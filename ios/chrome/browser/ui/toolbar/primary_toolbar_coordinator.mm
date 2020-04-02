@@ -75,7 +75,7 @@
   // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
   // clean up.
   self.viewController.dispatcher =
-      static_cast<id<ApplicationCommands, BrowserCommands, OmniboxFocuser>>(
+      static_cast<id<ApplicationCommands, BrowserCommands, OmniboxCommands>>(
           self.browser->GetCommandDispatcher());
   self.viewController.delegate = self;
 

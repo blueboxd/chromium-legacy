@@ -30,10 +30,17 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/tablet_mode.h"
+#include "ash/public/cpp/window_properties.h"
+#include "ui/aura/window.h"
 #endif
 
 using content::BrowserContext;
 using content::WebContents;
+
+ExtensionDialog::InitParams::InitParams(int width, int height)
+    : width(width), height(height) {}
+ExtensionDialog::InitParams::InitParams(const InitParams& other) = default;
+ExtensionDialog::InitParams::~InitParams() = default;
 
 // static
 ExtensionDialog* ExtensionDialog::Show(const GURL& url,
@@ -222,6 +229,15 @@ void ExtensionDialog::InitWindow(gfx::NativeWindow parent,
   // Make sure bounds is still on screen.
   bounds.AdjustToFit(screen_rect);
   window->SetBounds(bounds);
+
+#if defined(OS_CHROMEOS)
+  if (init_params.title_color) {
+    aura::Window* native_view = window->GetNativeWindow();
+    // Frame active color changes the title color when dialog is active.
+    native_view->SetProperty(ash::kFrameActiveColorKey,
+                             init_params.title_color.value());
+  }
+#endif
 
   window->Show();
   // TODO(jamescook): Remove redundant call to Activate()?

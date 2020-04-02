@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "components/password_manager/core/browser/hash_password_manager.h"
+#include "components/password_manager/core/browser/password_reuse_detector.h"
 
 namespace password_manager {
 
@@ -26,15 +27,16 @@ class PasswordReuseDetectorConsumer
   // Called when a password reuse is found.
   // |password_length| is the length of the re-used password, or the max length
   // if multiple passwords were matched. |reused_protected_password_hash| is the
-  // Gaia or enterprise password that matches the reuse. |matching_domains| is
-  // the list of domains for which |password| is saved (may be empty if
-  // |reused_protected_password_hash| is not null),  |saved_passwords|
-  // is the total number of passwords (with unique domains) stored in Password
-  // Manager.
+  // Gaia or enterprise password that matches the reuse.
+  // |matching_reused_credentials| is the list of MatchingReusedCredentials that
+  // contains the signon_realm which the |password| is saved (may be empty if
+  // |reused_protected_password_hash| is not null) on and the username,
+  // |saved_passwords| is the total number of passwords (with unique domains)
+  // stored in Password Manager.
   virtual void OnReuseFound(
       size_t password_length,
       base::Optional<PasswordHashData> reused_protected_password_hash,
-      const std::vector<std::string>& matching_domains,
+      const std::vector<MatchingReusedCredential>& matching_reused_credentials,
       int saved_passwords) = 0;
 };
 

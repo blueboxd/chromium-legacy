@@ -120,7 +120,7 @@ class MockPasswordReuseDetectorConsumer : public PasswordReuseDetectorConsumer {
   MOCK_METHOD4(OnReuseFound,
                void(size_t,
                     base::Optional<PasswordHashData>,
-                    const std::vector<std::string>&,
+                    const std::vector<MatchingReusedCredential>&,
                     int));
 };
 

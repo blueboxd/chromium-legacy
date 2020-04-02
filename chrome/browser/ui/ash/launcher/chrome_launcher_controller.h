@@ -277,7 +277,7 @@ class ChromeLauncherController
 
   // Show the dialog with the application's information. Call only if
   // CanDoShowAppInfoFlow() returns true.
-  void DoShowAppInfoFlow(Profile* profile, const std::string& extension_id);
+  void DoShowAppInfoFlow(Profile* profile, const std::string& app_id);
 
   // LauncherAppUpdater::Delegate:
   void OnAppInstalled(content::BrowserContext* browser_context,

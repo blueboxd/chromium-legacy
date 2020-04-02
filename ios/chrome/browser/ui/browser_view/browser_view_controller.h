@@ -23,7 +23,6 @@ class FullscreenController;
 @class BrowserContainerViewController;
 @class BrowserViewControllerDependencyFactory;
 @protocol FindInPageCommands;
-@protocol OmniboxFocuser;
 @protocol PasswordBreachCommands;
 @protocol PopupMenuCommands;
 @protocol FakeboxFocuser;
@@ -62,7 +61,6 @@ class FullscreenController;
                                   BrowserCommands,
                                   BrowsingDataCommands,
                                   FindInPageCommands,
-                                  OmniboxFocuser,
                                   PasswordBreachCommands,
                                   PopupMenuCommands,
                                   FakeboxFocuser,

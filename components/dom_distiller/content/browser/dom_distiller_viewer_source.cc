@@ -205,7 +205,7 @@ DomDistillerViewerSource::DomDistillerViewerSource(
     const std::string& scheme)
     : scheme_(scheme), dom_distiller_service_(dom_distiller_service) {}
 
-DomDistillerViewerSource::~DomDistillerViewerSource() {}
+DomDistillerViewerSource::~DomDistillerViewerSource() = default;
 
 std::string DomDistillerViewerSource::GetSource() {
   return scheme_ + "://";

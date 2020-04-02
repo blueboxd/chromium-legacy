@@ -173,6 +173,14 @@ bool LoginScreenTestApi::IsParentAccessButtonShown() {
 }
 
 // static
+bool LoginScreenTestApi::IsWarningBubbleShown() {
+  LockScreen::TestApi lock_screen_test(LockScreen::Get());
+  LockContentsView::TestApi lock_contents_test(
+      lock_screen_test.contents_view());
+  return lock_contents_test.warning_banner_bubble()->GetVisible();
+}
+
+// static
 void LoginScreenTestApi::SubmitPassword(const AccountId& account_id,
                                         const std::string& password,
                                         bool check_if_submittable) {

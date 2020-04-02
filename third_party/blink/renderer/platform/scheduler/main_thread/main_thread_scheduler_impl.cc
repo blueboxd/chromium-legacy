@@ -1477,7 +1477,7 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       break;
 
     case UseCase::kNone:
-      // It's only safe to block tasks that if we are expecting a compositor
+      // It's only safe to block tasks if we are expecting a compositor
       // driven gesture.
       if (main_thread_only().blocking_input_expected_soon &&
           any_thread().last_gesture_was_compositor_driven) {
@@ -2597,7 +2597,7 @@ TaskQueue::QueuePriority MainThreadSchedulerImpl::ComputePriority(
     MainThreadTaskQueue* task_queue) const {
   DCHECK(task_queue);
 
-  // If |task_queue| is associated to a frame, the the frame scheduler computes
+  // If |task_queue| is associated to a frame, then the frame scheduler computes
   // the priority.
   FrameSchedulerImpl* frame_scheduler = task_queue->GetFrameScheduler();
 

@@ -17,13 +17,12 @@
         <include name="IDR_SAMPLE_SYSTEM_WEB_APP_INDEX_HTML" file="index.html" type="BINDATA" compress="gzip" />
         <include name="IDR_SAMPLE_SYSTEM_WEB_APP_PWA_HTML" file="pwa.html" type="BINDATA" compress="gzip" />
         <include name="IDR_SAMPLE_SYSTEM_WEB_APP_SANDBOX_HTML" file="sandbox.html" type="BINDATA" compress="gzip" />
-        <include name="IDR_SAMPLE_SYSTEM_WEB_APP_JS" file="app.js" type="BINDATA" compress="gzip" />
         <include name="IDR_SAMPLE_SYSTEM_WEB_APP_MANIFEST" file="manifest.json" type="BINDATA" compress="gzip" />
         <include name="IDR_SAMPLE_SYSTEM_WEB_APP_ICON_192" file="app_icon_192.png" type="BINDATA" compress="gzip" />
 
         <!-- Untrusted app contents. -->
-        <include name="IDR_SAMPLE_SYSTEM_WEB_APP_APP_HTML" file="app.html" type="BINDATA" compress="gzip" />
-        <include name="IDR_SAMPLE_SYSTEM_WEB_APP_RECEIVER_JS" file="receiver.js" type="BINDATA" compress="gzip" />
+        <include name="IDR_SAMPLE_SYSTEM_WEB_APP_UNTRUSTED_HTML" file="untrusted.html" type="BINDATA" compress="gzip" />
+        <include name="IDR_SAMPLE_SYSTEM_WEB_APP_UNTRUSTED_JS" file="untrusted.js" type="BINDATA" compress="gzip" />
       </if>
     </includes>
   </release>

@@ -256,8 +256,8 @@ class FileGrid extends cr.ui.Grid {
       const index = item.listIndex;
       const nextIndex = index + 1;
 
-      if (util.isFilesNg()) {
-        const entry = this.dataModel.item(index);
+      const entry = this.dataModel.item(index);
+      if (entry && util.isFilesNg()) {
         if (entry.isDirectory && previousTitle !== 'dir') {
           // For first Directory we add a title div before the element.
           const title = document.createElement('div');

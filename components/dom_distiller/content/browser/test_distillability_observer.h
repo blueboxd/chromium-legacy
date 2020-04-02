@@ -40,5 +40,4 @@ class TestDistillabilityObserver : public DistillabilityObserver {
 
 }  // namespace dom_distiller
 
-#endif  // defined
-        // COMPONENTS_DOM_DISTILLER_CONTENT_BROWSER_TEST_DISTILLABILITY_OBSERVER_H_
+#endif  // COMPONENTS_DOM_DISTILLER_CONTENT_BROWSER_TEST_DISTILLABILITY_OBSERVER_H_

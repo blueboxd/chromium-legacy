@@ -491,6 +491,10 @@ function onLoad() {
 
   $('refresh-button').addEventListener('click', cr.quota.requestInfo, false);
   $('dump-button').addEventListener('click', dump, false);
+  $('trigger-notification').addEventListener('click', () => {
+    const origin = $('storage-pressure-origin').value;
+    cr.quota.triggerStoragePressure(origin);
+  }, false);
 }
 
 document.addEventListener('DOMContentLoaded', onLoad, false);

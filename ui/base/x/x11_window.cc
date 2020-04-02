@@ -16,6 +16,7 @@
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/base/hit_test_x11.h"
 #include "ui/base/wm_role_names_linux.h"
+#include "ui/base/x/x11_menu_registrar.h"
 #include "ui/base/x/x11_pointer_grab.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_util_internal.h"
@@ -151,6 +152,10 @@ XWindow::~XWindow() {
 }
 
 void XWindow::Init(const Configuration& config) {
+  // Ensure that the X11MenuRegistrar exists. The X11MenuRegistrar is
+  // necessary to properly track menu windows.
+  X11MenuRegistrar::Get();
+
   activatable_ = config.activatable;
 
   unsigned long attribute_mask = CWBackPixel | CWBitGravity;

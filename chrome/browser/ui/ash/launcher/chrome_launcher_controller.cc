@@ -69,8 +69,10 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/settings/chromeos/app_management/app_management_uma.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
@@ -903,19 +905,23 @@ bool ChromeLauncherController::CanDoShowAppInfoFlow(
   return CanShowAppInfoDialog(profile, extension_id);
 }
 
-void ChromeLauncherController::DoShowAppInfoFlow(
-    Profile* profile,
-    const std::string& extension_id) {
+void ChromeLauncherController::DoShowAppInfoFlow(Profile* profile,
+                                                 const std::string& app_id) {
   DCHECK(CanPlatformShowAppInfoDialog());
 
-  const extensions::Extension* extension = GetExtension(profile, extension_id);
-  if (!extension)
-    return;
-
   if (base::FeatureList::IsEnabled(features::kAppManagement)) {
-    chrome::ShowAppManagementPage(profile, extension_id);
+    apps::AppServiceProxy* proxy =
+        apps::AppServiceProxyFactory::GetForProfile(profile);
+    if (proxy && proxy->AppRegistryCache().GetAppType(app_id) ==
+                     apps::mojom::AppType::kUnknown) {
+      return;
+    }
 
-    if (extension->is_hosted_app() && extension->from_bookmark()) {
+    chrome::ShowAppManagementPage(profile, app_id);
+
+    web_app::WebAppProvider* web_app_provider =
+        web_app::WebAppProvider::Get(profile);
+    if (web_app_provider && web_app_provider->registrar().IsInstalled(app_id)) {
       base::UmaHistogramEnumeration(
           kAppManagementEntryPointsHistogramName,
           AppManagementEntryPoint::kShelfContextMenuAppInfoWebApp);
@@ -926,6 +932,11 @@ void ChromeLauncherController::DoShowAppInfoFlow(
     }
     return;
   }
+
+  // TODO(crbug.com/1065766): Remove below code.
+  const extensions::Extension* extension = GetExtension(profile, app_id);
+  if (!extension)
+    return;
 
   if (extension->is_hosted_app() && extension->from_bookmark()) {
     chrome::ShowSiteSettings(

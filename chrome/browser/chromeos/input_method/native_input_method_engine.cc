@@ -94,18 +94,6 @@ NativeInputMethodEngine::ImeObserver::ImeObserver(
     : base_observer_(std::move(base_observer)),
       receiver_from_engine_(this),
       assistive_suggester_(std::move(assistive_suggester)) {
-  auto* ime_manager = input_method::InputMethodManager::Get();
-
-  const auto start = base::Time::Now();
-  ime_manager->ConnectInputEngineManager(
-      remote_manager_.BindNewPipeAndPassReceiver());
-  LogLatency("InputMethod.Mojo.Extension.ServiceInitLatency",
-             base::Time::Now() - start);
-
-  remote_manager_.set_disconnect_handler(base::BindOnce(
-      &ImeObserver::OnError, base::Unretained(this), base::Time::Now()));
-
-  LogEvent(ImeServiceEvent::kInitSuccess);
 }
 
 NativeInputMethodEngine::ImeObserver::~ImeObserver() = default;
@@ -113,6 +101,18 @@ NativeInputMethodEngine::ImeObserver::~ImeObserver() = default;
 void NativeInputMethodEngine::ImeObserver::OnActivate(
     const std::string& engine_id) {
   if (ShouldEngineUseMojo(engine_id)) {
+    if (!remote_manager_.is_bound()) {
+      auto* ime_manager = input_method::InputMethodManager::Get();
+      const auto start = base::Time::Now();
+      ime_manager->ConnectInputEngineManager(
+          remote_manager_.BindNewPipeAndPassReceiver());
+      LogLatency("InputMethod.Mojo.Extension.ServiceInitLatency",
+                 base::Time::Now() - start);
+      remote_manager_.set_disconnect_handler(base::BindOnce(
+          &ImeObserver::OnError, base::Unretained(this), base::Time::Now()));
+      LogEvent(ImeServiceEvent::kInitSuccess);
+    }
+
     // For legacy reasons, |engine_id| starts with "vkd_" in the input method
     // manifest, but the InputEngineManager expects the prefix "m17n:".
     // TODO(https://crbug.com/1012490): Migrate to m17n prefix and remove this.
@@ -127,6 +127,10 @@ void NativeInputMethodEngine::ImeObserver::OnActivate(
         receiver_from_engine_.BindNewPipeAndPassRemote(), {},
         base::BindOnce(&ImeObserver::OnConnected, base::Unretained(this),
                        base::Time::Now()));
+  } else {
+    // Release the IME service.
+    // TODO(b/147709499): A better way to cleanup all.
+    remote_manager_.reset();
   }
   base_observer_->OnActivate(engine_id);
 }

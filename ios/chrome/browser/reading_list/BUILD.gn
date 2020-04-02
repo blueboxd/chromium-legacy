@@ -46,6 +46,7 @@ source_set("reading_list") {
     "//ios/chrome/browser/favicon",
     "//ios/chrome/browser/history",
     "//ios/chrome/common",
+    "//ios/components/webui:url_constants",
     "//ios/web/public",
     "//ios/web/public/deprecated",
     "//ios/web/public/security",

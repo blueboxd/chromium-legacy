@@ -9,7 +9,9 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_app_setup_controller.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_urls.h"
 #include "chrome/browser/profiles/profile.h"
@@ -17,6 +19,7 @@
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "ui/display/types/display_constants.h"
 
 namespace chromeos {
 
@@ -41,10 +44,18 @@ AndroidSmsAppManagerImpl::PwaDelegate::PwaDelegate() = default;
 
 AndroidSmsAppManagerImpl::PwaDelegate::~PwaDelegate() = default;
 
-content::WebContents* AndroidSmsAppManagerImpl::PwaDelegate::OpenApp(
-    Profile* profile,
-    const apps::AppLaunchParams& params) {
-  return apps::LaunchService::Get(profile)->OpenApplication(params);
+void AndroidSmsAppManagerImpl::PwaDelegate::OpenApp(Profile* profile,
+                                                    const std::string& app_id) {
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile);
+  DCHECK(proxy);
+  proxy->Launch(
+      app_id,
+      apps::GetEventFlags(apps::mojom::LaunchContainer::kLaunchContainerWindow,
+                          WindowOpenDisposition::NEW_WINDOW,
+                          false /* preferred_containner */),
+      apps::mojom::LaunchSource::kFromChromeInternal,
+      display::kInvalidDisplayId);
 }
 
 bool AndroidSmsAppManagerImpl::PwaDelegate::TransferItemAttributes(
@@ -250,13 +261,9 @@ void AndroidSmsAppManagerImpl::HandleAppSetupFinished() {
   // Otherwise, launch the app.
   PA_LOG(VERBOSE) << "AndroidSmsAppManagerImpl::HandleAppSetupFinished(): "
                   << "Launching Messages PWA.";
-  pwa_delegate_->OpenApp(
-      profile_, apps::AppLaunchParams(
-                    *setup_controller_->GetPwa(GetAndroidMessagesURL(
-                        true /* use_install_url */, *domain)),
-                    apps::mojom::LaunchContainer::kLaunchContainerWindow,
-                    WindowOpenDisposition::NEW_WINDOW,
-                    apps::mojom::AppLaunchSource::kSourceChromeInternal));
+  pwa_delegate_->OpenApp(profile_,
+                         *setup_controller_->GetPwa(GetAndroidMessagesURL(
+                             true /* use_install_url */, *domain)));
 }
 
 void AndroidSmsAppManagerImpl::SetPwaDelegateForTesting(

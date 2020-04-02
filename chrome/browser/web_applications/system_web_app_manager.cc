@@ -125,7 +125,8 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
     infos.at(SystemAppType::MEDIA).show_in_launcher = false;
     infos.at(SystemAppType::MEDIA).show_in_search = false;
     infos.at(SystemAppType::MEDIA).enabled_origin_trials =
-        OriginTrialsMap({{GetOrigin("chrome://media-app"), {"FileHandling"}}});
+        OriginTrialsMap({{GetOrigin("chrome://media-app"),
+                          {"FileHandling", "NativeFileSystem2"}}});
   }
 
   if (SystemWebAppManager::IsAppEnabled(SystemAppType::PRINT_MANAGEMENT)) {

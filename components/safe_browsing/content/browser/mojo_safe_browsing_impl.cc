@@ -156,7 +156,8 @@ void MojoSafeBrowsingImpl::CreateCheckerAndCheck(
       delegate_,
       base::BindRepeating(&GetWebContentsFromID, render_process_id_,
                           static_cast<int>(render_frame_id)),
-      /*real_time_lookup_enabled=*/false, /* url_lookup_service */ nullptr);
+      /*real_time_lookup_enabled=*/false, /*enhanced_protection_enabled=*/false,
+      /*url_lookup_service=*/nullptr);
 
   checker_impl->CheckUrl(
       url, method,

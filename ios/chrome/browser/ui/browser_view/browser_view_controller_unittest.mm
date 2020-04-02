@@ -214,7 +214,8 @@ TEST_F(BrowserViewControllerTest, TestWebStateSelected) {
 // TODO(altse): Needs a testing |Profile| that implements AutocompleteClassifier
 //             before enabling again.
 TEST_F(BrowserViewControllerTest, DISABLED_TestShieldWasTapped) {
-  [bvc_.dispatcher focusOmnibox];
+  [HandlerForProtocol(browser_->GetCommandDispatcher(), OmniboxCommands)
+      focusOmnibox];
   EXPECT_TRUE([[bvc_ typingShield] superview] != nil);
   EXPECT_FALSE([[bvc_ typingShield] isHidden]);
   [bvc_ shieldWasTapped:nil];

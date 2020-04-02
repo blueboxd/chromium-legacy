@@ -408,7 +408,8 @@ class PasswordStore : protected PasswordStoreSync,
     void OnReuseFound(
         size_t password_length,
         base::Optional<PasswordHashData> reused_protected_password_hash,
-        const std::vector<std::string>& matching_domains,
+        const std::vector<MatchingReusedCredential>&
+            matching_reused_credentials,
         int saved_passwords) override;
 
    private:

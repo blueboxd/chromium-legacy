@@ -24,6 +24,13 @@ class RenderFrameHost;
 class WebContents;
 }
 
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.contextmenu
+enum ContextMenuImageFormat {
+  JPEG = 0,
+  PNG = 1,
+  ORIGINAL = 2,
+};
+
 class ContextMenuHelper
     : public content::WebContentsUserData<ContextMenuHelper> {
  protected:
@@ -32,7 +39,8 @@ class ContextMenuHelper
           chrome_render_frame_ptr,
       const base::android::JavaRef<jobject>& jcallback,
       const std::vector<uint8_t>& thumbnail_data,
-      const gfx::Size& max_dimen_px)>;
+      const gfx::Size& max_dimen_px,
+      const std::string& image_extension)>;
 
  public:
   ~ContextMenuHelper() override;
@@ -53,30 +61,36 @@ class ContextMenuHelper
                        const base::android::JavaParamRef<jobject>& obj,
                        jboolean jis_link,
                        jboolean jis_data_reduction_proxy_enabled);
+  void SearchForImage(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& obj);
   void RetrieveImageForShare(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& jcallback,
       jint max_width_px,
-      jint max_height_px);
+      jint max_height_px,
+      jint j_image_type);
   void RetrieveImageForContextMenu(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& jcallback,
       jint max_width_px,
       jint max_height_px);
+
+ private:
+  explicit ContextMenuHelper(content::WebContents* web_contents);
+  friend class content::WebContentsUserData<ContextMenuHelper>;
+
   void RetrieveImageInternal(
       JNIEnv* env,
       const ImageRetrieveCallback& retrieve_callback,
       const base::android::JavaParamRef<jobject>& jcallback,
       jint max_width_px,
-      jint max_height_px);
-  void SearchForImage(JNIEnv* env,
-                      const base::android::JavaParamRef<jobject>& obj);
+      jint max_height_px,
+      chrome::mojom::ImageFormat image_format);
 
- private:
-  explicit ContextMenuHelper(content::WebContents* web_contents);
-  friend class content::WebContentsUserData<ContextMenuHelper>;
+  mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame>
+  GetChromeRenderFrame() const;
 
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;
   content::WebContents* web_contents_;

@@ -72,6 +72,9 @@ class ASH_EXPORT QuickAnswersControllerImpl
   // consent for the Quick Answers feature.
   void OnConsentSettingsRequestedByUser();
 
+  // Open Quick-Answers dogfood URL.
+  void OpenQuickAnswersDogfoodLink();
+
  private:
   void SendAssistantQuery(const std::string& query);
   void MaybeDismissQuickAnswersConsent();

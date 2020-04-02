@@ -24,7 +24,8 @@ class PermissionRequestImpl : public PermissionRequest {
  public:
   using PermissionDecidedCallback = base::OnceCallback<void(ContentSetting)>;
 
-  PermissionRequestImpl(const GURL& request_origin,
+  PermissionRequestImpl(const GURL& embedding_origin,
+                        const GURL& request_origin,
                         ContentSettingsType content_settings_type,
                         bool has_gesture,
                         PermissionDecidedCallback permission_decided_callback,
@@ -42,6 +43,7 @@ class PermissionRequestImpl : public PermissionRequest {
 #endif
   base::string16 GetMessageTextFragment() const override;
   base::string16 GetMessageTextWarningFragment() const override;
+  GURL GetEmbeddingOrigin() const override;
   GURL GetOrigin() const override;
   void PermissionGranted() override;
   void PermissionDenied() override;
@@ -51,6 +53,7 @@ class PermissionRequestImpl : public PermissionRequest {
   PermissionRequestGestureType GetGestureType() const override;
   ContentSettingsType GetContentSettingsType() const override;
 
+  GURL embedding_origin_;
   GURL request_origin_;
   ContentSettingsType content_settings_type_;
   bool has_gesture_;

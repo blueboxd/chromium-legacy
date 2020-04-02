@@ -29,11 +29,13 @@
 #include "content/public/browser/web_contents.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "url/gurl.h"
 #include "url/origin.h"
 
 using content::BrowserThread;
@@ -69,6 +71,24 @@ std::unique_ptr<VisualFeatures> ExtractVisualFeatures(
 }
 #endif
 
+std::vector<std::string> GetMatchingDomains(
+    const std::vector<password_manager::MatchingReusedCredential>&
+        matching_reused_credentials) {
+  std::vector<std::string> matching_domains;
+  matching_domains.reserve(matching_reused_credentials.size());
+  for (const auto& credential : matching_reused_credentials) {
+    std::string domain = net::registry_controlled_domains::GetDomainAndRegistry(
+        GURL(credential.signon_realm),
+        net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+    matching_domains.push_back(std::move(domain));
+  }
+  auto matching_domains_it =
+      std::unique(matching_domains.begin(), matching_domains.end());
+  matching_domains.resize(
+      std::distance(matching_domains.begin(), matching_domains_it));
+  return matching_domains;
+}
+
 }  // namespace
 
 PasswordProtectionRequest::PasswordProtectionRequest(
@@ -78,7 +98,8 @@ PasswordProtectionRequest::PasswordProtectionRequest(
     const GURL& password_form_frame_url,
     const std::string& username,
     PasswordType password_type,
-    const std::vector<std::string>& matching_domains,
+    const std::vector<password_manager::MatchingReusedCredential>&
+        matching_reused_credentials,
     LoginReputationClientRequest::TriggerType type,
     bool password_field_exists,
     PasswordProtectionService* pps,
@@ -90,7 +111,8 @@ PasswordProtectionRequest::PasswordProtectionRequest(
       password_form_frame_url_(password_form_frame_url),
       username_(username),
       password_type_(password_type),
-      matching_domains_(matching_domains),
+      matching_domains_(GetMatchingDomains(matching_reused_credentials)),
+      matching_reused_credentials_(matching_reused_credentials),
       trigger_type_(type),
       password_field_exists_(password_field_exists),
       password_protection_service_(pps),
@@ -103,8 +125,7 @@ PasswordProtectionRequest::PasswordProtectionRequest(
          trigger_type_ == LoginReputationClientRequest::PASSWORD_REUSE_EVENT);
   DCHECK(trigger_type_ != LoginReputationClientRequest::PASSWORD_REUSE_EVENT ||
          password_type_ != PasswordType::SAVED_PASSWORD ||
-         matching_domains_.size() > 0);
-
+         !matching_reused_credentials_.empty());
   request_proto_->set_trigger_type(trigger_type_);
 }
 

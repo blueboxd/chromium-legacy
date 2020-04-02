@@ -12,6 +12,7 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
 #include "ios/chrome/common/x_callback_url.h"
+#include "ios/components/webui/web_ui_url_constants.h"
 #import "net/base/mac/url_conversions.h"
 #include "url/gurl.h"
 

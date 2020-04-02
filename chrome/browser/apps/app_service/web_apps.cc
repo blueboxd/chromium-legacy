@@ -218,8 +218,8 @@ void WebApps::Launch(const std::string& app_id,
       GetRegistrar().GetAppEffectiveDisplayMode(app_id);
 
   AppLaunchParams params = apps::CreateAppIdLaunchParamsWithEventFlags(
-      web_app->app_id(), event_flags,
-      apps::mojom::AppLaunchSource::kSourceAppLauncher, display_id,
+      web_app->app_id(), event_flags, GetAppLaunchSource(launch_source),
+      display_id,
       /*fallback_container=*/
       web_app::ConvertDisplayModeToAppLaunchContainer(display_mode));
 

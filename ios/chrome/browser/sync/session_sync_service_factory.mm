@@ -27,6 +27,7 @@
 #import "ios/chrome/browser/sync/sessions/ios_chrome_local_session_event_router.h"
 #include "ios/chrome/browser/tabs/ios_synced_window_delegate_getter.h"
 #include "ios/chrome/common/channel_info.h"
+#include "ios/components/webui/web_ui_url_constants.h"
 #include "ios/web/public/thread/web_thread.h"
 #include "url/gurl.h"
 

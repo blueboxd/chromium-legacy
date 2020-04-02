@@ -1576,6 +1576,7 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask(
 
     // Duplicate the buffer FDs for the VideoFrame instance.
     std::vector<base::ScopedFD> duped_fds;
+    std::vector<ColorPlaneLayout> color_planes;
     for (const gfx::NativePixmapPlane& plane : handle.planes) {
       duped_fds.emplace_back(HANDLE_EINTR(dup(plane.fd.get())));
       if (!duped_fds.back().is_valid()) {
@@ -1583,9 +1584,14 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask(
         NOTIFY_ERROR(PLATFORM_FAILURE);
         return;
       }
+      color_planes.push_back(
+          ColorPlaneLayout(base::checked_cast<int32_t>(plane.stride),
+                           base::checked_cast<size_t>(plane.offset),
+                           base::checked_cast<size_t>(plane.size)));
     }
-    auto layout = VideoFrameLayout::Create(
-        gl_image_format_fourcc_->ToVideoPixelFormat(), gl_image_size_);
+    auto layout = VideoFrameLayout::CreateWithPlanes(
+        gl_image_format_fourcc_->ToVideoPixelFormat(), gl_image_size_,
+        std::move(color_planes));
     if (!layout) {
       LOG(ERROR) << "Cannot create layout!";
       NOTIFY_ERROR(INVALID_ARGUMENT);

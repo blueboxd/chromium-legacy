@@ -26,6 +26,7 @@ include_rules = [
   "+components/web_resource",
   "+ios/chrome/browser",
   "+ios/chrome/browser/feature_engagement",
+  "+ios/components/webui",
   "+ios/net",
   "+ios/public/provider/chrome",
   "+mojo/core/embedder/embedder.h",

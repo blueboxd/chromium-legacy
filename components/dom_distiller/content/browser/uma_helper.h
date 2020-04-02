@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_DOM_DISTILLER_CONTENT_BROWSER_UMA_HELPER_H_
 #define COMPONENTS_DOM_DISTILLER_CONTENT_BROWSER_UMA_HELPER_H_
 
-#include "base/macros.h"
 #include "base/time/time.h"
 
 namespace content {
@@ -94,8 +93,9 @@ class UMAHelper {
   // navigates to another page.
   static void LogTimeOnDistilledPage(base::TimeDelta time);
 
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(UMAHelper);
+  UMAHelper() = delete;
+  UMAHelper(const UMAHelper&) = delete;
+  UMAHelper& operator=(const UMAHelper&) = delete;
 };
 
 }  // namespace dom_distiller

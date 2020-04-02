@@ -66,8 +66,7 @@ SuggestionStatus PersonalInfoSuggester::HandleKeyEvent(
   if (suggestion_shown_) {
     suggestion_shown_ = false;
     if (event.key == "Tab" || event.key == "Right") {
-      std::string error;
-      engine_->AcceptSuggestion(context_id_, &error);
+      AcceptSuggestion();
       return SuggestionStatus::kAccept;
     }
     DismissSuggestion();
@@ -77,50 +76,45 @@ SuggestionStatus PersonalInfoSuggester::HandleKeyEvent(
 }
 
 bool PersonalInfoSuggester::Suggest(const base::string16& text) {
-  base::string16 suggestion_text = GetPersonalInfoSuggestion(text);
-  if (!suggestion_text.empty()) {
-    ShowSuggestion(suggestion_text);
-    suggestion_shown_ = true;
-  }
-  return suggestion_shown_;
-}
+  proposed_action_type_ = ProposeAssistiveAction(text);
 
-base::string16 PersonalInfoSuggester::GetPersonalInfoSuggestion(
-    const base::string16& text) {
-  AssistiveType action = ProposeAssistiveAction(text);
-  proposed_action_type_ = action;
+  if (proposed_action_type_ == AssistiveType::kGenericAction)
+    return false;
 
-  if (action == AssistiveType::kGenericAction)
-    return base::EmptyString16();
-
-  if (action == AssistiveType::kPersonalEmail)
-    return base::UTF8ToUTF16(profile_->GetProfileUserName());
-
-  auto autofill_profiles = personal_data_manager_->GetProfilesToSuggest();
-  if (autofill_profiles.empty())
-    return base::EmptyString16();
-
-  // Currently, we are just picking the first candidate, will improve the
-  // strategy in the future.
-  auto* data = autofill_profiles[0];
   base::string16 suggestion;
-  switch (action) {
-    case AssistiveType::kPersonalName:
-      suggestion = data->GetRawInfo(autofill::ServerFieldType::NAME_FULL);
-      break;
-    case AssistiveType::kPersonalAddress:
-      suggestion = data->GetRawInfo(
-          autofill::ServerFieldType::ADDRESS_HOME_STREET_ADDRESS);
-      break;
-    case AssistiveType::kPersonalPhoneNumber:
-      suggestion =
-          data->GetRawInfo(autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER);
-      break;
-    default:
-      NOTREACHED();
-      break;
+  if (proposed_action_type_ == AssistiveType::kPersonalEmail) {
+    suggestion = base::UTF8ToUTF16(profile_->GetProfileUserName());
+  } else {
+    auto autofill_profiles = personal_data_manager_->GetProfilesToSuggest();
+    if (autofill_profiles.empty())
+      return false;
+
+    // Currently, we are just picking the first candidate, will improve the
+    // strategy in the future.
+    auto* profile = autofill_profiles[0];
+    switch (proposed_action_type_) {
+      case AssistiveType::kPersonalName:
+        suggestion = profile->GetRawInfo(autofill::ServerFieldType::NAME_FULL);
+        break;
+      case AssistiveType::kPersonalAddress:
+        suggestion = profile->GetRawInfo(
+            autofill::ServerFieldType::ADDRESS_HOME_STREET_ADDRESS);
+        break;
+      case AssistiveType::kPersonalPhoneNumber:
+        suggestion = profile->GetRawInfo(
+            autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER);
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
   }
-  return suggestion;
+
+  if (suggestion.empty())
+    return false;
+  ShowSuggestion(suggestion);
+  suggestion_shown_ = true;
+  return true;
 }
 
 void PersonalInfoSuggester::ShowSuggestion(const base::string16& text) {
@@ -135,9 +129,16 @@ AssistiveType PersonalInfoSuggester::GetProposeActionType() {
   return proposed_action_type_;
 }
 
+void PersonalInfoSuggester::AcceptSuggestion() {
+  std::string error;
+  engine_->AcceptSuggestion(context_id_, &error);
+  if (!error.empty()) {
+    LOG(ERROR) << "Failed to accept suggestion. " << error;
+  }
+}
+
 void PersonalInfoSuggester::DismissSuggestion() {
   std::string error;
-  suggestion_shown_ = false;
   engine_->DismissSuggestion(context_id_, &error);
   if (!error.empty()) {
     LOG(ERROR) << "Failed to dismiss suggestion. " << error;

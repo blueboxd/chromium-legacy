@@ -522,6 +522,31 @@ void V4L2StatelessVideoDecoderBackend::ChangeResolution() {
   client_->ChangeResolution(pic_size, visible_rect, num_output_frames);
 }
 
+bool V4L2StatelessVideoDecoderBackend::ApplyResolution(
+    const gfx::Size& pic_size,
+    const gfx::Rect& visible_rect,
+    const size_t num_output_frames) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_EQ(input_queue_->QueuedBuffersCount(), 0u);
+
+  struct v4l2_format format = {};
+
+  format.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
+  if (device_->Ioctl(VIDIOC_G_FMT, &format) != 0) {
+    VPLOGF(1) << "Failed getting OUTPUT format";
+    return false;
+  }
+
+  format.fmt.pix_mp.width = pic_size.width();
+  format.fmt.pix_mp.height = pic_size.height();
+  if (device_->Ioctl(VIDIOC_S_FMT, &format) != 0) {
+    VPLOGF(1) << "Failed setting OUTPUT format";
+    return false;
+  }
+
+  return true;
+}
+
 void V4L2StatelessVideoDecoderBackend::OnChangeResolutionDone(bool success) {
   if (!success) {
     client_->OnBackendError();

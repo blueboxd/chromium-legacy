@@ -139,7 +139,7 @@ TEST_F(PasswordReuseDetectionManagerTest, NoReuseCheckingAfterReuseFound) {
   PasswordReuseDetectionManager manager(&client_);
 
   // Simulate that reuse found.
-  manager.OnReuseFound(0ul, base::nullopt, {"https://example.com"}, 0);
+  manager.OnReuseFound(0ul, base::nullopt, {{"https://example.com"}}, 0);
 
   // Expect no checking of reuse.
   EXPECT_CALL(*store_, CheckReuse(_, _, _)).Times(0);

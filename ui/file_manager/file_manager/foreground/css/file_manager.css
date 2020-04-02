@@ -2654,8 +2654,12 @@ body.files-ng .table-header-label {
 }
 
 body.files-ng .table-header-cell {
-  cursor: pointer;
   padding-bottom: 16px;
+}
+
+html:not(.pointer-active) body.files-ng .table-header-cell,
+body.files-ng .table-header-cell:active {
+  cursor: pointer;
 }
 
 body.files-ng #list-container .table-header-cell:first-child
@@ -2667,6 +2671,12 @@ body.files-ng .table-header-label .sort-icon {
   --cr-icon-button-icon-size: 16px;
   --cr-icon-button-size: 32px;
   border-radius: 50%;
+  cursor: default;
+}
+
+html:not(.pointer-active) body.files-ng .table-header-label .sort-icon,
+body.files-ng .table-header-label .sort-icon:active {
+  cursor: pointer;
 }
 
 body.files-ng .table-label-container {
@@ -2682,7 +2692,8 @@ body.files-ng .table-label-container > span {
   text-overflow: ellipsis;
 }
 
-body.files-ng .table-header-label .sorted .sort-icon:hover {
+html:not(.pointer-active) body.files-ng .table-header-label .sorted
+.sort-icon:hover {
   background-color: rgba(0, 0, 0, 4%);
 }
 
@@ -2733,8 +2744,13 @@ body.files-ng .table-header-splitter .splitter-icon {
   --cr-icon-button-size: 32px;
   --cr-icon-button-margin-start: 0px;
   --cr-icon-button-fill-color: var(--google-grey-500);
-  cursor: col-resize ;
+  cursor: default;
   height: 32px;
+}
+
+html:not(.pointer-active) body.files-ng .table-header-splitter
+.splitter-icon:hover {
+  cursor: col-resize;
 }
 
 body.files-ng #list-container .table-row-cell .size {

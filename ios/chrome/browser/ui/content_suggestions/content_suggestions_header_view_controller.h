@@ -19,7 +19,7 @@
 @protocol ContentSuggestionsHeaderViewControllerDelegate;
 @protocol FakeboxFocuser;
 @protocol NewTabPageControllerDelegate;
-@protocol OmniboxFocuser;
+@protocol OmniboxCommands;
 @class PrimaryToolbarViewController;
 class ReadingListModel;
 
@@ -38,7 +38,7 @@ class ReadingListModel;
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 
 @property(nonatomic, weak)
-    id<ApplicationCommands, BrowserCommands, OmniboxFocuser, FakeboxFocuser>
+    id<ApplicationCommands, BrowserCommands, OmniboxCommands, FakeboxFocuser>
         dispatcher;
 @property(nonatomic, weak) id<ContentSuggestionsHeaderViewControllerDelegate>
     delegate;

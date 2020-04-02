@@ -117,6 +117,10 @@ class PermissionRequest {
   // Returns a warning prompt text related to this permission.
   virtual base::string16 GetMessageTextWarningFragment() const;
 
+  // Get the top-level origin currently displayed in the address bar associated
+  // with this request.
+  virtual GURL GetEmbeddingOrigin() const;
+
   // Get the origin on whose behalf this permission request is being made.
   virtual GURL GetOrigin() const = 0;
 

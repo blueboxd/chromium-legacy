@@ -113,6 +113,7 @@ source_set("browser") {
     "//ios/chrome/browser/web:feature_flags",
     "//ios/chrome/common",
     "//ios/components/io_thread",
+    "//ios/components/webui:url_constants",
     "//ios/net",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/voice",
@@ -165,7 +166,10 @@ source_set("chrome_url_constants") {
     "chrome_url_constants.h",
   ]
 
-  deps = [ "//base" ]
+  deps = [
+    "//base",
+    "//ios/components/webui:url_constants",
+  ]
   libs = [ "UIKit.framework" ]
 }
 
@@ -279,6 +283,7 @@ source_set("unit_tests") {
     "//components/prefs:test_support",
     "//components/proxy_config",
     "//components/variations",
+    "//ios/components/webui:url_constants",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/signin",
     "//ios/web/public/test",

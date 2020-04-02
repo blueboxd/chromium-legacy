@@ -62,8 +62,20 @@ async function runTestQuery(data) {
     } catch (/** @type{Error} */ error) {
       result = `deleteOriginalFile failed Error: ${error}`;
     }
+  } else if (data.renameLastFile) {
+    try {
+      const renameResult =
+          await lastReceivedFileList.item(0).renameOriginalFile(
+              data.renameLastFile);
+      if (renameResult === RenameResult.FILE_EXISTS) {
+        result = 'renameOriginalFile resolved file exists';
+      } else {
+        result = 'renameOriginalFile resolved success';
+      }
+    } catch (/** @type{Error} */ error) {
+      result = `renameOriginalFile failed Error: ${error}`;
+    }
   }
-
   return {testQueryResult: result};
 }
 
@@ -107,7 +119,7 @@ async function signalTestHandlersReady() {
       return;
     } catch (/** @type {GenericErrorResponse} */ e) {
       if (e.message !== EXPECTED_ERROR) {
-        console.error('Unepxected error in signalTestHandlersReady', e);
+        console.error('Unexpected error in signalTestHandlersReady', e);
         return;
       }
     }

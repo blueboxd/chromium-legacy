@@ -633,7 +633,8 @@ void ChromePasswordManagerClient::CheckSafeBrowsingReputation(
 void ChromePasswordManagerClient::CheckProtectedPasswordEntry(
     PasswordType password_type,
     const std::string& username,
-    const std::vector<std::string>& matching_domains,
+    const std::vector<password_manager::MatchingReusedCredential>&
+        matching_reused_credentials,
     bool password_field_exists) {
   safe_browsing::PasswordProtectionService* pps =
       GetPasswordProtectionService();
@@ -642,7 +643,7 @@ void ChromePasswordManagerClient::CheckProtectedPasswordEntry(
 
   pps->MaybeStartProtectedPasswordEntryRequest(
       web_contents(), web_contents()->GetLastCommittedURL(), username,
-      password_type, matching_domains, password_field_exists);
+      password_type, matching_reused_credentials, password_field_exists);
 }
 #endif  // defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 

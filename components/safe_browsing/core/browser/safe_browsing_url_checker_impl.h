@@ -85,6 +85,7 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
       const base::RepeatingCallback<content::WebContents*()>&
           web_contents_getter,
       bool real_time_lookup_enabled,
+      bool enhanced_protection_enabled,
       base::WeakPtr<RealTimeUrlLookupService> url_lookup_service_on_ui);
 
   ~SafeBrowsingUrlCheckerImpl() override;
@@ -240,6 +241,9 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
 
   // Whether real time lookup is enabled for this request.
   bool real_time_lookup_enabled_;
+
+  // Whether enhanced protection is enabled for this profile.
+  bool enhanced_protection_enabled_;
 
   // This object is used to perform real time url check. Can only be accessed in
   // UI thread.

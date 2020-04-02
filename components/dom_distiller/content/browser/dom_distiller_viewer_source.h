@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 
@@ -40,6 +39,9 @@ class DomDistillerViewerSource : public content::URLDataSource {
   std::string GetContentSecurityPolicyStyleSrc() override;
   std::string GetContentSecurityPolicyChildSrc() override;
 
+  DomDistillerViewerSource(const DomDistillerViewerSource&) = delete;
+  DomDistillerViewerSource& operator=(const DomDistillerViewerSource&) = delete;
+
  private:
   friend class DomDistillerViewerSourceTest;
 
@@ -49,8 +51,6 @@ class DomDistillerViewerSource : public content::URLDataSource {
   // The service which contains all the functionality needed to interact with
   // the list of articles.
   DomDistillerServiceInterface* dom_distiller_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(DomDistillerViewerSource);
 };
 
 }  // namespace dom_distiller

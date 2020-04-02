@@ -9,6 +9,7 @@
 #include "components/grit/sync_driver_resources.h"
 #include "components/sync/driver/about_sync_util.h"
 #include "ios/components/webui/sync_internals/sync_internals_message_handler.h"
+#include "ios/components/webui/web_ui_url_constants.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/web_state.h"
 #include "ios/web/public/webui/web_ui_ios.h"
@@ -20,9 +21,9 @@
 
 namespace {
 
-web::WebUIIOSDataSource* CreateSyncInternalsHTMLSource(
-    const std::string& host) {
-  web::WebUIIOSDataSource* source = web::WebUIIOSDataSource::Create(host);
+web::WebUIIOSDataSource* CreateSyncInternalsHTMLSource() {
+  web::WebUIIOSDataSource* source =
+      web::WebUIIOSDataSource::Create(kChromeUISyncInternalsHost);
 
   source->UseStringsJs();
   source->AddResourcePath(syncer::sync_ui_util::kSyncIndexJS,
@@ -55,10 +56,10 @@ web::WebUIIOSDataSource* CreateSyncInternalsHTMLSource(
 
 }  // namespace
 
-SyncInternalsUI::SyncInternalsUI(web::WebUIIOS* web_ui, const std::string& host)
+SyncInternalsUI::SyncInternalsUI(web::WebUIIOS* web_ui)
     : web::WebUIIOSController(web_ui) {
   web::WebUIIOSDataSource::Add(web_ui->GetWebState()->GetBrowserState(),
-                               CreateSyncInternalsHTMLSource(host));
+                               CreateSyncInternalsHTMLSource());
   web_ui->AddMessageHandler(std::make_unique<SyncInternalsMessageHandler>());
 }
 

@@ -481,7 +481,7 @@ TEST_F(SafetyCheckHandlerTest, CheckSafeBrowsing_Disabled) {
           static_cast<int>(SafetyCheckHandler::SafeBrowsingStatus::kDisabled));
   ASSERT_TRUE(event);
   VerifyDisplayString(
-      event, "Safe Browsing is off. To stay safe on the web, turn it on.");
+      event, "Safe Browsing is off. Browser recommends turning it on.");
   histogram_tester_.ExpectBucketCount(
       "SafetyCheck.SafeBrowsingResult",
       SafetyCheckHandler::SafeBrowsingStatus::kDisabled, 1);

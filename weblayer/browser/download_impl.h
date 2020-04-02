@@ -81,6 +81,8 @@ class DownloadImpl : public Download, public base::SupportsUserData::Data {
   std::string GetMimeType() override;
   DownloadError GetError() override;
 
+  uint32_t GetId();
+
  private:
   explicit DownloadImpl(download::DownloadItem* item);
 

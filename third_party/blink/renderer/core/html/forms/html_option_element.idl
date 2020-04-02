@@ -21,13 +21,15 @@
 // https://html.spec.whatwg.org/C/#the-option-element
 
 [
+    ConstructorCallWith=Document,
     Exposed=Window,
     HTMLConstructor,
     NamedConstructor=Option(optional DOMString data = null,
                             optional DOMString value = null,
                             optional boolean defaultSelected = false,
                             optional boolean selected = false),
-    ConstructorCallWith=Document,
+    NamedConstructor_CallWith=Document,
+    NamedConstructor_RaisesException,
     RaisesException=Constructor
 ] interface HTMLOptionElement : HTMLElement {
     [CEReactions, Reflect] attribute boolean disabled;

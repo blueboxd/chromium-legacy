@@ -130,7 +130,7 @@ const int kLocationAuthorizationStatusCount = 5;
 
   [self.browser->GetCommandDispatcher()
       startDispatchingToTarget:self
-                   forProtocol:@protocol(OmniboxFocuser)];
+                   forProtocol:@protocol(OmniboxCommands)];
   [self.browser->GetCommandDispatcher()
       startDispatchingToTarget:self
                    forProtocol:@protocol(LoadQueryCommands)];
@@ -310,7 +310,7 @@ const int kLocationAuthorizationStatusCount = 5;
   [self cancelOmniboxEdit];
 }
 
-#pragma mark - OmniboxFocuser
+#pragma mark - OmniboxCommands
 
 - (void)focusOmniboxFromFakebox {
   [self.omniboxCoordinator focusOmnibox];

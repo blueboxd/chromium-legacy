@@ -26,10 +26,6 @@ namespace app_list {
 class AppListSyncableService;
 }  // namespace app_list
 
-namespace content {
-class WebContents;
-}  // namespace content
-
 namespace chromeos {
 
 namespace android_sms {
@@ -57,8 +53,7 @@ class AndroidSmsAppManagerImpl : public AndroidSmsAppManager {
    public:
     PwaDelegate();
     virtual ~PwaDelegate();
-    virtual content::WebContents* OpenApp(Profile* profile,
-                                          const apps::AppLaunchParams& params);
+    virtual void OpenApp(Profile* profile, const std::string& app_id);
     virtual bool TransferItemAttributes(
         const std::string& from_app_id,
         const std::string& to_app_id,

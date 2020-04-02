@@ -87,7 +87,7 @@ class FakeFileSystemHandle {
   constructor() {
     this.isFile = true;
     this.isDirectory = false;
-    this.name = '';
+    this.name = 'fake_file.png';
   }
   /** @override */
   async isSameEntry(other) {
@@ -117,6 +117,12 @@ class FakeFileSystemFileHandle extends FakeFileSystemHandle {
   }
   /** @override */
   async getFile() {
+    // TODO(b/152832337): Use a real image file and set mime type to be
+    // 'image/png'. In tests, the src_internal app struggles to reliably load
+    // empty images because a size of 0 can't be decoded but also can't reliably
+    // load real images due to b/152832025. Mitigate this for now by now by not
+    // providing a mime type so the image doesn't get loaded in tests but we can
+    // still test the IPC mechanisms.
     return new File([], this.name);
   }
 }
@@ -147,10 +153,18 @@ class FakeFileSystemDirectoryHandle extends FakeFileSystemHandle {
     this.files.push(fileHandle);
   }
   /** @override */
-  getFile(name, options) {
-    const fileHandler = this.files.find(f => f.name === name);
-    return fileHandler ? Promise.resolve(fileHandler) :
-                         Promise.reject(new Error(`File ${name} not found`));
+  async getFile(name, options) {
+    const fileHandle = this.files.find(f => f.name === name);
+    if (!fileHandle && options.create === true) {
+      // Simulate creating a new file.
+      const newFileHandle = new FakeFileSystemFileHandle();
+      newFileHandle.name = name;
+      this.files.push(newFileHandle);
+      return Promise.resolve(newFileHandle);
+    }
+    return fileHandle ? Promise.resolve(fileHandle) :
+                        Promise.reject((createNamedError(
+                            'NotFoundError', `File ${name} not found`)));
   }
   /** @override */
   getDirectory(name, options) {}
@@ -205,4 +219,16 @@ function loadMultipleFiles(files) {
   }
   entryIndex = 0;
   return sendFilesToGuest();
+}
+
+/**
+ * Creates an `Error` with the name field set.
+ * @param {string} name
+ * @param {string} msg
+ * @return {Error}
+ */
+function createNamedError(name, msg) {
+  const error = new Error(msg);
+  error.name = name;
+  return error;
 }

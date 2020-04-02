@@ -69,8 +69,8 @@ public final class DownloadCallbackProxy {
     }
 
     @CalledByNative
-    private DownloadImpl createDownload(long nativeDownloadImpl) {
-        return new DownloadImpl(mClient, nativeDownloadImpl);
+    private DownloadImpl createDownload(long nativeDownloadImpl, int id) {
+        return new DownloadImpl(mClient, nativeDownloadImpl, id);
     }
 
     @CalledByNative

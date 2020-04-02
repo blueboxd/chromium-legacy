@@ -24,6 +24,10 @@ struct VIEWS_EXPORT MenuConfig {
   MenuConfig();
   ~MenuConfig();
 
+  // Menus are the only place using kGroupingPropertyKey, so any value (other
+  // than 0) is fine.
+  static constexpr int kMenuControllerGroupingId = 1001;
+
   static const MenuConfig& instance();
 
   // Helper methods to simplify access to MenuConfig:

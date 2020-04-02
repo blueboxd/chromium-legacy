@@ -2915,7 +2915,8 @@
       'cfi_recover',
       'thin_lto',
       'release',
-      'static'
+      'static',
+      'goma',
     ],
     'cfi_full_cfi_icall_cfi_diag_thin_lto_release_static_dcheck_always_on_goma': [
       'cfi_full',

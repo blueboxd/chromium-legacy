@@ -458,6 +458,7 @@ android_library("chrome_java") {
     ":vr_build_config",
     "//chrome:assist_ranker_prediction_enum_javagen",
     "//chrome:content_setting_javagen",
+    "//chrome:context_menu_image_format_enum_javagen",
     "//chrome:cookie_controls_mode_javagen",
     "//chrome:download_enum_javagen",
     "//chrome:instant_apps_reasons_enum_javagen",

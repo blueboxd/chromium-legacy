@@ -176,6 +176,7 @@ bool BrowserMainPartsImpl::MainMessageLoopRun(int* result_code) {
 
 void BrowserMainPartsImpl::PostMainMessageLoopRun() {
   params_->delegate->PostMainMessageLoopRun();
+  browser_process_->StartTearDown();
 }
 
 void BrowserMainPartsImpl::PreDefaultMainMessageLoopRun(

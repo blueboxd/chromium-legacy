@@ -2088,12 +2088,9 @@ void MenuController::OpenMenuImpl(MenuItemView* item, bool show) {
         menu_open_mouse_loc_ = mouse_pos;
     }
 
-    // Menus are the only place using kGroupingPropertyKey, so any value (other
-    // than 0) is fine.
-    constexpr int kGroupingId = 1001;
     item->GetSubmenu()->GetWidget()->SetNativeWindowProperty(
         TooltipManager::kGroupingPropertyKey,
-        reinterpret_cast<void*>(kGroupingId));
+        reinterpret_cast<void*>(MenuConfig::kMenuControllerGroupingId));
 
     // Set the selection indices for this menu level based on traversal order.
     SetSelectionIndices(item);

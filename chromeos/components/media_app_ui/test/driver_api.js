@@ -12,6 +12,7 @@ let TestMessageResponseData;
  *     overwriteLastFile: (string|undefined),
  *     pathToRoot: (Array<string>|undefined),
  *     property: (string|undefined),
+ *     renameLastFile: (string|undefined),
  *     requestFullscreen: (boolean|undefined),
  *     testQuery: string,
  * }}

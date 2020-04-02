@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/ui/page_info/page_info_site_security_description.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
+#include "ios/components/webui/web_ui_url_constants.h"
 #include "ios/web/public/security/ssl_status.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"

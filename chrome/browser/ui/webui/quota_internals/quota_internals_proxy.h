@@ -39,6 +39,9 @@ class QuotaInternalsProxy
   explicit QuotaInternalsProxy(QuotaInternalsHandler* handler);
 
   void RequestInfo(scoped_refptr<storage::QuotaManager> quota_manager);
+  void TriggerStoragePressure(
+      url::Origin origin,
+      scoped_refptr<storage::QuotaManager> quota_manager);
 
  private:
   friend class base::DeleteHelper<QuotaInternalsProxy>;

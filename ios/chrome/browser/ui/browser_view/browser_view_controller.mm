@@ -548,6 +548,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Command handler for help commands
 @property(nonatomic, weak) id<HelpCommands> helpHandler;
 
+// Command handler for omnibox commands
+@property(nonatomic, weak) id<OmniboxCommands> omniboxHandler;
+
 // Primary toolbar.
 @property(nonatomic, strong)
     PrimaryToolbarCoordinator* primaryToolbarCoordinator;
@@ -788,7 +791,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       BrowserCommands,
       BrowsingDataCommands,
       FindInPageCommands,
-      OmniboxFocuser,
       PasswordBreachCommands,
       PopupMenuCommands,
       FakeboxFocuser,
@@ -796,8 +798,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       ToolbarCommands>)dispatcher {
   return static_cast<
       id<ApplicationCommands, BrowserCommands, BrowsingDataCommands,
-         FindInPageCommands, OmniboxFocuser, PasswordBreachCommands,
-         PopupMenuCommands, FakeboxFocuser, SnackbarCommands, ToolbarCommands>>(
+         FindInPageCommands, PasswordBreachCommands, PopupMenuCommands,
+         FakeboxFocuser, SnackbarCommands, ToolbarCommands>>(
       self.commandDispatcher);
 }
 
@@ -1074,7 +1076,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (void)shieldWasTapped:(id)sender {
-  [self.dispatcher cancelOmniboxEdit];
+  [self.omniboxHandler cancelOmniboxEdit];
 }
 
 - (void)userEnteredTabSwitcher {
@@ -1095,7 +1097,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   BOOL offTheRecord = self.isOffTheRecord;
   ProceduralBlock oldForegroundTabWasAddedCompletionBlock =
       self.foregroundTabWasAddedCompletionBlock;
-  __weak BrowserViewController* weakSelf = self;
+  id<OmniboxCommands> omniboxCommandHandler = self.omniboxHandler;
   self.foregroundTabWasAddedCompletionBlock = ^{
     if (oldForegroundTabWasAddedCompletionBlock) {
       oldForegroundTabWasAddedCompletionBlock();
@@ -1109,7 +1111,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       UMA_HISTOGRAM_TIMES("Toolbar.Menu.NewTabPresentationDuration", timeDelta);
     }
     if (focusOmnibox) {
-      [weakSelf.dispatcher focusOmnibox];
+      [omniboxCommandHandler focusOmnibox];
     }
   };
 
@@ -1174,7 +1176,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Present voice search.
   _voiceSearchController->StartRecognition(self, self.currentWebState);
-  [self.dispatcher cancelOmniboxEdit];
+  [self.omniboxHandler cancelOmniboxEdit];
 }
 
 #pragma mark - browser_view_controller+private.h
@@ -1238,7 +1240,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [_bookmarkInteractionController dismissBookmarkModalControllerAnimated:NO];
   [_bookmarkInteractionController dismissSnackbar];
   if (dismissOmnibox) {
-    [self.dispatcher cancelOmniboxEdit];
+    [self.omniboxHandler cancelOmniboxEdit];
   }
   [_dialogPresenter cancelAllDialogs];
   [self.helpHandler hideAllHelpBubbles];
@@ -1394,6 +1396,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       keyCommandsForConsumer:self
           baseViewController:self
                   dispatcher:self.dispatcher
+              omniboxHandler:self.omniboxHandler
                  editingText:[firstResponder
                                  isKindOfClass:[UITextField class]] ||
                              [firstResponder
@@ -2168,6 +2171,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   self.secondaryToolbarCoordinator.longPressDelegate =
       self.popupMenuCoordinator;
   self.tabStripCoordinator.longPressDelegate = self.popupMenuCoordinator;
+
+  self.omniboxHandler =
+      HandlerForProtocol(self.browser->GetCommandDispatcher(), OmniboxCommands);
 
   _sadTabCoordinator = [[SadTabCoordinator alloc]
       initWithBaseViewController:self.browserContainerViewController
@@ -4107,7 +4113,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   DCHECK(self.visible || self.dismissingModal);
 
   // Dismiss the omnibox (if open).
-  [self.dispatcher cancelOmniboxEdit];
+  [self.omniboxHandler cancelOmniboxEdit];
   // Dismiss the soft keyboard (if open).
   [[self viewForWebState:self.currentWebState] endEditing:NO];
   // Dismiss Find in Page focus.
@@ -4615,7 +4621,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (void)prepareForPageInfoPresentation {
   // Dismiss the omnibox (if open).
-  [self.dispatcher cancelOmniboxEdit];
+  [self.omniboxHandler cancelOmniboxEdit];
 }
 
 - (CGPoint)convertToPresentationCoordinatesForOrigin:(CGPoint)origin {

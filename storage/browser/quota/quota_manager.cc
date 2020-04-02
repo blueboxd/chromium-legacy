@@ -1508,6 +1508,10 @@ void QuotaManager::MaybeRunStoragePressureCallback(const url::Origin& origin,
   }
 }
 
+void QuotaManager::SimulateStoragePressure(const url::Origin origin) {
+  storage_pressure_callback_.Run(origin);
+}
+
 void QuotaManager::SetStoragePressureCallback(
     base::RepeatingCallback<void(url::Origin)> storage_pressure_callback) {
   storage_pressure_callback_ = storage_pressure_callback;

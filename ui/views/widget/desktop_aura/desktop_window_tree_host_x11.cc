@@ -57,7 +57,6 @@
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_aurax11.h"
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
-#include "ui/views/widget/desktop_aura/x11_desktop_handler.h"
 #include "ui/views/widget/desktop_aura/x11_desktop_window_move_client.h"
 #include "ui/views/window/native_frame_view.h"
 #include "ui/wm/core/compound_event_filter.h"
@@ -97,10 +96,6 @@ void DesktopWindowTreeHostX11::Init(const Widget::InitParams& params) {
 
 void DesktopWindowTreeHostX11::OnNativeWidgetCreated(
     const Widget::InitParams& params) {
-  // Ensure that the X11DesktopHandler exists so that it tracks create/destroy
-  // notify events.
-  X11DesktopHandler::get();
-
   x11_window_move_client_ = std::make_unique<X11DesktopWindowMoveClient>();
   wm::SetWindowMoveClient(window(), x11_window_move_client_.get());
 

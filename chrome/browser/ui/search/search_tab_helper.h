@@ -76,6 +76,11 @@ class SearchTabHelper : public content::WebContentsObserver,
 
   SearchIPCRouter& ipc_router_for_testing() { return ipc_router_; }
 
+  // Returns an equivalent SVG for the given Omnibox vector icon for use in the
+  // NTP Realbox.
+  static std::string AutocompleteMatchVectorIconToResourceName(
+      const gfx::VectorIcon& icon);
+
  private:
   friend class content::WebContentsUserData<SearchTabHelper>;
   friend class SearchIPCRouterTest;

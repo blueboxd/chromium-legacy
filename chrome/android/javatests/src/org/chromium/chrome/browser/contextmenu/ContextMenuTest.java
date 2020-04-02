@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.contextmenu;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
@@ -83,6 +84,8 @@ public class ContextMenuTest implements CustomMainActivityStart {
     private static final String FILENAME_GIF = "download.gif";
     private static final String FILENAME_PNG = "test_image.png";
     private static final String FILENAME_WEBM = "test.webm";
+    private static final String TEST_GIF_IMAGE_FILE_EXTENSION = ".gif";
+    private static final String TEST_JPG_IMAGE_FILE_EXTENSION = ".jpg";
 
     private static final String[] TEST_FILES = new String[] {
         FILENAME_GIF, FILENAME_PNG, FILENAME_WEBM
@@ -98,7 +101,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
         mTestServer.stopAndDestroyServer();
         TestThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(false));
         deleteTestFiles();
-        ContextMenuHelper.setHardcodedImageBytesForTesting(null);
+        ContextMenuHelper.setHardcodedImageBytesForTesting(null, null);
         LensUtils.setFakePassableLensEnvironmentForTesting(false);
     }
 
@@ -107,7 +110,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mTestUrl = mTestServer.getURL(TEST_PATH);
         deleteTestFiles();
-        ContextMenuHelper.setHardcodedImageBytesForTesting(null);
+        ContextMenuHelper.setHardcodedImageBytesForTesting(null, null);
         LensUtils.setFakePassableLensEnvironmentForTesting(false);
         mDownloadTestRule.startMainActivityWithURL(mTestUrl);
         mDownloadTestRule.assertWaitForPageScaleFactorMatch(0.5f);
@@ -155,7 +158,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
 
         LensUtils.setFakePassableLensEnvironmentForTesting(true);
         ShareHelper.setIgnoreActivityNotFoundExceptionForTesting(true);
-        hardcodeTestImageForSharing();
+        hardcodeTestImageForSharing(TEST_JPG_IMAGE_FILE_EXTENSION);
 
         ContextMenuUtils.selectContextMenuItemWithExpectedIntent(
                 InstrumentationRegistry.getInstrumentation(), mDownloadTestRule.getActivity(), tab,
@@ -176,7 +179,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
 
         LensUtils.setFakePassableLensEnvironmentForTesting(true);
         ShareHelper.setIgnoreActivityNotFoundExceptionForTesting(true);
-        hardcodeTestImageForSharing();
+        hardcodeTestImageForSharing(TEST_JPG_IMAGE_FILE_EXTENSION);
 
         ContextMenuUtils.selectContextMenuItemWithExpectedIntent(
                 InstrumentationRegistry.getInstrumentation(), mDownloadTestRule.getActivity(), tab,
@@ -618,6 +621,31 @@ public class ContextMenuTest implements CustomMainActivityStart {
         assertMenuItemsAreEqual(menu, expectedItems);
     }
 
+    @Test
+    @SmallTest
+    @Feature({"Browser", "ContextMenu"})
+    @EnableFeatures({ChromeFeatureList.CONTEXT_MENU_COPY_IMAGE})
+    public void testCopyImage() throws Throwable {
+        hardcodeTestImageForSharing(TEST_GIF_IMAGE_FILE_EXTENSION);
+        Tab tab = mDownloadTestRule.getActivity().getActivityTab();
+        // Allow all thread policies temporarily in main thread to avoid
+        // DiskWrite and UnBufferedIo violations during copying under
+        // emulator environment.
+        try (CloseableOnMainThread ignored =
+                        CloseableOnMainThread.StrictMode.allowAllThreadPolicies()) {
+            ContextMenuUtils.selectContextMenuItem(InstrumentationRegistry.getInstrumentation(),
+                    mDownloadTestRule.getActivity(), tab, "dataUrlIcon",
+                    R.id.contextmenu_copy_image);
+        }
+
+        String imageUriString = getClipboardUri().toString();
+        Assert.assertTrue("Image content prefix is not correct",
+                imageUriString.startsWith(
+                        "content://org.chromium.chrome.tests.FileProvider/images/screenshot/"));
+        Assert.assertTrue("Image extension is not correct",
+                imageUriString.endsWith(TEST_GIF_IMAGE_FILE_EXTENSION));
+    }
+
     /**
      * Takes all the visible items on the menu and compares them to a the list of expected items.
      * @param menu A context menu that is displaying visible items.
@@ -693,17 +721,35 @@ public class ContextMenuTest implements CustomMainActivityStart {
         return clipboardTextRef.get();
     }
 
+    private Uri getClipboardUri() throws Throwable {
+        final AtomicReference<Uri> clipboardUriRef = new AtomicReference<>();
+        mDownloadTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ClipboardManager clipMgr =
+                        (ClipboardManager) mDownloadTestRule.getActivity().getSystemService(
+                                Context.CLIPBOARD_SERVICE);
+                ClipData clipData = clipMgr.getPrimaryClip();
+                Assert.assertNotNull("Primary clip is null", clipData);
+                Assert.assertTrue("Primary clip contains no items.", clipData.getItemCount() > 0);
+                clipboardUriRef.set(clipData.getItemAt(0).getUri());
+            }
+        });
+        return clipboardUriRef.get();
+    }
+
     /**
      * Hardcode image bytes to non-null arbitrary data.
+     * @param extension Image file extension.
      */
-    private void hardcodeTestImageForSharing() {
+    private void hardcodeTestImageForSharing(String extension) {
         // This string just needs to be not empty in order for the code to accept it as valid
         // image data and generate the temp file for sharing. In the future we could explore
         // transcoding the actual test image from png to jpeg to make the test more realistic.
         String mockImageData = "randomdata";
         byte[] mockImageByteArray = mockImageData.getBytes();
         // See function javadoc for more context.
-        ContextMenuHelper.setHardcodedImageBytesForTesting(mockImageByteArray);
+        ContextMenuHelper.setHardcodedImageBytesForTesting(mockImageByteArray, extension);
     }
 
     private void assertStringContains(String subString, String superString) {

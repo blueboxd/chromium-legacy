@@ -12,7 +12,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
@@ -1652,8 +1651,8 @@ bool ChromePasswordProtectionService::IsURLWhitelistedForPasswordEntry(
 }
 
 void ChromePasswordProtectionService::PersistPhishedSavedPasswordCredential(
-    const std::string& username,
-    const std::vector<std::string>& matching_domains) {
+    const std::vector<password_manager::MatchingReusedCredential>&
+        matching_reused_credentials) {
   if (!profile_)
     return;
   scoped_refptr<password_manager::PasswordStore> password_store =
@@ -1663,10 +1662,9 @@ void ChromePasswordProtectionService::PersistPhishedSavedPasswordCredential(
   if (!password_store) {
     return;
   }
-  for (const std::string& domain : matching_domains) {
+  for (const auto& credential : matching_reused_credentials) {
     password_store->AddCompromisedCredentials(
-        {password_manager::GetSignonRealm(GURL(domain)),
-         base::ASCIIToUTF16(username), base::Time::Now(),
+        {credential.signon_realm, credential.username, base::Time::Now(),
          password_manager::CompromiseType::kPhished});
   }
 }

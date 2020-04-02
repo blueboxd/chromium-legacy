@@ -33,7 +33,7 @@ class AuthenticationService;
 @protocol LogoVendor;
 @protocol NTPHomeConsumer;
 @class NTPHomeMetrics;
-@protocol OmniboxFocuser;
+@protocol OmniboxCommands;
 class TemplateURLService;
 @protocol SnackbarCommands;
 class UrlLoadingBrowserAgent;
@@ -61,7 +61,7 @@ class VoiceSearchAvailability;
 
 // Dispatcher.
 @property(nonatomic, weak, nullable)
-    id<ApplicationCommands, BrowserCommands, OmniboxFocuser, SnackbarCommands>
+    id<ApplicationCommands, BrowserCommands, OmniboxCommands, SnackbarCommands>
         dispatcher;
 // Suggestions service used to get the suggestions.
 @property(nonatomic, assign, nonnull)

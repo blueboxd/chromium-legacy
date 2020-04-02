@@ -345,7 +345,6 @@ void CookieStore::Trace(Visitor* visitor) {
 }
 
 void CookieStore::ContextDestroyed() {
-  StopObserving();
   backend_.reset();
 }
 

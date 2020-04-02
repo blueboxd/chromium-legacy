@@ -51,8 +51,9 @@ class MockPasswordProtectionService : public PasswordProtectionService {
   MOCK_METHOD1(SanitizeReferrerChain, void(ReferrerChain*));
   MOCK_METHOD2(ShowInterstitial,
                void(content::WebContents*, ReusedPasswordAccountType));
-  MOCK_METHOD2(PersistPhishedSavedPasswordCredential,
-               void(const std::string&, const std::vector<std::string>&));
+  MOCK_METHOD1(
+      PersistPhishedSavedPasswordCredential,
+      void(const std::vector<password_manager::MatchingReusedCredential>&));
   MOCK_METHOD3(IsPingingEnabled,
                bool(LoginReputationClientRequest::TriggerType,
                     ReusedPasswordAccountType,
@@ -89,13 +90,14 @@ class MockPasswordProtectionService : public PasswordProtectionService {
                     const GURL&,
                     const GURL&,
                     const std::string&));
-  MOCK_METHOD6(MaybeStartProtectedPasswordEntryRequest,
-               void(content::WebContents*,
-                    const GURL&,
-                    const std::string&,
-                    PasswordType,
-                    const std::vector<std::string>&,
-                    bool));
+  MOCK_METHOD6(
+      MaybeStartProtectedPasswordEntryRequest,
+      void(content::WebContents*,
+           const GURL&,
+           const std::string&,
+           PasswordType,
+           const std::vector<password_manager::MatchingReusedCredential>&,
+           bool));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockPasswordProtectionService);

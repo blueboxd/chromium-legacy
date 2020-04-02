@@ -10,7 +10,7 @@
 #include <memory>
 
 @protocol OmniboxPopupPresenterDelegate;
-@protocol OmniboxFocuser;
+@protocol OmniboxCommands;
 class OmniboxPopupViewIOS;
 
 // Coordinator for the Omnibox Popup.

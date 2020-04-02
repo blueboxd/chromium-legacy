@@ -8,16 +8,20 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -38,11 +42,11 @@ constexpr int kAssistantIconSizeDip = 16;
 
 // Title text.
 constexpr SkColor kTitleTextColor = gfx::kGoogleGrey900;
-constexpr char kTitleTextFont[] = "Roboto, Normal 14px";
+constexpr int kTitleFontSizeDelta = 2;
 
 // Description text.
 constexpr SkColor kDescTextColor = gfx::kGoogleGrey700;
-constexpr char kDescTextFont[] = "Roboto, Normal 13px";
+constexpr int kDescFontSizeDelta = 1;
 
 // Buttons common.
 constexpr int kButtonSpacingDip = 8;
@@ -50,7 +54,7 @@ constexpr int kButtonBorderRadiusDip = 4;
 constexpr int kButtonBorderThicknessDip = 1;
 constexpr gfx::Insets kButtonBarInsets = {8, 0, 0, 0};
 constexpr gfx::Insets kButtonInsets = {6, 16, 6, 16};
-constexpr char kButtonFont[] = "Roboto, Medium 13px";
+constexpr int kButtonFontSizeDelta = 1;
 
 // Manage-Settings button.
 constexpr SkColor kSettingsButtonBorderColor = gfx::kGoogleGrey300;
@@ -60,16 +64,22 @@ constexpr SkColor kSettingsButtonTextColor = gfx::kGoogleBlue600;
 constexpr SkColor kConsentButtonBgColor = gfx::kGoogleBlue600;
 constexpr SkColor kConsentButtonTextColor = gfx::kGoogleGrey200;
 
+// Dogfood button.
+constexpr int kDogfoodButtonMarginDip = 4;
+constexpr int kDogfoodButtonSizeDip = 20;
+constexpr SkColor kDogfoodButtonColor = gfx::kGoogleGrey500;
+
 // Create and return a simple label with provided specs.
 std::unique_ptr<views::Label> CreateLabel(const base::string16& text,
                                           const SkColor color,
-                                          const gfx::FontList& font_list) {
+                                          int font_size_delta) {
   auto label = std::make_unique<views::Label>(text);
   label->SetAutoColorReadabilityEnabled(false);
   label->SetEnabledColor(color);
-  label->SetFontList(font_list);
   label->SetLineHeight(kLineHeightDip);
   label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+  label->SetFontList(
+      views::Label::GetDefaultFontList().DeriveWithSizeDelta(font_size_delta));
   return label;
 }
 
@@ -79,12 +89,13 @@ class CustomizedLabelButton : public views::LabelButton {
  public:
   CustomizedLabelButton(views::ButtonListener* listener,
                         const base::string16& text,
-                        const SkColor color,
-                        const gfx::FontList& font_list)
+                        const SkColor color)
       : LabelButton(listener, text) {
     SetEnabledTextColors(color);
-    label()->SetFontList(font_list);
     label()->SetLineHeight(kLineHeightDip);
+    label()->SetFontList(views::Label::GetDefaultFontList()
+                             .DeriveWithSizeDelta(kButtonFontSizeDelta)
+                             .DeriveWithWeight(gfx::Font::Weight::MEDIUM));
   }
 
   // Disallow copy and assign.
@@ -127,6 +138,9 @@ class UserConsentViewPreTargetHandler : public ui::EventHandler {
     if (view_->GetBoundsInScreen().Contains(location)) {
       DoDispatchEvent(view_, located_event);
       event->StopPropagation();
+      auto* tooltip_manager = view_->GetWidget()->GetTooltipManager();
+      if (tooltip_manager)
+        tooltip_manager->UpdateTooltip();
     }
   }
 
@@ -164,6 +178,11 @@ UserConsentView::UserConsentView(const gfx::Rect& anchor_view_bounds,
       ui_controller_(ui_controller) {
   InitLayout();
   InitWidget();
+
+  // Allow tooltips to be shown despite menu-controller owning capture.
+  GetWidget()->SetNativeWindowProperty(
+      views::TooltipManager::kGroupingPropertyKey,
+      reinterpret_cast<void*>(views::MenuConfig::kMenuControllerGroupingId));
 }
 
 UserConsentView::~UserConsentView() = default;
@@ -188,6 +207,10 @@ void UserConsentView::ButtonPressed(views::Button* sender,
     ui_controller_->OnManageSettingsButtonPressed();
     return;
   }
+  if (sender == dogfood_button_) {
+    ui_controller_->OnDogfoodButtonPressed();
+    return;
+  }
 }
 
 void UserConsentView::UpdateAnchorViewBounds(
@@ -197,17 +220,20 @@ void UserConsentView::UpdateAnchorViewBounds(
 }
 
 void UserConsentView::InitLayout() {
-  // Background.
+  SetLayoutManager(std::make_unique<views::FillLayout>());
   SetBackground(views::CreateSolidBackground(kMainViewBgColor));
 
-  // Layout.
-  auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kHorizontal, kMainViewInsets));
+  // Main-view Layout.
+  main_view_ = AddChildView(std::make_unique<views::View>());
+  auto* layout =
+      main_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kHorizontal, kMainViewInsets));
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStart);
 
   // Assistant icon.
-  auto* assistant_icon = AddChildView(std::make_unique<views::ImageView>());
+  auto* assistant_icon =
+      main_view_->AddChildView(std::make_unique<views::ImageView>());
   assistant_icon->SetBorder(views::CreateEmptyBorder(
       (kLineHeightDip - kAssistantIconSizeDip) / 2, 0, 0, 0));
   assistant_icon->SetImage(gfx::CreateVectorIcon(
@@ -215,11 +241,15 @@ void UserConsentView::InitLayout() {
 
   // Content.
   InitContent();
+
+  // Add dogfood icon, if in dogfood.
+  if (chromeos::features::IsQuickAnswersDogfood())
+    AddDogfoodButton();
 }
 
 void UserConsentView::InitContent() {
   // Layout.
-  content_ = AddChildView(std::make_unique<views::View>());
+  content_ = main_view_->AddChildView(std::make_unique<views::View>());
   content_->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, kContentInsets,
       kContentSpacingDip));
@@ -228,13 +258,13 @@ void UserConsentView::InitContent() {
   content_->AddChildView(
       CreateLabel(l10n_util::GetStringUTF16(
                       IDS_ASH_QUICK_ANSWERS_USER_CONSENT_VIEW_TITLE_TEXT),
-                  kTitleTextColor, gfx::FontList(kTitleTextFont)));
+                  kTitleTextColor, kTitleFontSizeDelta));
 
   // Description.
   auto* desc = content_->AddChildView(
       CreateLabel(l10n_util::GetStringUTF16(
                       IDS_ASH_QUICK_ANSWERS_USER_CONSENT_VIEW_DESC_TEXT),
-                  kDescTextColor, gfx::FontList(kDescTextFont)));
+                  kDescTextColor, kDescFontSizeDelta));
   desc->SetMultiLine(true);
   // BoxLayout does not necessarily size the height of multi-line labels
   // properly (crbug/682266). The label is thus explicitly sized to the width
@@ -263,7 +293,7 @@ void UserConsentView::InitButtonBar() {
       this,
       l10n_util::GetStringUTF16(
           IDS_ASH_QUICK_ANSWERS_USER_CONSENT_VIEW_MANAGE_SETTINGS_BUTTON),
-      kSettingsButtonTextColor, gfx::FontList(kButtonFont));
+      kSettingsButtonTextColor);
   settings_button->SetBorder(views::CreatePaddedBorder(
       views::CreateRoundedRectBorder(kButtonBorderThicknessDip,
                                      kButtonBorderRadiusDip,
@@ -276,7 +306,7 @@ void UserConsentView::InitButtonBar() {
       this,
       l10n_util::GetStringUTF16(
           IDS_ASH_QUICK_ANSWERS_USER_CONSENT_VIEW_GRANT_CONSENT_BUTTON),
-      kConsentButtonTextColor, gfx::FontList(kButtonFont));
+      kConsentButtonTextColor);
   consent_button->SetBackground(views::CreateRoundedRectBackground(
       kConsentButtonBgColor, kButtonBorderRadiusDip));
   consent_button->SetBorder(views::CreateEmptyBorder(kButtonInsets));
@@ -287,13 +317,32 @@ void UserConsentView::InitWidget() {
   views::Widget::InitParams params;
   params.activatable = views::Widget::InitParams::Activatable::ACTIVATABLE_NO;
   params.context = Shell::Get()->GetRootWindowForNewWindows();
-  params.type = views::Widget::InitParams::TYPE_TOOLTIP;
+  params.shadow_elevation = 2;
+  params.shadow_type = views::Widget::InitParams::ShadowType::kDrop;
+  params.type = views::Widget::InitParams::TYPE_POPUP;
   params.z_order = ui::ZOrderLevel::kFloatingUIElement;
 
   views::Widget* widget = new views::Widget();
   widget->Init(std::move(params));
   widget->SetContentsView(this);
   UpdateWidgetBounds();
+}
+
+void UserConsentView::AddDogfoodButton() {
+  auto* dogfood_view = AddChildView(std::make_unique<views::View>());
+  auto* layout =
+      dogfood_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kVertical,
+          gfx::Insets(kDogfoodButtonMarginDip)));
+  layout->set_cross_axis_alignment(views::BoxLayout::CrossAxisAlignment::kEnd);
+  auto dogfood_button = std::make_unique<views::ImageButton>(/*listener=*/this);
+  dogfood_button->SetImage(
+      views::Button::ButtonState::STATE_NORMAL,
+      gfx::CreateVectorIcon(kDogfoodIcon, kDogfoodButtonSizeDip,
+                            kDogfoodButtonColor));
+  dogfood_button->SetTooltipText(l10n_util::GetStringUTF16(
+      IDS_ASH_QUICK_ANSWERS_DOGFOOD_BUTTON_TOOLTIP_TEXT));
+  dogfood_button_ = dogfood_view->AddChildView(std::move(dogfood_button));
 }
 
 void UserConsentView::UpdateWidgetBounds() {

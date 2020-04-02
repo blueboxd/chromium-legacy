@@ -11,6 +11,7 @@
 #include "ui/views/view.h"
 
 namespace views {
+class ImageButton;
 class LabelButton;
 }  // namespace views
 
@@ -47,6 +48,7 @@ class UserConsentView : public views::View, public views::ButtonListener {
   void InitContent();
   void InitButtonBar();
   void InitWidget();
+  void AddDogfoodButton();
   void UpdateWidgetBounds();
 
   // Cached bounds of the anchor this view is tied to.
@@ -56,7 +58,9 @@ class UserConsentView : public views::View, public views::ButtonListener {
   QuickAnswersUiController* const ui_controller_;
 
   // Owned by view hierarchy.
+  views::View* main_view_ = nullptr;
   views::View* content_ = nullptr;
+  views::ImageButton* dogfood_button_ = nullptr;
   views::LabelButton* settings_button_ = nullptr;
   views::LabelButton* consent_button_ = nullptr;
 };

@@ -2489,6 +2489,16 @@ TEST_F(WallpaperControllerTest, ShowOneShotWallpaper) {
   EXPECT_FALSE(controller_->IsBlurAllowedForLockState());
   EXPECT_FALSE(controller_->ShouldApplyDimming());
 
+  // Verify that we can reload wallpaer without losing it.
+  // This is important for screen rotation.
+  controller_->ReloadWallpaperForTesting(/*clear_cache=*/false);
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(2, GetWallpaperCount());  // Reload increments count.
+  EXPECT_EQ(kOneShotWallpaperColor, GetWallpaperColor());
+  EXPECT_EQ(WallpaperType::ONE_SHOT, controller_->GetWallpaperType());
+  EXPECT_FALSE(controller_->IsBlurAllowedForLockState());
+  EXPECT_FALSE(controller_->ShouldApplyDimming());
+
   // Verify the user wallpaper info is unaffected, and the one-shot wallpaper
   // can be replaced by the user wallpaper.
   EXPECT_TRUE(controller_->GetUserWallpaperInfo(account_id_1, &wallpaper_info));

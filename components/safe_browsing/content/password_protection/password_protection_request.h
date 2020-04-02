@@ -12,6 +12,7 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/content/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/content/password_protection/metrics_util.h"
@@ -58,17 +59,19 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
                                       content::BrowserThread::DeleteOnUIThread>,
                                   public content::WebContentsObserver {
  public:
-  PasswordProtectionRequest(content::WebContents* web_contents,
-                            const GURL& main_frame_url,
-                            const GURL& password_form_action,
-                            const GURL& password_form_frame_url,
-                            const std::string& username,
-                            PasswordType password_type,
-                            const std::vector<std::string>& matching_origins,
-                            LoginReputationClientRequest::TriggerType type,
-                            bool password_field_exists,
-                            PasswordProtectionService* pps,
-                            int request_timeout_in_ms);
+  PasswordProtectionRequest(
+      content::WebContents* web_contents,
+      const GURL& main_frame_url,
+      const GURL& password_form_action,
+      const GURL& password_form_frame_url,
+      const std::string& username,
+      PasswordType password_type,
+      const std::vector<password_manager::MatchingReusedCredential>&
+          matching_reused_credentials,
+      LoginReputationClientRequest::TriggerType type,
+      bool password_field_exists,
+      PasswordProtectionService* pps,
+      int request_timeout_in_ms);
 
   base::WeakPtr<PasswordProtectionRequest> GetWeakPtr() {
     return weakptr_factory_.GetWeakPtr();
@@ -101,8 +104,13 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
 
   PasswordType password_type() const { return password_type_; }
 
-  const std::vector<std::string> matching_domains() const& {
+  const std::vector<std::string>& matching_domains() const {
     return matching_domains_;
+  }
+
+  const std::vector<password_manager::MatchingReusedCredential>&
+  matching_reused_credentials() const {
+    return matching_reused_credentials_;
   }
 
   bool is_modal_warning_showing() const { return is_modal_warning_showing_; }
@@ -218,6 +226,12 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
   // Should be non-empty if |reused_password_type_| == SAVED_PASSWORD.
   // Otherwise, may or may not be empty.
   const std::vector<std::string> matching_domains_;
+
+  // Signon_realms from the Password Manager that match this password.
+  // Should be non-empty if |reused_password_type_| == SAVED_PASSWORD.
+  // Otherwise, may or may not be empty.
+  const std::vector<password_manager::MatchingReusedCredential>
+      matching_reused_credentials_;
 
   // If this request is for unfamiliar login page or for a password reuse event.
   const LoginReputationClientRequest::TriggerType trigger_type_;

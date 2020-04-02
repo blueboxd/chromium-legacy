@@ -76,6 +76,9 @@ class ASH_EXPORT QuickAnswersUiController {
     return user_consent_view_ != nullptr;
   }
 
+  // Invoked when user clicks the Dogfood button on Quick-Answers related views.
+  void OnDogfoodButtonPressed();
+
  private:
   QuickAnswersControllerImpl* controller_ = nullptr;
 

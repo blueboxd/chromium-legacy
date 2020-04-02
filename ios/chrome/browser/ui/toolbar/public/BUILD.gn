@@ -6,7 +6,6 @@ source_set("public") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "fakebox_focuser.h",
-    "omnibox_focuser.h",
     "side_swipe_toolbar_interacting.h",
     "side_swipe_toolbar_snapshot_providing.h",
     "toolbar_coordinating.h",

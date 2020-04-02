@@ -31,6 +31,7 @@
 #include "ios/chrome/browser/ui/webui/user_actions_ui.h"
 #include "ios/chrome/browser/ui/webui/version_ui.h"
 #include "ios/components/webui/sync_internals/sync_internals_ui.h"
+#include "ios/components/webui/web_ui_url_constants.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -105,7 +106,7 @@ WebUIIOSFactoryFunction GetWebUIIOSFactoryFunction(const GURL& url) {
   if (url_host == kChromeUIUserActionsHost)
     return &NewWebUIIOS<UserActionsUI>;
   if (url_host == kChromeUISyncInternalsHost)
-    return &NewWebUIIOSWithHost<SyncInternalsUI>;
+    return &NewWebUIIOS<SyncInternalsUI>;
   if (url_host == kChromeUITermsHost)
     return &NewWebUIIOSWithHost<TermsUI>;
   if (url_host == kChromeUIVersionHost)

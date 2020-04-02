@@ -65,6 +65,8 @@ class Namespace(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             self.constants = list(constants)
             self.constructors = []
             self.constructor_groups = []
+            self.named_constructors = []
+            self.named_constructor_groups = []
             self.operations = list(operations)
             self.operation_groups = []
 

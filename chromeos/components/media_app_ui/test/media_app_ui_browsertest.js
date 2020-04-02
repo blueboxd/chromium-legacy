@@ -202,6 +202,7 @@ TEST_F('MediaAppUIBrowserTest', 'DeleteOriginalIPC', async () => {
   // Simulate steps taken to load a file via a launch event.
   const firstFile = directory.files[0];
   loadFile(await createTestImageFile(), firstFile);
+  // Set `currentDirectoryHandle` in launch.js.
   currentDirectoryHandle = directory;
   let testResponse;
 
@@ -254,7 +255,45 @@ TEST_F('MediaAppUIBrowserTest', 'NavigateIPC', async () => {
   result = await guestMessagePipe.sendMessage('test', {navigate: 'prev'});
   assertEquals(result.testQueryResult, 'loadPrev called');
   assertEquals(entryIndex, 1);
+  testDone();
+});
 
+// Tests the IPC behind the implementation of ReceivedFile.renameOriginalFile()
+// in the untrusted context.
+TEST_F('MediaAppUIBrowserTest', 'RenameOriginalIPC', async () => {
+  const directory = createMockTestDirectory();
+  // Simulate steps taken to load a file via a launch event.
+  const firstFile = directory.files[0];
+  loadFile(await createTestImageFile(), firstFile);
+  // Set `currentDirectoryHandle` in launch.js.
+  currentDirectoryHandle = directory;
+  let testResponse;
+
+  // Nothing should be deleted initially.
+  assertEquals(null, directory.lastDeleted);
+
+  // Test normal rename flow.
+  const messageRename = {renameLastFile: 'new_file_name.png'};
+  testResponse = await guestMessagePipe.sendMessage('test', messageRename);
+
+  assertEquals(
+      testResponse.testQueryResult, 'renameOriginalFile resolved success');
+  // The original file that was renamed got deleted.
+  assertEquals(firstFile, directory.lastDeleted);
+  // There is still one file which is the renamed version of the original file.
+  assertEquals(directory.files.length, 1);
+  assertEquals(directory.files[0].name, 'new_file_name.png');
+
+  // Test renaming when a file with the new name already exists.
+  const messageRenameExists = {renameLastFile: 'new_file_name.png'};
+  testResponse =
+      await guestMessagePipe.sendMessage('test', messageRenameExists);
+
+  assertEquals(
+      testResponse.testQueryResult, 'renameOriginalFile resolved file exists');
+  // No change to the existing file.
+  assertEquals(directory.files.length, 1);
+  assertEquals(directory.files[0].name, 'new_file_name.png');
   testDone();
 });
 

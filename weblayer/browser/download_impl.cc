@@ -158,6 +158,10 @@ void DownloadImpl::PauseInternal() {
   }
 }
 
+uint32_t DownloadImpl::GetId() {
+  return item_->GetId();
+}
+
 void DownloadImpl::ResumeInternal() {
   if (resume_pending_) {
     resume_pending_ = false;

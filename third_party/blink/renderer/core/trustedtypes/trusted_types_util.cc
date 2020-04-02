@@ -6,6 +6,7 @@
 
 #include "third_party/blink/public/mojom/reporting/reporting.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html_or_trusted_script_or_trusted_script_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -18,6 +19,8 @@
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script_url.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_type_policy.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_type_policy_factory.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -118,6 +121,18 @@ const char* GetElementName(const ScriptElementBase::Type type) {
   return "";
 }
 
+HeapVector<ScriptValue> GetDefaultCallbackArgs(
+    v8::Isolate* isolate,
+    const char* type,
+    const ExceptionState& exception_state) {
+  ScriptState* script_state = ScriptState::Current(isolate);
+  HeapVector<ScriptValue> args;
+  args.push_back(ScriptValue::From(script_state, type));
+  args.push_back(
+      ScriptValue::From(script_state, GetSamplePrefix(exception_state)));
+  return args;
+}
+
 // Handle failure of a Trusted Type assignment.
 //
 // If trusted type assignment fails, we need to
@@ -213,7 +228,10 @@ String GetStringFromScriptHelper(
   }
 
   TrustedScript* result = default_policy->CreateScript(
-      doc->GetIsolate(), script, HeapVector<ScriptValue>(), exception_state);
+      doc->GetIsolate(), script,
+      GetDefaultCallbackArgs(doc->GetIsolate(), "TrustedScript",
+                             exception_state),
+      exception_state);
   if (exception_state.HadException()) {
     exception_state.ClearException();
     return String();
@@ -262,9 +280,11 @@ String TrustedTypesCheckForHTML(const String& html,
       return html;
     }
   }
-  TrustedHTML* result =
-      default_policy->CreateHTML(execution_context->GetIsolate(), html,
-                                 HeapVector<ScriptValue>(), exception_state);
+  TrustedHTML* result = default_policy->CreateHTML(
+      execution_context->GetIsolate(), html,
+      GetDefaultCallbackArgs(execution_context->GetIsolate(), "TrustedHTML",
+                             exception_state),
+      exception_state);
   if (exception_state.HadException()) {
     return g_empty_string;
   }
@@ -314,9 +334,11 @@ String TrustedTypesCheckForScript(const String& script,
       return script;
     }
   }
-  TrustedScript* result =
-      default_policy->CreateScript(execution_context->GetIsolate(), script,
-                                   HeapVector<ScriptValue>(), exception_state);
+  TrustedScript* result = default_policy->CreateScript(
+      execution_context->GetIsolate(), script,
+      GetDefaultCallbackArgs(execution_context->GetIsolate(), "TrustedScript",
+                             exception_state),
+      exception_state);
   DCHECK_EQ(!result, exception_state.HadException());
   if (exception_state.HadException()) {
     return g_empty_string;
@@ -362,7 +384,9 @@ String TrustedTypesCheckForScriptURL(const String& script_url,
     }
   }
   TrustedScriptURL* result = default_policy->CreateScriptURL(
-      execution_context->GetIsolate(), script_url, HeapVector<ScriptValue>(),
+      execution_context->GetIsolate(), script_url,
+      GetDefaultCallbackArgs(execution_context->GetIsolate(),
+                             "TrustedScriptURL", exception_state),
       exception_state);
 
   if (exception_state.HadException()) {

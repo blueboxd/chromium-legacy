@@ -34,12 +34,14 @@ class BrowserURLLoaderThrottle::CheckerOnIO
       base::RepeatingCallback<content::WebContents*()> web_contents_getter,
       base::WeakPtr<BrowserURLLoaderThrottle> throttle,
       bool real_time_lookup_enabled,
+      bool enhanced_protection_enabled,
       base::WeakPtr<RealTimeUrlLookupService> url_lookup_service)
       : delegate_getter_(std::move(delegate_getter)),
         frame_tree_node_id_(frame_tree_node_id),
         web_contents_getter_(web_contents_getter),
         throttle_(std::move(throttle)),
         real_time_lookup_enabled_(real_time_lookup_enabled),
+        enhanced_protection_enabled_(enhanced_protection_enabled),
         url_lookup_service_(url_lookup_service) {}
 
   // Starts the initial safe browsing check. This check and future checks may be
@@ -70,7 +72,7 @@ class BrowserURLLoaderThrottle::CheckerOnIO
     url_checker_ = std::make_unique<SafeBrowsingUrlCheckerImpl>(
         headers, load_flags, resource_type, has_user_gesture,
         url_checker_delegate, web_contents_getter_, real_time_lookup_enabled_,
-        url_lookup_service_);
+        enhanced_protection_enabled_, url_lookup_service_);
 
     CheckUrl(url, method);
   }
@@ -137,6 +139,7 @@ class BrowserURLLoaderThrottle::CheckerOnIO
   bool skip_checks_ = false;
   base::WeakPtr<BrowserURLLoaderThrottle> throttle_;
   bool real_time_lookup_enabled_ = false;
+  bool enhanced_protection_enabled_ = false;
   base::WeakPtr<RealTimeUrlLookupService> url_lookup_service_;
 };
 
@@ -164,9 +167,13 @@ BrowserURLLoaderThrottle::BrowserURLLoaderThrottle(
       url_lookup_service ? url_lookup_service->CanPerformFullURLLookup()
                          : false;
 
+  bool enhanced_protection_enabled =
+      url_lookup_service && url_lookup_service->IsUserEpOptedIn();
+
   io_checker_ = std::make_unique<CheckerOnIO>(
       std::move(delegate_getter), frame_tree_node_id, web_contents_getter,
-      weak_factory_.GetWeakPtr(), real_time_lookup_enabled, url_lookup_service);
+      weak_factory_.GetWeakPtr(), real_time_lookup_enabled,
+      enhanced_protection_enabled, url_lookup_service);
 }
 
 BrowserURLLoaderThrottle::~BrowserURLLoaderThrottle() {

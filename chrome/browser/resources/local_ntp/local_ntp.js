@@ -106,6 +106,8 @@ const CLASSES = {
   USE_NOTIFIER: 'use-notifier',
 };
 
+const DOCUMENT_MATCH_TYPE = 'document';
+
 /**
  * The period of time (ms) before transitions can be applied to a toast
  * notification after modifying the "display" property.
@@ -1721,6 +1723,9 @@ function renderAutocompleteMatches(matches) {
       if (faviconOrImageUrlToDataUrlCache[match.destinationUrl]) {
         setBackgroundImageByUrl(
             iconEl, faviconOrImageUrlToDataUrlCache[match.destinationUrl]);
+      } else if (match.type == DOCUMENT_MATCH_TYPE) {
+        // Document matches use colored SVG icons.
+        setBackgroundImageByUrl(iconEl, match.iconUrl);
       } else {
         setWebkitMaskImageByUrl(iconEl, match.iconUrl);
       }
@@ -2157,6 +2162,10 @@ function setRealboxIcon(match) {
       realboxIcon.dataset.icon = '';
       setBackgroundImageByUrl(
           realboxIcon, faviconOrImageUrlToDataUrlCache[match.destinationUrl]);
+    } else if (match.type == DOCUMENT_MATCH_TYPE) {
+      realboxIcon.dataset.icon = match.iconUrl;
+      // Document matches use colored SVG icons.
+      setBackgroundImageByUrl(realboxIcon, realboxIcon.dataset.icon);
     } else {
       realboxIcon.dataset.icon = match.iconUrl;
       setWebkitMaskImageByUrl(realboxIcon, realboxIcon.dataset.icon);

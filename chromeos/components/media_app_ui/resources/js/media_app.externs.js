@@ -60,6 +60,15 @@ mediaApp.AbstractFile.prototype.overwriteOriginal;
 mediaApp.AbstractFile.prototype.deleteOriginalFile;
 
 /**
+ * A function that will rename the original file. Returns a promise that
+ * resolves to an enum value (see RenameResult in message_types) reflecting the
+ * result of the deletion (SUCCESS, FILE_EXISTS), rejected if the
+ * rename fails.
+ * @type {function(string): Promise<number>|undefined}
+ */
+mediaApp.AbstractFile.prototype.renameOriginalFile;
+
+/**
  * Wraps an HTML FileList object.
  * @record
  * @struct

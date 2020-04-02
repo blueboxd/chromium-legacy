@@ -254,6 +254,10 @@ const base::Feature kQuickAnswers{"QuickAnswers",
 const base::Feature kQuickAnswersRichUi{"QuickAnswersRichUi",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether dogfood version of quick answers.
+const base::Feature kQuickAnswersDogfood{"QuickAnswersDogfood",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 // ChromeOS Files App mounts RAR archives via rar2fs instead of avfs.
 // https://crbug.com/996549
 const base::Feature kRar2Fs{"Rar2Fs", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -389,6 +393,10 @@ bool IsInstantTetheringBackgroundAdvertisingSupported() {
 
 bool IsParentalControlsSettingsEnabled() {
   return base::FeatureList::IsEnabled(kParentalControlsSettings);
+}
+
+bool IsQuickAnswersDogfood() {
+  return base::FeatureList::IsEnabled(kQuickAnswersDogfood);
 }
 
 bool IsQuickAnswersEnabled() {

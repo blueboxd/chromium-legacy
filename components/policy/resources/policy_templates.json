@@ -18788,7 +18788,6 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:77-'],
-      'future': True,
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,

@@ -118,16 +118,17 @@ public class ShareImageFileUtils {
     }
 
     /**
-     * Temporarily saves the given set of JPEG bytes and provides that URI to a callback for
+     * Temporarily saves the given set of image bytes and provides that URI to a callback for
      * sharing.
      *
      * @param context The context used to trigger the share action.
-     * @param jpegImageData The image data to be shared in jpeg format.
+     * @param imageData The image data to be shared in |fileExtension| format.
+     * @param fileExtension File extension which |imageData| encoded to.
      * @param callback A provided callback function which will act on the generated URI.
      */
-    public static void generateTemporaryUriFromData(
-            final Context context, final byte[] jpegImageData, Callback<Uri> callback) {
-        if (jpegImageData.length == 0) {
+    public static void generateTemporaryUriFromData(final Context context, final byte[] imageData,
+            String fileExtension, Callback<Uri> callback) {
+        if (imageData.length == 0) {
             Log.w(TAG, "Share failed -- Received image contains no data.");
             return;
         }
@@ -146,7 +147,7 @@ public class ShareImageFileUtils {
         saveImage(fileName,
                 ()
                         -> { return ""; },
-                listener, (fos) -> { writeImageData(fos, jpegImageData); }, true);
+                listener, (fos) -> { writeImageData(fos, imageData); }, true, fileExtension);
     }
 
     /**
@@ -166,7 +167,7 @@ public class ShareImageFileUtils {
                         -> {
                     return context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getPath();
                 },
-                listener, (fos) -> { writeBitmap(fos, bitmap); }, false);
+                listener, (fos) -> { writeBitmap(fos, bitmap); }, false, JPEG_EXTENSION);
     }
 
     /**
@@ -199,16 +200,19 @@ public class ShareImageFileUtils {
      * @param listener The OnImageSaveListener to notify the download results.
      * @param writer The FileOutputStreamWriter that writes to given stream.
      * @param isTemporary Indicates whether image should be save to a temporary file.
+     * @param fileExtension The file's extension.
      */
     private static void saveImage(String fileName, FilePathProvider filePathProvider,
-            OnImageSaveListener listener, FileOutputStreamWriter writer, boolean isTemporary) {
+            OnImageSaveListener listener, FileOutputStreamWriter writer, boolean isTemporary,
+            String fileExtension) {
         new AsyncTask<Uri>() {
             @Override
             protected Uri doInBackground() {
                 FileOutputStream fOut = null;
                 File destFile = null;
                 try {
-                    destFile = createFile(fileName, filePathProvider.getPath(), isTemporary);
+                    destFile = createFile(
+                            fileName, filePathProvider.getPath(), isTemporary, fileExtension);
                     if (destFile != null && destFile.exists()) {
                         fOut = new FileOutputStream(destFile);
                         writer.write(fOut);
@@ -267,11 +271,12 @@ public class ShareImageFileUtils {
      * @param filePath The file path a destination file.
      * @param fileName The file name a destination file.
      * @param isTemporary Indicates whether image should be save to a temporary file.
+     * @param fileExtension The file's extension.
      *
      * @return The new File object.
      */
-    private static File createFile(String fileName, String filePath, boolean isTemporary)
-            throws IOException {
+    private static File createFile(String fileName, String filePath, boolean isTemporary,
+            String fileExtension) throws IOException {
         File path;
         if (filePath.isEmpty()) {
             path = getSharedFilesDirectory();
@@ -282,9 +287,9 @@ public class ShareImageFileUtils {
         File newFile = null;
         if (path.exists() || path.mkdir()) {
             if (isTemporary) {
-                newFile = File.createTempFile(fileName, JPEG_EXTENSION, path);
+                newFile = File.createTempFile(fileName, fileExtension, path);
             } else {
-                newFile = getNextAvailableFile(filePath, fileName, JPEG_EXTENSION);
+                newFile = getNextAvailableFile(filePath, fileName, fileExtension);
             }
         }
 

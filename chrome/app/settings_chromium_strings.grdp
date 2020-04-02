@@ -110,6 +110,9 @@
   <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_ERROR" desc="This text points out that the password check encountered an unknown error.">
     Chromium can't check your passwords. Try again later.
   </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_DISABLED" desc="This text points out that Safe Browsing is disabled and that the user is not protected.">
+    Safe Browsing is off. Chromium recommends turning it on.
+  </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_ERROR" desc="This text describes that safety check could not check extensions for an unkown reason.">
     Chromium can't check your extensions. Try again later.
   </message>

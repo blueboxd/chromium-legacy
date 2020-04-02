@@ -48,8 +48,11 @@ class GLFenceEGL;
 
 namespace media {
 
-class H264Parser;
 class V4L2StatefulWorkaround;
+
+namespace v4l2_vda_helpers {
+class InputBufferFragmentSplitter;
+}
 
 // This class handles video accelerators directly through a V4L2 device exported
 // by the hardware blocks.
@@ -218,8 +221,6 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // Decode from the buffers queued in decoder_input_queue_.  Calls
   // DecodeBufferInitial() or DecodeBufferContinue() as appropriate.
   void DecodeBufferTask();
-  // Advance to the next fragment that begins a frame.
-  bool AdvanceFrameFragment(const uint8_t* data, size_t size, size_t* endpos);
   // Schedule another DecodeBufferTask() if we're behind.
   void ScheduleDecodeBufferTaskIfNeeded();
 
@@ -501,16 +502,15 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // base::circular_deque because we need to do random access in OnMemoryDump().
   base::circular_deque<std::unique_ptr<BitstreamBufferRef>>
       decoder_input_queue_;
-  // For H264 decode, hardware requires that we send it frame-sized chunks.
-  // We'll need to parse the stream.
-  std::unique_ptr<H264Parser> decoder_h264_parser_;
+
+  // Used to split our input frames at the correct boundary. Only really useful
+  // for H.264 streams.
+  std::unique_ptr<v4l2_vda_helpers::InputBufferFragmentSplitter>
+      frame_splitter_;
 
   // Workaround for V4L2VideoDecodeAccelerator. This is created only if some
   // workaround is necessary for the V4L2VideoDecodeAccelerator.
   std::vector<std::unique_ptr<V4L2StatefulWorkaround>> workarounds_;
-
-  // Set if the decoder has a pending incomplete frame in an input buffer.
-  bool decoder_partial_frame_pending_;
 
   //
   // Hardware state and associated queues.  Since decoder_thread_ services
@@ -579,9 +579,7 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // Callback to set the correct gl context.
   MakeGLContextCurrentCallback make_context_current_cb_;
 
-  // The codec we'll be decoding for.
-  VideoCodecProfile video_profile_;
-  // Chosen input format for video_profile_.
+  // Chosen input format for the video profile we are decoding from.
   uint32_t input_format_fourcc_;
   // Chosen output format.
   base::Optional<Fourcc> output_format_fourcc_;

@@ -608,3 +608,5 @@ crbug.com/853360 [ Mac ] http/tests/misc/slow-loading-image-in-pattern.html [ Sl
 # Reaching the stack size limit makes for a consistently slow test with
 # occasional timeouts on Win7
 crbug.com/937546 [ Win7 ] http/tests/security/xss-DENIED-cross-origin-stack-overflow.html [ Slow ]
+
+crbug.com/1066517 http/tests/websocket/workers/worker-reload.html [ Slow ]

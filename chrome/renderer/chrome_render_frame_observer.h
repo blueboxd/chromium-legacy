@@ -57,6 +57,8 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver,
 #endif
 
  private:
+  friend class ChromeRenderFrameObserverTest;
+
   enum TextCaptureType { PRELIMINARY_CAPTURE, FINAL_CAPTURE };
 
   // RenderFrameObserver implementation.
@@ -85,11 +87,11 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver,
   void SetWindowFeatures(
       blink::mojom::WindowFeaturesPtr window_features) override;
   void ExecuteWebUIJavaScript(const base::string16& javascript) override;
-  void RequestThumbnailForContextNode(
+  void RequestImageForContextNode(
       int32_t thumbnail_min_area_pixels,
       const gfx::Size& thumbnail_max_size_pixels,
       chrome::mojom::ImageFormat image_format,
-      RequestThumbnailForContextNodeCallback callback) override;
+      RequestImageForContextNodeCallback callback) override;
   void RequestReloadImageForContextNode() override;
   void SetClientSidePhishingDetection(bool enable_phishing_detection) override;
   void GetWebApplicationInfo(GetWebApplicationInfoCallback callback) override;
@@ -108,6 +110,23 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver,
   // is reached.
   // TODO(dglazkov): This is incompatible with OOPIF and needs to be updated.
   void CapturePageText(TextCaptureType capture_type);
+
+  // Check if the image need to downscale.
+  static bool NeedsDownscale(const gfx::Size& original_image_size,
+                             int32_t requested_image_min_area_pixels,
+                             const gfx::Size& requested_image_max_size);
+
+  // If the source image is null or occupies less area than
+  // |requested_image_min_area_pixels|, we return the image unmodified.
+  // Otherwise, we scale down the image so that the width and height do not
+  // exceed |requested_image_max_size|, preserving the original aspect ratio.
+  static SkBitmap Downscale(const SkBitmap& image,
+                            int requested_image_min_area_pixels,
+                            const gfx::Size& requested_image_max_size);
+
+  // Check if the image need to encode to fit requested image format.
+  static bool NeedsEncodeImage(const std::string& image_extension,
+                               chrome::mojom::ImageFormat image_format);
 
   // Have the same lifetime as us.
   translate::TranslateAgent* translate_agent_;

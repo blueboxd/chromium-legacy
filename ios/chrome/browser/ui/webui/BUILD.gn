@@ -113,6 +113,7 @@ source_set("webui_internal") {
     "//ios/chrome/browser/ui/webui/translate_internals",
     "//ios/chrome/common",
     "//ios/components/webui:provider",
+    "//ios/components/webui:url_constants",
     "//ios/components/webui/sync_internals",
     "//url",
   ]
@@ -142,6 +143,7 @@ source_set("eg_tests") {
     "//ios/chrome/browser/ui/omnibox:omnibox_internal",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
+    "//ios/components/webui:url_constants",
     "//ios/testing/earl_grey:earl_grey_support",
     "//net:test_support",
     "//ui/base",
@@ -168,6 +170,7 @@ source_set("eg2_tests") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser:chrome_url_constants",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
+    "//ios/components/webui:url_constants",
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",
     "//ios/web/public/test:element_selector",

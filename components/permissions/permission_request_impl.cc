@@ -23,12 +23,14 @@
 namespace permissions {
 
 PermissionRequestImpl::PermissionRequestImpl(
+    const GURL& embedding_origin,
     const GURL& request_origin,
     ContentSettingsType content_settings_type,
     bool has_gesture,
     PermissionDecidedCallback permission_decided_callback,
     base::OnceClosure delete_callback)
-    : request_origin_(request_origin),
+    : embedding_origin_(embedding_origin),
+      request_origin_(request_origin),
       content_settings_type_(content_settings_type),
       has_gesture_(has_gesture),
       permission_decided_callback_(std::move(permission_decided_callback)),
@@ -146,14 +148,13 @@ base::string16 PermissionRequestImpl::GetMessageText() const {
       message_id = IDS_AR_INFOBAR_TEXT;
       break;
     case ContentSettingsType::STORAGE_ACCESS:
-      // TODO(https://crbug.com/989663): Plumb through second context origin for
-      // string instead of using GetOrigin() for both.
       return l10n_util::GetStringFUTF16(
           IDS_STORAGE_ACCESS_INFOBAR_TEXT,
           url_formatter::FormatUrlForSecurityDisplay(
               GetOrigin(), url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC),
           url_formatter::FormatUrlForSecurityDisplay(
-              GetOrigin(), url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
+              GetEmbeddingOrigin(),
+              url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
     default:
       NOTREACHED();
       return base::string16();
@@ -229,14 +230,13 @@ base::string16 PermissionRequestImpl::GetMessageTextFragment() const {
       message_id = IDS_AR_PERMISSION_FRAGMENT;
       break;
     case ContentSettingsType::STORAGE_ACCESS:
-      // TODO(https://crbug.com/989663): Plumb through second context origin for
-      // string instead of using GetOrigin() for both.
       return l10n_util::GetStringFUTF16(
           IDS_STORAGE_ACCESS_PERMISSION_FRAGMENT,
           url_formatter::FormatUrlForSecurityDisplay(
               GetOrigin(), url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC),
           url_formatter::FormatUrlForSecurityDisplay(
-              GetOrigin(), url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
+              GetEmbeddingOrigin(),
+              url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
     default:
       NOTREACHED();
       return base::string16();
@@ -248,6 +248,10 @@ base::string16 PermissionRequestImpl::GetMessageTextWarningFragment() const {
   if (content_settings_type_ == ContentSettingsType::PLUGINS)
     return l10n_util::GetStringUTF16(IDS_FLASH_PERMISSION_WARNING_FRAGMENT);
   return base::string16();
+}
+
+GURL PermissionRequestImpl::GetEmbeddingOrigin() const {
+  return embedding_origin_;
 }
 
 GURL PermissionRequestImpl::GetOrigin() const {

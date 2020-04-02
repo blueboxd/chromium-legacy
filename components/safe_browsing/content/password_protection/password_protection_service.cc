@@ -111,7 +111,7 @@ void PasswordProtectionService::MaybeStartPasswordFieldOnFocusRequest(
     StartRequest(web_contents, main_frame_url, password_form_action,
                  password_form_frame_url, /* username */ "",
                  PasswordType::PASSWORD_TYPE_UNKNOWN,
-                 {}, /* matching_domains: not used for this type */
+                 {}, /* matching_reused_credentials: not used for this type */
                  LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true);
   }
 }
@@ -123,7 +123,8 @@ void PasswordProtectionService::MaybeStartProtectedPasswordEntryRequest(
     const GURL& main_frame_url,
     const std::string& username,
     PasswordType password_type,
-    const std::vector<std::string>& matching_domains,
+    const std::vector<password_manager::MatchingReusedCredential>&
+        matching_reused_credentials,
     bool password_field_exists) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ReusedPasswordAccountType reused_password_account_type =
@@ -144,7 +145,7 @@ void PasswordProtectionService::MaybeStartProtectedPasswordEntryRequest(
 #endif  // defined(FULL_SAFE_BROWSING)
     if (can_send_ping) {
       StartRequest(web_contents, main_frame_url, GURL(), GURL(), username,
-                   password_type, matching_domains,
+                   password_type, matching_reused_credentials,
                    LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
                    password_field_exists);
     } else {
@@ -226,15 +227,17 @@ void PasswordProtectionService::StartRequest(
     const GURL& password_form_frame_url,
     const std::string& username,
     PasswordType password_type,
-    const std::vector<std::string>& matching_domains,
+    const std::vector<password_manager::MatchingReusedCredential>&
+        matching_reused_credentials,
     LoginReputationClientRequest::TriggerType trigger_type,
     bool password_field_exists) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_refptr<PasswordProtectionRequest> request(
       new PasswordProtectionRequest(
           web_contents, main_frame_url, password_form_action,
-          password_form_frame_url, username, password_type, matching_domains,
-          trigger_type, password_field_exists, this, GetRequestTimeoutInMS()));
+          password_form_frame_url, username, password_type,
+          matching_reused_credentials, trigger_type, password_field_exists,
+          this, GetRequestTimeoutInMS()));
   request->Start();
   pending_requests_.insert(std::move(request));
 }
@@ -329,8 +332,8 @@ void PasswordProtectionService::RequestFinished(
         verdict == LoginReputationClientResponse::PHISHING ||
         verdict == LoginReputationClientResponse::LOW_REPUTATION;
     if (is_unsafe_url) {
-      PersistPhishedSavedPasswordCredential(request->username(),
-                                            request->matching_domains());
+      PersistPhishedSavedPasswordCredential(
+          request->matching_reused_credentials());
     }
   }
 

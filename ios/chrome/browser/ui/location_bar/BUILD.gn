@@ -116,6 +116,7 @@ source_set("location_bar_model_delegate") {
     "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/ssl",
     "//ios/chrome/browser/web_state_list",
+    "//ios/components/webui:url_constants",
     "//ios/web/public",
     "//ios/web/public/security",
   ]

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 21
+// Next MinVersion: 22
 
 module arc.mojom;
 
@@ -329,6 +329,32 @@ enum AccessibilityNotificationStateType {
   SURFACE_REMOVED,
 };
 
+// These fields are taken from int attributes of
+// AccessibilityEvent and AccessibilityRecord.
+[Extensible]
+enum AccessibilityEventIntProperty {
+  ACTION,
+  FROM_INDEX,
+  TO_INDEX,
+  ITEM_COUNT,
+  CURRENT_ITEM_INDEX,
+  SCROLL_X,
+  SCROLL_Y,
+  MAX_SCROLL_X,
+  MAX_SCROLL_Y,
+  SCROLL_DELTA_X,
+  SCROLL_DELTA_Y,
+};
+
+// These fields are taken from string attributes of
+// AccessibilityEvent and AccessibilityRecord.
+[Extensible]
+enum AccessibilityEventStringProperty {
+  CLASS_NAME,
+  PACKAGE_NAME,
+  CONTENT_DESCRIPTION,
+};
+
 // AccessibilityEventData is a struct to contain info of
 // AccessibilityEvent in Android.
 // https://developer.android.com/reference/android/view/accessibility/AccessibilityEvent.html
@@ -360,6 +386,10 @@ struct AccessibilityEventData {
 
   // Retrieved from AccessibilityRecord.getText().
   [MinVersion=15] array<string>? event_text;
+
+  [MinVersion=21] map<AccessibilityEventIntProperty, int32>? int_properties;
+  [MinVersion=21]
+      map<AccessibilityEventStringProperty, string>? string_properties;
 };
 
 // AccessibilityActionData is a struct to contain info of AccessibilityAction in

@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
+#include "media/base/video_codecs.h"
 #include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/chromeos/image_processor.h"
 #include "ui/gfx/geometry/size.h"
@@ -16,6 +17,7 @@
 namespace media {
 
 class V4L2Device;
+class H264Parser;
 
 // Helper static methods to be shared between V4L2VideoDecodeAccelerator and
 // V4L2SliceVideoDecodeAccelerator. This avoids some code duplication between
@@ -65,6 +67,51 @@ std::unique_ptr<ImageProcessor> CreateImageProcessor(
 gfx::Size NativePixmapSizeFromHandle(const gfx::NativePixmapHandle& handle,
                                      const Fourcc fourcc,
                                      const gfx::Size& current_size);
+
+// Interface to split an input stream into chunks containing whole frames.
+// This default implementation can be used for codecs that do not support frame
+// splitting (like VP8 or VP9), whereas codecs that use slices can inherit
+// and specialize it.
+class InputBufferFragmentSplitter {
+ public:
+  static std::unique_ptr<InputBufferFragmentSplitter> CreateFromProfile(
+      media::VideoCodecProfile profile);
+
+  explicit InputBufferFragmentSplitter() = default;
+  virtual ~InputBufferFragmentSplitter() = default;
+
+  // Advance to the next fragment that begins a frame.
+  virtual bool AdvanceFrameFragment(const uint8_t* data,
+                                    size_t size,
+                                    size_t* endpos);
+
+  virtual void Reset();
+
+  // Returns true if we may currently be in the middle of a frame (e.g. we
+  // haven't yet parsed all the slices of a multi-slice H.264 frame).
+  virtual bool IsPartialFramePending() const;
+};
+
+// Splitter for H.264, making sure to properly report when a partial frame
+// may be pending.
+class H264InputBufferFragmentSplitter : public InputBufferFragmentSplitter {
+ public:
+  explicit H264InputBufferFragmentSplitter();
+
+  bool AdvanceFrameFragment(const uint8_t* data,
+                            size_t size,
+                            size_t* endpos) override;
+  void Reset() override;
+  bool IsPartialFramePending() const override;
+
+ private:
+  // For H264 decode, hardware requires that we send it frame-sized chunks.
+  // We'll need to parse the stream.
+  std::unique_ptr<H264Parser> h264_parser_;
+  // Set if we have a pending incomplete frame in the input buffer.
+  bool partial_frame_pending_ = false;
+};
+
 }  // namespace v4l2_vda_helpers
 }  // namespace media
 

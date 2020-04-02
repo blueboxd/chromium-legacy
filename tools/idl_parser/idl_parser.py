@@ -44,7 +44,9 @@ else:
   from idl_node import IDLAttribute, IDLNode
 
 SRC_DIR = os.path.abspath(os.path.dirname(__file__))
-sys.path.insert(0, os.path.join(SRC_DIR, os.pardir, os.pardir, 'third_party'))
+# Preserve sys.path[0] as is.
+# https://docs.python.org/3/library/sys.html?highlight=path[0]#sys.path
+sys.path.insert(1, os.path.join(SRC_DIR, os.pardir, os.pardir, 'third_party'))
 from ply import lex
 from ply import yacc
 

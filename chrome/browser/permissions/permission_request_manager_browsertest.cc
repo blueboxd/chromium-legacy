@@ -218,8 +218,8 @@ permissions::PermissionRequest* PermissionDialogTest::MakePermissionRequest(
   auto cleanup = [] {};  // Leave cleanup to test harness destructor.
   owned_requests_.push_back(
       std::make_unique<permissions::PermissionRequestImpl>(
-          GetUrl(), permission, user_gesture, base::Bind(decided),
-          base::Bind(cleanup)));
+          GetUrl(), GetUrl(), permission, user_gesture, base::BindOnce(decided),
+          base::BindOnce(cleanup)));
   return owned_requests_.back().get();
 }
 

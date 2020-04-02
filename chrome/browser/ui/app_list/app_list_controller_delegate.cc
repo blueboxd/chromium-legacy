@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/ash/tablet_mode_page_behavior.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/settings/chromeos/app_management/app_management_uma.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
@@ -104,9 +105,9 @@ void AppListControllerDelegate::DoShowAppInfoFlow(Profile* profile,
 
     chrome::ShowAppManagementPage(profile, app_id);
 
-    web_app::AppRegistrar& registrar =
-        web_app::WebAppProvider::Get(profile)->registrar();
-    if (registrar.IsInstalled(app_id)) {
+    web_app::WebAppProvider* web_app_provider =
+        web_app::WebAppProvider::Get(profile);
+    if (web_app_provider && web_app_provider->registrar().IsInstalled(app_id)) {
       base::UmaHistogramEnumeration(
           kAppManagementEntryPointsHistogramName,
           AppManagementEntryPoint::kAppListContextMenuAppInfoWebApp);

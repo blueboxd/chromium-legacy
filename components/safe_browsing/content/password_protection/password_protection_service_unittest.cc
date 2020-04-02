@@ -45,6 +45,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
 using testing::_;
 using testing::AnyNumber;
 using testing::ElementsAre;
@@ -55,8 +56,8 @@ namespace {
 
 const char kFormActionUrl[] = "https://form_action.com/";
 const char kPasswordFrameUrl[] = "https://password_frame.com/";
-const char kSavedDomain[] = "saved_domain.com";
-const char kSavedDomain2[] = "saved_domain2.com";
+const char kSavedDomain[] = "http://saved_domain.com";
+const char kSavedDomain2[] = "http://saved_domain2.com";
 const char kTargetUrl[] = "http://foo.com/";
 const char kUserName[] = "username";
 
@@ -306,7 +307,8 @@ class PasswordProtectionServiceTest : public ::testing::TestWithParam<bool> {
 
   void InitializeAndStartPasswordEntryRequest(
       PasswordType type,
-      const std::vector<std::string>& matching_domains,
+      const std::vector<password_manager::MatchingReusedCredential>&
+          matching_reused_credentials,
       bool match_whitelist,
       int timeout_in_ms,
       content::WebContents* web_contents) {
@@ -317,8 +319,9 @@ class PasswordProtectionServiceTest : public ::testing::TestWithParam<bool> {
 
     request_ = new PasswordProtectionRequest(
         web_contents, target_url, GURL(), GURL(), kUserName, type,
-        matching_domains, LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-        true, password_protection_service_.get(), timeout_in_ms);
+        matching_reused_credentials,
+        LoginReputationClientRequest::PASSWORD_REUSE_EVENT, true,
+        password_protection_service_.get(), timeout_in_ms);
     request_->Start();
   }
 
@@ -924,7 +927,8 @@ TEST_P(PasswordProtectionServiceTest,
       .WillRepeatedly(Return(account_info));
 
   InitializeAndStartPasswordEntryRequest(
-      PasswordType::OTHER_GAIA_PASSWORD, {"gmail.com"},
+      PasswordType::OTHER_GAIA_PASSWORD,
+      {{"gmail.com", ASCIIToUTF16("username")}},
       /*match_whitelist=*/false,
       /*timeout_in_ms=*/10000, web_contents.get());
   password_protection_service_->WaitForResponse();
@@ -1098,7 +1102,7 @@ TEST_P(PasswordProtectionServiceTest,
 }
 
 TEST_P(PasswordProtectionServiceTest,
-       VerifyNonSyncPasswordProtectionRequestProto) {
+       VerifySavePasswordProtectionRequestProto) {
   // Set up valid response.
   LoginReputationClientResponse expected_response =
       CreateVerdictProto(LoginReputationClientResponse::PHISHING, 10 * kMinute,
@@ -1109,7 +1113,9 @@ TEST_P(PasswordProtectionServiceTest,
 
   // Initialize request triggered by saved password reuse.
   InitializeAndStartPasswordEntryRequest(
-      PasswordType::SAVED_PASSWORD, {kSavedDomain, kSavedDomain2},
+      PasswordType::SAVED_PASSWORD,
+      {{kSavedDomain, ASCIIToUTF16("username")},
+       {kSavedDomain2, ASCIIToUTF16("username")}},
       false /* match whitelist */, 100000 /* timeout in ms*/,
       web_contents.get());
   password_protection_service_->WaitForResponse();
@@ -1123,8 +1129,8 @@ TEST_P(PasswordProtectionServiceTest,
   if (password_protection_service_->IsExtendedReporting() &&
       !password_protection_service_->IsIncognito()) {
     ASSERT_EQ(2, reuse_event.domains_matching_password_size());
-    EXPECT_EQ(kSavedDomain, reuse_event.domains_matching_password(0));
-    EXPECT_EQ(kSavedDomain2, reuse_event.domains_matching_password(1));
+    EXPECT_EQ("saved_domain.com", reuse_event.domains_matching_password(0));
+    EXPECT_EQ("saved_domain2.com", reuse_event.domains_matching_password(1));
   } else {
     EXPECT_EQ(0, reuse_event.domains_matching_password_size());
   }
@@ -1376,7 +1382,8 @@ TEST_P(PasswordProtectionServiceTest, TestPingsForAboutBlank) {
   std::unique_ptr<content::WebContents> web_contents = GetWebContents();
   password_protection_service_->StartRequest(
       web_contents.get(), GURL("about:blank"), GURL(), GURL(), "username",
-      PasswordType::SAVED_PASSWORD, {"example.com"},
+      PasswordType::SAVED_PASSWORD,
+      {{"example1.com", ASCIIToUTF16("username")}},
       LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true);
   base::RunLoop().RunUntilIdle();
   histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogram, 1);
@@ -1397,7 +1404,7 @@ TEST_P(PasswordProtectionServiceTest,
   std::unique_ptr<content::WebContents> web_contents = GetWebContents();
   password_protection_service_->StartRequest(
       web_contents.get(), GURL("about:blank"), GURL(), GURL(), kUserName,
-      PasswordType::SAVED_PASSWORD, {"example.com"},
+      PasswordType::SAVED_PASSWORD, {{"example.com", ASCIIToUTF16("username")}},
       LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true);
   base::RunLoop().RunUntilIdle();
 
@@ -1422,7 +1429,7 @@ TEST_P(PasswordProtectionServiceTest, TestDomFeaturesPopulated) {
   std::unique_ptr<content::WebContents> web_contents = GetWebContents();
   password_protection_service_->StartRequest(
       web_contents.get(), GURL("about:blank"), GURL(), GURL(), kUserName,
-      PasswordType::SAVED_PASSWORD, {"example.com"},
+      PasswordType::SAVED_PASSWORD, {{"example.com", ASCIIToUTF16("username")}},
       LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true);
   base::RunLoop().RunUntilIdle();
 
@@ -1445,7 +1452,7 @@ TEST_P(PasswordProtectionServiceTest, TestDomFeaturesTimeout) {
   std::unique_ptr<content::WebContents> web_contents = GetWebContents();
   password_protection_service_->StartRequest(
       web_contents.get(), GURL("about:blank"), GURL(), GURL(), kUserName,
-      PasswordType::SAVED_PASSWORD, {"example.com"},
+      PasswordType::SAVED_PASSWORD, {{"example.com", ASCIIToUTF16("username")}},
       LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true);
   task_environment_.FastForwardUntilNoTasksRemain();
 

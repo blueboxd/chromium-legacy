@@ -64,6 +64,7 @@ void RecordDefaultAppLaunch(DefaultAppName default_app_name,
   switch (launch_source) {
     case apps::mojom::LaunchSource::kUnknown:
     case apps::mojom::LaunchSource::kFromParentalControls:
+    case apps::mojom::LaunchSource::kFromTest:
       return;
     case apps::mojom::LaunchSource::kFromAppListGrid:
       base::UmaHistogramEnumeration("Apps.DefaultAppLaunch.FromAppListGrid",
@@ -118,6 +119,10 @@ void RecordDefaultAppLaunch(DefaultAppName default_app_name,
       base::UmaHistogramEnumeration("Apps.DefaultAppLaunch.FromMenu",
                                     default_app_name);
       break;
+    case apps::mojom::LaunchSource::kFromInstalledNotification:
+      base::UmaHistogramEnumeration(
+          "Apps.DefaultAppLaunch.FromInstalledNotification", default_app_name);
+      break;
   }
 }
 
@@ -146,6 +151,8 @@ void RecordBuiltInAppLaunch(apps::BuiltInAppName built_in_app_name,
     case apps::mojom::LaunchSource::kFromKeyboard:
     case apps::mojom::LaunchSource::kFromOtherApp:
     case apps::mojom::LaunchSource::kFromMenu:
+    case apps::mojom::LaunchSource::kFromInstalledNotification:
+    case apps::mojom::LaunchSource::kFromTest:
       break;
   }
 }

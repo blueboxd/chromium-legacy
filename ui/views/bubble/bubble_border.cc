@@ -323,7 +323,8 @@ void BubbleBorder::PaintNoShadow(const View& view, gfx::Canvas* canvas) {
   flags.setAntiAlias(true);
   flags.setStyle(cc::PaintFlags::kStroke_Style);
   flags.setStrokeWidth(kBorderThicknessDip);
-  constexpr SkColor kBorderColor = gfx::kGoogleGrey600;
+  SkColor kBorderColor = view.GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_BubbleBorder);
   flags.setColor(kBorderColor);
   canvas->DrawRoundRect(bounds, corner_radius(), flags);
 }

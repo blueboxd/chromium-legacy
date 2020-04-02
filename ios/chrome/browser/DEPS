@@ -109,6 +109,7 @@ include_rules = [
   "+ios/chrome/app",
   "+ios/components/io_thread",
   "+ios/components/ui_util",
+  "+ios/components/webui",
   "+ios/net",
   "+ios/public/provider/chrome",
   "+ios/public/provider/components",

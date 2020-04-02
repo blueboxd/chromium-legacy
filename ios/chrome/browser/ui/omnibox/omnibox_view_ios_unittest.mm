@@ -26,7 +26,7 @@ class OmniboxViewIOSTest : public PlatformTest {
     view_ = std::make_unique<OmniboxViewIOS>(
         mockOmniboxTextfield_, /* WebOmniboxEditController*/ nullptr,
         /*id<OmniboxLeftImageConsumer> */ nil, browser_state_.get(),
-        /*id<OmniboxFocuser>*/ nil);
+        /*id<OmniboxCommands>*/ nil);
   }
 
   // Test broser state.

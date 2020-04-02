@@ -76,6 +76,8 @@ NewObject
 Measure
 MeasureAs=*
 NamedConstructor=*
+NamedConstructor_CallWith=Document
+NamedConstructor_RaisesException
 NoInterfaceObject
 NotEnumerable
 OverrideBuiltins

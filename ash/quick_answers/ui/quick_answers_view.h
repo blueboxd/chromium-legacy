@@ -8,21 +8,28 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "chromeos/components/quick_answers/quick_answers_model.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/events/event_handler.h"
 #include "ui/views/controls/button/button.h"
 
+namespace chromeos {
+namespace quick_answers {
+struct QuickAnswer;
+}  // namespace quick_answers
+}  // namespace chromeos
+
 namespace views {
-class Label;
-}
+class ImageButton;
+class LabelButton;
+}  // namespace views
 
 namespace ash {
+
 class QuickAnswersUiController;
 class QuickAnswersViewHandler;
 
 // A bubble style view to show QuickAnswer.
-class ASH_EXPORT QuickAnswersView : public views::View {
+class ASH_EXPORT QuickAnswersView : public views::Button,
+                                    public views::ButtonListener {
  public:
   QuickAnswersView(const gfx::Rect& anchor_view_bounds,
                    const std::string& title,
@@ -35,21 +42,14 @@ class ASH_EXPORT QuickAnswersView : public views::View {
   // views::View:
   const char* GetClassName() const override;
 
-  // Methods to be called by QuickAnswersViewHandler.
-  // Whether a retry label is visible.
-  bool HasRetryLabel() const;
+  // views::Button:
+  void StateChanged(views::Button::ButtonState old_state) override;
 
-  // Called when a click happens within bounds of the retry label.
-  void OnRetryLabelPressed();
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Called when a click happens to trigger Assistant Query.
   void SendQuickAnswersQuery();
-
-  // Called during mouse move event.
-  void SetBackgroundColor(SkColor color);
-
-  // Whether |point_in_screen| is in retry label's bounds.
-  bool WithinRetryLabelBounds(const gfx::Point& point_in_screen) const;
 
   void UpdateAnchorViewBounds(const gfx::Rect& anchor_view_bounds);
 
@@ -62,6 +62,7 @@ class ASH_EXPORT QuickAnswersView : public views::View {
  private:
   void InitLayout();
   void InitWidget();
+  void AddDogfoodButton();
   void AddAssistantIcon();
   void UpdateBounds();
   void UpdateQuickAnswerResult(
@@ -71,9 +72,10 @@ class ASH_EXPORT QuickAnswersView : public views::View {
   QuickAnswersUiController* const controller_;
   bool has_second_row_answer_ = false;
   std::string title_;
-  SkColor background_color_ = SK_ColorWHITE;
+  views::View* main_view_ = nullptr;
   views::View* content_view_ = nullptr;
-  views::Label* retry_label_ = nullptr;
+  views::LabelButton* retry_label_ = nullptr;
+  views::ImageButton* dogfood_button_ = nullptr;
   std::unique_ptr<QuickAnswersViewHandler> quick_answers_view_handler_;
   base::WeakPtrFactory<QuickAnswersView> weak_factory_{this};
 };

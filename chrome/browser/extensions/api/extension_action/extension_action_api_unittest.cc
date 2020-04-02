@@ -13,24 +13,21 @@
 namespace extensions {
 namespace {
 
-enum class TestActionType {
-  kBrowser,
-  kPage,
-};
-
 class ExtensionActionAPIUnitTest
     : public ExtensionServiceTestWithInstall,
-      public ::testing::WithParamInterface<TestActionType> {
+      public ::testing::WithParamInterface<ActionInfo::Type> {
  public:
   ExtensionActionAPIUnitTest() {}
   ~ExtensionActionAPIUnitTest() override {}
 
   const char* GetManifestKey() {
     switch (GetParam()) {
-      case TestActionType::kBrowser:
+      case ActionInfo::TYPE_BROWSER:
         return manifest_keys::kBrowserAction;
-      case TestActionType::kPage:
+      case ActionInfo::TYPE_PAGE:
         return manifest_keys::kPageAction;
+      case ActionInfo::TYPE_ACTION:
+        return manifest_keys::kAction;
     }
     NOTREACHED();
     return nullptr;
@@ -38,10 +35,12 @@ class ExtensionActionAPIUnitTest
 
   const ActionInfo* GetActionInfo(const Extension& extension) {
     switch (GetParam()) {
-      case TestActionType::kBrowser:
+      case ActionInfo::TYPE_BROWSER:
         return ActionInfo::GetBrowserActionInfo(&extension);
-      case TestActionType::kPage:
+      case ActionInfo::TYPE_PAGE:
         return ActionInfo::GetPageActionInfo(&extension);
+      case ActionInfo::TYPE_ACTION:
+        return ActionInfo::GetExtensionActionInfo(&extension);
     }
     NOTREACHED();
     return nullptr;
@@ -103,8 +102,9 @@ TEST_P(ExtensionActionAPIUnitTest, MultiIcons) {
 
 INSTANTIATE_TEST_SUITE_P(All,
                          ExtensionActionAPIUnitTest,
-                         testing::Values(TestActionType::kBrowser,
-                                         TestActionType::kPage));
+                         testing::Values(ActionInfo::TYPE_BROWSER,
+                                         ActionInfo::TYPE_PAGE,
+                                         ActionInfo::TYPE_ACTION));
 
 }  // namespace
 }  // namespace extensions

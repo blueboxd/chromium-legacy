@@ -8,12 +8,15 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "build/build_config.h"
 #include "components/download/public/common/download_item.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_manager.h"
 #include "net/base/filename_util.h"
 #include "weblayer/browser/browser_context_impl.h"
+#include "weblayer/browser/browser_process.h"
 #include "weblayer/browser/download_impl.h"
 #include "weblayer/browser/download_manager_delegate_impl.h"
 #include "weblayer/browser/profile_impl.h"
@@ -45,6 +48,8 @@ void GenerateFilename(
 
 }  // namespace
 
+const char kDownloadNextIDPref[] = "weblayer_download_next_id";
+
 DownloadManagerDelegateImpl::DownloadManagerDelegateImpl(
     content::DownloadManager* download_manager)
     : download_manager_(download_manager) {
@@ -58,6 +63,15 @@ DownloadManagerDelegateImpl::~DownloadManagerDelegateImpl() {
   download_manager_->GetAllDownloads(&downloads);
   for (auto* download : downloads)
     download->RemoveObserver(this);
+}
+
+void DownloadManagerDelegateImpl::GetNextId(
+    content::DownloadIdCallback callback) {
+  // Need to return a unique id, even across crashes, to avoid notification
+  // intents with different data (e.g. notification GUID) getting dup'd. This is
+  // also persisted in the on-disk download database to support resumption.
+  auto* local_state = BrowserProcess::GetInstance()->GetLocalState();
+  std::move(callback).Run(local_state->GetInteger(kDownloadNextIDPref));
 }
 
 bool DownloadManagerDelegateImpl::DetermineDownloadTarget(
@@ -146,6 +160,17 @@ void DownloadManagerDelegateImpl::OnDownloadCreated(
   item->AddObserver(this);
   // Create a DownloadImpl which will be owned by |item|.
   DownloadImpl::Create(item);
+
+  auto* local_state = BrowserProcess::GetInstance()->GetLocalState();
+  int next_id = local_state->GetInteger(kDownloadNextIDPref);
+  if (item->GetId() >= static_cast<uint32_t>(next_id)) {
+    next_id = item->GetId();
+    // Reset the counter when it gets close to max value of unsigned 32 bit
+    // integer since that's what the download system persists.
+    if (++next_id == (std::numeric_limits<uint32_t>::max() / 2) - 1)
+      next_id = 0;
+    local_state->SetInteger(kDownloadNextIDPref, next_id);
+  }
 
   auto* delegate = GetDelegate(item);
   if (delegate)

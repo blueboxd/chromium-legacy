@@ -186,6 +186,8 @@ enum LaunchSource {
   kFromKeyboard = 12,               // Keyboard shortcut for opening app.
   kFromOtherApp = 13,               // Clicking link in another app or webui.
   kFromMenu = 14,                   // Menu.
+  kFromInstalledNotification = 15,  // Installed notification
+  kFromTest = 16,                   // Test
 };
 
 enum TriState {

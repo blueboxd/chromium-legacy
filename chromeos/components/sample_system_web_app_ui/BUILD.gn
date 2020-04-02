@@ -26,14 +26,11 @@ static_library("sample_system_web_app_ui") {
 }
 
 js_type_check("closure_compile") {
-  deps = [ ":app" ]
+  deps = [ ":untrusted" ]
 }
 
-js_library("app") {
-  sources = [
-    "resources/app.js",
-    "resources/receiver.js",
-  ]
+js_library("untrusted") {
+  sources = [ "resources/untrusted.js" ]
 }
 
 js2gtest("browser_tests_js") {

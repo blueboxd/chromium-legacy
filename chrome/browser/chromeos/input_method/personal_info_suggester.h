@@ -46,6 +46,8 @@ class PersonalInfoSuggester : public Suggester {
 
   void ShowSuggestion(const base::string16& text);
 
+  void AcceptSuggestion();
+
   InputMethodEngine* const engine_;
 
   // ID of the focused text field, 0 if none is focused.

@@ -67,6 +67,19 @@ void QuotaInternalsProxy::RequestInfo(
   ReportStatistics(stats);
 }
 
+void QuotaInternalsProxy::TriggerStoragePressure(
+    url::Origin origin,
+    scoped_refptr<storage::QuotaManager> quota_manager) {
+  DCHECK(quota_manager.get());
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&QuotaInternalsProxy::TriggerStoragePressure,
+                                  this, origin, quota_manager));
+    return;
+  }
+  quota_manager->SimulateStoragePressure(origin);
+}
+
 QuotaInternalsProxy::~QuotaInternalsProxy() = default;
 
 #define RELAY_TO_HANDLER(func, arg_t)                                        \

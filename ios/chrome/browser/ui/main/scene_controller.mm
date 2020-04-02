@@ -44,6 +44,7 @@
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/omnibox_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/first_run/first_run_util.h"
@@ -56,7 +57,6 @@
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_coordinator.h"
 #include "ios/chrome/browser/ui/tab_grid/tab_grid_coordinator.h"
-#import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/multi_window_support.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
@@ -1108,9 +1108,9 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
       };
     case FOCUS_OMNIBOX:
       return ^{
-        id<OmniboxFocuser> focusHandler = HandlerForProtocol(
+        id<OmniboxCommands> focusHandler = HandlerForProtocol(
             self.currentInterface.browser->GetCommandDispatcher(),
-            OmniboxFocuser);
+            OmniboxCommands);
         [focusHandler focusOmnibox];
       };
     default:
@@ -1513,9 +1513,10 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 - (void)displayCurrentBVCAndFocusOmnibox:(BOOL)focusOmnibox {
   ProceduralBlock completion = nil;
   if (focusOmnibox) {
-    __weak BrowserViewController* weakCurrentBVC = self.currentInterface.bvc;
+    id<OmniboxCommands> omniboxHandler = HandlerForProtocol(
+        self.currentInterface.browser->GetCommandDispatcher(), OmniboxCommands);
     completion = ^{
-      [weakCurrentBVC.dispatcher focusOmnibox];
+      [omniboxHandler focusOmnibox];
     };
   }
   [self.mainCoordinator

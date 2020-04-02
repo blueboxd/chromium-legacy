@@ -21,6 +21,8 @@ jumbo_component("x") {
     "x11_display_util.h",
     "x11_menu_list.cc",
     "x11_menu_list.h",
+    "x11_menu_registrar.cc",
+    "x11_menu_registrar.h",
     "x11_pointer_grab.cc",
     "x11_pointer_grab.h",
     "x11_shm_image_pool.cc",

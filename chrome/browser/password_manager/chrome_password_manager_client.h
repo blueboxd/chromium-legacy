@@ -30,6 +30,7 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_onboarding.h"
 #include "components/password_manager/core/browser/password_reuse_detection_manager.h"
+#include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/password_manager/core/browser/sync_credentials_filter.h"
 #include "components/prefs/pref_member.h"
 #include "components/safe_browsing/buildflags.h"
@@ -210,7 +211,8 @@ class ChromePasswordManagerClient
   void CheckProtectedPasswordEntry(
       password_manager::metrics_util::PasswordType reused_password_type,
       const std::string& username,
-      const std::vector<std::string>& matching_domains,
+      const std::vector<password_manager::MatchingReusedCredential>&
+          matching_reused_credentials,
       bool password_field_exists) override;
 #endif
 

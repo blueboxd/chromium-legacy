@@ -26,6 +26,7 @@ class ASH_PUBLIC_EXPORT LoginScreenTestApi {
   static bool IsAddUserButtonShown();
   static bool IsCancelButtonShown();
   static bool IsParentAccessButtonShown();
+  static bool IsWarningBubbleShown();
   static void SubmitPassword(const AccountId& account_id,
                              const std::string& password,
                              bool check_if_submittable);

@@ -66,7 +66,8 @@ class CoreTabHelper : public content::WebContentsObserver,
           chrome_render_frame,
       const GURL& src_url,
       const std::vector<uint8_t>& thumbnail_data,
-      const gfx::Size& original_size);
+      const gfx::Size& original_size,
+      const std::string& image_extension);
 
   // The time when we started to create the new tab page.  This time is from
   // before we created this WebContents.

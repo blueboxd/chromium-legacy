@@ -21,6 +21,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/content/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/content/password_protection/metrics_util.h"
@@ -97,15 +98,17 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // Creates an instance of PasswordProtectionRequest and call Start() on that
   // instance. This function also insert this request object in |requests_| for
   // record keeping.
-  void StartRequest(content::WebContents* web_contents,
-                    const GURL& main_frame_url,
-                    const GURL& password_form_action,
-                    const GURL& password_form_frame_url,
-                    const std::string& username,
-                    PasswordType password_type,
-                    const std::vector<std::string>& matching_domains,
-                    LoginReputationClientRequest::TriggerType trigger_type,
-                    bool password_field_exists);
+  void StartRequest(
+      content::WebContents* web_contents,
+      const GURL& main_frame_url,
+      const GURL& password_form_action,
+      const GURL& password_form_frame_url,
+      const std::string& username,
+      PasswordType password_type,
+      const std::vector<password_manager::MatchingReusedCredential>&
+          matching_reused_credentials,
+      LoginReputationClientRequest::TriggerType trigger_type,
+      bool password_field_exists);
 
 #if defined(ON_FOCUS_PING_ENABLED)
   virtual void MaybeStartPasswordFieldOnFocusRequest(
@@ -122,7 +125,8 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       const GURL& main_frame_url,
       const std::string& username,
       PasswordType password_type,
-      const std::vector<std::string>& matching_domains,
+      const std::vector<password_manager::MatchingReusedCredential>&
+          matching_reused_credentials,
       bool password_field_exists);
 #endif
 
@@ -209,11 +213,11 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       RequestOutcome* reason) const = 0;
 
   // Persist the phished saved password credential in the "compromised
-  // credentials" table. Calls the password store to add a row for each domain
-  // where the phished saved password is used on.
+  // credentials" table. Calls the password store to add a row for each
+  // MatchingReusedCredential where the phished saved password is used on.
   virtual void PersistPhishedSavedPasswordCredential(
-      const std::string& username,
-      const std::vector<std::string>& matching_domains) = 0;
+      const std::vector<password_manager::MatchingReusedCredential>&
+          matching_reused_credentials) = 0;
 
   // Converts from password::metrics_util::PasswordType to
   // LoginReputationClientRequest::PasswordReuseEvent::ReusedPasswordType.

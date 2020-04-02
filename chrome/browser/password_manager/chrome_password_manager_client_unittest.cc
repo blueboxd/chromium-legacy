@@ -727,18 +727,21 @@ TEST_F(ChromePasswordManagerClientTest,
       *client->password_protection_service(),
       MaybeStartProtectedPasswordEntryRequest(_, _, "username", _, _, true))
       .Times(4);
+  std::vector<password_manager::MatchingReusedCredential> credentials = {
+      {"saved_domain.com", base::ASCIIToUTF16("username")}};
+
   client->CheckProtectedPasswordEntry(
       password_manager::metrics_util::PasswordType::SAVED_PASSWORD, "username",
-      std::vector<std::string>({"saved_domain.com"}), true);
+      credentials, true);
   client->CheckProtectedPasswordEntry(
       password_manager::metrics_util::PasswordType::PRIMARY_ACCOUNT_PASSWORD,
-      "username", std::vector<std::string>({"saved_domain.com"}), true);
+      "username", credentials, true);
   client->CheckProtectedPasswordEntry(
       password_manager::metrics_util::PasswordType::OTHER_GAIA_PASSWORD,
-      "username", std::vector<std::string>({"saved_domain.com"}), true);
+      "username", credentials, true);
   client->CheckProtectedPasswordEntry(
       password_manager::metrics_util::PasswordType::ENTERPRISE_PASSWORD,
-      "username", std::vector<std::string>({"saved_domain.com"}), true);
+      "username", credentials, true);
 }
 
 TEST_F(ChromePasswordManagerClientTest, VerifyLogPasswordReuseDetectedEvent) {

@@ -84,8 +84,6 @@ class CORE_EXPORT NGFragmentItemsBuilder {
                          TextDirection direction,
                          const PhysicalSize& outer_size);
 
-  void AssociateNextForSameLayoutObject();
-
   Vector<std::unique_ptr<NGFragmentItem>> items_;
   Vector<LogicalOffset> offsets_;
   String text_content_;

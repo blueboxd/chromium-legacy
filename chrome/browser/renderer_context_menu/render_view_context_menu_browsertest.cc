@@ -80,8 +80,11 @@
 #include "third_party/blink/public/common/context_menu_data/media_type.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/emoji/emoji_panel_helper.h"
 #include "ui/base/models/menu_model.h"
+#include "ui/gfx/codec/jpeg_codec.h"
+#include "ui/gfx/codec/png_codec.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/window_pin_type.h"
@@ -191,6 +194,78 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
 
   Browser* OpenTestWebApp(const AppId& app_id) {
     return web_app::LaunchWebAppBrowser(browser()->profile(), app_id);
+  }
+
+  void OpenImagePageAndContextMenu(std::string image_path) {
+    ASSERT_TRUE(embedded_test_server()->Start());
+    GURL image_url(embedded_test_server()->GetURL(image_path));
+    GURL page("data:text/html,<img src='" + image_url.spec() + "'>");
+    ui_test_utils::NavigateToURL(browser(), page);
+
+    // Open and close a context menu.
+    ContextMenuWaiter waiter;
+    content::WebContents* tab =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    content::SimulateMouseClickAt(tab, 0, blink::WebMouseEvent::Button::kRight,
+                                  gfx::Point(15, 15));
+    waiter.WaitForMenuOpenAndClose();
+  }
+
+  void RequestImageAndVerifyResponse(
+      gfx::Size request_size,
+      chrome::mojom::ImageFormat request_image_format,
+      gfx::Size expected_original_size,
+      gfx::Size expected_size,
+      std::string expected_extension) {
+    mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame>
+        chrome_render_frame;
+    browser()
+        ->tab_strip_model()
+        ->GetActiveWebContents()
+        ->GetMainFrame()
+        ->GetRemoteAssociatedInterfaces()
+        ->GetInterface(&chrome_render_frame);
+
+    auto callback =
+        [](std::vector<uint8_t>* response_image_data,
+           gfx::Size* response_original_size,
+           std::string* response_file_extension, const base::Closure& quit,
+           const std::vector<uint8_t>& image_data,
+           const gfx::Size& original_size, const std::string& file_extension) {
+          *response_image_data = image_data;
+          *response_original_size = original_size;
+          *response_file_extension = file_extension;
+          quit.Run();
+        };
+
+    base::RunLoop run_loop;
+    std::vector<uint8_t> response_image_data;
+    gfx::Size response_original_size;
+    std::string response_file_extension;
+    chrome_render_frame->RequestImageForContextNode(
+        0, request_size, request_image_format,
+        base::Bind(callback, &response_image_data, &response_original_size,
+                   &response_file_extension, run_loop.QuitClosure()));
+    run_loop.Run();
+
+    ASSERT_EQ(expected_original_size.width(), response_original_size.width());
+    ASSERT_EQ(expected_original_size.height(), response_original_size.height());
+    ASSERT_EQ(expected_extension, response_file_extension);
+
+    SkBitmap decoded_bitmap;
+    if (response_file_extension == ".png") {
+      EXPECT_TRUE(gfx::PNGCodec::Decode(&response_image_data.front(),
+                                        response_image_data.size(),
+                                        &decoded_bitmap));
+      ASSERT_EQ(expected_size.width(), decoded_bitmap.width());
+      ASSERT_EQ(expected_size.height(), decoded_bitmap.height());
+    } else if (response_file_extension == ".jpg") {
+      decoded_bitmap = *gfx::JPEGCodec::Decode(&response_image_data.front(),
+                                               response_image_data.size())
+                            .get();
+      ASSERT_EQ(expected_size.width(), decoded_bitmap.width());
+      ASSERT_EQ(expected_size.height(), decoded_bitmap.height());
+    }
   }
 };
 
@@ -1077,14 +1152,15 @@ IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest, ImageSearchWithCorruptImage) {
 
   auto callback = [](bool* response_received, const base::Closure& quit,
                      const std::vector<uint8_t>& thumbnail_data,
-                     const gfx::Size& original_size) {
+                     const gfx::Size& original_size,
+                     const std::string& file_extension) {
     *response_received = true;
     quit.Run();
   };
 
   base::RunLoop run_loop;
   bool response_received = false;
-  chrome_render_frame->RequestThumbnailForContextNode(
+  chrome_render_frame->RequestImageForContextNode(
       0, gfx::Size(2048, 2048), chrome::mojom::ImageFormat::JPEG,
       base::Bind(callback, &response_received, run_loop.QuitClosure()));
   run_loop.Run();
@@ -1265,6 +1341,48 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, BrowserlessWebContentsCrash) {
       web_contents.get(), GURL("http://www.google.com/"),
       GURL("http://www.google.com/"), base::ASCIIToUTF16("Google"),
       blink::ContextMenuDataMediaType::kNone, ui::MENU_SOURCE_MOUSE);
+}
+
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, GifImageShare) {
+  OpenImagePageAndContextMenu("/google/logo.gif");
+  RequestImageAndVerifyResponse(
+      gfx::Size(2048, 2048), chrome::mojom::ImageFormat::ORIGINAL,
+      gfx::Size(276, 110), gfx::Size(276, 110), ".gif");
+}
+
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, GifImageDownscaleToJpeg) {
+  OpenImagePageAndContextMenu("/google/logo.gif");
+  RequestImageAndVerifyResponse(
+      gfx::Size(100, 100), chrome::mojom::ImageFormat::ORIGINAL,
+      gfx::Size(276, 110), gfx::Size(100, /* 100 / 480 * 320 =  */ 39), ".jpg");
+}
+
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, RequestPngForGifImage) {
+  OpenImagePageAndContextMenu("/google/logo.gif");
+  RequestImageAndVerifyResponse(
+      gfx::Size(2048, 2048), chrome::mojom::ImageFormat::PNG,
+      gfx::Size(276, 110), gfx::Size(276, 110), ".png");
+}
+
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, PngImageDownscaleToPng) {
+  OpenImagePageAndContextMenu("/image_search/valid.png");
+  RequestImageAndVerifyResponse(
+      gfx::Size(100, 100), chrome::mojom::ImageFormat::PNG, gfx::Size(200, 100),
+      gfx::Size(100, 50), ".png");
+}
+
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, PngImageOriginalDownscaleToPng) {
+  OpenImagePageAndContextMenu("/image_search/valid.png");
+  RequestImageAndVerifyResponse(
+      gfx::Size(100, 100), chrome::mojom::ImageFormat::ORIGINAL,
+      gfx::Size(200, 100), gfx::Size(100, 50), ".png");
+}
+
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, JpgImageDownscaleToJpg) {
+  OpenImagePageAndContextMenu("/android/watch.jpg");
+  RequestImageAndVerifyResponse(
+      gfx::Size(100, 100), chrome::mojom::ImageFormat::ORIGINAL,
+      gfx::Size(480, 320), gfx::Size(100, /* 100 / 480 * 320 =  */ 66), ".jpg");
 }
 
 }  // namespace

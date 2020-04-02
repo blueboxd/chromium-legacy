@@ -119,4 +119,8 @@ void QuickAnswersUiController::OnManageSettingsButtonPressed() {
   controller_->OnConsentSettingsRequestedByUser();
 }
 
+void QuickAnswersUiController::OnDogfoodButtonPressed() {
+  controller_->OpenQuickAnswersDogfoodLink();
+}
+
 }  // namespace ash

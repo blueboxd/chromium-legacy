@@ -1557,6 +1557,10 @@ if (is_android) {
     sources = [ "browser/supervised_user/supervised_user_url_filter.h" ]
   }
 
+  java_cpp_enum("context_menu_image_format_enum_javagen") {
+    sources = [ "browser/ui/android/context_menu_helper.h" ]
+  }
+
   source_set("chrome_android_core") {
     sources = [
       "app/android/chrome_android_initializer.cc",

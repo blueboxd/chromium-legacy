@@ -97,21 +97,6 @@
 
 namespace {
 
-// TODO(mahmadi): Make sure all the vector icons returned by
-// AutocompleteMatch::GetVectorIcon have an equivalent SVG resource.
-std::string AutocompleteMatchVectorIconToResourceName(
-    const gfx::VectorIcon& icon) {
-  if (icon.name == omnibox::kClockIcon.name) {
-    return kClockIconResourceName;
-  } else if (icon.name == omnibox::kPageIcon.name) {
-    return kPageIconResourceName;
-  } else if (icon.name == vector_icons::kSearchIcon.name) {
-    return kSearchIconResourceName;
-  } else {
-    return "";
-  }
-}
-
 std::vector<chrome::mojom::AutocompleteMatchPtr> CreateAutocompleteMatches(
     const AutocompleteResult& result) {
   std::vector<chrome::mojom::AutocompleteMatchPtr> matches;
@@ -134,7 +119,8 @@ std::vector<chrome::mojom::AutocompleteMatchPtr> CreateAutocompleteMatches(
     }
     mojom_match->destination_url = match.destination_url.spec();
     mojom_match->icon_url =
-        AutocompleteMatchVectorIconToResourceName(match.GetVectorIcon(false));
+        SearchTabHelper::AutocompleteMatchVectorIconToResourceName(
+            match.GetVectorIcon(false));
     mojom_match->image_dominant_color = match.image_dominant_color;
     mojom_match->image_url = match.image_url.spec();
     mojom_match->fill_into_edit = match.fill_into_edit;
@@ -261,6 +247,51 @@ void SearchTabHelper::OnTabClosing() {
   if (search::IsInstantNTP(web_contents_) && chrome_colors_service_)
     chrome_colors_service_->RevertThemeChangesForTab(
         web_contents_, chrome_colors::RevertReason::TAB_CLOSED);
+}
+
+// static
+std::string SearchTabHelper::AutocompleteMatchVectorIconToResourceName(
+    const gfx::VectorIcon& icon) {
+  if (icon.name == omnibox::kBlankIcon.name) {
+    return "";  // An empty resource name is effectively a blank icon.
+  } else if (icon.name == omnibox::kBookmarkIcon.name) {
+    return kBookmarkIconResourceName;
+  } else if (icon.name == omnibox::kCalculatorIcon.name) {
+    return kCalculatorIconResourceName;
+  } else if (icon.name == omnibox::kClockIcon.name) {
+    return kClockIconResourceName;
+  } else if (icon.name == omnibox::kDriveDocsIcon.name) {
+    return kDriveDocsIconResourceName;
+  } else if (icon.name == omnibox::kDriveFolderIcon.name) {
+    return kDriveFolderIconResourceName;
+  } else if (icon.name == omnibox::kDriveFormsIcon.name) {
+    return kDriveFormIconResourceName;
+  } else if (icon.name == omnibox::kDriveImageIcon.name) {
+    return kDriveImageIconResourceName;
+  } else if (icon.name == omnibox::kDriveLogoIcon.name) {
+    return kDriveLogoIconResourceName;
+  } else if (icon.name == omnibox::kDrivePdfIcon.name) {
+    return kDrivePdfIconResourceName;
+  } else if (icon.name == omnibox::kDriveSheetsIcon.name) {
+    return kDriveSheetsIconResourceName;
+  } else if (icon.name == omnibox::kDriveSlidesIcon.name) {
+    return kDriveSlidesIconResourceName;
+  } else if (icon.name == omnibox::kDriveVideoIcon.name) {
+    return kDriveVideoIconResourceName;
+  } else if (icon.name == omnibox::kExtensionAppIcon.name) {
+    return kExtensionAppIconResourceName;
+  } else if (icon.name == omnibox::kPageIcon.name) {
+    return kPageIconResourceName;
+  } else if (icon.name == omnibox::kPedalIcon.name) {
+    return "";  // Pedals are not supported in the NTP Realbox.
+  } else if (icon.name == vector_icons::kSearchIcon.name) {
+    return kSearchIconResourceName;
+  } else {
+    NOTREACHED()
+        << "Every vector icon returned by AutocompleteMatch::GetVectorIcon "
+           "must have an equivalent SVG resource for the NTP Realbox.";
+    return "";
+  }
 }
 
 void SearchTabHelper::DidStartNavigation(

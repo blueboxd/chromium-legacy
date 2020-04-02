@@ -12,6 +12,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
+#include "ios/components/webui/web_ui_url_constants.h"
 #include "ios/web/public/security/ssl_status.h"
 #include "ui/base/l10n/l10n_util.h"
 

@@ -359,6 +359,7 @@ ci.chromiumos_builder(
 
 ci.clang_builder(
     name = 'CFI Linux CF',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 ci.clang_builder(

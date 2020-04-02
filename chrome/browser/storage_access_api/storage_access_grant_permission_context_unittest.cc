@@ -17,6 +17,7 @@ namespace {
 
 constexpr char kInsecureURL[] = "http://www.example.com";
 constexpr char kSecureURL[] = "https://www.example.com";
+constexpr char kAlternateURL[] = "https://embedder_example.test";
 
 void SaveResult(ContentSetting* content_setting_result,
                 ContentSetting content_setting) {
@@ -91,9 +92,12 @@ TEST_F(StorageAccessGrantPermissionContextTest,
   permissions::PermissionRequestID fake_id(
       /*render_process_id=*/0, /*render_frame_id=*/0, /*request_id=*/0);
 
+  const GURL requesting_origin(kAlternateURL);
+  const GURL embedding_origin(kSecureURL);
+
   ContentSetting result = CONTENT_SETTING_DEFAULT;
   permission_context.DecidePermission(
-      web_contents(), fake_id, GURL(kSecureURL), GURL(kSecureURL),
+      web_contents(), fake_id, requesting_origin, embedding_origin,
       /*user_gesture=*/true, base::BindOnce(&SaveResult, &result));
   base::RunLoop().RunUntilIdle();
 
@@ -102,6 +106,18 @@ TEST_F(StorageAccessGrantPermissionContextTest,
       permissions::PermissionRequestManager::FromWebContents(web_contents());
   DCHECK(manager);
   EXPECT_TRUE(manager->IsRequestInProgress());
+
+  // Verify the prompt is showing text that includes both of the origins we
+  // expect.
+  permissions::PermissionRequest* request = manager->Requests().front();
+  ASSERT_TRUE(request);
+  ASSERT_EQ(1u, manager->Requests().size());
+  EXPECT_NE(request->GetMessageTextFragment().find(
+                base::UTF8ToUTF16(requesting_origin.host())),
+            base::string16::npos);
+  EXPECT_NE(request->GetMessageTextFragment().find(
+                base::UTF8ToUTF16(embedding_origin.host())),
+            base::string16::npos);
 
   // Close the prompt and validate we get the expected setting back in our
   // callback.

@@ -71,10 +71,8 @@ class AndroidSmsAppManagerImplTest : public testing::Test {
     }
 
     // AndroidSmsAppManagerImpl::PwaDelegate:
-    content::WebContents* OpenApp(Profile*, const apps::AppLaunchParams& params)
-        override {
-      opened_app_ids_.push_back(params.app_id);
-      return nullptr;
+    void OpenApp(Profile*, const std::string& app_id) override {
+      opened_app_ids_.push_back(app_id);
     }
 
     bool TransferItemAttributes(

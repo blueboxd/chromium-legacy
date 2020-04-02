@@ -22,7 +22,7 @@ DistillerNativeJavaScript::DistillerNativeJavaScript(
     content::RenderFrame* render_frame)
     : render_frame_(render_frame) {}
 
-DistillerNativeJavaScript::~DistillerNativeJavaScript() {}
+DistillerNativeJavaScript::~DistillerNativeJavaScript() = default;
 
 void DistillerNativeJavaScript::AddJavaScriptObjectToFrame(
     v8::Local<v8::Context> context) {

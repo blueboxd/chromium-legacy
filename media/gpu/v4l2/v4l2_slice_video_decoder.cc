@@ -232,27 +232,6 @@ bool V4L2SliceVideoDecoder::SetupInputFormat(uint32_t input_format_fourcc) {
   return true;
 }
 
-bool V4L2SliceVideoDecoder::SetCodedSizeOnInputQueue(
-    const gfx::Size& coded_size) {
-  struct v4l2_format format = {};
-
-  format.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-  if (device_->Ioctl(VIDIOC_G_FMT, &format) != 0) {
-    VPLOGF(1) << "Failed getting OUTPUT format";
-    return false;
-  }
-
-  format.fmt.pix_mp.width = coded_size.width();
-  format.fmt.pix_mp.height = coded_size.height();
-
-  if (device_->Ioctl(VIDIOC_S_FMT, &format) != 0) {
-    VPLOGF(1) << "Failed setting OUTPUT format";
-    return false;
-  }
-
-  return true;
-}
-
 bool V4L2SliceVideoDecoder::SetupOutputFormat(const gfx::Size& size,
                                               const gfx::Rect& visible_rect) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
@@ -486,8 +465,8 @@ void V4L2SliceVideoDecoder::ContinueChangeResolution(
   }
   DCHECK_GT(num_output_frames, 0u);
 
-  if (!SetCodedSizeOnInputQueue(pic_size)) {
-    VLOGF(1) << "Failed to set coded size on input queue";
+  if (!backend_->ApplyResolution(pic_size, visible_rect, num_output_frames)) {
+    SetState(State::kError);
     return;
   }
 

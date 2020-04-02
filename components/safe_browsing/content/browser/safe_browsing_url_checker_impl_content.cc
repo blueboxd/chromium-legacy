@@ -21,7 +21,7 @@ namespace safe_browsing {
 bool SafeBrowsingUrlCheckerImpl::CanPerformFullURLLookup(const GURL& url) {
   return real_time_lookup_enabled_ &&
          RealTimePolicyEngine::CanPerformFullURLLookupForResourceType(
-             resource_type_) &&
+             resource_type_, enhanced_protection_enabled_) &&
          RealTimeUrlLookupService::CanCheckUrl(url);
 }
 
@@ -44,7 +44,11 @@ void SafeBrowsingUrlCheckerImpl::OnRTLookupResponse(
     bool is_rt_lookup_successful,
     std::unique_ptr<RTLookupResponse> response) {
   DCHECK(CurrentlyOnThread(ThreadID::IO));
-  DCHECK_EQ(ResourceType::kMainFrame, resource_type_);
+  bool is_expected_resource_type =
+      (ResourceType::kMainFrame == resource_type_) ||
+      ((ResourceType::kSubFrame == resource_type_) &&
+       enhanced_protection_enabled_);
+  DCHECK(is_expected_resource_type);
 
   const GURL& url = urls_[next_index_].url;
 

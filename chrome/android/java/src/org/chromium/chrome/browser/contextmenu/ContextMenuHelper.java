@@ -63,6 +63,7 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
      * See function for details.
      */
     private static byte[] sHardcodedImageBytesForTesting;
+    private static String sHardcodedImageExtensionForTesting;
 
     /**
      * The tests trigger the context menu via JS rather than via a true native call which means
@@ -70,9 +71,13 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
      * test cases to hardcode the test image bytes that will be shared.
      * @param hardcodedImageBytes The hard coded image bytes to fake or null if image should not be
      *         faked.
+     * @param hardcodedImageExtension The hard coded image extension.
      */
-    public static void setHardcodedImageBytesForTesting(byte[] hardcodedImageBytes) {
+    @VisibleForTesting
+    public static void setHardcodedImageBytesForTesting(
+            byte[] hardcodedImageBytes, String hardcodedImageExtension) {
         sHardcodedImageBytesForTesting = hardcodedImageBytes;
+        sHardcodedImageExtensionForTesting = hardcodedImageExtension;
     }
 
     private ContextMenuHelper(long nativeContextMenuHelper, WebContents webContents) {
@@ -220,7 +225,7 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
      * @param isIncognito Whether the image to search came from an incognito context.
      */
     public void searchWithGoogleLens(boolean isIncognito) {
-        retrieveImage((Uri imageUri) -> {
+        retrieveImage(ContextMenuImageFormat.PNG, (Uri imageUri) -> {
             ShareHelper.shareImageWithGoogleLens(mWindow, imageUri, isIncognito);
         });
     }
@@ -239,7 +244,8 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
      * it will use the right activity set when the menu was displayed.
      */
     void shareImage() {
-        retrieveImage((Uri imageUri) -> { ShareHelper.shareImage(mWindow, null, imageUri); });
+        retrieveImage(ContextMenuImageFormat.ORIGINAL,
+                (Uri imageUri) -> { ShareHelper.shareImage(mWindow, null, imageUri); });
     }
 
     /**
@@ -248,14 +254,15 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
      *         the clipboard.
      */
     void copyImageToClipboard(ContextMenuItemDelegate delegate) {
-        retrieveImage((Uri imageUri) -> { delegate.onSaveImageToClipboard(imageUri); });
+        retrieveImage(ContextMenuImageFormat.ORIGINAL,
+                (Uri imageUri) -> { delegate.onSaveImageToClipboard(imageUri); });
     }
 
     /**
      * Share the image that triggered the current context menu with the last app used to share.
      */
     private void shareImageWithLastShareComponent() {
-        retrieveImage((Uri imageUri) -> {
+        retrieveImage(ContextMenuImageFormat.ORIGINAL, (Uri imageUri) -> {
             ShareHelper.shareImage(
                     mWindow, ShareHelper.getLastShareByChromeComponentName(), imageUri);
         });
@@ -264,25 +271,28 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
     /**
      * Retrieves a URI for the selected image for sharing with external apps. If the function fails
      * to retrieve the image bytes or generate a URI the callback will *not* be called.
-     * @param callback Called once the the image is generated and ready to be shared.
+     * @param imageFormat The image format will be requested.
+     * @param callback Called once the image is generated and ready to be shared.
      */
-    private void retrieveImage(Callback<Uri> callback) {
+    private void retrieveImage(@ContextMenuImageFormat int imageFormat, Callback<Uri> callback) {
         if (mNativeContextMenuHelper == 0) return;
-        Callback<byte[]> imageRetrievalCallback = new Callback<byte[]>() {
+        Callback<ImageCallbackResult> imageRetrievalCallback = new Callback<ImageCallbackResult>() {
             @Override
-            public void onResult(byte[] result) {
+            public void onResult(ImageCallbackResult result) {
                 if (mActivity == null) return;
 
-                ShareImageFileUtils.generateTemporaryUriFromData(mActivity, result, callback);
+                ShareImageFileUtils.generateTemporaryUriFromData(
+                        mActivity, result.imageData, result.extension, callback);
             }
         };
 
         if (sHardcodedImageBytesForTesting != null) {
-            imageRetrievalCallback.onResult(sHardcodedImageBytesForTesting);
+            imageRetrievalCallback.onResult(createImageCallbackResult(
+                    sHardcodedImageBytesForTesting, sHardcodedImageExtensionForTesting));
         } else {
             ContextMenuHelperJni.get().retrieveImageForShare(mNativeContextMenuHelper,
                     ContextMenuHelper.this, imageRetrievalCallback, MAX_SHARE_DIMEN_PX,
-                    MAX_SHARE_DIMEN_PX);
+                    MAX_SHARE_DIMEN_PX, imageFormat);
         }
     }
 
@@ -341,13 +351,33 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
         return mPopulator;
     }
 
+    /**
+     * The class hold the |retrieveImageForShare| callback result.
+     */
+    public static class ImageCallbackResult {
+        public byte[] imageData;
+        public String extension;
+
+        public ImageCallbackResult(byte[] imageData, String extension) {
+            this.imageData = imageData;
+            this.extension = extension;
+        }
+    }
+
+    @CalledByNative
+    private static ImageCallbackResult createImageCallbackResult(
+            byte[] imageData, String extension) {
+        return new ContextMenuHelper.ImageCallbackResult(imageData, extension);
+    }
+
     @NativeMethods
     interface Natives {
         void onStartDownload(long nativeContextMenuHelper, ContextMenuHelper caller, boolean isLink,
                 boolean isDataReductionProxyEnabled);
         void searchForImage(long nativeContextMenuHelper, ContextMenuHelper caller);
         void retrieveImageForShare(long nativeContextMenuHelper, ContextMenuHelper caller,
-                Callback<byte[]> callback, int maxWidthPx, int maxHeightPx);
+                Callback<ImageCallbackResult> callback, int maxWidthPx, int maxHeightPx,
+                @ContextMenuImageFormat int imageFormat);
         void retrieveImageForContextMenu(long nativeContextMenuHelper, ContextMenuHelper caller,
                 Callback<Bitmap> callback, int maxWidthPx, int maxHeightPx);
         void onContextMenuClosed(long nativeContextMenuHelper, ContextMenuHelper caller);

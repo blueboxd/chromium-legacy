@@ -42,9 +42,12 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_CHROMEOS)
+#include "base/feature_list.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chromeos/constants/chromeos_features.h"
+#include "ui/gfx/color_palette.h"
 #endif
 
 using extensions::AppWindow;
@@ -403,6 +406,11 @@ void SelectFileDialogExtension::SelectFileWithFileManagerParams(
   dialog_params.min_width = kFileManagerMinimumWidth;
   dialog_params.min_height = kFileManagerMinimumHeight;
   dialog_params.title = file_manager::util::GetSelectFileDialogTitle(type);
+#if defined(OS_CHROMEOS)
+  if (base::FeatureList::IsEnabled(chromeos::features::kFilesNG)) {
+    dialog_params.title_color = gfx::kGoogleGrey300;
+  }
+#endif
 
   ExtensionDialog* dialog = ExtensionDialog::Show(
       file_manager_url,

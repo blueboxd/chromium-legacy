@@ -51,15 +51,20 @@ class BacklightApp extends HTMLElement {
   /** @override  */
   async loadFiles(files) {
     const file = files.item(0);
-    const factory =
-        file.mimeType.match('^video/') ? createVideoChild : createImgChild;
+    const isVideo = file.mimeType.match('^video/');
+    // TODO(b/152832337): Remove this check when always using real image files
+    // in tests. Image with size < 0 can't reliably be decoded. Don't apply the
+    // size check to videos so MediaAppUIBrowserTest.CanFullscreenVideo doesn't
+    // fail.
+    if (file.size > 0 || isVideo) {
+      const factory = isVideo ? createVideoChild : createImgChild;
+      // Note the mock app will just leak this Blob URL.
+      const child = await factory(URL.createObjectURL(file.blob));
 
-    // Note the mock app will just leak this Blob URL.
-    const child = await factory(URL.createObjectURL(file.blob));
-
-    // Simulate an app that shows one image at a time.
-    this.replaceChild(child, this.currentMedia);
-    this.currentMedia = child;
+      // Simulate an app that shows one image at a time.
+      this.replaceChild(child, this.currentMedia);
+      this.currentMedia = child;
+    }
   }
 
   /** @override */

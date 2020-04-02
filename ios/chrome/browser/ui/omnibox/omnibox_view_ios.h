@@ -24,7 +24,7 @@ class WebOmniboxEditController;
 struct AutocompleteMatch;
 @class OmniboxTextFieldIOS;
 @class OmniboxTextFieldPasteDelegate;
-@protocol OmniboxFocuser;
+@protocol OmniboxCommands;
 
 // iOS implementation of OmniBoxView.  Wraps a UITextField and
 // interfaces with the rest of the autocomplete system.
@@ -37,7 +37,7 @@ class OmniboxViewIOS : public OmniboxView,
                  WebOmniboxEditController* controller,
                  id<OmniboxLeftImageConsumer> left_image_consumer,
                  ChromeBrowserState* browser_state,
-                 id<OmniboxFocuser> omnibox_focuser);
+                 id<OmniboxCommands> omnibox_focuser);
 
   void SetPopupProvider(OmniboxPopupProvider* provider) {
     popup_provider_ = provider;
@@ -174,7 +174,7 @@ class OmniboxViewIOS : public OmniboxView,
   __weak id<OmniboxLeftImageConsumer> left_image_consumer_;
   // Focuser, used to transition the location bar to focused/defocused state as
   // necessary.
-  __weak id<OmniboxFocuser> omnibox_focuser_;
+  __weak id<OmniboxCommands> omnibox_focuser_;
 
   State state_before_change_;
   NSString* marked_text_before_change_;

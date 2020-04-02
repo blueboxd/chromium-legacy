@@ -32,6 +32,7 @@ class DistillerNativeJavaScript {
                             v8::Local<v8::Object> javascript_object,
                             const std::string& name,
                             const base::RepeatingCallback<Sig>& callback);
+
   // Make sure the mojo service is connected.
   void EnsureServiceConnected();
 

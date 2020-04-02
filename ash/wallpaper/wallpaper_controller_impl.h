@@ -308,6 +308,9 @@ class ASH_EXPORT WallpaperControllerImpl
     wallpaper_reload_delay_ = base::TimeDelta::FromMilliseconds(0);
   }
 
+  // Proxy to private ReloadWallpaper().
+  void ReloadWallpaperForTesting(bool clear_cache);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(WallpaperControllerTest, BasicReparenting);
   FRIEND_TEST_ALL_PREFIXES(WallpaperControllerTest,

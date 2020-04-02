@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
@@ -42,6 +41,9 @@ class DistillabilityDriver
 
   UMAHelper::DistillabilityDriverTimer& GetTimer() { return timer_; }
 
+  DistillabilityDriver(const DistillabilityDriver&) = delete;
+  DistillabilityDriver& operator=(const DistillabilityDriver&) = delete;
+
  private:
   explicit DistillabilityDriver(content::WebContents* web_contents);
   friend class content::WebContentsUserData<DistillabilityDriver>;
@@ -70,8 +72,6 @@ class DistillabilityDriver
   base::WeakPtrFactory<DistillabilityDriver> weak_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(DistillabilityDriver);
 };
 
 }  // namespace dom_distiller

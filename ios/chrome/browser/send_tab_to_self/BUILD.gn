@@ -34,6 +34,7 @@ source_set("send_tab_to_self") {
     "//ios/chrome/browser/ui/infobars:infobars_ui",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/web_state_list",
+    "//ios/components/webui:url_constants",
     "//ios/web",
     "//ui/base",
     "//ui/gfx",

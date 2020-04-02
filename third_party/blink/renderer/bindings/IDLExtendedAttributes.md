@@ -365,6 +365,14 @@ The semantics are the same as `[Constructor]`, except that the name changes: Jav
 
 Whether you should allow an interface to have a named constructor or not depends on the spec of each interface.
 
+### [NamedConstructor_CallWith] _(i)_
+
+Summary: The same as `[CallWith]` but applied to the named constructors.
+
+### [NamedConstructor_RaisesException] _(i)_
+
+Summary: The same as `[RaisesException]` but applied to the named constructors.
+
 ### [NewObject] _(m)_
 
 Standard: [NewObject](https://heycam.github.io/webidl/#NewObject)

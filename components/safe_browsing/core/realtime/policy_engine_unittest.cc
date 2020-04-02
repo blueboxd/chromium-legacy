@@ -268,13 +268,31 @@ TEST_F(RealTimePolicyEngineTest,
 }
 
 TEST_F(RealTimePolicyEngineTest,
-       TestCanPerformFullURLLookup_EnabledMainFrameOnly) {
+       TestCanPerformFullURLLookup_EnabledMainFrameOnlyForNonEpUser) {
   for (int i = 0; i <= static_cast<int>(ResourceType::kMaxValue); i++) {
     ResourceType resource_type = static_cast<ResourceType>(i);
     bool enabled = RealTimePolicyEngine::CanPerformFullURLLookupForResourceType(
-        resource_type);
+        resource_type, /*enhanced_protection_enabled=*/false);
     switch (resource_type) {
       case ResourceType::kMainFrame:
+        EXPECT_TRUE(enabled);
+        break;
+      default:
+        EXPECT_FALSE(enabled);
+        break;
+    }
+  }
+}
+
+TEST_F(RealTimePolicyEngineTest,
+       TestCanPerformFullURLLookup_EnabledNonMainFrameForEpUser) {
+  for (int i = 0; i <= static_cast<int>(ResourceType::kMaxValue); i++) {
+    ResourceType resource_type = static_cast<ResourceType>(i);
+    bool enabled = RealTimePolicyEngine::CanPerformFullURLLookupForResourceType(
+        resource_type, /*enhanced_protection_enabled=*/true);
+    switch (resource_type) {
+      case ResourceType::kMainFrame:
+      case ResourceType::kSubFrame:
         EXPECT_TRUE(enabled);
         break;
       default:

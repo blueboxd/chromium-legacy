@@ -8,9 +8,9 @@
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/omnibox_commands.h"
 #import "ios/chrome/browser/ui/qr_scanner/qr_scanner_view_controller.h"
 #import "ios/chrome/browser/ui/scanner/scanner_presenting.h"
-#import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -48,7 +48,7 @@
 - (void)showQRScanner {
   DCHECK(self.browser);
   CommandDispatcher* dispatcher = self.browser->GetCommandDispatcher();
-  id<OmniboxFocuser> handler = HandlerForProtocol(dispatcher, OmniboxFocuser);
+  id<OmniboxCommands> handler = HandlerForProtocol(dispatcher, OmniboxCommands);
   [handler cancelOmniboxEdit];
   self.viewController = [[QRScannerViewController alloc]
       initWithPresentationProvider:self

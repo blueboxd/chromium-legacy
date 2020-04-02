@@ -128,11 +128,8 @@ mojom::blink::MediaSessionPlaybackState StringToMediaSessionPlaybackState(
 MediaSession::MediaSession(ExecutionContext* execution_context)
     : ExecutionContextClient(execution_context),
       clock_(base::DefaultTickClock::GetInstance()),
-      playback_state_(mojom::blink::MediaSessionPlaybackState::NONE) {}
-
-void MediaSession::Dispose() {
-  client_receiver_.reset();
-}
+      playback_state_(mojom::blink::MediaSessionPlaybackState::NONE),
+      client_receiver_(this, execution_context) {}
 
 void MediaSession::setPlaybackState(const String& playback_state) {
   playback_state_ = StringToMediaSessionPlaybackState(playback_state);
@@ -374,6 +371,7 @@ void MediaSession::DidReceiveAction(
 }
 
 void MediaSession::Trace(Visitor* visitor) {
+  visitor->Trace(client_receiver_);
   visitor->Trace(metadata_);
   visitor->Trace(action_handlers_);
   ScriptWrappable::Trace(visitor);

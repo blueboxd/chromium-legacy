@@ -200,6 +200,11 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
       event_data->event_type, focused_node ? focused_node->GetNode() : nullptr);
   event.id = event_data->source_id;
 
+  if (HasProperty(event_data->int_properties,
+                  arc::mojom::AccessibilityEventIntProperty::ACTION)) {
+    event.event_from = ax::mojom::EventFrom::kAction;
+  }
+
   if ((event_data->event_type == AXEventType::WINDOW_CONTENT_CHANGED ||
        event_data->event_type == AXEventType::VIEW_SCROLLED) &&
       chrome_focused_id_ && chrome_focused_bounds_) {

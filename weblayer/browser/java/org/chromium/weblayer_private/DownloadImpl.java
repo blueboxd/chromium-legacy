@@ -62,7 +62,7 @@ public final class DownloadImpl extends IDownload.Stub {
     private long mNativeDownloadImpl;
     private boolean mDisableNotification;
 
-    private int mNotificationId;
+    private final int mNotificationId;
     private NotificationCompat.Builder mBuilder;
     private static boolean sCreatedChannel = false;
     private static final HashMap<Integer, DownloadImpl> sMap = new HashMap<Integer, DownloadImpl>();
@@ -131,9 +131,10 @@ public final class DownloadImpl extends IDownload.Stub {
         return nextId;
     }
 
-    public DownloadImpl(IDownloadCallbackClient client, long nativeDownloadImpl) {
+    public DownloadImpl(IDownloadCallbackClient client, long nativeDownloadImpl, int id) {
         mClient = client;
         mNativeDownloadImpl = nativeDownloadImpl;
+        mNotificationId = id;
         try {
             mClientDownload = client.createClientDownload(this);
         } catch (RemoteException e) {
@@ -299,7 +300,6 @@ public final class DownloadImpl extends IDownload.Stub {
 
         if (!sCreatedChannel) createNotificationChannel();
 
-        mNotificationId = getNextNotificationId();
         sMap.put(Integer.valueOf(mNotificationId), this);
 
         Intent deleteIntent = createIntent();

@@ -25,7 +25,7 @@ class DistillabilityServiceImpl : public mojom::DistillabilityService {
       base::WeakPtr<DistillabilityDriver> distillability_driver)
       : distillability_driver_(distillability_driver) {}
 
-  ~DistillabilityServiceImpl() override {}
+  ~DistillabilityServiceImpl() override = default;
 
   void NotifyIsDistillable(bool is_distillable,
                            bool is_last_update,

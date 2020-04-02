@@ -69,7 +69,6 @@ bool AssistiveSuggester::OnKeyEvent(
         return true;
       case SuggestionStatus::kDismiss:
         current_suggester_ = nullptr;
-        suggestion_dismissed_ = true;
         return false;
       default:
         break;
@@ -97,11 +96,6 @@ void AssistiveSuggester::RecordAssistiveCoverageMetrics(
 bool AssistiveSuggester::OnSurroundingTextChanged(const base::string16& text,
                                                   int cursor_pos,
                                                   int anchor_pos) {
-  if (suggestion_dismissed_) {
-    suggestion_dismissed_ = false;
-    return false;
-  }
-
   if (context_id_ == -1)
     return false;
 

@@ -19,6 +19,7 @@ source_set("commands") {
     "help_commands.h",
     "infobar_commands.h",
     "load_query_commands.h",
+    "omnibox_commands.h",
     "omnibox_suggestion_commands.h",
     "open_new_tab_command.h",
     "open_new_tab_command.mm",

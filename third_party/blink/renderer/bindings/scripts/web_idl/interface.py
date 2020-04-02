@@ -38,6 +38,7 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
                      attributes=None,
                      constants=None,
                      constructors=None,
+                     named_constructors=None,
                      operations=None,
                      indexed_and_named_properties=None,
                      stringifier=None,
@@ -54,6 +55,8 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             assert constants is None or isinstance(constants, (list, tuple))
             assert constructors is None or isinstance(constructors,
                                                       (list, tuple))
+            assert named_constructors is None or isinstance(
+                named_constructors, (list, tuple))
             assert operations is None or isinstance(operations, (list, tuple))
             assert indexed_and_named_properties is None or isinstance(
                 indexed_and_named_properties, IndexedAndNamedProperties.IR)
@@ -66,6 +69,7 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             attributes = attributes or []
             constants = constants or []
             constructors = constructors or []
+            named_constructors = named_constructors or []
             operations = operations or []
             assert all(
                 isinstance(attribute, Attribute.IR)
@@ -75,6 +79,9 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             assert all(
                 isinstance(constructor, Constructor.IR)
                 for constructor in constructors)
+            assert all(
+                isinstance(named_constructor, Constructor.IR)
+                for named_constructor in named_constructors)
             assert all(
                 isinstance(operation, Operation.IR)
                 for operation in operations)
@@ -104,6 +111,8 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             self.constants = list(constants)
             self.constructors = list(constructors)
             self.constructor_groups = []
+            self.named_constructors = list(named_constructors)
+            self.named_constructor_groups = []
             self.operations = list(operations)
             self.operation_groups = []
             self.exposed_constructs = []
@@ -121,6 +130,8 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
                 yield constant
             for constructor in self.constructors:
                 yield constructor
+            for named_constructor in self.named_constructors:
+                yield named_constructor
             for operation in self.operations:
                 yield operation
 
@@ -151,23 +162,33 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
         ])
         self._constructor_groups = tuple([
             ConstructorGroup(
-                constructor_group_ir,
-                filter(
-                    lambda x: x.identifier == constructor_group_ir.identifier,
-                    self._constructors),
-                owner=self) for constructor_group_ir in ir.constructor_groups
+                group_ir,
+                filter(lambda x: x.identifier == group_ir.identifier,
+                       self._constructors),
+                owner=self) for group_ir in ir.constructor_groups
         ])
         assert len(self._constructor_groups) <= 1
+        self._named_constructors = tuple([
+            Constructor(named_constructor_ir, owner=self)
+            for named_constructor_ir in ir.named_constructors
+        ])
+        self._named_constructor_groups = tuple([
+            ConstructorGroup(
+                group_ir,
+                filter(lambda x: x.identifier == group_ir.identifier,
+                       self._named_constructors),
+                owner=self) for group_ir in ir.named_constructor_groups
+        ])
         self._operations = tuple([
             Operation(operation_ir, owner=self)
             for operation_ir in ir.operations
         ])
         self._operation_groups = tuple([
             OperationGroup(
-                operation_group_ir,
-                filter(lambda x: x.identifier == operation_group_ir.identifier,
+                group_ir,
+                filter(lambda x: x.identifier == group_ir.identifier,
                        self._operations),
-                owner=self) for operation_group_ir in ir.operation_groups
+                owner=self) for group_ir in ir.operation_groups
         ])
         self._exposed_constructs = tuple(ir.exposed_constructs)
         self._legacy_window_aliases = tuple(ir.legacy_window_aliases)
@@ -257,6 +278,16 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
         Constructors are grouped as operations are. There is 0 or 1 group.
         """
         return self._constructor_groups
+
+    @property
+    def named_constructors(self):
+        """Returns named constructors."""
+        return self._named_constructors
+
+    @property
+    def named_constructor_groups(self):
+        """Returns groups of overloaded named constructors."""
+        return self._named_constructor_groups
 
     @property
     def operations(self):

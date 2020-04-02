@@ -21,7 +21,6 @@
 #include "ui/views/test/views_interactive_ui_test_base.h"
 #include "ui/views/test/x11_property_change_waiter.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
-#include "ui/views/widget/desktop_aura/x11_desktop_handler.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -169,10 +168,6 @@ class X11TopmostWindowFinderTest : public ViewsInteractiveUITestBase {
     // Make X11 synchronous for our display connection. This does not force the
     // window manager to behave synchronously.
     XSynchronize(xdisplay(), x11::True);
-
-    // Ensure that the X11DesktopHandler exists. The X11DesktopHandler is
-    // necessary to properly track menu windows.
-    X11DesktopHandler::get();
   }
 
   void TearDown() override {

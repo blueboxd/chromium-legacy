@@ -418,6 +418,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
   void MaybeRunStoragePressureCallback(const url::Origin& origin,
                                        int64_t total_space,
                                        int64_t available_space);
+  // Used from quota-internals page to test behavior of the storage pressure
+  // callback.
+  void SimulateStoragePressure(const url::Origin origin);
 
   void PostTaskAndReplyWithResultForDBThread(
       const base::Location& from_here,

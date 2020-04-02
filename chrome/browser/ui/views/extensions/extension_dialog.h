@@ -10,9 +10,11 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -37,10 +39,9 @@ class ExtensionDialog : public views::DialogDelegate,
                         public base::RefCounted<ExtensionDialog> {
  public:
   struct InitParams {
-    InitParams() = delete;
-    InitParams(int width, int height) : width(width), height(height) {}
-    InitParams(const InitParams& other) = default;
-    ~InitParams() = default;
+    InitParams(int width, int height);
+    InitParams(const InitParams& other);
+    ~InitParams();
 
     // |is_modal| determines whether the dialog is modal to |parent_window|.
     bool is_modal = false;
@@ -51,6 +52,11 @@ class ExtensionDialog : public views::DialogDelegate,
     int min_width = 0;
     int min_height = 0;
     base::string16 title;
+
+#if defined(OS_CHROMEOS)
+    // |title_color| customizes the color of the window title.
+    base::Optional<SkColor> title_color;
+#endif
   };
   // Create and show a dialog with |url| centered over the provided window.
   // |parent_window| is the parent window to which the pop-up will be attached.

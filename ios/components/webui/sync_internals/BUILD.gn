@@ -18,6 +18,7 @@ source_set("sync_internals") {
     "//components/sync/driver:resources",
     "//components/version_info:version_info",
     "//ios/components/webui:provider",
+    "//ios/components/webui:url_constants",
     "//ios/web/public",
     "//ios/web/public/thread",
     "//ios/web/public/webui",

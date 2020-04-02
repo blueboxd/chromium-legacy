@@ -22,6 +22,7 @@ using chromeos::quick_answers::ResultType;
 
 constexpr char kAssistantRelatedInfoUrl[] =
     "chrome://os-settings/googleAssistant";
+constexpr char kDogfoodUrl[] = "https://go/quick-answers-dogfood-bugs";
 
 // TODO:(yanxiao) move the string to grd source file.
 constexpr char kNoResult[] = "See result in Assistant";
@@ -155,6 +156,11 @@ void QuickAnswersControllerImpl::MaybeDismissQuickAnswersConsent() {
   if (quick_answers_ui_controller_->is_showing_user_consent_view())
     consent_controller_->DismissConsent();
   quick_answers_ui_controller_->CloseUserConsentView();
+}
+
+void QuickAnswersControllerImpl::OpenQuickAnswersDogfoodLink() {
+  NewWindowDelegate::GetInstance()->NewTabWithUrl(
+      GURL(kDogfoodUrl), /*from_user_interaction=*/true);
 }
 
 }  // namespace ash

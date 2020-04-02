@@ -69,9 +69,20 @@ bool ReverseStringLess::operator()(const base::string16& lhs,
                                       rhs.rend());
 }
 
-PasswordReuseDetector::PasswordReuseDetector() {}
+bool MatchingReusedCredential::operator<(
+    const MatchingReusedCredential& other) const {
+  return std::tie(signon_realm, username) <
+         std::tie(other.signon_realm, other.username);
+}
 
-PasswordReuseDetector::~PasswordReuseDetector() {}
+bool MatchingReusedCredential::operator==(
+    const MatchingReusedCredential& other) const {
+  return signon_realm == other.signon_realm && username == other.username;
+}
+
+PasswordReuseDetector::PasswordReuseDetector() = default;
+
+PasswordReuseDetector::~PasswordReuseDetector() = default;
 
 void PasswordReuseDetector::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
@@ -109,9 +120,9 @@ void PasswordReuseDetector::CheckReuse(
           ? reused_enterprise_password_hash->length
           : 0;
 
-  std::vector<std::string> matching_domains;
+  std::vector<MatchingReusedCredential> matching_reused_credentials;
   size_t saved_reused_password_length =
-      CheckSavedPasswordReuse(input, domain, &matching_domains);
+      CheckSavedPasswordReuse(input, domain, &matching_reused_credentials);
 
   size_t max_reused_password_length =
       std::max({saved_reused_password_length, gaia_reused_password_length,
@@ -128,8 +139,8 @@ void PasswordReuseDetector::CheckReuse(
     reused_protected_password_hash = std::move(reused_enterprise_password_hash);
   }
   consumer->OnReuseFound(max_reused_password_length,
-                         reused_protected_password_hash, matching_domains,
-                         saved_passwords_);
+                         reused_protected_password_hash,
+                         matching_reused_credentials, saved_passwords_);
 }
 
 base::Optional<PasswordHashData> PasswordReuseDetector::CheckGaiaPasswordReuse(
@@ -173,37 +184,44 @@ PasswordReuseDetector::CheckNonGaiaEnterprisePasswordReuse(
 size_t PasswordReuseDetector::CheckSavedPasswordReuse(
     const base::string16& input,
     const std::string& domain,
-    std::vector<std::string>* matching_domains_out) {
+    std::vector<MatchingReusedCredential>* matching_reused_credentials_out) {
   const std::string registry_controlled_domain =
       GetRegistryControlledDomain(GURL(domain));
 
   // More than one password call match |input| if they share a common suffix
-  // with |input|.  Collect the set of domains for all matches.
-  std::set<std::string> matching_domains_set;
+  // with |input|.  Collect the set of MatchingReusedCredential for all matches.
+  std::set<MatchingReusedCredential> matching_reused_credentials_set;
 
   // The longest password match is kept for metrics.
   size_t longest_match_len = 0;
 
   for (auto passwords_iterator = FindFirstSavedPassword(input);
-       passwords_iterator != passwords_.end();
+       passwords_iterator != passwords_with_matching_reused_credentials_.end();
        passwords_iterator = FindNextSavedPassword(input, passwords_iterator)) {
-    const std::set<std::string>& domains = passwords_iterator->second;
-    DCHECK(!domains.empty());
+    const std::set<MatchingReusedCredential>& credentials =
+        passwords_iterator->second;
+    DCHECK(!credentials.empty());
+
+    std::set<std::string> signon_realms;
+    for (const auto& credential : credentials) {
+      signon_realms.insert(
+          GetRegistryControlledDomain(GURL(credential.signon_realm)));
+    }
     // If the page's URL matches a saved domain for this password,
     // this isn't password-reuse.
-    if (domains.find(registry_controlled_domain) != domains.end())
+    if (base::Contains(signon_realms, registry_controlled_domain))
       continue;
 
-    matching_domains_set.insert(domains.begin(), domains.end());
-    DCHECK(passwords_iterator->first.size());
-    if (longest_match_len < passwords_iterator->first.size())
-      longest_match_len = passwords_iterator->first.size();
+    matching_reused_credentials_set.insert(credentials.begin(),
+                                           credentials.end());
+    DCHECK(!passwords_iterator->first.empty());
+    longest_match_len =
+        std::max(longest_match_len, passwords_iterator->first.size());
   }
-  if (matching_domains_set.size() == 0)
-    return 0;
 
-  *matching_domains_out = std::vector<std::string>(matching_domains_set.begin(),
-                                                   matching_domains_set.end());
+  matching_reused_credentials_out->assign(
+      matching_reused_credentials_set.begin(),
+      matching_reused_credentials_set.end());
 
   return longest_match_len;
 }
@@ -265,33 +283,35 @@ void PasswordReuseDetector::ClearAllNonGmailPasswordHash() {
 void PasswordReuseDetector::AddPassword(const autofill::PasswordForm& form) {
   if (form.password_value.size() < kMinPasswordLengthToCheck)
     return;
-  GURL signon_realm(form.signon_realm);
-  const std::string domain = GetRegistryControlledDomain(signon_realm);
-  std::set<std::string>& domains = passwords_[form.password_value];
-  if (domains.find(domain) == domains.end()) {
-    ++saved_passwords_;
-    domains.insert(domain);
+
+  const auto result =
+      passwords_with_matching_reused_credentials_[form.password_value].insert(
+          {form.signon_realm, form.username_value});
+  if (result.second) {
+    saved_passwords_++;
   }
 }
 
 PasswordReuseDetector::passwords_iterator
 PasswordReuseDetector::FindFirstSavedPassword(const base::string16& input) {
-  // Keys in |passwords_| are ordered by lexicographical order of reversed
-  // strings. In order to check a password reuse a key of |passwords_| that is
-  // a suffix of |input| should be found. The longest such key should be the
-  // largest key in the |passwords_| keys order that is equal or smaller to
-  // |input|. There may be more, shorter, matches as well -- call
-  // FindNextSavedPassword(it) to find the next one.
-  if (passwords_.empty())
-    return passwords_.end();
+  // Keys in |passwords_with_matching_reused_credentials_| are ordered by
+  // lexicographical order of reversed strings. In order to check a password
+  // reuse a key of |passwords_with_matching_reused_credentials_| that is a
+  // suffix of |input| should be found. The longest such key should be the
+  // largest key in the |passwords_with_matching_reused_credentials_| keys order
+  // that is equal or smaller to |input|. There may be more, shorter, matches as
+  // well -- call FindNextSavedPassword(it) to find the next one.
+  if (passwords_with_matching_reused_credentials_.empty())
+    return passwords_with_matching_reused_credentials_.end();
 
   // lower_bound returns the first key that is bigger or equal to input.
-  passwords_iterator it = passwords_.lower_bound(input);
-  if (it != passwords_.end() && it->first == input) {
+  passwords_iterator it =
+      passwords_with_matching_reused_credentials_.lower_bound(input);
+  if (it != passwords_with_matching_reused_credentials_.end() &&
+      it->first == input) {
     // If the key is equal then a saved password is found.
     return it;
   }
-
   // Otherwise the previous key is a candidate for password reuse.
   return FindNextSavedPassword(input, it);
 }
@@ -300,10 +320,12 @@ PasswordReuseDetector::passwords_iterator
 PasswordReuseDetector::FindNextSavedPassword(
     const base::string16& input,
     PasswordReuseDetector::passwords_iterator it) {
-  if (it == passwords_.begin())
-    return passwords_.end();
+  if (it == passwords_with_matching_reused_credentials_.begin())
+    return passwords_with_matching_reused_credentials_.end();
   --it;
-  return IsSuffix(input, it->first) ? it : passwords_.end();
+  return IsSuffix(input, it->first)
+             ? it
+             : passwords_with_matching_reused_credentials_.end();
 }
 
 }  // namespace password_manager

@@ -872,8 +872,8 @@ base::Optional<struct v4l2_format> V4L2Queue::SetFormat(uint32_t fourcc,
   format.fmt.pix_mp.plane_fmt[0].sizeimage = buffer_size;
   if (device_->Ioctl(VIDIOC_S_FMT, &format) != 0 ||
       format.fmt.pix_mp.pixelformat != fourcc) {
-    VPQLOGF(2) << "Failed to set format on queue " << type_
-               << ". format_fourcc=0x" << std::hex << fourcc;
+    VPQLOGF(2) << "Failed to set format (format_fourcc=0x" << std::hex << fourcc
+               << ")";
     return base::nullopt;
   }
 

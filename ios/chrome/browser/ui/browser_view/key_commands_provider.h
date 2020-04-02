@@ -10,7 +10,7 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/find_in_page_commands.h"
-#import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
+#import "ios/chrome/browser/ui/commands/omnibox_commands.h"
 
 @protocol KeyCommandsPlumbing <NSObject>
 
@@ -56,8 +56,8 @@
                 baseViewController:(UIViewController*)baseViewController
                         dispatcher:(id<ApplicationCommands,
                                        BrowserCommands,
-                                       FindInPageCommands,
-                                       OmniboxFocuser>)dispatcher
+                                       FindInPageCommands>)dispatcher
+                    omniboxHandler:(id<OmniboxCommands>)omniboxHandler
                        editingText:(BOOL)editingText;
 
 @end

@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "components/dom_distiller/content/browser/uma_helper.h"
+
 #include <string>
 
-#include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"

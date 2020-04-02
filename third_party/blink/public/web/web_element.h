@@ -31,12 +31,19 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_ELEMENT_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_ELEMENT_H_
 
+#include <vector>
+
 #include "third_party/blink/public/web/web_node.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+
+namespace gfx {
+class Size;
+}
 
 namespace blink {
 
 class Element;
+class Image;
 struct WebRect;
 
 // Provides access to some properties of a DOM element node.
@@ -86,6 +93,17 @@ class BLINK_EXPORT WebElement : public WebNode {
   // Returns the image contents of this element or a null SkBitmap
   // if there isn't any.
   SkBitmap ImageContents();
+
+  // Returns a copy of original image data of this element or an empty vector
+  // if there isn't any.
+  std::vector<uint8_t> CopyOfImageData();
+
+  // Returns the original image file extension.
+  std::string ImageExtension();
+
+  // Returns the original image size.
+  gfx::Size GetImageSize();
+
   void RequestFullscreen();
 
 #if INSIDE_BLINK
@@ -93,6 +111,9 @@ class BLINK_EXPORT WebElement : public WebNode {
   WebElement& operator=(Element*);
   operator Element*() const;
 #endif
+
+ private:
+  Image* GetImage();
 };
 
 DECLARE_WEB_NODE_TYPE_CASTS(WebElement);

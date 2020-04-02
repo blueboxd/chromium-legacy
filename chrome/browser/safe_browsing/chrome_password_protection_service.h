@@ -17,6 +17,7 @@
 #include "chrome/browser/security_events/security_event_recorder_factory.h"
 #include "components/password_manager/core/browser/hash_password_manager.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/safe_browsing/buildflags.h"
@@ -229,11 +230,11 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
                                         RequestOutcome* reason) const override;
 
   // Persist the phished saved password credential in the "compromised
-  // credentials" table. Calls the password store to add a row for each domain
-  // where the phished saved password is used on.
+  // credentials" table. Calls the password store to add a row for each
+  // MatchingReusedCredential where the phished saved password is used on.
   void PersistPhishedSavedPasswordCredential(
-      const std::string& username,
-      const std::vector<std::string>& matching_domains) override;
+      const std::vector<password_manager::MatchingReusedCredential>&
+          matching_reused_credentials) override;
 
   // Returns the profile PasswordStore associated with this instance.
   password_manager::PasswordStore* GetProfilePasswordStore() const;

@@ -75,6 +75,12 @@ class V4L2VideoDecoderBackend {
   // Called whenever the V4L2 stream is stopped (|Streamoff| called on both
   // |V4L2Queue|s).
   virtual void OnStreamStopped() = 0;
+  // Called when the resolution has been decided, in case the backend needs
+  // to do something specific beyond applying these parameters to the CAPTURE
+  // queue.
+  virtual bool ApplyResolution(const gfx::Size& pic_size,
+                               const gfx::Rect& visible_rect,
+                               const size_t num_output_frames) = 0;
   // Called when ChangeResolution is done. |success| indicates whether there is
   // any error occurs during the resolution change.
   virtual void OnChangeResolutionDone(bool success) = 0;

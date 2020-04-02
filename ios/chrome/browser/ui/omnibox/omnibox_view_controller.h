@@ -14,7 +14,7 @@
 
 @protocol BrowserCommands;
 @protocol LoadQueryCommands;
-@protocol OmniboxFocuser;
+@protocol OmniboxCommands;
 @class OmniboxViewController;
 class OmniboxTextChangeDelegate;
 
@@ -47,7 +47,7 @@ class OmniboxTextChangeDelegate;
 
 // The dispatcher for the paste and go action.
 @property(nonatomic, weak)
-    id<BrowserCommands, LoadQueryCommands, OmniboxFocuser>
+    id<BrowserCommands, LoadQueryCommands, OmniboxCommands>
         dispatcher;
 
 // The delegate for this object.

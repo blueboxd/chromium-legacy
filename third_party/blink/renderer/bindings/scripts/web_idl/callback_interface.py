@@ -52,10 +52,12 @@ class CallbackInterface(UserDefinedType, WithExtendedAttributes,
 
             self.attributes = []
             self.constants = constants
-            self.operations = operations
-            self.operation_groups = []
             self.constructors = []
             self.constructor_groups = []
+            self.named_constructors = []
+            self.named_constructor_groups = []
+            self.operations = operations
+            self.operation_groups = []
 
     def __init__(self, ir):
         assert isinstance(ir, CallbackInterface.IR)

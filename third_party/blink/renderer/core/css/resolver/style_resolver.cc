@@ -1012,6 +1012,8 @@ CompositorKeyframeValue* StyleResolver::CreateCompositorKeyframeValueSnapshot(
       auto* set = MakeGarbageCollected<MutableCSSPropertyValueSet>(
           state.GetParserMode());
       set->SetProperty(property.GetCSSProperty().PropertyID(), *value);
+      cascade.MutableMatchResult().FinishAddingUARules();
+      cascade.MutableMatchResult().FinishAddingUserRules();
       cascade.MutableMatchResult().AddMatchedProperties(set);
       cascade.Apply();
     } else {

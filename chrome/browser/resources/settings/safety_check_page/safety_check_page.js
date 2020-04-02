@@ -306,7 +306,7 @@ Polymer({
    * @return {boolean}
    */
   shouldShowParentIconButton_: function() {
-    return this.parentStatus_ === ParentStatus.AFTER;
+    return this.parentStatus_ !== ParentStatus.BEFORE;
   },
 
   /** @private */
@@ -314,14 +314,15 @@ Polymer({
     settings.HatsBrowserProxyImpl.getInstance().tryShowSurvey();
 
     this.runSafetyCheck_();
+    Polymer.dom.flush();
     this.focusParent_();
   },
 
   /** @private */
   focusParent_() {
-    const parent =
-        /** @type {!Element} */ (this.$$('#safetyCheckParent'));
-    parent.focus();
+    const element =
+        /** @type {!Element} */ (this.$$('#safetyCheckParentIconButton'));
+    element.focus();
   },
 
   /**

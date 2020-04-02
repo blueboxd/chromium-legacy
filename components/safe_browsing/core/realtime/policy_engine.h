@@ -37,7 +37,8 @@ class RealTimePolicyEngine {
 
   // Return true if full URL lookups are enabled for |resource_type|.
   static bool CanPerformFullURLLookupForResourceType(
-      ResourceType resource_type);
+      ResourceType resource_type,
+      bool enhanced_protection_enabled);
 
   // Return true if the feature to enable full URL lookups is enabled and the
   // allowlist fetch is enabled for the profile represented by

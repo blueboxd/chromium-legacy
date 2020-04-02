@@ -93,7 +93,7 @@ void CoreTabHelper::SearchByImageInNewTab(
   // Bind the InterfacePtr into the callback so that it's kept alive until
   // there's either a connection error or a response.
   auto* thumbnail_capturer_proxy = chrome_render_frame.get();
-  thumbnail_capturer_proxy->RequestThumbnailForContextNode(
+  thumbnail_capturer_proxy->RequestImageForContextNode(
       kImageSearchThumbnailMinSize,
       gfx::Size(kImageSearchThumbnailMaxWidth, kImageSearchThumbnailMaxHeight),
       chrome::mojom::ImageFormat::JPEG,
@@ -252,7 +252,8 @@ void CoreTabHelper::DoSearchByImageInNewTab(
         chrome_render_frame,
     const GURL& src_url,
     const std::vector<uint8_t>& thumbnail_data,
-    const gfx::Size& original_size) {
+    const gfx::Size& original_size,
+    const std::string& image_extension) {
   if (thumbnail_data.empty())
     return;
 

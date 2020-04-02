@@ -646,6 +646,9 @@ void WallpaperControllerImpl::ShowWallpaperImage(const gfx::ImageSkia& image,
   if (image.width() == 1 && image.height() == 1)
     info.layout = WALLPAPER_LAYOUT_STRETCH;
 
+  if (info.type == WallpaperType::ONE_SHOT)
+    info.one_shot_wallpaper = image.DeepCopy();
+
   VLOG(1) << "SetWallpaper: image_id=" << WallpaperResizer::GetImageId(image)
           << " layout=" << info.layout;
 
@@ -1223,6 +1226,8 @@ void WallpaperControllerImpl::RemoveAlwaysOnTopWallpaper() {
   is_always_on_top_wallpaper_ = false;
   reload_always_on_top_wallpaper_callback_.Reset();
   ReparentWallpaper(GetWallpaperContainerId(locked_));
+  // Forget current wallpaper data.
+  current_wallpaper_.reset();
   ReloadWallpaper(/*clear_cache=*/false);
 }
 
@@ -1440,6 +1445,10 @@ void WallpaperControllerImpl::CreateEmptyWallpaperForTesting() {
   current_wallpaper_.reset();
   wallpaper_mode_ = WALLPAPER_IMAGE;
   UpdateWallpaperForAllRootWindows(/*lock_state_changed=*/false);
+}
+
+void WallpaperControllerImpl::ReloadWallpaperForTesting(bool clear_cache) {
+  ReloadWallpaper(clear_cache);
 }
 
 void WallpaperControllerImpl::UpdateWallpaperForRootWindow(
@@ -1887,6 +1896,11 @@ void WallpaperControllerImpl::OnWallpaperDecoded(const AccountId& account_id,
 }
 
 void WallpaperControllerImpl::ReloadWallpaper(bool clear_cache) {
+  const bool was_one_shot_wallpaper = IsOneShotWallpaper();
+  const gfx::ImageSkia one_shot_wallpaper =
+      was_one_shot_wallpaper
+          ? current_wallpaper_->wallpaper_info().one_shot_wallpaper
+          : gfx::ImageSkia();
   current_wallpaper_.reset();
   if (clear_cache)
     wallpaper_cache_map_.clear();
@@ -1897,6 +1911,8 @@ void WallpaperControllerImpl::ReloadWallpaper(bool clear_cache) {
     reload_preview_wallpaper_callback_.Run();
   else if (current_user_.is_valid())
     ShowUserWallpaper(current_user_);
+  else if (was_one_shot_wallpaper)
+    ShowOneShotWallpaper(one_shot_wallpaper);
   else
     ShowSigninWallpaper();
 }

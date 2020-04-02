@@ -83,7 +83,7 @@ class FileSystemHandle {
 
   /**
    * @param {FileSystemHandle} other
-   * @return {Promise<boolean>}
+   * @return {!Promise<boolean>}
    */
   isSameEntry(other) {}
 

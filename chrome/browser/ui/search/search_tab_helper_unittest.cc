@@ -20,12 +20,16 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/autocomplete_match_type.h"
+#include "components/omnibox/browser/vector_icons.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/test_sync_service.h"
 #include "content/public/browser/web_contents.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/vector_icon_types.h"
 #include "url/gurl.h"
 
 using testing::_;
@@ -102,4 +106,20 @@ TEST_F(SearchTabHelperTest, TitleIsSetForNTP) {
   NavigateAndCommit(GURL(chrome::kChromeUINewTabURL));
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE),
             web_contents()->GetTitle());
+}
+
+// Tests that all Omnibox vector icons map to an equivalent SVG for use in the
+// NTP Realbox.
+TEST_F(SearchTabHelperTest, VectorIcons) {
+  for (int type = AutocompleteMatchType::URL_WHAT_YOU_TYPED;
+       type != AutocompleteMatchType::NUM_TYPES; type++) {
+    AutocompleteMatch match;
+    match.type = (AutocompleteMatchType::Type)type;
+    const gfx::VectorIcon& vector_icon = match.GetVectorIcon(
+        /*is_bookmark=*/false);
+    const std::string& svg_name =
+        SearchTabHelper::AutocompleteMatchVectorIconToResourceName(vector_icon);
+    DCHECK(!svg_name.empty() || vector_icon.name == omnibox::kPedalIcon.name ||
+           vector_icon.name == omnibox::kBlankIcon.name);
+  }
 }

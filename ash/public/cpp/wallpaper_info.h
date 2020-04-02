@@ -7,6 +7,7 @@
 
 #include "ash/public/cpp/wallpaper_types.h"
 #include "base/time/time.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace ash {
 
@@ -36,6 +37,11 @@ struct WallpaperInfo {
   WallpaperLayout layout;
   WallpaperType type;
   base::Time date;
+
+  // Not empty if type == WallpaperType::ONE_SHOT.
+  // This field is filled in by ShowWallpaperImage when image is already
+  // decoded.
+  gfx::ImageSkia one_shot_wallpaper;
 };
 
 }  // namespace ash

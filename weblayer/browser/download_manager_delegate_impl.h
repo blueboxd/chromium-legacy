@@ -14,6 +14,8 @@
 namespace weblayer {
 class DownloadDelegate;
 
+extern const char kDownloadNextIDPref[];
+
 class DownloadManagerDelegateImpl : public content::DownloadManagerDelegate,
                                     public content::DownloadManager::Observer,
                                     public download::DownloadItem::Observer {
@@ -29,6 +31,7 @@ class DownloadManagerDelegateImpl : public content::DownloadManagerDelegate,
 
  private:
   // content::DownloadManagerDelegate implementation:
+  void GetNextId(content::DownloadIdCallback callback) override;
   bool DetermineDownloadTarget(
       download::DownloadItem* item,
       content::DownloadTargetCallback* callback) override;

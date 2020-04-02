@@ -111,10 +111,19 @@ bool RealTimePolicyEngine::CanPerformFullURLLookupWithToken(
 
 // static
 bool RealTimePolicyEngine::CanPerformFullURLLookupForResourceType(
-    ResourceType resource_type) {
+    ResourceType resource_type,
+    bool enhanced_protection_enabled) {
   UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.RT.ResourceTypes.Requested",
                             resource_type);
-  return resource_type == ResourceType::kMainFrame;
+  if (resource_type == ResourceType::kMainFrame) {
+    return true;
+  }
+  if (resource_type == ResourceType::kSubFrame && enhanced_protection_enabled &&
+      base::FeatureList::IsEnabled(
+          kRealTimeUrlLookupNonMainframeEnabledForEP)) {
+    return true;
+  }
+  return false;
 }
 
 }  // namespace safe_browsing

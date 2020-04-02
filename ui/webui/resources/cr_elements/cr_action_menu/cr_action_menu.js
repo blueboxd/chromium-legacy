@@ -238,8 +238,12 @@ Polymer({
    */
   onKeyDown_(e) {
     e.stopPropagation();
+
     if (e.key === 'Tab' || e.key === 'Escape') {
       this.close();
+      if (e.key === 'Tab') {
+        this.fire('tabkeyclose', {shiftKey: e.shiftKey});
+      }
       e.preventDefault();
       return;
     }

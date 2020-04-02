@@ -13,6 +13,7 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
+#include "ios/components/webui/web_ui_url_constants.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

@@ -34,6 +34,7 @@ CascadePriority* CascadeMap::Find(const CSSPropertyName& name) {
 
 bool CascadeMap::Add(const CSSPropertyName& name, CascadePriority priority) {
   if (name.IsCustomProperty()) {
+    DCHECK_NE(CascadeOrigin::kUserAgent, priority.GetOrigin());
     auto result = custom_properties_.insert(name, priority);
     if (result.is_new_entry || result.stored_value->value < priority) {
       result.stored_value->value = priority;

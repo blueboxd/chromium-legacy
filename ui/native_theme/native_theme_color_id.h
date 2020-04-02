@@ -128,6 +128,8 @@
   OP(kColorId_ThrobberSpinningColor),                                          \
   OP(kColorId_ThrobberWaitingColor),                                           \
   OP(kColorId_ThrobberLightColor),                                             \
+  /* Colors for Bubble Border */                                               \
+  OP(kColorId_BubbleBorder),                                                   \
   /* Colors for icons that alert, e.g. upgrade reminders. */                   \
   OP(kColorId_AlertSeverityLow),                                               \
   OP(kColorId_AlertSeverityMedium),                                            \

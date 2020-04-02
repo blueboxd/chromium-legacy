@@ -114,7 +114,7 @@ void StubPasswordManagerClient::CheckSafeBrowsingReputation(
 void StubPasswordManagerClient::CheckProtectedPasswordEntry(
     metrics_util::PasswordType reused_password_type,
     const std::string& username,
-    const std::vector<std::string>& matching_domains,
+    const std::vector<MatchingReusedCredential>& matching_reused_credentials,
     bool password_field_exists) {}
 #endif
 

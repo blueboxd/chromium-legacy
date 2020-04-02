@@ -121,7 +121,7 @@
   // clean up.
   self.actionHandler.dispatcher =
       static_cast<id<ApplicationCommands, BrowserCommands, FindInPageCommands,
-                     OmniboxFocuser>>(self.browser->GetCommandDispatcher());
+                     OmniboxCommands>>(self.browser->GetCommandDispatcher());
   self.actionHandler.incognito =
       self.browser->GetBrowserState()->IsOffTheRecord();
 

@@ -60,7 +60,9 @@ public class ShareImageFileUtilsTest {
     private static final long WAIT_TIMEOUT_SECONDS = 30L;
     private static final byte[] TEST_IMAGE_DATA = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     private static final String TEST_IMAGE_FILE_NAME = "chrome-test-bitmap";
-    private static final String TEST_IMAGE_FILE_EXTENSION = ".jpg";
+    private static final String TEST_GIF_IMAGE_FILE_EXTENSION = ".gif";
+    private static final String TEST_JPG_IMAGE_FILE_EXTENSION = ".jpg";
+    private static final String TEST_PNG_IMAGE_FILE_EXTENSION = ".png";
 
     private class FileProviderHelper implements ContentUriUtils.FileProviderUtil {
         private static final String API_AUTHORITY_SUFFIX = ".FileProvider";
@@ -132,13 +134,17 @@ public class ShareImageFileUtilsTest {
         return false;
     }
 
-    private Uri generateAnImageToClipboard() throws TimeoutException {
+    private Uri generateAnImageToClipboard(String fileExtension) throws TimeoutException {
         GenerateUriCallback imageCallback = new GenerateUriCallback();
         ShareImageFileUtils.generateTemporaryUriFromData(
-                mActivityTestRule.getActivity(), TEST_IMAGE_DATA, imageCallback);
+                mActivityTestRule.getActivity(), TEST_IMAGE_DATA, fileExtension, imageCallback);
         imageCallback.waitForCallback(0, 1, WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
         Clipboard.getInstance().setImageUri(imageCallback.getImageUri());
         return imageCallback.getImageUri();
+    }
+
+    private Uri generateAnImageToClipboard() throws TimeoutException {
+        return generateAnImageToClipboard(TEST_JPG_IMAGE_FILE_EXTENSION);
     }
 
     private void clearSharedImages() throws TimeoutException {
@@ -212,9 +218,12 @@ public class ShareImageFileUtilsTest {
     @Test
     @SmallTest
     public void clipboardUriDoNotClearTest() throws TimeoutException, IOException {
-        generateAnImageToClipboard();
-        generateAnImageToClipboard();
-        Uri clipboardUri = generateAnImageToClipboard();
+        Uri clipboardUri = generateAnImageToClipboard(TEST_GIF_IMAGE_FILE_EXTENSION);
+        Assert.assertTrue(clipboardUri.getPath().endsWith(TEST_GIF_IMAGE_FILE_EXTENSION));
+        clipboardUri = generateAnImageToClipboard(TEST_JPG_IMAGE_FILE_EXTENSION);
+        Assert.assertTrue(clipboardUri.getPath().endsWith(TEST_JPG_IMAGE_FILE_EXTENSION));
+        clipboardUri = generateAnImageToClipboard(TEST_PNG_IMAGE_FILE_EXTENSION);
+        Assert.assertTrue(clipboardUri.getPath().endsWith(TEST_PNG_IMAGE_FILE_EXTENSION));
         Assert.assertEquals(3, fileCountInShareDirectory());
 
         clearSharedImages();
@@ -286,7 +295,7 @@ public class ShareImageFileUtilsTest {
                                             uri, null, null, null, null);
                             Assert.assertNotNull(cursor);
                             Assert.assertTrue(cursor.moveToFirst());
-                            Assert.assertEquals(fileName + TEST_IMAGE_FILE_EXTENSION,
+                            Assert.assertEquals(fileName + TEST_JPG_IMAGE_FILE_EXTENSION,
                                     cursor.getString(cursor.getColumnIndex(
                                             MediaStore.MediaColumns.DISPLAY_NAME)));
                         });
@@ -315,11 +324,11 @@ public class ShareImageFileUtilsTest {
         File externalStorageDir = mActivityTestRule.getActivity().getExternalFilesDir(
                 Environment.DIRECTORY_DOWNLOADS);
         File imageFile = ShareImageFileUtils.getNextAvailableFile(
-                externalStorageDir.getPath(), fileName, TEST_IMAGE_FILE_EXTENSION);
+                externalStorageDir.getPath(), fileName, TEST_JPG_IMAGE_FILE_EXTENSION);
         Assert.assertTrue(imageFile.exists());
 
         File imageFile2 = ShareImageFileUtils.getNextAvailableFile(
-                externalStorageDir.getPath(), fileName, TEST_IMAGE_FILE_EXTENSION);
+                externalStorageDir.getPath(), fileName, TEST_JPG_IMAGE_FILE_EXTENSION);
         Assert.assertTrue(imageFile2.exists());
         Assert.assertNotEquals(imageFile.getPath(), imageFile2.getPath());
     }
@@ -329,7 +338,7 @@ public class ShareImageFileUtilsTest {
     @DisableIf.Build(sdk_is_greater_than = 28)
     public void testAddCompletedDownload() throws IOException {
         String filename =
-                TEST_IMAGE_FILE_NAME + "_add_completed_download" + TEST_IMAGE_FILE_EXTENSION;
+                TEST_IMAGE_FILE_NAME + "_add_completed_download" + TEST_JPG_IMAGE_FILE_EXTENSION;
         File externalStorageDir = mActivityTestRule.getActivity().getExternalFilesDir(
                 Environment.DIRECTORY_DOWNLOADS);
         File qrcodeFile = new File(externalStorageDir, filename);

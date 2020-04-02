@@ -182,6 +182,9 @@ base::Optional<SkColor> GetDarkSchemeColor(NativeTheme::ColorId color_id) {
     case NativeTheme::kColorId_ThrobberSpinningColor:
       return gfx::kGoogleBlue300;
 
+    case NativeTheme::kColorId_BubbleBorder:
+      return gfx::kGoogleGrey800;
+
     // Alert icon colors
     case NativeTheme::kColorId_AlertSeverityLow:
       return gfx::kGoogleGreen300;
@@ -515,6 +518,9 @@ SkColor GetDefaultColor(NativeTheme::ColorId color_id,
     case NativeTheme::kColorId_SyncInfoContainerNoPrimaryAccount:
       return base_theme->GetSystemColor(
           NativeTheme::kColorId_BubbleFooterBackground);
+
+    case NativeTheme::kColorId_BubbleBorder:
+      return gfx::kGoogleGrey300;
 
     case NativeTheme::kColorId_NumColors:
       // Keeping the kColorId_NumColors case instead of using the default case

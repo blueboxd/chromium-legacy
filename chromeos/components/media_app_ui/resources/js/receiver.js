@@ -57,6 +57,18 @@ class ReceivedFile {
             Message.DELETE_FILE, {token: this.token}));
     return deleteResponse.deleteResult;
   }
+
+  /**
+   * @override
+   * @param {string} newName
+   * @return {!Promise<number>}
+   */
+  async renameOriginalFile(newName) {
+    const renameResponse =
+        /** @type {!RenameFileResponse} */ (await parentMessagePipe.sendMessage(
+            Message.RENAME_FILE, {token: this.token, newFilename: newName}));
+    return renameResponse.renameResult;
+  }
 }
 
 /**

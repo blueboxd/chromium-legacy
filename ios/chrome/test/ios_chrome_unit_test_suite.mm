@@ -13,6 +13,7 @@
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/test/testing_application_context.h"
+#include "ios/components/webui/web_ui_url_constants.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/test_chrome_provider_initializer.h"
 #import "ios/web/public/web_client.h"

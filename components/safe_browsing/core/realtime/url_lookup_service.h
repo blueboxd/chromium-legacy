@@ -77,6 +77,9 @@ class RealTimeUrlLookupService : public KeyedService {
   // local hash-based method.
   bool IsInBackoffMode() const;
 
+  // Returns true if this profile has opted-in to Enhanced Protection.
+  bool IsUserEpOptedIn() const;
+
   // Start the full URL lookup for |url|, call |request_callback| on the same
   // thread when request is sent, call |response_callback| on the same thread
   // when response is received.

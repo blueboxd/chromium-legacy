@@ -20,6 +20,7 @@ using chromeos::default_web_apps::kMediaAppId;
 
 namespace file_manager {
 namespace file_tasks {
+namespace {
 
 // A list of file extensions (`/` delimited) representing a selection of files
 // and the app expected to be the default to open these files.
@@ -27,6 +28,35 @@ struct Expectation {
   const char* file_extensions;
   const char* app_id;
 };
+
+// Verifies that a single default task expectation (i.e. the expected
+// default app to open a given set of file extensions) matches the default
+// task in a vector of task descriptors. Decrements the provided |remaining|
+// integer to provide additional verification that this function is invoked
+// an expected number of times (i.e. even if the callback could be invoked
+// asynchronously).
+void VerifyTasks(int* remaining,
+                 Expectation expectation,
+                 std::unique_ptr<std::vector<FullTaskDescriptor>> result) {
+  ASSERT_TRUE(result) << expectation.file_extensions;
+
+  auto default_task =
+      std::find_if(result->begin(), result->end(),
+                   [](const auto& task) { return task.is_default(); });
+
+  ASSERT_TRUE(default_task != result->end()) << expectation.file_extensions;
+
+  EXPECT_EQ(expectation.app_id, default_task->task_descriptor().app_id)
+      << " for extension: " << expectation.file_extensions;
+
+  // Verify no other task is set as default.
+  EXPECT_EQ(1u,
+            std::count_if(result->begin(), result->end(),
+                          [](const auto& task) { return task.is_default(); }))
+      << expectation.file_extensions;
+
+  --*remaining;
+}
 
 class FileTasksBrowserTest : public InProcessBrowserTest {
  public:
@@ -37,36 +67,11 @@ class FileTasksBrowserTest : public InProcessBrowserTest {
         .InstallSystemAppsForTesting();
   }
 
+  // Tests that each of the passed expectations open by default in the expected
+  // app.
   void TestExpectationsAgainstDefaultTasks(
       const std::vector<Expectation>& expectations) {
-    base::RunLoop run_loop;
     int remaining = expectations.size();
-    auto callback = base::BindRepeating(
-        [](base::RepeatingClosure quit, int* remaining,
-           const char* file_extensions, const char* expected_app_id,
-           std::unique_ptr<std::vector<FullTaskDescriptor>> result) {
-          ASSERT_TRUE(result) << file_extensions;
-
-          auto default_task =
-              std::find_if(result->begin(), result->end(),
-                           [](const auto& task) { return task.is_default(); });
-
-          ASSERT_TRUE(default_task != result->end()) << file_extensions;
-
-          EXPECT_EQ(expected_app_id, default_task->task_descriptor().app_id)
-              << " for extension: " << file_extensions;
-
-          // Verify no other task is set as default.
-          EXPECT_EQ(1u, std::count_if(
-                            result->begin(), result->end(),
-                            [](const auto& task) { return task.is_default(); }))
-              << file_extensions;
-
-          if (--*remaining == 0)
-            quit.Run();
-        },
-        run_loop.QuitClosure(), &remaining);
-
     const base::FilePath prefix = base::FilePath().AppendASCII("file");
 
     for (const Expectation& test : expectations) {
@@ -83,11 +88,12 @@ class FileTasksBrowserTest : public InProcessBrowserTest {
         entries.push_back({path, mime_type, false});
       }
       std::vector<GURL> file_urls{entries.size(), GURL()};
-      FindAllTypesOfTasks(
-          browser()->profile(), entries, file_urls,
-          base::BindRepeating(callback, test.file_extensions, test.app_id));
+
+      // task_verifier callback is invoked synchronously from
+      // FindAllTypesOfTasks.
+      FindAllTypesOfTasks(browser()->profile(), entries, file_urls,
+                          base::BindRepeating(&VerifyTasks, &remaining, test));
     }
-    run_loop.Run();
     EXPECT_EQ(0, remaining);
   }
 };
@@ -144,6 +150,8 @@ constexpr Expectation kUnchangedExpectations[] = {
     {"ogg", kAudioPlayerAppId},
     {"wav", kAudioPlayerAppId},
 };
+
+}  // namespace
 
 // Test file extensions correspond to mime types where expected.
 IN_PROC_BROWSER_TEST_F(FileTasksBrowserTest, ExtensionToMimeMapping) {

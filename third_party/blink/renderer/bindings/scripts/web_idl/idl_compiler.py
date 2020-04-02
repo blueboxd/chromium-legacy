@@ -101,6 +101,8 @@ class IdlCompiler(object):
         # Process inheritances.
         self._process_interface_inheritances()
 
+        self._copy_named_constructor_extattrs()
+
         # Make groups of overloaded functions including inherited ones.
         self._group_overloaded_functions()
         self._propagate_extattrs_to_overload_group()
@@ -405,6 +407,28 @@ class IdlCompiler(object):
                     if is_own_member(operation)
                 ])
 
+    def _copy_named_constructor_extattrs(self):
+        old_irs = self._ir_map.irs_of_kind(IRMap.IR.Kind.INTERFACE)
+
+        self._ir_map.move_to_new_phase()
+
+        def copy_extattrs(ext_attrs, ir):
+            if 'NamedConstructor_CallWith' in ext_attrs:
+                ir.extended_attributes.append(
+                    ExtendedAttribute(
+                        key='CallWith',
+                        values=ext_attrs.values_of(
+                            'NamedConstructor_CallWith')))
+            if 'NamedConstructor_RaisesException' in ext_attrs:
+                ir.extended_attributes.append(
+                    ExtendedAttribute(key='RaisesException'))
+
+        for old_ir in old_irs:
+            new_ir = self._maybe_make_copy(old_ir)
+            self._ir_map.add(new_ir)
+            for named_constructor_ir in new_ir.named_constructors:
+                copy_extattrs(new_ir.extended_attributes, named_constructor_ir)
+
     def _group_overloaded_functions(self):
         old_irs = self._ir_map.irs_of_kinds(IRMap.IR.Kind.CALLBACK_INTERFACE,
                                             IRMap.IR.Kind.INTERFACE,
@@ -414,6 +438,7 @@ class IdlCompiler(object):
 
         for old_ir in old_irs:
             assert not old_ir.constructor_groups
+            assert not old_ir.named_constructor_groups
             assert not old_ir.operation_groups
             new_ir = self._maybe_make_copy(old_ir)
             self._ir_map.add(new_ir)
@@ -422,6 +447,12 @@ class IdlCompiler(object):
                 ConstructorGroup.IR(constructors=list(constructors))
                 for identifier, constructors in itertools.groupby(
                     sorted(new_ir.constructors, key=sort_key), key=sort_key)
+            ]
+            new_ir.named_constructor_groups = [
+                ConstructorGroup.IR(constructors=list(constructors))
+                for identifier, constructors in itertools.groupby(
+                    sorted(new_ir.named_constructors, key=sort_key),
+                    key=sort_key)
             ]
             new_ir.operation_groups = [
                 OperationGroup.IR(operations=list(operations))
@@ -444,7 +475,9 @@ class IdlCompiler(object):
             new_ir = self._maybe_make_copy(old_ir)
             self._ir_map.add(new_ir)
 
-            for group in new_ir.constructor_groups + new_ir.operation_groups:
+            for group in itertools.chain(new_ir.constructor_groups,
+                                         new_ir.named_constructor_groups,
+                                         new_ir.operation_groups):
                 for key in ANY_OF:
                     if any(key in overload.extended_attributes
                            for overload in group):
@@ -465,7 +498,9 @@ class IdlCompiler(object):
             new_ir = self._maybe_make_copy(old_ir)
             self._ir_map.add(new_ir)
 
-            for group in new_ir.constructor_groups + new_ir.operation_groups:
+            for group in itertools.chain(new_ir.constructor_groups,
+                                         new_ir.named_constructor_groups,
+                                         new_ir.operation_groups):
                 exposures = map(lambda overload: overload.exposure, group)
 
                 # [Exposed]

@@ -413,6 +413,10 @@ bool RealTimeUrlLookupService::CanPerformFullURLLookupWithToken() const {
       pref_service_, is_off_the_record_, sync_service_);
 }
 
+bool RealTimeUrlLookupService::IsUserEpOptedIn() const {
+  return IsEnhancedProtectionEnabled(*pref_service_);
+}
+
 // static
 SBThreatType RealTimeUrlLookupService::GetSBThreatTypeForRTThreatType(
     RTLookupResponse::ThreatInfo::ThreatType rt_threat_type) {

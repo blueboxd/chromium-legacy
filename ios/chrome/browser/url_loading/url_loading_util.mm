@@ -15,6 +15,7 @@
 #include "ios/chrome/browser/sessions/live_tab_context_browser_agent.h"
 #import "ios/chrome/browser/web/load_timing_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#include "ios/components/webui/web_ui_url_constants.h"
 #import "ios/web/public/web_state.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"

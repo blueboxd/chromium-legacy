@@ -5,3 +5,10 @@
 source_set("provider") {
   sources = [ "web_ui_provider.h" ]
 }
+
+source_set("url_constants") {
+  sources = [
+    "web_ui_url_constants.cc",
+    "web_ui_url_constants.h",
+  ]
+}

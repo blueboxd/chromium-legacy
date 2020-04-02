@@ -98,8 +98,7 @@ bool UserModel::IsGestureExpectedSoonImpl(
         base::TimeDelta::FromMilliseconds(kExpectSubsequentGestureMillis);
     return true;
   } else {
-    // If we've have a finished a gesture then a subsequent gesture is deemed
-    // likely.
+    // If we have finished a gesture then a subsequent gesture is deemed likely.
     base::TimeDelta expect_subsequent_gesture_for =
         base::TimeDelta::FromMilliseconds(kExpectSubsequentGestureMillis);
     if (last_continuous_gesture_time_.is_null() ||

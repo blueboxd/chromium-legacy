@@ -63,10 +63,6 @@ class AssistiveSuggester {
   // ID of the focused text field, 0 if none is focused.
   int context_id_ = -1;
 
-  // If the suggestion is dismissed by the user, this is necessary so that we
-  // will not reshow the suggestion immediately after the user dismisses it.
-  bool suggestion_dismissed_ = false;
-
   // The current suggester in use, nullptr means no suggestion is shown.
   Suggester* current_suggester_ = nullptr;
 };

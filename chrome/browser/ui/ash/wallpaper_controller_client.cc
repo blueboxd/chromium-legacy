@@ -9,7 +9,9 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/customization/customization_wallpaper_util.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -29,6 +31,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "ui/display/types/display_constants.h"
 
 namespace {
 
@@ -482,19 +485,21 @@ void WallpaperControllerClient::ShowWallpaperOnLoginScreen() {
 void WallpaperControllerClient::OpenWallpaperPicker() {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   DCHECK(profile);
-  extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(profile);
-
-  const extensions::Extension* extension =
-      registry->GetExtensionById(extension_misc::kWallpaperManagerId,
-                                 extensions::ExtensionRegistry::ENABLED);
-  if (!extension)
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile);
+  DCHECK(proxy);
+  if (proxy->AppRegistryCache().GetAppType(
+          extension_misc::kWallpaperManagerId) ==
+      apps::mojom::AppType::kUnknown) {
     return;
-
-  apps::LaunchService::Get(profile)->OpenApplication(apps::AppLaunchParams(
-      extension->id(), apps::mojom::LaunchContainer::kLaunchContainerWindow,
-      WindowOpenDisposition::NEW_WINDOW,
-      apps::mojom::AppLaunchSource::kSourceChromeInternal));
+  }
+  proxy->Launch(
+      extension_misc::kWallpaperManagerId,
+      apps::GetEventFlags(apps::mojom::LaunchContainer::kLaunchContainerWindow,
+                          WindowOpenDisposition::NEW_WINDOW,
+                          false /* preferred_containner */),
+      apps::mojom::LaunchSource::kFromChromeInternal,
+      display::kInvalidDisplayId);
 }
 
 bool WallpaperControllerClient::ShouldShowUserNamesOnLogin() const {

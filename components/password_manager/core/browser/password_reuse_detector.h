@@ -28,6 +28,16 @@ struct ReverseStringLess {
   bool operator()(const base::string16& lhs, const base::string16& rhs) const;
 };
 
+// Container for the signon_realm and username that a compromised saved password
+// is saved on/with.
+struct MatchingReusedCredential {
+  std::string signon_realm;
+  base::string16 username;
+
+  bool operator<(const MatchingReusedCredential& other) const;
+  bool operator==(const MatchingReusedCredential& other) const;
+};
+
 // Per-profile class responsible for detection of password reuse, i.e. that the
 // user input on some site contains the password saved on another site.
 // It receives saved passwords through PasswordStoreConsumer interface.
@@ -77,11 +87,15 @@ class PasswordReuseDetector : public PasswordStoreConsumer {
   void ClearAllNonGmailPasswordHash();
 
  private:
-  using passwords_iterator = std::map<base::string16,
-                                      std::set<std::string>,
-                                      ReverseStringLess>::const_iterator;
+  using PasswordsReusedCredentialsMap =
+      std::map<base::string16,
+               std::set<MatchingReusedCredential>,
+               ReverseStringLess>;
 
-  // Add password from |form| to |passwords_|.
+  using passwords_iterator = PasswordsReusedCredentialsMap::const_iterator;
+
+  // Add password from |form| to |passwords_| and
+  // |passwords_with_matching_reused_credentials_|.
   void AddPassword(const autofill::PasswordForm& form);
 
   // If Gaia password reuse is found, return the PasswordHashData of the reused
@@ -96,30 +110,40 @@ class PasswordReuseDetector : public PasswordStoreConsumer {
       const base::string16& input,
       const std::string& domain);
 
-  // If saved-password reuse is found, fill in the registry-controlled
-  // domains that match any reused password, and return the length of the
+  // If saved-password reuse is found, fill in the MatchingReusedCredentials
+  // that match any reused password, and return the length of the
   // longest password matched.  If no reuse is found, return 0.
   size_t CheckSavedPasswordReuse(
       const base::string16& input,
       const std::string& domain,
-      std::vector<std::string>* matching_domains_out);
+      std::vector<MatchingReusedCredential>* matching_reused_credentials_out);
 
-  // Returns the iterator to |passwords_| that corresponds to the longest key in
-  // |passwords_| that is a suffix of |input|. Returns passwords_.end() in case
-  // when no key in |passwords_| is a prefix of |input|.
+  // Returns the iterator to |passwords_with_matching_reused_credentials_| that
+  // corresponds to the longest key in
+  // |passwords_with_matching_reused_credentials_| that is a suffix of |input|.
+  // Returns passwords_with_matching_reused_credentials_.end() in case when no
+  // key in |passwords_with_matching_reused_credentials_| is a prefix of
+  // |input|.
   passwords_iterator FindFirstSavedPassword(const base::string16& input);
 
   // Call this repeatedly with iterator from |FindFirstSavedPassword| to
-  // find other matching passwords. This returns the iterator to |passwords_|
-  // that is the next previous matching entry that's a suffix of |input|, or
-  // passwords_.end() if there are no more.
+  // find other matching passwords. This returns the iterator to
+  // |passwords_with_matching_reused_credentials_| that is the next previous
+  // matching entry that's a suffix of |input|, or
+  // passwords_with_matching_reused_credentials_.end() if there are no more.
   passwords_iterator FindNextSavedPassword(const base::string16& input,
                                            passwords_iterator it);
+
   // Contains all passwords.
   // A key is a password.
-  // A value is a set of registry controlled domains on which the password
-  // saved.
-  std::map<base::string16, std::set<std::string>, ReverseStringLess> passwords_;
+  // A value is a set of pairs of signon_realms and username on which the
+  // password is saved.
+  // The order of the keys are ordered in lexicographical order of reversed
+  // strings. The reason for this is to optimize the lookup time. If the strings
+  // were not reversed, it would be needed to loop over the length of the typed
+  // input and size of this map and then find the suffix (O(n*m*log(n))).
+  // See https://crbug.com/668155.
+  PasswordsReusedCredentialsMap passwords_with_matching_reused_credentials_;
 
   // Number of passwords in |passwords_|, each password is calculated the number
   // of times how many different sites it's saved on.

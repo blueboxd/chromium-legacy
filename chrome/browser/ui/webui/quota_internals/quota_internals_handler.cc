@@ -30,6 +30,10 @@ void QuotaInternalsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "requestInfo", base::BindRepeating(&QuotaInternalsHandler::OnRequestInfo,
                                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "triggerStoragePressure",
+      base::BindRepeating(&QuotaInternalsHandler::OnTriggerStoragePressure,
+                          base::Unretained(this)));
 }
 
 void QuotaInternalsHandler::ReportAvailableSpace(int64_t available_space) {
@@ -83,6 +87,21 @@ void QuotaInternalsHandler::OnRequestInfo(const base::ListValue*) {
   proxy_->RequestInfo(
       BrowserContext::GetDefaultStoragePartition(
           Profile::FromWebUI(web_ui()))->GetQuotaManager());
+}
+
+void QuotaInternalsHandler::OnTriggerStoragePressure(
+    const base::ListValue* args) {
+  CHECK_EQ(1U, args->GetSize());
+  std::string origin_string;
+  CHECK(args->GetString(0, &origin_string));
+  GURL url(origin_string);
+
+  if (!proxy_.get())
+    proxy_ = new QuotaInternalsProxy(this);
+  proxy_->TriggerStoragePressure(
+      url::Origin::Create(url),
+      BrowserContext::GetDefaultStoragePartition(Profile::FromWebUI(web_ui()))
+          ->GetQuotaManager());
 }
 
 }  // namespace quota_internals

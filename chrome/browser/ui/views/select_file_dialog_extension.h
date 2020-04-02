@@ -93,7 +93,7 @@ class SelectFileDialogExtension
                       void* params) override;
 
  private:
-  friend class SelectFileDialogExtensionBrowserTest;
+  friend class BaseSelectFileDialogExtensionBrowserTest;
   friend class SelectFileDialogExtensionTest;
   friend class SelectFileDialogExtensionTestFactory;
 

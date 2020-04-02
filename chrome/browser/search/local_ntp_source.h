@@ -38,10 +38,22 @@ namespace search_provider_logos {
 class LogoService;
 }  // namespace search_provider_logos
 
-extern const char kClockIconResourceName[];
 extern const char kGoogleGIconResourceName[];
-extern const char kSearchIconResourceName[];
+extern const char kBookmarkIconResourceName[];
+extern const char kCalculatorIconResourceName[];
+extern const char kClockIconResourceName[];
+extern const char kDriveDocsIconResourceName[];
+extern const char kDriveFolderIconResourceName[];
+extern const char kDriveFormIconResourceName[];
+extern const char kDriveImageIconResourceName[];
+extern const char kDriveLogoIconResourceName[];
+extern const char kDrivePdfIconResourceName[];
+extern const char kDriveSheetsIconResourceName[];
+extern const char kDriveSlidesIconResourceName[];
+extern const char kDriveVideoIconResourceName[];
+extern const char kExtensionAppIconResourceName[];
 extern const char kPageIconResourceName[];
+extern const char kSearchIconResourceName[];
 
 // Serves HTML and resources for the local New Tab page, i.e.
 // chrome-search://local-ntp/local-ntp.html.

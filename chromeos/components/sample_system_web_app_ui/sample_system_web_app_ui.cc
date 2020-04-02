@@ -19,10 +19,10 @@ namespace chromeos {
 content::WebUIDataSource* CreateUntrustedSampleSystemWebAppDataSource() {
   content::WebUIDataSource* untrusted_source =
       content::WebUIDataSource::Create(kChromeUIUntrustedSampleSystemWebAppURL);
-  untrusted_source->AddResourcePath("app.html",
-                                    IDR_SAMPLE_SYSTEM_WEB_APP_APP_HTML);
-  untrusted_source->AddResourcePath("receiver.js",
-                                    IDR_SAMPLE_SYSTEM_WEB_APP_RECEIVER_JS);
+  untrusted_source->AddResourcePath("untrusted.html",
+                                    IDR_SAMPLE_SYSTEM_WEB_APP_UNTRUSTED_HTML);
+  untrusted_source->AddResourcePath("untrusted.js",
+                                    IDR_SAMPLE_SYSTEM_WEB_APP_UNTRUSTED_JS);
   untrusted_source->AddFrameAncestor(GURL(kChromeUISampleSystemWebAppURL));
   return untrusted_source;
 }
@@ -37,7 +37,6 @@ SampleSystemWebAppUI::SampleSystemWebAppUI(content::WebUI* web_ui)
                                   IDR_SAMPLE_SYSTEM_WEB_APP_PWA_HTML);
   trusted_source->AddResourcePath("sandbox.html",
                                   IDR_SAMPLE_SYSTEM_WEB_APP_SANDBOX_HTML);
-  trusted_source->AddResourcePath("app.js", IDR_SAMPLE_SYSTEM_WEB_APP_JS);
   trusted_source->AddResourcePath("manifest.json",
                                   IDR_SAMPLE_SYSTEM_WEB_APP_MANIFEST);
   trusted_source->AddResourcePath("app_icon_192.png",

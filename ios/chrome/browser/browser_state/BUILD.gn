@@ -28,6 +28,7 @@ source_set("browser_state") {
     "//components/webdata_services",
     "//ios/chrome/browser:chrome_url_constants",
     "//ios/chrome/browser/net:net_types",
+    "//ios/components/webui:url_constants",
     "//ios/web/public/webui",
   ]
 

@@ -25,6 +25,13 @@ cr.define('cr.quota', function() {
   }
 
   /**
+   * Post triggerStoragePressure message to Browser.
+   */
+  function triggerStoragePressure(origin) {
+    chrome.send('triggerStoragePressure', [origin]);
+  }
+
+  /**
    * Callback entry point from Browser.
    * Messages are Dispatched as Event to:
    *   * onAvailableSpaceUpdated,
@@ -77,6 +84,7 @@ cr.define('cr.quota', function() {
     onStatisticsUpdated: new cr.EventTarget(),
 
     requestInfo: requestInfo,
+    triggerStoragePressure: triggerStoragePressure,
     messageHandler: messageHandler
   };
 });

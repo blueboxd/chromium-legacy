@@ -575,6 +575,12 @@ const char kStartStackProfiler[]            = "start-stack-profiler";
 // durations to be significantly less than the test timeout.
 const char kStartStackProfilerBrowserTest[] = "browser-test";
 
+// Interval, in minutes, used for storage pressure notification throttling.
+// Useful for developers testing applications that might use non-trivial
+// amounts of disk space.
+const char kStoragePressureNotificationInterval[] =
+    "storage-pressure-notification-interval";
+
 // Sets the supervised user ID for any loaded or newly created profile to the
 // given value. Pass an empty string to mark the profile as non-supervised.
 // Used for testing.

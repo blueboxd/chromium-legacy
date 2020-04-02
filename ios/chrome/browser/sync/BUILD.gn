@@ -81,6 +81,7 @@ source_set("sync") {
     "//ios/chrome/browser/undo",
     "//ios/chrome/browser/webdata_services",
     "//ios/chrome/common",
+    "//ios/components/webui:url_constants",
     "//ios/web",
     "//ios/web/public/session",
     "//net",

@@ -12,7 +12,7 @@ DistillerJavaScriptServiceImpl::DistillerJavaScriptServiceImpl(
     DistillerUIHandle* distiller_ui_handle)
     : distiller_ui_handle_(distiller_ui_handle) {}
 
-DistillerJavaScriptServiceImpl::~DistillerJavaScriptServiceImpl() {}
+DistillerJavaScriptServiceImpl::~DistillerJavaScriptServiceImpl() = default;
 
 void DistillerJavaScriptServiceImpl::HandleDistillerOpenSettingsCall() {
   if (!distiller_ui_handle_) {

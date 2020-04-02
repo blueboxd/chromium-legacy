@@ -14,6 +14,9 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "base/macros.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/chromeos/apps/metrics/intent_handling_metrics.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -67,6 +70,7 @@
 #include "ui/base/base_window.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/display/types/display_constants.h"
 #include "url/url_constants.h"
 
 using arc::mojom::ChromePage;
@@ -291,21 +295,23 @@ void ChromeNewWindowClient::NewWindow(bool is_incognito) {
 }
 
 void ChromeNewWindowClient::OpenFileManager() {
-  using file_manager::kFileManagerAppId;
   Profile* const profile = ProfileManager::GetActiveUserProfile();
-  const extensions::ExtensionRegistry* const registry =
-      extensions::ExtensionRegistry::Get(profile);
-  if (!extensions::util::IsAppLaunchableWithoutEnabling(kFileManagerAppId,
-                                                        profile)) {
-    return;
-  }
-
-  const extensions::Extension* const extension =
-      registry->GetInstalledExtension(kFileManagerAppId);
-  apps::LaunchService::Get(profile)->OpenApplication(
-      CreateAppLaunchParamsUserContainer(
-          profile, extension, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-          apps::mojom::AppLaunchSource::kSourceKeyboard));
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile);
+  DCHECK(proxy);
+  proxy->AppRegistryCache().ForOneApp(
+      extension_misc::kWallpaperManagerId,
+      [proxy](const apps::AppUpdate& update) {
+        if (update.Readiness() == apps::mojom::Readiness::kReady) {
+          proxy->Launch(update.AppId(),
+                        apps::GetEventFlags(
+                            apps::mojom::LaunchContainer::kLaunchContainerNone,
+                            WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                            true /* preferred_containner */),
+                        apps::mojom::LaunchSource::kFromKeyboard,
+                        display::kInvalidDisplayId);
+        }
+      });
 }
 
 void ChromeNewWindowClient::OpenCrosh() {

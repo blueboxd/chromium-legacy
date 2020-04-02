@@ -191,20 +191,13 @@ void ChromeFeaturesServiceProvider::IsUsbguardEnabled(
 void ChromeFeaturesServiceProvider::IsVmManagementCliAllowed(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  bool is_allowed = true;
-  // The policy is experimental; check that the corresponding feature flag
-  // is enabled.
-  if (base::FeatureList::IsEnabled(
-          ::features::kCrostiniAdvancedAccessControls)) {
-    Profile* profile = GetSenderProfile(method_call, &response_sender);
-    if (!profile)
-      return;
+  Profile* profile = GetSenderProfile(method_call, &response_sender);
+  if (!profile)
+    return;
 
-    is_allowed = profile->GetPrefs()->GetBoolean(
-        crostini::prefs::kVmManagementCliAllowedByPolicy);
-  }
-
-  SendResponse(method_call, std::move(response_sender), is_allowed);
+  SendResponse(method_call, std::move(response_sender),
+               profile->GetPrefs()->GetBoolean(
+                   crostini::prefs::kVmManagementCliAllowedByPolicy));
 }
 
 }  // namespace chromeos

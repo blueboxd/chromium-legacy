@@ -56,6 +56,9 @@ ContinueWindowMac::ContinueWindowMac() {
 
 ContinueWindowMac::~ContinueWindowMac() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (controller_) {
+    HideUi();
+  }
 }
 
 void ContinueWindowMac::ShowUi() {
@@ -73,6 +76,7 @@ void ContinueWindowMac::HideUi() {
 
   @autoreleasepool {
     [controller_ hide];
+    controller_.reset();
   }
 }
 

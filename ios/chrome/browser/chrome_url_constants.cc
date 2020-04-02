@@ -7,8 +7,7 @@
 #include <stddef.h>
 
 #include "base/stl_util.h"
-
-const char kChromeUIScheme[] = "chrome";
+#include "ios/components/webui/web_ui_url_constants.h"
 
 const char kChromeUIChromeURLsURL[] = "chrome://chrome-urls/";
 const char kChromeUICreditsURL[] = "chrome://credits/";
@@ -47,7 +46,6 @@ const char kChromeUIPolicyHost[] = "policy";
 const char kChromeUIPrefsInternalsHost[] = "prefs-internals";
 const char kChromeUISignInInternalsHost[] = "signin-internals";
 const char kChromeUISuggestionsHost[] = "suggestions";
-const char kChromeUISyncInternalsHost[] = "sync-internals";
 const char kChromeUITermsHost[] = "terms";
 const char kChromeUITranslateInternalsHost[] = "translate-internals";
 const char kChromeUIURLKeyedMetricsHost[] = "ukm";

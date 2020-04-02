@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/password_manager/core/browser/password_reuse_detector_consumer.h"
 #include "url/gurl.h"
 
@@ -39,7 +40,7 @@ class PasswordReuseDetectionManager : public PasswordReuseDetectorConsumer {
   void OnReuseFound(
       size_t password_length,
       base::Optional<PasswordHashData> reused_protected_password_hash,
-      const std::vector<std::string>& matching_domains,
+      const std::vector<MatchingReusedCredential>& matching_reused_credentials,
       int saved_passwords) override;
 
   void SetClockForTesting(base::Clock* clock);

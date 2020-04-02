@@ -131,9 +131,9 @@
   self.headerController = [[ContentSuggestionsHeaderViewController alloc] init];
   // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
   // clean up.
-  self.headerController.dispatcher = static_cast<
-      id<ApplicationCommands, BrowserCommands, OmniboxFocuser, FakeboxFocuser>>(
-      self.browser->GetCommandDispatcher());
+  self.headerController.dispatcher =
+      static_cast<id<ApplicationCommands, BrowserCommands, OmniboxCommands,
+                     FakeboxFocuser>>(self.browser->GetCommandDispatcher());
   self.headerController.commandHandler = self.NTPMediator;
   self.headerController.delegate = self.NTPMediator;
   self.headerController.readingListModel =
@@ -188,7 +188,7 @@
   // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
   // clean up.
   self.NTPMediator.dispatcher =
-      static_cast<id<ApplicationCommands, BrowserCommands, OmniboxFocuser,
+      static_cast<id<ApplicationCommands, BrowserCommands, OmniboxCommands,
                      SnackbarCommands>>(self.browser->GetCommandDispatcher());
   self.NTPMediator.NTPMetrics = [[NTPHomeMetrics alloc]
       initWithBrowserState:self.browser->GetBrowserState()
@@ -238,9 +238,9 @@
                    didTriggerAction:(OverscrollAction)action {
   // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
   // clean up.
-  id<ApplicationCommands, BrowserCommands, OmniboxFocuser, SnackbarCommands>
+  id<ApplicationCommands, BrowserCommands, OmniboxCommands, SnackbarCommands>
       handler = static_cast<id<ApplicationCommands, BrowserCommands,
-                               OmniboxFocuser, SnackbarCommands>>(
+                               OmniboxCommands, SnackbarCommands>>(
           self.browser->GetCommandDispatcher());
   switch (action) {
     case OverscrollAction::NEW_TAB: {

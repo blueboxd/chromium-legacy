@@ -75,11 +75,13 @@ suite(policy_tests.suiteName, function() {
       }
       initialSettings.policies = {[settingName]: policy};
     }
-    // We want to make sure sticky settings get overridden.
-    initialSettings.serializedAppStateStr = JSON.stringify({
-      version: 2,
-      [serializedSettingName]: !defaultMode,
-    });
+    if (defaultMode !== undefined) {
+      // We want to make sure sticky settings get overridden.
+      initialSettings.serializedAppStateStr = JSON.stringify({
+        version: 2,
+        [serializedSettingName]: !defaultMode,
+      });
+    }
     return loadInitialSettings(initialSettings);
   }
 
@@ -96,102 +98,104 @@ suite(policy_tests.suiteName, function() {
   }
 
   /** Tests different scenarios of applying header/footer policy. */
-  test(assert(policy_tests.TestNames.HeaderFooterPolicy), function() {
-    [{
-      // No policies.
-      allowedMode: undefined,
-      defaultMode: undefined,
-      expectedDisabled: false,
-      expectedChecked: false,
-    },
-     {
-       // Restrict header/footer to be enabled.
-       allowedMode: true,
-       defaultMode: undefined,
-       expectedDisabled: true,
-       expectedChecked: true,
-     },
-     {
-       // Restrict header/footer to be disabled.
-       allowedMode: false,
-       defaultMode: undefined,
-       expectedDisabled: true,
-       expectedChecked: false,
-     },
-     {
-       // Check header/footer checkbox.
-       allowedMode: undefined,
-       defaultMode: true,
-       expectedDisabled: false,
-       expectedChecked: true,
-     },
-     {
-       // Uncheck header/footer checkbox.
-       allowedMode: undefined,
-       defaultMode: false,
-       expectedDisabled: false,
-       expectedChecked: false,
-     }].forEach(subtestParams => {
-      doPolicySetup(
+  test(assert(policy_tests.TestNames.HeaderFooterPolicy), async () => {
+    const tests = [
+      {
+        // No policies.
+        allowedMode: undefined,
+        defaultMode: undefined,
+        expectedDisabled: false,
+        expectedChecked: true,
+      },
+      {
+        // Restrict header/footer to be enabled.
+        allowedMode: true,
+        defaultMode: undefined,
+        expectedDisabled: true,
+        expectedChecked: true,
+      },
+      {
+        // Restrict header/footer to be disabled.
+        allowedMode: false,
+        defaultMode: undefined,
+        expectedDisabled: true,
+        expectedChecked: false,
+      },
+      {
+        // Check header/footer checkbox.
+        allowedMode: undefined,
+        defaultMode: true,
+        expectedDisabled: false,
+        expectedChecked: true,
+      },
+      {
+        // Uncheck header/footer checkbox.
+        allowedMode: undefined,
+        defaultMode: false,
+        expectedDisabled: false,
+        expectedChecked: false,
+      }
+    ];
+    for (const subtestParams of tests) {
+      await doPolicySetup(
           'headerFooter', 'isHeaderFooterEnabled', subtestParams.allowedMode,
-          subtestParams.defaultMode)
-          .then(function() {
-            toggleMoreSettings();
-            const checkbox = getCheckbox('headerFooter');
-            assertEquals(subtestParams.expectedDisabled, checkbox.disabled);
-            assertEquals(subtestParams.expectedChecked, checkbox.checked);
-          });
-    });
+          subtestParams.defaultMode);
+      toggleMoreSettings();
+      const checkbox = getCheckbox('headerFooter');
+      assertEquals(subtestParams.expectedDisabled, checkbox.disabled);
+      assertEquals(subtestParams.expectedChecked, checkbox.checked);
+    }
   });
 
   /** Tests different scenarios of applying background graphics policy. */
-  test(assert(policy_tests.TestNames.CssBackgroundPolicy), function() {
-    [{
-      // No policies.
-      allowedMode: undefined,
-      defaultMode: undefined,
-      expectedDisabled: false,
-      expectedChecked: true,
-    },
-     {
-       // Restrict background graphics to be enabled.
-       // Check that checkbox value default mode is not applied if it
-       // contradicts allowed mode.
-       allowedMode: BackgroundGraphicsModeRestriction.ENABLED,
-       defaultMode: BackgroundGraphicsModeRestriction.DISABLED,
-       expectedDisabled: true,
-       expectedChecked: true,
-     },
-     {
-       // Restrict background graphics to be disabled.
-       allowedMode: BackgroundGraphicsModeRestriction.DISABLED,
-       defaultMode: undefined,
-       expectedDisabled: true,
-       expectedChecked: false,
-     },
-     {
-       // Check background graphics checkbox.
-       allowedMode: undefined,
-       defaultMode: BackgroundGraphicsModeRestriction.ENABLED,
-       expectedDisabled: false,
-       expectedChecked: true,
-     },
-     {
-       // Uncheck background graphics checkbox.
-       allowedMode: BackgroundGraphicsModeRestriction.UNSET,
-       defaultMode: BackgroundGraphicsModeRestriction.DISABLED,
-       expectedDisabled: false,
-       expectedChecked: false,
-     }].forEach(subtestParams => {
-      doPolicySetup(
+  test(assert(policy_tests.TestNames.CssBackgroundPolicy), async () => {
+    const tests = [
+      {
+        // No policies.
+        allowedMode: undefined,
+        defaultMode: undefined,
+        expectedDisabled: false,
+        expectedChecked: false,
+      },
+      {
+        // Restrict background graphics to be enabled.
+        // Check that checkbox value default mode is not applied if it
+        // contradicts allowed mode.
+        allowedMode: BackgroundGraphicsModeRestriction.ENABLED,
+        defaultMode: BackgroundGraphicsModeRestriction.DISABLED,
+        expectedDisabled: true,
+        expectedChecked: true,
+      },
+      {
+        // Restrict background graphics to be disabled.
+        allowedMode: BackgroundGraphicsModeRestriction.DISABLED,
+        defaultMode: undefined,
+        expectedDisabled: true,
+        expectedChecked: false,
+      },
+      {
+        // Check background graphics checkbox.
+        allowedMode: undefined,
+        defaultMode: BackgroundGraphicsModeRestriction.ENABLED,
+        expectedDisabled: false,
+        expectedChecked: true,
+      },
+      {
+        // Uncheck background graphics checkbox.
+        allowedMode: BackgroundGraphicsModeRestriction.UNSET,
+        defaultMode: BackgroundGraphicsModeRestriction.DISABLED,
+        expectedDisabled: false,
+        expectedChecked: false,
+      }
+    ];
+    for (const subtestParams of tests) {
+      await doPolicySetup(
           'cssBackground', 'isCssBackgroundEnabled', subtestParams.allowedMode,
-          subtestParams.defaultMode)
-          .then(function() {
-            toggleMoreSettings();
-            const checkbox = getCheckbox('cssBackground');
-            assertEquals(subtestParams.expectedDisabled, checkbox.disabled);
-            assertEquals(subtestParams.expectedChecked, checkbox.checked);
-          });
-    });
+          subtestParams.defaultMode);
+      toggleMoreSettings();
+      const checkbox = getCheckbox('cssBackground');
+      assertEquals(subtestParams.expectedDisabled, checkbox.disabled);
+      assertEquals(subtestParams.expectedChecked, checkbox.checked);
+    }
   });
 });

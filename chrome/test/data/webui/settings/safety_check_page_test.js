@@ -112,9 +112,9 @@ suite('SafetyCheckUiTests', function() {
     await safetyCheckBrowserProxy.whenCalled('runSafetyCheck');
 
     Polymer.dom.flush();
-    // No button is present.
+    // Only the icon button is present.
     assertFalse(!!page.$$('#safetyCheckParentButton'));
-    assertFalse(!!page.$$('#safetyCheckParentIconButton'));
+    assertTrue(!!page.$$('#safetyCheckParentIconButton'));
     // Collapse is opened.
     assertTrue(page.$$('#safetyCheckCollapse').opened);
 

@@ -7,9 +7,9 @@
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
+#import "ios/chrome/browser/ui/commands/omnibox_commands.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_url_loader.h"
 #import "ios/chrome/browser/ui/omnibox/location_bar_delegate.h"
-#import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 
 @protocol EditViewAnimatee;
 @protocol LocationBarAnimatee;
@@ -18,7 +18,7 @@
 
 // Location bar coordinator.
 @interface LocationBarCoordinator
-    : ChromeCoordinator <LocationBarURLLoader, OmniboxFocuser>
+    : ChromeCoordinator <LocationBarURLLoader, OmniboxCommands>
 
 // Unavailable, use -initWithBaseViewController:browser:.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController

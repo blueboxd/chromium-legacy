@@ -94,6 +94,7 @@ polymer_modulizer("safety_check_page") {
                    "chrome/browser/resources/settings/open_window_proxy.html|OpenWindowProxyImpl",
                    "chrome/browser/resources/settings/safety_check_page/safety_check_browser_proxy.html|SafetyCheckBrowserProxy,SafetyCheckBrowserProxyImpl,SafetyCheckExtensionsStatus,SafetyCheckPasswordsStatus,SafetyCheckUpdatesStatus,SafetyCheckSafeBrowsingStatus,SafetyCheckCallbackConstants",
                    "ui/webui/resources/html/assert.html|assertNotReached",
+                   "ui/webui/resources/html/polymer.html|Polymer,html,flush",
                  ]
   namespace_rewrites = settings_namespace_rewrites
 }

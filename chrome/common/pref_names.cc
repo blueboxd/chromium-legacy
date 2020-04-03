@@ -128,6 +128,13 @@ const char kURLsToRestoreOnStartup[] = "session.startup_urls";
 // Boolean that is true when user feedback to Google is allowed.
 const char kUserFeedbackAllowed[] = "feedback_allowed";
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS) && BUILDFLAG(ENABLE_EXTENSIONS)
+// DictionaryValue that maps extension ids to the approved version of this
+// extension for a supervised user. Missing extensions are not approved.
+const char kSupervisedUserApprovedExtensions[] =
+    "profile.managed.approved_extensions";
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS) && BUILDFLAG(ENABLE_EXTENSIONS)
+
 // Stores the email address associated with the google account of the custodian
 // of the supervised user, set when the supervised user is created.
 const char kSupervisedUserCustodianEmail[] = "profile.managed.custodian_email";

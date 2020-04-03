@@ -74,16 +74,6 @@ struct AppLaunchParams {
   std::vector<base::FilePath> launch_files;
 };
 
-// Helper to create AppLaunchParams using event flags that allows user to
-// override the user-configured container using modifier keys. |display_id| is
-// the id of the display from which the app is launched.
-AppLaunchParams CreateAppIdLaunchParamsWithEventFlags(
-    const std::string& app_id,
-    int event_flags,
-    apps::mojom::AppLaunchSource source,
-    int64_t display_id,
-    apps::mojom::LaunchContainer fallback_container);
-
 }  // namespace apps
 
 #endif  // CHROME_BROWSER_APPS_APP_SERVICE_APP_LAUNCH_PARAMS_H_

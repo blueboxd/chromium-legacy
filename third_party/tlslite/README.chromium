@@ -1,6 +1,7 @@
 Name: tlslite
 URL: http://trevp.net/tlslite/
 Version: 0.4.8
+CPEPrefix: cpe:/a:tlslite_project:tlslite:0.4.8::~~~python~~
 Security Critical: No
 License: Public domain and BSD
 

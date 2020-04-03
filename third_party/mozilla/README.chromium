@@ -2,6 +2,7 @@ Name: Cocoa extension code from Camino
 Short Name: camino
 URL: http://caminobrowser.org/
 Version: unknown
+CPEPrefix: unknown
 License: MPL 1.1/GPL 2.0/LGPL 2.1
 Security Critical: yes
 

@@ -12,7 +12,6 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
-#include "ios/web_view/cwv_web_view_buildflags.h"
 #include "ios/web_view/internal/app/application_context.h"
 #import "ios/web_view/internal/cwv_flags_internal.h"
 #import "ios/web_view/internal/cwv_web_view_configuration_internal.h"
@@ -49,7 +48,6 @@ void WebViewWebMainParts::PreCreateThreads() {
 
   ApplicationContext::GetInstance()->PreCreateThreads();
 
-#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
   std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
   std::string enable_features = base::JoinString(
       {autofill::features::kAutofillUpstream.name,
@@ -61,16 +59,13 @@ void WebViewWebMainParts::PreCreateThreads() {
       /*enable_features=*/enable_features,
       /*disable_features=*/disabled_features);
   base::FeatureList::SetInstance(std::move(feature_list));
-#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
 }
 
 void WebViewWebMainParts::PreMainMessageLoopRun() {
   WebViewTranslateService::GetInstance()->Initialize();
 
-#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
   ContentSettingsPattern::SetNonWildcardDomainNonPortSchemes(
       /*schemes=*/nullptr, 0);
-#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
 }
 
 void WebViewWebMainParts::PostMainMessageLoopRun() {

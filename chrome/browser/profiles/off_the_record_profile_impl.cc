@@ -120,8 +120,11 @@ constexpr char kVideoDecodePerfHistoryId[] = "video-decode-perf-history";
 
 }  // namespace
 
-OffTheRecordProfileImpl::OffTheRecordProfileImpl(Profile* real_profile)
+OffTheRecordProfileImpl::OffTheRecordProfileImpl(
+    Profile* real_profile,
+    const OTRProfileID& otr_profile_id)
     : profile_(real_profile),
+      otr_profile_id_(otr_profile_id),
       io_data_(this),
       start_time_(base::Time::Now()),
       key_(std::make_unique<ProfileKey>(profile_->GetPath(),
@@ -295,21 +298,40 @@ bool OffTheRecordProfileImpl::IsOffTheRecord() const {
   return true;
 }
 
+const Profile::OTRProfileID& OffTheRecordProfileImpl::GetOTRProfileID() const {
+  return otr_profile_id_;
+}
+
 bool OffTheRecordProfileImpl::IsIndependentOffTheRecordProfile() {
-  return !GetOriginalProfile()->HasOffTheRecordProfile() ||
-         GetOriginalProfile()->GetOffTheRecordProfile() != this;
+  return otr_profile_id_ != OTRProfileID::PrimaryID();
 }
 
-Profile* OffTheRecordProfileImpl::GetOffTheRecordProfile() {
-  return this;
+Profile* OffTheRecordProfileImpl::GetOffTheRecordProfile(
+    const OTRProfileID& otr_profile_id) {
+  if (otr_profile_id_ == otr_profile_id)
+    return this;
+  return profile_->GetOffTheRecordProfile(otr_profile_id);
 }
 
-void OffTheRecordProfileImpl::DestroyOffTheRecordProfile() {
-  // Suicide is bad!
+std::vector<Profile*> OffTheRecordProfileImpl::GetAllOffTheRecordProfiles() {
+  return profile_->GetAllOffTheRecordProfiles();
+}
+
+void OffTheRecordProfileImpl::DestroyOffTheRecordProfile(
+    Profile* /*otr_profile*/) {
+  // OffTheRecord profiles should be destroyed through a request to their
+  // original profile.
   NOTREACHED();
 }
 
-bool OffTheRecordProfileImpl::HasOffTheRecordProfile() {
+bool OffTheRecordProfileImpl::HasOffTheRecordProfile(
+    const OTRProfileID& otr_profile_id) {
+  if (otr_profile_id_ == otr_profile_id)
+    return true;
+  return profile_->HasOffTheRecordProfile(otr_profile_id);
+}
+
+bool OffTheRecordProfileImpl::HasAnyOffTheRecordProfile() {
   return true;
 }
 
@@ -587,7 +609,7 @@ void OffTheRecordProfileImpl::SetCreationTimeForTesting(
 class GuestSessionProfile : public OffTheRecordProfileImpl {
  public:
   explicit GuestSessionProfile(Profile* real_profile)
-      : OffTheRecordProfileImpl(real_profile) {
+      : OffTheRecordProfileImpl(real_profile, OTRProfileID::PrimaryID()) {
     set_is_guest_profile(true);
   }
 
@@ -605,17 +627,19 @@ class GuestSessionProfile : public OffTheRecordProfileImpl {
 };
 #endif
 
-Profile* Profile::CreateOffTheRecordProfile() {
-  OffTheRecordProfileImpl* profile = NULL;
+// static
+std::unique_ptr<Profile> Profile::CreateOffTheRecordProfile(
+    Profile* parent,
+    const OTRProfileID& otr_profile_id) {
+  std::unique_ptr<OffTheRecordProfileImpl> profile;
 #if defined(OS_CHROMEOS)
-  if (IsGuestSession())
-    profile = new GuestSessionProfile(this);
+  if (parent->IsGuestSession() && otr_profile_id == OTRProfileID::PrimaryID())
+    profile.reset(new GuestSessionProfile(parent));
 #endif
   if (!profile)
-    profile = new OffTheRecordProfileImpl(this);
+    profile.reset(new OffTheRecordProfileImpl(parent, otr_profile_id));
   profile->Init();
-  NotifyOffTheRecordProfileCreated(profile);
-  return profile;
+  return std::move(profile);
 }
 
 #if !defined(OS_ANDROID)

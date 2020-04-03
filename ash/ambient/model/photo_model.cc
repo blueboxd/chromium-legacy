@@ -54,6 +54,11 @@ void PhotoModel::AddNextImage(const gfx::ImageSkia& image) {
     NotifyImagesChanged();
 }
 
+void PhotoModel::Clear() {
+  images_.clear();
+  current_image_index_ = 0;
+}
+
 gfx::ImageSkia PhotoModel::GetPrevImage() const {
   if (current_image_index_ == 0)
     return gfx::ImageSkia();

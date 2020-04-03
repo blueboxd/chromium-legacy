@@ -96,14 +96,13 @@ class ClientAndroid : public Client,
   // Overrides Client
   void AttachUI() override;
   void DestroyUI() override;
-  std::string GetApiKey() const override;
+  version_info::Channel GetChannel() const override;
   std::string GetAccountEmailAddress() const override;
   AccessTokenFetcher* GetAccessTokenFetcher() override;
   autofill::PersonalDataManager* GetPersonalDataManager() const override;
   password_manager::PasswordManagerClient* GetPasswordManagerClient()
       const override;
   WebsiteLoginFetcher* GetWebsiteLoginFetcher() const override;
-  std::string GetServerUrl() const override;
   std::string GetLocale() const override;
   std::string GetCountryCode() const override;
   DeviceContext GetDeviceContext() const override;
@@ -156,7 +155,6 @@ class ClientAndroid : public Client,
 
   base::OnceCallback<void(bool, const std::string&)>
       fetch_access_token_callback_;
-  std::string server_url_;
 
   base::WeakPtrFactory<ClientAndroid> weak_ptr_factory_{this};
 

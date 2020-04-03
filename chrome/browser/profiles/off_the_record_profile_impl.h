@@ -37,16 +37,23 @@ class PrefServiceSyncable;
 ////////////////////////////////////////////////////////////////////////////////
 class OffTheRecordProfileImpl : public Profile {
  public:
-  explicit OffTheRecordProfileImpl(Profile* real_profile);
+  OffTheRecordProfileImpl(Profile* real_profile,
+                          const OTRProfileID& otr_profile_id);
   ~OffTheRecordProfileImpl() override;
   void Init();
 
   // Profile implementation.
   std::string GetProfileUserName() const override;
   ProfileType GetProfileType() const override;
-  Profile* GetOffTheRecordProfile() override;
-  void DestroyOffTheRecordProfile() override;
-  bool HasOffTheRecordProfile() override;
+  // TODO(https://crbug.com/1033903): Remove the default value.
+  Profile* GetOffTheRecordProfile(
+      const OTRProfileID& otr_profile_id = OTRProfileID::PrimaryID()) override;
+  std::vector<Profile*> GetAllOffTheRecordProfiles() override;
+  void DestroyOffTheRecordProfile(Profile* otr_profile) override;
+  // TODO(https://crbug.com/1033903): Remove the default value.
+  bool HasOffTheRecordProfile(
+      const OTRProfileID& otr_profile_id = OTRProfileID::PrimaryID()) override;
+  bool HasAnyOffTheRecordProfile() override;
   Profile* GetOriginalProfile() override;
   const Profile* GetOriginalProfile() const override;
   bool IsSupervised() const override;
@@ -100,6 +107,7 @@ class OffTheRecordProfileImpl : public Profile {
   scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() override;
   bool IsOffTheRecord() override;
   bool IsOffTheRecord() const override;
+  const OTRProfileID& GetOTRProfileID() const override;
   content::DownloadManagerDelegate* GetDownloadManagerDelegate() override;
   content::ResourceContext* GetResourceContext() override;
   content::BrowserPluginGuestManager* GetGuestManager() override;
@@ -141,6 +149,8 @@ class OffTheRecordProfileImpl : public Profile {
 
   // The real underlying profile.
   Profile* profile_;
+
+  const OTRProfileID otr_profile_id_;
 
   std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs_;
 

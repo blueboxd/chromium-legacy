@@ -436,8 +436,17 @@ IntRect ChromeClientImpl::ViewportToScreen(
   if (client) {
     client->ConvertViewportToWindow(&screen_rect);
     WebRect view_rect = client->ViewRect();
-    screen_rect.x += view_rect.x;
-    screen_rect.y += view_rect.y;
+
+    base::CheckedNumeric<int> screen_rect_x = screen_rect.x;
+    base::CheckedNumeric<int> screen_rect_y = screen_rect.y;
+
+    screen_rect_x += view_rect.x;
+    screen_rect_y += view_rect.y;
+
+    screen_rect.x =
+        screen_rect_x.ValueOrDefault(std::numeric_limits<int>::max());
+    screen_rect.y =
+        screen_rect_y.ValueOrDefault(std::numeric_limits<int>::max());
   }
 
   return screen_rect;

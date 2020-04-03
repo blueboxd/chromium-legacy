@@ -2105,9 +2105,17 @@ gfx::Insets ScrollableShelfView::CalculateRipplePaddingInsets() const {
 
 gfx::RoundedCornersF
 ScrollableShelfView::CalculateShelfContainerRoundedCorners() const {
-  if (!chromeos::switches::ShouldShowShelfHotseat() ||
-      !Shell::Get()->IsInTabletMode())
+  // This function may access TabletModeController during destruction of
+  // Hotseat. However, TabletModeController is destructed before Hotseat. So
+  // check the pointer explicitly here.
+  // TODO(andrewxu): reorder the destruction order in Shell::~Shell then remove
+  // the explicit check.
+  const bool is_in_tablet_mode =
+      Shell::Get()->tablet_mode_controller() && Shell::Get()->IsInTabletMode();
+
+  if (!chromeos::switches::ShouldShowShelfHotseat() || !is_in_tablet_mode) {
     return gfx::RoundedCornersF();
+  }
 
   const bool is_horizontal_alignment = GetShelf()->IsHorizontalAlignment();
   const float radius = (is_horizontal_alignment ? height() : width()) / 2.f;

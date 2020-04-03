@@ -166,72 +166,6 @@ IN_PROC_BROWSER_TEST_F(IndependentOTRProfileManagerTest, CreateAndDestroy) {
 }
 
 IN_PROC_BROWSER_TEST_F(IndependentOTRProfileManagerTest,
-                       DeleteWaitsForLastBrowser) {
-  ProfileDestructionWatcher watcher;
-  Profile* otr_profile = nullptr;
-  Browser* otr_browser1 = nullptr;
-  Browser* otr_browser2 = nullptr;
-  {
-    auto profile_registration = manager_->CreateFromOriginalProfile(
-        browser()->profile(), base::BindOnce(&OriginalProfileNeverDestroyed));
-    otr_profile = profile_registration->profile();
-
-    otr_browser1 = CreateBrowser(otr_profile);
-    otr_browser2 = CreateBrowser(otr_profile);
-    ASSERT_NE(otr_browser1, otr_browser2);
-  }
-
-  base::RunLoop run_loop1;
-  BrowserRemovedWaiter removed_waiter1(otr_browser1,
-                                       run_loop1.QuitWhenIdleClosure());
-  otr_browser1->window()->Close();
-  run_loop1.Run();
-  ASSERT_FALSE(base::Contains(*BrowserList::GetInstance(), otr_browser1));
-  ASSERT_TRUE(base::Contains(*BrowserList::GetInstance(), otr_browser2));
-
-  watcher.Watch(otr_profile);
-  base::RunLoop run_loop2;
-  BrowserRemovedWaiter removed_waiter2(otr_browser2,
-                                       run_loop2.QuitWhenIdleClosure());
-  otr_browser2->window()->Close();
-  run_loop2.Run();
-  ASSERT_FALSE(base::Contains(*BrowserList::GetInstance(), otr_browser2));
-  EXPECT_TRUE(watcher.destroyed());
-}
-
-IN_PROC_BROWSER_TEST_F(IndependentOTRProfileManagerTest,
-                       DeleteImmediatelyWhenBrowsersAlreadyClosed) {
-  ProfileDestructionWatcher watcher;
-  {
-    auto profile_registration = manager_->CreateFromOriginalProfile(
-        browser()->profile(), base::BindOnce(&OriginalProfileNeverDestroyed));
-    auto* otr_profile = profile_registration->profile();
-
-    auto* otr_browser1 = CreateBrowser(otr_profile);
-    auto* otr_browser2 = CreateBrowser(otr_profile);
-    ASSERT_NE(otr_browser1, otr_browser2);
-
-    base::RunLoop run_loop1;
-    BrowserRemovedWaiter removed_waiter1(otr_browser1,
-                                         run_loop1.QuitWhenIdleClosure());
-    base::RunLoop run_loop2;
-    BrowserRemovedWaiter removed_waiter2(otr_browser2,
-                                         run_loop2.QuitWhenIdleClosure());
-    otr_browser1->window()->Close();
-    otr_browser2->window()->Close();
-    run_loop1.Run();
-    run_loop2.Run();
-    ASSERT_FALSE(base::Contains(*BrowserList::GetInstance(), otr_browser1));
-    ASSERT_FALSE(base::Contains(*BrowserList::GetInstance(), otr_browser2));
-
-    watcher.Watch(otr_profile);
-  }
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(watcher.destroyed());
-}
-
-IN_PROC_BROWSER_TEST_F(IndependentOTRProfileManagerTest,
                        CreateTwoFromSameProfile) {
   ProfileDestructionWatcher watcher1;
   ProfileDestructionWatcher watcher2;
@@ -310,66 +244,6 @@ IN_PROC_BROWSER_TEST_F(IndependentOTRProfileManagerTest,
   // profiles to be destroyed.
   EXPECT_TRUE(watcher1.destroyed());
   EXPECT_TRUE(watcher2.destroyed());
-}
-
-IN_PROC_BROWSER_TEST_F(IndependentOTRProfileManagerTest,
-                       BrowserClosingDoesntRemoveProfileObserver) {
-  ProfileDestructionWatcher watcher1;
-  ProfileDestructionWatcher watcher2;
-
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-#if defined(OS_CHROMEOS)
-  EnableProfileHelperTestSettings();
-#endif
-  original_profile_ = Profile::CreateProfile(temp_dir_.GetPath(), nullptr,
-                                             Profile::CREATE_MODE_SYNCHRONOUS);
-  ASSERT_TRUE(original_profile_);
-  auto profile_owner1 = RegistrationOwner(manager_, original_profile_.get());
-  auto* otr_profile1 = profile_owner1.profile();
-  Browser* otr_browser = nullptr;
-  {
-    auto profile_owner2 = RegistrationOwner(manager_, original_profile_.get());
-    auto* otr_profile2 = profile_owner2.profile();
-
-    otr_browser = CreateBrowser(otr_profile2);
-    watcher2.Watch(otr_profile2);
-  }
-  base::RunLoop run_loop;
-  BrowserRemovedWaiter removed_waiter(otr_browser,
-                                      run_loop.QuitWhenIdleClosure());
-  otr_browser->window()->Close();
-  run_loop.Run();
-  ASSERT_FALSE(base::Contains(*BrowserList::GetInstance(), otr_browser));
-  EXPECT_TRUE(watcher2.destroyed());
-
-  watcher1.Watch(otr_profile1);
-
-  SafelyDestroyOriginalProfile();
-
-  EXPECT_TRUE(watcher1.destroyed());
-}
-
-IN_PROC_BROWSER_TEST_F(IndependentOTRProfileManagerTest,
-                       CallbackNotCalledAfterUnregister) {
-  ProfileDestructionWatcher watcher;
-  Browser* otr_browser = nullptr;
-  Profile* otr_profile = nullptr;
-  {
-    auto profile_registration = manager_->CreateFromOriginalProfile(
-        browser()->profile(), base::BindOnce(&OriginalProfileNeverDestroyed));
-    otr_profile = profile_registration->profile();
-
-    otr_browser = CreateBrowser(otr_profile);
-  }
-  watcher.Watch(otr_profile);
-  base::RunLoop run_loop;
-  BrowserRemovedWaiter removed_waiter(otr_browser,
-                                      run_loop.QuitWhenIdleClosure());
-  otr_browser->window()->Close();
-  run_loop.Run();
-  ASSERT_FALSE(base::Contains(*BrowserList::GetInstance(), otr_browser));
-  EXPECT_TRUE(watcher.destroyed());
 }
 
 IN_PROC_BROWSER_TEST_F(IndependentOTRProfileManagerTest, Notifications) {

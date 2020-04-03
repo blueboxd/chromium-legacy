@@ -725,13 +725,13 @@ void V8DOMConfiguration::InstallConstants(
         static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete),
         v8::Local<v8::AccessorSignature>(), v8::DEFAULT,
         v8::SideEffectType::kHasNoSideEffect,
-        v8::SideEffectType::kHasNoSideEffect);
+        v8::SideEffectType::kHasSideEffect);
     prototype_template->SetNativeDataProperty(
         name, constants[i].getter, nullptr, v8::Local<v8::Value>(),
         static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete),
         v8::Local<v8::AccessorSignature>(), v8::DEFAULT,
         v8::SideEffectType::kHasNoSideEffect,
-        v8::SideEffectType::kHasNoSideEffect);
+        v8::SideEffectType::kHasSideEffect);
   }
 }
 

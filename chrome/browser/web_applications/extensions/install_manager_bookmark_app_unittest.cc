@@ -643,6 +643,8 @@ TEST_F(InstallManagerBookmarkAppTest, InstallBookmarkAppFromSync) {
 
   url_loader().SetNextLoadUrlResult(
       GURL("about:blank"), web_app::WebAppUrlLoader::Result::kUrlLoaded);
+  url_loader().SetNextLoadUrlResult(
+      AppUrl(), web_app::WebAppUrlLoader::Result::kRedirectedUrlLoaded);
 
   {
     base::RunLoop run_loop;

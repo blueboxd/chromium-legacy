@@ -244,11 +244,12 @@ void AppServiceProxy::LaunchAppWithFiles(
 
 void AppServiceProxy::LaunchAppWithIntent(
     const std::string& app_id,
+    int32_t event_flags,
     apps::mojom::IntentPtr intent,
     apps::mojom::LaunchSource launch_source,
     int64_t display_id) {
   if (app_service_.is_connected()) {
-    cache_.ForOneApp(app_id, [this, &intent, launch_source,
+    cache_.ForOneApp(app_id, [this, event_flags, &intent, launch_source,
                               display_id](const apps::AppUpdate& update) {
 #if defined(OS_CHROMEOS)
       if (MaybeShowLaunchPreventionDialog(update)) {
@@ -257,17 +258,18 @@ void AppServiceProxy::LaunchAppWithIntent(
 #endif
       RecordAppLaunch(update.AppId(), launch_source);
       app_service_->LaunchAppWithIntent(update.AppType(), update.AppId(),
-                                        std::move(intent), launch_source,
-                                        display_id);
+                                        event_flags, std::move(intent),
+                                        launch_source, display_id);
     });
   }
 }
 
 void AppServiceProxy::LaunchAppWithUrl(const std::string& app_id,
+                                       int32_t event_flags,
                                        GURL url,
                                        apps::mojom::LaunchSource launch_source,
                                        int64_t display_id) {
-  LaunchAppWithIntent(app_id, apps_util::CreateIntentFromUrl(url),
+  LaunchAppWithIntent(app_id, event_flags, apps_util::CreateIntentFromUrl(url),
                       launch_source, display_id);
 }
 

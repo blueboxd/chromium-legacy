@@ -592,7 +592,7 @@ void ChromeManagementAPIDelegate::EnableExtension(
   // for, and received parent permission to install the extension.
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForBrowserContext(context);
-  supervised_user_service->AddExtensionApproval(*extension);
+  supervised_user_service->AddOrUpdateExtensionApproval(*extension);
 #endif
 
   // If the extension was disabled for a permissions increase, the Management

@@ -25,6 +25,7 @@
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limit_interface.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
@@ -70,6 +71,7 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/clear_site_data_utils.h"
+#include "content/public/browser/web_contents.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/management_policy.h"
@@ -136,6 +138,7 @@ ash::ShelfLaunchSource ConvertLaunchSource(
     case apps::mojom::LaunchSource::kFromMenu:
     case apps::mojom::LaunchSource::kFromInstalledNotification:
     case apps::mojom::LaunchSource::kFromTest:
+    case apps::mojom::LaunchSource::kFromArc:
       return ash::LAUNCH_FROM_UNKNOWN;
   }
 }
@@ -438,6 +441,7 @@ void ExtensionApps::Launch(const std::string& app_id,
     case apps::mojom::LaunchSource::kFromMenu:
     case apps::mojom::LaunchSource::kFromInstalledNotification:
     case apps::mojom::LaunchSource::kFromTest:
+    case apps::mojom::LaunchSource::kFromArc:
       break;
   }
 
@@ -476,6 +480,7 @@ void ExtensionApps::LaunchAppWithFiles(const std::string& app_id,
 }
 
 void ExtensionApps::LaunchAppWithIntent(const std::string& app_id,
+                                        int32_t event_flags,
                                         apps::mojom::IntentPtr intent,
                                         apps::mojom::LaunchSource launch_source,
                                         int64_t display_id) {
@@ -486,17 +491,30 @@ void ExtensionApps::LaunchAppWithIntent(const std::string& app_id,
   const extensions::Extension* extension =
       extensions::ExtensionRegistry::Get(profile_)->GetInstalledExtension(
           app_id);
-  if (!extension || !extensions::util::IsAppLaunchable(app_id, profile_) ||
-      RunExtensionEnableFlow(
-          app_id,
-          base::BindOnce(&ExtensionApps::LaunchAppWithIntent,
-                         weak_factory_.GetWeakPtr(), app_id, std::move(intent),
-                         launch_source, display_id))) {
+  if (!extension || !extensions::util::IsAppLaunchable(app_id, profile_)) {
     return;
   }
 
-  AppLaunchParams params = CreateAppLaunchParamsForIntent(app_id, intent);
-  LaunchImpl(params);
+  if (!extensions::util::IsAppLaunchableWithoutEnabling(app_id, profile_)) {
+    RunExtensionEnableFlow(
+        app_id, base::BindOnce(&ExtensionApps::LaunchAppWithIntent,
+                               weak_factory_.GetWeakPtr(), app_id, event_flags,
+                               std::move(intent), launch_source, display_id));
+    return;
+  }
+
+  auto params = apps::CreateAppLaunchParamsForIntent(
+      app_id, event_flags, GetAppLaunchSource(launch_source), display_id,
+      extensions::GetLaunchContainer(extensions::ExtensionPrefs::Get(profile_),
+                                     extension),
+      intent);
+  auto* tab = LaunchImpl(params);
+
+  if (launch_source == apps::mojom::LaunchSource::kFromArc && tab) {
+    // Add a flag to remember this tab originated in the ARC context.
+    tab->SetUserData(&arc::ArcWebContentsData::kArcTransitionFlag,
+                     std::make_unique<arc::ArcWebContentsData>());
+  }
 }
 
 void ExtensionApps::SetPermission(const std::string& app_id,
@@ -1448,10 +1466,9 @@ void ExtensionApps::GetMenuModelForChromeBrowserApp(
   std::move(callback).Run(std::move(menu_items));
 }
 
-void ExtensionApps::LaunchImpl(const AppLaunchParams& params) {
+content::WebContents* ExtensionApps::LaunchImpl(const AppLaunchParams& params) {
   if (web_app_launch_manager_) {
-    web_app_launch_manager_->OpenApplication(params);
-    return;
+    return web_app_launch_manager_->OpenApplication(params);
   }
 
   if (params.container ==
@@ -1460,7 +1477,7 @@ void ExtensionApps::LaunchImpl(const AppLaunchParams& params) {
     web_app::RecordAppWindowLaunch(profile_, params.app_id);
   }
 
-  ::OpenApplication(profile_, params);
+  return ::OpenApplication(profile_, params);
 }
 
 }  // namespace apps

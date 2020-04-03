@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/ambient/backdrop/photo_client_impl.h"
 
 #include <utility>
+#include <vector>
 
 #include "ash/public/cpp/ambient/ambient_prefs.h"
 #include "base/base64.h"
@@ -157,8 +158,23 @@ PhotoClientImpl::~PhotoClientImpl() = default;
 void PhotoClientImpl::FetchTopicInfo(OnTopicInfoFetchedCallback callback) {
   // TODO(b/148463064): Access token will be requested and cached before
   // entering lock screen.
+  // Consolidate the functions of StartToFetchTopicInfo, StartToGetSettings, and
+  // StartToUpdateSettings after this is done.
   RequestAccessToken(base::BindOnce(&PhotoClientImpl::StartToFetchTopicInfo,
-                                    base::Unretained(this),
+                                    weak_factory_.GetWeakPtr(),
+                                    std::move(callback)));
+}
+
+void PhotoClientImpl::GetSettings(GetSettingsCallback callback) {
+  RequestAccessToken(base::BindOnce(&PhotoClientImpl::StartToGetSettings,
+                                    weak_factory_.GetWeakPtr(),
+                                    std::move(callback)));
+}
+
+void PhotoClientImpl::UpdateSettings(int topic_source,
+                                     UpdateSettingsCallback callback) {
+  RequestAccessToken(base::BindOnce(&PhotoClientImpl::StartToUpdateSettings,
+                                    weak_factory_.GetWeakPtr(), topic_source,
                                     std::move(callback)));
 }
 
@@ -172,6 +188,8 @@ void PhotoClientImpl::RequestAccessToken(GetAccessTokenCallback callback) {
   signin::ScopeSet scopes;
   scopes.insert(kPhotosOAuthScope);
   // TODO(b/148463064): Handle retry refresh token and multiple requests.
+  // Currently only one request is allowed.
+  DCHECK(!access_token_fetcher_);
   access_token_fetcher_ = identity_manager->CreateAccessTokenFetcherForAccount(
       account_info.account_id, /*oauth_consumer_name=*/"ChromeOS_AmbientMode",
 
@@ -186,45 +204,22 @@ void PhotoClientImpl::StartToFetchTopicInfo(
     signin::AccessTokenInfo access_token_info) {
   access_token_fetcher_.reset();
   if (gaia_id.empty() || access_token_info.token.empty()) {
-    std::move(callback).Run(/*success=*/false, base::nullopt);
+    std::move(callback).Run(base::nullopt);
     return;
   }
 
   std::string client_id = GetClientId();
   chromeos::ambient::BackdropClientConfig::Request request =
-      backdrop_client_config_.GetFetchTopicInfoRequest(
+      backdrop_client_config_.CreateFetchTopicInfoRequest(
           gaia_id, access_token_info.token, client_id);
   auto resource_request = CreateResourceRequest(request);
-
-  net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("backdrop_fetch_topics",
-                                          R"(
-            semantics {
-              sender: "ChromeOS Ambient Mode"
-              description:
-                "The ChromeOS Ambient Mode displays a rich set of photos for "
-                "users to choose from."
-              trigger:
-                "When ChromeOS Ambient Mode starts"
-              data:
-                "The Backdrop protocol buffer messages. Containing user auth"
-                "token and a unique random client id."
-              destination: GOOGLE_OWNED_SERVICE
-            }
-            policy {
-              cookies_allowed: NO
-              setting:
-                "NA"
-              policy_exception_justification:
-                "Not implemented, considered not necessary."
-            })");
 
   // |base::Unretained| is safe because this instance outlives
   // |backdrop_url_loader_|.
   DCHECK(!backdrop_url_loader_);
   backdrop_url_loader_ = std::make_unique<BackdropURLLoader>();
   backdrop_url_loader_->Start(
-      std::move(resource_request), request.body, traffic_annotation,
+      std::move(resource_request), request.body, NO_TRAFFIC_ANNOTATION_YET,
       base::BindOnce(&PhotoClientImpl::OnTopicInfoFetched,
                      base::Unretained(this), std::move(callback)));
 }
@@ -239,5 +234,84 @@ void PhotoClientImpl::OnTopicInfoFetched(
   backdrop::ScreenUpdate::Topic backdrop_topic =
       BackdropClientConfig::ParseFetchTopicInfoResponse(*response);
   ash::PhotoController::Topic topic = CreateTopicFrom(backdrop_topic);
-  std::move(callback).Run(/*success=*/true, topic);
+  std::move(callback).Run(topic);
+}
+
+void PhotoClientImpl::StartToGetSettings(
+    GetSettingsCallback callback,
+    const std::string& gaia_id,
+    GoogleServiceAuthError error,
+    signin::AccessTokenInfo access_token_info) {
+  access_token_fetcher_.reset();
+
+  if (gaia_id.empty() || access_token_info.token.empty()) {
+    std::move(callback).Run(/*topic_source=*/base::nullopt);
+    return;
+  }
+
+  std::string client_id = GetClientId();
+  BackdropClientConfig::Request request =
+      backdrop_client_config_.CreateGetSettingsRequest(
+          gaia_id, access_token_info.token, client_id);
+  auto resource_request = CreateResourceRequest(request);
+
+  // |base::Unretained| is safe because this instance outlives
+  // |backdrop_url_loader_|.
+  DCHECK(!backdrop_url_loader_);
+  backdrop_url_loader_ = std::make_unique<BackdropURLLoader>();
+  backdrop_url_loader_->Start(
+      std::move(resource_request), request.body, NO_TRAFFIC_ANNOTATION_YET,
+      base::BindOnce(&PhotoClientImpl::OnGetSettings, base::Unretained(this),
+                     std::move(callback)));
+}
+
+void PhotoClientImpl::OnGetSettings(GetSettingsCallback callback,
+                                    std::unique_ptr<std::string> response) {
+  DCHECK(backdrop_url_loader_);
+  backdrop_url_loader_.reset();
+
+  int topic_source = BackdropClientConfig::ParseGetSettingsResponse(*response);
+  if (topic_source == -1)
+    std::move(callback).Run(base::nullopt);
+  else
+    std::move(callback).Run(topic_source);
+}
+
+void PhotoClientImpl::StartToUpdateSettings(
+    int topic_source,
+    UpdateSettingsCallback callback,
+    const std::string& gaia_id,
+    GoogleServiceAuthError error,
+    signin::AccessTokenInfo access_token_info) {
+  access_token_fetcher_.reset();
+
+  if (gaia_id.empty() || access_token_info.token.empty()) {
+    std::move(callback).Run(/*success=*/false);
+    return;
+  }
+
+  std::string client_id = GetClientId();
+  BackdropClientConfig::Request request =
+      backdrop_client_config_.CreateUpdateSettingsRequest(
+          gaia_id, access_token_info.token, client_id, topic_source);
+  auto resource_request = CreateResourceRequest(request);
+
+  // |base::Unretained| is safe because this instance outlives
+  // |backdrop_url_loader_|.
+  DCHECK(!backdrop_url_loader_);
+  backdrop_url_loader_ = std::make_unique<BackdropURLLoader>();
+  backdrop_url_loader_->Start(
+      std::move(resource_request), request.body, NO_TRAFFIC_ANNOTATION_YET,
+      base::BindOnce(&PhotoClientImpl::OnUpdateSettings, base::Unretained(this),
+                     std::move(callback)));
+}
+
+void PhotoClientImpl::OnUpdateSettings(UpdateSettingsCallback callback,
+                                       std::unique_ptr<std::string> response) {
+  DCHECK(backdrop_url_loader_);
+  backdrop_url_loader_.reset();
+
+  const bool success =
+      BackdropClientConfig::ParseUpdateSettingsResponse(*response);
+  std::move(callback).Run(success);
 }

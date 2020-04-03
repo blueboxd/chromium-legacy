@@ -30,6 +30,7 @@
 #include "components/autofill_assistant/browser/access_token_fetcher.h"
 #include "components/autofill_assistant/browser/controller.h"
 #include "components/autofill_assistant/browser/features.h"
+#include "components/autofill_assistant/browser/switches.h"
 #include "components/autofill_assistant/browser/website_login_fetcher_impl.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
@@ -40,7 +41,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
-#include "google_apis/google_api_keys.h"
 #include "url/gurl.h"
 
 using base::android::AttachCurrentThread;
@@ -48,15 +48,7 @@ using base::android::JavaParamRef;
 using base::android::JavaRef;
 
 namespace autofill_assistant {
-namespace switches {
-const char* const kAutofillAssistantServerKey = "autofill-assistant-key";
-const char* const kAutofillAssistantUrl = "autofill-assistant-url";
-}  // namespace switches
-
 namespace {
-
-const char* const kDefaultAutofillAssistantServerUrl =
-    "https://automate-pa.googleapis.com";
 
 // A direct action that corresponds to pressing the close or cancel button on
 // the UI.
@@ -106,11 +98,6 @@ ClientAndroid::ClientAndroid(content::WebContents* web_contents)
       java_object_(Java_AutofillAssistantClient_create(
           AttachCurrentThread(),
           reinterpret_cast<intptr_t>(this))) {
-  server_url_ = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      switches::kAutofillAssistantUrl);
-  if (server_url_.empty()) {
-    server_url_ = kDefaultAutofillAssistantServerUrl;
-  }
 }
 
 ClientAndroid::~ClientAndroid() {
@@ -449,19 +436,8 @@ void ClientAndroid::DestroyUI() {
   ui_controller_android_.reset();
 }
 
-std::string ClientAndroid::GetApiKey() const {
-  std::string api_key;
-  if (google_apis::IsGoogleChromeAPIKeyUsed()) {
-    api_key = chrome::GetChannel() == version_info::Channel::STABLE
-                  ? google_apis::GetAPIKey()
-                  : google_apis::GetNonStableAPIKey();
-  }
-  const auto* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kAutofillAssistantServerKey)) {
-    api_key = command_line->GetSwitchValueASCII(
-        switches::kAutofillAssistantServerKey);
-  }
-  return api_key;
+version_info::Channel ClientAndroid::GetChannel() const {
+  return chrome::GetChannel();
 }
 
 std::string ClientAndroid::GetAccountEmailAddress() const {
@@ -502,10 +478,6 @@ WebsiteLoginFetcher* ClientAndroid::GetWebsiteLoginFetcher() const {
         std::make_unique<WebsiteLoginFetcherImpl>(client, driver);
   }
   return website_login_fetcher_.get();
-}
-
-std::string ClientAndroid::GetServerUrl() const {
-  return server_url_;
 }
 
 std::string ClientAndroid::GetLocale() const {
@@ -596,4 +568,4 @@ bool ClientAndroid::NeedsUI() {
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ClientAndroid)
 
-}  // namespace autofill_assistant.
+}  // namespace autofill_assistant

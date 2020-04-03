@@ -12,6 +12,8 @@ source_set("x11") {
   sources = [
     "client_native_pixmap_factory_x11.cc",
     "client_native_pixmap_factory_x11.h",
+    "gl_egl_utility_x11.cc",
+    "gl_egl_utility_x11.h",
     "gl_ozone_glx.cc",
     "gl_ozone_glx.h",
     "gl_surface_egl_ozone_x11.cc",
@@ -50,6 +52,7 @@ source_set("x11") {
     "//ui/base/clipboard:clipboard_types",
     "//ui/base/ime",
     "//ui/base/x",
+    "//ui/base/x:gl",
     "//ui/display/fake",
     "//ui/events",
     "//ui/events/devices",

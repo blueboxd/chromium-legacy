@@ -45,7 +45,9 @@ constexpr uint32_t kMinWlDrmVersion = 2;
 constexpr uint32_t kMinWlOutputVersion = 2;
 }  // namespace
 
-WaylandConnection::WaylandConnection() : controller_(FROM_HERE) {}
+WaylandConnection::WaylandConnection(
+    WaylandBufferManagerHost* buffer_manager_host)
+    : buffer_manager_host_(buffer_manager_host), controller_(FROM_HERE) {}
 
 WaylandConnection::~WaylandConnection() = default;
 
@@ -72,8 +74,6 @@ bool WaylandConnection::Initialize() {
          !wayland_output_manager_->IsOutputReady()) {
     wl_display_roundtrip(display_.get());
   }
-
-  buffer_manager_host_ = std::make_unique<WaylandBufferManagerHost>(this);
 
   if (!compositor_) {
     LOG(ERROR) << "No wl_compositor object";

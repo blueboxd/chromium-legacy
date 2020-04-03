@@ -182,26 +182,30 @@ struct DefaultHash<CountCopy> {
 template <typename T>
 class ValueInstanceCount final {
  public:
+  static int* const kDeletedValue;
+
   ValueInstanceCount() : counter_(nullptr), value_(T()) {}
   explicit ValueInstanceCount(int* counter, T value = T())
       : counter_(counter), value_(value) {
-    DCHECK(counter_);
-    *counter = 1;
+    if (counter_ && counter_ != kDeletedValue)
+      ++*counter_;
   }
   ValueInstanceCount(const ValueInstanceCount& other)
       : counter_(other.counter_), value_(other.value_) {
-    if (counter_)
+    if (counter_ && counter_ != kDeletedValue)
       ++*counter_;
   }
   ValueInstanceCount& operator=(const ValueInstanceCount& other) {
+    if (counter_ && counter_ != kDeletedValue)
+      --*counter_;
     counter_ = other.counter_;
     value_ = other.value_;
-    if (counter_)
+    if (counter_ && counter_ != kDeletedValue)
       ++*counter_;
     return *this;
   }
   ~ValueInstanceCount() {
-    if (counter_)
+    if (counter_ && counter_ != kDeletedValue)
       --*counter_;
   }
 
@@ -221,9 +225,11 @@ struct ValueInstanceCountHashTraits
   static bool IsEmptyValue(const ValueInstanceCount<T>& value) {
     return !value.Counter();
   }
-  static void ConstructDeletedValue(ValueInstanceCount<T>& slot, bool) {}
+  static void ConstructDeletedValue(ValueInstanceCount<T>& slot, bool) {
+    slot = ValueInstanceCount<T>(ValueInstanceCount<T>::kDeletedValue);
+  }
   static bool IsDeletedValue(const ValueInstanceCount<T>& value) {
-    return false;
+    return value.Counter() == ValueInstanceCount<T>::kDeletedValue;
   }
 };
 

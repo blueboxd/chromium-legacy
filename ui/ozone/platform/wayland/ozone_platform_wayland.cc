@@ -22,10 +22,13 @@
 #include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/platform/wayland/gpu/drm_render_node_path_finder.h"
-#include "ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu.h"
+#include "ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu_impl.h"
+#include "ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu_single_process.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_surface_factory.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_connector.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
+#include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host_impl.h"
+#include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host_single_process.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_input_method_context_factory.h"
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
@@ -176,19 +179,37 @@ class OzonePlatformWayland : public OzonePlatform {
 #endif
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
         keyboard_layout_engine_.get());
-    connection_ = std::make_unique<WaylandConnection>();
+
+    if (args.single_process && !args.using_mojo) {
+      using_mojo_ = false;
+      buffer_manager_host_ =
+          std::make_unique<WaylandBufferManagerHostSingleProcess>();
+    } else if (args.using_mojo) {
+      auto buffer_manager_host_impl =
+          std::make_unique<WaylandBufferManagerHostImpl>();
+      buffer_manager_connector_ =
+          std::make_unique<WaylandBufferManagerConnector>(
+              buffer_manager_host_impl.get());
+      buffer_manager_host_ = std::move(buffer_manager_host_impl);
+    } else {
+      NOTREACHED() << "Not supported configuration: single_process="
+                   << args.single_process << "; using_mojo=" << args.using_mojo;
+    }
+
+    connection_ =
+        std::make_unique<WaylandConnection>(buffer_manager_host_.get());
     if (!connection_->Initialize())
       LOG(FATAL) << "Failed to initialize Wayland platform";
 
-    buffer_manager_connector_ = std::make_unique<WaylandBufferManagerConnector>(
-        connection_->buffer_manager_host());
+    buffer_manager_host_->SetWaylandConnection(connection_.get());
+    supported_buffer_formats_ =
+        buffer_manager_host_->GetSupportedBufferFormats();
+
     cursor_factory_ = std::make_unique<BitmapCursorFactoryOzone>();
     overlay_manager_ = std::make_unique<StubOverlayManager>();
     input_controller_ = CreateStubInputController();
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
 
-    supported_buffer_formats_ =
-        connection_->buffer_manager_host()->GetSupportedBufferFormats();
 #if BUILDFLAG(USE_GTK)
     DCHECK(!GtkUiDelegate::instance());
     gtk_ui_delegate_ =
@@ -198,7 +219,23 @@ class OzonePlatformWayland : public OzonePlatform {
   }
 
   void InitializeGPU(const InitParams& args) override {
-    buffer_manager_ = std::make_unique<WaylandBufferManagerGpu>();
+    if (args.single_process && !args.using_mojo) {
+      // This must be set during InitializeUI call.
+      DCHECK(!using_mojo_);
+      auto buffer_manager_single_process =
+          std::make_unique<WaylandBufferManagerGpuSingleProcess>(
+              buffer_manager_host_.get());
+      static_cast<WaylandBufferManagerHostSingleProcess*>(
+          buffer_manager_host_.get())
+          ->SetWaylandBufferManagerGpuSingleProcess(
+              buffer_manager_single_process.get());
+      buffer_manager_ = std::move(buffer_manager_single_process);
+    } else if (args.using_mojo) {
+      buffer_manager_ = std::make_unique<WaylandBufferManagerGpuImpl>();
+    } else {
+      NOTREACHED() << "Not supported configuration: single_process="
+                   << args.single_process << "; using_mojo=" << args.using_mojo;
+    }
     surface_factory_ = std::make_unique<WaylandSurfaceFactory>(
         connection_.get(), buffer_manager_.get());
 #if defined(WAYLAND_GBM)
@@ -224,6 +261,9 @@ class OzonePlatformWayland : public OzonePlatform {
   }
 
   void AddInterfaces(mojo::BinderMap* binders) override {
+    if (!using_mojo_)
+      return;
+
     binders->Add<ozone::mojom::WaylandBufferManagerGpu>(
         base::BindRepeating(
             &OzonePlatformWayland::CreateWaylandBufferManagerGpuBinding,
@@ -233,7 +273,8 @@ class OzonePlatformWayland : public OzonePlatform {
 
   void CreateWaylandBufferManagerGpuBinding(
       mojo::PendingReceiver<ozone::mojom::WaylandBufferManagerGpu> receiver) {
-    buffer_manager_->AddBindingWaylandBufferManagerGpu(std::move(receiver));
+    static_cast<WaylandBufferManagerGpuImpl*>(buffer_manager_.get())
+        ->AddBindingWaylandBufferManagerGpu(std::move(receiver));
   }
 
  private:
@@ -251,6 +292,7 @@ class OzonePlatformWayland : public OzonePlatform {
   std::unique_ptr<WaylandInputMethodContextFactory>
       input_method_context_factory_;
   std::unique_ptr<WaylandBufferManagerConnector> buffer_manager_connector_;
+  std::unique_ptr<WaylandBufferManagerHost> buffer_manager_host_;
 
   // Objects, which solely live in the GPU process.
   std::unique_ptr<WaylandBufferManagerGpu> buffer_manager_;
@@ -266,6 +308,8 @@ class OzonePlatformWayland : public OzonePlatform {
 #if BUILDFLAG(USE_GTK)
   std::unique_ptr<GtkUiDelegateWayland> gtk_ui_delegate_;
 #endif
+
+  bool using_mojo_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformWayland);
 };

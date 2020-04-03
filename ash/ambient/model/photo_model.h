@@ -34,6 +34,9 @@ class ASH_EXPORT PhotoModel {
   // Add image to local storage.
   void AddNextImage(const gfx::ImageSkia& image);
 
+  // Clear local storage.
+  void Clear();
+
   // Get images from local storage. Could be null image.
   gfx::ImageSkia GetPrevImage() const;
   gfx::ImageSkia GetCurrImage() const;

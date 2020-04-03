@@ -1,6 +1,7 @@
 Name: hunspell
 URL: http://hunspell.sourceforge.net/
 Version: 1.6.0
+CPEPrefix: cpe:/a:hunspell_project:hunspell:1.6.0
 License: MPL 1.1/GPL 2.0/LGPL 2.1
 License File: COPYING.MPL
 Security Critical: yes

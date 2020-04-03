@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -52,17 +53,16 @@ IndependentOTRProfileManager::CreateFromOriginalProfile(
   DCHECK(!callback.is_null());
   if (!HasDependentProfiles(original_profile))
     observed_original_profiles_.Add(original_profile);
-  auto* otr_profile = original_profile->CreateOffTheRecordProfile();
+  // TODO(https://crbug.com/1033903): Receive profile id from the callers.
+  std::string profile_id = base::StringPrintf("profile::independent-otr-%i",
+                                              first_unused_unique_id_++);
+  auto* otr_profile = original_profile->GetOffTheRecordProfile(
+      Profile::OTRProfileID(profile_id));
   auto entry = refcounts_map_.emplace(otr_profile, 1);
   auto callback_entry =
       callbacks_map_.emplace(otr_profile, std::move(callback));
   DCHECK(entry.second);
   DCHECK(callback_entry.second);
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PROFILE_CREATED,
-      content::Source<Profile>(otr_profile),
-      content::NotificationService::NoDetails());
 
   return base::WrapUnique(new OTRProfileRegistration(this, otr_profile));
 }
@@ -101,7 +101,8 @@ void IndependentOTRProfileManager::OnBrowserRemoved(Browser* browser) {
   }
 }
 
-IndependentOTRProfileManager::IndependentOTRProfileManager() {
+IndependentOTRProfileManager::IndependentOTRProfileManager()
+    : first_unused_unique_id_(0) {
   BrowserList::AddObserver(this);
 }
 

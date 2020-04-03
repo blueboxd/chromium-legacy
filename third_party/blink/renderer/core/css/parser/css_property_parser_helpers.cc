@@ -29,7 +29,9 @@
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/properties/longhand.h"
 #include "third_party/blink/renderer/core/css/style_color.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -659,8 +661,6 @@ CSSCustomIdentValue* ConsumeCustomIdentWithToken(
 
   if (EqualIgnoringASCIICase(token.Value(), "default"))
     context.Count(WebFeature::kDefaultInCustomIdent);
-  if (EqualIgnoringASCIICase(token.Value(), "revert"))
-    context.Count(WebFeature::kRevertInCustomIdent);
 
   return MakeGarbageCollected<CSSCustomIdentValue>(
       token.Value().ToAtomicString());
@@ -1952,7 +1952,30 @@ void CountKeywordOnlyPropertyUsage(CSSPropertyID property,
   if (!context.IsUseCounterRecordingEnabled())
     return;
   switch (property) {
-    case CSSPropertyID::kWebkitAppearance: {
+    case CSSPropertyID::kAppearance:
+      if (value_id == CSSValueID::kInnerSpinButton ||
+          value_id == CSSValueID::kMediaSlider ||
+          value_id == CSSValueID::kMediaSliderthumb ||
+          value_id == CSSValueID::kMediaVolumeSlider ||
+          value_id == CSSValueID::kMediaVolumeSliderthumb ||
+          value_id == CSSValueID::kSliderVertical ||
+          value_id == CSSValueID::kSliderthumbHorizontal ||
+          value_id == CSSValueID::kSliderthumbVertical ||
+          value_id == CSSValueID::kSearchfieldCancelButton) {
+        if (const auto* document = context.GetDocument()) {
+          document->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+              mojom::blink::ConsoleMessageSource::kOther,
+              mojom::blink::ConsoleMessageLevel::kWarning,
+              String("The keyword '") + getValueName(value_id) +
+                  "' specified to an 'appearance' property is not "
+                  "standardized. It will be removed in the future."));
+        }
+      }
+      FALLTHROUGH;
+      // This function distinguishes 'appearance' and '-webkit-appearance'
+      // though other property aliases are handles as their aliased properties.
+      // See Appearance::ParseSingleValue().
+    case CSSPropertyID::kAliasWebkitAppearance: {
       WebFeature feature;
       if (value_id == CSSValueID::kNone) {
         feature = WebFeature::kCSSValueAppearanceNone;

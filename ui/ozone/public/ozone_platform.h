@@ -36,6 +36,7 @@ class PlatformScreen;
 class SurfaceFactoryOzone;
 class SystemInputInjector;
 class PlatformClipboard;
+class PlatformGLEGLUtility;
 
 namespace internal {
 class InputMethodDelegate;
@@ -152,6 +153,7 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
   virtual std::unique_ptr<InputMethod> CreateInputMethod(
       internal::InputMethodDelegate* delegate,
       gfx::AcceleratedWidget widget) = 0;
+  virtual PlatformGLEGLUtility* GetPlatformGLEGLUtility();
 
   // Returns true if the specified buffer format is supported.
   virtual bool IsNativePixmapConfigSupported(gfx::BufferFormat format,

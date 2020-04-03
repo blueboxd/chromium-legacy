@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/i18n/number_formatting.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -605,15 +604,17 @@ WaylandBuffer::WaylandBuffer(const gfx::Size& size, uint32_t buffer_id)
     : size(size), buffer_id(buffer_id) {}
 WaylandBuffer::~WaylandBuffer() = default;
 
-WaylandBufferManagerHost::WaylandBufferManagerHost(
-    WaylandConnection* connection)
-    : connection_(connection), receiver_(this), weak_factory_(this) {
-  connection_->wayland_window_manager()->AddObserver(this);
-}
+WaylandBufferManagerHost::WaylandBufferManagerHost() : weak_factory_(this) {}
 
 WaylandBufferManagerHost::~WaylandBufferManagerHost() {
   DCHECK(surfaces_.empty());
   DCHECK(anonymous_buffers_.empty());
+}
+
+void WaylandBufferManagerHost::SetWaylandConnection(
+    WaylandConnection* connection) {
+  connection_ = connection;
+  connection_->wayland_window_manager()->AddObserver(this);
 }
 
 void WaylandBufferManagerHost::OnWindowAdded(WaylandWindow* window) {
@@ -632,24 +633,7 @@ void WaylandBufferManagerHost::OnWindowRemoved(WaylandWindow* window) {
     surfaces_.erase(it);
 }
 
-void WaylandBufferManagerHost::SetTerminateGpuCallback(
-    base::OnceCallback<void(std::string)> terminate_callback) {
-  terminate_gpu_cb_ = std::move(terminate_callback);
-}
-
-mojo::PendingRemote<ozone::mojom::WaylandBufferManagerHost>
-WaylandBufferManagerHost::BindInterface() {
-  DCHECK(!receiver_.is_bound());
-  mojo::PendingRemote<ozone::mojom::WaylandBufferManagerHost>
-      buffer_manager_host;
-  receiver_.Bind(buffer_manager_host.InitWithNewPipeAndPassReceiver());
-  return buffer_manager_host;
-}
-
-void WaylandBufferManagerHost::OnChannelDestroyed() {
-  buffer_manager_gpu_associated_.reset();
-  receiver_.reset();
-
+void WaylandBufferManagerHost::ClearInternalState() {
   for (auto& surface_pair : surfaces_)
     surface_pair.second->ClearState();
 
@@ -671,14 +655,8 @@ bool WaylandBufferManagerHost::SupportsDmabuf() const {
          (connection_->drm() && connection_->drm()->SupportsDrmPrime());
 }
 
-void WaylandBufferManagerHost::SetWaylandBufferManagerGpu(
-    mojo::PendingAssociatedRemote<ozone::mojom::WaylandBufferManagerGpu>
-        buffer_manager_gpu_associated) {
-  buffer_manager_gpu_associated_.Bind(std::move(buffer_manager_gpu_associated));
-}
-
-void WaylandBufferManagerHost::CreateDmabufBasedBuffer(
-    mojo::PlatformHandle dmabuf_fd,
+void WaylandBufferManagerHost::CreateBufferDmabuf(
+    base::ScopedFD dmabuf_fd,
     const gfx::Size& size,
     const std::vector<uint32_t>& strides,
     const std::vector<uint32_t>& offsets,
@@ -686,20 +664,17 @@ void WaylandBufferManagerHost::CreateDmabufBasedBuffer(
     uint32_t format,
     uint32_t planes_count,
     uint32_t buffer_id) {
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
   DCHECK(error_message_.empty());
 
   TRACE_EVENT2("wayland", "WaylandBufferManagerHost::CreateDmabufBasedBuffer",
                "Format", format, "Buffer id", buffer_id);
 
-  base::ScopedFD fd = dmabuf_fd.TakeFD();
-
   // Validate data and ask surface to create a buffer associated with the
   // |buffer_id|.
-  if (!ValidateDataFromGpu(fd, size, strides, offsets, modifiers, format,
+  if (!ValidateDataFromGpu(dmabuf_fd, size, strides, offsets, modifiers, format,
                            planes_count, buffer_id) ||
       !CreateBuffer(size, buffer_id)) {
-    TerminateGpuProcess();
+    OnError(std::move(error_message_));
     return;
   }
 
@@ -708,12 +683,12 @@ void WaylandBufferManagerHost::CreateDmabufBasedBuffer(
       base::BindOnce(&WaylandBufferManagerHost::OnCreateBufferComplete,
                      weak_factory_.GetWeakPtr(), buffer_id);
   if (connection_->zwp_dmabuf()) {
-    connection_->zwp_dmabuf()->CreateBuffer(std::move(fd), size, strides,
+    connection_->zwp_dmabuf()->CreateBuffer(std::move(dmabuf_fd), size, strides,
                                             offsets, modifiers, format,
                                             planes_count, std::move(callback));
   } else if (connection_->drm()) {
-    connection_->drm()->CreateBuffer(std::move(fd), size, strides, offsets,
-                                     modifiers, format, planes_count,
+    connection_->drm()->CreateBuffer(std::move(dmabuf_fd), size, strides,
+                                     offsets, modifiers, format, planes_count,
                                      std::move(callback));
   } else {
     // This method must never be called if neither zwp_linux_dmabuf or wl_drm
@@ -722,36 +697,34 @@ void WaylandBufferManagerHost::CreateDmabufBasedBuffer(
   }
 }
 
-void WaylandBufferManagerHost::CreateShmBasedBuffer(mojo::PlatformHandle shm_fd,
-                                                    uint64_t length,
-                                                    const gfx::Size& size,
-                                                    uint32_t buffer_id) {
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+void WaylandBufferManagerHost::CreateBufferShm(base::ScopedFD shm_fd,
+                                               uint64_t length,
+                                               const gfx::Size& size,
+                                               uint32_t buffer_id) {
   DCHECK(error_message_.empty());
 
   TRACE_EVENT1("wayland", "WaylandBufferManagerHost::CreateShmBasedBuffer",
                "Buffer id", buffer_id);
 
-  base::ScopedFD fd = shm_fd.TakeFD();
   // Validate data and create a buffer associated with the |buffer_id|.
-  if (!ValidateDataFromGpu(fd, length, size, buffer_id) ||
+  if (!ValidateDataFromGpu(shm_fd, length, size, buffer_id) ||
       !CreateBuffer(size, buffer_id)) {
-    TerminateGpuProcess();
+    OnError(std::move(error_message_));
     return;
   }
 
   // Create a shm based wl_buffer and attach it to the created buffer.
-  auto buffer = connection_->shm()->CreateBuffer(std::move(fd), length, size);
+  auto buffer =
+      connection_->shm()->CreateBuffer(std::move(shm_fd), length, size);
   OnCreateBufferComplete(buffer_id, std::move(buffer));
 
   connection_->ScheduleFlush();
 }
 
-void WaylandBufferManagerHost::CommitBuffer(gfx::AcceleratedWidget widget,
-                                            uint32_t buffer_id,
-                                            const gfx::Rect& damage_region) {
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
-
+void WaylandBufferManagerHost::CommitBufferWithId(
+    gfx::AcceleratedWidget widget,
+    uint32_t buffer_id,
+    const gfx::Rect& damage_region) {
   TRACE_EVENT1("wayland", "WaylandBufferManagerHost::CommitBuffer", "Buffer id",
                buffer_id);
 
@@ -772,19 +745,18 @@ void WaylandBufferManagerHost::CommitBuffer(gfx::AcceleratedWidget widget,
   }
 
   if (!error_message_.empty())
-    TerminateGpuProcess();
+    OnError(std::move(error_message_));
 }
 
-void WaylandBufferManagerHost::DestroyBuffer(gfx::AcceleratedWidget widget,
-                                             uint32_t buffer_id) {
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
-
+void WaylandBufferManagerHost::DestroyBufferWithId(
+    gfx::AcceleratedWidget widget,
+    uint32_t buffer_id) {
   TRACE_EVENT1("wayland", "WaylandBufferManagerHost::DestroyBuffer",
                "Buffer id", buffer_id);
 
   DCHECK(error_message_.empty());
   if (!ValidateBufferIdFromGpu(buffer_id)) {
-    TerminateGpuProcess();
+    OnError(std::move(error_message_));
     return;
   }
 
@@ -815,7 +787,7 @@ void WaylandBufferManagerHost::DestroyBuffer(gfx::AcceleratedWidget widget,
 
   error_message_ = base::StrCat(
       {"Buffer with ", NumberToString(buffer_id), " id does not exist"});
-  TerminateGpuProcess();
+  OnError(std::move(error_message_));
 }
 
 void WaylandBufferManagerHost::ResetSurfaceContents(
@@ -964,32 +936,6 @@ void WaylandBufferManagerHost::OnCreateBufferComplete(
     }
     // There is no need for the buffer anymore. Let it go out of the scope and
     // be destroyed.
-}
-
-void WaylandBufferManagerHost::OnSubmission(
-    gfx::AcceleratedWidget widget,
-    uint32_t buffer_id,
-    const gfx::SwapResult& swap_result) {
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
-
-  DCHECK(buffer_manager_gpu_associated_);
-  buffer_manager_gpu_associated_->OnSubmission(widget, buffer_id, swap_result);
-}
-
-void WaylandBufferManagerHost::OnPresentation(
-    gfx::AcceleratedWidget widget,
-    uint32_t buffer_id,
-    const gfx::PresentationFeedback& feedback) {
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
-
-  DCHECK(buffer_manager_gpu_associated_);
-  buffer_manager_gpu_associated_->OnPresentation(widget, buffer_id, feedback);
-}
-
-void WaylandBufferManagerHost::TerminateGpuProcess() {
-  DCHECK(!error_message_.empty());
-  std::move(terminate_gpu_cb_).Run(std::move(error_message_));
-  // The GPU process' failure results in calling ::OnChannelDestroyed.
 }
 
 bool WaylandBufferManagerHost::DestroyAnonymousBuffer(uint32_t buffer_id) {

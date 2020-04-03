@@ -19,16 +19,16 @@ constexpr char kRemovedActionName[] = "SupervisedUsers_Extensions_Removed";
 
 // static
 void SupervisedUserExtensionsMetricsRecorder::RecordExtensionsUmaMetrics(
-    syncer::SyncChange::SyncChangeType type) {
+    SupervisedUserService::ApprovedExtensionChange type) {
   switch (type) {
-    case syncer::SyncChange::ACTION_ADD:
+    case SupervisedUserService::ApprovedExtensionChange::kNew:
       // Record UMA metrics for custodian approval for a new extension.
       base::RecordAction(
           base::UserMetricsAction(kNewExtensionApprovalGrantedActionName));
       base::UmaHistogramEnumeration(
           kHistogramName, UmaExtensionState::kNewExtensionApprovalGranted);
       break;
-    case syncer::SyncChange::ACTION_UPDATE:
+    case SupervisedUserService::ApprovedExtensionChange::kUpdate:
       // Record UMA metrics for child approval for a newer version of an
       // existing extension.
       base::RecordAction(
@@ -36,14 +36,11 @@ void SupervisedUserExtensionsMetricsRecorder::RecordExtensionsUmaMetrics(
       base::UmaHistogramEnumeration(
           kHistogramName, UmaExtensionState::kNewVersionApprovalGranted);
       break;
-    case syncer::SyncChange::ACTION_DELETE:
+    case SupervisedUserService::ApprovedExtensionChange::kRemove:
       // Record UMA metrics for removing an extension.
       base::RecordAction(base::UserMetricsAction(kRemovedActionName));
       base::UmaHistogramEnumeration(kHistogramName,
                                     UmaExtensionState::kRemoved);
-      break;
-    case syncer::SyncChange::ACTION_INVALID:
-      NOTREACHED();
       break;
   }
 }

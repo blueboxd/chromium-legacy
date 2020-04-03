@@ -27,10 +27,6 @@
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_surface_overlay.h"
 
-#if defined(USE_X11)
-#include "ui/events/platform/x11/x11_event_source.h"  // nogncheck
-#endif
-
 namespace gl {
 
 class EGLDisplayPlatform {
@@ -136,9 +132,6 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
 
 // Encapsulates an EGL surface bound to a view.
 class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL,
-#if defined(USE_X11)
-                                         public ui::XEventDispatcher,
-#endif
                                          public EGLTimestampClient {
  public:
   NativeViewGLSurfaceEGL(EGLNativeWindowType window,
@@ -194,7 +187,6 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL,
   ~NativeViewGLSurfaceEGL() override;
 
   EGLNativeWindowType window_ = 0;
-  std::vector<EGLNativeWindowType> children_;
   gfx::Size size_ = gfx::Size(1, 1);
   bool enable_fixed_size_angle_ = true;
 
@@ -213,19 +205,13 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL,
   void UpdateSwapEvents(EGLuint64KHR newFrameId, bool newFrameIdIsValid);
   void TraceSwapEvents(EGLuint64KHR oldFrameId);
 
-#if defined(USE_X11)
-  // XEventDispatcher:
-  bool DispatchXEvent(XEvent* xev) override;
-#endif
+  // Some platforms may provide a custom implementation of vsync provider.
+  virtual std::unique_ptr<gfx::VSyncProvider> CreateVsyncProviderInternal();
 
   EGLSurface surface_ = nullptr;
   bool supports_post_sub_buffer_ = false;
   bool supports_swap_buffer_with_damage_ = false;
   gfx::SurfaceOrigin surface_origin_ = gfx::SurfaceOrigin::kBottomLeft;
-
-#if defined(USE_X11)
-  bool has_swapped_buffers_ = false;
-#endif
 
   std::unique_ptr<gfx::VSyncProvider> vsync_provider_external_;
   std::unique_ptr<gfx::VSyncProvider> vsync_provider_internal_;

@@ -132,7 +132,7 @@ const CSSPropertyID kComputedPropertyArray[] = {
     CSSPropertyID::kWillChange, CSSPropertyID::kWordBreak,
     CSSPropertyID::kWordSpacing, CSSPropertyID::kZIndex, CSSPropertyID::kZoom,
 
-    CSSPropertyID::kWebkitAppearance, CSSPropertyID::kBackfaceVisibility,
+    CSSPropertyID::kAppearance, CSSPropertyID::kBackfaceVisibility,
     CSSPropertyID::kWebkitBorderHorizontalSpacing,
     CSSPropertyID::kWebkitBorderImage,
     CSSPropertyID::kWebkitBorderVerticalSpacing, CSSPropertyID::kWebkitBoxAlign,
@@ -433,8 +433,7 @@ const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValue(
 String CSSComputedStyleDeclaration::GetPropertyValue(
     CSSPropertyID property_id) const {
   // allow_visited_style_ is true only for access from DevTools.
-  if (!allow_visited_style_ &&
-      property_id == CSSPropertyID::kWebkitAppearance) {
+  if (!allow_visited_style_ && property_id == CSSPropertyID::kAppearance) {
     UseCounter::Count(
         node_->GetDocument(),
         WebFeature::kGetComputedStyleForWebkitAppearanceExcludeDevTools);
@@ -559,7 +558,7 @@ String CSSComputedStyleDeclaration::removeProperty(
 
 const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValueInternal(
     CSSPropertyID property_id) {
-  if (property_id == CSSPropertyID::kWebkitAppearance && node_) {
+  if (property_id == CSSPropertyID::kAppearance && node_) {
     UseCounter::Count(node_->GetDocument(),
                       WebFeature::kGetComputedStyleWebkitAppearance);
   }

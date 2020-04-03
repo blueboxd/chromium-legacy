@@ -137,6 +137,7 @@ void AppServiceImpl::LaunchAppWithFiles(apps::mojom::AppType app_type,
 void AppServiceImpl::LaunchAppWithIntent(
     apps::mojom::AppType app_type,
     const std::string& app_id,
+    int32_t event_flags,
     apps::mojom::IntentPtr intent,
     apps::mojom::LaunchSource launch_source,
     int64_t display_id) {
@@ -144,8 +145,8 @@ void AppServiceImpl::LaunchAppWithIntent(
   if (iter == publishers_.end()) {
     return;
   }
-  iter->second->LaunchAppWithIntent(app_id, std::move(intent), launch_source,
-                                    display_id);
+  iter->second->LaunchAppWithIntent(app_id, event_flags, std::move(intent),
+                                    launch_source, display_id);
 }
 
 void AppServiceImpl::SetPermission(apps::mojom::AppType app_type,

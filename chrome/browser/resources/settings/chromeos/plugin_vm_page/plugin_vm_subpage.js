@@ -24,6 +24,17 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /**
+     * Whether the toggle to share the camera with PluginVm should be shown.
+     * @private {boolean}
+     */
+    showPluginVmCamera_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('showPluginVmCamera');
+      },
+    },
   },
 
   observers: [

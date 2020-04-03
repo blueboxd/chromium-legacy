@@ -793,7 +793,7 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
       return (value_id >= CSSValueID::kDrag &&
               value_id <= CSSValueID::kNoDrag) ||
              value_id == CSSValueID::kNone;
-    case CSSPropertyID::kWebkitAppearance:
+    case CSSPropertyID::kAppearance:
       return (value_id >= CSSValueID::kCheckbox &&
               value_id <= CSSValueID::kTextarea) ||
              value_id == CSSValueID::kNone || value_id == CSSValueID::kAuto;
@@ -1049,7 +1049,6 @@ bool CSSParserFastPaths::IsKeywordPropertyID(CSSPropertyID property_id) {
     case CSSPropertyID::kVectorEffect:
     case CSSPropertyID::kVisibility:
     case CSSPropertyID::kWebkitAppRegion:
-    case CSSPropertyID::kWebkitAppearance:
     case CSSPropertyID::kBackfaceVisibility:
     case CSSPropertyID::kBorderBlockEndStyle:
     case CSSPropertyID::kBorderBlockStartStyle:

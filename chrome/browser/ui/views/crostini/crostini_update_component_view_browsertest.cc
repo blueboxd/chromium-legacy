@@ -24,25 +24,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class LoadFinishedWaiter : public content::WebContentsObserver {
- public:
-  explicit LoadFinishedWaiter(content::WebContents* contents)
-      : content::WebContentsObserver(contents) {}
-
-  ~LoadFinishedWaiter() override = default;
-
-  void Wait() { run_loop_.Run(); }
-
-  // content::WebContentsObserver:
-  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
-                     const GURL& validated_url) override {
-    run_loop_.Quit();
-  }
-
- private:
-  base::RunLoop run_loop_;
-};
-
 class CrostiniUpdateComponentViewBrowserTest
     : public CrostiniDialogBrowserTest {
  public:
@@ -153,8 +134,8 @@ IN_PROC_BROWSER_TEST_F(CrostiniUpdateComponentViewBrowserTest,
     Browser* terminal_browser = web_app::FindSystemWebAppBrowser(
         browser()->profile(), web_app::SystemAppType::TERMINAL);
     CHECK_NE(nullptr, terminal_browser);
-    LoadFinishedWaiter(terminal_browser->tab_strip_model()->GetWebContentsAt(0))
-        .Wait();
+    WaitForLoadFinished(
+        terminal_browser->tab_strip_model()->GetWebContentsAt(0));
   }
 
   ExpectView();

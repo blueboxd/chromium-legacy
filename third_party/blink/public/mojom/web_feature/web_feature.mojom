@@ -2225,7 +2225,7 @@ enum WebFeature {
   kV8RTCRtpReceiver_JitterBufferDelayHint_AttributeGetter = 2886,
   kV8RTCRtpReceiver_JitterBufferDelayHint_AttributeSetter = 2887,
   kMediaCapabilitiesDecodingInfoWithKeySystemConfig = 2888,
-  kRevertInCustomIdent = 2889,
+  kOBSOLETE_RevertInCustomIdent = 2889,
   kUnoptimizedImagePolicies = 2890,
   kVTTCueParser = 2891,
   kMediaElementTextTrackContainer = 2892,
@@ -2536,6 +2536,9 @@ enum WebFeature {
   kCrossOriginOpenerPolicySameOriginAllowPopups = 3198,
   kCrossOriginEmbedderPolicyRequireCorp = 3199,
   kCoopAndCoepIsolated = 3200,
+  // The above items are available in M83 branch.
+
+  kWrongBaselineOfButtonElement = 3201,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

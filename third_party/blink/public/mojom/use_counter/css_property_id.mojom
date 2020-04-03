@@ -218,7 +218,7 @@ enum CSSSampleId {
     kAliasWebkitAnimationName = 172,
     kAliasWebkitAnimationPlayState = 173,
     kAliasWebkitAnimationTimingFunction = 174,
-    kWebkitAppearance = 175,
+    kAliasWebkitAppearance = 175,
     // kWebkitAspectRatio = 176,
     kAliasWebkitBackfaceVisibility = 177,
     kAliasWebkitBackgroundClip = 178,
@@ -701,6 +701,7 @@ enum CSSSampleId {
     kSubtreeVisibility = 655,
     kMathStyle = 656,
     kAspectRatio = 657,
+    kAppearance = 658,
     // 1. Add new features above this line (don't change the assigned numbers of
     //    the existing items).
     // 2. Run the src/tools/metrics/histograms/update_use_counter_css.py script

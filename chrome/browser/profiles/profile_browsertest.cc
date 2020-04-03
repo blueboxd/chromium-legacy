@@ -21,6 +21,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
+#include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
@@ -33,8 +34,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/chrome_version_service.h"
+#include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_observer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_constants.h"
@@ -129,6 +132,29 @@ class MockProfileDelegate : public Profile::Delegate {
  public:
   MOCK_METHOD1(OnPrefsLoaded, void(Profile*));
   MOCK_METHOD3(OnProfileCreated, void(Profile*, bool, bool));
+};
+
+class ProfileDestructionWatcher : public ProfileObserver {
+ public:
+  ProfileDestructionWatcher() = default;
+  ~ProfileDestructionWatcher() override = default;
+
+  void Watch(Profile* profile) { observed_profiles_.Add(profile); }
+
+  // ProfileObserver:
+  void OnProfileWillBeDestroyed(Profile* profile) override {
+    DCHECK(!destroyed_) << "Double profile destruction";
+    destroyed_ = true;
+    observed_profiles_.Remove(profile);
+  }
+
+  bool destroyed() const { return destroyed_; }
+
+ private:
+  bool destroyed_ = false;
+  ScopedObserver<Profile, ProfileObserver> observed_profiles_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(ProfileDestructionWatcher);
 };
 
 // Creates a prefs file in the given directory.
@@ -683,4 +709,107 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, Notifications) {
   // Pending tasks related to |profile| could depend on |temp_dir|. We need to
   // let them complete before |temp_dir| goes out of scope.
   FlushIoTaskRunnerAndSpinThreads();
+}
+
+// Verifies creating an OTR with non-primary id results in a different profile
+// from incognito profile.
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateNonPrimaryOTR) {
+  Profile::OTRProfileID otr_profile_id("profile::otr");
+
+  Profile* regular_profile = browser()->profile();
+  EXPECT_FALSE(regular_profile->HasAnyOffTheRecordProfile());
+
+  Profile* otr_profile =
+      regular_profile->GetOffTheRecordProfile(otr_profile_id);
+  EXPECT_TRUE(regular_profile->HasAnyOffTheRecordProfile());
+  EXPECT_TRUE(otr_profile->IsOffTheRecord());
+  EXPECT_EQ(otr_profile_id, otr_profile->GetOTRProfileID());
+  EXPECT_TRUE(regular_profile->HasOffTheRecordProfile(otr_profile_id));
+  EXPECT_NE(otr_profile, regular_profile->GetOffTheRecordProfile(
+                             Profile::OTRProfileID::PrimaryID()));
+
+  regular_profile->DestroyOffTheRecordProfile(otr_profile);
+  EXPECT_FALSE(regular_profile->HasOffTheRecordProfile(otr_profile_id));
+  EXPECT_TRUE(regular_profile->HasOffTheRecordProfile(
+      Profile::OTRProfileID::PrimaryID()));
+  EXPECT_TRUE(regular_profile->HasAnyOffTheRecordProfile());
+}
+
+// Verifies creating two OTRs with different ids results in different profiles.
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateTwoNonPrimaryOTRs) {
+  Profile::OTRProfileID otr_profile_id1("profile::otr1");
+  Profile::OTRProfileID otr_profile_id2("profile::otr2");
+
+  Profile* regular_profile = browser()->profile();
+
+  Profile* otr_profile1 =
+      regular_profile->GetOffTheRecordProfile(otr_profile_id1);
+  Profile* otr_profile2 =
+      regular_profile->GetOffTheRecordProfile(otr_profile_id2);
+
+  EXPECT_NE(otr_profile1, otr_profile2);
+  EXPECT_TRUE(regular_profile->HasOffTheRecordProfile(otr_profile_id1));
+  EXPECT_TRUE(regular_profile->HasOffTheRecordProfile(otr_profile_id2));
+
+  regular_profile->DestroyOffTheRecordProfile(otr_profile1);
+  EXPECT_FALSE(regular_profile->HasOffTheRecordProfile(otr_profile_id1));
+  EXPECT_TRUE(regular_profile->HasOffTheRecordProfile(otr_profile_id2));
+}
+
+// Verifies destroying regular profile will result in destruction of OTR
+// profiles.
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, DestroyRegularProfileBeforeOTRs) {
+  Profile::OTRProfileID otr_profile_id1("profile::otr1");
+  Profile::OTRProfileID otr_profile_id2("profile::otr2");
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  MockProfileDelegate delegate;
+  std::unique_ptr<Profile> regular_profile(CreateProfile(
+      temp_dir.GetPath(), &delegate, Profile::CREATE_MODE_SYNCHRONOUS));
+
+  // Creating a profile causes an implicit connection attempt to a Mojo
+  // service, which occurs as part of a new task. Before deleting |profile|,
+  // ensure this task runs to prevent a crash.
+  FlushIoTaskRunnerAndSpinThreads();
+
+  Profile* otr_profile1 =
+      regular_profile->GetOffTheRecordProfile(otr_profile_id1);
+  Profile* otr_profile2 =
+      regular_profile->GetOffTheRecordProfile(otr_profile_id2);
+
+  ProfileDestructionWatcher watcher1;
+  ProfileDestructionWatcher watcher2;
+  watcher1.Watch(otr_profile1);
+  watcher2.Watch(otr_profile2);
+
+  ProfileDestroyer::DestroyProfileWhenAppropriate(regular_profile.release());
+
+  EXPECT_TRUE(watcher1.destroyed());
+  EXPECT_TRUE(watcher2.destroyed());
+}
+
+// Tests Profile::GetAllOffTheRecordProfiles
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, TestGetAllOffTheRecordProfiles) {
+  Profile::OTRProfileID otr_profile_id1("profile::otr1");
+  Profile::OTRProfileID otr_profile_id2("profile::otr2");
+
+  Profile* regular_profile = browser()->profile();
+
+  Profile* otr_profile1 =
+      regular_profile->GetOffTheRecordProfile(otr_profile_id1);
+  Profile* otr_profile2 =
+      regular_profile->GetOffTheRecordProfile(otr_profile_id2);
+  Profile* incognito_profile = regular_profile->GetOffTheRecordProfile(
+      Profile::OTRProfileID::PrimaryID());
+
+  std::vector<Profile*> all_otrs =
+      regular_profile->GetAllOffTheRecordProfiles();
+
+  EXPECT_EQ(3u, all_otrs.size());
+  EXPECT_TRUE(base::Contains(all_otrs, otr_profile1));
+  EXPECT_TRUE(base::Contains(all_otrs, otr_profile2));
+  EXPECT_TRUE(base::Contains(all_otrs, incognito_profile));
 }

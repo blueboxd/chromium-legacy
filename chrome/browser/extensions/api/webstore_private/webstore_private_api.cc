@@ -509,7 +509,7 @@ void WebstorePrivateBeginInstallWithManifest3Function::
     OnParentPermissionReceived() {
   SupervisedUserService* service =
       SupervisedUserServiceFactory::GetForProfile(chrome_details_.GetProfile());
-  service->AddExtensionApproval(*dummy_extension_);
+  service->AddOrUpdateExtensionApproval(*dummy_extension_);
 
   HandleInstallProceed();
   Release();  // Matches the AddRef in Run().

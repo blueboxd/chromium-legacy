@@ -3,7 +3,6 @@ All changes to this list should go through Blink's feature review process: http:
 
 [LONGHANDS]
     -webkit-app-region
-    -webkit-appearance
     -webkit-border-horizontal-spacing
     -webkit-border-image
     -webkit-border-vertical-spacing
@@ -71,6 +70,7 @@ All changes to this list should go through Blink's feature review process: http:
     animation-name
     animation-play-state
     animation-timing-function
+    appearance
     backdrop-filter
     backface-visibility
     background-attachment
@@ -677,6 +677,8 @@ All changes to this list should go through Blink's feature review process: http:
         animation-play-state
     -webkit-animation-timing-function
         animation-timing-function
+    -webkit-appearance
+        appearance
     -webkit-backface-visibility
         backface-visibility
     -webkit-background-clip

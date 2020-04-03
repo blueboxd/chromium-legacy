@@ -118,10 +118,13 @@ class WebAppInstallTask : content::WebContentsObserver {
       InstallManager::OnceInstallCallback callback);
 
   // Starts background installation of a web app: does not show UI dialog.
-  // |web_application_info| contains all the data needed for installation. Icons
-  // will be downloaded from the icon URLs provided in |web_application_info|.
-  void InstallWebAppFromInfoRetrieveIcons(
+  // |web_application_info| contains most of the data needed for installation.
+  // The launch URL and its manifest are loaded to determine the display mode.
+  // Icons will be downloaded from the icon URLs provided in
+  // |web_application_info|. Doesn't memorize |url_loader| pointer.
+  void LoadAndInstallWebAppFromSync(
       content::WebContents* web_contents,
+      WebAppUrlLoader* url_loader,
       std::unique_ptr<WebApplicationInfo> web_application_info,
       bool is_locally_installed,
       WebappInstallSource install_source,
@@ -203,6 +206,19 @@ class WebAppInstallTask : content::WebContentsObserver {
       bool skip_page_favicons,
       const std::string& intent,
       bool should_intent_to_store);
+
+  void OnWebAppFromSyncUrlLoadedRetrieveManifest(
+      std::unique_ptr<WebApplicationInfo> web_application_info,
+      bool is_locally_installed,
+      WebAppUrlLoader::Result result);
+  void OnWebAppFromSyncManifestRetrieved(
+      std::unique_ptr<WebApplicationInfo> web_application_info,
+      bool is_locally_installed,
+      const GURL& manifest_url,
+      const blink::Manifest& manifest);
+  void WebAppFromSyncLoadIcons(
+      std::unique_ptr<WebApplicationInfo> web_application_info,
+      bool is_locally_installed);
 
   void OnIconsRetrieved(std::unique_ptr<WebApplicationInfo> web_app_info,
                         bool is_locally_installed,

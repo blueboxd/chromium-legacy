@@ -1451,7 +1451,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void DidAssociateFormControl(Element*);
 
   void AddConsoleMessage(ConsoleMessage* message,
-                         bool discard_duplicates = false);
+                         bool discard_duplicates = false) const;
   void AddInspectorIssue(InspectorIssue*);
 
   LocalFrame* ExecutingFrame();

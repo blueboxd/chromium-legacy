@@ -16,12 +16,12 @@ PhotoController* g_photo_controller = nullptr;
 
 PhotoController::Topic::Topic() = default;
 
-PhotoController::Topic::~Topic() = default;
-
 PhotoController::Topic::Topic(const Topic&) = default;
 
 PhotoController::Topic& PhotoController::Topic::operator=(const Topic&) =
     default;
+
+PhotoController::Topic::~Topic() = default;
 
 // static
 PhotoController* PhotoController::Get() {

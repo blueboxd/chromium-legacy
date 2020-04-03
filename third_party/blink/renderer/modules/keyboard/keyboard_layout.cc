@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -31,7 +32,7 @@ constexpr char kKeyboardMapRequestFailedErrorMsg[] =
 }  // namespace
 
 KeyboardLayout::KeyboardLayout(ExecutionContext* context)
-    : ExecutionContextClient(context) {}
+    : ExecutionContextClient(context), service_(context) {}
 
 ScriptPromise KeyboardLayout::GetKeyboardLayoutMap(
     ScriptState* script_state,
@@ -75,14 +76,15 @@ bool KeyboardLayout::IsLocalFrameAttached() {
 }
 
 bool KeyboardLayout::EnsureServiceConnected() {
-  if (!service_) {
+  if (!service_.is_bound()) {
     LocalFrame* frame = GetFrame();
     if (!frame) {
       return false;
     }
     frame->GetBrowserInterfaceBroker().GetInterface(
-        service_.BindNewPipeAndPassReceiver());
-    DCHECK(service_);
+        service_.BindNewPipeAndPassReceiver(
+            frame->GetTaskRunner(TaskType::kMiscPlatformAPI)));
+    DCHECK(service_.is_bound());
   }
   return true;
 }
@@ -116,6 +118,7 @@ void KeyboardLayout::GotKeyboardLayoutMap(
 
 void KeyboardLayout::Trace(Visitor* visitor) {
   visitor->Trace(script_promise_resolver_);
+  visitor->Trace(service_);
   ExecutionContextClient::Trace(visitor);
 }
 

@@ -87,6 +87,10 @@ PlatformClipboard* OzonePlatform::GetPlatformClipboard() {
   return nullptr;
 }
 
+PlatformGLEGLUtility* OzonePlatform::GetPlatformGLEGLUtility() {
+  return nullptr;
+}
+
 bool OzonePlatform::IsNativePixmapConfigSupported(
     gfx::BufferFormat format,
     gfx::BufferUsage usage) const {

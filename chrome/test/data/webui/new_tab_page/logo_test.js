@@ -107,7 +107,8 @@ suite('NewTabPageLogoTest', () => {
     assertStyle(logo.$.multiColoredLogo, 'display', 'none');
   });
 
-  test('receiving resize message resizes doodle', async () => {
+  // Disabled for flakiness, see https://crbug.com/1065812.
+  test.skip('receiving resize message resizes doodle', async () => {
     // Arrange.
     const logo = await createLogo({content: {url: {url: 'https://foo.com'}}});
     const transitionend = eventToPromise('transitionend', logo.$.iframe);

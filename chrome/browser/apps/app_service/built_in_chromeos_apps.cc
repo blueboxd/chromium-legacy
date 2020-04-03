@@ -189,6 +189,7 @@ void BuiltInChromeOsApps::LaunchAppWithFiles(
 
 void BuiltInChromeOsApps::LaunchAppWithIntent(
     const std::string& app_id,
+    int32_t event_flags,
     apps::mojom::IntentPtr intent,
     apps::mojom::LaunchSource launch_source,
     int64_t display_id) {

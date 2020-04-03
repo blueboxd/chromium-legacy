@@ -94,6 +94,7 @@ typedef Vector<scoped_refptr<const ComputedStyle>, 4> PseudoElementStyleCache;
 
 namespace css_longhand {
 
+class Appearance;
 class BackgroundColor;
 class BorderBottomColor;
 class BorderLeftColor;
@@ -125,7 +126,6 @@ class Resize;
 class StopColor;
 class Stroke;
 class TextDecorationColor;
-class WebkitAppearance;
 class WebkitTapHighlightColor;
 class WebkitTextEmphasisColor;
 class WebkitTextFillColor;
@@ -238,7 +238,7 @@ class ComputedStyle : public ComputedStyleBase,
   friend class LayoutTheme;
   friend class StyleAdjuster;
   friend class StyleCascade;
-  friend class css_longhand::WebkitAppearance;
+  friend class css_longhand::Appearance;
   // Editing has to only reveal unvisited info.
   friend class ApplyStyleCommand;
   // Editing has to only reveal unvisited info.

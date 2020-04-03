@@ -61,6 +61,8 @@ public class ExternalNavigationTest {
             "link_with_intent_to_chrome_in_new_tab.html";
     private static final String PAGE_THAT_INTENTS_TO_CHROME_ON_LOAD_FILE =
             "page_that_intents_to_chrome_on_load.html";
+    private static final String LINK_TO_PAGE_THAT_INTENTS_TO_CHROME_ON_LOAD_FILE =
+            "link_to_page_that_intents_to_chrome_on_load.html";
 
     // The test server handles "echo" with a response containing "Echo" :).
     private final String mTestServerSiteUrl = mActivityTestRule.getTestServer().getURL("/echo");
@@ -389,6 +391,52 @@ public class ExternalNavigationTest {
 
         // The current URL should not have changed, and the intent should have been launched.
         Assert.assertEquals(url, mActivityTestRule.getCurrentDisplayUrl());
+        Intent intent = intentInterceptor.mLastIntent;
+        Assert.assertNotNull(intent);
+        Assert.assertEquals(INTENT_TO_CHROME_PACKAGE, intent.getPackage());
+        Assert.assertEquals(INTENT_TO_CHROME_ACTION, intent.getAction());
+        Assert.assertEquals(INTENT_TO_CHROME_DATA_STRING, intent.getDataString());
+    }
+
+    /**
+     * Tests the following flow:
+     * - The user clicks on a link
+     * - This link goes to a page that loads a handleable intent in onload()
+     * This flow should result in the external intent being launched rather than blocked,
+     * because the initial navigation to the page did not occur via user typing.
+     */
+    @Test
+    @SmallTest
+    public void testUserClicksLinkToPageWithExternalIntentLaunchedViaOnLoad() throws Throwable {
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(ABOUT_BLANK_URL);
+        IntentInterceptor intentInterceptor = new IntentInterceptor();
+        activity.setIntentInterceptor(intentInterceptor);
+
+        String url =
+                mActivityTestRule.getTestDataURL(LINK_TO_PAGE_THAT_INTENTS_TO_CHROME_ON_LOAD_FILE);
+
+        mActivityTestRule.navigateAndWait(url);
+
+        // Clicking on the link on this page should result in a navigation to the page that loads an
+        // intent in onLoad(), followed by a launching of that intent.
+        Tab tab = mActivityTestRule.getActivity().getTab();
+        String finalUrl =
+                mActivityTestRule.getTestDataURL(PAGE_THAT_INTENTS_TO_CHROME_ON_LOAD_FILE);
+        NavigationWaiter waiter =
+                new NavigationWaiter(finalUrl, tab, /*expectFailure=*/false, /*waitForPaint=*/true);
+
+        mActivityTestRule.executeScriptSync(
+                "document.onclick = function() {document.getElementById('link').click()}",
+                true /* useSeparateIsolate */);
+        EventUtils.simulateTouchCenterOfView(
+                mActivityTestRule.getActivity().getWindow().getDecorView());
+
+        waiter.waitForNavigation();
+
+        intentInterceptor.waitForIntent();
+
+        // The current URL should not have changed, and the intent should have been launched.
+        Assert.assertEquals(finalUrl, mActivityTestRule.getCurrentDisplayUrl());
         Intent intent = intentInterceptor.mLastIntent;
         Assert.assertNotNull(intent);
         Assert.assertEquals(INTENT_TO_CHROME_PACKAGE, intent.getPackage());

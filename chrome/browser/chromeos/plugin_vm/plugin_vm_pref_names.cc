@@ -23,6 +23,9 @@ const char kPluginVmImage[] = "plugin_vm.image";
 const char kPluginVmImageExists[] = "plugin_vm.image_exists";
 // A boolean preference indicating whether Plugin VM is allowed to use printers.
 const char kPluginVmPrintersAllowed[] = "plugin_vm.printers_allowed";
+// A boolean preference indicating whether the camera should be shared with
+// PluginVm.
+const char kPluginVmCameraSharing[] = "plugin_vm.camera_sharing";
 // Preferences for storing engagement time data, as per
 // GuestOsEngagementMetrics.
 const char kEngagementPrefsPrefix[] = "plugin_vm.metrics";
@@ -33,6 +36,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   // TODO(crbug.com/1066760): For convenience this currently defaults to true,
   // but we'll need to revisit before launch.
   registry->RegisterBooleanPref(kPluginVmPrintersAllowed, true);
+  registry->RegisterBooleanPref(kPluginVmCameraSharing, false);
 
   guest_os::prefs::RegisterEngagementProfilePrefs(registry,
                                                   kEngagementPrefsPrefix);

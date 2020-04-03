@@ -116,6 +116,24 @@ Polymer({
   },
 
   /**
+   * @return {string} cr icon name.
+   * @private
+   */
+  getPrimaryAccountTooltipIcon_() {
+    return this.isChildUser_ ? 'cr20:kite' : 'cr:info-outline';
+  },
+
+  /**
+   * @return {string} tooltip text
+   * @private
+   */
+  getPrimaryAccountTooltip_() {
+    return this.isChildUser_ ?
+        this.i18n('accountManagerPrimaryAccountChildManagedTooltip') :
+        this.i18n('accountManagerPrimaryAccountTooltip');
+  },
+
+  /**
    * @param {string} iconUrl
    * @return {string} A CSS image-set for multiple scale factors.
    * @private

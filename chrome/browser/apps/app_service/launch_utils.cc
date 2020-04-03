@@ -120,20 +120,53 @@ Browser* CreateBrowserWithNewTabPage(Profile* profile) {
   return browser;
 }
 
+AppLaunchParams CreateAppIdLaunchParamsWithEventFlags(
+    const std::string& app_id,
+    int event_flags,
+    apps::mojom::AppLaunchSource source,
+    int64_t display_id,
+    apps::mojom::LaunchContainer fallback_container) {
+  WindowOpenDisposition raw_disposition =
+      ui::DispositionFromEventFlags(event_flags);
+
+  apps::mojom::LaunchContainer container;
+  WindowOpenDisposition disposition;
+  if (raw_disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB ||
+      raw_disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB) {
+    container = apps::mojom::LaunchContainer::kLaunchContainerTab;
+    disposition = raw_disposition;
+  } else if (raw_disposition == WindowOpenDisposition::NEW_WINDOW) {
+    container = apps::mojom::LaunchContainer::kLaunchContainerWindow;
+    disposition = raw_disposition;
+  } else {
+    // Look at preference to find the right launch container.  If no preference
+    // is set, launch as a regular tab.
+    container = fallback_container;
+    disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+  }
+  return AppLaunchParams(app_id, container, disposition, source, display_id);
+}
+
 apps::AppLaunchParams CreateAppLaunchParamsForIntent(
     const std::string& app_id,
+    int32_t event_flags,
+    apps::mojom::AppLaunchSource source,
+    int64_t display_id,
+    apps::mojom::LaunchContainer fallback_container,
     const apps::mojom::IntentPtr& intent) {
-  apps::AppLaunchParams params(
-      app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
-      WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      apps::mojom::AppLaunchSource::kSourceNone);
+  auto params = CreateAppIdLaunchParamsWithEventFlags(
+      app_id, event_flags, source, display_id, fallback_container);
 
   if (intent->scheme.has_value() && intent->host.has_value() &&
       intent->path.has_value()) {
     params.source = apps::mojom::AppLaunchSource::kSourceIntentUrl;
+    std::string port;
+    if (intent->port.has_value()) {
+      port = ":" + intent->port.value();
+    }
     params.override_url =
         GURL(intent->scheme.value() + url::kStandardSchemeSeparator +
-             intent->host.value() + intent->path.value());
+             intent->host.value() + port + intent->path.value());
     DCHECK(params.override_url.is_valid());
   }
 
@@ -166,6 +199,8 @@ apps::mojom::AppLaunchSource GetAppLaunchSource(
       return apps::mojom::AppLaunchSource::kSourceInstalledNotification;
     case apps::mojom::LaunchSource::kFromTest:
       return apps::mojom::AppLaunchSource::kSourceTest;
+    case apps::mojom::LaunchSource::kFromArc:
+      return apps::mojom::AppLaunchSource::kSourceArc;
   }
 }
 

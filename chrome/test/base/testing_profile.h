@@ -156,6 +156,9 @@ class TestingProfile : public Profile {
     // Build an incognito profile, owned by |original_profile|. Note: unless you
     // need to customize the Builder, or access TestingProfile member functions,
     // you can use original_profile->GetOffTheRecordProfile().
+    //
+    // TODO(https://crbug.com/1033903): Add BuildOffTheRecord to add possibility
+    // of creating non-primary OTRs.
     TestingProfile* BuildIncognito(TestingProfile* original_profile);
 
    private:
@@ -268,10 +271,10 @@ class TestingProfile : public Profile {
   void SetNetworkContext(
       std::unique_ptr<network::mojom::NetworkContext> network_context);
 
-  // Called on the parent of an incognito |profile|. Usually called from the
-  // constructor of an incognito TestingProfile, but can also be used by tests
-  // to provide an OffTheRecordProfileImpl instance.
-  void SetOffTheRecordProfile(std::unique_ptr<Profile> profile);
+  // Called on the parent of an OffTheRecord |otr_profile|. Usually called from
+  // the constructor of an OffTheRecord TestingProfile, but can also be used by
+  // tests to provide an OffTheRecordProfileImpl instance.
+  void SetOffTheRecordProfile(std::unique_ptr<Profile> otr_profile);
 
   void SetSupervisedUserId(const std::string& id);
 
@@ -288,6 +291,7 @@ class TestingProfile : public Profile {
   // profile dynamically.
   bool IsOffTheRecord() final;
   bool IsOffTheRecord() const final;
+  const OTRProfileID& GetOTRProfileID() const override;
   content::DownloadManagerDelegate* GetDownloadManagerDelegate() override;
   content::ResourceContext* GetResourceContext() override;
   content::BrowserPluginGuestManager* GetGuestManager() override;
@@ -315,9 +319,19 @@ class TestingProfile : public Profile {
   std::string GetProfileUserName() const override;
   ProfileType GetProfileType() const override;
 
-  Profile* GetOffTheRecordProfile() override;
-  void DestroyOffTheRecordProfile() override;
-  bool HasOffTheRecordProfile() override;
+  // TODO(https://crbug.com/1033903): Remove the default value.
+  Profile* GetOffTheRecordProfile(
+      const OTRProfileID& otr_profile_id = OTRProfileID::PrimaryID()) override;
+  std::vector<Profile*> GetAllOffTheRecordProfiles() override;
+  void DestroyOffTheRecordProfile(Profile* otr_profile) override;
+  // TODO(https://crbug.com/1033903): Remove this function when all the use
+  // cases are migrated to above version. The parameter-less version destroys
+  // the primary off the record profile.
+  void DestroyOffTheRecordProfile();
+  // TODO(https://crbug.com/1033903): Remove the default value.
+  bool HasOffTheRecordProfile(
+      const OTRProfileID& otr_profile_id = OTRProfileID::PrimaryID()) override;
+  bool HasAnyOffTheRecordProfile() override;
   Profile* GetOriginalProfile() override;
   const Profile* GetOriginalProfile() const override;
   bool IsSupervised() const override;

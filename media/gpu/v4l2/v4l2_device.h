@@ -293,6 +293,26 @@ class MEDIA_GPU_EXPORT V4L2Queue
                                                size_t buffer_size)
       WARN_UNUSED_RESULT;
 
+  // Returns the currently set format on the queue. The result is returned as
+  // a std::pair where the first member is the format, or base::nullopt if the
+  // format could not be obtained due to an ioctl error. The second member is
+  // only used in case of an error and contains the |errno| set by the failing
+  // ioctl. If the first member is not base::nullopt, the second member will
+  // always be zero.
+  //
+  // If the second member is 0, then the first member is guaranteed to have
+  // a valid value. So clients that are not interested in the precise error
+  // message can just check that the first member is valid and go on.
+  //
+  // This pair is used because not all failures to get the format are
+  // necessarily errors, so we need to way to let the use decide whether it
+  // is one or not.
+  std::pair<base::Optional<struct v4l2_format>, int> GetFormat();
+
+  // Codec-specific method to get the visible rectangle of the queue, using the
+  // VIDIOC_G_SELECTION ioctl if available, or VIDIOC_G_CROP as a fallback.
+  base::Optional<gfx::Rect> GetVisibleRect();
+
   // Allocate |count| buffers for the current format of this queue, with a
   // specific |memory| allocation, and returns the number of buffers allocated
   // or zero if an error occurred, or if references to any previously allocated

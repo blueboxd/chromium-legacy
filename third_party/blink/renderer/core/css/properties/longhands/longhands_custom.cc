@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/css_value_pair.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_fast_paths.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_local_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_mode.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token.h"
@@ -6834,7 +6835,24 @@ void WebkitAppRegion::ApplyValue(StyleResolverState& state,
   state.GetDocument().SetHasAnnotatedRegions(true);
 }
 
-const CSSValue* WebkitAppearance::CSSValueFromComputedStyleInternal(
+const CSSValue* Appearance::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context) const {
+  CSSValueID id = range.Peek().Id();
+  CSSPropertyID property = CSSPropertyID::kAppearance;
+  if (CSSParserFastPaths::IsValidKeywordPropertyAndValue(property, id,
+                                                         context.Mode())) {
+    if (local_context.UseAliasParsing())
+      property = CSSPropertyID::kAliasWebkitAppearance;
+    css_property_parser_helpers::CountKeywordOnlyPropertyUsage(property,
+                                                               context, id);
+    return css_property_parser_helpers::ConsumeIdent(range);
+  }
+  return nullptr;
+}
+
+const CSSValue* Appearance::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,

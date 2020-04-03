@@ -638,20 +638,6 @@ TEST_F(CSSPropertyUseCounterTest, CSSPropertyDefaultAnimationNameUseCount) {
   EXPECT_TRUE(IsCounted(feature));
 }
 
-TEST_F(CSSPropertyUseCounterTest, CSSPropertyRevertAnimationNameUseCount) {
-  WebFeature feature = WebFeature::kRevertInCustomIdent;
-  EXPECT_FALSE(IsCounted(feature));
-
-  ParseProperty(CSSPropertyID::kAnimationName, "initial");
-  EXPECT_FALSE(IsCounted(feature));
-
-  ParseProperty(CSSPropertyID::kAnimationName, "test");
-  EXPECT_FALSE(IsCounted(feature));
-
-  ParseProperty(CSSPropertyID::kAnimationName, "revert");
-  EXPECT_TRUE(IsCounted(feature));
-}
-
 TEST_F(CSSPropertyUseCounterTest, CSSPropertyContainStyleUseCount) {
   WebFeature feature = WebFeature::kCSSValueContainStyle;
   EXPECT_FALSE(IsCounted(feature));

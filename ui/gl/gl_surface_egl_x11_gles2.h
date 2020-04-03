@@ -11,12 +11,13 @@
 
 #include "base/macros.h"
 #include "ui/gl/gl_export.h"
-#include "ui/gl/gl_surface_egl.h"
+#include "ui/gl/gl_surface_egl_x11.h"
 
 namespace gl {
 
 // Encapsulates an EGL surface bound to a view using the X Window System.
-class GL_EXPORT NativeViewGLSurfaceEGLX11GLES2 : public NativeViewGLSurfaceEGL {
+class GL_EXPORT NativeViewGLSurfaceEGLX11GLES2
+    : public NativeViewGLSurfaceEGLX11 {
  public:
   explicit NativeViewGLSurfaceEGLX11GLES2(EGLNativeWindowType window);
 

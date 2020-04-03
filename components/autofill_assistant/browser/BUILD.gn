@@ -139,6 +139,8 @@ jumbo_static_library("browser") {
     "state.h",
     "string_conversions_util.cc",
     "string_conversions_util.h",
+    "switches.cc",
+    "switches.h",
     "top_padding.cc",
     "top_padding.h",
     "trigger_context.cc",
@@ -219,6 +221,7 @@ static_library("unit_test_support") {
     "//base",
     "//base/test:test_support",
     "//components/autofill/core/browser:test_support",
+    "//components/version_info",
     "//testing/gmock",
     "//testing/gtest",
   ]

@@ -54,6 +54,7 @@ interface AppService {
   LaunchAppWithIntent(
       AppType app_type,
       string app_id,
+      int32 event_flags,
       Intent intent,
       LaunchSource launch_source,
       int64 display_id);
@@ -148,6 +149,7 @@ interface Publisher {
   // of app platform.
   LaunchAppWithIntent(
     string app_id,
+    int32 event_flags,
     Intent intent,
     LaunchSource launch_source,
     int64 display_id);

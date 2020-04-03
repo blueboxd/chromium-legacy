@@ -72,68 +72,50 @@ struct WaylandBuffer {
 // accelerated compositing) or shared memory (software compositing) and uses
 // internal representation of surfaces, which are used to store buffers
 // associated with the WaylandWindow.
-class WaylandBufferManagerHost : public ozone::mojom::WaylandBufferManagerHost,
-                                 public WaylandWindowObserver {
+class WaylandBufferManagerHost : public WaylandWindowObserver {
  public:
-  explicit WaylandBufferManagerHost(WaylandConnection* connection);
+  WaylandBufferManagerHost();
   ~WaylandBufferManagerHost() override;
+
+  void SetWaylandConnection(WaylandConnection* connection);
 
   // WaylandWindowObserver implements:
   void OnWindowAdded(WaylandWindow* window) override;
   void OnWindowRemoved(WaylandWindow* window) override;
-
-  void SetTerminateGpuCallback(
-      base::OnceCallback<void(std::string)> terminate_gpu_cb);
-
-  // Returns bound pointer to own mojo interface.
-  mojo::PendingRemote<ozone::mojom::WaylandBufferManagerHost> BindInterface();
-
-  // Unbinds the interface and clears the state of the |buffer_manager_|. Used
-  // only when the GPU channel, which uses the mojo pipe to this interface, is
-  // destroyed.
-  void OnChannelDestroyed();
 
   // Returns supported buffer formats either from zwp_linux_dmabuf or wl_drm.
   wl::BufferFormatsWithModifiersMap GetSupportedBufferFormats() const;
 
   bool SupportsDmabuf() const;
 
-  // ozone::mojom::WaylandBufferManagerHost overrides:
-  //
-  // These overridden methods below are invoked by the GPU when hardware
-  // accelerated rendering is used.
-  void SetWaylandBufferManagerGpu(
-      mojo::PendingAssociatedRemote<ozone::mojom::WaylandBufferManagerGpu>
-          buffer_manager_gpu_associated) override;
-  //
-  // Called by the GPU and asks to import a wl_buffer based on a gbm file
-  // descriptor using zwp_linux_dmabuf protocol. Check comments in the
-  // ui/ozone/public/mojom/wayland/wayland_connection.mojom.
-  void CreateDmabufBasedBuffer(mojo::PlatformHandle dmabuf_fd,
-                               const gfx::Size& size,
-                               const std::vector<uint32_t>& strides,
-                               const std::vector<uint32_t>& offsets,
-                               const std::vector<uint64_t>& modifiers,
-                               uint32_t format,
-                               uint32_t planes_count,
-                               uint32_t buffer_id) override;
-  // Called by the GPU and asks to import a wl_buffer based on a shared memory
-  // file descriptor using wl_shm protocol. Check comments in the
-  // ui/ozone/public/mojom/wayland/wayland_connection.mojom.
-  void CreateShmBasedBuffer(mojo::PlatformHandle shm_fd,
-                            uint64_t length,
-                            const gfx::Size& size,
-                            uint32_t buffer_id) override;
+  // Creates a wl_buffer based on a gbm file descriptor using zwp_linux_dmabuf
+  // protocol.
+  void CreateBufferDmabuf(base::ScopedFD dmabuf_fd,
+                          const gfx::Size& size,
+                          const std::vector<uint32_t>& strides,
+                          const std::vector<uint32_t>& offsets,
+                          const std::vector<uint64_t>& modifiers,
+                          uint32_t format,
+                          uint32_t planes_count,
+                          uint32_t buffer_id);
+
+  // Creates a wl_buffer based on a shared memory file descriptor using wl_shm
+  // protocol.
+  void CreateBufferShm(base::ScopedFD shm_fd,
+                       uint64_t length,
+                       const gfx::Size& size,
+                       uint32_t buffer_id);
+
   // Called by the GPU to destroy the imported wl_buffer with a |buffer_id|.
-  void DestroyBuffer(gfx::AcceleratedWidget widget,
-                     uint32_t buffer_id) override;
-  // Called by the GPU and asks to attach a wl_buffer with a |buffer_id| to a
+  void DestroyBufferWithId(gfx::AcceleratedWidget widget, uint32_t buffer_id);
+
+  // Attaches a wl_buffer with a |buffer_id| to a
   // WaylandWindow with the specified |widget|.
   // Calls OnSubmission and OnPresentation on successful swap and pixels
   // presented.
-  void CommitBuffer(gfx::AcceleratedWidget widget,
-                    uint32_t buffer_id,
-                    const gfx::Rect& damage_region) override;
+  void CommitBufferWithId(gfx::AcceleratedWidget widget,
+                          uint32_t buffer_id,
+                          const gfx::Rect& damage_region);
 
   // When a surface is hidden, the client may want to detach the buffer attached
   // to the surface backed by |widget| to ensure Wayland does not present those
@@ -143,6 +125,10 @@ class WaylandBufferManagerHost : public ozone::mojom::WaylandBufferManagerHost,
 
   // Returns the anonymously created WaylandBuffer.
   std::unique_ptr<WaylandBuffer> PassAnonymousWlBuffer(uint32_t buffer_id);
+
+ protected:
+  // Clears the state of the |buffer_manager_|.
+  void ClearInternalState();
 
  private:
   // This is an internal representation of a real surface, which holds a pointer
@@ -175,17 +161,16 @@ class WaylandBufferManagerHost : public ozone::mojom::WaylandBufferManagerHost,
   void OnCreateBufferComplete(uint32_t buffer_id,
                               wl::Object<struct wl_buffer> new_buffer);
 
-  // Tells the |buffer_manager_gpu_ptr_| the result of a swap call and provides
-  // it with the presentation feedback.
-  void OnSubmission(gfx::AcceleratedWidget widget,
-                    uint32_t buffer_id,
-                    const gfx::SwapResult& swap_result);
-  void OnPresentation(gfx::AcceleratedWidget widget,
-                      uint32_t buffer_id,
-                      const gfx::PresentationFeedback& feedback);
+  // Notifies about the swap result and the presentation feedback.
+  virtual void OnSubmission(gfx::AcceleratedWidget widget,
+                            uint32_t buffer_id,
+                            const gfx::SwapResult& swap_result) = 0;
+  virtual void OnPresentation(gfx::AcceleratedWidget widget,
+                              uint32_t buffer_id,
+                              const gfx::PresentationFeedback& feedback) = 0;
 
-  // Terminates the GPU process on invalid data received
-  void TerminateGpuProcess();
+  // Notifies invalid data has been received.
+  virtual void OnError(std::string error_message) = 0;
 
   bool DestroyAnonymousBuffer(uint32_t buffer_id);
 
@@ -195,15 +180,7 @@ class WaylandBufferManagerHost : public ozone::mojom::WaylandBufferManagerHost,
   std::string error_message_;
 
   // Non-owned pointer to the main connection.
-  WaylandConnection* const connection_;
-
-  mojo::AssociatedRemote<ozone::mojom::WaylandBufferManagerGpu>
-      buffer_manager_gpu_associated_;
-  mojo::Receiver<ozone::mojom::WaylandBufferManagerHost> receiver_;
-
-  // A callback, which is used to terminate a GPU process in case of invalid
-  // data sent by the GPU to the browser process.
-  base::OnceCallback<void(std::string)> terminate_gpu_cb_;
+  WaylandConnection* connection_ = nullptr;
 
   // Contains anonymous buffers aka buffers that are not attached to any of the
   // existing surfaces and that will be mapped to surfaces later.  Typically

@@ -98,6 +98,10 @@ class IndependentOTRProfileManager final : public BrowserListObserver,
 
   ScopedObserver<Profile, ProfileObserver> observed_original_profiles_{this};
 
+  // TODO(https://crbug.com/1033903): Remove after getting unique id from
+  // owners.
+  int first_unused_unique_id_;
+
   DISALLOW_COPY_AND_ASSIGN(IndependentOTRProfileManager);
 };
 

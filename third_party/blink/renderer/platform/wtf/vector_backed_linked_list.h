@@ -79,16 +79,6 @@ struct VectorTraits<VectorBackedLinkedListNode<ValueType, Allocator>>
       VectorTraits<ValueType>::kCanCopyWithMemcpy;
   static const bool kCanMoveWithMemcpy =
       VectorTraits<ValueType>::kCanMoveWithMemcpy;
-
-  // Needs to be shadowing because |VectorTraitsBase::IsDeletedValue| uses call
-  // by value, which means we need to define copy constructor of
-  // |VectorBackedLinkedList|. We can remove this function if we change
-  // |VectorTraitsBase::IsDeletedValue| to use call by reference.
-  static bool IsDeletedValue(
-      const VectorBackedLinkedListNode<ValueType, Allocator>& node) {
-    NOTREACHED();
-    return false;
-  }
 };
 
 // VectorBackedLinkedList maintains a linked list through its contents such that

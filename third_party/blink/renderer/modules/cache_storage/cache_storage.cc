@@ -104,7 +104,7 @@ ScriptPromise CacheStorage::open(ScriptState* script_state,
 
   // The context may be destroyed and the mojo connection unbound. However the
   // object may live on, reject any requests after the context is destroyed.
-  if (!cache_storage_remote_) {
+  if (!cache_storage_remote_.is_bound()) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kInvalidStateError));
     return promise;
@@ -177,7 +177,7 @@ ScriptPromise CacheStorage::has(ScriptState* script_state,
 
   // The context may be destroyed and the mojo connection unbound. However the
   // object may live on, reject any requests after the context is destroyed.
-  if (!cache_storage_remote_) {
+  if (!cache_storage_remote_.is_bound()) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kInvalidStateError));
     return promise;
@@ -237,7 +237,7 @@ ScriptPromise CacheStorage::Delete(ScriptState* script_state,
 
   // The context may be destroyed and the mojo connection unbound. However the
   // object may live on, reject any requests after the context is destroyed.
-  if (!cache_storage_remote_) {
+  if (!cache_storage_remote_.is_bound()) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kInvalidStateError));
     return promise;
@@ -297,7 +297,7 @@ ScriptPromise CacheStorage::keys(ScriptState* script_state) {
 
   // The context may be destroyed and the mojo connection unbound. However the
   // object may live on, reject any requests after the context is destroyed.
-  if (!cache_storage_remote_) {
+  if (!cache_storage_remote_.is_bound()) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kInvalidStateError));
     return promise;
@@ -374,7 +374,7 @@ ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
 
   // The context may be destroyed and the mojo connection unbound. However the
   // object may live on, reject any requests after the context is destroyed.
-  if (!cache_storage_remote_) {
+  if (!cache_storage_remote_.is_bound()) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kInvalidStateError));
     return promise;
@@ -457,9 +457,10 @@ ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
 
 CacheStorage::CacheStorage(ExecutionContext* context,
                            GlobalFetch::ScopedFetcher* fetcher)
-    : ExecutionContextLifecycleObserver(context),
+    : ExecutionContextClient(context),
       scoped_fetcher_(fetcher),
       blob_client_list_(MakeGarbageCollected<CacheStorageBlobClientList>()),
+      cache_storage_remote_(context),
       ever_used_(false) {
   // See https://bit.ly/2S0zRAS for task types.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
@@ -471,8 +472,9 @@ CacheStorage::CacheStorage(ExecutionContext* context,
     mojo::PendingRemote<mojom::blink::CacheStorage> info =
         service_worker->TakeCacheStorage();
     if (info) {
-      cache_storage_remote_ = mojo::Remote<mojom::blink::CacheStorage>(
-          std::move(info), task_runner);
+      cache_storage_remote_ =
+          HeapMojoRemote<mojom::blink::CacheStorage>(context);
+      cache_storage_remote_.Bind(std::move(info), task_runner);
       return;
     }
   }
@@ -497,8 +499,9 @@ bool CacheStorage::HasPendingActivity() const {
 void CacheStorage::Trace(Visitor* visitor) {
   visitor->Trace(scoped_fetcher_);
   visitor->Trace(blob_client_list_);
+  visitor->Trace(cache_storage_remote_);
   ScriptWrappable::Trace(visitor);
-  ExecutionContextLifecycleObserver::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 bool CacheStorage::IsAllowed(ScriptState* script_state) {
@@ -507,10 +510,6 @@ bool CacheStorage::IsAllowed(ScriptState* script_state) {
     allowed_.emplace(IsCacheStorageAllowed(script_state));
   }
   return allowed_.value();
-}
-
-void CacheStorage::ContextDestroyed() {
-  cache_storage_remote_.reset();
 }
 
 }  // namespace blink

@@ -32,14 +32,14 @@ async_test(async (t) => {
   let target = document.getElementById("target");
   let axTarget = axElementById("target");
   t.step(() => { assert_false(axTarget.isIgnored); });
-  t.step(() => { assert_equals(axTarget.childrenCount, 0); });
+  t.step(() => { assert_equals(axTarget.childrenCount, 0, "When locked, nodes in hidden subtree are ignored"); });
 
   target.classList.remove("hidden");
   requestAnimationFrame(() => requestAnimationFrame(() => {
     // The ax object for #target got replaced since the layout object changed, so use the new ax object.
     axTarget = axElementById("target");
-    t.step(() => { assert_equals(axTarget.childrenCount, 2, "After commit, nodes in target subtree are not ignored"); });
+    t.step(() => { assert_equals(axTarget.childrenCount, 2, "After getting unlocked, nodes in hidden subtree are not ignored"); });
     t.done();
   }));
-}, "Nodes in target non-activatable tree are not exposed to accessibility tree");
+}, "Nodes in hidden non-activatable tree are not exposed to accessibility tree");
 </script>

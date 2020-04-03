@@ -14,6 +14,8 @@ NS_ASSUME_NONNULL_BEGIN
 @class CWVAutofillFormSuggestion;
 @class CWVAutofillProfile;
 @class CWVCreditCard;
+@class CWVCreditCardExpirationFixer;
+@class CWVCreditCardNameFixer;
 @class CWVCreditCardSaver;
 @class CWVCreditCardVerifier;
 @class CWVPassword;
@@ -100,6 +102,22 @@ typedef NS_ENUM(NSInteger, CWVPasswordUserDecision) {
 // Life time of |saver| should be managed by the delegate.
 - (void)autofillController:(CWVAutofillController*)autofillController
     saveCreditCardWithSaver:(CWVCreditCardSaver*)saver;
+
+// Called if the card holder's name needs to be confirmed by the user before the
+// card can be saved. This can happen if a user doesn't have a GPay account or
+// attempted to save a credit card without providing a name for it.
+// |fixer| encapsulates information needed to assist with this fix attempt.
+// Life time of |fixer| should be managed by the delegate.
+- (void)autofillController:(CWVAutofillController*)autofillController
+    confirmCreditCardNameWithFixer:(CWVCreditCardNameFixer*)fixer;
+
+// Called if the card's expiration needs to be corrected before the the card can
+// be saved. This can happen if a user attempted to save a credit card with an
+// expired expiration date.
+// |fixer| encapsulates information needed to assist with this fix attempt.
+// Life time of |fixer| should be managed by the delegate.
+- (void)autofillController:(CWVAutofillController*)autofillController
+    confirmCreditCardExpirationWithFixer:(CWVCreditCardExpirationFixer*)fixer;
 
 // Called when the user needs to use |verifier| to verify a credit card.
 // Lifetime of |verifier| should be managed by the delegate.

@@ -66,7 +66,7 @@ struct VectorTraitsBase {
 
   // Vectors do not support deleting values.
   static constexpr bool kCanHaveDeletedValue = false;
-  static bool IsDeletedValue(T value) { return false; }
+  static bool IsDeletedValue(const T& value) { return false; }
 };
 
 template <typename T>

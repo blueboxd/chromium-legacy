@@ -80,3 +80,18 @@ jumbo_component("x") {
     "//ui/platform_window/common",
   ]
 }
+
+source_set("gl") {
+  sources = [
+    "x11_gl_egl_utility.cc",
+    "x11_gl_egl_utility.h",
+  ]
+
+  configs += [ "//third_party/khronos:khronos_headers" ]
+  deps = [
+    ":x",
+    "//base",
+    "//third_party/angle:includes",
+    "//ui/gl",
+  ]
+}

@@ -28,6 +28,7 @@
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -776,16 +777,26 @@ ProfileImpl::~ProfileImpl() {
   ChromePluginServiceFilter::GetInstance()->UnregisterProfile(this);
 #endif
 
-  // Destroy OTR profile and its profile services first.
-  if (off_the_record_profile_) {
-    ProfileDestroyer::DestroyOffTheRecordProfileNow(
-        off_the_record_profile_.get());
-  } else {
+  // Destroy all OTR profiles and their profile services first.
+  std::vector<Profile*> raw_otr_profiles;
+  bool primary_otr_available = false;
+
+  // Get a list of existing OTR profiles since |off_the_record_profile_| might
+  // be modified after the call to |DestroyOffTheRecordProfileNow|.
+  for (auto& otr_profile : otr_profiles_) {
+    raw_otr_profiles.push_back(otr_profile.second.get());
+    primary_otr_available |= (otr_profile.first == OTRProfileID::PrimaryID());
+  }
+
+  for (Profile* otr_profile : raw_otr_profiles)
+    ProfileDestroyer::DestroyOffTheRecordProfileNow(otr_profile);
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+  if (!primary_otr_available) {
     ExtensionPrefValueMapFactory::GetForBrowserContext(this)
         ->ClearAllIncognitoSessionOnlyPreferences();
-#endif
   }
+#endif
 
   FullBrowserTransitionManager::Get()->OnProfileDestroyed(this);
 
@@ -858,33 +869,66 @@ bool ProfileImpl::IsOffTheRecord() const {
   return false;
 }
 
+const Profile::OTRProfileID& ProfileImpl::GetOTRProfileID() const {
+  NOTREACHED();
+  static base::NoDestructor<OTRProfileID> otr_profile_id(
+      "ProfileImp::NoOTRProfileID");
+  return *otr_profile_id;
+}
+
 bool ProfileImpl::IsIndependentOffTheRecordProfile() {
   return false;
 }
 
-Profile* ProfileImpl::GetOffTheRecordProfile() {
-  if (!off_the_record_profile_) {
-    std::unique_ptr<Profile> p(CreateOffTheRecordProfile());
-    off_the_record_profile_.swap(p);
+Profile* ProfileImpl::GetOffTheRecordProfile(
+    const OTRProfileID& otr_profile_id) {
+  if (HasOffTheRecordProfile(otr_profile_id))
+    return otr_profiles_[otr_profile_id].get();
 
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_PROFILE_CREATED,
-        content::Source<Profile>(off_the_record_profile_.get()),
-        content::NotificationService::NoDetails());
-  }
-  return off_the_record_profile_.get();
+  // Create a new OffTheRecordProfile
+  std::unique_ptr<Profile> otr_profile =
+      Profile::CreateOffTheRecordProfile(this, otr_profile_id);
+  Profile* raw_otr_profile = otr_profile.get();
+
+  otr_profiles_[otr_profile_id] = std::move(otr_profile);
+
+  NotifyOffTheRecordProfileCreated(raw_otr_profile);
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_PROFILE_CREATED,
+      content::Source<Profile>(raw_otr_profile),
+      content::NotificationService::NoDetails());
+
+  return raw_otr_profile;
 }
 
-void ProfileImpl::DestroyOffTheRecordProfile() {
-  off_the_record_profile_.reset();
+std::vector<Profile*> ProfileImpl::GetAllOffTheRecordProfiles() {
+  std::vector<Profile*> raw_otr_profiles;
+  for (auto& otr : otr_profiles_)
+    raw_otr_profiles.push_back(otr.second.get());
+  return raw_otr_profiles;
+}
+
+void ProfileImpl::DestroyOffTheRecordProfile(Profile* otr_profile) {
+  CHECK(otr_profile);
+  OTRProfileID profile_id = otr_profile->GetOTRProfileID();
+  DCHECK(HasOffTheRecordProfile(profile_id));
+  otr_profiles_.erase(profile_id);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  ExtensionPrefValueMapFactory::GetForBrowserContext(this)
-      ->ClearAllIncognitoSessionOnlyPreferences();
+  // Extensions are only supported on primary OTR profile.
+  if (profile_id == OTRProfileID::PrimaryID()) {
+    ExtensionPrefValueMapFactory::GetForBrowserContext(this)
+        ->ClearAllIncognitoSessionOnlyPreferences();
+  }
 #endif
 }
 
-bool ProfileImpl::HasOffTheRecordProfile() {
-  return off_the_record_profile_.get() != NULL;
+bool ProfileImpl::HasOffTheRecordProfile(const OTRProfileID& otr_profile_id) {
+  return base::Contains(otr_profiles_, otr_profile_id);
+}
+
+bool ProfileImpl::HasAnyOffTheRecordProfile() {
+  return !otr_profiles_.empty();
 }
 
 Profile* ProfileImpl::GetOriginalProfile() {
@@ -1297,8 +1341,8 @@ ProfileImpl::GetNativeFileSystemPermissionContext() {
 bool ProfileImpl::IsSameProfile(Profile* profile) {
   if (profile == static_cast<Profile*>(this))
     return true;
-  Profile* otr_profile = off_the_record_profile_.get();
-  return otr_profile && profile == otr_profile;
+
+  return profile && profile->GetOriginalProfile() == this;
 }
 
 base::Time ProfileImpl::GetStartTime() const {

@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/buildflag_header.gni")
 import("//build/config/ios/ios_sdk.gni")
 import("//build/config/ios/rules.gni")
 import("//build/config/locales.gni")
@@ -14,15 +13,6 @@ import("//ios/web_view/features.gni")
 import("//ios/web_view/repack.gni")
 import("//testing/test.gni")
 import("//tools/grit/repack.gni")
-
-buildflag_header("web_view_buildflags") {
-  header = "cwv_web_view_buildflags.h"
-
-  flags = [
-    "IOS_WEB_VIEW_ENABLE_SYNC=$ios_web_view_enable_sync",
-    "IOS_WEB_VIEW_ENABLE_AUTOFILL=$ios_web_view_enable_autofill",
-  ]
-}
 
 group("all_tests") {
   testonly = true
@@ -44,22 +34,40 @@ config("config") {
 
 # These are defined as vars so they can be shared with different targets below.
 ios_web_view_public_headers = [
+  "public/cwv_autofill_controller.h",
+  "public/cwv_autofill_controller_delegate.h",
+  "public/cwv_autofill_data_manager.h",
+  "public/cwv_autofill_data_manager_observer.h",
+  "public/cwv_autofill_form.h",
+  "public/cwv_autofill_profile.h",
+  "public/cwv_autofill_suggestion.h",
   "public/cwv_back_forward_list.h",
   "public/cwv_back_forward_list_item.h",
+  "public/cwv_credit_card.h",
+  "public/cwv_credit_card_expiration_fixer.h",
+  "public/cwv_credit_card_name_fixer.h",
+  "public/cwv_credit_card_saver.h",
+  "public/cwv_credit_card_verifier.h",
   "public/cwv_download_task.h",
   "public/cwv_export.h",
   "public/cwv_favicon.h",
   "public/cwv_flags.h",
   "public/cwv_html_element.h",
+  "public/cwv_identity.h",
   "public/cwv_navigation_action.h",
   "public/cwv_navigation_delegate.h",
   "public/cwv_navigation_type.h",
+  "public/cwv_password.h",
   "public/cwv_preferences.h",
+  "public/cwv_preferences_autofill.h",
   "public/cwv_preview_element_info.h",
   "public/cwv_script_command.h",
   "public/cwv_scroll_view.h",
   "public/cwv_scroll_view_delegate.h",
   "public/cwv_ssl_status.h",
+  "public/cwv_sync_controller.h",
+  "public/cwv_sync_controller_data_source.h",
+  "public/cwv_sync_controller_delegate.h",
   "public/cwv_translation_controller.h",
   "public/cwv_translation_controller_delegate.h",
   "public/cwv_translation_language.h",
@@ -68,37 +76,11 @@ ios_web_view_public_headers = [
   "public/cwv_user_content_controller.h",
   "public/cwv_user_script.h",
   "public/cwv_web_view.h",
+  "public/cwv_web_view_autofill.h",
   "public/cwv_web_view_configuration.h",
+  "public/cwv_web_view_configuration_autofill.h",
+  "public/cwv_web_view_configuration_sync.h",
 ]
-if (ios_web_view_enable_sync) {
-  ios_web_view_public_headers += [
-    "public/cwv_identity.h",
-    "public/cwv_sync_controller.h",
-    "public/cwv_sync_controller_data_source.h",
-    "public/cwv_sync_controller_delegate.h",
-    "public/cwv_web_view_configuration_sync.h",
-  ]
-}
-if (ios_web_view_enable_autofill) {
-  ios_web_view_public_headers += [
-    "public/cwv_autofill_controller.h",
-    "public/cwv_autofill_controller_delegate.h",
-    "public/cwv_autofill_data_manager.h",
-    "public/cwv_autofill_data_manager_observer.h",
-    "public/cwv_autofill_form.h",
-    "public/cwv_autofill_profile.h",
-    "public/cwv_autofill_suggestion.h",
-    "public/cwv_credit_card.h",
-    "public/cwv_credit_card_expiration_fixer.h",
-    "public/cwv_credit_card_name_fixer.h",
-    "public/cwv_credit_card_saver.h",
-    "public/cwv_credit_card_verifier.h",
-    "public/cwv_password.h",
-    "public/cwv_preferences_autofill.h",
-    "public/cwv_web_view_autofill.h",
-    "public/cwv_web_view_configuration_autofill.h",
-  ]
-}
 
 source_set("web_view_sources") {
   sources = ios_web_view_public_headers
@@ -107,6 +89,27 @@ source_set("web_view_sources") {
     "internal/app/application_context.mm",
     "internal/app/web_view_io_thread.h",
     "internal/app/web_view_io_thread.mm",
+    "internal/autofill/cwv_autofill_client_ios_bridge.h",
+    "internal/autofill/cwv_autofill_controller.mm",
+    "internal/autofill/cwv_autofill_controller_internal.h",
+    "internal/autofill/cwv_autofill_data_manager.mm",
+    "internal/autofill/cwv_autofill_data_manager_internal.h",
+    "internal/autofill/cwv_autofill_form.mm",
+    "internal/autofill/cwv_autofill_form_internal.h",
+    "internal/autofill/cwv_autofill_profile.mm",
+    "internal/autofill/cwv_autofill_profile_internal.h",
+    "internal/autofill/cwv_autofill_suggestion.mm",
+    "internal/autofill/cwv_autofill_suggestion_internal.h",
+    "internal/autofill/cwv_credit_card.mm",
+    "internal/autofill/cwv_credit_card_expiration_fixer.mm",
+    "internal/autofill/cwv_credit_card_expiration_fixer_internal.h",
+    "internal/autofill/cwv_credit_card_internal.h",
+    "internal/autofill/cwv_credit_card_name_fixer.mm",
+    "internal/autofill/cwv_credit_card_name_fixer_internal.h",
+    "internal/autofill/cwv_credit_card_saver.mm",
+    "internal/autofill/cwv_credit_card_saver_internal.h",
+    "internal/autofill/cwv_credit_card_verifier.mm",
+    "internal/autofill/cwv_credit_card_verifier_internal.h",
     "internal/autofill/web_view_autocomplete_history_manager_factory.h",
     "internal/autofill/web_view_autocomplete_history_manager_factory.mm",
     "internal/autofill/web_view_autofill_client_ios.h",
@@ -160,6 +163,10 @@ source_set("web_view_sources") {
     "internal/language/web_view_language_model_manager_factory.mm",
     "internal/language/web_view_url_language_histogram_factory.h",
     "internal/language/web_view_url_language_histogram_factory.mm",
+    "internal/passwords/cwv_password.mm",
+    "internal/passwords/cwv_password_controller.h",
+    "internal/passwords/cwv_password_controller.mm",
+    "internal/passwords/cwv_password_internal.h",
     "internal/passwords/web_view_password_feature_manager.h",
     "internal/passwords/web_view_password_feature_manager.mm",
     "internal/passwords/web_view_password_manager_client.h",
@@ -172,6 +179,7 @@ source_set("web_view_sources") {
     "internal/passwords/web_view_password_store_factory.mm",
     "internal/pref_names.h",
     "internal/pref_names.mm",
+    "internal/signin/cwv_identity.mm",
     "internal/signin/ios_web_view_signin_client.h",
     "internal/signin/ios_web_view_signin_client.mm",
     "internal/signin/web_view_device_accounts_provider_impl.h",
@@ -182,6 +190,8 @@ source_set("web_view_sources") {
     "internal/signin/web_view_signin_client_factory.mm",
     "internal/signin/web_view_signin_error_controller_factory.h",
     "internal/signin/web_view_signin_error_controller_factory.mm",
+    "internal/sync/cwv_sync_controller.mm",
+    "internal/sync/cwv_sync_controller_internal.h",
     "internal/sync/web_view_device_info_sync_service_factory.h",
     "internal/sync/web_view_device_info_sync_service_factory.mm",
     "internal/sync/web_view_gcm_profile_service_factory.h",
@@ -233,46 +243,9 @@ source_set("web_view_sources") {
     "internal/webdata_services/web_view_web_data_service_wrapper_factory.h",
     "internal/webdata_services/web_view_web_data_service_wrapper_factory.mm",
   ]
-  if (ios_web_view_enable_sync) {
-    sources += [
-      "internal/signin/cwv_identity.mm",
-      "internal/sync/cwv_sync_controller.mm",
-      "internal/sync/cwv_sync_controller_internal.h",
-    ]
-  }
-  if (ios_web_view_enable_autofill) {
-    sources += [
-      "internal/autofill/cwv_autofill_client_ios_bridge.h",
-      "internal/autofill/cwv_autofill_controller.mm",
-      "internal/autofill/cwv_autofill_controller_internal.h",
-      "internal/autofill/cwv_autofill_data_manager.mm",
-      "internal/autofill/cwv_autofill_data_manager_internal.h",
-      "internal/autofill/cwv_autofill_form.mm",
-      "internal/autofill/cwv_autofill_form_internal.h",
-      "internal/autofill/cwv_autofill_profile.mm",
-      "internal/autofill/cwv_autofill_profile_internal.h",
-      "internal/autofill/cwv_autofill_suggestion.mm",
-      "internal/autofill/cwv_autofill_suggestion_internal.h",
-      "internal/autofill/cwv_credit_card.mm",
-      "internal/autofill/cwv_credit_card_expiration_fixer.mm",
-      "internal/autofill/cwv_credit_card_expiration_fixer_internal.h",
-      "internal/autofill/cwv_credit_card_internal.h",
-      "internal/autofill/cwv_credit_card_name_fixer.mm",
-      "internal/autofill/cwv_credit_card_name_fixer_internal.h",
-      "internal/autofill/cwv_credit_card_saver.mm",
-      "internal/autofill/cwv_credit_card_saver_internal.h",
-      "internal/autofill/cwv_credit_card_verifier.mm",
-      "internal/autofill/cwv_credit_card_verifier_internal.h",
-      "internal/passwords/cwv_password.mm",
-      "internal/passwords/cwv_password_controller.h",
-      "internal/passwords/cwv_password_controller.mm",
-      "internal/passwords/cwv_password_internal.h",
-    ]
-  }
 
   public_deps = [
     ":web_view_all_frames",
-    ":web_view_buildflags",
     ":web_view_main_frame",
     ":web_view_resources",
     "//base",
@@ -349,12 +322,7 @@ source_set("web_view_sources") {
   ]
 }
 
-# Generate the umbrella header to exclude headers for disabled features.
-# This is preferable to guarding header imports using flags defined in
-# :web_view_buildflags because:
-# 1. Confusing to see headers for unsupported features in umbrella header.
-# 2. A need to include cwv_web_view_buildflags.h as part of public headers and
-#    any headers it itself includes, despite not being part of the public API.
+# Generate the umbrella header.
 action("web_view_umbrella_header") {
   script = "//build/config/ios/generate_umbrella_header.py"
 
@@ -555,10 +523,8 @@ group("web_view_resources") {
   deps = [
     ":repack_locales",
     ":repack_resources",
+    ":repack_scalable_resources",
   ]
-  if (ios_web_view_enable_autofill) {
-    deps += [ ":repack_scalable_resources" ]
-  }
 }
 
 if (additional_toolchains == [] || current_toolchain == default_toolchain) {

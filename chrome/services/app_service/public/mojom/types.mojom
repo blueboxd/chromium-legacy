@@ -188,6 +188,7 @@ enum LaunchSource {
   kFromMenu = 14,                   // Menu.
   kFromInstalledNotification = 15,  // Installed notification
   kFromTest = 16,                   // Test
+  kFromArc = 17,                    // Arc.
 };
 
 enum TriState {
@@ -286,6 +287,7 @@ struct IntentFilter {
 struct Intent {
   string? scheme; // URL scheme. e.g. https.
   string? host;   // URL host. e.g. www.google.com.
+  string? port;   // URL host. e.g. 8080.
   string? path;   // URL path. e.g. /abc.
 };
 

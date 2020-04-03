@@ -12,7 +12,6 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_store_default.h"
 #include "components/sync/driver/sync_service.h"
-#include "ios/web_view/cwv_web_view_buildflags.h"
 #include "ios/web_view/internal/app/application_context.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_data_manager_internal.h"
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
@@ -40,18 +39,14 @@
   NSHashTable* _webViews;
 }
 
-#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 // This web view configuration's autofill data manager.
 // nil if CWVWebViewConfiguration is created with +incognitoConfiguration.
 @property(nonatomic, readonly, nullable)
     CWVAutofillDataManager* autofillDataManager;
-#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 
-#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
 // This web view configuration's sync controller.
 // nil if CWVWebViewConfiguration is created with +incognitoConfiguration.
 @property(nonatomic, readonly, nullable) CWVSyncController* syncController;
-#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
 
 // Initializes configuration with the specified browser state mode.
 - (instancetype)initWithBrowserState:
@@ -61,13 +56,9 @@
 
 @implementation CWVWebViewConfiguration
 
-#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 @synthesize autofillDataManager = _autofillDataManager;
-#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 @synthesize preferences = _preferences;
-#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
 @synthesize syncController = _syncController;
-#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
 @synthesize userContentController = _userContentController;
 
 namespace {
@@ -131,8 +122,8 @@ CWVWebViewConfiguration* gIncognitoConfiguration = nil;
   return self;
 }
 
-#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 #pragma mark - Autofill
+
 - (CWVAutofillDataManager*)autofillDataManager {
   if (!_autofillDataManager && self.persistent) {
     autofill::PersonalDataManager* personalDataManager =
@@ -147,10 +138,9 @@ CWVWebViewConfiguration* gIncognitoConfiguration = nil;
   }
   return _autofillDataManager;
 }
-#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 
-#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
 #pragma mark - Sync
+
 - (CWVSyncController*)syncController {
   if (!_syncController && self.persistent) {
     syncer::SyncService* syncService =
@@ -183,7 +173,6 @@ CWVWebViewConfiguration* gIncognitoConfiguration = nil;
   }
   return _syncController;
 }
-#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
 
 #pragma mark - Public Methods
 
@@ -205,9 +194,7 @@ CWVWebViewConfiguration* gIncognitoConfiguration = nil;
   for (CWVWebView* webView in _webViews) {
     [webView shutDown];
   }
-#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
   [_syncController shutDown];
-#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
   _browserState.reset();
 }
 

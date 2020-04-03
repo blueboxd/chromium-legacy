@@ -15,24 +15,24 @@
 #include "base/strings/stringprintf.h"
 #include "components/autofill_assistant/browser/client.h"
 #include "components/autofill_assistant/browser/protocol_utils.h"
+#include "components/autofill_assistant/browser/switches.h"
 #include "components/autofill_assistant/browser/trigger_context.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "crypto/sha2.h"
+#include "google_apis/google_api_keys.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/url_canon_stdstring.h"
 
+namespace autofill_assistant {
 namespace {
-namespace switches {
-// --autofill_assistant-auth=false disables authentication. This is only useful
-// during development, as prod instances require authentication.
-const char* const kAutofillAssistantAuth = "autofill-assistant-auth";
-}  // namespace switches
 
+const char* const kDefaultAutofillAssistantServerUrl =
+    "https://automate-pa.googleapis.com";
 const char* const kScriptEndpoint = "/v1/supportsSite2";
 const char* const kActionEndpoint = "/v1/actions2";
 
@@ -54,21 +54,45 @@ net::NetworkTrafficAnnotationTag traffic_annotation =
             "This feature can be disabled in settings."
           policy_exception_justification: "Not implemented."
         })");
-}  // namespace
 
-namespace autofill_assistant {
+std::string GetAPIKey(version_info::Channel channel) {
+  const auto* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kAutofillAssistantServerKey)) {
+    return command_line->GetSwitchValueASCII(
+        switches::kAutofillAssistantServerKey);
+  }
+
+  if (google_apis::IsGoogleChromeAPIKeyUsed()) {
+    return channel == version_info::Channel::STABLE
+               ? google_apis::GetAPIKey()
+               : google_apis::GetNonStableAPIKey();
+  }
+  return "";
+}
+
+std::string GetServerUrl() {
+  std::string server_url =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kAutofillAssistantUrl);
+  if (server_url.empty()) {
+    server_url = kDefaultAutofillAssistantServerUrl;
+  }
+  return server_url;
+}
+
+}  // namespace
 
 // static
 std::unique_ptr<ServiceImpl> ServiceImpl::Create(
     content::BrowserContext* context,
     Client* client) {
-  GURL server_url(client->GetServerUrl());
+  GURL server_url(GetServerUrl());
   DCHECK(server_url.is_valid());
 
   return std::make_unique<ServiceImpl>(
-      client->GetApiKey(), server_url, context, client->GetAccessTokenFetcher(),
-      client->GetLocale(), client->GetCountryCode(), client->GetDeviceContext(),
-      client);
+      GetAPIKey(client->GetChannel()), server_url, context,
+      client->GetAccessTokenFetcher(), client->GetLocale(),
+      client->GetCountryCode(), client->GetDeviceContext(), client);
 }
 
 ServiceImpl::ServiceImpl(const std::string& api_key,

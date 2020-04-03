@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -752,14 +753,29 @@ bool TestingProfile::IsOffTheRecord() const {
   return original_profile_;
 }
 
-void TestingProfile::SetOffTheRecordProfile(std::unique_ptr<Profile> profile) {
-  DCHECK(!IsOffTheRecord());
-  if (profile)
-    DCHECK_EQ(this, profile->GetOriginalProfile());
-  incognito_profile_ = std::move(profile);
+const Profile::OTRProfileID& TestingProfile::GetOTRProfileID() const {
+  // TODO(https://crbug.com//1033903): Remove this variable and add support for
+  // non-primary OTRs.
+  static base::NoDestructor<Profile::OTRProfileID> incognito_profile_id(
+      Profile::OTRProfileID::PrimaryID());
+  DCHECK(IsOffTheRecord());
+
+  return *incognito_profile_id;
 }
 
-Profile* TestingProfile::GetOffTheRecordProfile() {
+void TestingProfile::SetOffTheRecordProfile(
+    std::unique_ptr<Profile> otr_profile) {
+  // TODO(https://crbug.com//1033903): Add support for non-primary OTRs.
+  DCHECK(!IsOffTheRecord());
+  if (otr_profile)
+    DCHECK_EQ(this, otr_profile->GetOriginalProfile());
+  incognito_profile_ = std::move(otr_profile);
+}
+
+Profile* TestingProfile::GetOffTheRecordProfile(
+    const OTRProfileID& otr_profile_id) {
+  // TODO(https://crbug.com//1033903): Add support for non-primary OTRs.
+  DCHECK(otr_profile_id == OTRProfileID::PrimaryID());
   if (IsOffTheRecord())
     return this;
   if (!incognito_profile_)
@@ -767,11 +783,34 @@ Profile* TestingProfile::GetOffTheRecordProfile() {
   return incognito_profile_.get();
 }
 
-void TestingProfile::DestroyOffTheRecordProfile() {
+std::vector<Profile*> TestingProfile::GetAllOffTheRecordProfiles() {
+  // TODO(https://crbug.com//1033903): Add support for non-primary OTRs.
+  std::vector<Profile*> otr_profiles;
+
+  if (incognito_profile_)
+    otr_profiles.push_back(incognito_profile_.get());
+
+  return otr_profiles;
+}
+
+void TestingProfile::DestroyOffTheRecordProfile(Profile* otr_profile) {
+  // TODO(https://crbug.com//1033903): Add support for non-primary OTRs.
   incognito_profile_.reset();
 }
 
-bool TestingProfile::HasOffTheRecordProfile() {
+void TestingProfile::DestroyOffTheRecordProfile() {
+  DestroyOffTheRecordProfile(incognito_profile_.get());
+}
+
+bool TestingProfile::HasOffTheRecordProfile(
+    const OTRProfileID& otr_profile_id) {
+  // TODO(https://crbug.com//1033903): Add support for non-primary OTRs.
+  DCHECK(otr_profile_id == OTRProfileID::PrimaryID());
+  return incognito_profile_.get() != nullptr;
+}
+
+bool TestingProfile::HasAnyOffTheRecordProfile() {
+  // TODO(https://crbug.com//1033903): Add support for non-primary OTRs.
   return incognito_profile_.get() != nullptr;
 }
 
@@ -812,8 +851,7 @@ bool TestingProfile::IsLegacySupervised() const {
 }
 
 bool TestingProfile::IsIndependentOffTheRecordProfile() {
-  return !GetOriginalProfile()->HasOffTheRecordProfile() ||
-         GetOriginalProfile()->GetOffTheRecordProfile() != this;
+  return IsOffTheRecord() && GetOTRProfileID() != OTRProfileID::PrimaryID();
 }
 
 bool TestingProfile::AllowsBrowserWindows() const {

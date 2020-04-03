@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/services/shape_detection/public/mojom/textdetection.mojom.js"></script>
+<script src="resources/big-buffer-helpers.js"></script>
+<script src="resources/mock-textdetection.js"></script>
+<script>
+
+const createTestForPostMessage = (createDetector, mock, detectionResultTest) => {
+  async_test(t => {
+
+    const img = new Image();
+    img.onload = async() => {
+
+      const canvas = document.createElement("canvas");;
+      canvas.getContext("2d").drawImage(img, 0, 0);
+
+      const detector = createDetector();
+      try {
+        const detectionResult = await detector.detect(canvas.getContext("2d")
+            .getImageData(0, 0, canvas.width, canvas.height));
+
+        const msgWatcher = new EventWatcher(t, window, ['message']);
+        window.postMessage(detectionResult);
+        const evt = await msgWatcher.wait_for('message');
+
+        detectionResultTest(evt.data);
+        t.done();
+      } catch(error) {
+        assert_unreached("Error during detect(canvas): " + error);
+      }
+    }
+
+    img.src = "../media/content/greenbox.png";
+  });
+};
+
+function CheckDetectedReadOnlyBoundingBoxes(detectionResult) {
+  assert_equals(detectionResult.length, 2, "Number of textBlocks");
+  assert_equals(detectionResult[0].rawValue, "cats", "textBlock 1");
+  assert_equals(detectionResult[1].rawValue, "dogs", "textBlock 2");
+  for (i = 0; i < detectionResult.length; i++) {
+    assert_equals(detectionResult[i].boundingBox.x, detectionResult[i].cornerPoints[0].x);
+    assert_equals(detectionResult[i].boundingBox.y, detectionResult[i].cornerPoints[0].y);
+    assert_equals(detectionResult[i].boundingBox.width,
+                  detectionResult[i].cornerPoints[2].x - detectionResult[i].cornerPoints[3].x);
+    assert_equals(detectionResult[i].boundingBox.height,
+                  detectionResult[i].cornerPoints[2].y - detectionResult[i].cornerPoints[1].y);
+  }
+}
+
+// These tests verify that a DetectedText can be passed to postMessage().
+generate_tests(createTestForPostMessage, [
+  [
+    "Text - DetectedText can be passed to postMessage()",
+    () => { return new TextDetector(); },
+    mockTextDetection,
+    CheckDetectedReadOnlyBoundingBoxes
+  ]
+]);
+
+</script>

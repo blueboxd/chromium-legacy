@@ -22,4 +22,14 @@ void TestPhotoController::GetNextImage(
   std::move(callback).Run(/*success=*/true, image);
 }
 
+void TestPhotoController::GetSettings(GetSettingsCallback callback) {
+  // 0 is the enum number for Google Photos.
+  std::move(callback).Run(/*topic_source=*/0);
+}
+
+void TestPhotoController::UpdateSettings(int topic_source,
+                                         UpdateSettingsCallback callback) {
+  std::move(callback).Run(/*success=*/true);
+}
+
 }  // namespace ash

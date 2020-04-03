@@ -8,14 +8,13 @@
 #include <memory>
 
 #include "ash/public/cpp/ambient/photo_controller.h"
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/optional.h"
 
 // The interface of a client to retrieve photos.
 class PhotoClient {
  public:
   using OnTopicInfoFetchedCallback = base::OnceCallback<void(
-      bool success,
       const base::Optional<ash::PhotoController::Topic>& topic)>;
 
   // Creates PhotoClient based on the build flag ENABLE_CROS_LIBASSISTANT.
@@ -27,6 +26,12 @@ class PhotoClient {
   virtual ~PhotoClient() = default;
 
   virtual void FetchTopicInfo(OnTopicInfoFetchedCallback callback);
+
+  virtual void GetSettings(ash::PhotoController::GetSettingsCallback callback);
+
+  virtual void UpdateSettings(
+      int topic_source,
+      ash::PhotoController::UpdateSettingsCallback callback);
 };
 
 #endif  // CHROME_BROWSER_UI_ASH_AMBIENT_PHOTO_CLIENT_H_

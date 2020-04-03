@@ -14,7 +14,7 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_surface.h"
-#include "ui/gl/gl_surface_egl.h"
+#include "ui/gl/gl_surface_egl_x11.h"
 #include "ui/gl/gl_surface_egl_x11_gles2.h"
 #include "ui/gl/gl_surface_glx.h"
 #include "ui/gl/gl_surface_glx_x11.h"
@@ -83,7 +83,7 @@ scoped_refptr<GLSurface> CreateViewGLSurface(gfx::AcceleratedWidget window) {
       return InitializeGLSurface(new NativeViewGLSurfaceEGLX11GLES2(window));
     case kGLImplementationEGLANGLE:
       DCHECK(window != gfx::kNullAcceleratedWidget);
-      return InitializeGLSurface(new NativeViewGLSurfaceEGL(window, nullptr));
+      return InitializeGLSurface(new NativeViewGLSurfaceEGLX11(window));
     case kGLImplementationMockGL:
     case kGLImplementationStubGL:
       return new GLSurfaceStub;

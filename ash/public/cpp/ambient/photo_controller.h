@@ -43,9 +43,19 @@ class ASH_PUBLIC_EXPORT PhotoController {
 
   using PhotoDownloadCallback =
       base::OnceCallback<void(bool success, const gfx::ImageSkia&)>;
+  using GetSettingsCallback =
+      base::OnceCallback<void(const base::Optional<int>& topic_source)>;
+  using UpdateSettingsCallback = base::OnceCallback<void(bool success)>;
 
   // Get next image.
   virtual void GetNextImage(PhotoDownloadCallback callback) = 0;
+
+  // Get settings.
+  virtual void GetSettings(GetSettingsCallback callback) = 0;
+
+  // Update settings.
+  virtual void UpdateSettings(int topic_source,
+                              UpdateSettingsCallback callback) = 0;
 
  protected:
   PhotoController();

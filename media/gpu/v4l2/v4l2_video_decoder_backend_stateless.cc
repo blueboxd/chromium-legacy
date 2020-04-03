@@ -529,13 +529,12 @@ bool V4L2StatelessVideoDecoderBackend::ApplyResolution(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(input_queue_->QueuedBuffersCount(), 0u);
 
-  struct v4l2_format format = {};
-
-  format.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-  if (device_->Ioctl(VIDIOC_G_FMT, &format) != 0) {
+  auto ret = input_queue_->GetFormat().first;
+  if (!ret) {
     VPLOGF(1) << "Failed getting OUTPUT format";
     return false;
   }
+  struct v4l2_format format = std::move(*ret);
 
   format.fmt.pix_mp.width = pic_size.width();
   format.fmt.pix_mp.height = pic_size.height();

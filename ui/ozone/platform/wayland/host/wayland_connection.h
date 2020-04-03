@@ -41,7 +41,7 @@ class WaylandShm;
 class WaylandConnection : public PlatformEventSource,
                           public base::MessagePumpForUI::FdWatcher {
  public:
-  WaylandConnection();
+  explicit WaylandConnection(WaylandBufferManagerHost* buffer_manager_host);
   ~WaylandConnection() override;
 
   bool Initialize();
@@ -96,7 +96,7 @@ class WaylandConnection : public PlatformEventSource,
   }
 
   WaylandBufferManagerHost* buffer_manager_host() const {
-    return buffer_manager_host_.get();
+    return buffer_manager_host_;
   }
 
   WaylandZwpLinuxDmabuf* zwp_dmabuf() const { return zwp_dmabuf_.get(); }
@@ -200,7 +200,8 @@ class WaylandConnection : public PlatformEventSource,
   std::unique_ptr<WaylandZwpLinuxDmabuf> zwp_dmabuf_;
   std::unique_ptr<WaylandDrm> drm_;
   std::unique_ptr<WaylandShm> shm_;
-  std::unique_ptr<WaylandBufferManagerHost> buffer_manager_host_;
+
+  WaylandBufferManagerHost* const buffer_manager_host_;
 
   std::unique_ptr<GtkPrimarySelectionDeviceManager>
       primary_selection_device_manager_;

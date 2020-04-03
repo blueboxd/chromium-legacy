@@ -333,16 +333,16 @@ class WebAppInstallTaskTest : public WebAppTest {
     return app_id;
   }
 
-  AppId InstallWebAppFromInfoRetrieveIcons(const GURL& url,
-                                           bool is_locally_installed) {
+  AppId LoadAndInstallWebAppFromSync(const GURL& url,
+                                     bool is_locally_installed) {
     AppId app_id;
     auto web_app_info = std::make_unique<WebApplicationInfo>();
     web_app_info->app_url = url;
 
     base::RunLoop run_loop;
-    install_task_->InstallWebAppFromInfoRetrieveIcons(
-        web_contents(), std::move(web_app_info), is_locally_installed,
-        WebappInstallSource::SYNC,
+    install_task_->LoadAndInstallWebAppFromSync(
+        web_contents(), &url_loader(), std::move(web_app_info),
+        is_locally_installed, WebappInstallSource::SYNC,
         base::BindLambdaForTesting(
             [&](const AppId& installed_app_id, InstallResultCode code) {
               ASSERT_EQ(InstallResultCode::kSuccessNewInstall, code);
@@ -908,12 +908,14 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_GenerateIcons) {
   run_loop.Run();
 }
 
-TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfoRetrieveIcons_TwoIcons) {
+TEST_F(WebAppInstallTaskTest, LoadAndInstallWebAppFromSync_TwoIcons) {
   SetInstallFinalizerForTesting();
 
   const GURL url{"https://example.com/path"};
   const GURL icon1_url{"https://example.com/path/icon1.png"};
   const GURL icon2_url{"https://example.com/path/icon2.png"};
+  url_loader().SetNextLoadUrlResult(
+      url, WebAppUrlLoader::Result::kRedirectedUrlLoaded);
 
   CreateDefaultDataToRetrieve(url);
 
@@ -940,9 +942,9 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfoRetrieveIcons_TwoIcons) {
 
   base::RunLoop run_loop;
 
-  install_task_->InstallWebAppFromInfoRetrieveIcons(
-      web_contents(), std::move(web_app_info), /*is_locally_installed=*/true,
-      WebappInstallSource::SYNC,
+  install_task_->LoadAndInstallWebAppFromSync(
+      web_contents(), &url_loader(), std::move(web_app_info),
+      /*is_locally_installed=*/true, WebappInstallSource::SYNC,
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
             EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
@@ -978,10 +980,12 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfoRetrieveIcons_TwoIcons) {
   run_loop.Run();
 }
 
-TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfoRetrieveIcons_NoIcons) {
+TEST_F(WebAppInstallTaskTest, LoadAndInstallWebAppFromSync_NoIcons) {
   SetInstallFinalizerForTesting();
 
   const GURL url{"https://example.com/path"};
+  url_loader().SetNextLoadUrlResult(
+      url, WebAppUrlLoader::Result::kRedirectedUrlLoaded);
   CreateDefaultDataToRetrieve(url);
   const AppId app_id = GenerateAppIdFromURL(url);
 
@@ -992,9 +996,9 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfoRetrieveIcons_NoIcons) {
 
   base::RunLoop run_loop;
 
-  install_task_->InstallWebAppFromInfoRetrieveIcons(
-      web_contents(), std::move(web_app_info), /*is_locally_installed=*/false,
-      WebappInstallSource::SYNC,
+  install_task_->LoadAndInstallWebAppFromSync(
+      web_contents(), &url_loader(), std::move(web_app_info),
+      /*is_locally_installed=*/false, WebappInstallSource::SYNC,
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
             EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
@@ -1162,21 +1166,26 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_DisplayMode) {
   }
 }
 
-TEST_F(WebAppInstallTaskTest,
-       InstallWebAppFromInfoRetrieveIcons_LocallyInstallled) {
+TEST_F(WebAppInstallTaskTest, LoadAndInstallWebAppFromSync_LocallyInstallled) {
   {
     const auto url = GURL("https://example.com/");
+    url_loader().SetNextLoadUrlResult(
+        url, WebAppUrlLoader::Result::kRedirectedUrlLoaded);
     CreateDataToRetrieve(url, /*open_as_window*/ false);
     auto app_id =
-        InstallWebAppFromInfoRetrieveIcons(url, /*is_locally_installed*/ false);
+        LoadAndInstallWebAppFromSync(url, /*is_locally_installed*/ false);
     EXPECT_FALSE(registrar().GetAppById(app_id)->is_locally_installed());
+    EXPECT_EQ(registrar().GetAppDisplayMode(app_id), DisplayMode::kBrowser);
   }
   {
     const auto url = GURL("https://example.org/");
+    url_loader().SetNextLoadUrlResult(
+        url, WebAppUrlLoader::Result::kRedirectedUrlLoaded);
     CreateDataToRetrieve(url, /*open_as_window*/ false);
     auto app_id =
-        InstallWebAppFromInfoRetrieveIcons(url, /*is_locally_installed*/ true);
+        LoadAndInstallWebAppFromSync(url, /*is_locally_installed*/ true);
     EXPECT_TRUE(registrar().GetAppById(app_id)->is_locally_installed());
+    EXPECT_EQ(registrar().GetAppDisplayMode(app_id), DisplayMode::kBrowser);
   }
 }
 

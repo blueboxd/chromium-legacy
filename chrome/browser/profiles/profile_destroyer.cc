@@ -41,7 +41,7 @@ void ProfileDestroyer::DestroyProfileWhenAppropriate(Profile* const profile) {
   // anyway, so we can't iterate them via AllHostsIterator anyway.
   if (profile->AsTestingProfile()) {
     if (profile->IsOffTheRecord())
-      profile->GetOriginalProfile()->DestroyOffTheRecordProfile();
+      profile->GetOriginalProfile()->DestroyOffTheRecordProfile(profile);
     else
       delete profile;
     return;
@@ -64,10 +64,7 @@ void ProfileDestroyer::DestroyProfileWhenAppropriate(Profile* const profile) {
       // hosts referring to it are properly terminated.
       new ProfileDestroyer(profile, &profile_hosts);
     } else {
-      if (profile->IsIndependentOffTheRecordProfile())
-        delete profile;
-      else
-        profile->GetOriginalProfile()->DestroyOffTheRecordProfile();
+      profile->GetOriginalProfile()->DestroyOffTheRecordProfile(profile);
     }
     return;
   }
@@ -80,6 +77,8 @@ void ProfileDestroyer::DestroyProfileWhenAppropriate(Profile* const profile) {
       profile_has_off_the_record ? profile->GetOffTheRecordProfile() : nullptr;
 #endif  // DCHECK_IS_ON()
 
+  // TODO(https://crbug.com/1033903): If profile has OTRs and they have hosts,
+  // create a |ProfileDestroyer| instead.
   delete profile;
 
 #if DCHECK_IS_ON()
@@ -127,11 +126,7 @@ void ProfileDestroyer::DestroyOffTheRecordProfileNow(Profile* const profile) {
     }
   }
 
-  if (profile->IsIndependentOffTheRecordProfile()) {
-    delete profile;
-  } else {
-    profile->GetOriginalProfile()->DestroyOffTheRecordProfile();
-  }
+  profile->GetOriginalProfile()->DestroyOffTheRecordProfile(profile);
 }
 
 ProfileDestroyer::ProfileDestroyer(Profile* const profile, HostSet* hosts)

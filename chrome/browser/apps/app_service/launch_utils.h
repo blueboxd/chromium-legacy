@@ -43,8 +43,22 @@ std::vector<base::FilePath> GetLaunchFilesFromCommandLine(
 // the new tab page.
 Browser* CreateBrowserWithNewTabPage(Profile* profile);
 
+// Helper to create AppLaunchParams using event flags that allows user to
+// override the user-configured container using modifier keys. |display_id| is
+// the id of the display from which the app is launched.
+AppLaunchParams CreateAppIdLaunchParamsWithEventFlags(
+    const std::string& app_id,
+    int event_flags,
+    apps::mojom::AppLaunchSource source,
+    int64_t display_id,
+    apps::mojom::LaunchContainer fallback_container);
+
 apps::AppLaunchParams CreateAppLaunchParamsForIntent(
     const std::string& app_id,
+    int32_t event_flags,
+    apps::mojom::AppLaunchSource source,
+    int64_t display_id,
+    apps::mojom::LaunchContainer fallback_container,
     const apps::mojom::IntentPtr& intent);
 
 apps::mojom::AppLaunchSource GetAppLaunchSource(

@@ -4,16 +4,12 @@
 
 #import "ios/web_view/internal/cwv_preferences_internal.h"
 
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/language/core/browser/pref_names.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
-#include "ios/web_view/cwv_web_view_buildflags.h"
-
-#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
-#include "components/autofill/core/common/autofill_prefs.h"
-#include "components/password_manager/core/common/password_manager_pref_names.h"
-#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -48,7 +44,6 @@
   translatePrefs.ResetToDefaults();
 }
 
-#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 #pragma mark - Autofill
 
 - (void)setProfileAutofillEnabled:(BOOL)enabled {
@@ -76,7 +71,5 @@
   return _prefService->GetBoolean(
       password_manager::prefs::kCredentialsEnableService);
 }
-
-#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 
 @end

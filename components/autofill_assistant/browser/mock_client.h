@@ -11,6 +11,7 @@
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/mock_personal_data_manager.h"
 #include "components/autofill_assistant/browser/website_login_fetcher.h"
+#include "components/version_info/channel.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill_assistant {
@@ -20,8 +21,7 @@ class MockClient : public Client {
   MockClient();
   ~MockClient();
 
-  MOCK_CONST_METHOD0(GetApiKey, std::string());
-  MOCK_CONST_METHOD0(GetServerUrl, std::string());
+  MOCK_CONST_METHOD0(GetChannel, version_info::Channel());
   MOCK_CONST_METHOD0(GetLocale, std::string());
   MOCK_CONST_METHOD0(GetCountryCode, std::string());
   MOCK_CONST_METHOD0(GetDeviceContext, DeviceContext());

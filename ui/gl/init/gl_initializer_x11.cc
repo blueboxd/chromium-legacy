@@ -20,6 +20,7 @@
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/gl_surface_glx.h"
 #include "ui/gl/gl_switches.h"
+#include "ui/gl/init/gl_display_egl_util_x11.h"
 
 namespace gl {
 namespace init {
@@ -152,6 +153,8 @@ bool InitializeGLOneOffPlatform() {
     case kGLImplementationSwiftShaderGL:
     case kGLImplementationEGLGLES2:
     case kGLImplementationEGLANGLE:
+      // Set utility class that helps to initialize egl platform.
+      gl::GLDisplayEglUtil::SetInstance(gl::GLDisplayEglUtilX11::GetInstance());
       if (!GLSurfaceEGL::InitializeOneOff(
               EGLDisplayPlatform(gfx::GetXDisplay()))) {
         LOG(ERROR) << "GLSurfaceEGL::InitializeOneOff failed.";

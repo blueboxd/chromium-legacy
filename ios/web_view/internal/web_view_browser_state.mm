@@ -31,7 +31,6 @@
 #include "components/translate/core/browser/translate_prefs.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
-#include "ios/web_view/cwv_web_view_buildflags.h"
 #include "ios/web_view/internal/app/application_context.h"
 #import "ios/web_view/internal/autofill/web_view_autofill_log_router_factory.h"
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
@@ -109,9 +108,7 @@ WebViewBrowserState::WebViewBrowserState(
 
   base::ThreadRestrictions::SetIOAllowed(wasIOAllowed);
 
-#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
   ActiveStateManager::FromBrowserState(this)->SetActive(true);
-#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
 
   BrowserStateDependencyManager::GetInstance()->CreateBrowserStateServices(
       this);
@@ -121,9 +118,7 @@ WebViewBrowserState::~WebViewBrowserState() {
   BrowserStateDependencyManager::GetInstance()->DestroyBrowserStateServices(
       this);
 
-#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
   ActiveStateManager::FromBrowserState(this)->SetActive(false);
-#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
 
   base::PostTask(FROM_HERE, {web::WebThread::IO},
                  base::BindOnce(&WebViewURLRequestContextGetter::ShutDown,
@@ -170,33 +165,22 @@ void WebViewBrowserState::RegisterPrefs(
                                      true);
   language::LanguagePrefs::RegisterProfilePrefs(pref_registry);
   translate::TranslatePrefs::RegisterProfilePrefs(pref_registry);
-
-#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
   autofill::prefs::RegisterProfilePrefs(pref_registry);
   password_manager::PasswordManager::RegisterProfilePrefs(pref_registry);
-#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
-
-#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
   sync_sessions::SessionSyncPrefs::RegisterProfilePrefs(pref_registry);
   syncer::SyncPrefs::RegisterProfilePrefs(pref_registry);
   syncer::DeviceInfoPrefs::RegisterProfilePrefs(pref_registry);
-#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
 
   // Instantiate all factories to setup dependency graph for pref registration.
   WebViewLanguageModelManagerFactory::GetInstance();
   WebViewTranslateRankerFactory::GetInstance();
   WebViewUrlLanguageHistogramFactory::GetInstance();
   WebViewTranslateAcceptLanguagesFactory::GetInstance();
-
-#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
   autofill::WebViewAutofillLogRouterFactory::GetInstance();
   WebViewPersonalDataManagerFactory::GetInstance();
   WebViewWebDataServiceWrapperFactory::GetInstance();
   WebViewPasswordManagerLogRouterFactory::GetInstance();
   WebViewPasswordStoreFactory::GetInstance();
-#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
-
-#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
   WebViewCookieSettingsFactory::GetInstance();
   WebViewHostContentSettingsMapFactory::GetInstance();
   WebViewSigninClientFactory::GetInstance();
@@ -206,7 +190,6 @@ void WebViewBrowserState::RegisterPrefs(
   WebViewProfileInvalidationProviderFactory::GetInstance();
   WebViewProfileSyncServiceFactory::GetInstance();
   WebViewModelTypeStoreServiceFactory::GetInstance();
-#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
 
   BrowserStateDependencyManager::GetInstance()
       ->RegisterBrowserStatePrefsForServices(pref_registry);

@@ -228,8 +228,9 @@ void WebAppInstallTask::InstallWebAppWithParams(
                      base::Unretained(this), /*force_shortcut_app=*/false));
 }
 
-void WebAppInstallTask::InstallWebAppFromInfoRetrieveIcons(
+void WebAppInstallTask::LoadAndInstallWebAppFromSync(
     content::WebContents* web_contents,
+    WebAppUrlLoader* url_loader,
     std::unique_ptr<WebApplicationInfo> web_application_info,
     bool is_locally_installed,
     WebappInstallSource install_source,
@@ -241,18 +242,17 @@ void WebAppInstallTask::InstallWebAppFromInfoRetrieveIcons(
   install_source_ = install_source;
   background_installation_ = true;
 
-  std::vector<GURL> icon_urls =
-      GetValidIconUrlsToDownload(*web_application_info);
+  // Default display mode, used if we fail to load the manifest.
+  web_application_info->display_mode = DisplayMode::kBrowser;
 
-  // Skip downloading the page favicons as everything in is the URL list.
-  data_retriever_->GetIcons(
-      web_contents, icon_urls, /*skip_page_fav_icons*/ true,
-      install_source_ == WebappInstallSource::SYNC
-          ? WebAppIconDownloader::Histogram::kForSync
-          : WebAppIconDownloader::Histogram::kForCreate,
-      base::BindOnce(&WebAppInstallTask::OnIconsRetrieved,
-                     base::Unretained(this), std::move(web_application_info),
-                     is_locally_installed));
+  const GURL launch_url = web_application_info->app_url;
+  url_loader->LoadUrl(
+      launch_url, web_contents,
+      WebAppUrlLoader::UrlComparison::kIgnoreQueryParamsAndRef,
+      base::BindOnce(
+          &WebAppInstallTask::OnWebAppFromSyncUrlLoadedRetrieveManifest,
+          weak_ptr_factory_.GetWeakPtr(), std::move(web_application_info),
+          is_locally_installed));
 }
 
 void WebAppInstallTask::UpdateWebAppFromInfo(
@@ -614,6 +614,59 @@ void WebAppInstallTask::OnDidCheckForIntentToPlayStore(
       base::BindOnce(&WebAppInstallTask::OnIconsRetrievedShowDialog,
                      base::Unretained(this), std::move(web_app_info),
                      for_installable_site));
+}
+
+void WebAppInstallTask::OnWebAppFromSyncUrlLoadedRetrieveManifest(
+    std::unique_ptr<WebApplicationInfo> web_application_info,
+    bool is_locally_installed,
+    WebAppUrlLoader::Result result) {
+  if (ShouldStopInstall())
+    return;
+
+  if (result != WebAppUrlLoader::Result::kUrlLoaded) {
+    WebAppFromSyncLoadIcons(std::move(web_application_info),
+                            is_locally_installed);
+    return;
+  }
+
+  web_contents()->GetManifest(
+      base::BindOnce(&WebAppInstallTask::OnWebAppFromSyncManifestRetrieved,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(web_application_info), is_locally_installed));
+}
+
+void WebAppInstallTask::OnWebAppFromSyncManifestRetrieved(
+    std::unique_ptr<WebApplicationInfo> web_application_info,
+    bool is_locally_installed,
+    const GURL& manifest_url,
+    const blink::Manifest& manifest) {
+  if (ShouldStopInstall())
+    return;
+
+  if (!manifest.IsEmpty()) {
+    // TODO(crbug.com/1067519): Copy more fields from the manifest.
+    web_application_info->display_mode = manifest.display;
+  }
+
+  WebAppFromSyncLoadIcons(std::move(web_application_info),
+                          is_locally_installed);
+}
+
+void WebAppInstallTask::WebAppFromSyncLoadIcons(
+    std::unique_ptr<WebApplicationInfo> web_application_info,
+    bool is_locally_installed) {
+  std::vector<GURL> icon_urls =
+      GetValidIconUrlsToDownload(*web_application_info);
+
+  // Skip downloading the page favicons as everything in is the URL list.
+  data_retriever_->GetIcons(
+      web_contents(), icon_urls, /*skip_page_fav_icons*/ true,
+      install_source_ == WebappInstallSource::SYNC
+          ? WebAppIconDownloader::Histogram::kForSync
+          : WebAppIconDownloader::Histogram::kForCreate,
+      base::BindOnce(&WebAppInstallTask::OnIconsRetrieved,
+                     base::Unretained(this), std::move(web_application_info),
+                     is_locally_installed));
 }
 
 void WebAppInstallTask::OnIconsRetrieved(

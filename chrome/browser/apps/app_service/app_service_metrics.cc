@@ -123,6 +123,10 @@ void RecordDefaultAppLaunch(DefaultAppName default_app_name,
       base::UmaHistogramEnumeration(
           "Apps.DefaultAppLaunch.FromInstalledNotification", default_app_name);
       break;
+    case apps::mojom::LaunchSource::kFromArc:
+      base::UmaHistogramEnumeration("Apps.DefaultAppLaunch.FromArc",
+                                    default_app_name);
+      break;
   }
 }
 
@@ -153,6 +157,7 @@ void RecordBuiltInAppLaunch(apps::BuiltInAppName built_in_app_name,
     case apps::mojom::LaunchSource::kFromMenu:
     case apps::mojom::LaunchSource::kFromInstalledNotification:
     case apps::mojom::LaunchSource::kFromTest:
+    case apps::mojom::LaunchSource::kFromArc:
       break;
   }
 }

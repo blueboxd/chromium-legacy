@@ -11,17 +11,26 @@
 
 namespace WTF {
 
+template <typename T>
+int* const ValueInstanceCount<T>::kDeletedValue =
+    reinterpret_cast<int*>(static_cast<uintptr_t>(-1));
+
 TEST(NewLinkedHashSetTest, CopyConstructAndAssignInt) {
-  NewLinkedHashSet<int> set1;
+  using Set = NewLinkedHashSet<ValueInstanceCount<int>>;
+  // Declare the counters before the set, because they have to outlive teh set.
+  int counter1 = 0;
+  int counter2 = 0;
+  int counter3 = 0;
+  Set set1;
   EXPECT_EQ(set1.size(), 0u);
   EXPECT_TRUE(set1.IsEmpty());
-  set1.insert(1);
-  set1.insert(2);
-  set1.insert(3);
+  set1.insert(ValueInstanceCount<int>(&counter1, 1));
+  set1.insert(ValueInstanceCount<int>(&counter2, 2));
+  set1.insert(ValueInstanceCount<int>(&counter3, 3));
   EXPECT_EQ(set1.size(), 3u);
-  NewLinkedHashSet<int> set2(set1);
+  Set set2(set1);
   EXPECT_EQ(set2.size(), 3u);
-  NewLinkedHashSet<int> set3;
+  Set set3;
   EXPECT_EQ(set3.size(), 0u);
   set3 = set2;
   EXPECT_EQ(set3.size(), 3u);
@@ -29,17 +38,24 @@ TEST(NewLinkedHashSetTest, CopyConstructAndAssignInt) {
   auto it2 = set2.begin();
   auto it3 = set3.begin();
   for (int i = 0; i < 3; i++) {
-    EXPECT_EQ(*it1, i + 1);
-    EXPECT_EQ(*it2, i + 1);
-    EXPECT_EQ(*it3, i + 1);
+    EXPECT_EQ(it1->Value(), i + 1);
+    EXPECT_EQ(it2->Value(), i + 1);
+    EXPECT_EQ(it3->Value(), i + 1);
     ++it1;
     ++it2;
     ++it3;
   }
+
+  // Each object is now in all 3 sets.
+  // Count 2x because each set uses hash map and vector.
+  EXPECT_EQ(counter1, 6);
+  EXPECT_EQ(counter2, 6);
+  EXPECT_EQ(counter3, 6);
 }
 
 TEST(NewLinkedHashSetTest, CopyConstructAndAssignIntPtr) {
-  NewLinkedHashSet<int*> set1;
+  using Set = NewLinkedHashSet<int*>;
+  Set set1;
   EXPECT_EQ(set1.size(), 0u);
   EXPECT_TRUE(set1.IsEmpty());
   std::unique_ptr<int> int1 = std::make_unique<int>(1);
@@ -49,9 +65,9 @@ TEST(NewLinkedHashSetTest, CopyConstructAndAssignIntPtr) {
   set1.insert(int2.get());
   set1.insert(int3.get());
   EXPECT_EQ(set1.size(), 3u);
-  NewLinkedHashSet<int*> set2(set1);
+  Set set2(set1);
   EXPECT_EQ(set2.size(), 3u);
-  NewLinkedHashSet<int*> set3;
+  Set set3;
   EXPECT_EQ(set3.size(), 0u);
   set3 = set2;
   EXPECT_EQ(set3.size(), 3u);
@@ -67,6 +83,7 @@ TEST(NewLinkedHashSetTest, CopyConstructAndAssignIntPtr) {
     ++it3;
   }
 
+  // Changing the pointed values in one set should change it in all sets.
   for (int* ptr : set1)
     *ptr += 1000;
   it1 = set1.begin();
@@ -83,16 +100,17 @@ TEST(NewLinkedHashSetTest, CopyConstructAndAssignIntPtr) {
 }
 
 TEST(NewLinkedHashSetTest, CopyConstructAndAssignString) {
-  NewLinkedHashSet<String> set1;
+  using Set = NewLinkedHashSet<String>;
+  Set set1;
   EXPECT_EQ(set1.size(), 0u);
   EXPECT_TRUE(set1.IsEmpty());
   set1.insert("1");
   set1.insert("2");
   set1.insert("3");
   EXPECT_EQ(set1.size(), 3u);
-  NewLinkedHashSet<String> set2(set1);
+  Set set2(set1);
   EXPECT_EQ(set2.size(), 3u);
-  NewLinkedHashSet<String> set3;
+  Set set3;
   EXPECT_EQ(set3.size(), 0u);
   set3 = set2;
   EXPECT_EQ(set3.size(), 3u);
@@ -107,22 +125,40 @@ TEST(NewLinkedHashSetTest, CopyConstructAndAssignString) {
     ++it2;
     ++it3;
   }
+
+  // Changing one set should not affect the others.
+  set1.clear();
+  set1.insert("11");
+  set1.insert("12");
+  set1.insert("13");
+  it1 = set1.begin();
+  it2 = set2.begin();
+  it3 = set3.begin();
+  for (int i = 0; i < 3; i++) {
+    EXPECT_EQ(*it1, String(Vector<UChar>({'1', '1' + i})));
+    EXPECT_EQ(*it2, String(Vector<UChar>({'1' + i})));
+    EXPECT_EQ(*it3, String(Vector<UChar>({'1' + i})));
+    ++it1;
+    ++it2;
+    ++it3;
+  }
 }
 
 TEST(NewLinkedHashSetTest, MoveConstructAndAssignInt) {
-  NewLinkedHashSet<ValueInstanceCount<int>> set1;
-  EXPECT_EQ(set1.size(), 0u);
-  EXPECT_TRUE(set1.IsEmpty());
+  using Set = NewLinkedHashSet<ValueInstanceCount<int>>;
   int counter1 = 0;
   int counter2 = 0;
   int counter3 = 0;
+  Set set1;
+  EXPECT_EQ(set1.size(), 0u);
+  EXPECT_TRUE(set1.IsEmpty());
   set1.insert(ValueInstanceCount<int>(&counter1, 1));
   set1.insert(ValueInstanceCount<int>(&counter2, 2));
   set1.insert(ValueInstanceCount<int>(&counter3, 3));
   EXPECT_EQ(set1.size(), 3u);
-  NewLinkedHashSet<ValueInstanceCount<int>> set2(std::move(set1));
+  Set set2(std::move(set1));
   EXPECT_EQ(set2.size(), 3u);
-  NewLinkedHashSet<ValueInstanceCount<int>> set3;
+  Set set3;
   EXPECT_EQ(set3.size(), 0u);
   set3 = std::move(set2);
   EXPECT_EQ(set3.size(), 3u);
@@ -138,7 +174,7 @@ TEST(NewLinkedHashSetTest, MoveConstructAndAssignInt) {
   EXPECT_EQ(counter2, 2);
   EXPECT_EQ(counter3, 2);
 
-  NewLinkedHashSet<ValueInstanceCount<int>> set4(set3);
+  Set set4(set3);
   // Copy constructor was used, each object is in set3 and set4.
   EXPECT_EQ(counter1, 4);
   EXPECT_EQ(counter2, 4);
@@ -146,19 +182,20 @@ TEST(NewLinkedHashSetTest, MoveConstructAndAssignInt) {
 }
 
 TEST(NewLinkedHashSetTest, MoveConstructAndAssignString) {
-  NewLinkedHashSet<ValueInstanceCount<String>> set1;
-  EXPECT_EQ(set1.size(), 0u);
-  EXPECT_TRUE(set1.IsEmpty());
+  using Set = NewLinkedHashSet<ValueInstanceCount<String>>;
   int counter1 = 0;
   int counter2 = 0;
   int counter3 = 0;
+  Set set1;
+  EXPECT_EQ(set1.size(), 0u);
+  EXPECT_TRUE(set1.IsEmpty());
   set1.insert(ValueInstanceCount<String>(&counter1, "1"));
   set1.insert(ValueInstanceCount<String>(&counter2, "2"));
   set1.insert(ValueInstanceCount<String>(&counter3, "3"));
   EXPECT_EQ(set1.size(), 3u);
-  NewLinkedHashSet<ValueInstanceCount<String>> set2(std::move(set1));
+  Set set2(std::move(set1));
   EXPECT_EQ(set2.size(), 3u);
-  NewLinkedHashSet<ValueInstanceCount<String>> set3;
+  Set set3;
   EXPECT_EQ(set3.size(), 0u);
   set3 = std::move(set2);
   EXPECT_EQ(set3.size(), 3u);
@@ -174,7 +211,7 @@ TEST(NewLinkedHashSetTest, MoveConstructAndAssignString) {
   EXPECT_EQ(counter2, 2);
   EXPECT_EQ(counter3, 2);
 
-  NewLinkedHashSet<ValueInstanceCount<String>> set4(set3);
+  Set set4(set3);
   // Copy constructor was used, each object is in set3 and set4.
   EXPECT_EQ(counter1, 4);
   EXPECT_EQ(counter2, 4);
@@ -372,7 +409,9 @@ TEST(NewLinkedHashSetTest, Erase) {
 
   Set::const_iterator it = set.begin();
   ++it;
+  EXPECT_TRUE(set.Contains(2));
   set.erase(it);
+  EXPECT_FALSE(set.Contains(2));
   it = set.begin();
   EXPECT_EQ(*it, 1);
   ++it;
@@ -382,7 +421,9 @@ TEST(NewLinkedHashSetTest, Erase) {
   ++it;
   EXPECT_EQ(*it, 5);
 
+  EXPECT_TRUE(set.Contains(3));
   set.erase(3);
+  EXPECT_FALSE(set.Contains(3));
   it = set.begin();
   EXPECT_EQ(*it, 1);
   ++it;

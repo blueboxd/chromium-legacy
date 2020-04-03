@@ -3,7 +3,6 @@ This test documents all computed styles on a div element.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 -webkit-app-region: none
--webkit-appearance: none
 -webkit-border-horizontal-spacing: 0px
 -webkit-border-image: none
 -webkit-border-vertical-spacing: 0px
@@ -63,6 +62,7 @@ animation-iteration-count: 1
 animation-name: none
 animation-play-state: running
 animation-timing-function: ease
+appearance: none
 backdrop-filter: none
 backface-visibility: visible
 background-attachment: scroll

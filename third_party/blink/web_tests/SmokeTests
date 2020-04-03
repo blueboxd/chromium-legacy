@@ -284,7 +284,6 @@ external/wpt/shadow-dom/Element-interface-shadowRoot-attribute.html
 external/wpt/shadow-dom/event-with-related-target.html
 external/wpt/shadow-dom/untriaged/shadow-trees/upper-boundary-encapsulation/dom-tree-accessors-002.html
 external/wpt/shadow-dom/untriaged/styles/test-008.html
-external/wpt/shape-detection/shapedetection-empty-input.https.html
 external/wpt/streams/byte-length-queuing-strategy.html
 external/wpt/streams/piping/close-propagation-backward.html
 external/wpt/streams/piping/multiple-propagation.html
@@ -727,6 +726,7 @@ fast/scrolling/scrollable-area-overflow-not-set.html
 fast/selectors/018.html
 fast/selectors/061.html
 fast/serviceworker/serviceworkercontainer-interface.html
+fast/shapedetection/shapedetection-empty-input.html
 fast/shapes/crash-caused-by-dirtying-a-shape-while-computing-it-requires-a-long-filename-to-crash.html
 fast/shapes/parsing/parsing-shape-property-aliases.html
 fast/shapes/shape-outside-floats/shape-outside-floats-ellipse-margin-right.html

@@ -204,6 +204,8 @@ jumbo_component("gl") {
       "gl_bindings_autogen_egl.h",
       "gl_context_egl.cc",
       "gl_context_egl.h",
+      "gl_display_egl_util.cc",
+      "gl_display_egl_util.h",
       "gl_egl_api_implementation.cc",
       "gl_egl_api_implementation.h",
       "gl_fence_egl.cc",
@@ -255,6 +257,8 @@ jumbo_component("gl") {
 
   if (use_x11) {
     sources += [
+      "gl_surface_egl_x11.cc",
+      "gl_surface_egl_x11.h",
       "gl_surface_egl_x11_gles2.cc",
       "gl_surface_egl_x11_gles2.h",
       "gl_surface_glx_x11.cc",

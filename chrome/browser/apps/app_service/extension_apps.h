@@ -36,6 +36,10 @@
 
 class Profile;
 
+namespace content {
+class WebContents;
+}
+
 namespace extensions {
 class AppWindow;
 class ExtensionSet;
@@ -100,6 +104,7 @@ class ExtensionApps : public apps::mojom::Publisher,
                           apps::mojom::LaunchSource launch_source,
                           apps::mojom::FilePathsPtr file_paths) override;
   void LaunchAppWithIntent(const std::string& app_id,
+                           int32_t event_flags,
                            apps::mojom::IntentPtr intent,
                            apps::mojom::LaunchSource launch_source,
                            int64_t display_id) override;
@@ -215,7 +220,7 @@ class ExtensionApps : public apps::mojom::Publisher,
   void GetMenuModelForChromeBrowserApp(apps::mojom::MenuType menu_type,
                                        GetMenuModelCallback callback);
 
-  void LaunchImpl(const AppLaunchParams& params);
+  content::WebContents* LaunchImpl(const AppLaunchParams& params);
 
   mojo::Receiver<apps::mojom::Publisher> receiver_{this};
   mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;

@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/intent_picker_tab_helper.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
@@ -100,8 +101,12 @@ void CommonAppsNavigationThrottle::OnIntentPickerClosed(
     // TODO(crbug.com/853604): Distinguish the source from link and omnibox.
     apps::mojom::LaunchSource launch_source =
         apps::mojom::LaunchSource::kFromLink;
-    proxy->LaunchAppWithUrl(launch_name, url, launch_source,
-                            display::kDefaultDisplayId);
+    proxy->LaunchAppWithUrl(
+        launch_name,
+        GetEventFlags(apps::mojom::LaunchContainer::kLaunchContainerWindow,
+                      WindowOpenDisposition::NEW_WINDOW,
+                      /*prefer_container=*/true),
+        url, launch_source, display::kDefaultDisplayId);
     CloseOrGoBack(web_contents);
   }
 }
@@ -211,8 +216,12 @@ bool CommonAppsNavigationThrottle::ShouldDeferNavigation(
     if (preferred_app_id.has_value() &&
         base::Contains(app_ids, preferred_app_id.value())) {
       auto launch_source = apps::mojom::LaunchSource::kFromLink;
-      proxy->LaunchAppWithUrl(preferred_app_id.value(), url, launch_source,
-                              display::kDefaultDisplayId);
+      proxy->LaunchAppWithUrl(
+          preferred_app_id.value(),
+          GetEventFlags(apps::mojom::LaunchContainer::kLaunchContainerWindow,
+                        WindowOpenDisposition::NEW_WINDOW,
+                        /*prefer_container=*/true),
+          url, launch_source, display::kDefaultDisplayId);
       CloseOrGoBack(web_contents);
       return true;
     }

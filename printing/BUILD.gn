@@ -31,13 +31,19 @@ if ((enable_basic_printing && is_win) || enable_print_preview) {
              "set enable_pdf=true.")
 }
 
+# Enable the CUPS IPP printing backend.
+# TODO(crbug.com/226176): Remove this after CUPS PPD API calls are removed.
+declare_args() {
+  use_cups_ipp = use_cups && !is_desktop_linux
+}
+
 # Several targets want to include this header file. We separate it out
 # here so multiple targets can depend on it.
 source_set("printing_export") {
   sources = [ "printing_export.h" ]
 }
 
-if (use_cups && is_chromeos) {
+if (use_cups_ipp && is_chromeos) {
   ipp_handler_map_path = "$target_gen_dir/backend/ipp_handler_map.cc"
 
   ipp_code_generate("ipp_handlers_generate") {
@@ -217,7 +223,7 @@ component("printing") {
     # of the print backend and enables a custom implementation instead.
     defines += [ "PRINT_BACKEND_AVAILABLE" ]
 
-    if (is_chromeos || is_mac) {
+    if (use_cups_ipp) {
       sources += [
         "backend/cups_connection.cc",
         "backend/cups_connection.h",
@@ -271,7 +277,7 @@ component("printing") {
     }
   }
 
-  if (is_chromeos || is_mac) {
+  if (use_cups_ipp || is_chromeos) {
     sources += [
       "printer_query_result.h",
       "printer_status.cc",
@@ -370,7 +376,7 @@ test("printing_unittests") {
   if (use_cups) {
     configs += [ ":cups" ]
 
-    if (is_chromeos || is_mac) {
+    if (use_cups_ipp) {
       sources += [ "backend/cups_ipp_helper_unittest.cc" ]
     }
 

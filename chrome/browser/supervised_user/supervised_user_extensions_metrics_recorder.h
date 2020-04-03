@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_EXTENSIONS_METRICS_RECORDER_H_
 #define CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_EXTENSIONS_METRICS_RECORDER_H_
 
-#include "components/sync/model/sync_change.h"
+#include "chrome/browser/supervised_user/supervised_user_service.h"
 
 // Records UMA metrics for child users using extensions.
 // TODO(tobyhuang): Reevaluate if this class should be converted to a namespace
@@ -38,7 +38,7 @@ class SupervisedUserExtensionsMetricsRecorder {
       const SupervisedUserExtensionsMetricsRecorder&) = delete;
 
   static void RecordExtensionsUmaMetrics(
-      syncer::SyncChange::SyncChangeType type);
+      SupervisedUserService::ApprovedExtensionChange type);
 };
 
 #endif  // CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_EXTENSIONS_METRICS_RECORDER_H_

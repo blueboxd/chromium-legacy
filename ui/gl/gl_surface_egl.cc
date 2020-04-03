@@ -20,7 +20,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/system/sys_info.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
@@ -30,6 +29,7 @@
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_context_egl.h"
+#include "ui/gl/gl_display_egl_util.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_presentation_helper.h"
@@ -204,37 +204,6 @@ struct TraceSwapEventsInitializer {
 static base::LazyInstance<TraceSwapEventsInitializer>::Leaky
     g_trace_swap_enabled = LAZY_INSTANCE_INITIALIZER;
 
-#if defined(USE_X11)
-class XrandrIntervalOnlyVSyncProvider : public gfx::VSyncProvider {
- public:
-  XrandrIntervalOnlyVSyncProvider(Display* display)
-      : display_(display), interval_(base::TimeDelta::FromSeconds(1 / 60.)) {}
-
-  void GetVSyncParameters(UpdateVSyncCallback callback) override {
-    if (++calls_since_last_update_ >= kCallsBetweenUpdates) {
-      calls_since_last_update_ = 0;
-      interval_ = ui::GetPrimaryDisplayRefreshIntervalFromXrandr(display_);
-    }
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback), base::TimeTicks(), interval_));
-  }
-
-  bool GetVSyncParametersIfAvailable(base::TimeTicks* timebase,
-                                     base::TimeDelta* interval) override {
-    return false;
-  }
-  bool SupportGetVSyncParametersIfAvailable() const override { return false; }
-  bool IsHWClock() const override { return false; }
-
- private:
-  Display* const display_ = nullptr;
-  base::TimeDelta interval_;
-  static const int kCallsBetweenUpdates = 100;
-  int calls_since_last_update_ = kCallsBetweenUpdates;
-};
-#endif
-
 class EGLSyncControlVSyncProvider : public SyncControlVSyncProvider {
  public:
   explicit EGLSyncControlVSyncProvider(EGLSurface surface)
@@ -313,18 +282,8 @@ EGLDisplay GetPlatformANGLEDisplay(
   display_attribs.push_back(EGL_PLATFORM_ANGLE_TYPE_ANGLE);
   display_attribs.push_back(static_cast<EGLAttrib>(platform_type));
 
-#if defined(USE_X11)
-  // ANGLE_NULL doesn't use the visual, and may run without X11 where we can't
-  // get it anyway.
-  if (platform_type != EGL_PLATFORM_ANGLE_TYPE_NULL_ANGLE) {
-    Visual* visual;
-    ui::XVisualManager::GetInstance()->ChooseVisualForWindow(
-        true, &visual, nullptr, nullptr, nullptr);
-    display_attribs.push_back(EGL_X11_VISUAL_ID_ANGLE);
-    display_attribs.push_back(
-        static_cast<EGLAttrib>(XVisualIDFromVisual(visual)));
-  }
-#endif
+  GLDisplayEglUtil::GetInstance()->GetPlatformExtraDisplayAttribs(
+      platform_type, &display_attribs);
 
   std::vector<const char*> enabled_features_attribs =
       GetAttribArrayFromStringVector(enabled_features);
@@ -574,15 +533,10 @@ EGLConfig ChooseConfig(GLSurfaceFormat format, bool surfaceless) {
   EGLint stencil_size = format.GetStencilBits();
   EGLint samples = format.GetSamples();
 
-#if defined(USE_X11)
-  // If we're using ANGLE_NULL, we may not have a display, in which case we
-  // can't use XVisualManager.
-  if (g_native_display.GetDisplay() != EGL_DEFAULT_DISPLAY) {
-    ui::XVisualManager::GetInstance()->ChooseVisualForWindow(
-        true, nullptr, &buffer_size, nullptr, nullptr);
-    alpha_size = buffer_size == 32 ? 8 : 0;
-  }
-#endif
+  // Some platforms (eg. X11) may want to set custom values for alpha and buffer
+  // sizes.
+  GLDisplayEglUtil::GetInstance()->ChoosePlatformCustomAlphaAndBufferSize(
+      &alpha_size, &buffer_size);
 
   EGLint surface_type =
       (surfaceless ? EGL_DONT_CARE : EGL_WINDOW_BIT | EGL_PBUFFER_BIT);
@@ -1372,34 +1326,8 @@ bool NativeViewGLSurfaceEGL::Initialize(GLSurfaceFormat format) {
         std::make_unique<EGLSyncControlVSyncProvider>(surface_);
   }
 
-#if defined(USE_X11)
-  // Query all child windows and store them. ANGLE creates a child window when
-  // eglCreateWidnowSurface is called on X11 and expose events from this window
-  // need to be received by this class.
-  Display* x11_display = GetNativeDisplay();
-  Window root = 0;
-  Window parent = 0;
-  Window* children = nullptr;
-  unsigned num_children = 0;
-  if (XQueryTree(x11_display, window_, &root, &parent, &children,
-                 &num_children)) {
-    for (unsigned int i = 0; i < num_children; ++i) {
-      children_.push_back(children[i]);
-    }
-    if (num_children > 0) {
-      XFree(children);
-    }
-  }
-
-  if (ui::X11EventSource::HasInstance()) {
-    ui::X11EventSource::GetInstance()->AddXEventDispatcher(this);
-  }
-
-  if (!vsync_provider_external_ && !vsync_provider_internal_) {
-    vsync_provider_internal_ =
-        std::make_unique<XrandrIntervalOnlyVSyncProvider>(x11_display);
-  }
-#endif
+  if (!vsync_provider_external_ && !vsync_provider_internal_)
+    vsync_provider_internal_ = CreateVsyncProviderInternal();
 
   presentation_helper_ =
       std::make_unique<GLSurfacePresentationHelper>(GetVSyncProvider());
@@ -1496,11 +1424,6 @@ void NativeViewGLSurfaceEGL::Destroy() {
   vsync_provider_internal_ = nullptr;
 
   if (surface_) {
-#if defined(USE_X11)
-    if (ui::X11EventSource::HasInstance()) {
-      ui::X11EventSource::GetInstance()->RemoveXEventDispatcher(this);
-    }
-#endif
     if (!eglDestroySurface(GetDisplay(), surface_)) {
       LOG(ERROR) << "eglDestroySurface failed with error "
                  << GetLastEGLErrorString();
@@ -1543,17 +1466,6 @@ gfx::SwapResult NativeViewGLSurfaceEGL::SwapBuffers(
   } else if (use_egl_timestamps_) {
     UpdateSwapEvents(new_frame_id, new_frame_id_is_valid);
   }
-
-#if defined(USE_X11)
-  // We need to restore the background pixel that we set to WhitePixel on
-  // views::DesktopWindowTreeHostX11::InitX11Window back to None for the
-  // XWindow associated to this surface after the first SwapBuffers has
-  // happened, to avoid showing a weird white background while resizing.
-  if (GetNativeDisplay() && !has_swapped_buffers_) {
-    XSetWindowBackgroundPixmap(GetNativeDisplay(), window_, 0);
-    has_swapped_buffers_ = true;
-  }
-#endif
 
   return scoped_swap_buffers.result();
 }
@@ -1671,6 +1583,11 @@ void NativeViewGLSurfaceEGL::TraceSwapEvents(EGLuint64KHR oldFrameId) {
         kSwapEventTraceCategories, tracePairs[i].name, trace_id,
         tracePairs[i].time);
   }
+}
+
+std::unique_ptr<gfx::VSyncProvider>
+NativeViewGLSurfaceEGL::CreateVsyncProviderInternal() {
+  return nullptr;
 }
 
 gfx::Size NativeViewGLSurfaceEGL::GetSize() {
@@ -1980,25 +1897,6 @@ bool NativeViewGLSurfaceEGL::CommitAndClearPendingOverlays() {
 #endif
   return success;
 }
-
-#if defined(USE_X11)
-bool NativeViewGLSurfaceEGL::DispatchXEvent(XEvent* x_event) {
-  // When ANGLE is used for EGL, it creates an X11 child window. Expose events
-  // from this window need to be forwarded to this class.
-  bool can_dispatch = x_event->type == Expose &&
-                      std::find(children_.begin(), children_.end(),
-                                x_event->xexpose.window) != children_.end();
-
-  if (!can_dispatch)
-    return false;
-
-  x_event->xexpose.window = window_;
-  Display* x11_display = GetNativeDisplay();
-  XSendEvent(x11_display, window_, x11::False, ExposureMask, x_event);
-  XFlush(x11_display);
-  return true;
-}
-#endif
 
 PbufferGLSurfaceEGL::PbufferGLSurfaceEGL(const gfx::Size& size)
     : size_(size),

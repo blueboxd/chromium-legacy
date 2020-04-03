@@ -3727,6 +3727,7 @@ bool AXObject::NameFromContents(bool recursive) const {
     case ax::mojom::Role::kVideo:
     case ax::mojom::Role::kWebArea:
     case ax::mojom::Role::kWebView:
+    case ax::mojom::Role::kWindow:
       result = false;
       break;
 
@@ -3822,7 +3823,6 @@ bool AXObject::NameFromContents(bool recursive) const {
     }
 
     case ax::mojom::Role::kUnknown:
-    case ax::mojom::Role::kMaxValue:
       LOG(ERROR) << "ax::mojom::Role::kUnknown for " << GetNode();
       NOTREACHED();
       break;

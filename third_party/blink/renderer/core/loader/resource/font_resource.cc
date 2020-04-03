@@ -119,6 +119,8 @@ scoped_refptr<FontCustomPlatformData> FontResource::GetCustomFontData() {
 
     if (!font_data_)
       SetStatus(ResourceStatus::kDecodeError);
+    else
+      ClearData();
   }
   return font_data_;
 }

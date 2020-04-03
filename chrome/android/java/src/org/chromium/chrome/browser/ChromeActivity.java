@@ -209,11 +209,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     static final int NO_TOOLBAR_LAYOUT = -1;
 
-    /**
-     * Timeout in ms for reading PartnerBrowserCustomizations provider.
-     */
-    private static final int PARTNER_BROWSER_CUSTOMIZATIONS_TIMEOUT_MS = 10000;
-
     private C mComponent;
 
     protected ObservableSupplierImpl<TabModelSelector> mTabModelSelectorSupplier =
@@ -1099,8 +1094,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         if (mPartnerBrowserRefreshNeeded) {
             mPartnerBrowserRefreshNeeded = false;
-            PartnerBrowserCustomizations.getInstance().initializeAsync(
-                    getApplicationContext(), PARTNER_BROWSER_CUSTOMIZATIONS_TIMEOUT_MS);
+            PartnerBrowserCustomizations.getInstance().initializeAsync(getApplicationContext());
             PartnerBrowserCustomizations.getInstance().setOnInitializeAsyncFinished(() -> {
                 if (PartnerBrowserCustomizations.isIncognitoDisabled()) {
                     terminateIncognitoSession();

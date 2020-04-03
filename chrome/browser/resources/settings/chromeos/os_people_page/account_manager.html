@@ -184,10 +184,10 @@
           <!-- If this is the Device Account, display the management status -->
           <template is="dom-if" if="[[item.isDeviceAccount]]">
             <cr-tooltip-icon id="primaryAccountTooltip" aria-hidden="true"
-                icon-class="cr:info-outline"
+                icon-class="[[getPrimaryAccountTooltipIcon_(isChildUser_)]]"
                 class="tooltip-primary-account"
-                tooltip-text="$i18n{accountManagerPrimaryAccountTooltip}"
-                icon-aria-label="$i18n{accountManagerPrimaryAccountTooltip}">
+                tooltip-text="[[getPrimaryAccountTooltip_(isChildUser_)]]"
+                icon-aria-label="[[getPrimaryAccountTooltip_(isChildUser_)]]">
             </cr-tooltip-icon>
             <span class="management-status"
                 aria-labelledby$="fullName-[[index]] email-[[index]]"

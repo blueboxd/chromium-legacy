@@ -14,7 +14,7 @@ namespace gl {
 
 NativeViewGLSurfaceEGLX11GLES2::NativeViewGLSurfaceEGLX11GLES2(
     EGLNativeWindowType window)
-    : NativeViewGLSurfaceEGL(0, nullptr), parent_window_(window) {}
+    : NativeViewGLSurfaceEGLX11(0), parent_window_(window) {}
 
 bool NativeViewGLSurfaceEGLX11GLES2::InitializeNativeWindow() {
   Display* x11_display = GetNativeDisplay();
@@ -46,7 +46,7 @@ bool NativeViewGLSurfaceEGLX11GLES2::InitializeNativeWindow() {
 }
 
 void NativeViewGLSurfaceEGLX11GLES2::Destroy() {
-  NativeViewGLSurfaceEGL::Destroy();
+  NativeViewGLSurfaceEGLX11::Destroy();
 
   if (window_) {
     Display* x11_display = GetNativeDisplay();

@@ -187,7 +187,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'dd29370cdd4111e8a2099e60d99b2343ae12d49e',
+  'angle_revision': '1cc49bb2e230555fb3dc33d3400a5f7a0cefe943',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -238,7 +238,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '395a627b8ad8b48dc4119fb6d309d29ec5d5fda0',
+  'catapult_revision': '2e6c0ac0b11dbb57d05be2e33b407ea25481ee11',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -933,7 +933,7 @@ deps = {
     Var('chromium_git') + '/codecs/libgav1.git' + '@' + '638ef84819f8b3cd614dcf63378fe4814aa4cb2a',
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '0b66fa3b62cb36a3bc86f5018cf92a5211b27156',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + 'b5757b95005bbf6b0287096c5b708c5e25645311',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
@@ -1458,7 +1458,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'cb70daa3fa9a1ec35838944b776f4d52ec26c87f',
+    Var('webrtc_git') + '/src.git' + '@' + '47cd4085b978d14022be068fed518e691cc246ef',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1533,7 +1533,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c3968223894a8fc412e82acb702f0711d5134513',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@fca03eaabd5257d23753fa703df212755c526937',
     'condition': 'checkout_src_internal',
   },
 

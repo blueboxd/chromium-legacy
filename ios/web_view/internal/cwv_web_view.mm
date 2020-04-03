@@ -37,7 +37,6 @@
 #import "ios/web/public/web_state_delegate_bridge.h"
 #import "ios/web/public/web_state_observer_bridge.h"
 #import "ios/web/public/web_view_only/wk_web_view_configuration_util.h"
-#include "ios/web_view/cwv_web_view_buildflags.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_controller_internal.h"
 #import "ios/web_view/internal/cwv_back_forward_list_internal.h"
 #import "ios/web_view/internal/cwv_favicon_internal.h"
@@ -137,9 +136,7 @@ WEB_STATE_USER_DATA_KEY_IMPL(WebViewHolder)
 @property(nonatomic, readwrite) NSURL* visibleURL;
 @property(nonatomic, readwrite) NSString* visibleLocationString;
 @property(nonatomic, readwrite) CWVSSLStatus* visibleSSLStatus;
-#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 @property(nonatomic, readonly) CWVAutofillController* autofillController;
-#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 
 // Updates the availability of the back/forward navigation properties exposed
 // through |canGoBack| and |canGoForward|, and also updates |backForwardList|.
@@ -148,10 +145,8 @@ WEB_STATE_USER_DATA_KEY_IMPL(WebViewHolder)
 - (void)updateCurrentURLs;
 // Updates |title| property.
 - (void)updateTitle;
-#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 // Returns a new CWVAutofillController created from |_webState|.
 - (CWVAutofillController*)newAutofillController;
-#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 // Returns a new CWVTranslationController created from |_webState|.
 - (CWVTranslationController*)newTranslationController;
 // Updates |_webState| visiblity.
@@ -166,9 +161,7 @@ BOOL gChromeLongPressAndForceTouchHandlingEnabled = YES;
 
 @implementation CWVWebView
 
-#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 @synthesize autofillController = _autofillController;
-#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 @synthesize backForwardList = _backForwardList;
 @synthesize canGoBack = _canGoBack;
 @synthesize canGoForward = _canGoForward;
@@ -628,7 +621,6 @@ BOOL gChromeLongPressAndForceTouchHandlingEnabled = YES;
       initWithTranslateClient:translateClient];
 }
 
-#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 #pragma mark - Autofill
 
 - (CWVAutofillController*)autofillController {
@@ -659,8 +651,6 @@ BOOL gChromeLongPressAndForceTouchHandlingEnabled = YES;
                                      JSSuggestionManager:JSSuggestionManager
                                       passwordController:passwordController];
 }
-
-#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 
 #pragma mark - Preserving and Restoring State
 
@@ -804,14 +794,12 @@ BOOL gChromeLongPressAndForceTouchHandlingEnabled = YES;
     _translationController.delegate = delegate;
   }
 
-#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
   // Recreate and restore the delegate only if previously lazily loaded.
   if (_autofillController) {
     id<CWVAutofillControllerDelegate> delegate = _autofillController.delegate;
     _autofillController = [self newAutofillController];
     _autofillController.delegate = delegate;
   }
-#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 
   [self addInternalWebViewAsSubview];
 

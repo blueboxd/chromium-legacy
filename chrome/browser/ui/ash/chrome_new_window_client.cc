@@ -17,7 +17,6 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/chromeos/apps/metrics/intent_handling_metrics.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
@@ -426,26 +425,24 @@ void ChromeNewWindowClient::OpenWebAppFromArc(const GURL& url) {
     return;
   }
 
-  auto launch_container = apps::mojom::LaunchContainer::kLaunchContainerWindow;
+  int event_flags = apps::GetEventFlags(
+      apps::mojom::LaunchContainer::kLaunchContainerWindow,
+      WindowOpenDisposition::NEW_WINDOW, /*prefer_container=*/false);
   if (web_app::WebAppProviderBase::GetProviderBase(profile)
           ->registrar()
           .GetAppEffectiveDisplayMode(*app_id) ==
       blink::mojom::DisplayMode::kBrowser) {
-    launch_container = apps::mojom::LaunchContainer::kLaunchContainerTab;
+    event_flags = apps::GetEventFlags(
+        apps::mojom::LaunchContainer::kLaunchContainerTab,
+        WindowOpenDisposition::NEW_FOREGROUND_TAB, /*prefer_container=*/false);
   }
 
-  apps::AppLaunchParams params = apps::AppLaunchParams(
-      *app_id, launch_container, WindowOpenDisposition::NEW_WINDOW,
-      apps::mojom::AppLaunchSource::kSourceArc);
-  params.override_url = url;
-  content::WebContents* tab =
-      apps::LaunchService::Get(profile)->OpenApplication(params);
-  if (!tab)
-    return;
-
-  // Add a flag to remember this tab originated in the ARC context.
-  tab->SetUserData(&arc::ArcWebContentsData::kArcTransitionFlag,
-                   std::make_unique<arc::ArcWebContentsData>());
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile);
+  DCHECK(proxy);
+  proxy->LaunchAppWithUrl(*app_id, event_flags, url,
+                          apps::mojom::LaunchSource::kFromArc,
+                          display::kInvalidDisplayId);
 }
 
 void ChromeNewWindowClient::OpenArcCustomTab(

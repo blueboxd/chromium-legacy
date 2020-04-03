@@ -177,6 +177,8 @@ virtual/composite-after-paint/paint/frames/* [ Pass ]
 virtual/composite-after-paint/scrollingcoordinator/* [ Pass ]
 # --- End CompositeAfterPaint Tests --
 
+crbug.com/1067174 wpt_internal/display-lock/css-subtree-visibility/subtree-visibility-051.html [ Failure ]
+
 # Subpixel differences
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-color-5.html [ Failure ]
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-image-5.html [ Failure ]
@@ -310,10 +312,6 @@ crbug.com/954591 external/wpt/css/css-transforms/composited-under-rotateY-180deg
 # Fixed in CompositeAfterPaint.
 crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrollbar-over-child-layer-nested-2.html [ Failure ]
 crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrollbar-over-child-layer-nested.html [ Failure ]
-
-crbug.com/981719 external/wpt/css/css-ui/appearance-textfield-001.html [ Failure ]
-crbug.com/981719 [ Linux ] external/wpt/css/css-ui/webkit-appearance-textfield-001.html [ Failure ]
-crbug.com/981719 [ Win ] external/wpt/css/css-ui/webkit-appearance-textfield-001.html [ Failure ]
 
 # WebGPU tests are only run on GPU bots, so they are skipped by default and run
 # separately from other Web Tests.
@@ -3123,9 +3121,6 @@ crbug.com/1012242 external/wpt/webvtt/rendering/cues-with-video/processing-model
 # FontFace object failures detected by WPT test
 crbug.com/965409 external/wpt/css/css-font-loading/fontface-descriptor-updates.html [ Failure ]
 
-# Various menulist appearance failures in WPT
-crbug.com/968164 external/wpt/css/css-ui/appearance-menulist-button-002.html [ Failure ]
-
 # Implement text-decoration-thickness and text-decoration-offset
 crbug.com/785230 external/wpt/css/css-text-decor/text-underline-offset-002.html [ Failure ]
 crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-001.html [ Failure ]
@@ -3433,7 +3428,6 @@ crbug.com/626703 external/wpt/css/css-writing-modes/text-combine-upright-digits-
 crbug.com/626703 external/wpt/webrtc/RTCRtpTransceiver.https.html [ Crash Timeout ]
 crbug.com/626703 external/wpt/css/css-writing-modes/text-combine-upright-all-001-manual.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-writing-modes/text-combine-upright-digits-002-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-ui/webkit-appearance-button-bevel-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/text-combine-upright-all-002-manual.html [ Skip ]
 crbug.com/626703 virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/json-module/parse-error.tentative.html [ Timeout ]
 crbug.com/967018 virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/css-module/* [ Failure ]
@@ -5563,6 +5557,7 @@ crbug.com/942134 [ Win ] virtual/exotic-color-space/images/feature-policy-oversi
 crbug.com/943388 [ Win ] http/tests/devtools/network/network-recording-after-reload-with-screenshots-enabled.js [ Pass Failure ]
 
 # Sheriff 2019-03-20
+crbug.com/732103 [ Mac10.11 ] http/tests/shapedetection/shapedetection-cross-origin.html [ Timeout Pass ]
 crbug.com/943969 [ Win ] inspector-protocol/css/css-get-media-queries.js [ Pass Failure ]
 crbug.com/943969 [ Mac10.10 ] inspector-protocol/css/css-get-media-queries.js [ Pass Failure ]
 crbug.com/943969 [ Mac10.11 ] inspector-protocol/css/css-get-media-queries.js [ Pass Failure ]

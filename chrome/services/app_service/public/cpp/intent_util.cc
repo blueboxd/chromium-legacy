@@ -32,6 +32,7 @@ apps::mojom::IntentPtr CreateIntentFromUrl(const GURL& url) {
   auto intent = apps::mojom::Intent::New();
   intent->scheme = url.scheme();
   intent->host = url.host();
+  intent->port = url.port();
   intent->path = url.path();
   return intent;
 }

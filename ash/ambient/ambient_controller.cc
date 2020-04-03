@@ -74,6 +74,8 @@ AmbientController::~AmbientController() {
 
 void AmbientController::OnWidgetDestroying(views::Widget* widget) {
   refresh_timer_.Stop();
+  photo_model_.Clear();
+  weak_factory_.InvalidateWeakPtrs();
   container_view_->GetWidget()->RemoveObserver(this);
   container_view_ = nullptr;
 
@@ -170,9 +172,9 @@ void AmbientController::ScheduleRefreshImage() {
     refresh_interval = base::TimeDelta::FromSeconds(5);
   }
 
-  refresh_timer_.Start(
-      FROM_HERE, refresh_interval,
-      base::BindOnce(&AmbientController::RefreshImage, base::Unretained(this)));
+  refresh_timer_.Start(FROM_HERE, refresh_interval,
+                       base::BindOnce(&AmbientController::RefreshImage,
+                                      weak_factory_.GetWeakPtr()));
 }
 
 void AmbientController::GetNextImage() {

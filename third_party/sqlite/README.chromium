@@ -1,6 +1,7 @@
 Name: sqlite
 URL: https://sqlite.org/
 Version: 3.31.1
+CPEPrefix: cpe:/a:sqlite:sqlite:3.31.1
 Included In Release: Yes
 Security Critical: Yes
 License: Public domain

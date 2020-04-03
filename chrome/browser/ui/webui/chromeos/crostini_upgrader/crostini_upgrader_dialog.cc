@@ -46,7 +46,11 @@ CrostiniUpgraderDialog::CrostiniUpgraderDialog(
       only_run_launch_closure_on_restart_(only_run_launch_closure_on_restart),
       launch_closure_{std::move(launch_closure)} {}
 
-CrostiniUpgraderDialog::~CrostiniUpgraderDialog() = default;
+CrostiniUpgraderDialog::~CrostiniUpgraderDialog() {
+  if (deletion_closure_for_testing_) {
+    std::move(deletion_closure_for_testing_).Run();
+  }
+}
 
 void CrostiniUpgraderDialog::GetDialogSize(gfx::Size* size) const {
   size->SetSize(::kDialogWidth, ::kDialogHeight);
@@ -65,10 +69,19 @@ void CrostiniUpgraderDialog::AdjustWidgetInitParams(
   params->z_order = ui::ZOrderLevel::kNormal;
 }
 
+void CrostiniUpgraderDialog::SetDeletionClosureForTesting(
+    base::OnceClosure deletion_closure_for_testing) {
+  deletion_closure_for_testing_ = std::move(deletion_closure_for_testing);
+}
+
 bool CrostiniUpgraderDialog::CanCloseDialog() const {
   // TODO(929571): If other WebUI Dialogs also need to let the WebUI control
   // closing logic, we should find a more general solution.
 
+  if (deletion_closure_for_testing_) {
+    // Running in a test.
+    return true;
+  }
   // Disallow closing without WebUI consent.
   return upgrader_ui_ == nullptr || upgrader_ui_->can_close();
 }

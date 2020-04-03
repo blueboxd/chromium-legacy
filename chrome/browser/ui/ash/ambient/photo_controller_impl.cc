@@ -12,9 +12,8 @@
 #include "components/account_id/account_id.h"
 #include "ui/gfx/image/image_skia.h"
 
-PhotoControllerImpl::PhotoControllerImpl() : weak_factory_(this) {
-  photo_client_ = PhotoClient::Create();
-}
+PhotoControllerImpl::PhotoControllerImpl()
+    : photo_client_(PhotoClient::Create()) {}
 
 PhotoControllerImpl::~PhotoControllerImpl() = default;
 
@@ -24,11 +23,19 @@ void PhotoControllerImpl::GetNextImage(PhotoDownloadCallback callback) {
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+void PhotoControllerImpl::GetSettings(GetSettingsCallback callback) {
+  photo_client_->GetSettings(std::move(callback));
+}
+
+void PhotoControllerImpl::UpdateSettings(int topic_source,
+                                         UpdateSettingsCallback callback) {
+  photo_client_->UpdateSettings(topic_source, std::move(callback));
+}
+
 void PhotoControllerImpl::OnNextImageInfoFetched(
     PhotoDownloadCallback callback,
-    bool success,
     const base::Optional<ash::PhotoController::Topic>& topic) {
-  if (!success ||
+  if (!topic.has_value() ||
       (topic->url.empty() && !topic->portrait_image_url.has_value())) {
     std::move(callback).Run(/*success=*/false, gfx::ImageSkia());
     return;
@@ -41,5 +48,5 @@ void PhotoControllerImpl::OnNextImageInfoFetched(
           ->GetAccountId();
   ash::AssistantImageDownloader::GetInstance()->Download(
       account_id, GURL(image_url),
-      base::BindOnce(std::move(callback), success));
+      base::BindOnce(std::move(callback), /*success=*/true));
 }

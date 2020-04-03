@@ -129,8 +129,8 @@ void StyleCascade::Apply(CascadeFilter filter) {
   ApplyMatchResult(resolver);
   ApplyInterpolations(resolver);
 
-  if (map_.Find(CSSPropertyName(CSSPropertyID::kWebkitAppearance)) &&
-      !resolver.filter_.Rejects(GetCSSPropertyWebkitAppearance()) &&
+  if (map_.Find(CSSPropertyName(CSSPropertyID::kAppearance)) &&
+      !resolver.filter_.Rejects(GetCSSPropertyAppearance()) &&
       state_.Style()->HasAppearance()) {
     state_.Style()->SetHasAuthorBackground(HasAuthorBackground());
     state_.Style()->SetHasAuthorBorder(HasAuthorBorder());

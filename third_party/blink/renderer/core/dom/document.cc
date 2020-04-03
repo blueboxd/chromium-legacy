@@ -7238,7 +7238,7 @@ ResizeObserverController& Document::EnsureResizeObserverController() {
 }
 
 void Document::AddConsoleMessage(ConsoleMessage* message,
-                                 bool discard_duplicates) {
+                                 bool discard_duplicates) const {
   // Don't let non-attached Documents spam the console.
   if (domWindow())
     domWindow()->AddConsoleMessage(message, discard_duplicates);

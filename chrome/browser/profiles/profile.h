@@ -103,6 +103,39 @@ class Profile : public content::BrowserContext {
     GUEST_PROFILE,  // Guest session's profile
   };
 
+  class OTRProfileID {
+   public:
+    // Creates an OTR profile ID from |profile_id|.
+    // |profile_id| should follow the following naming scheme:
+    // "<component>::<subcomponent_id>". For example, "HaTS::WebDialog"
+    explicit OTRProfileID(const std::string& profile_id);
+
+    // ID used by the incognito and guest profiles.
+    // TODO(https://crbug.com/1033903): To be replaced with |IncognitoID| and
+    // |GuestID| when the use cases are reduced.
+    static const OTRProfileID PrimaryID();
+
+    bool operator==(const OTRProfileID& other) const {
+      return profile_id_ == other.profile_id_;
+    }
+
+    bool operator!=(const OTRProfileID& other) const {
+      return profile_id_ != other.profile_id_;
+    }
+
+    bool operator<(const OTRProfileID& other) const {
+      return profile_id_ < other.profile_id_;
+    }
+
+    // Returns this OTRProfileID in a string format that can be used for debug
+    // message.
+    const std::string& ToString() const;
+
+   private:
+    OTRProfileID() = default;
+    const std::string profile_id_;
+  };
+
   class Delegate {
    public:
     virtual ~Delegate();
@@ -150,6 +183,7 @@ class Profile : public content::BrowserContext {
   // Note that for Chrome this covers BOTH Incognito mode and Guest sessions.
   bool IsOffTheRecord() override = 0;
   virtual bool IsOffTheRecord() const = 0;
+  virtual const OTRProfileID& GetOTRProfileID() const = 0;
 
   variations::VariationsClient* GetVariationsClient() override;
 
@@ -169,27 +203,48 @@ class Profile : public content::BrowserContext {
   // implementations, this is usually the Google-services email address.
   virtual std::string GetProfileUserName() const = 0;
 
-  // Return the incognito version of this profile. The returned pointer
-  // is owned by the receiving profile. If the receiving profile is off the
-  // record, the same profile is returned.
+  // Return an OffTheRecord version of this profile with the given
+  // |otr_profile_id|. The returned pointer is owned by the receiving profile.
+  // If the receiving profile is OffTheRecord, the owner would be its original
+  // profile.
   //
-  // WARNING: This will create the OffTheRecord profile if it doesn't already
+  // WARNING I: This will create the OffTheRecord profile if it doesn't already
   // exist. If this isn't what you want, you need to check
   // HasOffTheRecordProfile() first.
-  virtual Profile* GetOffTheRecordProfile() = 0;
+  //
+  // WARNING II: Once a profile is no longer used, use
+  // ProfileDestroyer::DestroyProfileWhenAppropriate or
+  // ProfileDestroyer::DestroyOffTheRecordProfileNow to destroy it.
+  //
+  // TODO(https://crbug.com/1033903): Remove the default value.
+  virtual Profile* GetOffTheRecordProfile(
+      const OTRProfileID& otr_profile_id = OTRProfileID::PrimaryID()) = 0;
 
-  // Destroys the incognito profile.
-  virtual void DestroyOffTheRecordProfile() = 0;
+  // Returns all OffTheRecord profiles.
+  virtual std::vector<Profile*> GetAllOffTheRecordProfiles() = 0;
 
-  // True if an incognito profile exists.
-  virtual bool HasOffTheRecordProfile() = 0;
+  // Destroys the OffTheRecord profile.
+  virtual void DestroyOffTheRecordProfile(Profile* otr_profile) = 0;
+
+  // TODO(https://crbug.com/1033903): Remove this function when all the use
+  // cases are migrated to above version. The parameter-less version destroys
+  // the primary OffTheRecord profile.
+  void DestroyOffTheRecordProfile();
+
+  // True if an OffTheRecord profile with given id exists.
+  // TODO(https://crbug.com/1033903): Remove the default value.
+  virtual bool HasOffTheRecordProfile(
+      const OTRProfileID& otr_profile_id = OTRProfileID::PrimaryID()) = 0;
+
+  // Returns true if the profile has any OffTheRecord profiles.
+  virtual bool HasAnyOffTheRecordProfile() = 0;
 
   // Return the original "recording" profile. This method returns this if the
-  // profile is not incognito.
+  // profile is not OffTheRecord.
   virtual Profile* GetOriginalProfile() = 0;
 
   // Return the original "recording" profile. This method returns this if the
-  // profile is not incognito.
+  // profile is not OffTheRecord.
   virtual const Profile* GetOriginalProfile() const = 0;
 
   // Returns whether the profile is supervised (either a legacy supervised
@@ -223,11 +278,15 @@ class Profile : public content::BrowserContext {
   // Retrieves a pointer to the PrefService that manages the preferences
   // for OffTheRecord Profiles.  This PrefService is lazily created the first
   // time that this method is called.
+  // TODO(https://crbug.com/1065444): Investigate whether it's possible to
+  // remove.
   virtual PrefService* GetOffTheRecordPrefs() = 0;
 
   // Like GetOffTheRecordPrefs but gives a read-only view of prefs that can be
   // used even if there's no OTR profile at the moment
   // (i.e. HasOffTheRecordProfile is false).
+  // TODO(https://crbug.com/1065444): Investigate whether it's possible to
+  // remove.
   virtual PrefService* GetReadOnlyOffTheRecordPrefs();
 
   // Returns the main URLLoaderFactory.
@@ -236,7 +295,7 @@ class Profile : public content::BrowserContext {
 
   // Return whether 2 profiles are the same. 2 profiles are the same if they
   // represent the same profile. This can happen if there is pointer equality
-  // or if one profile is the incognito version of another profile (or vice
+  // or if one profile is the OffTheRecord version of another profile (or vice
   // versa).
   virtual bool IsSameProfile(Profile* profile) = 0;
 
@@ -330,14 +389,16 @@ class Profile : public content::BrowserContext {
 
   // Returns whether it is an Incognito profile. An Incognito profile is an
   // off-the-record profile that is not a guest profile.
+  //
+  // TODO(https://crbug.com/1033903): Update to return false for non-primary
+  // OTRs and update documentation above.
   bool IsIncognitoProfile() const;
 
-  // Returns true if this is an off the record profile that is independent from
-  // its original regular profile. This covers OTR profiles that are directly
-  // created using CreateOffTheRecordProfile() (such as done by
-  // IndependentOTRProfileManager). Calling GetOffTheRecordProfile on their
-  // GetOriginProfile will not point to themselves.
-  // This type of usage is not recommended.
+  // Returns true if this is a non-primary OffTheRecord profile. This type of
+  // OffTheRecord profiles have limited functionality and cannot be used to
+  // create a browser object.
+  //
+  // TODO(https://crbug.com/1033903): Rename to |CanSupportBrowsers|.
   virtual bool IsIndependentOffTheRecordProfile() = 0;
 
   // Returns whether it is a guest session. This covers both the guest profile
@@ -407,11 +468,6 @@ class Profile : public content::BrowserContext {
   // ProfileDestroyer, but in tests, some are not.
   void MaybeSendDestroyedNotification();
 
-  // Creates an OffTheRecordProfile which points to this Profile. The caller is
-  // responsible for sending a NOTIFICATION_PROFILE_CREATED when the profile is
-  // correctly assigned to its owner.
-  Profile* CreateOffTheRecordProfile();
-
 #if !defined(OS_ANDROID)
   // Convenience method to retrieve the default zoom level for the default
   // storage partition.
@@ -434,6 +490,13 @@ class Profile : public content::BrowserContext {
   void set_is_system_profile(bool is_system_profile) {
     is_system_profile_ = is_system_profile;
   }
+
+  // Creates an OffTheRecordProfile which points to this Profile. The caller is
+  // responsible for sending a NOTIFICATION_PROFILE_CREATED when the profile is
+  // correctly assigned to its owner.
+  static std::unique_ptr<Profile> CreateOffTheRecordProfile(
+      Profile* parent,
+      const OTRProfileID& otr_profile_id);
 
   // Returns a newly created ExtensionPrefStore suitable for the supplied
   // Profile.
@@ -471,5 +534,8 @@ class Profile : public content::BrowserContext {
 struct ProfileCompare {
   bool operator()(Profile* a, Profile* b) const;
 };
+
+std::ostream& operator<<(std::ostream& out,
+                         const Profile::OTRProfileID& profile_id);
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_H_

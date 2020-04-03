@@ -17,6 +17,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
@@ -38,8 +39,12 @@
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_menu_model.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/app_shortcut_manager.h"
 #include "chrome/browser/web_applications/components/external_install_options.h"
+#include "chrome/browser/web_applications/components/install_manager.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/test/web_app_install_observer.h"
@@ -645,6 +650,36 @@ IN_PROC_BROWSER_TEST_P(HostedOrWebAppTest, SubframeRedirectsToHostedApp) {
   EXPECT_EQ(
       "This page has no title.",
       EvalJs(subframe, "document.body.innerText.trim();").ExtractString());
+}
+
+using BookmarkAppTest = HostedOrWebAppTest;
+
+IN_PROC_BROWSER_TEST_P(BookmarkAppTest, InstallFromSync) {
+  ASSERT_TRUE(https_server()->Start());
+
+  const GURL app_url =
+      https_server()->GetURL("/banners/manifest_test_page.html");
+  const web_app::AppId app_id = web_app::GenerateAppIdFromURL(app_url);
+
+  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  web_app_info->app_url = app_url;
+  web_app_info->scope = app_url.GetWithoutFilename();
+
+  base::RunLoop run_loop;
+  web_app::WebAppProviderBase* const provider =
+      web_app::WebAppProviderBase::GetProviderBase(profile());
+  DCHECK(provider);
+  provider->install_manager().InstallBookmarkAppFromSync(
+      app_id, std::move(web_app_info),
+      base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
+                                     web_app::InstallResultCode code) {
+        EXPECT_EQ(web_app::InstallResultCode::kSuccessNewInstall, code);
+        EXPECT_EQ(app_id, installed_app_id);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+  EXPECT_EQ(web_app::DisplayMode::kStandalone,
+            provider->registrar().GetAppDisplayMode(app_id));
 }
 
 // Tests that platform apps can still load mixed content.
@@ -1795,6 +1830,10 @@ INSTANTIATE_TEST_SUITE_P(All,
 INSTANTIATE_TEST_SUITE_P(All,
                          HostedAppTest,
                          ::testing::Values(AppType::HOSTED_APP));
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         BookmarkAppTest,
+                         ::testing::Values(AppType::BOOKMARK_APP));
 
 INSTANTIATE_TEST_SUITE_P(All,
                          HostedAppTestWithAutoupgradesDisabled,

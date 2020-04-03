@@ -2084,18 +2084,19 @@ bool V4L2VideoDecodeAccelerator::GetFormatInfo(struct v4l2_format* format,
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
 
   *again = false;
-  memset(format, 0, sizeof(*format));
-  format->type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-  if (device_->Ioctl(VIDIOC_G_FMT, format) != 0) {
-    if (errno == EINVAL) {
+
+  auto ret = output_queue_->GetFormat();
+  switch (ret.second) {
+    case 0:
+      *format = *ret.first;
+      break;
+    case EINVAL:
       // EINVAL means we haven't seen sufficient stream to decode the format.
       *again = true;
       return true;
-    } else {
-      PLOG(ERROR) << "ioctl() failed: VIDIOC_G_FMT";
+    default:
       NOTIFY_ERROR(PLATFORM_FAILURE);
       return false;
-    }
   }
 
   // Make sure we are still getting the format we set on initialization.
@@ -2146,30 +2147,11 @@ gfx::Size V4L2VideoDecodeAccelerator::GetVisibleSize(
     const gfx::Size& coded_size) {
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
 
-  struct v4l2_rect* visible_rect;
-  struct v4l2_selection selection_arg;
-  memset(&selection_arg, 0, sizeof(selection_arg));
-  selection_arg.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-  selection_arg.target = V4L2_SEL_TGT_COMPOSE;
-
-  if (device_->Ioctl(VIDIOC_G_SELECTION, &selection_arg) == 0) {
-    DVLOGF(3) << "VIDIOC_G_SELECTION is supported";
-    visible_rect = &selection_arg.r;
-  } else {
-    DVLOGF(3) << "Fallback to VIDIOC_G_CROP";
-    struct v4l2_crop crop_arg;
-    memset(&crop_arg, 0, sizeof(crop_arg));
-    crop_arg.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-
-    if (device_->Ioctl(VIDIOC_G_CROP, &crop_arg) != 0) {
-      VPLOGF(1) << "ioctl() VIDIOC_G_CROP failed";
-      return coded_size;
-    }
-    visible_rect = &crop_arg.c;
+  auto ret = output_queue_->GetVisibleRect();
+  if (!ret) {
+    return coded_size;
   }
-
-  gfx::Rect rect(visible_rect->left, visible_rect->top, visible_rect->width,
-                 visible_rect->height);
+  gfx::Rect rect = std::move(*ret);
   DVLOGF(3) << "visible rectangle is " << rect.ToString();
   if (!gfx::Rect(coded_size).Contains(rect)) {
     DVLOGF(3) << "visible rectangle " << rect.ToString()

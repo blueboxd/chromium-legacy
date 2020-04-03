@@ -7,6 +7,10 @@
 #include "base/run_loop.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/events/ozone/layout/scoped_keyboard_layout_engine.h"
+#include "ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu_impl.h"
+#include "ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu_single_process.h"
+#include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host_impl.h"
+#include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host_single_process.h"
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_screen.h"
 #include "ui/ozone/platform/wayland/test/mock_surface.h"
@@ -33,15 +37,30 @@ WaylandTest::WaylandTest()
 #endif
   scoped_keyboard_layout_engine_ = std::make_unique<ScopedKeyboardLayoutEngine>(
       std::move(keyboard_layout_engine));
-  connection_ = std::make_unique<WaylandConnection>();
-  buffer_manager_gpu_ = std::make_unique<WaylandBufferManagerGpu>();
-  surface_factory_ = std::make_unique<WaylandSurfaceFactory>(
-      connection_.get(), buffer_manager_gpu_.get());
 }
 
 WaylandTest::~WaylandTest() {}
 
 void WaylandTest::SetUp() {
+  if (use_mojo_) {
+    buffer_manager_host_ = std::make_unique<WaylandBufferManagerHostImpl>();
+    buffer_manager_gpu_ = std::make_unique<WaylandBufferManagerGpuImpl>();
+  } else {
+    buffer_manager_host_ =
+        std::make_unique<WaylandBufferManagerHostSingleProcess>();
+    buffer_manager_gpu_ =
+        std::make_unique<WaylandBufferManagerGpuSingleProcess>(
+            buffer_manager_host_.get());
+    static_cast<WaylandBufferManagerHostSingleProcess*>(
+        buffer_manager_host_.get())
+        ->SetWaylandBufferManagerGpuSingleProcess(buffer_manager_gpu_.get());
+  }
+
+  connection_ = std::make_unique<WaylandConnection>(buffer_manager_host_.get());
+  buffer_manager_host_->SetWaylandConnection(connection_.get());
+  surface_factory_ = std::make_unique<WaylandSurfaceFactory>(
+      connection_.get(), buffer_manager_gpu_.get());
+
   ASSERT_TRUE(server_.Start(GetParam()));
   ASSERT_TRUE(connection_->Initialize());
   screen_ = connection_->wayland_output_manager()->CreateWaylandScreen(
@@ -84,6 +103,10 @@ void WaylandTest::Sync() {
   // Pause the server, after it has finished processing any follow-up requests
   // from the client.
   server_.Pause();
+}
+
+void WaylandTest::SetInitializeWithMojo(bool use_mojo) {
+  use_mojo_ = use_mojo;
 }
 
 }  // namespace ui

@@ -147,10 +147,10 @@ void WebAppInstallManager::InstallBookmarkAppFromSync(
       finalizer(), data_retriever_factory_.Run());
 
   base::OnceClosure start_task = base::BindOnce(
-      &WebAppInstallTask::InstallWebAppFromInfoRetrieveIcons,
+      &WebAppInstallTask::LoadAndInstallWebAppFromSync,
       base::Unretained(task.get()), EnsureWebContentsCreated(),
-      std::move(web_application_info), is_locally_installed,
-      WebappInstallSource::SYNC,
+      base::Unretained(url_loader_.get()), std::move(web_application_info),
+      is_locally_installed, WebappInstallSource::SYNC,
       base::BindOnce(&WebAppInstallManager::OnQueuedTaskCompleted,
                      base::Unretained(this), task.get(), std::move(callback)));
 

@@ -3732,14 +3732,18 @@
       converter: "ConvertLength",
     },
     {
-      name: "-webkit-appearance",
-      property_methods: ["CSSValueFromComputedStyleInternal"],
+      name: "appearance",
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       field_group: "*",
       field_size: 5,
       field_template: "primitive",
       computed_style_custom_functions: ["getter"],
       default_value: "kNoControlPart",
       type_name: "ControlPart",
+    },
+    {
+      name: "-webkit-appearance",
+      alias_for: "appearance",
     },
     {
       name: "-webkit-app-region",

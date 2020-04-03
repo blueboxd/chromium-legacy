@@ -649,15 +649,12 @@ bool V4L2SliceVideoDecodeAccelerator::CreateOutputBuffers() {
 
   // Since VdaVideoDecoder doesn't allocate PictureBuffer with size adjusted by
   // itself, we have to adjust here.
-  struct v4l2_format format;
-  memset(&format, 0, sizeof(format));
-  format.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-
-  if (device_->Ioctl(VIDIOC_G_FMT, &format) != 0) {
-    PLOG(ERROR) << "Failed getting OUTPUT format";
+  auto ret = input_queue_->GetFormat().first;
+  if (!ret) {
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return false;
   }
+  struct v4l2_format format = std::move(*ret);
 
   format.fmt.pix_mp.width = pic_size.width();
   format.fmt.pix_mp.height = pic_size.height();
@@ -669,13 +666,12 @@ bool V4L2SliceVideoDecodeAccelerator::CreateOutputBuffers() {
   }
 
   // Get the coded size from the CAPTURE queue
-  memset(&format, 0, sizeof(format));
-  format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-  if (device_->Ioctl(VIDIOC_G_FMT, &format) != 0) {
-    PLOG(ERROR) << "Failed getting CAPTURE format";
+  ret = output_queue_->GetFormat().first;
+  if (!ret) {
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return false;
   }
+  format = std::move(*ret);
 
   coded_size_.SetSize(base::checked_cast<int>(format.fmt.pix_mp.width),
                       base::checked_cast<int>(format.fmt.pix_mp.height));

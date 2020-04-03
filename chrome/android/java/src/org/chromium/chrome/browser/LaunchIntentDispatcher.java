@@ -68,12 +68,6 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
 
     private static final String TAG = "ActivitiyDispatcher";
 
-    /**
-     * Timeout in ms for reading PartnerBrowserCustomizations provider. We do not trust third party
-     * provider by default.
-     */
-    private static final int PARTNER_BROWSER_CUSTOMIZATIONS_TIMEOUT_MS = 10000;
-
     private final Activity mActivity;
     private final Intent mIntent;
     private final boolean mIsCustomTabIntent;
@@ -151,7 +145,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         // We want to initialize early because when there are no tabs to restore, we should possibly
         // show homepage, which might require reading PartnerBrowserCustomizations provider.
         PartnerBrowserCustomizations.getInstance().initializeAsync(
-                mActivity.getApplicationContext(), PARTNER_BROWSER_CUSTOMIZATIONS_TIMEOUT_MS);
+                mActivity.getApplicationContext());
 
         int tabId = IntentUtils.safeGetIntExtra(
                 mIntent, IntentHandler.TabOpenType.BRING_TAB_TO_FRONT_STRING, Tab.INVALID_TAB_ID);

@@ -8,14 +8,18 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/init/gl_display_egl_util_ozone.h"
 #include "ui/gl/init/ozone_util.h"
+#include "ui/ozone/public/ozone_platform.h"
 
 namespace gl {
 namespace init {
 
 bool InitializeGLOneOffPlatform() {
-  if (HasGLOzone())
+  if (HasGLOzone()) {
+    gl::GLDisplayEglUtil::SetInstance(gl::GLDisplayEglUtilOzone::GetInstance());
     return GetGLOzone()->InitializeGLOneOffPlatform();
+  }
 
   switch (GetGLImplementation()) {
     case kGLImplementationMockGL:

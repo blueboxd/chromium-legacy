@@ -19,9 +19,6 @@ using ::testing::Return;
 class ServiceImplTest : public ::testing::Test {
  public:
   ServiceImplTest() {
-    ON_CALL(mock_client_, GetServerUrl)
-        .WillByDefault(Return("https://www.google.com/"));
-
     service_impl_ = ServiceImpl::Create(nullptr, &mock_client_);
   }
 

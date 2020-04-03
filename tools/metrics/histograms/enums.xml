@@ -26576,7 +26576,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="2887"
       label="V8RTCRtpReceiver_JitterBufferDelayHint_AttributeSetter"/>
   <int value="2888" label="MediaCapabilitiesDecodingInfoWithKeySystemConfig"/>
-  <int value="2889" label="RevertInCustomIdent"/>
+  <int value="2889" label="OBSOLETE_RevertInCustomIdent"/>
   <int value="2890" label="UnoptimizedImagePolicies"/>
   <int value="2891" label="VTTCueParser"/>
   <int value="2892" label="MediaElementTextTrackContainer"/>
@@ -26899,6 +26899,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3198" label="CrossOriginOpenerPolicySameOriginAllowPopups"/>
   <int value="3199" label="CrossOriginEmbedderPolicyRequireCorp"/>
   <int value="3200" label="CoopAndCoepIsolated"/>
+  <int value="3201" label="WrongBaselineOfButtonElement"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -33104,6 +33105,23 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="18" label="GMS call result status is not successful"/>
   <int value="19" label="Success with selection"/>
   <int value="20" label="Duplicate entry"/>
+</enum>
+
+<enum name="ICUCreateInstanceCode">
+  <summary>Recorded when ICU create instance of key objects.</summary>
+  <int value="0" label="Character Break Iterator"/>
+  <int value="1" label="Word Break Iterator"/>
+  <int value="2" label="Line Break Iterator"/>
+  <int value="3" label="Line Break Iterator (type=loose)"/>
+  <int value="4" label="Line Break Iterator (type=normal)"/>
+  <int value="5" label="Line Break Iterator (type=strict)"/>
+  <int value="6" label="Sentence Break Iterator"/>
+  <int value="7" label="Title Break Iterator"/>
+  <int value="8" label="Thai Break Engine"/>
+  <int value="9" label="Lao Break Engine"/>
+  <int value="10" label="Burmese Break Engine"/>
+  <int value="11" label="Khmer Break Engine"/>
+  <int value="12" label="Chinese/Japanese Break Engine"/>
 </enum>
 
 <enum name="ICUDataFileCode">
@@ -41994,7 +42012,7 @@ Called by update_use_counter_css.py.-->
   <int value="172" label="alias-webkit-animation-name"/>
   <int value="173" label="alias-webkit-animation-play-state"/>
   <int value="174" label="alias-webkit-animation-timing-function"/>
-  <int value="175" label="webkit-appearance"/>
+  <int value="175" label="alias-webkit-appearance"/>
   <int value="176" label="webkit-aspect-ratio"/>
   <int value="177" label="alias-webkit-backface-visibility"/>
   <int value="178" label="alias-webkit-background-clip"/>
@@ -42477,6 +42495,7 @@ Called by update_use_counter_css.py.-->
   <int value="655" label="subtree-visibility"/>
   <int value="656" label="math-style"/>
   <int value="657" label="aspect-ratio"/>
+  <int value="658" label="appearance"/>
 </enum>
 
 <enum name="MappedEditingCommands">

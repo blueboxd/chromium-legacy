@@ -1,6 +1,7 @@
 Name: wayland
 URL: http://wayland.freedesktop.org/
 Version: 1.17.0
+CPEPrefix: cpe:/a:wayland:wayland:1.17.0
 License: MIT
 License File: src/COPYING
 Security Critical: yes

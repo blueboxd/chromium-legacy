@@ -47,6 +47,20 @@ class FormStructure;
                             callback:(autofill::AutofillClient::
                                           UploadSaveCardPromptCallback)callback;
 
+// Bridge For AutofillClient's method |ConfirmAccountNameFixFlow|.
+- (void)
+    confirmCreditCardAccountName:(const base::string16&)name
+                        callback:
+                            (base::OnceCallback<void(const base::string16&)>)
+                                callback;
+
+// Bridge For AutofillClient's method |ConfirmExpirationDateFixFlow|.
+- (void)confirmCreditCardExpirationWithCard:(const autofill::CreditCard&)card
+                                   callback:
+                                       (base::OnceCallback<void(
+                                            const base::string16&,
+                                            const base::string16&)>)callback;
+
 // Bridge for AutofillClient's method |CreditCardUploadCompleted|.
 - (void)handleCreditCardUploadCompleted:(BOOL)cardSaved;
 

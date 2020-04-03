@@ -52,16 +52,20 @@ SupervisedUserSettingsPrefMappingEntry kSupervisedUserSettingsPrefMapping[] = {
         prefs::kSupervisedUserManualURLs,
     },
     {
-        supervised_users::kForceSafeSearch, prefs::kForceGoogleSafeSearch,
+        supervised_users::kForceSafeSearch,
+        prefs::kForceGoogleSafeSearch,
     },
     {
-        supervised_users::kSafeSitesEnabled, prefs::kSupervisedUserSafeSites,
+        supervised_users::kSafeSitesEnabled,
+        prefs::kSupervisedUserSafeSites,
     },
     {
-        supervised_users::kSigninAllowed, prefs::kSigninAllowed,
+        supervised_users::kSigninAllowed,
+        prefs::kSigninAllowed,
     },
     {
-        supervised_users::kUserName, prefs::kProfileName,
+        supervised_users::kUserName,
+        prefs::kProfileName,
     },
 };
 

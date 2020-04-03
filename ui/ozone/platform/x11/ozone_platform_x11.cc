@@ -21,6 +21,7 @@
 #include "ui/gfx/x/x11_connection.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
+#include "ui/ozone/platform/x11/gl_egl_utility_x11.h"
 #include "ui/ozone/platform/x11/x11_clipboard_ozone.h"
 #include "ui/ozone/platform/x11/x11_cursor_factory_ozone.h"
 #include "ui/ozone/platform/x11/x11_screen_ozone.h"
@@ -122,6 +123,10 @@ class OzonePlatformX11 : public OzonePlatform {
     return clipboard_.get();
   }
 
+  PlatformGLEGLUtility* GetPlatformGLEGLUtility() override {
+    return gl_egl_utility_.get();
+  }
+
   std::unique_ptr<InputMethod> CreateInputMethod(
       internal::InputMethodDelegate* delegate,
       gfx::AcceleratedWidget) override {
@@ -180,6 +185,7 @@ class OzonePlatformX11 : public OzonePlatform {
       CreatePlatformEventSource();
 
     surface_factory_ozone_ = std::make_unique<X11SurfaceFactory>();
+    gl_egl_utility_ = std::make_unique<GLEGLUtilityX11>();
   }
 
  private:
@@ -228,6 +234,7 @@ class OzonePlatformX11 : public OzonePlatform {
 
   // Objects in the GPU process.
   std::unique_ptr<X11SurfaceFactory> surface_factory_ozone_;
+  std::unique_ptr<GLEGLUtilityX11> gl_egl_utility_;
 
   // Objects in both UI and GPU process.
   std::unique_ptr<X11EventSource> event_source_;

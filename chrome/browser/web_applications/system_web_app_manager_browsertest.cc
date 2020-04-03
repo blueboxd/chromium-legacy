@@ -10,7 +10,9 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
@@ -26,6 +28,7 @@
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_tab_helper.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
 #include "chrome/services/app_service/public/cpp/app_update.h"
@@ -331,6 +334,163 @@ class SystemWebAppManagerLaunchDirectoryBrowserTest
   SystemWebAppManagerLaunchDirectoryBrowserTest()
       : SystemWebAppManagerFileHandlingBrowserTestBase(
             IncludeLaunchDirectory::kYes) {}
+
+  // Returns the content of |jsIdentifier| file handle.
+  std::string ReadContentFromJsFileHandle(content::WebContents* web_contents,
+                                          const std::string& jsIdentifier) {
+    std::string js_file_content;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+        web_contents,
+        "Promise.resolve(" + jsIdentifier + ")" +
+            ".then(async (identifier) => {"
+            "  const file = await identifier.getFile();"
+            "  const content = await file.text();"
+            "  window.domAutomationController.send(content);"
+            "});",
+        &js_file_content));
+    return js_file_content;
+  }
+
+  // Writes |contentToWrite| to |jsIdentifier| file handle. Returns whether
+  // JavaScript execution finishes.
+  bool WriteContentToJsFileHandle(content::WebContents* web_contents,
+                                  const std::string& jsIdentifier,
+                                  const std::string& contentToWrite) {
+    bool file_written;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+        web_contents,
+        content::JsReplace(
+            "Promise.resolve(" + jsIdentifier + ")" +
+                ".then(async (file_handle) => {"
+                "  const writable = await file_handle.createWritable();"
+                "  await writable.write($1);"
+                "  await writable.close();"
+                "  window.domAutomationController.send(true);"
+                "});",
+            contentToWrite),
+        &file_written));
+    return file_written;
+  }
+
+  // Remove file by |file_name| from |jsIdentifier| directory handle. Returns
+  // whether JavaScript execution finishes.
+  bool RemoveFileFromJsDirectoryHandle(content::WebContents* web_contents,
+                                       const std::string& jsIdentifier,
+                                       const std::string& file_name) {
+    bool file_removed;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+        web_contents,
+        content::JsReplace("Promise.resolve(" + jsIdentifier + ")" +
+                               ".then(async (dir_handle) => {"
+                               "  await dir_handle.removeEntry($1);"
+                               "  domAutomationController.send(true);"
+                               "});",
+                           file_name),
+        &file_removed));
+    return file_removed;
+  }
+
+  std::string ReadFileContent(const base::FilePath& path) {
+    std::string content;
+    EXPECT_TRUE(base::ReadFileToString(path, &content));
+    return content;
+  }
+
+  // Launch the App with |base_dir| and a file inside this directory, then test
+  // SWA can 1) read and write to the launch file; 2) read and write to other
+  // files inside the launch directory; 3) read and write to the launch
+  // directory (i.e. list and delete files).
+  void TestPermissionsForLaunchDirectory(const base::FilePath& base_dir) {
+    apps::AppLaunchParams params = LaunchParamsForApp(GetMockAppType());
+    params.source = apps::mojom::AppLaunchSource::kSourceChromeInternal;
+
+    base::ScopedAllowBlockingForTesting allow_blocking;
+
+    // Create the launch file, which stores 4 characters "test".
+    base::FilePath launch_file_path;
+    ASSERT_TRUE(base::CreateTemporaryFileInDir(base_dir, &launch_file_path));
+    ASSERT_EQ(4, base::WriteFile(launch_file_path, "test", 4));
+
+    // Launch the App.
+    const GURL& launch_url = WebAppProvider::Get(browser()->profile())
+                                 ->registrar()
+                                 .GetAppLaunchURL(params.app_id);
+    params.launch_files = {launch_file_path};
+    content::TestNavigationObserver navigation_observer(launch_url);
+    navigation_observer.StartWatchingNewWebContents();
+    content::WebContents* web_contents =
+        apps::LaunchService::Get(browser()->profile())->OpenApplication(params);
+    navigation_observer.Wait();
+
+    // Launch directories and files passed to system web apps should
+    // automatically be granted write permission. Users should not get
+    // permission prompts. So we auto deny them (if they show up).
+    NativeFileSystemPermissionRequestManager::FromWebContents(web_contents)
+        ->set_auto_response_for_test(permissions::PermissionAction::DENIED);
+
+    // Set up a Promise to resolves to launchParams, when launchQueue's consumer
+    // callback is called.
+    EXPECT_TRUE(content::ExecuteScript(
+        web_contents,
+        "window.launchParamsPromise = new Promise(resolve => {"
+        "  window.resolveLaunchParamsPromise = resolve;"
+        "});"
+        "launchQueue.setConsumer(launchParams => {"
+        "  window.resolveLaunchParamsPromise(launchParams);"
+        "});"));
+
+    // Wait for launch. Set window.launchParams for manipulation.
+    EXPECT_TRUE(content::ExecuteScript(
+        web_contents,
+        "window.launchParamsPromise.then(launchParams => {"
+        "  window.launchParams = launchParams;"
+        "});"));
+
+    // Check we can read and write to the launch file.
+    std::string launch_file_js_handle = "window.launchParams.files[1]";
+    EXPECT_EQ("test",
+              ReadContentFromJsFileHandle(web_contents, launch_file_js_handle));
+    EXPECT_TRUE(WriteContentToJsFileHandle(web_contents, launch_file_js_handle,
+                                           "js_written"));
+    EXPECT_EQ("js_written", ReadFileContent(launch_file_path));
+
+    // Check we can read and write to a different file inside the directory.
+    // Note, this also checks we can read the launch directory, using
+    // directory_handle.getFile().
+    base::FilePath non_launch_file_path;
+    ASSERT_TRUE(
+        base::CreateTemporaryFileInDir(base_dir, &non_launch_file_path));
+    ASSERT_EQ(5, base::WriteFile(non_launch_file_path, "test2", 5));
+
+    std::string non_launch_file_js_handle =
+        content::JsReplace("window.launchParams.files[0].getFile($1)",
+                           non_launch_file_path.BaseName().AsUTF8Unsafe());
+    EXPECT_EQ("test2", ReadContentFromJsFileHandle(web_contents,
+                                                   non_launch_file_js_handle));
+    EXPECT_TRUE(WriteContentToJsFileHandle(
+        web_contents, non_launch_file_js_handle, "js_written2"));
+    EXPECT_EQ("js_written2", ReadFileContent(non_launch_file_path));
+
+    // Check the launch file can be deleted.
+    std::string launch_dir_js_handle = "window.launchParams.files[0]";
+    EXPECT_TRUE(RemoveFileFromJsDirectoryHandle(
+        web_contents, launch_dir_js_handle,
+        launch_file_path.BaseName().AsUTF8Unsafe()));
+    EXPECT_FALSE(base::PathExists(launch_file_path));
+
+    // Check the non-launch file can be deleted.
+    EXPECT_TRUE(RemoveFileFromJsDirectoryHandle(
+        web_contents, launch_dir_js_handle,
+        non_launch_file_path.BaseName().AsUTF8Unsafe()));
+    EXPECT_FALSE(base::PathExists(non_launch_file_path));
+
+    // Check a file can be created.
+    std::string new_file_js_handle = content::JsReplace(
+        "window.launchParams.files[0].getFile($1, {create:true})", "new_file");
+    EXPECT_TRUE(WriteContentToJsFileHandle(web_contents, new_file_js_handle,
+                                           "js_new_file"));
+    EXPECT_EQ("js_new_file", ReadFileContent(base_dir.AppendASCII("new_file")));
+  }
 };
 
 // Launching behavior for apps that do not want to received launch directory are
@@ -462,45 +622,33 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerLaunchDirectoryBrowserTest,
       "domAutomationController.send(window.secondLaunchParams.files[1].name)",
       &file_name));
   EXPECT_EQ(temp_file_path2.BaseName().AsUTF8Unsafe(), file_name);
+}
 
-  // Launch directories and files passed to system web apps should automatically
-  // be granted write permission. Users should not get permission prompts. Here
-  // we execute some JavaScript code that modifies and deletes files in the
-  // directory.
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerLaunchDirectoryBrowserTest,
+                       ReadWritePermissions_OrdinaryDirectory) {
+  WaitForTestSystemAppInstall();
 
-  // Auto deny prompts (if they show up).
-  NativeFileSystemPermissionRequestManager::FromWebContents(web_contents)
-      ->set_auto_response_for_test(permissions::PermissionAction::DENIED);
+  // Test for ordinary directory.
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  base::ScopedTempDir temp_directory;
+  ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
+  TestPermissionsForLaunchDirectory(temp_directory.GetPath());
+}
 
-  // Modifies the launch file. Reuse the first launch directory.
-  bool writer_closed;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      web_contents,
-      "window.firstLaunchParams.files[1].createWritable().then("
-      "  async writer => {"
-      "    console.log(writer);"
-      "    await writer.write('test');"
-      "    await writer.close();"
-      "    domAutomationController.send(true);"
-      "  }"
-      ");",
-      &writer_closed));
-  EXPECT_TRUE(writer_closed);
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerLaunchDirectoryBrowserTest,
+                       ReadWritePermissions_SensitiveDirectory) {
+  WaitForTestSystemAppInstall();
 
-  std::string read_contents;
-  EXPECT_TRUE(base::ReadFileToString(temp_file_path, &read_contents));
-  EXPECT_EQ("test", read_contents);
-
-  // Deletes the launch file. Reuse the second launch directory.
-  bool file_removed;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      web_contents,
-      "window.secondLaunchParams.files[0].removeEntry("
-      "  window.secondLaunchParams.files[1].name"
-      ").then(_ => domAutomationController.send(true));",
-      &file_removed));
-  EXPECT_TRUE(file_removed);
-  EXPECT_FALSE(base::PathExists(temp_file_path2));
+  // Test for sensitive directory (which are otherwise blocked by
+  // NativeFileSystem API). It is safe to use |chrome::DIR_DEFAULT_DOWNLOADS|,
+  // because InProcBrowserTest fixture sets up different download directory for
+  // each test cases.
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  base::FilePath sensitive_dir;
+  ASSERT_TRUE(
+      base::PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &sensitive_dir));
+  ASSERT_TRUE(base::DirectoryExists(sensitive_dir));
+  TestPermissionsForLaunchDirectory(sensitive_dir);
 }
 
 class SystemWebAppManagerFileHandlingOriginTrialsBrowserTest

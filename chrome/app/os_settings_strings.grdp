@@ -738,6 +738,12 @@
   <message name="IDS_SETTINGS_ACCOUNT_MANAGER_PRIMARY_ACCOUNT_TOOLTIP" desc="Tooltip for the primary account in accounts list in Settings describing how to sign out.">
     To sign out of the primary account on this device, click the time on your screen. In the menu that appears, click "Sign out".
   </message>
+  <message name="IDS_SETTINGS_ACCOUNT_MANAGER_CHILD_MANAGED_BY_ONE_PARENT_TOOLTIP" desc="Tooltip for the primary account in accounts list in Settings showing that this user is managed by parent's account.">
+    Account managed by <ph name="PARENT_EMAIL">$1<ex>user@example.com</ex></ph>. To sign out of the primary account on this device, click the time on your screen. In the menu that appears, click "Sign out".
+  </message>
+  <message name="IDS_SETTINGS_ACCOUNT_MANAGER_CHILD_MANAGED_BY_TWO_PARENTS_TOOLTIP" desc="Tooltip for the primary account in accounts list in Settings showing that this user is managed by two parents' accounts.">
+    Account managed by <ph name="FIRST_PARENT_EMAIL">$1<ex>first@example.com</ex></ph> and <ph name="SECOND_PARENT_EMAIL">$2<ex>second@example.com</ex></ph>. To sign out of the primary account on this device, click the time on your screen. In the menu that appears, click "Sign out".
+  </message>
   <message name="IDS_SETTINGS_ACCOUNT_MANAGER_REMOVE_ACCOUNT_LABEL" desc="Label of the Remove account button in Account Manager.">
     Remove this account
   </message>
@@ -817,6 +823,9 @@
   </message>
   <message name="IDS_SETTINGS_PLUGIN_VM_CONFIRM_REMOVE_DIALOG_BODY" desc="Message of the confirmation dialog displayed before removal begins.">
     Removing Plugin VM will delete your VM. This includes its applications, settings, and data. Are you sure you wish to continue?
+  </message>
+  <message name="IDS_SETTINGS_PLUGIN_VM_CAMERA_ACCESS_TITLE" desc="The text in the settings page for allowing camera access from Plugin VM.">
+    Give access to camera
   </message>
 
   <!-- Crostini -->

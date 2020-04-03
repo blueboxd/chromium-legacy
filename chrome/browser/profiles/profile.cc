@@ -103,6 +103,24 @@ class ChromeVariationsClient : public variations::VariationsClient {
 
 }  // namespace
 
+Profile::OTRProfileID::OTRProfileID(const std::string& profile_id)
+    : profile_id_(profile_id) {}
+
+// static
+const Profile::OTRProfileID Profile::OTRProfileID::PrimaryID() {
+  return OTRProfileID("profile::primary_otr");
+}
+
+const std::string& Profile::OTRProfileID::ToString() const {
+  return profile_id_;
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const Profile::OTRProfileID& profile_id) {
+  out << profile_id.ToString();
+  return out;
+}
+
 Profile::Profile()
     : restored_last_session_(false),
       sent_destroyed_notification_(false),
@@ -411,4 +429,11 @@ variations::VariationsClient* Profile::GetVariationsClient() {
   if (!chrome_variations_client_)
     chrome_variations_client_ = std::make_unique<ChromeVariationsClient>(this);
   return chrome_variations_client_.get();
+}
+
+void Profile::DestroyOffTheRecordProfile() {
+  OTRProfileID primary_otr_id = OTRProfileID::PrimaryID();
+  if (!HasOffTheRecordProfile(primary_otr_id))
+    return;
+  DestroyOffTheRecordProfile(GetOffTheRecordProfile(primary_otr_id));
 }

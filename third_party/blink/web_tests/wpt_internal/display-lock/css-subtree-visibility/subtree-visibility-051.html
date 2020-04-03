@@ -4,12 +4,14 @@
 <title>Subtree Visibility: accessibility focus</title>
 <link rel="author" title="Rakina Zata Amni" href="mailto:rakina@chromium.org">
 <link rel="help" href="https://github.com/WICG/display-locking">
-<link rel="match" href="container-ref.html">
 <meta name="assert" content="subtree-visibility auto subtrees are exposed by accessibility focus">
 
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
 
+<div style="height:10000px;">
+  spacer so that everything below will be offscreen (and won't get viewport-activated)
+</div>
 <div id="hidden" style="subtree-visibility: auto">
   foo
   <div id="child" tabindex="0">
@@ -23,25 +25,25 @@ function axElementById(id) {
 }
 
 async_test(async(t) => {
-  t.step(() => {
-    let axChild = axElementById("child");
-    assert_false(Boolean(axChild.backgroundColor), "Background color after activation");
-  });
+  const hiddenEl = document.getElementById("hidden");
+  let axHidden = axElementById("hidden");
+  // #hidden is locked, and thus is saved as an AXNodeObject instead of an AXLayoutObject,
+  // and has 3 child nodes: "foo" text, "<newline>" text, and #child node.
+  // Note that we have the separate <newline> text because it's an AXNodeObject and does
+  // not do whitespace collapsing (though this might change in the future).
+  t.step(() => { assert_equals(axHidden.childrenCount, 3, "Children count when locked"); });
 
-  axElementById("child").takeFocus();  // Use accessibility to set the focus.
-
-  // Wait for a few frames for the ax tree to be refreshed.
+  // Focus to #child, causing #hidden to get unlocked.
+  axElementById("child").takeFocus();
+  // Wait for the next frame for the ax object to be recreated.
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
--     requestAnimationFrame(() => {
-  -     t.step(() => {
-          let axChild = axElementById("child");
-          assert_equals(axChild.backgroundColor, 0xFFFFFFFF, "Background color after activation");
-        });
-        t.done();
-      });
+      axHidden = axElementById("hidden");
+      // #hidden is now unlocked and saved as a normal AXLayoutObject with 2 child nodes:
+      // "foo" text and #child node.
+      t.step(() => { assert_equals(axHidden.childrenCount, 2, "Children count after activation"); });
+      t.done();
     });
   });
-}, "Accessiblility focus causes activatable hidden tree to activate, and thus accessibility details such as background color become available");
-
+}, "Accessiblility focus causes activatable hidden tree to activate");
 </script>

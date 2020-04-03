@@ -23,6 +23,7 @@
 #include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -54,6 +55,7 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/clear_site_data_utils.h"
+#include "content/public/browser/web_contents.h"
 #include "url/url_constants.h"
 
 namespace {
@@ -244,6 +246,7 @@ void WebApps::LaunchAppWithFiles(const std::string& app_id,
 }
 
 void WebApps::LaunchAppWithIntent(const std::string& app_id,
+                                  int32_t event_flags,
                                   apps::mojom::IntentPtr intent,
                                   apps::mojom::LaunchSource launch_source,
                                   int64_t display_id) {
@@ -251,8 +254,20 @@ void WebApps::LaunchAppWithIntent(const std::string& app_id,
     return;
   }
 
-  AppLaunchParams params = CreateAppLaunchParamsForIntent(app_id, intent);
-  web_app_launch_manager_->OpenApplication(params);
+  auto params = apps::CreateAppLaunchParamsForIntent(
+      app_id, event_flags, GetAppLaunchSource(launch_source), display_id,
+      web_app::ConvertDisplayModeToAppLaunchContainer(
+          GetRegistrar().GetAppEffectiveDisplayMode(app_id)),
+      intent);
+  auto* tab = web_app_launch_manager_->OpenApplication(params);
+
+  if (launch_source != apps::mojom::LaunchSource::kFromArc || !tab) {
+    return;
+  }
+
+  // Add a flag to remember this tab originated in the ARC context.
+  tab->SetUserData(&arc::ArcWebContentsData::kArcTransitionFlag,
+                   std::make_unique<arc::ArcWebContentsData>());
 }
 
 void WebApps::SetPermission(const std::string& app_id,

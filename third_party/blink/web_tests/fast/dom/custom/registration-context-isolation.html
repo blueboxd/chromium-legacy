@@ -163,6 +163,7 @@ withFrame(t.step_func(function (frame) {
     var documentB = documentA.implementation.createDocument(null, '');
     assert_throws_dom(
         'NOT_SUPPORTED_ERR',
+        frame.contentWindow.DOMException,
         function() { documentB.registerElement('x-a'); });
 
     // This document will not process custom elements because there is
@@ -170,6 +171,7 @@ withFrame(t.step_func(function (frame) {
     var documentC = documentB.implementation.createHTMLDocument();
     assert_throws_dom(
         'NOT_SUPPORTED_ERR',
+        frame.contentWindow.DOMException,
         function() { documentC.registerElement('x-b'); });
 
     // Nor this one.
@@ -177,6 +179,7 @@ withFrame(t.step_func(function (frame) {
         'http://www.w3.org/1999/xhtml', 'html');
     assert_throws_dom(
         'NOT_SUPPORTED_ERR',
+        frame.contentWindow.DOMException,
         function() { documentD.registerElement('x-c'); });
 
     frame.remove();

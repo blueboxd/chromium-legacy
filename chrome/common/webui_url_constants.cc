@@ -430,6 +430,7 @@ const char kNetworkDetailSubPage[] = "networkDetail";
 const char kNetworksSubPage[] = "networks";
 const char kOsAccessibilitySubPage[] = "osAccessibility";
 const char kOsPrintingSubPage[] = "osPrinting";
+const char kOsPrivacySubPage[] = "osPrivacy";
 const char kOsResetSubPage[] = "osReset";
 const char kOsSearchSubPage[] = "osSearch";
 const char kPluginVmDetailsSubPage[] = "pluginVm/details";
@@ -490,6 +491,7 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       kOsLanguagesDetailsSubPage,
       kOsLanguagesInputMethodsSubPage,
       kOsPrintingSubPage,
+      kOsPrivacySubPage,
       kOsResetSubPage,
       kOsSearchSubPage,
       kPointerOverlaySubPage,

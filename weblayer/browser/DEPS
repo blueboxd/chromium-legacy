@@ -38,6 +38,7 @@ include_rules = [
   "+components/variations",
   "+components/version_info",
   "+components/web_cache/browser",
+  "+components/webrtc",
   "+content/public",
   "+mojo/public",
   "+net",

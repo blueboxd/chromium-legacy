@@ -278,6 +278,7 @@ source_set("chromeos") {
 
     # TODO: care about enable_basic_printing and enable_print_preview.
     "//ash/keyboard/ui",
+    "//chromeos/services/assistant/public/cpp:interaction_subscriber",
     "//printing",
     "//remoting/host/it2me:chrome_os_host",
     "//services/audio/public/cpp",

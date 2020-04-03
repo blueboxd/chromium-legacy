@@ -60,6 +60,10 @@ class ChromePermissionsClient : public permissions::PermissionsClient {
       content::WebContents* web_contents,
       ContentSettingsType type,
       base::WeakPtr<permissions::PermissionPromptAndroid> prompt) override;
+  void RepromptForAndroidPermissions(
+      content::WebContents* web_contents,
+      const std::vector<ContentSettingsType>& content_settings_types,
+      PermissionsUpdatedCallback callback) override;
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject() override;
   int MapToJavaDrawableId(int resource_id) override;
 #else

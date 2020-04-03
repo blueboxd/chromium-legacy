@@ -163,7 +163,7 @@ class TouchEventsViewTest : public ViewEventTestBase {
 
     const int touch_pointer_count = 3;
     TouchEventHandler touch_event_handler;
-    GetWidget()->GetNativeWindow()->GetHost()->window()->AddPreTargetHandler(
+    window()->GetNativeWindow()->GetHost()->window()->AddPreTargetHandler(
         &touch_event_handler);
     gfx::Point in_content(touch_view_->width() / 2, touch_view_->height() / 2);
     views::View::ConvertPointToScreen(touch_view_, &in_content);
@@ -181,7 +181,7 @@ class TouchEventsViewTest : public ViewEventTestBase {
     EXPECT_EQ(touch_pointer_count,
               gesture_recognizer_->num_touch_release_events());
 
-    GetWidget()->GetNativeWindow()->GetHost()->window()->RemovePreTargetHandler(
+    window()->GetNativeWindow()->GetHost()->window()->RemovePreTargetHandler(
         &touch_event_handler);
     Done();
   }
@@ -210,7 +210,7 @@ class TouchEventsRecursiveViewTest : public TouchEventsViewTest {
 
     const int touch_pointer_count = 1;
     TouchEventHandler touch_event_handler;
-    GetWidget()->GetNativeWindow()->GetHost()->window()->AddPreTargetHandler(
+    window()->GetNativeWindow()->GetHost()->window()->AddPreTargetHandler(
         &touch_event_handler);
     gfx::Point in_content(touch_view_->width() / 2, touch_view_->height() / 2);
     views::View::ConvertPointToScreen(touch_view_, &in_content);
@@ -224,7 +224,7 @@ class TouchEventsRecursiveViewTest : public TouchEventsViewTest {
     EXPECT_EQ(touch_pointer_count + 1, touch_event_handler.num_touch_presses());
     EXPECT_EQ(0, touch_event_handler.num_pointers_down());
     EXPECT_EQ(2, touch_event_handler.max_call_depth());
-    GetWidget()->GetNativeWindow()->GetHost()->window()->RemovePreTargetHandler(
+    window()->GetNativeWindow()->GetHost()->window()->RemovePreTargetHandler(
         &touch_event_handler);
     Done();
   }

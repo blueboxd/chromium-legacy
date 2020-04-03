@@ -15,6 +15,7 @@ import androidx.browser.customtabs.CustomTabsSessionToken;
 
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
+import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.net.NetworkChangeNotifier;
 
@@ -73,8 +74,7 @@ public class CustomTabIntentHandler {
         runWhenTabCreated(() -> {
             if (mTabProvider.getInitialTabCreationMode() != TabCreationMode.RESTORED) {
                 mHandlingStrategy.handleInitialIntent(mIntentDataProvider);
-            } else if (mIntentDataProvider.isWebappOrWebApkActivity()
-                    && !mIntentDataProvider.isWebApkActivity()
+            } else if (mIntentDataProvider.getActivityType() == ActivityType.WEBAPP
                     && NetworkChangeNotifier.isOnline()) {
                 mTabProvider.getTab().reloadIgnoringCache();
             }

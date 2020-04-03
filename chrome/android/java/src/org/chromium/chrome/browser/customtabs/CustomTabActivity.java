@@ -45,7 +45,6 @@ import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActi
 import org.chromium.chrome.browser.customtabs.features.CustomTabNavigationBarController;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
-import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
@@ -100,13 +99,6 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
         } else {
             return super.getBackgroundDrawable();
         }
-    }
-
-    @Override
-    @ActivityType
-    public int getActivityType() {
-        return mIntentDataProvider.isTrustedWebActivity()
-                ? ActivityType.TRUSTED_WEB_ACTIVITY : ActivityType.CUSTOM_TAB;
     }
 
     @Override

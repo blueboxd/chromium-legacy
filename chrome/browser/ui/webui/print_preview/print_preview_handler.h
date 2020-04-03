@@ -97,10 +97,6 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
                             int preview_uid,
                             int preview_request_id);
 
-  int regenerate_preview_request_count() const {
-    return regenerate_preview_request_count_;
-  }
-
   // Notifies PDF Printer Handler that |path| was selected. Used for tests.
   void FileSelectedForTesting(const base::FilePath& path,
                               int index,
@@ -314,16 +310,13 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
 
   // A count of how many requests received to regenerate preview data.
   // Initialized to 0 then incremented and emitted to a histogram.
-  int regenerate_preview_request_count_;
-
-  // A count of how many requests received to show manage printers dialog.
-  int manage_printers_dialog_request_count_;
+  int regenerate_preview_request_count_ = 0;
 
   // Whether we have already logged a failed print preview.
-  bool reported_failed_preview_;
+  bool reported_failed_preview_ = false;
 
   // Whether we have already logged the number of printers this session.
-  bool has_logged_printers_count_;
+  bool has_logged_printers_count_ = false;
 
   // Whether Google Cloud Print is enabled for the active profile.
   bool cloud_print_enabled_ = false;
@@ -338,7 +331,7 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
 
   // Pointer to the identity manager service so that print preview can listen
   // for GAIA cookie changes.
-  signin::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_ = nullptr;
 
   // Handles requests for cloud printers. Created lazily by calling
   // GetPrinterHandler().

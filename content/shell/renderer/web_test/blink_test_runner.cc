@@ -40,7 +40,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
-#include "content/public/test/web_test_support.h"
+#include "content/public/test/web_test_support_renderer.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/web_test/blink_test_helpers.h"
 #include "content/shell/renderer/web_test/web_test_render_thread_observer.h"

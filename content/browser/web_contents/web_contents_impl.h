@@ -393,6 +393,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                               RenderFrameHost* render_frame_host,
                               bool is_full_page) override;
   bool IsInnerWebContentsForGuest() override;
+  bool IsPortal() override;
   RenderFrameHostImpl* GetOuterWebContentsFrame() override;
   WebContentsImpl* GetOuterWebContents() override;
   WebContentsImpl* GetOutermostWebContents() override;
@@ -784,7 +785,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool IsSpatialNavigationDisabled() const override;
   RenderFrameHostImpl* GetPendingMainFrame() override;
   void DidFirstVisuallyNonEmptyPaint(RenderViewHostImpl* source) override;
-  bool IsPortal() const override;
   void OnThemeColorChanged(RenderViewHostImpl* source) override;
 
   // NavigatorDelegate ---------------------------------------------------------

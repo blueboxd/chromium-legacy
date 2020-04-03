@@ -14,6 +14,10 @@ const base::Feature kV8OptimizeJavascript{"V8OptimizeJavascript",
 const base::Feature kV8FlushBytecode{"V8FlushBytecode",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables finalizing streaming JS compilations on a background thread.
+const base::Feature kV8OffThreadFinalization{"V8OffThreadFinalization",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables lazy feedback allocation in V8.
 const base::Feature kV8LazyFeedbackAllocation{"V8LazyFeedbackAllocation",
                                               base::FEATURE_ENABLED_BY_DEFAULT};

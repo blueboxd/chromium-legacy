@@ -42,56 +42,32 @@ struct DevInfoScopedTraits {
 
 using ScopedDevInfo = base::ScopedGeneric<HDEVINFO, DevInfoScopedTraits>;
 
-bool GetDeviceUint32Property(HDEVINFO dev_info,
-                             SP_DEVINFO_DATA* dev_info_data,
-                             const DEVPROPKEY& property,
-                             uint32_t* property_buffer) {
+base::Optional<uint32_t> GetDeviceUint32Property(HDEVINFO dev_info,
+                                                 SP_DEVINFO_DATA* dev_info_data,
+                                                 const DEVPROPKEY& property) {
   DEVPROPTYPE property_type;
-  if (!SetupDiGetDeviceProperty(dev_info, dev_info_data, &property,
-                                &property_type,
-                                reinterpret_cast<PBYTE>(property_buffer),
-                                sizeof(*property_buffer), nullptr, 0) ||
+  uint32_t buffer;
+  if (!SetupDiGetDeviceProperty(
+          dev_info, dev_info_data, &property, &property_type,
+          reinterpret_cast<PBYTE>(&buffer), sizeof(buffer), nullptr, 0) ||
       property_type != DEVPROP_TYPE_UINT32) {
-    return false;
+    return base::nullopt;
   }
 
-  return true;
+  return buffer;
 }
 
-bool GetDeviceStringProperty(HDEVINFO dev_info,
-                             SP_DEVINFO_DATA* dev_info_data,
-                             const DEVPROPKEY& property,
-                             base::string16* buffer) {
+base::Optional<base::string16> GetDeviceStringProperty(
+    HDEVINFO dev_info,
+    SP_DEVINFO_DATA* dev_info_data,
+    const DEVPROPKEY& property) {
   DEVPROPTYPE property_type;
   DWORD required_size;
   if (SetupDiGetDeviceProperty(dev_info, dev_info_data, &property,
                                &property_type, nullptr, 0, &required_size, 0) ||
       GetLastError() != ERROR_INSUFFICIENT_BUFFER ||
       property_type != DEVPROP_TYPE_STRING) {
-    return false;
-  }
-
-  if (!SetupDiGetDeviceProperty(
-          dev_info, dev_info_data, &property, &property_type,
-          reinterpret_cast<PBYTE>(base::WriteInto(buffer, required_size)),
-          required_size, nullptr, 0)) {
-    return false;
-  }
-
-  return true;
-}
-
-bool GetDeviceStringListProperty(HDEVINFO dev_info,
-                                 SP_DEVINFO_DATA* dev_info_data,
-                                 const DEVPROPKEY& property,
-                                 std::vector<base::string16>* result) {
-  DEVPROPTYPE property_type;
-  DWORD required_size;
-  if (SetupDiGetDeviceProperty(dev_info, dev_info_data, &property,
-                               &property_type, nullptr, 0, &required_size, 0) ||
-      GetLastError() != ERROR_INSUFFICIENT_BUFFER ||
-      property_type != DEVPROP_TYPE_STRING_LIST) {
-    return false;
+    return base::nullopt;
   }
 
   base::string16 buffer;
@@ -99,30 +75,50 @@ bool GetDeviceStringListProperty(HDEVINFO dev_info,
           dev_info, dev_info_data, &property, &property_type,
           reinterpret_cast<PBYTE>(base::WriteInto(&buffer, required_size)),
           required_size, nullptr, 0)) {
-    return false;
+    return base::nullopt;
+  }
+
+  return buffer;
+}
+
+base::Optional<std::vector<base::string16>> GetDeviceStringListProperty(
+    HDEVINFO dev_info,
+    SP_DEVINFO_DATA* dev_info_data,
+    const DEVPROPKEY& property) {
+  DEVPROPTYPE property_type;
+  DWORD required_size;
+  if (SetupDiGetDeviceProperty(dev_info, dev_info_data, &property,
+                               &property_type, nullptr, 0, &required_size, 0) ||
+      GetLastError() != ERROR_INSUFFICIENT_BUFFER ||
+      property_type != DEVPROP_TYPE_STRING_LIST) {
+    return base::nullopt;
+  }
+
+  base::string16 buffer;
+  if (!SetupDiGetDeviceProperty(
+          dev_info, dev_info_data, &property, &property_type,
+          reinterpret_cast<PBYTE>(base::WriteInto(&buffer, required_size)),
+          required_size, nullptr, 0)) {
+    return base::nullopt;
   }
 
   // Windows string list properties use a NUL character as the delimiter.
-  *result = base::SplitString(buffer, base::StringPiece16(L"\0", 1),
-                              base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  return true;
+  return base::SplitString(buffer, base::StringPiece16(L"\0", 1),
+                           base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 }
 
-bool GetServiceName(HDEVINFO dev_info,
-                    SP_DEVINFO_DATA* dev_info_data,
-                    base::string16* service_name) {
-  base::string16 buffer;
-  if (!GetDeviceStringProperty(dev_info, dev_info_data, DEVPKEY_Device_Service,
-                               &buffer)) {
-    return false;
-  }
+base::string16 GetServiceName(HDEVINFO dev_info,
+                              SP_DEVINFO_DATA* dev_info_data) {
+  base::Optional<base::string16> property =
+      GetDeviceStringProperty(dev_info, dev_info_data, DEVPKEY_Device_Service);
+  if (!property.has_value())
+    return base::string16();
 
   // Windows pads this string with a variable number of NUL bytes for no
   // discernible reason.
-  *service_name = base::TrimString(buffer, base::StringPiece16(L"\0", 1),
-                                   base::TRIM_TRAILING)
-                      .as_string();
-  return true;
+  return base::TrimString(*property, base::StringPiece16(L"\0", 1),
+                          base::TRIM_TRAILING)
+      .as_string();
 }
 
 bool GetDeviceInterfaceDetails(HDEVINFO dev_info,
@@ -155,46 +151,56 @@ bool GetDeviceInterfaceDetails(HDEVINFO dev_info,
     return false;
   }
 
-  if (device_path) {
+  if (device_path)
     *device_path = base::string16(device_interface_detail_data->DevicePath);
-  }
 
   if (bus_number) {
-    if (!GetDeviceUint32Property(dev_info, &dev_info_data,
-                                 DEVPKEY_Device_BusNumber, bus_number)) {
+    auto result = GetDeviceUint32Property(dev_info, &dev_info_data,
+                                          DEVPKEY_Device_BusNumber);
+    if (!result.has_value()) {
       USB_PLOG(ERROR) << "Failed to get device bus number";
       return false;
     }
+    *bus_number = result.value();
   }
 
   if (port_number) {
-    if (!GetDeviceUint32Property(dev_info, &dev_info_data,
-                                 DEVPKEY_Device_Address, port_number)) {
+    auto result = GetDeviceUint32Property(dev_info, &dev_info_data,
+                                          DEVPKEY_Device_Address);
+    if (!result.has_value()) {
       USB_PLOG(ERROR) << "Failed to get device address";
       return false;
     }
+    *port_number = result.value();
   }
 
   if (parent_instance_id) {
-    if (!GetDeviceStringProperty(dev_info, &dev_info_data,
-                                 DEVPKEY_Device_Parent, parent_instance_id)) {
+    auto result = GetDeviceStringProperty(dev_info, &dev_info_data,
+                                          DEVPKEY_Device_Parent);
+    if (!result.has_value()) {
       USB_PLOG(ERROR) << "Failed to get the device parent";
       return false;
     }
+    *parent_instance_id = std::move(result.value());
   }
 
   if (child_instance_ids) {
-    if (!GetDeviceStringListProperty(dev_info, &dev_info_data,
-                                     DEVPKEY_Device_Children,
-                                     child_instance_ids) &&
-        GetLastError() != ERROR_NOT_FOUND) {
-      USB_PLOG(ERROR) << "Failed to get device children";
-      return false;
+    auto result = GetDeviceStringListProperty(dev_info, &dev_info_data,
+                                              DEVPKEY_Device_Children);
+    if (!result.has_value()) {
+      if (GetLastError() != ERROR_NOT_FOUND) {
+        result.emplace();
+      } else {
+        USB_PLOG(ERROR) << "Failed to get device children";
+        return false;
+      }
     }
+    *child_instance_ids = std::move(result.value());
   }
 
   if (service_name) {
-    if (!GetServiceName(dev_info, &dev_info_data, service_name)) {
+    *service_name = GetServiceName(dev_info, &dev_info_data);
+    if (service_name->empty()) {
       USB_PLOG(ERROR) << "Failed to get device driver name";
       return false;
     }
@@ -203,15 +209,14 @@ bool GetDeviceInterfaceDetails(HDEVINFO dev_info,
   return true;
 }
 
-bool GetDevicePath(const base::string16& instance_id,
-                   const GUID& device_interface_guid,
-                   base::string16* device_path) {
+base::string16 GetDevicePath(const base::string16& instance_id,
+                             const GUID& device_interface_guid) {
   ScopedDevInfo dev_info(
       SetupDiGetClassDevs(&device_interface_guid, instance_id.c_str(), 0,
                           DIGCF_DEVICEINTERFACE | DIGCF_PRESENT));
   if (!dev_info.is_valid()) {
     USB_PLOG(ERROR) << "SetupDiGetClassDevs";
-    return false;
+    return base::string16();
   }
 
   SP_DEVICE_INTERFACE_DATA device_interface_data = {};
@@ -220,20 +225,24 @@ bool GetDevicePath(const base::string16& instance_id,
                                    &device_interface_guid, 0,
                                    &device_interface_data)) {
     USB_PLOG(ERROR) << "SetupDiEnumDeviceInterfaces";
-    return false;
+    return base::string16();
   }
 
-  return GetDeviceInterfaceDetails(dev_info.get(), &device_interface_data,
-                                   device_path, nullptr, nullptr, nullptr,
-                                   nullptr, nullptr);
+  base::string16 device_path;
+  if (!GetDeviceInterfaceDetails(dev_info.get(), &device_interface_data,
+                                 &device_path, nullptr, nullptr, nullptr,
+                                 nullptr, nullptr)) {
+    return base::string16();
+  }
+
+  return device_path;
 }
 
-bool GetWinUsbDevicePath(const base::string16& instance_id,
-                         base::string16* device_path) {
+base::string16 GetWinUsbDevicePath(const base::string16& instance_id) {
   ScopedDevInfo dev_info(SetupDiCreateDeviceInfoList(nullptr, nullptr));
   if (!dev_info.is_valid()) {
     USB_PLOG(ERROR) << "SetupDiCreateDeviceInfoList";
-    return false;
+    return base::string16();
   }
 
   SP_DEVINFO_DATA dev_info_data = {};
@@ -241,17 +250,17 @@ bool GetWinUsbDevicePath(const base::string16& instance_id,
   if (!SetupDiOpenDeviceInfo(dev_info.get(), instance_id.c_str(), nullptr, 0,
                              &dev_info_data)) {
     USB_PLOG(ERROR) << "SetupDiOpenDeviceInfo";
-    return false;
+    return base::string16();
   }
 
-  base::string16 service_name;
-  if (!GetServiceName(dev_info.get(), &dev_info_data, &service_name)) {
+  base::string16 service_name = GetServiceName(dev_info.get(), &dev_info_data);
+  if (service_name.empty()) {
     USB_PLOG(ERROR) << "Could not get child device's service name";
-    return false;
+    return base::string16();
   }
 
   if (!base::EqualsCaseInsensitiveASCII(service_name, L"winusb"))
-    return false;
+    return base::string16();
 
   // There is no standard device interface GUID for USB functions and so we
   // must discover the set of GUIDs that have been set in the registry by
@@ -261,7 +270,7 @@ bool GetWinUsbDevicePath(const base::string16& instance_id,
                                   DICS_FLAG_GLOBAL, 0, DIREG_DEV, KEY_READ);
   if (key == INVALID_HANDLE_VALUE) {
     USB_PLOG(ERROR) << "Could not open device registry key";
-    return false;
+    return base::string16();
   }
   base::win::RegKey scoped_key(key);
 
@@ -271,7 +280,7 @@ bool GetWinUsbDevicePath(const base::string16& instance_id,
   if (result != ERROR_SUCCESS) {
     USB_LOG(ERROR) << "Could not read device interface GUIDs: "
                    << logging::SystemErrorCodeToString(result);
-    return false;
+    return base::string16();
   }
 
   for (const auto& guid_string : device_interface_guids) {
@@ -282,11 +291,12 @@ bool GetWinUsbDevicePath(const base::string16& instance_id,
       continue;
     }
 
-    if (GetDevicePath(instance_id, guid, device_path))
-      return true;
+    base::string16 device_path = GetDevicePath(instance_id, guid);
+    if (!device_path.empty())
+      return device_path;
   }
 
-  return false;
+  return base::string16();
 }
 
 }  // namespace
@@ -374,20 +384,17 @@ class UsbServiceWin::BlockingTaskRunnerHelper {
     std::vector<base::string16> child_device_paths;
     if (base::EqualsCaseInsensitiveASCII(service_name, L"usbccgp")) {
       for (const base::string16& instance_id : child_instance_ids) {
-        base::string16 child_device_path;
-        if (GetWinUsbDevicePath(instance_id, &child_device_path))
+        base::string16 child_device_path = GetWinUsbDevicePath(instance_id);
+        if (!child_device_path.empty())
           child_device_paths.push_back(std::move(child_device_path));
       }
     }
 
     base::string16& hub_path = hub_paths_[parent_instance_id];
     if (hub_path.empty()) {
-      base::string16 parent_path;
-      if (!GetDevicePath(parent_instance_id, GUID_DEVINTERFACE_USB_HUB,
-                         &parent_path)) {
+      hub_path = GetDevicePath(parent_instance_id, GUID_DEVINTERFACE_USB_HUB);
+      if (hub_path.empty())
         return;
-      }
-      hub_path = parent_path;
     }
 
     service_task_runner_->PostTask(

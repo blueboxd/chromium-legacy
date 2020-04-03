@@ -10,7 +10,7 @@ test_with_window((w) => {
   class X extends w.HTMLElement {}
 
   w.customElements.define('new-old', X);
-  assert_throws_dom("NotSupportedError", () => {
+  assert_throws_dom("NotSupportedError", w.DOMException, () => {
     w.document.registerElement('new-old', {prototype: X.prototype});
   }, '"registering" (v0) a name already "defined" should throw');
 
@@ -18,7 +18,7 @@ test_with_window((w) => {
     prototype: Object.create(w.HTMLElement.prototype)
   });
   class Y extends w.HTMLElement {}
-  assert_throws_dom("NotSupportedError", () => {
+  assert_throws_dom("NotSupportedError", w.DOMException, () => {
     w.customElements.define('old-new', Y);
   }, '"defining" (v1) a name already "registered" (v0) should throw');
 }, 'Overlapping old and new-style custom elements are not allowed');

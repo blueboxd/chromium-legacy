@@ -21,6 +21,7 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
@@ -40,7 +41,6 @@ import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTab
 import org.chromium.chrome.browser.customtabs.features.ImmersiveModeController;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
-import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBrowserControlsConstraintsHelper;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
@@ -53,6 +53,7 @@ import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndr
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.ScreenOrientationProvider;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
+import org.chromium.webapk.lib.common.WebApkConstants;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -152,12 +153,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         }
     }
 
-    @Override
-    @ActivityType
-    public int getActivityType() {
-        return ActivityType.WEBAPP;
-    }
-
     protected boolean loadUrlIfPostShareTarget(WebappInfo webappInfo) {
         return false;
     }
@@ -167,7 +162,24 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     }
 
     protected WebappInfo createWebappInfo(Intent intent) {
-        return (intent == null) ? WebappInfo.createEmpty() : WebappInfo.create(intent);
+        if (intent == null) return WebappInfo.createEmpty();
+
+        WebappInfo info = WebApkInfo.create(intent);
+        if (info != null) return info;
+
+        return WebappInfo.create(intent);
+    }
+
+    @Override
+    public boolean shouldPreferLightweightFre(Intent intent) {
+        // We cannot use WebappInfo#webApkPackageName() because
+        // {@link WebappActivity#performPreInflationStartup()} may not have been called yet.
+        String webApkPackageName =
+                IntentUtils.safeGetStringExtra(intent, WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME);
+
+        // Use the lightweight FRE for unbound WebAPKs.
+        return webApkPackageName != null
+                && !webApkPackageName.startsWith(WebApkConstants.WEBAPK_PACKAGE_PREFIX);
     }
 
     @Override

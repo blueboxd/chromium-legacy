@@ -73,6 +73,15 @@ permissions::PermissionManager::PermissionContextMap CreatePermissionContexts(
           blink::mojom::FeaturePolicyFeature::kEncryptedMedia);
 #endif
 
+  permission_contexts[ContentSettingsType::MEDIASTREAM_MIC] =
+      std::make_unique<SafePermissionContext>(
+          browser_context, ContentSettingsType::MEDIASTREAM_MIC,
+          blink::mojom::FeaturePolicyFeature::kMicrophone);
+  permission_contexts[ContentSettingsType::MEDIASTREAM_CAMERA] =
+      std::make_unique<SafePermissionContext>(
+          browser_context, ContentSettingsType::MEDIASTREAM_CAMERA,
+          blink::mojom::FeaturePolicyFeature::kCamera);
+
   // For now, all requests are denied. As features are added, their permission
   // contexts can be added here instead of DeniedPermissionContext.
   for (content::PermissionType type : content::GetAllPermissionTypes()) {

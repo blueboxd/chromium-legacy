@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
@@ -274,6 +275,17 @@ void MediaHistoryStoreInternal::Initialize() {
 
   base::UmaHistogramEnumeration(MediaHistoryStore::kInitResultHistogramName,
                                 MediaHistoryStore::InitResult::kSuccess);
+
+  // Get the size in bytes.
+  int64_t file_size = 0;
+  base::GetFileSize(db_path_, &file_size);
+  DCHECK_NE(0, file_size);
+
+  // Record the size in KB.
+  if (file_size > 0) {
+    base::UmaHistogramMemoryKB(MediaHistoryStore::kDatabaseSizeKbHistogramName,
+                               file_size / 1000);
+  }
 }
 
 sql::InitStatus MediaHistoryStoreInternal::CreateOrUpgradeIfNeeded() {
@@ -723,6 +735,9 @@ const char MediaHistoryStore::kPlaybackWriteResultHistogramName[] =
 
 const char MediaHistoryStore::kSessionWriteResultHistogramName[] =
     "Media.History.Session.WriteResult";
+
+const char MediaHistoryStore::kDatabaseSizeKbHistogramName[] =
+    "Media.History.DatabaseSize";
 
 MediaHistoryStore::MediaHistoryStore(
     Profile* profile,

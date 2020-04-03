@@ -8,6 +8,8 @@ import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.Destroyable;
 
 import javax.inject.Inject;
 
@@ -18,8 +20,8 @@ import dagger.Lazy;
  * Add methods here if other components need to communicate with the WebAPK activity component.
  */
 @ActivityScope
-public class WebApkActivityCoordinator {
-    private final WebApkActivity mActivity;
+public class WebApkActivityCoordinator implements Destroyable {
+    private final WebappActivity mActivity;
     private final Lazy<WebApkUpdateManager> mWebApkUpdateManager;
 
     @Inject
@@ -27,12 +29,13 @@ public class WebApkActivityCoordinator {
             WebappDeferredStartupWithStorageHandler deferredStartupWithStorageHandler,
             WebappDisclosureSnackbarController disclosureSnackbarController,
             WebApkActivityLifecycleUmaTracker webApkActivityLifecycleUmaTracker,
+            ActivityLifecycleDispatcher lifecycleDispatcher,
             Lazy<WebApkUpdateManager> webApkUpdateManager) {
         // We don't need to do anything with |disclosureSnackbarController| and
         // |webApkActivityLifecycleUmaTracker|. We just need to resolve
         // them so that they start working.
 
-        mActivity = (WebApkActivity) activity;
+        mActivity = (WebappActivity) activity;
         mWebApkUpdateManager = webApkUpdateManager;
 
         deferredStartupWithStorageHandler.addTask((storage, didCreateStorage) -> {
@@ -40,6 +43,7 @@ public class WebApkActivityCoordinator {
 
             onDeferredStartupWithStorage(storage, didCreateStorage);
         });
+        lifecycleDispatcher.register(this);
     }
 
     public void onDeferredStartupWithStorage(
@@ -49,5 +53,12 @@ public class WebApkActivityCoordinator {
 
         WebApkInfo info = (WebApkInfo) mActivity.getWebappInfo();
         mWebApkUpdateManager.get().updateIfNeeded(storage, info);
+    }
+
+    @Override
+    public void destroy() {
+        // The common case is to be connected to just one WebAPK's services. For the sake of
+        // simplicity disconnect from the services of all WebAPKs.
+        ChromeWebApkHost.disconnectFromAllServices(true /* waitForPendingWork */);
     }
 }

@@ -15,10 +15,8 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #import "ios/chrome/browser/main/browser.h"
-#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
-#import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_ui_delegate.h"
 #import "ios/chrome/browser/ui/settings/privacy/privacy_navigation_commands.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
@@ -57,8 +55,7 @@ const char kGoogleServicesSettingsURL[] = "settings://open_google_services";
 
 }  // namespace
 
-@interface PrivacyTableViewController () <ClearBrowsingDataUIDelegate,
-                                          PrefObserverDelegate> {
+@interface PrivacyTableViewController () <PrefObserverDelegate> {
   ChromeBrowserState* _browserState;  // weak
 
   // Pref observer to track changes to prefs.
@@ -221,21 +218,6 @@ const char kGoogleServicesSettingsURL[] = "settings://open_google_services";
       break;
   }
   [tableView deselectRowAtIndexPath:indexPath animated:YES];
-}
-
-#pragma mark - ClearBrowsingDataUIDelegate
-
-- (void)openURL:(const GURL&)URL {
-  DCHECK(self.dispatcher);
-  OpenNewTabCommand* command = [OpenNewTabCommand commandWithURLFromChrome:URL];
-  [self.dispatcher closeSettingsUIAndOpenURL:command];
-}
-
-- (void)dismissClearBrowsingData {
-  SettingsNavigationController* navigationController =
-      base::mac::ObjCCastStrict<SettingsNavigationController>(
-          self.navigationController);
-  [navigationController closeSettings];
 }
 
 #pragma mark - PrefObserverDelegate

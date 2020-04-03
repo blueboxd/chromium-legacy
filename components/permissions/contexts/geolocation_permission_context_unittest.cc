@@ -93,14 +93,6 @@ class TestGeolocationPermissionContextDelegate
   }
 
 #if defined(OS_ANDROID)
-  bool ShouldRequestAndroidLocationPermission(
-      content::WebContents* web_contents) override {
-    return false;
-  }
-
-  void RequestAndroidPermission(content::WebContents* web_contents,
-                                PermissionUpdatedCallback callback) override {}
-
   bool IsInteractable(content::WebContents* web_contents) override {
     return true;
   }

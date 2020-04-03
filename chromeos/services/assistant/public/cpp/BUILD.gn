@@ -10,3 +10,15 @@ source_set("prefs") {
 
   deps = [ "//components/prefs" ]
 }
+
+source_set("interaction_subscriber") {
+  sources = [
+    "default_assistant_interaction_subscriber.cc",
+    "default_assistant_interaction_subscriber.h",
+  ]
+
+  deps = [
+    "//chromeos/services/assistant/public/mojom",
+    "//mojo/public/cpp/bindings",
+  ]
+}

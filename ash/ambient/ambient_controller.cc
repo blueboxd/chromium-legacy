@@ -51,9 +51,6 @@ void AmbientController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
     // devices.
     registry->RegisterBooleanPref(ash::ambient::prefs::kAmbientModeEnabled,
                                   true);
-    registry->RegisterIntegerPref(
-        ash::ambient::prefs::kAmbientModeTopicSource,
-        static_cast<int>(ash::ambient::prefs::TopicSource::kArtGallery));
   }
 }
 

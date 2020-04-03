@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninPreferencesManager;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountTrackerService;
 import org.chromium.components.signin.AccountUtils;
@@ -53,7 +54,10 @@ public final class SigninTestUtil {
     public static void setUpAuthForTest() {
         sAccountManager = new FakeAccountManagerDelegate(
                 FakeAccountManagerDelegate.DISABLE_PROFILE_DATA_SOURCE);
-        AccountManagerFacadeProvider.overrideAccountManagerFacadeForTests(sAccountManager);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            AccountManagerFacadeProvider.setInstanceForTests(
+                    new AccountManagerFacade(sAccountManager));
+        });
     }
 
     /**

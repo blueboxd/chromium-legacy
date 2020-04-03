@@ -9,6 +9,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
+#include "components/permissions/android/android_permission_util.h"
 #include "components/permissions/permission_request_id.h"
 #include "content/public/browser/web_contents.h"
 #endif
@@ -81,25 +82,27 @@ void WebXrPermissionContext::NotifyPermissionSet(
   // Otherwise, the user granted permission to use AR, so now we need to check
   // if we need to prompt for android system permissions.
   std::vector<ContentSettingsType> permission_type = {content_settings_type_};
-  ShowPermissionInfoBarState should_show =
-      PermissionUpdateInfoBarDelegate::ShouldShowPermissionInfoBar(
-          web_contents, permission_type);
-  switch (should_show) {
-    case ShowPermissionInfoBarState::NO_NEED_TO_SHOW_PERMISSION_INFOBAR:
+  permissions::PermissionRepromptState reprompt_state =
+      permissions::ShouldRepromptUserForPermissions(web_contents,
+                                                    permission_type);
+  switch (reprompt_state) {
+    case permissions::PermissionRepromptState::kNoNeed:
       // We have already returned if permission was denied by the user, and this
       // indicates that we have all the OS permissions we need.
       OnAndroidPermissionDecided(id, requesting_origin, embedding_origin,
                                  std::move(callback),
                                  true /*permission_granted*/);
       return;
-    case ShowPermissionInfoBarState::CANNOT_SHOW_PERMISSION_INFOBAR:
+
+    case permissions::PermissionRepromptState::kCannotShow:
       // If we cannot show the info bar, then we have to assume we don't have
       // the permissions we need.
       OnAndroidPermissionDecided(id, requesting_origin, embedding_origin,
                                  std::move(callback),
                                  false /*permission_granted*/);
       return;
-    case ShowPermissionInfoBarState::SHOW_PERMISSION_INFOBAR:
+
+    case permissions::PermissionRepromptState::kShow:
       // Otherwise, prompt the user that we need additional permissions.
       PermissionUpdateInfoBarDelegate::Create(
           web_contents, permission_type,

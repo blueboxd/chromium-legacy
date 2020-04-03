@@ -20,6 +20,27 @@ NET_EXPORT extern const base::Feature kAcceptLanguageHeader;
 // Enables TLS 1.3 early data.
 NET_EXPORT extern const base::Feature kEnableTLS13EarlyData;
 
+// Enables DNS queries for HTTPSSVC or INTEGRITY records, depending on feature
+// parameters. These queries will only be made over DoH. HTTPSSVC responses may
+// cause us to upgrade the URL to HTTPS and/or to attempt QUIC.
+NET_EXPORT extern const base::Feature kDnsHttpssvc;
+
+// Determine which kind of record should be queried: HTTPSSVC or INTEGRITY. No
+// more than one of these feature parameters should be enabled at once. In the
+// event that both are enabled, |kDnsHttpssvcUseIntegrity| takes priority, and
+// |kDnsHttpssvcUseHttpssvc| will be ignored.
+NET_EXPORT extern const base::FeatureParam<bool> kDnsHttpssvcUseHttpssvc;
+NET_EXPORT extern const base::FeatureParam<bool> kDnsHttpssvcUseIntegrity;
+
+// If we are still waiting for an HTTPSSVC or INTEGRITY query after all the
+// other queries in a DnsTask have completed, we will compute a timeout for the
+// remaining query. The timeout will be the min of:
+//   (a) |kDnsHttpssvcExtraTimeMs.Get()|
+//   (b) |kDnsHttpssvcExtraTimePercent.Get() / 100 * t|, where |t| is the
+//       number of milliseconds since the first query began.
+NET_EXPORT extern const base::FeatureParam<int> kDnsHttpssvcExtraTimeMs;
+NET_EXPORT extern const base::FeatureParam<int> kDnsHttpssvcExtraTimePercent;
+
 // Enables optimizing the network quality estimation algorithms in network
 // quality estimator (NQE).
 NET_EXPORT extern const base::Feature kNetworkQualityEstimator;

@@ -51,6 +51,9 @@ constexpr int kInvalidIndexedRulesetFormatVersion = -1;
 int g_indexed_ruleset_format_version_for_testing =
     kInvalidIndexedRulesetFormatVersion;
 
+constexpr int kInvalidOverrideChecksumForTest = -1;
+int g_override_checksum_for_test = kInvalidOverrideChecksumForTest;
+
 int GetIndexedRulesetFormatVersion() {
   return g_indexed_ruleset_format_version_for_testing ==
                  kInvalidIndexedRulesetFormatVersion
@@ -63,16 +66,6 @@ int GetIndexedRulesetFormatVersion() {
 std::string GetVersionHeader() {
   return base::StringPrintf("---------Version=%d",
                             GetIndexedRulesetFormatVersion());
-}
-
-// Returns the checksum of the given serialized |data|. |data| must not include
-// the version header.
-int GetChecksum(base::span<const uint8_t> data) {
-  uint32_t hash = base::PersistentHash(data.data(), data.size());
-
-  // Strip off the sign bit since this needs to be persisted in preferences
-  // which don't support unsigned ints.
-  return static_cast<int>(hash & 0x7fffffff);
 }
 
 void ClearRendererCacheOnUI() {
@@ -112,6 +105,21 @@ bool StripVersionHeaderAndParseVersion(std::string* ruleset_data) {
   // Strip the header from |ruleset_data|.
   ruleset_data->erase(0, version_header.size());
   return true;
+}
+
+int GetChecksum(base::span<const uint8_t> data) {
+  if (g_override_checksum_for_test != kInvalidOverrideChecksumForTest)
+    return g_override_checksum_for_test;
+
+  uint32_t hash = base::PersistentHash(data.data(), data.size());
+
+  // Strip off the sign bit since this needs to be persisted in preferences
+  // which don't support unsigned ints.
+  return static_cast<int>(hash & 0x7fffffff);
+}
+
+void OverrideGetChecksumForTest(int checksum) {
+  g_override_checksum_for_test = checksum;
 }
 
 bool PersistIndexedRuleset(const base::FilePath& path,

@@ -13,7 +13,6 @@
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_image.h"
 #include "gpu/vulkan/vulkan_instance.h"
-#include "gpu/vulkan/vulkan_posix_util.h"
 #include "gpu/vulkan/vulkan_surface.h"
 #include "gpu/vulkan/vulkan_util.h"
 #include "ui/gfx/gpu_fence.h"
@@ -121,7 +120,7 @@ VkSemaphore VulkanImplementationAndroid::CreateExternalSemaphore(
 VkSemaphore VulkanImplementationAndroid::ImportSemaphoreHandle(
     VkDevice vk_device,
     SemaphoreHandle sync_handle) {
-  return ImportVkSemaphoreHandlePosix(vk_device, std::move(sync_handle));
+  return ImportVkSemaphoreHandle(vk_device, std::move(sync_handle));
 }
 
 SemaphoreHandle VulkanImplementationAndroid::GetSemaphoreHandle(
@@ -129,8 +128,8 @@ SemaphoreHandle VulkanImplementationAndroid::GetSemaphoreHandle(
     VkSemaphore vk_semaphore) {
   // VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT specifies a POSIX file
   // descriptor handle to a Linux Sync File or Android Fence object.
-  return GetVkSemaphoreHandlePosix(
-      vk_device, vk_semaphore, VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT);
+  return GetVkSemaphoreHandle(vk_device, vk_semaphore,
+                              VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT);
 }
 
 VkExternalMemoryHandleTypeFlagBits

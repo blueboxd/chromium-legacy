@@ -33,7 +33,7 @@
 #include "chrome/browser/media/media_storage_id_salt.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
-#include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
+#include "chrome/browser/media/webrtc/permission_bubble_media_access_handler.h"
 #include "chrome/browser/media/webrtc/system_media_capture_permissions_stats_mac.h"
 #include "chrome/browser/memory/enterprise_memory_limit_pref_observer.h"
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
@@ -554,6 +554,11 @@ const char kInvalidatorClientId[] = "invalidator.client_id";
 const char kInvalidatorInvalidationState[] = "invalidator.invalidation_state";
 const char kInvalidatorSavedInvalidations[] = "invalidator.saved_invalidations";
 
+#if defined(OS_CHROMEOS)
+// Deprecated 4/2020
+const char kAmbientModeTopicSource[] = "settings.ambient_mode.topic_source";
+#endif  // defined(OS_CHROMEOS)
+
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -652,6 +657,10 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterStringPref(kInvalidatorClientId, std::string());
 
   chrome_browser_net::RegisterDNSProbesSettingBackupPref(registry);
+
+#if defined(OS_CHROMEOS)
+  registry->RegisterIntegerPref(kAmbientModeTopicSource, 0);
+#endif  // defined(OS_CHROMEOS)
 }
 
 }  // namespace
@@ -873,7 +882,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   MediaDeviceIDSalt::RegisterProfilePrefs(registry);
   MediaEngagementService::RegisterProfilePrefs(registry);
   MediaStorageIdSalt::RegisterProfilePrefs(registry);
-  MediaStreamDevicesController::RegisterProfilePrefs(registry);
   NavigationCorrectionTabObserver::RegisterProfilePrefs(registry);
   NotificationDisplayServiceImpl::RegisterProfilePrefs(registry);
   NotifierStateTracker::RegisterProfilePrefs(registry);
@@ -887,6 +895,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   password_bubble_experiment::RegisterPrefs(registry);
   password_manager::PasswordManager::RegisterProfilePrefs(registry);
   payments::RegisterProfilePrefs(registry);
+  PermissionBubbleMediaAccessHandler::RegisterProfilePrefs(registry);
   PlatformNotificationServiceImpl::RegisterProfilePrefs(registry);
   policy::DeveloperToolsPolicyHandler::RegisterProfilePrefs(registry);
   policy::URLBlacklistManager::RegisterProfilePrefs(registry);
@@ -1326,4 +1335,9 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   // Added 3/2020.
   profile_prefs->ClearPref(kDataReductionNetworkProperties);
   chrome_browser_net::MigrateDNSProbesSettingToOrFromBackup(profile_prefs);
+
+#if defined(OS_CHROMEOS)
+  // Added 4/2020.
+  profile_prefs->ClearPref(kAmbientModeTopicSource);
+#endif
 }

@@ -21,22 +21,6 @@ function test_with_window(f, name, srcdoc) {
   }, name);
 }
 
-// TODO(1066131): After https://github.com/web-platform-tests/wpt/pull/21876 is
-// rolled into Chromium, this function can be replaced with:
-//   assert_throws_dom(code, global_context.DOMException, func, description);
-function assert_throws_dom_exception(global_context, code, func, description) {
-  let exception;
-  assert_throws_dom(code, () => {
-    try {
-      func.call(this);
-    } catch(e) {
-      exception = e;
-      throw e;
-    }
-  }, description);
-  assert_true(exception instanceof global_context.DOMException, 'DOMException on the appropriate window');
-}
-
 function assert_array_equals_callback_invocations(actual, expected, description) {
   assert_equals(actual.length, expected.length);
   for (let len=actual.length, i=0; i<len; ++i) {
@@ -80,7 +64,7 @@ function assert_reports_impl(w, func) {
 // with the expected DOMException.
 function assert_reports_dom(w, expected_error, func, description) {
   const e = assert_reports_impl(w, func);
-  assert_throws_dom(expected_error, () => { throw e; }, description);
+  assert_throws_dom(expected_error, w.DOMException, () => { throw e; }, description);
 }
 
 // Asserts that func synchronously invokes the error event handler in w

@@ -5,6 +5,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/bind.h"
+#include "build/build_config.h"
 #include "gpu/vulkan/tests/basic_vulkan_test.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_fence_helper.h"
@@ -147,7 +148,13 @@ TEST_F(VulkanFenceHelperTest, SkiaCallbackBeforeFences) {
   EXPECT_EQ(10u, cleanups_run);
 }
 
+// The test failed on Win with GTX1660 GPU.
+// https://crbug.com/1066854
+#if defined(OS_WIN)
+TEST_F(VulkanFenceHelperTest, DISABLED_SkiaCallbackAfterFences) {
+#else
 TEST_F(VulkanFenceHelperTest, SkiaCallbackAfterFences) {
+#endif
   VulkanFenceHelper* fence_helper = GetDeviceQueue()->GetFenceHelper();
   uint32_t cleanups_run = 0;
   auto increment_cleanups_callback =
@@ -168,7 +175,8 @@ TEST_F(VulkanFenceHelperTest, SkiaCallbackAfterFences) {
       fence_helper->GenerateCleanupFence();
   EXPECT_TRUE(fence_handle.is_valid());
 
-  // Call vkQueueWaitIdle() to make sure the |fence_handle| is passed.
+  // Call vkQueueWaitIdle() to make sure the |fence_handle| is passed,
+  // however it doesn't work on Win with GTX1660 GPU.
   vkQueueWaitIdle(queue());
 
   // Enqueue 5 more callbacks.

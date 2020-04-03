@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/layout/layout_fieldset.h"
 #include "third_party/blink/renderer/core/layout/layout_file_upload_control.h"
 #include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
+#include "third_party/blink/renderer/core/layout/layout_grid.h"
 #include "third_party/blink/renderer/core/layout/layout_inside_list_marker.h"
 #include "third_party/blink/renderer/core/layout/layout_list_item.h"
 #include "third_party/blink/renderer/core/layout/layout_outside_list_marker.h"
@@ -24,6 +25,7 @@
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_fieldset.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_flexible_box.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_grid.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_progress.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_table_caption.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_table_cell.h"
@@ -104,6 +106,14 @@ LayoutBlock* LayoutObjectFactory::CreateFlexibleBox(Node& node,
                                                     LegacyLayout legacy) {
   bool disable_ng_for_type = !RuntimeEnabledFeatures::LayoutNGFlexBoxEnabled();
   return CreateObject<LayoutBlock, LayoutNGFlexibleBox, LayoutFlexibleBox>(
+      node, style, legacy, disable_ng_for_type);
+}
+
+LayoutBlock* LayoutObjectFactory::CreateGrid(Node& node,
+                                             const ComputedStyle& style,
+                                             LegacyLayout legacy) {
+  bool disable_ng_for_type = !RuntimeEnabledFeatures::LayoutNGGridEnabled();
+  return CreateObject<LayoutBlock, LayoutNGGrid, LayoutGrid>(
       node, style, legacy, disable_ng_for_type);
 }
 

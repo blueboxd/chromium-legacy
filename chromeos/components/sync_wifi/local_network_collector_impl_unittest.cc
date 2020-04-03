@@ -86,8 +86,8 @@ class LocalNetworkCollectorImplTest : public testing::Test {
       return;
     }
     EXPECT_EQ(expected_ssid, DecodeHexString(result->hex_ssid()));
-    EXPECT_TRUE(result->has_last_update_timestamp());
-    EXPECT_NE(0, result->last_update_timestamp());
+    EXPECT_TRUE(result->has_last_connected_timestamp());
+    EXPECT_NE(0, result->last_connected_timestamp());
   }
 
   LocalNetworkCollector* local_network_collector() {

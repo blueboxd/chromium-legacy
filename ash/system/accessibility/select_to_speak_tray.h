@@ -29,9 +29,11 @@ class ASH_EXPORT SelectToSpeakTray : public TrayBackgroundView,
   // TrayBackgroundView:
   base::string16 GetAccessibleNameForTray() override;
   const char* GetClassName() const override;
+  bool PerformAction(const ui::Event& event) override;
+  // The SelectToSpeakTray does not have a bubble, so these functions are
+  // no-ops.
   void HideBubbleWithView(const TrayBubbleView* bubble_view) override {}
   void ClickedOutsideBubble() override {}
-  bool PerformAction(const ui::Event& event) override;
 
   // AccessibilityObserver:
   void OnAccessibilityStatusChanged() override;

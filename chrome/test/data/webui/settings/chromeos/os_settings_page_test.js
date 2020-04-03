@@ -85,7 +85,7 @@ suite('OSSettingsPage', function() {
     await test_util.flushTasks();
 
     const sectionNames =
-        ['privacy', 'osLanguages', 'files', 'osReset', 'dateTime', 'a11y'];
+        ['osPrivacy', 'osLanguages', 'files', 'osReset', 'dateTime', 'a11y'];
 
     for (const name of sectionNames) {
       const section = settingsPage.shadowRoot.querySelector(
@@ -112,7 +112,7 @@ suite('OSSettingsPage', function() {
     }
 
     const visibleSections = [
-      'internet', 'bluetooth', 'device', 'osSearch', 'apps', 'privacy',
+      'internet', 'bluetooth', 'device', 'osSearch', 'apps', 'osPrivacy',
       'osLanguages', 'files', 'osReset', 'dateTime', 'a11y'
     ];
     for (const name of visibleSections) {

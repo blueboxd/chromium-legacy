@@ -1891,12 +1891,12 @@ bool ChildProcessSecurityPolicyImpl::GetMatchingIsolatedOrigin(
 bool ChildProcessSecurityPolicyImpl::DoesOriginRequestOptInIsolation(
     const IsolationContext& isolation_context,
     const url::Origin& origin) {
-  // IsolationOptIn is only available when OriginPolicy is enabled.
-  // We only isolate HTTPS, so early-out if we see other schemes.
-  if (!base::FeatureList::IsEnabled(features::kOriginPolicy) ||
-      !origin.GetURL().SchemeIs(url::kHttpsScheme)) {
+  if (!IsOptInOriginIsolationEnabled())
     return false;
-  }
+
+  // We only isolate HTTPS, so early-out if we see other schemes.
+  if (!origin.GetURL().SchemeIs(url::kHttpsScheme))
+    return false;
 
   base::AutoLock origins_isolation_opt_in_lock(origins_isolation_opt_in_lock_);
   // See if the same origin exists in the BrowsingInstance already, and if so
@@ -1920,6 +1920,12 @@ bool ChildProcessSecurityPolicyImpl::DoesOriginRequestOptInIsolation(
 
   // If |origin| isn't already in BrowserInstance, check the master opt_ins set.
   return origin_isolation_opt_ins_.contains(origin);
+}
+
+// static
+bool ChildProcessSecurityPolicyImpl::IsOptInOriginIsolationEnabled() {
+  return base::FeatureList::IsEnabled(features::kOriginPolicy) ||
+         base::FeatureList::IsEnabled(features::kOriginIsolationHeader);
 }
 
 void ChildProcessSecurityPolicyImpl::

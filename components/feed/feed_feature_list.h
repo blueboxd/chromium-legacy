@@ -28,6 +28,8 @@ extern const base::Feature kInterestFeedFeedback;
 // for personalization.
 extern const base::Feature kReportFeedUserActions;
 
+extern const base::Feature kInterestFeedV2;
+
 }  // namespace feed
 
 #endif  // COMPONENTS_FEED_FEED_FEATURE_LIST_H_

@@ -109,7 +109,8 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsIfTooManyIssuers) {
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
 
   auto issuer = url::Origin::Create(GURL("https://issuer.com/"));
-  auto toplevel = url::Origin::Create(GURL("https://toplevel.com/"));
+  auto toplevel =
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/"));
 
   // Associate the toplevel with the cap's worth of issuers different from
   // |issuer|. (The cap is guaranteed to be quite small because of privacy
@@ -122,7 +123,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsIfTooManyIssuers) {
   }
 
   TrustTokenRequestRedemptionHelper helper(
-      url::Origin::Create(GURL("https://toplevel.com/")),
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
       mojom::TrustTokenRefreshPolicy::kUseCached, store.get(),
       std::make_unique<FixedKeyCommitmentGetter>(),
       std::make_unique<FakeKeyPairGenerator>(),
@@ -144,7 +145,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsIfKeyCommitmentFails) {
   // Have the key commitment getter return nullptr, denoting that the key
   // commitment fetch failed.
   TrustTokenRequestRedemptionHelper helper(
-      url::Origin::Create(GURL("https://toplevel.com/")),
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
       mojom::TrustTokenRefreshPolicy::kUseCached, store.get(),
       std::make_unique<FixedKeyCommitmentGetter>(
           url::Origin::Create(GURL("https://issuer.com/")), nullptr),
@@ -173,7 +174,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsIfNoTokensToRedeem) {
       mojom::TrustTokenKeyCommitmentResult::New());
 
   TrustTokenRequestRedemptionHelper helper(
-      url::Origin::Create(GURL("https://toplevel.com/")),
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
       mojom::TrustTokenRefreshPolicy::kUseCached, store.get(),
       std::move(getter), std::make_unique<FakeKeyPairGenerator>(),
       std::make_unique<MockCryptographer>());
@@ -216,7 +217,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest,
       .WillOnce(Return(base::nullopt));
 
   TrustTokenRequestRedemptionHelper helper(
-      url::Origin::Create(GURL("https://toplevel.com/")),
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
       mojom::TrustTokenRefreshPolicy::kUseCached, store.get(),
       std::move(getter), std::make_unique<FakeKeyPairGenerator>(),
       std::move(cryptographer));
@@ -255,7 +256,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsIfKeyPairGenerationFails) {
   // Provide |helper| a FailingKeyPairGenerator to ensure that key pair
   // generation does not succeed.
   TrustTokenRequestRedemptionHelper helper(
-      url::Origin::Create(GURL("https://toplevel.com/")),
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
       mojom::TrustTokenRefreshPolicy::kUseCached, store.get(),
       std::move(getter), std::make_unique<FailingKeyPairGenerator>(),
       std::make_unique<MockCryptographer>());
@@ -304,7 +305,7 @@ class TrustTokenBeginRedemptionPostconditionsTest
             Return(std::string("this string contains a redemption request")));
 
     TrustTokenRequestRedemptionHelper helper(
-        url::Origin::Create(GURL("https://toplevel.com/")),
+        *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
         mojom::TrustTokenRefreshPolicy::kUseCached, store.get(),
         std::move(getter), std::make_unique<FakeKeyPairGenerator>(),
         std::move(cryptographer));
@@ -366,7 +367,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsIfResponseOmitsHeader) {
           Return(std::string("this string contains a redemption request")));
 
   TrustTokenRequestRedemptionHelper helper(
-      url::Origin::Create(GURL("https://toplevel.com/")),
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
       mojom::TrustTokenRefreshPolicy::kUseCached, store.get(),
       std::move(getter), std::make_unique<FakeKeyPairGenerator>(),
       std::move(cryptographer));
@@ -424,7 +425,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsIfResponseIsUnusable) {
       .WillOnce(Return(base::nullopt));
 
   TrustTokenRequestRedemptionHelper helper(
-      url::Origin::Create(GURL("https://toplevel.com/")),
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
       mojom::TrustTokenRefreshPolicy::kUseCached, store.get(),
       std::move(getter), std::make_unique<FakeKeyPairGenerator>(),
       std::move(cryptographer));
@@ -486,7 +487,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, Success) {
       .WillOnce(Return("a successfully-extracted SRR"));
 
   TrustTokenRequestRedemptionHelper helper(
-      url::Origin::Create(GURL("https://toplevel.com/")),
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
       mojom::TrustTokenRefreshPolicy::kUseCached, store.get(),
       std::move(getter), std::make_unique<FakeKeyPairGenerator>(),
       std::move(cryptographer));
@@ -547,7 +548,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, AssociatesIssuerWithToplevel) {
       .WillOnce(Return("well-formed redemption request"));
 
   TrustTokenRequestRedemptionHelper helper(
-      url::Origin::Create(GURL("https://toplevel.com/")),
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
       mojom::TrustTokenRefreshPolicy::kUseCached, store.get(),
       std::move(getter), std::make_unique<FakeKeyPairGenerator>(),
       std::move(cryptographer));
@@ -565,9 +566,9 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, AssociatesIssuerWithToplevel) {
 
   // After the operation has successfully begun, the issuer and the toplevel
   // should be associated.
-  EXPECT_TRUE(
-      store->IsAssociated(url::Origin::Create(GURL("https://issuer.com/")),
-                          url::Origin::Create(GURL("https://toplevel.com/"))));
+  EXPECT_TRUE(store->IsAssociated(
+      url::Origin::Create(GURL("https://issuer.com/")),
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/"))));
 }
 
 // Check that a successful end-to-end Begin/Finalize flow stores the obtained
@@ -599,7 +600,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, StoresObtainedRedemptionRecord) {
       .WillOnce(Return("a successfully-extracted SRR"));
 
   TrustTokenRequestRedemptionHelper helper(
-      url::Origin::Create(GURL("https://toplevel.com/")),
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
       mojom::TrustTokenRefreshPolicy::kUseCached, store.get(),
       std::move(getter),
       std::make_unique<MockKeyPairGenerator>("signing key", "verification key"),
@@ -624,7 +625,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, StoresObtainedRedemptionRecord) {
   EXPECT_THAT(
       store->RetrieveNonstaleRedemptionRecord(
           url::Origin::Create(GURL("https://issuer.com/")),
-          url::Origin::Create(GURL("https://toplevel.com/"))),
+          *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/"))),
       Optional(AllOf(Property(&SignedTrustTokenRedemptionRecord::body,
                               "a successfully-extracted SRR"),
                      Property(&SignedTrustTokenRedemptionRecord::public_key,
@@ -640,7 +641,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest,
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
 
   TrustTokenRequestRedemptionHelper helper(
-      url::Origin::Create(GURL("https://toplevel.com/")),
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
       mojom::TrustTokenRefreshPolicy::kRefresh, store.get(),
       std::make_unique<FixedKeyCommitmentGetter>(),
       std::make_unique<FakeKeyPairGenerator>(),
@@ -662,12 +663,13 @@ TEST_F(TrustTokenRequestRedemptionHelperTest,
 // return early with kAlreadyExists.
 TEST_F(TrustTokenRequestRedemptionHelperTest, RedemptionRecordCacheHit) {
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
-  store->SetRedemptionRecord(url::Origin::Create(GURL("https://issuer.com")),
-                             url::Origin::Create(GURL("https://toplevel.com")),
-                             SignedTrustTokenRedemptionRecord());
+  store->SetRedemptionRecord(
+      url::Origin::Create(GURL("https://issuer.com")),
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com")),
+      SignedTrustTokenRedemptionRecord());
 
   TrustTokenRequestRedemptionHelper helper(
-      url::Origin::Create(GURL("https://toplevel.com/")),
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
       mojom::TrustTokenRefreshPolicy::kUseCached, store.get(),
       std::make_unique<FixedKeyCommitmentGetter>(),
       std::make_unique<FakeKeyPairGenerator>(),
@@ -697,9 +699,10 @@ TEST_F(TrustTokenRequestRedemptionHelperTest,
   // commitment's key so that it does not get evicted from storage after the key
   // commitment is updated to reflect the key commitment result).
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
-  store->SetRedemptionRecord(url::Origin::Create(GURL("https://issuer.com")),
-                             url::Origin::Create(GURL("https://toplevel.com")),
-                             SignedTrustTokenRedemptionRecord());
+  store->SetRedemptionRecord(
+      url::Origin::Create(GURL("https://issuer.com")),
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com")),
+      SignedTrustTokenRedemptionRecord());
   store->AddTokens(url::Origin::Create(GURL("https://issuer.com/")),
                    std::vector<std::string>{"a token"},
                    /*key=*/"");
@@ -718,7 +721,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest,
       .WillOnce(Return("a successfully-extracted SRR"));
 
   TrustTokenRequestRedemptionHelper helper(
-      url::Origin::Create(GURL("https://toplevel.com/")),
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
       mojom::TrustTokenRefreshPolicy::kRefresh, store.get(), std::move(getter),
       std::make_unique<MockKeyPairGenerator>("signing key", "verification key"),
       std::move(cryptographer));
@@ -747,13 +750,63 @@ TEST_F(TrustTokenRequestRedemptionHelperTest,
   EXPECT_THAT(
       store->RetrieveNonstaleRedemptionRecord(
           url::Origin::Create(GURL("https://issuer.com/")),
-          url::Origin::Create(GURL("https://toplevel.com/"))),
+          *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/"))),
       Optional(AllOf(Property(&SignedTrustTokenRedemptionRecord::body,
                               "a successfully-extracted SRR"),
                      Property(&SignedTrustTokenRedemptionRecord::public_key,
                               "verification key"),
                      Property(&SignedTrustTokenRedemptionRecord::signing_key,
                               "signing key"))));
+}
+
+TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsUnsuitableInsecureIssuer) {
+  auto store = TrustTokenStore::CreateInMemory();
+  TrustTokenRequestRedemptionHelper helper(
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
+      mojom::TrustTokenRefreshPolicy::kUseCached, store.get(),
+      std::make_unique<FixedKeyCommitmentGetter>(),
+      std::make_unique<FakeKeyPairGenerator>(),
+      std::make_unique<MockCryptographer>());
+
+  auto request = MakeURLRequest("http://insecure-issuer.com/");
+
+  EXPECT_EQ(ExecuteBeginOperationAndWaitForResult(&helper, request.get()),
+            mojom::TrustTokenOperationStatus::kInvalidArgument);
+}
+
+TEST_F(TrustTokenRequestRedemptionHelperTest,
+       RejectsUnsuitableNonHttpNonHttpsIssuer) {
+  auto store = TrustTokenStore::CreateInMemory();
+  TrustTokenRequestRedemptionHelper helper(
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
+      mojom::TrustTokenRefreshPolicy::kUseCached, store.get(),
+      std::make_unique<FixedKeyCommitmentGetter>(),
+      std::make_unique<FakeKeyPairGenerator>(),
+      std::make_unique<MockCryptographer>());
+
+  auto request = MakeURLRequest("file:///non-https-issuer.txt");
+
+  EXPECT_EQ(ExecuteBeginOperationAndWaitForResult(&helper, request.get()),
+            mojom::TrustTokenOperationStatus::kInvalidArgument);
+}
+
+TEST_F(TrustTokenRequestRedemptionHelperTest, RequiresInitiatorForSrrRefresh) {
+  // Refresh mode "refresh" requires that the request's initiator to
+  // be same-origin with the request's issuer. Test that, in this case, the
+  // redemption helper requires that the request have an initiator.
+  auto store = TrustTokenStore::CreateInMemory();
+  TrustTokenRequestRedemptionHelper helper(
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
+      mojom::TrustTokenRefreshPolicy::kRefresh, store.get(),
+      std::make_unique<FixedKeyCommitmentGetter>(),
+      std::make_unique<FakeKeyPairGenerator>(),
+      std::make_unique<MockCryptographer>());
+
+  auto request = MakeURLRequest("https://issuer.example");
+  request->set_initiator(base::nullopt);
+
+  EXPECT_EQ(ExecuteBeginOperationAndWaitForResult(&helper, request.get()),
+            mojom::TrustTokenOperationStatus::kFailedPrecondition);
 }
 
 }  // namespace network

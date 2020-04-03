@@ -55,11 +55,27 @@ struct CrossThreadCopier<webrtc::VideoEncoder::RateControlParameters>
   STATIC_ONLY(CrossThreadCopier);
 };
 
+template <>
+struct CrossThreadCopier<
+    std::vector<media::VideoEncodeAccelerator::Config::SpatialLayer>>
+    : public CrossThreadCopierPassThrough<
+          std::vector<media::VideoEncodeAccelerator::Config::SpatialLayer>> {
+  STATIC_ONLY(CrossThreadCopier);
+};
 }  // namespace WTF
 
 namespace blink {
 
 namespace {
+
+bool ConvertKbpsToBps(uint32_t bitrate_kbps, uint32_t* bitrate_bps) {
+  if (!base::IsValueInRangeForNumericType<uint32_t>(bitrate_kbps *
+                                                    UINT64_C(1000))) {
+    return false;
+  }
+  *bitrate_bps = bitrate_kbps * 1000;
+  return true;
+}
 
 webrtc::VideoEncoder::EncoderInfo CopyToWebrtcEncoderInfo(
     const media::VideoEncoderInfo& enc_info) {
@@ -91,6 +107,83 @@ webrtc::VideoEncoder::EncoderInfo CopyToWebrtcEncoderInfo(
         limit.min_bitrate_bps, limit.max_bitrate_bps);
   }
   return info;
+}
+
+// Create VEA::Config::SpatialLayer from |codec_settings|. If some config of
+// |codec_settings| is not supported, returns false.
+bool CreateSpatialLayersConfig(
+    const webrtc::VideoCodec& codec_settings,
+    std::vector<media::VideoEncodeAccelerator::Config::SpatialLayer>*
+        spatial_layers) {
+  if (codec_settings.codecType == webrtc::kVideoCodecVP8 &&
+      codec_settings.mode == webrtc::VideoCodecMode::kScreensharing &&
+      codec_settings.VP8().numberOfTemporalLayers > 1) {
+    // This is a VP8 stream with screensharing using temporal layers for
+    // temporal scalability. Since this implementation does not yet implement
+    // temporal layers, fall back to software codec, if cfm and board is known
+    // to have a CPU that can handle it.
+    if (base::FeatureList::IsEnabled(features::kWebRtcScreenshareSwEncoding)) {
+      // TODO(sprang): Add support for temporal layers so we don't need
+      // fallback. See eg http://crbug.com/702017
+      DVLOG(1) << "Falling back to software encoder.";
+      return false;
+    }
+  }
+  if (codec_settings.codecType == webrtc::kVideoCodecVP9 &&
+      codec_settings.VP9().numberOfSpatialLayers > 1) {
+    DVLOG(1)
+        << "VP9 SVC not yet supported by HW codecs, falling back to sofware.";
+    return false;
+  }
+
+  // We fill SpatialLayer only in temporal layer or spatial layer encoding.
+  switch (codec_settings.codecType) {
+    case webrtc::kVideoCodecVP8:
+      if (codec_settings.VP8().numberOfTemporalLayers > 1) {
+        // Though there is no SVC in VP8 spec. We allocate 1 element in
+        // spatial_layers for temporal layer encoding.
+        spatial_layers->resize(1u);
+        auto& sl = (*spatial_layers)[0];
+        sl.width = codec_settings.width;
+        sl.height = codec_settings.height;
+        if (!ConvertKbpsToBps(codec_settings.startBitrate, &sl.bitrate_bps))
+          return false;
+        sl.framerate = codec_settings.maxFramerate;
+        sl.max_qp = base::saturated_cast<uint8_t>(codec_settings.qpMax);
+        sl.num_of_temporal_layers = base::saturated_cast<uint8_t>(
+            codec_settings.VP8().numberOfTemporalLayers);
+      }
+      break;
+    case webrtc::kVideoCodecVP9:
+      // Since one TL and one SL can be regarded as one simple stream,
+      // SpatialLayer is not filled.
+      if (codec_settings.VP9().numberOfTemporalLayers > 1 ||
+          codec_settings.VP9().numberOfSpatialLayers > 1) {
+        spatial_layers->resize(codec_settings.VP9().numberOfSpatialLayers);
+        for (size_t i = 0; i < spatial_layers->size(); ++i) {
+          const webrtc::SpatialLayer& rtc_sl = codec_settings.spatialLayers[i];
+          // We ignore non active spatial layer and don't proceed further. There
+          // must NOT be an active higher spatial layer than non active spatial
+          // layer.
+          if (!rtc_sl.active)
+            break;
+          auto& sl = (*spatial_layers)[i];
+          sl.width = base::checked_cast<int32_t>(rtc_sl.width);
+          sl.height = base::checked_cast<int32_t>(rtc_sl.height);
+          if (!ConvertKbpsToBps(rtc_sl.targetBitrate, &sl.bitrate_bps))
+            return false;
+          sl.bitrate_bps = rtc_sl.targetBitrate * 1000;
+          sl.framerate = base::saturated_cast<int32_t>(rtc_sl.maxFramerate);
+          sl.max_qp = base::saturated_cast<uint8_t>(rtc_sl.qpMax);
+          sl.num_of_temporal_layers =
+              base::saturated_cast<uint8_t>(rtc_sl.numberOfTemporalLayers);
+        }
+      }
+      break;
+    default:
+      break;
+  }
+  return true;
 }
 
 struct RTCTimestamps {
@@ -183,11 +276,14 @@ class RTCVideoEncoder::Impl
   // call.
   // RTCVideoEncoder expects to be able to call this function synchronously from
   // its own thread, hence the |async_waiter| and |async_retval| arguments.
-  void CreateAndInitializeVEA(const gfx::Size& input_visible_size,
-                              uint32_t bitrate,
-                              media::VideoCodecProfile profile,
-                              base::WaitableEvent* async_waiter,
-                              int32_t* async_retval);
+  void CreateAndInitializeVEA(
+      const gfx::Size& input_visible_size,
+      uint32_t bitrate,
+      media::VideoCodecProfile profile,
+      const std::vector<media::VideoEncodeAccelerator::Config::SpatialLayer>&
+          spatial_layers,
+      base::WaitableEvent* async_waiter,
+      int32_t* async_retval);
 
   webrtc::VideoEncoder::EncoderInfo GetEncoderInfo() const;
 
@@ -400,6 +496,8 @@ void RTCVideoEncoder::Impl::CreateAndInitializeVEA(
     const gfx::Size& input_visible_size,
     uint32_t bitrate,
     media::VideoCodecProfile profile,
+    const std::vector<media::VideoEncodeAccelerator::Config::SpatialLayer>&
+        spatial_layers,
     base::WaitableEvent* async_waiter,
     int32_t* async_retval) {
   DVLOG(3) << __func__;
@@ -462,7 +560,8 @@ void RTCVideoEncoder::Impl::CreateAndInitializeVEA(
       base::nullopt, base::nullopt, storage_type,
       video_content_type_ == webrtc::VideoContentType::SCREENSHARE
           ? media::VideoEncodeAccelerator::Config::ContentType::kDisplay
-          : media::VideoEncodeAccelerator::Config::ContentType::kCamera);
+          : media::VideoEncodeAccelerator::Config::ContentType::kCamera,
+      spatial_layers);
   if (!video_encoder_->Initialize(config, this)) {
     LogAndNotifyError(FROM_HERE, "Error initializing video_encoder",
                       media::VideoEncodeAccelerator::kInvalidArgumentError);
@@ -1012,7 +1111,8 @@ void RTCVideoEncoder::Impl::SignalAsyncWaiter(int32_t retval) {
 }
 
 bool RTCVideoEncoder::Impl::IsBitrateTooHigh(uint32_t bitrate) {
-  if (base::IsValueInRangeForNumericType<uint32_t>(bitrate * UINT64_C(1000)))
+  uint32_t bitrate_bps = 0;
+  if (ConvertKbpsToBps(bitrate, &bitrate_bps))
     return false;
   LogAndNotifyError(FROM_HERE, "Overflow converting bitrate from kbps to bps",
                     media::VideoEncodeAccelerator::kInvalidArgumentError);
@@ -1135,32 +1235,16 @@ int32_t RTCVideoEncoder::InitEncode(const webrtc::VideoCodec* codec_settings,
   if (impl_)
     Release();
 
-  if (codec_settings->codecType == webrtc::kVideoCodecVP8 &&
-      codec_settings->mode == webrtc::VideoCodecMode::kScreensharing &&
-      codec_settings->VP8().numberOfTemporalLayers > 1) {
-    // This is a VP8 stream with screensharing using temporal layers for
-    // temporal scalability. Since this implementation does not yet implement
-    // temporal layers, fall back to software codec, if cfm and board is known
-    // to have a CPU that can handle it.
-    if (base::FeatureList::IsEnabled(features::kWebRtcScreenshareSwEncoding)) {
-      // TODO(sprang): Add support for temporal layers so we don't need
-      // fallback. See eg http://crbug.com/702017
-      DVLOG(1) << "Falling back to software encoder.";
-      return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
-    }
-  }
-  if (codec_settings->codecType == webrtc::kVideoCodecVP9 &&
-      codec_settings->VP9().numberOfSpatialLayers > 1) {
-    DVLOG(1)
-        << "VP9 SVC not yet supported by HW codecs, falling back to sofware.";
-    return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
-  }
-
   impl_ =
       new Impl(gpu_factories_, ProfileToWebRtcVideoCodecType(profile_),
                (codec_settings->mode == webrtc::VideoCodecMode::kScreensharing)
                    ? webrtc::VideoContentType::SCREENSHARE
                    : webrtc::VideoContentType::UNSPECIFIED);
+
+  std::vector<media::VideoEncodeAccelerator::Config::SpatialLayer>
+      spatial_layers;
+  if (!CreateSpatialLayersConfig(*codec_settings, &spatial_layers))
+    return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
 
   // This wait is necessary because this task is completed in GPU process
   // asynchronously but WebRTC API is synchronous.
@@ -1175,7 +1259,7 @@ int32_t RTCVideoEncoder::InitEncode(const webrtc::VideoCodec* codec_settings,
           &RTCVideoEncoder::Impl::CreateAndInitializeVEA,
           scoped_refptr<Impl>(impl_),
           gfx::Size(codec_settings->width, codec_settings->height),
-          codec_settings->startBitrate, profile_,
+          codec_settings->startBitrate, profile_, spatial_layers,
           CrossThreadUnretained(&initialization_waiter),
           CrossThreadUnretained(&initialization_retval)));
 

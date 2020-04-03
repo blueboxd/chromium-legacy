@@ -195,7 +195,6 @@ MEDIA_EXPORT extern const base::Feature kUsePooledSharedImageVideoProvider;
 
 #if defined(OS_WIN)
 MEDIA_EXPORT extern const base::Feature kDelayCopyNV12Textures;
-MEDIA_EXPORT extern const base::Feature kMediaFoundationH264Encoding;
 MEDIA_EXPORT extern const base::Feature kMediaFoundationVideoCapture;
 MEDIA_EXPORT extern const base::Feature kMediaFoundationVP8Decoding;
 MEDIA_EXPORT extern const base::Feature kDirectShowGetPhotoState;

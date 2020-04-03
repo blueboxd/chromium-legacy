@@ -80,8 +80,7 @@ if (enable_vulkan) {
     if (is_posix) {
       sources += [
         "vulkan_image_linux.cc",
-        "vulkan_posix_util.cc",
-        "vulkan_posix_util.h",
+        "vulkan_util_posix.cc",
       ]
     }
 

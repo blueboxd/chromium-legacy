@@ -15,8 +15,8 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
+#include "components/permissions/android/android_permission_util.h"
 #include "components/permissions/permission_uma_util.h"
-#include "components/permissions/permission_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/android/window_android.h"
@@ -29,8 +29,9 @@ infobars::InfoBar* PermissionUpdateInfoBarDelegate::Create(
     content::WebContents* web_contents,
     const std::vector<ContentSettingsType>& content_settings_types,
     PermissionUpdatedCallback callback) {
-  DCHECK(ShouldShowPermissionInfoBar(web_contents, content_settings_types) ==
-         ShowPermissionInfoBarState::SHOW_PERMISSION_INFOBAR)
+  DCHECK_EQ(permissions::ShouldRepromptUserForPermissions(
+                web_contents, content_settings_types),
+            permissions::PermissionRepromptState::kShow)
       << "Caller should check ShouldShowPermissionInfobar before creating the "
       << "infobar.";
 
@@ -41,8 +42,8 @@ infobars::InfoBar* PermissionUpdateInfoBarDelegate::Create(
 
   for (ContentSettingsType content_settings_type : content_settings_types) {
     int previous_size = permissions.size();
-    permissions::PermissionUtil::GetAndroidPermissionsForContentSetting(
-        content_settings_type, &permissions);
+    permissions::GetAndroidPermissionsForContentSetting(content_settings_type,
+                                                        &permissions);
 
     bool has_all_permissions = true;
     for (auto it = permissions.begin() + previous_size; it != permissions.end();
@@ -93,38 +94,6 @@ infobars::InfoBar* PermissionUpdateInfoBarDelegate::Create(
   return PermissionUpdateInfoBarDelegate::Create(
       web_contents, android_permissions, content_settings_types,
       permission_msg_id, std::move(callback));
-}
-
-// static
-ShowPermissionInfoBarState
-PermissionUpdateInfoBarDelegate::ShouldShowPermissionInfoBar(
-    content::WebContents* web_contents,
-    const std::vector<ContentSettingsType>& content_settings_types) {
-  if (!web_contents)
-    return ShowPermissionInfoBarState::CANNOT_SHOW_PERMISSION_INFOBAR;
-
-  auto* window_android = web_contents->GetNativeView()->GetWindowAndroid();
-  if (!window_android)
-    return ShowPermissionInfoBarState::CANNOT_SHOW_PERMISSION_INFOBAR;
-
-  for (ContentSettingsType content_settings_type : content_settings_types) {
-    std::vector<std::string> android_permissions;
-    permissions::PermissionUtil::GetAndroidPermissionsForContentSetting(
-        content_settings_type, &android_permissions);
-
-    for (const auto& android_permission : android_permissions) {
-      if (!window_android->HasPermission(android_permission)) {
-        permissions::PermissionUmaUtil::
-            RecordMissingPermissionInfobarShouldShow(true,
-                                                     content_settings_types);
-        return ShowPermissionInfoBarState::SHOW_PERMISSION_INFOBAR;
-      }
-    }
-  }
-
-  permissions::PermissionUmaUtil::RecordMissingPermissionInfobarShouldShow(
-      false, content_settings_types);
-  return ShowPermissionInfoBarState::NO_NEED_TO_SHOW_PERMISSION_INFOBAR;
 }
 
 void PermissionUpdateInfoBarDelegate::OnPermissionResult(

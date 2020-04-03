@@ -989,19 +989,5 @@ TEST_F(ServiceWorkerNavigationLoaderTest, CancelNavigationDuringFetchEvent) {
   EXPECT_EQ(net::ERR_ABORTED, client_.completion_status().error_code);
 }
 
-TEST_F(ServiceWorkerNavigationLoaderTest, ResponseWithCoop) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures({network::features::kCrossOriginOpenerPolicy},
-                                {});
-  service_worker_->RespondWithHeaders(
-      {{"Cross-Origin-Opener-Policy", "same-origin"}});
-
-  // Perform the request.
-  StartRequest(CreateRequest());
-  client_.RunUntilComplete();
-  EXPECT_EQ(network::mojom::CrossOriginOpenerPolicy::kSameOrigin,
-            client_.response_head()->cross_origin_opener_policy);
-}
-
 }  // namespace service_worker_navigation_loader_unittest
 }  // namespace content

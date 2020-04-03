@@ -2017,8 +2017,9 @@ class ScrollObserver : public RenderWidgetHost::InputEventObserver {
   DISALLOW_COPY_AND_ASSIGN(ScrollObserver);
 };
 
-// crbug.com/825629
-#if defined(OS_ANDROID)
+// Android: crbug.com/825629
+// NDEBUG: crbug.com/1063045
+#if defined(OS_ANDROID) || defined(NDEBUG)
 #define MAYBE_ScrollBubblingFromNestedOOPIFTest \
   DISABLED_ScrollBubblingFromNestedOOPIFTest
 #else

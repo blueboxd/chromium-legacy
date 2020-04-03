@@ -34,7 +34,7 @@ namespace views {
 class Label;
 }
 
-class ParentPermissionSection;
+class ParentPermissionInputSection;
 
 // Modal dialog that shows a dialog that prompts a parent for permission by
 // asking them to enter their google account credentials.  This is created only
@@ -156,8 +156,9 @@ class ParentPermissionDialogView : public views::BubbleDialogDelegateView,
 
   bool reprompt_after_incorrect_credential_ = true;
 
-  // Contains the parent-permission related views widgets.
-  std::unique_ptr<ParentPermissionSection> parent_permission_section_;
+  // Contains the parent-permission-input related views widgets.
+  std::unique_ptr<ParentPermissionInputSection>
+      parent_permission_input_section_;
 
   views::Label* invalid_credential_label_ = nullptr;
 

@@ -32,6 +32,7 @@
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/permissions/grouped_permission_infobar_delegate_android.h"
+#include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
 #else
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/permission_bubble/permission_prompt.h"
@@ -265,6 +266,14 @@ infobars::InfoBar* ChromePermissionsClient::MaybeCreateInfoBar(
                                                     infobar_service);
   }
   return nullptr;
+}
+
+void ChromePermissionsClient::RepromptForAndroidPermissions(
+    content::WebContents* web_contents,
+    const std::vector<ContentSettingsType>& content_settings_types,
+    PermissionsUpdatedCallback callback) {
+  PermissionUpdateInfoBarDelegate::Create(web_contents, content_settings_types,
+                                          std::move(callback));
 }
 
 base::android::ScopedJavaLocalRef<jobject>

@@ -40,7 +40,7 @@ public class SigninHelperTest {
 
     @After
     public void tearDown() {
-        AccountManagerFacadeProvider.resetAccountManagerFacadeForTests();
+        AccountManagerFacadeProvider.resetInstanceForTests();
     }
 
     @Test

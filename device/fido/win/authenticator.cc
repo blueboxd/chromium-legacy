@@ -183,6 +183,10 @@ bool WinWebAuthnApiAuthenticator::IsWinNativeApiAuthenticator() const {
   return true;
 }
 
+bool WinWebAuthnApiAuthenticator::SupportsCredProtectExtension() const {
+  return win_api_->Version() >= WEBAUTHN_API_VERSION_2;
+}
+
 const base::Optional<AuthenticatorSupportedOptions>&
 WinWebAuthnApiAuthenticator::Options() const {
   // The request can potentially be fulfilled by any device that Windows
@@ -195,10 +199,6 @@ WinWebAuthnApiAuthenticator::Options() const {
 
 base::WeakPtr<FidoAuthenticator> WinWebAuthnApiAuthenticator::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
-}
-
-bool WinWebAuthnApiAuthenticator::SupportsCredProtectExtension() const {
-  return win_api_->Version() >= WEBAUTHN_API_VERSION_2;
 }
 
 bool WinWebAuthnApiAuthenticator::ShowsPrivacyNotice() const {

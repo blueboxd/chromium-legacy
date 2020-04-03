@@ -483,8 +483,6 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   // Ambient Mode.
   (*s_whitelist)[ash::ambient::prefs::kAmbientModeEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[ash::ambient::prefs::kAmbientModeTopicSource] =
-      settings_api::PrefType::PREF_TYPE_NUMBER;
 
   // Google Assistant.
   (*s_whitelist)[chromeos::assistant::prefs::kAssistantConsentStatus] =

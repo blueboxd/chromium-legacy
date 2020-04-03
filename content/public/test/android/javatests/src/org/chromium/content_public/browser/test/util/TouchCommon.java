@@ -72,6 +72,23 @@ public class TouchCommon {
     }
 
     /**
+     * Synchronously perform a start-to-end drag event on the specified view with deterministic
+     * timing (events do not use system time).
+     *
+     * @param activity The main activity to dispatch events to.
+     * @param fromX X coordinate of the initial touch, in screen coordinates.
+     * @param toX X coordinate of the drag destination, in screen coordinates.
+     * @param fromY X coordinate of the initial touch, in screen coordinates.
+     * @param toY Y coordinate of the drag destination, in screen coordinates.
+     * @param stepCount How many move steps to include in the drag.
+     * @param duration The amount of time that will be simulated for the event stream in ms.
+     */
+    public static void performDrag(Activity activity, float fromX, float toX, float fromY,
+            float toY, int stepCount, long duration) {
+        performDrag(getRootViewForActivity(activity), fromX, toX, fromY, toY, stepCount, duration);
+    }
+
+    /**
      * Starts (synchronously) a drag motion. Normally followed by dragTo() and dragEnd().
      *
      * @activity activity The activity where the touch action is being performed.

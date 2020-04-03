@@ -212,11 +212,51 @@ TEST(PdfMetafileCgTest, GetPageBounds) {
   }
 }
 
-TEST(PdfMetafileCgTest, RenderPageBasic) {
+TEST(PdfMetafileCgTest, RenderPortraitRectangles) {
   constexpr gfx::Rect kPageBounds(200, 300);
   constexpr gfx::Size kDestinationSize(200, 300);
   TestRenderPage("rectangles.pdf", /*page_number=*/1, kPageBounds,
-                 "rectangles_cg_expected.pdf.0.png", kDestinationSize);
+                 "render_portrait_rectangles_expected.0.png", kDestinationSize);
+}
+
+TEST(PdfMetafileCgTest, RenderLargePortraitRectangles) {
+  constexpr gfx::Rect kPageBounds(200, 300);
+  constexpr gfx::Size kDestinationSize(100, 120);
+  TestRenderPage("rectangles.pdf", /*page_number=*/1, kPageBounds,
+                 "render_large_portrait_rectangles_expected.0.png",
+                 kDestinationSize);
+}
+
+TEST(PdfMetafileCgTest, RenderSmallPortraitRectangles) {
+  constexpr gfx::Rect kPageBounds(200, 300);
+  constexpr gfx::Size kDestinationSize(300, 450);
+  TestRenderPage("rectangles.pdf", /*page_number=*/1, kPageBounds,
+                 "render_small_portrait_rectangles_expected.0.png",
+                 kDestinationSize);
+}
+
+TEST(PdfMetafileCgTest, RenderLandscapeRectangles) {
+  constexpr gfx::Rect kPageBounds(800, 500);
+  constexpr gfx::Size kDestinationSize(400, 600);
+  TestRenderPage("landscape_rectangles.pdf", /*page_number=*/1, kPageBounds,
+                 "render_landscape_rectangles_expected.0.png",
+                 kDestinationSize);
+}
+
+TEST(PdfMetafileCgTest, RenderLargeLandscapeRectangles) {
+  constexpr gfx::Rect kPageBounds(800, 500);
+  constexpr gfx::Size kDestinationSize(200, 300);
+  TestRenderPage("landscape_rectangles.pdf", /*page_number=*/1, kPageBounds,
+                 "render_large_landscape_rectangles_expected.0.png",
+                 kDestinationSize);
+}
+
+TEST(PdfMetafileCgTest, RenderSmallLandscapeRectangles) {
+  constexpr gfx::Rect kPageBounds(800, 500);
+  constexpr gfx::Size kDestinationSize(600, 900);
+  TestRenderPage("landscape_rectangles.pdf", /*page_number=*/1, kPageBounds,
+                 "render_small_landscape_rectangles_expected.0.png",
+                 kDestinationSize);
 }
 
 }  // namespace printing

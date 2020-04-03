@@ -14,8 +14,11 @@
 #include "components/captive_portal/core/buildflags.h"
 #include "components/find_in_page/find_tab_helper.h"
 #include "components/find_in_page/find_types.h"
+#include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_request_manager.h"
+#include "components/permissions/permission_result.h"
 #include "components/sessions/content/session_tab_helper.h"
+#include "components/webrtc/media_stream_devices_controller.h"
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
@@ -32,6 +35,7 @@
 #include "weblayer/browser/i18n_util.h"
 #include "weblayer/browser/isolated_world_ids.h"
 #include "weblayer/browser/navigation_controller_impl.h"
+#include "weblayer/browser/permissions/permission_manager_factory.h"
 #include "weblayer/browser/persistence/browser_persister.h"
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/public/fullscreen_delegate.h"
@@ -543,6 +547,41 @@ bool TabImpl::DoBrowserControlsShrinkRendererSize(
 
 bool TabImpl::EmbedsFullscreenWidget() {
   return true;
+}
+
+void TabImpl::RequestMediaAccessPermission(
+    content::WebContents* web_contents,
+    const content::MediaStreamRequest& request,
+    content::MediaResponseCallback callback) {
+  webrtc::MediaStreamDevicesController::RequestPermissions(
+      request, nullptr,
+      base::BindOnce(
+          [](content::MediaResponseCallback callback,
+             const blink::MediaStreamDevices& devices,
+             blink::mojom::MediaStreamRequestResult result,
+             bool blocked_by_feature_policy, ContentSetting audio_setting,
+             ContentSetting video_setting) {
+            std::move(callback).Run(devices, result, {});
+          },
+          base::Passed(std::move(callback))));
+}
+
+bool TabImpl::CheckMediaAccessPermission(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& security_origin,
+    blink::mojom::MediaStreamType type) {
+  DCHECK(type == blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE ||
+         type == blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE);
+  ContentSettingsType content_settings_type =
+      type == blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE
+          ? ContentSettingsType::MEDIASTREAM_MIC
+          : ContentSettingsType::MEDIASTREAM_CAMERA;
+  return PermissionManagerFactory::GetForBrowserContext(
+             content::WebContents::FromRenderFrameHost(render_frame_host)
+                 ->GetBrowserContext())
+             ->GetPermissionStatusForFrame(content_settings_type,
+                                           render_frame_host, security_origin)
+             .content_setting == CONTENT_SETTING_ALLOW;
 }
 
 void TabImpl::EnterFullscreenModeForTab(

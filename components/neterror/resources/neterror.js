@@ -72,8 +72,9 @@ if (window.errorPageController) {
 
 // Subframes use a different layout but the same html file.  This is to make it
 // easier to support platforms that load the error page via different
-// mechanisms (Currently just iOS).
-if (window.top.location !== window.location) {
+// mechanisms (Currently just iOS). We also use the subframe style for portals
+// as they are embedded like subframes and can't be interacted with by the user.
+if (window.top.location !== window.location || window.portalHost) {
   document.documentElement.setAttribute('subframe', '');
 }
 

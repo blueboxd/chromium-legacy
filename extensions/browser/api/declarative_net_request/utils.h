@@ -46,6 +46,14 @@ void SetIndexedRulesetFormatVersionForTesting(int version);
 // mismatch.
 bool StripVersionHeaderAndParseVersion(std::string* ruleset_data);
 
+// Returns the checksum of the given serialized |data|. |data| must not include
+// the version header.
+int GetChecksum(base::span<const uint8_t> data);
+
+// Override the result of any calls to GetChecksum() above, so that it returns
+// |checksum|. Note: If |checksum| is -1, no such override is performed.
+void OverrideGetChecksumForTest(int checksum);
+
 // Helper function to persist the indexed ruleset |data| at the given |path|.
 // The ruleset is composed of a version header corresponding to the current
 // ruleset format version, followed by the actual ruleset data. Note: The

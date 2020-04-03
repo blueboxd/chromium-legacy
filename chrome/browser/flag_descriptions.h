@@ -1403,6 +1403,9 @@ extern const char kInterestFeedNotificationsDescription[];
 extern const char kInterestFeedContentSuggestionsName[];
 extern const char kInterestFeedContentSuggestionsDescription[];
 
+extern const char kInterestFeedV2Name[];
+extern const char kInterestFeedV2Description[];
+
 extern const char kInterestFeedFeedbackName[];
 extern const char kInterestFeedFeedbackDescription[];
 

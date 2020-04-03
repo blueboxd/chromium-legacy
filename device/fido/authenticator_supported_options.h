@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "components/cbor/values.h"
+#include "device/fido/fido_constants.h"
 
 namespace device {
 
@@ -77,6 +78,9 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorSupportedOptions {
   // supports_cred_protect is true if the authenticator supports the
   // `credProtect` extension. See CTAP2 draft for details.
   bool supports_cred_protect = false;
+  // default_cred_protect specifies the default credProtect level applied by
+  // this authenticator.
+  CredProtect default_cred_protect = CredProtect::kUVOptional;
   // Represents whether client pin is set and stored in authenticator. Set as
   // null optional if client pin capability is not supported by the
   // authenticator.

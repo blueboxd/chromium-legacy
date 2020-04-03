@@ -39,24 +39,21 @@ class CompositorFrameReporterTest : public testing::Test {
   }
 
  protected:
-  void AdvanceNowByMs(int advance_ms) {
+  base::TimeTicks AdvanceNowByMs(int advance_ms) {
     now_ += base::TimeDelta::FromMicroseconds(advance_ms);
+    return now_;
   }
 
   base::TimeTicks Now() { return now_; }
 
   viz::FrameTimingDetails BuildFrameTimingDetails() {
     viz::FrameTimingDetails frame_timing_details;
-    AdvanceNowByMs(1);
-    frame_timing_details.received_compositor_frame_timestamp = Now();
-    AdvanceNowByMs(1);
-    frame_timing_details.draw_start_timestamp = Now();
-    AdvanceNowByMs(1);
-    frame_timing_details.swap_timings.swap_start = Now();
-    AdvanceNowByMs(1);
-    frame_timing_details.swap_timings.swap_end = Now();
-    AdvanceNowByMs(1);
-    frame_timing_details.presentation_feedback.timestamp = Now();
+    frame_timing_details.received_compositor_frame_timestamp =
+        AdvanceNowByMs(1);
+    frame_timing_details.draw_start_timestamp = AdvanceNowByMs(1);
+    frame_timing_details.swap_timings.swap_start = AdvanceNowByMs(1);
+    frame_timing_details.swap_timings.swap_end = AdvanceNowByMs(1);
+    frame_timing_details.presentation_feedback.timestamp = AdvanceNowByMs(1);
     return frame_timing_details;
   }
 
@@ -255,6 +252,116 @@ TEST_F(CompositorFrameReporterTest, EventLatencyForPresentedFrameReported) {
                                      latency_ms, 1);
   histogram_tester.ExpectBucketCount("EventLatency.TouchMoved.TotalLatency",
                                      latency_ms, 2);
+}
+
+// Tests that when a frame is presented to the user, event latency breakdown
+// metrics are reported properly.
+TEST_F(CompositorFrameReporterTest,
+       EventLatencyBreakdownsForPresentedFrameReported) {
+  base::HistogramTester histogram_tester;
+
+  const base::TimeTicks event_time = Now();
+  std::vector<EventMetrics> events_metrics = {
+      {ui::ET_TOUCH_PRESSED, event_time, base::nullopt},
+      {ui::ET_TOUCH_MOVED, event_time, base::nullopt},
+      {ui::ET_TOUCH_MOVED, event_time, base::nullopt},
+  };
+  EXPECT_THAT(events_metrics, ::testing::Each(IsWhitelisted()));
+
+  auto begin_impl_time = AdvanceNowByMs(2);
+  pipeline_reporter_->StartStage(
+      CompositorFrameReporter::StageType::kBeginImplFrameToSendBeginMainFrame,
+      begin_impl_time);
+
+  auto begin_main_time = AdvanceNowByMs(3);
+  pipeline_reporter_->StartStage(
+      CompositorFrameReporter::StageType::kSendBeginMainFrameToCommit,
+      begin_main_time);
+
+  auto begin_commit_time = AdvanceNowByMs(4);
+  pipeline_reporter_->StartStage(CompositorFrameReporter::StageType::kCommit,
+                                 begin_commit_time);
+
+  auto end_commit_time = AdvanceNowByMs(5);
+  pipeline_reporter_->StartStage(
+      CompositorFrameReporter::StageType::kEndCommitToActivation,
+      end_commit_time);
+
+  auto begin_activation_time = AdvanceNowByMs(6);
+  pipeline_reporter_->StartStage(
+      CompositorFrameReporter::StageType::kActivation, begin_activation_time);
+
+  auto end_activation_time = AdvanceNowByMs(7);
+  pipeline_reporter_->StartStage(
+      CompositorFrameReporter::StageType::kEndActivateToSubmitCompositorFrame,
+      end_activation_time);
+
+  auto submit_time = AdvanceNowByMs(8);
+  pipeline_reporter_->StartStage(
+      CompositorFrameReporter::StageType::
+          kSubmitCompositorFrameToPresentationCompositorFrame,
+      submit_time);
+  pipeline_reporter_->SetEventsMetrics(std::move(events_metrics));
+
+  auto presentation_time = AdvanceNowByMs(9);
+  pipeline_reporter_->TerminateFrame(
+      CompositorFrameReporter::FrameTerminationStatus::kPresentedFrame,
+      presentation_time);
+
+  pipeline_reporter_ = nullptr;
+
+  struct {
+    const char* name;
+    const base::TimeDelta latency;
+    const int count;
+  } expected_counts[] = {
+      {"EventLatency.TouchPressed.BrowserToRendererCompositor",
+       begin_impl_time - event_time, 1},
+      {"EventLatency.TouchPressed.BeginImplFrameToSendBeginMainFrame",
+       begin_main_time - begin_impl_time, 1},
+      {"EventLatency.TouchPressed.SendBeginMainFrameToCommit",
+       begin_commit_time - begin_main_time, 1},
+      {"EventLatency.TouchPressed.Commit", end_commit_time - begin_commit_time,
+       1},
+      {"EventLatency.TouchPressed.EndCommitToActivation",
+       begin_activation_time - end_commit_time, 1},
+      {"EventLatency.TouchPressed.Activation",
+       end_activation_time - begin_activation_time, 1},
+      {"EventLatency.TouchPressed.EndActivateToSubmitCompositorFrame",
+       submit_time - end_activation_time, 1},
+      {"EventLatency.TouchPressed."
+       "SubmitCompositorFrameToPresentationCompositorFrame",
+       presentation_time - submit_time, 1},
+      {"EventLatency.TouchPressed.TotalLatency", presentation_time - event_time,
+       1},
+      {"EventLatency.TouchMoved.BrowserToRendererCompositor",
+       begin_impl_time - event_time, 2},
+      {"EventLatency.TouchMoved.BeginImplFrameToSendBeginMainFrame",
+       begin_main_time - begin_impl_time, 2},
+      {"EventLatency.TouchMoved.SendBeginMainFrameToCommit",
+       begin_commit_time - begin_main_time, 2},
+      {"EventLatency.TouchMoved.Commit", end_commit_time - begin_commit_time,
+       2},
+      {"EventLatency.TouchMoved.EndCommitToActivation",
+       begin_activation_time - end_commit_time, 2},
+      {"EventLatency.TouchMoved.Activation",
+       end_activation_time - begin_activation_time, 2},
+      {"EventLatency.TouchMoved.EndActivateToSubmitCompositorFrame",
+       submit_time - end_activation_time, 2},
+      {"EventLatency.TouchMoved."
+       "SubmitCompositorFrameToPresentationCompositorFrame",
+       presentation_time - submit_time, 2},
+      {"EventLatency.TouchMoved.TotalLatency", presentation_time - event_time,
+       2},
+  };
+
+  for (const auto& expected_count : expected_counts) {
+    histogram_tester.ExpectTotalCount(expected_count.name,
+                                      expected_count.count);
+    histogram_tester.ExpectBucketCount(expected_count.name,
+                                       expected_count.latency.InMicroseconds(),
+                                       expected_count.count);
+  }
 }
 
 // Tests that when a frame is presented to the user, scroll event latency

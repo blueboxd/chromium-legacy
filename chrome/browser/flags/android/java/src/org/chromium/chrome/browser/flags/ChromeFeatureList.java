@@ -18,7 +18,7 @@ import java.util.Map;
  * Java accessor for base/feature_list.h state.
  *
  * This class provides methods to access values of feature flags registered in
- * |kFeaturesExposedToJava| in chrome/browser/android/chrome_feature_list.cc and as a constant
+ * |kFeaturesExposedToJava| in chrome/browser/android/flags/chrome_feature_list.cc and as a constant
  * in this class.
  *
  * This class also provides methods to access values of field trial parameters associated to those
@@ -304,6 +304,7 @@ public abstract class ChromeFeatureList {
     public static final String INSTANT_START = "InstantStart";
     public static final String INTEREST_FEED_CONTENT_SUGGESTIONS = "InterestFeedContentSuggestions";
     public static final String INTEREST_FEED_FEEDBACK = "InterestFeedFeedback";
+    public static final String INTEREST_FEED_V2 = "InterestFeedV2";
     public static final String KITKAT_SUPPORTED = "KitKatSupported";
     public static final String LOOKALIKE_NAVIGATION_URL_SUGGESTIONS_UI =
             "LookalikeUrlNavigationSuggestionsUI";

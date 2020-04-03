@@ -24,7 +24,7 @@
 namespace network {
 
 TrustTokenRequestRedemptionHelper::TrustTokenRequestRedemptionHelper(
-    const url::Origin& top_level_origin,
+    SuitableTrustTokenOrigin top_level_origin,
     mojom::TrustTokenRefreshPolicy refresh_policy,
     TrustTokenStore* token_store,
     std::unique_ptr<TrustTokenKeyCommitmentGetter> key_commitment_getter,
@@ -36,11 +36,6 @@ TrustTokenRequestRedemptionHelper::TrustTokenRequestRedemptionHelper(
       key_commitment_getter_(std::move(key_commitment_getter)),
       key_pair_generator_(std::move(key_pair_generator)),
       cryptographer_(std::move(cryptographer)) {
-  DCHECK(top_level_origin.scheme() == url::kHttpsScheme ||
-         (top_level_origin.scheme() == url::kHttpScheme &&
-          IsOriginPotentiallyTrustworthy(top_level_origin)))
-      << top_level_origin;
-
   DCHECK(token_store_);
   DCHECK(key_commitment_getter_);
   DCHECK(key_pair_generator_);
@@ -53,37 +48,38 @@ TrustTokenRequestRedemptionHelper::~TrustTokenRequestRedemptionHelper() =
 void TrustTokenRequestRedemptionHelper::Begin(
     net::URLRequest* request,
     base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done) {
-  DCHECK(request->url().SchemeIsHTTPOrHTTPS() &&
-         IsUrlPotentiallyTrustworthy(request->url()))
-      << request->url();
-  DCHECK(request->initiator() &&
-             request->initiator()->scheme() == url::kHttpsScheme ||
-         (request->initiator()->scheme() == url::kHttpScheme &&
-          IsOriginPotentiallyTrustworthy(*request->initiator())))
-      << (request->initiator() ? request->initiator()->Serialize() : "(none)");
+  DCHECK(request);
+  DCHECK(!request->initiator() ||
+         IsOriginPotentiallyTrustworthy(*request->initiator()))
+      << *request->initiator();
 
-  issuer_ = url::Origin::Create(request->url());
+  issuer_ = SuitableTrustTokenOrigin::Create(request->url());
+  if (!issuer_) {
+    std::move(done).Run(mojom::TrustTokenOperationStatus::kInvalidArgument);
+    return;
+  }
 
   if (refresh_policy_ == mojom::TrustTokenRefreshPolicy::kRefresh &&
-      !request->initiator()->IsSameOriginWith(issuer_)) {
+      (!request->initiator() ||
+       !request->initiator()->IsSameOriginWith(*issuer_))) {
     std::move(done).Run(mojom::TrustTokenOperationStatus::kFailedPrecondition);
     return;
   }
 
-  if (!token_store_->SetAssociation(issuer_, top_level_origin_)) {
+  if (!token_store_->SetAssociation(*issuer_, top_level_origin_)) {
     std::move(done).Run(mojom::TrustTokenOperationStatus::kResourceExhausted);
     return;
   }
 
   if (refresh_policy_ == mojom::TrustTokenRefreshPolicy::kUseCached &&
-      token_store_->RetrieveNonstaleRedemptionRecord(issuer_,
+      token_store_->RetrieveNonstaleRedemptionRecord(*issuer_,
                                                      top_level_origin_)) {
     std::move(done).Run(mojom::TrustTokenOperationStatus::kAlreadyExists);
     return;
   }
 
   key_commitment_getter_->Get(
-      issuer_,
+      *issuer_,
       base::BindOnce(&TrustTokenRequestRedemptionHelper::OnGotKeyCommitment,
                      weak_factory_.GetWeakPtr(), request, std::move(done)));
 }
@@ -99,7 +95,7 @@ void TrustTokenRequestRedemptionHelper::OnGotKeyCommitment(
 
   // Evict tokens signed with keys other than those from the issuer's most
   // recent commitments.
-  token_store_->PruneStaleIssuerState(issuer_, commitment_result->keys);
+  token_store_->PruneStaleIssuerState(*issuer_, commitment_result->keys);
 
   base::Optional<TrustToken> maybe_token_to_redeem = RetrieveSingleToken();
   if (!maybe_token_to_redeem) {
@@ -132,7 +128,7 @@ void TrustTokenRequestRedemptionHelper::OnGotKeyCommitment(
   // settings.
   request->SetLoadFlags(request->load_flags() | net::LOAD_BYPASS_CACHE);
 
-  token_store_->DeleteToken(issuer_, *maybe_token_to_redeem);
+  token_store_->DeleteToken(*issuer_, *maybe_token_to_redeem);
 
   std::move(done).Run(mojom::TrustTokenOperationStatus::kOk);
 }
@@ -181,7 +177,7 @@ mojom::TrustTokenOperationStatus TrustTokenRequestRedemptionHelper::Finalize(
   record_to_store.set_body(std::move(*maybe_signed_redemption_record));
   record_to_store.set_signing_key(std::move(signing_key_));
   record_to_store.set_public_key(std::move(verification_key_));
-  token_store_->SetRedemptionRecord(issuer_, top_level_origin_,
+  token_store_->SetRedemptionRecord(*issuer_, top_level_origin_,
                                     std::move(record_to_store));
 
   return mojom::TrustTokenOperationStatus::kOk;
@@ -197,7 +193,7 @@ TrustTokenRequestRedemptionHelper::RetrieveSingleToken() {
       base::BindRepeating([](const std::string&) { return true; });
 
   std::vector<TrustToken> matching_tokens =
-      token_store_->RetrieveMatchingTokens(issuer_, key_matcher);
+      token_store_->RetrieveMatchingTokens(*issuer_, key_matcher);
 
   if (matching_tokens.empty())
     return base::nullopt;

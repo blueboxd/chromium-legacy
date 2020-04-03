@@ -86,6 +86,8 @@
   <message name="IDS_SETTINGS_SIGNIN_ALLOWED_DESC" desc="The description of the preference to allow to sign-in to Chrome">
     By turning this off, you can sign in to Google sites like Gmail without signing in to Chrome
   </message>
+
+  <!-- Safety check -->
   <message name="IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_BEFORE" desc="This text describes what the safety check is. (It's an area of the Settings page where users can quickly check whether their safety-related settings are fully protecting them.)">
     Chrome can help keep you safe from data breaches, bad extensions, and more
   </message>
@@ -95,20 +97,8 @@
   <message name="IDS_SETTINGS_SAFETY_CHECK_UPDATES_FAILED" desc="This text describes that Chrome cannot update due to an unknown error.">
     Chrome didn't update, something went wrong. <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Fix Chrome update problems and failed updates.<ph name="END_LINK">&lt;/a&gt;</ph>
   </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_OFFLINE" desc="This text points out that the password check cannot run due to not having internet connection.">
-    Chrome can't check your passwords. Try checking your internet connection.
-  </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_SIGNED_OUT" desc="This text points out that the password check can only run when the user is signed in.">
     Chrome can't check your passwords because you're not signed in
-  </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_QUOTA_LIMIT" desc="This text points out that the password check cannot run and that the user should try again tomorrow.">
-    Chrome can't check all your passwords. Try again after 24 hours.
-  </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_TOO_MANY_PASSWORDS" desc="This text points out that the password check cannot run due to the user having too many saved passwords.">
-    Chrome can't check your passwords because there are too many
-  </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_ERROR" desc="This text points out that the password check encountered an unknown error.">
-    Chrome can't check your passwords. Try again later.
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_DISABLED" desc="This text points out that Safe Browsing is disabled and that the user is not protected.">
     Safe Browsing is off. Chrome recommends turning it on.

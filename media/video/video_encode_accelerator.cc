@@ -41,7 +41,8 @@ VideoEncodeAccelerator::Config::Config(
     base::Optional<uint32_t> gop_length,
     base::Optional<uint8_t> h264_output_level,
     base::Optional<StorageType> storage_type,
-    ContentType content_type)
+    ContentType content_type,
+    const std::vector<SpatialLayer>& spatial_layers)
     : input_format(input_format),
       input_visible_size(input_visible_size),
       output_profile(output_profile),
@@ -51,7 +52,8 @@ VideoEncodeAccelerator::Config::Config(
       gop_length(gop_length),
       h264_output_level(h264_output_level),
       storage_type(storage_type),
-      content_type(content_type) {}
+      content_type(content_type),
+      spatial_layers(spatial_layers) {}
 
 VideoEncodeAccelerator::Config::~Config() = default;
 
@@ -73,6 +75,16 @@ std::string VideoEncodeAccelerator::Config::AsHumanReadableString() const {
       VideoCodecProfileToVideoCodec(output_profile) == kCodecH264) {
     str += base::StringPrintf(", h264_output_level: %u",
                               h264_output_level.value());
+  }
+
+  for (size_t i = 0; i < spatial_layers.size(); ++i) {
+    const auto& sl = spatial_layers[i];
+    str += base::StringPrintf(
+        "\nSL#%zu: width=%d, height=%d, bitrate_bps=%u"
+        ", framerate=%u, max_qp=%u"
+        ", num_of_temporal_layers=%u",
+        i, sl.width, sl.height, sl.bitrate_bps, sl.framerate, sl.max_qp,
+        sl.num_of_temporal_layers);
   }
   return str;
 }

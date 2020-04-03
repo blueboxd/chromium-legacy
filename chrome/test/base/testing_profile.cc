@@ -778,8 +778,12 @@ Profile* TestingProfile::GetOffTheRecordProfile(
   DCHECK(otr_profile_id == OTRProfileID::PrimaryID());
   if (IsOffTheRecord())
     return this;
-  if (!incognito_profile_)
-    TestingProfile::Builder().BuildIncognito(this);
+  if (!incognito_profile_) {
+    TestingProfile::Builder builder;
+    if (IsGuestSession())
+      builder.SetGuestSession();
+    builder.BuildIncognito(this);
+  }
   return incognito_profile_.get();
 }
 

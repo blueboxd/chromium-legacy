@@ -1107,7 +1107,7 @@ class LayerTreeHostTestSurfaceDamage : public LayerTreeHostTest {
         root_->SetBounds(gfx::Size(20, 20));
         break;
       case 3:
-        child_->SetDoubleSided(false);
+        child_->SetOpacity(0.8f);
         break;
     }
   }

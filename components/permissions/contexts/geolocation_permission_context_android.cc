@@ -12,8 +12,10 @@
 #include "base/metrics/histogram_functions.h"
 #include "components/location/android/location_settings.h"
 #include "components/location/android/location_settings_impl.h"
+#include "components/permissions/android/android_permission_util.h"
 #include "components/permissions/permission_request_id.h"
 #include "components/permissions/permission_uma_util.h"
+#include "components/permissions/permissions_client.h"
 #include "components/permissions/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -112,9 +114,11 @@ void GeolocationPermissionContextAndroid::RequestPermission(
           embedding_origin)
           .content_setting;
   if (content_setting == CONTENT_SETTING_ALLOW &&
-      delegate_->ShouldRequestAndroidLocationPermission(web_contents)) {
-    delegate_->RequestAndroidPermission(
-        web_contents,
+      ShouldRepromptUserForPermissions(web_contents,
+                                       {ContentSettingsType::GEOLOCATION}) ==
+          PermissionRepromptState::kShow) {
+    PermissionsClient::Get()->RepromptForAndroidPermissions(
+        web_contents, {ContentSettingsType::GEOLOCATION},
         base::BindOnce(&GeolocationPermissionContextAndroid::
                            HandleUpdateAndroidPermissions,
                        weak_factory_.GetWeakPtr(), id, requesting_frame_origin,

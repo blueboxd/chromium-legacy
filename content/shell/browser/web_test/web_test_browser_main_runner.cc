@@ -28,7 +28,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/ppapi_test_utils.h"
-#include "content/public/test/web_test_support.h"
+#include "content/public/test/web_test_support_browser.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/web_test/blink_test_controller.h"
 #include "content/shell/browser/web_test/test_info_extractor.h"

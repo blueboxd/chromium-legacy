@@ -62,7 +62,8 @@ public class ImageFetcherFactory {
                 return sNetworkImageFetcher;
             case ImageFetcherConfig.DISK_CACHE_ONLY:
                 if (sCachedImageFetcher == null) {
-                    sCachedImageFetcher = new CachedImageFetcher(imageFetcherBridge);
+                    sCachedImageFetcher = new CachedImageFetcher(
+                            imageFetcherBridge, new CachedImageFetcher.ImageLoader());
                 }
                 return sCachedImageFetcher;
             case ImageFetcherConfig.IN_MEMORY_ONLY:

@@ -48,6 +48,17 @@ struct LoadRequestData;
 class RulesMonitorService : public BrowserContextKeyedAPI,
                             public ExtensionRegistryObserver {
  public:
+  // An observer used in tests.
+  class TestObserver {
+   public:
+    // Called when the ruleset load (in response to extension load) is complete
+    // for |extension_id|,
+    virtual void OnRulesetLoadComplete(const ExtensionId& extension_id) = 0;
+
+   protected:
+    virtual ~TestObserver() = default;
+  };
+
   // Returns the instance for |browser_context|. An instance is shared between
   // an incognito and a regular context.
   static RulesMonitorService* Get(content::BrowserContext* browser_context);
@@ -70,6 +81,8 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
 
   const ActionTracker& action_tracker() const { return action_tracker_; }
   ActionTracker& action_tracker() { return action_tracker_; }
+
+  void SetObserverForTest(TestObserver* observer) { test_observer_ = observer; }
 
  private:
   class FileSequenceBridge;
@@ -132,6 +145,9 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
   declarative_net_request::RulesetManager ruleset_manager_;
 
   ActionTracker action_tracker_;
+
+  // Non-owned pointer.
+  TestObserver* test_observer_ = nullptr;
 
   // Must be the last member variable. See WeakPtrFactory documentation for
   // details.

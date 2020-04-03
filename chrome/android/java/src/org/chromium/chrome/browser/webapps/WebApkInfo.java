@@ -94,10 +94,6 @@ public class WebApkInfo extends WebappInfo {
         }
     }
 
-    public static WebApkInfo createEmpty() {
-        return create(createEmptyIntentDataProvider());
-    }
-
     /**
      * Constructs a WebApkInfo from the passed in Intent and <meta-data> in the WebAPK's Android
      * manifest.

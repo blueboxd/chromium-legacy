@@ -118,4 +118,12 @@ TEST_F(SelectToSpeakTrayTest, SelectToSpeakStateImpactsImageAndActivation) {
       GetInactiveImage().BackedBySameObjectAs(GetImageView()->GetImage()));
 }
 
+// Trivial test to increase coverage of select_to_speak_tray.h. The
+// SelectToSpeakTray does not have a bubble, so these are empty functions.
+// Without this test, coverage of select_to_speak_tray.h is 0%.
+TEST_F(SelectToSpeakTrayTest, OverriddenFunctionsDoNothing) {
+  GetTray()->HideBubbleWithView(nullptr);
+  GetTray()->ClickedOutsideBubble();
+}
+
 }  // namespace ash

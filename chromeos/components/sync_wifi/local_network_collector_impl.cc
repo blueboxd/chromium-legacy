@@ -177,7 +177,7 @@ void LocalNetworkCollectorImpl::StartGetNetworkDetails(
       SecurityTypeProtoFromMojo(network->type_state->get_wifi()->security));
   base::TimeDelta timestamp =
       network_metadata_store_->GetLastConnectedTimestamp(network->guid);
-  proto.set_last_update_timestamp(timestamp.InMilliseconds());
+  proto.set_last_connected_timestamp(timestamp.InMilliseconds());
   cros_network_config_->GetManagedProperties(
       network->guid,
       base::BindOnce(&LocalNetworkCollectorImpl::OnGetManagedPropertiesResult,

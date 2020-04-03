@@ -70,10 +70,9 @@ class BrowsingModeBottomToolbarMediator implements ThemeColorObserver {
      * @param activity An activity to attach the IPH to.
      * @param anchor The view to anchor the IPH to.
      * @param tracker A tracker for IPH.
-     * @param completeRunnable The Runnable to be called if the user tab on the view.
      */
     void showIPH(@FeatureConstants String feature, ChromeActivity activity, View anchor,
-            Tracker tracker, Runnable completeRunnable) {
+            Tracker tracker) {
         if (!tracker.shouldTriggerHelpUI(feature) || !anchor.isShown() || !anchor.isEnabled()) {
             return;
         }
@@ -126,8 +125,8 @@ class BrowsingModeBottomToolbarMediator implements ThemeColorObserver {
                 R.style.TextAppearance_TextLarge_Primary_Light, descId,
                 FeatureHighlightProvider.TextAlignment.CENTER,
                 R.style.TextAppearance_TextMedium_Primary_Light, innerBackgroundColor,
-                finalOuterColor, finalScrimColor, FeatureHighlightProvider.NO_TIMEOUT, tapToDismiss,
-                completeRunnable);
+                finalOuterColor, finalScrimColor, FeatureHighlightProvider.NO_TIMEOUT,
+                tapToDismiss);
     }
 
     /**

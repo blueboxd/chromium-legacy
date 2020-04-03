@@ -97,7 +97,7 @@ cr.define('settings', function() {
 
     r.ADVANCED = new settings.Route('/advanced');
 
-    r.PRIVACY = r.ADVANCED.createSection('/privacy', 'privacy');
+    r.OS_PRIVACY = r.ADVANCED.createSection('/osPrivacy', 'osPrivacy');
 
     // Languages and input
     r.OS_LANGUAGES = r.ADVANCED.createSection('/osLanguages', 'osLanguages');

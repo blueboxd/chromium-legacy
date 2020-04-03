@@ -283,6 +283,7 @@ extern const char kCredentialManagementPreviewMapKey[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kBioEnrollmentMapKey[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kBioEnrollmentPreviewMapKey[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kUvTokenMapKey[];
+extern const char kDefaultCredProtectKey[];
 
 // HID transport specific constants.
 constexpr uint32_t kHidBroadcastChannel = 0xffffffff;
@@ -365,8 +366,19 @@ extern const base::TimeDelta kBleDevicePairingModeWaitingInterval;
 // CredProtect enumerates the levels of credential protection specified by the
 // `credProtect` CTAP2 extension.
 enum class CredProtect : uint8_t {
+  kUVOptional = 1,
   kUVOrCredIDRequired = 2,
   kUVRequired = 3,
+};
+
+// CredProtectRequest extends |CredProtect| with an additional value that
+// represents a request for |kUVOrCredIDRequired|, unless the default is
+// higher.
+enum class CredProtectRequest : uint8_t {
+  kUVOptional = 1,
+  kUVOrCredIDRequired = 2,
+  kUVRequired = 3,
+  kUVOrCredIDRequiredOrBetter = 255,
 };
 
 // The map key for inserting the googleAndroidClientDataExtension output into a

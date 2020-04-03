@@ -203,6 +203,9 @@
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
+          "args": [
+            "--skip-perf"
+          ],
           "script": "//tools/perf/process_perf_results.py"
         },
         "name": "performance_test_suite",

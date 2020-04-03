@@ -1824,9 +1824,12 @@ void URLLoader::CompleteBlockedResponse(
     int error_code,
     bool should_report_corb_blocking,
     base::Optional<BlockedByResponseReason> reason) {
-  // The response headers and body shouldn't yet be sent to the URLLoaderClient.
-  DCHECK(response_);
-  DCHECK(consumer_handle_.is_valid());
+  if (has_received_response_) {
+    // The response headers and body shouldn't yet be sent to the
+    // URLLoaderClient.
+    DCHECK(response_);
+    DCHECK(consumer_handle_.is_valid());
+  }
 
   // Tell the URLLoaderClient that the response has been completed.
   URLLoaderCompletionStatus status;
@@ -1845,6 +1848,9 @@ void URLLoader::CompleteBlockedResponse(
 }
 
 URLLoader::BlockResponseForCorbResult URLLoader::BlockResponseForCorb() {
+  // CORB should only do work after the response headers have been received.
+  DCHECK(has_received_response_);
+
   // The response headers and body shouldn't yet be sent to the URLLoaderClient.
   DCHECK(response_);
   DCHECK(consumer_handle_.is_valid());

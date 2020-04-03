@@ -125,9 +125,6 @@ class Service : public mojom::AudioService {
   std::unique_ptr<LogFactoryManager> log_factory_manager_;
   std::unique_ptr<ServiceMetrics> metrics_;
 
-  // TODO(crbug.com/888478): Remove this after diagnosis.
-  volatile uint32_t magic_bytes_;
-
   DISALLOW_COPY_AND_ASSIGN(Service);
 };
 

@@ -79,7 +79,7 @@ import jp.tomorrowkey.android.gifplayer.BaseGifImage;
  */
 class AutofillAssistantUiTestUtil {
     /** Image fetcher which synchronously returns a preset image. */
-    static class MockImageFetcher extends ImageFetcher {
+    static class MockImageFetcher extends ImageFetcher.ImageFetcherForTesting {
         private final Bitmap mBitmapToFetch;
         private final BaseGifImage mGifToFetch;
 

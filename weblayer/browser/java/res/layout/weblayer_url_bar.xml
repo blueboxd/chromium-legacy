@@ -17,6 +17,7 @@
         android:layout_height="@dimen/security_status_icon_size"
         android:layout_width="@dimen/security_status_icon_size"
         android:scaleType="center"
+        android:visibility="gone"
         app:tint="@color/default_icon_color_tint_list"/>
 
     <TextView

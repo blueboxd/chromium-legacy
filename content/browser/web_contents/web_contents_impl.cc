@@ -5240,7 +5240,7 @@ void WebContentsImpl::DidFirstVisuallyNonEmptyPaint(
   }
 }
 
-bool WebContentsImpl::IsPortal() const {
+bool WebContentsImpl::IsPortal() {
   return portal();
 }
 

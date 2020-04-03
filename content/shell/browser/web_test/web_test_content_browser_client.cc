@@ -213,13 +213,10 @@ void WebTestContentBrowserClient::ExposeInterfacesToRenderer(
   associated_registry->AddInterface(
       base::BindRepeating(&WebTestContentBrowserClient::BindBlinkTestController,
                           base::Unretained(this)));
-  StoragePartition* partition =
-      BrowserContext::GetDefaultStoragePartition(browser_context());
   associated_registry->AddInterface(base::BindRepeating(
       &WebTestContentBrowserClient::BindWebTestController,
-      base::Unretained(this), render_process_host->GetID(),
-      partition->GetQuotaManager(), partition->GetDatabaseTracker(),
-      partition->GetNetworkContext()));
+      render_process_host->GetID(),
+      BrowserContext::GetDefaultStoragePartition(browser_context())));
 }
 
 base::Optional<service_manager::Manifest>
@@ -471,14 +468,15 @@ void WebTestContentBrowserClient::BindBlinkTestController(
     BlinkTestController::Get()->AddBlinkTestClientReceiver(std::move(receiver));
 }
 
+// static
 void WebTestContentBrowserClient::BindWebTestController(
     int render_process_id,
-    storage::QuotaManager* quota_manager,
-    storage::DatabaseTracker* database_tracker,
-    network::mojom::NetworkContext* network_context,
+    StoragePartition* partition,
     mojo::PendingAssociatedReceiver<mojom::WebTestClient> receiver) {
-  WebTestClientImpl::Create(render_process_id, quota_manager, database_tracker,
-                            network_context, std::move(receiver));
+  WebTestClientImpl::Create(render_process_id, partition->GetQuotaManager(),
+                            partition->GetDatabaseTracker(),
+                            partition->GetNetworkContext(),
+                            std::move(receiver));
 }
 
 #if defined(OS_WIN)

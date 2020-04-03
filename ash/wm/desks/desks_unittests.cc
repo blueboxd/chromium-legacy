@@ -61,6 +61,8 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/test/test_window_delegate.h"
+#include "ui/base/clipboard/clipboard_buffer.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/chromeos/events/event_rewriter_chromeos.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -1874,6 +1876,47 @@ TEST_F(DesksEditableNamesTest, EventsThatCommitChanges) {
   event_generator->ClickLeftButton();
   EXPECT_FALSE(desk_name_view->HasFocus());
   ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+}
+
+TEST_F(DesksEditableNamesTest, MaxLength) {
+  ASSERT_EQ(2u, controller()->desks().size());
+  auto* overview_controller = Shell::Get()->overview_controller();
+  ASSERT_TRUE(overview_controller->InOverviewSession());
+
+  ClickOnDeskNameViewAtIndex(0);
+  // Select all and delete.
+  SendKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
+  SendKey(ui::VKEY_BACK);
+
+  // Simulate user is typing text beyond the max length.
+  base::string16 expected_desk_name(DeskNameView::kMaxLength, L'a');
+  for (size_t i = 0; i < DeskNameView::kMaxLength + 10; ++i)
+    SendKey(ui::VKEY_A);
+  SendKey(ui::VKEY_RETURN);
+
+  // Desk name has been trimmed.
+  auto* desk_1 = controller()->desks()[0].get();
+  EXPECT_EQ(DeskNameView::kMaxLength, desk_1->name().size());
+  EXPECT_EQ(expected_desk_name, desk_1->name());
+  EXPECT_TRUE(desk_1->is_name_set_by_user());
+
+  // Test that pasting a large amount of text is trimmed at the max length.
+  base::string16 clipboard_text(DeskNameView::kMaxLength + 10, L'b');
+  expected_desk_name = base::string16(DeskNameView::kMaxLength, L'b');
+  EXPECT_GT(clipboard_text.size(), DeskNameView::kMaxLength);
+  ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
+      .WriteText(clipboard_text);
+
+  ClickOnDeskNameViewAtIndex(0);
+  // Select all and delete.
+  SendKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
+  SendKey(ui::VKEY_BACK);
+
+  // Paste text.
+  SendKey(ui::VKEY_V, ui::EF_CONTROL_DOWN);
+  SendKey(ui::VKEY_RETURN);
+  EXPECT_EQ(DeskNameView::kMaxLength, desk_1->name().size());
+  EXPECT_EQ(expected_desk_name, desk_1->name());
 }
 
 class TabletModeDesksTest : public DesksTest {

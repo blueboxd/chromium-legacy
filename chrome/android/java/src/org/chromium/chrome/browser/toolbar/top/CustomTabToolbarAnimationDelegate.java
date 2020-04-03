@@ -6,15 +6,16 @@ package org.chromium.chrome.browser.toolbar.top;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.util.TypedValue;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
+import androidx.annotation.DimenRes;
+
 import org.chromium.chrome.R;
-import org.chromium.components.browser_ui.widget.animation.CancelAwareAnimatorListener;
+import org.chromium.components.omnibox.SecurityButtonAnimationDelegate;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
 /**
@@ -30,63 +31,23 @@ import org.chromium.ui.interpolators.BakedBezierInterpolator;
  * its new position.
  */
 class CustomTabToolbarAnimationDelegate {
-    private static final int CUSTOM_TAB_TOOLBAR_SLIDE_DURATION_MS = 200;
-    private static final int CUSTOM_TAB_TOOLBAR_FADE_DURATION_MS = 150;
-
-    private final View mSecurityButton;
-    private final View mTitleUrlContainer;
-    private final AnimatorSet mSecurityButtonShowAnimator;
-    private final AnimatorSet mSecurityButtonHideAnimator;
+    private final SecurityButtonAnimationDelegate mSecurityButtonAnimationDelegate;
 
     private TextView mUrlBar;
     private TextView mTitleBar;
-    private int mSecurityButtonWidth;
     // A flag controlling whether the animation has run before.
     private boolean mShouldRunTitleAnimation;
 
     /**
      * Constructs an instance of {@link CustomTabToolbarAnimationDelegate}.
      */
-    CustomTabToolbarAnimationDelegate(View securityButton, final View titleUrlContainer) {
-        mSecurityButton = securityButton;
-        mTitleUrlContainer = titleUrlContainer;
-        mSecurityButtonWidth = securityButton.getResources().getDimensionPixelSize(
-                R.dimen.location_bar_icon_width);
-
-        titleUrlContainer.setTranslationX(-mSecurityButtonWidth);
-
-        mSecurityButtonShowAnimator = new AnimatorSet();
-        Animator translateRight = ObjectAnimator.ofFloat(titleUrlContainer, View.TRANSLATION_X, 0);
-        translateRight.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
-        translateRight.setDuration(CUSTOM_TAB_TOOLBAR_SLIDE_DURATION_MS);
-
-        Animator fadeIn = ObjectAnimator.ofFloat(mSecurityButton, View.ALPHA, 1);
-        fadeIn.setInterpolator(BakedBezierInterpolator.FADE_IN_CURVE);
-        fadeIn.setDuration(CUSTOM_TAB_TOOLBAR_FADE_DURATION_MS);
-        fadeIn.addListener(new CancelAwareAnimatorListener() {
-            @Override
-            public void onStart(Animator animation) {
-                mSecurityButton.setVisibility(View.VISIBLE);
-            }
-        });
-        mSecurityButtonShowAnimator.playSequentially(translateRight, fadeIn);
-
-        mSecurityButtonHideAnimator = new AnimatorSet();
-        Animator fadeOut = ObjectAnimator.ofFloat(mSecurityButton, View.ALPHA, 0);
-        fadeOut.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
-        fadeOut.setDuration(CUSTOM_TAB_TOOLBAR_FADE_DURATION_MS);
-        fadeOut.addListener(new CancelAwareAnimatorListener() {
-            @Override
-            public void onEnd(Animator animation) {
-                mSecurityButton.setVisibility(View.INVISIBLE);
-            }
-        });
-
-        Animator translateLeft = ObjectAnimator.ofFloat(
-                titleUrlContainer, View.TRANSLATION_X, -mSecurityButtonWidth);
-        translateLeft.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
-        translateLeft.setDuration(CUSTOM_TAB_TOOLBAR_SLIDE_DURATION_MS);
-        mSecurityButtonHideAnimator.playSequentially(fadeOut, translateLeft);
+    CustomTabToolbarAnimationDelegate(ImageButton securityButton, final View titleUrlContainer,
+            @DimenRes int securityStatusIconSize) {
+        int securityButtonWidth =
+                securityButton.getResources().getDimensionPixelSize(securityStatusIconSize);
+        titleUrlContainer.setTranslationX(-securityButtonWidth);
+        mSecurityButtonAnimationDelegate = new SecurityButtonAnimationDelegate(
+                securityButton, titleUrlContainer, securityStatusIconSize);
     }
 
     /**
@@ -147,7 +108,7 @@ class CustomTabToolbarAnimationDelegate {
                         .scaleY(1f)
                         .translationX(0)
                         .translationY(0)
-                        .setDuration(CUSTOM_TAB_TOOLBAR_SLIDE_DURATION_MS)
+                        .setDuration(SecurityButtonAnimationDelegate.SLIDE_DURATION_MS)
                         .setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE)
                         .setListener(new AnimatorListenerAdapter() {
                             @Override
@@ -155,7 +116,8 @@ class CustomTabToolbarAnimationDelegate {
                                 mTitleBar.animate()
                                         .alpha(1f)
                                         .setInterpolator(BakedBezierInterpolator.FADE_IN_CURVE)
-                                        .setDuration(CUSTOM_TAB_TOOLBAR_FADE_DURATION_MS)
+                                        .setDuration(
+                                                SecurityButtonAnimationDelegate.FADE_DURATION_MS)
                                         .start();
                             }
                         })
@@ -165,26 +127,11 @@ class CustomTabToolbarAnimationDelegate {
     }
 
     /**
-     * Starts the animation to show the security button.
+     * Starts the animation to show/hide the security button,
+     * @param securityIconResource  The updated resource to be assigned to the security status icon.
+     * When this is null, the icon is animated to the left and faded out.
      */
-    void showSecurityButton() {
-        if (mSecurityButtonHideAnimator.isStarted()) mSecurityButtonHideAnimator.cancel();
-        if (mSecurityButtonShowAnimator.isStarted()
-                || mSecurityButton.getVisibility() == View.VISIBLE) {
-            return;
-        }
-        mSecurityButtonShowAnimator.start();
-    }
-
-    /**
-     * Starts the animation to hide the security button.
-     */
-    void hideSecurityButton() {
-        if (mSecurityButtonShowAnimator.isStarted()) mSecurityButtonShowAnimator.cancel();
-        if (mSecurityButtonHideAnimator.isStarted()
-                || mTitleUrlContainer.getTranslationX() == -mSecurityButtonWidth) {
-            return;
-        }
-        mSecurityButtonHideAnimator.start();
+    void updateSecurityButton(int securityIconResource) {
+        mSecurityButtonAnimationDelegate.updateSecurityButton(securityIconResource);
     }
 }

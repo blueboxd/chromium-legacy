@@ -13,7 +13,7 @@ import org.chromium.components.feed.core.proto.ui.piet.GradientsProto.LinearGrad
 /** Class to display gradients according to the Piet spec (angle + color stops at %ages) */
 public class GradientDrawable extends ShapeDrawable {
     // Doesn't like the call to setShape and setShaderFactory
-    @SuppressWarnings("initialization")
+    @SuppressWarnings("nullness")
     public GradientDrawable(LinearGradient gradient, Supplier<Boolean> rtlSupplier) {
         super();
 

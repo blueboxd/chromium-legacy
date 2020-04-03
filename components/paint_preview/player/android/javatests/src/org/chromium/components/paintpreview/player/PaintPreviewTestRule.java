@@ -11,6 +11,7 @@ import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
  * Loads native and initializes the browser process for Paint Preview instrumentation tests.
@@ -25,7 +26,10 @@ public class PaintPreviewTestRule extends NativeLibraryTestRule {
     private void setUp() {
         mAccountManager = new FakeAccountManagerDelegate(
                 FakeAccountManagerDelegate.DISABLE_PROFILE_DATA_SOURCE);
-        AccountManagerFacadeProvider.overrideAccountManagerFacadeForTests(mAccountManager);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            AccountManagerFacadeProvider.setInstanceForTests(
+                    new AccountManagerFacade(mAccountManager));
+        });
         loadNativeLibraryAndInitBrowserProcess();
     }
 

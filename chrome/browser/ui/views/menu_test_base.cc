@@ -28,8 +28,8 @@ void MenuTestBase::Click(views::View* view, base::OnceClosure next) {
 }
 
 void MenuTestBase::KeyPress(ui::KeyboardCode keycode, base::OnceClosure next) {
-  ui_controls::SendKeyPressNotifyWhenDone(GetWidget()->GetNativeWindow(),
-                                          keycode, false, false, false, false,
+  ui_controls::SendKeyPressNotifyWhenDone(window()->GetNativeWindow(), keycode,
+                                          false, false, false, false,
                                           std::move(next));
 }
 

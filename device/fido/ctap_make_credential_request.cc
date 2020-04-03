@@ -130,15 +130,13 @@ base::Optional<CtapMakeCredentialRequest> CtapMakeCredentialRequest::Parse(
       }
       switch (cred_protect_it->second.GetUnsigned()) {
         case 1:
-          // Default behaviour.
+          request.cred_protect = device::CredProtect::kUVOptional;
           break;
         case 2:
-          request.cred_protect =
-              std::make_pair(device::CredProtect::kUVOrCredIDRequired, false);
+          request.cred_protect = device::CredProtect::kUVOrCredIDRequired;
           break;
         case 3:
-          request.cred_protect =
-              std::make_pair(device::CredProtect::kUVRequired, false);
+          request.cred_protect = device::CredProtect::kUVRequired;
           break;
         default:
           return base::nullopt;
@@ -253,7 +251,7 @@ AsCTAPRequestValuePair(const CtapMakeCredentialRequest& request) {
 
   if (request.cred_protect) {
     extensions.emplace(kExtensionCredProtect,
-                       static_cast<uint8_t>(request.cred_protect->first));
+                       static_cast<int64_t>(*request.cred_protect));
   }
 
   if (request.android_client_data_ext) {

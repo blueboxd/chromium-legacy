@@ -148,6 +148,51 @@ Display BuildPrimaryDisplay() {
   return BuildDisplayForScreen([[NSScreen screens] firstObject]);
 }
 
+std::vector<Display> BuildDisplaysFromQuartz() {
+  // Don't just return all online displays.  This would include displays
+  // that mirror other displays, which are not desired in this list.  It's
+  // tempting to use the count returned by CGGetActiveDisplayList, but active
+  // displays exclude sleeping displays, and those are desired.
+
+  // It would be ridiculous to have this many displays connected, but
+  // CGDirectDisplayID is just an integer, so supporting up to this many
+  // doesn't hurt.
+  CGDirectDisplayID online_displays[1024];
+  CGDisplayCount online_display_count = 0;
+  if (CGGetOnlineDisplayList(base::size(online_displays), online_displays,
+                             &online_display_count) != kCGErrorSuccess) {
+    return std::vector<Display>(1, BuildPrimaryDisplay());
+  }
+
+  typedef std::map<int64_t, NSScreen*> ScreenIdsToScreensMap;
+  ScreenIdsToScreensMap screen_ids_to_screens;
+  for (NSScreen* screen in [NSScreen screens]) {
+    NSDictionary* screen_device_description = [screen deviceDescription];
+    int64_t screen_id = [[screen_device_description
+        objectForKey:@"NSScreenNumber"] unsignedIntValue];
+    screen_ids_to_screens[screen_id] = screen;
+  }
+
+  std::vector<Display> displays;
+  for (CGDisplayCount online_display_index = 0;
+       online_display_index < online_display_count; ++online_display_index) {
+    CGDirectDisplayID online_display = online_displays[online_display_index];
+    if (CGDisplayMirrorsDisplay(online_display) == kCGNullDirectDisplay) {
+      // If this display doesn't mirror any other, include it in the list.
+      // The primary display in a mirrored set will be counted, but those that
+      // mirror it will not be.
+      ScreenIdsToScreensMap::iterator foundScreen =
+          screen_ids_to_screens.find(online_display);
+      if (foundScreen != screen_ids_to_screens.end()) {
+        displays.push_back(BuildDisplayForScreen(foundScreen->second));
+      }
+    }
+  }
+
+  return displays.empty() ? std::vector<Display>(1, BuildPrimaryDisplay())
+                          : displays;
+}
+
 // Returns the minimum Manhattan distance from |point| to corners of |screen|
 // frame.
 CGFloat GetMinimumDistanceToCorner(const NSPoint& point, NSScreen* screen) {
@@ -321,7 +366,9 @@ class ScreenMac : public Screen {
     // on Catalina, it has been observed that -[NSScreen screens] changes before
     // any notifications are received.
     // https://crbug.com/1021340.
-    OnNSScreensMayHaveChanged();
+    // When this happens, do not update |displays_|, because we may be iterating
+    // it higher up in the stack.
+    // https://crbug.com/1033866
     DLOG(ERROR) << "Value of -[NSScreen screens] changed before notification.";
     return BuildDisplayForScreen(screen);
   }
@@ -337,51 +384,6 @@ class ScreenMac : public Screen {
     UpdateDisplaysIfNeeded();
     change_notifier_.NotifyDisplaysChanged(old_displays_, displays_);
     old_displays_ = displays_;
-  }
-
-  std::vector<Display> BuildDisplaysFromQuartz() const {
-    // Don't just return all online displays.  This would include displays
-    // that mirror other displays, which are not desired in this list.  It's
-    // tempting to use the count returned by CGGetActiveDisplayList, but active
-    // displays exclude sleeping displays, and those are desired.
-
-    // It would be ridiculous to have this many displays connected, but
-    // CGDirectDisplayID is just an integer, so supporting up to this many
-    // doesn't hurt.
-    CGDirectDisplayID online_displays[1024];
-    CGDisplayCount online_display_count = 0;
-    if (CGGetOnlineDisplayList(base::size(online_displays), online_displays,
-                               &online_display_count) != kCGErrorSuccess) {
-      return std::vector<Display>(1, BuildPrimaryDisplay());
-    }
-
-    typedef std::map<int64_t, NSScreen*> ScreenIdsToScreensMap;
-    ScreenIdsToScreensMap screen_ids_to_screens;
-    for (NSScreen* screen in [NSScreen screens]) {
-      NSDictionary* screen_device_description = [screen deviceDescription];
-      int64_t screen_id = [[screen_device_description
-          objectForKey:@"NSScreenNumber"] unsignedIntValue];
-      screen_ids_to_screens[screen_id] = screen;
-    }
-
-    std::vector<Display> displays;
-    for (CGDisplayCount online_display_index = 0;
-         online_display_index < online_display_count; ++online_display_index) {
-      CGDirectDisplayID online_display = online_displays[online_display_index];
-      if (CGDisplayMirrorsDisplay(online_display) == kCGNullDirectDisplay) {
-        // If this display doesn't mirror any other, include it in the list.
-        // The primary display in a mirrored set will be counted, but those that
-        // mirror it will not be.
-        ScreenIdsToScreensMap::iterator foundScreen =
-            screen_ids_to_screens.find(online_display);
-        if (foundScreen != screen_ids_to_screens.end()) {
-          displays.push_back(BuildDisplayForScreen(foundScreen->second));
-        }
-      }
-    }
-
-    return displays.empty() ? std::vector<Display>(1, BuildPrimaryDisplay())
-                            : displays;
   }
 
   void OnNSScreensMayHaveChanged() const {

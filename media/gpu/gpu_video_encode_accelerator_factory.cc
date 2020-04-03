@@ -100,11 +100,9 @@ std::vector<VEAFactoryFunction> GetVEAFactoryFunctions(
   vea_factory_functions.push_back(base::BindRepeating(&CreateVTVEA));
 #endif
 #if defined(OS_WIN)
-  if (base::FeatureList::IsEnabled(kMediaFoundationH264Encoding)) {
-    vea_factory_functions.push_back(base::BindRepeating(
-        &CreateMediaFoundationVEA,
-        gpu_preferences.enable_media_foundation_vea_on_windows7));
-  }
+  vea_factory_functions.push_back(base::BindRepeating(
+      &CreateMediaFoundationVEA,
+      gpu_preferences.enable_media_foundation_vea_on_windows7));
 #endif
   return vea_factory_functions;
 }

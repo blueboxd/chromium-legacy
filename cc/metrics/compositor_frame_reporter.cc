@@ -160,8 +160,10 @@ constexpr int kEventLatencyEventTypeCount =
     static_cast<int>(ui::EventType::ET_LAST);
 constexpr int kEventLatencyScrollTypeCount =
     static_cast<int>(ScrollInputType::kMaxValue) + 1;
-constexpr int kMaxEventLatencyHistogramIndex =
+constexpr int kMaxEventLatencyHistogramBaseIndex =
     kEventLatencyEventTypeCount * kEventLatencyScrollTypeCount;
+constexpr int kMaxEventLatencyHistogramIndex =
+    kMaxEventLatencyHistogramBaseIndex * kStageTypeCount;
 constexpr int kEventLatencyHistogramMin = 1;
 constexpr int kEventLatencyHistogramMax = 5000000;
 constexpr int kEventLatencyHistogramBucketCount = 100;
@@ -543,7 +545,7 @@ void CompositorFrameReporter::ReportEventLatencyHistograms() const {
         event_metrics.scroll_input_type()
             ? static_cast<int>(*event_metrics.scroll_input_type())
             : 0;
-    const int histogram_index =
+    const int histogram_base_index =
         event_type_index * kEventLatencyScrollTypeCount + scroll_type_index;
 
     // For scroll events, report total latency up to gpu-swap-end. This is
@@ -556,8 +558,8 @@ void CompositorFrameReporter::ReportEventLatencyHistograms() const {
       const std::string swap_end_histogram_name =
           histogram_base_name + ".TotalLatencyToSwapEnd";
       STATIC_HISTOGRAM_POINTER_GROUP(
-          swap_end_histogram_name, histogram_index,
-          kMaxEventLatencyHistogramIndex,
+          swap_end_histogram_name, histogram_base_index,
+          kMaxEventLatencyHistogramBaseIndex,
           AddTimeMicrosecondsGranularity(swap_end_latency),
           base::Histogram::FactoryGet(
               swap_end_histogram_name, kEventLatencyHistogramMin,
@@ -565,53 +567,72 @@ void CompositorFrameReporter::ReportEventLatencyHistograms() const {
               base::HistogramBase::kUmaTargetedHistogramFlag));
     }
 
-    base::TimeDelta total_latency =
-        frame_termination_time_ - event_metrics.time_stamp();
-    const std::string histogram_name = histogram_base_name + ".TotalLatency";
-    STATIC_HISTOGRAM_POINTER_GROUP(
-        histogram_name, histogram_index, kMaxEventLatencyHistogramIndex,
-        AddTimeMicrosecondsGranularity(total_latency),
-        base::Histogram::FactoryGet(
-            histogram_name, kEventLatencyHistogramMin,
-            kEventLatencyHistogramMax, kEventLatencyHistogramBucketCount,
-            base::HistogramBase::kUmaTargetedHistogramFlag));
-
     const auto trace_id = TRACE_ID_LOCAL(&event_metrics);
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP1(
         "cc,input", "EventLatency", trace_id, event_metrics.time_stamp(),
         "event", event_metrics.GetTypeName());
 
-    // Report the breakdowns.
     // It is possible for an event to arrive in the compositor in the middle of
     // a frame (e.g. the browser received the event *after* renderer received a
     // begin-impl, and the event reached the compositor before that frame
     // ended). To handle such cases, find the first stage that happens after the
     // event's arrival in the browser.
-    // TODO(mohsen): Report the breakdowns in UMA too.
     size_t index = 0;
     for (; index < stage_history_.size(); ++index) {
       const auto& stage = stage_history_[index];
       if (stage.start_time > event_metrics.time_stamp()) {
+        const char stage_type_name[] = "BrowserToRendererCompositor";
+
+        const base::TimeDelta latency =
+            stage.start_time - event_metrics.time_stamp();
+        const std::string histogram_name =
+            base::StrCat({histogram_base_name, ".", stage_type_name});
+        STATIC_HISTOGRAM_POINTER_GROUP(
+            histogram_name, histogram_base_index,
+            kMaxEventLatencyHistogramBaseIndex,
+            AddTimeMicrosecondsGranularity(latency),
+            base::Histogram::FactoryGet(
+                histogram_name, kEventLatencyHistogramMin,
+                kEventLatencyHistogramMax, kEventLatencyHistogramBucketCount,
+                base::HistogramBase::kUmaTargetedHistogramFlag));
+
         TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
-            "cc,input", "BrowserToRendererCompositor", trace_id,
-            event_metrics.time_stamp());
+            "cc,input", stage_type_name, trace_id, event_metrics.time_stamp());
         TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
-            "cc,input", "BrowserToRendererCompositor", trace_id,
-            stage.start_time);
+            "cc,input", stage_type_name, trace_id, stage.start_time);
         break;
       }
     }
 
     for (; index < stage_history_.size(); ++index) {
       const auto& stage = stage_history_[index];
-      if (stage.stage_type == StageType::kTotalLatency)
-        break;
-      TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
-          "cc,input", GetStageName(static_cast<int>(stage.stage_type)),
-          trace_id, stage.start_time);
-      TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
-          "cc,input", GetStageName(static_cast<int>(stage.stage_type)),
-          trace_id, stage.end_time);
+
+      // Total latency is calculated since the event timestamp.
+      const base::TimeTicks start_time =
+          stage.stage_type == StageType::kTotalLatency
+              ? event_metrics.time_stamp()
+              : stage.start_time;
+      const base::TimeDelta latency = stage.end_time - start_time;
+      const int stage_type_index = static_cast<int>(stage.stage_type);
+      const char* stage_type_name = GetStageName(stage_type_index);
+      const std::string histogram_name =
+          base::StrCat({histogram_base_name, ".", stage_type_name});
+      const int histogram_index =
+          histogram_base_index * kStageTypeCount + stage_type_index;
+      STATIC_HISTOGRAM_POINTER_GROUP(
+          histogram_name, histogram_index, kMaxEventLatencyHistogramIndex,
+          AddTimeMicrosecondsGranularity(latency),
+          base::Histogram::FactoryGet(
+              histogram_name, kEventLatencyHistogramMin,
+              kEventLatencyHistogramMax, kEventLatencyHistogramBucketCount,
+              base::HistogramBase::kUmaTargetedHistogramFlag));
+
+      if (stage.stage_type != StageType::kTotalLatency) {
+        TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
+            "cc,input", stage_type_name, trace_id, stage.start_time);
+        TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
+            "cc,input", stage_type_name, trace_id, stage.end_time);
+      }
     }
     TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
         "cc,input", "EventLatency", trace_id, frame_termination_time_);

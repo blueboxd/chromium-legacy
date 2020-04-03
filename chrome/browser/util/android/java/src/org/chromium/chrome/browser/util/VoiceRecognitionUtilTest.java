@@ -42,7 +42,7 @@ public class VoiceRecognitionUtilTest {
 
     @After
     public void tearDown() {
-        AccountManagerFacadeProvider.resetAccountManagerFacadeForTests();
+        AccountManagerFacadeProvider.resetInstanceForTests();
     }
 
     private static class IntentTestPackageManager extends MockPackageManager {

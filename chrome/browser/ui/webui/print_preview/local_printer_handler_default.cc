@@ -11,19 +11,23 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_utils.h"
 #include "components/printing/browser/printer_capabilities.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "printing/backend/print_backend.h"
 
 #if defined(OS_MACOSX)
 #include "components/printing/browser/features.h"
 #include "components/printing/browser/printer_capabilities_mac.h"
+#endif
+
+#if defined(OS_WIN)
+#include "base/threading/thread_restrictions.h"
 #endif
 
 namespace printing {
@@ -32,24 +36,37 @@ namespace {
 
 scoped_refptr<base::TaskRunner> CreatePrinterHandlerTaskRunner() {
   // USER_VISIBLE because the result is displayed in the print preview dialog.
+#if !defined(OS_WIN)
   static constexpr base::TaskTraits kTraits = {
       base::MayBlock(), base::TaskPriority::USER_VISIBLE};
+#endif
 
 #if defined(USE_CUPS)
   // CUPS is thread safe.
   return base::ThreadPool::CreateTaskRunner(kTraits);
 #elif defined(OS_WIN)
-  // Windows drivers are likely not thread-safe.
-  return base::ThreadPool::CreateSingleThreadTaskRunner(kTraits);
+  // Windows drivers are likely not thread-safe and need to be accessed on the
+  // UI thread.
+  return base::CreateSingleThreadTaskRunner({content::BrowserThread::UI,
+                                             base::MayBlock(),
+                                             base::TaskPriority::USER_VISIBLE});
 #else
   // Be conservative on unsupported platforms.
   return base::ThreadPool::CreateSingleThreadTaskRunner(kTraits);
 #endif
 }
 
-PrinterList EnumeratePrintersAsync(const std::string& locale) {
-  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
-                                                base::BlockingType::MAY_BLOCK);
+}  // namespace
+
+// static
+PrinterList LocalPrinterHandlerDefault::EnumeratePrintersAsync(
+    const std::string& locale) {
+#if defined(OS_WIN)
+  // Blocking is needed here because Windows printer drivers are oftentimes
+  // not thread-safe and have to be accessed on the UI thread.
+  base::ScopedAllowBlocking allow_blocking;
+#endif
+
   scoped_refptr<PrintBackend> print_backend(
       PrintBackend::CreateInstance(nullptr, locale));
 
@@ -58,16 +75,22 @@ PrinterList EnumeratePrintersAsync(const std::string& locale) {
   return printer_list;
 }
 
-base::Value FetchCapabilitiesAsync(const std::string& device_name,
-                                   const std::string& locale) {
+// static
+base::Value LocalPrinterHandlerDefault::FetchCapabilitiesAsync(
+    const std::string& device_name,
+    const std::string& locale) {
   PrinterSemanticCapsAndDefaults::Papers user_defined_papers;
 #if defined(OS_MACOSX)
   if (base::FeatureList::IsEnabled(features::kEnableCustomMacPaperSizes))
     user_defined_papers = GetMacCustomPaperSizes();
 #endif
 
-  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
-                                                base::BlockingType::MAY_BLOCK);
+#if defined(OS_WIN)
+  // Blocking is needed here because Windows printer drivers are oftentimes
+  // not thread-safe and have to be accessed on the UI thread.
+  base::ScopedAllowBlocking allow_blocking;
+#endif
+
   scoped_refptr<PrintBackend> print_backend(
       PrintBackend::CreateInstance(nullptr, locale));
 
@@ -84,9 +107,15 @@ base::Value FetchCapabilitiesAsync(const std::string& device_name,
       /*has_secure_protocol=*/false, print_backend);
 }
 
-std::string GetDefaultPrinterAsync(const std::string& locale) {
-  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
-                                                base::BlockingType::MAY_BLOCK);
+// static
+std::string LocalPrinterHandlerDefault::GetDefaultPrinterAsync(
+    const std::string& locale) {
+#if defined(OS_WIN)
+  // Blocking is needed here because Windows printer drivers are oftentimes
+  // not thread-safe and have to be accessed on the UI thread.
+  base::ScopedAllowBlocking allow_blocking;
+#endif
+
   scoped_refptr<PrintBackend> print_backend(
       PrintBackend::CreateInstance(nullptr, locale));
 
@@ -94,8 +123,6 @@ std::string GetDefaultPrinterAsync(const std::string& locale) {
   VLOG(1) << "Default Printer: " << default_printer;
   return default_printer;
 }
-
-}  // namespace
 
 LocalPrinterHandlerDefault::LocalPrinterHandlerDefault(
     content::WebContents* preview_web_contents)

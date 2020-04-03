@@ -329,7 +329,7 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
       viz::VerticalScrollDirection scroll_direction) {}
 
   // Returns true if the delegate is a portal.
-  virtual bool IsPortal() const;
+  virtual bool IsPortal();
 
   // Notify the delegate that the screen orientation has been changed.
   virtual void DidChangeScreenOrientation() {}

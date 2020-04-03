@@ -16,10 +16,9 @@ import org.chromium.ui.base.WindowAndroid;
 public final class PermissionRequestUtils {
     @CalledByNative
     private static void requestPermission(
-            WindowAndroid windowAndroid, long nativeCallback, int contentSettingsType) {
+            WindowAndroid windowAndroid, long nativeCallback, int[] contentSettingsTypes) {
         if (!AndroidPermissionRequester.requestAndroidPermissions(windowAndroid,
-                    new int[] {contentSettingsType},
-                    new AndroidPermissionRequester.RequestDelegate() {
+                    contentSettingsTypes, new AndroidPermissionRequester.RequestDelegate() {
                         @Override
                         public void onAndroidPermissionAccepted() {
                             PermissionRequestUtilsJni.get().onResult(nativeCallback, true);
@@ -29,8 +28,7 @@ public final class PermissionRequestUtils {
                         public void onAndroidPermissionCanceled() {
                             PermissionRequestUtilsJni.get().onResult(nativeCallback, false);
                         }
-                    },
-                    new PermissionsClient())) {
+                    }, new PermissionsClient())) {
             PermissionRequestUtilsJni.get().onResult(nativeCallback, false);
         }
     }

@@ -34,7 +34,7 @@ public class BorderDrawable extends ShapeDrawable {
     }
 
     // Doesn't like calls to getPaint()
-    @SuppressWarnings("initialization")
+    @SuppressWarnings("nullness")
     public BorderDrawable(Context context, Borders borders, float[] cornerRadii, boolean isRtL,
             int width, int height) {
         super(new RoundRectShape(cornerRadii, null, null));

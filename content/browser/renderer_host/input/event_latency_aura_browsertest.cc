@@ -83,6 +83,16 @@ IN_PROC_BROWSER_TEST_F(EventLatencyBrowserTest, KeyPressOnButton) {
   FetchHistogramsFromChildProcesses();
 
   base::HistogramTester::CountsMap expected_counts = {
+      {"EventLatency.KeyReleased.BrowserToRendererCompositor", 1},
+      {"EventLatency.KeyReleased.BeginImplFrameToSendBeginMainFrame", 1},
+      {"EventLatency.KeyReleased.SendBeginMainFrameToCommit", 1},
+      {"EventLatency.KeyReleased.Commit", 1},
+      {"EventLatency.KeyReleased.EndCommitToActivation", 1},
+      {"EventLatency.KeyReleased.Activation", 1},
+      {"EventLatency.KeyReleased.EndActivateToSubmitCompositorFrame", 1},
+      {"EventLatency.KeyReleased."
+       "SubmitCompositorFrameToPresentationCompositorFrame",
+       1},
       {"EventLatency.KeyReleased.TotalLatency", 1},
   };
   EXPECT_THAT(histogram_tester.GetTotalCountsForPrefix("EventLatency."),
@@ -114,6 +124,16 @@ IN_PROC_BROWSER_TEST_F(EventLatencyBrowserTest, KeyPressOnButtonWithAnimation) {
   FetchHistogramsFromChildProcesses();
 
   base::HistogramTester::CountsMap expected_counts = {
+      {"EventLatency.KeyReleased.BrowserToRendererCompositor", 1},
+      {"EventLatency.KeyReleased.BeginImplFrameToSendBeginMainFrame", 1},
+      {"EventLatency.KeyReleased.SendBeginMainFrameToCommit", 1},
+      {"EventLatency.KeyReleased.Commit", 1},
+      {"EventLatency.KeyReleased.EndCommitToActivation", 1},
+      {"EventLatency.KeyReleased.Activation", 1},
+      {"EventLatency.KeyReleased.EndActivateToSubmitCompositorFrame", 1},
+      {"EventLatency.KeyReleased."
+       "SubmitCompositorFrameToPresentationCompositorFrame",
+       1},
       {"EventLatency.KeyReleased.TotalLatency", 1},
   };
   EXPECT_THAT(histogram_tester.GetTotalCountsForPrefix("EventLatency."),

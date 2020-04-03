@@ -63,7 +63,8 @@ public class AccountManagerFacadeRobolectricTest {
         mDelegate = new FakeAccountManagerDelegate(
                 FakeAccountManagerDelegate.ENABLE_PROFILE_DATA_SOURCE);
         Assert.assertFalse(mDelegate.isRegisterObserversCalled());
-        AccountManagerFacadeProvider.overrideAccountManagerFacadeForTests(mDelegate);
+        // TODO(https://crbug.com/1067633): Remove AccountManagerFacadeProvider in this test
+        AccountManagerFacadeProvider.setInstanceForTests(new AccountManagerFacade(mDelegate));
         Assert.assertTrue(mDelegate.isRegisterObserversCalled());
         mFacade = AccountManagerFacadeProvider.getInstance();
     }

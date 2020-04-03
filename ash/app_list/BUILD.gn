@@ -237,6 +237,7 @@ test("app_list_unittests") {
     "//base",
     "//base/test:test_support",
     "//chromeos/constants",
+    "//chromeos/services/assistant/public/cpp:interaction_subscriber",
     "//mojo/core/embedder",
     "//mojo/public/cpp/bindings",
     "//services/content/public/cpp",

@@ -60,6 +60,17 @@ function getSyncNothingPrefs() {
   return getOsSyncPrefs(false);
 }
 
+// Returns a SyncStatus representing the default syncing state.
+function getDefaultSyncStatus() {
+  return {
+    disabled: false,
+    hasError: false,
+    hasUnrecoverableError: false,
+    signedIn: true,
+    statusAction: settings.StatusAction.NO_ACTION,
+  };
+}
+
 function setupWithFeatureEnabled() {
   cr.webUIListenerCallback(
       'os-sync-prefs-changed', /*featureEnabled=*/ true, getSyncAllPrefs());
@@ -74,8 +85,9 @@ function setupWithFeatureDisabled() {
 }
 
 suite('OsSyncControlsTest', function() {
-  let syncControls = null;
   let browserProxy = null;
+  let syncControls = null;
+  let syncIconContainer = null;
 
   setup(function() {
     browserProxy = new TestOsSyncBrowserProxy();
@@ -83,11 +95,14 @@ suite('OsSyncControlsTest', function() {
 
     PolymerTest.clearBody();
     syncControls = document.createElement('os-sync-controls');
-    syncControls.syncStatus = {hasError: false};
+    syncControls.syncStatus = getDefaultSyncStatus();
     syncControls.profileName = 'John Cena';
     syncControls.profileEmail = 'john.cena@gmail.com';
     syncControls.profileIconUrl = 'data:image/png;base64,abc123';
     document.body.appendChild(syncControls);
+
+    // Alias to help with line wrapping in test cases.
+    syncIconContainer = syncControls.$.syncIconContainer;
   });
 
   teardown(function() {
@@ -102,6 +117,47 @@ suite('OsSyncControlsTest', function() {
 
   test('Avatar icon', function() {
     assertEquals('data:image/png;base64,abc123', syncControls.$.avatarIcon.src);
+  });
+
+  test('Status icon is visible with feature enabled', function() {
+    setupWithFeatureEnabled();
+    assertFalse(syncControls.$.syncIconContainer.hidden);
+  });
+
+  test('Status icon is hidden with feature disabled', function() {
+    setupWithFeatureDisabled();
+    assertTrue(syncControls.$.syncIconContainer.hidden);
+  });
+
+  test('Status icon with error', function() {
+    setupWithFeatureEnabled();
+    const status = getDefaultSyncStatus();
+    status.hasError = true;
+    syncControls.syncStatus = status;
+
+    assertTrue(syncIconContainer.classList.contains('sync-problem'));
+    assertTrue(!!syncControls.$$('[icon="settings:sync-problem"]'));
+  });
+
+  test('Status icon with sync paused for reauthentication', function() {
+    setupWithFeatureEnabled();
+    const status = getDefaultSyncStatus();
+    status.hasError = true;
+    status.statusAction = settings.StatusAction.REAUTHENTICATE;
+    syncControls.syncStatus = status;
+
+    assertTrue(syncIconContainer.classList.contains('sync-paused'));
+    assertTrue(!!syncControls.$$('[icon="settings:sync-disabled"]'));
+  });
+
+  test('Status icon with sync disabled', function() {
+    setupWithFeatureEnabled();
+    const status = getDefaultSyncStatus();
+    status.disabled = true;
+    syncControls.syncStatus = status;
+
+    assertTrue(syncIconContainer.classList.contains('sync-disabled'));
+    assertTrue(!!syncControls.$$('[icon="cr:sync"]'));
   });
 
   test('Account name and email with feature enabled', function() {

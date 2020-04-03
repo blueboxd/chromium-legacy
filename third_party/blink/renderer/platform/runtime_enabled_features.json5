@@ -917,7 +917,7 @@
       // unit tests.
       name: "LayoutNG",
       // Keep this list in sync with the one in LayoutNGFlexBox below.
-      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFieldset", "LayoutNGFragmentItem", "LayoutNGLineCache", "EditingNG", "BidiCaretAffinity", "LayoutNGTable", "LayoutNGFragmentTraversal"],
+      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFieldset", "LayoutNGFragmentItem", "LayoutNGGrid", "LayoutNGLineCache", "EditingNG", "BidiCaretAffinity", "LayoutNGTable", "LayoutNGFragmentTraversal"],
       status: "stable",
     },
     {
@@ -928,7 +928,7 @@
     },
     {
       name: "LayoutNGFlexBox",
-      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFieldset", "LayoutNGFragmentItem", "LayoutNGLineCache", "EditingNG", "BidiCaretAffinity", "LayoutNGTable", "LayoutNGFragmentTraversal"],
+      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFieldset", "LayoutNGFragmentItem", "LayoutNGGrid", "LayoutNGLineCache", "EditingNG", "BidiCaretAffinity", "LayoutNGTable", "LayoutNGFragmentTraversal"],
       status: "experimental",
     },
     {
@@ -944,6 +944,9 @@
       // Traverse the fragment tree when painting and hit-testing, instead of
       // the layout object tree.
       name: "LayoutNGFragmentTraversal",
+    },
+    {
+      name: "LayoutNGGrid",
     },
     {
       name: "LayoutNGLineCache",
@@ -1527,6 +1530,7 @@
     },
     {
       name: "ScreenWakeLock",
+      origin_trial_feature_name: "WakeLock",
       status: "experimental",
     },
     // WebSpeech API with both speech recognition and synthesis functionality
@@ -1809,6 +1813,7 @@
     },
     {
       name: "WakeLock",
+      origin_trial_feature_name: "WakeLock",
       implied_by: ['ScreenWakeLock', 'SystemWakeLock'],
     },
     {

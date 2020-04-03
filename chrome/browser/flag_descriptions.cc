@@ -2419,6 +2419,11 @@ const char kInterestFeedContentSuggestionsDescription[] =
 const char kInterestFeedContentSuggestionsName[] =
     "Interest Feed Content Suggestions";
 
+const char kInterestFeedV2Name[] = "Interest Feed v2";
+const char kInterestFeedV2Description[] =
+    "Show content suggestions on the New Tab Page and Start Surface using the "
+    "new Feed Component.";
+
 const char kInterestFeedFeedbackDescription[] =
     "Allow the user to provide feedback from a feed card.";
 const char kInterestFeedFeedbackName[] = "Interest Feed Feedback";

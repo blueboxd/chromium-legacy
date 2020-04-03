@@ -215,8 +215,12 @@ void RulesMonitorService::OnExtensionLoaded(
     load_data.rulesets.push_back(std::move(dynamic_ruleset));
   }
 
-  if (load_data.rulesets.empty())
+  if (load_data.rulesets.empty()) {
+    if (test_observer_)
+      test_observer_->OnRulesetLoadComplete(extension->id());
+
     return;
+  }
 
   auto load_ruleset_callback = base::BindOnce(
       &RulesMonitorService::OnRulesetLoaded, weak_factory_.GetWeakPtr());
@@ -269,9 +273,18 @@ void RulesMonitorService::OnExtensionUninstalled(
 void RulesMonitorService::OnRulesetLoaded(LoadRequestData load_data) {
   DCHECK(!load_data.rulesets.empty());
 
+  if (test_observer_)
+    test_observer_->OnRulesetLoadComplete(load_data.extension_id);
+
+  // The extension may have been uninstalled by this point. Return early if
+  // that's the case.
+  if (!extension_registry_->GetInstalledExtension(load_data.extension_id))
+    return;
+
   // Update checksums for all rulesets.
-  // TODO(crbug.com/754526): The extension may have been uninstalled by this
-  // point, in which case setting the prefs is incorrect.
+  // Note: We also do this for a non-enabled extension. The ruleset on the disk
+  // has already been modified at this point. So we do want to update the
+  // checksum for it to be in sync with what's on disk.
   for (const RulesetInfo& ruleset : load_data.rulesets) {
     if (!ruleset.new_checksum())
       continue;
@@ -324,12 +337,23 @@ void RulesMonitorService::OnDynamicRulesUpdated(
   RulesetInfo& dynamic_ruleset = load_data.rulesets[0];
   DCHECK_EQ(dynamic_ruleset.did_load_successfully(), !error.has_value());
 
+  // The extension may have been uninstalled by this point. Return early if
+  // that's the case.
+  if (!extension_registry_->GetInstalledExtension(load_data.extension_id)) {
+    // Still dispatch the |callback|, although it's probably a no-op.
+    std::move(callback).Run(std::move(error));
+    return;
+  }
+
   // Update the ruleset checksums if needed. Note it's possible that
   // new_checksum() is valid while did_load_successfully() returns false below.
   // This should be rare but can happen when updating the rulesets succeeds but
   // we fail to create a RulesetMatcher from the indexed ruleset file (e.g. due
   // to a file read error). We still update the prefs checksum to ensure the
   // next ruleset load succeeds.
+  // Note: We also do this for a non-enabled extension. The ruleset on the disk
+  // has already been modified at this point. So we do want to update the
+  // checksum for it to be in sync with what's on disk.
   if (dynamic_ruleset.new_checksum()) {
     prefs_->SetDNRDynamicRulesetChecksum(load_data.extension_id,
                                          *dynamic_ruleset.new_checksum());

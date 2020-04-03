@@ -262,6 +262,7 @@ source_set("weblayer_lib_base") {
     "//components/variations/service",
     "//components/version_info",
     "//components/web_cache/browser",
+    "//components/webrtc",
     "//content:content_resources",
     "//content:dev_ui_content_resources",
     "//content/app/resources",

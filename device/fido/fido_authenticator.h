@@ -194,6 +194,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
   virtual std::string GetId() const = 0;
   virtual base::string16 GetDisplayName() const = 0;
   virtual ProtocolVersion SupportedProtocol() const;
+  virtual bool SupportsCredProtectExtension() const;
   virtual const base::Optional<AuthenticatorSupportedOptions>& Options()
       const = 0;
   virtual base::Optional<FidoTransportProtocol> AuthenticatorTransport()

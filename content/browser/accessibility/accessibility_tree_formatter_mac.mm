@@ -220,7 +220,7 @@ NSArray* AllAttributesArray() {
 
 }  // namespace
 
-class AccessibilityTreeFormatterMac : public AccessibilityTreeFormatterBrowser {
+class AccessibilityTreeFormatterMac : public AccessibilityTreeFormatterBase {
  public:
   explicit AccessibilityTreeFormatterMac();
   ~AccessibilityTreeFormatterMac() override;
@@ -228,14 +228,27 @@ class AccessibilityTreeFormatterMac : public AccessibilityTreeFormatterBrowser {
   void AddDefaultFilters(
       std::vector<PropertyFilter>* property_filters) override;
 
+  std::unique_ptr<base::DictionaryValue> BuildAccessibilityTree(
+      BrowserAccessibility* root) override;
+
+  std::unique_ptr<base::DictionaryValue> BuildAccessibilityTreeForProcess(
+      base::ProcessId pid) override;
+  std::unique_ptr<base::DictionaryValue> BuildAccessibilityTreeForWindow(
+      gfx::AcceleratedWidget widget) override;
+  std::unique_ptr<base::DictionaryValue> BuildAccessibilityTreeForPattern(
+      const base::StringPiece& pattern) override;
+
  private:
+  void RecursiveBuildAccessibilityTree(const BrowserAccessibilityCocoa* node,
+                                       base::DictionaryValue* dict);
+
   base::FilePath::StringType GetExpectedFileSuffix() override;
   const std::string GetAllowEmptyString() override;
   const std::string GetAllowString() override;
   const std::string GetDenyString() override;
   const std::string GetDenyNodeString() override;
-  void AddProperties(const BrowserAccessibility& node,
-                     base::DictionaryValue* dict) override;
+  void AddProperties(const BrowserAccessibilityCocoa* node,
+                     base::DictionaryValue* dict);
   base::string16 ProcessTreeForOutput(
       const base::DictionaryValue& node,
       base::DictionaryValue* filtered_dict_result = nullptr) override;
@@ -265,12 +278,61 @@ void AccessibilityTreeFormatterMac::AddDefaultFilters(
   AddPropertyFilter(property_filters, "AXValueAutofill*");
   AddPropertyFilter(property_filters, "AXAutocomplete*");
 }
-void AccessibilityTreeFormatterMac::AddProperties(
-    const BrowserAccessibility& node,
+
+std::unique_ptr<base::DictionaryValue>
+AccessibilityTreeFormatterMac::BuildAccessibilityTree(
+    BrowserAccessibility* root) {
+  DCHECK(root);
+  DCHECK(root->instance_active());
+
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+  BrowserAccessibilityCocoa* cocoa_root = ToBrowserAccessibilityCocoa(root);
+  RecursiveBuildAccessibilityTree(cocoa_root, dict.get());
+  return dict;
+}
+
+std::unique_ptr<base::DictionaryValue>
+AccessibilityTreeFormatterMac::BuildAccessibilityTreeForProcess(
+    base::ProcessId pid) {
+  NOTREACHED();
+  return nullptr;
+}
+
+std::unique_ptr<base::DictionaryValue>
+AccessibilityTreeFormatterMac::BuildAccessibilityTreeForWindow(
+    gfx::AcceleratedWidget widget) {
+  NOTREACHED();
+  return nullptr;
+}
+
+std::unique_ptr<base::DictionaryValue>
+AccessibilityTreeFormatterMac::BuildAccessibilityTreeForPattern(
+    const base::StringPiece& pattern) {
+  NOTREACHED();
+  return nullptr;
+}
+
+void AccessibilityTreeFormatterMac::RecursiveBuildAccessibilityTree(
+    const BrowserAccessibilityCocoa* cocoa_node,
     base::DictionaryValue* dict) {
-  dict->SetInteger("id", node.GetId());
-  BrowserAccessibilityCocoa* cocoa_node =
-      ToBrowserAccessibilityCocoa(const_cast<BrowserAccessibility*>(&node));
+  AddProperties(cocoa_node, dict);
+
+  auto children = std::make_unique<base::ListValue>();
+  for (BrowserAccessibilityCocoa* cocoa_child in [cocoa_node children]) {
+    std::unique_ptr<base::DictionaryValue> child_dict(
+        new base::DictionaryValue);
+    RecursiveBuildAccessibilityTree(cocoa_child, child_dict.get());
+    children->Append(std::move(child_dict));
+  }
+  dict->Set(kChildrenDictAttr, std::move(children));
+}
+
+void AccessibilityTreeFormatterMac::AddProperties(
+    const BrowserAccessibilityCocoa* cocoa_node,
+    base::DictionaryValue* dict) {
+  BrowserAccessibility* node = [cocoa_node owner];
+  dict->SetInteger("id", node->GetId());
+
   NSArray* supportedAttributes = [cocoa_node accessibilityAttributeNames];
 
   string role = SysNSStringToUTF8(
@@ -292,7 +354,7 @@ void AccessibilityTreeFormatterMac::AddProperties(
       dict->Set(SysNSStringToUTF8(requestedAttribute), PopulateObject(value));
     }
   }
-  dict->Set(kPositionDictAttr, PopulatePosition(node));
+  dict->Set(kPositionDictAttr, PopulatePosition(*node));
   dict->Set(kSizeDictAttr, PopulateSize(cocoa_node));
 }
 

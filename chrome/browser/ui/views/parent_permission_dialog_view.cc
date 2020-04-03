@@ -40,6 +40,7 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
@@ -57,16 +58,17 @@
 #include "ui/views/layout/grid_layout.h"
 
 namespace {
-constexpr int kSectionPaddingTop = 20;
+constexpr int kPermissionSectionPaddingTop = 20;
+constexpr int kPermissionSectionPaddingBottom = 20;
+constexpr int kInvalidCredentialLabelFontSizeDelta = 1;
+constexpr int kInvalidCredentialLabelTopPadding = 3;
 
 // Label that may contain empty text.
 // Override is needed to configure accessibility node for an empty name.
 class MaybeEmptyLabel : public views::Label {
  public:
-  explicit MaybeEmptyLabel(const std::string& text)
-      : views::Label(base::UTF8ToUTF16(text),
-                     CONTEXT_BODY_TEXT_LARGE,
-                     views::style::STYLE_SECONDARY) {}
+  MaybeEmptyLabel(const std::string& text, const CustomFont& font)
+      : views::Label(base::UTF8ToUTF16(text), font) {}
 
   MaybeEmptyLabel& operator=(const MaybeEmptyLabel&) = delete;
   MaybeEmptyLabel(const MaybeEmptyLabel&) = delete;
@@ -93,12 +95,11 @@ TestParentPermissionDialogViewObserver* test_view_observer = nullptr;
 
 }  // namespace
 
-// Creates a view for the parent approvals section of the extension info and
-// listens for updates to its controls. The view added to the parent contains a
-// parent email selection drop-down box, and a password entry field.
-class ParentPermissionSection : public views::TextfieldController {
+// Create the parent permission input section of the dialog and
+// listens for updates to its controls.
+class ParentPermissionInputSection : public views::TextfieldController {
  public:
-  ParentPermissionSection(
+  ParentPermissionInputSection(
       ParentPermissionDialogView* main_view,
       const std::vector<base::string16>& parent_permission_email_addresses,
       int available_width)
@@ -160,6 +161,14 @@ class ParentPermissionSection : public views::TextfieldController {
           parent_permission_email_addresses[0]);
     } else {
       // If there is just one parent, show a label with that parent's email.
+      auto parent_account_label = std::make_unique<views::Label>(
+          l10n_util::GetStringUTF16(
+              IDS_PARENT_PERMISSION_PROMPT_PARENT_ACCOUNT_LABEL),
+          CONTEXT_BODY_TEXT_LARGE, views::style::STYLE_PRIMARY);
+      parent_account_label->SetHorizontalAlignment(
+          gfx::HorizontalAlignment::ALIGN_LEFT);
+      view->AddChildView(std::move(parent_account_label));
+
       auto parent_email_label = std::make_unique<views::Label>(
           parent_permission_email_addresses[0], CONTEXT_BODY_TEXT_LARGE,
           views::style::STYLE_SECONDARY);
@@ -193,15 +202,16 @@ class ParentPermissionSection : public views::TextfieldController {
     const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
     const gfx::Insets content_insets =
         provider->GetDialogInsetsForContentType(views::CONTROL, views::CONTROL);
-    view->SetBorder(views::CreateEmptyBorder(
-        kSectionPaddingTop, content_insets.left(), 0, content_insets.right()));
+    view->SetBorder(views::CreateEmptyBorder(0, content_insets.left(), 0,
+                                             content_insets.right()));
 
     // Add to main view.
     main_view->AddChildView(std::move(view));
   }
 
-  ParentPermissionSection(const ParentPermissionSection&) = delete;
-  ParentPermissionSection& operator=(const ParentPermissionSection&) = delete;
+  ParentPermissionInputSection(const ParentPermissionInputSection&) = delete;
+  ParentPermissionInputSection& operator=(const ParentPermissionInputSection&) =
+      delete;
 
   // views::TextfieldController
   void ContentsChanged(views::Textfield* sender,
@@ -388,82 +398,90 @@ void ParentPermissionDialogView::CreateContents() {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets()));
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  auto section_container = std::make_unique<views::View>();
   const gfx::Insets content_insets =
       provider->GetDialogInsetsForContentType(views::CONTROL, views::CONTROL);
+  const int content_width = GetPreferredSize().width() - content_insets.width();
   set_margins(gfx::Insets(content_insets.top(), 0, content_insets.bottom(), 0));
-  section_container->SetBorder(views::CreateEmptyBorder(
-      kSectionPaddingTop, content_insets.left(), 0, content_insets.right()));
-  section_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
-      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
-  const int content_width =
-      GetPreferredSize().width() - section_container->GetInsets().width();
 
-  if (params_->extension) {
-    // Set up the permissions view.
-    if (!prompt_permissions_.permissions.empty()) {
-      // Set up the permissions header string.
-      // Shouldn't be asking for permissions for theme installs.
-      DCHECK(!params_->extension->is_theme());
-      base::string16 extension_type;
-      if (params_->extension->is_extension()) {
-        extension_type = l10n_util::GetStringUTF16(
-            IDS_PARENT_PERMISSION_PROMPT_EXTENSION_TYPE_EXTENSION);
-      } else if (params_->extension->is_app()) {
-        extension_type = l10n_util::GetStringUTF16(
-            IDS_PARENT_PERMISSION_PROMPT_EXTENSION_TYPE_APP);
-      }
-      base::string16 permission_header_label = l10n_util::GetStringFUTF16(
-          IDS_PARENT_PERMISSION_PROMPT_CHILD_WANTS_TO_INSTALL_LABEL,
-          GetActiveUserFirstName(), extension_type);
-
-      views::Label* permissions_header =
-          new views::Label(permission_header_label, CONTEXT_BODY_TEXT_LARGE);
-      permissions_header->SetMultiLine(true);
-      permissions_header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-      permissions_header->SizeToFit(content_width);
-      permissions_header->SetBorder(views::CreateEmptyBorder(
-          0, content_insets.left(), 0, content_insets.right()));
-
-      // Add this outside the scrolling section, so it can't be obscured by
-      // scrolling.
-      AddChildView(permissions_header);
-
-      // Create permissions view.
-      auto permissions_view =
-          std::make_unique<ExtensionPermissionsView>(content_width);
-      permissions_view->AddPermissions(prompt_permissions_);
-
-      // Add to the section container, so the permissions can scroll, since they
-      // can be arbitrarily long.
-      section_container->AddChildView(std::move(permissions_view));
+  // Extension-specific views.
+  if (params_->extension && !prompt_permissions_.permissions.empty()) {
+    auto install_permissions_section_container =
+        std::make_unique<views::View>();
+    install_permissions_section_container->SetBorder(views::CreateEmptyBorder(
+        kPermissionSectionPaddingTop, content_insets.left(),
+        kPermissionSectionPaddingBottom, content_insets.right()));
+    install_permissions_section_container->SetLayoutManager(
+        std::make_unique<views::BoxLayout>(
+            views::BoxLayout::Orientation::kVertical, gfx::Insets(),
+            provider->GetDistanceMetric(
+                views::DISTANCE_RELATED_CONTROL_VERTICAL)));
+    // Set up the permissions header string.
+    // Shouldn't be asking for permissions for theme installs.
+    DCHECK(!params_->extension->is_theme());
+    base::string16 extension_type;
+    if (params_->extension->is_extension()) {
+      extension_type = l10n_util::GetStringUTF16(
+          IDS_PARENT_PERMISSION_PROMPT_EXTENSION_TYPE_EXTENSION);
+    } else if (params_->extension->is_app()) {
+      extension_type = l10n_util::GetStringUTF16(
+          IDS_PARENT_PERMISSION_PROMPT_EXTENSION_TYPE_APP);
     }
+    base::string16 permission_header_label = l10n_util::GetStringFUTF16(
+        IDS_PARENT_PERMISSION_PROMPT_CHILD_WANTS_TO_INSTALL_LABEL,
+        GetActiveUserFirstName(), extension_type);
+
+    views::Label* permissions_header =
+        new views::Label(permission_header_label, CONTEXT_BODY_TEXT_LARGE);
+    permissions_header->SetMultiLine(true);
+    permissions_header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    permissions_header->SizeToFit(content_width);
+    permissions_header->SetBorder(views::CreateEmptyBorder(
+        0, content_insets.left(), 0, content_insets.right()));
+
+    // Add this outside the scrolling section, so it can't be obscured by
+    // scrolling.
+    AddChildView(permissions_header);
+
+    // Create permissions view.
+    auto permissions_view =
+        std::make_unique<ExtensionPermissionsView>(content_width);
+    permissions_view->AddPermissions(prompt_permissions_);
+
+    // Add to the section container, so the permissions can scroll, since they
+    // can be arbitrarily long.
+    install_permissions_section_container->AddChildView(
+        std::move(permissions_view));
+
+    // Add section container to an enclosing scroll view.
+    auto scroll_view = std::make_unique<views::ScrollView>();
+    scroll_view->SetHideHorizontalScrollBar(true);
+    scroll_view->SetContents(std::move(install_permissions_section_container));
+    scroll_view->ClipHeightTo(
+        0, provider->GetDistanceMetric(
+               views::DISTANCE_DIALOG_SCROLLABLE_AREA_MAX_HEIGHT));
+    AddChildView(std::move(scroll_view));
   }
 
-  // Add section container to the enclosing scroll view.
-  auto scroll_view = std::make_unique<views::ScrollView>();
-  scroll_view->SetHideHorizontalScrollBar(true);
-  scroll_view->SetContents(std::move(section_container));
-  scroll_view->ClipHeightTo(
-      0, provider->GetDistanceMetric(
-             views::DISTANCE_DIALOG_SCROLLABLE_AREA_MAX_HEIGHT));
-  AddChildView(std::move(scroll_view));
-
-  // Create the parent permission section, which adds itself
-  // to the main view.
-  parent_permission_section_ = std::make_unique<ParentPermissionSection>(
-      this, parent_permission_email_addresses_, content_width);
+  // Create the parent permission section, which contains controls
+  // for parent selection and password entry.
+  parent_permission_input_section_ =
+      std::make_unique<ParentPermissionInputSection>(
+          this, parent_permission_email_addresses_, content_width);
 
   // Add the invalid credential label, which is initially empty,
   // and hence invisible.  It will be updated if the user enters
   // an incorrect password.
-  auto invalid_credential_label = std::make_unique<MaybeEmptyLabel>("");
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  views::Label::CustomFont font = {
+      rb.GetFontListWithDelta(kInvalidCredentialLabelFontSizeDelta)};
+  auto invalid_credential_label = std::make_unique<MaybeEmptyLabel>("", font);
+
   invalid_credential_label->SetBorder(views::CreateEmptyBorder(
-      0, content_insets.left(), 0, content_insets.right()));
+      kInvalidCredentialLabelTopPadding, content_insets.left(), 0,
+      content_insets.right()));
   invalid_credential_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   invalid_credential_label->SetMultiLine(true);
-  invalid_credential_label->SetEnabledColor(gfx::kGoogleRed500);
+  invalid_credential_label->SetEnabledColor(gfx::kGoogleRed600);
   invalid_credential_label->SizeToFit(content_width);
 
   // Cache the pointer so we we can update the invalid credential label when we

@@ -14,6 +14,7 @@
 #include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/trust_tokens/proto/public.pb.h"
+#include "services/network/trust_tokens/suitable_trust_token_origin.h"
 #include "services/network/trust_tokens/trust_token_http_headers.h"
 #include "services/network/trust_tokens/trust_token_parameterization.h"
 #include "services/network/trust_tokens/trust_token_store.h"
@@ -23,19 +24,14 @@
 namespace network {
 
 TrustTokenRequestIssuanceHelper::TrustTokenRequestIssuanceHelper(
-    const url::Origin& top_level_origin,
+    SuitableTrustTokenOrigin top_level_origin,
     TrustTokenStore* token_store,
     std::unique_ptr<TrustTokenKeyCommitmentGetter> key_commitment_getter,
     std::unique_ptr<Cryptographer> cryptographer)
-    : top_level_origin_(top_level_origin),
+    : top_level_origin_(std::move(top_level_origin)),
       token_store_(token_store),
       key_commitment_getter_(std::move(key_commitment_getter)),
       cryptographer_(std::move(cryptographer)) {
-  DCHECK(top_level_origin.scheme() == url::kHttpsScheme ||
-         (top_level_origin.scheme() == url::kHttpScheme &&
-          IsOriginPotentiallyTrustworthy(top_level_origin)))
-      << top_level_origin;
-
   DCHECK(token_store_);
   DCHECK(key_commitment_getter_);
   DCHECK(cryptographer_);
@@ -51,29 +47,30 @@ TrustTokenRequestIssuanceHelper::Cryptographer::UnblindedTokens::
 void TrustTokenRequestIssuanceHelper::Begin(
     net::URLRequest* request,
     base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done) {
-  DCHECK(request->url().SchemeIsHTTPOrHTTPS() &&
-         IsUrlPotentiallyTrustworthy(request->url()))
-      << request->url();
-  DCHECK(request->initiator() &&
-             request->initiator()->scheme() == url::kHttpsScheme ||
-         (request->initiator()->scheme() == url::kHttpScheme &&
-          IsOriginPotentiallyTrustworthy(*request->initiator())))
-      << (request->initiator() ? request->initiator()->Serialize()
-                               : "(missing)");
+  DCHECK(request);
+  DCHECK(!request->initiator() ||
+         IsOriginPotentiallyTrustworthy(*request->initiator()))
+      << *request->initiator();
 
-  issuer_ = url::Origin::Create(request->url());
-  if (!token_store_->SetAssociation(issuer_, top_level_origin_)) {
+  issuer_ = SuitableTrustTokenOrigin::Create(request->url());
+  if (!issuer_) {
+    std::move(done).Run(mojom::TrustTokenOperationStatus::kInvalidArgument);
+    return;
+  }
+
+  if (!token_store_->SetAssociation(*issuer_, top_level_origin_)) {
     std::move(done).Run(mojom::TrustTokenOperationStatus::kResourceExhausted);
     return;
   }
 
-  if (token_store_->CountTokens(issuer_) == kTrustTokenPerIssuerTokenCapacity) {
+  if (token_store_->CountTokens(*issuer_) ==
+      kTrustTokenPerIssuerTokenCapacity) {
     std::move(done).Run(mojom::TrustTokenOperationStatus::kResourceExhausted);
     return;
   }
 
   key_commitment_getter_->Get(
-      issuer_,
+      *issuer_,
       base::BindOnce(&TrustTokenRequestIssuanceHelper::OnGotKeyCommitment,
                      weak_ptr_factory_.GetWeakPtr(), request, std::move(done)));
 }
@@ -98,7 +95,7 @@ void TrustTokenRequestIssuanceHelper::OnGotKeyCommitment(
 
   // Evict tokens signed with keys other than those from the issuer's most
   // recent commitments.
-  token_store_->PruneStaleIssuerState(issuer_, commitment_result->keys);
+  token_store_->PruneStaleIssuerState(*issuer_, commitment_result->keys);
 
   int batch_size = commitment_result->batch_size
                        ? std::min(commitment_result->batch_size->value,
@@ -154,7 +151,7 @@ mojom::TrustTokenOperationStatus TrustTokenRequestIssuanceHelper::Finalize(
     return mojom::TrustTokenOperationStatus::kBadResponse;
   }
 
-  token_store_->AddTokens(issuer_, base::make_span(maybe_tokens->tokens),
+  token_store_->AddTokens(*issuer_, base::make_span(maybe_tokens->tokens),
                           maybe_tokens->body_of_verifying_key);
 
   return mojom::TrustTokenOperationStatus::kOk;

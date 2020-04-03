@@ -130,32 +130,3 @@ void CrostiniDialogBrowserTest::UnregisterTermina() {
           component_updater::CrOSComponentManager::Error::INSTALL_FAILURE,
           base::FilePath(), base::FilePath()));
 }
-
-class WebContentsWaiter : public content::WebContentsObserver {
- public:
-  enum Operation { LOAD };  // Add other operations as required.
-  explicit WebContentsWaiter(content::WebContents* contents,
-                             Operation operation)
-      : content::WebContentsObserver(contents), operation_(operation) {}
-
-  ~WebContentsWaiter() override = default;
-
-  void Wait() { run_loop_.Run(); }
-
-  // content::WebContentsObserver:
-  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
-                     const GURL& validated_url) override {
-    if (operation_ == LOAD) {
-      run_loop_.Quit();
-    }
-  }
-
- private:
-  base::RunLoop run_loop_;
-  Operation operation_;
-};
-
-void CrostiniDialogBrowserTest::WaitForLoadFinished(
-    content::WebContents* contents) {
-  WebContentsWaiter(contents, WebContentsWaiter::LOAD).Wait();
-}

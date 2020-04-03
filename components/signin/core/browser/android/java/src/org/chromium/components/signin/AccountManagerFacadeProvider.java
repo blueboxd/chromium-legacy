@@ -26,7 +26,7 @@ public class AccountManagerFacadeProvider {
 
     /**
      * Initializes AccountManagerFacade singleton instance. Can only be called once.
-     * Tests can override the instance with {@link #overrideAccountManagerFacadeForTests}.
+     * Tests can override the instance with {@link #setInstanceForTests}.
      *
      * @param delegate the AccountManagerDelegate to use
      */
@@ -42,27 +42,23 @@ public class AccountManagerFacadeProvider {
     }
 
     /**
-     * Overrides AccountManagerFacade singleton instance for tests. Only for use in Tests.
-     * Overrides any previous or future calls to {@link #initializeAccountManagerFacade}.
-     *
-     * @param delegate the AccountManagerDelegate to use
+     * Sets the test instance.
      */
     @VisibleForTesting
     @AnyThread
-    public static void overrideAccountManagerFacadeForTests(AccountManagerDelegate delegate) {
+    public static void setInstanceForTests(AccountManagerFacade accountManagerFacade) {
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            sTestingInstance = new AccountManagerFacade(delegate);
+            sTestingInstance = accountManagerFacade;
             sAtomicInstance.set(sTestingInstance);
         });
     }
 
     /**
-     * Resets custom AccountManagerFacade set with {@link #overrideAccountManagerFacadeForTests}.
-     * Only for use in Tests.
+     * Resets the test instance set with {@link #setInstanceForTests}.
      */
     @VisibleForTesting
     @AnyThread
-    public static void resetAccountManagerFacadeForTests() {
+    public static void resetInstanceForTests() {
         ThreadUtils.runOnUiThreadBlocking(() -> {
             sTestingInstance = null;
             sAtomicInstance.set(sInstance);
@@ -71,7 +67,7 @@ public class AccountManagerFacadeProvider {
 
     /**
      * Singleton instance getter. Singleton must be initialized before calling this by
-     * {@link #initializeAccountManagerFacade} or {@link #overrideAccountManagerFacadeForTests}.
+     * {@link #initializeAccountManagerFacade} or {@link #setInstanceForTests}.
      *
      * @return a singleton instance
      */

@@ -1,9 +1,9 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "base/task/post_task.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
-#include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
 #include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -11,6 +11,7 @@
 #include "components/permissions/test/mock_permission_prompt_factory.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_constants.h"
+#include "components/webrtc/media_stream_devices_controller.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -104,7 +105,9 @@ class MediaStreamDevicesControllerBrowserTest
 
   void Accept(const blink::MediaStreamDevices& devices,
               blink::mojom::MediaStreamRequestResult result,
-              std::unique_ptr<content::MediaStreamUI> ui) {
+              bool blocked_by_feature_policy,
+              ContentSetting audio_setting,
+              ContentSetting video_setting) {
     if (policy_value_ || request_url_allowed_via_whitelist_) {
       ASSERT_EQ(1U, devices.size());
       ASSERT_EQ("fake_dev", devices[0].id);
@@ -119,9 +122,10 @@ class MediaStreamDevicesControllerBrowserTest
                       blink::mojom::MediaStreamType::NO_SERVICE));
     // TODO(raymes): Test MEDIA_DEVICE_OPEN (Pepper) which grants both webcam
     // and microphone permissions at the same time.
-    MediaStreamDevicesController::RequestPermissions(
-        request, base::Bind(&MediaStreamDevicesControllerBrowserTest::Accept,
-                            base::Unretained(this)));
+    webrtc::MediaStreamDevicesController::RequestPermissions(
+        request, MediaCaptureDevicesDispatcher::GetInstance(),
+        base::Bind(&MediaStreamDevicesControllerBrowserTest::Accept,
+                   base::Unretained(this)));
     quit_closure_.Run();
   }
 
@@ -131,9 +135,10 @@ class MediaStreamDevicesControllerBrowserTest
                       blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
     // TODO(raymes): Test MEDIA_DEVICE_OPEN (Pepper) which grants both webcam
     // and microphone permissions at the same time.
-    MediaStreamDevicesController::RequestPermissions(
-        request, base::Bind(&MediaStreamDevicesControllerBrowserTest::Accept,
-                            base::Unretained(this)));
+    webrtc::MediaStreamDevicesController::RequestPermissions(
+        request, MediaCaptureDevicesDispatcher::GetInstance(),
+        base::Bind(&MediaStreamDevicesControllerBrowserTest::Accept,
+                   base::Unretained(this)));
     quit_closure_.Run();
   }
 

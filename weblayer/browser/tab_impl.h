@@ -172,6 +172,13 @@ class TabImpl : public Tab,
   bool DoBrowserControlsShrinkRendererSize(
       const content::WebContents* web_contents) override;
   bool EmbedsFullscreenWidget() override;
+  void RequestMediaAccessPermission(
+      content::WebContents* web_contents,
+      const content::MediaStreamRequest& request,
+      content::MediaResponseCallback callback) override;
+  bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
+                                  const GURL& security_origin,
+                                  blink::mojom::MediaStreamType type) override;
   void EnterFullscreenModeForTab(
       content::WebContents* web_contents,
       const GURL& origin,

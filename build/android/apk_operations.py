@@ -1620,7 +1620,7 @@ class _PrintCertsCommand(_Command):
           raise Exception(
               'Cannot print full certificate because apk is not V1 signed.')
 
-        cmd = [keytool, '-printcert', '-jarfile', '-rfc', self.apk_helper.path]
+        cmd = [keytool, '-printcert', '-jarfile', self.apk_helper.path, '-rfc']
         # Redirect stderr to hide a keytool warning about using non-standard
         # keystore format.
         full_output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
@@ -1816,7 +1816,8 @@ def _ParseArgs(parser, from_wrapper_script, is_bundle):
 
 def _RunInternal(parser, output_directory=None, bundle_generation_info=None):
   colorama.init()
-  parser.set_defaults(output_directory=output_directory)
+  parser.set_defaults(
+      additional_apk_paths=None, output_directory=output_directory)
   from_wrapper_script = bool(output_directory)
   args = _ParseArgs(parser, from_wrapper_script, bool(bundle_generation_info))
   run_tests_helper.SetLogLevel(args.verbose_count)

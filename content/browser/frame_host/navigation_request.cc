@@ -1692,30 +1692,35 @@ void NavigationRequest::OnRequestRedirected(
   WillRedirectRequest(common_params_->referrer->url, expected_process);
 }
 
-void NavigationRequest::CheckForOriginPolicyIsolationOptIn(
+void NavigationRequest::CheckForIsolationOptIn(
     const GURL& url,
     const network::mojom::URLResponseHead* response) {
-  // IsolationOptIn is only available when OriginPolicy is enabled.
-  if (!base::FeatureList::IsEnabled(features::kOriginPolicy))
+  if (!response)
     return;
 
-  bool requests_origin_isolation = false;
-  if (response && response->origin_policy) {
-    const network::OriginPolicy& origin_policy =
-        response->origin_policy.value();
-    // For now, we'll take the presence of any isolation_optin_hints value
-    // as an indication to opt-in.
-    requests_origin_isolation =
-        origin_policy.state == network::OriginPolicyState::kLoaded &&
-        origin_policy.contents->isolation_optin_hints.has_value();
-  }
+  // For now we only check for the presence of hints; we do not yet act on the
+  // specific hints.
+  const bool requests_via_origin_policy =
+      base::FeatureList::IsEnabled(features::kOriginPolicy) &&
+      response->origin_policy &&
+      response->origin_policy->state == network::OriginPolicyState::kLoaded &&
+      response->origin_policy->contents->isolation_optin_hints.has_value();
+
+  // TODO(https://crbug.com/1066930): For now we just check the presence of the
+  // header; we do not parse/validate it. When we do, that will have to be
+  // outside the browser process.
+  const bool requests_via_header =
+      base::FeatureList::IsEnabled(features::kOriginIsolationHeader) &&
+      response->headers && response->headers->HasHeader("origin-isolation");
+
+  const bool requests_origin_isolation =
+      requests_via_origin_policy || requests_via_header;
+
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   url::Origin origin = url::Origin::Create(url);
   // We need to update the master list even if |requests_origin_isolation| is
-  // false, since we need to maintain the master opt-in list according to the
-  // most recently seen OriginPolicy.
-  // TODO(wjmaclean): when we start to support versioning for OriginPolicies,
-  // will we need to key the master list accordingly?
+  // false, since we need to maintain the opt-in list according to the most
+  // recently seen opt-in.
   policy->UpdateOriginIsolationOptInListIfNecessary(origin,
                                                     requests_origin_isolation);
 }
@@ -1902,10 +1907,10 @@ void NavigationRequest::OnResponseStarted(
     }
   }
 
-  // The navigation may have encountered an OriginPolicy that requests isolation
-  // for the url's origin. Before we pick the renderer, make sure we update the
-  // master list for origin-isolation opt-ins.
-  CheckForOriginPolicyIsolationOptIn(common_params().url, response());
+  // The navigation may have encountered an origin policy or Origin-Isolation
+  // header that requests isolation for the url's origin. Before we pick the
+  // renderer, make sure we update the origin-isolation opt-ins appropriately.
+  CheckForIsolationOptIn(common_params().url, response());
 
   // Select an appropriate renderer to commit the navigation.
   if (IsServedFromBackForwardCache()) {
@@ -2777,8 +2782,7 @@ void NavigationRequest::RenderProcessHostDestroyed(RenderProcessHost* host) {
 
 void NavigationRequest::RenderProcessExited(
     RenderProcessHost* host,
-    const ChildProcessTerminationInfo& info) {
-}
+    const ChildProcessTerminationInfo& info) {}
 
 void NavigationRequest::UpdateSiteURL(
     RenderProcessHost* post_redirect_process) {

@@ -40,7 +40,6 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile_key.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/transition_manager/full_browser_transition_manager.h"
@@ -146,11 +145,12 @@ OffTheRecordProfileImpl::OffTheRecordProfileImpl(
 void OffTheRecordProfileImpl::Init() {
   FullBrowserTransitionManager::Get()->OnProfileCreated(this);
 
+  // Must be done before CreateBrowserContextServices(), since some of them
+  // change behavior based on whether the provided context is a guest session.
+  set_is_guest_profile(profile_->IsGuestSession());
+
   BrowserContextDependencyManager::GetInstance()->CreateBrowserContextServices(
       this);
-
-  set_is_guest_profile(
-      profile_->GetPath() == ProfileManager::GetGuestProfilePath());
 
   // Always crash when incognito is not available.
   // Guest profiles may always be OTR. Check IncognitoModePrefs otherwise.

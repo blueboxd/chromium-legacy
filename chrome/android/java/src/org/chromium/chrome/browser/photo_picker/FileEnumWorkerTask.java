@@ -101,7 +101,7 @@ class FileEnumWorkerTask extends AsyncTask<List<PickerBitmap>> {
      */
     @Override
     protected List<PickerBitmap> doInBackground() {
-        assert !ThreadUtils.runningOnUiThread();
+        ThreadUtils.assertOnBackgroundThread();
 
         if (isCancelled()) return null;
 
@@ -158,8 +158,7 @@ class FileEnumWorkerTask extends AsyncTask<List<PickerBitmap>> {
 
         Uri contentUri = MediaStore.Files.getContentUri("external");
         Cursor imageCursor =
-                mContentResolver.query(contentUri, selectColumns, whereClause, whereArgs, orderBy);
-
+                createImageCursor(contentUri, selectColumns, whereClause, whereArgs, orderBy);
         if (imageCursor == null) {
             Log.e(TAG, "Content Resolver query() returned null");
             return null;
@@ -190,16 +189,17 @@ class FileEnumWorkerTask extends AsyncTask<List<PickerBitmap>> {
         imageCursor.close();
 
         pickerBitmaps.add(0, new PickerBitmap(null, 0, PickerBitmap.TileTypes.GALLERY));
-        boolean hasCameraAppAvailable =
-                mWindowAndroid.canResolveActivity(new Intent(MediaStore.ACTION_IMAGE_CAPTURE));
-        boolean hasOrCanRequestCameraPermission =
-                mWindowAndroid.hasPermission(Manifest.permission.CAMERA)
-                || mWindowAndroid.canRequestPermission(Manifest.permission.CAMERA);
-        if (hasCameraAppAvailable && hasOrCanRequestCameraPermission) {
+        if (shouldShowCameraTile()) {
             pickerBitmaps.add(0, new PickerBitmap(null, 0, PickerBitmap.TileTypes.CAMERA));
         }
 
         return pickerBitmaps;
+    }
+
+    @Override
+    protected void onCancelled() {
+        super.onCancelled();
+        mCallback.filesEnumeratedCallback(null);
     }
 
     /**
@@ -213,5 +213,26 @@ class FileEnumWorkerTask extends AsyncTask<List<PickerBitmap>> {
         }
 
         mCallback.filesEnumeratedCallback(files);
+    }
+
+    /**
+     * Creates a cursor containing the image files to show. Can be overridden in tests to provide
+     * fake data.
+     */
+    protected Cursor createImageCursor(Uri contentUri, String[] selectColumns, String whereClause,
+            String[] whereArgs, String orderBy) {
+        return mContentResolver.query(contentUri, selectColumns, whereClause, whereArgs, orderBy);
+    }
+
+    /**
+     * Returns whether to include the Camera tile also.
+     */
+    protected boolean shouldShowCameraTile() {
+        boolean hasCameraAppAvailable =
+                mWindowAndroid.canResolveActivity(new Intent(MediaStore.ACTION_IMAGE_CAPTURE));
+        boolean hasOrCanRequestCameraPermission =
+                (mWindowAndroid.hasPermission(Manifest.permission.CAMERA)
+                        || mWindowAndroid.canRequestPermission(Manifest.permission.CAMERA));
+        return hasCameraAppAvailable && hasOrCanRequestCameraPermission;
     }
 }

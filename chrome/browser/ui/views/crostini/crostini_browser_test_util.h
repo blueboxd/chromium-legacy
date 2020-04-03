@@ -15,10 +15,6 @@
 
 class CrostiniBrowserTestChromeBrowserMainExtraParts;
 
-namespace content {
-class WebContents;
-}
-
 // Common base for Crostini dialog broswer tests. Allows tests to set network
 // connection type.
 class CrostiniDialogBrowserTest : public DialogBrowserTest {
@@ -35,8 +31,6 @@ class CrostiniDialogBrowserTest : public DialogBrowserTest {
   void SetConnectionType(network::mojom::ConnectionType connection_type);
 
   void UnregisterTermina();
-
-  void WaitForLoadFinished(content::WebContents* contents);
 
  protected:
   const bool register_termina_;

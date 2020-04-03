@@ -81,12 +81,17 @@ template("fuchsia_package_runner") {
     }
     wrapper_script = generated_run_pkg_script_path
 
-    deps = [ invoker.package ]
-    if (defined(invoker.deps)) {
-      deps += invoker.deps
-    }
+    data_deps = [
+      invoker.package,
 
-    data_deps = [ invoker.package ]
+      # Runner scripts require access to "ids.txt" for symbolization, and to
+      # the "package" from which to get the name & version to deploy, which
+      # are outputs of the archive manifest generation action.
+      invoker.package + "__archive-manifest",
+    ]
+    if (defined(invoker.data_deps)) {
+      data_deps += invoker.data_deps
+    }
 
     # Declares the files that are needed for test execution on the
     # swarming test client.
@@ -133,7 +138,10 @@ template("fuchsia_package_runner") {
         package_dep_target = package_dep[0]
         package_dep_name = package_dep[1]
 
-        deps += [ package_dep_target ]
+        data_deps += [
+          package_dep_target,
+          package_dep_target + "__archive-manifest",
+        ]
         package_dep_path = rebase_path(
                 get_label_info(package_dep_target, "target_gen_dir") + "/" +
                     package_dep_name + "/" + package_dep_name + ".far",
@@ -178,9 +186,9 @@ template("fuchsia_package_runner") {
     executable = rebase_path("//build/fuchsia/deploy_to_amber_repo.py")
     wrapper_script = generated_install_pkg_script_path
 
-    deps = [ invoker.package ]
-    if (defined(invoker.deps)) {
-      deps += invoker.deps
+    data_deps = [ invoker.package ]
+    if (defined(invoker.data_deps)) {
+      data_deps += invoker.data_deps
     }
 
     # Build a list of all packages to install, and pass the list to the runner
@@ -191,7 +199,7 @@ template("fuchsia_package_runner") {
         package_dep_target = package_dep[0]
         package_dep_name = package_dep[1]
 
-        deps += [ package_dep_target ]
+        data_deps += [ package_dep_target ]
         package_dep_path = rebase_path(
                 get_label_info(package_dep_target, "target_gen_dir") + "/" +
                     package_dep_name + "/" + package_dep_name + ".far",

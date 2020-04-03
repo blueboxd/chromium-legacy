@@ -8,6 +8,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
+#include "components/feed/core/v2/public/feed_stream_api.h"
 
 namespace feedui {
 class StreamUpdate;
@@ -17,10 +18,13 @@ namespace feed {
 
 // Native access to |FeedStreamSurface| in Java.
 // Created once for each NTP/start surface.
-class FeedStreamSurface {
+class FeedStreamSurface : public FeedStreamApi::SurfaceInterface {
  public:
   explicit FeedStreamSurface(const base::android::JavaRef<jobject>& j_this);
-  ~FeedStreamSurface();
+  ~FeedStreamSurface() override;
+
+  // SurfaceInterface implementation.
+  void StreamUpdate(const feedui::StreamUpdate& update) override;
 
   void OnStreamUpdated(const feedui::StreamUpdate& stream_update);
 
@@ -63,7 +67,7 @@ class FeedStreamSurface {
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
-
+  FeedStreamApi* feed_stream_api_;
   DISALLOW_COPY_AND_ASSIGN(FeedStreamSurface);
 };
 

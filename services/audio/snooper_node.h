@@ -67,8 +67,6 @@ class SnooperNode : public LoopbackGroupMember::Snooper {
 
   ~SnooperNode() final;
 
-  const media::AudioParameters& input_params() const { return input_params_; }
-
   // GroupMember::Snooper implementation. Inserts more data into the delay
   // buffer.
   void OnData(const media::AudioBus& input_bus,

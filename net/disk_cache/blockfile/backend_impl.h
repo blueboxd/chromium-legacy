@@ -426,7 +426,6 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
 
   Stats stats_;  // Usage statistics.
   std::unique_ptr<base::RepeatingTimer> timer_;  // Usage timer.
-  base::WaitableEvent done_;  // Signals the end of background work.
   base::WeakPtrFactory<BackendImpl> ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BackendImpl);

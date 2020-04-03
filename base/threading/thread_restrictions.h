@@ -206,6 +206,7 @@ class ScopedIPCSupport;
 }
 }
 namespace printing {
+class LocalPrinterHandlerDefault;
 class PrintJobWorker;
 class PrinterQuery;
 }
@@ -372,6 +373,7 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend class memory_instrumentation::OSMetrics;
   friend class module_installer::ScopedAllowModulePakLoad;
   friend class mojo::CoreLibraryInitializer;
+  friend class printing::LocalPrinterHandlerDefault;
   friend class printing::PrintJobWorker;
   friend class resource_coordinator::TabManagerDelegate;  // crbug.com/778703
   friend class web::WebSubThread;

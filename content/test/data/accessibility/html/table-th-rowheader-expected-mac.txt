@@ -11,5 +11,17 @@ AXWebArea AXTitle='Table example - th rowheader'
 ++++++AXCell AXColumnIndexRange={"len":1,"loc":1} AXRowHeaderUIElements=["AXCell Lastname"] AXRowIndexRange={"len":1,"loc":1}
 ++++++++AXStaticText AXValue='Smith'
 ++++AXColumn AXIndex='0'
+++++++AXCell AXColumnIndexRange={"len":1,"loc":0} AXRowIndexRange={"len":1,"loc":0}
+++++++++AXStaticText AXValue='Firstname'
+++++++AXCell AXColumnIndexRange={"len":1,"loc":0} AXRowIndexRange={"len":1,"loc":1}
+++++++++AXStaticText AXValue='Lastname'
 ++++AXColumn AXIndex='1'
+++++++AXCell AXColumnIndexRange={"len":1,"loc":1} AXRowHeaderUIElements=["AXCell Firstname"] AXRowIndexRange={"len":1,"loc":0}
+++++++++AXStaticText AXValue='Jill'
+++++++AXCell AXColumnIndexRange={"len":1,"loc":1} AXRowHeaderUIElements=["AXCell Lastname"] AXRowIndexRange={"len":1,"loc":1}
+++++++++AXStaticText AXValue='Smith'
 ++++AXGroup
+++++++AXCell AXColumnIndexRange={"len":1,"loc":0} AXRowIndexRange={"len":1,"loc":0}
+++++++++AXStaticText AXValue='Firstname'
+++++++AXCell AXColumnIndexRange={"len":1,"loc":0} AXRowIndexRange={"len":1,"loc":1}
+++++++++AXStaticText AXValue='Lastname'

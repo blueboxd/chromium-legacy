@@ -9,6 +9,7 @@
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "components/permissions/android/android_permission_util.h"
 #include "components/permissions/permission_request_id.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
@@ -22,20 +23,6 @@ GeolocationPermissionContextDelegateAndroid::
 
 GeolocationPermissionContextDelegateAndroid::
     ~GeolocationPermissionContextDelegateAndroid() = default;
-
-bool GeolocationPermissionContextDelegateAndroid::
-    ShouldRequestAndroidLocationPermission(content::WebContents* web_contents) {
-  return PermissionUpdateInfoBarDelegate::ShouldShowPermissionInfoBar(
-             web_contents, {ContentSettingsType::GEOLOCATION}) ==
-         ShowPermissionInfoBarState::SHOW_PERMISSION_INFOBAR;
-}
-
-void GeolocationPermissionContextDelegateAndroid::RequestAndroidPermission(
-    content::WebContents* web_contents,
-    PermissionUpdatedCallback callback) {
-  PermissionUpdateInfoBarDelegate::Create(
-      web_contents, {ContentSettingsType::GEOLOCATION}, std::move(callback));
-}
 
 bool GeolocationPermissionContextDelegateAndroid::IsInteractable(
     content::WebContents* web_contents) {

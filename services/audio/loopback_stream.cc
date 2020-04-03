@@ -5,17 +5,14 @@
 #include "services/audio/loopback_stream.h"
 
 #include <algorithm>
-#include <cinttypes>
 #include <string>
 
 #include "base/bind.h"
 #include "base/stl_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/sync_socket.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
-#include "components/crash/core/common/crash_key.h"
 #include "media/base/audio_bus.h"
 #include "media/base/vector_math.h"
 #include "mojo/public/cpp/system/buffer.h"
@@ -240,9 +237,6 @@ void LoopbackStream::OnError() {
   // take care of the rest.
 }
 
-// static
-std::atomic<int> LoopbackStream::FlowNetwork::instance_count_;
-
 LoopbackStream::FlowNetwork::FlowNetwork(
     scoped_refptr<base::SequencedTaskRunner> flow_task_runner,
     const media::AudioParameters& output_params,
@@ -251,39 +245,26 @@ LoopbackStream::FlowNetwork::FlowNetwork(
       flow_task_runner_(flow_task_runner),
       output_params_(output_params),
       writer_(std::move(writer)),
-      mix_bus_(media::AudioBus::Create(output_params_)) {
-  ++instance_count_;
-  magic_bytes_ = 0x600DC0DEu;
-  HelpDiagnoseCauseOfLoopbackCrash("constructed");
-}
+      mix_bus_(media::AudioBus::Create(output_params_)) {}
 
 void LoopbackStream::FlowNetwork::AddInput(SnooperNode* node) {
-  CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK_CALLED_ON_VALID_SEQUENCE(control_sequence_);
 
   base::AutoLock scoped_lock(lock_);
-  if (inputs_.empty()) {
-    HelpDiagnoseCauseOfLoopbackCrash("adding first input");
-  }
   DCHECK(!base::Contains(inputs_, node));
   inputs_.push_back(node);
 }
 
 void LoopbackStream::FlowNetwork::RemoveInput(SnooperNode* node) {
-  CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK_CALLED_ON_VALID_SEQUENCE(control_sequence_);
 
   base::AutoLock scoped_lock(lock_);
   const auto it = std::find(inputs_.begin(), inputs_.end(), node);
   DCHECK(it != inputs_.end());
   inputs_.erase(it);
-  if (inputs_.empty()) {
-    HelpDiagnoseCauseOfLoopbackCrash("removed last input");
-  }
 }
 
 void LoopbackStream::FlowNetwork::SetVolume(double volume) {
-  CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK_CALLED_ON_VALID_SEQUENCE(control_sequence_);
 
   base::AutoLock scoped_lock(lock_);
@@ -291,14 +272,11 @@ void LoopbackStream::FlowNetwork::SetVolume(double volume) {
 }
 
 void LoopbackStream::FlowNetwork::Start() {
-  CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK_CALLED_ON_VALID_SEQUENCE(control_sequence_);
   DCHECK(!is_started());
 
   timer_.emplace(clock_);
   // Note: GenerateMoreAudio() will schedule the timer.
-
-  HelpDiagnoseCauseOfLoopbackCrash("starting");
 
   first_generate_time_ = clock_->NowTicks();
   frames_elapsed_ = 0;
@@ -313,17 +291,11 @@ void LoopbackStream::FlowNetwork::Start() {
 }
 
 LoopbackStream::FlowNetwork::~FlowNetwork() {
-  CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK(flow_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(inputs_.empty());
-
-  HelpDiagnoseCauseOfLoopbackCrash("destructing");
-  magic_bytes_ = 0xDEADBEEFu;
-  --instance_count_;
 }
 
 void LoopbackStream::FlowNetwork::GenerateMoreAudio() {
-  CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK(flow_task_runner_->RunsTasksInCurrentSequence());
 
   TRACE_EVENT_WITH_FLOW0("audio", "GenerateMoreAudio", this,
@@ -337,8 +309,6 @@ void LoopbackStream::FlowNetwork::GenerateMoreAudio() {
   {
     base::AutoLock scoped_lock(lock_);
     output_volume = volume_;
-
-    HelpDiagnoseCauseOfLoopbackCrash("generating");
 
     // Compute the reference time to use for audio rendering. Query each input
     // node and update |capture_delay_|, if necessary. This is used to always
@@ -433,47 +403,6 @@ void LoopbackStream::FlowNetwork::GenerateMoreAudio() {
   // effects in the next GenerateMoreAudio() call. http://crbug.com/847487
   timer_->Start(FROM_HERE, next_generate_time_ - now, this,
                 &FlowNetwork::GenerateMoreAudio);
-}
-
-void LoopbackStream::FlowNetwork::HelpDiagnoseCauseOfLoopbackCrash(
-    const char* event) {
-  static crash_reporter::CrashKeyString<512> crash_string(
-      "audio-service-loopback");
-  const auto ToAbbreviatedParamsString =
-      [](const media::AudioParameters& params) {
-        return base::StringPrintf(
-            "F%d|L%d|R%d|FPB%d", static_cast<int>(params.format()),
-            static_cast<int>(params.channel_layout()), params.sample_rate(),
-            params.frames_per_buffer());
-      };
-  std::vector<std::string> input_formats;
-  input_formats.reserve(inputs_.size());
-  for (const SnooperNode* input : inputs_) {
-    input_formats.push_back(ToAbbreviatedParamsString(input->input_params()));
-  }
-  crash_string.Set(base::StringPrintf(
-      "num_instances=%d, event=%s, elapsed=%" PRId64 ", first_gen_ts=%" PRId64
-      ", next_gen_ts=%" PRId64
-      ", has_transfer_bus=%c, format=%s, volume=%f, has_timer=%c, inputs={%s}",
-      instance_count_.load(), event, frames_elapsed_,
-      (first_generate_time_ - base::TimeTicks()).InMicroseconds(),
-      (next_generate_time_ - base::TimeTicks()).InMicroseconds(),
-      transfer_bus_ ? 'Y' : 'N',
-      ToAbbreviatedParamsString(output_params_).c_str(), volume_,
-      timer_ ? 'Y' : 'N', base::JoinString(input_formats, ", ").c_str()));
-
-  // If there are any crashes from this code, please record to crbug.com/888478.
-  CHECK_EQ(magic_bytes_, 0x600DC0DEu);
-  CHECK(mix_bus_);
-  CHECK_GT(mix_bus_->channels(), 0);
-  CHECK_EQ(mix_bus_->channels(), output_params_.channels());
-  CHECK_GT(mix_bus_->frames(), 0);
-  CHECK_EQ(mix_bus_->frames(), output_params_.frames_per_buffer());
-  for (int i = 0; i < mix_bus_->channels(); ++i) {
-    float* const data = mix_bus_->channel(i);
-    CHECK(data);
-    memset(data, 0, mix_bus_->frames() * sizeof(data[0]));
-  }
 }
 
 }  // namespace audio

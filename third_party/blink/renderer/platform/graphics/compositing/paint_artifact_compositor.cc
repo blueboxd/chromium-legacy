@@ -1286,7 +1286,6 @@ void PaintArtifactCompositor::Update(
     layer->SetClipTreeIndex(clip_id);
     layer->SetEffectTreeIndex(effect_id);
     bool backface_hidden = property_state.Transform().IsBackfaceHidden();
-    layer->SetDoubleSided(!backface_hidden);
     layer->SetShouldCheckBackfaceVisibility(backface_hidden);
     bool has_will_change_transform =
         property_state.Transform().RequiresCompositingForWillChangeTransform();

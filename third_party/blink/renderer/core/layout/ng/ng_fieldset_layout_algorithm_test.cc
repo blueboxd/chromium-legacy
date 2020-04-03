@@ -1811,10 +1811,12 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, SmallLegendLargeBorderFragmentation) {
       node, space, fragment->BreakToken());
   ASSERT_TRUE(fragment->BreakToken());
 
+  // TODO(almaher): The fieldset content should start at offset 60,20.
   dump = DumpFragmentTree(fragment.get());
   expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
   offset:unplaced size:220x40
     offset:60,0 size:10x10
+    offset:60,0 size:100x0
 )DUMP";
   EXPECT_EQ(expectation, dump);
 
@@ -1830,9 +1832,7 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, SmallLegendLargeBorderFragmentation) {
 
   fragment = NGBaseLayoutAlgorithmTest::RunFieldsetLayoutAlgorithm(
       node, space, fragment->BreakToken());
-  // TODO(almaher): There should be no break token here. In this case the bottom
-  // border never reduces in size, causing fragmentation to continue infinitely.
-  ASSERT_TRUE(fragment->BreakToken());
+  ASSERT_FALSE(fragment->BreakToken());
 
   dump = DumpFragmentTree(fragment.get());
   expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
@@ -1879,9 +1879,11 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, SmallerLegendLargeBorderFragmentation) {
       node, space, fragment->BreakToken());
   ASSERT_TRUE(fragment->BreakToken());
 
+  // TODO(almaher): The fieldset content should start at offset 60,20.
   dump = DumpFragmentTree(fragment.get());
   expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
   offset:unplaced size:220x40
+    offset:60,0 size:100x0
 )DUMP";
   EXPECT_EQ(expectation, dump);
 
@@ -1897,9 +1899,7 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, SmallerLegendLargeBorderFragmentation) {
 
   fragment = NGBaseLayoutAlgorithmTest::RunFieldsetLayoutAlgorithm(
       node, space, fragment->BreakToken());
-  // TODO(almaher): There should be no break token here. In this case the bottom
-  // border never reduces in size, causing fragmentation to continue infinitely.
-  ASSERT_TRUE(fragment->BreakToken());
+  ASSERT_FALSE(fragment->BreakToken());
 
   dump = DumpFragmentTree(fragment.get());
   expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
@@ -1946,9 +1946,11 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, SmallerLegendLargeBorderWithBreak) {
       node, space, fragment->BreakToken());
   ASSERT_TRUE(fragment->BreakToken());
 
+  // TODO(almaher): The fieldset content should start at offset 60,20.
   dump = DumpFragmentTree(fragment.get());
   expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
   offset:unplaced size:220x40
+    offset:60,0 size:100x0
 )DUMP";
   EXPECT_EQ(expectation, dump);
 
@@ -1964,9 +1966,7 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, SmallerLegendLargeBorderWithBreak) {
 
   fragment = NGBaseLayoutAlgorithmTest::RunFieldsetLayoutAlgorithm(
       node, space, fragment->BreakToken());
-  // TODO(almaher): There should be no break token here. In this case the bottom
-  // border never reduces in size, causing fragmentation to continue infinitely.
-  ASSERT_TRUE(fragment->BreakToken());
+  ASSERT_FALSE(fragment->BreakToken());
 
   dump = DumpFragmentTree(fragment.get());
   expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.

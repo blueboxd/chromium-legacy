@@ -180,36 +180,31 @@ TrustTokenRequestSigningHelper::TrustTokenRequestSigningHelper(
     std::unique_ptr<Signer> signer,
     std::unique_ptr<TrustTokenRequestCanonicalizer> canonicalizer)
     : token_store_(token_store),
-      params_(params),
+      params_(std::move(params)),
       signer_(std::move(signer)),
-      canonicalizer_(std::move(canonicalizer)) {
-  DCHECK(params_.issuer.scheme() == url::kHttpsScheme ||
-         (params_.issuer.scheme() == url::kHttpScheme &&
-          IsOriginPotentiallyTrustworthy(params_.issuer)));
-  DCHECK(params_.toplevel.scheme() == url::kHttpsScheme ||
-         (params_.toplevel.scheme() == url::kHttpScheme &&
-          IsOriginPotentiallyTrustworthy(params_.toplevel)));
-}
+      canonicalizer_(std::move(canonicalizer)) {}
 
 TrustTokenRequestSigningHelper::~TrustTokenRequestSigningHelper() = default;
 
-Params::Params() = default;
+Params::Params(SuitableTrustTokenOrigin issuer,
+               SuitableTrustTokenOrigin toplevel)
+    : issuer(std::move(issuer)), toplevel(std::move(toplevel)) {}
 Params::~Params() = default;
 Params::Params(const Params&) = default;
 // The type alias causes a linter false positive.
 // NOLINTNEXTLINE(misc-unconventional-assign-operator)
 Params& Params::operator=(const Params&) = default;
+Params::Params(Params&&) = default;
+// NOLINTNEXTLINE(misc-unconventional-assign-operator)
+Params& Params::operator=(Params&&) = default;
 
 void TrustTokenRequestSigningHelper::Begin(
     net::URLRequest* request,
     base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done) {
   DCHECK(request);
-  DCHECK(request->url().SchemeIsHTTPOrHTTPS() &&
-         IsUrlPotentiallyTrustworthy(request->url()));
-  DCHECK(request->initiator() &&
-             request->initiator()->scheme() == url::kHttpsScheme ||
-         (request->initiator()->scheme() == url::kHttpScheme &&
-          IsOriginPotentiallyTrustworthy(*request->initiator())));
+  DCHECK(!request->initiator() ||
+         IsOriginPotentiallyTrustworthy(*request->initiator()))
+      << *request->initiator();
 
   // This class is responsible for adding these headers; callers should not add
   // them.

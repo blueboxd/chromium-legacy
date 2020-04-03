@@ -159,7 +159,7 @@ RenderWidgetHostDelegate::GetFocusedFrameFromFocusedDelegate() {
   return nullptr;
 }
 
-bool RenderWidgetHostDelegate::IsPortal() const {
+bool RenderWidgetHostDelegate::IsPortal() {
   return false;
 }
 

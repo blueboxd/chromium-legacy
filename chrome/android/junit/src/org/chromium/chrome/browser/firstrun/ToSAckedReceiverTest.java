@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.components.signin.AccountManagerDelegate;
 import org.chromium.components.signin.AccountManagerDelegateException;
+import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 
 import java.util.HashSet;
@@ -62,7 +63,8 @@ public class ToSAckedReceiverTest {
         Account[] accounts = new Account[1];
         accounts[0] = new Account(GOOGLE_ACCOUNT, "LegitAccount");
         Mockito.doReturn(accounts).when(accountManagerDelegate).getAccountsSync();
-        AccountManagerFacadeProvider.overrideAccountManagerFacadeForTests(accountManagerDelegate);
+        AccountManagerFacadeProvider.setInstanceForTests(
+                new AccountManagerFacade(accountManagerDelegate));
         Assert.assertTrue(ToSAckedReceiver.checkAnyUserHasSeenToS());
     }
 }

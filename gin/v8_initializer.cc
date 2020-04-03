@@ -211,6 +211,13 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode) {
                                sizeof(no_flush_bytecode) - 1);
   }
 
+  if (base::FeatureList::IsEnabled(features::kV8OffThreadFinalization)) {
+    static const char finalize_streaming_on_background[] =
+        "--finalize-streaming-on-background";
+    v8::V8::SetFlagsFromString(finalize_streaming_on_background,
+                               sizeof(finalize_streaming_on_background) - 1);
+  }
+
   if (!base::FeatureList::IsEnabled(features::kV8LazyFeedbackAllocation)) {
     static const char no_lazy_feedback_allocation[] =
         "--no-lazy-feedback-allocation";

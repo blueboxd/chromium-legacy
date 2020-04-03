@@ -92,4 +92,17 @@ TEST(GenerateSchemaOrgCodeTest, GetPropertyConfigurationUsesOverridesFile) {
       testing::UnorderedElementsAre("http://schema.org/PropertyValue"));
 }
 
+TEST(GenerateSchemaOrgCodeTest, IsDescendedFromSucceeds) {
+  EXPECT_TRUE(entity::IsDescendedFrom(entity::kThing, entity::kVideoObject));
+}
+
+TEST(GenerateSchemaOrgCodeTest, IsDescendedFromSucceedsMultipleInheritance) {
+  EXPECT_TRUE(
+      entity::IsDescendedFrom(entity::kPlace, entity::kCafeOrCoffeeShop));
+}
+
+TEST(GenerateSchemaOrgCodeTest, IsDescendedFromFails) {
+  EXPECT_FALSE(entity::IsDescendedFrom(entity::kVideoObject, entity::kThing));
+}
+
 }  // namespace schema_org

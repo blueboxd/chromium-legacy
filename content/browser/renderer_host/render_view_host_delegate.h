@@ -180,7 +180,7 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   virtual void DidFirstVisuallyNonEmptyPaint(RenderViewHostImpl* source) {}
 
   // Returns true if the render view is rendering a portal.
-  virtual bool IsPortal() const;
+  virtual bool IsPortal();
 
   // Called when the theme color for the underlying document as specified
   // by theme-color meta tag has changed.

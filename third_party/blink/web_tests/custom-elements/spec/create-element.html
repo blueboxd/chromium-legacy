@@ -37,7 +37,7 @@ function setup(w) {
 }
 
 test_with_window((w) => {
-  assert_throws_dom_exception(w, 'InvalidCharacterError', () => {
+  assert_throws_dom('InvalidCharacterError', w.DOMException, () => {
     w.document.createElement('.invalid.name.');
   });
 }, 'createElement   1. If localName does not match the Name production, then throw an InvalidCharacterError');

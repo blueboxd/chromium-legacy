@@ -15,6 +15,7 @@ import android.view.View;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
@@ -38,6 +39,7 @@ class StatusIndicatorMediator
     private Supplier<Boolean> mCanAnimateNativeBrowserControls;
 
     private int mIndicatorHeight;
+    private int mJavaLayoutHeight;
     private boolean mIsHiding;
 
     /**
@@ -75,9 +77,11 @@ class StatusIndicatorMediator
     @Override
     public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft,
             int oldTop, int oldRight, int oldBottom) {
-        if (mIndicatorHeight == v.getHeight()) return;
+        // Wait for first valid height while showing indicator.
+        if (mIsHiding || mJavaLayoutHeight != 0 || v.getHeight() <= 0) return;
 
-        heightChanged(v.getHeight());
+        mJavaLayoutHeight = v.getHeight();
+        updateVisibility(false);
     }
 
     void addObserver(StatusIndicatorCoordinator.StatusIndicatorObserver observer) {
@@ -293,7 +297,7 @@ class StatusIndicatorMediator
         animatorSet.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                heightChanged(0);
+                updateVisibility(true);
             }
         });
         animatorSet.start();
@@ -315,14 +319,16 @@ class StatusIndicatorMediator
 
     // Other internal methods
 
-    private void heightChanged(int newHeight) {
-        mIndicatorHeight = newHeight;
+    /**
+     * Call to kick off height change when status indicator is shown/hidden.
+     * @param hiding Whether the status indicator is hiding.
+     */
+    private void updateVisibility(boolean hiding) {
+        mIsHiding = hiding;
+        mIndicatorHeight = hiding ? 0 : mJavaLayoutHeight;
 
-        if (mIndicatorHeight > 0) {
+        if (!mIsHiding) {
             mFullscreenManager.addListener(this);
-            mIsHiding = false;
-        } else {
-            mIsHiding = true;
         }
 
         // If the browser controls won't be animating, we can pretend that the animation ended.
@@ -330,7 +336,7 @@ class StatusIndicatorMediator
             onOffsetChanged(mIndicatorHeight);
         }
 
-        notifyHeightChange(newHeight);
+        notifyHeightChange(mIndicatorHeight);
     }
 
     private void onOffsetChanged(int topControlsMinHeightOffset) {
@@ -353,6 +359,12 @@ class StatusIndicatorMediator
         if (doneHiding) {
             mFullscreenManager.removeListener(this);
             mIsHiding = false;
+            mJavaLayoutHeight = 0;
         }
+    }
+
+    @VisibleForTesting
+    void updateVisibilityForTesting(boolean hiding) {
+        updateVisibility(hiding);
     }
 }

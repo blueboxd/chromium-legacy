@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 81 tests; 74 PASS, 7 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 83 tests; 76 PASS, 7 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS src set
 PASS src changed
 PASS src removed
@@ -20,6 +20,7 @@ PASS crossorigin anonymous to use-credentials, src absent
 PASS crossorigin use-credentials to absent, src absent
 PASS crossorigin use-credentials to empty, src absent
 PASS crossorigin use-credentials to anonymous, src absent
+PASS crossorigin use-credentials to invalid, src absent
 PASS crossorigin absent to empty, src already set
 PASS crossorigin absent to anonymous, src already set
 PASS crossorigin absent to use-credentials, src already set
@@ -30,6 +31,7 @@ PASS crossorigin anonymous to use-credentials, src already set
 PASS crossorigin use-credentials to absent, src already set
 PASS crossorigin use-credentials to empty, src already set
 PASS crossorigin use-credentials to anonymous, src already set
+PASS crossorigin use-credentials to invalid, src already set
 FAIL inserted into picture assert_unreached: update the image data didn't run Reached unreachable code
 FAIL removed from picture assert_unreached: update the image data didn't run Reached unreachable code
 PASS parent is picture, previous source inserted

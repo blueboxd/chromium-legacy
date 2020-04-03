@@ -27,5 +27,26 @@ bool IsValidEntityName(const std::string& entity_name) {
   return kValidEntityNames->find(entity_name) != kValidEntityNames->end();
 }
 
+bool IsDescendedFrom(const std::string& possible_parent,
+                     const std::string& possible_child) {
+  static const base::NoDestructor<std::map<std::string, std::vector<std::string>>>
+    kParentEntities(std::map<std::string, std::vector<std::string>>({
+      {%for key in entity_parent_lookup %}
+      { "{{key}}", {
+        {% for parent in entity_parent_lookup[key] %}
+          "{{parent}}",
+        {% endfor %}
+        }
+      },
+      {% endfor %}
+    }));
+  auto parents = kParentEntities->find(possible_child);
+  if (parents == kParentEntities->end())
+    return false;
+  auto it = std::find_if(parents->second.begin(), parents->second.end(), [&possible_parent](const std::string& parent) { return parent == possible_parent; });
+  return it != parents->second.end();
+}
+
+
 }  // entity
 }  // schema_org

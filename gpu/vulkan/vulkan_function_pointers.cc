@@ -849,6 +849,29 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(
   }
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
+#if defined(OS_WIN)
+  if (gfx::HasExtension(enabled_extensions,
+                        VK_KHR_EXTERNAL_SEMAPHORE_WIN32_EXTENSION_NAME)) {
+    vkGetSemaphoreWin32HandleKHRFn =
+        reinterpret_cast<PFN_vkGetSemaphoreWin32HandleKHR>(
+            vkGetDeviceProcAddr(vk_device, "vkGetSemaphoreWin32HandleKHR"));
+    if (!vkGetSemaphoreWin32HandleKHRFn) {
+      DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                    << "vkGetSemaphoreWin32HandleKHR";
+      return false;
+    }
+
+    vkImportSemaphoreWin32HandleKHRFn =
+        reinterpret_cast<PFN_vkImportSemaphoreWin32HandleKHR>(
+            vkGetDeviceProcAddr(vk_device, "vkImportSemaphoreWin32HandleKHR"));
+    if (!vkImportSemaphoreWin32HandleKHRFn) {
+      DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                    << "vkImportSemaphoreWin32HandleKHR";
+      return false;
+    }
+  }
+#endif  // defined(OS_WIN)
+
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   if (gfx::HasExtension(enabled_extensions,
                         VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME)) {
@@ -870,6 +893,30 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(
     }
   }
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
+
+#if defined(OS_WIN)
+  if (gfx::HasExtension(enabled_extensions,
+                        VK_KHR_EXTERNAL_MEMORY_WIN32_EXTENSION_NAME)) {
+    vkGetMemoryWin32HandleKHRFn =
+        reinterpret_cast<PFN_vkGetMemoryWin32HandleKHR>(
+            vkGetDeviceProcAddr(vk_device, "vkGetMemoryWin32HandleKHR"));
+    if (!vkGetMemoryWin32HandleKHRFn) {
+      DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                    << "vkGetMemoryWin32HandleKHR";
+      return false;
+    }
+
+    vkGetMemoryWin32HandlePropertiesKHRFn =
+        reinterpret_cast<PFN_vkGetMemoryWin32HandlePropertiesKHR>(
+            vkGetDeviceProcAddr(vk_device,
+                                "vkGetMemoryWin32HandlePropertiesKHR"));
+    if (!vkGetMemoryWin32HandlePropertiesKHRFn) {
+      DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                    << "vkGetMemoryWin32HandlePropertiesKHR";
+      return false;
+    }
+  }
+#endif  // defined(OS_WIN)
 
 #if defined(OS_FUCHSIA)
   if (gfx::HasExtension(enabled_extensions,

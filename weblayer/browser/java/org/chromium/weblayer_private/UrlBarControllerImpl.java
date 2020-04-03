@@ -19,6 +19,7 @@ import androidx.annotation.NonNull;
 import org.chromium.base.LifetimeAssert;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.components.omnibox.SecurityButtonAnimationDelegate;
 import org.chromium.components.omnibox.SecurityStatusIcon;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.IUrlBarController;
@@ -77,6 +78,7 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
         private float mTextSize;
         private TextView mUrlTextView;
         private ImageButton mSecurityButton;
+        private final SecurityButtonAnimationDelegate mSecurityButtonAnimationDelegate;
 
         public UrlBarView(@NonNull Context context, Bundle options) {
             super(context);
@@ -86,6 +88,8 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
             setBackgroundColor(Color.TRANSPARENT);
             mUrlTextView = findViewById(R.id.url_text);
             mSecurityButton = (ImageButton) findViewById(R.id.security_button);
+            mSecurityButtonAnimationDelegate = new SecurityButtonAnimationDelegate(
+                    mSecurityButton, mUrlTextView, R.dimen.security_status_icon_size);
 
             updateView();
         }
@@ -120,7 +124,7 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
             mUrlTextView.setTextSize(
                     TypedValue.COMPLEX_UNIT_SP, Math.max(MINIMUM_TEXT_SIZE, mTextSize));
 
-            mSecurityButton.setImageResource(getSecurityIcon());
+            mSecurityButtonAnimationDelegate.updateSecurityButton(getSecurityIcon());
             mSecurityButton.setContentDescription(getContext().getResources().getString(
                     SecurityStatusIcon.getSecurityIconContentDescriptionResourceId(
                             UrlBarControllerImplJni.get().getConnectionSecurityLevel(

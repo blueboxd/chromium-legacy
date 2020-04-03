@@ -2,8 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/sysroot.gni")
+import("//third_party/fuchsia-sdk/sdk/build/component.gni")
+import("//third_party/fuchsia-sdk/sdk/build/package.gni")
 
+# DEPRECATED: Use the Fuchsia SDK's fuchsia_component() and fuchsia_package()
+# templates directly, in new code.
+#
 # Creates a Fuchsia .far package file containing a Fuchsia component.
 #
 # Parameters are:
@@ -28,210 +32,97 @@ import("//build/config/sysroot.gni")
 #
 # TODO(https://crbug.com/1050703): Migrate consumers to GN SDK equivalents.
 template("cr_fuchsia_package") {
-  pkg = {
-    forward_variables_from(invoker, "*")
+  assert(defined(invoker.binary))
 
-    if (defined(package_name_override)) {
-      package_name = package_name_override
-    } else {
-      package_name = invoker.target_name
-    }
+  if (defined(invoker.package_name_override)) {
+    _package_name = invoker.package_name_override
+  } else {
+    _package_name = invoker.target_name
+  }
 
-    if (defined(archive_name_override)) {
-      archive_filename = archive_name_override
-    } else {
-      archive_filename = package_name
-    }
+  _package_contents = [ invoker.binary ]
+  if (defined(invoker.deps)) {
+    _package_contents += invoker.deps
+  }
 
-    if (!defined(manifest)) {
+  _component_target = target_name + "__cr-component"
+  _package_components = [ ":${_component_target}" ]
+
+  # Declare the primary component for this package.
+  fuchsia_component(_component_target) {
+    forward_variables_from(invoker,
+                           [
+                             #"data",
+                             "testonly",
+                           ])
+
+    if (!defined(invoker.manifest)) {
       assert(testonly == true)
 
       # TODO(1019938): switch the default to tests.cmx which doesn't request
       # the deprecated-ambient-replace-as-executable feature.
-      manifest = "//build/config/fuchsia/tests-with-exec.cmx"
+      manifest_fragment = "//build/config/fuchsia/tests-with-exec.cmx"
+    } else {
+      manifest_fragment = invoker.manifest
+    }
+
+    manifest_fragment_data = read_file(manifest_fragment, "json")
+    if (!defined(manifest_fragment_data.program)) {
+      manifest_fragment_data.program = {
+        binary = get_label_info(invoker.binary, "name")
+      }
+    }
+    manifest = "$target_out_dir/" + target_name + "__component-manifest.cmx"
+    write_file(manifest, manifest_fragment_data, "json")
+
+    if (defined(invoker.component_name_override)) {
+      manifest_output_name = "${invoker.component_name_override}"
+    } else {
+      manifest_output_name = "${_package_name}"
+    }
+
+    data_deps = _package_contents
+  }
+
+  # Bundle manifests providing additional entrypoints into the package.
+  if (defined(invoker.additional_manifests)) {
+    foreach(filename, invoker.additional_manifests) {
+      _additional_component_target = target_name + "_" + filename
+      _package_components += [ ":${_additional_component_target}" ]
+      fuchsia_component(_additional_component_target) {
+        forward_variables_from(invoker, [ "testonly" ])
+        data_deps = _package_contents
+        manifest = filename
+      }
     }
   }
-  assert(defined(pkg.binary))
 
-  _pm_tool_path = "//third_party/fuchsia-sdk/sdk/tools/pm"
-
-  _pkg_out_dir = "${target_gen_dir}/${pkg.archive_filename}"
-  _runtime_deps_file = "$_pkg_out_dir/${pkg.archive_filename}.runtime_deps"
-  _archive_manifest = "$_pkg_out_dir/${pkg.archive_filename}.archive_manifest"
-  _build_ids_file = "$_pkg_out_dir/ids.txt"
-  _meta_far_file = "$_pkg_out_dir/meta.far"
-  _combined_far_file = "$_pkg_out_dir/${pkg.package_name}-0.far"
-  _final_far_file = "$_pkg_out_dir/${pkg.archive_filename}.far"
-  _package_info_path = "$_pkg_out_dir/package"
-
-  if (defined(pkg.component_name_override)) {
-    _generated_cmx = "$_pkg_out_dir/${pkg.component_name_override}.cmx"
+  # Generate a Fuchsia ARchive (FAR) of the requested name.
+  if (defined(invoker.archive_name_override)) {
+    _archive_name = invoker.archive_name_override
   } else {
-    _generated_cmx = "$_pkg_out_dir/${pkg.package_name}.cmx"
+    _archive_name = _package_name
   }
 
-  _write_manifest_target = "${pkg.package_name}__write_manifest"
-  _package_target = "${pkg.package_name}__pkg"
-  _bundle_target = "${pkg.package_name}__bundle"
+  if (_archive_name != _package_name) {
+    _archive_target = target_name + "__cr-archive"
 
-  # Generates a manifest file based on the GN runtime deps
-  # suitable for "pm" tool consumption.
-  action(_write_manifest_target) {
-    _depfile = "${target_gen_dir}/${target_name}_stamp.d"
-
-    forward_variables_from(invoker,
-                           [
-                             "data",
-                             "deps",
-                             "testonly",
-                           ])
-
-    script = "//build/config/fuchsia/prepare_package_inputs.py"
-
-    inputs = [
-      _runtime_deps_file,
-      pkg.manifest,
-    ]
-
-    outputs = [
-      _archive_manifest,
-      _build_ids_file,
-      _generated_cmx,
-    ]
-
-    if (!defined(deps)) {
-      deps = []
+    copy(target_name) {
+      deps = [ ":${_archive_target}" ]
+      _pkg_out_dir = "${target_gen_dir}/${_package_name}"
+      sources = [ "${_pkg_out_dir}/${_package_name}.far" ]
+      outputs = [ "${_pkg_out_dir}/${_archive_name}.far" ]
     }
-    deps += [ pkg.binary ]
-    data_deps = deps
-
-    # Use a depfile to trigger package rebuilds if any of the files (static
-    # assets, shared libraries, etc.) included by the package have changed.
-    depfile = _depfile
-
-    args = [
-      "--root-dir",
-      rebase_path("//", root_build_dir),
-      "--out-dir",
-      rebase_path(root_out_dir, root_build_dir),
-      "--app-name",
-      pkg.package_name,
-      "--app-filename",
-      get_label_info(pkg.binary, "name"),
-      "--manifest-input-path",
-      rebase_path(pkg.manifest, root_build_dir),
-      "--runtime-deps-file",
-      rebase_path(_runtime_deps_file, root_build_dir),
-      "--depfile-path",
-      rebase_path(_depfile, root_build_dir),
-      "--package-manifest-path",
-      rebase_path(_archive_manifest, root_build_dir),
-      "--component-manifest-path",
-      rebase_path(_generated_cmx, root_build_dir),
-      "--build-ids-file",
-      rebase_path(_build_ids_file, root_build_dir),
-    ]
-
-    if (defined(pkg.excluded_files)) {
-      foreach(filename, pkg.excluded_files) {
-        args += [
-          "--exclude-file",
-          filename,
-        ]
-      }
-    }
-
-    if (defined(pkg.additional_manifests)) {
-      foreach(filename, pkg.additional_manifests) {
-        args += [
-          "--additional-manifest",
-          rebase_path(filename),
-        ]
-      }
-    }
-
-    write_runtime_deps = _runtime_deps_file
+  } else {
+    _archive_target = target_name
   }
 
-  # Creates a signed Fuchsia metadata package.
-  action(_package_target) {
+  fuchsia_package(_archive_target) {
     forward_variables_from(invoker, [ "testonly" ])
-
-    script = "//build/gn_run_binary.py"
-
-    deps = [ ":$_write_manifest_target" ]
-
-    inputs = [
-      # Depend on the SDK hash, to ensure rebuild if the SDK tools change.
-      "//third_party/fuchsia-sdk/sdk/.hash",
-    ]
-
-    if (defined(pkg.additional_manifests)) {
-      inputs += pkg.additional_manifests
+    package_name = _package_name
+    if (defined(invoker.excluded_files)) {
+      excluded_files = invoker.excluded_files
     }
-
-    outputs = [ _meta_far_file ]
-
-    args = [
-      rebase_path(_pm_tool_path, root_build_dir),
-      "-o",
-      rebase_path(_pkg_out_dir, root_build_dir),
-      "-m",
-      rebase_path(_archive_manifest, root_build_dir),
-      "build",
-    ]
-  }
-
-  # Creates a package containing the metadata archive and blob data.
-  action(_bundle_target) {
-    forward_variables_from(invoker, [ "testonly" ])
-
-    script = "//build/gn_run_binary.py"
-
-    deps = [
-      ":$_package_target",
-      ":$_write_manifest_target",
-    ]
-
-    inputs = [
-      # Depend on the SDK hash, to ensure rebuild if the SDK tools change.
-      "//third_party/fuchsia-sdk/sdk/.hash",
-      _meta_far_file,
-      _archive_manifest,
-    ]
-
-    outputs = [ _combined_far_file ]
-
-    args = [
-      rebase_path(_pm_tool_path, root_build_dir),
-      "-o",
-      rebase_path(_pkg_out_dir, root_build_dir),
-      "-m",
-      rebase_path(_archive_manifest, root_build_dir),
-      "archive",
-    ]
-  }
-
-  # Copies the archive to a well-known path.
-  # TODO(kmarshall): Use a 'pm' output flag to write directly to the desired
-  # file path instead.
-  copy(target_name) {
-    forward_variables_from(invoker, [ "testonly" ])
-
-    # Allows dependent targets to make use of "ids.txt".
-    public_deps = [ ":$_write_manifest_target" ]
-
-    deps = [ ":$_bundle_target" ]
-
-    data = [
-      _final_far_file,
-
-      # Files specified here so that they can be read by isolated testbots.
-      _package_info_path,
-      _build_ids_file,
-    ]
-
-    sources = [ _combined_far_file ]
-    outputs = [ _final_far_file ]
+    deps = _package_components
   }
 }

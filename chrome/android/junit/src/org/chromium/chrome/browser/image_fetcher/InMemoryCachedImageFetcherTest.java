@@ -69,17 +69,17 @@ public class InMemoryCachedImageFetcherTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        ImageFetcherBridge.setupForTesting(mBridge);
+        doReturn(mBridge).when(mCachedImageFetcher).getImageFetcherBridge();
+
         mReferencePool = new DiscardableReferencePool();
         mBitmapCache = new BitmapCache(mReferencePool, DEFAULT_CACHE_SIZE);
         mInMemoryCachedImageFetcher =
                 spy(new InMemoryCachedImageFetcher(mBitmapCache, mCachedImageFetcher));
     }
 
-    public void answerFetch(Bitmap bitmap, CachedImageFetcher cachedImageFetcher,
-            boolean deleteBitmapCacheOnFetch) {
+    public void answerFetch(Bitmap bitmap, boolean deleteBitmapCacheOnFetch) {
         mInMemoryCachedImageFetcher =
-                spy(new InMemoryCachedImageFetcher(mBitmapCache, cachedImageFetcher));
+                spy(new InMemoryCachedImageFetcher(mBitmapCache, mCachedImageFetcher));
         // clang-format off
         doAnswer((InvocationOnMock invocation) -> {
             if (deleteBitmapCacheOnFetch) {
@@ -98,7 +98,7 @@ public class InMemoryCachedImageFetcherTest {
     @Test
     @SmallTest
     public void testFetchImageCachesFirstCall() {
-        answerFetch(mBitmap, mCachedImageFetcher, false);
+        answerFetch(mBitmap, false);
         mInMemoryCachedImageFetcher.fetchImage(
                 URL, UMA_CLIENT_NAME, WIDTH_PX, HEIGHT_PX, mCallback);
         verify(mCallback).onResult(eq(mBitmap));
@@ -119,7 +119,8 @@ public class InMemoryCachedImageFetcherTest {
     @Test
     @SmallTest
     public void testFetchImageReturnsNullWhenFetcherIsNull() {
-        answerFetch(mBitmap, null, false);
+        answerFetch(mBitmap, false);
+        mInMemoryCachedImageFetcher.setImageFetcherForTesting(null);
         doReturn(null)
                 .when(mInMemoryCachedImageFetcher)
                 .tryToGetBitmap(eq(URL), eq(WIDTH_PX), eq(HEIGHT_PX));
@@ -136,7 +137,7 @@ public class InMemoryCachedImageFetcherTest {
     @SmallTest
     public void testFetchImageDoesNotCacheAfterDestroy() {
         try {
-            answerFetch(mBitmap, mCachedImageFetcher, true);
+            answerFetch(mBitmap, true);
 
             // No exception should be thrown here when bitmap cache is null.
             mInMemoryCachedImageFetcher.fetchImage(

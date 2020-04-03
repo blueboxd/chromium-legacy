@@ -63,7 +63,7 @@ mojom("web_test_common_mojom") {
   ]
 }
 
-source_set("web_test_common") {
+static_library("web_test_common") {
   testonly = true
   sources = [
     "common/web_test/web_test_constants.h",
@@ -84,6 +84,44 @@ source_set("web_test_common") {
     "//third_party/blink/public:blink_headers",
     "//v8",
   ]
+}
+
+static_library("web_test_renderer") {
+  testonly = true
+  sources = [
+    "renderer/web_test/blink_test_helpers.cc",
+    "renderer/web_test/blink_test_helpers.h",
+    "renderer/web_test/blink_test_runner.cc",
+    "renderer/web_test/blink_test_runner.h",
+    "renderer/web_test/test_websocket_handshake_throttle_provider.cc",
+    "renderer/web_test/test_websocket_handshake_throttle_provider.h",
+    "renderer/web_test/web_test_content_renderer_client.cc",
+    "renderer/web_test/web_test_content_renderer_client.h",
+    "renderer/web_test/web_test_render_frame_observer.cc",
+    "renderer/web_test/web_test_render_frame_observer.h",
+    "renderer/web_test/web_test_render_thread_observer.cc",
+    "renderer/web_test/web_test_render_thread_observer.h",
+  ]
+  deps = [
+    ":content_shell_lib",
+    ":web_test_common",
+    "//components/plugins/renderer",
+    "//components/web_cache/renderer",
+    "//content/shell/test_runner",
+    "//content/test:web_test_support_renderer",
+    "//media/capture",
+    "//skia",
+    "//skia:test_fonts",
+    "//third_party/blink/public:blink_headers",
+    "//third_party/blink/public:test_headers",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//v8",
+  ]
+
+  # Annoyingly, this target and web_test_support_renderer have circular
+  # includes.
+  allow_circular_includes_from = [ "//content/test:web_test_support_renderer" ]
 }
 
 # This component provides a ContentMainDelegate for Content Shell and derived
@@ -112,6 +150,8 @@ static_library("content_shell_app") {
   ]
   deps = [
     ":content_shell_lib",
+    ":web_test_common",
+    ":web_test_renderer",
     "//content/public/app:both",
     "//v8",
   ]
@@ -250,18 +290,6 @@ static_library("content_shell_lib") {
     "renderer/shell_content_renderer_client.h",
     "renderer/shell_render_view_observer.cc",
     "renderer/shell_render_view_observer.h",
-    "renderer/web_test/blink_test_helpers.cc",
-    "renderer/web_test/blink_test_helpers.h",
-    "renderer/web_test/blink_test_runner.cc",
-    "renderer/web_test/blink_test_runner.h",
-    "renderer/web_test/test_websocket_handshake_throttle_provider.cc",
-    "renderer/web_test/test_websocket_handshake_throttle_provider.h",
-    "renderer/web_test/web_test_content_renderer_client.cc",
-    "renderer/web_test/web_test_content_renderer_client.h",
-    "renderer/web_test/web_test_render_frame_observer.cc",
-    "renderer/web_test/web_test_render_frame_observer.h",
-    "renderer/web_test/web_test_render_thread_observer.cc",
-    "renderer/web_test/web_test_render_thread_observer.h",
     "utility/shell_content_utility_client.cc",
     "utility/shell_content_utility_client.h",
   ]
@@ -312,7 +340,6 @@ static_library("content_shell_lib") {
     "//components/download/public/common:public",
     "//components/keyed_service/content",
     "//components/network_session_configurator/browser",
-    "//components/plugins/renderer",
     "//components/services/storage/test_api",
     "//components/url_formatter",
     "//components/web_cache/renderer",
@@ -327,7 +354,7 @@ static_library("content_shell_lib") {
     "//content/test:content_test_mojo_bindings",
     "//content/test:mojo_web_test_bindings",
     "//content/test:test_support",
-    "//content/test:web_test_support",
+    "//content/test:web_test_support_browser",
     "//device/bluetooth",
     "//device/bluetooth:fake_bluetooth",
     "//device/bluetooth:mocks",
@@ -335,7 +362,6 @@ static_library("content_shell_lib") {
     "//gin",
     "//gpu",
     "//media",
-    "//media/capture",
     "//media/mojo:buildflags",
     "//net",
     "//net:net_resources",
@@ -350,7 +376,6 @@ static_library("content_shell_lib") {
     "//services/test/echo:lib",
     "//services/test/echo/public/mojom",
     "//skia",
-    "//skia:test_fonts",
     "//storage/browser",
     "//testing/gmock",
     "//testing/gtest",
@@ -386,9 +411,6 @@ static_library("content_shell_lib") {
     ]
     deps += [ "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.policy" ]
   }
-
-  # Annoyingly, this target and web_test_support have circular includes.
-  allow_circular_includes_from = [ "//content/test:web_test_support" ]
 
   if (enable_plugins) {
     deps += [

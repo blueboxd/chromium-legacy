@@ -684,25 +684,58 @@ void TabSpecificContentSettings::OnContentSettingChanged(
     return;
   }
 
-  if (content_type == ContentSettingsType::MEDIASTREAM_MIC ||
-      content_type == ContentSettingsType::MEDIASTREAM_CAMERA) {
-    const GURL media_origin = media_stream_access_origin();
-    ContentSetting setting = map_->GetContentSetting(
-        media_origin, media_origin, content_type, std::string());
-    ContentSettingsStatus& status = content_settings_status_[content_type];
+  ContentSettingsStatus& status = content_settings_status_[content_type];
+  switch (content_type) {
+    case ContentSettingsType::MEDIASTREAM_MIC:
+    case ContentSettingsType::MEDIASTREAM_CAMERA: {
+      const GURL media_origin = media_stream_access_origin();
+      ContentSetting setting = map_->GetContentSetting(
+          media_origin, media_origin, content_type, std::string());
 
-    if (content_type == ContentSettingsType::MEDIASTREAM_MIC &&
-        setting == CONTENT_SETTING_ALLOW) {
-      mic_was_just_granted_on_site_level_ = true;
+      if (content_type == ContentSettingsType::MEDIASTREAM_MIC &&
+          setting == CONTENT_SETTING_ALLOW) {
+        mic_was_just_granted_on_site_level_ = true;
+      }
+
+      if (content_type == ContentSettingsType::MEDIASTREAM_CAMERA &&
+          setting == CONTENT_SETTING_ALLOW) {
+        camera_was_just_granted_on_site_level_ = true;
+      }
+
+      status.allowed = setting == CONTENT_SETTING_ALLOW;
+      status.blocked = setting == CONTENT_SETTING_BLOCK;
+      break;
     }
-
-    if (content_type == ContentSettingsType::MEDIASTREAM_CAMERA &&
-        setting == CONTENT_SETTING_ALLOW) {
-      camera_was_just_granted_on_site_level_ = true;
+    case ContentSettingsType::IMAGES:
+    case ContentSettingsType::JAVASCRIPT:
+    case ContentSettingsType::PLUGINS:
+    case ContentSettingsType::COOKIES:
+    case ContentSettingsType::POPUPS:
+    case ContentSettingsType::MIXEDSCRIPT:
+    case ContentSettingsType::PPAPI_BROKER:
+    case ContentSettingsType::MIDI_SYSEX:
+    case ContentSettingsType::ADS:
+    case ContentSettingsType::SOUND:
+    case ContentSettingsType::CLIPBOARD_READ_WRITE:
+    case ContentSettingsType::SENSORS: {
+      ContentSetting setting = map_->GetContentSetting(
+          web_contents()->GetVisibleURL(), web_contents()->GetVisibleURL(),
+          content_type, std::string());
+      // If an indicator is shown and the content settings has changed, swap the
+      // indicator for the one with the opposite meaning (allowed <=> blocked).
+      if (setting == CONTENT_SETTING_BLOCK && status.allowed) {
+        status.blocked = false;
+        status.allowed = false;
+        OnContentBlocked(content_type);
+      } else if (setting == CONTENT_SETTING_ALLOW && status.blocked) {
+        status.blocked = false;
+        status.allowed = false;
+        OnContentAllowed(content_type);
+      }
+      break;
     }
-
-    status.allowed = setting == CONTENT_SETTING_ALLOW;
-    status.blocked = setting == CONTENT_SETTING_BLOCK;
+    default:
+      break;
   }
 
   if (!ShouldSendUpdatedContentSettingsRulesToRenderer(content_type))

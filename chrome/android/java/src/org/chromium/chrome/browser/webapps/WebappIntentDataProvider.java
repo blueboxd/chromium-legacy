@@ -16,6 +16,7 @@ import androidx.browser.trusted.sharing.ShareData;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.components.browser_ui.widget.TintedDrawable;
 
 /**
@@ -28,6 +29,7 @@ public class WebappIntentDataProvider extends BrowserServicesIntentDataProvider 
     private final ShareData mShareData;
     private final @NonNull WebappExtras mWebappExtras;
     private final @Nullable WebApkExtras mWebApkExtras;
+    private final @ActivityType int mActivityType;
     private final Intent mIntent;
 
     /**
@@ -46,7 +48,13 @@ public class WebappIntentDataProvider extends BrowserServicesIntentDataProvider 
         mShareData = shareData;
         mWebappExtras = webappExtras;
         mWebApkExtras = webApkExtras;
+        mActivityType = (webApkExtras != null) ? ActivityType.WEB_APK : ActivityType.WEBAPP;
         mIntent = new Intent();
+    }
+
+    @Override
+    public @ActivityType int getActivityType() {
+        return mActivityType;
     }
 
     @Override
@@ -79,16 +87,6 @@ public class WebappIntentDataProvider extends BrowserServicesIntentDataProvider 
     @Override
     public int getTitleVisibilityState() {
         return CustomTabsIntent.SHOW_PAGE_TITLE;
-    }
-
-    @Override
-    public boolean isWebappOrWebApkActivity() {
-        return true;
-    }
-
-    @Override
-    public boolean isWebApkActivity() {
-        return mWebApkExtras != null;
     }
 
     @Override

@@ -18,14 +18,11 @@ import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProv
 public class WebappInfo {
     protected final BrowserServicesIntentDataProvider mProvider;
 
-    protected static BrowserServicesIntentDataProvider createEmptyIntentDataProvider() {
-        return new WebappIntentDataProvider(WebappIntentDataProvider.getDefaultToolbarColor(),
-                false /* hasCustomToolbarColor */, null /* shareData */, WebappExtras.createEmpty(),
-                WebApkExtras.createEmpty());
-    }
-
     public static WebappInfo createEmpty() {
-        return new WebappInfo(createEmptyIntentDataProvider());
+        return new WebappInfo(
+                new WebappIntentDataProvider(WebappIntentDataProvider.getDefaultToolbarColor(),
+                        false /* hasCustomToolbarColor */, null /* shareData */,
+                        WebappExtras.createEmpty(), WebApkExtras.createEmpty()));
     }
 
     /**

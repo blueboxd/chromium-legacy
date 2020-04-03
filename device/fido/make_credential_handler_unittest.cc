@@ -83,11 +83,13 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
         test_data::kClientDataJson, std::move(rp), std::move(user),
         std::move(credential_params));
 
+    MakeCredentialRequestHandler::Options options;
+    options.allow_skipping_pin_touch = true;
+
     auto handler = std::make_unique<MakeCredentialRequestHandler>(
         fake_discovery_factory_.get(), supported_transports_,
         std::move(request_parameter),
-        std::move(authenticator_selection_criteria),
-        /*allow_skipping_pin_touch=*/true, cb_.callback());
+        std::move(authenticator_selection_criteria), options, cb_.callback());
     if (pending_mock_platform_device_) {
       platform_discovery_->AddDevice(std::move(pending_mock_platform_device_));
       platform_discovery_->WaitForCallToStartAndSimulateSuccess();

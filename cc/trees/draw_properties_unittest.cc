@@ -4481,10 +4481,13 @@ TEST_F(DrawPropertiesTest,
 
 TEST_F(DrawPropertiesTest, TransformAnimationUpdatesBackfaceVisibility) {
   LayerImpl* root = root_layer();
+  root->SetDrawsContent(true);
   LayerImpl* back_facing = AddLayer<LayerImpl>();
+  back_facing->SetDrawsContent(true);
   LayerImpl* render_surface1 = AddLayer<LayerImpl>();
+  render_surface1->SetDrawsContent(true);
   LayerImpl* render_surface2 = AddLayer<LayerImpl>();
-
+  render_surface2->SetDrawsContent(true);
   gfx::Transform rotate_about_y;
   rotate_about_y.RotateAboutYAxis(180.0);
 
@@ -4519,7 +4522,11 @@ TEST_F(DrawPropertiesTest, TransformAnimationUpdatesBackfaceVisibility) {
   UpdateActiveTreeDrawProperties();
 
   EXPECT_TRUE(GetEffectNode(render_surface1)->hidden_by_backface_visibility);
+  EXPECT_EQ(gfx::Rect(), render_surface1->visible_layer_rect());
   EXPECT_TRUE(GetEffectNode(render_surface2)->hidden_by_backface_visibility);
+  EXPECT_EQ(gfx::Rect(), render_surface2->visible_layer_rect());
+
+  EXPECT_EQ(1u, GetRenderSurfaceList().size());
 
   root->layer_tree_impl()->SetTransformMutated(back_facing->element_id(),
                                                gfx::Transform());
@@ -4527,13 +4534,24 @@ TEST_F(DrawPropertiesTest, TransformAnimationUpdatesBackfaceVisibility) {
                                                rotate_about_y);
   UpdateActiveTreeDrawProperties();
   EXPECT_FALSE(GetEffectNode(render_surface1)->hidden_by_backface_visibility);
+  EXPECT_EQ(gfx::Rect(0, 0, 30, 30), render_surface1->visible_layer_rect());
   EXPECT_TRUE(GetEffectNode(render_surface2)->hidden_by_backface_visibility);
+  EXPECT_EQ(gfx::Rect(), render_surface2->visible_layer_rect());
+
+  EXPECT_EQ(2u, GetRenderSurfaceList().size());
 
   root->layer_tree_impl()->SetTransformMutated(render_surface1->element_id(),
                                                rotate_about_y);
   UpdateActiveTreeDrawProperties();
   EXPECT_TRUE(GetEffectNode(render_surface1)->hidden_by_backface_visibility);
+  // Draw properties are only updated for visible layers, so this remains the
+  // cached value from last time. The expectation is commented out because
+  // this result is not required.
+  //  EXPECT_EQ(gfx::Rect(0, 0, 30, 30), render_surface1->visible_layer_rect());
   EXPECT_TRUE(GetEffectNode(render_surface2)->hidden_by_backface_visibility);
+  EXPECT_EQ(gfx::Rect(), render_surface2->visible_layer_rect());
+
+  EXPECT_EQ(1u, GetRenderSurfaceList().size());
 }
 
 TEST_F(DrawPropertiesTest, ScrollChildAndScrollParentDifferentTargets) {
@@ -6616,7 +6634,6 @@ TEST_F(DrawPropertiesTestWithLayerTree, SkippingLayerImpl) {
   // A double sided render surface with backface visible should not be skipped
   ImplOf(grandchild)->set_visible_layer_rect(gfx::Rect());
   child->SetForceRenderSurfaceForTesting(true);
-  child->SetDoubleSided(true);
   child->SetTransform(rotate_back_and_translate);
   CommitAndActivate();
   EXPECT_EQ(gfx::Rect(10, 10), ImplOf(grandchild)->visible_layer_rect());
@@ -6817,12 +6834,10 @@ TEST_F(DrawPropertiesTestWithLayerTree, SkippingLayer) {
   child->SetBounds(gfx::Size(10, 10));
 
   gfx::Transform rotate;
-  child->SetDoubleSided(false);
   rotate.RotateAboutXAxis(180.f);
   child->SetTransform(rotate);
   CommitAndActivate();
   EXPECT_EQ(gfx::Rect(0, 0), ImplOf(child)->visible_layer_rect());
-  child->SetDoubleSided(true);
   child->SetTransform(gfx::Transform());
 
   child->SetOpacity(0.f);

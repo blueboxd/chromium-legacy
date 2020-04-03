@@ -236,6 +236,31 @@ class WarningServiceObserver : public WarningService::Observer {
   DISALLOW_COPY_AND_ASSIGN(WarningServiceObserver);
 };
 
+// Helper to wait for ruleset load in response to extension load.
+class RulesetLoadObserver : public RulesMonitorService::TestObserver {
+ public:
+  RulesetLoadObserver(RulesMonitorService* service,
+                      const ExtensionId& extension_id)
+      : service_(service), extension_id_(extension_id) {
+    service_->SetObserverForTest(this);
+  }
+
+  ~RulesetLoadObserver() override { service_->SetObserverForTest(nullptr); }
+
+  void Wait() { run_loop_.Run(); }
+
+ private:
+  // RulesMonitorService::TestObserver override:
+  void OnRulesetLoadComplete(const ExtensionId& extension_id) override {
+    if (extension_id_ == extension_id)
+      run_loop_.Quit();
+  }
+
+  RulesMonitorService* const service_;
+  const ExtensionId extension_id_;
+  base::RunLoop run_loop_;
+};
+
 class DeclarativeNetRequestBrowserTest
     : public ExtensionBrowserTest,
       public ::testing::WithParamInterface<ExtensionLoadType> {
@@ -308,8 +333,12 @@ class DeclarativeNetRequestBrowserTest
         ->GetPageType();
   }
 
+  RulesMonitorService* rules_monitor_service() {
+    return RulesMonitorService::Get(profile());
+  }
+
   RulesetManager* ruleset_manager() {
-    return RulesMonitorService::Get(profile())->ruleset_manager();
+    return rules_monitor_service()->ruleset_manager();
   }
 
   content::PageType GetPageType() const { return GetPageType(browser()); }
@@ -2102,12 +2131,16 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   EXPECT_FALSE(ruleset_manager()->GetMatcherForExtension(extension_id));
 
   // Now change the current indexed ruleset format version. This should cause a
-  // version mismatch when the extension is loaded again, but reindexing should
+  // version mismatch when the extension is loaded again, but re-indexing should
   // still succeed.
-  const int kIndexedRulesetFormatVersion = 100;
-  std::string old_version_header = GetVersionHeaderForTesting();
-  SetIndexedRulesetFormatVersionForTesting(kIndexedRulesetFormatVersion);
-  ASSERT_NE(old_version_header, GetVersionHeaderForTesting());
+  int current_format_version = GetIndexedRulesetFormatVersionForTesting();
+  SetIndexedRulesetFormatVersionForTesting(current_format_version + 1);
+
+  // Also override the checksum value for the indexed ruleset to simulate a
+  // flatbuffer schema change. This will ensure that the checksum of the
+  // re-indexed file differs from the current checksum.
+  const int kTestChecksum = 100;
+  OverrideGetChecksumForTest(kTestChecksum);
 
   base::HistogramTester tester;
   EnableExtension(extension_id);
@@ -2128,6 +2161,81 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   tester.ExpectUniqueSample(
       "Extensions.DeclarativeNetRequest.RulesetReindexSuccessful",
       true /*sample*/, 2 /*count*/);
+
+  // Ensure that the new checksum was correctly persisted in prefs.
+  const ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+  const Extension* extension = extension_registry()->GetExtensionById(
+      extension_id, ExtensionRegistry::ENABLED);
+  std::vector<RulesetSource> static_sources =
+      RulesetSource::CreateStatic(*extension);
+  ASSERT_EQ(1u, static_sources.size());
+
+  int checksum = kTestChecksum + 1;
+  EXPECT_TRUE(prefs->GetDNRStaticRulesetChecksum(
+      extension_id, static_sources[0].id(), &checksum));
+  EXPECT_EQ(kTestChecksum, checksum);
+  EXPECT_TRUE(prefs->GetDNRDynamicRulesetChecksum(extension_id, &checksum));
+  EXPECT_EQ(kTestChecksum, checksum);
+}
+
+// Tests that static ruleset preferences are deleted on uninstall for an edge
+// case where ruleset loading is completed after extension uninstallation.
+// Regression test for crbug.com/1067441.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
+                       RulesetPrefsDeletedOnUninstall) {
+  RulesetCountWaiter waiter(ruleset_manager());
+
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules({} /* rules */));
+  waiter.WaitForRulesetCount(1);
+
+  const ExtensionId extension_id = last_loaded_extension_id();
+  const Extension* extension = extension_registry()->GetExtensionById(
+      extension_id, ExtensionRegistry::ENABLED);
+
+  std::vector<RulesetSource> static_sources =
+      RulesetSource::CreateStatic(*extension);
+  ASSERT_EQ(1u, static_sources.size());
+
+  DisableExtension(extension_id);
+  waiter.WaitForRulesetCount(0);
+
+  const ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+  int checksum = -1;
+  EXPECT_TRUE(prefs->GetDNRStaticRulesetChecksum(
+      extension_id, static_sources[0].id(), &checksum));
+
+  // Now change the current indexed ruleset format version. This should cause a
+  // version mismatch when the extension is loaded again, but re-indexing should
+  // still succeed.
+  int current_format_version = GetIndexedRulesetFormatVersionForTesting();
+  SetIndexedRulesetFormatVersionForTesting(current_format_version + 1);
+
+  // Also override the checksum value for the indexed ruleset to simulate a
+  // flatbuffer schema change. This will ensure that the checksum of the
+  // re-indexed file differs from the current checksum.
+  const int kTestChecksum = checksum + 1;
+  OverrideGetChecksumForTest(kTestChecksum);
+
+  base::HistogramTester tester;
+  RulesetLoadObserver load_observer(rules_monitor_service(), extension_id);
+
+  // Now enable the extension, causing the asynchronous extension ruleset load
+  // which further results in an asynchronous re-indexing task. Immediately
+  // uninstall the extension to ensure that the uninstallation precedes
+  // completion of ruleset load.
+  EnableExtension(extension_id);
+  UninstallExtension(extension_id);
+
+  load_observer.Wait();
+
+  // Verify that reindexing succeeded.
+  tester.ExpectUniqueSample(
+      "Extensions.DeclarativeNetRequest.RulesetReindexSuccessful",
+      true /*sample*/, 1 /*count*/);
+
+  // Verify that the prefs for the static ruleset were deleted successfully.
+  EXPECT_FALSE(prefs->GetDNRStaticRulesetChecksum(
+      extension_id, static_sources[0].id(), &checksum));
 }
 
 // Tests that redirecting requests using the declarativeNetRequest API works
@@ -3518,9 +3626,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
 
   base::SimpleTestClock clock_;
   clock_.SetNow(start_time);
-  auto* rules_monitor_service =
-      declarative_net_request::RulesMonitorService::Get(profile());
-  rules_monitor_service->action_tracker().SetClockForTests(&clock_);
+  rules_monitor_service()->action_tracker().SetClockForTests(&clock_);
 
   // Load the extension with a background script so scripts can be run from its
   // generated background page. Also grant the feedback permission for the
@@ -3603,7 +3709,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   rule_count = GetMatchedRuleCount(extension_id, first_tab_id, timestamp_2);
   EXPECT_EQ("0", rule_count);
 
-  rules_monitor_service->action_tracker().SetClockForTests(nullptr);
+  rules_monitor_service()->action_tracker().SetClockForTests(nullptr);
 }
 
 // Test that getMatchedRules will only return matched rules for individual tabs

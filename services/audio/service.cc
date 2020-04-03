@@ -16,7 +16,6 @@
 #include "base/system/system_monitor.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
-#include "components/crash/core/common/crash_key.h"
 #include "media/audio/audio_manager.h"
 #include "media/base/bind_to_current_loop.h"
 #include "services/audio/debug_recording.h"
@@ -31,22 +30,12 @@
 
 namespace audio {
 
-namespace {
-
-// TODO(crbug.com/888478): Remove this after diagnosis.
-crash_reporter::CrashKeyString<64> g_service_state_for_crashing(
-    "audio-service-state");
-
-}  // namespace
-
 Service::Service(std::unique_ptr<AudioManagerAccessor> audio_manager_accessor,
                  bool enable_remote_client_support,
                  mojo::PendingReceiver<mojom::AudioService> receiver)
     : receiver_(this, std::move(receiver)),
       audio_manager_accessor_(std::move(audio_manager_accessor)),
       enable_remote_client_support_(enable_remote_client_support) {
-  magic_bytes_ = 0x600DC0DEu;
-  g_service_state_for_crashing.Set("constructing");
   DCHECK(audio_manager_accessor_);
 
   if (enable_remote_client_support_) {
@@ -67,30 +56,22 @@ Service::Service(std::unique_ptr<AudioManagerAccessor> audio_manager_accessor,
 
   metrics_ =
       std::make_unique<ServiceMetrics>(base::DefaultTickClock::GetInstance());
-  g_service_state_for_crashing.Set("constructed");
 }
 
 Service::~Service() {
-  CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  g_service_state_for_crashing.Set("destructing");
   TRACE_EVENT0("audio", "audio::Service::~Service");
 
   metrics_.reset();
-  g_service_state_for_crashing.Set("destructing - killed metrics");
 
   // Stop all streams cleanly before shutting down the audio manager.
   stream_factory_.reset();
-  g_service_state_for_crashing.Set("destructing - killed stream_factory");
 
   // Reset |debug_recording_| to disable debug recording before AudioManager
   // shutdown.
   debug_recording_.reset();
-  g_service_state_for_crashing.Set("destructing - killed debug_recording");
 
   audio_manager_accessor_->Shutdown();
-  g_service_state_for_crashing.Set("destructing - did shut down manager");
-  magic_bytes_ = 0xDEADBEEFu;
 }
 
 // static
@@ -113,7 +94,6 @@ void Service::SetTestingApiBinderForTesting(TestingApiBinder binder) {
 
 void Service::BindSystemInfo(
     mojo::PendingReceiver<mojom::SystemInfo> receiver) {
-  CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   auto& binder_override = GetSystemInfoBinderForTesting();
@@ -131,7 +111,6 @@ void Service::BindSystemInfo(
 
 void Service::BindDebugRecording(
     mojo::PendingReceiver<mojom::DebugRecording> receiver) {
-  CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // Accept only one bind request at a time. Old receiver is overwritten.
@@ -144,7 +123,6 @@ void Service::BindDebugRecording(
 
 void Service::BindStreamFactory(
     mojo::PendingReceiver<mojom::StreamFactory> receiver) {
-  CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (!stream_factory_)
@@ -154,7 +132,6 @@ void Service::BindStreamFactory(
 
 void Service::BindDeviceNotifier(
     mojo::PendingReceiver<mojom::DeviceNotifier> receiver) {
-  CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(enable_remote_client_support_);
 
@@ -166,7 +143,6 @@ void Service::BindDeviceNotifier(
 
 void Service::BindLogFactoryManager(
     mojo::PendingReceiver<mojom::LogFactoryManager> receiver) {
-  CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(log_factory_manager_);
   DCHECK(enable_remote_client_support_);
@@ -181,7 +157,6 @@ void Service::BindTestingApi(
 }
 
 void Service::InitializeDeviceMonitor() {
-  CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 #if defined(OS_MACOSX)
   if (audio_device_listener_mac_)

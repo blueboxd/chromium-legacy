@@ -16,8 +16,10 @@
   <template>
     <style include="settings-shared">
       :host {
+        --cr-toolbar-field-width: 480px;
         display: flex;
-        flex-basis: var(--cr-toolbar-field-width, 680px);
+        flex-basis: var(--cr-toolbar-field-width);
+        flex-direction: row;
         transition: width 150ms cubic-bezier(0.4, 0, 0.2, 1);
       }
 
@@ -30,15 +32,36 @@
         flex-basis: 100%;
       }
 
+      cr-toolbar-search-field {
+        --cr-toolbar-search-field-border-radius: 20px;
+        transition: height 150ms;
+      }
+
+      :host(:focus-within) cr-toolbar-search-field {
+        --cr-toolbar-search-field-background: var(--cr-card-background-color);
+      }
+
+      :host(:focus-within[should-show-dropdown_]) cr-toolbar-search-field {
+        --cr-toolbar-search-field-border-radius: 20px 20px 0 0;
+        border-bottom: var(--cr-separator-line);
+        height: 48px;
+      }
+
+      :host(:focus-within:not([narrow])) cr-toolbar-search-field {
+        box-shadow: var(--cr-menu-shadow);
+      }
+
       :host([narrow]) iron-dropdown {
         left: 0;
         right: 0;
       }
 
       iron-dropdown [slot='dropdown-content'] {
-        background-color: var(--cr-card-background-color);
-        box-shadow: var(--cr-card-shadow);
+        background-color: var(--cr-menu-background-color);
+        border-radius: 0 0 20px 20px;
+        box-shadow: var(--cr-menu-shadow);
         display: table;
+        padding: 8px 0 13px 0;
       }
 
       :host([narrow]) iron-dropdown [slot='dropdown-content'] {
@@ -58,24 +81,26 @@
       <!--  As part of iron-dropdown's behavior, the slot 'dropdown-content' is
             hidden until iron-dropdown's opened attribute is set true, or when
             iron-dropdown's open() is called on the JS side. -->
-      <iron-list id="searchResultList" slot="dropdown-content" selection-enabled
-          items="[[searchResults_]]" selected-item="{{selectedItem_}}"
-          on-selected-item-changed="onSelectedItemChanged_">
-        <!-- TODO(crbug/1056909): Use template dom-if if searchResults_ is
-             empty, show 'No Results' UI -->
-        <template>
-          <os-search-result-row actionable search-result="[[item]]"
-              selected="[[isItemSelected_(item, selectedItem_)]]"
-              tabindex$="[[getRowTabIndex_(item, selectedItem_)]]"
-              iron-list-tab-index$="[[getRowTabIndex_(item, selectedItem_)]]"
-              on-navigated-to-result-route="onNavigatedtoResultRowRoute_"
-              last-focused="{{lastFocused_}}"
-              list-blurred="{{listBlurred_}}"
-              focus-row-index="[[index]]"
-              first$="[[!index]]">
-          </os-search-result-row>
-        </template>
-      </iron-list>
+      <div slot="dropdown-content">
+        <iron-list id="searchResultList" selection-enabled
+            items="[[searchResults_]]" selected-item="{{selectedItem_}}"
+            on-selected-item-changed="onSelectedItemChanged_">
+          <!-- TODO(crbug/1056909): Use template dom-if if searchResults_ is
+               empty, show 'No Results' UI -->
+          <template>
+            <os-search-result-row actionable search-result="[[item]]"
+                selected="[[isItemSelected_(item, selectedItem_)]]"
+                tabindex$="[[getRowTabIndex_(item, selectedItem_)]]"
+                iron-list-tab-index$="[[getRowTabIndex_(item, selectedItem_)]]"
+                on-navigated-to-result-route="onNavigatedtoResultRowRoute_"
+                last-focused="{{lastFocused_}}"
+                list-blurred="{{listBlurred_}}"
+                focus-row-index="[[index]]"
+                first$="[[!index]]">
+            </os-search-result-row>
+          </template>
+        </iron-list>
+      </div>
     </iron-dropdown>
   </template>
   <script src="os_settings_search_box.js"></script>

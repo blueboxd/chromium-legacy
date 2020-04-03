@@ -259,6 +259,7 @@ class ATL_NO_VTABLE CGaiaCredentialProvider
   CredentialCreatorFn anonymous_cred_creator_ = nullptr;
   CredentialCreatorFn other_user_cred_creator_ = nullptr;
   CredentialCreatorFn reauth_cred_creator_ = nullptr;
+  std::vector<base::string16> reauth_cred_sids_;
 };
 
 // OBJECT_ENTRY_AUTO() contains an extra semicolon.

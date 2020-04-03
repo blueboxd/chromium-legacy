@@ -48,13 +48,13 @@ public class FeatureHighlightProvider {
      * @param outerColor The outer color of the bubble.
      * @param scrimColor The color of the out side of feature highlight.
      * @param timeoutMs The amount of time in ms before the bubble disappears.
-     * @param completeRunnable The Runnable to be called if the user tab on the view.
+     * @param tapToDismiss The feature highlight bubble can be dismissiable.
      */
     public void buildForView(AppCompatActivity activity, View view, @StringRes int headTextId,
             @TextAlignment int headAlignment, @StyleRes int headStyle, @StringRes int bodyTextId,
             @TextAlignment int bodyAlignment, @StyleRes int bodyStyle, @ColorInt int pulseColor,
             @ColorInt int outerColor, @ColorInt int scrimColor, long timeoutMs,
-            Runnable completeRunnable) {}
+            Boolean tapToDismiss) {}
 
     /**
      * Build and show a feature highlight bubble for a particular view.

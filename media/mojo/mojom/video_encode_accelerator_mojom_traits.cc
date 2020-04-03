@@ -196,6 +196,20 @@ bool EnumTraits<media::mojom::VideoEncodeAcceleratorConfig::ContentType,
 }
 
 // static
+bool StructTraits<media::mojom::SpatialLayerDataView,
+                  media::VideoEncodeAccelerator::Config::SpatialLayer>::
+    Read(media::mojom::SpatialLayerDataView input,
+         media::VideoEncodeAccelerator::Config::SpatialLayer* output) {
+  output->width = input.width();
+  output->height = input.height();
+  output->bitrate_bps = input.bitrate_bps();
+  output->framerate = input.framerate();
+  output->max_qp = input.max_qp();
+  output->num_of_temporal_layers = input.num_of_temporal_layers();
+  return true;
+}
+
+// static
 bool StructTraits<media::mojom::VideoEncodeAcceleratorConfigDataView,
                   media::VideoEncodeAccelerator::Config>::
     Read(media::mojom::VideoEncodeAcceleratorConfigDataView input,
@@ -235,10 +249,15 @@ bool StructTraits<media::mojom::VideoEncodeAcceleratorConfigDataView,
   if (!input.ReadContentType(&content_type))
     return false;
 
+  std::vector<media::VideoEncodeAccelerator::Config::SpatialLayer>
+      spatial_layers;
+  if (!input.ReadSpatialLayers(&spatial_layers))
+    return false;
+
   *output = media::VideoEncodeAccelerator::Config(
       input_format, input_visible_size, output_profile, input.initial_bitrate(),
       initial_framerate, gop_length, h264_output_level, storage_type,
-      content_type);
+      content_type, spatial_layers);
   return true;
 }
 

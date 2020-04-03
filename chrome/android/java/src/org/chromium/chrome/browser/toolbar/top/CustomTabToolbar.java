@@ -200,7 +200,8 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
         mCloseButton = findViewById(R.id.close_button);
         mCloseButton.setOnLongClickListener(this);
         mMenuButton = findViewById(R.id.menu_button);
-        mAnimDelegate = new CustomTabToolbarAnimationDelegate(mSecurityButton, mTitleUrlContainer);
+        mAnimDelegate = new CustomTabToolbarAnimationDelegate(
+                mSecurityButton, mTitleUrlContainer, R.dimen.location_bar_icon_width);
     }
 
     @Override
@@ -768,18 +769,12 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
 
             int securityIconResource = getToolbarDataProvider().getSecurityIconResource(
                     DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext()));
-            if (securityIconResource == 0) {
-                // Hide the button if we don't have an actual icon to display.
-                mSecurityButton.setImageDrawable(null);
-                mAnimDelegate.hideSecurityButton();
-            } else {
-                // ImageView#setImageResource is no-op if given resource is the current one.
-                mSecurityButton.setImageResource(securityIconResource);
+            if (securityIconResource != 0) {
                 ColorStateList colorStateList = AppCompatResources.getColorStateList(
                         getContext(), getToolbarDataProvider().getSecurityIconColorStateList());
                 ApiCompatibilityUtils.setImageTintList(mSecurityButton, colorStateList);
-                mAnimDelegate.showSecurityButton();
             }
+            mAnimDelegate.updateSecurityButton(securityIconResource);
 
             int contentDescriptionId =
                     getToolbarDataProvider().getSecurityIconContentDescriptionResourceId();

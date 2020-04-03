@@ -13,7 +13,7 @@ namespace cr_fuchsia {
 // Loads and parses configuration data from the environment.
 // Returns a null value if the file(s) do not exist.
 // CHECK-fails if the file(s) are present but not parseable.
-base::Optional<base::Value> LoadPackageConfig();
+const base::Optional<base::Value>& LoadPackageConfig();
 
 }  // namespace cr_fuchsia
 

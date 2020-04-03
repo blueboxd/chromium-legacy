@@ -7,6 +7,8 @@ package org.chromium.base;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import android.net.Uri;
+
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -16,14 +18,19 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 
 /** Unit tests for {@link Log}. */
@@ -92,9 +99,23 @@ public class FileUtilsTest {
     }
 
     /**
-     * Helper to get the {@link File} object of a temp file created for testing.
+     * Helper to get the absolute path strings of multiple temp paths created for testing.
      *
-     * @param relPathname The relative name of the temp file or directory.
+     * @param relPathnames Relative names of temp files or directories (does not need to exist).
+     */
+    private ArrayList<String> getPathNames(String... relPathNames) {
+        Path rootDir = temporaryFolder.getRoot().toPath();
+        ArrayList<String> ret = new ArrayList<String>();
+        for (String relPathName : relPathNames) {
+            ret.add(rootDir.resolve(relPathName).toString());
+        }
+        return ret;
+    }
+
+    /**
+     * Helper to get the {@link File} object of a temp paths created for testing.
+     *
+     * @param relPathname The relative name of a temp file or directory (does not need to exist).
      */
     private File getFile(String relPathName) {
         Path rootDir = temporaryFolder.getRoot().toPath();
@@ -206,12 +227,149 @@ public class FileUtilsTest {
         assertFileList("");
     }
 
-    // TOOD(huangs): Implement testBatchDeleteFiles().
+    @Test
+    public void testBatchDeleteFiles() throws IOException {
+        // Batch delete files specified as path names.
+        prepareMixedFilesTestCase();
+        assertFileList("a1/; a1/b1/; a1/b1/c; a1/b1/c2; a1/b2/; a1/b2/c/; a1/b3; a2/; c");
+        FileUtils.batchDeleteFiles(getPathNames("a1/b1", "c", "nonexistent"), null);
+        assertFileList("a1/; a1/b2/; a1/b2/c/; a1/b3; a2/");
+        // Note that "b2" is not "a1/b2".
+        FileUtils.batchDeleteFiles(getPathNames("b2", "a1/b2/c"), null);
+        assertFileList("a1/; a1/b2/; a1/b3; a2/");
+        FileUtils.batchDeleteFiles(getPathNames("a1/b3", "a1", "a2", "a2", "a1", "a1/b2"), null);
+        assertFileList("");
+
+        // Omit testing content URL deletion.
+    }
+
     // TOOD(huangs): Implement testExtractAsset().
-    // TOOD(huangs): Implement testCopyStream().
-    // TOOD(huangs): Implement testCopyStreamToFile().
-    // TOOD(huangs): Implement testReadStream().
-    // TOOD(huangs): Implement testGetUriForFile().
+
+    /**
+     * Helper to create a byte array filled with arbitrary, non-repeating data.
+     *
+     * @param size Size of returned array.
+     */
+    private byte[] createBigByteArray(int size) {
+        byte[] ret = new byte[size];
+        for (int i = 0; i < size; ++i) {
+            int t = i ^ (i >> 8) ^ (i >> 16) ^ (i >> 24); // Prevents repeats.
+            ret[i] = (byte) (t & 0xFF);
+        }
+        return ret;
+    }
+
+    @Test
+    public void testCopyStream() {
+        Function<byte[], Boolean> runCase = (byte[] inputBytes) -> {
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(inputBytes);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            try {
+                FileUtils.copyStream(inputStream, outputStream);
+            } catch (IOException e) {
+                return false;
+            }
+            byte[] outputBytes = outputStream.toByteArray();
+            return Arrays.equals(inputBytes, outputBytes);
+        };
+
+        assertTrue(runCase.apply(new byte[] {}));
+        assertTrue(runCase.apply(new byte[] {3, 1, 4, 1, 5, 9, 2, 6, 5}));
+        assertTrue(runCase.apply("To be or not to be".getBytes()));
+        assertTrue(runCase.apply(createBigByteArray(131072))); // 1 << 17.
+        assertTrue(runCase.apply(createBigByteArray(119993))); // Prime.
+    }
+
+    @Test
+    public void testCopyStreamToFile() {
+        Function<byte[], Boolean> runCase = (byte[] inputBytes) -> {
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(inputBytes);
+            ByteArrayOutputStream verifyStream = new ByteArrayOutputStream();
+            byte[] fileBytes;
+            try {
+                File tempFile = temporaryFolder.newFile();
+                FileUtils.copyStreamToFile(inputStream, tempFile);
+                byte[] buffer = new byte[6543]; // Use weird size.
+                try (InputStream is = new FileInputStream(tempFile)) {
+                    int amountRead;
+                    while ((amountRead = is.read(buffer)) != -1) {
+                        verifyStream.write(buffer, 0, amountRead);
+                    }
+                }
+            } catch (IOException e) {
+                return false;
+            }
+            byte[] outputBytes = verifyStream.toByteArray();
+            return Arrays.equals(inputBytes, outputBytes);
+        };
+
+        assertTrue(runCase.apply(new byte[] {}));
+        assertTrue(runCase.apply(new byte[] {3, 1, 4, 1, 5, 9, 2, 6, 5}));
+        assertTrue(runCase.apply("To be or not to be".getBytes()));
+        assertTrue(runCase.apply(createBigByteArray(131072))); // 1 << 17.
+        assertTrue(runCase.apply(createBigByteArray(119993))); // Prime.
+    }
+
+    @Test
+    public void testReadStream() {
+        Function<byte[], Boolean> runCase = (byte[] inputBytes) -> {
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(inputBytes);
+            byte[] verifyBytes;
+            try {
+                verifyBytes = FileUtils.readStream(inputStream);
+            } catch (IOException e) {
+                return false;
+            }
+            return Arrays.equals(inputBytes, verifyBytes);
+        };
+
+        assertTrue(runCase.apply(new byte[] {}));
+        assertTrue(runCase.apply(new byte[] {3, 1, 4, 1, 5, 9, 2, 6, 5}));
+        assertTrue(runCase.apply("To be or not to be".getBytes()));
+        assertTrue(runCase.apply(createBigByteArray(131072))); // 1 << 17.
+        assertTrue(runCase.apply(createBigByteArray(119993))); // Prime.
+    }
+
+    @Test
+    public void testGetUriForFileWithContentUri() {
+        // ContentUriUtils needs to be initialized for "content://" URL to work. Use a fake
+        // version to avoid dealing with Android innards, and to provide consistent results.
+        ContentUriUtils.setFileProviderUtil(new ContentUriUtils.FileProviderUtil() {
+            @Override
+            public Uri getContentUriFromFile(File file) {
+                Uri.Builder builder = new Uri.Builder();
+                String fileString = file.toString();
+                if (fileString.startsWith("/")) {
+                    fileString = fileString.substring(1);
+                }
+                builder.scheme("content").authority("org.chromium.test");
+                for (String path : fileString.split("/")) {
+                    builder.appendPath(path);
+                }
+                return builder.build();
+            }
+        });
+
+        assertEquals(
+                "content://org.chromium.test/", FileUtils.getUriForFile(new File("/")).toString());
+        assertEquals("content://org.chromium.test/foo.bar",
+                FileUtils.getUriForFile(new File("/foo.bar")).toString());
+        assertEquals("content://org.chromium.test/path1/path2/filename.ext",
+                FileUtils.getUriForFile(new File("/path1/path2/filename.ext")).toString());
+        assertEquals("content://org.chromium.test/../../..",
+                FileUtils.getUriForFile(new File("/../../..")).toString());
+    }
+
+    @Test
+    public void testGetUriForFileWithoutContentUri() {
+        // Assumes contentUriUtils.setFileProviderUtil() is not called yet.
+        // Only test using absolute path. Otherwise cwd would be included into results.
+        assertEquals("file:///", FileUtils.getUriForFile(new File("/")).toString());
+        assertEquals("file:///foo.bar", FileUtils.getUriForFile(new File("/foo.bar")).toString());
+        assertEquals("file:///path1/path2/filename.ext",
+                FileUtils.getUriForFile(new File("/path1/path2/filename.ext")).toString());
+        assertEquals("file:///../../..", FileUtils.getUriForFile(new File("/../../..")).toString());
+    }
 
     @Test
     public void testGetExtension() {

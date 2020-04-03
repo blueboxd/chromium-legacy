@@ -417,7 +417,7 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
         # 'aborted tests' in logs is an array of strings, each string defined
         # as "{TestCase}/{testMethod}"
         for test in self.logs['aborted tests']:
-          output.mark_aborted(test)
+          output.mark_timeout(test)
 
         for test in attempt_results['passed']:
           output.mark_passed(test)

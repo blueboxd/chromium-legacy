@@ -9,19 +9,20 @@
 Polymer({
   is: 'settings-ambient-mode-page',
 
-  behaviors: [I18nBehavior, PrefsBehavior],
+  behaviors: [I18nBehavior, PrefsBehavior, WebUIListenerBehavior],
 
   properties: {
     prefs: Object,
 
     /**
-     * Enum values for the 'settings.ambient_mode.topic_source' preference.
-     * Values need to stay in sync with the |ash::ambient::prefs::TopicSource|.
+     * Enum values for topicSourceRadioGroup.
+     * Values need to stay in sync with the enum |ash::ambient::TopicSource|.
      * @private {!Object<string, number>}
      */
     topicSource_: {
       type: Object,
       value: {
+        UNKNOWN: -1,
         GOOGLE_PHOTOS: 0,
         ART_GALLERY: 1,
       },
@@ -29,12 +30,11 @@ Polymer({
     },
 
     /** @private */
-    isAmbientModeEnabled_: {
-      type: Boolean,
+    topicSourceSelected_: {
+      type: String,
       value() {
-        return loadTimeData.getBoolean('isAmbientModeEnabled');
+        return this.topicSource_.UNKNOWN;
       },
-      readOnly: true,
     },
   },
 
@@ -48,6 +48,10 @@ Polymer({
 
   /** @override */
   ready() {
+    this.addWebUIListener('topic-source-changed', (topicSource) => {
+      this.topicSourceSelected_ = topicSource;
+    });
+
     this.browserProxy_.onAmbientModePageReady();
   },
 
@@ -58,5 +62,20 @@ Polymer({
    */
   getAmbientModeOnOffLabel_(toggleValue) {
     return this.i18n(toggleValue ? 'ambientModeOn' : 'ambientModeOff');
+  },
+
+  /** @private */
+  onTopicSourceSelectedChanged_() {
+    return this.browserProxy_.onTopicSourceSelectedChanged(
+        this.$$('#topicSourceRadioGroup').selected);
+  },
+
+  /**
+   * @param {number} topicSource
+   * @return {boolean}
+   * @private
+   */
+  isValidTopicSource_(topicSource) {
+    return this.topicSourceSelected_ !== this.topicSource_.UNKNOWN;
   },
 });

@@ -5,6 +5,7 @@
 #include "chrome/browser/media/history/media_history_store.h"
 
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
@@ -124,6 +125,14 @@ class MediaHistoryStoreUnitTest
     base::FilePath db_file =
         temp_dir_.GetPath().Append(FILE_PATH_LITERAL("Media History"));
     ASSERT_TRUE(db_.Open(db_file));
+
+    // Get the size in bytes.
+    int64_t file_size = 0;
+    base::GetFileSize(db_file, &file_size);
+    EXPECT_LT(0, file_size);
+
+    histogram_tester.ExpectUniqueSample(
+        MediaHistoryStore::kDatabaseSizeKbHistogramName, file_size / 1000, 1);
 
     // Set up the media history store for OTR.
     otr_service_ = std::make_unique<MediaHistoryKeyedService>(

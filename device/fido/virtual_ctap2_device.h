@@ -58,6 +58,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
     // overrides any level requested in the makeCredential.
     base::Optional<device::CredProtect> force_cred_protect;
 
+    // default_cred_protect, if |cred_protect_support| is true, is the
+    // credProtect level that will be set for makeCredential requests that do
+    // not specify one.
+    device::CredProtect default_cred_protect = device::CredProtect::kUVOptional;
+
     // max_credential_count_in_list, if non-zero, is the value to return for
     // maxCredentialCountInList in the authenticatorGetInfo reponse.
     // CTAP2_ERR_LIMIT_EXCEEDED will be returned for requests with an allow or

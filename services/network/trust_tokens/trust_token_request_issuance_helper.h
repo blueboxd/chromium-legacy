@@ -14,6 +14,7 @@
 #include "base/strings/string_piece_forward.h"
 #include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 #include "services/network/trust_tokens/proto/public.pb.h"
+#include "services/network/trust_tokens/suitable_trust_token_origin.h"
 #include "services/network/trust_tokens/trust_token_key_commitment_getter.h"
 #include "services/network/trust_tokens/trust_token_request_helper.h"
 #include "url/origin.h"
@@ -95,7 +96,7 @@ class TrustTokenRequestIssuanceHelper : public TrustTokenRequestHelper {
   // REQUIRES: |token_store|, |key_commitment_getter|, and |cryptographer| must
   // be non-null.
   TrustTokenRequestIssuanceHelper(
-      const url::Origin& top_level_origin,
+      SuitableTrustTokenOrigin top_level_origin,
       TrustTokenStore* token_store,
       std::unique_ptr<TrustTokenKeyCommitmentGetter> key_commitment_getter,
       std::unique_ptr<Cryptographer> cryptographer);
@@ -155,8 +156,11 @@ class TrustTokenRequestIssuanceHelper : public TrustTokenRequestHelper {
       base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done,
       mojom::TrustTokenKeyCommitmentResultPtr commitment_result);
 
-  url::Origin issuer_;
-  const url::Origin top_level_origin_;
+  // |issuer_| needs to be a nullable type because it is initialized in |Begin|,
+  // but, once initialized, it will never be empty over the course of the
+  // operation's execution.
+  base::Optional<SuitableTrustTokenOrigin> issuer_;
+  const SuitableTrustTokenOrigin top_level_origin_;
   TrustTokenStore* const token_store_;
   const std::unique_ptr<TrustTokenKeyCommitmentGetter> key_commitment_getter_;
   const std::unique_ptr<Cryptographer> cryptographer_;

@@ -61,24 +61,9 @@ luci.console_view(
             short_name = '64',
         ),
         luci.console_view_entry(
-            builder = builder_name('Win Builder'),
-            category = 'chromium.win|release|builder',
-            short_name = '32',
-        ),
-        luci.console_view_entry(
             builder = builder_name('Win x64 Builder'),
             category = 'chromium.win|release|builder',
             short_name = '64',
-        ),
-        luci.console_view_entry(
-            builder = builder_name('Win7 (32) Tests'),
-            category = 'chromium.win|release|tester',
-            short_name = '32',
-        ),
-        luci.console_view_entry(
-            builder = builder_name('Win7 Tests (1)'),
-            category = 'chromium.win|release|tester',
-            short_name = '32',
         ),
         luci.console_view_entry(
             builder = builder_name('Win 7 Tests x64 (1)'),
@@ -91,11 +76,6 @@ luci.console_view(
             short_name = 'w10',
         ),
         luci.console_view_entry(
-            builder = builder_name('Win x64 Builder (dbg)'),
-            category = 'chromium.win|debug|builder',
-            short_name = '64',
-        ),
-        luci.console_view_entry(
             builder = builder_name('Win Builder (dbg)'),
             category = 'chromium.win|debug|builder',
             short_name = '32',
@@ -104,21 +84,6 @@ luci.console_view(
             builder = builder_name('Win7 Tests (dbg)(1)'),
             category = 'chromium.win|debug|tester',
             short_name = '7',
-        ),
-        luci.console_view_entry(
-            builder = builder_name('Win10 Tests x64 (dbg)'),
-            category = 'chromium.win|debug|tester',
-            short_name = '10',
-        ),
-        luci.console_view_entry(
-            builder = builder_name('Windows deterministic'),
-            category = 'chromium.win|misc',
-            short_name = 'det',
-        ),
-        luci.console_view_entry(
-            builder = builder_name('WebKit Win10'),
-            category = 'chromium.win|misc',
-            short_name = 'wbk',
         ),
         luci.console_view_entry(
             builder = builder_name('Mac Builder'),
@@ -166,11 +131,6 @@ luci.console_view(
             short_name = '13',
         ),
         luci.console_view_entry(
-            builder = builder_name('ios-device'),
-            category = 'chromium.mac|ios|default',
-            short_name = 'dev',
-        ),
-        luci.console_view_entry(
             builder = builder_name('ios-simulator'),
             category = 'chromium.mac|ios|default',
             short_name = 'sim',
@@ -179,11 +139,6 @@ luci.console_view(
             builder = builder_name('ios-simulator-full-configs'),
             category = 'chromium.mac|ios|default',
             short_name = 'ful',
-        ),
-        luci.console_view_entry(
-            builder = builder_name('ios-simulator-noncq'),
-            category = 'chromium.mac|ios|default',
-            short_name = 'non',
         ),
         luci.console_view_entry(
             builder = builder_name('Linux Builder'),
@@ -196,44 +151,14 @@ luci.console_view(
             short_name = 'tst',
         ),
         luci.console_view_entry(
-            builder = builder_name('Network Service Linux'),
-            category = 'chromium.linux|release',
-            short_name = 'nsl',
-        ),
-        luci.console_view_entry(
-            builder = builder_name('linux-gcc-rel'),
-            category = 'chromium.linux|release',
-            short_name = 'gcc',
-        ),
-        luci.console_view_entry(
-            builder = builder_name('Deterministic Linux'),
-            category = 'chromium.linux|release',
-            short_name = 'det',
-        ),
-        luci.console_view_entry(
             builder = builder_name('linux-ozone-rel'),
             category = 'chromium.linux|release',
             short_name = 'ozo',
         ),
         luci.console_view_entry(
-            builder = builder_name('linux-trusty-rel'),
-            category = 'chromium.linux|release',
-            short_name = 'tru',
-        ),
-        luci.console_view_entry(
-            builder = builder_name('Linux Builder (dbg)(32)'),
-            category = 'chromium.linux|debug|builder',
-            short_name = '32',
-        ),
-        luci.console_view_entry(
             builder = builder_name('Linux Builder (dbg)'),
             category = 'chromium.linux|debug|builder',
             short_name = '64',
-        ),
-        luci.console_view_entry(
-            builder = builder_name('Deterministic Linux (dbg)'),
-            category = 'chromium.linux|debug|builder',
-            short_name = 'det',
         ),
         luci.console_view_entry(
             builder = builder_name('Linux Tests (dbg)(1)'),
@@ -244,11 +169,6 @@ luci.console_view(
             builder = builder_name('Cast Linux'),
             category = 'chromium.linux|cast',
             short_name = 'vid',
-        ),
-        luci.console_view_entry(
-            builder = builder_name('Cast Audio Linux'),
-            category = 'chromium.linux|cast',
-            short_name = 'aud',
         ),
         luci.console_view_entry(
             builder = builder_name('Fuchsia ARM64'),
@@ -265,19 +185,9 @@ luci.console_view(
             short_name = 'x64',
         ),
         luci.console_view_entry(
-            builder = builder_name('Deterministic Fuchsia (dbg)'),
-            category = 'chromium.linux|fuchsia|x64',
-            short_name = 'det',
-        ),
-        luci.console_view_entry(
             builder = builder_name('Fuchsia x64'),
             category = 'chromium.linux|fuchsia|x64',
             short_name = 'rel',
-        ),
-        luci.console_view_entry(
-            builder = builder_name('Linux ChromiumOS Full'),
-            category = 'chromium.chromiumos|default',
-            short_name = 'ful',
         ),
         luci.console_view_entry(
             builder = builder_name('linux-chromeos-rel'),
@@ -290,16 +200,6 @@ luci.console_view(
             short_name = 'dbg',
         ),
         luci.console_view_entry(
-            builder = builder_name('chromeos-amd64-generic-asan-rel'),
-            category = 'chromium.chromiumos|simple|release|x64',
-            short_name = 'asn',
-        ),
-        luci.console_view_entry(
-            builder = builder_name('chromeos-amd64-generic-cfi-thin-lto-rel'),
-            category = 'chromium.chromiumos|simple|release|x64',
-            short_name = 'cfi',
-        ),
-        luci.console_view_entry(
             builder = builder_name('chromeos-amd64-generic-dbg'),
             category = 'chromium.chromiumos|simple|debug|x64',
             short_name = 'dbg',
@@ -308,11 +208,6 @@ luci.console_view(
             builder = builder_name('chromeos-amd64-generic-rel'),
             category = 'chromium.chromiumos|simple|release|x64',
             short_name = 'rel',
-        ),
-        luci.console_view_entry(
-            builder = builder_name('chromeos-arm-generic-dbg'),
-            category = 'chromium.chromiumos|simple|debug',
-            short_name = 'arm',
         ),
         luci.console_view_entry(
             builder = builder_name('chromeos-arm-generic-rel'),
@@ -475,21 +370,6 @@ luci.console_view(
             short_name = 'win',
         ),
         luci.console_view_entry(
-            builder = builder_name('win-asan'),
-            category = 'chromium.memory|win',
-            short_name = 'asn',
-        ),
-        luci.console_view_entry(
-            builder = builder_name('Mac ASan 64 Builder'),
-            category = 'chromium.memory|mac',
-            short_name = 'bld',
-        ),
-        luci.console_view_entry(
-            builder = builder_name('Mac ASan 64 Tests (1)'),
-            category = 'chromium.memory|mac',
-            short_name = 'tst',
-        ),
-        luci.console_view_entry(
             builder = builder_name('Linux TSan Builder'),
             category = 'chromium.memory|linux|TSan v2',
             short_name = 'bld',
@@ -513,61 +393,6 @@ luci.console_view(
             builder = builder_name('Linux ASan Tests (sandboxed)'),
             category = 'chromium.memory|linux|asan lsan',
             short_name = 'sbx',
-        ),
-        luci.console_view_entry(
-            builder = builder_name('Linux MSan Builder'),
-            category = 'chromium.memory|linux|msan',
-            short_name = 'bld',
-        ),
-        luci.console_view_entry(
-            builder = builder_name('Linux MSan Tests'),
-            category = 'chromium.memory|linux|msan',
-            short_name = 'tst',
-        ),
-        luci.console_view_entry(
-            builder = builder_name('WebKit Linux ASAN'),
-            category = 'chromium.memory|linux|webkit',
-            short_name = 'asn',
-        ),
-        luci.console_view_entry(
-            builder = builder_name('WebKit Linux MSAN'),
-            category = 'chromium.memory|linux|webkit',
-            short_name = 'msn',
-        ),
-        luci.console_view_entry(
-            builder = builder_name('WebKit Linux Leak'),
-            category = 'chromium.memory|linux|webkit',
-            short_name = 'lk',
-        ),
-        luci.console_view_entry(
-            builder = builder_name('Linux Chromium OS ASan LSan Builder'),
-            category = 'chromium.memory|cros|asan',
-            short_name = 'bld',
-        ),
-        luci.console_view_entry(
-            builder = builder_name('Linux Chromium OS ASan LSan Tests (1)'),
-            category = 'chromium.memory|cros|asan',
-            short_name = 'tst',
-        ),
-        luci.console_view_entry(
-            builder = builder_name('Linux ChromiumOS MSan Builder'),
-            category = 'chromium.memory|cros|msan',
-            short_name = 'bld',
-        ),
-        luci.console_view_entry(
-            builder = builder_name('Linux ChromiumOS MSan Tests'),
-            category = 'chromium.memory|cros|msan',
-            short_name = 'tst',
-        ),
-        luci.console_view_entry(
-            builder = builder_name('android-asan'),
-            category = 'chromium.memory|android',
-            short_name = 'asn',
-        ),
-        luci.console_view_entry(
-            builder = builder_name('Linux CFI'),
-            category = 'chromium.memory|cfi',
-            short_name = 'lnx',
         ),
         luci.console_view_entry(
             builder = builder_name('Dawn Linux x64 DEPS Builder'),
@@ -630,6 +455,14 @@ luci.console_view(
             short_name = 'x64',
         ),
         luci.console_view_entry(
+            builder = builder_name('GPU Win x64 Builder'),
+            category = 'chromium.gpu|Windows',
+        ),
+        luci.console_view_entry(
+            builder = builder_name('Win10 x64 Release (NVIDIA)'),
+            category = 'chromium.gpu|Windows',
+        ),
+        luci.console_view_entry(
             builder = builder_name('GPU Mac Builder'),
             category = 'chromium.gpu|Mac',
         ),
@@ -673,6 +506,11 @@ luci.console_view(
             category = 'chromium.fyi|linux',
         ),
         luci.console_view_entry(
+            builder = builder_name('Linux Ozone Tester (Headless)'),
+            category = 'chromium.fyi|linux',
+            short_name = 'loh',
+        ),
+        luci.console_view_entry(
             builder = builder_name('Linux Ozone Tester (Wayland)'),
             category = 'chromium.fyi|linux',
             short_name = 'low',
@@ -681,6 +519,10 @@ luci.console_view(
             builder = builder_name('Linux Ozone Tester (X11)'),
             category = 'chromium.fyi|linux',
             short_name = 'lox',
+        ),
+        luci.console_view_entry(
+            builder = builder_name('Win10 Tests x64 1803'),
+            category = 'chromium.fyi|win10|1803',
         ),
     ],
 )

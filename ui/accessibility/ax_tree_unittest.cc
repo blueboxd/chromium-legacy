@@ -3647,6 +3647,43 @@ TEST(AXTreeTest, TestSetSizePosInSetMenuItemValidChildOfMenuListPopup) {
   EXPECT_OPTIONAL_EQ(2, item2->GetSetSize());
 }
 
+TEST(AXTreeTest, TestSetSizePostInSetListBoxOptionWithGroup) {
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(7);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].child_ids = {2, 3};
+  initial_state.nodes[0].role = ax::mojom::Role::kListBox;
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[1].child_ids = {4, 5};
+  initial_state.nodes[1].role = ax::mojom::Role::kGroup;
+  initial_state.nodes[2].id = 3;
+  initial_state.nodes[2].child_ids = {6, 7};
+  initial_state.nodes[2].role = ax::mojom::Role::kGroup;
+  initial_state.nodes[3].id = 4;
+  initial_state.nodes[3].role = ax::mojom::Role::kListBoxOption;
+  initial_state.nodes[4].id = 5;
+  initial_state.nodes[4].role = ax::mojom::Role::kListBoxOption;
+  initial_state.nodes[5].id = 6;
+  initial_state.nodes[5].role = ax::mojom::Role::kListBoxOption;
+  initial_state.nodes[6].id = 7;
+  initial_state.nodes[6].role = ax::mojom::Role::kListBoxOption;
+  AXTree tree(initial_state);
+
+  AXNode* listbox_option1 = tree.GetFromId(4);
+  EXPECT_OPTIONAL_EQ(1, listbox_option1->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(2, listbox_option1->GetSetSize());
+  AXNode* listbox_option2 = tree.GetFromId(5);
+  EXPECT_OPTIONAL_EQ(2, listbox_option2->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(2, listbox_option2->GetSetSize());
+  AXNode* listbox_option3 = tree.GetFromId(6);
+  EXPECT_OPTIONAL_EQ(1, listbox_option3->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(2, listbox_option3->GetSetSize());
+  AXNode* listbox_option4 = tree.GetFromId(7);
+  EXPECT_OPTIONAL_EQ(2, listbox_option4->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(2, listbox_option4->GetSetSize());
+}
+
 TEST(AXTreeTest, OnNodeWillBeDeletedHasValidUnignoredParent) {
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;

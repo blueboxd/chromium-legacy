@@ -14,6 +14,7 @@
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "chrome/browser/ui/webui/print_preview/printer_handler.h"
+#include "printing/backend/print_backend.h"
 
 namespace base {
 class TaskRunner;
@@ -44,6 +45,11 @@ class LocalPrinterHandlerDefault : public PrinterHandler {
                   PrintCallback callback) override;
 
  private:
+  static PrinterList EnumeratePrintersAsync(const std::string& locale);
+  static base::Value FetchCapabilitiesAsync(const std::string& device_name,
+                                            const std::string& locale);
+  static std::string GetDefaultPrinterAsync(const std::string& locale);
+
   content::WebContents* const preview_web_contents_;
 
   // TaskRunner for blocking tasks. Threading behavior is platform-specific.

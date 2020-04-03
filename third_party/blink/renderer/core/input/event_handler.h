@@ -270,6 +270,8 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
 
   bool LongTapShouldInvokeContextMenu();
 
+  void UpdateCursor();
+
  private:
   WebInputEventResult HandleMouseMoveOrLeaveEvent(
       const WebMouseEvent&,
@@ -302,8 +304,6 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
   void HoverTimerFired(TimerBase*);
   void CursorUpdateTimerFired(TimerBase*);
   void ActiveIntervalTimerFired(TimerBase*);
-
-  void UpdateCursor();
 
   ScrollableArea* AssociatedScrollableArea(const PaintLayer*) const;
 

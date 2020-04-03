@@ -161,18 +161,18 @@ def RunPackage(output_dir, target, package_paths, package_name,
   system_logger = (
       _AttachKernelLogReader(target) if args.system_logging else None)
   try:
-    with target.GetAmberRepo():
-      if system_logger:
-        # Spin up a thread to asynchronously dump the system log to stdout
-        # for easier diagnoses of early, pre-execution failures.
-        log_output_quit_event = multiprocessing.Event()
-        log_output_thread = threading.Thread(
-            target=
-            lambda: _DrainStreamToStdout(system_logger.stdout, log_output_quit_event)
-        )
-        log_output_thread.daemon = True
-        log_output_thread.start()
+    if system_logger:
+      # Spin up a thread to asynchronously dump the system log to stdout
+      # for easier diagnoses of early, pre-execution failures.
+      log_output_quit_event = multiprocessing.Event()
+      log_output_thread = threading.Thread(
+          target=
+          lambda: _DrainStreamToStdout(system_logger.stdout, log_output_quit_event)
+      )
+      log_output_thread.daemon = True
+      log_output_thread.start()
 
+    with target.GetAmberRepo():
       target.InstallPackage(package_paths)
 
       if system_logger:

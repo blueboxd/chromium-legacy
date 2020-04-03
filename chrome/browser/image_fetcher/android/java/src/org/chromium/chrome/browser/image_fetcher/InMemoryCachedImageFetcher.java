@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.image_fetcher;
 
 import android.graphics.Bitmap;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
@@ -34,7 +35,9 @@ public class InMemoryCachedImageFetcher extends ImageFetcher {
      * @param imageFetcher The image fetcher to back this. Must be Cached/NetworkImageFetcher.
      * @param referencePool Pool used to discard references when under memory pressure.
      */
-    InMemoryCachedImageFetcher(ImageFetcher imageFetcher, DiscardableReferencePool referencePool) {
+    InMemoryCachedImageFetcher(
+            @NonNull ImageFetcher imageFetcher, @NonNull DiscardableReferencePool referencePool) {
+        super(imageFetcher);
         init(imageFetcher, new BitmapCache(referencePool, determineCacheSize(DEFAULT_CACHE_SIZE)));
     }
 
@@ -45,8 +48,9 @@ public class InMemoryCachedImageFetcher extends ImageFetcher {
      * @param cacheSize The cache size to use (in bytes), may be smaller depending on the device's
      *         memory.
      */
-    InMemoryCachedImageFetcher(
-            ImageFetcher imageFetcher, DiscardableReferencePool referencePool, int cacheSize) {
+    InMemoryCachedImageFetcher(@NonNull ImageFetcher imageFetcher,
+            @NonNull DiscardableReferencePool referencePool, int cacheSize) {
+        super(imageFetcher);
         init(imageFetcher, new BitmapCache(referencePool, determineCacheSize(cacheSize)));
     }
 
@@ -187,8 +191,14 @@ public class InMemoryCachedImageFetcher extends ImageFetcher {
 
     /** Test constructor. */
     @VisibleForTesting
-    InMemoryCachedImageFetcher(BitmapCache bitmapCache, ImageFetcher imageFetcher) {
+    InMemoryCachedImageFetcher(
+            @NonNull BitmapCache bitmapCache, @NonNull ImageFetcher imageFetcher) {
+        super(imageFetcher);
         mBitmapCache = bitmapCache;
+        mImageFetcher = imageFetcher;
+    }
+
+    void setImageFetcherForTesting(ImageFetcher imageFetcher) {
         mImageFetcher = imageFetcher;
     }
 }

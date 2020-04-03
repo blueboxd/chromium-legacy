@@ -612,6 +612,11 @@ class WebContents : public PageNavigator,
   // GetOuterWebContents instead.
   virtual bool IsInnerWebContentsForGuest() = 0;
 
+  // Returns whether this WebContents is a portal. This returns true even when
+  // this WebContents is not attached to its portal host's WebContents tree.
+  // This value may change over time due to portal activation and adoption.
+  virtual bool IsPortal() = 0;
+
   // Returns the outer WebContents frame, the same frame that this WebContents
   // was attached in AttachToOuterWebContentsFrame().
   virtual RenderFrameHost* GetOuterWebContentsFrame() = 0;

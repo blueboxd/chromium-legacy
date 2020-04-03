@@ -41,7 +41,7 @@ SSLErrorNavigationThrottle::WillFailRequest() {
 
   // Do not set special error page HTML for subframes; those are handled as
   // normal network errors.
-  if (!handle->IsInMainFrame()) {
+  if (!handle->IsInMainFrame() || handle->GetWebContents()->IsPortal()) {
     return content::NavigationThrottle::PROCEED;
   }
 
@@ -67,7 +67,7 @@ SSLErrorNavigationThrottle::WillProcessResponse() {
 
   // Do not set special error page HTML for subframes; those are handled as
   // normal network errors.
-  if (!handle->IsInMainFrame()) {
+  if (!handle->IsInMainFrame() || handle->GetWebContents()->IsPortal()) {
     return content::NavigationThrottle::PROCEED;
   }
 

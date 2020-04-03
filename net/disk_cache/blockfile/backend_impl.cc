@@ -110,8 +110,10 @@ bool InitExperiment(disk_cache::IndexHeader* header, bool cache_created) {
 }
 
 // A callback to perform final cleanup on the background thread.
-void FinalCleanupCallback(disk_cache::BackendImpl* backend) {
+void FinalCleanupCallback(disk_cache::BackendImpl* backend,
+                          base::WaitableEvent* done) {
   backend->CleanupCache();
+  done->Signal();
 }
 
 class CacheThread : public base::Thread {
@@ -159,9 +161,7 @@ BackendImpl::BackendImpl(
       block_files_(path),
       mask_(0),
       user_flags_(0),
-      net_log_(net_log),
-      done_(base::WaitableEvent::ResetPolicy::MANUAL,
-            base::WaitableEvent::InitialState::NOT_SIGNALED) {
+      net_log_(net_log) {
   TRACE_EVENT0("disk_cache", "BackendImpl::BackendImpl");
 }
 
@@ -177,9 +177,7 @@ BackendImpl::BackendImpl(
       block_files_(path),
       mask_(mask),
       user_flags_(kMask),
-      net_log_(net_log),
-      done_(base::WaitableEvent::ResetPolicy::MANUAL,
-            base::WaitableEvent::InitialState::NOT_SIGNALED) {
+      net_log_(net_log) {
   TRACE_EVENT0("disk_cache", "BackendImpl::BackendImpl");
 }
 
@@ -199,12 +197,15 @@ BackendImpl::~BackendImpl() {
     // Unit tests may use the same sequence for everything.
     CleanupCache();
   } else {
+    // Signals the end of background work.
+    base::WaitableEvent done;
+
     background_queue_.background_thread()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&FinalCleanupCallback, base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&FinalCleanupCallback, base::Unretained(this),
+                                  base::Unretained(&done)));
     // http://crbug.com/74623
     base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
-    done_.Wait();
+    done.Wait();
   }
 }
 
@@ -348,7 +349,6 @@ void BackendImpl::CleanupCache() {
   FlushIndex();
   index_ = nullptr;
   ptr_factory_.InvalidateWeakPtrs();
-  done_.Signal();
 }
 
 // ------------------------------------------------------------------------

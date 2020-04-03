@@ -104,6 +104,7 @@ group("metrics_python_tests") {
 
     "//tools/metrics/ukm/ukm.xml",
     "//tools/metrics/ukm/codegen.py",
+    "//tools/metrics/ukm/codegen_test.py",
     "//tools/metrics/ukm/builders_template.py",
     "//tools/metrics/ukm/decode_template.py",
     "//tools/metrics/ukm/gen_builders.py",

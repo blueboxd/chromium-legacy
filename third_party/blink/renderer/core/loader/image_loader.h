@@ -173,7 +173,6 @@ class CORE_EXPORT ImageLoader : public GarbageCollected<ImageLoader>,
   void DoUpdateFromElement(
       BypassMainWorldBehavior,
       UpdateFromElementBehavior,
-      const KURL&,
       network::mojom::ReferrerPolicy = network::mojom::ReferrerPolicy::kDefault,
       UpdateType = UpdateType::kAsync);
 
@@ -197,8 +196,7 @@ class CORE_EXPORT ImageLoader : public GarbageCollected<ImageLoader>,
   void ClearFailedLoadURL();
   void DispatchErrorEvent();
   void CrossSiteOrCSPViolationOccurred(AtomicString);
-  void EnqueueImageLoadingMicroTask(const KURL&,
-                                    UpdateFromElementBehavior,
+  void EnqueueImageLoadingMicroTask(UpdateFromElementBehavior,
                                     network::mojom::ReferrerPolicy);
 
   KURL ImageSourceToKURL(AtomicString) const;

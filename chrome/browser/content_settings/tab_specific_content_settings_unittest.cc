@@ -8,8 +8,10 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/parsed_cookie.h"
@@ -319,4 +321,46 @@ TEST_F(TabSpecificContentSettingsTest, LocalSharedObjectsContainerCookie) {
   EXPECT_EQ(5u, objects.GetObjectCount());
   EXPECT_EQ(5u, objects.GetObjectCountForDomain(GURL("http://google.com")));
   EXPECT_EQ(1u, objects.GetDomainCount());
+}
+
+TEST_F(TabSpecificContentSettingsTest, IndicatorChangedOnContentSettingChange) {
+  NavigateAndCommit(GURL("http://google.com"));
+
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents());
+
+  // First trigger OnContentBlocked.
+  EXPECT_FALSE(content_settings->IsContentBlocked(
+      ContentSettingsType::CLIPBOARD_READ_WRITE));
+  content_settings->OnContentBlocked(ContentSettingsType::CLIPBOARD_READ_WRITE);
+  EXPECT_TRUE(content_settings->IsContentBlocked(
+      ContentSettingsType::CLIPBOARD_READ_WRITE));
+
+  // Simulate the user modifying the setting.
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(browser_context());
+
+  ContentSettingsPattern pattern =
+      ContentSettingsPattern::FromURL(web_contents()->GetVisibleURL());
+
+  map->SetWebsiteSettingCustomScope(
+      pattern, pattern, ContentSettingsType::CLIPBOARD_READ_WRITE,
+      std::string(), std::make_unique<base::Value>(CONTENT_SETTING_ALLOW));
+
+  // Now the indicator is set to allowed.
+  EXPECT_TRUE(content_settings->IsContentAllowed(
+      ContentSettingsType::CLIPBOARD_READ_WRITE));
+  EXPECT_FALSE(content_settings->IsContentBlocked(
+      ContentSettingsType::CLIPBOARD_READ_WRITE));
+
+  // Simulate the user modifying the setting back to blocked.
+  map->SetWebsiteSettingCustomScope(
+      pattern, pattern, ContentSettingsType::CLIPBOARD_READ_WRITE,
+      std::string(), std::make_unique<base::Value>(CONTENT_SETTING_BLOCK));
+
+  // Now the indicator is set to allowed.
+  EXPECT_TRUE(content_settings->IsContentBlocked(
+      ContentSettingsType::CLIPBOARD_READ_WRITE));
+  EXPECT_FALSE(content_settings->IsContentAllowed(
+      ContentSettingsType::CLIPBOARD_READ_WRITE));
 }

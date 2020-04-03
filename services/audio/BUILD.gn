@@ -67,7 +67,6 @@ source_set("audio") {
   deps = [
     ":testing_api_support",
     "//build:chromecast_buildflags",
-    "//components/crash/core/common:crash_key",  # Temporary: crbug.com/888478
   ]
 
   if (audio_processing_in_audio_service_supported) {

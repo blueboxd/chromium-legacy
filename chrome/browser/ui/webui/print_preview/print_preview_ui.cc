@@ -675,9 +675,6 @@ void PrintPreviewUI::OnPreviewDataIsAvailable(
     base::UmaHistogramTimes(
         "PrintPreview.InitialDisplayTime",
         base::TimeTicks::Now() - initial_preview_start_time_);
-    base::UmaHistogramCounts1M(
-        "PrintPreview.RegeneratePreviewRequest.BeforeFirstData",
-        handler_->regenerate_preview_request_count());
     initial_preview_start_time_ = base::TimeTicks();
   }
 

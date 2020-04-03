@@ -60,6 +60,7 @@ class MediaHistoryStore {
   static const char kInitResultHistogramName[];
   static const char kPlaybackWriteResultHistogramName[];
   static const char kSessionWriteResultHistogramName[];
+  static const char kDatabaseSizeKbHistogramName[];
 
   // When we initialize the database we store the result in
   // |kInitResultHistogramName|. Do not change the numbering since this

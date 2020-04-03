@@ -366,6 +366,19 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
       options.supports_uv_token = option_map_it->second.GetBool();
     }
 
+    option_map_it = option_map.find(CBOR(kDefaultCredProtectKey));
+    if (option_map_it != option_map.end()) {
+      if (!option_map_it->second.is_unsigned()) {
+        return base::nullopt;
+      }
+      const int64_t value = option_map_it->second.GetInteger();
+      if (value != static_cast<uint8_t>(CredProtect::kUVOrCredIDRequired) &&
+          value != static_cast<uint8_t>(CredProtect::kUVRequired)) {
+        return base::nullopt;
+      }
+      options.default_cred_protect = static_cast<CredProtect>(value);
+    }
+
     response.options = std::move(options);
   }
 

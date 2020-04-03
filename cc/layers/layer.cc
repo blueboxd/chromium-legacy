@@ -1112,16 +1112,6 @@ void Layer::SetForceRenderSurfaceForTesting(bool force) {
   SetNeedsCommit();
 }
 
-void Layer::SetDoubleSided(bool double_sided) {
-  DCHECK(IsPropertyChangeAllowed());
-  if (inputs_.double_sided == double_sided)
-    return;
-  inputs_.double_sided = double_sided;
-  SetNeedsCommit();
-  SetPropertyTreesNeedRebuild();
-  SetSubtreePropertyChanged();
-}
-
 void Layer::SetTransformTreeIndex(int index) {
   DCHECK(IsPropertyChangeAllowed());
   if (transform_tree_index_ == index)

@@ -115,6 +115,12 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
     }
 
     @Override
+    @ActivityType
+    public int getActivityType() {
+        return getIntentDataProvider().getActivityType();
+    }
+
+    @Override
     public void initializeCompositor() {
         super.initializeCompositor();
         getTabModelSelector().onNativeLibraryReady(getTabContentManager());

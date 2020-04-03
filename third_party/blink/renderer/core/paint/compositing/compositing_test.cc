@@ -903,7 +903,7 @@ TEST_P(CompositingSimTest, LayerClipPropertyChanged) {
   Compositor().BeginFrame();
 
   auto* inner_element_layer = CcLayerByDOMElementId("inner");
-  EXPECT_FALSE(inner_element_layer->double_sided());
+  EXPECT_TRUE(inner_element_layer->should_check_backface_visibility());
 
   // Initially, no layer should have |subtree_property_changed| set.
   EXPECT_FALSE(inner_element_layer->subtree_property_changed());
@@ -915,7 +915,7 @@ TEST_P(CompositingSimTest, LayerClipPropertyChanged) {
   UpdateAllLifecyclePhases();
 
   inner_element_layer = CcLayerByDOMElementId("inner");
-  EXPECT_FALSE(inner_element_layer->double_sided());
+  EXPECT_TRUE(inner_element_layer->should_check_backface_visibility());
   EXPECT_TRUE(inner_element_layer->subtree_property_changed());
 
   // After a frame the |subtree_property_changed| value should be reset.

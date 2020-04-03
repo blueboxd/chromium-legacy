@@ -52,7 +52,7 @@ std::unique_ptr<JSONObject> CCLayerAsJSON(const cc::Layer* layer,
   if (!layer->DrawsContent())
     json->SetBoolean("drawsContent", false);
 
-  if (!layer->double_sided())
+  if (layer->should_check_backface_visibility())
     json->SetString("backfaceVisibility", "hidden");
 
   if (Color(layer->background_color()).Alpha()) {

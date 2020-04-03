@@ -135,14 +135,30 @@ ProxyConfigurationProtoFromMojo(
       sync_pb::WifiConfigurationSpecifics_ProxyConfiguration::
           PROXY_OPTION_AUTOMATIC) {
     if (proxy_settings->pac) {
-      proto.set_proxy_url(proxy_settings->pac->active_value);
+      proto.set_autoconfiguration_url(proxy_settings->pac->active_value);
     }
   } else if (proto.proxy_option() ==
              sync_pb::WifiConfigurationSpecifics_ProxyConfiguration::
                  PROXY_OPTION_MANUAL) {
-    // TODO: Implement support for manual proxies.
-    // Return an empty proxy configuration for now.
-    return sync_pb::WifiConfigurationSpecifics_ProxyConfiguration();
+    sync_pb::
+        WifiConfigurationSpecifics_ProxyConfiguration_ManualProxyConfiguration*
+            manual_settings = proto.mutable_manual_proxy_configuration();
+    manual_settings->set_http_proxy_url(
+        proxy_settings->manual->http_proxy->host->active_value);
+    manual_settings->set_http_proxy_port(
+        proxy_settings->manual->http_proxy->port->active_value);
+    manual_settings->set_secure_http_proxy_url(
+        proxy_settings->manual->secure_http_proxy->host->active_value);
+    manual_settings->set_secure_http_proxy_port(
+        proxy_settings->manual->secure_http_proxy->port->active_value);
+    manual_settings->set_socks_host_url(
+        proxy_settings->manual->socks->host->active_value);
+    manual_settings->set_socks_host_port(
+        proxy_settings->manual->socks->port->active_value);
+    for (const std::string& domain :
+         proxy_settings->exclude_domains->active_value) {
+      manual_settings->add_whitelisted_domains(domain);
+    }
   }
 
   return proto;

@@ -38,6 +38,7 @@ class AccessibilityHighlightController;
 class AccessibilityObserver;
 class ScopedBacklightsForcedOff;
 class SelectToSpeakEventHandler;
+class SwitchAccessBubbleController;
 class SwitchAccessEventHandler;
 
 enum AccessibilityNotificationVisibility {
@@ -382,6 +383,9 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
 
   // Test helpers:
   SwitchAccessEventHandler* GetSwitchAccessEventHandlerForTest();
+  SwitchAccessBubbleController* GetSwitchAccessBubbleControllerForTest() {
+    return switch_access_bubble_controller_.get();
+  }
   void no_switch_access_disable_confirmation_dialog_for_testing(
       bool skip_dialog) {
     no_switch_access_disable_confirmation_dialog_for_testing_ = skip_dialog;
@@ -444,6 +448,8 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
 
   // List of key codes that Switch Access should capture.
   std::vector<int> switch_access_keys_to_capture_;
+  std::unique_ptr<SwitchAccessBubbleController>
+      switch_access_bubble_controller_;
   std::unique_ptr<SwitchAccessEventHandler> switch_access_event_handler_;
   SwitchAccessEventHandlerDelegate* switch_access_event_handler_delegate_ =
       nullptr;

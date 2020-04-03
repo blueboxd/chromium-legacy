@@ -108,7 +108,8 @@ def RecursiveMatchFilename(folder, filename):
     for entry in it:
       if (entry.is_symlink()):
         continue
-      if entry.is_file() and filename in entry.path:
+      if (entry.is_file() and filename in entry.path and
+          not os.path.basename(entry.path).startswith('.')):
         matches.append(entry.path)
       if entry.is_dir():
         # On Windows, junctions are like a symlink that python interprets as a

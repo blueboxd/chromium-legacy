@@ -112,12 +112,6 @@ class AutoclickRingHandler::AutoclickRingView : public views::View {
     SchedulePaint();
   }
 
-  void UpdateWithShrinkAnimation(gfx::Animation* animation) {
-    current_angle_ = animation->CurrentValueBetween(
-        kAutoclickRingAngleStartValue, kAutoclickRingAngleEndValue);
-    SchedulePaint();
-  }
-
   void SetSize(int radius) { radius_ = radius; }
 
  private:
@@ -166,7 +160,7 @@ void AutoclickRingHandler::StartGesture(
   ring_widget_ = widget;
   current_animation_type_ = AnimationType::GROW_ANIMATION;
   animation_duration_ = duration;
-  StartAnimation(base::TimeDelta());
+  StartAnimation(animation_duration_);
 }
 
 void AutoclickRingHandler::StopGesture() {
@@ -197,13 +191,6 @@ void AutoclickRingHandler::StartAnimation(base::TimeDelta delay) {
       Start();
       break;
     }
-    case AnimationType::SHRINK_ANIMATION: {
-      view_.reset(
-          new AutoclickRingView(tap_down_location_, ring_widget_, radius_));
-      SetDuration(delay);
-      Start();
-      break;
-    }
     case AnimationType::NONE:
       NOTREACHED();
       break;
@@ -226,10 +213,6 @@ void AutoclickRingHandler::AnimateToState(double state) {
       view_->SetLocation(tap_down_location_);
       view_->UpdateWithGrowAnimation(this);
       break;
-    case AnimationType::SHRINK_ANIMATION:
-      view_->SetLocation(tap_down_location_);
-      view_->UpdateWithShrinkAnimation(this);
-      break;
     case AnimationType::NONE:
       NOTREACHED();
       break;
@@ -239,14 +222,10 @@ void AutoclickRingHandler::AnimateToState(double state) {
 void AutoclickRingHandler::AnimationStopped() {
   switch (current_animation_type_) {
     case AnimationType::GROW_ANIMATION:
-      current_animation_type_ = AnimationType::SHRINK_ANIMATION;
-      StartAnimation(animation_duration_);
-      break;
-    case AnimationType::SHRINK_ANIMATION:
       current_animation_type_ = AnimationType::NONE;
       break;
     case AnimationType::NONE:
-      // fall through to reset the view.
+      // Fall through to reset the view.
       view_.reset();
       break;
   }

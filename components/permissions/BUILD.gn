@@ -57,6 +57,8 @@ source_set("permissions") {
   ]
   if (is_android) {
     sources += [
+      "android/android_permission_util.cc",
+      "android/android_permission_util.h",
       "android/permission_dialog_delegate.cc",
       "android/permission_dialog_delegate.h",
       "android/permission_prompt_android.cc",

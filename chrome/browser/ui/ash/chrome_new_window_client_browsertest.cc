@@ -330,6 +330,8 @@ void TestAllOSSettingPages(const GURL& base_url) {
                      base_url.Resolve(chrome::kPluginVmSharedPathsSubPage));
   TestOpenChromePage(ChromePage::OSSEARCH,
                      base_url.Resolve(chrome::kOsSearchSubPage));
+  TestOpenChromePage(ChromePage::OSPRIVACY,
+                     base_url.Resolve(chrome::kOsPrivacySubPage));
   TestOpenChromePage(ChromePage::SMARTLOCKSETTINGS,
                      base_url.Resolve(chrome::kSmartLockSettingsSubPage));
   TestOpenChromePage(ChromePage::STYLUS,

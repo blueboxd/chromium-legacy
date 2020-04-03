@@ -4,9 +4,14 @@
 
 library chromium.cast;
 
+using fuchsia.media.sessions2;
+
 /// Allows clients to access and modify certain aspects of the Cast receiver
 /// application runtime.
 protocol ApplicationController {
   /// Enables or disables touch event processing.
   SetTouchInputEnabled(bool enable);
+
+  /// Connects to the application's media control & observation API.
+  GetMediaPlayer(request<fuchsia.media.sessions2.Player> request);
 };

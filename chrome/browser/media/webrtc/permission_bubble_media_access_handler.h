@@ -9,9 +9,14 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/media/media_access_handler.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
+
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
 
 // MediaAccessHandler for permission bubble requests.
 class PermissionBubbleMediaAccessHandler
@@ -40,12 +45,24 @@ class PermissionBubbleMediaAccessHandler
                                blink::mojom::MediaStreamType stream_type,
                                content::MediaRequestState state) override;
 
+  // Registers the prefs backing the audio and video policies.
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
  private:
   struct PendingAccessRequest;
   using RequestsMap = std::map<int, PendingAccessRequest>;
   using RequestsMaps = std::map<content::WebContents*, RequestsMap>;
 
   void ProcessQueuedAccessRequest(content::WebContents* web_contents);
+  void OnMediaStreamRequestResponse(
+      content::WebContents* web_contents,
+      int request_id,
+      content::MediaStreamRequest request,
+      const blink::MediaStreamDevices& devices,
+      blink::mojom::MediaStreamRequestResult result,
+      bool blocked_by_feature_policy,
+      ContentSetting audio_setting,
+      ContentSetting video_setting);
   void OnAccessRequestResponse(content::WebContents* web_contents,
                                int request_id,
                                const blink::MediaStreamDevices& devices,

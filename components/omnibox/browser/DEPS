@@ -1,6 +1,7 @@
 include_rules = [
   "+components/bookmarks/browser",
   "+components/bookmarks/test",
+  "+components/browser_ui/widget/android/java",
   "+components/component_updater",
   "+components/dom_distiller/core",
   "+components/embedder_support/android/java/src/org/chromium/components/embedder_support/util",
@@ -42,6 +43,7 @@ include_rules = [
   "+third_party/protobuf/src/google",
   "+third_party/re2",
   "+third_party/skia",
+  "+ui/android/java",
   "+ui/base",
   "+ui/gfx",
   "+url",

@@ -232,10 +232,23 @@ struct VulkanFunctionPointers {
   VulkanFunction<PFN_vkImportSemaphoreFdKHR> vkImportSemaphoreFdKHRFn;
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
+#if defined(OS_WIN)
+  VulkanFunction<PFN_vkGetSemaphoreWin32HandleKHR>
+      vkGetSemaphoreWin32HandleKHRFn;
+  VulkanFunction<PFN_vkImportSemaphoreWin32HandleKHR>
+      vkImportSemaphoreWin32HandleKHRFn;
+#endif  // defined(OS_WIN)
+
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   VulkanFunction<PFN_vkGetMemoryFdKHR> vkGetMemoryFdKHRFn;
   VulkanFunction<PFN_vkGetMemoryFdPropertiesKHR> vkGetMemoryFdPropertiesKHRFn;
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
+
+#if defined(OS_WIN)
+  VulkanFunction<PFN_vkGetMemoryWin32HandleKHR> vkGetMemoryWin32HandleKHRFn;
+  VulkanFunction<PFN_vkGetMemoryWin32HandlePropertiesKHR>
+      vkGetMemoryWin32HandlePropertiesKHRFn;
+#endif  // defined(OS_WIN)
 
 #if defined(OS_FUCHSIA)
   VulkanFunction<PFN_vkImportSemaphoreZirconHandleFUCHSIA>
@@ -454,11 +467,25 @@ struct VulkanFunctionPointers {
   gpu::GetVulkanFunctionPointers()->vkImportSemaphoreFdKHRFn
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
+#if defined(OS_WIN)
+#define vkGetSemaphoreWin32HandleKHR \
+  gpu::GetVulkanFunctionPointers()->vkGetSemaphoreWin32HandleKHRFn
+#define vkImportSemaphoreWin32HandleKHR \
+  gpu::GetVulkanFunctionPointers()->vkImportSemaphoreWin32HandleKHRFn
+#endif  // defined(OS_WIN)
+
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 #define vkGetMemoryFdKHR gpu::GetVulkanFunctionPointers()->vkGetMemoryFdKHRFn
 #define vkGetMemoryFdPropertiesKHR \
   gpu::GetVulkanFunctionPointers()->vkGetMemoryFdPropertiesKHRFn
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
+
+#if defined(OS_WIN)
+#define vkGetMemoryWin32HandleKHR \
+  gpu::GetVulkanFunctionPointers()->vkGetMemoryWin32HandleKHRFn
+#define vkGetMemoryWin32HandlePropertiesKHR \
+  gpu::GetVulkanFunctionPointers()->vkGetMemoryWin32HandlePropertiesKHRFn
+#endif  // defined(OS_WIN)
 
 #if defined(OS_FUCHSIA)
 #define vkImportSemaphoreZirconHandleFUCHSIA \

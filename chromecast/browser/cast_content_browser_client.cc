@@ -84,6 +84,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/service_manager/embedder/descriptors.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gl/gl_switches.h"
@@ -158,12 +159,14 @@ CastContentBrowserClient::CastContentBrowserClient(
 #endif
   });
 
-#if defined(OS_ANDROID)
   cast_feature_list_creator_->SetExtraDisableFeatures({
+      // TODO(juke): Reenable this after solving casting issue on LAN.
+      blink::features::kMixedContentAutoupgrade,
+#if defined(OS_ANDROID)
       ::media::kAudioFocusLossSuspendMediaSession,
       ::media::kRequestSystemAudioFocus,
-  });
 #endif
+  });
 }
 
 CastContentBrowserClient::~CastContentBrowserClient() {

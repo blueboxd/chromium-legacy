@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.photo_picker;
 import android.net.Uri;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
 
@@ -101,5 +102,14 @@ public class PickerBitmap implements Comparable<PickerBitmap> {
     @Override
     public int compareTo(PickerBitmap other) {
         return ApiCompatibilityUtils.compareLong(other.mLastModified, mLastModified);
+    }
+
+    /**
+     * Accessor for the last modified date (for testing use only).
+     * @return The last modified date.
+     */
+    @VisibleForTesting
+    public long getLastModifiedForTesting() {
+        return mLastModified;
     }
 }

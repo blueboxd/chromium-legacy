@@ -133,9 +133,47 @@ def merge_with_schema(schema, overrides, thing):
         schema['@graph'].append(thing)
 
 
+def lookup_parents(thing, schema, lookup_table):
+    """Recursively looks up all the parents of thing in the schema.
+
+  Returns the parents and populates them in lookup_table. The parents list may
+  contain duplicates if thing has multiple inheritance trees.
+  """
+    obj_name = object_name_from_id(thing['@id'])
+    if obj_name in lookup_table:
+        return lookup_table[obj_name]
+    lookup_table[obj_name] = []
+
+    if 'rdfs:subClassOf' in thing:
+        parent_classes = thing['rdfs:subClassOf']
+        if not isinstance(parent_classes, list):
+            parent_classes = [parent_classes]
+        parent_classes = [
+            get_schema_obj(parent['@id'], schema) for parent in parent_classes
+        ]
+        parent_classes = [
+            parent for parent in parent_classes if parent is not None
+        ]
+        found_parents = [
+            lookup_parents(parent_thing, schema, lookup_table)
+            for parent_thing in parent_classes
+        ]
+        # flatten the list
+        found_parents = [item for sublist in found_parents for item in sublist]
+        lookup_table[obj_name].extend(found_parents)
+
+    lookup_table[obj_name].append(obj_name)
+    return lookup_table[obj_name]
+
+
 def get_template_vars(schema_file_path, overrides_file_path):
     """Read the needed template variables from the schema file."""
-    template_vars = {'entities': [], 'properties': [], 'enums': []}
+    template_vars = {
+        'entities': [],
+        'properties': [],
+        'enums': [],
+        'entity_parent_lookup': {}
+    }
 
     with open(schema_file_path) as schema_file:
         schema = json.loads(schema_file.read())
@@ -149,6 +187,8 @@ def get_template_vars(schema_file_path, overrides_file_path):
     for thing in schema['@graph']:
         if thing['@type'] == 'rdfs:Class':
             template_vars['entities'].append(object_name_from_id(thing['@id']))
+            lookup_parents(thing, schema,
+                           template_vars['entity_parent_lookup'])
             if is_enum_type(thing):
                 template_vars['enums'].append({
                     'name':

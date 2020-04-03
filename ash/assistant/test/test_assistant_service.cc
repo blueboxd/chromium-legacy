@@ -10,11 +10,12 @@
 
 #include "ash/assistant/assistant_interaction_controller.h"
 #include "base/unguessable_token.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/cpp/default_assistant_interaction_subscriber.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ash {
 
+using chromeos::assistant::DefaultAssistantInteractionSubscriber;
 using chromeos::assistant::mojom::AssistantInteractionMetadata;
 using chromeos::assistant::mojom::AssistantInteractionMetadataPtr;
 using chromeos::assistant::mojom::AssistantInteractionResolution;
@@ -28,17 +29,12 @@ using chromeos::assistant::mojom::AssistantSuggestionPtr;
 //    - A conversation is finished before starting a new one.
 //    - No responses (text, card, ...) are sent before starting or after
 //    finishing an interaction.
-class SanityCheckSubscriber : public AssistantInteractionSubscriber {
+class SanityCheckSubscriber : public DefaultAssistantInteractionSubscriber {
  public:
-  SanityCheckSubscriber() : receiver_(this) {}
+  SanityCheckSubscriber() = default;
   ~SanityCheckSubscriber() override = default;
 
-  mojo::PendingRemote<AssistantInteractionSubscriber>
-  BindNewPipeAndPassRemote() {
-    return receiver_.BindNewPipeAndPassRemote();
-  }
-
-  // AssistantInteractionSubscriber implementation:
+  // DefaultAssistantInteractionSubscriber implementation:
   void OnInteractionStarted(AssistantInteractionMetadataPtr metadata) override {
     if (current_state_ == ConversationState::kInProgress) {
       ADD_FAILURE()
@@ -81,23 +77,6 @@ class SanityCheckSubscriber : public AssistantInteractionSubscriber {
     CheckResponse();
   }
 
-  void OnSpeechRecognitionStarted() override {}
-
-  void OnSpeechRecognitionIntermediateResult(
-      const std::string& high_confidence_text,
-      const std::string& low_confidence_text) override {}
-
-  void OnSpeechRecognitionEndOfUtterance() override {}
-
-  void OnSpeechRecognitionFinalResult(
-      const std::string& final_result) override {}
-
-  void OnSpeechLevelUpdated(float speech_level) override {}
-
-  void OnTtsStarted(bool due_to_error) override {}
-
-  void OnWaitStarted() override {}
-
  private:
   void CheckResponse() {
     if (current_state_ == ConversationState::kNotStarted)
@@ -115,26 +94,21 @@ class SanityCheckSubscriber : public AssistantInteractionSubscriber {
   };
 
   ConversationState current_state_ = ConversationState::kNotStarted;
-  mojo::Receiver<AssistantInteractionSubscriber> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(SanityCheckSubscriber);
 };
 
 // Subscriber that tracks the current interaction.
-class CurrentInteractionSubscriber : public AssistantInteractionSubscriber {
+class CurrentInteractionSubscriber
+    : public DefaultAssistantInteractionSubscriber {
  public:
-  CurrentInteractionSubscriber() : receiver_(this) {}
+  CurrentInteractionSubscriber() = default;
   CurrentInteractionSubscriber(CurrentInteractionSubscriber&) = delete;
   CurrentInteractionSubscriber& operator=(CurrentInteractionSubscriber&) =
       delete;
   ~CurrentInteractionSubscriber() override = default;
 
-  mojo::PendingRemote<AssistantInteractionSubscriber>
-  BindNewPipeAndPassRemote() {
-    return receiver_.BindNewPipeAndPassRemote();
-  }
-
-  // AssistantInteractionSubscriber implementation:
+  // DefaultAssistantInteractionSubscriber implementation:
   void OnInteractionStarted(AssistantInteractionMetadataPtr metadata) override {
     current_interaction_ = *metadata;
   }
@@ -144,27 +118,6 @@ class CurrentInteractionSubscriber : public AssistantInteractionSubscriber {
     current_interaction_ = base::nullopt;
   }
 
-  void OnHtmlResponse(const std::string& response,
-                      const std::string& fallback) override {}
-  void OnSuggestionsResponse(
-      std::vector<chromeos::assistant::mojom::AssistantSuggestionPtr> response)
-      override {}
-  void OnTextResponse(const std::string& response) override {}
-  void OnTimersResponse(const std::vector<std::string>& timer_ids) override {}
-  void OnOpenUrlResponse(const ::GURL& url, bool in_background) override {}
-  void OnOpenAppResponse(chromeos::assistant::mojom::AndroidAppInfoPtr app_info,
-                         OnOpenAppResponseCallback callback) override {}
-  void OnSpeechRecognitionStarted() override {}
-  void OnSpeechRecognitionIntermediateResult(
-      const std::string& high_confidence_text,
-      const std::string& low_confidence_text) override {}
-  void OnSpeechRecognitionEndOfUtterance() override {}
-  void OnSpeechRecognitionFinalResult(
-      const std::string& final_result) override {}
-  void OnSpeechLevelUpdated(float speech_level) override {}
-  void OnTtsStarted(bool due_to_error) override {}
-  void OnWaitStarted() override {}
-
   base::Optional<AssistantInteractionMetadata> current_interaction() {
     return current_interaction_;
   }
@@ -172,7 +125,6 @@ class CurrentInteractionSubscriber : public AssistantInteractionSubscriber {
  private:
   base::Optional<AssistantInteractionMetadata> current_interaction_ =
       base::nullopt;
-  mojo::Receiver<AssistantInteractionSubscriber> receiver_;
 };
 
 class InteractionResponse::Response {

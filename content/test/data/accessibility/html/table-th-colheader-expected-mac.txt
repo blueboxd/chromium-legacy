@@ -11,5 +11,17 @@ AXWebArea
 ++++++AXCell AXColumnHeaderUIElements=["AXCell Lastname"] AXColumnIndexRange={"len":1,"loc":1} AXRowIndexRange={"len":1,"loc":1}
 ++++++++AXStaticText AXValue='Smith'
 ++++AXColumn AXHeader='AXCell Firstname' AXIndex='0'
+++++++AXCell AXColumnIndexRange={"len":1,"loc":0} AXRowIndexRange={"len":1,"loc":0}
+++++++++AXStaticText AXValue='Firstname'
+++++++AXCell AXColumnHeaderUIElements=["AXCell Firstname"] AXColumnIndexRange={"len":1,"loc":0} AXRowIndexRange={"len":1,"loc":1}
+++++++++AXStaticText AXValue='Jill'
 ++++AXColumn AXHeader='AXCell Lastname' AXIndex='1'
+++++++AXCell AXColumnIndexRange={"len":1,"loc":1} AXRowIndexRange={"len":1,"loc":0}
+++++++++AXStaticText AXValue='Lastname'
+++++++AXCell AXColumnHeaderUIElements=["AXCell Lastname"] AXColumnIndexRange={"len":1,"loc":1} AXRowIndexRange={"len":1,"loc":1}
+++++++++AXStaticText AXValue='Smith'
 ++++AXGroup
+++++++AXCell AXColumnIndexRange={"len":1,"loc":0} AXRowIndexRange={"len":1,"loc":0}
+++++++++AXStaticText AXValue='Firstname'
+++++++AXCell AXColumnIndexRange={"len":1,"loc":1} AXRowIndexRange={"len":1,"loc":0}
+++++++++AXStaticText AXValue='Lastname'

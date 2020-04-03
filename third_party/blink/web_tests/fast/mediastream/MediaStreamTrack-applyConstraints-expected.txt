@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 PASS applyConstraints() sets the value of a constraint set by getUserMedia()
-FAIL Attempting to change the deviceId with applyConstraints() fails promise_reject_js: function "function OverconstrainedError() { [native code] }" is not an Error subtype
+FAIL Attempting to change the deviceId with applyConstraints() fails promise_rejects_js: function "function OverconstrainedError() { [native code] }" is not an Error subtype
 PASS An unsupported constraint is ignored by applyConstraints()
 PASS All valid keys are returned for complex constraints
 PASS Simple integer

@@ -10,7 +10,14 @@
 cr.define('settings', function() {
   /** @interface */
   class AmbientModeBrowserProxy {
+    /**
+     * Retrieves the initial settings from server, such as topic source. As a
+     * response, the C++ sends the 'topic-source-changed' WebUIListener event.
+     */
     onAmbientModePageReady() {}
+
+    /** Updates the selected topic source to server. */
+    onTopicSourceSelectedChanged(selected) {}
   }
 
   /** @implements {settings.AmbientModeBrowserProxy} */
@@ -18,6 +25,11 @@ cr.define('settings', function() {
     /** @override */
     onAmbientModePageReady() {
       chrome.send('onAmbientModePageReady');
+    }
+
+    /** @override */
+    onTopicSourceSelectedChanged(selected) {
+      chrome.send('onTopicSourceSelectedChanged', [selected]);
     }
   }
 

@@ -48,7 +48,26 @@ class GenerateSchemaOrgCodeTest(unittest.TestCase):
                         'enum_types': []
                     }],
                     'enums': [],
+                    'entity_parent_lookup': {
+                        'MediaObject': ['MediaObject']
+                    }
                 })
+
+    def test_lookup_parents(self):
+        thing = {'@id': schema_org_id('Thing')}
+        intangible = {
+            '@id': schema_org_id('Intangible'),
+            'rdfs:subClassOf': thing
+        }
+        structured_value = {
+            '@id': schema_org_id('StructuredValue'),
+            'rdfs:subClassOf': intangible
+        }
+        brand = {'@id': schema_org_id('Brand'), 'rdfs:subClassOf': intangible}
+        schema = {'@graph': [thing, intangible, structured_value, brand]}
+        self.assertListEqual(
+            generate_schema_org_code.lookup_parents(brand, schema, {}),
+            ['Thing', 'Intangible', 'Brand'])
 
     def test_get_root_type_thing(self):
         thing = {'@id': schema_org_id('Thing')}

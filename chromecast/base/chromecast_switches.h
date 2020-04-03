@@ -89,6 +89,8 @@ extern const char kEnableTopDragGesture[];
 extern const char kCastAppBackgroundColor[];
 
 extern const char kMixerServiceEndpoint[];
+extern const char kMixerServicePort[];
+
 extern const char kCastMemoryPressureCriticalFraction[];
 extern const char kCastMemoryPressureModerateFraction[];
 

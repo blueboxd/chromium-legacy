@@ -731,6 +731,7 @@ mojom("mojo_bindings") {
         "//services/network/public/cpp",
         "//third_party/blink/public/common",
         "//ui/accessibility",
+        "//ui/base/cursor",
         "//ui/base/ime:text_input_types",
         "//ui/events/blink",
         "//ui/gfx/ipc",

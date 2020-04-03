@@ -7,7 +7,12 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "chrome/android/chrome_jni_headers/FeedStreamSurface_jni.h"
+#include "chrome/browser/android/feed/v2/feed_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "components/feed/core/proto/v2/ui.pb.h"
+#include "components/feed/core/v2/public/feed_service.h"
+#include "components/feed/core/v2/public/feed_stream_api.h"
 
 using base::android::JavaParamRef;
 using base::android::JavaRef;
@@ -21,16 +26,31 @@ static jlong JNI_FeedStreamSurface_Init(JNIEnv* env,
   return reinterpret_cast<intptr_t>(new FeedStreamSurface(j_this));
 }
 
-FeedStreamSurface::FeedStreamSurface(const JavaRef<jobject>& j_this) {
+FeedStreamSurface::FeedStreamSurface(const JavaRef<jobject>& j_this)
+    : feed_stream_api_(nullptr) {
   java_ref_.Reset(j_this);
+
+  // TODO(iwells): check that this profile is okay to use. what about first run?
+  Profile* profile = ProfileManager::GetLastUsedProfile();
+  if (!profile)
+    return;
+
+  feed_stream_api_ =
+      FeedServiceFactory::GetForBrowserContext(profile)->GetStream();
+  if (feed_stream_api_)
+    feed_stream_api_->AttachSurface(this);
 }
 
-FeedStreamSurface::~FeedStreamSurface() {}
+FeedStreamSurface::~FeedStreamSurface() {
+  if (feed_stream_api_)
+    feed_stream_api_->DetachSurface(this);
+}
 
-void FeedStreamSurface::OnStreamUpdated(
+void FeedStreamSurface::StreamUpdate(
     const feedui::StreamUpdate& stream_update) {
   JNIEnv* env = base::android::AttachCurrentThread();
   int32_t data_size = stream_update.ByteSize();
+
   std::vector<uint8_t> data;
   data.resize(data_size);
   stream_update.SerializeToArray(data.data(), data_size);

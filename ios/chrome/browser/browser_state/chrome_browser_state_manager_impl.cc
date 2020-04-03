@@ -28,6 +28,8 @@
 #include "ios/chrome/browser/browser_state_metrics/browser_state_metrics.h"
 #include "ios/chrome/browser/chrome_constants.h"
 #include "ios/chrome/browser/chrome_paths.h"
+#include "ios/chrome/browser/credential_provider/credential_provider_service_factory.h"
+#include "ios/chrome/browser/credential_provider/credential_provider_support.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/signin/account_consistency_service_factory.h"
 #include "ios/chrome/browser/signin/account_reconcilor_factory.h"
@@ -210,6 +212,10 @@ void ChromeBrowserStateManagerImpl::DoFinalInitForServices(
   // Initialization needs to happen after the browser context is available
   // because UnifiedConsentService's dependencies needs the URL context getter.
   UnifiedConsentServiceFactory::GetForBrowserState(browser_state);
+
+  if (IsCredentialProviderExtensionSupported()) {
+    CredentialProviderServiceFactory::GetForBrowserState(browser_state);
+  }
 }
 
 void ChromeBrowserStateManagerImpl::AddBrowserStateToCache(

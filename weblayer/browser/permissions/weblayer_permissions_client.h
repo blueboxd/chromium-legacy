@@ -30,6 +30,10 @@ class WebLayerPermissionsClient : public permissions::PermissionsClient {
       content::BrowserContext* browser_context,
       ContentSettingsType type) override;
 #if defined(OS_ANDROID)
+  void RepromptForAndroidPermissions(
+      content::WebContents* web_contents,
+      const std::vector<ContentSettingsType>& content_settings_types,
+      PermissionsUpdatedCallback callback) override;
   int MapToJavaDrawableId(int resource_id) override;
 #endif
 

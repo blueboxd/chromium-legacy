@@ -115,7 +115,7 @@ source_set("unit_tests") {
     "audio_decoder_config_mojom_traits_unittest.cc",
     "cdm_key_information_mojom_traits_unittest.cc",
     "video_decoder_config_mojom_traits_unittest.cc",
-    "video_encoder_info_mojom_traits_unittest.cc",
+    "video_encode_accelerator_mojom_traits_unittest.cc",
     "video_frame_mojom_traits_unittest.cc",
   ]
 

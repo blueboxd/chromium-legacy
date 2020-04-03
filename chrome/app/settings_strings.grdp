@@ -1608,6 +1608,8 @@
   <message name="IDS_SETTINGS_PRIVACY_MORE" desc="Label on the expansion button to show more privacy settings.">
     More
   </message>
+
+  <!-- Safety check -->
   <message name="IDS_SETTINGS_SAFETY_CHECK_SECTION_TITLE" desc="'Safety check' is a noun phrase (sentence case). 'Safety check' refers to an area of the Settings page where users can quickly check whether their safety-related settings are fully protecting them.">
     Safety check
   </message>
@@ -1676,20 +1678,6 @@
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_PRIMARY_LABEL" desc="'Passwords' is an element in safety check that allows users to check for their passwords being compromised.">
     Passwords
-  </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_PROGRESS" desc="This text describes the progress of the safety check password check.">
-    <ph name="DONE">$1<ex>3</ex></ph>/<ph name="TOTAL">$2<ex>20</ex></ph> passwords checked...
-  </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_SAFE" desc="This text points out that the safety check password check has not found any compromised passwords.">
-    No compromised passwords found
-  </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_COMPROMISED" desc="This text points out that the safety check password check has found compromised passwords. The placeholder will be a numeral.">
-    {NUM_PASSWORDS, plural,
-     =1 {1 compromised password}
-     other {{NUM_PASSWORDS} compromised passwords}}
-  </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_NO_PASSWORDS" desc="This text points out that password check cannot run due to the user not having saved passwords.">
-    No saved passwords
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_BUTTON" desc="This button allows users to change their compromised passwords.">
     {NUM_PASSWORDS, plural,
@@ -2905,8 +2893,8 @@
     <message name="IDS_SETTINGS_ACCOUNT_MANAGER_ACCOUNT_REMOVED_MESSAGE" desc="Notification message after account removal.">
       <ph name="EMAIL">$1<ex>abcd@google.com</ex></ph> was removed from this device
     </message>
-    <message name="IDS_SETTINGS_ACCOUNT_MANAGER_EDUCATION_ACCOUNT" desc="Status label which indicates that specified account is EDU account.">
-      Education account
+    <message name="IDS_SETTINGS_ACCOUNT_MANAGER_EDUCATION_ACCOUNT" desc="Status label which indicates that specified account is a school/EDU account.">
+      School account
     </message>
     <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_LOCATE_SCANNER_POWER_BUTTON" desc="Text in the add fingerprint dialog telling users to place finger on the power button which is the sensor.">
       Touch the power button with your finger

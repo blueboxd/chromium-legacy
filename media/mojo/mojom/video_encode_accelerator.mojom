@@ -61,6 +61,17 @@ struct VideoBitrateAllocation {
 };
 
 // This defines a mojo transport format for
+// media::VideoEncodeAccelerator::Config::SpatialLayer.
+struct SpatialLayer {
+  int32 width;
+  int32 height;
+  uint32 bitrate_bps;
+  uint32 framerate;
+  uint8 max_qp;
+  uint8 num_of_temporal_layers;
+};
+
+// This defines a mojo transport format for
 // media::VideoEncodeAccelerator::Config.
 struct VideoEncodeAcceleratorConfig {
   // See media::VideoEncodeAccelerator::Config::ContentType
@@ -88,6 +99,7 @@ struct VideoEncodeAcceleratorConfig {
   StorageType storage_type;
   bool has_storage_type;  // Whether or not config has storage type config
   ContentType content_type;
+  array<SpatialLayer> spatial_layers;
 };
 
 interface VideoEncodeAccelerator {

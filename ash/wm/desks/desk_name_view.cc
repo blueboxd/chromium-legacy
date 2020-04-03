@@ -52,6 +52,9 @@ DeskNameView::DeskNameView() {
 DeskNameView::~DeskNameView() = default;
 
 // static
+constexpr size_t DeskNameView::kMaxLength;
+
+// static
 void DeskNameView::CommitChanges(views::Widget* widget) {
   DCHECK(IsDesksBarWidget(widget));
 

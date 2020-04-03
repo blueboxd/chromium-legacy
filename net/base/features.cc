@@ -11,6 +11,21 @@ namespace features {
 const base::Feature kAcceptLanguageHeader{"AcceptLanguageHeader",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kDnsHttpssvc{"DnsHttpssvc",
+                                 base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::FeatureParam<bool> kDnsHttpssvcUseHttpssvc{
+    &kDnsHttpssvc, "DnsHttpssvcUseHttpssvc", false};
+
+const base::FeatureParam<bool> kDnsHttpssvcUseIntegrity{
+    &kDnsHttpssvc, "DnsHttpssvcUseIntegrity", false};
+
+const base::FeatureParam<int> kDnsHttpssvcExtraTimeMs{
+    &kDnsHttpssvc, "DnsHttpssvcExtraTimeMs", 10};
+
+const base::FeatureParam<int> kDnsHttpssvcExtraTimePercent{
+    &kDnsHttpssvc, "DnsHttpssvcExtraTimePercent", 5};
+
 const base::Feature kEnableTLS13EarlyData{"EnableTLS13EarlyData",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 

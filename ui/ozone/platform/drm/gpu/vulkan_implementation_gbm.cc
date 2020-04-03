@@ -11,7 +11,6 @@
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_image.h"
 #include "gpu/vulkan/vulkan_instance.h"
-#include "gpu/vulkan/vulkan_posix_util.h"
 #include "gpu/vulkan/vulkan_surface.h"
 #include "gpu/vulkan/vulkan_util.h"
 #include "ui/gfx/gpu_fence.h"
@@ -149,13 +148,13 @@ VkSemaphore VulkanImplementationGbm::CreateExternalSemaphore(
 VkSemaphore VulkanImplementationGbm::ImportSemaphoreHandle(
     VkDevice vk_device,
     gpu::SemaphoreHandle sync_handle) {
-  return gpu::ImportVkSemaphoreHandlePosix(vk_device, std::move(sync_handle));
+  return gpu::ImportVkSemaphoreHandle(vk_device, std::move(sync_handle));
 }
 
 gpu::SemaphoreHandle VulkanImplementationGbm::GetSemaphoreHandle(
     VkDevice vk_device,
     VkSemaphore vk_semaphore) {
-  return gpu::GetVkSemaphoreHandlePosix(
+  return gpu::GetVkSemaphoreHandle(
       vk_device, vk_semaphore, VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT);
 }
 

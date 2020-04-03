@@ -30,4 +30,7 @@ const base::Feature kInterestFeedFeedback{"InterestFeedFeedback",
 const base::Feature kReportFeedUserActions{"ReportFeedUserActions",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kInterestFeedV2{"InterestFeedV2",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace feed

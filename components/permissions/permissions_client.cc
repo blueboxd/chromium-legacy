@@ -118,6 +118,13 @@ infobars::InfoBar* PermissionsClient::MaybeCreateInfoBar(
   return nullptr;
 }
 
+void PermissionsClient::RepromptForAndroidPermissions(
+    content::WebContents* web_contents,
+    const std::vector<ContentSettingsType>& content_settings_types,
+    PermissionsUpdatedCallback callback) {
+  std::move(callback).Run(false);
+}
+
 base::android::ScopedJavaLocalRef<jobject> PermissionsClient::GetJavaObject() {
   return Java_PermissionsClient_get(base::android::AttachCurrentThread());
 }

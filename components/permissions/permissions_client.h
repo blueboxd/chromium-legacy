@@ -163,6 +163,16 @@ class PermissionsClient {
       ContentSettingsType type,
       base::WeakPtr<PermissionPromptAndroid> prompt);
 
+  using PermissionsUpdatedCallback = base::OnceCallback<void(bool)>;
+
+  // Prompts the user to accept system permissions for |content_settings_types|,
+  // after they've already been denied. In Chrome, this shows an infobar.
+  // |callback| will be run with |true| for success and |false| otherwise.
+  virtual void RepromptForAndroidPermissions(
+      content::WebContents* web_contents,
+      const std::vector<ContentSettingsType>& content_settings_types,
+      PermissionsUpdatedCallback callback);
+
   // Returns a handle to the Java counterpart of this class.
   virtual base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 

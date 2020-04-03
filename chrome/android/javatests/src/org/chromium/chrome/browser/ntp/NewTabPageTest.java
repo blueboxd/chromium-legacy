@@ -238,9 +238,8 @@ public class NewTabPageTest {
         mRenderTestRule.render(mNtp.getSignInPromoViewForTesting(), "sign_in_promo");
     }
 
-    @DisabledTest(message = "https://crbug.com/945293")
     @Test
-    @SmallTest
+    @MediumTest
     @Feature({"NewTabPage", "FeedNewTabPage", "RenderTest"})
     @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
     public void testRender_ArticleSectionHeader(boolean interestFeedEnabled) throws Exception {

@@ -24,7 +24,7 @@ namespace {
 bool IsHeadless() {
   constexpr char kHeadlessConfigKey[] = "headless";
 
-  base::Optional<base::Value> config = cr_fuchsia::LoadPackageConfig();
+  const base::Optional<base::Value>& config = cr_fuchsia::LoadPackageConfig();
   if (config) {
     base::Optional<bool> headless = config->FindBoolPath(kHeadlessConfigKey);
     return headless && *headless;

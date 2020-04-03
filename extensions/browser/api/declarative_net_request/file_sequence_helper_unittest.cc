@@ -240,10 +240,8 @@ TEST_F(FileSequenceHelperTest, RulesetFormatVersionMismatch) {
   TestLoadRulesets(test_cases);
 
   // Now simulate a flatbuffer version mismatch.
-  const int kIndexedRulesetFormatVersion = 100;
-  std::string old_version_header = GetVersionHeaderForTesting();
-  SetIndexedRulesetFormatVersionForTesting(kIndexedRulesetFormatVersion);
-  ASSERT_NE(old_version_header, GetVersionHeaderForTesting());
+  int current_format_version = GetIndexedRulesetFormatVersionForTesting();
+  SetIndexedRulesetFormatVersionForTesting(current_format_version + 1);
 
   // Version mismatch will cause reindexing and updated checksums.
   for (auto& test_case : test_cases) {
@@ -253,6 +251,9 @@ TEST_F(FileSequenceHelperTest, RulesetFormatVersionMismatch) {
   }
 
   TestLoadRulesets(test_cases);
+
+  // Reset the indexed ruleset format version.
+  SetIndexedRulesetFormatVersionForTesting(current_format_version);
 }
 
 TEST_F(FileSequenceHelperTest, JSONAndIndexedRulesetDeleted) {

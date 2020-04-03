@@ -368,37 +368,39 @@ base::string16 SafetyCheckHandler::GetStringForPasswords(
     Compromised compromised,
     Done done,
     Total total) {
+  const base::string16 short_product_name =
+      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
   switch (status) {
     case PasswordsStatus::kChecking: {
       // Unable to get progress for some reason.
       if (total.value() == 0) {
         return l10n_util::GetStringUTF16(IDS_SETTINGS_SAFETY_CHECK_RUNNING);
       }
-      return l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_PROGRESS,
-          base::FormatNumber(done.value()), base::FormatNumber(total.value()));
+      return l10n_util::GetStringFUTF16(IDS_SETTINGS_CHECK_PASSWORDS_PROGRESS,
+                                        base::FormatNumber(done.value()),
+                                        base::FormatNumber(total.value()));
     }
     case PasswordsStatus::kSafe:
-      return l10n_util::GetStringUTF16(
-          IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_SAFE);
+      return l10n_util::GetPluralStringFUTF16(
+          IDS_SETTINGS_COMPROMISED_PASSWORDS_COUNT, 0);
     case PasswordsStatus::kCompromisedExist:
       return l10n_util::GetPluralStringFUTF16(
-          IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_COMPROMISED, compromised.value());
+          IDS_SETTINGS_COMPROMISED_PASSWORDS_COUNT, compromised.value());
     case PasswordsStatus::kOffline:
-      return l10n_util::GetStringUTF16(
-          IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_OFFLINE);
+      return l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_CHECK_PASSWORDS_ERROR_OFFLINE, short_product_name);
     case PasswordsStatus::kNoPasswords:
-      return l10n_util::GetStringUTF16(
-          IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_NO_PASSWORDS);
+      return l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_CHECK_PASSWORDS_ERROR_NO_PASSWORDS, short_product_name);
     case PasswordsStatus::kSignedOut:
       return l10n_util::GetStringUTF16(
           IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_SIGNED_OUT);
     case PasswordsStatus::kQuotaLimit:
-      return l10n_util::GetStringUTF16(
-          IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_QUOTA_LIMIT);
+      return l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_CHECK_PASSWORDS_ERROR_QUOTA_LIMIT, short_product_name);
     case PasswordsStatus::kError:
-      return l10n_util::GetStringUTF16(
-          IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_ERROR);
+      return l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_CHECK_PASSWORDS_ERROR_GENERIC, short_product_name);
   }
 }
 

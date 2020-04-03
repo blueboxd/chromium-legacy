@@ -120,25 +120,29 @@ HRESULT CreateCredentialObject(
 class BackgroundTokenHandleUpdater {
  public:
   explicit BackgroundTokenHandleUpdater(
-      ICredentialUpdateEventsHandler* event_handler);
+      ICredentialUpdateEventsHandler* event_handler,
+      const std::vector<base::string16>* reauth_sids);
   ~BackgroundTokenHandleUpdater();
 
  private:
   static unsigned __stdcall PeriodicTokenHandleUpdate(void* param);
+  bool IsAuthEnforcedOnAssociatedUsers();
 
   // Raw pointer to the interface on CGaiaCredentialProvider that is used
   // to notify that token handle validity has changed. Any instance of this
   // class should be owned by the CGaiaCredentialProvider to ensure that
   // this pointer outlives the updater.
   ICredentialUpdateEventsHandler* event_handler_;
+  const std::vector<base::string16>* reauth_sids_;
 
   base::win::ScopedHandle token_update_thread_;
   base::WaitableEvent token_update_quit_event_;
 };
 
 BackgroundTokenHandleUpdater::BackgroundTokenHandleUpdater(
-    ICredentialUpdateEventsHandler* event_handler)
-    : event_handler_(event_handler) {
+    ICredentialUpdateEventsHandler* event_handler,
+    const std::vector<base::string16>* reauth_sids)
+    : event_handler_(event_handler), reauth_sids_(reauth_sids) {
   unsigned wait_thread_id;
   uintptr_t wait_thread =
       _beginthreadex(nullptr, 0, PeriodicTokenHandleUpdate,
@@ -158,6 +162,31 @@ BackgroundTokenHandleUpdater::~BackgroundTokenHandleUpdater() {
   }
 }
 
+bool BackgroundTokenHandleUpdater::IsAuthEnforcedOnAssociatedUsers() {
+  std::map<base::string16, UserTokenHandleInfo> sids_to_handle_info;
+  HRESULT hr = GetUserTokenHandles(&sids_to_handle_info);
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "GetUserTokenHandles hr=" << putHR(hr);
+    return hr;
+  }
+
+  for (const auto& sid_to_association : sids_to_handle_info) {
+    const base::string16& sid = sid_to_association.first;
+    // Checks if the login UI was already refreshed due to
+    // auth enforcements on this sid.
+    if (reauth_sids_ != nullptr &&
+        (std::find(reauth_sids_->begin(), reauth_sids_->end(), sid) !=
+         reauth_sids_->end()))
+      continue;
+
+    // Return true if the associated user sid has auth enforced.
+    if (AssociatedUserValidator::Get()->IsAuthEnforcedForUser(sid)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 unsigned __stdcall BackgroundTokenHandleUpdater::PeriodicTokenHandleUpdate(
     void* param) {
   BackgroundTokenHandleUpdater* updater =
@@ -173,8 +202,7 @@ unsigned __stdcall BackgroundTokenHandleUpdater::PeriodicTokenHandleUpdate(
     if (hr != WAIT_TIMEOUT)
       break;
 
-    bool user_access_changed =
-        AssociatedUserValidator::Get()->IsAuthEnforcedOnAssociatedUsers();
+    bool user_access_changed = updater->IsAuthEnforcedOnAssociatedUsers();
     if (user_access_changed) {
       LOGFN(VERBOSE) << "A user token handle has been invalidated. Refreshing "
                         "credentials";
@@ -381,8 +409,8 @@ HRESULT CGaiaCredentialProvider::CreateReauthCredentials(
   }
 
   LOGFN(VERBOSE) << "count=" << count;
+  reauth_cred_sids_.clear();
 
-  std::vector<base::string16> reauth_cred_sids;
   for (DWORD i = 0; i < count; ++i) {
     Microsoft::WRL::ComPtr<ICredentialProviderUser> user;
     hr = users->GetAt(i, &user);
@@ -466,14 +494,14 @@ HRESULT CGaiaCredentialProvider::CreateReauthCredentials(
 
     // Add SID to the vector to keep track of all the users that have a reauth
     // credential created.
-    reauth_cred_sids.push_back(sid);
+    reauth_cred_sids_.push_back(sid);
 
     LOGFN(VERBOSE) << "Reauth SID : " << sid;
   }
 
   // Deny sign in access for users that have a reauth credential added to them.
   AssociatedUserValidator::Get()->DenySigninForUsersWithInvalidTokenHandles(
-      cpus_, reauth_cred_sids);
+      cpus_, reauth_cred_sids_);
 
   return S_OK;
 }
@@ -702,8 +730,8 @@ HRESULT CGaiaCredentialProvider::Advise(ICredentialProviderEvents* pcpe,
   advise_context_ = context;
 
   if (AssociatedUserValidator::Get()->IsUserAccessBlockingEnforced(cpus_)) {
-    token_handle_updater_ =
-        std::make_unique<BackgroundTokenHandleUpdater>(this);
+    token_handle_updater_ = std::make_unique<BackgroundTokenHandleUpdater>(
+        this, &reauth_cred_sids_);
   }
 
   return S_OK;

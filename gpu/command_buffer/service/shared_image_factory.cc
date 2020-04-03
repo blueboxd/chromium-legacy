@@ -147,7 +147,7 @@ SharedImageFactory::SharedImageFactory(
   // For Windows
   bool use_passthrough = gpu_preferences.use_passthrough_cmd_decoder &&
                          gles2::PassthroughCommandDecoderSupported();
-  if (use_passthrough) {
+  if (use_passthrough && !using_vulkan_) {
     // Only supported for passthrough command decoder.
     interop_backing_factory_ = std::make_unique<SharedImageBackingFactoryD3D>();
   }

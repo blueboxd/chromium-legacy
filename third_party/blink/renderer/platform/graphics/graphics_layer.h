@@ -153,8 +153,6 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
   bool ContentsOpaque() const;
   void SetContentsOpaque(bool);
 
-  bool BackfaceVisibility() const;
-
   void SetHitTestable(bool);
   bool GetHitTestable() const { return hit_testable_; }
 

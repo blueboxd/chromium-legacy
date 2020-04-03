@@ -255,9 +255,10 @@ const uint32_t ContextProviderImpl::kContextRequestHandleId =
     PA_HND(PA_USER0, 0);
 
 ContextProviderImpl::ContextProviderImpl() {
-  base::Optional<base::Value> default_config = cr_fuchsia::LoadPackageConfig();
+  const base::Optional<base::Value>& default_config =
+      cr_fuchsia::LoadPackageConfig();
   if (default_config) {
-    config_default_ = std::move(default_config.value());
+    config_default_ = default_config->Clone();
   } else {
     config_default_ = base::Value(base::Value::Type::DICTIONARY);
   }
@@ -571,14 +572,14 @@ base::Value ContextProviderImpl::LoadConfig() {
   if (!config_override_.is_none())
     return config_override_.Clone();
 
-  base::Optional<base::Value> config = cr_fuchsia::LoadPackageConfig();
+  const base::Optional<base::Value>& config = cr_fuchsia::LoadPackageConfig();
   if (!config) {
     DLOG(WARNING) << "Configuration data not found. Using default "
                      "WebEngine configuration.";
     return base::Value(base::Value::Type::DICTIONARY);
   }
 
-  return std::move(*config);
+  return config->Clone();
 }
 
 void ContextProviderImpl::EnableDevTools(

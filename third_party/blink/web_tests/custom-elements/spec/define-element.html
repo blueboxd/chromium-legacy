@@ -47,7 +47,7 @@ test_with_window((w) => {
   ];
   class X extends w.HTMLElement {}
   invalid_names.forEach((name) => {
-    assert_throws_dom_exception(w, 'SYNTAX_ERR', () => {
+    assert_throws_dom('SYNTAX_ERR', w.DOMException, () => {
       w.customElements.define(name, X);
     })
   });
@@ -57,7 +57,7 @@ test_with_window((w) => {
   class X extends w.HTMLElement {}
   class Y extends w.HTMLElement {}
   w.customElements.define('a-a', X);
-  assert_throws_dom_exception(w, 'NotSupportedError', () => {
+  assert_throws_dom('NotSupportedError', w.DOMException, () => {
     w.customElements.define('a-a', Y);
   }, 'defining an element with a name that is already defined should throw ' +
      'a NotSupportedError');
@@ -68,7 +68,7 @@ test_with_window((w) => {
   let X = (function () {}).bind({});
   Object.defineProperty(X, 'prototype', {
     get() {
-      assert_throws_dom_exception(w, 'NotSupportedError', () => {
+      assert_throws_dom('NotSupportedError', w.DOMException, () => {
         w.customElements.define('a-a', Y);
       }, 'defining an element with a name that is being defined should ' +
          'throw a NotSupportedError');
@@ -82,7 +82,7 @@ test_with_window((w) => {
 test_with_window((w) => {
   class X extends w.HTMLElement {}
   w.customElements.define('a-a', X);
-  assert_throws_dom_exception(w, 'NotSupportedError', () => {
+  assert_throws_dom('NotSupportedError', w.DOMException, () => {
     w.customElements.define('a-b', X);
   }, 'defining an element with a constructor that is already in the ' +
      'registry should throw a NotSupportedError');
@@ -117,7 +117,7 @@ test_with_window((w) => {
   let X = (function () {}).bind({});
   Object.defineProperty(X, 'prototype', {
     get() {
-      assert_throws_dom_exception(w, 'NotSupportedError', () => {
+      assert_throws_dom('NotSupportedError', w.DOMException, () => {
         w.customElements.define('second-name', X);
       }, 'defining an element with a constructor that is being defined ' +
          'should throw a NotSupportedError');
@@ -132,7 +132,7 @@ test_with_window((w) => {
   let X = (function () {}).bind({});
   Object.defineProperty(X, 'prototype', {
     get() {
-      assert_throws_dom_exception(w, 'NotSupportedError', () => {
+      assert_throws_dom('NotSupportedError', w.DOMException, () => {
         w.customElements.define('second-name', class extends HTMLElement { });
       }, 'defining an element while element definition is running should ' +
          'throw a NotSupportedError');
@@ -189,7 +189,7 @@ test_with_window((w) => {
 
   class C extends w.HTMLElement {}
   w.customElements.define('a-a', C);
-  assert_throws_dom_exception(w, 'SYNTAX_ERR', () => {
+  assert_throws_dom('SYNTAX_ERR', w.DOMException, () => {
     let invalid_name = 'annotation-xml';
     let reused_constructor = C;
     w.customElements.define(invalid_name, reused_constructor);

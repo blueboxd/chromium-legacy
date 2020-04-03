@@ -233,10 +233,10 @@ MATCHER_P2(Header,
 TEST_F(TrustTokenRequestSigningHelperTest, WontSignIfNoRedemptionRecord) {
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
 
-  TrustTokenRequestSigningHelper::Params params;
+  TrustTokenRequestSigningHelper::Params params(
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com")));
   params.sign_request_data = mojom::TrustTokenSignRequestData::kHeadersOnly;
-  params.issuer = url::Origin::Create(GURL("https://issuer.com"));
-  params.toplevel = url::Origin::Create(GURL("https://toplevel.com"));
 
   TrustTokenRequestSigningHelper helper(
       store.get(), std::move(params), std::make_unique<FakeSigner>(),
@@ -261,10 +261,10 @@ TEST_F(TrustTokenRequestSigningHelperTest, MergesHeaders) {
 
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
 
-  TrustTokenRequestSigningHelper::Params params;
+  TrustTokenRequestSigningHelper::Params params(
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com")));
   params.sign_request_data = mojom::TrustTokenSignRequestData::kHeadersOnly;
-  params.issuer = url::Origin::Create(GURL("https://issuer.com"));
-  params.toplevel = url::Origin::Create(GURL("https://toplevel.com"));
   params.additional_headers_to_sign = std::vector<std::string>{"Sec-Time"};
 
   SignedTrustTokenRedemptionRecord my_record;
@@ -306,10 +306,10 @@ TEST_F(TrustTokenRequestSigningHelperTest,
 
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
 
-  TrustTokenRequestSigningHelper::Params params;
+  TrustTokenRequestSigningHelper::Params params(
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com")));
   params.sign_request_data = mojom::TrustTokenSignRequestData::kHeadersOnly;
-  params.issuer = url::Origin::Create(GURL("https://issuer.com"));
-  params.toplevel = url::Origin::Create(GURL("https://toplevel.com"));
 
   SignedTrustTokenRedemptionRecord my_record;
   my_record.set_public_key("key");
@@ -345,10 +345,10 @@ TEST_F(TrustTokenRequestSigningHelperTest,
 
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
 
-  TrustTokenRequestSigningHelper::Params params;
+  TrustTokenRequestSigningHelper::Params params(
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com")));
   params.sign_request_data = mojom::TrustTokenSignRequestData::kHeadersOnly;
-  params.issuer = url::Origin::Create(GURL("https://issuer.com"));
-  params.toplevel = url::Origin::Create(GURL("https://toplevel.com"));
   params.additional_headers_to_sign = std::vector<std::string>{
       "this header name is definitely not in "
       "TrustTokenRequestSigningHelper::kSignableRequestHeaders"};
@@ -383,11 +383,11 @@ class TrustTokenRequestSigningHelperTestWithMockTime
 TEST_F(TrustTokenRequestSigningHelperTestWithMockTime, ProvidesTimeHeader) {
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
 
-  TrustTokenRequestSigningHelper::Params params;
+  TrustTokenRequestSigningHelper::Params params(
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com")));
   params.sign_request_data = mojom::TrustTokenSignRequestData::kHeadersOnly;
   params.should_add_timestamp = true;
-  params.issuer = url::Origin::Create(GURL("https://issuer.com"));
-  params.toplevel = url::Origin::Create(GURL("https://toplevel.com"));
 
   SignedTrustTokenRedemptionRecord my_record;
   my_record.set_public_key("key");
@@ -413,10 +413,9 @@ TEST_F(TrustTokenRequestSigningHelperTest,
        RedemptionRecordAttachmentWithoutSigning) {
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
 
-  TrustTokenRequestSigningHelper::Params params;
-  params.sign_request_data = mojom::TrustTokenSignRequestData::kHeadersOnly;
-  params.issuer = url::Origin::Create(GURL("https://issuer.com"));
-  params.toplevel = url::Origin::Create(GURL("https://toplevel.com"));
+  TrustTokenRequestSigningHelper::Params params(
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com")));
   params.should_add_timestamp = true;
   params.sign_request_data = mojom::TrustTokenSignRequestData::kOmit;
 
@@ -446,10 +445,10 @@ TEST_F(TrustTokenRequestSigningHelperTest,
 TEST_F(TrustTokenRequestSigningHelperTest, SignAndVerifyMinimal) {
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
 
-  TrustTokenRequestSigningHelper::Params params;
+  TrustTokenRequestSigningHelper::Params params(
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com")));
   params.sign_request_data = mojom::TrustTokenSignRequestData::kHeadersOnly;
-  params.issuer = url::Origin::Create(GURL("https://issuer.com"));
-  params.toplevel = url::Origin::Create(GURL("https://toplevel.com"));
 
   SignedTrustTokenRedemptionRecord my_record;
   my_record.set_public_key("key");
@@ -482,10 +481,10 @@ TEST_F(TrustTokenRequestSigningHelperTest, SignAndVerifyMinimal) {
 TEST_F(TrustTokenRequestSigningHelperTest, SignAndVerifyWithHeaders) {
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
 
-  TrustTokenRequestSigningHelper::Params params;
+  TrustTokenRequestSigningHelper::Params params(
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com")));
   params.sign_request_data = mojom::TrustTokenSignRequestData::kHeadersOnly;
-  params.issuer = url::Origin::Create(GURL("https://issuer.com"));
-  params.toplevel = url::Origin::Create(GURL("https://toplevel.com"));
   SignedTrustTokenRedemptionRecord record;
   record.set_body("I am a signed token redemption record");
   record.set_public_key("key");
@@ -515,10 +514,10 @@ TEST_F(TrustTokenRequestSigningHelperTest, SignAndVerifyWithHeaders) {
 TEST_F(TrustTokenRequestSigningHelperTest, SignAndVerifyTimestampHeader) {
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
 
-  TrustTokenRequestSigningHelper::Params params;
+  TrustTokenRequestSigningHelper::Params params(
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com")));
   params.sign_request_data = mojom::TrustTokenSignRequestData::kHeadersOnly;
-  params.issuer = url::Origin::Create(GURL("https://issuer.com"));
-  params.toplevel = url::Origin::Create(GURL("https://toplevel.com"));
   params.additional_headers_to_sign = std::vector<std::string>{"sec-time"};
   params.should_add_timestamp = true;
 
@@ -558,9 +557,9 @@ TEST_F(TrustTokenRequestSigningHelperTest,
        SignAndVerifyWithHeadersAndDestinationUrl) {
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
 
-  TrustTokenRequestSigningHelper::Params params;
-  params.issuer = url::Origin::Create(GURL("https://issuer.com"));
-  params.toplevel = url::Origin::Create(GURL("https://toplevel.com"));
+  TrustTokenRequestSigningHelper::Params params(
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com")));
   params.sign_request_data = mojom::TrustTokenSignRequestData::kInclude;
 
   SignedTrustTokenRedemptionRecord record;
@@ -608,10 +607,10 @@ TEST_F(TrustTokenRequestSigningHelperTest,
 TEST_F(TrustTokenRequestSigningHelperTest, CatchesSignatureFailure) {
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
 
-  TrustTokenRequestSigningHelper::Params params;
+  TrustTokenRequestSigningHelper::Params params(
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com")));
   params.sign_request_data = mojom::TrustTokenSignRequestData::kHeadersOnly;
-  params.issuer = url::Origin::Create(GURL("https://issuer.com"));
-  params.toplevel = url::Origin::Create(GURL("https://toplevel.com"));
 
   SignedTrustTokenRedemptionRecord my_record;
   my_record.set_public_key("key");

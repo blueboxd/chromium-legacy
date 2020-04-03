@@ -33,7 +33,7 @@ sync_pb::WifiConfigurationSpecifics GenerateTestWifiSpecifics(
     NOTREACHED();
   }
   specifics.set_passphrase(passphrase);
-  specifics.set_last_update_timestamp(timestamp);
+  specifics.set_last_connected_timestamp(timestamp);
   specifics.set_automatically_connect(
       sync_pb::WifiConfigurationSpecifics::AUTOMATICALLY_CONNECT_ENABLED);
   specifics.set_is_preferred(

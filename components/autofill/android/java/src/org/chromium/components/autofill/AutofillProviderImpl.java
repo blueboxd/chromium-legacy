@@ -85,6 +85,12 @@ public class AutofillProviderImpl extends AutofillProvider {
                     child.setAutofillHints(field.mAutocompleteAttr.split(" +"));
                 }
                 child.setHint(field.mPlaceholder);
+
+                RectF bounds = field.getBoundsInContainerViewCoordinates();
+                // Field has no scroll.
+                child.setDimens((int) bounds.left, (int) bounds.top, 0 /* scrollX*/,
+                        0 /* scrollY */, (int) bounds.width(), (int) bounds.height());
+
                 ViewStructure.HtmlInfo.Builder builder =
                         child.newHtmlInfoBuilder("input")
                                 .addAttribute("name", field.mName)
@@ -308,6 +314,7 @@ public class AutofillProviderImpl extends AutofillProvider {
         mAutofillManager.notifyNewSessionStarted();
         Rect absBound = transformToWindowBounds(new RectF(x, y, x + width, y + height));
         if (mRequest != null) notifyViewExitBeforeDestoryRequest();
+        transformFormFieldToContainViewCoordinates(formData);
         mRequest = new AutofillRequest(formData, new FocusField((short) focus, absBound));
         int virtualId = mRequest.getVirtualId((short) focus);
         mAutofillManager.notifyVirtualViewEntered(mContainerView, virtualId, absBound);
@@ -490,5 +497,26 @@ public class AutofillProviderImpl extends AutofillProvider {
         matrix.mapRect(bounds);
         return new Rect(
                 (int) bounds.left, (int) bounds.top, (int) bounds.right, (int) bounds.bottom);
+    }
+
+    /**
+     * Transform FormFieldData's bounds to ContainView's coordinates and update the bounds with the
+     * transformed one.
+     *
+     * @param formData the form need to be transformed.
+     */
+    private void transformFormFieldToContainViewCoordinates(FormData formData) {
+        WindowAndroid windowAndroid = mWebContents.getTopLevelNativeWindow();
+        DisplayAndroid displayAndroid = windowAndroid.getDisplay();
+        float dipScale = displayAndroid.getDipScale();
+        Matrix matrix = new Matrix();
+        matrix.setScale(dipScale, dipScale);
+        matrix.postTranslate(mContainerView.getScrollX(), mContainerView.getScrollY());
+
+        for (FormFieldData field : formData.mFields) {
+            RectF bounds = new RectF();
+            matrix.mapRect(bounds, field.getBounds());
+            field.setBoundsInContainerViewCoordinates(bounds);
+        }
     }
 }

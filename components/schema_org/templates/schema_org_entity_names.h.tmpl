@@ -19,6 +19,11 @@ extern const char k{{entity[0]|upper}}{{entity[1:]}}[];
 
 bool IsValidEntityName(const std::string& entity_name);
 
+// Returns true if the entity with name possible_child inherits from
+// possible_parent.
+bool IsDescendedFrom(const std::string& possible_parent,
+                     const std::string& possible_child);
+
 }  // namespace entity
 }  // namespace schema_org
 

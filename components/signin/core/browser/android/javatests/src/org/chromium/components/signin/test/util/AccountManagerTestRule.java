@@ -53,7 +53,10 @@ public class AccountManagerTestRule implements TestRule {
                         : FakeAccountManagerDelegate.ENABLE_BLOCK_GET_ACCOUNTS;
                 mDelegate = new FakeAccountManagerDelegate(
                         mProfileDataSourceFlag, blockGetAccountsFlag);
-                AccountManagerFacadeProvider.overrideAccountManagerFacadeForTests(mDelegate);
+                ThreadUtils.runOnUiThreadBlocking(() -> {
+                    AccountManagerFacadeProvider.setInstanceForTests(
+                            new AccountManagerFacade(mDelegate));
+                });
                 statement.evaluate();
             }
         };

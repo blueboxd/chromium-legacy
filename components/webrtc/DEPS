@@ -1,0 +1,9 @@
+include_rules = [
+  "+components/content_settings",
+  "+components/permissions",
+  "+content/public/browser",
+  "+content/public/common",
+  "+third_party/blink/public/common",
+  "+third_party/blink/public/mojom",
+  "+ui/android",
+]

@@ -12,14 +12,19 @@
 #include "base/metrics/field_trial.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
+#include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/media/webrtc/media_stream_device_permissions.h"
-#include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_result.h"
+#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
+#include "components/webrtc/media_stream_devices_controller.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -52,6 +57,66 @@ using RepeatingMediaResponseCallback =
 #if defined(OS_MACOSX)
 using system_media_permissions::SystemPermission;
 #endif
+
+namespace {
+
+void UpdateTabSpecificContentSettings(
+    content::WebContents* web_contents,
+    const content::MediaStreamRequest& request,
+    ContentSetting audio_setting,
+    ContentSetting video_setting) {
+  if (!web_contents)
+    return;
+
+  auto* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents);
+  if (!content_settings)
+    return;
+
+  TabSpecificContentSettings::MicrophoneCameraState microphone_camera_state =
+      TabSpecificContentSettings::MICROPHONE_CAMERA_NOT_ACCESSED;
+  std::string selected_audio_device;
+  std::string selected_video_device;
+  std::string requested_audio_device = request.requested_audio_device_id;
+  std::string requested_video_device = request.requested_video_device_id;
+
+  // TODO(raymes): Why do we use the defaults here for the selected devices?
+  // Shouldn't we just use the devices that were actually selected?
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (audio_setting != CONTENT_SETTING_DEFAULT) {
+    selected_audio_device =
+        requested_audio_device.empty()
+            ? profile->GetPrefs()->GetString(prefs::kDefaultAudioCaptureDevice)
+            : requested_audio_device;
+    microphone_camera_state |=
+        TabSpecificContentSettings::MICROPHONE_ACCESSED |
+        (audio_setting == CONTENT_SETTING_ALLOW
+             ? 0
+             : TabSpecificContentSettings::MICROPHONE_BLOCKED);
+  }
+
+  if (video_setting != CONTENT_SETTING_DEFAULT) {
+    selected_video_device =
+        requested_video_device.empty()
+            ? profile->GetPrefs()->GetString(prefs::kDefaultVideoCaptureDevice)
+            : requested_video_device;
+    microphone_camera_state |=
+        TabSpecificContentSettings::CAMERA_ACCESSED |
+        (video_setting == CONTENT_SETTING_ALLOW
+             ? 0
+             : TabSpecificContentSettings::CAMERA_BLOCKED);
+  }
+
+  content_settings->OnMediaStreamPermissionSet(
+      PermissionManagerFactory::GetForProfile(profile)->GetCanonicalOrigin(
+          ContentSettingsType::MEDIASTREAM_CAMERA, request.security_origin,
+          web_contents->GetLastCommittedURL()),
+      microphone_camera_state, selected_audio_device, selected_video_device,
+      requested_audio_device, requested_video_device);
+}
+
+}  // namespace
 
 struct PermissionBubbleMediaAccessHandler::PendingAccessRequest {
   PendingAccessRequest(const content::MediaStreamRequest& request,
@@ -175,10 +240,11 @@ void PermissionBubbleMediaAccessHandler::ProcessQueuedAccessRequest(
   }
 #endif
 
-  MediaStreamDevicesController::RequestPermissions(
-      request, base::BindOnce(
-                   &PermissionBubbleMediaAccessHandler::OnAccessRequestResponse,
-                   base::Unretained(this), web_contents, request_id));
+  webrtc::MediaStreamDevicesController::RequestPermissions(
+      request, MediaCaptureDevicesDispatcher::GetInstance(),
+      base::BindOnce(
+          &PermissionBubbleMediaAccessHandler::OnMediaStreamRequestResponse,
+          base::Unretained(this), web_contents, request_id, request));
 }
 
 void PermissionBubbleMediaAccessHandler::UpdateMediaRequestState(
@@ -208,6 +274,42 @@ void PermissionBubbleMediaAccessHandler::UpdateMediaRequestState(
     if (found)
       break;
   }
+}
+
+// static
+void PermissionBubbleMediaAccessHandler::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* prefs) {
+  prefs->RegisterBooleanPref(prefs::kVideoCaptureAllowed, true);
+  prefs->RegisterBooleanPref(prefs::kAudioCaptureAllowed, true);
+  prefs->RegisterListPref(prefs::kVideoCaptureAllowedUrls);
+  prefs->RegisterListPref(prefs::kAudioCaptureAllowedUrls);
+}
+
+void PermissionBubbleMediaAccessHandler::OnMediaStreamRequestResponse(
+    content::WebContents* web_contents,
+    int request_id,
+    content::MediaStreamRequest request,
+    const blink::MediaStreamDevices& devices,
+    blink::mojom::MediaStreamRequestResult result,
+    bool blocked_by_feature_policy,
+    ContentSetting audio_setting,
+    ContentSetting video_setting) {
+  // If the kill switch is, or the request was blocked because of feature
+  // policy we don't update the tab context.
+  if (result != blink::mojom::MediaStreamRequestResult::KILL_SWITCH_ON &&
+      !blocked_by_feature_policy) {
+    UpdateTabSpecificContentSettings(web_contents, request, audio_setting,
+                                     video_setting);
+  }
+
+  std::unique_ptr<content::MediaStreamUI> ui;
+  if (!devices.empty()) {
+    ui = MediaCaptureDevicesDispatcher::GetInstance()
+             ->GetMediaStreamCaptureIndicator()
+             ->RegisterMediaStream(web_contents, devices);
+  }
+  OnAccessRequestResponse(web_contents, request_id, devices, result,
+                          std::move(ui));
 }
 
 void PermissionBubbleMediaAccessHandler::OnAccessRequestResponse(

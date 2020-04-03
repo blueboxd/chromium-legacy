@@ -122,6 +122,9 @@ class RTCVideoEncoderTest
       case webrtc::kVideoCodecH264:
         media_profile = media::H264PROFILE_BASELINE;
         break;
+      case webrtc::kVideoCodecVP9:
+        media_profile = media::VP9PROFILE_PROFILE0;
+        break;
       default:
         ADD_FAILURE() << "Unexpected codec type: " << codec_type;
         media_profile = media::VIDEO_CODEC_PROFILE_UNKNOWN;
@@ -230,6 +233,37 @@ INSTANTIATE_TEST_SUITE_P(CodecProfiles,
                          RTCVideoEncoderTest,
                          Values(webrtc::kVideoCodecVP8,
                                 webrtc::kVideoCodecH264));
+
+TEST_F(RTCVideoEncoderTest, CreateAndInitSucceedsForTemporalLayer) {
+  const webrtc::VideoCodecType codec_type = webrtc::kVideoCodecVP9;
+  CreateEncoder(codec_type);
+  webrtc::VideoCodec codec{};
+  codec.codecType = codec_type;
+  codec.width = kInputFrameWidth;
+  codec.height = kInputFrameHeight;
+  codec.startBitrate = kStartBitrate;
+  codec.maxBitrate = codec.startBitrate * 2;
+  codec.minBitrate = codec.startBitrate / 2;
+  codec.maxFramerate = 24;
+  codec.active = true;
+  codec.qpMax = 30;
+  codec.numberOfSimulcastStreams = 1;
+  codec.mode = webrtc::VideoCodecMode::kRealtimeVideo;
+  webrtc::VideoCodecVP9& vp9 = *codec.VP9();
+  vp9.numberOfTemporalLayers = 3;
+  vp9.numberOfSpatialLayers = 1;
+  webrtc::SpatialLayer& sl = codec.spatialLayers[0];
+  sl.width = kInputFrameWidth;
+  sl.height = kInputFrameHeight;
+  sl.maxFramerate = 24;
+  sl.numberOfTemporalLayers = vp9.numberOfTemporalLayers;
+  sl.targetBitrate = kStartBitrate;
+  sl.maxBitrate = sl.targetBitrate;
+  sl.minBitrate = sl.targetBitrate;
+  sl.qpMax = 30;
+  sl.active = true;
+  EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK, rtc_encoder_->InitEncode(&codec, 1, 12345));
+}
 
 // Checks that WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE is returned when there is
 // platform error.

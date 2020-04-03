@@ -56,7 +56,8 @@ ScriptPromise WakeLock::request(ScriptState* script_state,
   auto* context = ExecutionContext::From(script_state);
   DCHECK(context->IsDocument() || context->IsDedicatedWorkerGlobalScope());
 
-  if (type == "screen" && !RuntimeEnabledFeatures::ScreenWakeLockEnabled()) {
+  if (type == "screen" &&
+      !RuntimeEnabledFeatures::ScreenWakeLockEnabled(context)) {
     exception_state.ThrowTypeError(
         "The provided value 'screen' is not a valid enum value of type "
         "WakeLockType.");

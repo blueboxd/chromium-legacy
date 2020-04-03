@@ -17,35 +17,62 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/ime/init/input_method_initializer.h"
 #include "ui/compositor/test/test_context_factories.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 
 namespace {
 
-// View subclass that allows you to specify the preferred size.
+// View that keeps its preferred size in sync with what |harness| requests.
 class TestView : public views::View {
  public:
-  explicit TestView(ViewEventTestBase* harness) : harness_(harness) {}
+  explicit TestView(ViewEventTestBase* harness) : harness_(harness) {
+    SetLayoutManager(std::make_unique<views::FillLayout>());
+    AddChildView(harness_->CreateContentsView());
+  }
+  TestView(const TestView&) = delete;
+  TestView& operator=(const TestView&) = delete;
+  ~TestView() override = default;
 
   gfx::Size CalculatePreferredSize() const override {
     return harness_->GetPreferredSizeForContents();
   }
 
-  void Layout() override {
-    // Permit a test to remove the view being tested from the hierarchy, then
-    // still handle a _NET_WM_STATE event on Linux during teardown that triggers
-    // layout.
-    if (!children().empty())
-      children().front()->SetBoundsRect(GetLocalBounds());
+ private:
+  ViewEventTestBase* harness_;
+};
+
+}  // namespace
+
+class TestBaseWidgetDelegate : public views::WidgetDelegate {
+ public:
+  explicit TestBaseWidgetDelegate(ViewEventTestBase* harness)
+      : harness_(harness) {}
+  TestBaseWidgetDelegate(const TestBaseWidgetDelegate&) = delete;
+  TestBaseWidgetDelegate& operator=(const TestBaseWidgetDelegate&) = delete;
+  ~TestBaseWidgetDelegate() override = default;
+
+  // views::WidgetDelegate:
+  bool CanResize() const override { return true; }
+  void WindowClosing() override { harness_->window_ = nullptr; }
+  void DeleteDelegate() override { delete this; }
+  views::Widget* GetWidget() override { return contents_->GetWidget(); }
+  const views::Widget* GetWidget() const override {
+    return contents_->GetWidget();
+  }
+  views::View* GetContentsView() override {
+    // This will first be called by Widget::Init(), which passes the returned
+    // View* to SetContentsView(), which takes ownership.
+    if (!contents_)
+      contents_ = new TestView(harness_);
+    return contents_;
   }
 
  private:
   ViewEventTestBase* harness_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestView);
+  views::View* contents_ = nullptr;
 };
-
-}  // namespace
 
 ViewEventTestBase::ViewEventTestBase() {
   // The TestingBrowserProcess must be created in the constructor because there
@@ -58,9 +85,8 @@ ViewEventTestBase::ViewEventTestBase() {
   mojo::core::Init();
 }
 
-void ViewEventTestBase::Done() {
-  drag_event_thread_.reset();
-  run_loop_.Quit();
+ViewEventTestBase::~ViewEventTestBase() {
+  TestingBrowserProcess::DeleteInstance();
 }
 
 void ViewEventTestBase::SetUpTestCase() {
@@ -72,9 +98,7 @@ void ViewEventTestBase::SetUp() {
   ui::InitializeInputMethodForTesting();
 
   // The ContextFactory must exist before any Compositors are created.
-  const bool enable_pixel_output = false;
-  context_factories_ =
-      std::make_unique<ui::TestContextFactories>(enable_pixel_output);
+  context_factories_ = std::make_unique<ui::TestContextFactories>(false);
 
 #if defined(OS_MACOSX)
   views_delegate_.set_context_factory(context_factories_->GetContextFactory());
@@ -83,8 +107,10 @@ void ViewEventTestBase::SetUp() {
 
   platform_part_.reset(ViewEventTestPlatformPart::Create(
       context_factories_->GetContextFactory()));
+
   window_ = views::Widget::CreateWindowWithContext(
-      this, platform_part_->GetContext());
+      new TestBaseWidgetDelegate(this),  // Owns itself.
+      platform_part_->GetContext());
   window_->Show();
 }
 
@@ -92,7 +118,6 @@ void ViewEventTestBase::TearDown() {
   if (window_) {
     window_->Close();
     base::RunLoop().RunUntilIdle();
-    window_ = NULL;
   }
 
   ui::Clipboard::DestroyClipboardForCurrentThread();
@@ -107,31 +132,9 @@ gfx::Size ViewEventTestBase::GetPreferredSizeForContents() const {
   return gfx::Size();
 }
 
-bool ViewEventTestBase::CanResize() const {
-  return true;
-}
-
-views::View* ViewEventTestBase::GetContentsView() {
-  if (!content_view_) {
-    // Wrap the real view (as returned by CreateContentsView) in a View so
-    // that we can customize the preferred size.
-    TestView* test_view = new TestView(this);
-    test_view->AddChildView(CreateContentsView());
-    content_view_ = test_view;
-  }
-  return content_view_;
-}
-
-const views::Widget* ViewEventTestBase::GetWidget() const {
-  return content_view_->GetWidget();
-}
-
-views::Widget* ViewEventTestBase::GetWidget() {
-  return content_view_->GetWidget();
-}
-
-ViewEventTestBase::~ViewEventTestBase() {
-  TestingBrowserProcess::DeleteInstance();
+void ViewEventTestBase::Done() {
+  drag_event_thread_.reset();
+  run_loop_.Quit();
 }
 
 void ViewEventTestBase::StartMessageLoopAndRunTest() {

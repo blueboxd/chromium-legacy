@@ -30,6 +30,7 @@ _EXCLUDED_PATHS = (
     r'^third_party[\\/]blink[\\/]tools[\\/]blinkpy[\\/]third_party[\\/]wpt[\\/]wpt[\\/].*',
     r'^third_party[\\/]blink[\\/]web_tests[\\/]external[\\/]wpt[\\/]tools[\\/].*',
     r'^third_party[\\/]blink[\\/]web_tests[\\/]external[\\/]wpt[\\/]resources[\\/]webidl2[\\/].*',
+    r'^third_party[\\/]blink[\\/]web_tests[\\/]resources[\\/]webidl2.js',
 )
 
 

@@ -737,7 +737,7 @@ if (is_android) {
   }
 }
 
-static_library("web_test_support") {
+static_library("web_test_support_browser") {
   testonly = true
 
   # See comment at the top of //content/BUILD.gn for why this is disabled in
@@ -747,28 +747,39 @@ static_library("web_test_support") {
   }
 
   sources = [
-    "../public/test/web_test_support.h",
-    "web_test_support.cc",
+    "../public/test/web_test_support_browser.h",
+    "web_test_support_browser.cc",
+  ]
+  deps = [
+    "//content/browser:for_content_tests",  # For non-component builds.
+    "//content/public/browser",  # For component builds.
+    "//net:test_support",
+  ]
+}
+
+static_library("web_test_support_renderer") {
+  testonly = true
+
+  # See comment at the top of //content/BUILD.gn for why this is disabled in
+  # component builds.
+  if (is_component_build) {
+    check_includes = false
+  }
+
+  sources = [
+    "../public/test/web_test_support_renderer.h",
+    "web_test_support_renderer.cc",
   ]
 
   deps = [
     ":test_support",
-    "//content/browser:for_content_tests",
-    "//content/child:for_content_tests",
     "//content/public/common",
     "//content/public/renderer",
     "//content/renderer:for_content_tests",
     "//content/shell/test_runner:test_runner",
-    "//device/bluetooth",
-    "//device/gamepad/public/cpp:shared_with_blink",
-    "//net:test_support",
-    "//services/device/public/cpp/generic_sensor",
-    "//skia",
-    "//ui/accessibility:ax_enums_mojo",
     "//ui/events/blink",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
-    "//v8",
 
     # This is required to ensure
     #   content/shell/common/web_test/blink_test.mojom.h

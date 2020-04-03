@@ -2186,6 +2186,7 @@
                     "params": {
                         "editdistance": "false",
                         "editdistance_siteengagement": "true",
+                        "targetembedding": "false",
                         "topsites": "true"
                     },
                     "enable_features": [

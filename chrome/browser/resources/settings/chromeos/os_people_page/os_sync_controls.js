@@ -144,6 +144,45 @@ Polymer({
   },
 
   /**
+   * Returns the CSS class for the sync status icon.
+   * @return {string}
+   * @private
+   */
+  getSyncIconStyle_() {
+    if (this.syncStatus.disabled) {
+      return 'sync-disabled';
+    }
+    if (!this.syncStatus.hasError) {
+      return 'sync';
+    }
+    // Specific error cases below.
+    if (this.syncStatus.hasUnrecoverableError) {
+      return 'sync-problem';
+    }
+    if (this.syncStatus.statusAction == settings.StatusAction.REAUTHENTICATE) {
+      return 'sync-paused';
+    }
+    return 'sync-problem';
+  },
+
+  /**
+   * Returns the image to use for the sync status icon. The value must match
+   * one of iron-icon's settings:(*) icon names.
+   * @return {string}
+   * @private
+   */
+  getSyncIcon_() {
+    switch (this.getSyncIconStyle_()) {
+      case 'sync-problem':
+        return 'settings:sync-problem';
+      case 'sync-paused':
+        return 'settings:sync-disabled';
+      default:
+        return 'cr:sync';
+    }
+  },
+
+  /**
    * Handler for when the sync preferences are updated.
    * @private
    */

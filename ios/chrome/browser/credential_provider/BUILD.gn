@@ -9,12 +9,21 @@ import("//ios/build/chrome_build.gni")
 source_set("credential_provider") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "credential_provider_service.cc",
+    "credential_provider_service.h",
+    "credential_provider_service_factory.cc",
+    "credential_provider_service_factory.h",
     "credential_provider_support.cc",
     "credential_provider_support.h",
   ]
   deps = [
     ":buildflags",
     "//base",
+    "//components/keyed_service/core",
+    "//components/keyed_service/ios",
+    "//components/password_manager/core/browser",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/passwords",
   ]
 }
 
@@ -29,10 +38,11 @@ buildflag_header("buildflags") {
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = []
+  sources = [ "credential_provider_service_unittest.cc" ]
   deps = [
     ":credential_provider",
     "//base/test:test_support",
+    "//components/password_manager/core/browser:test_support",
     "//testing/gtest",
   ]
 }

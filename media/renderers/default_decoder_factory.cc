@@ -121,10 +121,22 @@ void DefaultDecoderFactory::CreateVideoDecoders(
 #if defined(OS_FUCHSIA)
   if (gpu_factories) {
     auto* context_provider = gpu_factories->GetMediaContextProvider();
-    DCHECK(context_provider);
-    video_decoders->push_back(
-        CreateFuchsiaVideoDecoder(gpu_factories->SharedImageInterface(),
-                                  context_provider->ContextSupport()));
+
+    // GetMediaContextProvider() may return nullptr when the context was lost
+    // (e.g. after GPU process crash). To handle this case RenderThreadImpl
+    // creates a new GpuVideoAcceleratorFactories with a new ContextProvider
+    // instance, but there is no way to get it here. For now just don't add
+    // FuchsiaVideoDecoder in that scenario.
+    //
+    // TODO(crbug.com/580386): Handle context loss properly.
+    if (context_provider) {
+      video_decoders->push_back(
+          CreateFuchsiaVideoDecoder(gpu_factories->SharedImageInterface(),
+                                    context_provider->ContextSupport()));
+    } else {
+      DLOG(ERROR)
+          << "Can't created FuchsiaVideoDecoder due to GPU context loss.";
+    }
   }
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

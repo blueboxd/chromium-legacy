@@ -2647,6 +2647,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "interest-feed-v2",
+    "owners": [ "//chrome/android/feed/OWNERS", "feed@chromium.org" ],
+    "expiry_milestone": 95
+  },
+  {
     "name": "ios-breadcrumbs",
     "owners": [ "michaeldo" ],
     // Breadcrumbs is not a launching feature, but rather a tool used on

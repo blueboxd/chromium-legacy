@@ -55,7 +55,7 @@ void MixerConnection::Connect() {
   if (path.empty()) {
     path = kDefaultUnixDomainSocketPath;
   }
-  int port = GetSwitchValueNonNegativeInt(switches::kMixerServiceEndpoint,
+  int port = GetSwitchValueNonNegativeInt(switches::kMixerServicePort,
                                           kDefaultTcpPort);
   connecting_socket_ = AudioSocketService::Connect(path, port);
 

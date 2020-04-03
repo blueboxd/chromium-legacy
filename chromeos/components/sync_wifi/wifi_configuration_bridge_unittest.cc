@@ -72,8 +72,8 @@ bool VectorContainsProto(
              [&proto](const sync_pb::WifiConfigurationSpecifics& specifics) {
                return NetworkIdentifier::FromProto(specifics) ==
                           NetworkIdentifier::FromProto(proto) &&
-                      specifics.last_update_timestamp() ==
-                          proto.last_update_timestamp() &&
+                      specifics.last_connected_timestamp() ==
+                          proto.last_connected_timestamp() &&
                       specifics.passphrase() == proto.passphrase();
              }) != protos.end();
 }

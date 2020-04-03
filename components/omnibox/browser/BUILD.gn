@@ -304,6 +304,7 @@ if (is_android) {
     sources = [
       "android/java/src/org/chromium/components/omnibox/AutocompleteSchemeClassifier.java",
       "android/java/src/org/chromium/components/omnibox/OmniboxUrlEmphasizer.java",
+      "android/java/src/org/chromium/components/omnibox/SecurityButtonAnimationDelegate.java",
       "android/java/src/org/chromium/components/omnibox/SecurityStatusIcon.java",
       "android/java/src/org/chromium/components/omnibox/SuggestionAnswer.java",
     ]
@@ -312,10 +313,12 @@ if (is_android) {
       ":java_resources",
       "//base:base_java",
       "//base:jni_java",
+      "//components/browser_ui/widget/android:java",
       "//components/embedder_support/android:util_java",
       "//components/security_state/core:security_state_enums_java",
       "//content/public/android:content_java",
       "//third_party/android_deps:androidx_core_core_java",
+      "//ui/android:ui_full_java",
     ]
 
     srcjar_deps = [ ":browser_java_enums_srcjar" ]

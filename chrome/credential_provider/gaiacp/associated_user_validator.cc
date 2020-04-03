@@ -603,25 +603,6 @@ bool AssociatedUserValidator::IsTokenHandleValidForUser(
   return validity_it->second->is_valid;
 }
 
-bool AssociatedUserValidator::IsAuthEnforcedOnAssociatedUsers() {
-  std::map<base::string16, UserTokenHandleInfo> sids_to_handle_info;
-  HRESULT hr = GetUserTokenHandles(&sids_to_handle_info);
-  if (FAILED(hr)) {
-    LOGFN(ERROR) << "GetUserTokenHandles hr=" << putHR(hr);
-    return hr;
-  }
-
-  for (const auto& sid_to_association : sids_to_handle_info) {
-    const base::string16& sid = sid_to_association.first;
-    // Return true even if one of the associated user sid
-    // has an auth enforced.
-    if (IsAuthEnforcedForUser(sid)) {
-      return true;
-    }
-  }
-  return false;
-}
-
 void AssociatedUserValidator::BlockDenyAccessUpdate() {
   base::AutoLock locker(validator_lock_);
   ++block_deny_access_update_;

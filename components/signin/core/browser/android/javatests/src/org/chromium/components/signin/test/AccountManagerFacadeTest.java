@@ -36,7 +36,9 @@ public class AccountManagerFacadeTest {
 
     @Before
     public void setUp() {
-        AccountManagerFacadeProvider.overrideAccountManagerFacadeForTests(mDelegate);
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            AccountManagerFacadeProvider.setInstanceForTests(new AccountManagerFacade(mDelegate));
+        });
     }
 
     @Test

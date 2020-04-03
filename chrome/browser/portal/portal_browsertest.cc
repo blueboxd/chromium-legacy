@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
+#include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
 #include "chrome/browser/pdf/pdf_extension_test_util.h"
 #include "chrome/browser/task_manager/providers/task.h"
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
@@ -21,8 +22,12 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/page_type.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -262,4 +267,56 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, PdfViewerLoadsInPortal) {
   WebContents* portal_contents = inner_web_contents[0];
 
   EXPECT_TRUE(pdf_extension_test_util::EnsurePDFHasLoaded(portal_contents));
+}
+
+// Test that we do not show main frame interstitials in portal contents. We
+// should treat portals like subframes in terms of how to display the error to
+// the user.
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, ShowSubFrameErrorPage) {
+  net::EmbeddedTestServer bad_https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  bad_https_server.AddDefaultHandlers(GetChromeTestDataDir());
+  bad_https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
+  ASSERT_TRUE(bad_https_server.Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+
+  GURL bad_cert_url(bad_https_server.GetURL("/title1.html"));
+  content::TestNavigationObserver portal_navigation_observer(nullptr, 1);
+  portal_navigation_observer.StartWatchingNewWebContents();
+  ASSERT_EQ(true,
+            content::EvalJs(
+                contents, content::JsReplace(
+                              "new Promise((resolve) => {"
+                              "  let portal = document.createElement('portal');"
+                              "  portal.src = $1;"
+                              "  portal.onload = () => { resolve(true); };"
+                              "  document.body.appendChild(portal);"
+                              "});",
+                              bad_cert_url)));
+  portal_navigation_observer.StopWatchingNewWebContents();
+  portal_navigation_observer.Wait();
+  EXPECT_FALSE(portal_navigation_observer.last_navigation_succeeded());
+  EXPECT_EQ(net::ERR_CERT_DATE_INVALID,
+            portal_navigation_observer.last_net_error_code());
+
+  std::vector<WebContents*> inner_web_contents =
+      contents->GetInnerWebContents();
+  ASSERT_EQ(1u, inner_web_contents.size());
+  WebContents* portal_contents = inner_web_contents[0];
+
+  content::NavigationController& controller = portal_contents->GetController();
+  content::NavigationEntry* entry = controller.GetLastCommittedEntry();
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(content::PAGE_TYPE_ERROR, entry->GetPageType());
+
+  // Ensure that this is the net error page and not an interstitial.
+  ASSERT_FALSE(
+      chrome_browser_interstitials::IsShowingInterstitial(portal_contents));
+  // Also ensure that the error page is using its subframe layout.
+  ASSERT_EQ(true, content::EvalJs(
+                      portal_contents,
+                      "document.documentElement.hasAttribute('subframe');"));
 }

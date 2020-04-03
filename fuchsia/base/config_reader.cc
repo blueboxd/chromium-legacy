@@ -6,10 +6,13 @@
 
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
+#include "base/no_destructor.h"
 
 namespace cr_fuchsia {
 
-base::Optional<base::Value> LoadPackageConfig() {
+namespace {
+
+base::Optional<base::Value> ReadPackageConfig() {
   constexpr char kConfigPath[] = "/config/data/config.json";
 
   base::FilePath path(kConfigPath);
@@ -33,6 +36,16 @@ base::Optional<base::Value> LoadPackageConfig() {
                            << path.value();
 
   return std::move(parsed.value());
+}
+
+}  // namespace
+
+const base::Optional<base::Value>& LoadPackageConfig() {
+  // Package configurations do not change at run-time, so read the configuration
+  // on the first call and cache the result.
+  static base::NoDestructor<base::Optional<base::Value>> config(
+      ReadPackageConfig());
+  return *config;
 }
 
 }  // namespace cr_fuchsia

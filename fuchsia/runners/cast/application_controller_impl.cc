@@ -31,3 +31,8 @@ void ApplicationControllerImpl::SetTouchInputEnabled(bool enable) {
                               (enable ? fuchsia::web::AllowInputState::ALLOW
                                       : fuchsia::web::AllowInputState::DENY));
 }
+
+void ApplicationControllerImpl::GetMediaPlayer(
+    fidl::InterfaceRequest<fuchsia::media::sessions2::Player> request) {
+  frame_->GetMediaPlayer(std::move(request));
+}

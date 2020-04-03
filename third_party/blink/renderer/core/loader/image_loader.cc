@@ -109,14 +109,12 @@ static ImageLoader::BypassMainWorldBehavior ShouldBypassMainWorldCSP(
 class ImageLoader::Task {
  public:
   Task(ImageLoader* loader,
-       const KURL& request_url,
        UpdateFromElementBehavior update_behavior,
        network::mojom::ReferrerPolicy referrer_policy)
       : loader_(loader),
         should_bypass_main_world_csp_(ShouldBypassMainWorldCSP(loader)),
         update_behavior_(update_behavior),
-        referrer_policy_(referrer_policy),
-        request_url_(request_url) {
+        referrer_policy_(referrer_policy) {
     ExecutionContext* context =
         loader_->GetElement()->GetDocument().ToExecutionContext();
     probe::AsyncTaskScheduled(context, "Image", &async_task_id_);
@@ -142,13 +140,11 @@ class ImageLoader::Task {
     if (script_state_ && script_state_->ContextIsValid()) {
       ScriptState::Scope scope(script_state_);
       loader_->DoUpdateFromElement(should_bypass_main_world_csp_,
-                                   update_behavior_, request_url_,
-                                   referrer_policy_);
+                                   update_behavior_, referrer_policy_);
     } else {
       // This call does not access v8::Context internally.
       loader_->DoUpdateFromElement(should_bypass_main_world_csp_,
-                                   update_behavior_, request_url_,
-                                   referrer_policy_);
+                                   update_behavior_, referrer_policy_);
     }
   }
 
@@ -165,7 +161,7 @@ class ImageLoader::Task {
   UpdateFromElementBehavior update_behavior_;
   WeakPersistent<ScriptState> script_state_;
   network::mojom::ReferrerPolicy referrer_policy_;
-  KURL request_url_;
+
   probe::AsyncTaskId async_task_id_;
   base::WeakPtrFactory<Task> weak_factory_{this};
 };
@@ -416,11 +412,9 @@ inline void ImageLoader::ClearFailedLoadURL() {
 }
 
 inline void ImageLoader::EnqueueImageLoadingMicroTask(
-    const KURL& request_url,
     UpdateFromElementBehavior update_behavior,
     network::mojom::ReferrerPolicy referrer_policy) {
-  auto task = std::make_unique<Task>(this, request_url, update_behavior,
-                                     referrer_policy);
+  auto task = std::make_unique<Task>(this, update_behavior, referrer_policy);
   pending_task_ = task->GetWeakPtr();
   Microtask::EnqueueMicrotask(
       WTF::Bind(&Task::Run, WTF::Passed(std::move(task))));
@@ -448,7 +442,6 @@ void ImageLoader::UpdateImageState(ImageResourceContent* new_image_content) {
 void ImageLoader::DoUpdateFromElement(
     BypassMainWorldBehavior bypass_behavior,
     UpdateFromElementBehavior update_behavior,
-    const KURL& url,
     network::mojom::ReferrerPolicy referrer_policy,
     UpdateType update_type) {
   // FIXME: According to
@@ -469,6 +462,7 @@ void ImageLoader::DoUpdateFromElement(
     return;
 
   AtomicString image_source_url = element_->ImageSourceURL();
+  const KURL url = ImageSourceToKURL(image_source_url);
   ImageResourceContent* new_image_content = nullptr;
   if (!url.IsNull() && !url.IsEmpty()) {
     // Unlike raw <img>, we block mixed content inside of <picture> or
@@ -677,10 +671,8 @@ void ImageLoader::UpdateFromElement(
     delay_until_do_update_from_element_ = nullptr;
   }
 
-  KURL url = ImageSourceToKURL(image_source_url);
-
-  if (ShouldLoadImmediately(url)) {
-    DoUpdateFromElement(kDoNotBypassMainWorldCSP, update_behavior, url,
+  if (ShouldLoadImmediately(ImageSourceToKURL(image_source_url))) {
+    DoUpdateFromElement(kDoNotBypassMainWorldCSP, update_behavior,
                         referrer_policy, UpdateType::kSync);
     return;
   }
@@ -705,7 +697,7 @@ void ImageLoader::UpdateFromElement(
   // images we don't intend to display.
   Document& document = element_->GetDocument();
   if (!document.IsContextDestroyed() && document.IsActive())
-    EnqueueImageLoadingMicroTask(url, update_behavior, referrer_policy);
+    EnqueueImageLoadingMicroTask(update_behavior, referrer_policy);
 }
 
 KURL ImageLoader::ImageSourceToKURL(AtomicString image_source_url) const {

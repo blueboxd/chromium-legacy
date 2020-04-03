@@ -125,6 +125,7 @@ Polymer({
       type: Boolean,
       value: false,
       computed: 'computeShouldShowDropdown_(searchResults_)',
+      reflectToAttribute: true,
     },
 
     /**

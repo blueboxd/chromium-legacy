@@ -46,18 +46,6 @@ class GeolocationPermissionContext : public PermissionContextBase {
                                   bool allowed) = 0;
 
 #if defined(OS_ANDROID)
-    // Returns whether or not the Android location permission should be
-    // requested.
-    virtual bool ShouldRequestAndroidLocationPermission(
-        content::WebContents* web_contents) = 0;
-
-    using PermissionUpdatedCallback = base::OnceCallback<void(bool)>;
-    // Requests Android location permission, and calls |callback| with the
-    // reslt.
-    virtual void RequestAndroidPermission(
-        content::WebContents* web_contents,
-        PermissionUpdatedCallback callback) = 0;
-
     // Returns whether or not this |web_contents| is interactable.
     virtual bool IsInteractable(content::WebContents* web_contents) = 0;
 

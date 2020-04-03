@@ -27,6 +27,7 @@
 #include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_transport_protocol.h"
+#include "device/fido/make_credential_request_handler.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
 #include "url/origin.h"
 
@@ -189,6 +190,8 @@ class CONTENT_EXPORT AuthenticatorCommon {
   base::Optional<std::string> app_id_;
   base::Optional<device::CtapMakeCredentialRequest>
       ctap_make_credential_request_;
+  base::Optional<device::MakeCredentialRequestHandler::Options>
+      make_credential_options_;
   base::Optional<device::CtapGetAssertionRequest> ctap_get_assertion_request_;
   // awaiting_attestation_response_ is true if the embedder has been queried
   // about an attestsation decision and the response is still pending.

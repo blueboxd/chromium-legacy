@@ -14,6 +14,7 @@
 #include "base/strings/string_piece_forward.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/trust_tokens/proto/public.pb.h"
+#include "services/network/trust_tokens/suitable_trust_token_origin.h"
 #include "services/network/trust_tokens/trust_token_key_commitment_getter.h"
 #include "services/network/trust_tokens/trust_token_request_helper.h"
 #include "url/origin.h"
@@ -98,7 +99,7 @@ class TrustTokenRequestRedemptionHelper : public TrustTokenRequestHelper {
   // |cryptographer| are delegates that help execute the protocol; see
   // their class comments.
   TrustTokenRequestRedemptionHelper(
-      const url::Origin& top_level_origin,
+      SuitableTrustTokenOrigin top_level_origin,
       mojom::TrustTokenRefreshPolicy refresh_policy,
       TrustTokenStore* token_store,
       std::unique_ptr<TrustTokenKeyCommitmentGetter> key_commitment_getter,
@@ -161,7 +162,11 @@ class TrustTokenRequestRedemptionHelper : public TrustTokenRequestHelper {
 
   // |issuer_|, |top_level_origin_|, and |refresh_policy_| are parameters
   // determining the scope and control flow of the redemption operation.
-  url::Origin issuer_;
+  //
+  // |issuer_| needs to be a nullable type because it is initialized in |Begin|,
+  // but, once initialized, it will never be empty over the course of the
+  // operation's execution.
+  base::Optional<SuitableTrustTokenOrigin> issuer_;
   const url::Origin top_level_origin_;
   const mojom::TrustTokenRefreshPolicy refresh_policy_;
 

@@ -22,9 +22,6 @@ class CrostiniUpgraderDialog : public SystemWebDialogDelegate {
   static void Show(base::OnceClosure launch_closure,
                    bool only_run_launch_closure_on_restart = false);
 
-  void SetDeletionClosureForTesting(
-      base::OnceClosure deletion_closure_for_testing);
-
  private:
   explicit CrostiniUpgraderDialog(base::OnceClosure launch_closure,
                                   bool only_run_launch_closure_on_restart);
@@ -40,10 +37,10 @@ class CrostiniUpgraderDialog : public SystemWebDialogDelegate {
   void OnCloseContents(content::WebContents* source,
                        bool* out_close_dialog) override;
 
+ private:
   CrostiniUpgraderUI* upgrader_ui_ = nullptr;  // Not owned.
   const bool only_run_launch_closure_on_restart_;
   base::OnceClosure launch_closure_;
-  base::OnceClosure deletion_closure_for_testing_;
 };
 
 }  // namespace chromeos

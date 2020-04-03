@@ -64,6 +64,10 @@ void MediaFeedsFetcher::FetchFeed(const GURL& url, MediaFeedCallback callback) {
   resource_request->redirect_mode = ::network::mojom::RedirectMode::kError;
   resource_request->attach_same_site_cookies = true;
   resource_request->site_for_cookies = net::SiteForCookies::FromUrl(url);
+  url::Origin origin = url::Origin::Create(url);
+  resource_request->trusted_params = network::ResourceRequest::TrustedParams();
+  resource_request->trusted_params->network_isolation_key =
+      net::NetworkIsolationKey(origin, origin);
 
   DCHECK(!pending_request_);
   pending_request_ = network::SimpleURLLoader::Create(

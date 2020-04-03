@@ -48,7 +48,7 @@ public final class WebLayerFactoryImpl extends IWebLayerFactory.Stub {
     @Override
     public boolean isClientSupported() {
         StrictModeWorkaround.apply();
-        return Math.abs(sClientMajorVersion - getImplementationMajorVersion()) <= 3;
+        return Math.abs(sClientMajorVersion - getImplementationMajorVersion()) <= 4;
     }
 
     /**

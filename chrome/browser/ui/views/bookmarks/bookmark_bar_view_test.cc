@@ -325,7 +325,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     // clipboard selection from the X server (for the 'paste' item), so mock it
     // out.
     ui::TestClipboard::CreateForCurrentThread();
-    GetWidget()->Activate();
+    window()->Activate();
 #endif
   }
 
@@ -1056,7 +1056,7 @@ class BookmarkBarViewTest10 : public BookmarkBarViewEventTestBase {
 
     // Send a down event, which should select the first item.
     ASSERT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(
-        window_->GetNativeWindow(), ui::VKEY_DOWN, false, false, false, false,
+        window()->GetNativeWindow(), ui::VKEY_DOWN, false, false, false, false,
         CreateEventTask(this, &BookmarkBarViewTest10::Step3)));
   }
 
@@ -1069,7 +1069,7 @@ class BookmarkBarViewTest10 : public BookmarkBarViewEventTestBase {
 
     // Send a key down event, which should select the next item.
     ASSERT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(
-        window_->GetNativeWindow(), ui::VKEY_DOWN, false, false, false, false,
+        window()->GetNativeWindow(), ui::VKEY_DOWN, false, false, false, false,
         CreateEventTask(this, &BookmarkBarViewTest10::Step4)));
   }
 
@@ -1082,7 +1082,7 @@ class BookmarkBarViewTest10 : public BookmarkBarViewEventTestBase {
 
     // Send a right arrow to force the menu to open.
     ASSERT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(
-        window_->GetNativeWindow(), ui::VKEY_RIGHT, false, false, false, false,
+        window()->GetNativeWindow(), ui::VKEY_RIGHT, false, false, false, false,
         CreateEventTask(this, &BookmarkBarViewTest10::Step5)));
   }
 
@@ -1098,7 +1098,7 @@ class BookmarkBarViewTest10 : public BookmarkBarViewEventTestBase {
 
     // Send a left arrow to close the submenu.
     ASSERT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(
-        window_->GetNativeWindow(), ui::VKEY_LEFT, false, false, false, false,
+        window()->GetNativeWindow(), ui::VKEY_LEFT, false, false, false, false,
         CreateEventTask(this, &BookmarkBarViewTest10::Step6)));
   }
 
@@ -1113,7 +1113,7 @@ class BookmarkBarViewTest10 : public BookmarkBarViewEventTestBase {
 
     // Send a down arrow to go down to f1b.
     ASSERT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(
-        window_->GetNativeWindow(), ui::VKEY_DOWN, false, false, false, false,
+        window()->GetNativeWindow(), ui::VKEY_DOWN, false, false, false, false,
         CreateEventTask(this, &BookmarkBarViewTest10::Step7)));
   }
 
@@ -1126,7 +1126,7 @@ class BookmarkBarViewTest10 : public BookmarkBarViewEventTestBase {
 
     // Send a down arrow to wrap back to f1a.
     ASSERT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(
-        window_->GetNativeWindow(), ui::VKEY_DOWN, false, false, false, false,
+        window()->GetNativeWindow(), ui::VKEY_DOWN, false, false, false, false,
         CreateEventTask(this, &BookmarkBarViewTest10::Step8)));
   }
 
@@ -1139,8 +1139,8 @@ class BookmarkBarViewTest10 : public BookmarkBarViewEventTestBase {
 
     // Send enter, which should select the item.
     ASSERT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(
-        window_->GetNativeWindow(), ui::VKEY_RETURN, false, false, false, false,
-        CreateEventTask(this, &BookmarkBarViewTest10::Step9)));
+        window()->GetNativeWindow(), ui::VKEY_RETURN, false, false, false,
+        false, CreateEventTask(this, &BookmarkBarViewTest10::Step9)));
   }
 
   void Step9() {
@@ -1194,8 +1194,8 @@ class BookmarkBarViewTest11 : public BookmarkBarViewEventTestBase {
   void Step3() {
     // Send escape so that the context menu hides.
     ASSERT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(
-        window_->GetNativeWindow(), ui::VKEY_ESCAPE, false, false, false, false,
-        CreateEventTask(this, &BookmarkBarViewTest11::Step4)));
+        window()->GetNativeWindow(), ui::VKEY_ESCAPE, false, false, false,
+        false, CreateEventTask(this, &BookmarkBarViewTest11::Step4)));
   }
 
   void Step4() {
@@ -1426,8 +1426,8 @@ class BookmarkBarViewTest14 : public BookmarkBarViewEventTestBase {
 
     // Send escape so that the context menu hides.
     ASSERT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(
-        window_->GetNativeWindow(), ui::VKEY_ESCAPE, false, false, false, false,
-        CreateEventTask(this, &BookmarkBarViewTest14::Step3)));
+        window()->GetNativeWindow(), ui::VKEY_ESCAPE, false, false, false,
+        false, CreateEventTask(this, &BookmarkBarViewTest14::Step3)));
   }
 
   void Step3() {
@@ -1542,8 +1542,7 @@ class BookmarkBarViewTest16 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(button->state() == views::Button::STATE_PRESSED);
 
     // Close the window.
-    window_->Close();
-    window_ = NULL;
+    window()->Close();
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, CreateEventTask(this, &BookmarkBarViewTest16::Done));
@@ -1962,7 +1961,7 @@ class BookmarkBarViewTest22 : public BookmarkBarViewDragTestBase {
   void OnWidgetDragWillStart(views::Widget* widget) override {
     // Watch for main window destruction instead of menu dragging.
     widget_observer()->RemoveAll();
-    widget_observer()->Add(window_);
+    widget_observer()->Add(window());
 
     BookmarkBarViewDragTestBase::OnWidgetDragWillStart(widget);
   }
@@ -1988,8 +1987,7 @@ class BookmarkBarViewTest22 : public BookmarkBarViewDragTestBase {
     // window alone may not exit this message loop.
     BookmarkBarViewDragTestBase::OnDragEntered();
 
-    window_->Close();
-    window_ = nullptr;
+    window()->Close();
   }
 
   const BookmarkNode* GetDroppedNode() const override {
@@ -2031,8 +2029,7 @@ class BookmarkBarViewTest23 : public BookmarkBarViewEventTestBase {
 
     // Navigate down to highlight the first menu item.
     ASSERT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(
-        GetWidget()->GetNativeWindow(), ui::VKEY_DOWN, false, false, false,
-        false,  // No modifer keys
+        window()->GetNativeWindow(), ui::VKEY_DOWN, false, false, false, false,
         CreateEventTask(this, &BookmarkBarViewTest23::Step3)));
   }
 
@@ -2043,10 +2040,9 @@ class BookmarkBarViewTest23 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
 
     // Open the context menu via the keyboard.
-    ASSERT_TRUE(ui_controls::SendKeyPress(GetWidget()->GetNativeWindow(),
+    ASSERT_TRUE(ui_controls::SendKeyPress(window()->GetNativeWindow(),
                                           ui::VKEY_APPS, false, false, false,
-                                          false  // No modifer keys
-                                          ));
+                                          false));
     // The BookmarkContextMenuNotificationObserver triggers Step4.
   }
 
@@ -2102,8 +2098,7 @@ class BookmarkBarViewTest24 : public BookmarkBarViewEventTestBase {
 
     // Navigate down to highlight the first menu item.
     ASSERT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(
-        GetWidget()->GetNativeWindow(), ui::VKEY_DOWN, false, false, false,
-        false,  // No modifer keys
+        window()->GetNativeWindow(), ui::VKEY_DOWN, false, false, false, false,
         CreateEventTask(this, &BookmarkBarViewTest24::Step3)));
   }
 
@@ -2114,10 +2109,9 @@ class BookmarkBarViewTest24 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
 
     // Open the context menu via the keyboard.
-    ASSERT_TRUE(ui_controls::SendKeyPress(GetWidget()->GetNativeWindow(),
+    ASSERT_TRUE(ui_controls::SendKeyPress(window()->GetNativeWindow(),
                                           ui::VKEY_APPS, false, false, false,
-                                          false  // No modifer keys
-                                          ));
+                                          false));
     // The BookmarkContextMenuNotificationObserver triggers Step4.
   }
 
@@ -2130,8 +2124,8 @@ class BookmarkBarViewTest24 : public BookmarkBarViewEventTestBase {
 
     // Send escape to close the context menu.
     ASSERT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(
-        window_->GetNativeWindow(), ui::VKEY_ESCAPE, false, false, false, false,
-        CreateEventTask(this, &BookmarkBarViewTest24::Step5)));
+        window()->GetNativeWindow(), ui::VKEY_ESCAPE, false, false, false,
+        false, CreateEventTask(this, &BookmarkBarViewTest24::Step5)));
   }
 
   void Step5() {
@@ -2145,8 +2139,8 @@ class BookmarkBarViewTest24 : public BookmarkBarViewEventTestBase {
 
     // Send escape to close the main menu.
     ASSERT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(
-        window_->GetNativeWindow(), ui::VKEY_ESCAPE, false, false, false, false,
-        CreateEventTask(this, &BookmarkBarViewTest24::Done)));
+        window()->GetNativeWindow(), ui::VKEY_ESCAPE, false, false, false,
+        false, CreateEventTask(this, &BookmarkBarViewTest24::Done)));
   }
 
   BookmarkContextMenuNotificationObserver observer_;
@@ -2177,7 +2171,7 @@ class BookmarkBarViewTest25 : public BookmarkBarViewEventTestBase {
 
     // Send KEYCODE key event, which should close the menu.
     ASSERT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(
-        window_->GetNativeWindow(), KEYCODE, false, false, false, false,
+        window()->GetNativeWindow(), KEYCODE, false, false, false, false,
         CreateEventTask(this, &BookmarkBarViewTest25::Step3)));
   }
 
@@ -2220,9 +2214,8 @@ class BookmarkBarViewTest26 : public BookmarkBarViewEventTestBase {
     // Send WM_CANCELMODE, which should close the menu. The message is sent
     // synchronously, however, we post a task to make sure that the message is
     // processed completely before finishing the test.
-    ::SendMessage(
-        GetWidget()->GetNativeView()->GetHost()->GetAcceleratedWidget(),
-        WM_CANCELMODE, 0, 0);
+    ::SendMessage(window()->GetNativeView()->GetHost()->GetAcceleratedWidget(),
+                  WM_CANCELMODE, 0, 0);
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,

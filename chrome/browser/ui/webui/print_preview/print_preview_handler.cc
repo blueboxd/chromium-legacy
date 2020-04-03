@@ -522,18 +522,11 @@ class PrintPreviewHandler::AccessTokenService
 };
 #endif  // defined(OS_CHROMEOS)
 
-PrintPreviewHandler::PrintPreviewHandler()
-    : regenerate_preview_request_count_(0),
-      manage_printers_dialog_request_count_(0),
-      reported_failed_preview_(false),
-      has_logged_printers_count_(false),
-      identity_manager_(nullptr) {
+PrintPreviewHandler::PrintPreviewHandler() {
   ReportUserActionHistogram(PREVIEW_STARTED);
 }
 
 PrintPreviewHandler::~PrintPreviewHandler() {
-  base::UmaHistogramCounts1M("PrintPreview.ManagePrinters",
-                             manage_printers_dialog_request_count_);
   UnregisterForGaiaCookieChanges();
 }
 
@@ -1005,7 +998,6 @@ void PrintPreviewHandler::HandleGetAccessToken(const base::ListValue* args) {
 #if BUILDFLAG(ENABLE_BASIC_PRINT_DIALOG)
 void PrintPreviewHandler::HandleShowSystemDialog(
     const base::ListValue* /*args*/) {
-  manage_printers_dialog_request_count_++;
   ReportUserActionHistogram(FALLBACK_TO_ADVANCED_SETTINGS_DIALOG);
 
   WebContents* initiator = GetInitiator();

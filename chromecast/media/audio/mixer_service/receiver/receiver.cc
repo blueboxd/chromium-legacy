@@ -128,7 +128,7 @@ Receiver::Receiver()
     : task_runner_(base::SequencedTaskRunnerHandle::Get()),
       socket_service_(
           GetEndpoint(),
-          GetSwitchValueNonNegativeInt(switches::kMixerServiceEndpoint,
+          GetSwitchValueNonNegativeInt(switches::kMixerServicePort,
                                        mixer_service::kDefaultTcpPort),
           kMaxAcceptLoop,
           this),

@@ -74,7 +74,7 @@ public class RoundedCornerWrapperView extends FrameLayout {
     private int mRoundedCornerRadius;
 
     // Doesn't like the call to setOutlineProvider
-    @SuppressWarnings("initialization")
+    @SuppressWarnings("nullness")
     public RoundedCornerWrapperView(Context context, RoundedCorners roundedCorners,
             RoundedCornerMaskCache maskCache, Supplier<Boolean> isRtLSupplier, int radiusOverride,
             Borders borders, boolean allowClipPath, boolean allowOutlineRounding) {

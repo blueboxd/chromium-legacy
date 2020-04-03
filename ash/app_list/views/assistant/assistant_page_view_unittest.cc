@@ -8,7 +8,7 @@
 #include "ash/assistant/ui/main_stage/suggestion_chip_view.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom-shared.h"
+#include "chromeos/services/assistant/public/cpp/default_assistant_interaction_subscriber.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/event.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -208,12 +208,11 @@ class AssistantPageViewTest : public AssistantAshTestBase {
 
 // Counts the number of Assistant interactions that are started.
 class AssistantInteractionCounter
-    : private chromeos::assistant::mojom::AssistantInteractionSubscriber {
+    : private chromeos::assistant::DefaultAssistantInteractionSubscriber {
  public:
   explicit AssistantInteractionCounter(
       chromeos::assistant::mojom::Assistant* service) {
-    service->AddAssistantInteractionSubscriber(
-        receiver_.BindNewPipeAndPassRemote());
+    service->AddAssistantInteractionSubscriber(BindNewPipeAndPassRemote());
   }
   AssistantInteractionCounter(AssistantInteractionCounter&) = delete;
   AssistantInteractionCounter& operator=(AssistantInteractionCounter&) = delete;
@@ -222,35 +221,12 @@ class AssistantInteractionCounter
   int interaction_count() const { return interaction_count_; }
 
  private:
-  // AssistantInteractionSubscriber implementation:
+  // DefaultAssistantInteractionSubscriber implementation:
   void OnInteractionStarted(
       chromeos::assistant::mojom::AssistantInteractionMetadataPtr) override {
     interaction_count_++;
   }
-  void OnInteractionFinished(
-      chromeos::assistant::mojom::AssistantInteractionResolution) override {}
-  void OnHtmlResponse(const std::string& response,
-                      const std::string& fallback) override {}
-  void OnSuggestionsResponse(
-      std::vector<chromeos::assistant::mojom::AssistantSuggestionPtr> response)
-      override {}
-  void OnTextResponse(const std::string& response) override {}
-  void OnTimersResponse(const std::vector<std::string>& timer_ids) override {}
-  void OnOpenUrlResponse(const ::GURL& url, bool in_background) override {}
-  void OnOpenAppResponse(chromeos::assistant::mojom::AndroidAppInfoPtr app_info,
-                         OnOpenAppResponseCallback callback) override {}
-  void OnSpeechRecognitionStarted() override {}
-  void OnSpeechRecognitionIntermediateResult(
-      const std::string& high_confidence_text,
-      const std::string& low_confidence_text) override {}
-  void OnSpeechRecognitionEndOfUtterance() override {}
-  void OnSpeechRecognitionFinalResult(
-      const std::string& final_result) override {}
-  void OnSpeechLevelUpdated(float speech_level) override {}
-  void OnTtsStarted(bool due_to_error) override {}
-  void OnWaitStarted() override {}
 
-  mojo::Receiver<AssistantInteractionSubscriber> receiver_{this};
   int interaction_count_ = 0;
 };
 

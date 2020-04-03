@@ -22,6 +22,14 @@ import shutil
 import subprocess
 import sys
 
+
+try:
+  import urllib2 as urllib
+except ImportError:  # For Py3 compatibility
+  import urllib.request as urllib
+  import urllib.error as urllib
+
+
 from update import (CDS_URL, CHROMIUM_DIR, CLANG_REVISION, LLVM_BUILD_DIR,
                     FORCE_HEAD_REVISION_FILE, PACKAGE_VERSION, RELEASE_VERSION,
                     STAMP_FILE, CopyFile, CopyDiaDllTo, DownloadUrl,
@@ -128,19 +136,12 @@ def CheckoutLLVM(commit, dir):
   sys.exit(1)
 
 
-def UrlOpen(url):
-  # Normally we'd use urllib, but on our bots it can't connect to the GitHub API
-  # due to using too old TLS (see crbug.com/897796#c56). As a horrible
-  # workaround, shell out to curl instead. It seems curl is recent enough on all
-  # our machines that it can connect. On Windows it's in our gnuwin package.
-  # TODO(crbug.com/965937): Use urllib once our Python is recent enough.
-  return subprocess.check_output(['curl', '--silent', url])
-
 
 def GetLatestLLVMCommit():
   """Get the latest commit hash in the LLVM monorepo."""
-  ref = json.loads(UrlOpen(('https://api.github.com/repos/'
-                            'llvm/llvm-project/git/refs/heads/master')))
+  ref = json.loads(
+      urllib.urlopen(('https://api.github.com/repos/'
+                      'llvm/llvm-project/git/refs/heads/master')).read())
   assert ref['object']['type'] == 'commit'
   return ref['object']['sha']
 
@@ -394,12 +395,6 @@ def main():
   # Don't buffer stdout, so that print statements are immediately flushed.
   sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
-  # The gnuwin package also includes curl, which is needed to interact with the
-  # github API below.
-  # TODO(crbug.com/965937): Use urllib once our Python is recent enough, and
-  # move this down to where we fetch other build tools.
-  AddGnuWinToPath()
-
   # TODO(crbug.com/929645): Remove once we build on host systems with a modern
   # enough GCC to build Clang.
   MaybeDownloadHostGcc(args)
@@ -420,6 +415,7 @@ def main():
   WriteStampFile('', FORCE_HEAD_REVISION_FILE)
 
   AddCMakeToPath(args)
+  AddGnuWinToPath()
   DeleteChromeToolsShim()
 
 

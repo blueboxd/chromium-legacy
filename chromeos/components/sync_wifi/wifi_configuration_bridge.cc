@@ -121,8 +121,8 @@ void WifiConfigurationBridge::OnGetAllSyncableNetworksResult(
         change->data().specifics.wifi_configuration();
     NetworkIdentifier id = NetworkIdentifier::FromProto(proto);
     if (sync_networks.contains(id) &&
-        sync_networks[id].last_update_timestamp() >
-            proto.last_update_timestamp()) {
+        sync_networks[id].last_connected_timestamp() >
+            proto.last_connected_timestamp()) {
       continue;
     }
     sync_networks[id] = proto;
@@ -132,8 +132,8 @@ void WifiConfigurationBridge::OnGetAllSyncableNetworksResult(
   for (sync_pb::WifiConfigurationSpecifics& proto : local_network_list) {
     NetworkIdentifier id = NetworkIdentifier::FromProto(proto);
     if (sync_networks.contains(id) &&
-        sync_networks[id].last_update_timestamp() >
-            proto.last_update_timestamp()) {
+        sync_networks[id].last_connected_timestamp() >
+            proto.last_connected_timestamp()) {
       continue;
     }
 
@@ -157,8 +157,8 @@ void WifiConfigurationBridge::OnGetAllSyncableNetworksResult(
     sync_pb::WifiConfigurationSpecifics& proto = kv.second;
 
     if (local_networks.contains(id) &&
-        local_networks[id].last_update_timestamp() >
-            proto.last_update_timestamp()) {
+        local_networks[id].last_connected_timestamp() >
+            proto.last_connected_timestamp()) {
       continue;
     }
 

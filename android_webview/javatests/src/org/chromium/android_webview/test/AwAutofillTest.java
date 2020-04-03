@@ -5,6 +5,7 @@
 package org.chromium.android_webview.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -313,7 +314,23 @@ public class AwAutofillTest {
         public void setId(int id, String packageName, String typeName, String entryName) {}
 
         @Override
-        public void setDimens(int left, int top, int scrollX, int scrollY, int width, int height) {}
+        public void setDimens(int left, int top, int scrollX, int scrollY, int width, int height) {
+            mDimensRect = new Rect(left, top, width + left, height + top);
+            mDimensScrollX = scrollX;
+            mDimensScrollY = scrollY;
+        }
+
+        public Rect getDimensRect() {
+            return mDimensRect;
+        }
+
+        public int getDimensScrollX() {
+            return mDimensScrollX;
+        }
+
+        public int getDimensScrollY() {
+            return mDimensScrollY;
+        }
 
         @Override
         public void setElevation(float elevation) {}
@@ -423,6 +440,9 @@ public class AwAutofillTest {
         private boolean mDataIsSensitive;
         private AwHtmlInfo mAwHtmlInfo;
         private boolean mChecked;
+        private Rect mDimensRect;
+        private int mDimensScrollX;
+        private int mDimensScrollY;
     }
 
     // crbug.com/776230: On Android L, declaring variables of unsupported classes causes an error.
@@ -841,6 +861,10 @@ public class AwAutofillTest {
             assertEquals("placeholder@placeholder.com", child0.getHint());
             assertEquals("name", child0.getAutofillHints()[0]);
             assertEquals("given-name", child0.getAutofillHints()[1]);
+            assertFalse(child0.getDimensRect().isEmpty());
+            // The field has no scroll, should always be zero.
+            assertEquals(0, child0.getDimensScrollX());
+            assertEquals(0, child0.getDimensScrollY());
             TestViewStructure.AwHtmlInfo htmlInfo0 = child0.getHtmlInfo();
             assertEquals("text", htmlInfo0.getAttribute("type"));
             assertEquals("text1", htmlInfo0.getAttribute("id"));
@@ -854,6 +878,10 @@ public class AwAutofillTest {
             assertEquals(View.AUTOFILL_TYPE_TOGGLE, child1.getAutofillType());
             assertEquals("", child1.getHint());
             assertNull(child1.getAutofillHints());
+            assertFalse(child1.getDimensRect().isEmpty());
+            // The field has no scroll, should always be zero.
+            assertEquals(0, child1.getDimensScrollX());
+            assertEquals(0, child1.getDimensScrollY());
             TestViewStructure.AwHtmlInfo htmlInfo1 = child1.getHtmlInfo();
             assertEquals("checkbox", htmlInfo1.getAttribute("type"));
             assertEquals("checkbox1", htmlInfo1.getAttribute("id"));
@@ -867,6 +895,10 @@ public class AwAutofillTest {
             assertEquals(View.AUTOFILL_TYPE_LIST, child2.getAutofillType());
             assertEquals("", child2.getHint());
             assertNull(child2.getAutofillHints());
+            assertFalse(child2.getDimensRect().isEmpty());
+            // The field has no scroll, should always be zero.
+            assertEquals(0, child2.getDimensScrollX());
+            assertEquals(0, child2.getDimensScrollY());
             TestViewStructure.AwHtmlInfo htmlInfo2 = child2.getHtmlInfo();
             assertEquals("month", htmlInfo2.getAttribute("name"));
             assertEquals("select1", htmlInfo2.getAttribute("id"));
@@ -879,6 +911,10 @@ public class AwAutofillTest {
             assertEquals(View.AUTOFILL_TYPE_TEXT, child3.getAutofillType());
             assertEquals("", child3.getHint());
             assertNull(child3.getAutofillHints());
+            assertFalse(child3.getDimensRect().isEmpty());
+            // The field has no scroll, should always be zero.
+            assertEquals(0, child3.getDimensScrollX());
+            assertEquals(0, child3.getDimensScrollY());
             TestViewStructure.AwHtmlInfo htmlInfo3 = child3.getHtmlInfo();
             assertEquals("textarea1", htmlInfo3.getAttribute("name"));
 
@@ -1351,10 +1387,25 @@ public class AwAutofillTest {
             assertEquals(1, values.size());
             assertTrue(values.get(0).second.isList());
             assertEquals(1, values.get(0).second.getListValue());
+
+            // Verify the autofill session started by select control has dimens filled.
+            invokeOnProvideAutoFillVirtualStructure();
+            TestViewStructure viewStructure = mTestValues.testViewStructure;
+            assertNotNull(viewStructure);
+            assertEquals(2, viewStructure.getChildCount());
+            assertFalse(viewStructure.getChild(0).getDimensRect().isEmpty());
+            // The field has no scroll, should always be zero.
+            assertEquals(0, viewStructure.getChild(0).getDimensScrollX());
+            assertEquals(0, viewStructure.getChild(0).getDimensScrollY());
+            assertFalse(viewStructure.getChild(1).getDimensRect().isEmpty());
+            // The field has no scroll, should always be zero.
+            assertEquals(0, viewStructure.getChild(1).getDimensScrollX());
+            assertEquals(0, viewStructure.getChild(1).getDimensScrollY());
         } finally {
             webServer.shutdown();
         }
     }
+
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})

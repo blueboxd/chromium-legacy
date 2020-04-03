@@ -100,7 +100,7 @@ public class ImageFetcherBridge {
         assert mNativeImageFetcherBridge != 0 : "fetchImage called after destroy";
         ImageFetcherBridgeJni.get().fetchImage(mNativeImageFetcherBridge, ImageFetcherBridge.this,
                 config, url, clientName, (bitmap) -> {
-                    callback.onResult(ImageFetcher.tryToResizeImage(bitmap, width, height));
+                    callback.onResult(ImageFetcher.resizeImage(bitmap, width, height));
                 });
     }
 

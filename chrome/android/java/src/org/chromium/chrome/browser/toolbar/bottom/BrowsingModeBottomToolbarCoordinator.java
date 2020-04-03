@@ -96,7 +96,7 @@ public class BrowsingModeBottomToolbarCoordinator {
         mHomeButton = mToolbarRoot.findViewById(R.id.bottom_home_button);
         mHomeButton.setOnClickListener(homeButtonListener);
         mHomeButton.setActivityTabProvider(mTabProvider);
-        setupIPH(FeatureConstants.CHROME_DUET_HOME_BUTTON_FEATURE, mHomeButton, homeButtonListener);
+        setupIPH(FeatureConstants.CHROME_DUET_HOME_BUTTON_FEATURE, mHomeButton);
 
         mNewTabButton = mToolbarRoot.findViewById(R.id.bottom_new_tab_button);
 
@@ -104,8 +104,7 @@ public class BrowsingModeBottomToolbarCoordinator {
 
         mSearchAccelerator = mToolbarRoot.findViewById(R.id.search_accelerator);
         mSearchAccelerator.setOnClickListener(searchAcceleratorListener);
-        setupIPH(FeatureConstants.CHROME_DUET_SEARCH_FEATURE, mSearchAccelerator,
-                searchAcceleratorListener);
+        setupIPH(FeatureConstants.CHROME_DUET_SEARCH_FEATURE, mSearchAccelerator);
 
         // TODO(amaralp): Make this adhere to MVC framework.
         mTabSwitcherButtonView = mToolbarRoot.findViewById(R.id.bottom_tab_switcher_button);
@@ -137,25 +136,16 @@ public class BrowsingModeBottomToolbarCoordinator {
      * Setup and show the IPH bubble for Chrome Duet if needed.
      * @param feature A String identifying the feature.
      * @param anchor The view to anchor the IPH to.
-     * @param listener An {@link OnClickListener} that is triggered when IPH is clicked. {@link
-     *         HomeButton} and {@link SearchAccelerator} need to pass this parameter, {@link
-     *         TabSwitcherButtonView} just passes null.
      */
-    void setupIPH(@FeatureConstants String feature, View anchor, OnClickListener listener) {
+    void setupIPH(@FeatureConstants String feature, View anchor) {
         mTabProvider.addObserverAndTrigger(new HintlessActivityTabObserver() {
             @Override
             public void onActivityTabChanged(Tab tab) {
                 if (tab == null) return;
                 Profile profile = Profile.fromWebContents(tab.getWebContents());
                 final Tracker tracker = TrackerFactory.getTrackerForProfile(profile);
-                final Runnable completeRunnable = () -> {
-                    if (listener != null) {
-                        listener.onClick(anchor);
-                    }
-                };
                 tracker.addOnInitializedCallback((ready) -> {
-                    mMediator.showIPH(feature, ((TabImpl) tab).getActivity(), anchor, tracker,
-                            completeRunnable);
+                    mMediator.showIPH(feature, ((TabImpl) tab).getActivity(), anchor, tracker);
                 });
                 mTabProvider.removeObserver(this);
             }
@@ -214,11 +204,7 @@ public class BrowsingModeBottomToolbarCoordinator {
             mTabSwitcherButtonCoordinator.setTabSwitcherListener(tabSwitcherListener);
             mTabSwitcherButtonCoordinator.setThemeColorProvider(themeColorProvider);
             mTabSwitcherButtonCoordinator.setTabCountProvider(tabCountProvider);
-            // Send null to IPH here to avoid tabSwitcherListener to be called twince, since
-            // mTabSwitcherButtonView has it own OnClickListener, but other buttons set
-            // OnClickListener to their wrappers.
-            setupIPH(FeatureConstants.CHROME_DUET_TAB_SWITCHER_FEATURE, mTabSwitcherButtonView,
-                    null);
+            setupIPH(FeatureConstants.CHROME_DUET_TAB_SWITCHER_FEATURE, mTabSwitcherButtonView);
         }
 
         // If StartSurface is HomePage, BrowsingModeBottomToolbar is shown in browsing mode and in

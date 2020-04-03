@@ -587,10 +587,6 @@ void GraphicsLayer::SetMaskLayer(GraphicsLayer* mask_layer) {
   mask_layer_ = mask_layer;
 }
 
-bool GraphicsLayer::BackfaceVisibility() const {
-  return CcLayer()->double_sided();
-}
-
 void GraphicsLayer::SetHitTestable(bool should_hit_test) {
   if (hit_testable_ == should_hit_test)
     return;

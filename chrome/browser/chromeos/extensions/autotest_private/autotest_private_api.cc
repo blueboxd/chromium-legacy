@@ -109,7 +109,7 @@
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/cpp/default_assistant_interaction_subscriber.h"
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/arc/arc_prefs.h"
@@ -2290,7 +2290,7 @@ void AutotestPrivateEnableAssistantAndWaitForReadyFunction::
 // |AutotestPrivateSendAssistantTextQueryFunction| and
 // |AutotestPrivateWaitForAssistantQueryStatusFunction|.
 class AssistantInteractionHelper
-    : public chromeos::assistant::mojom::AssistantInteractionSubscriber {
+    : public chromeos::assistant::DefaultAssistantInteractionSubscriber {
  public:
   using OnInteractionFinishedCallback = base::OnceCallback<void(bool)>;
 
@@ -2305,8 +2305,7 @@ class AssistantInteractionHelper
         assistant_.BindNewPipeAndPassReceiver());
 
     // Subscribe to Assistant interaction events.
-    assistant_->AddAssistantInteractionSubscriber(
-        assistant_interaction_subscriber_receiver_.BindNewPipeAndPassRemote());
+    assistant_->AddAssistantInteractionSubscriber(BindNewPipeAndPassRemote());
 
     on_interaction_finished_callback_ =
         std::move(on_interaction_finished_callback);
@@ -2383,21 +2382,7 @@ class AssistantInteractionHelper
     std::move(callback).Run(true);
   }
 
-  void OnSuggestionsResponse(std::vector<AssistantSuggestionPtr>) override {}
-  void OnTimersResponse(const std::vector<std::string>& timer_ids) override {}
-  void OnOpenUrlResponse(const GURL& url, bool in_background) override {}
-  void OnSpeechRecognitionStarted() override {}
-  void OnSpeechRecognitionIntermediateResult(
-      const std::string& high_confidence_text,
-      const std::string& low_confidence_text) override {}
-  void OnSpeechRecognitionEndOfUtterance() override {}
-  void OnSpeechLevelUpdated(float speech_level) override {}
-  void OnTtsStarted(bool due_to_error) override {}
-  void OnWaitStarted() override {}
-
   mojo::Remote<chromeos::assistant::mojom::Assistant> assistant_;
-  mojo::Receiver<chromeos::assistant::mojom::AssistantInteractionSubscriber>
-      assistant_interaction_subscriber_receiver_{this};
   std::unique_ptr<base::DictionaryValue> query_status_;
   base::DictionaryValue result_;
 

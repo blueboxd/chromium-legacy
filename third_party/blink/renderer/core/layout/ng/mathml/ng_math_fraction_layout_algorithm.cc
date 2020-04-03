@@ -192,10 +192,6 @@ scoped_refptr<const NGLayoutResult> NGMathFractionLayoutAlgorithm::Layout() {
       ConstraintSpace().GetWritingMode(), ConstraintSpace().Direction(),
       To<NGPhysicalBoxFragment>(denominator_layout_result->PhysicalFragment()));
 
-  LayoutUnit content_inline_size = std::max(
-      numerator_fragment.InlineSize() + numerator_margins.InlineSum(),
-      denominator_fragment.InlineSize() + denominator_margins.InlineSum());
-
   LayoutUnit numerator_ascent =
       numerator_margins.block_start +
       numerator_fragment.Baseline().value_or(numerator_fragment.BlockSize());
@@ -252,13 +248,13 @@ scoped_refptr<const NGLayoutResult> NGMathFractionLayoutAlgorithm::Layout() {
   LogicalOffset denominator_offset;
   numerator_offset.inline_offset =
       border_scrollbar_padding_.inline_start + numerator_margins.inline_start +
-      (content_inline_size -
+      (child_available_size.inline_size -
        (numerator_fragment.InlineSize() + numerator_margins.InlineSum())) /
           2;
   denominator_offset.inline_offset =
       border_scrollbar_padding_.inline_start +
       denominator_margins.inline_start +
-      (content_inline_size -
+      (child_available_size.inline_size -
        (denominator_fragment.InlineSize() + denominator_margins.InlineSum())) /
           2;
 

@@ -389,7 +389,7 @@ void BleConnectionManagerImpl::SetAuthenticatingChannel(
   PauseConnectionAttemptsToDevice(remote_device_id);
 
   if (DoesAuthenticatingChannelExist(remote_device_id)) {
-    PA_LOG(ERROR) << "BleConnectionManager::OnReceivedAdvertisement(): A new "
+    PA_LOG(ERROR) << "BleConnectionManager::SetAuthenticatingChannel(): A new "
                   << "channel was created, one already exists for the same "
                   << "remote device ID. ID: "
                   << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
@@ -399,9 +399,9 @@ void BleConnectionManagerImpl::SetAuthenticatingChannel(
 
   SecureChannel* secure_channel_raw = secure_channel.get();
 
-  PA_LOG(INFO) << "BleConnectionManager::OnReceivedAdvertisement(): Connection "
-               << "established; starting authentication process. Remote device "
-               << "ID: "
+  PA_LOG(INFO) << "BleConnectionManager::SetAuthenticatingChannel(): "
+               << "Advertisement received; establishing connection. "
+               << "Remote device ID: "
                << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                       remote_device_id)
                << ", Connection role: " << connection_role;

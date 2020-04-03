@@ -100,9 +100,6 @@ class StreamFactory final : public mojom::StreamFactory {
   void DestroyMuter(LocalMuter* muter);
   void DestroyLoopbackStream(LoopbackStream* stream);
 
-  // TODO(crbug.com/888478): Remove this after diagnosis.
-  void SetStateForCrashing(const char* state);
-
   SEQUENCE_CHECKER(owning_sequence_);
 
   media::AudioManager* const audio_manager_;
@@ -118,11 +115,7 @@ class StreamFactory final : public mojom::StreamFactory {
   InputStreamSet input_streams_;
   OutputStreamSet output_streams_;
 
-  // TODO(crbug.com/888478): Remove this after diagnosis.
-  volatile uint32_t magic_bytes_;
-
   base::WeakPtrFactory<StreamFactory> weak_ptr_factory_{this};
-
   DISALLOW_COPY_AND_ASSIGN(StreamFactory);
 };
 

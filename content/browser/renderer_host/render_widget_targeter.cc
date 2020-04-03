@@ -226,6 +226,13 @@ void RenderWidgetTargeter::ResolveTargetingRequest(TargetingRequest request) {
                  ? middle_click_result_
                  : delegate_->FindTargetSynchronously(request_target,
                                                       *request.GetEvent());
+    // |result.target_location| is utilized to update the position in widget for
+    // an event. If we are in autoscroll mode, we used cached data. So we need
+    // to update the target location of the |result|.
+    if (is_autoscroll_in_progress_) {
+      result.target_location = request_target_location;
+    }
+
     if (!is_autoscroll_in_progress_ &&
         IsMouseMiddleClick(*request.GetEvent())) {
       if (!result.should_query_view)

@@ -17,7 +17,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
-#include "content/public/test/web_test_support.h"
+#include "content/public/test/web_test_support_renderer.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/common/web_test/web_test_switches.h"
 #include "content/shell/renderer/shell_render_view_observer.h"

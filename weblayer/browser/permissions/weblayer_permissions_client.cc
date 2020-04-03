@@ -9,6 +9,7 @@
 #include "weblayer/browser/permissions/permission_manager_factory.h"
 
 #if defined(OS_ANDROID)
+#include "weblayer/browser/android/permission_request_utils.h"
 #include "weblayer/browser/android/resource_mapper.h"
 #endif
 
@@ -44,6 +45,14 @@ permissions::ChooserContextBase* WebLayerPermissionsClient::GetChooserContext(
 }
 
 #if defined(OS_ANDROID)
+void WebLayerPermissionsClient::RepromptForAndroidPermissions(
+    content::WebContents* web_contents,
+    const std::vector<ContentSettingsType>& content_settings_types,
+    PermissionsUpdatedCallback callback) {
+  RequestAndroidPermissions(web_contents, content_settings_types,
+                            std::move(callback));
+}
+
 int WebLayerPermissionsClient::MapToJavaDrawableId(int resource_id) {
   return weblayer::MapToJavaDrawableId(resource_id);
 }

@@ -37,6 +37,13 @@ class SuitableTrustTokenOrigin {
   std::string Serialize() const;
   const url::Origin& origin() const { return origin_; }
 
+  // This implicit "widening" conversion is allowed to ease drop-in use of
+  // SuitableTrustTokenOrigin in places currently requiring url::Origins with
+  // guaranteed preconditions. The intended use is creating a
+  // SuitableTrustTokenOrigin to confirm the preconditions, then directly
+  // passing the SuitableTrustTokenOrigin to url::Origin-accepting callsite.
+  operator const url::Origin&() const { return origin_; }  // NOLINT
+
   // Constructs a SuitableTrustTokenOrigin from the given origin. Public only as
   // an implementation detail; clients should use |Create|.
   SuitableTrustTokenOrigin(util::PassKey<SuitableTrustTokenOrigin>,

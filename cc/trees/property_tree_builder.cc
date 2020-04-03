@@ -470,7 +470,6 @@ bool PropertyTreeBuilderContext::AddEffectNodeIfNeeded(
   node->trilinear_filtering = layer->trilinear_filtering();
   node->has_potential_opacity_animation = has_potential_opacity_animation;
   node->has_potential_filter_animation = has_potential_filter_animation;
-  node->double_sided = layer->double_sided();
   node->subtree_hidden = layer->hide_layer_and_subtree();
   node->is_currently_animating_opacity =
       OpacityIsAnimating(mutator_host_, layer);
@@ -633,15 +632,6 @@ void PropertyTreeBuilderContext::AddScrollNodeIfNeeded(
   layer->SetScrollTreeIndex(node_id);
 }
 
-void SetBackfaceVisibilityTransform(Layer* layer, bool created_transform_node) {
-  // A double-sided layer's backface can been shown when its visible.
-  // In addition, we need to check if (1) there might be a local 3D transform
-  // on the layer that might turn it to the backface, or (2) it is not drawn
-  // into a flattened space.
-  layer->SetShouldCheckBackfaceVisibility(!layer->double_sided() &&
-                                          created_transform_node);
-}
-
 void SetSafeOpaqueBackgroundColor(const DataForRecursion& data_from_ancestor,
                                   Layer* layer,
                                   DataForRecursion* data_for_children) {
@@ -673,7 +663,6 @@ void PropertyTreeBuilderContext::BuildPropertyTreesInternal(
 
   AddScrollNodeIfNeeded(data_from_parent, layer, &data_for_children);
 
-  SetBackfaceVisibilityTransform(layer, created_transform_node);
   SetSafeOpaqueBackgroundColor(data_from_parent, layer, &data_for_children);
 
   bool not_axis_aligned_since_last_clip =

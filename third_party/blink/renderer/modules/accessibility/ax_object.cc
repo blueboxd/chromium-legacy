@@ -1710,6 +1710,8 @@ bool AXObject::IsHiddenViaStyle() const {
       auto* element = DynamicTo<Element>(node);
       while (element && !element->GetLayoutObject()) {
         const ComputedStyle* style = element->EnsureComputedStyle();
+        if (!style)
+          continue;
         if (is_first_loop && style->Visibility() != EVisibility::kVisible)
           return true;
         // CSS Display:
@@ -1750,6 +1752,8 @@ bool AXObject::IsHiddenForTextAlternativeCalculation() const {
     auto* element = DynamicTo<Element>(node);
     if (element && node->isConnected()) {
       const ComputedStyle* style = element->EnsureComputedStyle();
+      if (!style)
+        return false;
       return style->Display() == EDisplay::kNone ||
              style->Visibility() != EVisibility::kVisible;
     }

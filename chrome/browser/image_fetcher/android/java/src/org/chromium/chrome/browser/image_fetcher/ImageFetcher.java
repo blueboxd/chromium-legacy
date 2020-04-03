@@ -27,6 +27,31 @@ public abstract class ImageFetcher {
     public static final String FEED_UMA_CLIENT_NAME = "Feed";
     public static final String NTP_ANIMATED_LOGO_UMA_CLIENT_NAME = "NewTabPageAnimatedLogo";
 
+    /** Base class that can be used for testing. */
+    public abstract static class ImageFetcherForTesting extends ImageFetcher {
+        public ImageFetcherForTesting() {}
+    }
+
+    // Singleton ImageFetcherBridge.
+    private ImageFetcherBridge mImageFetcherBridge;
+
+    /** Copy-constructor to support composite instances of ImageFetcher. */
+    public ImageFetcher(ImageFetcher imageFetcher) {
+        mImageFetcherBridge = imageFetcher.getImageFetcherBridge();
+    }
+
+    /** Base constructor that takes an ImageFetcherBridge. */
+    public ImageFetcher(ImageFetcherBridge imageFetcherBridge) {
+        mImageFetcherBridge = imageFetcherBridge;
+    }
+
+    /** Test constructor */
+    private ImageFetcher() {}
+
+    protected ImageFetcherBridge getImageFetcherBridge() {
+        return mImageFetcherBridge;
+    }
+
     /**
      * Try to resize the given image if the conditions are met.
      *
@@ -37,7 +62,7 @@ public abstract class ImageFetcher {
      * @return The resized image, or the original image if the  conditions aren't met.
      */
     @VisibleForTesting
-    public static Bitmap tryToResizeImage(@Nullable Bitmap bitmap, int width, int height) {
+    public static Bitmap resizeImage(@Nullable Bitmap bitmap, int width, int height) {
         if (bitmap != null && width > 0 && height > 0 && bitmap.getWidth() != width
                 && bitmap.getHeight() != height) {
             /* The resizing rules are the as follows:
@@ -60,7 +85,7 @@ public abstract class ImageFetcher {
      * @param eventId The event to be reported
      */
     public void reportEvent(String clientName, @ImageFetcherEvent int eventId) {
-        ImageFetcherBridge.getInstance().reportEvent(clientName, eventId);
+        mImageFetcherBridge.reportEvent(clientName, eventId);
     }
 
     /**

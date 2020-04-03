@@ -17,6 +17,24 @@ namespace schema_org {
 using improved::mojom::Entity;
 using improved::mojom::EntityPtr;
 
+base::Optional<std::string> ObjectNameFromId(const std::string& id) {
+  GURL id_url = GURL(id);
+  if (!id_url.SchemeIsHTTPOrHTTPS() || id_url.host() != "schema.org")
+    return base::nullopt;
+  return id_url.path().substr(1);
+}
+
+bool EntityPropertyIsValidType(const property::PropertyConfiguration& config,
+                               const std::string& type) {
+  for (const auto& thing_type_id : config.thing_types) {
+    auto thing_type_name = ObjectNameFromId(thing_type_id);
+    DCHECK(thing_type_name.has_value());
+    if (entity::IsDescendedFrom(thing_type_name.value(), type))
+      return true;
+  }
+  return false;
+}
+
 // static
 bool ValidateEntity(Entity* entity) {
   if (!entity::IsValidEntityName(entity->type)) {
@@ -49,7 +67,8 @@ bool ValidateEntity(Entity* entity) {
         auto nested_it = (*it)->values->entity_values.begin();
         while (nested_it != (*it)->values->entity_values.end()) {
           auto& nested_entity = *nested_it;
-          if (!ValidateEntity(nested_entity.get())) {
+          if (!ValidateEntity(nested_entity.get()) ||
+              !EntityPropertyIsValidType(config, nested_entity->type)) {
             nested_it = (*it)->values->entity_values.erase(nested_it);
           } else {
             has_valid_entities = true;

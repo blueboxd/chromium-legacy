@@ -4466,6 +4466,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PARENT_PERMISSION_PROMPT_SELECT_PARENT_LABEL" desc="Text for the label shown above the parent selector.">
         Choose parent account for approval
       </message>
+      <message name="IDS_PARENT_PERMISSION_PROMPT_PARENT_ACCOUNT_LABEL" desc="Text for the label shown above a single parent account email.">
+        Parent account
+      </message>
       <message name="IDS_PARENT_PERMISSION_PROMPT_ENTER_PASSWORD_LABEL" desc="Text for the label shown above the parent password entry field.">
         Enter password
       </message>
@@ -5314,9 +5317,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NTP_CUSTOM_LINKS_INVALID_URL" desc="Error message for when an invalid URL is provided while creating a custom link. (On the New Tab Page)">
        Type a valid URL
       </message>
-      <message name="IDS_NTP_CUSTOM_LINKS_SHORTCUT_EXISTS" desc="Error message for when the shortcut being created already exists. (On the New Tab Page)">
-       Shortcut already exists
-      </message>
       <message name="IDS_NTP_CUSTOM_LINKS_CANT_CREATE" desc="A catchall error message for when the shortcut cannot be created. (On the New Tab Page)">
        Can’t create shortcut
       </message>
@@ -5350,9 +5350,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NTP_CUSTOM_BG_DAILY_REFRESH" desc="The text label for the daily background randomization option.  (On the New Tab Page)">
         Refresh daily
       </message>
-      <message name="IDS_NTP_CUSTOM_BG_SURPRISE_ME" desc="The text label for the random background option. (On the New Tab Page)">
-        Surprise me
-      </message>
       <message name="IDS_NTP_CUSTOM_BG_RESTORE_DEFAULT" desc="The text label for the restore default option for background customization. (On the New Tab Page)">
         Restore default background
       </message>
@@ -5370,12 +5367,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_NTP_CUSTOM_BG_BACKGROUNDS_UNAVAILABLE" desc="Error message for when background customization is not available. (On the New Tab Page)">
         Backgrounds are unavailable. Try again later.
-      </message>
-      <message name="IDS_NTP_CUSTOM_BG_IMAGE_UNAVAILABLE" desc="Error message for when the selected background image is not available. (On the New Tab Page)">
-        Image is unavailable. Try again later.
-      </message>
-      <message name="IDS_NTP_CUSTOM_BG_IMAGE_NOT_USABLE" desc="Error message for when an uploaded image is not usuable as a custom background. (On the New Tab Page)">
-        This image can't be used. Choose a different image.
       </message>
       <message name="IDS_NTP_CUSTOM_BG_BACK_LABEL" desc="Accessibility label for the back arrow on the background picker dialog. (On the New Tab Page)">
         Back
@@ -6251,12 +6242,6 @@ the Bookmarks menu.">
       <message name="IDS_PICTURE_IN_PICTURE_BACK_TO_TAB_CONTROL_TEXT" desc="Text label of the back to tab control button. The button appears when the user hovers over the Picture-in-Picture window.">
         Back to tab
       </message>
-      <message name="IDS_PICTURE_IN_PICTURE_MUTE_CONTROL_TEXT" desc="Text label of the mute control button. The button appears when the user hovers over the Picture-in-Picture window and the video is currently unmuted.">
-        Mute
-      </message>
-      <message name="IDS_PICTURE_IN_PICTURE_UNMUTE_CONTROL_TEXT" desc="Text label of the mute control button. The button appears when the user hovers over the Picture-in-Picture window and the video is currently muted.">
-        Unmute
-      </message>
       <message name="IDS_PICTURE_IN_PICTURE_SKIP_AD_CONTROL_TEXT" desc="Text label of the skip ad control button. The button appears when the user hovers over the Picture-in-Picture window.">
         Skip Ad
       </message>
@@ -6274,24 +6259,6 @@ the Bookmarks menu.">
       </message>
       <message name="IDS_PICTURE_IN_PICTURE_PREVIOUS_TRACK_CONTROL_ACCESSIBLE_TEXT" desc="Accessible text label used for the controls button in the Picture-in-Picture window. The button invokes previous track action.">
         Previous track
-      </message>
-      <message name="IDS_PICTURE_IN_PICTURE_CONFIRM_CLOSE_TITLE" desc="Text label of the title for the confirmation dialog. This dialog appears when the user tries to close a tab / window while in Picture-in-Picture mode.">
-        Are you sure you want to close this tab?
-      </message>
-      <message name="IDS_PICTURE_IN_PICTURE_CONFIRM_LEAVE_TITLE" desc="Text label of the description for the confirmation dialog. This dialog appears when the user tries to leave a page while in Picture-in-Picture mode.">
-        Are you sure you want to leave this page?
-      </message>
-      <message name="IDS_PICTURE_IN_PICTURE_CONFIRM_DESCRIPTION" desc="Text label of the description for the confirmation dialog. This dialog appears when the user tries to close a tab / window or leave a page while in Picture-in-Picture mode.">
-        The video in picture-in-picture mode will stop playing.
-      </message>
-      <message name="IDS_PICTURE_IN_PICTURE_CONFIRM_CLOSE_TEXT" desc="Text label of the close button. The button appears in the confirmation dialog when the user tries to close a tab or window while in Picture-in-Picture mode.">
-        Close
-      </message>
-      <message name="IDS_PICTURE_IN_PICTURE_CONFIRM_LEAVE_TEXT" desc="Text label of the leave button. The button appears in the confirmation dialog when the user tries to leave a page while in Picture-in-Picture mode.">
-        Leave
-      </message>
-      <message name="IDS_PICTURE_IN_PICTURE_CANCEL_TEXT" desc="Text label of the cancel button. The button appears in the confirmation dialog when the user tries to close a tab / window or leave a page while in Picture-in-Picture mode.">
-        Cancel
       </message>
 
       <!-- Load State -->
@@ -8047,9 +8014,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
         <message name="IDS_TRANSLATE_BUBBLE_BEFORE_TRANSLATE_TITLE" desc="Title text for the translate bubble when asking to translate a page.">
           Translate this page?
         </message>
-        <message name="IDS_TRANSLATE_BUBBLE_BEFORE_TRANSLATE_NEW" desc="Text to show for the translate bubble label when that page is in specified language and ask if should translate.">
-          Do you want Google to translate this page from <ph name="source_language">$1<ex>Spanish</ex></ph> to <ph name="target_language">$2<ex>English</ex></ph>?
-        </message>
         <message name="IDS_TRANSLATE_BUBBLE_ADVANCED_TITLE" desc="Title text for the options panel.">
           Options
         </message>
@@ -8060,9 +8024,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
           This page could not be translated
         </message>
         <if expr="not use_titlecase">
-          <message name="IDS_TRANSLATE_BUBBLE_ADVANCED_LINK" desc="Text to show for the translate bubble link label to jump to the advanced panel.">
-            Options
-          </message>
           <message name="IDS_TRANSLATE_BUBBLE_ADVANCED_BUTTON" desc="Text to show for the translate bubble button to jump to the advanced panel.">
             Options
           </message>
@@ -8093,9 +8054,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
           <message name="IDS_TRANSLATE_BUBBLE_TRANSLATING" desc="Text to show for the translate bubble label when page is currently being translated by servers">
             Translating...
           </message>
-          <message name="IDS_TRANSLATE_BUBBLE_TRANSLATED" desc="Text to show for the translate bubble label when the page has been translated from one language to another">
-            This page has been translated
-          </message>
           <message name="IDS_TRANSLATE_BUBBLE_REVERT" desc="Text to show for the translate bubble button to revert translation of translated page">
             Show original
           </message>
@@ -8105,23 +8063,14 @@ Please help our engineers fix this problem. Tell us what happened right before y
           <message name="IDS_TRANSLATE_BUBBLE_ALWAYS" desc="Text to show for the translate bubble checkbox to always translate from one language to another">
             Always translate
           </message>
-          <message name="IDS_TRANSLATE_BUBBLE_ALWAYS_DO_THIS" desc="Text to show for the translate bubble checkbox to always translate from one language to another in 2016Q2 UI">
-            Always do this
-          </message>
           <message name="IDS_TRANSLATE_BUBBLE_OPTIONS_MENU_BUTTON" desc="Text to show for the translate bubble 'Options' menu button">
             Options
-          </message>
-          <message name="IDS_TRANSLATE_BUBBLE_COULD_NOT_TRANSLATE" desc="Text to show for the translate bubble label when the page could not be translated.">
-            This page could not be translated
           </message>
           <message name="IDS_TRANSLATE_BUBBLE_PAGE_LANGUAGE" desc="Text to show for the translate bubble label next to the combobox of the page language">
             Page language:
           </message>
           <message name="IDS_TRANSLATE_BUBBLE_TRANSLATION_LANGUAGE" desc="Text to show for the translate bubble label next to the combobox of the target language for Translate">
             Translation language:
-          </message>
-          <message name="IDS_TRANSLATE_BUBBLE_LANGUAGE_SETTINGS" desc="Text to show for the translate bubble link label next to jump to the language setting page.">
-            Language settings
           </message>
           <message name="IDS_TRANSLATE_BUBBLE_ADVANCED_TARGET" desc="Text to show as the title in the advanced source language view for TAB UI">
             Language to translate into
@@ -8131,9 +8080,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
           </message>
         </if>
         <if expr="use_titlecase">
-          <message name="IDS_TRANSLATE_BUBBLE_ADVANCED_LINK" desc="In Title Case: Text to show for the translate bubble link label to jump to the advanced panel.">
-            Options
-          </message>
           <message name="IDS_TRANSLATE_BUBBLE_ADVANCED_BUTTON" desc="In Title Case: Text to show for the translate bubble button to jump to the advanced panel.">
             Options
           </message>
@@ -8164,9 +8110,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
           <message name="IDS_TRANSLATE_BUBBLE_TRANSLATING" desc="In Title Case: Text to show for the translate bubble label when page is currently being translated by servers">
             Translating...
           </message>
-          <message name="IDS_TRANSLATE_BUBBLE_TRANSLATED" desc="In Title Case: Text to show for the translate bubble label when the page has been translated from one language to another">
-            This Page Has Been Translated
-          </message>
           <message name="IDS_TRANSLATE_BUBBLE_REVERT" desc="In Title Case: Text to show for the translate bubble button to revert translation of translated page">
             Show Original
           </message>
@@ -8176,23 +8119,14 @@ Please help our engineers fix this problem. Tell us what happened right before y
           <message name="IDS_TRANSLATE_BUBBLE_ALWAYS" desc="In Title Case: Text to show for the translate bubble checkbox to always translate from one language to another">
             Always Translate
           </message>
-          <message name="IDS_TRANSLATE_BUBBLE_ALWAYS_DO_THIS" desc="In Title Case: Text to show for the translate bubble checkbox to always translate from one language to another in 2016Q2 UI">
-            Always Do This
-          </message>
           <message name="IDS_TRANSLATE_BUBBLE_OPTIONS_MENU_BUTTON" desc="In Title Case: Text to show for the translate bubble 'Options' button">
             Options
-          </message>
-          <message name="IDS_TRANSLATE_BUBBLE_COULD_NOT_TRANSLATE" desc="In Title Case: Text to show for the translate bubble label when the page could not be translated.">
-            This Page Could Not Be Translated
           </message>
           <message name="IDS_TRANSLATE_BUBBLE_PAGE_LANGUAGE" desc="In Title Case: Text to show for the translate bubble label next to the combobox of the page language">
             Page Language:
           </message>
           <message name="IDS_TRANSLATE_BUBBLE_TRANSLATION_LANGUAGE" desc="In Title Case: Text to show for the translate bubble label next to the combobox of the target language for Translate">
             Translation Language:
-          </message>
-          <message name="IDS_TRANSLATE_BUBBLE_LANGUAGE_SETTINGS" desc="In Title Case: Text to show for the translate bubble link label next to jump to the language setting page.">
-            Language Settings
           </message>
           <message name="IDS_TRANSLATE_BUBBLE_ADVANCED_TARGET" desc="In Title Case: Text to show as the title in the advanced source language view for TAB UI">
             Language to Translate into
@@ -9871,15 +9805,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
           Settings
         </message>
     </if>
-
-    <!-- NTP content suggestions strings -->
-    <message name="IDS_NTP_DOWNLOAD_SUGGESTIONS_SECTION_HEADER" desc="Header of the downloads section, which is a list of pages (or files) that the user downloaded, displayed as cards on the New Tab Page.">
-      Downloads
-    </message>
-
-    <message name="IDS_NTP_DOWNLOADS_SUGGESTIONS_SECTION_EMPTY" desc="On the New Tab Page, text of card explaining to the user that they can expect to see some download related content suggestions in this section in the future.">
-      Your downloads appear here
-    </message>
 
     <!-- Automation infobar -->
     <message name="IDS_CONTROLLED_BY_AUTOMATION" desc="Message shown when the browser session is being controlled by an automated test.">

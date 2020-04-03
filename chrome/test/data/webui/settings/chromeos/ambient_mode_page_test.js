@@ -9,12 +9,18 @@ class TestAmbientModeBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
       'onAmbientModePageReady',
+      'onTopicSourceSelectedChanged',
     ]);
   }
 
   /** @override */
   onAmbientModePageReady() {
     this.methodCalled('onAmbientModePageReady');
+  }
+
+  /** @override */
+  onTopicSourceSelectedChanged(selected) {
+    this.methodCalled('onTopicSourceSelectedChanged', selected);
   }
 }
 
@@ -72,24 +78,11 @@ suite('AmbientModeHandler', function() {
     assertEquals(enabled, enabled_toggled_twice);
   });
 
-  test('chooseTopicSource', function() {
+  test('hasTopicSourceButtons', function() {
     const topicSourceRadioGroup = page.$$('#topicSourceRadioGroup');
-
-    // The radio group's state is set by the pref value.
-    let topicSourceValue =
-        page.getPref('settings.ambient_mode.topic_source.value');
-    assertEquals(topicSourceValue, parseFloat(topicSourceRadioGroup.selected));
 
     const radioButtons =
         topicSourceRadioGroup.querySelectorAll('cr-radio-button');
     assertEquals(2, radioButtons.length);
-
-    // Click on topic source radio button will set the pref value.
-    radioButtons.forEach(function(button, index) {
-      button.click();
-      topicSourceValue =
-          page.getPref('settings.ambient_mode.topic_source.value');
-      assertEquals(topicSourceValue, index);
-    });
   });
 });

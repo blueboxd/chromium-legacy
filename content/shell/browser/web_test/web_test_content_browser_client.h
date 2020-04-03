@@ -23,19 +23,7 @@
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom.h"
 #include "third_party/blink/public/mojom/permissions/permission_automation.mojom-forward.h"
 
-namespace network {
-namespace mojom {
-class NetworkContext;
-}  // namespace mojom
-}  // namespace network
-
-namespace storage {
-class DatabaseTracker;
-class QuotaManager;
-}  // namespace storage
-
 namespace content {
-
 class FakeBluetoothChooser;
 class FakeBluetoothChooserFactory;
 class FakeBluetoothDelegate;
@@ -141,11 +129,9 @@ class WebTestContentBrowserClient : public ShellContentBrowserClient {
   void BindBlinkTestController(
       mojo::PendingAssociatedReceiver<mojom::BlinkTestClient> receiver);
 
-  void BindWebTestController(
+  static void BindWebTestController(
       int render_process_id,
-      storage::QuotaManager* quota_manager,
-      storage::DatabaseTracker* database_tracker,
-      network::mojom::NetworkContext* network_context,
+      StoragePartition* partition,
       mojo::PendingAssociatedReceiver<mojom::WebTestClient> receiver);
 
   std::unique_ptr<MockPlatformNotificationService>

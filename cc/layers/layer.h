@@ -475,22 +475,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return force_render_surface_for_testing_;
   }
 
-  // Set or get if this layer should continue to be visible when rotated such
-  // that its back face is facing toward the camera. If false, the layer will
-  // disappear when its back face is visible, but if true, the mirror image of
-  // its front face will be shown. For instance, with a 180deg rotation around
-  // the middle of the layer on the Y axis, if this is false then nothing is
-  // visible. But if true, the layer is seen with its contents flipped along the
-  // Y axis. Being single-sided applies transitively to the subtree of this
-  // layer. If it is hidden because of its back face being visible, then its
-  // subtree will be too (even if a subtree layer's front face would have been
-  // visible).
-  //
-  // Note that should_check_backface_visibility() is the final computed value
-  // for back face visibility, which is only for internal use.
-  void SetDoubleSided(bool double_sided);
-  bool double_sided() const { return inputs_.double_sided; }
-
   // When true the layer may contribute to the compositor's output. When false,
   // it does not. This property does not apply to children of the layer, they
   // may contribute while this layer does not. The layer itself will determine

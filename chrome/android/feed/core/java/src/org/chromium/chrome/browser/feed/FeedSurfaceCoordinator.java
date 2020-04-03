@@ -35,6 +35,8 @@ import org.chromium.chrome.browser.feed.library.api.host.stream.SnackbarCallback
 import org.chromium.chrome.browser.feed.library.api.host.stream.StreamConfiguration;
 import org.chromium.chrome.browser.feed.library.api.host.stream.TooltipApi;
 import org.chromium.chrome.browser.feed.tooltip.BasicTooltipApi;
+import org.chromium.chrome.browser.feed.v2.FeedStreamSurface;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.SnapScrollHelper;
@@ -63,6 +65,7 @@ public class FeedSurfaceCoordinator {
     private final int mDefaultMargin;
     private final int mWideMargin;
     private final FeedSurfaceMediator mMediator;
+    private FeedStreamSurface mFeedStreamSurface;
 
     private UiConfig mUiConfig;
     private FrameLayout mRootView;
@@ -292,6 +295,12 @@ public class FeedSurfaceCoordinator {
 
         // Mediator should be created before any Stream changes.
         mMediator = new FeedSurfaceMediator(this, snapScrollHelper);
+
+        // Native should already have been loaded because of FeedSurfaceMediator.
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_V2)) {
+            // TODO(iwells): Temporary. This should probably move to FeedSurfaceMediator.
+            mFeedStreamSurface = new FeedStreamSurface(mActivity);
+        }
     }
 
     public void destroy() {

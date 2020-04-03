@@ -78,10 +78,18 @@ constexpr char kMaximumDischargePercentAllowedFieldName[] =
 
 // Dummy values to populate cros_healthd's RunRoutineResponse.
 constexpr uint32_t kId = 11;
-constexpr chromeos::cros_healthd::mojom::DiagnosticRoutineStatusEnum kStatus =
+constexpr auto kStatus =
     chromeos::cros_healthd::mojom::DiagnosticRoutineStatusEnum::kRunning;
 
 constexpr RemoteCommandJob::UniqueIDType kUniqueID = 987123;
+
+constexpr int kPositiveInt = 8789;
+constexpr int kNegativeInt = -231;
+constexpr auto kValidAcPowerStatusEnum =
+    chromeos::cros_healthd::mojom::AcPowerStatusEnum::kConnected;
+constexpr char kValidExpectedAcPowerType[] = "power_type";
+constexpr auto kValidDiskReadRoutineTypeEnum =
+    chromeos::cros_healthd::mojom::DiskReadRoutineTypeEnum::kLinearRead;
 
 em::RemoteCommand GenerateCommandProto(
     RemoteCommandJob::UniqueIDType unique_id,
@@ -214,19 +222,18 @@ bool DeviceCommandRunRoutineJobTest::RunJob(
 }
 
 TEST_F(DeviceCommandRunRoutineJobTest, InvalidRoutineEnumInCommandPayload) {
+  constexpr auto kInvalidRoutineEnum = static_cast<
+      chromeos::cros_healthd::mojom::DiagnosticRoutineEnum>(
+      std::numeric_limits<std::underlying_type<
+          chromeos::cros_healthd::mojom::DiagnosticRoutineEnum>::type>::max());
   auto job = std::make_unique<DeviceCommandRunRoutineJob>();
   base::Value params_dict(base::Value::Type::DICTIONARY);
   EXPECT_FALSE(job->Init(
       base::TimeTicks::Now(),
-      GenerateCommandProto(
-          kUniqueID, base::TimeTicks::Now() - test_start_time_,
-          base::TimeDelta::FromSeconds(30),
-          /*terminate_upon_input=*/false,
-          static_cast<chromeos::cros_healthd::mojom::DiagnosticRoutineEnum>(
-              std::numeric_limits<std::underlying_type<
-                  chromeos::cros_healthd::mojom::DiagnosticRoutineEnum>::type>::
-                  max()),
-          std::move(params_dict)),
+      GenerateCommandProto(kUniqueID, base::TimeTicks::Now() - test_start_time_,
+                           base::TimeDelta::FromSeconds(30),
+                           /*terminate_upon_input=*/false, kInvalidRoutineEnum,
+                           std::move(params_dict)),
       nullptr));
 
   EXPECT_EQ(kUniqueID, job->unique_id());
@@ -252,15 +259,15 @@ TEST_F(DeviceCommandRunRoutineJobTest, CommandPayloadMissingRoutine) {
 // Test that not including a parameters dictionary causes the routine
 // initialization to fail.
 TEST_F(DeviceCommandRunRoutineJobTest, CommandPayloadMissingParamDict) {
+  constexpr auto kValidRoutineEnum =
+      chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kSmartctlCheck;
   auto job = std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_FALSE(job->Init(
       base::TimeTicks::Now(),
-      GenerateCommandProto(
-          kUniqueID, base::TimeTicks::Now() - test_start_time_,
-          base::TimeDelta::FromSeconds(30),
-          /*terminate_upon_input=*/false,
-          chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kSmartctlCheck,
-          /*params=*/base::nullopt),
+      GenerateCommandProto(kUniqueID, base::TimeTicks::Now() - test_start_time_,
+                           base::TimeDelta::FromSeconds(30),
+                           /*terminate_upon_input=*/false, kValidRoutineEnum,
+                           /*params=*/base::nullopt),
       nullptr));
 
   EXPECT_EQ(kUniqueID, job->unique_id());
@@ -273,8 +280,8 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunBatteryCapacityRoutineSuccess) {
   chromeos::cros_healthd::FakeCrosHealthdClient::Get()
       ->SetRunRoutineResponseForTesting(run_routine_response);
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kLowMahFieldName, /*low_mah=*/90812);
-  params_dict.SetIntKey(kHighMahFieldName, /*high_mah=*/986909);
+  params_dict.SetIntKey(kLowMahFieldName, kPositiveInt);
+  params_dict.SetIntKey(kHighMahFieldName, kPositiveInt);
   EXPECT_TRUE(RunJob(
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryCapacity,
       std::move(params_dict),
@@ -290,7 +297,7 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunBatteryCapacityRoutineSuccess) {
 // routine to fail.
 TEST_F(DeviceCommandRunRoutineJobTest, RunBatteryCapacityRoutineMissingLowMah) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kHighMahFieldName, /*high_mah=*/986909);
+  params_dict.SetIntKey(kHighMahFieldName, kPositiveInt);
   EXPECT_TRUE(RunJob(
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryCapacity,
       std::move(params_dict),
@@ -307,7 +314,7 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunBatteryCapacityRoutineMissingLowMah) {
 TEST_F(DeviceCommandRunRoutineJobTest,
        RunBatteryCapacityRoutineMissingHighMah) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kLowMahFieldName, /*low_mah=*/90812);
+  params_dict.SetIntKey(kLowMahFieldName, kPositiveInt);
   EXPECT_TRUE(RunJob(
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryCapacity,
       std::move(params_dict),
@@ -323,8 +330,8 @@ TEST_F(DeviceCommandRunRoutineJobTest,
 // fail.
 TEST_F(DeviceCommandRunRoutineJobTest, RunBatteryCapacityRoutineInvalidLowMah) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kLowMahFieldName, /*low_mah=*/-1);
-  params_dict.SetIntKey(kHighMahFieldName, /*high_mah=*/986909);
+  params_dict.SetIntKey(kLowMahFieldName, kNegativeInt);
+  params_dict.SetIntKey(kHighMahFieldName, kPositiveInt);
   EXPECT_TRUE(RunJob(
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryCapacity,
       std::move(params_dict),
@@ -341,8 +348,8 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunBatteryCapacityRoutineInvalidLowMah) {
 TEST_F(DeviceCommandRunRoutineJobTest,
        RunBatteryCapacityRoutineInvalidHighMah) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kLowMahFieldName, /*low_mah=*/90812);
-  params_dict.SetIntKey(kHighMahFieldName, /*high_mah=*/-1);
+  params_dict.SetIntKey(kLowMahFieldName, kPositiveInt);
+  params_dict.SetIntKey(kHighMahFieldName, kNegativeInt);
   EXPECT_TRUE(RunJob(
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryCapacity,
       std::move(params_dict),
@@ -360,10 +367,8 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunBatteryHealthRoutineSuccess) {
   chromeos::cros_healthd::FakeCrosHealthdClient::Get()
       ->SetRunRoutineResponseForTesting(run_routine_response);
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kMaximumCycleCountFieldName,
-                        /*maximum_cycle_count=*/12);
-  params_dict.SetIntKey(kPercentBatteryWearAllowedFieldName,
-                        /*percent_battery_wear_allowed=*/78);
+  params_dict.SetIntKey(kMaximumCycleCountFieldName, kPositiveInt);
+  params_dict.SetIntKey(kPercentBatteryWearAllowedFieldName, kPositiveInt);
   EXPECT_TRUE(RunJob(
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryHealth,
       std::move(params_dict),
@@ -380,8 +385,7 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunBatteryHealthRoutineSuccess) {
 TEST_F(DeviceCommandRunRoutineJobTest,
        RunBatteryHealthRoutineMissingMaximumCycleCount) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kPercentBatteryWearAllowedFieldName,
-                        /*percent_battery_wear_allowed=*/78);
+  params_dict.SetIntKey(kPercentBatteryWearAllowedFieldName, kPositiveInt);
   EXPECT_TRUE(RunJob(
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryHealth,
       std::move(params_dict),
@@ -398,8 +402,7 @@ TEST_F(DeviceCommandRunRoutineJobTest,
 TEST_F(DeviceCommandRunRoutineJobTest,
        RunBatteryHealthRoutineMissingPercentBatteryWearAllowed) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kMaximumCycleCountFieldName,
-                        /*maximum_cycle_count=*/12);
+  params_dict.SetIntKey(kMaximumCycleCountFieldName, kPositiveInt);
   EXPECT_TRUE(RunJob(
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryHealth,
       std::move(params_dict),
@@ -416,10 +419,8 @@ TEST_F(DeviceCommandRunRoutineJobTest,
 TEST_F(DeviceCommandRunRoutineJobTest,
        RunBatteryHealthRoutineInvalidMaximumCycleCount) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kMaximumCycleCountFieldName,
-                        /*maximum_cycle_count=*/-1);
-  params_dict.SetIntKey(kPercentBatteryWearAllowedFieldName,
-                        /*percent_battery_wear_allowed=*/78);
+  params_dict.SetIntKey(kMaximumCycleCountFieldName, kNegativeInt);
+  params_dict.SetIntKey(kPercentBatteryWearAllowedFieldName, kPositiveInt);
   EXPECT_TRUE(RunJob(
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryHealth,
       std::move(params_dict),
@@ -436,10 +437,8 @@ TEST_F(DeviceCommandRunRoutineJobTest,
 TEST_F(DeviceCommandRunRoutineJobTest,
        RunBatteryHealthRoutineInvalidPercentBatteryWearAllowed) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kMaximumCycleCountFieldName,
-                        /*maximum_cycle_count=*/12);
-  params_dict.SetIntKey(kPercentBatteryWearAllowedFieldName,
-                        /*percent_battery_wear_allowed=*/-1);
+  params_dict.SetIntKey(kMaximumCycleCountFieldName, kPositiveInt);
+  params_dict.SetIntKey(kPercentBatteryWearAllowedFieldName, kNegativeInt);
   EXPECT_TRUE(RunJob(
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryHealth,
       std::move(params_dict),
@@ -457,8 +456,7 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunUrandomRoutineSuccess) {
   chromeos::cros_healthd::FakeCrosHealthdClient::Get()
       ->SetRunRoutineResponseForTesting(run_routine_response);
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kLengthSecondsFieldName,
-                        /*length_seconds=*/2342);
+  params_dict.SetIntKey(kLengthSecondsFieldName, kPositiveInt);
   EXPECT_TRUE(
       RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kUrandom,
              std::move(params_dict),
@@ -489,8 +487,7 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunUrandomRoutineMissingLengthSeconds) {
 // fail.
 TEST_F(DeviceCommandRunRoutineJobTest, RunUrandomRoutineInvalidLengthSeconds) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kLengthSecondsFieldName,
-                        /*length_seconds=*/-1);
+  params_dict.SetIntKey(kLengthSecondsFieldName, kNegativeInt);
   EXPECT_TRUE(
       RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kUrandom,
              std::move(params_dict),
@@ -528,12 +525,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunAcPowerRoutineSuccess) {
   chromeos::cros_healthd::FakeCrosHealthdClient::Get()
       ->SetRunRoutineResponseForTesting(run_routine_response);
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(
-      kExpectedStatusFieldName,
-      /*expected_status=*/static_cast<int>(
-          chromeos::cros_healthd::mojom::AcPowerStatusEnum::kConnected));
+  params_dict.SetIntKey(kExpectedStatusFieldName,
+                        static_cast<int>(kValidAcPowerStatusEnum));
   params_dict.SetStringKey(kExpectedPowerTypeFieldName,
-                           /*expected_power_type=*/"power_type");
+                           kValidExpectedAcPowerType);
   EXPECT_TRUE(
       RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kAcPower,
              std::move(params_dict),
@@ -554,10 +549,8 @@ TEST_F(DeviceCommandRunRoutineJobTest,
   chromeos::cros_healthd::FakeCrosHealthdClient::Get()
       ->SetRunRoutineResponseForTesting(run_routine_response);
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(
-      kExpectedStatusFieldName,
-      /*expected_status=*/static_cast<int>(
-          chromeos::cros_healthd::mojom::AcPowerStatusEnum::kConnected));
+  params_dict.SetIntKey(kExpectedStatusFieldName,
+                        static_cast<int>(kValidAcPowerStatusEnum));
   EXPECT_TRUE(
       RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kAcPower,
              std::move(params_dict),
@@ -574,7 +567,7 @@ TEST_F(DeviceCommandRunRoutineJobTest,
 TEST_F(DeviceCommandRunRoutineJobTest, RunAcPowerRoutineMissingExpectedStatus) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetStringKey(kExpectedPowerTypeFieldName,
-                           /*expected_power_type=*/"power_type");
+                           kValidExpectedAcPowerType);
   EXPECT_TRUE(
       RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kAcPower,
              std::move(params_dict),
@@ -589,15 +582,15 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunAcPowerRoutineMissingExpectedStatus) {
 // Test that an invalid value for the expectedStatus parameter causes the AC
 // power routine to fail.
 TEST_F(DeviceCommandRunRoutineJobTest, RunAcPowerRoutineInvalidExpectedStatus) {
-  base::Value params_dict(base::Value::Type::DICTIONARY);
-  auto expected_status =
+  constexpr auto kInvalidAcPowerStatusEnum =
       static_cast<chromeos::cros_healthd::mojom::AcPowerStatusEnum>(
           std::numeric_limits<std::underlying_type<
               chromeos::cros_healthd::mojom::AcPowerStatusEnum>::type>::max());
+  base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kExpectedStatusFieldName,
-                        static_cast<int>(expected_status));
+                        static_cast<int>(kInvalidAcPowerStatusEnum));
   params_dict.SetStringKey(kExpectedPowerTypeFieldName,
-                           /*expected_power_type=*/"power_type");
+                           kValidExpectedAcPowerType);
   EXPECT_TRUE(
       RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kAcPower,
              std::move(params_dict),
@@ -615,8 +608,7 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunCpuCacheRoutineSuccess) {
   chromeos::cros_healthd::FakeCrosHealthdClient::Get()
       ->SetRunRoutineResponseForTesting(run_routine_response);
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kLengthSecondsFieldName,
-                        /*length_seconds=*/2342);
+  params_dict.SetIntKey(kLengthSecondsFieldName, kPositiveInt);
   EXPECT_TRUE(
       RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kCpuCache,
              std::move(params_dict),
@@ -647,8 +639,7 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunCpuCacheRoutineMissingLengthSeconds) {
 // fail.
 TEST_F(DeviceCommandRunRoutineJobTest, RunCpuCacheRoutineInvalidLengthSeconds) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kLengthSecondsFieldName,
-                        /*length_seconds=*/-1);
+  params_dict.SetIntKey(kLengthSecondsFieldName, kNegativeInt);
   EXPECT_TRUE(
       RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kCpuCache,
              std::move(params_dict),
@@ -666,8 +657,7 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunCpuStressRoutineSuccess) {
   chromeos::cros_healthd::FakeCrosHealthdClient::Get()
       ->SetRunRoutineResponseForTesting(run_routine_response);
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kLengthSecondsFieldName,
-                        /*length_seconds=*/2342);
+  params_dict.SetIntKey(kLengthSecondsFieldName, kPositiveInt);
   EXPECT_TRUE(
       RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kCpuStress,
              std::move(params_dict),
@@ -700,8 +690,7 @@ TEST_F(DeviceCommandRunRoutineJobTest,
 TEST_F(DeviceCommandRunRoutineJobTest,
        RunCpuStressRoutineInvalidLengthSeconds) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kLengthSecondsFieldName,
-                        /*length_seconds=*/-1);
+  params_dict.SetIntKey(kLengthSecondsFieldName, kNegativeInt);
   EXPECT_TRUE(
       RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kCpuStress,
              std::move(params_dict),
@@ -719,8 +708,7 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunFloatingPointAccuracyRoutineSuccess) {
   chromeos::cros_healthd::FakeCrosHealthdClient::Get()
       ->SetRunRoutineResponseForTesting(run_routine_response);
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kLengthSecondsFieldName,
-                        /*length_seconds=*/2342);
+  params_dict.SetIntKey(kLengthSecondsFieldName, kPositiveInt);
   EXPECT_TRUE(RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::
                          kFloatingPointAccuracy,
                      std::move(params_dict),
@@ -755,8 +743,7 @@ TEST_F(DeviceCommandRunRoutineJobTest,
 TEST_F(DeviceCommandRunRoutineJobTest,
        RunFloatingPointAccuracyRoutineInvalidLengthSeconds) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kLengthSecondsFieldName,
-                        /*length_seconds=*/-1);
+  params_dict.SetIntKey(kLengthSecondsFieldName, kNegativeInt);
   EXPECT_TRUE(
       RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::
                  kFloatingPointAccuracy,
@@ -775,8 +762,7 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunNvmeWearLevelRoutineSuccess) {
   chromeos::cros_healthd::FakeCrosHealthdClient::Get()
       ->SetRunRoutineResponseForTesting(run_routine_response);
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kWearLevelThresholdFieldName,
-                        /*wear_level_threshold=*/50);
+  params_dict.SetIntKey(kWearLevelThresholdFieldName, kPositiveInt);
   EXPECT_TRUE(RunJob(
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kNvmeWearLevel,
       std::move(params_dict),
@@ -809,8 +795,7 @@ TEST_F(DeviceCommandRunRoutineJobTest,
 TEST_F(DeviceCommandRunRoutineJobTest,
        RunNvmeWearLevelRoutineInvalidWearLevelThreshold) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kWearLevelThresholdFieldName,
-                        /*wear_level_threshold=*/-1);
+  params_dict.SetIntKey(kWearLevelThresholdFieldName, kNegativeInt);
   EXPECT_TRUE(RunJob(
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kNvmeWearLevel,
       std::move(params_dict),
@@ -823,15 +808,15 @@ TEST_F(DeviceCommandRunRoutineJobTest,
 }
 
 TEST_F(DeviceCommandRunRoutineJobTest, RunNvmeSelfTestRoutineSuccess) {
+  constexpr auto kValidNvmeSelfTestTypeEnum =
+      chromeos::cros_healthd::mojom::NvmeSelfTestTypeEnum::kShortSelfTest;
   auto run_routine_response =
       chromeos::cros_healthd::mojom::RunRoutineResponse::New(kId, kStatus);
   chromeos::cros_healthd::FakeCrosHealthdClient::Get()
       ->SetRunRoutineResponseForTesting(run_routine_response);
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(
-      kNvmeSelfTestTypeFieldName,
-      /*nvme_self_test_type=*/static_cast<int>(
-          chromeos::cros_healthd::mojom::NvmeSelfTestTypeEnum::kShortSelfTest));
+  params_dict.SetIntKey(kNvmeSelfTestTypeFieldName,
+                        static_cast<int>(kValidNvmeSelfTestTypeEnum));
   EXPECT_TRUE(RunJob(
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kNvmeSelfTest,
       std::move(params_dict),
@@ -863,11 +848,13 @@ TEST_F(DeviceCommandRunRoutineJobTest,
 // self test routine to fail.
 TEST_F(DeviceCommandRunRoutineJobTest,
        RunNvmeSelfTestRoutineInvalidSelfTestType) {
+  constexpr auto kInvalidNvmeSelfTestTypeEnum = static_cast<
+      chromeos::cros_healthd::mojom::NvmeSelfTestTypeEnum>(
+      std::numeric_limits<std::underlying_type<
+          chromeos::cros_healthd::mojom::NvmeSelfTestTypeEnum>::type>::max());
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  auto nvme_self_test_type = std::numeric_limits<std::underlying_type<
-      chromeos::cros_healthd::mojom::NvmeSelfTestTypeEnum>::type>::max();
   params_dict.SetIntKey(kNvmeSelfTestTypeFieldName,
-                        static_cast<int>(nvme_self_test_type));
+                        static_cast<int>(kInvalidNvmeSelfTestTypeEnum));
   EXPECT_TRUE(RunJob(
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kNvmeSelfTest,
       std::move(params_dict),
@@ -886,14 +873,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunDiskReadRoutineSuccess) {
   chromeos::cros_healthd::FakeCrosHealthdClient::Get()
       ->SetRunRoutineResponseForTesting(run_routine_response);
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(
-      kTypeFieldName,
-      /*type=*/static_cast<int>(
-          chromeos::cros_healthd::mojom::DiskReadRoutineTypeEnum::kLinearRead));
-  params_dict.SetIntKey(kLengthSecondsFieldName,
-                        /*length_seconds=*/2342);
-  params_dict.SetIntKey(kFileSizeMbFieldName,
-                        /*file_size_mb=*/512);
+  params_dict.SetIntKey(kTypeFieldName,
+                        static_cast<int>(kValidDiskReadRoutineTypeEnum));
+  params_dict.SetIntKey(kLengthSecondsFieldName, kPositiveInt);
+  params_dict.SetIntKey(kFileSizeMbFieldName, kPositiveInt);
   EXPECT_TRUE(
       RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kDiskRead,
              std::move(params_dict),
@@ -909,10 +892,8 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunDiskReadRoutineSuccess) {
 // fail.
 TEST_F(DeviceCommandRunRoutineJobTest, RunDiskReadRoutineMissingType) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kLengthSecondsFieldName,
-                        /*length_seconds=*/2342);
-  params_dict.SetIntKey(kFileSizeMbFieldName,
-                        /*file_size_mb=*/512);
+  params_dict.SetIntKey(kLengthSecondsFieldName, kPositiveInt);
+  params_dict.SetIntKey(kFileSizeMbFieldName, kPositiveInt);
   EXPECT_TRUE(
       RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kDiskRead,
              std::move(params_dict),
@@ -928,12 +909,9 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunDiskReadRoutineMissingType) {
 // routine to fail.
 TEST_F(DeviceCommandRunRoutineJobTest, RunDiskReadRoutineMissingLengthSeconds) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(
-      kTypeFieldName,
-      /*type=*/static_cast<int>(
-          chromeos::cros_healthd::mojom::DiskReadRoutineTypeEnum::kLinearRead));
-  params_dict.SetIntKey(kFileSizeMbFieldName,
-                        /*file_size_mb=*/512);
+  params_dict.SetIntKey(kTypeFieldName,
+                        static_cast<int>(kValidDiskReadRoutineTypeEnum));
+  params_dict.SetIntKey(kFileSizeMbFieldName, kPositiveInt);
   EXPECT_TRUE(
       RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kDiskRead,
              std::move(params_dict),
@@ -949,12 +927,9 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunDiskReadRoutineMissingLengthSeconds) {
 // to fail.
 TEST_F(DeviceCommandRunRoutineJobTest, RunDiskReadRoutineMissingFileSizeMb) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(
-      kTypeFieldName,
-      /*type=*/static_cast<int>(
-          chromeos::cros_healthd::mojom::DiskReadRoutineTypeEnum::kLinearRead));
-  params_dict.SetIntKey(kLengthSecondsFieldName,
-                        /*length_seconds=*/2342);
+  params_dict.SetIntKey(kTypeFieldName,
+                        static_cast<int>(kValidDiskReadRoutineTypeEnum));
+  params_dict.SetIntKey(kLengthSecondsFieldName, kPositiveInt);
   EXPECT_TRUE(
       RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kDiskRead,
              std::move(params_dict),
@@ -969,17 +944,16 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunDiskReadRoutineMissingFileSizeMb) {
 // Test that an invalid value for the type parameter causes the disk read
 // routine to fail.
 TEST_F(DeviceCommandRunRoutineJobTest, RunDiskReadRoutineInvalidType) {
-  base::Value params_dict(base::Value::Type::DICTIONARY);
-  auto type =
+  constexpr auto kInvalidDiskReadRoutineTypeEnum =
       static_cast<chromeos::cros_healthd::mojom::DiskReadRoutineTypeEnum>(
           std::numeric_limits<std::underlying_type<
               chromeos::cros_healthd::mojom::DiskReadRoutineTypeEnum>::type>::
               max());
-  params_dict.SetIntKey(kTypeFieldName, static_cast<int>(type));
-  params_dict.SetIntKey(kLengthSecondsFieldName,
-                        /*length_seconds=*/2342);
-  params_dict.SetIntKey(kFileSizeMbFieldName,
-                        /*file_size_mb=*/512);
+  base::Value params_dict(base::Value::Type::DICTIONARY);
+  params_dict.SetIntKey(kTypeFieldName,
+                        static_cast<int>(kInvalidDiskReadRoutineTypeEnum));
+  params_dict.SetIntKey(kLengthSecondsFieldName, kPositiveInt);
+  params_dict.SetIntKey(kFileSizeMbFieldName, kPositiveInt);
   EXPECT_TRUE(
       RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kDiskRead,
              std::move(params_dict),
@@ -995,14 +969,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunDiskReadRoutineInvalidType) {
 // read routine to fail.
 TEST_F(DeviceCommandRunRoutineJobTest, RunDiskReadRoutineInvalidLengthSeconds) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(
-      kTypeFieldName,
-      /*type=*/static_cast<int>(
-          chromeos::cros_healthd::mojom::DiskReadRoutineTypeEnum::kLinearRead));
-  params_dict.SetIntKey(kLengthSecondsFieldName,
-                        /*length_seconds=*/-1);
-  params_dict.SetIntKey(kFileSizeMbFieldName,
-                        /*file_size_mb=*/512);
+  params_dict.SetIntKey(kTypeFieldName,
+                        static_cast<int>(kValidDiskReadRoutineTypeEnum));
+  params_dict.SetIntKey(kLengthSecondsFieldName, kNegativeInt);
+  params_dict.SetIntKey(kFileSizeMbFieldName, kPositiveInt);
   EXPECT_TRUE(
       RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kDiskRead,
              std::move(params_dict),
@@ -1018,14 +988,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunDiskReadRoutineInvalidLengthSeconds) {
 // routine to fail.
 TEST_F(DeviceCommandRunRoutineJobTest, RunDiskReadRoutineInvalidFileSizeMb) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(
-      kTypeFieldName,
-      /*type=*/static_cast<int>(
-          chromeos::cros_healthd::mojom::DiskReadRoutineTypeEnum::kLinearRead));
-  params_dict.SetIntKey(kLengthSecondsFieldName,
-                        /*length_seconds=*/2342);
-  params_dict.SetIntKey(kFileSizeMbFieldName,
-                        /*file_size_mb=*/-1);
+  params_dict.SetIntKey(kTypeFieldName,
+                        static_cast<int>(kValidDiskReadRoutineTypeEnum));
+  params_dict.SetIntKey(kLengthSecondsFieldName, kPositiveInt);
+  params_dict.SetIntKey(kFileSizeMbFieldName, kNegativeInt);
   EXPECT_TRUE(
       RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kDiskRead,
              std::move(params_dict),
@@ -1044,10 +1010,8 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunPrimeSearchRoutineSuccess) {
   chromeos::cros_healthd::FakeCrosHealthdClient::Get()
       ->SetRunRoutineResponseForTesting(run_routine_response);
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kLengthSecondsFieldName,
-                        /*length_seconds=*/2342);
-  params_dict.SetIntKey(kMaxNumFieldName,
-                        /*max_num=*/100000);
+  params_dict.SetIntKey(kLengthSecondsFieldName, kPositiveInt);
+  params_dict.SetIntKey(kMaxNumFieldName, kPositiveInt);
   EXPECT_TRUE(
       RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kPrimeSearch,
              std::move(params_dict),
@@ -1064,8 +1028,7 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunPrimeSearchRoutineSuccess) {
 TEST_F(DeviceCommandRunRoutineJobTest,
        RunPrimeSearchRoutineMissingLengthSeconds) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kMaxNumFieldName,
-                        /*max_num=*/100000);
+  params_dict.SetIntKey(kMaxNumFieldName, kPositiveInt);
   EXPECT_TRUE(
       RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kPrimeSearch,
              std::move(params_dict),
@@ -1081,8 +1044,7 @@ TEST_F(DeviceCommandRunRoutineJobTest,
 // fail.
 TEST_F(DeviceCommandRunRoutineJobTest, RunPrimeSearchRoutineMissingMaxNum) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kLengthSecondsFieldName,
-                        /*length_seconds=*/2342);
+  params_dict.SetIntKey(kLengthSecondsFieldName, kPositiveInt);
   EXPECT_TRUE(
       RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kPrimeSearch,
              std::move(params_dict),
@@ -1099,10 +1061,8 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunPrimeSearchRoutineMissingMaxNum) {
 TEST_F(DeviceCommandRunRoutineJobTest,
        RunPrimeSearchRoutineInvalidLengthSeconds) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kLengthSecondsFieldName,
-                        /*length_seconds=*/-1);
-  params_dict.SetIntKey(kMaxNumFieldName,
-                        /*max_num=*/100000);
+  params_dict.SetIntKey(kLengthSecondsFieldName, kNegativeInt);
+  params_dict.SetIntKey(kMaxNumFieldName, kPositiveInt);
   EXPECT_TRUE(
       RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kPrimeSearch,
              std::move(params_dict),
@@ -1118,10 +1078,8 @@ TEST_F(DeviceCommandRunRoutineJobTest,
 // routine to fail.
 TEST_F(DeviceCommandRunRoutineJobTest, RunPrimeSearchRoutineInvalidMaxNum) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kLengthSecondsFieldName,
-                        /*length_seconds=*/2342);
-  params_dict.SetIntKey(kMaxNumFieldName,
-                        /*max_num=*/-1);
+  params_dict.SetIntKey(kLengthSecondsFieldName, kPositiveInt);
+  params_dict.SetIntKey(kMaxNumFieldName, kNegativeInt);
   EXPECT_TRUE(
       RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kPrimeSearch,
              std::move(params_dict),
@@ -1139,9 +1097,8 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunBatteryDischargeRoutineSuccess) {
   chromeos::cros_healthd::FakeCrosHealthdClient::Get()
       ->SetRunRoutineResponseForTesting(run_routine_response);
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kLengthSecondsFieldName, /*length_seconds=*/10);
-  params_dict.SetIntKey(kMaximumDischargePercentAllowedFieldName,
-                        /*maximum_discharge_percent_allowed=*/76);
+  params_dict.SetIntKey(kLengthSecondsFieldName, kPositiveInt);
+  params_dict.SetIntKey(kMaximumDischargePercentAllowedFieldName, kPositiveInt);
   EXPECT_TRUE(RunJob(
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryDischarge,
       std::move(params_dict),
@@ -1158,8 +1115,7 @@ TEST_F(DeviceCommandRunRoutineJobTest,
   // Test that leaving out the lengthSeconds parameter causes the routine to
   // fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kMaximumDischargePercentAllowedFieldName,
-                        /*maximum_discharge_percent_allowed=*/76);
+  params_dict.SetIntKey(kMaximumDischargePercentAllowedFieldName, kPositiveInt);
   EXPECT_TRUE(RunJob(
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryDischarge,
       std::move(params_dict),
@@ -1176,7 +1132,7 @@ TEST_F(DeviceCommandRunRoutineJobTest,
   // Test that leaving out the maximumDischargePercentAllowed parameter causes
   // the routine to fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kLengthSecondsFieldName, /*length_seconds=*/10);
+  params_dict.SetIntKey(kLengthSecondsFieldName, kPositiveInt);
   EXPECT_TRUE(RunJob(
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryDischarge,
       std::move(params_dict),
@@ -1192,9 +1148,8 @@ TEST_F(DeviceCommandRunRoutineJobTest,
        RunBatteryDischargeRoutineInvalidLengthSeconds) {
   // Test that a negative lengthSeconds parameter causes the routine to fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kLengthSecondsFieldName, /*length_seconds=*/-10);
-  params_dict.SetIntKey(kMaximumDischargePercentAllowedFieldName,
-                        /*maximum_discharge_percent_allowed=*/76);
+  params_dict.SetIntKey(kLengthSecondsFieldName, kNegativeInt);
+  params_dict.SetIntKey(kMaximumDischargePercentAllowedFieldName, kPositiveInt);
   EXPECT_TRUE(RunJob(
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryDischarge,
       std::move(params_dict),
@@ -1211,9 +1166,8 @@ TEST_F(DeviceCommandRunRoutineJobTest,
   // Test that a negative maximumDischargePercentAllowed parameter causes the
   // routine to fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kLengthSecondsFieldName, /*length_seconds=*/10);
-  params_dict.SetIntKey(kMaximumDischargePercentAllowedFieldName,
-                        /*maximum_discharge_percent_allowed=*/-76);
+  params_dict.SetIntKey(kLengthSecondsFieldName, kPositiveInt);
+  params_dict.SetIntKey(kMaximumDischargePercentAllowedFieldName, kNegativeInt);
   EXPECT_TRUE(RunJob(
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryDischarge,
       std::move(params_dict),

@@ -15,6 +15,7 @@
 #include "net/http/http_request_headers.h"
 #include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
+#include "services/network/trust_tokens/suitable_trust_token_origin.h"
 #include "services/network/trust_tokens/trust_token_request_helper.h"
 #include "url/origin.h"
 
@@ -69,11 +70,13 @@ class TrustTokenRequestSigningHelper : public TrustTokenRequestHelper {
       'T', 'r', 'u', 's', 't', ' ', 'T', 'o', 'k', 'e', 'n', ' ', 'v', '0'};
 
   struct Params {
-    Params();
+    Params(SuitableTrustTokenOrigin issuer, SuitableTrustTokenOrigin toplevel);
     ~Params();
 
     Params(const Params&);
     Params& operator=(const Params&);
+    Params(Params&&);
+    Params& operator=(Params&&);
 
     // |issuer| is the Trust Tokens issuer origin for which to retrieve a Signed
     // Redemption Record and matching signing key. This must be both (1) HTTP or
@@ -82,11 +85,11 @@ class TrustTokenRequestSigningHelper : public TrustTokenRequestHelper {
     //   1. HTTP or HTTPS so that the scheme serializes in a sensible manner in
     //   order to serve as a key for persisting state.
     //   2. potentially trustworthy origin to satisfy Web security requirements.
-    url::Origin issuer;
+    SuitableTrustTokenOrigin issuer;
 
     // |toplevel| is the top-level origin of the initiating request. This must
     // satisfy the same preconditions as |issuer|.
-    url::Origin toplevel;
+    SuitableTrustTokenOrigin toplevel;
 
     // |additional_headers_to_sign| is a list of headers to sign, in addition to
     // those specified by the request's Signed-Headers header. If these are not

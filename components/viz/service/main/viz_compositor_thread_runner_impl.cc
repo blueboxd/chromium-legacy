@@ -198,6 +198,8 @@ void VizCompositorThreadRunnerImpl::CreateFrameSinkManagerOnCompositorThread(
   init_params.restart_id = params->restart_id;
   init_params.run_all_compositor_stages_before_draw =
       run_all_compositor_stages_before_draw;
+  init_params.log_capture_pipeline_in_webrtc =
+      features::ShouldWebRtcLogCapturePipeline();
 
   frame_sink_manager_ = std::make_unique<FrameSinkManagerImpl>(init_params);
   frame_sink_manager_->BindAndSetClient(

@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
 #include "third_party/blink/renderer/core/css/css_variable_reference_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
+#include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
@@ -114,9 +115,7 @@ CSSValueID ClassifyVariableRange(CSSParserTokenRange range,
   range.ConsumeWhitespace();
   if (range.Peek().GetType() == kIdentToken) {
     CSSValueID id = range.ConsumeIncludingWhitespace().Id();
-    if (range.AtEnd() &&
-        (id == CSSValueID::kInherit || id == CSSValueID::kInitial ||
-         id == CSSValueID::kUnset))
+    if (range.AtEnd() && css_parsing_utils::IsCSSWideKeyword(id))
       return id;
   }
 

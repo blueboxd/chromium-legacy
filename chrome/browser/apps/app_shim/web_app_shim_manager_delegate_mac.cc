@@ -5,7 +5,9 @@
 #include "chrome/browser/apps/app_shim/web_app_shim_manager_delegate_mac.h"
 
 #include "chrome/browser/apps/app_service/app_launch_params.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/web_applications/components/app_shortcut_manager.h"
 #include "chrome/browser/web_applications/components/web_app_shortcut_mac.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -99,7 +101,9 @@ void WebAppShimManagerDelegate::LaunchApp(
       app_id, launch_container, WindowOpenDisposition::NEW_FOREGROUND_TAB,
       apps::mojom::AppLaunchSource::kSourceCommandLine);
   params.launch_files = files;
-  apps::LaunchService::Get(profile)->OpenApplication(params);
+  apps::AppServiceProxyFactory::GetForProfile(profile)
+      ->BrowserAppLauncher()
+      .LaunchAppWithParams(params);
 }
 
 void WebAppShimManagerDelegate::LaunchShim(

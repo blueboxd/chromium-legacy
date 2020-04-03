@@ -273,84 +273,84 @@ promise_test(function(t) {
     return promise_rejects_dom(t, 'InvalidStateError', new PaymentRequest([{'supportedMethods': 'foo'}], buildDetails()).abort());
 }, 'abort() without show() should reject with error');
 
-generate_tests(assert_throws, [
-    ['PaymentRequest constructor should throw for incorrect parameter types.', new TypeError(), function() {
+generate_tests(assert_throws_js, [
+    ['PaymentRequest constructor should throw for incorrect parameter types.', TypeError, function() {
         new PaymentRequest('', '', '')
     }],
-    ['PaymentRequest constructor should throw for undefined required parameters.', new TypeError(), function() {
+    ['PaymentRequest constructor should throw for undefined required parameters.', TypeError, function() {
         new PaymentRequest(undefined, undefined)
     }],
-    ['PaymentRequest constructor should throw for null required parameter.', new TypeError(), function() {
+    ['PaymentRequest constructor should throw for null required parameter.', TypeError, function() {
         new PaymentRequest(null, null)
     }],
-    ['Empty list of supported payment method identifiers should throw TypeError.', new TypeError(), function() {
+    ['Empty list of supported payment method identifiers should throw TypeError.', TypeError, function() {
         new PaymentRequest([], buildDetails())
     }],
-    ['Empty supported payment method identifier should throw RangeError.', new RangeError(), function() {
+    ['Empty supported payment method identifier should throw RangeError.', RangeError, function() {
         new PaymentRequest([{'supportedMethods': ''}], buildDetails())
     }],
-    ['Absence of total should throw TypeError.', new TypeError(), function() {
+    ['Absence of total should throw TypeError.', TypeError, function() {
         new PaymentRequest([{'supportedMethods': 'foo'}], {'displayItems': [buildItem()]})
     }],
-    ['Negative total value should throw a TypeError.', new TypeError(), function() {
+    ['Negative total value should throw a TypeError.', TypeError, function() {
         new PaymentRequest([{'supportedMethods': 'foo'}], buildDetails('total', {'value': '-0.01'}))
     }],
-    ['Negative total value in PaymentDetailsModifier should throw a TypeError.', new TypeError(), function() {
+    ['Negative total value in PaymentDetailsModifier should throw a TypeError.', TypeError, function() {
         new PaymentRequest([{'supportedMethods': 'foo'}], {'total': buildItem(), 'modifiers': [{'supportedMethods': 'foo', 'total': buildItem({'value': '-0.01'})}]})
     }],
-    ['Undefined supportedMethods in modifiers should throw TypeError.', new TypeError(), function() {
+    ['Undefined supportedMethods in modifiers should throw TypeError.', TypeError, function() {
         new PaymentRequest([{'supportedMethods': 'foo'}], {'total': buildItem(), 'modifiers': [{'supportedMethods': undefined}]})
     }],
-    ['Empty supportedMethods in modifiers should throw RangeError.', new RangeError(), function() {
+    ['Empty supportedMethods in modifiers should throw RangeError.', RangeError, function() {
         new PaymentRequest([{'supportedMethods': 'foo'}], {'total': buildItem(), 'modifiers': [{'supportedMethods': ''}]})
     }],
-    ['Absence of supportedMethods in modifiers should throw TypeError.', new TypeError(), function() {
+    ['Absence of supportedMethods in modifiers should throw TypeError.', TypeError, function() {
         new PaymentRequest([{'supportedMethods': 'foo'}], {'total': buildItem(), 'modifiers': [{'total': buildItem()}]})
     }],
-    ['Empty details should throw', new TypeError(), function() {
+    ['Empty details should throw', TypeError, function() {
         new PaymentRequest([{'supportedMethods': 'foo'}], {})
     }],
-    ['Null items should throw', new TypeError(), function() {
+    ['Null items should throw', TypeError, function() {
         new PaymentRequest([{'supportedMethods': 'foo'}], {'total': buildItem(), 'displayItems': null});
     }],
-    ['Null shipping options should throw', new TypeError(), function() {
+    ['Null shipping options should throw', TypeError, function() {
         new PaymentRequest([{'supportedMethods': 'foo'}], {'total': buildItem(), 'displayItems': [buildItem()], 'shippingOptions': null});
     }],
-    ['Undefined PaymentShippingType value for shppingType should throw a TypeError', new TypeError(), function() {
+    ['Undefined PaymentShippingType value for shppingType should throw a TypeError', TypeError, function() {
         var request = new PaymentRequest([{'supportedMethods': 'foo'}], buildDetails(), {'requestShipping': true, 'shippingType': 'invalid'});
     }],
-    ['Null for shppingType should throw a TypeError', new TypeError(), function() {
+    ['Null for shppingType should throw a TypeError', TypeError, function() {
         var request = new PaymentRequest([{'supportedMethods': 'foo'}], buildDetails(), {'requestShipping': true, 'shippingType': null});
     }],
-    ['Array value for shppingType should throw a TypeError', new TypeError(), function() {
+    ['Array value for shppingType should throw a TypeError', TypeError, function() {
         var request = new PaymentRequest([{'supportedMethods': 'foo'}], buildDetails(), {'requestShipping': true, 'shippingType': []});
     }],
-    ['Object value for shppingType should throw a TypeError', new TypeError(), function() {
+    ['Object value for shppingType should throw a TypeError', TypeError, function() {
         var request = new PaymentRequest([{'supportedMethods': 'foo'}], buildDetails(), {'requestShipping': true, 'shippingType': {}});
     }],
-    ['Numeric value for shppingType should throw a TypeError', new TypeError(), function() {
+    ['Numeric value for shppingType should throw a TypeError', TypeError, function() {
         var request = new PaymentRequest([{'supportedMethods': 'foo'}], buildDetails(), {'requestShipping': true, 'shippingType': 0});
     }],
 
     // Payment method specific data should be a JSON-serializable object.
-    ['String value for payment method specific data parameter should throw', new TypeError(), function() {
+    ['String value for payment method specific data parameter should throw', TypeError, function() {
         new PaymentRequest([{'supportedMethods': 'foo', 'data': 'foo'}], buildDetails(), {})
     }],
-    ['Numeric value for payment method specific data parameter should throw', new TypeError(), function() {
+    ['Numeric value for payment method specific data parameter should throw', TypeError, function() {
         new PaymentRequest([{'supportedMethods': 'foo', 'data': 42}], buildDetails(), {})
     }],
-    ['Infinite JSON value for one of the payment method specific data pieces should throw', new TypeError(), function() {
+    ['Infinite JSON value for one of the payment method specific data pieces should throw', TypeError, function() {
         var infiniteData = {'foo': {}};
         infiniteData.foo = infiniteData;
         new PaymentRequest([{'supportedMethods': 'foo', 'data': infiniteData}], buildDetails())
     }],
-    ['Null for payment method specific data parameter should throw', new TypeError(), function() {
+    ['Null for payment method specific data parameter should throw', TypeError, function() {
         new PaymentRequest([{'supportedMethods': 'foo', 'data': null}], buildDetails())
     }],
-    ['Empty string for payment method specific data parameter should throw', new TypeError(), function() {
+    ['Empty string for payment method specific data parameter should throw', TypeError, function() {
         new PaymentRequest([{'supportedMethods': 'foo', 'data': ''}], buildDetails())
     }],
-    ['PaymentRequest constructor should throw for invalid "basic-card" parameters.', new TypeError(), function() {
+    ['PaymentRequest constructor should throw for invalid "basic-card" parameters.', TypeError, function() {
         new PaymentRequest([{'supportedMethods': 'basic-card', 'data': {'supportedTypes': 0, 'supportedNetworks': 'foo'}}], buildDetails())
     }]
 ]);

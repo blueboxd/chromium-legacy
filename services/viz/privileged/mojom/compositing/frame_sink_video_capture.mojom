@@ -52,6 +52,9 @@ interface FrameSinkVideoConsumer {
   // Indicates that OnFrameCaptured() will not be called again, an end-of-stream
   // signal.
   OnStopped();
+  // Called to deliver a log message to the consumer.
+  // Currently used to populate WebRTC native logs.
+  OnLog(string message);
 };
 
 // Interface to an implementation that captures the frames of a

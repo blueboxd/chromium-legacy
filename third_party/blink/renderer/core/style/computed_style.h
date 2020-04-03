@@ -707,7 +707,7 @@ class ComputedStyle : public ComputedStyleBase,
            OutlineColorIsCurrentColor() == other.OutlineColorIsCurrentColor() &&
            OutlineColor() == other.OutlineColor() &&
            OutlineStyle() == other.OutlineStyle() &&
-           OutlineOffsetInternal() == other.OutlineOffsetInternal() &&
+           OutlineOffset() == other.OutlineOffset() &&
            OutlineStyleIsAuto() == other.OutlineStyleIsAuto();
   }
 
@@ -726,11 +726,6 @@ class ComputedStyle : public ComputedStyleBase,
     return OutlineWidthInternal().ToUnsigned();
   }
   void SetOutlineWidth(uint16_t v) { SetOutlineWidthInternal(LayoutUnit(v)); }
-
-  // outline-offset
-  int OutlineOffset() const {
-    return OutlineOffsetInternal();
-  }
 
   // -webkit-perspective-origin-x
   const Length& PerspectiveOriginX() const { return PerspectiveOrigin().X(); }
@@ -1261,9 +1256,6 @@ class ComputedStyle : public ComputedStyleBase,
   CSSTransitionData& AccessTransitions();
 
   // Callback selectors.
-  const Vector<String>& CallbackSelectors() const {
-    return CallbackSelectorsInternal();
-  }
   void AddCallbackSelector(const String& selector);
 
   // Non-property flags.

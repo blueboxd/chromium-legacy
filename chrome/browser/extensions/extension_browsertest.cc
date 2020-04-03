@@ -24,7 +24,9 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -436,7 +438,9 @@ const Extension* ExtensionBrowserTest::LoadAndLaunchApp(
                                WindowOpenDisposition::NEW_WINDOW,
                                AppLaunchSource::kSourceTest);
   params.command_line = *base::CommandLine::ForCurrentProcess();
-  apps::LaunchService::Get(profile())->OpenApplication(params);
+  apps::AppServiceProxyFactory::GetForProfile(profile())
+      ->BrowserAppLauncher()
+      .LaunchAppWithParams(params);
   app_loaded_observer.Wait();
 
   return app;

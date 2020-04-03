@@ -123,7 +123,7 @@ class VIZ_HOST_EXPORT ClientFrameSinkVideoCapturer
       mojo::PendingRemote<mojom::FrameSinkVideoConsumerFrameCallbacks>
           callbacks) final;
   void OnStopped() final;
-
+  void OnLog(const std::string& message) final;
   // Establishes connection to FrameSinkVideoCapturer and sends the existing
   // configuration.
   void EstablishConnection();

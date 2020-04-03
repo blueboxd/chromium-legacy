@@ -150,7 +150,8 @@ CSSValue* ConsumeImageOrNone(CSSParserTokenRange&, const CSSParserContext&);
 
 CSSValue* ConsumeAxis(CSSParserTokenRange&, const CSSParserContext& context);
 
-bool IsCSSWideKeyword(StringView);
+// See also css_parsing_utils::IsCSSWideKeyword.
+CORE_EXPORT bool IsCSSWideKeyword(StringView);
 bool IsRevertKeyword(StringView);
 bool IsDefaultKeyword(StringView);
 

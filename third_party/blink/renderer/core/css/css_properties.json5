@@ -2634,7 +2634,6 @@
       field_template: "primitive",
       default_value: "0",
       type_name: "int",
-      computed_style_custom_functions: ["getter"],
       converter: "ConvertComputedLength<int>",
       typedom_types: ["Length"],
       valid_for_cue: true,

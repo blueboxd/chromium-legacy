@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 
 class Browser;
@@ -18,6 +19,10 @@ namespace base {
 class CommandLine;
 class FilePath;
 }  // namespace base
+
+namespace content {
+class WebContents;
+}
 
 namespace web_app {
 class WebAppLaunchManager;
@@ -39,7 +44,10 @@ class BrowserAppLauncher {
   BrowserAppLauncher(const BrowserAppLauncher&) = delete;
   BrowserAppLauncher& operator=(const BrowserAppLauncher&) = delete;
 
-  // Attempt to open |app_id| in a new window or tab. Open an empty browser
+  // Launches an app for the given |app_id| in a way specified by |params|.
+  content::WebContents* LaunchAppWithParams(const AppLaunchParams& params);
+
+  // Attempts to open |app_id| in a new window or tab. Open an empty browser
   // window if unsuccessful. The user's preferred launch container for the app
   // (standalone window or browser tab) is used. |callback| will be called with
   // the container type used to open the app, kLaunchContainerNone if an empty

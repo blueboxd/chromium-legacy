@@ -157,6 +157,12 @@ void ClientFrameSinkVideoCapturer::OnFrameCaptured(
                              std::move(callbacks));
 }
 
+void ClientFrameSinkVideoCapturer::OnLog(const std::string& message) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  consumer_->OnLog(message);
+}
+
 void ClientFrameSinkVideoCapturer::OnStopped() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 

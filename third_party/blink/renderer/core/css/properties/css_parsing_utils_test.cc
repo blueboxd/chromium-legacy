@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/html/html_html_element.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
@@ -19,6 +20,18 @@ TEST(CSSParsingUtilsTest, BasicShapeUseCount) {
   document.documentElement()->setInnerHTML(
       "<style>span { shape-outside: circle(); }</style>");
   EXPECT_TRUE(document.IsUseCounted(feature));
+}
+
+TEST(CSSParsingUtilsTest, Revert) {
+  {
+    ScopedCSSRevertForTest scoped_revert(true);
+    EXPECT_TRUE(css_parsing_utils::IsCSSWideKeyword(CSSValueID::kRevert));
+  }
+
+  {
+    ScopedCSSRevertForTest scoped_revert(false);
+    EXPECT_FALSE(css_parsing_utils::IsCSSWideKeyword(CSSValueID::kRevert));
+  }
 }
 
 }  // namespace blink

@@ -14,12 +14,20 @@
 class ChromeBrowserState;
 @class MainController;
 @class NewTabPageController;
+@class SceneController;
+@class SceneState;
 @class UIViewController;
 
 namespace chrome_test_util {
 
 // Returns the main controller.
 MainController* GetMainController();
+
+// Returns the foreground, active scene.
+SceneState* GetForegroundActiveScene();
+
+// Returns the foreground, active scene controller.
+SceneController* GetForegroundActiveSceneController();
 
 // Returns the current, non-incognito ChromeBrowserState.
 ChromeBrowserState* GetOriginalBrowserState();

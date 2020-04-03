@@ -7,7 +7,9 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -59,10 +61,12 @@ AppId InstallWebApp(Profile* profile,
 
 Browser* LaunchWebAppBrowser(Profile* profile, const AppId& app_id) {
   EXPECT_TRUE(
-      apps::LaunchService::Get(profile)->OpenApplication(apps::AppLaunchParams(
-          app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
-          WindowOpenDisposition::CURRENT_TAB,
-          apps::mojom::AppLaunchSource::kSourceTest)));
+      apps::AppServiceProxyFactory::GetForProfile(profile)
+          ->BrowserAppLauncher()
+          .LaunchAppWithParams(apps::AppLaunchParams(
+              app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
+              WindowOpenDisposition::CURRENT_TAB,
+              apps::mojom::AppLaunchSource::kSourceTest)));
 
   Browser* browser = chrome::FindLastActive();
   bool is_correct_app_browser =
@@ -84,10 +88,12 @@ Browser* LaunchWebAppBrowserAndWait(Profile* profile, const AppId& app_id) {
 
 Browser* LaunchBrowserForWebAppInTab(Profile* profile, const AppId& app_id) {
   content::WebContents* web_contents =
-      apps::LaunchService::Get(profile)->OpenApplication(apps::AppLaunchParams(
-          app_id, apps::mojom::LaunchContainer::kLaunchContainerTab,
-          WindowOpenDisposition::NEW_FOREGROUND_TAB,
-          apps::mojom::AppLaunchSource::kSourceTest));
+      apps::AppServiceProxyFactory::GetForProfile(profile)
+          ->BrowserAppLauncher()
+          .LaunchAppWithParams(apps::AppLaunchParams(
+              app_id, apps::mojom::LaunchContainer::kLaunchContainerTab,
+              WindowOpenDisposition::NEW_FOREGROUND_TAB,
+              apps::mojom::AppLaunchSource::kSourceTest));
   DCHECK(web_contents);
 
   WebAppTabHelperBase* tab_helper =

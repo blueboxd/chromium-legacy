@@ -680,6 +680,9 @@ class CORE_EXPORT Document : public ContainerNode,
     kRunPostLayoutTasksSynchronously,
   };
   void UpdateStyleAndLayoutForNode(const Node*, DocumentUpdateReason);
+  void IncLayoutCallsCounter() { ++layout_calls_counter_; }
+  void IncLayoutCallsCounterNG() { ++layout_calls_counter_ng_; }
+
   scoped_refptr<const ComputedStyle> StyleForPage(int page_index);
 
   // Ensures that location-based data will be valid for a given node.
@@ -2252,6 +2255,13 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // The number of canvas elements on the document
   int num_canvases_ = 0;
+
+  // The number of LayoutObject::UpdateLayout() calls for both of the legacy
+  // layout and LayoutNG.
+  uint32_t layout_calls_counter_ = 0;
+
+  // The number of LayoutObject::UpdateLayout() calls for LayoutNG.
+  uint32_t layout_calls_counter_ng_ = 0;
 
   // Number of display locks in this document that block all activation.
   int display_lock_blocking_all_activation_count_ = 0;

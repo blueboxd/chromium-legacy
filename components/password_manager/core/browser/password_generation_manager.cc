@@ -19,8 +19,6 @@ namespace password_manager {
 namespace {
 
 using autofill::PasswordForm;
-using metrics_util::GenerationPresaveConflict;
-using metrics_util::LogGenerationPresaveConflict;
 
 std::vector<PasswordForm> DeepCopyVector(
     const std::vector<const PasswordForm*>& forms) {
@@ -132,7 +130,6 @@ bool PasswordDataForUI::IsBlacklisted() const {
 }
 
 void PasswordDataForUI::Save() {
-  LogPresavedUpdateUIDismissalReason(metrics_util::CLICKED_SAVE);
   bubble_interaction_cb_.Run(true, pending_form_);
 }
 
@@ -152,17 +149,14 @@ void PasswordDataForUI::OnUpdatePasswordFromPrompt(
 }
 
 void PasswordDataForUI::OnNopeUpdateClicked() {
-  LogPresavedUpdateUIDismissalReason(metrics_util::CLICKED_CANCEL);
   bubble_interaction_cb_.Run(false, pending_form_);
 }
 
 void PasswordDataForUI::OnNeverClicked() {
-  LogPresavedUpdateUIDismissalReason(metrics_util::CLICKED_NEVER);
   bubble_interaction_cb_.Run(false, pending_form_);
 }
 
 void PasswordDataForUI::OnNoInteraction(bool is_update) {
-  LogPresavedUpdateUIDismissalReason(metrics_util::NO_DIRECT_INTERACTION);
   bubble_interaction_cb_.Run(false, pending_form_);
 }
 
@@ -209,8 +203,6 @@ void PasswordGenerationManager::GeneratedPasswordAccepted(
     const PasswordForm* conflict =
         FindUsernameConflict(generated, non_federated_matches);
     if (conflict) {
-      LogGenerationPresaveConflict(
-          GenerationPresaveConflict::kConflictWithEmptyUsername);
       auto bubble_launcher = std::make_unique<PasswordDataForUI>(
           std::move(generated), non_federated_matches, federated_matches,
           base::BindRepeating(&PasswordGenerationManager::OnPresaveBubbleResult,
@@ -218,13 +210,7 @@ void PasswordGenerationManager::GeneratedPasswordAccepted(
       client_->PromptUserToSaveOrUpdatePassword(std::move(bubble_launcher),
                                                 true);
       return;
-    } else {
-      LogGenerationPresaveConflict(
-          GenerationPresaveConflict::kNoConflictWithEmptyUsername);
     }
-  } else {
-    LogGenerationPresaveConflict(
-        GenerationPresaveConflict::kNoUsernameConflict);
   }
   driver->GeneratedPasswordAccepted(generated.password_value);
 }

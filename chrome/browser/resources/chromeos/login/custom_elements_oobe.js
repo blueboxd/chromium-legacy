@@ -49,6 +49,7 @@
 // <include src="enterprise_enrollment.js">
 // <include src="sync_consent.js">
 // <include src="fingerprint_setup.js">
+// <include src="components/progress_list_item.js">
 // <include src="demo_setup.js">
 // <include src="demo_preferences.js">
 // <include src="recommend_apps.js">

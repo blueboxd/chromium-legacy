@@ -157,8 +157,6 @@ void PasswordSaveManagerImpl::CreatePendingCredentials(
     const FormData& submitted_form,
     bool is_http_auth,
     bool is_credential_api_save) {
-  DCHECK(votes_uploader_);
-
   const PasswordForm* similar_saved_form;
   std::tie(similar_saved_form, pending_credentials_state_) =
       FindSimilarSavedFormAndComputeState(parsed_submitted_form);
@@ -172,6 +170,12 @@ void PasswordSaveManagerImpl::CreatePendingCredentials(
       submitted_form, generated_password, is_http_auth, is_credential_api_save,
       similar_saved_form);
 
+  SetVotesAndRecordMetricsForPendingCredentials(parsed_submitted_form);
+}
+
+void PasswordSaveManagerImpl::SetVotesAndRecordMetricsForPendingCredentials(
+    const PasswordForm& parsed_submitted_form) {
+  DCHECK(votes_uploader_);
   votes_uploader_->set_password_overridden(false);
   switch (pending_credentials_state_) {
     case PendingCredentialsState::NEW_LOGIN: {
@@ -217,21 +221,11 @@ void PasswordSaveManagerImpl::Save(const FormData& observed_form,
   }
 
   if (IsNewLogin()) {
-    metrics_util::LogNewlySavedPasswordIsGenerated(
-        pending_credentials_.type == PasswordForm::Type::kGenerated);
     SanitizePossibleUsernames(&pending_credentials_);
     pending_credentials_.date_created = base::Time::Now();
-    votes_uploader_->SendVotesOnSave(observed_form, parsed_submitted_form,
-                                     form_fetcher_->GetBestMatches(),
-                                     &pending_credentials_);
-    SavePendingToStore(parsed_submitted_form, false /*update*/);
-  } else {
-    // It sounds wrong that we still update even if the state is NONE. We
-    // should double check if this actually necessary. Currently some tests
-    // depend on this behavior.
-    ProcessUpdate(observed_form, parsed_submitted_form);
-    SavePendingToStore(parsed_submitted_form, true /*update*/);
   }
+
+  SavePendingToStore(observed_form, parsed_submitted_form);
 
   if (pending_credentials_.times_used == 1 &&
       pending_credentials_.type == PasswordForm::Type::kGenerated) {
@@ -254,8 +248,7 @@ void PasswordSaveManagerImpl::Update(
 
   pending_credentials_state_ = PendingCredentialsState::UPDATE;
 
-  ProcessUpdate(observed_form, parsed_submitted_form);
-  SavePendingToStore(parsed_submitted_form, true /*update*/);
+  SavePendingToStore(observed_form, parsed_submitted_form);
 }
 
 void PasswordSaveManagerImpl::PermanentlyBlacklist(
@@ -451,14 +444,16 @@ PasswordSaveManagerImpl::FindSimilarSavedFormAndComputeState(
 }
 
 void PasswordSaveManagerImpl::SavePendingToStore(
-    const PasswordForm& parsed_submitted_form,
-    bool update) {
+    const FormData& observed_form,
+    const PasswordForm& parsed_submitted_form) {
+  UploadVotesAndMetrics(observed_form, parsed_submitted_form);
+
+  bool update = !IsNewLogin();
   const PasswordForm* similar_saved_form =
       FindSimilarSavedFormAndComputeState(parsed_submitted_form).first;
-  if ((update || IsPasswordUpdate()) &&
-      !pending_credentials_.IsFederatedCredential()) {
+  if (update && !pending_credentials_.IsFederatedCredential())
     DCHECK(similar_saved_form);
-  }
+
   base::string16 old_password = similar_saved_form
                                     ? similar_saved_form->password_value
                                     : base::string16();
@@ -467,15 +462,27 @@ void PasswordSaveManagerImpl::SavePendingToStore(
         pending_credentials_, form_fetcher_->GetAllRelevantMatches(),
         old_password, GetFormSaverForGeneration());
   } else if (update) {
+    // It sounds wrong that we still update even if the state is NONE. We
+    // should double check if this actually necessary. Currently some tests
+    // depend on this behavior.
     UpdateInternal(form_fetcher_->GetAllRelevantMatches(), old_password);
   } else {
     SaveInternal(form_fetcher_->GetAllRelevantMatches(), old_password);
   }
 }
 
-void PasswordSaveManagerImpl::ProcessUpdate(
+void PasswordSaveManagerImpl::UploadVotesAndMetrics(
     const FormData& observed_form,
     const PasswordForm& parsed_submitted_form) {
+  if (IsNewLogin()) {
+    metrics_util::LogNewlySavedPasswordIsGenerated(
+        pending_credentials_.type == PasswordForm::Type::kGenerated);
+    votes_uploader_->SendVotesOnSave(observed_form, parsed_submitted_form,
+                                     form_fetcher_->GetBestMatches(),
+                                     &pending_credentials_);
+    return;
+  }
+
   DCHECK_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
   DCHECK(form_fetcher_->GetPreferredMatch() ||
          pending_credentials_.IsFederatedCredential());

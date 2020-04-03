@@ -38,7 +38,7 @@ class CollectionWrapper : public GarbageCollected<CollectionWrapper<T>> {
 
 template <typename C>
 void AddToCollection() {
-  constexpr int kIterations = 100;
+  constexpr int kIterations = 10;
   IncrementalMarkingTestDriver driver(ThreadState::Current());
   Persistent<CollectionWrapper<C>> persistent =
       MakeGarbageCollected<CollectionWrapper<C>>();
@@ -57,7 +57,7 @@ void AddToCollection() {
 
 template <typename C, typename GetLocation>
 void RemoveFromCollectionAtLocation(GetLocation location) {
-  constexpr int kIterations = 100;
+  constexpr int kIterations = 10;
   IncrementalMarkingTestDriver driver(ThreadState::Current());
   Persistent<CollectionWrapper<C>> persistent =
       MakeGarbageCollected<CollectionWrapper<C>>();
@@ -309,7 +309,7 @@ TEST_F(ConcurrentMarkingTest, SwapHashCountedSet) {
 // Additional test for vectors and deques
 template <typename V>
 void PopFromCollection() {
-  constexpr int kIterations = 100;
+  constexpr int kIterations = 10;
   IncrementalMarkingTestDriver driver(ThreadState::Current());
   Persistent<CollectionWrapper<V>> persistent =
       MakeGarbageCollected<CollectionWrapper<V>>();
@@ -379,7 +379,7 @@ TEST_F(ConcurrentMarkingTest, PopFromVector) {
 // HeapVector with inlined buffer
 
 template <typename T>
-class HeapInlinedVectorAdapter : public HeapVectorAdapter<T, 100> {};
+class HeapInlinedVectorAdapter : public HeapVectorAdapter<T, 10> {};
 
 TEST_F(ConcurrentMarkingTest, AddToInlinedVector) {
   AddToCollection<HeapInlinedVectorAdapter<Member<IntegerObject>>>();

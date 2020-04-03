@@ -26,7 +26,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/background/background_application_list_model.h"
 #include "chrome/browser/background/background_mode_optimizer.h"
 #include "chrome/browser/browser_process.h"
@@ -349,8 +351,9 @@ void BackgroundModeManager::RegisterProfile(Profile* profile) {
 void BackgroundModeManager::LaunchBackgroundApplication(
     Profile* profile,
     const Extension* extension) {
-  apps::LaunchService::Get(profile)->OpenApplication(
-      CreateAppLaunchParamsUserContainer(
+  apps::AppServiceProxyFactory::GetForProfile(profile)
+      ->BrowserAppLauncher()
+      .LaunchAppWithParams(CreateAppLaunchParamsUserContainer(
           profile, extension, WindowOpenDisposition::NEW_FOREGROUND_TAB,
           apps::mojom::AppLaunchSource::kSourceBackground));
 }

@@ -76,6 +76,18 @@
       interfaceName: "MathMLElement",
     },
     {
+      name: "mover",
+      interfaceName: "MathMLUnderOverElement",
+    },
+    {
+      name: "munder",
+      interfaceName: "MathMLUnderOverElement",
+    },
+    {
+      name: "munderover",
+      interfaceName: "MathMLUnderOverElement",
+    },
+    {
       name: "semantics",
       interfaceName: "MathMLRowElement",
     },

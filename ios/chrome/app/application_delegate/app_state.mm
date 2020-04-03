@@ -505,6 +505,16 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 
 #pragma mark - Multiwindow-related
 
+- (SceneState*)foregroundActiveScene {
+  for (SceneState* sceneState in self.connectedScenes) {
+    if (sceneState.activationLevel == SceneActivationLevelForegroundActive) {
+      return sceneState;
+    }
+  }
+
+  return nil;
+}
+
 - (NSArray<SceneState*>*)connectedScenes {
   if (IsMultiwindowSupported()) {
     NSMutableArray* sceneStates = [[NSMutableArray alloc] init];

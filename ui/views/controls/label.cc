@@ -895,9 +895,9 @@ bool Label::IsCommandIdChecked(int command_id) const {
 
 bool Label::IsCommandIdEnabled(int command_id) const {
   switch (command_id) {
-    case IDS_APP_COPY:
+    case MenuCommands::kCopy:
       return HasSelection() && !GetObscured();
-    case IDS_APP_SELECT_ALL:
+    case MenuCommands::kSelectAll:
       return GetRenderTextForSelectionController() && !GetText().empty();
   }
   return false;
@@ -905,10 +905,10 @@ bool Label::IsCommandIdEnabled(int command_id) const {
 
 void Label::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
-    case IDS_APP_COPY:
+    case MenuCommands::kCopy:
       CopyToClipboard();
       break;
-    case IDS_APP_SELECT_ALL:
+    case MenuCommands::kSelectAll:
       SelectAll();
       DCHECK(HasSelection());
       UpdateSelectionClipboard();
@@ -921,11 +921,11 @@ void Label::ExecuteCommand(int command_id, int event_flags) {
 bool Label::GetAcceleratorForCommandId(int command_id,
                                        ui::Accelerator* accelerator) const {
   switch (command_id) {
-    case IDS_APP_COPY:
+    case MenuCommands::kCopy:
       *accelerator = ui::Accelerator(ui::VKEY_C, ui::EF_CONTROL_DOWN);
       return true;
 
-    case IDS_APP_SELECT_ALL:
+    case MenuCommands::kSelectAll:
       *accelerator = ui::Accelerator(ui::VKEY_A, ui::EF_CONTROL_DOWN);
       return true;
 
@@ -1101,8 +1101,8 @@ void Label::CopyToClipboard() {
 }
 
 void Label::BuildContextMenuContents() {
-  context_menu_contents_.AddItemWithStringId(IDS_APP_COPY, IDS_APP_COPY);
-  context_menu_contents_.AddItemWithStringId(IDS_APP_SELECT_ALL,
+  context_menu_contents_.AddItemWithStringId(MenuCommands::kCopy, IDS_APP_COPY);
+  context_menu_contents_.AddItemWithStringId(MenuCommands::kSelectAll,
                                              IDS_APP_SELECT_ALL);
 }
 

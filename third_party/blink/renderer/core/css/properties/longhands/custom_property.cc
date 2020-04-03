@@ -79,6 +79,7 @@ void CustomProperty::ApplyValue(StyleResolverState& state,
 
   const auto& declaration = To<CSSCustomPropertyDeclaration>(value);
 
+  DCHECK(!value.IsRevertValue());
   bool is_inherited_property = IsInherited();
   bool initial = declaration.IsInitial(is_inherited_property);
   bool inherit = declaration.IsInherit(is_inherited_property);

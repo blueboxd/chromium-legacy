@@ -61,6 +61,19 @@ constexpr char kDemoSetupLoadingDurationHistogram[] =
     "DemoMode.Setup.LoadingDuration";
 constexpr char kDemoSetupNumRetriesHistogram[] = "DemoMode.Setup.NumRetries";
 
+struct DemoSetupStepInfo {
+  DemoSetupController::DemoSetupStep step;
+  const int step_index;
+};
+
+base::span<const DemoSetupStepInfo> GetDemoSetupStepsInfo() {
+  static const DemoSetupStepInfo kDemoModeSetupStepsInfo[] = {
+      {DemoSetupController::DemoSetupStep::kDownloadResources, 0},
+      {DemoSetupController::DemoSetupStep::kEnrollment, 1},
+      {DemoSetupController::DemoSetupStep::kComplete, 2}};
+  return kDemoModeSetupStepsInfo;
+}
+
 // Get the DeviceLocalAccountPolicyStore for the account_id.
 policy::CloudPolicyStore* GetDeviceLocalAccountPolicyStore(
     const std::string& account_id) {
@@ -483,6 +496,32 @@ std::string DemoSetupController::GetSubOrganizationEmail() {
   return std::string();
 }
 
+// static
+base::Value DemoSetupController::GetDemoSetupSteps() {
+  base::Value setup_steps_dict(base::Value::Type::DICTIONARY);
+  for (auto entry : GetDemoSetupStepsInfo()) {
+    setup_steps_dict.SetIntPath(GetDemoSetupStepString(entry.step),
+                                entry.step_index);
+  }
+
+  return setup_steps_dict;
+}
+
+// static
+std::string DemoSetupController::GetDemoSetupStepString(
+    const DemoSetupStep step_enum) {
+  switch (step_enum) {
+    case DemoSetupStep::kDownloadResources:
+      return "downloadResources";
+    case DemoSetupStep::kEnrollment:
+      return "enrollment";
+    case DemoSetupStep::kComplete:
+      return "complete";
+  }
+
+  NOTREACHED();
+}
+
 DemoSetupController::DemoSetupController() {}
 
 DemoSetupController::~DemoSetupController() {
@@ -497,17 +536,19 @@ bool DemoSetupController::IsOfflineEnrollment() const {
 void DemoSetupController::Enroll(
     OnSetupSuccess on_setup_success,
     OnSetupError on_setup_error,
-    const OnIncrementSetupProgress& increment_setup_progress) {
+    const OnSetCurrentSetupStep& set_current_setup_step) {
   DCHECK_NE(demo_config_, DemoSession::DemoModeConfig::kNone)
       << "Demo config needs to be explicitly set before calling Enroll()";
   DCHECK(!enrollment_helper_);
 
-  increment_setup_progress_ = increment_setup_progress;
+  set_current_setup_step_ = set_current_setup_step;
   on_setup_success_ = std::move(on_setup_success);
   on_setup_error_ = std::move(on_setup_error);
 
   VLOG(1) << "Starting demo setup "
           << DemoSession::DemoConfigToString(demo_config_);
+
+  SetCurrentSetupStep(DemoSetupStep::kDownloadResources);
 
   switch (demo_config_) {
     case DemoSession::DemoModeConfig::kOnline:
@@ -577,7 +618,7 @@ void DemoSetupController::OnDemoResourcesCrOSComponentLoaded() {
       base::TimeTicks::Now() - download_start_time_;
   base::UmaHistogramLongTimes100(kDemoSetupDownloadDurationHistogram,
                                  download_duration);
-  IncrementSetupProgress(/*complete=*/false);
+  SetCurrentSetupStep(DemoSetupStep::kEnrollment);
 
   if (demo_resources_->component_error().value() !=
       component_updater::CrOSComponentManager::Error::NONE) {
@@ -662,7 +703,6 @@ void DemoSetupController::OnDeviceEnrolled() {
     base::UmaHistogramLongTimes100(kDemoSetupEnrollDurationHistogram,
                                    enroll_duration);
   }
-  IncrementSetupProgress(/*complete=*/false);
 
   // Try to load the policy for the device local account.
   if (demo_config_ == DemoSession::DemoModeConfig::kOffline) {
@@ -764,8 +804,6 @@ void DemoSetupController::OnDeviceLocalAccountPolicyLoaded(
 }
 
 void DemoSetupController::OnDeviceRegistered() {
-  IncrementSetupProgress(/*complete=*/true);
-
   VLOG(1) << "Demo mode setup finished successfully.";
 
   if (demo_config_ == DemoSession::DemoModeConfig::kOnline) {
@@ -782,6 +820,8 @@ void DemoSetupController::OnDeviceRegistered() {
   base::UmaHistogramCounts100(kDemoSetupNumRetriesHistogram,
                               num_setup_retries_);
 
+  SetCurrentSetupStep(DemoSetupStep::kComplete);
+
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetInteger(prefs::kDemoModeConfig, static_cast<int>(demo_config_));
   prefs->CommitPendingWrite();
@@ -790,9 +830,9 @@ void DemoSetupController::OnDeviceRegistered() {
     std::move(on_setup_success_).Run();
 }
 
-void DemoSetupController::IncrementSetupProgress(bool complete) {
-  if (!increment_setup_progress_.is_null())
-    increment_setup_progress_.Run(complete);
+void DemoSetupController::SetCurrentSetupStep(DemoSetupStep current_step) {
+  if (!set_current_setup_step_.is_null())
+    set_current_setup_step_.Run(current_step);
 }
 
 void DemoSetupController::SetupFailed(const DemoSetupError& error) {

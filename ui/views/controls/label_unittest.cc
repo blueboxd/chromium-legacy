@@ -1384,38 +1384,38 @@ TEST_F(LabelSelectionTest, ContextMenuContents) {
   label()->SetText(ASCIIToUTF16("Label context menu"));
   label()->SizeToPreferredSize();
 
-  // A non-selectable label would not show a context menu and both COPY and
-  // SELECT_ALL context menu items should be disabled for it.
-  EXPECT_FALSE(IsMenuCommandEnabled(IDS_APP_COPY));
-  EXPECT_FALSE(IsMenuCommandEnabled(IDS_APP_SELECT_ALL));
+  // A non-selectable label should not show a context menu and both copy and
+  // select-all context menu items should be disabled for it.
+  EXPECT_FALSE(IsMenuCommandEnabled(Label::MenuCommands::kCopy));
+  EXPECT_FALSE(IsMenuCommandEnabled(Label::MenuCommands::kSelectAll));
 
-  // For a selectable label with no selection, only SELECT_ALL should be
+  // For a selectable label with no selection, only kSelectAll should be
   // enabled.
   ASSERT_TRUE(label()->SetSelectable(true));
-  EXPECT_FALSE(IsMenuCommandEnabled(IDS_APP_COPY));
-  EXPECT_TRUE(IsMenuCommandEnabled(IDS_APP_SELECT_ALL));
+  EXPECT_FALSE(IsMenuCommandEnabled(Label::MenuCommands::kCopy));
+  EXPECT_TRUE(IsMenuCommandEnabled(Label::MenuCommands::kSelectAll));
 
-  // For a selectable label with a selection, both COPY and SELECT_ALL should be
-  // enabled.
+  // For a selectable label with a selection, both copy and select-all should
+  // be enabled.
   label()->SelectRange(gfx::Range(0, 4));
-  EXPECT_TRUE(IsMenuCommandEnabled(IDS_APP_COPY));
-  EXPECT_TRUE(IsMenuCommandEnabled(IDS_APP_SELECT_ALL));
-  // Ensure unsupported commands like PASTE are not enabled.
-  EXPECT_FALSE(IsMenuCommandEnabled(IDS_APP_PASTE));
+  EXPECT_TRUE(IsMenuCommandEnabled(Label::MenuCommands::kCopy));
+  EXPECT_TRUE(IsMenuCommandEnabled(Label::MenuCommands::kSelectAll));
+  // Ensure unsupported commands are not enabled.
+  EXPECT_FALSE(IsMenuCommandEnabled(Label::MenuCommands::kLastCommandId + 1));
 
-  // An obscured label would not show a context menu and both COPY and
-  // SELECT_ALL should be disabled for it.
+  // An obscured label would not show a context menu and both copy and
+  // select-all should be disabled for it.
   label()->SetObscured(true);
   EXPECT_FALSE(label()->GetSelectable());
-  EXPECT_FALSE(IsMenuCommandEnabled(IDS_APP_COPY));
-  EXPECT_FALSE(IsMenuCommandEnabled(IDS_APP_SELECT_ALL));
+  EXPECT_FALSE(IsMenuCommandEnabled(Label::MenuCommands::kCopy));
+  EXPECT_FALSE(IsMenuCommandEnabled(Label::MenuCommands::kSelectAll));
   label()->SetObscured(false);
 
-  // For an empty label, both COPY and SELECT_ALL should be disabled.
+  // For an empty label, both copy and select-all should be disabled.
   label()->SetText(base::string16());
   ASSERT_TRUE(label()->SetSelectable(true));
-  EXPECT_FALSE(IsMenuCommandEnabled(IDS_APP_COPY));
-  EXPECT_FALSE(IsMenuCommandEnabled(IDS_APP_SELECT_ALL));
+  EXPECT_FALSE(IsMenuCommandEnabled(Label::MenuCommands::kCopy));
+  EXPECT_FALSE(IsMenuCommandEnabled(Label::MenuCommands::kSelectAll));
 }
 
 }  // namespace views

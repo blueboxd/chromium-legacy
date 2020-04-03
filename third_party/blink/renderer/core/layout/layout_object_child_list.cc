@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 
@@ -59,9 +60,13 @@ void InvalidateInlineItems(LayoutObject* object) {
   }
 
   if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
-    // TODO(yosin): Tells |NGFragmentItem| about they become not to associate
-    // to layout object.
-    object->ClearFirstInlineFragmentItemIndex();
+    // This LayoutObject is not technically destroyed, but further access should
+    // be prohibited when moved to different parent as if it were destroyed.
+    if (object->FirstInlineFragmentItemIndex()) {
+      if (auto* text = ToLayoutTextOrNull(object))
+        text->DetachAbstractInlineTextBoxesIfNeeded();
+      NGFragmentItems::LayoutObjectWillBeMoved(*object);
+    }
   } else if (NGPaintFragment* fragment = object->FirstInlineFragment()) {
     // This LayoutObject is not technically destroyed, but further access should
     // be prohibited when moved to different parent as if it were destroyed.

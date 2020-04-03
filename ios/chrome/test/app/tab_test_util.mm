@@ -17,6 +17,8 @@
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/ui/main/scene_controller.h"
+#import "ios/chrome/browser/ui/main/scene_controller_testing.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_switcher.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -57,12 +59,12 @@ BOOL IsIncognitoMode() {
 void OpenNewTab() {
   @autoreleasepool {  // Make sure that all internals are deallocated.
     OpenNewTabCommand* command = [OpenNewTabCommand command];
-    if (GetMainController().tabSwitcherActive) {
+    if (GetForegroundActiveSceneController().isTabSwitcherActive) {
       // The TabGrid is currently presented.
       Browser* browser =
-          GetMainController().interfaceProvider.mainInterface.browser;
+          GetForegroundActiveScene().interfaceProvider.mainInterface.browser;
       UrlLoadParams params = UrlLoadParams::InNewTab(GURL(kChromeUINewTabURL));
-      [GetMainController().tabSwitcher
+      [GetForegroundActiveSceneController().tabSwitcher
           dismissWithNewTabAnimationToBrowser:browser
                             withUrlLoadParams:params
                                       atIndex:INT_MAX];
@@ -84,12 +86,12 @@ void SimulateExternalAppURLOpening() {
 void OpenNewIncognitoTab() {
   @autoreleasepool {  // Make sure that all internals are deallocated.
     OpenNewTabCommand* command = [OpenNewTabCommand incognitoTabCommand];
-    if (GetMainController().tabSwitcherActive) {
+    if (GetForegroundActiveSceneController().isTabSwitcherActive) {
       // The TabGrid is currently presented.
-      Browser* browser =
-          GetMainController().interfaceProvider.incognitoInterface.browser;
+      Browser* browser = GetForegroundActiveScene()
+                             .interfaceProvider.incognitoInterface.browser;
       UrlLoadParams params = UrlLoadParams::InNewTab(GURL(kChromeUINewTabURL));
-      [GetMainController().tabSwitcher
+      [GetForegroundActiveSceneController().tabSwitcher
           dismissWithNewTabAnimationToBrowser:browser
                             withUrlLoadParams:params
                                       atIndex:INT_MAX];
@@ -147,7 +149,7 @@ void CloseTabAtIndex(NSUInteger index) {
 }
 
 NSUInteger GetIndexOfActiveNormalTab() {
-  TabModel* model = chrome_test_util::GetMainController()
+  TabModel* model = chrome_test_util::GetForegroundActiveSceneController()
                         .interfaceProvider.mainInterface.tabModel;
   return model.webStateList->active_index();
 }
@@ -158,11 +160,12 @@ void CloseAllTabsInCurrentMode() {
 
 void CloseAllTabs() {
   if (GetIncognitoTabCount()) {
-    [GetMainController()
+    [GetForegroundActiveSceneController()
             .interfaceProvider.incognitoInterface.tabModel closeAllTabs];
   }
   if (GetMainTabCount()) {
-    [GetMainController().interfaceProvider.mainInterface.tabModel closeAllTabs];
+    [GetForegroundActiveScene()
+            .interfaceProvider.mainInterface.tabModel closeAllTabs];
   }
 }
 

@@ -192,7 +192,8 @@ void PannerHandler::Process(uint32_t frames_to_process) {
       Listener()->WaitForHRTFDatabaseLoaderThreadCompletion();
     }
 
-    if (HasSampleAccurateValues() || Listener()->HasSampleAccurateValues()) {
+    if ((HasSampleAccurateValues() || Listener()->HasSampleAccurateValues()) &&
+        (IsAudioRate() || Listener()->IsAudioRate())) {
       // It's tempting to skip sample-accurate processing if
       // isAzimuthElevationDirty() and isDistanceConeGain() both return false.
       // But in general we can't because something may scheduled to start in the
@@ -330,10 +331,9 @@ void PannerHandler::Initialize() {
                            Listener()->HrtfDatabaseLoader());
   Listener()->AddPanner(*this);
 
-  // Set the cached values to the current values to start things off.  The
-  // panner is already marked as dirty, so this won't matter.
-  last_position_ = GetPosition();
-  last_orientation_ = Orientation();
+  // The panner is already marked as dirty, so |last_position_| and
+  // |last_orientation_| will bet updated on first use.  Don't need to
+  // set them here.
 
   AudioHandler::Initialize();
 }
@@ -710,12 +710,18 @@ void PannerHandler::SetChannelCountMode(const String& mode,
 }
 
 bool PannerHandler::HasSampleAccurateValues() const {
-  return position_x_->HasSampleAccurateValues() ||
-         position_y_->HasSampleAccurateValues() ||
-         position_z_->HasSampleAccurateValues() ||
-         orientation_x_->HasSampleAccurateValues() ||
-         orientation_y_->HasSampleAccurateValues() ||
-         orientation_z_->HasSampleAccurateValues();
+  return position_x_->HasSampleAccurateValuesTimeline() ||
+         position_y_->HasSampleAccurateValuesTimeline() ||
+         position_z_->HasSampleAccurateValuesTimeline() ||
+         orientation_x_->HasSampleAccurateValuesTimeline() ||
+         orientation_y_->HasSampleAccurateValuesTimeline() ||
+         orientation_z_->HasSampleAccurateValuesTimeline();
+}
+
+bool PannerHandler::IsAudioRate() const {
+  return position_x_->IsAudioRate() || position_y_->IsAudioRate() ||
+         position_z_->IsAudioRate() || orientation_x_->IsAudioRate() ||
+         orientation_y_->IsAudioRate() || orientation_z_->IsAudioRate();
 }
 
 void PannerHandler::UpdateDirtyState() {

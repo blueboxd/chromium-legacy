@@ -6,8 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SERIAL_SERIAL_PORT_H_
 
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/serial.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/serial/serial.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
@@ -15,6 +13,9 @@
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 
 namespace base {
 class UnguessableToken;
@@ -37,7 +38,6 @@ class SerialPort final : public ScriptWrappable,
                          public device::mojom::blink::SerialPortClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(SerialPort);
-  USING_PRE_FINALIZER(SerialPort, Dispose);
 
  public:
   explicit SerialPort(Serial* parent, mojom::blink::SerialPortInfoPtr info);
@@ -64,7 +64,6 @@ class SerialPort final : public ScriptWrappable,
 
   void ContextDestroyed();
   void Trace(Visitor*) override;
-  void Dispose();
 
   // ActiveScriptWrappable
   ExecutionContext* GetExecutionContext() const;
@@ -95,8 +94,10 @@ class SerialPort final : public ScriptWrappable,
   const Member<Serial> parent_;
 
   uint32_t buffer_size_ = 0;
-  mojo::Remote<device::mojom::blink::SerialPort> port_;
-  mojo::Receiver<device::mojom::blink::SerialPortClient> client_receiver_{this};
+  HeapMojoRemote<device::mojom::blink::SerialPort> port_;
+  HeapMojoReceiver<device::mojom::blink::SerialPortClient,
+                   HeapMojoWrapperMode::kWithoutContextObserver>
+      client_receiver_;
 
   Member<ReadableStream> readable_;
   Member<SerialPortUnderlyingSource> underlying_source_;

@@ -373,6 +373,27 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
             extension_prefs->GetDisableReasons(
                 chromeos::default_web_apps::kOsSettingsAppId));
 }
+
+// Ensure that OS Settings is not blocked by the ExtensionAllowedTypes policy.
+IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionAllowedTypesOsSettings) {
+  extensions::ExtensionRegistry* registry = extension_registry();
+  const extensions::Extension* bookmark_app = InstallOSSettings();
+  ASSERT_TRUE(bookmark_app);
+  ASSERT_TRUE(registry->enabled_extensions().GetByID(
+      chromeos::default_web_apps::kOsSettingsAppId));
+
+  base::ListValue allowed_types;
+  allowed_types.AppendString("theme");
+  PolicyMap policies;
+  policies.Set(key::kExtensionAllowedTypes, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               allowed_types.CreateDeepCopy(), nullptr);
+  UpdateProviderPolicy(policies);
+
+  extensions::ExtensionService* service = extension_service();
+  EXPECT_TRUE(service->IsExtensionEnabled(
+      chromeos::default_web_apps::kOsSettingsAppId));
+}
 #endif  // defined(OS_CHROMEOS)
 
 IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,

@@ -150,7 +150,6 @@ bool CSSSyntaxStringParser::ConsumeDataTypeName(CSSSyntaxType& type) {
 
 bool CSSSyntaxStringParser::ConsumeIdent(String& ident) {
   ident = ConsumeName(input_);
-  // TODO(crbug.com/579788): Implement 'revert'.
   // TODO(crbug.com/882285): Make 'default' invalid as <custom-ident>.
   return !css_property_parser_helpers::IsCSSWideKeyword(ident) &&
          !css_property_parser_helpers::IsRevertKeyword(ident) &&

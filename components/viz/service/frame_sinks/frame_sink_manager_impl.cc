@@ -58,7 +58,8 @@ FrameSinkManagerImpl::FrameSinkManagerImpl(const InitParams& params)
       hit_test_manager_(surface_manager()),
       restart_id_(params.restart_id),
       run_all_compositor_stages_before_draw_(
-          params.run_all_compositor_stages_before_draw) {
+          params.run_all_compositor_stages_before_draw),
+      log_capture_pipeline_in_webrtc_(params.log_capture_pipeline_in_webrtc) {
   surface_manager_.AddObserver(&hit_test_manager_);
   surface_manager_.AddObserver(this);
 }
@@ -273,7 +274,8 @@ void FrameSinkManagerImpl::CreateVideoCapturer(
   video_capturers_.emplace(std::make_unique<FrameSinkVideoCapturerImpl>(
       this, std::move(receiver),
       std::make_unique<media::VideoCaptureOracle>(
-          true /* enable_auto_throttling */)));
+          true /* enable_auto_throttling */),
+      log_capture_pipeline_in_webrtc_));
 }
 
 void FrameSinkManagerImpl::EvictSurfaces(

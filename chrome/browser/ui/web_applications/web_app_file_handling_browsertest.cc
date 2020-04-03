@@ -10,7 +10,9 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
 #include "chrome/browser/web_applications/components/file_handler_manager.h"
 #include "chrome/browser/web_applications/components/web_app_prefs_utils.h"
@@ -150,7 +152,9 @@ content::WebContents* LaunchApplication(
   navigation_observer.StartWatchingNewWebContents();
 
   content::WebContents* web_contents =
-      apps::LaunchService::Get(profile)->OpenApplication(params);
+      apps::AppServiceProxyFactory::GetForProfile(profile)
+          ->BrowserAppLauncher()
+          .LaunchAppWithParams(params);
 
   navigation_observer.Wait();
 

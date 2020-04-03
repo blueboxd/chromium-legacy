@@ -470,18 +470,9 @@ CSSPrimitiveValue* ConsumeAlphaValue(CSSParserTokenRange& range,
 
 bool CanConsumeCalcValue(CalculationCategory category,
                          CSSParserMode css_parser_mode) {
-  if (category == kCalcLength || category == kCalcPercent ||
-      category == kCalcPercentLength)
-    return true;
-
-  if (css_parser_mode != kSVGAttributeMode)
-    return false;
-
-  if (category == kCalcNumber || category == kCalcPercentNumber ||
-      category == kCalcLengthNumber || category == kCalcPercentLengthNumber)
-    return true;
-
-  return false;
+  return category == kCalcLength || category == kCalcPercent ||
+         category == kCalcPercentLength ||
+         (css_parser_mode == kSVGAttributeMode && category == kCalcNumber);
 }
 
 CSSPrimitiveValue* ConsumeLengthOrPercent(CSSParserTokenRange& range,
@@ -512,16 +503,7 @@ bool IsNonZeroUserUnitsValue(const CSSPrimitiveValue* value) {
            value->GetDoubleValue() != 0;
   }
   const auto& math_value = To<CSSMathFunctionValue>(*value);
-  switch (math_value.Category()) {
-    case kCalcNumber:
-      return math_value.DoubleValue() != 0;
-    case kCalcPercentNumber:
-    case kCalcLengthNumber:
-    case kCalcPercentLengthNumber:
-      return true;
-    default:
-      return false;
-  }
+  return math_value.Category() == kCalcNumber && math_value.DoubleValue() != 0;
 }
 
 }  // namespace
@@ -1868,7 +1850,9 @@ CSSValue* ConsumeImage(CSSParserTokenRange& range,
 bool IsCSSWideKeyword(StringView keyword) {
   return EqualIgnoringASCIICase(keyword, "initial") ||
          EqualIgnoringASCIICase(keyword, "inherit") ||
-         EqualIgnoringASCIICase(keyword, "unset");
+         EqualIgnoringASCIICase(keyword, "unset") ||
+         (RuntimeEnabledFeatures::CSSRevertEnabled() &&
+          EqualIgnoringASCIICase(keyword, "revert"));
 }
 
 // https://drafts.csswg.org/css-cascade/#default

@@ -44,6 +44,11 @@ Polymer({
   ],
 
   properties: {
+    // <if expr="not chromeos">
+    /** @private */
+    storedAccounts_: Array,
+    // </if>
+
     /** Preferences state. */
     prefs: {
       type: Object,
@@ -98,7 +103,7 @@ Polymer({
     signedIn_: {
       type: Boolean,
       value: true,
-      computed: 'computeSignedIn_(syncStatus_.signedIn)',
+      computed: 'computeSignedIn_(syncStatus_, storedAccounts_)',
     },
 
     /** @private */
@@ -299,6 +304,13 @@ Polymer({
     syncBrowserProxy.sendSyncPrefsChanged();
     this.addWebUIListener('sync-prefs-changed', syncPrefsChanged);
 
+    // For non-ChromeOS, also check whether accounts are available.
+    // <if expr="not chromeos">
+    const storedAccountsChanged = accounts => this.storedAccounts_ = accounts;
+    syncBrowserProxy.getStoredAccounts().then(storedAccountsChanged);
+    this.addWebUIListener('stored-accounts-updated', storedAccountsChanged);
+    // </if>
+
     Polymer.RenderStatus.afterNextRender(this, function() {
       Polymer.IronA11yAnnouncer.requestAvailability();
     });
@@ -387,7 +399,9 @@ Polymer({
    * @private
    */
   computeSignedIn_() {
-    return !!this.syncStatus_ && !!this.syncStatus_.signedIn;
+    return !!this.syncStatus_ && !!this.syncStatus_.signedIn ?
+        !this.syncStatus_.hasError :
+        (!!this.storedAccounts_ && this.storedAccounts_.length > 0);
   },
 
   /**

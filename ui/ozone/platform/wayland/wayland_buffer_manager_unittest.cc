@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu_impl.h"
-#include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host_impl.h"
+#include "ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu.h"
+#include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
 
 #include <drm_fourcc.h>
 #include <memory>
@@ -69,28 +69,22 @@ class MockSurfaceGpu : public WaylandSurfaceGpu {
 
 }  // namespace
 
-// Exercises WaylandBufferManagerGpu<->Host with mojo.
 class WaylandBufferManagerTest : public WaylandTest {
  public:
   WaylandBufferManagerTest() = default;
   ~WaylandBufferManagerTest() override = default;
 
   void SetUp() override {
-    // Instructs to create mojo based impl of buffer managers.
-    WaylandTest::SetInitializeWithMojo(true);
     WaylandTest::SetUp();
 
-    manager_host_ = static_cast<WaylandBufferManagerHostImpl*>(
-        connection_->buffer_manager_host());
+    manager_host_ = connection_->buffer_manager_host();
     EXPECT_TRUE(manager_host_);
 
     // Use the helper methods below, which automatically set the termination
     // callback and bind the interface again if the manager failed.
     manager_host_->SetTerminateGpuCallback(callback_.Get());
     auto interface_ptr = manager_host_->BindInterface();
-    auto* manager_gpu_impl =
-        static_cast<WaylandBufferManagerGpuImpl*>(buffer_manager_gpu_.get());
-    manager_gpu_impl->Initialize(std::move(interface_ptr), {}, false);
+    buffer_manager_gpu_->Initialize(std::move(interface_ptr), {}, false);
   }
 
  protected:
@@ -124,12 +118,9 @@ class WaylandBufferManagerTest : public WaylandTest {
             auto interface_ptr = manager_host_->BindInterface();
             // Recreate the gpu side manager (the production code does the
             // same).
-            auto buffer_manager_gpu_impl =
-                std::make_unique<WaylandBufferManagerGpuImpl>();
-            buffer_manager_gpu_impl->Initialize(std::move(interface_ptr), {},
-                                                false);
-            buffer_manager_gpu_ = std::move(buffer_manager_gpu_impl);
-
+            buffer_manager_gpu_ = std::make_unique<WaylandBufferManagerGpu>();
+            buffer_manager_gpu_->Initialize(std::move(interface_ptr), {},
+                                            false);
           }));
     }
   }
@@ -212,8 +203,7 @@ class WaylandBufferManagerTest : public WaylandTest {
   }
 
   MockTerminateGpuCallback callback_;
-  WaylandBufferManagerHostImpl* manager_host_;
-  WaylandBufferManagerGpuImpl* manager_gpu_;
+  WaylandBufferManagerHost* manager_host_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WaylandBufferManagerTest);

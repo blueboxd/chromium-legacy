@@ -51,6 +51,7 @@ class DevToolsEyeDropper : public content::WebContentsObserver,
       mojo::PendingRemote<viz::mojom::FrameSinkVideoConsumerFrameCallbacks>
           callbacks) override;
   void OnStopped() override;
+  void OnLog(const std::string& /*message*/) override {}
 
   EyeDropperCallback callback_;
   SkBitmap frame_;

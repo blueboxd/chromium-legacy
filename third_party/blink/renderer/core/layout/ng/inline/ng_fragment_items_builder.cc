@@ -217,7 +217,6 @@ void NGFragmentItemsBuilder::ToFragmentItems(WritingMode writing_mode,
                                              const PhysicalSize& outer_size,
                                              void* data) {
   ConvertToPhysical(writing_mode, direction, outer_size);
-  NGFragmentItems::AssociateWithLayoutObject(&items_);
   new (data) NGFragmentItems(this);
 }
 

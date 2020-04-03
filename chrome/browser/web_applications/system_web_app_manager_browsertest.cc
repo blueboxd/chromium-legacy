@@ -18,7 +18,7 @@
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/native_file_system/native_file_system_permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -123,11 +123,9 @@ apps::AppLaunchParams SystemWebAppManagerBrowserTestBase::LaunchParamsForApp(
 
 content::WebContents* SystemWebAppManagerBrowserTestBase::LaunchApp(
     const apps::AppLaunchParams& params) {
-  // Use apps::LaunchService::OpenApplication() to get the most coverage. E.g.,
-  // this is what is invoked by file_manager::file_tasks::ExecuteWebTask() on
-  // ChromeOS.
-  return apps::LaunchService::Get(browser()->profile())
-      ->OpenApplication(params);
+  return apps::AppServiceProxyFactory::GetForProfile(browser()->profile())
+      ->BrowserAppLauncher()
+      .LaunchAppWithParams(params);
 }
 
 SystemWebAppManagerBrowserTest::SystemWebAppManagerBrowserTest(
@@ -275,7 +273,9 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerLaunchFilesBrowserTest,
   content::TestNavigationObserver navigation_observer(launch_url);
   navigation_observer.StartWatchingNewWebContents();
   content::WebContents* web_contents =
-      apps::LaunchService::Get(browser()->profile())->OpenApplication(params);
+      apps::AppServiceProxyFactory::GetForProfile(browser()->profile())
+          ->BrowserAppLauncher()
+          .LaunchAppWithParams(params);
   navigation_observer.Wait();
 
   // Set up a Promise that resolves to launchParams, when launchQueue's consumer
@@ -312,7 +312,9 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerLaunchFilesBrowserTest,
                                              &temp_file_path2));
   params.launch_files = {temp_file_path2};
   content::WebContents* web_contents2 =
-      apps::LaunchService::Get(browser()->profile())->OpenApplication(params);
+      apps::AppServiceProxyFactory::GetForProfile(browser()->profile())
+          ->BrowserAppLauncher()
+          .LaunchAppWithParams(params);
 
   // WebContents* should be the same because we are passing launchParams to the
   // opened application.
@@ -419,7 +421,9 @@ class SystemWebAppManagerLaunchDirectoryBrowserTest
     content::TestNavigationObserver navigation_observer(launch_url);
     navigation_observer.StartWatchingNewWebContents();
     content::WebContents* web_contents =
-        apps::LaunchService::Get(browser()->profile())->OpenApplication(params);
+        apps::AppServiceProxyFactory::GetForProfile(browser()->profile())
+            ->BrowserAppLauncher()
+            .LaunchAppWithParams(params);
     navigation_observer.Wait();
 
     // Launch directories and files passed to system web apps should
@@ -519,7 +523,9 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerLaunchDirectoryBrowserTest,
   content::TestNavigationObserver navigation_observer(launch_url);
   navigation_observer.StartWatchingNewWebContents();
   content::WebContents* web_contents =
-      apps::LaunchService::Get(browser()->profile())->OpenApplication(params);
+      apps::AppServiceProxyFactory::GetForProfile(browser()->profile())
+          ->BrowserAppLauncher()
+          .LaunchAppWithParams(params);
   navigation_observer.Wait();
 
   // Set up a Promise that resolves to launchParams, when launchQueue's consumer
@@ -583,7 +589,9 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerLaunchDirectoryBrowserTest,
                                              &temp_file_path2));
   params.launch_files = {temp_file_path2};
   content::WebContents* web_contents2 =
-      apps::LaunchService::Get(browser()->profile())->OpenApplication(params);
+      apps::AppServiceProxyFactory::GetForProfile(browser()->profile())
+          ->BrowserAppLauncher()
+          .LaunchAppWithParams(params);
 
   // WebContents* should be the same because we are passing launchParams to the
   // opened application.
@@ -689,7 +697,9 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerFileHandlingOriginTrialsBrowserTest,
   content::TestNavigationObserver navigation_observer(launch_url);
   navigation_observer.StartWatchingNewWebContents();
   content::WebContents* web_contents =
-      apps::LaunchService::Get(browser()->profile())->OpenApplication(params);
+      apps::AppServiceProxyFactory::GetForProfile(browser()->profile())
+          ->BrowserAppLauncher()
+          .LaunchAppWithParams(params);
   navigation_observer.Wait();
 
   // Wait for the Promise to resolve.

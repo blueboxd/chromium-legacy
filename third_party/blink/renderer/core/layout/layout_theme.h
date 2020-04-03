@@ -169,7 +169,6 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
                                 bool in_forced_colors_mode,
                                 WebColorScheme color_scheme) const;
 
-  virtual bool IsFocusRingOutset() const;
   virtual Color FocusRingColor() const;
   virtual Color PlatformFocusRingColor() const { return Color(0, 0, 0); }
   void SetCustomFocusRingColor(const Color&);

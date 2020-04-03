@@ -7931,6 +7931,7 @@ const CSSValue* WillChange::ParseSingleValue(
         case CSSValueID::kDefault:
         case CSSValueID::kInitial:
         case CSSValueID::kInherit:
+        case CSSValueID::kRevert:
           return nullptr;
         case CSSValueID::kContents:
         case CSSValueID::kScrollPosition:

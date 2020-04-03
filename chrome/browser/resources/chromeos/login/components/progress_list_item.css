@@ -3,7 +3,6 @@
  * found in the LICENSE file. */
 
 #container {
-  align-items: center;
   height: 56px;
 }
 
@@ -15,7 +14,7 @@
   background-color: var(--google-grey-500);
   border-radius: 50%;
   height: 8px;
-  margin-start: 8px;
+  margin-inline-start: 8px;
   width: 8px;
 }
 

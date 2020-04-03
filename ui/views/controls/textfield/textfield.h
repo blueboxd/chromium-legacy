@@ -75,6 +75,13 @@ class VIEWS_EXPORT Textfield : public View,
  public:
   METADATA_HEADER(Textfield);
 
+  enum MenuCommands {
+    kUndo = kLastTouchEditableCommandId + 1,
+    kDelete,
+    kSelectAll,
+    kLastCommandId = kSelectAll,
+  };
+
   // Returns the text cursor blink time, or 0 for no blinking.
   static base::TimeDelta GetCaretBlinkInterval();
 

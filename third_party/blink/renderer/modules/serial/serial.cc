@@ -42,7 +42,9 @@ String TokenToString(const base::UnguessableToken& token) {
 }  // namespace
 
 Serial::Serial(ExecutionContext& execution_context)
-    : ExecutionContextLifecycleObserver(&execution_context) {}
+    : ExecutionContextLifecycleObserver(&execution_context),
+      service_(&execution_context),
+      receiver_(this, &execution_context) {}
 
 ExecutionContext* Serial::GetExecutionContext() const {
   return ExecutionContextLifecycleObserver::GetExecutionContext();
@@ -155,10 +157,6 @@ ScriptPromise Serial::requestPort(ScriptState* script_state,
   return resolver->Promise();
 }
 
-void Serial::Dispose() {
-  receiver_.reset();
-}
-
 void Serial::GetPort(
     const base::UnguessableToken& token,
     mojo::PendingReceiver<device::mojom::blink::SerialPort> receiver) {
@@ -167,6 +165,8 @@ void Serial::GetPort(
 }
 
 void Serial::Trace(Visitor* visitor) {
+  visitor->Trace(service_);
+  visitor->Trace(receiver_);
   visitor->Trace(get_ports_promises_);
   visitor->Trace(request_port_promises_);
   visitor->Trace(port_cache_);
@@ -196,7 +196,7 @@ void Serial::AddedEventListener(const AtomicString& event_type,
 void Serial::EnsureServiceConnection() {
   DCHECK(GetExecutionContext());
 
-  if (service_)
+  if (service_.is_bound())
     return;
 
   auto task_runner =
@@ -206,7 +206,7 @@ void Serial::EnsureServiceConnection() {
   service_.set_disconnect_handler(
       WTF::Bind(&Serial::OnServiceConnectionError, WrapWeakPersistent(this)));
 
-  service_->SetClient(receiver_.BindNewPipeAndPassRemote());
+  service_->SetClient(receiver_.BindNewPipeAndPassRemote(task_runner));
 }
 
 void Serial::OnServiceConnectionError() {

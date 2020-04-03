@@ -25,19 +25,9 @@ class GURL;
 // Methods that only exist for tests.
 @interface MainController (TestingOnly)
 
-// Tab switcher state.
-- (BOOL)tabSwitcherActive;
-
-@property(nonatomic, strong) id<TabSwitcher> tabSwitcher;
-
 // Sets the internal startup state to indicate that the launch was triggered
 // by an external app opening the given URL.
 - (void)setStartupParametersWithURL:(const GURL&)launchURL;
-
-// Dismisses all modal dialogs, excluding the omnibox if |dismissOmnibox| is
-// NO, then call |completion|.
-- (void)dismissModalDialogsWithCompletion:(ProceduralBlock)completion
-                           dismissOmnibox:(BOOL)dismissOmnibox;
 
 @end
 

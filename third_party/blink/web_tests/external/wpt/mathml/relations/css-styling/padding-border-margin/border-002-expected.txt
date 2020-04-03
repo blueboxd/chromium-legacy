@@ -1,0 +1,52 @@
+This is a testharness.js-based test.
+PASS Border properties on maction
+PASS Border properties on maction (rtl)
+PASS Border properties on menclose
+PASS Border properties on menclose (rtl)
+PASS Border properties on merror
+PASS Border properties on merror (rtl)
+PASS Border properties on mfrac
+PASS Border properties on mfrac (rtl)
+PASS Border properties on mi
+PASS Border properties on mi (rtl)
+PASS Border properties on mmultiscripts
+PASS Border properties on mmultiscripts (rtl)
+PASS Border properties on mn
+PASS Border properties on mn (rtl)
+PASS Border properties on mo
+PASS Border properties on mo (rtl)
+PASS Border properties on mover
+PASS Border properties on mover (rtl)
+PASS Border properties on mpadded
+PASS Border properties on mpadded (rtl)
+PASS Border properties on mphantom
+PASS Border properties on mphantom (rtl)
+FAIL Border properties on mroot assert_true: mroot is supported expected true got false
+FAIL Border properties on mroot (rtl) assert_true: mroot is supported expected true got false
+PASS Border properties on mrow
+PASS Border properties on mrow (rtl)
+PASS Border properties on ms
+PASS Border properties on ms (rtl)
+PASS Border properties on mspace
+FAIL Border properties on msqrt assert_true: msqrt is supported expected true got false
+FAIL Border properties on msqrt (rtl) assert_true: msqrt is supported expected true got false
+PASS Border properties on mstyle
+PASS Border properties on mstyle (rtl)
+PASS Border properties on msub
+PASS Border properties on msub (rtl)
+PASS Border properties on msubsup
+PASS Border properties on msubsup (rtl)
+PASS Border properties on msup
+PASS Border properties on msup (rtl)
+PASS Border properties on mtable
+PASS Border properties on mtable (rtl)
+PASS Border properties on mtext
+PASS Border properties on mtext (rtl)
+PASS Border properties on munder
+PASS Border properties on munder (rtl)
+PASS Border properties on munderover
+PASS Border properties on munderover (rtl)
+PASS Border properties on semantics
+PASS Border properties on semantics (rtl)
+Harness: the test ran to completion.
+

@@ -3,7 +3,7 @@
  * found in the LICENSE file. */
 
 /* Spinner shown on progress dialog. */
-paper-spinner-lite {
+paper-spinner-lite#spinner {
   height: 164px;
   width: 164px;
 }

@@ -26,6 +26,7 @@ NGLayoutInputNode FirstChildInFlow(const NGBlockNode&);
 NGLayoutInputNode NextSiblingInFlow(const NGBlockNode&);
 
 bool IsValidMathMLFraction(const NGBlockNode&);
+bool IsValidMathMLUnderOver(const NGBlockNode&);
 
 inline float RuleThicknessFallback(const ComputedStyle& style) {
   // This function returns a value for the default rule thickness (TeX's

@@ -102,6 +102,7 @@ class CORE_EXPORT StyleCascade {
   // See documentation the other Resolve* functions for what resolve means.
   const CSSValue* Resolve(const CSSPropertyName&,
                           const CSSValue&,
+                          CascadeOrigin,
                           CascadeResolver&);
 
  private:
@@ -245,9 +246,11 @@ class CORE_EXPORT StyleCascade {
 
   const CSSValue* Resolve(const CSSProperty&,
                           const CSSValue&,
+                          CascadeOrigin,
                           CascadeResolver&);
   const CSSValue* ResolveCustomProperty(const CSSProperty&,
                                         const CSSCustomPropertyDeclaration&,
+                                        CascadeOrigin,
                                         CascadeResolver&);
   const CSSValue* ResolveVariableReference(const CSSProperty&,
                                            const CSSVariableReferenceValue&,
@@ -255,6 +258,9 @@ class CORE_EXPORT StyleCascade {
   const CSSValue* ResolvePendingSubstitution(const CSSProperty&,
                                              const CSSPendingSubstitutionValue&,
                                              CascadeResolver&);
+  const CSSValue* ResolveRevert(const CSSProperty&,
+                                CascadeOrigin,
+                                CascadeResolver&);
 
   scoped_refptr<CSSVariableData> ResolveVariableData(CSSVariableData*,
                                                      CascadeResolver&);

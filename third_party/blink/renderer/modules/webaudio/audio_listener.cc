@@ -150,15 +150,26 @@ void AudioListener::RemovePanner(PannerHandler& panner) {
 }
 
 bool AudioListener::HasSampleAccurateValues() const {
-  return positionX()->Handler().HasSampleAccurateValues() ||
-         positionY()->Handler().HasSampleAccurateValues() ||
-         positionZ()->Handler().HasSampleAccurateValues() ||
-         forwardX()->Handler().HasSampleAccurateValues() ||
-         forwardY()->Handler().HasSampleAccurateValues() ||
-         forwardZ()->Handler().HasSampleAccurateValues() ||
-         upX()->Handler().HasSampleAccurateValues() ||
-         upY()->Handler().HasSampleAccurateValues() ||
-         upZ()->Handler().HasSampleAccurateValues();
+  return positionX()->Handler().HasSampleAccurateValuesTimeline() ||
+         positionY()->Handler().HasSampleAccurateValuesTimeline() ||
+         positionZ()->Handler().HasSampleAccurateValuesTimeline() ||
+         forwardX()->Handler().HasSampleAccurateValuesTimeline() ||
+         forwardY()->Handler().HasSampleAccurateValuesTimeline() ||
+         forwardZ()->Handler().HasSampleAccurateValuesTimeline() ||
+         upX()->Handler().HasSampleAccurateValuesTimeline() ||
+         upY()->Handler().HasSampleAccurateValuesTimeline() ||
+         upZ()->Handler().HasSampleAccurateValuesTimeline();
+}
+
+bool AudioListener::IsAudioRate() const {
+  return positionX()->Handler().IsAudioRate() ||
+         positionY()->Handler().IsAudioRate() ||
+         positionZ()->Handler().IsAudioRate() ||
+         forwardX()->Handler().IsAudioRate() ||
+         forwardY()->Handler().IsAudioRate() ||
+         forwardZ()->Handler().IsAudioRate() ||
+         upX()->Handler().IsAudioRate() || upY()->Handler().IsAudioRate() ||
+         upZ()->Handler().IsAudioRate();
 }
 
 void AudioListener::UpdateValuesIfNeeded(uint32_t frames_to_process) {

@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/task_runner_util.h"
-#include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host_impl.h"
+#include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 
 namespace ui {
@@ -33,7 +33,7 @@ void BindInterfaceInGpuProcess(mojo::PendingReceiver<Interface> request,
 }  // namespace
 
 WaylandBufferManagerConnector::WaylandBufferManagerConnector(
-    WaylandBufferManagerHostImpl* buffer_manager_host)
+    WaylandBufferManagerHost* buffer_manager_host)
     : buffer_manager_host_(buffer_manager_host) {}
 
 WaylandBufferManagerConnector::~WaylandBufferManagerConnector() = default;
@@ -71,7 +71,7 @@ void WaylandBufferManagerConnector::OnGpuServiceLaunched(
 
   base::PostTaskAndReplyWithResult(
       ui_runner.get(), FROM_HERE,
-      base::BindOnce(&WaylandBufferManagerHostImpl::BindInterface,
+      base::BindOnce(&WaylandBufferManagerHost::BindInterface,
                      base::Unretained(buffer_manager_host_)),
       base::BindOnce(
           &WaylandBufferManagerConnector::OnBufferManagerHostPtrBinded,

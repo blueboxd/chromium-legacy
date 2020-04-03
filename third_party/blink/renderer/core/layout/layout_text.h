@@ -476,11 +476,10 @@ inline InlineTextBoxList& LayoutText::MutableTextBoxes() {
 inline NGPaintFragment* LayoutText::FirstInlineFragment() const {
   if (!IsInLayoutNGInlineFormattingContext())
     return nullptr;
-  // TODO(yosin): Once we replace all usage of |FirstInlineFragment()| to
-  // |NGInlineCursor|, we should change this to |DCHECK()|.
-  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
-    return nullptr;
-  return first_paint_fragment_;
+  if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return first_paint_fragment_;
+  NOTREACHED();
+  return nullptr;
 }
 
 inline wtf_size_t LayoutText::FirstInlineFragmentItemIndex() const {

@@ -1,0 +1,19 @@
+This is a testharness.js-based test.
+PASS Margin properties on the children of menclose
+PASS Margin properties on the children of merror
+PASS Margin properties on the children of mfrac
+FAIL Margin properties on the children of mmultiscripts assert_approx_equals: block size expected 345 +/- 1 but got 305
+PASS Margin properties on the children of mover
+PASS Margin properties on the children of mpadded
+PASS Margin properties on the children of mphantom
+FAIL Margin properties on the children of mroot assert_true: mroot is supported expected true got false
+PASS Margin properties on the children of mrow
+FAIL Margin properties on the children of msqrt assert_true: msqrt is supported expected true got false
+PASS Margin properties on the children of mstyle
+FAIL Margin properties on the children of msub assert_approx_equals: block size expected 230 +/- 1 but got 210
+FAIL Margin properties on the children of msubsup assert_approx_equals: block size expected 345 +/- 1 but got 305
+FAIL Margin properties on the children of msup assert_approx_equals: block size expected 230 +/- 1 but got 210
+PASS Margin properties on the children of munder
+PASS Margin properties on the children of munderover
+Harness: the test ran to completion.
+

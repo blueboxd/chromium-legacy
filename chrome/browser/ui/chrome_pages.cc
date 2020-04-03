@@ -19,9 +19,10 @@
 #include "base/system/sys_info.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/default_web_app_ids.h"
@@ -154,7 +155,9 @@ void LaunchReleaseNotesImpl(Profile* profile) {
         profile, extension, 0, apps::mojom::AppLaunchSource::kSourceUntracked,
         -1);
     params.override_url = GURL(BuildQueryString(profile));
-    apps::LaunchService::Get(profile)->OpenApplication(params);
+    apps::AppServiceProxyFactory::GetForProfile(profile)
+        ->BrowserAppLauncher()
+        .LaunchAppWithParams(params);
     return;
   }
   DVLOG(1) << "ReleaseNotes App Not Found";

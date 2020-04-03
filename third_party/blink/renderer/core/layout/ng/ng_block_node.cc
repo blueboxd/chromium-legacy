@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_layout_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_row_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_space_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_under_over_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
@@ -55,6 +56,7 @@
 #include "third_party/blink/renderer/core/mathml/mathml_element.h"
 #include "third_party/blink/renderer/core/mathml/mathml_fraction_element.h"
 #include "third_party/blink/renderer/core/mathml/mathml_space_element.h"
+#include "third_party/blink/renderer/core/mathml/mathml_under_over_element.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
@@ -63,6 +65,11 @@
 namespace blink {
 
 namespace {
+
+inline bool HasInlineChildren(LayoutBlockFlow* block_flow) {
+  auto* child = GetLayoutObjectForFirstChildNode(block_flow);
+  return child && AreNGBlockFlowChildrenInline(block_flow);
+}
 
 inline LayoutMultiColumnFlowThread* GetFlowThread(
     const LayoutBlockFlow* block_flow) {
@@ -99,6 +106,9 @@ NOINLINE void DetermineMathMLAlgorithmAndRun(
   else if (IsA<MathMLFractionElement>(element) &&
            IsValidMathMLFraction(params.node))
     CreateAlgorithmAndRun<NGMathFractionLayoutAlgorithm>(params, callback);
+  else if (IsA<MathMLUnderOverElement>(element) &&
+           IsValidMathMLUnderOver(params.node))
+    CreateAlgorithmAndRun<NGMathUnderOverLayoutAlgorithm>(params, callback);
   else
     CreateAlgorithmAndRun<NGMathRowLayoutAlgorithm>(params, callback);
 }
@@ -628,9 +638,8 @@ void NGBlockNode::FinishLayout(
     box_->SetCachedLayoutResult(layout_result);
 
   if (block_flow) {
-    auto* child = GetLayoutObjectForFirstChildNode(block_flow);
-    bool has_inline_children =
-        child && AreNGBlockFlowChildrenInline(block_flow);
+    const NGFragmentItems* items = physical_fragment.Items();
+    bool has_inline_children = items || HasInlineChildren(block_flow);
 
     // Don't consider display-locked objects as having any children.
     if (has_inline_children && box_->LayoutBlockedByDisplayLock(
@@ -656,15 +665,18 @@ void NGBlockNode::FinishLayout(
             physical_fragment, physical_fragment.Size().width,
             Style().IsFlippedBlocksWritingMode());
         block_flow->SetPaintFragment(break_token, &physical_fragment);
-      } else {
-        CopyFragmentDataToLayoutBoxForInlineChildren(physical_fragment);
+      } else if (items) {
+        CopyFragmentItemsToLayoutBox(physical_fragment, *items);
       }
     } else {
       // We still need to clear paint fragments in case it had inline children,
       // and thus had NGPaintFragment.
       block_flow->ClearNGInlineNodeData();
-      block_flow->SetPaintFragment(break_token, nullptr);
+      if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+        block_flow->SetPaintFragment(break_token, nullptr);
     }
+  } else {
+    DCHECK(!physical_fragment.HasItems());
   }
 
   CopyFragmentDataToLayoutBox(constraint_space, *layout_result, break_token);
@@ -1140,14 +1152,13 @@ void NGBlockNode::CopyFragmentDataToLayoutBoxForInlineChildren(
   }
 }
 
-void NGBlockNode::CopyFragmentDataToLayoutBoxForInlineChildren(
-    const NGPhysicalBoxFragment& container) {
+void NGBlockNode::CopyFragmentItemsToLayoutBox(
+    const NGPhysicalBoxFragment& container,
+    const NGFragmentItems& items) {
   DCHECK(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
-  const NGFragmentItems* items = container.Items();
-  if (!items)
-    return;
+
   bool initial_container_is_flipped = Style().IsFlippedBlocksWritingMode();
-  for (NGInlineCursor cursor(*items); cursor; cursor.MoveToNext()) {
+  for (NGInlineCursor cursor(items); cursor; cursor.MoveToNext()) {
     if (const NGPhysicalBoxFragment* child = cursor.Current().BoxFragment()) {
       // Replaced elements and inline blocks need Location() set relative to
       // their block container.

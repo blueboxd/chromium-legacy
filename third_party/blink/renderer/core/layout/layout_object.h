@@ -3490,7 +3490,11 @@ inline void LayoutObject::SetIsInLayoutNGInlineFormattingContext(
   if (IsInLayoutNGInlineFormattingContext() == new_value)
     return;
   InLayoutNGInlineFormattingContextWillChange(new_value);
+  // The association cache for inline fragments is in union. Make sure the
+  // cache is cleared before and after changing this flag.
+  DCHECK(!HasInlineFragments());
   bitfields_.SetIsInLayoutNGInlineFormattingContext(new_value);
+  DCHECK(!HasInlineFragments());
 }
 
 inline void LayoutObject::SetHasBoxDecorationBackground(bool b) {

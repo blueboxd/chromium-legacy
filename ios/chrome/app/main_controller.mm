@@ -1244,34 +1244,11 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 @implementation MainController (TestingOnly)
 
-- (BOOL)tabSwitcherActive {
-  return self.sceneController.isTabSwitcherActive;
-}
-
-- (void)dismissModalDialogsWithCompletion:(ProceduralBlock)completion
-                           dismissOmnibox:(BOOL)dismissOmnibox {
-  [self.sceneController dismissModalDialogsWithCompletion:completion
-                                           dismissOmnibox:dismissOmnibox];
-}
-
-- (void)setTabSwitcher:(id<TabSwitcher>)switcher {
-  [self.sceneController setTabSwitcher:switcher];
-}
-
-- (id<TabSwitcher>)tabSwitcher {
-  return self.sceneController.tabSwitcher;
-}
-
 - (void)setStartupParametersWithURL:(const GURL&)launchURL {
   NSString* sourceApplication = @"Fake App";
   self.startupParameters = [ChromeAppStartupParameters
       newChromeAppStartupParametersWithURL:net::NSURLWithGURL(launchURL)
                      fromSourceApplication:sourceApplication];
-}
-
-// Defined in FirstRunAppInterface for EGTests.
-- (void)showFirstRunUI {
-  [self.sceneController showFirstRunUI];
 }
 
 @end

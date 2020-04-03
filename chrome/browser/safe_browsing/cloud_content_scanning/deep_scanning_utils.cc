@@ -173,11 +173,22 @@ void RecordDeepScanMetrics(DeepScanAccessPoint access_point,
                                  ? response.dlp_scan_verdict().status() ==
                                        DlpDeepScanningVerdict::SUCCESS
                                  : true;
-  bool malware_verdict_success =
-      response.has_malware_scan_verdict()
-          ? response.malware_scan_verdict().verdict() !=
-                MalwareDeepScanningVerdict::VERDICT_UNSPECIFIED
-          : true;
+
+  bool malware_verdict_success = true;
+  if (response.has_malware_scan_verdict()) {
+    switch (response.malware_scan_verdict().verdict()) {
+      case MalwareDeepScanningVerdict::VERDICT_UNSPECIFIED:
+      case MalwareDeepScanningVerdict::SCAN_FAILURE:
+        malware_verdict_success = false;
+        break;
+      case MalwareDeepScanningVerdict::MALWARE:
+      case MalwareDeepScanningVerdict::UWS:
+      case MalwareDeepScanningVerdict::CLEAN:
+        malware_verdict_success = true;
+        break;
+    }
+  }
+
   bool success = dlp_verdict_success && malware_verdict_success;
   std::string result_value = BinaryUploadServiceResultToString(result, success);
 

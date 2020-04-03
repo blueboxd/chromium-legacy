@@ -151,6 +151,13 @@ CORE_EXPORT ExecutionContext* ExecutionContextFromV8Wrappable(
 CORE_EXPORT ExecutionContext* ExecutionContextFromV8Wrappable(
     const DOMParser* parser);
 
+CORE_EXPORT v8::MaybeLocal<v8::Function> CreateNamedConstructorFunction(
+    ScriptState* script_state,
+    v8::FunctionCallback callback,
+    const char* func_name,
+    int func_length,
+    const WrapperTypeInfo* wrapper_type_info);
+
 CORE_EXPORT v8::Local<v8::Array> EnumerateIndexedProperties(
     v8::Isolate* isolate,
     uint32_t length);

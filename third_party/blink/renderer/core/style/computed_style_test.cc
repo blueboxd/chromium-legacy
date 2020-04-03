@@ -88,12 +88,10 @@ TEST(ComputedStyleTest, FocusRingWidth) {
     static uint16_t outline_width = 4;
     style->SetOutlineWidth(outline_width);
 
-    double expected_width =
-        LayoutTheme::GetTheme().IsFocusRingOutset() ? outline_width : 3.5;
+    double expected_width = 3.5;
     EXPECT_EQ(expected_width, style->GetOutlineStrokeWidthForFocusRing());
 
-    expected_width =
-        LayoutTheme::GetTheme().IsFocusRingOutset() ? outline_width : 1.0;
+    expected_width = 1.0;
     style->SetEffectiveZoom(0.5);
     EXPECT_EQ(expected_width, style->GetOutlineStrokeWidthForFocusRing());
 #endif

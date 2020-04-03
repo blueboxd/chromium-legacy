@@ -27,6 +27,23 @@ BrowserAppLauncher::BrowserAppLauncher(Profile* profile) : profile_(profile) {
 
 BrowserAppLauncher::~BrowserAppLauncher() = default;
 
+content::WebContents* BrowserAppLauncher::LaunchAppWithParams(
+    const AppLaunchParams& params) {
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(profile_)->GetInstalledExtension(
+          params.app_id);
+  if ((!extension || extension->from_bookmark()) && web_app_launch_manager_) {
+    return web_app_launch_manager_->OpenApplication(params);
+  }
+
+  if (params.container ==
+          apps::mojom::LaunchContainer::kLaunchContainerWindow &&
+      extension && extension->from_bookmark()) {
+    web_app::RecordAppWindowLaunch(profile_, params.app_id);
+  }
+  return ::OpenApplication(profile_, params);
+}
+
 void BrowserAppLauncher::LaunchAppWithCallback(
     const std::string& app_id,
     const base::CommandLine& command_line,

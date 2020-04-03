@@ -5,7 +5,7 @@
 #ifndef MEDIA_CAPTURE_CONTENT_VIDEO_CAPTURE_ORACLE_H_
 #define MEDIA_CAPTURE_CONTENT_VIDEO_CAPTURE_ORACLE_H_
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/time/time.h"
 #include "media/base/feedback_signal_accumulator.h"
 #include "media/capture/capture_export.h"
@@ -139,6 +139,11 @@ class CAPTURE_EXPORT VideoCaptureOracle {
   static constexpr base::TimeDelta kDefaultMinSizeChangePeriod =
       base::TimeDelta::FromSeconds(3);
 
+  void SetLogCallback(
+      base::RepeatingCallback<void(const std::string&)> emit_log_cb);
+
+  void Log(const std::string& message);
+
  private:
   // Retrieve/Assign a frame timestamp by capture |frame_number|.  Only valid
   // when IsFrameInRecentHistory(frame_number) returns true.
@@ -253,6 +258,10 @@ class CAPTURE_EXPORT VideoCaptureOracle {
   // animation.  This determines whether capture size increases will be
   // aggressive (because content is not animating).
   base::TimeTicks last_time_animation_was_detected_;
+
+  // Callback for webrtc native log. It should check for corresponding feature
+  // inside.
+  base::RepeatingCallback<void(const std::string&)> emit_log_message_cb_;
 };
 
 }  // namespace media

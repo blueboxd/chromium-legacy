@@ -5,8 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERIAL_SERIAL_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SERIAL_SERIAL_H_
 
-#include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/serial/serial.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
@@ -14,6 +12,9 @@
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -29,7 +30,6 @@ class Serial final : public EventTargetWithInlineData,
                      public mojom::blink::SerialServiceClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Serial);
-  USING_PRE_FINALIZER(Serial, Dispose);
 
  public:
   explicit Serial(ExecutionContext&);
@@ -53,7 +53,6 @@ class Serial final : public EventTargetWithInlineData,
                             const SerialPortRequestOptions*,
                             ExceptionState&);
 
-  void Dispose();
   void GetPort(
       const base::UnguessableToken& token,
       mojo::PendingReceiver<device::mojom::blink::SerialPort> receiver);
@@ -72,8 +71,12 @@ class Serial final : public EventTargetWithInlineData,
                   Vector<mojom::blink::SerialPortInfoPtr>);
   void OnRequestPort(ScriptPromiseResolver*, mojom::blink::SerialPortInfoPtr);
 
-  mojo::Remote<mojom::blink::SerialService> service_;
-  mojo::Receiver<mojom::blink::SerialServiceClient> receiver_{this};
+  HeapMojoRemote<mojom::blink::SerialService,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      service_;
+  HeapMojoReceiver<mojom::blink::SerialServiceClient,
+                   HeapMojoWrapperMode::kWithoutContextObserver>
+      receiver_;
   HeapHashSet<Member<ScriptPromiseResolver>> get_ports_promises_;
   HeapHashSet<Member<ScriptPromiseResolver>> request_port_promises_;
   HeapHashMap<String, WeakMember<SerialPort>> port_cache_;

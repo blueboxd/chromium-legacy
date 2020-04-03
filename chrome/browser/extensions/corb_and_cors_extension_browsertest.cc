@@ -13,7 +13,9 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/values.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
@@ -1693,8 +1695,9 @@ IN_PROC_BROWSER_TEST_F(CorbAndCorsAppBrowserTest, WebViewContentScript) {
   content::WebContents* app_contents = nullptr;
   {
     content::WebContentsAddedObserver new_contents_observer;
-    apps::LaunchService::Get(browser()->profile())
-        ->OpenApplication(apps::AppLaunchParams(
+    apps::AppServiceProxyFactory::GetForProfile(browser()->profile())
+        ->BrowserAppLauncher()
+        .LaunchAppWithParams(apps::AppLaunchParams(
             app->id(), LaunchContainer::kLaunchContainerNone,
             WindowOpenDisposition::NEW_WINDOW,
             apps::mojom::AppLaunchSource::kSourceTest));

@@ -35,6 +35,12 @@ class VIEWS_EXPORT Label : public View,
  public:
   METADATA_HEADER(Label);
 
+  enum MenuCommands {
+    kCopy = 1,
+    kSelectAll,
+    kLastCommandId = kSelectAll,
+  };
+
   // Helper to construct a Label that doesn't use the views typography spec.
   // Using this causes Label to obtain colors from ui::NativeTheme and line
   // spacing from gfx::FontList::GetHeight().

@@ -229,10 +229,7 @@ double CSSMathExpressionNumericLiteral::ComputeLengthPx(
     case kCalcAngle:
     case kCalcFrequency:
     case kCalcPercentLength:
-    case kCalcPercentNumber:
     case kCalcTime:
-    case kCalcLengthNumber:
-    case kCalcPercentLengthNumber:
     case kCalcOther:
       NOTREACHED();
       break;
@@ -285,43 +282,26 @@ bool CSSMathExpressionNumericLiteral::InvolvesPercentageComparisons() const {
 // ------ End of CSSMathExpressionNumericLiteral member functions
 
 static const CalculationCategory kAddSubtractResult[kCalcOther][kCalcOther] = {
-    /* CalcNumber */ {kCalcNumber, kCalcLengthNumber, kCalcPercentNumber,
-                      kCalcPercentNumber, kCalcOther, kCalcOther, kCalcOther,
-                      kCalcOther, kCalcLengthNumber, kCalcPercentLengthNumber},
+    /* CalcNumber */ {kCalcNumber, kCalcOther, kCalcOther, kCalcOther,
+                      kCalcOther, kCalcOther, kCalcOther},
     /* CalcLength */
-    {kCalcLengthNumber, kCalcLength, kCalcPercentLength, kCalcOther,
-     kCalcPercentLength, kCalcOther, kCalcOther, kCalcOther, kCalcLengthNumber,
-     kCalcPercentLengthNumber},
+    {kCalcOther, kCalcLength, kCalcPercentLength, kCalcPercentLength,
+     kCalcOther, kCalcOther, kCalcOther},
     /* CalcPercent */
-    {kCalcPercentNumber, kCalcPercentLength, kCalcPercent, kCalcPercentNumber,
-     kCalcPercentLength, kCalcOther, kCalcOther, kCalcOther,
-     kCalcPercentLengthNumber, kCalcPercentLengthNumber},
-    /* CalcPercentNumber */
-    {kCalcPercentNumber, kCalcPercentLengthNumber, kCalcPercentNumber,
-     kCalcPercentNumber, kCalcPercentLengthNumber, kCalcOther, kCalcOther,
-     kCalcOther, kCalcOther, kCalcPercentLengthNumber},
+    {kCalcOther, kCalcPercentLength, kCalcPercent, kCalcPercentLength,
+     kCalcOther, kCalcOther, kCalcOther},
     /* CalcPercentLength */
-    {kCalcPercentLengthNumber, kCalcPercentLength, kCalcPercentLength,
-     kCalcPercentLengthNumber, kCalcPercentLength, kCalcOther, kCalcOther,
-     kCalcOther, kCalcOther, kCalcPercentLengthNumber},
+    {kCalcOther, kCalcPercentLength, kCalcPercentLength, kCalcPercentLength,
+     kCalcOther, kCalcOther, kCalcOther},
     /* CalcAngle  */
-    {kCalcOther, kCalcOther, kCalcOther, kCalcOther, kCalcOther, kCalcAngle,
-     kCalcOther, kCalcOther, kCalcOther, kCalcOther},
+    {kCalcOther, kCalcOther, kCalcOther, kCalcOther, kCalcAngle, kCalcOther,
+     kCalcOther},
     /* CalcTime */
-    {kCalcOther, kCalcOther, kCalcOther, kCalcOther, kCalcOther, kCalcOther,
-     kCalcTime, kCalcOther, kCalcOther, kCalcOther},
+    {kCalcOther, kCalcOther, kCalcOther, kCalcOther, kCalcOther, kCalcTime,
+     kCalcOther},
     /* CalcFrequency */
     {kCalcOther, kCalcOther, kCalcOther, kCalcOther, kCalcOther, kCalcOther,
-     kCalcOther, kCalcFrequency, kCalcOther, kCalcOther},
-    /* CalcLengthNumber */
-    {kCalcLengthNumber, kCalcLengthNumber, kCalcPercentLengthNumber,
-     kCalcPercentLengthNumber, kCalcPercentLengthNumber, kCalcOther, kCalcOther,
-     kCalcOther, kCalcLengthNumber, kCalcPercentLengthNumber},
-    /* CalcPercentLengthNumber */
-    {kCalcPercentLengthNumber, kCalcPercentLengthNumber,
-     kCalcPercentLengthNumber, kCalcPercentLengthNumber,
-     kCalcPercentLengthNumber, kCalcOther, kCalcOther, kCalcOther,
-     kCalcPercentLengthNumber, kCalcPercentLengthNumber}};
+     kCalcFrequency}};
 
 static CalculationCategory DetermineCategory(
     const CSSMathExpressionNode& left_side,
@@ -729,9 +709,6 @@ CSSPrimitiveValue::UnitType CSSMathExpressionBinaryOperation::ResolvedUnitType()
     case kCalcFrequency:
       return CSSPrimitiveValue::UnitType::kHertz;
     case kCalcPercentLength:
-    case kCalcPercentNumber:
-    case kCalcLengthNumber:
-    case kCalcPercentLengthNumber:
     case kCalcOther:
       return CSSPrimitiveValue::UnitType::kUnknown;
   }

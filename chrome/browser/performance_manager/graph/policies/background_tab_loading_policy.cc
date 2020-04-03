@@ -64,7 +64,7 @@ BackgroundTabLoadingPolicy::BackgroundTabLoadingPolicy()
     : page_loader_(std::make_unique<mechanism::PageLoader>()) {
   DCHECK(!g_background_tab_loading_policy);
   g_background_tab_loading_policy = this;
-  simultaneous_tab_loads_ = CalculateMaxSimultaneousTabLoads(
+  max_simultaneous_tab_loads_ = CalculateMaxSimultaneousTabLoads(
       kMinSimultaneousTabLoads, kMaxSimultaneousTabLoads,
       kCoresPerSimultaneousTabLoad, base::SysInfo::NumberOfProcessors());
 }
@@ -86,6 +86,9 @@ void BackgroundTabLoadingPolicy::OnIsLoadingChanged(const PageNode* page_node) {
   if (!page_node->IsLoading()) {
     // Once the PageNode finishes loading, stop tracking it within this policy.
     RemovePageNode(page_node);
+
+    // Since there is a free loading slot, load more tab if needed.
+    MaybeLoadSomeTabs();
     return;
   }
   // The PageNode started loading, either because of this policy or because of
@@ -105,6 +108,10 @@ void BackgroundTabLoadingPolicy::OnIsLoadingChanged(const PageNode* page_node) {
 void BackgroundTabLoadingPolicy::OnBeforePageNodeRemoved(
     const PageNode* page_node) {
   RemovePageNode(page_node);
+
+  // There may be free loading slots, check and load more tabs if that's the
+  // case.
+  MaybeLoadSomeTabs();
 }
 
 void BackgroundTabLoadingPolicy::ScheduleLoadForRestoredTabs(
@@ -115,8 +122,8 @@ void BackgroundTabLoadingPolicy::ScheduleLoadForRestoredTabs(
     page_nodes_to_load_.push_back(page_node);
     DCHECK(
         TabPropertiesDecorator::Data::FromPageNode(page_node)->IsInTabStrip());
-    InitiateLoad(page_node);
   }
+  MaybeLoadSomeTabs();
 }
 
 void BackgroundTabLoadingPolicy::SetMockLoaderForTesting(
@@ -124,11 +131,16 @@ void BackgroundTabLoadingPolicy::SetMockLoaderForTesting(
   page_loader_ = std::move(loader);
 }
 
+void BackgroundTabLoadingPolicy::SetMaxSimultaneousLoadsForTesting(
+    size_t loading_slots) {
+  max_simultaneous_tab_loads_ = loading_slots;
+}
+
 BackgroundTabLoadingPolicy* BackgroundTabLoadingPolicy::GetInstance() {
   return g_background_tab_loading_policy;
 }
 
-void BackgroundTabLoadingPolicy::InitiateLoad(PageNode* page_node) {
+void BackgroundTabLoadingPolicy::InitiateLoad(const PageNode* page_node) {
   // Mark |page_node| as load initiated. Ensure that InitiateLoad is only called
   // for a PageNode that is tracked by the policy.
   size_t num_removed = base::Erase(page_nodes_to_load_, page_node);
@@ -143,6 +155,44 @@ void BackgroundTabLoadingPolicy::RemovePageNode(const PageNode* page_node) {
   base::Erase(page_nodes_to_load_, page_node);
   base::Erase(page_nodes_load_initiated_, page_node);
   base::Erase(page_nodes_loading_, page_node);
+}
+
+void BackgroundTabLoadingPolicy::MaybeLoadSomeTabs() {
+  // Continue to load tabs while possible. This is in a loop with a
+  // recalculation of GetMaxNewTabLoads() as reentrancy can cause conditions
+  // to change as each tab load is initiated.
+  while (GetMaxNewTabLoads() > 0)
+    LoadNextTab();
+}
+
+size_t BackgroundTabLoadingPolicy::GetMaxNewTabLoads() const {
+  // This takes into account all tabs currently loading across the browser,
+  // including ones that BackgroundTabLoadingPolicy isn't explicitly managing.
+  // This ensures that BackgroundTabLoadingPolicy respects user interaction
+  // first and foremost. There's a small race between when we initiated loading
+  // and when PageNodeObserver notifies us that it has actually started, so we
+  // also make use of |page_nodes_initiated_| to track these.
+  size_t loading_tab_count =
+      page_nodes_load_initiated_.size() + page_nodes_loading_.size();
+
+  // Determine the number of free loading slots available.
+  size_t page_nodes_to_load = 0;
+  if (loading_tab_count < max_simultaneous_tab_loads_)
+    page_nodes_to_load = max_simultaneous_tab_loads_ - loading_tab_count;
+
+  // Cap the number of loads by the actual number of tabs remaining.
+  page_nodes_to_load = std::min(page_nodes_to_load, page_nodes_to_load_.size());
+
+  return page_nodes_to_load;
+}
+
+void BackgroundTabLoadingPolicy::LoadNextTab() {
+  DCHECK(!page_nodes_to_load_.empty());
+
+  // Find the next PageNode to load.
+  const PageNode* page_node = page_nodes_to_load_.front();
+
+  InitiateLoad(page_node);
 }
 
 }  // namespace policies

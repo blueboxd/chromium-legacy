@@ -19,6 +19,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/pointer/touch_editing_controller.h"
 #include "ui/events/event_observer.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -433,11 +434,11 @@ bool TouchSelectionControllerClientAura::IsCommandIdEnabled(
   bool readable = rwhva_->GetTextInputType() != ui::TEXT_INPUT_TYPE_PASSWORD;
   bool has_selection = !rwhva_->GetSelectedText().empty();
   switch (command_id) {
-    case IDS_APP_CUT:
+    case ui::TouchEditable::kCut:
       return editable && readable && has_selection;
-    case IDS_APP_COPY:
+    case ui::TouchEditable::kCopy:
       return readable && has_selection;
-    case IDS_APP_PASTE: {
+    case ui::TouchEditable::kPaste: {
       base::string16 result;
       ui::Clipboard::GetForCurrentThread()->ReadText(
           ui::ClipboardBuffer::kCopyPaste, &result);
@@ -456,13 +457,13 @@ void TouchSelectionControllerClientAura::ExecuteCommand(int command_id,
     return;
 
   switch (command_id) {
-    case IDS_APP_CUT:
+    case ui::TouchEditable::kCut:
       host_delegate->Cut();
       break;
-    case IDS_APP_COPY:
+    case ui::TouchEditable::kCopy:
       host_delegate->Copy();
       break;
-    case IDS_APP_PASTE:
+    case ui::TouchEditable::kPaste:
       host_delegate->Paste();
       break;
     default:

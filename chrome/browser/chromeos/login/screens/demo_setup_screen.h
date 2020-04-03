@@ -17,7 +17,7 @@ namespace chromeos {
 
 class DemoSetupScreenView;
 
-// Controlls demo mode setup. The screen can be shown during OOBE. It allows
+// Controls demo mode setup. The screen can be shown during OOBE. It allows
 // user to setup retail demo mode on the device.
 class DemoSetupScreen : public BaseScreen {
  public:
@@ -34,6 +34,10 @@ class DemoSetupScreen : public BaseScreen {
   // then it has to call Bind(nullptr).
   void OnViewDestroyed(DemoSetupScreenView* view);
 
+  // Test utilities.
+  void SetCurrentSetupStepForTest(
+      const DemoSetupController::DemoSetupStep current_step);
+
  protected:
   // BaseScreen:
   void ShowImpl() override;
@@ -45,8 +49,9 @@ class DemoSetupScreen : public BaseScreen {
  private:
   void StartEnrollment();
 
-  // Increments setup progress percentage for UI.
-  void IncrementSetupProgress(bool complete);
+  // Updates current setup step.
+  void SetCurrentSetupStep(
+      const DemoSetupController::DemoSetupStep current_step);
 
   // Called when the setup flow finished with error.
   void OnSetupError(const DemoSetupController::DemoSetupError& error);

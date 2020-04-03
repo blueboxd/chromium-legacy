@@ -153,10 +153,14 @@ LayoutText::LayoutText(Node* node, scoped_refptr<StringImpl> str)
 
 LayoutText::~LayoutText() {
 #if DCHECK_IS_ON()
-  if (IsInLayoutNGInlineFormattingContext())
-    DCHECK(!first_paint_fragment_);
-  else
+  if (IsInLayoutNGInlineFormattingContext()) {
+    if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+      DCHECK(!first_paint_fragment_);
+    else
+      DCHECK(!first_fragment_item_index_);
+  } else {
     text_boxes_.AssertIsEmpty();
+  }
 #endif
 }
 
@@ -223,20 +227,26 @@ void LayoutText::RemoveAndDestroyTextBoxes() {
       for (InlineTextBox* box : TextBoxes())
         box->Remove();
     } else {
+      if (Parent())
+        Parent()->DirtyLinesFromChangedChild(this);
       if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
-        if (has_abstract_inline_text_box_)
+        if (FirstInlineFragmentItemIndex()) {
+          DetachAbstractInlineTextBoxesIfNeeded();
+          NGFragmentItems::LayoutObjectWillBeDestroyed(*this);
           ClearFirstInlineFragmentItemIndex();
+        }
       } else if (NGPaintFragment* first_inline_fragment =
                      FirstInlineFragment()) {
         first_inline_fragment->LayoutObjectWillBeDestroyed();
         SetFirstInlineFragment(nullptr);
       }
-      if (Parent())
-        Parent()->DirtyLinesFromChangedChild(this);
     }
   } else if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
-    if (has_abstract_inline_text_box_)
+    if (FirstInlineFragmentItemIndex()) {
+      DetachAbstractInlineTextBoxesIfNeeded();
+      NGFragmentItems::LayoutObjectWillBeDestroyed(*this);
       ClearFirstInlineFragmentItemIndex();
+    }
   } else if (NGPaintFragment* first_inline_fragment = FirstInlineFragment()) {
     // Still do this to clear the global hash map in  NGAbstractInlineTextBox.
     SetFirstInlineFragment(nullptr);
@@ -298,10 +308,7 @@ void LayoutText::DetachAbstractInlineTextBoxes() {
 
 void LayoutText::SetFirstInlineFragment(NGPaintFragment* first_fragment) {
   CHECK(IsInLayoutNGInlineFormattingContext());
-  // TODO(yosin): Once we remove |NGPaintFragment|, we should get rid of
-  // |!fragment|.
-  DCHECK(!first_fragment ||
-         !RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
+  DCHECK(!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
   DetachAbstractInlineTextBoxesIfNeeded();
   first_paint_fragment_ = first_fragment;
 }
@@ -319,17 +326,26 @@ void LayoutText::SetFirstInlineFragmentItemIndex(wtf_size_t index) {
   DCHECK(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
   DCHECK_NE(index, 0u);
   DetachAbstractInlineTextBoxesIfNeeded();
-  // TDOO(yosin): Once we update all |LayoutObject::FirstInlineFragment()|,
-  // we should enable below.
-  // first_fragment_item_index_ = index;
+  first_fragment_item_index_ = index;
 }
 
 void LayoutText::InLayoutNGInlineFormattingContextWillChange(bool new_value) {
-  DeleteTextBoxes();
+  if (IsInLayoutNGInlineFormattingContext()) {
+    if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+      SetFirstInlineFragment(nullptr);
+    } else {
+      ClearFirstInlineFragmentItemIndex();
+    }
+  } else {
+    DeleteTextBoxes();
+  }
 
   // Because |first_paint_fragment_| and |text_boxes_| are union, when one is
   // deleted, the other should be initialized to nullptr.
-  DCHECK(new_value ? !first_paint_fragment_ : !text_boxes_.First());
+  DCHECK(new_value ? (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()
+                          ? !first_fragment_item_index_
+                          : !first_paint_fragment_)
+                   : !text_boxes_.First());
 
   // Because there are no inline boxes associated to this text, we should not
   // have abstract inline text boxes too.
@@ -414,11 +430,11 @@ Vector<LayoutText::TextBoxInfo> LayoutText::GetTextBoxInfo() const {
 }
 
 bool LayoutText::HasInlineFragments() const {
-    if (IsInLayoutNGInlineFormattingContext()) {
-      NGInlineCursor cursor;
-      cursor.MoveTo(*this);
-      return cursor.IsNotNull();
-    }
+  if (IsInLayoutNGInlineFormattingContext()) {
+    if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+      return first_paint_fragment_;
+    return first_fragment_item_index_;
+  }
 
   return FirstTextBox();
 }

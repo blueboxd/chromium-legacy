@@ -29,6 +29,7 @@ using mojom::blink::PermissionStatus;
 WakeLock::WakeLock(Document& document)
     : ExecutionContextLifecycleObserver(&document),
       PageVisibilityObserver(document.GetPage()),
+      permission_service_(document.ToExecutionContext()),
       managers_{
           MakeGarbageCollected<WakeLockManager>(document.ToExecutionContext(),
                                                 WakeLockType::kScreen),
@@ -42,6 +43,7 @@ WakeLock::WakeLock(Document& document)
 WakeLock::WakeLock(DedicatedWorkerGlobalScope& worker_scope)
     : ExecutionContextLifecycleObserver(&worker_scope),
       PageVisibilityObserver(nullptr),
+      permission_service_(&worker_scope),
       managers_{MakeGarbageCollected<WakeLockManager>(&worker_scope,
                                                       WakeLockType::kScreen),
                 MakeGarbageCollected<WakeLockManager>(&worker_scope,
@@ -271,10 +273,11 @@ void WakeLock::ObtainPermission(
 }
 
 PermissionService* WakeLock::GetPermissionService() {
-  if (!permission_service_) {
+  if (!permission_service_.is_bound()) {
     ConnectToPermissionService(
         GetExecutionContext(),
-        permission_service_.BindNewPipeAndPassReceiver());
+        permission_service_.BindNewPipeAndPassReceiver(
+            GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI)));
   }
   return permission_service_.get();
 }
@@ -282,6 +285,7 @@ PermissionService* WakeLock::GetPermissionService() {
 void WakeLock::Trace(Visitor* visitor) {
   for (const WakeLockManager* manager : managers_)
     visitor->Trace(manager);
+  visitor->Trace(permission_service_);
   PageVisibilityObserver::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);
   ScriptWrappable::Trace(visitor);

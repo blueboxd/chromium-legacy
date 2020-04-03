@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time_to_iso8601.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
@@ -39,6 +40,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
@@ -1167,6 +1169,87 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
                        NoOfflineSetupOptionOnNetworkList) {
   SkipToScreen(NetworkScreenView::kScreenId);
   EXPECT_FALSE(IsCustomNetworkListElementShown("offlineDemoSetupListItemName"));
+}
+
+class DemoSetupProgressStepsTest : public DemoSetupTestBase {
+ public:
+  DemoSetupProgressStepsTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kShowStepsInDemoModeSetup);
+  }
+  ~DemoSetupProgressStepsTest() override = default;
+
+  // Checks how many steps have been rendered in the demo setup screen.
+  int CountNumberOfStepsInUi() {
+    const std::string query =
+        "$('demo-setup-content').$$('oobe-dialog').querySelectorAll('progress-"
+        "list-item').length";
+
+    return test::OobeJS().GetInt(query);
+  }
+
+  // Checks how many steps are marked as pending in the demo setup screen.
+  int CountPendingStepsInUi() {
+    const std::string query =
+        "Object.values($('demo-setup-content').$$('oobe-dialog')."
+        "querySelectorAll('progress-list-item')).filter(node => "
+        "node.shadowRoot.querySelector('#icon-pending:not([hidden])')).length";
+
+    return test::OobeJS().GetInt(query);
+  }
+
+  // Checks how many steps are marked as active in the demo setup screen.
+  int CountActiveStepsInUi() {
+    const std::string query =
+        "Object.values($('demo-setup-content').$$('oobe-dialog')."
+        "querySelectorAll('progress-list-item')).filter(node => "
+        "node.shadowRoot.querySelector('#icon-active:not([hidden])')).length";
+
+    return test::OobeJS().GetInt(query);
+  }
+
+  // Checks how many steps are marked as complete in the demo setup screen.
+  int CountCompletedStepsInUi() {
+    const std::string query =
+        "Object.values($('demo-setup-content').$$('oobe-dialog')."
+        "querySelectorAll('progress-list-item')).filter(node => "
+        "node.shadowRoot.querySelector('#icon-completed:not([hidden])'))."
+        "length";
+
+    return test::OobeJS().GetInt(query);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  DISALLOW_COPY_AND_ASSIGN(DemoSetupProgressStepsTest);
+};
+
+IN_PROC_BROWSER_TEST_F(DemoSetupProgressStepsTest,
+                       SetupProgessStepsDisplayCorrectly) {
+  auto* const wizard_controller = WizardController::default_controller();
+  wizard_controller->SimulateDemoModeSetupForTesting(
+      DemoSession::DemoModeConfig::kOnline);
+  SimulateNetworkConnected();
+  SkipToScreen(DemoSetupScreenView::kScreenId);
+
+  DemoSetupScreen* demoSetupScreen = GetDemoSetupScreen();
+
+  DemoSetupController::DemoSetupStep orderedSteps[] = {
+      DemoSetupController::DemoSetupStep::kDownloadResources,
+      DemoSetupController::DemoSetupStep::kEnrollment,
+      DemoSetupController::DemoSetupStep::kComplete};
+
+  // Subtract 1 to account for kComplete step
+  int numSteps =
+      static_cast<int>(sizeof(orderedSteps) / sizeof(*orderedSteps)) - 1;
+  ASSERT_EQ(CountNumberOfStepsInUi(), numSteps);
+
+  for (int i = 0; i < numSteps; i++) {
+    demoSetupScreen->SetCurrentSetupStepForTest(orderedSteps[i]);
+    ASSERT_EQ(CountPendingStepsInUi(), numSteps - i - 1);
+    ASSERT_EQ(CountActiveStepsInUi(), 1);
+    ASSERT_EQ(CountCompletedStepsInUi(), i);
+  }
 }
 
 class DemoSetupArcUnsupportedTest : public DemoSetupTestBase {

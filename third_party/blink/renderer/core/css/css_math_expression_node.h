@@ -47,17 +47,14 @@ class CSSNumericLiteralValue;
 // The order of this enum should not change since its elements are used as
 // indices in the addSubtractResult matrix.
 enum CalculationCategory {
-  kCalcNumber = 0,
+  kCalcNumber,
   kCalcLength,
   kCalcPercent,
-  kCalcPercentNumber,
   kCalcPercentLength,
   kCalcAngle,
   kCalcTime,
   kCalcFrequency,
-  kCalcLengthNumber,
-  kCalcPercentLengthNumber,
-  kCalcOther
+  kCalcOther,
 };
 
 class CORE_EXPORT CSSMathExpressionNode
@@ -121,9 +118,7 @@ class CORE_EXPORT CSSMathExpressionNode
 
   CalculationCategory Category() const { return category_; }
   bool HasPercentage() const {
-    return category_ == kCalcPercent || category_ == kCalcPercentNumber ||
-           category_ == kCalcPercentLength ||
-           category_ == kCalcPercentLengthNumber;
+    return category_ == kCalcPercent || category_ == kCalcPercentLength;
   }
 
   // Returns the unit type of the math expression *without doing any type

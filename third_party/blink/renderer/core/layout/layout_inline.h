@@ -429,6 +429,7 @@ inline NGPaintFragment* LayoutInline::FirstInlineFragment() const {
     return nullptr;
   // TODO(yosin): Once we replace all usage of |FirstInlineFragment()| to
   // |NGInlineCursor|, we should change this to |DCHECK()|.
+  DCHECK(!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
   if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
     return nullptr;
   return first_paint_fragment_;

@@ -913,6 +913,14 @@ class DeviceStatusCollectorState : public StatusCollectorState {
           backlight_info_out->set_brightness(backlight->brightness);
         }
       }
+      const auto& fan_info = probe_result->fan_info;
+      if (fan_info.has_value()) {
+        for (const auto& fan : fan_info.value()) {
+          em::FanInfo* const fan_info_out =
+              response_params_.device_status->add_fan_info();
+          fan_info_out->set_speed_rpm(fan->speed_rpm);
+        }
+      }
 
       for (const std::unique_ptr<SampledData>& sample_data : samples) {
         auto it = sample_data->battery_samples.find(battery_info->model_name);
@@ -1516,7 +1524,7 @@ void DeviceStatusCollector::FetchCrosHealthdData(
 
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   std::vector<ProbeCategoryEnum> categories_to_probe = {
-      ProbeCategoryEnum::kCachedVpdData};
+      ProbeCategoryEnum::kCachedVpdData, ProbeCategoryEnum::kFan};
   if (report_storage_status_)
     categories_to_probe.push_back(ProbeCategoryEnum::kNonRemovableBlockDevices);
   if (report_power_status_)

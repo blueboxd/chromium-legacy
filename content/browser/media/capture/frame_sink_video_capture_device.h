@@ -82,6 +82,7 @@ class CONTENT_EXPORT FrameSinkVideoCaptureDevice
       mojo::PendingRemote<viz::mojom::FrameSinkVideoConsumerFrameCallbacks>
           callbacks) final;
   void OnStopped() final;
+  void OnLog(const std::string& message) final;
 
   // These are called to notify when the capture target has changed or was
   // permanently lost.

@@ -126,10 +126,15 @@ def callback_function_name(cg_context,
     elif cg_context.constant:
         kind = "Constant"
     elif cg_context.constructor_group:
-        property_name = ""
-        kind = "Constructor"
+        if cg_context.is_named_constructor:
+            kind = "NamedConstructor"
+        else:
+            property_name = ""
+            kind = "Constructor"
     elif cg_context.exposed_construct:
-        if cg_context.legacy_window_alias:
+        if cg_context.is_named_constructor:
+            kind = "NamedConstructorProperty"
+        elif cg_context.legacy_window_alias:
             kind = "LegacyWindowAlias"
         else:
             kind = "ExposedConstruct"
@@ -562,7 +567,10 @@ def _make_blink_api_call(code_node,
 
     func_name = backward_compatible_api_func(cg_context)
     if cg_context.constructor:
-        func_name = "Create"
+        if cg_context.is_named_constructor:
+            func_name = "CreateForJSConstructor"
+        else:
+            func_name = "Create"
     if "Reflect" in ext_attrs:  # [Reflect]
         func_name = _make_reflect_accessor_func_name(cg_context)
 
@@ -676,7 +684,7 @@ def make_bindings_trace_event(cg_context):
         event_name = "{}.{}".format(event_name, "get")
     elif cg_context.attribute_set:
         event_name = "{}.{}".format(event_name, "set")
-    elif cg_context.constructor_group:
+    elif cg_context.constructor_group and not cg_context.is_named_constructor:
         event_name = "{}.{}".format(cg_context.class_like.identifier,
                                     "constructor")
 
@@ -729,7 +737,7 @@ def make_check_constructor_call(cg_context):
 
     T = TextNode
 
-    return SequenceNode([
+    node = SequenceNode([
         CxxUnlikelyIfNode(
             cond="!${info}.IsConstructCall()",
             body=T("${exception_state}.ThrowTypeError("
@@ -742,6 +750,11 @@ def make_check_constructor_call(cg_context):
             body=T("bindings::V8SetReturnValue(${info}, ${v8_receiver});\n"
                    "return;")),
     ])
+    node.accumulate(
+        CodeGenAccumulator.require_include_headers([
+            "third_party/blink/renderer/platform/bindings/v8_object_constructor.h",
+        ]))
+    return node
 
 
 def make_check_receiver(cg_context):
@@ -1730,6 +1743,80 @@ def make_exposed_construct_callback_def(cg_context, function_name):
     ])
 
     return func_def
+
+
+def make_named_constructor_property_callback_def(cg_context, function_name):
+    assert isinstance(cg_context, CodeGenContext)
+    assert isinstance(function_name, str)
+
+    func_def = _make_empty_callback_def(cg_context, function_name)
+    body = func_def.body
+
+    body.extend([
+        make_runtime_call_timer_scope(cg_context),
+        make_bindings_trace_event(cg_context),
+        make_report_deprecate_as(cg_context),
+        make_report_measure_as(cg_context),
+        make_log_activity(cg_context),
+        EmptyNode(),
+    ])
+
+    constructor_group = cg_context.exposed_construct
+    assert isinstance(constructor_group, web_idl.ConstructorGroup)
+    assert isinstance(constructor_group.owner, web_idl.Interface)
+    named_ctor_v8_bridge = v8_bridge_class_name(constructor_group.owner)
+    cgc = CodeGenContext(
+        interface=constructor_group.owner,
+        constructor_group=constructor_group,
+        is_named_constructor=True,
+        class_name=named_ctor_v8_bridge)
+    named_ctor_name = callback_function_name(cgc)
+    named_ctor_def = make_constructor_callback_def(cgc, named_ctor_name)
+
+    return_value_cache_return_early = """\
+static const V8PrivateProperty::SymbolKey kPrivatePropertyNamedConstructor;
+auto&& v8_private_named_constructor =
+    V8PrivateProperty::GetSymbol(${isolate}, kPrivatePropertyNamedConstructor);
+v8::Local<v8::Value> v8_named_constructor;
+if (v8_private_named_constructor.GetOrUndefined(${v8_receiver})
+        .ToLocal(&v8_named_constructor) &&
+    !v8_named_constructor->IsUndefined()) {
+  bindings::V8SetReturnValue(${info}, v8_named_constructor);
+  return;
+}
+"""
+
+    pattern = """\
+v8::Local<v8::Function> v8_function;
+if (!bindings::CreateNamedConstructorFunction(
+         ${script_state},
+         {callback},
+         "{func_name}",
+         {func_length},
+         {v8_bridge}::GetWrapperTypeInfo())
+     .ToLocal(&v8_function)) {
+  return;
+}
+bindings::V8SetReturnValue(${info}, v8_function);
+"""
+    create_named_constructor_function = _format(
+        pattern,
+        callback=named_ctor_name,
+        func_name=constructor_group.identifier,
+        func_length=constructor_group.min_num_of_required_arguments,
+        v8_bridge=named_ctor_v8_bridge)
+
+    return_value_cache_update_value = """\
+v8_private_named_constructor.Set(${v8_receiver}, v8_function);
+"""
+
+    body.extend([
+        TextNode(return_value_cache_return_early),
+        TextNode(create_named_constructor_function),
+        TextNode(return_value_cache_update_value),
+    ])
+
+    return SequenceNode([named_ctor_def, EmptyNode(), func_def])
 
 
 def make_operation_entry(cg_context):
@@ -3271,6 +3358,31 @@ def _make_property_entries_and_callback_defs(
                 exposed_construct=exposed_construct,
                 prop_callback_name=prop_callback_name))
 
+    def process_named_constructor_group(named_constructor_group,
+                                        is_context_dependent,
+                                        exposure_conditional, world):
+        cgc = cg_context.make_copy(
+            exposed_construct=named_constructor_group,
+            is_named_constructor=True,
+            for_world=world,
+            v8_callback_type=CodeGenContext.V8_ACCESSOR_NAME_GETTER_CALLBACK)
+        prop_callback_name = callback_function_name(cgc)
+        prop_callback_node = make_named_constructor_property_callback_def(
+            cgc, prop_callback_name)
+
+        callback_def_nodes.extend([
+            prop_callback_node,
+            EmptyNode(),
+        ])
+
+        exposed_construct_entries.append(
+            _PropEntryExposedConstruct(
+                is_context_dependent=is_context_dependent,
+                exposure_conditional=exposure_conditional,
+                world=world,
+                exposed_construct=named_constructor_group,
+                prop_callback_name=prop_callback_name))
+
     def process_operation_group(operation_group, is_context_dependent,
                                 exposure_conditional, world):
         cgc = cg_context.make_copy(
@@ -3318,6 +3430,12 @@ def _make_property_entries_and_callback_defs(
     iterate(interface.constructor_groups, process_constructor_group)
     iterate(interface.exposed_constructs, process_exposed_construct)
     iterate(interface.legacy_window_aliases, process_exposed_construct)
+    named_constructor_groups = [
+        group for construct in interface.exposed_constructs
+        for group in construct.named_constructor_groups
+        if construct.named_constructor_groups
+    ]
+    iterate(named_constructor_groups, process_named_constructor_group)
     iterate(interface.operation_groups, process_operation_group)
     if interface.stringifier:
         iterate([interface.stringifier.operation], process_stringifier)
@@ -4680,10 +4798,6 @@ def generate_interface(interface):
     ])
     impl_source_node.accumulator.add_include_headers(
         _collect_include_headers(interface))
-    if interface.constructor_groups:
-        impl_source_node.accumulator.add_include_headers([
-            "third_party/blink/renderer/platform/bindings/v8_object_constructor.h",
-        ])
 
     # Assemble the parts.
     api_header_blink_ns.body.append(api_class_def)

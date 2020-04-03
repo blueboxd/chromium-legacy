@@ -16,7 +16,9 @@
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
@@ -613,7 +615,9 @@ void NewWindow(Browser* browser) {
     const apps::AppLaunchParams params = apps::AppLaunchParams(
         app_id, launch_container, WindowOpenDisposition::NEW_WINDOW,
         apps::mojom::AppLaunchSource::kSourceKeyboard);
-    apps::LaunchService::Get(profile)->OpenApplication(params);
+    apps::AppServiceProxyFactory::GetForProfile(profile)
+        ->BrowserAppLauncher()
+        .LaunchAppWithParams(params);
     return;
   }
 

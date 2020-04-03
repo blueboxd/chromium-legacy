@@ -271,7 +271,11 @@ void AudioParamHandler::CalculateFinalValues(float* values,
   if (NumberOfRenderingConnections() > 0) {
     DCHECK_LE(number_of_values, audio_utilities::kRenderQuantumFrames);
 
-    summing_bus_->SetChannelMemory(0, values, number_of_values);
+    // If we're not sample accurate, we only need one value, so make the summing
+    // bus have length 1.  When the connections are added in, only the first
+    // value will be added.  Which is exactly what we want.
+    summing_bus_->SetChannelMemory(0, values,
+                                   sample_accurate ? number_of_values : 1);
 
     for (unsigned i = 0; i < NumberOfRenderingConnections(); ++i) {
       AudioNodeOutput* output = RenderingOutput(i);
@@ -283,6 +287,14 @@ void AudioParamHandler::CalculateFinalValues(float* values,
 
       // Sum, with unity-gain.
       summing_bus_->SumFrom(*connection_bus);
+    }
+
+    // If we're not sample accurate, duplicate the first element of |values| to
+    // all of the elements.
+    if (!sample_accurate) {
+      for (unsigned k = 0; k < number_of_values; ++k) {
+        values[k] = values[0];
+      }
     }
 
     // Clamp the values now to the nominal range

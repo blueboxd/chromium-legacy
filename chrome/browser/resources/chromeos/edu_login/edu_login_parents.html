@@ -31,6 +31,10 @@
     height: var(--profile-icon-size);
     width: var(--profile-icon-size);
   }
+
+  #parentsListBody {
+    margin-bottom: 16px;
+  }
 </style>
 
 <edu-login-template>
@@ -41,8 +45,8 @@
             src="chrome://theme/IDR_LOGO_GOOGLE_COLOR_90" alt="">
       </if>
       <h1>$i18n{parentsListTitle}</h1>
-      <p id="parentsListBody" aria-hidden="true" class="secondary">
-        $i18n{parentsListBody}
+      <p id="parentsListBody" aria-hidden="true"
+          class="secondary">$i18n{parentsListBody}
       </p>
     </div>
     <div tabindex="0" role="listbox" aria-labelledby="parentsListBody">

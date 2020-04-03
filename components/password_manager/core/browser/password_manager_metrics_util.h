@@ -433,18 +433,6 @@ enum class GenerationDialogChoice {
   kMaxValue = kRejected
 };
 
-// Type of the conflict with existing credentials when starting password
-// generation.
-enum class GenerationPresaveConflict {
-  // Credential can be presaved as is.
-  kNoUsernameConflict = 0,
-  // Credential can be presaved without username.
-  kNoConflictWithEmptyUsername = 1,
-  // Credential should overwrite one without username.
-  kConflictWithEmptyUsername = 2,
-  kMaxValue = kConflictWithEmptyUsername
-};
-
 // Log the |reason| a user dismissed the password manager UI except save/update
 // bubbles.
 void LogGeneralUIDismissalReason(UIDismissalReason reason);
@@ -454,10 +442,6 @@ void LogSaveUIDismissalReason(UIDismissalReason reason);
 
 // Log the |reason| a user dismissed the update password bubble.
 void LogUpdateUIDismissalReason(UIDismissalReason reason);
-
-// Log the |reason| a user dismissed the update password bubble when resolving a
-// conflict during generation.
-void LogPresavedUpdateUIDismissalReason(UIDismissalReason reason);
 
 // Log the |type| of a leak dialog shown to the user and the |reason| why it was
 // dismissed.
@@ -564,10 +548,6 @@ void LogNewlySavedPasswordIsGenerated(bool value);
 void LogGenerationDialogChoice(
     GenerationDialogChoice choice,
     autofill::password_generation::PasswordGenerationType type);
-
-// Log whether there is a conflict with existing credentials when presaving
-// a generated password.
-void LogGenerationPresaveConflict(GenerationPresaveConflict value);
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 // Log a save gaia password change event.

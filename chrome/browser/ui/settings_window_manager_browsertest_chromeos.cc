@@ -6,7 +6,9 @@
 
 #include "base/macros.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -112,8 +114,9 @@ IN_PROC_BROWSER_TEST_F(SettingsWindowManagerTest, OpenSettingsWindow) {
   web_app::AppId settings_app_id = *web_app::GetAppIdForSystemWebApp(
       browser()->profile(), web_app::SystemAppType::SETTINGS);
   content::WebContents* contents =
-      apps::LaunchService::Get(browser()->profile())
-          ->OpenApplication(apps::AppLaunchParams(
+      apps::AppServiceProxyFactory::GetForProfile(browser()->profile())
+          ->BrowserAppLauncher()
+          .LaunchAppWithParams(apps::AppLaunchParams(
               settings_app_id,
               apps::mojom::LaunchContainer::kLaunchContainerWindow,
               WindowOpenDisposition::NEW_WINDOW,

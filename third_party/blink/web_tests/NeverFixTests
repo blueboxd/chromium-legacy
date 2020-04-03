@@ -312,8 +312,6 @@ webaudio/codec-tests/aac/* [ Skip ]
 
 # WPT for CSS cascade
 crbug.com/763610 external/wpt/css/CSS2/cascade/* [ Skip ]
-# The revert keyword is not yet supported.
-external/wpt/css/css-cascade/revert-val-001.html [ Skip ]
 
 # These tests require a DRM system that is not available with content_shell.
 external/wpt/encrypted-media/drm-check-encryption-scheme.https.html [ Skip ]

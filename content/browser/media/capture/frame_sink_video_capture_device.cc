@@ -263,6 +263,21 @@ void FrameSinkVideoCaptureDevice::OnStopped() {
   OnFatalError("Capturer service cannot continue.");
 }
 
+void FrameSinkVideoCaptureDevice::OnLog(const std::string& message) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (receiver_) {
+    if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+      receiver_->OnLog(message);
+    } else {
+      base::PostTask(
+          FROM_HERE, {BrowserThread::IO},
+          base::BindOnce(&media::VideoFrameReceiver::OnLog,
+                         base::Unretained(receiver_.get()), message));
+    }
+  }
+}
+
 void FrameSinkVideoCaptureDevice::OnTargetChanged(
     const viz::FrameSinkId& frame_sink_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

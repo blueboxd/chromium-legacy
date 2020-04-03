@@ -70,6 +70,7 @@ class CONTENT_EXPORT DevToolsVideoConsumer
       mojo::PendingRemote<viz::mojom::FrameSinkVideoConsumerFrameCallbacks>
           callbacks) override;
   void OnStopped() override;
+  void OnLog(const std::string& /*message*/) override {}
 
   // Default min frame size is 1x1, as otherwise, nothing would be captured.
   static constexpr gfx::Size kDefaultMinFrameSize = gfx::Size(1, 1);

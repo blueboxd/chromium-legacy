@@ -6,8 +6,8 @@
   .info-item {
     display: flex;
     flex: auto;
-    padding-bottom: 10px;
-    padding-top: 10px;
+    padding-bottom: 16px;
+    padding-top: 16px;
   }
 
   .info-item:not(:last-child) {
@@ -16,11 +16,13 @@
 
   .info-icon {
     flex-basis: 24px;
-    padding-top: 10px;
   }
 
   .info-title {
+    display: flex;
     flex: 1;
+    flex-direction: column;
+    justify-content: center;
     padding-inline-start: 24px;
   }
 </style>
@@ -29,8 +31,8 @@
   <span slot="main">
     <div class="main-padding">
       <if expr="_google_chrome">
-        <img id="google-full-logo" src="chrome://theme/IDR_LOGO_GOOGLE_COLOR_90"
-          alt="">
+        <img class="google-full-logo"
+            src="chrome://theme/IDR_LOGO_GOOGLE_COLOR_90" alt="">
       </if>
 
       <h1>$i18n{parentInfoTitle}</h1>

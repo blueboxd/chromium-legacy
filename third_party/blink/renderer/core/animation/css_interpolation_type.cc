@@ -12,6 +12,8 @@
 #include "third_party/blink/renderer/core/animation/string_keyframe.h"
 #include "third_party/blink/renderer/core/css/computed_style_css_value_mapping.h"
 #include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
+#include "third_party/blink/renderer/core/css/css_revert_value.h"
+#include "third_party/blink/renderer/core/css/css_unset_value.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/css/css_variable_reference_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
@@ -181,6 +183,11 @@ InterpolationValue CSSInterpolationType::MaybeConvertSingleInternal(
     conversion_checkers.push_back(std::make_unique<ResolvedVariableChecker>(
         CssProperty().PropertyID(), value, resolved_value));
     value = resolved_value;
+  }
+
+  if (value->IsRevertValue()) {
+    // TODO(andruud): Actually revert instead of treating as unset.
+    value = cssvalue::CSSUnsetValue::Create();
   }
 
   bool is_inherited = CssProperty().IsInherited();

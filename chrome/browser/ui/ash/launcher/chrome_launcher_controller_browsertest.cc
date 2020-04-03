@@ -35,10 +35,11 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/speech_monitor.h"
@@ -1525,10 +1526,12 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
   const Extension* extension = extension_registry()->GetExtensionById(
       last_loaded_extension_id(), extensions::ExtensionRegistry::ENABLED);
   EXPECT_TRUE(extension);
-  apps::LaunchService::Get(profile())->OpenApplication(apps::AppLaunchParams(
-      extension->id(), extensions::LaunchContainer::kLaunchContainerTab,
-      WindowOpenDisposition::NEW_WINDOW,
-      apps::mojom::AppLaunchSource::kSourceTest));
+  apps::AppServiceProxyFactory::GetForProfile(profile())
+      ->BrowserAppLauncher()
+      .LaunchAppWithParams(apps::AppLaunchParams(
+          extension->id(), extensions::LaunchContainer::kLaunchContainerTab,
+          WindowOpenDisposition::NEW_WINDOW,
+          apps::mojom::AppLaunchSource::kSourceTest));
 
   EXPECT_EQ(++browsers, NumberOfDetectedLauncherBrowsers(false));
   EXPECT_EQ(++tabs, NumberOfDetectedLauncherBrowsers(true));

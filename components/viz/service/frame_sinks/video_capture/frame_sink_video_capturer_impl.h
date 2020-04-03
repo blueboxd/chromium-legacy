@@ -10,7 +10,7 @@
 #include <memory>
 #include <queue>
 #include <vector>
-
+#include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -79,7 +79,8 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   FrameSinkVideoCapturerImpl(
       FrameSinkVideoCapturerManager* frame_sink_manager,
       mojo::PendingReceiver<mojom::FrameSinkVideoCapturer> receiver,
-      std::unique_ptr<media::VideoCaptureOracle> oracle);
+      std::unique_ptr<media::VideoCaptureOracle> oracle,
+      bool log_to_webrtc);
 
   ~FrameSinkVideoCapturerImpl() final;
 
@@ -227,6 +228,8 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   // numbers.
   static gfx::Rect ExpandRectToI420SubsampleBoundaries(const gfx::Rect& rect);
 
+  void OnLog(const std::string& message);
+
   // Owner/Manager of this instance.
   FrameSinkVideoCapturerManager* const frame_sink_manager_;
 
@@ -334,6 +337,9 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   // A weak pointer factory used for cancelling consumer feedback from any
   // in-flight frame deliveries.
   base::WeakPtrFactory<media::VideoCaptureOracle> feedback_weak_factory_;
+
+  // Enables debug log messages to be sent to webrtc native log.
+  const bool log_to_webrtc_;
 
   // A weak pointer factory used for cancelling the results from any in-flight
   // copy output requests.

@@ -365,8 +365,7 @@ class PLATFORM_EXPORT GraphicsContext {
                      int default_offset,
                      float border_radius,
                      float min_border_width,
-                     const Color&,
-                     bool is_outset);
+                     const Color&);
   void DrawFocusRing(const Path&, float width, int offset, const Color&);
 
   enum Edge {
@@ -422,10 +421,7 @@ class PLATFORM_EXPORT GraphicsContext {
                                           FloatPoint& p2,
                                           float stroke_width);
 
-  static int FocusRingOutsetExtent(int offset,
-                                   int default_offset,
-                                   int width,
-                                   bool is_outset);
+  static int FocusRingOutsetExtent(int offset, int default_offset, int width);
 
   void SetInDrawingRecorder(bool);
   bool InDrawingRecorder() const { return in_drawing_recorder_; }
@@ -480,8 +476,7 @@ class PLATFORM_EXPORT GraphicsContext {
                              float width,
                              int offset,
                              float border_radius,
-                             const Color&,
-                             bool is_outset);
+                             const Color&);
 
   // SkCanvas wrappers.
   void ClipRRect(const SkRRect&,

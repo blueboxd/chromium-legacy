@@ -866,10 +866,6 @@ void LayoutTheme::SetCustomFocusRingColor(const Color& c) {
   has_custom_focus_ring_color_ = true;
 }
 
-bool LayoutTheme::IsFocusRingOutset() const {
-  return false;
-}
-
 Color LayoutTheme::FocusRingColor() const {
   return has_custom_focus_ring_color_ ? custom_focus_ring_color_
                                       : GetTheme().PlatformFocusRingColor();

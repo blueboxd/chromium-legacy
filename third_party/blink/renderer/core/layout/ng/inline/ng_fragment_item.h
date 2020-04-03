@@ -117,6 +117,8 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
   LayoutObject* GetMutableLayoutObject() const {
     return const_cast<LayoutObject*>(layout_object_);
   }
+  void LayoutObjectWillBeDestroyed() const;
+  void LayoutObjectWillBeMoved() const;
   Node* GetNode() const { return layout_object_->GetNode(); }
   Node* NodeForHitTest() const { return layout_object_->NodeForHitTest(); }
   bool IsSiblingOf(const NGFragmentItem& other) const;

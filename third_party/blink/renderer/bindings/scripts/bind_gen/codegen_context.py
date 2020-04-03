@@ -71,6 +71,7 @@ class CodeGenContext(object):
             "constructor_group": None,
             "dict_member": None,
             "exposed_construct": None,
+            "is_named_constructor": False,
             "legacy_window_alias": None,
             "operation": None,
             "operation_group": None,

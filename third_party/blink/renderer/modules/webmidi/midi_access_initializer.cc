@@ -30,16 +30,16 @@ using mojom::blink::PermissionStatus;
 
 MIDIAccessInitializer::MIDIAccessInitializer(ScriptState* script_state,
                                              const MIDIOptions* options)
-    : ScriptPromiseResolver(script_state), options_(options) {}
+    : ScriptPromiseResolver(script_state),
+      options_(options),
+      permission_service_(GetExecutionContext()) {}
 
 void MIDIAccessInitializer::Dispose() {
   dispatcher_.reset();
-  permission_service_.reset();
 }
 
 void MIDIAccessInitializer::ContextDestroyed() {
   dispatcher_.reset();
-  permission_service_.reset();
 
   ScriptPromiseResolver::ContextDestroyed();
 }
@@ -126,6 +126,7 @@ void MIDIAccessInitializer::DidStartSession(Result result) {
 
 void MIDIAccessInitializer::Trace(Visitor* visitor) {
   visitor->Trace(options_);
+  visitor->Trace(permission_service_);
   ScriptPromiseResolver::Trace(visitor);
 }
 

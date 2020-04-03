@@ -670,13 +670,20 @@
     OK
   </message>
   <message name="IDS_OOBE_DEMO_SETUP_PROGRESS_SCREEN_TITLE" desc="The title of the dialog that is shown when demo mode setup is in progress.">
-    Starting demo mode
+    Starting Demo Mode
   </message>
   <message name="IDS_OOBE_DEMO_SETUP_ERROR_SCREEN_TITLE" desc="The title of the dialog that is shown when demo mode setup failed.">
     Couldn't start demo mode
   </message>
   <message name="IDS_OOBE_DEMO_SETUP_ERROR_SCREEN_RETRY_BUTTON_LABEL" desc="The label of the button that is shown on error screen and that retries demo mode setup with the previously chosen configuration.">
     OK
+  </message>
+  <!-- Demo setup progress steps -->
+  <message name="IDS_OOBE_DEMO_SETUP_PROGRESS_STEP_DOWNLOAD" desc="List item shown when demo resources are being downloaded">
+    Downloading Resources
+  </message>
+  <message name="IDS_OOBE_DEMO_SETUP_PROGRESS_STEP_ENROLL" desc="List item shown when enterprise enrolling for demo mode">
+    Enrolling in Demo Mode
   </message>
   <!-- Demo setup flow errors -->
   <message name="IDS_DEMO_SETUP_OFFLINE_POLICY_ERROR" desc="Error message shown on demo setup screen when loading or parsing offline policy failed.">

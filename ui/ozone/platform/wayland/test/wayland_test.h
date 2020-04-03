@@ -46,8 +46,6 @@ class WaylandTest : public ::testing::TestWithParam<uint32_t> {
 
   void Sync();
 
-  void SetInitializeWithMojo(bool use_mojo);
-
  protected:
   base::test::TaskEnvironment task_environment_;
 
@@ -57,7 +55,6 @@ class WaylandTest : public ::testing::TestWithParam<uint32_t> {
   MockPlatformWindowDelegate delegate_;
   std::unique_ptr<ScopedKeyboardLayoutEngine> scoped_keyboard_layout_engine_;
   std::unique_ptr<WaylandSurfaceFactory> surface_factory_;
-  std::unique_ptr<WaylandBufferManagerHost> buffer_manager_host_;
   std::unique_ptr<WaylandBufferManagerGpu> buffer_manager_gpu_;
   std::unique_ptr<WaylandConnection> connection_;
   std::unique_ptr<WaylandScreen> screen_;
@@ -66,8 +63,6 @@ class WaylandTest : public ::testing::TestWithParam<uint32_t> {
 
  private:
   bool initialized_ = false;
-
-  bool use_mojo_ = false;
 
 #if BUILDFLAG(USE_XKBCOMMON)
   XkbEvdevCodes xkb_evdev_code_converter_;

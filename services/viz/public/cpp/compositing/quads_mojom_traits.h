@@ -544,11 +544,13 @@ struct DrawQuadWithSharedQuadState {
 template <>
 struct StructTraits<viz::mojom::DrawQuadDataView, DrawQuadWithSharedQuadState> {
   static const gfx::Rect& rect(const DrawQuadWithSharedQuadState& input) {
+    DCHECK(input.quad->rect.size().GetCheckedArea().IsValid());
     return input.quad->rect;
   }
 
   static const gfx::Rect& visible_rect(
       const DrawQuadWithSharedQuadState& input) {
+    DCHECK(input.quad->rect.Contains(input.quad->visible_rect));
     return input.quad->visible_rect;
   }
 

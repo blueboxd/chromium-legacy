@@ -167,7 +167,8 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, PRE_AddingSeveralUsers) {
 }
 
 // TODO(crbug.com/1067461): Flakes on ASAN and linux-chromeos-dbg
-#if defined(OS_CHROMEOS) && (defined(ADDRESS_SANITIZER) || !defined(NDEBUG))
+#if defined(OS_CHROMEOS) && (defined(ADDRESS_SANITIZER) || \
+                             defined(MEMORY_SANITIZER) || !defined(NDEBUG))
 #define MAYBE_AddingSeveralUsers DISABLED_AddingSeveralUsers
 #else
 #define MAYBE_AddingSeveralUsers AddingSeveralUsers

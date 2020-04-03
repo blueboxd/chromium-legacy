@@ -159,7 +159,10 @@ class AbortCloseFunction : public ScriptFunction {
 }  // namespace
 
 SerialPort::SerialPort(Serial* parent, mojom::blink::SerialPortInfoPtr info)
-    : info_(std::move(info)), parent_(parent) {}
+    : info_(std::move(info)),
+      parent_(parent),
+      port_(GetExecutionContext()),
+      client_receiver_(this, GetExecutionContext()) {}
 
 SerialPort::~SerialPort() = default;
 
@@ -173,7 +176,7 @@ ScriptPromise SerialPort::open(ScriptState* script_state,
     return ScriptPromise();
   }
 
-  if (port_) {
+  if (port_.is_bound()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "The port is already open.");
     return ScriptPromise();
@@ -262,7 +265,10 @@ ScriptPromise SerialPort::open(ScriptState* script_state,
   }
 
   mojo::PendingRemote<device::mojom::blink::SerialPortClient> client;
-  parent_->GetPort(info_->token, port_.BindNewPipeAndPassReceiver());
+  parent_->GetPort(
+      info_->token,
+      port_.BindNewPipeAndPassReceiver(
+          GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI)));
   port_.set_disconnect_handler(
       WTF::Bind(&SerialPort::OnConnectionError, WrapWeakPersistent(this)));
 
@@ -282,7 +288,7 @@ ReadableStream* SerialPort::readable(ScriptState* script_state,
   if (readable_)
     return readable_;
 
-  if (!port_ || open_resolver_ || closing_ || read_fatal_)
+  if (!port_.is_bound() || open_resolver_ || closing_ || read_fatal_)
     return nullptr;
 
   mojo::ScopedDataPipeConsumerHandle readable_pipe;
@@ -303,7 +309,7 @@ WritableStream* SerialPort::writable(ScriptState* script_state,
   if (writable_)
     return writable_;
 
-  if (!port_ || open_resolver_ || closing_ || write_fatal_)
+  if (!port_.is_bound() || open_resolver_ || closing_ || write_fatal_)
     return nullptr;
 
   mojo::ScopedDataPipeProducerHandle writable_pipe;
@@ -321,7 +327,7 @@ WritableStream* SerialPort::writable(ScriptState* script_state,
 
 ScriptPromise SerialPort::getSignals(ScriptState* script_state,
                                      ExceptionState& exception_state) {
-  if (!port_) {
+  if (!port_.is_bound()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kPortClosed);
     return ScriptPromise();
@@ -338,7 +344,7 @@ ScriptPromise SerialPort::getSignals(ScriptState* script_state,
 ScriptPromise SerialPort::setSignals(ScriptState* script_state,
                                      const SerialOutputSignals* signals,
                                      ExceptionState& exception_state) {
-  if (!port_) {
+  if (!port_.is_bound()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kPortClosed);
     return ScriptPromise();
@@ -369,7 +375,7 @@ ScriptPromise SerialPort::setSignals(ScriptState* script_state,
 
 ScriptPromise SerialPort::close(ScriptState* script_state,
                                 ExceptionState& exception_state) {
-  if (!port_) {
+  if (!port_.is_bound()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "The port is already closed.");
     return ScriptPromise();
@@ -415,7 +421,7 @@ ScriptPromise SerialPort::ContinueClose(ScriptState* script_state) {
   DCHECK(!writable_);
   DCHECK(!close_resolver_);
 
-  if (!port_)
+  if (!port_.is_bound())
     return ScriptPromise::CastUndefined(script_state);
 
   close_resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -445,6 +451,8 @@ void SerialPort::ContextDestroyed() {
 
 void SerialPort::Trace(Visitor* visitor) {
   visitor->Trace(parent_);
+  visitor->Trace(port_);
+  visitor->Trace(client_receiver_);
   visitor->Trace(readable_);
   visitor->Trace(underlying_source_);
   visitor->Trace(writable_);
@@ -453,12 +461,6 @@ void SerialPort::Trace(Visitor* visitor) {
   visitor->Trace(signal_resolvers_);
   visitor->Trace(close_resolver_);
   ScriptWrappable::Trace(visitor);
-}
-
-void SerialPort::Dispose() {
-  // The binding holds a raw pointer to this object which must be released when
-  // it becomes garbage.
-  client_receiver_.reset();
 }
 
 ExecutionContext* SerialPort::GetExecutionContext() const {
@@ -564,7 +566,9 @@ void SerialPort::OnOpen(
   ScriptState::Scope scope(script_state);
   InitializeReadableStream(script_state, std::move(readable_pipe));
   InitializeWritableStream(script_state, std::move(writable_pipe));
-  client_receiver_.Bind(std::move(client_receiver));
+  client_receiver_.Bind(
+      std::move(client_receiver),
+      GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI));
   open_resolver_->Resolve();
   open_resolver_ = nullptr;
 }

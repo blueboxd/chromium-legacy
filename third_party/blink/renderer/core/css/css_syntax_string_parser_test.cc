@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/css/css_syntax_string_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/css_syntax_component.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
@@ -118,6 +119,15 @@ TEST_F(CSSSyntaxStringParserTest, InvalidIdents) {
   EXPECT_FALSE(CSSSyntaxStringParser("initial").Parse());
   EXPECT_FALSE(CSSSyntaxStringParser("inherit").Parse());
   EXPECT_FALSE(CSSSyntaxStringParser("unset").Parse());
+  EXPECT_FALSE(CSSSyntaxStringParser("default").Parse());
+  EXPECT_FALSE(CSSSyntaxStringParser("revert").Parse());
+
+  // 'revert' is forbidden also with CSSRevert toggled.
+  {
+    ScopedCSSRevertForTest scoped_revert(
+        !RuntimeEnabledFeatures::CSSRevertEnabled());
+    EXPECT_FALSE(CSSSyntaxStringParser("revert").Parse());
+  }
 }
 
 TEST_F(CSSSyntaxStringParserTest, Combinator) {

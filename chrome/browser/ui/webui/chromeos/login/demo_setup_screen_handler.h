@@ -28,8 +28,9 @@ class DemoSetupScreenView {
   // Sets view and screen.
   virtual void Bind(DemoSetupScreen* screen) = 0;
 
-  // Increments setup progress percentage for UI.
-  virtual void IncrementSetupProgress(bool complete) = 0;
+  // Updates current setup step.
+  virtual void SetCurrentSetupStep(
+      DemoSetupController::DemoSetupStep current_step) = 0;
 
   // Handles successful setup.
   virtual void OnSetupSucceeded() = 0;
@@ -53,7 +54,8 @@ class DemoSetupScreenHandler : public BaseScreenHandler,
   void Show() override;
   void Hide() override;
   void Bind(DemoSetupScreen* screen) override;
-  void IncrementSetupProgress(bool complete) override;
+  void SetCurrentSetupStep(
+      DemoSetupController::DemoSetupStep current_step) override;
   void OnSetupFailed(const DemoSetupController::DemoSetupError& error) override;
   void OnSetupSucceeded() override;
 

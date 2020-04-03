@@ -15,7 +15,9 @@
 #include "base/json/json_writer.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
@@ -128,8 +130,9 @@ void RequestOpenApp(Profile* profile) {
           arc::kPlayStoreAppId);
   DCHECK(extension);
   DCHECK(extensions::util::IsAppLaunchable(arc::kPlayStoreAppId, profile));
-  apps::LaunchService::Get(profile)->OpenApplication(
-      CreateAppLaunchParamsUserContainer(
+  apps::AppServiceProxyFactory::GetForProfile(profile)
+      ->BrowserAppLauncher()
+      .LaunchAppWithParams(CreateAppLaunchParamsUserContainer(
           profile, extension, WindowOpenDisposition::NEW_WINDOW,
           apps::mojom::AppLaunchSource::kSourceChromeInternal));
 }

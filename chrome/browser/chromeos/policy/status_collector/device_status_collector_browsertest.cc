@@ -170,6 +170,8 @@ constexpr uint32_t kFakePageFaults = 896123761;
 constexpr char kFakeBacklightPath[] = "/sys/class/backlight/fake_backlight";
 constexpr uint32_t kFakeMaxBrightness = 769;
 constexpr uint32_t kFakeBrightness = 124;
+// Fan test values:
+constexpr uint32_t kFakeSpeedRpm = 1225;
 
 // Time delta representing 1 hour time interval.
 constexpr TimeDelta kHour = TimeDelta::FromHours(1);
@@ -484,11 +486,13 @@ void GetFakeCrosHealthdData(
   chromeos::cros_healthd::mojom::BacklightInfo backlight_info(
       kFakeBacklightPath, kFakeMaxBrightness, kFakeBrightness);
   backlight_vector.push_back(backlight_info.Clone());
+  std::vector<chromeos::cros_healthd::mojom::FanInfoPtr> fan_vector;
+  chromeos::cros_healthd::mojom::FanInfo fan_info(kFakeSpeedRpm);
+  fan_vector.push_back(fan_info.Clone());
   chromeos::cros_healthd::mojom::TelemetryInfo fake_info(
       battery_info.Clone(), std::move(block_device_info),
       cached_vpd_info.Clone(), std::move(cpu_vector), timezone_info.Clone(),
-      memory_info.Clone(), std::move(backlight_vector),
-      base::nullopt /* fan_info */);
+      memory_info.Clone(), std::move(backlight_vector), std::move(fan_vector));
 
   // Create fake SampledData.
   em::CPUTempInfo fake_cpu_temp_sample;
@@ -2902,6 +2906,7 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
   EXPECT_FALSE(device_status_.has_system_status());
   EXPECT_FALSE(device_status_.has_timezone_info());
   EXPECT_FALSE(device_status_.has_memory_info());
+  EXPECT_EQ(device_status_.fan_info_size(), 0);
 
   // When all of the relevant policies are set, expect the protobuf to have the
   // data from cros_healthd.
@@ -2989,6 +2994,11 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
   EXPECT_EQ(backlight.path(), kFakeBacklightPath);
   EXPECT_EQ(backlight.max_brightness(), kFakeMaxBrightness);
   EXPECT_EQ(backlight.brightness(), kFakeBrightness);
+
+  // Verify the fan info.
+  ASSERT_EQ(device_status_.fan_info_size(), 1);
+  const auto& fan = device_status_.fan_info(0);
+  EXPECT_EQ(fan.speed_rpm(), kFakeSpeedRpm);
 }
 
 // Fake device state.

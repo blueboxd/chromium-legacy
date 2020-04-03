@@ -80,6 +80,16 @@ void SimpleMenuModel::AddItem(int command_id, const base::string16& label) {
 }
 
 void SimpleMenuModel::AddItemWithStringId(int command_id, int string_id) {
+  // Prevent this dangerous pattern:
+  //   model->AddItemWithStringId(IDS_FOO, IDS_FOO);
+  // This conflates string IDs with command IDs, which are separate namespaces.
+  // Sometimes this is an accident where this is meant:
+  //   model->AddItemWithStringId(IDC_FOO, IDS_FOO);
+  // but sometimes it is deliberate, usually in situations where there is no
+  // matching IDC constant or the matching IDC constant is not available.
+  // Using IDS constants for command IDs can cause confusion elsewhere, since
+  // command IDs are usually either IDC values or strictly local constants.
+  DCHECK_NE(command_id, string_id);
   AddItem(command_id, l10n_util::GetStringUTF16(string_id));
 }
 

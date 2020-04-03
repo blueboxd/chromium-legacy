@@ -15,6 +15,7 @@
 @property(nonatomic, readonly) AppState* appState;
 
 + (MainController*)sharedMainController;
++ (AppState*)sharedAppState;
 
 @end
 #endif  // IOS_CHROME_APP_MAIN_APPLICATION_DELEGATE_TESTING_H_

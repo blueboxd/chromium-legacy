@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/css/css_initial_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/css_revert_value.h"
 #include "third_party/blink/renderer/core/css/css_unset_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_idioms.h"
 #include "third_party/blink/renderer/core/css/parser/css_property_parser.h"
@@ -1106,13 +1107,15 @@ static CSSValue* ParseKeywordValue(CSSPropertyID property_id,
   DCHECK(!string.IsEmpty());
 
   if (!CSSParserFastPaths::IsKeywordPropertyID(property_id)) {
-    // All properties accept the values of "initial," "inherit" and "unset".
+    // All properties accept CSS-wide keywords.
     if (!EqualIgnoringASCIICase(string, "initial") &&
         !EqualIgnoringASCIICase(string, "inherit") &&
-        !EqualIgnoringASCIICase(string, "unset"))
+        !EqualIgnoringASCIICase(string, "unset") &&
+        (!RuntimeEnabledFeatures::CSSRevertEnabled() ||
+         !EqualIgnoringASCIICase(string, "revert")))
       return nullptr;
 
-    // Parse initial/inherit/unset shorthands using the CSSPropertyParser.
+    // Parse CSS-wide keyword shorthands using the CSSPropertyParser.
     if (shorthandForProperty(property_id).length())
       return nullptr;
 
@@ -1132,6 +1135,10 @@ static CSSValue* ParseKeywordValue(CSSPropertyID property_id,
     return CSSInitialValue::Create();
   if (value_id == CSSValueID::kUnset)
     return cssvalue::CSSUnsetValue::Create();
+  if (RuntimeEnabledFeatures::CSSRevertEnabled() &&
+      value_id == CSSValueID::kRevert) {
+    return cssvalue::CSSRevertValue::Create();
+  }
   if (CSSParserFastPaths::IsValidKeywordPropertyAndValue(property_id, value_id,
                                                          parser_mode))
     return CSSIdentifierValue::Create(value_id);

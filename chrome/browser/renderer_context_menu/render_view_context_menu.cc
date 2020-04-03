@@ -27,6 +27,10 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/apps/platform_apps/app_load_service.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/browser_process.h"
@@ -162,7 +166,6 @@
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/apps/app_service/app_launch_params.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/extensions/devtools_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
@@ -2690,7 +2693,9 @@ void RenderViewContextMenu::ExecOpenBookmarkApp() {
       WindowOpenDisposition::CURRENT_TAB,
       apps::mojom::AppLaunchSource::kSourceContextMenu);
   launch_params.override_url = params_.link_url;
-  apps::LaunchService::Get(GetProfile())->OpenApplication(launch_params);
+  apps::AppServiceProxyFactory::GetForProfile(GetProfile())
+      ->BrowserAppLauncher()
+      .LaunchAppWithParams(launch_params);
 }
 
 void RenderViewContextMenu::ExecProtocolHandler(int event_flags,

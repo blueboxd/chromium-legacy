@@ -166,6 +166,16 @@ class WaylandSurfaceFactoryTest : public WaylandTest {
   WaylandSurfaceFactoryTest() = default;
   ~WaylandSurfaceFactoryTest() override = default;
 
+  void SetUp() override {
+    WaylandTest::SetUp();
+
+    auto manager_ptr = connection_->buffer_manager_host()->BindInterface();
+    buffer_manager_gpu_->Initialize(std::move(manager_ptr), {}, false);
+
+    // Wait until initialization and mojo calls go through.
+    base::RunLoop().RunUntilIdle();
+  }
+
   void TearDown() override {
     // The mojo call to destroy shared buffer goes after surfaces are destroyed.
     // Wait until it's done.

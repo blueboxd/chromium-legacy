@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/css/css_invalid_variable_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
+#include "third_party/blink/renderer/core/css/css_revert_value.h"
 #include "third_party/blink/renderer/core/css/css_unset_value.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
@@ -55,6 +56,7 @@ class CORE_EXPORT CSSValuePool final : public GarbageCollected<CSSValuePool> {
   static const int kMaximumCacheableIntegerValue = 255;
   using CSSColorValue = cssvalue::CSSColorValue;
   using CSSUnsetValue = cssvalue::CSSUnsetValue;
+  using CSSRevertValue = cssvalue::CSSRevertValue;
   using ColorValueCache = HeapHashMap<unsigned, Member<CSSColorValue>>;
   static const unsigned kMaximumColorCacheSize = 512;
   using FontFaceValueCache =
@@ -71,6 +73,7 @@ class CORE_EXPORT CSSValuePool final : public GarbageCollected<CSSValuePool> {
   CSSInheritedValue* InheritedValue() { return inherited_value_; }
   CSSInitialValue* InitialValue() { return initial_value_; }
   CSSUnsetValue* UnsetValue() { return unset_value_; }
+  CSSRevertValue* RevertValue() { return revert_value_; }
   CSSInvalidVariableValue* InvalidVariableValue() {
     return invalid_variable_value_;
   }
@@ -134,6 +137,7 @@ class CORE_EXPORT CSSValuePool final : public GarbageCollected<CSSValuePool> {
   Member<CSSInheritedValue> inherited_value_;
   Member<CSSInitialValue> initial_value_;
   Member<CSSUnsetValue> unset_value_;
+  Member<CSSRevertValue> revert_value_;
   Member<CSSInvalidVariableValue> invalid_variable_value_;
   Member<CSSColorValue> color_transparent_;
   Member<CSSColorValue> color_white_;

@@ -17,6 +17,8 @@
 #include "third_party/blink/renderer/modules/wake_lock/wake_lock_type.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 
 namespace WTF {
 
@@ -68,7 +70,9 @@ class MODULES_EXPORT WakeLock final : public ScriptWrappable,
       base::OnceCallback<void(mojom::blink::PermissionStatus)> callback);
   mojom::blink::PermissionService* GetPermissionService();
 
-  mojo::Remote<mojom::blink::PermissionService> permission_service_;
+  HeapMojoRemote<mojom::blink::PermissionService,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      permission_service_;
 
   // https://w3c.github.io/wake-lock/#concepts-and-state-record
   // Each platform wake lock (one per wake lock type) has an associated state

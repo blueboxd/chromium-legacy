@@ -52,8 +52,10 @@ void DemoSetupScreenHandler::OnSetupFailed(
              DemoSetupController::DemoSetupError::RecoveryMethod::kPowerwash);
 }
 
-void DemoSetupScreenHandler::IncrementSetupProgress(bool complete) {
-  CallJS("login.DemoSetupScreen.incrementSetupProgress", complete);
+void DemoSetupScreenHandler::SetCurrentSetupStep(
+    DemoSetupController::DemoSetupStep current_step) {
+  CallJS("login.DemoSetupScreen.setCurrentSetupStep",
+         DemoSetupController::GetDemoSetupStepString(current_step));
 }
 
 void DemoSetupScreenHandler::OnSetupSucceeded() {
@@ -72,13 +74,21 @@ void DemoSetupScreenHandler::DeclareLocalizedValues(
                IDS_OOBE_DEMO_SETUP_ERROR_SCREEN_RETRY_BUTTON_LABEL);
   builder->Add("demoSetupErrorScreenPowerwashButtonLabel",
                IDS_LOCAL_STATE_ERROR_POWERWASH_BUTTON);
+
+  builder->Add("demoSetupProgressStepDownload",
+               IDS_OOBE_DEMO_SETUP_PROGRESS_STEP_DOWNLOAD);
+  builder->Add("demoSetupProgressStepEnroll",
+               IDS_OOBE_DEMO_SETUP_PROGRESS_STEP_ENROLL);
 }
 
 void DemoSetupScreenHandler::GetAdditionalParameters(
     base::DictionaryValue* parameters) {
   parameters->SetBoolKey(
-      "showProgressBarInDemoModeSetup",
-      base::FeatureList::IsEnabled(features::kShowProgressBarInDemoModeSetup));
+      "showStepsInDemoModeSetup",
+      base::FeatureList::IsEnabled(features::kShowStepsInDemoModeSetup));
+
+  parameters->SetPath("demoSetupSteps",
+                      DemoSetupController::GetDemoSetupSteps());
 }
 
 }  // namespace chromeos

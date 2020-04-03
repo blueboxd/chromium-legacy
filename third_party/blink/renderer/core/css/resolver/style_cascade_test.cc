@@ -245,9 +245,12 @@ class TestCascadeAutoLock {
   CascadeResolver::AutoLock lock_;
 };
 
-class StyleCascadeTest : public PageTestBase, private ScopedCSSCascadeForTest {
+class StyleCascadeTest : public PageTestBase,
+                         private ScopedCSSCascadeForTest,
+                         private ScopedCSSRevertForTest {
  public:
-  StyleCascadeTest() : ScopedCSSCascadeForTest(true) {}
+  StyleCascadeTest()
+      : ScopedCSSCascadeForTest(true), ScopedCSSRevertForTest(true) {}
 
   CSSStyleSheet* CreateSheet(const String& css_text) {
     auto* init = MakeGarbageCollected<CSSStyleSheetInit>();
@@ -1194,6 +1197,153 @@ TEST_F(StyleCascadeTest, Unset) {
   EXPECT_EQ("foo", cascade.ComputedValue("--x"));
 }
 
+TEST_F(StyleCascadeTest, RevertUA) {
+  TestCascade cascade(GetDocument());
+  cascade.Add("display:block", CascadeOrigin::kUserAgent);
+  cascade.Add("display:revert", CascadeOrigin::kUserAgent);
+
+  cascade.Add("display:block", CascadeOrigin::kUser);
+  cascade.Add("display:revert", CascadeOrigin::kUser);
+
+  cascade.Add("display:block", CascadeOrigin::kAuthor);
+  cascade.Add("display:revert", CascadeOrigin::kAuthor);
+
+  cascade.Apply();
+
+  EXPECT_EQ("inline", cascade.ComputedValue("display"));
+}
+
+TEST_F(StyleCascadeTest, RevertStandardProperty) {
+  TestCascade cascade(GetDocument());
+  cascade.Add("left:10px", CascadeOrigin::kUserAgent);
+  cascade.Add("right:10px", CascadeOrigin::kUserAgent);
+
+  cascade.Add("right:20px", CascadeOrigin::kUser);
+  cascade.Add("right:revert", CascadeOrigin::kUser);
+  cascade.Add("top:20px", CascadeOrigin::kUser);
+  cascade.Add("bottom:20px", CascadeOrigin::kUser);
+
+  cascade.Add("bottom:30px", CascadeOrigin::kAuthor);
+  cascade.Add("bottom:revert", CascadeOrigin::kAuthor);
+  cascade.Add("left:30px", CascadeOrigin::kAuthor);
+  cascade.Add("left:revert", CascadeOrigin::kAuthor);
+  cascade.Add("right:revert", CascadeOrigin::kAuthor);
+  cascade.Apply();
+
+  EXPECT_EQ("20px", cascade.ComputedValue("top"));
+  EXPECT_EQ("10px", cascade.ComputedValue("right"));
+  EXPECT_EQ("20px", cascade.ComputedValue("bottom"));
+  EXPECT_EQ("10px", cascade.ComputedValue("left"));
+}
+
+TEST_F(StyleCascadeTest, RevertCustomProperty) {
+  TestCascade cascade(GetDocument());
+  cascade.Add("--x:10px", CascadeOrigin::kUser);
+
+  cascade.Add("--y:fail", CascadeOrigin::kAuthor);
+
+  cascade.Add("--x:revert", CascadeOrigin::kAuthor);
+  cascade.Add("--y:revert", CascadeOrigin::kAuthor);
+
+  cascade.Apply();
+
+  EXPECT_EQ("10px", cascade.ComputedValue("--x"));
+  EXPECT_FALSE(cascade.ComputedValue("--y"));
+}
+
+TEST_F(StyleCascadeTest, RevertChain) {
+  TestCascade cascade(GetDocument());
+  cascade.Add("width:10px", CascadeOrigin::kUserAgent);
+
+  cascade.Add("width:revert", CascadeOrigin::kUser);
+  cascade.Add("--x:revert", CascadeOrigin::kUser);
+
+  cascade.Add("width:revert", CascadeOrigin::kAuthor);
+  cascade.Add("--x:revert", CascadeOrigin::kAuthor);
+  cascade.Apply();
+
+  EXPECT_EQ("10px", cascade.ComputedValue("width"));
+  EXPECT_FALSE(cascade.ComputedValue("--x"));
+}
+
+TEST_F(StyleCascadeTest, RevertFromAuthorToUA) {
+  TestCascade cascade(GetDocument());
+  cascade.Add("width:10px", CascadeOrigin::kUserAgent);
+  cascade.Add("height:10px", CascadeOrigin::kUserAgent);
+
+  cascade.Add("width:20px", CascadeOrigin::kAuthor);
+  cascade.Add("height:20px", CascadeOrigin::kAuthor);
+  cascade.Add("width:revert", CascadeOrigin::kAuthor);
+  cascade.Add("height:revert", CascadeOrigin::kAuthor);
+  cascade.Apply();
+
+  EXPECT_EQ("10px", cascade.ComputedValue("width"));
+  EXPECT_EQ("10px", cascade.ComputedValue("height"));
+}
+
+TEST_F(StyleCascadeTest, RevertInitialFallback) {
+  TestCascade cascade(GetDocument());
+  cascade.Add("width:20px", CascadeOrigin::kAuthor);
+  cascade.Add("width:revert", CascadeOrigin::kAuthor);
+  cascade.Apply();
+
+  EXPECT_EQ("auto", cascade.ComputedValue("width"));
+}
+
+TEST_F(StyleCascadeTest, RevertInheritedFallback) {
+  TestCascade parent(GetDocument());
+  parent.Add("color", "red");
+  parent.Apply();
+
+  TestCascade cascade(GetDocument());
+  cascade.InheritFrom(parent.TakeStyle());
+  EXPECT_EQ("rgb(255, 0, 0)", cascade.ComputedValue("color"));
+
+  cascade.Add("color:black", CascadeOrigin::kAuthor);
+  cascade.Add("color:revert", CascadeOrigin::kAuthor);
+  cascade.Apply();
+  EXPECT_EQ("rgb(255, 0, 0)", cascade.ComputedValue("color"));
+}
+
+TEST_F(StyleCascadeTest, RevertRegistered) {
+  RegisterProperty(GetDocument(), "--x", "<length>", "0px", false);
+
+  TestCascade cascade(GetDocument());
+  cascade.Add("--x:20px", CascadeOrigin::kUser);
+  cascade.Add("--x:100px", CascadeOrigin::kAuthor);
+  cascade.Add("--x:revert", CascadeOrigin::kAuthor);
+  cascade.Apply();
+
+  EXPECT_EQ("20px", cascade.ComputedValue("--x"));
+}
+
+TEST_F(StyleCascadeTest, RevertRegisteredInitialFallback) {
+  RegisterProperty(GetDocument(), "--x", "<length>", "0px", false);
+
+  TestCascade cascade(GetDocument());
+  cascade.Add("--x:20px", CascadeOrigin::kAuthor);
+  cascade.Add("--x:revert", CascadeOrigin::kAuthor);
+  cascade.Apply();
+
+  EXPECT_EQ("0px", cascade.ComputedValue("--x"));
+}
+
+TEST_F(StyleCascadeTest, RevertRegisteredInheritedFallback) {
+  RegisterProperty(GetDocument(), "--x", "<length>", "0px", true);
+
+  TestCascade parent(GetDocument());
+  parent.Add("--x", "1px");
+  parent.Apply();
+
+  TestCascade cascade(GetDocument());
+  cascade.InheritFrom(parent.TakeStyle());
+  EXPECT_EQ("1px", cascade.ComputedValue("--x"));
+
+  cascade.Add("--x:100px", CascadeOrigin::kAuthor);
+  cascade.Add("--x:revert", CascadeOrigin::kAuthor);
+  cascade.Apply();
+  EXPECT_EQ("1px", cascade.ComputedValue("--x"));
+}
 TEST_F(StyleCascadeTest, RegisteredInitial) {
   RegisterProperty(GetDocument(), "--x", "<length>", "0px", false);
 

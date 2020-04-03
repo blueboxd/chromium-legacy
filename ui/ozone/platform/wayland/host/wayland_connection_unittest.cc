@@ -22,7 +22,7 @@ TEST(WaylandConnectionTest, Ping) {
       base::test::SingleThreadTaskEnvironment::MainThreadType::UI);
   wl::TestWaylandServerThread server;
   ASSERT_TRUE(server.Start(kXdgVersionStable));
-  WaylandConnection connection(nullptr);
+  WaylandConnection connection;
   ASSERT_TRUE(connection.Initialize());
   connection.StartProcessingEvents();
 

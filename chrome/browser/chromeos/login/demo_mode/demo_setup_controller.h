@@ -28,11 +28,21 @@ namespace chromeos {
 
 class DemoResources;
 
-// Controlls enrollment flow for setting up Demo Mode.
+// Controls enrollment flow for setting up Demo Mode.
 class DemoSetupController
     : public EnterpriseEnrollmentHelper::EnrollmentStatusConsumer,
       public policy::CloudPolicyStore::Observer {
  public:
+  // All steps required for setup.
+  enum class DemoSetupStep {
+    // Downloading Demo Mode resources.
+    kDownloadResources,
+    // Enrolling in Demo Mode.
+    kEnrollment,
+    // Setup is complete.
+    kComplete
+  };
+
   // Contains information related to setup error.
   class DemoSetupError {
    public:
@@ -155,7 +165,8 @@ class DemoSetupController
   // Demo mode setup callbacks.
   using OnSetupSuccess = base::OnceClosure;
   using OnSetupError = base::OnceCallback<void(const DemoSetupError&)>;
-  using OnIncrementSetupProgress = base::RepeatingCallback<void(bool)>;
+  using OnSetCurrentSetupStep =
+      base::RepeatingCallback<void(const DemoSetupStep)>;
   using HasPreinstalledDemoResourcesCallback = base::OnceCallback<void(bool)>;
 
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
@@ -177,6 +188,12 @@ class DemoSetupController
   // Otherwise, returns an empty string.
   static std::string GetSubOrganizationEmail();
 
+  // Returns a dictionary mapping setup steps to step indices.
+  static base::Value GetDemoSetupSteps();
+
+  // Converts a step enum to a string e.g. to sent to JavaScript.
+  static std::string GetDemoSetupStepString(const DemoSetupStep step_enum);
+
   DemoSetupController();
   ~DemoSetupController() override;
 
@@ -194,11 +211,11 @@ class DemoSetupController
   // performed and it should be set with set_enrollment_type() before calling
   // Enroll(). |on_setup_success| will be called when enrollment finishes
   // successfully. |on_setup_error| will be called when enrollment finishes with
-  // an error. |update_setup_progress| will be called when enrollment progress
-  // is updated.
+  // an error. |set_current_setup_step| will be called when an enrollment step
+  // completes.
   void Enroll(OnSetupSuccess on_setup_success,
               OnSetupError on_setup_error,
-              const OnIncrementSetupProgress& increment_setup_progress);
+              const OnSetCurrentSetupStep& set_current_setup_step);
 
   // Tries to mount the preinstalled offline resources necessary for offline
   // Demo Mode.
@@ -257,8 +274,8 @@ class DemoSetupController
   // is completed. This is the last step of demo mode setup flow.
   void OnDeviceRegistered();
 
-  // Increments setup progress percentage for UI.
-  void IncrementSetupProgress(bool complete);
+  // Sets current setup step.
+  void SetCurrentSetupStep(DemoSetupStep current_step);
 
   // Finish the flow with an error.
   void SetupFailed(const DemoSetupError& error);
@@ -292,8 +309,8 @@ class DemoSetupController
   // Path at which to mount preinstalled offline demo resources for tests.
   base::FilePath preinstalled_offline_resources_path_for_tests_;
 
-  // Callback to call when setup progress is updated.
-  OnIncrementSetupProgress increment_setup_progress_;
+  // Callback to call when setup step is updated.
+  OnSetCurrentSetupStep set_current_setup_step_;
 
   // Callback to call when enrollment finishes with an error.
   OnSetupError on_setup_error_;

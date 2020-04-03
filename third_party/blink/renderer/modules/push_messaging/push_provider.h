@@ -11,11 +11,12 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom-blink.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom-blink-forward.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription_callbacks.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -46,6 +47,8 @@ class PushProvider final : public GarbageCollected<PushProvider>,
   void Unsubscribe(std::unique_ptr<PushUnsubscribeCallbacks> callbacks);
   void GetSubscription(std::unique_ptr<PushSubscriptionCallbacks> callbacks);
 
+  void Trace(Visitor*) override;
+
  private:
   // Returns an initialized PushMessaging service. A connection will be
   // established after the first call to this method.
@@ -64,7 +67,9 @@ class PushProvider final : public GarbageCollected<PushProvider>,
                           mojom::blink::PushGetRegistrationStatus status,
                           mojom::blink::PushSubscriptionPtr subscription);
 
-  mojo::Remote<mojom::blink::PushMessaging> push_messaging_manager_;
+  HeapMojoRemote<mojom::blink::PushMessaging,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      push_messaging_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(PushProvider);
 };

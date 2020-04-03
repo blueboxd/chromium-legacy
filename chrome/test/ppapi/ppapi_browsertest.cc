@@ -16,7 +16,9 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile.h"
@@ -2284,7 +2286,9 @@ class PackagedAppTest : public extensions::ExtensionBrowserTest {
         WindowOpenDisposition::NEW_WINDOW,
         apps::mojom::AppLaunchSource::kSourceTest);
     params.command_line = *base::CommandLine::ForCurrentProcess();
-    apps::LaunchService::Get(browser()->profile())->OpenApplication(params);
+    apps::AppServiceProxyFactory::GetForProfile(browser()->profile())
+        ->BrowserAppLauncher()
+        .LaunchAppWithParams(params);
   }
 
   void RunTests(const std::string& extension_dirname) {

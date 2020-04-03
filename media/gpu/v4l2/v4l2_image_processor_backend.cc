@@ -574,6 +574,33 @@ void V4L2ImageProcessorBackend::ProcessJobsTask() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(backend_sequence_checker_);
 
   while (!input_job_queue_.empty()) {
+    if (!input_queue_->IsStreaming()) {
+      const VideoFrame& input_frame =
+          *(input_job_queue_.front()->input_frame.get());
+      const gfx::Size input_buffer_size(input_frame.stride(0),
+                                        input_frame.coded_size().height());
+      if (!ReconfigureV4L2Format(input_buffer_size, input_frame.visible_rect(),
+                                 V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE)) {
+        NotifyError();
+        return;
+      }
+    }
+
+    if (input_job_queue_.front()
+            ->output_frame &&  // output_frame is nullptr in ALLOCATE mode.
+        !output_queue_->IsStreaming()) {
+      const VideoFrame& output_frame =
+          *(input_job_queue_.front()->output_frame.get());
+      const gfx::Size output_buffer_size(output_frame.stride(0),
+                                         output_frame.coded_size().height());
+      if (!ReconfigureV4L2Format(output_buffer_size,
+                                 output_frame.visible_rect(),
+                                 V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE)) {
+        NotifyError();
+        return;
+      }
+    }
+
     // We need one input and one output buffer to schedule the job
     auto input_buffer = input_queue_->GetFreeBuffer();
     auto output_buffer = output_queue_->GetFreeBuffer();
@@ -639,6 +666,39 @@ bool V4L2ImageProcessorBackend::ApplyCrop(const gfx::Rect& visible_rect,
     return false;
   }
   return true;
+}
+
+bool V4L2ImageProcessorBackend::ReconfigureV4L2Format(
+    const gfx::Size& size,
+    const gfx::Rect& visible_rect,
+    enum v4l2_buf_type type) {
+  v4l2_format format{};
+  format.type = type;
+  if (device_->Ioctl(VIDIOC_G_FMT, &format) != 0) {
+    VPLOGF(1) << "ioctl() failed: VIDIOC_G_FMT";
+    return false;
+  }
+
+  if (static_cast<int>(format.fmt.pix_mp.width) == size.width() &&
+      static_cast<int>(format.fmt.pix_mp.height) == size.height()) {
+    return true;
+  }
+  format.fmt.pix_mp.width = size.width();
+  format.fmt.pix_mp.height = size.height();
+  if (device_->Ioctl(VIDIOC_S_FMT, &format) != 0) {
+    VPLOGF(1) << "ioctl() failed: VIDIOC_S_FMT";
+    return false;
+  }
+  if (!ApplyCrop(visible_rect, type)) {
+    return false;
+  }
+
+  auto queue = device_->GetQueue(type);
+  const size_t num_buffers = queue->AllocatedBuffersCount();
+  const v4l2_memory memory_type = queue->GetMemoryType();
+  DCHECK_GT(num_buffers, 0u);
+  return queue->DeallocateBuffers() &&
+         AllocateV4L2Buffers(queue.get(), num_buffers, memory_type);
 }
 
 bool V4L2ImageProcessorBackend::CreateInputBuffers() {

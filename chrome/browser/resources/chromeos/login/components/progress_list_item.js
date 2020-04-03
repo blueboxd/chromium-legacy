@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 Polymer({
-  is: 'progress-list-element',
+  is: 'progress-list-item',
 
   behaviors: [OobeI18nBehavior],
 

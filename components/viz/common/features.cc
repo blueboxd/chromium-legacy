@@ -65,6 +65,10 @@ const base::Feature kSplitPartiallyOccludedQuads{
 const base::Feature kUsePreferredIntervalForVideo{
     "UsePreferredIntervalForVideo", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Whether we should log extra debug information to webrtc native log.
+const base::Feature kWebRtcLogCapturePipeline{
+    "WebRtcLogCapturePipeline", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsVizHitTestingDebugEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableVizHitTestDebug);
@@ -135,6 +139,10 @@ bool ShouldUseRealBuffersForPageFlipTest() {
 
 bool ShouldSplitPartiallyOccludedQuads() {
   return base::FeatureList::IsEnabled(kSplitPartiallyOccludedQuads);
+}
+
+bool ShouldWebRtcLogCapturePipeline() {
+  return base::FeatureList::IsEnabled(kWebRtcLogCapturePipeline);
 }
 
 }  // namespace features

@@ -8,7 +8,9 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -95,10 +97,12 @@ void DemoAppLauncher::OnProfileLoaded(Profile* profile) {
       NetworkTypePattern::Physical(), false,
       chromeos::network_handler::ErrorCallback());
 
-  apps::LaunchService::Get(profile)->OpenApplication(apps::AppLaunchParams(
-      extension_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
-      WindowOpenDisposition::NEW_WINDOW,
-      apps::mojom::AppLaunchSource::kSourceChromeInternal, true));
+  apps::AppServiceProxyFactory::GetForProfile(profile)
+      ->BrowserAppLauncher()
+      .LaunchAppWithParams(apps::AppLaunchParams(
+          extension_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
+          WindowOpenDisposition::NEW_WINDOW,
+          apps::mojom::AppLaunchSource::kSourceChromeInternal, true));
   KioskAppManager::Get()->InitSession(profile, extension_id);
 
   session_manager::SessionManager::Get()->SessionStarted();

@@ -6,7 +6,6 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
@@ -176,7 +175,6 @@ PasswordGenerationManagerTest::SetUpOverwritingUI(
 // Check that accepting a generated password simply relays the message to the
 // driver.
 TEST_F(PasswordGenerationManagerTest, GeneratedPasswordAccepted_EmptyStore) {
-  base::HistogramTester histogram_tester;
   PasswordForm generated = CreateGenerated();
   MockPasswordManagerDriver driver;
   FakeFormFetcher fetcher;
@@ -186,16 +184,12 @@ TEST_F(PasswordGenerationManagerTest, GeneratedPasswordAccepted_EmptyStore) {
       std::move(generated), fetcher.GetNonFederatedMatches(),
       fetcher.GetFederatedMatches(), driver.AsWeakPtr());
   EXPECT_FALSE(manager().HasGeneratedPassword());
-  histogram_tester.ExpectUniqueSample(
-      "PasswordGeneration.PresaveConflict",
-      metrics_util::GenerationPresaveConflict::kNoUsernameConflict, 1);
 }
 
 // In case of accepted password conflicts with an existing username the
 // credential can be presaved with an empty one. Thus, no conflict happens and
 // the driver should be notified directly.
 TEST_F(PasswordGenerationManagerTest, GeneratedPasswordAccepted_Conflict) {
-  base::HistogramTester histogram_tester;
   PasswordForm generated = CreateGenerated();
   const PasswordForm saved = CreateSaved();
   generated.username_value = saved.username_value;
@@ -208,13 +202,9 @@ TEST_F(PasswordGenerationManagerTest, GeneratedPasswordAccepted_Conflict) {
       std::move(generated), fetcher.GetNonFederatedMatches(),
       fetcher.GetFederatedMatches(), driver.AsWeakPtr());
   EXPECT_FALSE(manager().HasGeneratedPassword());
-  histogram_tester.ExpectUniqueSample(
-      "PasswordGeneration.PresaveConflict",
-      metrics_util::GenerationPresaveConflict::kNoConflictWithEmptyUsername, 1);
 }
 
 TEST_F(PasswordGenerationManagerTest, GeneratedPasswordAccepted_UpdateUI) {
-  base::HistogramTester histogram_tester;
   MockPasswordManagerDriver driver;
   EXPECT_CALL(driver, GeneratedPasswordAccepted(_)).Times(0);
   std::unique_ptr<PasswordFormManagerForUI> ui_form =
@@ -231,9 +221,6 @@ TEST_F(PasswordGenerationManagerTest, GeneratedPasswordAccepted_UpdateUI) {
             ui_form->GetPendingCredentials().password_value);
   EXPECT_THAT(ui_form->GetInteractionsStats(), IsEmpty());
   EXPECT_FALSE(ui_form->IsBlacklisted());
-  histogram_tester.ExpectUniqueSample(
-      "PasswordGeneration.PresaveConflict",
-      metrics_util::GenerationPresaveConflict::kConflictWithEmptyUsername, 1);
 }
 
 TEST_F(PasswordGenerationManagerTest,

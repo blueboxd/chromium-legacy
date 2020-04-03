@@ -19,7 +19,7 @@ const CSSValue* CSSInterpolationEnvironment::Resolve(
   if (!value)
     return value;
   return cascade_->Resolve(property.GetCSSPropertyName(), *value,
-                           *cascade_resolver_);
+                           CascadeOrigin::kAnimation, *cascade_resolver_);
 }
 
 }  // namespace blink

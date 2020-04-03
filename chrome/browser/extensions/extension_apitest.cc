@@ -17,7 +17,9 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -298,7 +300,9 @@ bool ExtensionApiTest::RunExtensionTestImpl(const std::string& extension_name,
         extension->id(), LaunchContainer::kLaunchContainerNone,
         WindowOpenDisposition::NEW_WINDOW, AppLaunchSource::kSourceTest);
     params.command_line = *base::CommandLine::ForCurrentProcess();
-    apps::LaunchService::Get(browser()->profile())->OpenApplication(params);
+    apps::AppServiceProxyFactory::GetForProfile(browser()->profile())
+        ->BrowserAppLauncher()
+        .LaunchAppWithParams(params);
   }
 
   if (!catcher.GetNextResult()) {

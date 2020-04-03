@@ -12,15 +12,15 @@
 
 namespace ui {
 
-class WaylandBufferManagerHostImpl;
+class WaylandBufferManagerHost;
 
 // A connector class which instantiates a connection between
-// WaylandBufferManagerGpuImpl on the GPU side and the
-// WaylandBufferManagerHostImpl object on the browser process side.
+// WaylandBufferManagerGpu on the GPU side and the WaylandBufferManagerHost
+// object on the browser process side.
 class WaylandBufferManagerConnector : public GpuPlatformSupportHost {
  public:
   explicit WaylandBufferManagerConnector(
-      WaylandBufferManagerHostImpl* buffer_manager_host);
+      WaylandBufferManagerHost* buffer_manager_host);
   ~WaylandBufferManagerConnector() override;
 
   // GpuPlatformSupportHost:
@@ -46,8 +46,8 @@ class WaylandBufferManagerConnector : public GpuPlatformSupportHost {
   void OnTerminateGpuProcess(std::string message);
 
   // Non-owned pointer, which is used to bind a mojo pointer to the
-  // WaylandBufferManagerHostImpl.
-  WaylandBufferManagerHostImpl* const buffer_manager_host_;
+  // WaylandBufferManagerHost.
+  WaylandBufferManagerHost* const buffer_manager_host_;
 
   GpuHostBindInterfaceCallback binder_;
   GpuHostTerminateCallback terminate_callback_;

@@ -23,15 +23,19 @@ class CORE_EXPORT CascadeMap {
 
  public:
   // Get the CascadePriority for the given CSSPropertyName. If there is no
-  // entry for the given name, CascadePriority() is returned.
+  // entry for the given name, CascadePriority() is returned. If a CascadeOrigin
+  // is provided, returns the CascadePriority for that origin.
   CascadePriority At(const CSSPropertyName&) const;
+  CascadePriority At(const CSSPropertyName&, CascadeOrigin) const;
   // Find the CascadePriority location for a given name, if present. If there
-  // is no entry for the given name, nullptr is returned.
+  // is no entry for the given name, nullptr is returned. If a CascadeOrigin
+  // is provided, returns the CascadePriority for that origin.
   //
   // Note that the returned pointer may accessed to change the stored value.
   //
   // Note also that calling Add() invalidates the pointer.
   CascadePriority* Find(const CSSPropertyName&);
+  CascadePriority* Find(const CSSPropertyName&, CascadeOrigin);
   // Adds an an entry to the map if the incoming priority is greater than or
   // equal to the current priority for the same name.
   void Add(const CSSPropertyName&, CascadePriority);
@@ -42,15 +46,38 @@ class CORE_EXPORT CascadeMap {
   // Remove all properties (both native and custom) from the CascadeMap.
   void Reset();
 
+  class NativeMap {
+    STACK_ALLOCATED();
+
+   public:
+    std::bitset<numCSSProperties>& Bits() { return bits_; }
+    const std::bitset<numCSSProperties>& Bits() const { return bits_; }
+
+    CascadePriority* Buffer() {
+      return reinterpret_cast<CascadePriority*>(properties_);
+    }
+    const CascadePriority* Buffer() const {
+      return reinterpret_cast<const CascadePriority*>(properties_);
+    }
+
+   private:
+    // For performance reasons, a char-array is used to prevent construction of
+    // CascadePriority objects. A companion std::bitset keeps track of which
+    // properties are initialized.
+    std::bitset<numCSSProperties> bits_;
+    alignas(CascadePriority) char properties_[numCSSProperties *
+                                              sizeof(CascadePriority)];
+  };
+
+  using CustomMap = HashMap<CSSPropertyName, CascadePriority>;
+
  private:
   uint64_t high_priority_ = 0;
-  // For performance reasons, a char-array is used to prevent construction of
-  // CascadePriority objects. A companion std::bitset keeps track of which
-  // properties are initialized.
-  std::bitset<numCSSProperties> native_property_bits_;
-  alignas(CascadePriority) char native_properties_[numCSSProperties *
-                                                   sizeof(CascadePriority)];
-  HashMap<CSSPropertyName, CascadePriority> custom_properties_;
+  NativeMap native_properties_;
+  NativeMap native_ua_properties_;
+  NativeMap native_user_properties_;
+  CustomMap custom_properties_;
+  CustomMap custom_user_properties_;
 };
 
 }  // namespace blink

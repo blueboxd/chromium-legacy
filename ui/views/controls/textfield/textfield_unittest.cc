@@ -1283,11 +1283,11 @@ TEST_F(TextfieldTest, PasswordTest) {
   SetClipboardText(ui::ClipboardBuffer::kCopyPaste, "foo");
 
   // Cut and copy should be disabled.
-  EXPECT_FALSE(textfield_->IsCommandIdEnabled(IDS_APP_CUT));
-  textfield_->ExecuteCommand(IDS_APP_CUT, 0);
+  EXPECT_FALSE(textfield_->IsCommandIdEnabled(Textfield::kCut));
+  textfield_->ExecuteCommand(Textfield::kCut, 0);
   SendKeyEvent(ui::VKEY_X, false, true);
-  EXPECT_FALSE(textfield_->IsCommandIdEnabled(IDS_APP_COPY));
-  textfield_->ExecuteCommand(IDS_APP_COPY, 0);
+  EXPECT_FALSE(textfield_->IsCommandIdEnabled(Textfield::kCopy));
+  textfield_->ExecuteCommand(Textfield::kCopy, 0);
   SendKeyEvent(ui::VKEY_C, false, true);
   SendAlternateCopy();
   EXPECT_STR_EQ("foo", GetClipboardText(ui::ClipboardBuffer::kCopyPaste));
@@ -1297,8 +1297,8 @@ TEST_F(TextfieldTest, PasswordTest) {
   SendKeyEvent(ui::VKEY_DELETE, true, false);
 
   // Paste should work normally.
-  EXPECT_TRUE(textfield_->IsCommandIdEnabled(IDS_APP_PASTE));
-  textfield_->ExecuteCommand(IDS_APP_PASTE, 0);
+  EXPECT_TRUE(textfield_->IsCommandIdEnabled(Textfield::kPaste));
+  textfield_->ExecuteCommand(Textfield::kPaste, 0);
   SendKeyEvent(ui::VKEY_V, false, true);
   SendAlternatePaste();
   EXPECT_STR_EQ("foo", GetClipboardText(ui::ClipboardBuffer::kCopyPaste));
@@ -1964,24 +1964,24 @@ TEST_F(TextfieldTest, ReadOnlyTest) {
 
   // Cut should be disabled.
   SetClipboardText(ui::ClipboardBuffer::kCopyPaste, "Test");
-  EXPECT_FALSE(textfield_->IsCommandIdEnabled(IDS_APP_CUT));
-  textfield_->ExecuteCommand(IDS_APP_CUT, 0);
+  EXPECT_FALSE(textfield_->IsCommandIdEnabled(Textfield::kCut));
+  textfield_->ExecuteCommand(Textfield::kCut, 0);
   SendKeyEvent(ui::VKEY_X, false, true);
   SendAlternateCut();
   EXPECT_STR_EQ("Test", GetClipboardText(ui::ClipboardBuffer::kCopyPaste));
   EXPECT_STR_EQ("read only", textfield_->GetText());
 
   // Paste should be disabled.
-  EXPECT_FALSE(textfield_->IsCommandIdEnabled(IDS_APP_PASTE));
-  textfield_->ExecuteCommand(IDS_APP_PASTE, 0);
+  EXPECT_FALSE(textfield_->IsCommandIdEnabled(Textfield::kPaste));
+  textfield_->ExecuteCommand(Textfield::kPaste, 0);
   SendKeyEvent(ui::VKEY_V, false, true);
   SendAlternatePaste();
   EXPECT_STR_EQ("read only", textfield_->GetText());
 
   // Copy should work normally.
   SetClipboardText(ui::ClipboardBuffer::kCopyPaste, "Test");
-  EXPECT_TRUE(textfield_->IsCommandIdEnabled(IDS_APP_COPY));
-  textfield_->ExecuteCommand(IDS_APP_COPY, 0);
+  EXPECT_TRUE(textfield_->IsCommandIdEnabled(Textfield::kCopy));
+  textfield_->ExecuteCommand(Textfield::kCopy, 0);
   EXPECT_STR_EQ("read only", GetClipboardText(ui::ClipboardBuffer::kCopyPaste));
   SetClipboardText(ui::ClipboardBuffer::kCopyPaste, "Test");
   SendKeyEvent(ui::VKEY_C, false, true);
@@ -2297,11 +2297,11 @@ TEST_F(TextfieldTest, Yank) {
 
 TEST_F(TextfieldTest, CutCopyPaste) {
   InitTextfield();
-  // Ensure IDS_APP_CUT cuts.
+  // Ensure kCut cuts.
   textfield_->SetText(ASCIIToUTF16("123"));
   textfield_->SelectAll(false);
-  EXPECT_TRUE(textfield_->IsCommandIdEnabled(IDS_APP_CUT));
-  textfield_->ExecuteCommand(IDS_APP_CUT, 0);
+  EXPECT_TRUE(textfield_->IsCommandIdEnabled(Textfield::kCut));
+  textfield_->ExecuteCommand(Textfield::kCut, 0);
   EXPECT_STR_EQ("123", GetClipboardText(ui::ClipboardBuffer::kCopyPaste));
   EXPECT_STR_EQ("", textfield_->GetText());
   EXPECT_EQ(ui::ClipboardBuffer::kCopyPaste, GetAndResetCopiedToClipboard());
@@ -2337,11 +2337,11 @@ TEST_F(TextfieldTest, CutCopyPaste) {
   EXPECT_STR_EQ("123", textfield_->GetText());
   EXPECT_EQ(ui::ClipboardBuffer::kMaxValue, GetAndResetCopiedToClipboard());
 
-  // Ensure IDS_APP_COPY copies.
+  // Ensure kCopy copies.
   textfield_->SetText(ASCIIToUTF16("789"));
   textfield_->SelectAll(false);
-  EXPECT_TRUE(textfield_->IsCommandIdEnabled(IDS_APP_COPY));
-  textfield_->ExecuteCommand(IDS_APP_COPY, 0);
+  EXPECT_TRUE(textfield_->IsCommandIdEnabled(Textfield::kCopy));
+  textfield_->ExecuteCommand(Textfield::kCopy, 0);
   EXPECT_STR_EQ("789", GetClipboardText(ui::ClipboardBuffer::kCopyPaste));
   EXPECT_EQ(ui::ClipboardBuffer::kCopyPaste, GetAndResetCopiedToClipboard());
 
@@ -2363,12 +2363,12 @@ TEST_F(TextfieldTest, CutCopyPaste) {
   EXPECT_STR_EQ("345", textfield_->GetText());
   EXPECT_EQ(ui::ClipboardBuffer::kCopyPaste, GetAndResetCopiedToClipboard());
 
-  // Ensure IDS_APP_PASTE, [Ctrl]+[V], and [Shift]+[Insert] pastes;
+  // Ensure kPaste, [Ctrl]+[V], and [Shift]+[Insert] pastes;
   // also ensure that [Ctrl]+[Alt]+[V] does nothing.
   SetClipboardText(ui::ClipboardBuffer::kCopyPaste, "abc");
   textfield_->SetText(base::string16());
-  EXPECT_TRUE(textfield_->IsCommandIdEnabled(IDS_APP_PASTE));
-  textfield_->ExecuteCommand(IDS_APP_PASTE, 0);
+  EXPECT_TRUE(textfield_->IsCommandIdEnabled(Textfield::kPaste));
+  textfield_->ExecuteCommand(Textfield::kPaste, 0);
   EXPECT_STR_EQ("abc", textfield_->GetText());
   SendKeyEvent(ui::VKEY_V, false, true);
   EXPECT_STR_EQ("abcabc", textfield_->GetText());

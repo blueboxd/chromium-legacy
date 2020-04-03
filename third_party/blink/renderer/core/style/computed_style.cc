@@ -1072,7 +1072,7 @@ void ComputedStyle::UpdateIsStackingContext(bool is_document_element,
 }
 
 void ComputedStyle::AddCallbackSelector(const String& selector) {
-  if (!CallbackSelectorsInternal().Contains(selector))
+  if (!CallbackSelectors().Contains(selector))
     MutableCallbackSelectorsInternal().push_back(selector);
 }
 
@@ -2235,8 +2235,7 @@ int ComputedStyle::OutlineOutsetExtent() const {
   if (OutlineStyleIsAuto()) {
     return GraphicsContext::FocusRingOutsetExtent(
         OutlineOffset(), GetDefaultOffsetForFocusRing(),
-        std::ceil(GetOutlineStrokeWidthForFocusRing()),
-        LayoutTheme::GetTheme().IsFocusRingOutset());
+        std::ceil(GetOutlineStrokeWidthForFocusRing()));
   }
   return base::ClampAdd(OutlineWidth(), OutlineOffset()).Max(0);
 }
@@ -2249,9 +2248,6 @@ float ComputedStyle::GetOutlineStrokeWidthForFocusRing() const {
 #if defined(OS_MACOSX)
   return OutlineWidth();
 #else
-  if (LayoutTheme::GetTheme().IsFocusRingOutset()) {
-    return OutlineWidth();
-  }
   // Draw an outline with thickness in proportion to the zoom level, but never
   // so narrow that it becomes invisible.
   return std::max(EffectiveZoom(), 1.f);

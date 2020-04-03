@@ -732,6 +732,7 @@ crbug.com/906737 [ android qualcomm ] conformance/extensions/webgl-compressed-te
 crbug.com/906742 [ android qualcomm no-passthrough ] conformance2/glsl3/compare-structs-containing-arrays.html [ Failure ]
 crbug.com/1008535 [ android qualcomm-adreno-(tm)-540 passthrough ] conformance2/textures/misc/tex-image-with-bad-args-from-dom-elements.html [ Skip ]
 crbug.com/1000354 [ android qualcomm-adreno-(tm)-540 passthrough ] conformance2/reading/read-pixels-from-fbo-test.html [ Failure ]
+crbug.com/951628 [ android qualcomm-adreno-(tm)-540 passthrough ] conformance/rendering/blending.html [ Failure ]
 crbug.com/981216 [ android qualcomm-adreno-(tm)-540 ] deqp/functional/gles3/fbocolorbuffer/tex2d_01.html [ RetryOnFailure ]
 crbug.com/949321 [ android qualcomm ] deqp/functional/gles3/framebufferblit/default_framebuffer_02.html [ RetryOnFailure ]
 crbug.com/1022410 [ android qualcomm ] conformance2/transform_feedback/switching-objects.html [ RetryOnFailure ]

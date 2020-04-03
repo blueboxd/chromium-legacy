@@ -76,12 +76,18 @@ void DemoSetupScreen::StartEnrollment() {
                      weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(&DemoSetupScreen::OnSetupError,
                      weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&DemoSetupScreen::IncrementSetupProgress,
+      base::BindRepeating(&DemoSetupScreen::SetCurrentSetupStep,
                           weak_ptr_factory_.GetWeakPtr()));
 }
 
-void DemoSetupScreen::IncrementSetupProgress(bool complete) {
-  view_->IncrementSetupProgress(complete);
+void DemoSetupScreen::SetCurrentSetupStep(
+    const DemoSetupController::DemoSetupStep current_step) {
+  view_->SetCurrentSetupStep(current_step);
+}
+
+void DemoSetupScreen::SetCurrentSetupStepForTest(
+    const DemoSetupController::DemoSetupStep current_step) {
+  SetCurrentSetupStep(current_step);
 }
 
 void DemoSetupScreen::OnSetupError(

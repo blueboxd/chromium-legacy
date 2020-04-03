@@ -133,6 +133,10 @@ OmniboxState::OmniboxState(const OmniboxEditModel::State& model_state,
 OmniboxState::~OmniboxState() {
 }
 
+enum OmniboxMenuCommands {
+  kShowUrl = views::Textfield::MenuCommands::kLastCommandId + 1,
+};
+
 }  // namespace
 
 // Animation chosen to match the default values in the edwardjung prototype.
@@ -496,20 +500,13 @@ void OmniboxViewViews::ExecuteCommand(int command_id, int event_flags) {
   // In the base class, touch text selection is deactivated when a command is
   // executed. Since we are not always calling the base class implementation
   // here, we need to deactivate touch text selection here, too.
-  //
-  // Note: while it looks weird that some of these cases are IDC_* and some are
-  // IDS_*, that is intentional. The commands that do not have matching IDC_*
-  // constants are registered using their names' IDS constants as their command
-  // IDs. If at some point in the future someone adds a new IDC constant that
-  // clashes with one of these IDS constants, this stanza will fail to compile
-  // because there'll be a duplicate switch case.
   DestroyTouchSelection();
   switch (command_id) {
     // These commands don't invoke the popup via OnBefore/AfterPossibleChange().
     case IDC_PASTE_AND_GO:
       model()->PasteAndGo(GetClipboardText());
       return;
-    case IDS_SHOW_URL:
+    case kShowUrl:
       model()->Unelide(true /* exit_query_in_omnibox */);
       return;
     case IDC_SHOW_FULL_URLS:
@@ -525,7 +522,7 @@ void OmniboxViewViews::ExecuteCommand(int command_id, int event_flags) {
       return;
 
     // These commands do invoke the popup.
-    case IDS_APP_PASTE:
+    case Textfield::kPaste:
       ExecuteTextEditCommand(ui::TextEditCommand::PASTE);
       return;
     default:
@@ -1454,13 +1451,13 @@ void OmniboxViewViews::OnBlur() {
 }
 
 bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
-  if (command_id == IDS_APP_PASTE)
+  if (command_id == Textfield::kPaste)
     return !GetReadOnly() && !GetClipboardText().empty();
   if (command_id == IDC_PASTE_AND_GO)
     return !GetReadOnly() && model()->CanPasteAndGo(GetClipboardText());
 
   // Menu item is only shown when it is valid.
-  if (command_id == IDS_SHOW_URL)
+  if (command_id == kShowUrl)
     return true;
   if (command_id == IDC_SHOW_FULL_URLS)
     return true;
@@ -1837,7 +1834,7 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
           location_bar_view_->GetWebContents())) {
     send_tab_to_self::RecordSendTabToSelfClickResult(
         send_tab_to_self::kOmniboxMenu, SendTabToSelfClickResult::kShowItem);
-    int index = menu_contents->GetIndexOfCommandId(IDS_APP_UNDO);
+    int index = menu_contents->GetIndexOfCommandId(Textfield::kUndo);
     // Add a separator if this is not the first item.
     if (index)
       menu_contents->InsertSeparatorAt(index++, ui::NORMAL_SEPARATOR);
@@ -1870,7 +1867,7 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
     menu_contents->InsertSeparatorAt(++index, ui::NORMAL_SEPARATOR);
   }
 
-  int paste_position = menu_contents->GetIndexOfCommandId(IDS_APP_PASTE);
+  int paste_position = menu_contents->GetIndexOfCommandId(Textfield::kPaste);
   DCHECK_GE(paste_position, 0);
   menu_contents->InsertItemWithStringIdAt(paste_position + 1, IDC_PASTE_AND_GO,
                                           IDS_PASTE_AND_GO);
@@ -1884,15 +1881,12 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
     if (!GetReadOnly() && !model()->user_input_in_progress() &&
         GetText() !=
             controller()->GetLocationBarModel()->GetFormattedFullURL()) {
-      menu_contents->AddItemWithStringId(IDS_SHOW_URL, IDS_SHOW_URL);
+      menu_contents->AddItemWithStringId(kShowUrl, IDS_SHOW_URL);
     }
   }
 
   menu_contents->AddSeparator(ui::NORMAL_SEPARATOR);
 
-  // Minor note: We use IDC_ for command id here while the underlying textfield
-  // is using IDS_ for all its command ids. This is because views cannot depend
-  // on IDC_ for now.
   menu_contents->AddItemWithStringId(IDC_EDIT_SEARCH_ENGINES,
                                      IDS_EDIT_SEARCH_ENGINES);
 

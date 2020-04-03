@@ -374,6 +374,12 @@
   return _appState;
 }
 
++ (AppState*)sharedAppState {
+  return base::mac::ObjCCast<MainApplicationDelegate>(
+             [[UIApplication sharedApplication] delegate])
+      .appState;
+}
+
 + (MainController*)sharedMainController {
   return base::mac::ObjCCast<MainApplicationDelegate>(
              [[UIApplication sharedApplication] delegate])

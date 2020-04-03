@@ -28,13 +28,6 @@
 
 namespace {
 
-// Contents of the Reload drop-down menu.
-const int kReloadMenuItems[]  = {
-  IDS_RELOAD_MENU_NORMAL_RELOAD_ITEM,
-  IDS_RELOAD_MENU_HARD_RELOAD_ITEM,
-  IDS_RELOAD_MENU_EMPTY_AND_HARD_RELOAD_ITEM,
-};
-
 const gfx::VectorIcon& GetIconForMode(ReloadButton::IconStyle icon_style,
                                       bool is_reload) {
   const bool touch_ui = ui::TouchUiController::Get()->touch_ui();
@@ -224,39 +217,21 @@ bool ReloadButton::IsCommandIdVisible(int command_id) const {
 bool ReloadButton::GetAcceleratorForCommandId(
     int command_id,
     ui::Accelerator* accelerator) const {
-  switch (command_id) {
-    case IDS_RELOAD_MENU_NORMAL_RELOAD_ITEM:
-      GetWidget()->GetAccelerator(IDC_RELOAD, accelerator);
-      return true;
-    case IDS_RELOAD_MENU_HARD_RELOAD_ITEM:
-      GetWidget()->GetAccelerator(IDC_RELOAD_BYPASSING_CACHE, accelerator);
-      return true;
-  }
   return GetWidget()->GetAccelerator(command_id, accelerator);
 }
 
 void ReloadButton::ExecuteCommand(int command_id, int event_flags) {
-  int browser_command = 0;
-  switch (command_id) {
-    case IDS_RELOAD_MENU_NORMAL_RELOAD_ITEM:
-      browser_command = IDC_RELOAD;
-      break;
-    case IDS_RELOAD_MENU_HARD_RELOAD_ITEM:
-      browser_command = IDC_RELOAD_BYPASSING_CACHE;
-      break;
-    case IDS_RELOAD_MENU_EMPTY_AND_HARD_RELOAD_ITEM:
-      browser_command = IDC_RELOAD_CLEARING_CACHE;
-      break;
-    default:
-      NOTREACHED();
-  }
-  ExecuteBrowserCommand(browser_command, event_flags);
+  ExecuteBrowserCommand(command_id, event_flags);
 }
 
 std::unique_ptr<ui::SimpleMenuModel> ReloadButton::CreateMenuModel() {
   auto menu_model = std::make_unique<ui::SimpleMenuModel>(this);
-  for (int item : kReloadMenuItems)
-    menu_model->AddItemWithStringId(item, item);
+  menu_model->AddItemWithStringId(IDC_RELOAD,
+                                  IDS_RELOAD_MENU_NORMAL_RELOAD_ITEM);
+  menu_model->AddItemWithStringId(IDC_RELOAD_BYPASSING_CACHE,
+                                  IDS_RELOAD_MENU_HARD_RELOAD_ITEM);
+  menu_model->AddItemWithStringId(IDC_RELOAD_CLEARING_CACHE,
+                                  IDS_RELOAD_MENU_EMPTY_AND_HARD_RELOAD_ITEM);
   return menu_model;
 }
 

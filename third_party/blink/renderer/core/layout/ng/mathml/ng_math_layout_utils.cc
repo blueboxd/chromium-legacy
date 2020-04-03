@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_space_utils.h"
 #include "third_party/blink/renderer/core/mathml/mathml_fraction_element.h"
+#include "third_party/blink/renderer/core/mathml/mathml_under_over_element.h"
 
 namespace blink {
 
@@ -67,6 +68,21 @@ inline bool InFlowChildCountIs(const NGBlockNode& node, unsigned count) {
 
 bool IsValidMathMLFraction(const NGBlockNode& node) {
   return InFlowChildCountIs(node, 2);
+}
+
+bool IsValidMathMLUnderOver(const NGBlockNode& node) {
+  auto* scripted =
+      DynamicTo<MathMLUnderOverElement>(node.GetLayoutBox()->GetNode());
+  switch (scripted->scriptType()) {
+    case MathMLUnderOverElement::ScriptType::kUnder:
+    case MathMLUnderOverElement::ScriptType::kOver:
+      return InFlowChildCountIs(node, 2);
+    case MathMLUnderOverElement::ScriptType::kUnderOver:
+      return InFlowChildCountIs(node, 3);
+    default:
+      NOTREACHED();
+      return false;
+  }
 }
 
 namespace {

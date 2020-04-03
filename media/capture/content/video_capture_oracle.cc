@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
 #include "base/numerics/safe_conversions.h"
@@ -412,6 +413,15 @@ void VideoCaptureOracle::AnalyzeAndAdjust(const base::TimeTicks analyze_time) {
   const int decreased_area = AnalyzeForDecreasedArea(analyze_time);
   if (decreased_area > 0) {
     resolution_chooser_.SetTargetFrameArea(decreased_area);
+    if (!emit_log_message_cb_.is_null()) {
+      emit_log_message_cb_.Run(base::StringPrintf(
+          "VFC: CaptureOracle - Decreasing resolution. "
+          "buffer_utilization_: %lf "
+          "estimated_cappable_area: %lf "
+          "capture_size: %s ",
+          buffer_pool_utilization_.current(), estimated_capable_area_.current(),
+          capture_size_.ToString().c_str()));
+    }
     return;
   }
 
@@ -585,6 +595,11 @@ bool VideoCaptureOracle::HasSufficientRecentFeedback(
       accumulator.update_time() - accumulator.reset_time();
   return (amount_of_history >= min_size_change_period_) &&
          (now - accumulator.update_time() <= kMaxTimeSinceLastFeedbackUpdate);
+}
+
+void VideoCaptureOracle::SetLogCallback(
+    base::RepeatingCallback<void(const std::string&)> emit_log_cb) {
+  emit_log_message_cb_ = std::move(emit_log_cb);
 }
 
 }  // namespace media

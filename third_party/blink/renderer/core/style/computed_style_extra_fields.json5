@@ -638,7 +638,7 @@
       default_value: "Vector<String>()",
       include_paths: ["third_party/blink/renderer/platform/wtf/vector.h",
                       "third_party/blink/renderer/platform/wtf/text/wtf_string.h"],
-      computed_style_custom_functions: ["getter", "setter"],
+      computed_style_custom_functions: ["setter"],
     },
     {
       name: "PaintImages",

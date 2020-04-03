@@ -458,6 +458,13 @@ bool IsContentPositionOrLeftOrRightKeyword(CSSValueID id) {
   return IsContentPositionKeyword(id) || IsLeftOrRightKeyword(id);
 }
 
+bool IsCSSWideKeyword(CSSValueID id) {
+  return id == CSSValueID::kInherit || id == CSSValueID::kInitial ||
+         id == CSSValueID::kUnset ||
+         (RuntimeEnabledFeatures::CSSRevertEnabled() &&
+          (id == CSSValueID::kRevert));
+}
+
 CSSValue* ConsumeScrollOffset(CSSParserTokenRange& range,
                               const CSSParserContext& context) {
   range.ConsumeWhitespace();

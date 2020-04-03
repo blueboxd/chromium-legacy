@@ -1047,6 +1047,7 @@ jumbo_source_set("unit_tests") {
   sources = [
     "clipboard/clipboard_utilities_test.cc",
     "content_capture/content_capture_test.cc",
+    "css/css_revert_value_test.cc",
     "css/css_test_helpers.cc",
     "css/css_test_helpers.h",
     "css/css_uri_value_test.cc",

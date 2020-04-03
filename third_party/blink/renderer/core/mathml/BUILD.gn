@@ -14,5 +14,7 @@ blink_core_sources("mathml") {
     "mathml_row_element.h",
     "mathml_space_element.cc",
     "mathml_space_element.h",
+    "mathml_under_over_element.cc",
+    "mathml_under_over_element.h",
   ]
 }

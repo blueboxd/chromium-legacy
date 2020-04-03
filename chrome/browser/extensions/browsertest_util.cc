@@ -12,7 +12,9 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/profiles/profile.h"
@@ -91,9 +93,12 @@ const Extension* InstallBookmarkApp(Profile* profile, WebApplicationInfo info) {
 
 Browser* LaunchAppBrowser(Profile* profile, const Extension* extension_app) {
   EXPECT_TRUE(
-      apps::LaunchService::Get(profile)->OpenApplication(apps::AppLaunchParams(
-          extension_app->id(), LaunchContainer::kLaunchContainerWindow,
-          WindowOpenDisposition::CURRENT_TAB, AppLaunchSource::kSourceTest)));
+      apps::AppServiceProxyFactory::GetForProfile(profile)
+          ->BrowserAppLauncher()
+          .LaunchAppWithParams(apps::AppLaunchParams(
+              extension_app->id(), LaunchContainer::kLaunchContainerWindow,
+              WindowOpenDisposition::CURRENT_TAB,
+              AppLaunchSource::kSourceTest)));
 
   Browser* browser = chrome::FindLastActive();
   bool is_correct_app_browser =

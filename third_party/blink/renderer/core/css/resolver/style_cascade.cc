@@ -95,6 +95,23 @@ PropertyHandle ToPropertyHandle(const CSSProperty& property,
   return PropertyHandle(property, DecodeIsPresentationAttribute(position));
 }
 
+// https://drafts.csswg.org/css-cascade-4/#default
+CascadeOrigin TargetOriginForRevert(CascadeOrigin origin) {
+  switch (origin) {
+    case CascadeOrigin::kNone:
+    case CascadeOrigin::kTransition:
+      NOTREACHED();
+      return CascadeOrigin::kNone;
+    case CascadeOrigin::kUserAgent:
+      return CascadeOrigin::kNone;
+    case CascadeOrigin::kUser:
+      return CascadeOrigin::kUserAgent;
+    case CascadeOrigin::kAuthor:
+    case CascadeOrigin::kAnimation:
+      return CascadeOrigin::kUser;
+  }
+}
+
 }  // namespace
 
 MatchResult& StyleCascade::MutableMatchResult() {
@@ -146,10 +163,12 @@ void StyleCascade::Reset() {
 
 const CSSValue* StyleCascade::Resolve(const CSSPropertyName& name,
                                       const CSSValue& value,
+                                      CascadeOrigin origin,
                                       CascadeResolver& resolver) {
   CSSPropertyRef ref(name, state_.GetDocument());
 
-  const CSSValue* resolved = Resolve(ref.GetProperty(), value, resolver);
+  const CSSValue* resolved =
+      Resolve(ref.GetProperty(), value, origin, resolver);
 
   DCHECK(resolved);
 
@@ -272,7 +291,8 @@ void StyleCascade::ApplyMatchResult(CascadeResolver& resolver) {
         ApplySurrogate(property, priority, resolver);
         continue;
       }
-      const CSSValue* value = Resolve(property, e.Value(), resolver);
+      CascadeOrigin origin = priority.GetOrigin();
+      const CSSValue* value = Resolve(property, e.Value(), origin, resolver);
       StyleBuilder::ApplyProperty(property, state_, *value);
     }
   }
@@ -426,7 +446,7 @@ void StyleCascade::LookupAndApplyDeclaration(const CSSProperty& property,
   DCHECK(priority.GetOrigin() < CascadeOrigin::kAnimation);
   const CSSValue* value = ValueAt(match_result_, priority.GetPosition());
   DCHECK(value);
-  value = Resolve(property, *value, resolver);
+  value = Resolve(property, *value, priority.GetOrigin(), resolver);
   DCHECK(!value->IsVariableReferenceValue());
   DCHECK(!value->IsPendingSubstitutionValue());
   StyleBuilder::ApplyProperty(property, state_, *value);
@@ -494,26 +514,33 @@ StyleCascade::TokenSequence::BuildVariableData() {
 
 const CSSValue* StyleCascade::Resolve(const CSSProperty& property,
                                       const CSSValue& value,
+                                      CascadeOrigin origin,
                                       CascadeResolver& resolver) {
   if (const auto* v = DynamicTo<CSSCustomPropertyDeclaration>(value))
-    return ResolveCustomProperty(property, *v, resolver);
+    return ResolveCustomProperty(property, *v, origin, resolver);
   if (const auto* v = DynamicTo<CSSVariableReferenceValue>(value))
     return ResolveVariableReference(property, *v, resolver);
   if (const auto* v = DynamicTo<cssvalue::CSSPendingSubstitutionValue>(value))
     return ResolvePendingSubstitution(property, *v, resolver);
+  if (value.IsRevertValue())
+    return ResolveRevert(property, origin, resolver);
   return &value;
 }
 
 const CSSValue* StyleCascade::ResolveCustomProperty(
     const CSSProperty& property,
     const CSSCustomPropertyDeclaration& decl,
+    CascadeOrigin origin,
     CascadeResolver& resolver) {
+  // TODO(andruud): Don't transport css-wide keywords in this value.
+  if (!decl.Value()) {
+    if (decl.IsRevert())
+      return ResolveRevert(property, origin, resolver);
+    return &decl;
+  }
+
   DCHECK(!resolver.IsLocked(property));
   CascadeResolver::AutoLock lock(property, resolver);
-
-  // TODO(andruud): Don't transport css-wide keywords in this value.
-  if (!decl.Value())
-    return &decl;
 
   scoped_refptr<CSSVariableData> data = decl.Value();
 
@@ -623,6 +650,29 @@ const CSSValue* StyleCascade::ResolvePendingSubstitution(
 
   NOTREACHED();
   return cssvalue::CSSUnsetValue::Create();
+}
+
+const CSSValue* StyleCascade::ResolveRevert(const CSSProperty& property,
+                                            CascadeOrigin origin,
+                                            CascadeResolver& resolver) {
+  CascadeOrigin target_origin = TargetOriginForRevert(origin);
+
+  switch (target_origin) {
+    case CascadeOrigin::kTransition:
+    case CascadeOrigin::kNone:
+      return cssvalue::CSSUnsetValue::Create();
+    case CascadeOrigin::kUserAgent:
+    case CascadeOrigin::kUser:
+    case CascadeOrigin::kAuthor:
+    case CascadeOrigin::kAnimation: {
+      CascadePriority* p =
+          map_.Find(property.GetCSSPropertyName(), target_origin);
+      if (!p)
+        return cssvalue::CSSUnsetValue::Create();
+      return Resolve(property, *ValueAt(match_result_, p->GetPosition()),
+                     target_origin, resolver);
+    }
+  }
 }
 
 scoped_refptr<CSSVariableData> StyleCascade::ResolveVariableData(

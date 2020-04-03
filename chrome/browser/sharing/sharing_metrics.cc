@@ -399,6 +399,11 @@ void LogSendSharingMessageResult(
         base::StrCat(
             {metric_prefix, ".", PulseIntervalToString(pulse_interval)}),
         result);
+    base::UmaHistogramEnumeration(
+        base::StrCat({metric_prefix, ".",
+                      DevicePlatformToString(receiving_device_platform), ".",
+                      PulseIntervalToString(pulse_interval)}),
+        result);
   }
 }
 

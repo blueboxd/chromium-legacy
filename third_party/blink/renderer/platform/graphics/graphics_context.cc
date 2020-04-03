@@ -322,10 +322,7 @@ void GraphicsContext::CompositeRecord(sk_sp<PaintRecord> record,
 
 namespace {
 
-int AdjustedFocusRingOffset(int offset,
-                            int default_offset,
-                            int width,
-                            bool is_outset) {
+int AdjustedFocusRingOffset(int offset, int default_offset, int width) {
   if (::features::IsFormControlsRefreshEnabled()) {
     // For FormControlsRefresh the focus ring has a default offset that
     // depends on the element type.
@@ -335,8 +332,6 @@ int AdjustedFocusRingOffset(int offset,
 #if defined(OS_MACOSX)
   return offset + 2;
 #else
-  if (is_outset)
-    return offset + width - (width + 1) / 2;
   return 0;
 #endif
 }
@@ -345,19 +340,17 @@ int AdjustedFocusRingOffset(int offset,
 
 int GraphicsContext::FocusRingOutsetExtent(int offset,
                                            int default_offset,
-                                           int width,
-                                           bool is_outset) {
+                                           int width) {
   // Unlike normal outlines (whole width is outside of the offset), focus
   // rings can be drawn with the center of the path aligned with the offset, so
   // only half of the width is outside of the offset.
   if (::features::IsFormControlsRefreshEnabled()) {
     // For FormControlsRefresh 2/3 of the width is outside of the offset.
-    return AdjustedFocusRingOffset(offset, default_offset, width, is_outset) +
+    return AdjustedFocusRingOffset(offset, default_offset, width) +
            std::ceil(width / 3.f) * 2;
   }
 
-  return AdjustedFocusRingOffset(offset, /*default_offset=*/0, width,
-                                 is_outset) +
+  return AdjustedFocusRingOffset(offset, /*default_offset=*/0, width) +
          (width + 1) / 2;
 }
 
@@ -398,8 +391,7 @@ void GraphicsContext::DrawFocusRingInternal(const Vector<IntRect>& rects,
                                             float width,
                                             int offset,
                                             float border_radius,
-                                            const Color& color,
-                                            bool is_outset) {
+                                            const Color& color) {
   unsigned rect_count = rects.size();
   if (!rect_count)
     return;
@@ -408,8 +400,8 @@ void GraphicsContext::DrawFocusRingInternal(const Vector<IntRect>& rects,
   if (!::features::IsFormControlsRefreshEnabled()) {
     // For FormControlsRefresh the offset is already adjusted by
     // GraphicsContext::DrawFocusRing.
-    offset = AdjustedFocusRingOffset(offset, /*default_offset=*/0,
-                                     std::ceil(width), is_outset);
+    offset =
+        AdjustedFocusRingOffset(offset, /*default_offset=*/0, std::ceil(width));
   }
   for (unsigned i = 0; i < rect_count; i++) {
     SkIRect r = rects[i];
@@ -432,38 +424,19 @@ void GraphicsContext::DrawFocusRingInternal(const Vector<IntRect>& rects,
   }
 }
 
-namespace {
-
-static const double kFocusRingLuminanceThreshold = 0.45;
-
-bool ShouldDrawInnerFocusRingForContrast(bool is_outset,
-                                         float width,
-                                         Color color) {
-  if (!is_outset || width < 3) {
-    return false;
-  }
-  double h = 0.0, s = 0.0, l = 0.0;
-  color.GetHSL(h, s, l);
-  return l < kFocusRingLuminanceThreshold;
-}
-
-}  // namespace
-
 void GraphicsContext::DrawFocusRing(const Vector<IntRect>& rects,
                                     float width,
                                     int offset,
                                     int default_offset,
                                     float border_radius,
                                     float min_border_width,
-                                    const Color& color,
-                                    bool is_outset) {
+                                    const Color& color) {
   if (::features::IsFormControlsRefreshEnabled()) {
     // The focus ring is made of two borders which have a 2:1 ratio.
     const float first_border_width = (width / 3) * 2;
     const float second_border_width = width - first_border_width;
 
-    offset = AdjustedFocusRingOffset(offset, default_offset, std::ceil(width),
-                                     is_outset);
+    offset = AdjustedFocusRingOffset(offset, default_offset, std::ceil(width));
     // How much space the focus ring would like to take from the actual border.
     const float inside_border_width = 1;
     if (min_border_width >= inside_border_width) {
@@ -473,27 +446,11 @@ void GraphicsContext::DrawFocusRing(const Vector<IntRect>& rects,
     // artifacts.
     DrawFocusRingInternal(rects, first_border_width,
                           offset + std::ceil(second_border_width),
-                          border_radius, SK_ColorWHITE, is_outset);
+                          border_radius, SK_ColorWHITE);
     DrawFocusRingInternal(rects, first_border_width, offset, border_radius,
-                          color, is_outset);
+                          color);
   } else {
-    // If a focus ring is outset and the color is dark, it may be hard to see on
-    // dark backgrounds. In this case, we'll actually draw two focus rings, the
-    // outset focus ring with a white inner ring for contrast.
-    if (ShouldDrawInnerFocusRingForContrast(is_outset, width, color)) {
-      int contrast_offset = static_cast<int>(std::floor(width * 0.5));
-      // We create a 1px gap for the contrast ring. The contrast ring is drawn
-      // first, and we overdraw by a pixel to ensure no gaps or AA artifacts.
-      DrawFocusRingInternal(rects, contrast_offset, offset, border_radius,
-                            SK_ColorWHITE, is_outset);
-      DrawFocusRingInternal(rects, width - contrast_offset,
-                            offset + contrast_offset, border_radius, color,
-                            is_outset);
-
-    } else {
-      DrawFocusRingInternal(rects, width, offset, border_radius, color,
-                            is_outset);
-    }
+    DrawFocusRingInternal(rects, width, offset, border_radius, color);
   }
 }
 

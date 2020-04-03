@@ -6,6 +6,12 @@ import("//build/config/jumbo.gni")
 
 jumbo_static_library("core") {
   sources = [
+    "autofill_card_validation.cc",
+    "autofill_card_validation.h",
+    "autofill_payment_app.cc",
+    "autofill_payment_app.h",
+    "basic_card_response.cc",
+    "basic_card_response.h",
     "can_make_payment_query.cc",
     "can_make_payment_query.h",
     "currency_formatter.cc",
@@ -18,6 +24,8 @@ jumbo_static_library("core") {
     "features.h",
     "journey_logger.cc",
     "journey_logger.h",
+    "payer_data.cc",
+    "payer_data.h",
     "payment_address.cc",
     "payment_address.h",
     "payment_app.cc",
@@ -38,6 +46,8 @@ jumbo_static_library("core") {
     "payment_method_data.h",
     "payment_prefs.cc",
     "payment_prefs.h",
+    "payment_request_data_util.cc",
+    "payment_request_data_util.h",
     "payment_shipping_option.cc",
     "payment_shipping_option.h",
     "payments_experimental_features.cc",
@@ -50,20 +60,10 @@ jumbo_static_library("core") {
 
   if (!is_android) {
     sources += [
-      "autofill_card_validation.cc",
-      "autofill_card_validation.h",
-      "autofill_payment_app.cc",
-      "autofill_payment_app.h",
-      "basic_card_response.cc",
-      "basic_card_response.h",
-      "payer_data.cc",
-      "payer_data.h",
       "payment_options.cc",
       "payment_options.h",
       "payment_options_provider.h",
       "payment_request_base_delegate.h",
-      "payment_request_data_util.cc",
-      "payment_request_data_util.h",
       "payment_request_delegate.h",
       "payment_response.cc",
       "payment_response.h",

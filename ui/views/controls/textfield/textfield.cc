@@ -215,20 +215,20 @@ ui::TextEditCommand GetCommandForKeyEvent(const ui::KeyEvent& event) {
 ui::TextEditCommand GetTextEditCommandFromMenuCommand(int command_id,
                                                       bool has_selection) {
   switch (command_id) {
-    case IDS_APP_UNDO:
+    case Textfield::kUndo:
       return ui::TextEditCommand::UNDO;
-    case IDS_APP_CUT:
+    case Textfield::kCut:
       return ui::TextEditCommand::CUT;
-    case IDS_APP_COPY:
+    case Textfield::kCopy:
       return ui::TextEditCommand::COPY;
-    case IDS_APP_PASTE:
+    case Textfield::kPaste:
       return ui::TextEditCommand::PASTE;
-    case IDS_APP_DELETE:
+    case Textfield::kDelete:
       // The DELETE menu action only works in case of an active selection.
       if (has_selection)
         return ui::TextEditCommand::DELETE_FORWARD;
       break;
-    case IDS_APP_SELECT_ALL:
+    case Textfield::kSelectAll:
       return ui::TextEditCommand::SELECT_ALL;
   }
   return ui::TextEditCommand::INVALID_COMMAND;
@@ -1377,23 +1377,23 @@ bool Textfield::IsCommandIdEnabled(int command_id) const {
 bool Textfield::GetAcceleratorForCommandId(int command_id,
                                            ui::Accelerator* accelerator) const {
   switch (command_id) {
-    case IDS_APP_UNDO:
+    case kUndo:
       *accelerator = ui::Accelerator(ui::VKEY_Z, ui::EF_PLATFORM_ACCELERATOR);
       return true;
 
-    case IDS_APP_CUT:
+    case kCut:
       *accelerator = ui::Accelerator(ui::VKEY_X, ui::EF_PLATFORM_ACCELERATOR);
       return true;
 
-    case IDS_APP_COPY:
+    case kCopy:
       *accelerator = ui::Accelerator(ui::VKEY_C, ui::EF_PLATFORM_ACCELERATOR);
       return true;
 
-    case IDS_APP_PASTE:
+    case kPaste:
       *accelerator = ui::Accelerator(ui::VKEY_V, ui::EF_PLATFORM_ACCELERATOR);
       return true;
 
-    case IDS_APP_SELECT_ALL:
+    case kSelectAll:
       *accelerator = ui::Accelerator(ui::VKEY_A, ui::EF_PLATFORM_ACCELERATOR);
       return true;
 
@@ -2339,15 +2339,14 @@ void Textfield::UpdateContextMenu() {
   context_menu_contents_.reset();
 
   context_menu_contents_ = std::make_unique<ui::SimpleMenuModel>(this);
-  context_menu_contents_->AddItemWithStringId(IDS_APP_UNDO, IDS_APP_UNDO);
+  context_menu_contents_->AddItemWithStringId(kUndo, IDS_APP_UNDO);
   context_menu_contents_->AddSeparator(ui::NORMAL_SEPARATOR);
-  context_menu_contents_->AddItemWithStringId(IDS_APP_CUT, IDS_APP_CUT);
-  context_menu_contents_->AddItemWithStringId(IDS_APP_COPY, IDS_APP_COPY);
-  context_menu_contents_->AddItemWithStringId(IDS_APP_PASTE, IDS_APP_PASTE);
-  context_menu_contents_->AddItemWithStringId(IDS_APP_DELETE, IDS_APP_DELETE);
+  context_menu_contents_->AddItemWithStringId(kCut, IDS_APP_CUT);
+  context_menu_contents_->AddItemWithStringId(kCopy, IDS_APP_COPY);
+  context_menu_contents_->AddItemWithStringId(kPaste, IDS_APP_PASTE);
+  context_menu_contents_->AddItemWithStringId(kDelete, IDS_APP_DELETE);
   context_menu_contents_->AddSeparator(ui::NORMAL_SEPARATOR);
-  context_menu_contents_->AddItemWithStringId(IDS_APP_SELECT_ALL,
-                                              IDS_APP_SELECT_ALL);
+  context_menu_contents_->AddItemWithStringId(kSelectAll, IDS_APP_SELECT_ALL);
 
   // If the controller adds menu commands, also override ExecuteCommand() and
   // IsCommandIdEnabled() as appropriate, for the commands added.

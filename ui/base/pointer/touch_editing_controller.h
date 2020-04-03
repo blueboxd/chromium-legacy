@@ -19,6 +19,15 @@ namespace ui {
 // using touch.
 class UI_BASE_EXPORT TouchEditable : public ui::SimpleMenuModel::Delegate {
  public:
+  // Commands that all TouchEditables support:
+  enum MenuCommands {
+    // Don't use command ID 0 - a lot of tests use 0 for "no command".
+    kCut = 1,
+    kCopy,
+    kPaste,
+    kLastTouchEditableCommandId = kPaste,
+  };
+
   // TODO(mohsen): Consider switching from local coordinates to screen
   // coordinates in this interface and see if it will simplify things.
 

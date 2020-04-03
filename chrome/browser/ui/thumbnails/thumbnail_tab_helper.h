@@ -91,6 +91,7 @@ class ThumbnailTabHelper
       mojo::PendingRemote<::viz::mojom::FrameSinkVideoConsumerFrameCallbacks>
           callbacks) override;
   void OnStopped() override;
+  void OnLog(const std::string& /*message*/) override {}
 
   // Returns the dimensions of the multipurpose thumbnail that should be
   // captured from an entire webpage. Can be cropped or compressed later.

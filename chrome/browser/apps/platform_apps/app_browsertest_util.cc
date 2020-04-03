@@ -9,7 +9,10 @@
 
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
@@ -154,16 +157,18 @@ const Extension* PlatformAppBrowserTest::InstallAndLaunchPlatformApp(
 }
 
 void PlatformAppBrowserTest::LaunchPlatformApp(const Extension* extension) {
-  apps::LaunchService::Get(browser()->profile())
-      ->OpenApplication(apps::AppLaunchParams(
+  apps::AppServiceProxyFactory::GetForProfile(profile())
+      ->BrowserAppLauncher()
+      .LaunchAppWithParams(apps::AppLaunchParams(
           extension->id(), LaunchContainer::kLaunchContainerNone,
           WindowOpenDisposition::NEW_WINDOW,
           apps::mojom::AppLaunchSource::kSourceTest));
 }
 
 void PlatformAppBrowserTest::LaunchHostedApp(const Extension* extension) {
-  apps::LaunchService::Get(browser()->profile())
-      ->OpenApplication(CreateAppLaunchParamsUserContainer(
+  apps::AppServiceProxyFactory::GetForProfile(profile())
+      ->BrowserAppLauncher()
+      .LaunchAppWithParams(CreateAppLaunchParamsUserContainer(
           browser()->profile(), extension,
           WindowOpenDisposition::NEW_FOREGROUND_TAB,
           apps::mojom::AppLaunchSource::kSourceCommandLine));

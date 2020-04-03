@@ -232,6 +232,40 @@ ExecutionContext* ExecutionContextFromV8Wrappable(const DOMParser* parser) {
                                : nullptr;
 }
 
+v8::MaybeLocal<v8::Function> CreateNamedConstructorFunction(
+    ScriptState* script_state,
+    v8::FunctionCallback callback,
+    const char* func_name,
+    int func_length,
+    const WrapperTypeInfo* wrapper_type_info) {
+  v8::Isolate* isolate = script_state->GetIsolate();
+  const DOMWrapperWorld& world = script_state->World();
+  V8PerIsolateData* per_isolate_data = V8PerIsolateData::From(isolate);
+  const void* callback_key = reinterpret_cast<const void*>(callback);
+
+  // Named constructors are not interface objcets (despite that they're
+  // pretending so), but we reuse the cache of interface objects, which just
+  // works because both are V8 function template.
+  v8::Local<v8::FunctionTemplate> function_template =
+      per_isolate_data->FindInterfaceTemplate(world, callback_key);
+  if (function_template.IsEmpty()) {
+    function_template = v8::FunctionTemplate::New(
+        isolate, callback, v8::Local<v8::Value>(), v8::Local<v8::Signature>(),
+        func_length, v8::ConstructorBehavior::kAllow,
+        v8::SideEffectType::kHasSideEffect);
+    v8::Local<v8::FunctionTemplate> interface_template =
+        wrapper_type_info->DomTemplate(isolate, world);
+    function_template->SetPrototypeProviderTemplate(interface_template);
+    function_template->ReadOnlyPrototype();
+    function_template->SetClassName(V8AtomicString(isolate, func_name));
+    function_template->InstanceTemplate()->SetInternalFieldCount(
+        kV8DefaultWrapperInternalFieldCount);
+    per_isolate_data->SetInterfaceTemplate(world, callback_key,
+                                           function_template);
+  }
+  return function_template->GetFunction(script_state->GetContext());
+}
+
 v8::Local<v8::Array> EnumerateIndexedProperties(v8::Isolate* isolate,
                                                 uint32_t length) {
   Vector<v8::Local<v8::Value>> elements;

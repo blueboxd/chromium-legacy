@@ -46,7 +46,7 @@ math[display="block"] {
     outline: auto 1px -webkit-focus-ring-color;
 }
 
-maction, merror, mfrac, mphantom, mrow, mspace, mstyle
+maction, merror, mfrac, mphantom, mrow, mspace, mstyle, munder, mover, munderover
 {
     display: math;
 }

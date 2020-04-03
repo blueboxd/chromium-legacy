@@ -13,7 +13,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/launch_util.h"
@@ -327,9 +329,11 @@ void LaunchWebApp(const web_app::AppId& app_id, Profile* profile) {
   if (display_mode == blink::mojom::DisplayMode::kBrowser)
     launch_container = apps::mojom::LaunchContainer::kLaunchContainerTab;
 
-  apps::LaunchService::Get(profile)->OpenApplication(apps::AppLaunchParams(
-      app_id, launch_container, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      apps::mojom::AppLaunchSource::kSourceManagementApi));
+  apps::AppServiceProxyFactory::GetForProfile(profile)
+      ->BrowserAppLauncher()
+      .LaunchAppWithParams(apps::AppLaunchParams(
+          app_id, launch_container, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+          apps::mojom::AppLaunchSource::kSourceManagementApi));
 }
 
 void OnWebAppInstallCompleted(InstallOrLaunchWebAppCallback callback,
@@ -389,10 +393,12 @@ void ChromeManagementAPIDelegate::LaunchAppFunctionDelegate(
   extensions::LaunchContainer launch_container =
       GetLaunchContainer(extensions::ExtensionPrefs::Get(context), extension);
   Profile* profile = Profile::FromBrowserContext(context);
-  apps::LaunchService::Get(profile)->OpenApplication(apps::AppLaunchParams(
-      extension->id(), launch_container,
-      WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      apps::mojom::AppLaunchSource::kSourceManagementApi));
+  apps::AppServiceProxyFactory::GetForProfile(profile)
+      ->BrowserAppLauncher()
+      .LaunchAppWithParams(apps::AppLaunchParams(
+          extension->id(), launch_container,
+          WindowOpenDisposition::NEW_FOREGROUND_TAB,
+          apps::mojom::AppLaunchSource::kSourceManagementApi));
 
 #if defined(OS_CHROMEOS)
   chromeos::DemoSession::RecordAppLaunchSourceIfInDemoMode(

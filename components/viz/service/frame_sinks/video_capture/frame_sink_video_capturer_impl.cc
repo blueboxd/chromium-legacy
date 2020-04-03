@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -63,16 +64,21 @@ constexpr gfx::ColorSpace FrameSinkVideoCapturerImpl::kDefaultColorSpace;
 FrameSinkVideoCapturerImpl::FrameSinkVideoCapturerImpl(
     FrameSinkVideoCapturerManager* frame_sink_manager,
     mojo::PendingReceiver<mojom::FrameSinkVideoCapturer> receiver,
-    std::unique_ptr<media::VideoCaptureOracle> oracle)
+    std::unique_ptr<media::VideoCaptureOracle> oracle,
+    bool log_to_webrtc)
     : frame_sink_manager_(frame_sink_manager),
       copy_request_source_(base::UnguessableToken::Create()),
       clock_(base::DefaultTickClock::GetInstance()),
       oracle_(std::move(oracle)),
       frame_pool_(kDesignLimitMaxFrames),
-      feedback_weak_factory_(oracle_.get()) {
+      feedback_weak_factory_(oracle_.get()),
+      log_to_webrtc_(log_to_webrtc) {
   DCHECK(frame_sink_manager_);
   DCHECK(oracle_);
-
+  if (log_to_webrtc_) {
+    oracle_->SetLogCallback(base::BindRepeating(
+        &FrameSinkVideoCapturerImpl::OnLog, base::Unretained(this)));
+  }
   // Instantiate a default base::OneShotTimer instance.
   refresh_frame_retry_timer_.emplace();
 
@@ -337,6 +343,11 @@ void FrameSinkVideoCapturerImpl::RefreshSoon() {
   if (source_size != oracle_->source_size()) {
     oracle_->SetSourceSize(source_size);
     InvalidateEntireSource();
+    if (log_to_webrtc_) {
+      consumer_->OnLog(
+          base::StringPrintf("VFC: RefreshSoon() changed active frame size: %s",
+                             source_size.ToString().c_str()));
+    }
   }
 
   MaybeCaptureFrame(VideoCaptureOracle::kRefreshRequest, gfx::Rect(),
@@ -360,6 +371,11 @@ void FrameSinkVideoCapturerImpl::OnFrameDamaged(
   } else {
     oracle_->SetSourceSize(frame_size);
     InvalidateEntireSource();
+    if (log_to_webrtc_ && consumer_) {
+      consumer_->OnLog(
+          base::StringPrintf("VFC: OnFramedamaged() changed frame size: %s",
+                             frame_size.ToString().c_str()));
+    }
   }
 
   MaybeCaptureFrame(VideoCaptureOracle::kCompositorUpdate, damage_rect,
@@ -583,6 +599,30 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
   // If the frame is a resurrected one, just deliver it since it already
   // contains the most up-to-date capture of the source content.
   if (can_resurrect_content) {
+    if (log_to_webrtc_) {
+      std::string strides = "";
+      switch (frame->format()) {
+        case media::PIXEL_FORMAT_I420:
+          strides = base::StringPrintf("strideY:%d StrideU:%d StrideV:%d",
+                                       frame->stride(VideoFrame::kYPlane),
+                                       frame->stride(VideoFrame::kUPlane),
+                                       frame->stride(VideoFrame::kVPlane));
+          break;
+        case media::PIXEL_FORMAT_ARGB:
+          strides = base::StringPrintf("strideRGBA:%d",
+                                       frame->stride(VideoFrame::kARGBPlane));
+          break;
+        default:
+          strides = "strides:???";
+      }
+      consumer_->OnLog(base::StringPrintf(
+          "VFC: Ressurecting frame format=%s frame_coded_size: %s "
+          "frame_visible_rect: %s frame_natural_size: %s %s",
+          VideoPixelFormatToString(frame->format()).c_str(),
+          frame->coded_size().ToString().c_str(),
+          frame->visible_rect().ToString().c_str(),
+          frame->natural_size().ToString().c_str(), strides.c_str()));
+    }
     OnFrameReadyForDelivery(capture_frame_number, oracle_frame_number,
                             content_rect, std::move(frame));
     return;
@@ -613,6 +653,20 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
   // being captured.
   dirty_rect_ = gfx::Rect();
 
+  if (log_to_webrtc_) {
+    std::string format =
+        pixel_format_ == media::PIXEL_FORMAT_I420 ? "I420" : "RGBA_bitmap";
+    consumer_->OnLog(base::StringPrintf(
+        "VFC: Sending CopyRequest: "
+        "format=%s area:%s "
+        "scale_from: %s "
+        "scale_to: %s "
+        "frame pool utilization: %f",
+        format.c_str(), request->area().ToString().c_str(),
+        request->scale_from().ToString().c_str(),
+        request->scale_to().ToString().c_str(), utilization));
+  }
+
   resolved_target_->RequestCopyOfOutput(LocalSurfaceId(), std::move(request));
 }
 
@@ -629,6 +683,38 @@ void FrameSinkVideoCapturerImpl::DidCopyFrame(
   DCHECK_GE(capture_frame_number, next_delivery_frame_number_);
   DCHECK(frame);
   DCHECK(result);
+
+  if (log_to_webrtc_ && consumer_) {
+    std::string format = "";
+    std::string strides = "";
+    switch (result->format()) {
+      case CopyOutputResult::Format::I420_PLANES:
+        format = "I420";
+        strides = base::StringPrintf("strideY:%d StrideU:%d StrideV:%d",
+                                     frame->stride(VideoFrame::kYPlane),
+                                     frame->stride(VideoFrame::kUPlane),
+                                     frame->stride(VideoFrame::kVPlane));
+        break;
+      case CopyOutputResult::Format::RGBA_BITMAP:
+        format = "RGBA_Bitmap";
+        strides = base::StringPrintf("strideRGBA:%d",
+                                     frame->stride(VideoFrame::kARGBPlane));
+        break;
+      case CopyOutputResult::Format::RGBA_TEXTURE:
+        format = "RGBA_Texture";
+        strides = base::StringPrintf("strideRGBA:%d",
+                                     frame->stride(VideoFrame::kARGBPlane));
+        break;
+    }
+    consumer_->OnLog(base::StringPrintf(
+        "VFC: got CopyOutputResult: format=%s size:%s frame_coded_size: %s "
+        "frame_visible_rect: %s frame_natural_size: %s content_rect: %s %s",
+        format.c_str(), result->size().ToString().c_str(),
+        frame->coded_size().ToString().c_str(),
+        frame->visible_rect().ToString().c_str(),
+        frame->natural_size().ToString().c_str(),
+        content_rect.ToString().c_str(), strides.c_str()));
+  }
 
   // Stop() should have canceled any outstanding copy requests. So, by reaching
   // this point, |consumer_| should be bound.
@@ -838,6 +924,12 @@ gfx::Rect FrameSinkVideoCapturerImpl::ExpandRectToI420SubsampleBoundaries(
   const int r = rect.right() + (rect.right() & 1);
   const int b = rect.bottom() + (rect.bottom() & 1);
   return gfx::Rect(x, y, r - x, b - y);
+}
+
+void FrameSinkVideoCapturerImpl::OnLog(const std::string& message) {
+  if (log_to_webrtc_ && consumer_) {
+    consumer_->OnLog(message);
+  }
 }
 
 FrameSinkVideoCapturerImpl::CapturedFrame::CapturedFrame(

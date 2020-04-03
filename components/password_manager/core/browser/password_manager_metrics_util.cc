@@ -43,12 +43,6 @@ void LogUpdateUIDismissalReason(UIDismissalReason reason) {
                                 reason, NUM_UI_RESPONSES);
 }
 
-void LogPresavedUpdateUIDismissalReason(UIDismissalReason reason) {
-  base::UmaHistogramEnumeration(
-      "PasswordManager.PresavedUpdateUIDismissalReason", reason,
-      NUM_UI_RESPONSES);
-}
-
 void LogLeakDialogTypeAndDismissalReason(LeakDialogType type,
                                          LeakDialogDismissalReason reason) {
   static constexpr char kHistogram[] =
@@ -241,10 +235,6 @@ void LogDeleteCorruptedPasswordsResult(DeleteCorruptedPasswordsResult result) {
 void LogNewlySavedPasswordIsGenerated(bool value) {
   base::UmaHistogramBoolean("PasswordManager.NewlySavedPasswordIsGenerated",
                             value);
-}
-
-void LogGenerationPresaveConflict(GenerationPresaveConflict value) {
-  base::UmaHistogramEnumeration("PasswordGeneration.PresaveConflict", value);
 }
 
 void LogGenerationDialogChoice(GenerationDialogChoice choice,

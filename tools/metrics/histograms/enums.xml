@@ -50252,6 +50252,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PasswordGenerationPresaveConflict">
+  <obsolete>
+    Deprecated as of 2020-04.
+  </obsolete>
   <int value="0" label="No username conflict"/>
   <int value="1" label="No conflict with empty username"/>
   <int value="2" label="Conflict with empty username"/>
@@ -61787,6 +61790,13 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="15" label="DiceTurnOnSyncHelper::Abort"/>
   <int value="16" label="MachineLogon::CredentialProvider"/>
   <int value="17" label="TokenService::ExtractCredentials"/>
+</enum>
+
+<enum name="SourceIdConsistency">
+  <int value="0" label="Consistent"/>
+  <int value="1" label="ContainsInvalid"/>
+  <int value="2" label="NonUnique"/>
+  <int value="3" label="ContainsInvalidAndNonUnique"/>
 </enum>
 
 <enum name="SpareProcessMaybeTakeAction">

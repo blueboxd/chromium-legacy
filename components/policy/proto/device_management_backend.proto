@@ -283,6 +283,9 @@ message DeviceServiceApiAccessRequest {
     // to access Google Docs.
     // Please see go/cros-demo-mode and go/demo-mode-account-brainstorm.
     CHROME_OS_DEMO_MODE = 2;
+    // Authcode will be used by the enterprise-managed Chrome Browser to
+    // register for policy invalidations. This is requested during enrollment.
+    CHROME_BROWSER = 3;
   }
 
   // Device type indicates the intended use of the auth code.
@@ -1076,6 +1079,12 @@ message BacklightInfo {
   optional uint32 brightness = 3;
 }
 
+// Information about the device's fan.
+message FanInfo {
+  // Fan speed in RPM.
+  optional uint32 speed_rpm = 1;
+}
+
 // Report device level status.
 message DeviceStatusReportRequest {
   reserved 4, 7, 13, 20;
@@ -1185,6 +1194,9 @@ message DeviceStatusReportRequest {
 
   // Information about the device's backlights.
   repeated BacklightInfo backlight_info = 37;
+
+  // Information about the device's fans.
+  repeated FanInfo fan_info = 38;
 }
 
 message OsUpdateStatus {

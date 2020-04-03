@@ -5,8 +5,11 @@
 #include "chrome/browser/apps/platform_apps/extension_app_shim_manager_delegate_mac.h"
 
 #include "apps/launcher.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/apps/app_shim/app_shim_termination_manager.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/apps/platform_apps/app_window_registry_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/launch_util.h"
@@ -180,7 +183,9 @@ void ExtensionAppShimManagerDelegate::LaunchApp(
         profile, extension, WindowOpenDisposition::NEW_FOREGROUND_TAB,
         apps::mojom::AppLaunchSource::kSourceCommandLine);
     params.launch_files = files;
-    apps::LaunchService::Get(profile)->OpenApplication(params);
+    apps::AppServiceProxyFactory::GetForProfile(profile)
+        ->BrowserAppLauncher()
+        .LaunchAppWithParams(params);
     return;
   }
   if (files.empty()) {

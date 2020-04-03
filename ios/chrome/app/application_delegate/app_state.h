@@ -96,6 +96,9 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 // -performActionForShortcutItem or -openURL.
 - (void)launchFromURLHandled:(BOOL)URLHandled;
 
+// Returns the foreground and active scene, if there is one.
+- (SceneState*)foregroundActiveScene;
+
 // Returns a list of all connected scenes.
 - (NSArray<SceneState*>*)connectedScenes;
 

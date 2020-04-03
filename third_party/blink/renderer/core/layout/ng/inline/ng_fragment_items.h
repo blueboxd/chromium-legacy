@@ -28,8 +28,13 @@ class CORE_EXPORT NGFragmentItems {
     return UNLIKELY(first_line) ? first_line_text_content_ : text_content_;
   }
 
-  static void AssociateWithLayoutObject(
-      Vector<std::unique_ptr<NGFragmentItem>>* items);
+  // Associate/disassociate |NGFragmentItem|s with |LayoutObject|s.
+  void AssociateWithLayoutObject() const;
+  void ClearAssociatedFragments() const;
+
+  // Notify when |LayoutObject| will be destroyed/moved.
+  static void LayoutObjectWillBeDestroyed(const LayoutObject& layout_object);
+  static void LayoutObjectWillBeMoved(const LayoutObject& layout_object);
 
  private:
   // TODO(kojii): inline capacity TBD.

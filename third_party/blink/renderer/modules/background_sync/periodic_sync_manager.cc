@@ -19,7 +19,9 @@ namespace blink {
 PeriodicSyncManager::PeriodicSyncManager(
     ServiceWorkerRegistration* registration,
     scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : registration_(registration), task_runner_(std::move(task_runner)) {
+    : registration_(registration),
+      task_runner_(std::move(task_runner)),
+      background_sync_service_(registration_->GetExecutionContext()) {
   DCHECK(registration_);
 }
 
@@ -89,13 +91,13 @@ ScriptPromise PeriodicSyncManager::unregister(ScriptState* script_state,
   return promise;
 }
 
-const mojo::Remote<mojom::blink::PeriodicBackgroundSyncService>&
+mojom::blink::PeriodicBackgroundSyncService*
 PeriodicSyncManager::GetBackgroundSyncServiceRemote() {
   if (!background_sync_service_.is_bound()) {
     Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
-        background_sync_service_.BindNewPipeAndPassReceiver());
+        background_sync_service_.BindNewPipeAndPassReceiver(task_runner_));
   }
-  return background_sync_service_;
+  return background_sync_service_.get();
 }
 
 void PeriodicSyncManager::RegisterCallback(
@@ -186,6 +188,7 @@ void PeriodicSyncManager::UnregisterCallback(
 
 void PeriodicSyncManager::Trace(Visitor* visitor) {
   visitor->Trace(registration_);
+  visitor->Trace(background_sync_service_);
   ScriptWrappable::Trace(visitor);
 }
 

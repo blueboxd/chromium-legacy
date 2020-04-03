@@ -69,6 +69,10 @@ class AudioListener : public ScriptWrappable, public InspectorHelperMixin {
   // True if any of AudioParams have automations.
   bool HasSampleAccurateValues() const;
 
+  // True if any of the AudioParams are set for a-rate automations
+  // (the default).
+  bool IsAudioRate() const;
+
   // Update the internal state of the listener, including updating the dirty
   // state of all PannerNodes if necessary.
   void UpdateState();

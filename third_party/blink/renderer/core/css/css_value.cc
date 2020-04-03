@@ -65,6 +65,7 @@
 #include "third_party/blink/renderer/core/css/css_quad_value.h"
 #include "third_party/blink/renderer/core/css/css_ray_value.h"
 #include "third_party/blink/renderer/core/css/css_reflect_value.h"
+#include "third_party/blink/renderer/core/css/css_revert_value.h"
 #include "third_party/blink/renderer/core/css/css_shadow_value.h"
 #include "third_party/blink/renderer/core/css/css_string_value.h"
 #include "third_party/blink/renderer/core/css/css_timing_function_value.h"
@@ -212,6 +213,8 @@ bool CSSValue::operator==(const CSSValue& other) const {
         return CompareCSSValues<CSSInitialValue>(*this, other);
       case kUnsetClass:
         return CompareCSSValues<cssvalue::CSSUnsetValue>(*this, other);
+      case kRevertClass:
+        return CompareCSSValues<cssvalue::CSSRevertValue>(*this, other);
       case kGridAutoRepeatClass:
         return CompareCSSValues<cssvalue::CSSGridAutoRepeatValue>(*this, other);
       case kGridIntegerRepeatClass:
@@ -331,6 +334,8 @@ String CSSValue::CssText() const {
       return To<CSSInheritedValue>(this)->CustomCSSText();
     case kUnsetClass:
       return To<cssvalue::CSSUnsetValue>(this)->CustomCSSText();
+    case kRevertClass:
+      return To<cssvalue::CSSRevertValue>(this)->CustomCSSText();
     case kInitialClass:
       return To<CSSInitialValue>(this)->CustomCSSText();
     case kGridAutoRepeatClass:
@@ -474,6 +479,9 @@ void CSSValue::FinalizeGarbageCollectedObject() {
       return;
     case kUnsetClass:
       To<cssvalue::CSSUnsetValue>(this)->~CSSUnsetValue();
+      return;
+    case kRevertClass:
+      To<cssvalue::CSSRevertValue>(this)->~CSSRevertValue();
       return;
     case kGridAutoRepeatClass:
       To<cssvalue::CSSGridAutoRepeatValue>(this)->~CSSGridAutoRepeatValue();
@@ -647,6 +655,9 @@ void CSSValue::Trace(Visitor* visitor) {
       return;
     case kUnsetClass:
       To<cssvalue::CSSUnsetValue>(this)->TraceAfterDispatch(visitor);
+      return;
+    case kRevertClass:
+      To<cssvalue::CSSRevertValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kGridAutoRepeatClass:
       To<cssvalue::CSSGridAutoRepeatValue>(this)->TraceAfterDispatch(visitor);

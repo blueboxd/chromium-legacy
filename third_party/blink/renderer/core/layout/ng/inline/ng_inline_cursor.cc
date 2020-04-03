@@ -902,6 +902,10 @@ void NGInlineCursor::InternalMoveTo(const LayoutObject& layout_object) {
     DCHECK(&root);
     SetRoot(root);
     if (!HasRoot()) {
+      if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+        MakeNull();
+        return;
+      }
       const auto fragments =
           NGPaintFragment::InlineFragmentsFor(&layout_object);
       if (!fragments.IsInLayoutNGInlineFormattingContext() ||
@@ -915,9 +919,8 @@ void NGInlineCursor::InternalMoveTo(const LayoutObject& layout_object) {
   if (fragment_items_) {
     const wtf_size_t item_index = layout_object.FirstInlineFragmentItemIndex();
     if (!item_index) {
-      // TODO(yosin): Once we update all |LayoutObject::FirstInlineFragment()|
-      // clients, we should replace to |return MakeNull()|
-      MoveToItem(SlowFirstItemIteratorFor(layout_object));
+      DCHECK(items_.end() == SlowFirstItemIteratorFor(layout_object));
+      MakeNull();
       return;
     }
     const unsigned span_index = SpanIndexFromItemIndex(item_index);

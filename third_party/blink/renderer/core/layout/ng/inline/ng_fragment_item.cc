@@ -174,6 +174,21 @@ bool NGFragmentItem::HasSelfPaintingLayer() const {
   return false;
 }
 
+void NGFragmentItem::LayoutObjectWillBeDestroyed() const {
+  const_cast<NGFragmentItem*>(this)->layout_object_ = nullptr;
+  if (const NGPhysicalBoxFragment* fragment = BoxFragment())
+    fragment->LayoutObjectWillBeDestroyed();
+}
+
+void NGFragmentItem::LayoutObjectWillBeMoved() const {
+  // When |Layoutobject| is moved out from the current IFC, we should not clear
+  // the association with it in |ClearAssociatedFragments|, because the
+  // |LayoutObject| may be moved to a different IFC and is already laid out
+  // before clearing this IFC. This happens e.g., when split inlines moves
+  // inline children into a child anonymous block.
+  const_cast<NGFragmentItem*>(this)->layout_object_ = nullptr;
+}
+
 inline const LayoutBox* NGFragmentItem::InkOverflowOwnerBox() const {
   if (Type() == kBox)
     return ToLayoutBoxOrNull(GetLayoutObject());

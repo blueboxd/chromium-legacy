@@ -296,8 +296,13 @@ void LayoutBox::WillBeDestroyed() {
   ShapeOutsideInfo::RemoveInfo(*this);
 
   if (!DocumentBeingDestroyed()) {
-    if (NGPaintFragment* first_inline_fragment = FirstInlineFragment())
-      first_inline_fragment->LayoutObjectWillBeDestroyed();
+    if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+      if (NGPaintFragment* first_inline_fragment = FirstInlineFragment())
+        first_inline_fragment->LayoutObjectWillBeDestroyed();
+    } else if (FirstInlineFragmentItemIndex()) {
+      NGFragmentItems::LayoutObjectWillBeDestroyed(*this);
+      ClearFirstInlineFragmentItemIndex();
+    }
     for (auto result : layout_results_)
       result->PhysicalFragment().LayoutObjectWillBeDestroyed();
   }
@@ -886,6 +891,11 @@ void LayoutBox::UpdateAfterLayout() {
   // Legacy, then NG again, NG won't use a stale layout result.
   if (IsOutOfFlowPositioned() && !IsLayoutNGObject())
     ClearLayoutResults();
+
+  Document& document = GetDocument();
+  document.IncLayoutCallsCounter();
+  if (IsLayoutNGObject())
+    document.IncLayoutCallsCounterNG();
 }
 
 bool LayoutBox::HasOverrideIntrinsicContentWidth() const {
@@ -2468,17 +2478,12 @@ bool LayoutBox::HasInlineFragments() const {
     return inline_box_wrapper_;
   if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
     return first_paint_fragment_;
-  // TODO(yosin): We should use |first_fragment_item_index_|.
-  NGInlineCursor cursor;
-  cursor.MoveTo(*this);
-  return cursor;
+  return first_fragment_item_index_;
 }
 
 void LayoutBox::SetFirstInlineFragment(NGPaintFragment* fragment) {
   CHECK(IsInLayoutNGInlineFormattingContext()) << *this;
-  // TODO(yosin): Once we remove |NGPaintFragment|, we should get rid of
-  // |!fragment|.
-  DCHECK(!fragment || !RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
+  DCHECK(!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
   first_paint_fragment_ = fragment;
 }
 
@@ -2492,17 +2497,26 @@ void LayoutBox::SetFirstInlineFragmentItemIndex(wtf_size_t index) {
   CHECK(IsInLayoutNGInlineFormattingContext()) << *this;
   DCHECK(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
   DCHECK_NE(index, 0u);
-  // TDOO(yosin): Once we update all |LayoutObject::FirstInlineFragment()|,
-  // we should enable below.
-  // first_fragment_item_index_ = index;
+  first_fragment_item_index_ = index;
 }
 
 void LayoutBox::InLayoutNGInlineFormattingContextWillChange(bool new_value) {
-  DeleteLineBoxWrapper();
+  if (IsInLayoutNGInlineFormattingContext()) {
+    if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+      SetFirstInlineFragment(nullptr);
+    } else {
+      ClearFirstInlineFragmentItemIndex();
+    }
+  } else {
+    DeleteLineBoxWrapper();
+  }
 
   // Because |first_paint_fragment_| and |inline_box_wrapper_| are union, when
   // one is deleted, the other should be initialized to nullptr.
-  DCHECK(new_value ? !first_paint_fragment_ : !inline_box_wrapper_);
+  DCHECK(new_value ? (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()
+                          ? !first_fragment_item_index_
+                          : !first_paint_fragment_)
+                   : !inline_box_wrapper_);
 }
 
 void LayoutBox::SetCachedLayoutResult(
@@ -2524,9 +2538,38 @@ void LayoutBox::SetCachedLayoutResult(
 void LayoutBox::AddLayoutResult(scoped_refptr<const NGLayoutResult> result,
                                 wtf_size_t index) {
   DCHECK_EQ(result->Status(), NGLayoutResult::kSuccess);
-  if (index != WTF::kNotFound)
-    ShrinkLayoutResults(index);
+  if (index != WTF::kNotFound && layout_results_.size() > index) {
+    if (layout_results_.size() > index + 1)
+      ShrinkLayoutResults(index + 1);
+    ReplaceLayoutResult(std::move(result), index);
+    return;
+  }
+  if (!index) {
+    if (const NGFragmentItems* items =
+            To<NGPhysicalBoxFragment>(result->PhysicalFragment()).Items())
+      items->AssociateWithLayoutObject();
+  }
   layout_results_.push_back(std::move(result));
+}
+
+void LayoutBox::ReplaceLayoutResult(scoped_refptr<const NGLayoutResult> result,
+                                    wtf_size_t index) {
+  DCHECK_LE(index, layout_results_.size());
+  const NGLayoutResult* old_result = layout_results_[index].get();
+  if (old_result == result.get())
+    return;
+  if (!index &&
+      &old_result->PhysicalFragment() != &result->PhysicalFragment()) {
+    if (const NGFragmentItems* old_items =
+            To<NGPhysicalBoxFragment>(old_result->PhysicalFragment()).Items()) {
+      InvalidateItems(*old_result);
+      old_items->ClearAssociatedFragments();
+    }
+    if (const NGFragmentItems* new_items =
+            To<NGPhysicalBoxFragment>(result->PhysicalFragment()).Items())
+      new_items->AssociateWithLayoutObject();
+  }
+  layout_results_[index] = std::move(result);
 }
 
 void LayoutBox::ClearLayoutResults() {
@@ -2542,6 +2585,13 @@ void LayoutBox::ShrinkLayoutResults(wtf_size_t results_to_keep) {
   // Invalidate if inline |DisplayItemClient|s will be destroyed.
   for (wtf_size_t i = results_to_keep; i < layout_results_.size(); i++)
     InvalidateItems(*layout_results_[i]);
+  if (results_to_keep == 0 && !layout_results_.IsEmpty()) {
+    if (const NGFragmentItems* old_items =
+            To<NGPhysicalBoxFragment>(layout_results_[0]->PhysicalFragment())
+                .Items()) {
+      old_items->ClearAssociatedFragments();
+    }
+  }
   layout_results_.Shrink(results_to_keep);
 }
 
@@ -2563,6 +2613,7 @@ const NGLayoutResult* LayoutBox::GetCachedLayoutResult() const {
   const NGLayoutResult* result = layout_results_[0].get();
   if (result->IsSingleUse())
     return nullptr;
+  DCHECK(result->PhysicalFragment().IsAlive());
   DCHECK_EQ(layout_results_.size(), 1u);
   return result;
 }

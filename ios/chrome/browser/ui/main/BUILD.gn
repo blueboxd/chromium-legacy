@@ -4,6 +4,12 @@
 
 import("//ios/build/chrome_build.gni")
 
+source_set("scene_testing") {
+  sources = [ "scene_controller_testing.h" ]
+  deps = [ "//ios/chrome/browser:utils" ]
+  libs = [ "UIKit.framework" ]
+}
+
 source_set("scene_guts") {
   sources = [ "scene_controller_guts.h" ]
   deps = [
@@ -31,6 +37,7 @@ source_set("scene") {
   deps = [
     ":main",
     ":scene_guts",
+    ":scene_testing",
     "//base",
     "//components/signin/public/identity_manager",
     "//components/url_formatter",

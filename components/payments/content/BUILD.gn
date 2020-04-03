@@ -6,8 +6,18 @@ import("//build/config/jumbo.gni")
 
 jumbo_static_library("content") {
   sources = [
+    "autofill_payment_app_factory.cc",
+    "autofill_payment_app_factory.h",
     "can_make_payment_query_factory.cc",
     "can_make_payment_query_factory.h",
+    "initialization_task.cc",
+    "initialization_task.h",
+    "payment_app_factory.cc",
+    "payment_app_factory.h",
+    "payment_app_service.cc",
+    "payment_app_service.h",
+    "payment_app_service_factory.cc",
+    "payment_app_service_factory.h",
     "payment_details_converter.cc",
     "payment_details_converter.h",
     "payment_event_response_util.cc",
@@ -16,6 +26,12 @@ jumbo_static_library("content") {
     "payment_handler_host.h",
     "payment_request_converter.cc",
     "payment_request_converter.h",
+    "payment_request_spec.cc",
+    "payment_request_spec.h",
+    "service_worker_payment_app.cc",
+    "service_worker_payment_app.h",
+    "service_worker_payment_app_factory.cc",
+    "service_worker_payment_app_factory.h",
   ]
 
   deps = [
@@ -26,6 +42,7 @@ jumbo_static_library("content") {
     "//components/payments/content/utility",
     "//components/payments/core",
     "//components/payments/core:error_strings",
+    "//components/payments/core:method_strings",
     "//components/payments/mojom",
     "//components/prefs",
     "//components/strings:components_strings_grit",
@@ -38,37 +55,19 @@ jumbo_static_library("content") {
 
   if (!is_android) {
     sources += [
-      "autofill_payment_app_factory.cc",
-      "autofill_payment_app_factory.h",
       "content_payment_request_delegate.h",
-      "initialization_task.cc",
-      "initialization_task.h",
-      "payment_app_factory.cc",
-      "payment_app_factory.h",
-      "payment_app_service.cc",
-      "payment_app_service.h",
-      "payment_app_service_factory.cc",
-      "payment_app_service_factory.h",
       "payment_request.cc",
       "payment_request.h",
       "payment_request_dialog.h",
       "payment_request_display_manager.cc",
       "payment_request_display_manager.h",
-      "payment_request_spec.cc",
-      "payment_request_spec.h",
       "payment_request_state.cc",
       "payment_request_state.h",
       "payment_request_web_contents_manager.cc",
       "payment_request_web_contents_manager.h",
       "payment_response_helper.cc",
       "payment_response_helper.h",
-      "service_worker_payment_app.cc",
-      "service_worker_payment_app.h",
-      "service_worker_payment_app_factory.cc",
-      "service_worker_payment_app_factory.h",
     ]
-
-    deps += [ "//components/payments/core:method_strings" ]
   }
 }
 

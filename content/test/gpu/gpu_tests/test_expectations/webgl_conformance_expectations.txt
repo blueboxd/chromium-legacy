@@ -200,6 +200,7 @@ crbug.com/680754 [ win10 nvidia-0x1cb3 d3d9 ] conformance/ogles/GL/cos/cos_001_t
 crbug.com/750896 [ win10 nvidia-0x1cb3 d3d9 ] conformance/textures/image_bitmap_from_video/* [ RetryOnFailure ]
 crbug.com/750896 [ win10 nvidia-0x1cb3 d3d9 ] conformance/textures/video/* [ RetryOnFailure ]
 crbug.com/829389 [ win10 nvidia-0x1cb3 d3d9 passthrough ] conformance/uniforms/uniform-samplers-test.html [ RetryOnFailure ]
+crbug.com/angleproject/4539 [ win10 nvidia-0x1cb3 d3d9 passthrough ] conformance/extensions/oes-texture-half-float-linear.html [ RetryOnFailure ]
 
 # Win10 / NVIDIA Quadro P400 failures
 crbug.com/728670 [ win10 nvidia-0x1cb3 ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ RetryOnFailure ]

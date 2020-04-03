@@ -17,7 +17,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_propvariant.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile.h"
@@ -199,8 +201,9 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowPropertyManagerTest, DISABLED_HostedApp) {
       LoadExtension(test_data_dir_.AppendASCII("app/"));
   EXPECT_TRUE(extension);
 
-  apps::LaunchService::Get(browser()->profile())
-      ->OpenApplication(apps::AppLaunchParams(
+  apps::AppServiceProxyFactory::GetForProfile(browser()->profile())
+      ->BrowserAppLauncher()
+      .LaunchAppWithParams(apps::AppLaunchParams(
           extension->id(), apps::mojom::LaunchContainer::kLaunchContainerWindow,
           WindowOpenDisposition::NEW_FOREGROUND_TAB,
           apps::mojom::AppLaunchSource::kSourceTest));

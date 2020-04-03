@@ -12,6 +12,7 @@ generate_jni("jni_headers") {
   sources = [
     "../../../android/java/src/org/chromium/chrome/browser/payments/CanMakePaymentQuery.java",
     "../../../android/java/src/org/chromium/chrome/browser/payments/JourneyLogger.java",
+    "../../../android/java/src/org/chromium/chrome/browser/payments/PaymentAppServiceBridge.java",
     "../../../android/java/src/org/chromium/chrome/browser/payments/PaymentManifestWebDataService.java",
     "../../../android/java/src/org/chromium/chrome/browser/payments/ServiceWorkerPaymentAppBridge.java",
     "../../../android/java/src/org/chromium/chrome/browser/payments/SslValidityChecker.java",

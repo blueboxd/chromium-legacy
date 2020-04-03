@@ -136,15 +136,18 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
   const FormFetcher* form_fetcher_;
 
  private:
-  // Save/update |pending_credentials_| to the password store.
-  void SavePendingToStore(const autofill::PasswordForm& parsed_submitted_form,
-                          bool update);
+  void SetVotesAndRecordMetricsForPendingCredentials(
+      const autofill::PasswordForm& parsed_submitted_form);
 
-  // Helper for Save in the case there is at least one match for the pending
-  // credentials. This sends needed signals to the autofill server, and also
-  // triggers some UMA reporting.
-  void ProcessUpdate(const autofill::FormData& observed_form,
-                     const autofill::PasswordForm& parsed_submitted_form);
+  // Save/update |pending_credentials_| to the password store.
+  void SavePendingToStore(const autofill::FormData& observed_form,
+                          const autofill::PasswordForm& parsed_submitted_form);
+
+  // This sends needed signals to the autofill server, and also triggers some
+  // UMA reporting.
+  void UploadVotesAndMetrics(
+      const autofill::FormData& observed_form,
+      const autofill::PasswordForm& parsed_submitted_form);
 
   // Handles the user flows related to the generation.
   std::unique_ptr<PasswordGenerationManager> generation_manager_;

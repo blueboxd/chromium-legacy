@@ -473,6 +473,13 @@ def main():
       '-DLLVM_INCLUDE_GO_TESTS=OFF',
   ]
 
+  if sys.platform == 'darwin':
+    # For libc++, we only want the headers.
+    base_cmake_args.extend([
+        '-DLIBCXX_ENABLE_SHARED=OFF', '-DLIBCXX_ENABLE_STATIC=OFF',
+        '-DLIBCXX_INCLUDE_TESTS=OFF'
+    ])
+
   if args.gcc_toolchain:
     # Don't use the custom gcc toolchain when building compiler-rt tests; those
     # tests are built with the just-built Clang, and target both i386 and x86_64
@@ -488,12 +495,6 @@ def main():
     cflags.append('-I' + zlib_dir)
     cxxflags.append('-I' + zlib_dir)
     ldflags.append('-LIBPATH:' + zlib_dir)
-
-  if sys.platform == 'darwin':
-    # Use the system libc++abi.
-    # TODO(hans): use https://reviews.llvm.org/D62060 instead
-    base_cmake_args.append('-DLIBCXX_CXX_ABI=libcxxabi')
-    base_cmake_args.append('-DLIBCXX_CXX_ABI_SYSTEM=1')
 
   if sys.platform != 'win32':
     # libxml2 is required by the Win manifest merging tool used in cross-builds.

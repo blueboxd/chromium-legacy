@@ -20,7 +20,10 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -535,7 +538,9 @@ void AppLauncherHandler::HandleLaunchApp(const base::ListValue* args) {
             : apps::mojom::LaunchContainer::kLaunchContainerTab,
         disposition, apps::mojom::AppLaunchSource::kSourceNewTabPage);
     params.override_url = override_url;
-    apps::LaunchService::Get(profile)->OpenApplication(params);
+    apps::AppServiceProxyFactory::GetForProfile(profile)
+        ->BrowserAppLauncher()
+        .LaunchAppWithParams(params);
   } else {
     // To give a more "launchy" experience when using the NTP launcher, we close
     // it automatically.
@@ -552,7 +557,9 @@ void AppLauncherHandler::HandleLaunchApp(const base::ListValue* args) {
         extensions::AppLaunchSource::kSourceNewTabPage);
     params.override_url = override_url;
     WebContents* new_contents =
-        apps::LaunchService::Get(profile)->OpenApplication(params);
+        apps::AppServiceProxyFactory::GetForProfile(profile)
+            ->BrowserAppLauncher()
+            .LaunchAppWithParams(params);
 
     // This will also destroy the handler, so do not perform any actions after.
     if (new_contents != old_contents && browser &&

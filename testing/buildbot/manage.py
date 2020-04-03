@@ -171,6 +171,7 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
   'tools_unittests',
   'video_engine_tests',
   'voice_engine_unittests',
+  'voip_unittests',
   'webrtc_nonparallel_tests',
   'xmllite_xmpp_unittests',
 

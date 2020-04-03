@@ -85,19 +85,26 @@ std::string
 bool StandardManagementPolicyProvider::UserMayLoad(
     const Extension* extension,
     base::string16* error) const {
+  ExtensionManagement::InstallationMode installation_mode =
+      settings_->GetInstallationMode(extension);
+
+  // TODO(crbug.com/1065865): The special check for kOsSettingsAppId should be
+  // removed once OSSettings is moved to WebApps.
+#if defined(OS_CHROMEOS)
+  if (extension->id() == chromeos::default_web_apps::kOsSettingsAppId &&
+      (installation_mode == ExtensionManagement::INSTALLATION_BLOCKED ||
+       installation_mode == ExtensionManagement::INSTALLATION_REMOVED)) {
+    return ReturnLoadError(extension, error);
+  }
+#endif  // defined(OS_CHROMEOS)
+
   // Component extensions are always allowed, besides the camera app that can be
   // disabled by extension policy. This is a temporary solution until there's a
   // dedicated policy to disable the camera, at which point the special check in
   // the 'if' statement should be removed.
   // TODO(http://crbug.com/1002935)
-  // TODO(crbug.com/1065865): The special check for kOsSettingsAppId should be
-  // removed once OSSettings is moved to WebApps.
   if (Manifest::IsComponentLocation(extension->location()) &&
-      extension->id() != extension_misc::kCameraAppId
-#if defined(OS_CHROMEOS)
-      && extension->id() != chromeos::default_web_apps::kOsSettingsAppId
-#endif  // defined(OS_CHROMEOS)
-  ) {
+      extension->id() != extension_misc::kCameraAppId) {
     return true;
   }
 
@@ -112,13 +119,7 @@ bool StandardManagementPolicyProvider::UserMayLoad(
   // by extension management policies. See crbug.com/786061.
   // TODO(calamity): This special case should be removed by removing bookmark
   // apps from external sources. See crbug.com/788245.
-  // TODO(crbug.com/1065865): The special check for kOsSettingsAppId should be
-  // removed once OSSettings is moved to WebApps.
-  if (extension->from_bookmark()
-#if defined(OS_CHROMEOS)
-      && extension->id() != chromeos::default_web_apps::kOsSettingsAppId
-#endif  // defined(OS_CHROMEOS)
-  )
+  if (extension->from_bookmark())
     return true;
 
   // Check whether the extension type is allowed.
@@ -148,8 +149,6 @@ bool StandardManagementPolicyProvider::UserMayLoad(
       NOTREACHED();
   }
 
-  ExtensionManagement::InstallationMode installation_mode =
-      settings_->GetInstallationMode(extension);
   if (installation_mode == ExtensionManagement::INSTALLATION_BLOCKED ||
       installation_mode == ExtensionManagement::INSTALLATION_REMOVED) {
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)

@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/pointer/touch_editing_controller.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
@@ -25,7 +26,15 @@
 namespace views {
 namespace {
 
-constexpr int kMenuCommands[] = {IDS_APP_CUT, IDS_APP_COPY, IDS_APP_PASTE};
+struct MenuCommand {
+  int command_id;
+  int message_id;
+} kMenuCommands[] = {
+    {ui::TouchEditable::kCut, IDS_APP_CUT},
+    {ui::TouchEditable::kCopy, IDS_APP_COPY},
+    {ui::TouchEditable::kPaste, IDS_APP_PASTE},
+};
+
 constexpr int kSpacingBetweenButtons = 2;
 constexpr int kEllipsesButtonTag = -1;
 
@@ -95,8 +104,8 @@ bool TouchSelectionMenuViews::IsMenuAvailable(
     const ui::TouchSelectionMenuClient* client) {
   DCHECK(client);
 
-  const auto is_enabled = [client](int command) {
-    return client->IsCommandIdEnabled(command);
+  const auto is_enabled = [client](MenuCommand command) {
+    return client->IsCommandIdEnabled(command.command_id);
   };
   return std::any_of(std::cbegin(kMenuCommands), std::cend(kMenuCommands),
                      is_enabled);
@@ -113,12 +122,12 @@ void TouchSelectionMenuViews::CloseMenu() {
 TouchSelectionMenuViews::~TouchSelectionMenuViews() = default;
 
 void TouchSelectionMenuViews::CreateButtons() {
-  for (int command_id : kMenuCommands) {
-    if (!client_->IsCommandIdEnabled(command_id))
+  for (const auto& command : kMenuCommands) {
+    if (!client_->IsCommandIdEnabled(command.command_id))
       continue;
 
-    Button* button =
-        CreateButton(l10n_util::GetStringUTF16(command_id), command_id);
+    Button* button = CreateButton(l10n_util::GetStringUTF16(command.message_id),
+                                  command.command_id);
     AddChildView(button);
   }
 

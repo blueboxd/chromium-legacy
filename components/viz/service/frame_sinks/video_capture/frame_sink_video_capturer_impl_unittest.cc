@@ -124,6 +124,7 @@ class MockConsumer : public mojom::FrameSinkVideoConsumer {
 
   MOCK_METHOD0(OnFrameCapturedMock, void());
   MOCK_METHOD0(OnStopped, void());
+  MOCK_METHOD1(OnLog, void(const std::string&));
 
   int num_frames_received() const { return frames_.size(); }
 
@@ -379,7 +380,7 @@ class FrameSinkVideoCapturerTest : public testing::Test {
         true /* enable_auto_throttling */);
     oracle_ = oracle.get();
     capturer_ = std::make_unique<FrameSinkVideoCapturerImpl>(
-        &frame_sink_manager_, mojo::NullReceiver(), std::move(oracle));
+        &frame_sink_manager_, mojo::NullReceiver(), std::move(oracle), false);
   }
 
   void SetUp() override {

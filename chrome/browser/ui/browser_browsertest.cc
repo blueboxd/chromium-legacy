@@ -28,7 +28,9 @@
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/defaults.h"
@@ -1384,8 +1386,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldShowLocationBar) {
 
   // Launch it in a window, as AppLauncherHandler::HandleLaunchApp() would.
   WebContents* app_window =
-      apps::LaunchService::Get(browser()->profile())
-          ->OpenApplication(apps::AppLaunchParams(
+      apps::AppServiceProxyFactory::GetForProfile(browser()->profile())
+          ->BrowserAppLauncher()
+          .LaunchAppWithParams(apps::AppLaunchParams(
               extension_app->id(),
               apps::mojom::LaunchContainer::kLaunchContainerWindow,
               WindowOpenDisposition::NEW_WINDOW,
@@ -1556,8 +1559,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
 
   // Launch it in a window, as AppLauncherHandler::HandleLaunchApp() would.
   WebContents* app_window =
-      apps::LaunchService::Get(browser()->profile())
-          ->OpenApplication(apps::AppLaunchParams(
+      apps::AppServiceProxyFactory::GetForProfile(browser()->profile())
+          ->BrowserAppLauncher()
+          .LaunchAppWithParams(apps::AppLaunchParams(
               extension_app->id(),
               apps::mojom::LaunchContainer::kLaunchContainerWindow,
               WindowOpenDisposition::NEW_WINDOW,

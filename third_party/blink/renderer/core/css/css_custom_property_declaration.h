@@ -8,6 +8,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/css/css_variable_data.h"
+#include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
@@ -21,8 +22,7 @@ class CORE_EXPORT CSSCustomPropertyDeclaration : public CSSValue {
         name_(name),
         value_(nullptr),
         value_id_(id) {
-    DCHECK(id == CSSValueID::kInherit || id == CSSValueID::kInitial ||
-           id == CSSValueID::kUnset);
+    DCHECK(css_parsing_utils::IsCSSWideKeyword(id));
   }
 
   CSSCustomPropertyDeclaration(const AtomicString& name,
@@ -43,6 +43,7 @@ class CORE_EXPORT CSSCustomPropertyDeclaration : public CSSValue {
     return value_id_ == CSSValueID::kInitial ||
            (!is_inherited_property && value_id_ == CSSValueID::kUnset);
   }
+  bool IsRevert() const { return value_id_ == CSSValueID::kRevert; }
 
   String CustomCSSText() const;
 

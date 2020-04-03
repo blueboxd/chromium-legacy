@@ -12,22 +12,18 @@
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/browser/ui/first_run/welcome_to_chrome_view_controller.h"
+#import "ios/chrome/browser/ui/main/scene_controller.h"
+#import "ios/chrome/browser/ui/main/scene_controller_testing.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-// TODO(crbug.com/1019942): Develop a better way to show the first run UI that
-// doesn't require exposing private API.
-@interface MainController (ExposedForTesting)
-- (void)showFirstRunUI;
-@end
-
 @implementation FirstRunAppInterface
 
 + (void)showFirstRunUI {
-  [chrome_test_util::GetMainController() showFirstRunUI];
+  [chrome_test_util::GetForegroundActiveSceneController() showFirstRunUI];
 }
 
 + (void)setUMACollectionEnabled:(BOOL)enabled {

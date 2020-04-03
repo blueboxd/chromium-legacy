@@ -9,6 +9,7 @@
 #import "base/test/ios/wait_util.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
+#import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/app/application_delegate/metrics_mediator.h"
 #import "ios/chrome/app/application_delegate/metrics_mediator_testing.h"
 #import "ios/chrome/app/chrome_overlay_window.h"
@@ -24,6 +25,9 @@
 #import "ios/chrome/browser/metrics/previous_session_info_private.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
 #import "ios/chrome/browser/ui/main/bvc_container_view_controller.h"
+#import "ios/chrome/browser/ui/main/scene_controller.h"
+#import "ios/chrome/browser/ui/main/scene_controller_testing.h"
+#import "ios/chrome/browser/ui/main/scene_state.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/web/public/navigation/navigation_context.h"
@@ -76,6 +80,15 @@ namespace chrome_test_util {
 
 MainController* GetMainController() {
   return [MainApplicationDelegate sharedMainController];
+}
+
+SceneState* GetForegroundActiveScene() {
+  return MainApplicationDelegate.sharedAppState.foregroundActiveScene;
+}
+
+SceneController* GetForegroundActiveSceneController() {
+  return MainApplicationDelegate.sharedAppState.foregroundActiveScene
+      .controller;
 }
 
 ChromeBrowserState* GetOriginalBrowserState() {
@@ -132,8 +145,8 @@ void RemoveAllInfoBars() {
 }
 
 void ClearPresentedState() {
-  [GetMainController() dismissModalDialogsWithCompletion:nil
-                                          dismissOmnibox:YES];
+  [GetForegroundActiveSceneController() dismissModalDialogsWithCompletion:nil
+                                                           dismissOmnibox:YES];
 }
 
 void SetBooleanLocalStatePref(const char* pref_name, bool value) {

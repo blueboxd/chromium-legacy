@@ -969,6 +969,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // Store one layout result (with its physical fragment) at the specified
   // index, and delete all entries following it.
   void AddLayoutResult(scoped_refptr<const NGLayoutResult>, wtf_size_t index);
+  void ReplaceLayoutResult(scoped_refptr<const NGLayoutResult>,
+                           wtf_size_t index);
 
   void ShrinkLayoutResults(wtf_size_t results_to_keep);
   void ClearLayoutResults();
@@ -2001,11 +2003,10 @@ inline void LayoutBox::SetInlineBoxWrapper(InlineBox* box_wrapper) {
 inline NGPaintFragment* LayoutBox::FirstInlineFragment() const {
   if (!IsInLayoutNGInlineFormattingContext())
     return nullptr;
-  // TODO(yosin): Once we replace all usage of |FirstInlineFragment()| to
-  // |NGInlineCursor|, we should change this to |DCHECK()|.
-  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
-    return nullptr;
-  return first_paint_fragment_;
+  if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return first_paint_fragment_;
+  NOTREACHED();
+  return nullptr;
 }
 
 inline wtf_size_t LayoutBox::FirstInlineFragmentItemIndex() const {

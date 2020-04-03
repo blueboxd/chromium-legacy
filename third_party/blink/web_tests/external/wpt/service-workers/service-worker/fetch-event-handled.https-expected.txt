@@ -1,6 +1,7 @@
 This is a testharness.js-based test.
 PASS global setup
-FAIL FetchEvent.handled should resolve when respondWith() is not called assert_equals: expected "RESOLVED" but got "FAILED"
+FAIL FetchEvent.handled should resolve when respondWith() is not called for a navigation request assert_equals: expected "RESOLVED" but got "FAILED"
+FAIL FetchEvent.handled should resolve when respondWith() is not called for a sub-resource request assert_equals: expected "RESOLVED" but got "FAILED"
 FAIL FetchEvent.handled should reject when respondWith() is not called and the event is canceled assert_equals: expected "REJECTED" but got "FAILED"
 FAIL FetchEvent.handled should resolve when the promise provided to respondWith() is resolved assert_equals: expected "RESOLVED" but got "FAILED"
 FAIL FetchEvent.handled should reject when the promise provided to respondWith() is resolved to an invalid response assert_equals: expected "REJECTED" but got "FAILED"

@@ -12,6 +12,15 @@
 namespace blink {
 
 namespace {
+CascadePriority UaPriority(size_t position) {
+  return CascadePriority(CascadeOrigin::kUserAgent, false, 0, position);
+}
+CascadePriority UserPriority(size_t position) {
+  return CascadePriority(CascadeOrigin::kUser, false, 0, position);
+}
+CascadePriority AuthorPriority(size_t position) {
+  return CascadePriority(CascadeOrigin::kAuthor, false, 0, position);
+}
 
 bool AddTo(CascadeMap& map,
            const CSSPropertyName& name,
@@ -225,6 +234,55 @@ TEST(CascadeMapTest, ResetHighPrio) {
   EXPECT_TRUE(map.HighPriorityBits());
   map.Reset();
   EXPECT_FALSE(map.HighPriorityBits());
+}
+
+TEST(CascadeMapTest, FindOrigin) {
+  CascadeMap map;
+
+  CSSPropertyName color(CSSPropertyID::kColor);
+  CSSPropertyName display(CSSPropertyID::kDisplay);
+  CSSPropertyName top(CSSPropertyID::kTop);
+  CSSPropertyName left(CSSPropertyID::kLeft);
+  CSSPropertyName right(CSSPropertyID::kRight);
+  CSSPropertyName bottom(CSSPropertyID::kBottom);
+
+  map.Add(color, UaPriority(1));
+  map.Add(display, UaPriority(2));
+  map.Add(top, UaPriority(3));
+  map.Add(left, UaPriority(4));
+  map.Add(right, UaPriority(5));
+
+  map.Add(display, UserPriority(10));
+  map.Add(right, UserPriority(11));
+
+  map.Add(color, AuthorPriority(20));
+  map.Add(display, AuthorPriority(21));
+  map.Add(top, AuthorPriority(22));
+  map.Add(bottom, AuthorPriority(23));
+
+  // Final result of the cascade:
+  EXPECT_EQ(AuthorPriority(20), *map.Find(color));
+  EXPECT_EQ(AuthorPriority(21), *map.Find(display));
+  EXPECT_EQ(AuthorPriority(22), *map.Find(top));
+  EXPECT_EQ(UaPriority(4), *map.Find(left));
+  EXPECT_EQ(UserPriority(11), *map.Find(right));
+  EXPECT_EQ(AuthorPriority(23), *map.Find(bottom));
+
+  // Final result up to and including kUser:
+  EXPECT_EQ(UaPriority(1), *map.Find(color, CascadeOrigin::kUser));
+  EXPECT_EQ(UserPriority(10), *map.Find(display, CascadeOrigin::kUser));
+  EXPECT_EQ(UaPriority(3), *map.Find(top, CascadeOrigin::kUser));
+  EXPECT_EQ(UaPriority(4), *map.Find(left, CascadeOrigin::kUser));
+  EXPECT_EQ(UserPriority(11), *map.Find(right, CascadeOrigin::kUser));
+  EXPECT_FALSE(map.Find(bottom, CascadeOrigin::kUser));
+
+  // Final result up to and including kUserAgent:
+  EXPECT_EQ(UaPriority(1), *map.Find(color, CascadeOrigin::kUserAgent));
+  EXPECT_EQ(UaPriority(2), *map.Find(display, CascadeOrigin::kUserAgent));
+  EXPECT_EQ(UaPriority(3), *map.Find(top, CascadeOrigin::kUserAgent));
+  EXPECT_EQ(UaPriority(4), *map.Find(left, CascadeOrigin::kUserAgent));
+  EXPECT_EQ(UaPriority(5), *map.Find(right, CascadeOrigin::kUserAgent));
+  EXPECT_FALSE(map.Find(bottom, CascadeOrigin::kUserAgent));
 }
 
 }  // namespace blink

@@ -205,7 +205,7 @@ void MessagePumpLibevent::Run(Delegate* delegate) {
     mac::ScopedNSAutoreleasePool autorelease_pool;
 #endif
     // Do some work and see if the next task is ready right away.
-    Delegate::NextWorkInfo next_work_info = delegate->DoSomeWork();
+    Delegate::NextWorkInfo next_work_info = delegate->DoWork();
     bool immediate_work_available = next_work_info.is_immediate();
 
     if (!keep_running_)

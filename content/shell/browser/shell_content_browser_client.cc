@@ -100,8 +100,8 @@ std::string GetShellUserAgent() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (base::FeatureList::IsEnabled(blink::features::kFreezeUserAgent)) {
     return content::GetFrozenUserAgent(
-               command_line->HasSwitch(switches::kUseMobileUserAgent))
-        .as_string();
+        command_line->HasSwitch(switches::kUseMobileUserAgent),
+        CONTENT_SHELL_MAJOR_VERSION);
   }
   if (command_line->HasSwitch(switches::kUseMobileUserAgent))
     product += " Mobile";

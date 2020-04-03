@@ -25,3 +25,49 @@ js_library("ambient_mode_page") {
     "//ui/webui/resources/js:load_time_data",
   ]
 }
+
+# TODO: Uncomment as the Polymer3 migration makes progress.
+#js_type_check("closure_compile_module") {
+#  is_polymer3 = true
+#  deps = [
+#    ":ambient_mode_browser_proxy.m",
+#    ":ambient_mode_page.m"
+#  ]
+#}
+
+js_library("ambient_mode_browser_proxy.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/ambient_mode_page/ambient_mode_browser_proxy.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("ambient_mode_page.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/ambient_mode_page/ambient_mode_page.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":ambient_mode_page_module" ]
+}
+
+import("//tools/polymer/polymer.gni")
+
+group("polymer3_elements") {
+  public_deps = [
+    ":ambient_mode_page_module",
+    ":modulize",
+  ]
+}
+
+polymer_modulizer("ambient_mode_page") {
+  js_file = "ambient_mode_page.js"
+  html_file = "ambient_mode_page.html"
+  html_type = "dom-module"
+}
+
+import("//ui/webui/resources/tools/js_modulizer.gni")
+
+js_modulizer("modulize") {
+  input_files = [ "ambient_mode_browser_proxy.js" ]
+}

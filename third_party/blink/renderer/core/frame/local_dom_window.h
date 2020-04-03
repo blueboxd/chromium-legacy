@@ -433,6 +433,15 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   HeapHashSet<WeakMember<EventListenerObserver>> event_listener_observers_;
 
   mutable Member<TrustedTypePolicyFactory> trusted_types_;
+
+  // A dummy scheduler to return when the window is detached.
+  // All operations on it result in no-op, but due to this it's safe to
+  // use the returned value of GetScheduler() without additional checks.
+  // A task posted to a task runner obtained from one of its task runners
+  // will be forwarded to the default task runner.
+  // TODO(altimin): We should be able to remove it after we complete
+  // frame:document lifetime refactoring.
+  std::unique_ptr<FrameOrWorkerScheduler> detached_scheduler_;
 };
 
 template <>

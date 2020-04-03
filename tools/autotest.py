@@ -90,7 +90,7 @@ def RunCommand(cmd, **kwargs):
 def BuildTestTargetWithNinja(out_dir, target, dry_run):
   """Builds the specified target with ninja"""
   ninja_path = os.path.join(DEPOT_TOOLS_DIR, 'autoninja')
-  if 'win' in sys.platform:
+  if sys.platform.startswith('win32'):
     ninja_path += '.bat'
   cmd = [ninja_path, '-C', out_dir, target]
   print('Building: ' + ' '.join(cmd))
@@ -170,7 +170,7 @@ def FindTestTarget(out_dir, path):
   # internal gn targets, and match against well-known test suffixes, falling
   # back to a list of known test targets if that fails.
   gn_path = os.path.join(DEPOT_TOOLS_DIR, 'gn')
-  if 'win' in sys.platform:
+  if sys.platform.startswith('win32'):
     gn_path += '.bat'
   cmd = [gn_path, 'refs', out_dir, '--all', path]
   targets = RunCommand(cmd, cwd=SRC_DIR).splitlines()

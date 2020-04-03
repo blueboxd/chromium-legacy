@@ -148,6 +148,8 @@ class ChromeContentRendererClient
   std::unique_ptr<blink::WebContentSettingsClient>
   CreateWorkerContentSettingsClient(
       content::RenderFrame* render_frame) override;
+  std::unique_ptr<media::SpeechRecognitionClient> CreateSpeechRecognitionClient(
+      content::RenderFrame* render_frame) override;
   void AddSupportedKeySystems(
       std::vector<std::unique_ptr<::media::KeySystemProperties>>* key_systems)
       override;

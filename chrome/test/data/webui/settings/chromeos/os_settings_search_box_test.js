@@ -38,14 +38,16 @@ suite('OSSettingsSearchBox', () => {
   /**
    * @param {string} resultText Exact string of the result to be displayed.
    * @param {string} path Url path with optional params.
+   * @param {?chromeos.settings.mojom.SearchResultIcon} icon Result icon enum.
    * @return {!chromeos.settings.mojom.SearchResult} A search result.
    */
-  function fakeResult(resultText, urlPathWithParameters) {
+  function fakeResult(resultText, urlPathWithParameters, icon) {
     return /** @type {!mojom.SearchResult} */ ({
       resultText: {
         data: Array.from(resultText, c => c.charCodeAt()),
       },
       urlPathWithParameters: urlPathWithParameters,
+      icon: icon ? icon : chromeos.settings.mojom.SearchResultIcon.MIN_VALUE,
     });
   }
 
@@ -62,7 +64,7 @@ suite('OSSettingsSearchBox', () => {
     assertTrue(!!resultList);
 
     settingsSearchHandler = new settings.FakeSettingsSearchHandler();
-    searchBox.setSearchHandlerForTesting(settingsSearchHandler);
+    settings.setSearchHandlerForTesting(settingsSearchHandler);
 
     userActionRecorder = new settings.FakeUserActionRecorder();
     settings.setUserActionRecorderForTesting(userActionRecorder);
@@ -73,7 +75,7 @@ suite('OSSettingsSearchBox', () => {
     // Clear search field for next test.
     await simulateSearch('');
     settings.setUserActionRecorderForTesting(null);
-    searchBox.setSearchHandlerForTesting(undefined);
+    settings.setSearchHandlerForTesting(null);
   });
 
   test('User action search event', async () => {

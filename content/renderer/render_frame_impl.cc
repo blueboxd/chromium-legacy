@@ -3776,6 +3776,13 @@ RenderFrameImpl::CreateWorkerContentSettingsClient() {
       this);
 }
 
+std::unique_ptr<media::SpeechRecognitionClient>
+RenderFrameImpl::CreateSpeechRecognitionClient() {
+  if (!frame_ || !frame_->View())
+    return nullptr;
+  return GetContentClient()->renderer()->CreateSpeechRecognitionClient(this);
+}
+
 scoped_refptr<blink::WebWorkerFetchContext>
 RenderFrameImpl::CreateWorkerFetchContext() {
   ServiceWorkerNetworkProviderForFrame* provider =

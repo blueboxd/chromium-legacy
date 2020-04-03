@@ -25,7 +25,6 @@
 #include "content/public/test/test_service.h"
 #include "content/public/test/test_service.mojom.h"
 #include "content/public/utility/utility_thread.h"
-#include "content/shell/common/power_monitor_test.mojom.h"
 #include "content/shell/common/power_monitor_test_impl.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"

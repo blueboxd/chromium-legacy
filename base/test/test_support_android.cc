@@ -113,7 +113,7 @@ class MessagePumpForUIStub : public base::MessagePumpForUI {
           break;
       }
 
-      Delegate::NextWorkInfo next_work_info = g_state->delegate->DoSomeWork();
+      Delegate::NextWorkInfo next_work_info = g_state->delegate->DoWork();
       more_work_is_plausible = next_work_info.is_immediate();
       if (g_state->should_quit)
         break;

@@ -51,3 +51,81 @@ js_library("timezone_subpage") {
     "//ui/webui/resources/js:cr",
   ]
 }
+
+# TODO: Uncomment as the Polymer3 migration makes progress.
+#js_type_check("closure_compile_module") {
+#  is_polymer3 = true
+#  deps = [
+#    ":date_time_page.m",
+#    ":date_time_types.m",
+#    ":timezone_selector.m",
+#    ":timezone_subpage.m"
+#  ]
+#}
+
+js_library("date_time_page.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/date_time_page/date_time_page.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":date_time_page_module" ]
+}
+
+js_library("date_time_types.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/date_time_page/date_time_types.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":date_time_types_module" ]
+}
+
+js_library("timezone_selector.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/date_time_page/timezone_selector.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":timezone_selector_module" ]
+}
+
+js_library("timezone_subpage.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/date_time_page/timezone_subpage.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":timezone_subpage_module" ]
+}
+
+import("//tools/polymer/polymer.gni")
+
+group("polymer3_elements") {
+  public_deps = [
+    ":date_time_page_module",
+    ":date_time_types_module",
+    ":timezone_selector_module",
+    ":timezone_subpage_module",
+  ]
+}
+
+polymer_modulizer("date_time_page") {
+  js_file = "date_time_page.js"
+  html_file = "date_time_page.html"
+  html_type = "dom-module"
+}
+
+polymer_modulizer("date_time_types") {
+  js_file = "date_time_types.js"
+  html_file = "date_time_types.html"
+  html_type = "dom-module"
+}
+
+polymer_modulizer("timezone_selector") {
+  js_file = "timezone_selector.js"
+  html_file = "timezone_selector.html"
+  html_type = "dom-module"
+}
+
+polymer_modulizer("timezone_subpage") {
+  js_file = "timezone_subpage.js"
+  html_file = "timezone_subpage.html"
+  html_type = "dom-module"
+}

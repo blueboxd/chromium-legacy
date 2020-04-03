@@ -8718,10 +8718,13 @@ interface ValidityState
     method constructor
 interface VideoDecoder
     attribute @@toStringTag
-    getter readable
-    getter writable
+    getter decodeProcessingCount
+    getter decodeQueueSize
     method configure
     method constructor
+    method decode
+    method flush
+    method reset
 interface VideoFrame
     attribute @@toStringTag
     getter coded_height

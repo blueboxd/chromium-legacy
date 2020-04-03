@@ -42,9 +42,10 @@ def _OnStaleMd5(options, cmd, javac_cmd, files, classpath):
 
   # Use AtomicOutput so that output timestamps are not updated when outputs
   # are not changed.
-  with build_utils.AtomicOutput(options.jar_path) as f:
-    cmd += ['--output', f.name]
-    logging.info('Command: %s' % ' '.join(cmd))
+  with build_utils.AtomicOutput(options.jar_path) as output_jar, \
+      build_utils.AtomicOutput(options.generated_jar_path) as generated_jar:
+    cmd += ['--output', output_jar.name, '--gensrc_output', generated_jar.name]
+    logging.debug('Command: %s', cmd)
     start = time.time()
     subprocess.check_call(cmd)
     end = time.time() - start
@@ -89,6 +90,10 @@ def main(argv):
       action='append',
       help='key=value arguments for the annotation processors.')
   parser.add_argument('--jar-path', help='Jar output path.', required=True)
+  parser.add_argument(
+      '--generated-jar-path',
+      required=True,
+      help='Output path for generated source files.')
   options, unknown_args = parser.parse_known_args(argv)
 
   options.bootclasspath = build_utils.ParseGnList(options.bootclasspath)
@@ -150,6 +155,7 @@ def main(argv):
 
   output_paths = [
       options.jar_path,
+      options.generated_jar_path,
   ]
 
   input_strings = cmd + options.classpath + files

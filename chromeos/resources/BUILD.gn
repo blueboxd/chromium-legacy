@@ -140,7 +140,10 @@ grit("print_management_resources") {
   source =
       "../components/print_management/resources/print_management_resources.grd"
 
-  deps = [ "../components/print_management/resources:polymer3_elements" ]
+  deps = [
+    "../components/print_management/mojom:mojom_js",
+    "../components/print_management/resources:polymer3_elements",
+  ]
 
   outputs = [
     "grit/chromeos_print_management_resources.h",

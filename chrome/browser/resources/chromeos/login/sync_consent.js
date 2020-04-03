@@ -12,6 +12,17 @@ Polymer({
 
   behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
 
+  properties: {
+    /** @private */
+    splitSettingsSyncEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('splitSettingsSyncEnabled');
+      },
+      readOnly: true,
+    },
+  },
+
   /** @override */
   ready() {
     this.updateLocalizedContent();
@@ -68,6 +79,9 @@ Polymer({
     if (loadTimeData.getBoolean('splitSyncConsent')) {
       // SplitSyncConsent version.
       this.showScreen_('osSyncConsentDialog');
+    } else if (loadTimeData.getBoolean('splitSettingsSyncEnabled')) {
+      // SplitSettingsSync version.
+      this.showScreen_('splitSettingsSyncConsentDialog');
     } else {
       // Regular version.
       this.showScreen_('syncConsentOverviewDialog');
@@ -80,7 +94,12 @@ Polymer({
    * @private
    */
   onSettingsSaveAndContinue_(e) {
-    if (this.$.reviewSettingsBox.checked) {
+    assert(e.path);
+    assert(!loadTimeData.getBoolean('splitSyncConsent'));
+    let checked = this.splitSettingsSyncEnabled_ ?
+        this.$.reviewBrowserSyncOptionsBox.checked :
+        this.$.reviewSettingsBox.checked;
+    if (checked) {
       chrome.send('login.SyncConsentScreen.continueAndReview', [
         this.getConsentDescription_(), this.getConsentConfirmation_(e.path)
       ]);

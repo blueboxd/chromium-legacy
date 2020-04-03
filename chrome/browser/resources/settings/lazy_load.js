@@ -30,7 +30,6 @@ import './people_page/import_data_dialog.m.js';
 import './people_page/manage_profile.m.js';
 // </if>
 import './people_page/signout_dialog.m.js';
-import './people_page/sync_account_control.m.js';
 import './people_page/sync_controls.m.js';
 import './people_page/sync_page.m.js';
 
@@ -99,6 +98,7 @@ export {SetPINDialogPage} from './privacy_page/security_keys_set_pin_dialog.m.js
 export {CredentialManagementDialogPage} from './privacy_page/security_keys_credential_management_dialog.m.js';
 export {BioEnrollDialogPage} from './privacy_page/security_keys_bio_enroll_dialog.m.js';
 export {WebsiteUsageBrowserProxyImpl} from './site_settings/website_usage_browser_proxy.m.js';
+export {MAX_SIGNIN_PROMO_IMPRESSION} from './people_page/sync_account_control.m.js';
 
 // <if expr="not chromeos">
 export {SystemPageBrowserProxyImpl} from './system_page/system_page_browser_proxy.m.js';

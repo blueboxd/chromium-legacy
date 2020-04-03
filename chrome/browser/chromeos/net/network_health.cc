@@ -10,6 +10,7 @@
 #include "chromeos/services/network_config/in_process_instance.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 
+using chromeos::network_config::mojom::DeviceStatePropertiesPtr;
 using chromeos::network_config::mojom::FilterType;
 using chromeos::network_config::mojom::NetworkFilter;
 using chromeos::network_config::mojom::NetworkStatePropertiesPtr;
@@ -28,6 +29,10 @@ NetworkHealth::NetworkState::NetworkState() {}
 
 NetworkHealth::NetworkState::~NetworkState() {}
 
+NetworkHealth::DeviceState::DeviceState() {}
+
+NetworkHealth::DeviceState::~DeviceState() {}
+
 NetworkHealth::NetworkHealth() {
   chromeos::network_config::BindToInProcessInstance(
       remote_cros_network_config_.BindNewPipeAndPassReceiver());
@@ -45,13 +50,13 @@ NetworkHealth::NetworkHealthState NetworkHealth::GetNetworkHealthState() {
 
 void NetworkHealth::RefreshNetworkHealthState() {
   RequestActiveNetworks();
+  RequestDeviceStateList();
 }
 
 void NetworkHealth::OnActiveNetworksReceived(
     std::vector<NetworkStatePropertiesPtr> network_props) {
   std::vector<NetworkState> active_networks;
   for (const auto& prop : network_props) {
-    DCHECK(prop);
     NetworkState state;
     state.name = prop->name;
     state.type = prop->type;
@@ -62,9 +67,27 @@ void NetworkHealth::OnActiveNetworksReceived(
   network_health_state_.active_networks.swap(active_networks);
 }
 
+void NetworkHealth::OnDeviceStateListReceived(
+    std::vector<DeviceStatePropertiesPtr> device_props) {
+  std::vector<DeviceState> devices;
+  for (const auto& prop : device_props) {
+    DeviceState device;
+    device.mac_address = prop->mac_address.value_or("");
+    device.type = prop->type;
+    device.state = prop->device_state;
+    devices.push_back(std::move(device));
+  }
+
+  network_health_state_.devices.swap(devices);
+}
+
 void NetworkHealth::OnActiveNetworksChanged(
     std::vector<NetworkStatePropertiesPtr> network_props) {
   OnActiveNetworksReceived(std::move(network_props));
+}
+
+void NetworkHealth::OnDeviceStateListChanged() {
+  RequestDeviceStateList();
 }
 
 void NetworkHealth::RequestActiveNetworks() {
@@ -73,6 +96,11 @@ void NetworkHealth::RequestActiveNetworks() {
                          network_config::mojom::kNoLimit),
       base::BindOnce(&NetworkHealth::OnActiveNetworksReceived,
                      base::Unretained(this)));
+}
+
+void NetworkHealth::RequestDeviceStateList() {
+  remote_cros_network_config_->GetDeviceStateList(base::BindOnce(
+      &NetworkHealth::OnDeviceStateListReceived, base::Unretained(this)));
 }
 
 }  // namespace chromeos

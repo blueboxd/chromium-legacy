@@ -472,7 +472,7 @@ LayoutUnit ComputeBlockSizeForFragment(
 }
 
 // Computes size for a replaced element.
-void ComputeReplacedSize(const NGLayoutInputNode& node,
+void ComputeReplacedSize(const NGBlockNode& node,
                          const NGConstraintSpace& space,
                          const base::Optional<MinMaxSizes>& child_min_max_sizes,
                          base::Optional<LogicalSize>* out_replaced_size,
@@ -521,9 +521,10 @@ void ComputeReplacedSize(const NGLayoutInputNode& node,
 
   base::Optional<LayoutUnit> intrinsic_inline;
   base::Optional<LayoutUnit> intrinsic_block;
-  LogicalSize aspect_ratio;
+  node.IntrinsicSize(&intrinsic_inline, &intrinsic_block);
 
-  node.IntrinsicSize(&intrinsic_inline, &intrinsic_block, &aspect_ratio);
+  LogicalSize aspect_ratio = node.GetAspectRatio();
+
   // Computing intrinsic size is complicated by the fact that
   // intrinsic_inline, intrinsic_block, and aspect_ratio can all
   // be empty independent of each other.

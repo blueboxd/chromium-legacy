@@ -5,7 +5,6 @@
 #include "content/shell/gpu/shell_content_gpu_client.h"
 
 #include "base/bind.h"
-#include "content/shell/common/power_monitor_test.mojom.h"
 #include "content/shell/common/power_monitor_test_impl.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 

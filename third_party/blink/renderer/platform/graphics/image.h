@@ -109,9 +109,12 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   virtual bool HasIntrinsicSize() const { return true; }
 
   virtual IntSize Size() const = 0;
-  IntSize Size(RespectImageOrientationEnum);
+  IntSize Size(RespectImageOrientationEnum) const;
   virtual IntSize SizeRespectingOrientation() const { return Size(); }
-  virtual FloatSize SizeAsFloat() const { return FloatSize(Size()); }
+  virtual FloatSize SizeAsFloat(
+      RespectImageOrientationEnum respect_orientation) const {
+    return FloatSize(Size(respect_orientation));
+  }
   IntRect Rect() const { return IntRect(IntPoint(), Size()); }
   int width() const { return Size().Width(); }
   int height() const { return Size().Height(); }
@@ -215,8 +218,11 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
 
   // Correct the src rect (rotate and maybe translate it) to account for a
   // non-default image orientation. The image must have non-default orientation
-  // to call this method.
-  FloatRect CorrectSrcRectForImageOrientation(FloatRect) const;
+  // to call this method. The image_size is the oriented size of the image (i.e.
+  // after orientation has been applied). src_rect may be a subset of the image,
+  // also oriented.
+  FloatRect CorrectSrcRectForImageOrientation(FloatSize image_size,
+                                              FloatRect src_rect) const;
 
   enum ImageClampingMode {
     kClampImageToSourceRect,

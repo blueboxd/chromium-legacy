@@ -47,7 +47,8 @@ AudioRendererImpl::AudioRendererImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     media::AudioRendererSink* sink,
     const CreateAudioDecodersCB& create_audio_decoders_cb,
-    MediaLog* media_log)
+    MediaLog* media_log,
+    const TranscribeAudioCallback& transcribe_audio_callback)
     : task_runner_(task_runner),
       expecting_config_changes_(false),
       sink_(sink),
@@ -69,7 +70,8 @@ AudioRendererImpl::AudioRendererImpl(
       received_end_of_stream_(false),
       rendered_end_of_stream_(false),
       is_suspending_(false),
-      is_passthrough_(false) {
+      is_passthrough_(false),
+      transcribe_audio_callback_(transcribe_audio_callback) {
   DCHECK(create_audio_decoders_cb_);
 
   // PowerObserver's must be added and removed from the same thread, but we
@@ -868,6 +870,9 @@ bool AudioRendererImpl::HandleDecodedBuffer_Locked(
     // audio playback.
     if (first_packet_timestamp_ == kNoTimestamp)
       first_packet_timestamp_ = buffer->timestamp();
+
+    if (!transcribe_audio_callback_.is_null())
+      transcribe_audio_callback_.Run(buffer);
 
     if (state_ != kUninitialized)
       algorithm_->EnqueueBuffer(std::move(buffer));

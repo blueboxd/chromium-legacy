@@ -38,8 +38,23 @@ message StreamUpdate {
 
 // A horizontal slice of UI to be presented in the vertical-scrolling feed.
 message Slice {
-  oneof SliceData { XSurfaceSlice xsurface_slice = 1; }
+  oneof SliceData {
+    XSurfaceSlice xsurface_slice = 1;
+    ZeroStateSlice zero_state_slice = 3;
+  }
   string slice_id = 2;
+}
+
+// This slice is sent when no feed data can be loaded.
+message ZeroStateSlice {
+  enum Type {
+    UNKNOWN = 0;
+    // A generic error that explains there are no cards available.
+    NO_CARDS_AVAILABLE = 1;
+    // An error indicating there were problems refreshing the feed.
+    CANT_REFRESH = 2;
+  };
+  Type type = 1;
 }
 
 message XSurfaceSlice {

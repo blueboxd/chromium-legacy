@@ -176,6 +176,12 @@ ContentRendererClient::CreateWorkerContentSettingsClient(
   return nullptr;
 }
 
+std::unique_ptr<media::SpeechRecognitionClient>
+ContentRendererClient::CreateSpeechRecognitionClient(
+    RenderFrame* render_frame) {
+  return nullptr;
+}
+
 bool ContentRendererClient::IsPluginAllowedToUseCameraDeviceAPI(
     const GURL& url) {
   return false;

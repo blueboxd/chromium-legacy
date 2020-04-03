@@ -36,8 +36,12 @@ BackGestureContextualNudgeControllerImpl::
 }
 
 void BackGestureContextualNudgeControllerImpl::OnBackGestureStarted() {
-  if (nudge_)
+  if (nudge_) {
     nudge_->CancelAnimationOrFadeOutToHide();
+    contextual_tooltip::LogNudgeDismissedMetrics(
+        contextual_tooltip::TooltipType::kBackGesture,
+        contextual_tooltip::DismissNudgeReason::kBackGestureStarted);
+  }
 }
 
 void BackGestureContextualNudgeControllerImpl::OnActiveUserSessionChanged(
@@ -71,8 +75,12 @@ void BackGestureContextualNudgeControllerImpl::OnWindowActivated(
 
   // If another window is activated when the nudge is waiting to be shown or
   // is currently being shown, cancel the animation.
-  if (nudge_)
+  if (nudge_) {
     nudge_->CancelAnimationOrFadeOutToHide();
+    contextual_tooltip::LogNudgeDismissedMetrics(
+        contextual_tooltip::TooltipType::kBackGesture,
+        contextual_tooltip::DismissNudgeReason::kActiveWindowChanged);
+  }
 
   if (!nudge_ || !nudge_->ShouldNudgeCountAsShown()) {
     // Start tracking |gained_active|'s navigation status and show the
@@ -85,8 +93,12 @@ void BackGestureContextualNudgeControllerImpl::NavigationEntryChanged(
     aura::Window* window) {
   // If navigation entry changed when the nudge is waiting to be shown or is
   // currently being shown, cancel the animation.
-  if (nudge_)
+  if (nudge_) {
     nudge_->CancelAnimationOrFadeOutToHide();
+    contextual_tooltip::LogNudgeDismissedMetrics(
+        contextual_tooltip::TooltipType::kBackGesture,
+        contextual_tooltip::DismissNudgeReason::kNavigationEntryChanged);
+  }
 
   MaybeShowNudgeUi(window);
 }
@@ -161,8 +173,24 @@ void BackGestureContextualNudgeControllerImpl::UpdateWindowMonitoring(
   nudge_delegate_.reset();
   Shell::Get()->activation_client()->RemoveObserver(this);
   // Cancel any in-waiting animation or in-progress animation.
-  if (nudge_)
+  if (nudge_) {
     nudge_->CancelAnimationOrFadeOutToHide();
+
+    if (!Shell::Get()->IsInTabletMode()) {
+      contextual_tooltip::LogNudgeDismissedMetrics(
+          contextual_tooltip::TooltipType::kBackGesture,
+          contextual_tooltip::DismissNudgeReason::kSwitchToClamshell);
+    } else if (Shell::Get()->session_controller()->GetSessionState() !=
+               session_manager::SessionState::ACTIVE) {
+      contextual_tooltip::LogNudgeDismissedMetrics(
+          contextual_tooltip::TooltipType::kBackGesture,
+          contextual_tooltip::DismissNudgeReason::kUserSessionInactive);
+    } else {
+      contextual_tooltip::LogNudgeDismissedMetrics(
+          contextual_tooltip::TooltipType::kBackGesture,
+          contextual_tooltip::DismissNudgeReason::kOther);
+    }
+  }
 }
 
 void BackGestureContextualNudgeControllerImpl::OnNudgeAnimationFinished() {
@@ -177,6 +205,9 @@ void BackGestureContextualNudgeControllerImpl::OnNudgeAnimationFinished() {
   if (count_as_shown) {
     contextual_tooltip::HandleNudgeShown(
         GetActivePrefService(), contextual_tooltip::TooltipType::kBackGesture);
+    contextual_tooltip::LogNudgeDismissedMetrics(
+        contextual_tooltip::TooltipType::kBackGesture,
+        contextual_tooltip::DismissNudgeReason::kTimeout);
     UpdateWindowMonitoring(/*can_show_nudge_immediately=*/false);
 
     // Set a timer to monitoring windows and show nudge ui again.

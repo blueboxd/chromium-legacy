@@ -94,8 +94,8 @@ int GetTimeIntervalMilliseconds(TimeTicks next_task_time) {
 //
 // For the GLib pump we try to follow the Windows UI pump model:
 // - Whenever we receive a wakeup event or the timer for delayed work expires,
-// we run DoSomeWork. That part will also run in the other event pumps.
-// - We also run DoSomeWork, and possibly DoIdleWork, in the main loop,
+// we run DoWork. That part will also run in the other event pumps.
+// - We also run DoWork, and possibly DoIdleWork, in the main loop,
 // around event handling.
 
 struct WorkSource : public GSource {
@@ -406,7 +406,7 @@ bool MessagePumpGlib::HandleCheck() {
 }
 
 void MessagePumpGlib::HandleDispatch() {
-  state_->next_work_info = state_->delegate->DoSomeWork();
+  state_->next_work_info = state_->delegate->DoWork();
 }
 
 void MessagePumpGlib::Run(Delegate* delegate) {
@@ -440,7 +440,7 @@ void MessagePumpGlib::Run(Delegate* delegate) {
     if (state_->should_quit)
       break;
 
-    state_->next_work_info = state_->delegate->DoSomeWork();
+    state_->next_work_info = state_->delegate->DoWork();
     more_work_is_plausible |= state_->next_work_info.is_immediate();
     if (state_->should_quit)
       break;

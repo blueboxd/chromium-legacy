@@ -17,9 +17,15 @@
       <include name="IDR_PRINT_MANAGEMENT_JS" file="${root_gen_dir}/chromeos/components/print_management/resources/print_management.js" use_base_dir="false" compress="gzip" type="BINDATA"/>
       <include name="IDR_PRINT_MANAGEMENT_MANIFEST" file="manifest.json" type="BINDATA" compress="gzip" />
       <include name="IDR_PRINT_MANAGEMENT_ICON" file="app_icon_192.png" type="BINDATA" compress="gzip" />
-      <include name="IDR_PRINT_MANAGEMENT_PWA_HTML" file="pwa.html" type="BINDATA" compress="gzip" />
+      <include name="IDR_PRINTING_MANAGER_MOJO_LITE_JS" file="${root_gen_dir}/chromeos/components/print_management/mojom/printing_manager.mojom-lite.js" compress="gzip" use_base_dir="false" type="BINDATA" />
+      <include name="IDR_PRINT_MANAGEMENT_PWA_HTML" file="pwa.html" type="BINDATA" compress="gzip" /> 
       <include name="IDR_SCANNING_UI_INDEX_HTML" file="scanning_ui_index.html" type="BINDATA" compress="gzip" />
-      <include name="IDR_SCANNING_UI_JS" file="${root_gen_dir}/chromeos/components/print_management/resources/scanning_ui.js" use_base_dir="false" compress="gzip" type="BINDATA"/>
+      <include name="IDR_SCANNING_UI_JS" file="${root_gen_dir}/chromeos/components/print_management/resources/scanning_ui.js" use_base_dir="false" compress="gzip" type="BINDATA"/> 
     </includes>
+
+    <structures>
+      <structure name="IDR_PRINT_MANAGEMENT_MOJO_INTERFACE_PROVIDER_JS"
+          file="mojo_interface_provider.js" type="chrome_html"/>
+    </structures>
   </release>
 </grit>

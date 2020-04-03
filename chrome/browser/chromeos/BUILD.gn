@@ -2154,6 +2154,8 @@ source_set("chromeos") {
     "printing/print_management/print_job_info_mojom_conversions.h",
     "printing/print_management/printing_manager.cc",
     "printing/print_management/printing_manager.h",
+    "printing/print_management/printing_manager_factory.cc",
+    "printing/print_management/printing_manager_factory.h",
     "printing/print_server.cc",
     "printing/print_server.h",
     "printing/print_servers_provider.cc",

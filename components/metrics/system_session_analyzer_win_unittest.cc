@@ -94,7 +94,7 @@ TEST(SystemSessionAnalyzerTest, StandardCase) {
 
 TEST(SystemSessionAnalyzerTest, NoEvent) {
   StubSystemSessionAnalyzer analyzer(0U);
-  EXPECT_EQ(SystemSessionAnalyzer::FAILED,
+  EXPECT_EQ(SystemSessionAnalyzer::INITIALIZE_FAILED,
             analyzer.IsSessionUnclean(base::Time::Now()));
 }
 
@@ -106,7 +106,7 @@ TEST(SystemSessionAnalyzerTest, TimeInversion) {
   analyzer.AddEvent({kIdSessionEnd, time + base::TimeDelta::FromSeconds(1)});
   analyzer.AddEvent({kIdSessionStart, time - base::TimeDelta::FromSeconds(1)});
 
-  EXPECT_EQ(SystemSessionAnalyzer::FAILED,
+  EXPECT_EQ(SystemSessionAnalyzer::INITIALIZE_FAILED,
             analyzer.IsSessionUnclean(base::Time::Now()));
 }
 
@@ -118,7 +118,7 @@ TEST(SystemSessionAnalyzerTest, IdInversion) {
   analyzer.AddEvent({kIdSessionStart, time - base::TimeDelta::FromSeconds(1)});
   analyzer.AddEvent({kIdSessionEnd, time - base::TimeDelta::FromSeconds(2)});
 
-  EXPECT_EQ(SystemSessionAnalyzer::FAILED,
+  EXPECT_EQ(SystemSessionAnalyzer::INITIALIZE_FAILED,
             analyzer.IsSessionUnclean(base::Time::Now()));
 }
 

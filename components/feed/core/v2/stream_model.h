@@ -96,7 +96,7 @@ class StreamModel {
   const feedstore::Content* FindContent(ContentRevision revision) const;
 
   // Returns the shared state data identified by |id|.
-  const std::string* FindSharedStateData(const std::string& id);
+  const std::string* FindSharedStateData(const std::string& id) const;
 
   // Apply |operations| to the model.
   void ExecuteOperations(std::vector<feedstore::DataOperation> operations);

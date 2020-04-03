@@ -100,7 +100,8 @@ FloatSize LayoutSVGImage::CalculateObjectSize() const {
         !cached_image->IsSizeAvailable())
       return object_bounding_box_.Size();
 
-    intrinsic_size = FloatSize(cached_image->GetImage()->Size());
+    intrinsic_size =
+        FloatSize(cached_image->GetImage()->SizeRespectingOrientation());
     if (auto* svg_image = DynamicTo<SVGImage>(cached_image->GetImage())) {
       IntrinsicSizingInfo intrinsic_sizing_info;
       has_intrinsic_ratio &= svg_image->GetIntrinsicSizingInfo(intrinsic_sizing_info);

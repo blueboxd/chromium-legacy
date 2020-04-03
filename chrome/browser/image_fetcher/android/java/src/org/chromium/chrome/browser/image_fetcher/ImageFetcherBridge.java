@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.image_fetcher;
 
 import android.graphics.Bitmap;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.Callback;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -36,13 +38,14 @@ public class ImageFetcherBridge {
     /**
      * Creates a ImageFetcherBridge for accessing the native ImageFetcher implementation.
      */
-    public ImageFetcherBridge(Profile profile) {
+    @VisibleForTesting
+    ImageFetcherBridge(Profile profile) {
         mNativeImageFetcherBridge = ImageFetcherBridgeJni.get().init(profile);
     }
 
     /** Cleans up native half of bridge. */
     public void destroy() {
-        assert mNativeImageFetcherBridge != 0;
+        assert mNativeImageFetcherBridge != 0 : "destroy called twice";
         ImageFetcherBridgeJni.get().destroy(mNativeImageFetcherBridge, ImageFetcherBridge.this);
         mNativeImageFetcherBridge = 0;
     }
@@ -54,7 +57,7 @@ public class ImageFetcherBridge {
      * @return The full path to the resource on disk.
      */
     public String getFilePath(String url) {
-        assert mNativeImageFetcherBridge != 0;
+        assert mNativeImageFetcherBridge != 0 : "getFilePath called after destroy";
         return ImageFetcherBridgeJni.get().getFilePath(
                 mNativeImageFetcherBridge, ImageFetcherBridge.this, url);
     }
@@ -69,11 +72,12 @@ public class ImageFetcherBridge {
      */
     public void fetchGif(@ImageFetcherConfig int config, String url, String clientName,
             Callback<BaseGifImage> callback) {
-        assert mNativeImageFetcherBridge != 0;
+        assert mNativeImageFetcherBridge != 0 : "fetchGif called after destroy";
         ImageFetcherBridgeJni.get().fetchImageData(mNativeImageFetcherBridge,
                 ImageFetcherBridge.this, config, url, clientName, (byte[] data) -> {
                     if (data == null || data.length == 0) {
                         callback.onResult(null);
+                        return;
                     }
 
                     callback.onResult(new BaseGifImage(data));
@@ -93,7 +97,7 @@ public class ImageFetcherBridge {
      */
     public void fetchImage(@ImageFetcherConfig int config, String url, String clientName, int width,
             int height, Callback<Bitmap> callback) {
-        assert mNativeImageFetcherBridge != 0;
+        assert mNativeImageFetcherBridge != 0 : "fetchImage called after destroy";
         ImageFetcherBridgeJni.get().fetchImage(mNativeImageFetcherBridge, ImageFetcherBridge.this,
                 config, url, clientName, (bitmap) -> {
                     callback.onResult(ImageFetcher.tryToResizeImage(bitmap, width, height));
@@ -107,7 +111,7 @@ public class ImageFetcherBridge {
      * @param eventId The event to report.
      */
     public void reportEvent(String clientName, @ImageFetcherEvent int eventId) {
-        assert mNativeImageFetcherBridge != 0;
+        assert mNativeImageFetcherBridge != 0 : "reportEvent called after destroy";
         ImageFetcherBridgeJni.get().reportEvent(
                 mNativeImageFetcherBridge, ImageFetcherBridge.this, clientName, eventId);
     }
@@ -120,7 +124,7 @@ public class ImageFetcherBridge {
      *      total duration.
      */
     public void reportCacheHitTime(String clientName, long startTimeMillis) {
-        assert mNativeImageFetcherBridge != 0;
+        assert mNativeImageFetcherBridge != 0 : "reportCacheHitTime called after destroy";
         ImageFetcherBridgeJni.get().reportCacheHitTime(
                 mNativeImageFetcherBridge, ImageFetcherBridge.this, clientName, startTimeMillis);
     }
@@ -133,7 +137,8 @@ public class ImageFetcherBridge {
      *      total duration.
      */
     public void reportTotalFetchTimeFromNative(String clientName, long startTimeMillis) {
-        assert mNativeImageFetcherBridge != 0;
+        assert mNativeImageFetcherBridge
+                != 0 : "reportTotalFetchTimeFromNative called after destroy";
         ImageFetcherBridgeJni.get().reportTotalFetchTimeFromNative(
                 mNativeImageFetcherBridge, ImageFetcherBridge.this, clientName, startTimeMillis);
     }

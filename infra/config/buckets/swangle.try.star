@@ -24,6 +24,12 @@ try_.defaults.caches.set([
 
 
 try_.chromium_swangle_linux_builder(
+    name = 'linux-swangle-chromium-try-x64',
+    pool = 'luci.chromium.swangle.chromium.linux.x64.try',
+    execution_timeout = 6 * time.hour,
+)
+
+try_.chromium_swangle_linux_builder(
     name = 'linux-swangle-try-tot-angle-x64',
     pool = 'luci.chromium.swangle.angle.linux.x64.try',
 )
@@ -45,7 +51,7 @@ try_.chromium_swangle_linux_builder(
 
 try_.chromium_swangle_linux_builder(
     name = 'linux-swangle-try-x64',
-    pool = 'luci.chromium.swangle.chromium.linux.x64.try',
+    pool = 'luci.chromium.swangle.deps.linux.x64.try',
 )
 
 try_.chromium_swangle_linux_builder(
@@ -53,6 +59,19 @@ try_.chromium_swangle_linux_builder(
     pool = 'luci.chromium.swangle.linux.x86.try',
 )
 
+
+try_.chromium_swangle_mac_builder(
+    name = 'mac-swangle-chromium-try-x64',
+    pool = 'luci.chromium.swangle.chromium.mac.x64.try',
+    execution_timeout = 6 * time.hour,
+)
+
+
+try_.chromium_swangle_windows_builder(
+    name = 'win-swangle-chromium-try-x86',
+    pool = 'luci.chromium.swangle.chromium.win.x86.try',
+    execution_timeout = 6 * time.hour,
+)
 
 try_.chromium_swangle_windows_builder(
     name = 'win-swangle-try-tot-angle-x64',
@@ -81,6 +100,6 @@ try_.chromium_swangle_windows_builder(
 
 try_.chromium_swangle_windows_builder(
     name = 'win-swangle-try-x86',
-    pool = 'luci.chromium.swangle.chromium.win.x86.try',
+    pool = 'luci.chromium.swangle.deps.win.x86.try',
 )
 

@@ -172,11 +172,6 @@
         https://chrome.google.com/webstore?hl=[GRITLANGCODE]
       </message>
 
-      <!-- The width for the "create application shortcuts" dialog in characters. -->
-      <message name="IDS_CREATE_SHORTCUTS_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-        65
-      </message>
-
       <!-- The width of the media galleries configuration dialog in characters. -->
       <message name="IDS_MEDIA_GALLERIES_DIALOG_CONTENT_WIDTH_CHARS" use_name_for_id="true">
         81

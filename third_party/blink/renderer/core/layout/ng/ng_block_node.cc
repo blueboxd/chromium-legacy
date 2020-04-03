@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/html/html_marquee_element.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/box_layout_extra_input.h"
+#include "third_party/blink/renderer/core/layout/intrinsic_sizing_info.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_fieldset.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
@@ -300,9 +301,15 @@ void SetupBoxLayoutExtraInput(const NGConstraintSpace& space,
 }
 
 bool CanUseCachedIntrinsicInlineSizes(const MinMaxSizesInput& input,
-                                      const LayoutBox& box) {
+                                      const NGBlockNode& node,
+                                      bool is_orthogonal_flow_root) {
+  const auto& box = *node.GetLayoutBox();
+
   // Obviously can't use the cache if our intrinsic logical widths are dirty.
   if (box.IntrinsicLogicalWidthsDirty())
+    return false;
+
+  if (is_orthogonal_flow_root)
     return false;
 
   // We don't store the float inline sizes for comparison, always skip the
@@ -311,15 +318,31 @@ bool CanUseCachedIntrinsicInlineSizes(const MinMaxSizesInput& input,
     return false;
 
   // Check if we have any percentage inline padding.
-  const auto& style = box.StyleRef();
+  const auto& style = node.Style();
   if (style.MayHavePadding() && (style.PaddingStart().IsPercentOrCalc() ||
                                  style.PaddingEnd().IsPercentOrCalc()))
     return false;
 
   // Check if the %-block-size matches.
   if (input.percentage_resolution_block_size !=
-      box.IntrinsicLogicalWidthsPercentageResolutionBlockSize())
-    return false;
+      box.IntrinsicLogicalWidthsPercentageResolutionBlockSize()) {
+    // Miss the cache if our children use our %-block-size.
+    if (node.UseParentPercentageResolutionBlockSizeForChildren())
+      return false;
+
+    // OOF-positioned nodes have the %-block-size computed for their children
+    // up front.
+    if (node.IsOutOfFlowPositioned())
+      return false;
+
+    if (node.IsTable())
+      return false;
+
+    if (style.LogicalHeight().IsPercentOrCalc() ||
+        style.LogicalMinHeight().IsPercentOrCalc() ||
+        style.LogicalMaxHeight().IsPercentOrCalc())
+      return false;
+  }
 
   return true;
 }
@@ -659,7 +682,7 @@ MinMaxSizes NGBlockNode::ComputeMinMaxSizes(
   bool is_orthogonal_flow_root =
       !IsParallelWritingMode(container_writing_mode, Style().GetWritingMode());
 
-  if (CanUseCachedIntrinsicInlineSizes(input, *box_))
+  if (CanUseCachedIntrinsicInlineSizes(input, *this, is_orthogonal_flow_root))
     return box_->IntrinsicLogicalWidths();
 
   box_->SetIntrinsicLogicalWidthsDirty();
@@ -1178,14 +1201,23 @@ bool NGBlockNode::HasAspectRatio() const {
   if (!layout_object->IsImage() && !IsA<LayoutVideo>(layout_object) &&
       !layout_object->IsCanvas())
     return false;
-  base::Optional<LayoutUnit> computed_inline_size;
-  base::Optional<LayoutUnit> computed_block_size;
-  LogicalSize aspect_ratio;
 
   // Retrieving this and throwing it away is wasteful. We could make this method
   // return Optional<LogicalSize> that returns the aspect_ratio if there is one.
-  IntrinsicSize(&computed_inline_size, &computed_block_size, &aspect_ratio);
-  return !aspect_ratio.IsEmpty();
+  return !GetAspectRatio().IsEmpty();
+}
+
+LogicalSize NGBlockNode::GetAspectRatio() const {
+  base::Optional<LayoutUnit> computed_inline_size;
+  base::Optional<LayoutUnit> computed_block_size;
+  GetOverrideIntrinsicSize(&computed_inline_size, &computed_block_size);
+  if (computed_inline_size && computed_block_size)
+    return LogicalSize(*computed_inline_size, *computed_block_size);
+
+  IntrinsicSizingInfo legacy_sizing_info;
+  ToLayoutReplaced(box_)->ComputeIntrinsicSizingInfo(legacy_sizing_info);
+  return LogicalSize(LayoutUnit(legacy_sizing_info.aspect_ratio.Width()),
+                     LayoutUnit(legacy_sizing_info.aspect_ratio.Height()));
 }
 
 bool NGBlockNode::UseLogicalBottomMarginEdgeForInlineBlockBaseline() const {

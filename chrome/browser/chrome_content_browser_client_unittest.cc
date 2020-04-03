@@ -444,7 +444,9 @@ TEST(ChromeContentBrowserClientTest, UserAgentStringFrozen) {
   {
     ChromeContentBrowserClient content_browser_client;
     std::string buffer = content_browser_client.GetUserAgent();
-    EXPECT_EQ(buffer, content::frozen_user_agent_strings::kAndroid);
+    EXPECT_EQ(buffer, base::StringPrintf(
+                          content::frozen_user_agent_strings::kAndroid,
+                          version_info::GetMajorVersionNumber().c_str()));
   }
 
   // Verify the mobile user agent string is returned when using a mobile user
@@ -454,13 +456,17 @@ TEST(ChromeContentBrowserClientTest, UserAgentStringFrozen) {
   {
     ChromeContentBrowserClient content_browser_client;
     std::string buffer = content_browser_client.GetUserAgent();
-    EXPECT_EQ(buffer, content::frozen_user_agent_strings::kAndroidMobile);
+    EXPECT_EQ(buffer, base::StringPrintf(
+                          content::frozen_user_agent_strings::kAndroidMobile,
+                          version_info::GetMajorVersionNumber().c_str()));
   }
 #else
   {
     ChromeContentBrowserClient content_browser_client;
     std::string buffer = content_browser_client.GetUserAgent();
-    EXPECT_EQ(buffer, content::frozen_user_agent_strings::kDesktop);
+    EXPECT_EQ(buffer, base::StringPrintf(
+                          content::frozen_user_agent_strings::kDesktop,
+                          version_info::GetMajorVersionNumber().c_str()));
   }
 #endif
 }

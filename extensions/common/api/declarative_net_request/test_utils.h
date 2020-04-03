@@ -150,6 +150,9 @@ enum ConfigFlag {
 
   // Whether the extension has the activeTab permission.
   kConfig_HasActiveTab = 1 << 2,
+
+  // Whether the "declarative_net_request" manifest key should be omitted.
+  kConfig_OmitDeclarativeNetRequestKey = 1 << 3,
 };
 
 // Describes a single extension ruleset.

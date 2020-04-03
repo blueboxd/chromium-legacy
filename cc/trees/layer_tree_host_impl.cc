@@ -6167,19 +6167,8 @@ void LayerTreeHostImpl::RequestInvalidationForAnimatedImages() {
 }
 
 EventMetricsSet LayerTreeHostImpl::TakeEventsMetrics() {
-  std::vector<EventMetrics> main_event_metrics_result;
-  main_event_metrics_result.swap(events_metrics_from_main_thread_);
-  return EventMetricsSet(std::move(main_event_metrics_result),
+  return EventMetricsSet(active_tree()->TakeEventsMetrics(),
                          events_metrics_manager_.TakeSavedEventsMetrics());
-}
-
-void LayerTreeHostImpl::AppendEventsMetricsFromMainThread(
-    std::vector<EventMetrics> events_metrics) {
-  events_metrics_from_main_thread_.reserve(
-      events_metrics_from_main_thread_.size() + events_metrics.size());
-  events_metrics_from_main_thread_.insert(
-      events_metrics_from_main_thread_.end(), events_metrics.begin(),
-      events_metrics.end());
 }
 
 base::WeakPtr<LayerTreeHostImpl> LayerTreeHostImpl::AsWeakPtr() {

@@ -309,6 +309,20 @@ html:not(.col-resize) #directory-tree
   background-color: var(--google-grey-100);
 }
 
+html.pointer-active #directory-tree
+    .tree-row:not([active]):not([selected]) > .file-row:active {
+  background-color: var(--google-grey-100);
+}
+
+html.pointer-active #directory-tree
+    .tree-row:not([active]):not([selected]):hover > .file-row:not(:active) {
+  background-color: unset;
+}
+
+html.pointer-active #directory-tree :not(:active) {
+  cursor: default;
+}
+
 html.focus-outline-visible #directory-tree:focus .tree-row[selected] > .file-row {
   border: 1px solid var(--google-blue-600);
 }

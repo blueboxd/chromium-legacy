@@ -1642,6 +1642,7 @@ ci.mac_ios_builder(
 
 ci.mac_ios_builder(
     name = 'ios-simulator-full-configs',
+    executable = 'recipe:chromium',
 )
 
 ci.mac_ios_builder(
@@ -1749,6 +1750,10 @@ ci.memory_builder(
 
 
 ci.swangle_linux_builder(
+    name = 'linux-swangle-chromium-x64',
+)
+
+ci.swangle_linux_builder(
     name = 'linux-swangle-tot-angle-x64',
 )
 
@@ -1772,6 +1777,15 @@ ci.swangle_linux_builder(
     name = 'linux-swangle-x86',
 )
 
+
+ci.swangle_mac_builder(
+    name = 'mac-swangle-chromium-x64',
+)
+
+
+ci.swangle_windows_builder(
+    name = 'win-swangle-chromium-x86',
+)
 
 ci.swangle_windows_builder(
     name = 'win-swangle-tot-angle-x64',

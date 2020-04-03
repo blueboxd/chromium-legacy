@@ -167,13 +167,14 @@ public class FileUtils {
 
     /**
      * Returns the file extension, or an empty string if none.
-     * @param file Name of the file, with or without the full path.
+     * @param file Name of the file, with or without the full path (Unix style).
      * @return empty string if no extension, extension otherwise.
      */
     public static String getExtension(String file) {
-        int index = file.lastIndexOf('.');
-        if (index == -1) return "";
-        return file.substring(index + 1).toLowerCase(Locale.US);
+        int lastSep = file.lastIndexOf('/');
+        int lastDot = file.lastIndexOf('.');
+        if (lastSep >= lastDot) return ""; // Subsumes |lastDot == -1|.
+        return file.substring(lastDot + 1).toLowerCase(Locale.US);
     }
 
     /** Queries and decodes bitmap from content provider. */

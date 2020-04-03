@@ -326,7 +326,8 @@ bool Image::ApplyShader(PaintFlags& flags, const SkMatrix& local_matrix) {
   return true;
 }
 
-IntSize Image::Size(RespectImageOrientationEnum respect_image_orientation) {
+IntSize Image::Size(
+    RespectImageOrientationEnum respect_image_orientation) const {
   if (respect_image_orientation == kRespectImageOrientation)
     return SizeRespectingOrientation();
   return Size();
@@ -378,14 +379,13 @@ bool Image::GetBitmap(const FloatRect& src_rect, SkBitmap* bitmap) {
   return true;
 }
 
-FloatRect Image::CorrectSrcRectForImageOrientation(
-    FloatRect original_rect) const {
+FloatRect Image::CorrectSrcRectForImageOrientation(FloatSize image_size,
+                                                   FloatRect src_rect) const {
   ImageOrientation orientation = CurrentFrameOrientation();
   DCHECK(orientation != kDefaultImageOrientation);
-  AffineTransform forward_map =
-      orientation.TransformFromDefault(original_rect.Size());
+  AffineTransform forward_map = orientation.TransformFromDefault(image_size);
   AffineTransform inverse_map = forward_map.Inverse();
-  return inverse_map.MapRect(original_rect);
+  return inverse_map.MapRect(src_rect);
 }
 
 DarkModeClassification Image::GetDarkModeClassification(

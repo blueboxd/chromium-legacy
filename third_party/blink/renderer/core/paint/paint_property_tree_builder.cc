@@ -3007,6 +3007,7 @@ PaintPropertyTreeBuilder::ContextForFragment(
   // This will be used in the loop finding matching fragment from ancestor flow
   // threads after no matching from parent_fragments.
   LayoutUnit logical_top_in_containing_flow_thread;
+  bool crossed_flow_thread = false;
 
   if (object_.IsLayoutFlowThread()) {
     const auto& flow_thread = ToLayoutFlowThread(object_);
@@ -3025,6 +3026,7 @@ PaintPropertyTreeBuilder::ContextForFragment(
         return context;
       }
     }
+    crossed_flow_thread = true;
   } else {
     bool parent_is_under_same_flow_thread;
     auto* pagination_layer =
@@ -3057,6 +3059,7 @@ PaintPropertyTreeBuilder::ContextForFragment(
     }
 
     logical_top_in_containing_flow_thread = logical_top_in_flow_thread;
+    crossed_flow_thread = !parent_is_under_same_flow_thread;
   }
 
   // Found no matching parent fragment. Use parent_fragments[0] to inherit
@@ -3081,14 +3084,35 @@ PaintPropertyTreeBuilder::ContextForFragment(
     if (!container->FirstFragment().HasLocalBorderBoxProperties())
       continue;
 
-    for (const auto* fragment = &container->FirstFragment(); fragment;
-         fragment = fragment->NextFragment()) {
-      if (fragment->LogicalTopInFlowThread() ==
-          logical_top_in_containing_flow_thread) {
-        // Found a matching fragment in an ancestor container. Use the
-        // container's content clip as the clip state.
-        context.current.clip = &fragment->PostOverflowClip();
-        return context;
+    const FragmentData* container_fragment = &container->FirstFragment();
+    while (container_fragment->LogicalTopInFlowThread() <
+               logical_top_in_containing_flow_thread &&
+           container_fragment->NextFragment())
+      container_fragment = container_fragment->NextFragment();
+
+    if (container_fragment->LogicalTopInFlowThread() ==
+        logical_top_in_containing_flow_thread) {
+      // Found a matching fragment in an ancestor container. Use the
+      // container's content clip as the clip state.
+      context.current.clip = &container_fragment->PostOverflowClip();
+      return context;
+    }
+
+    // We didn't find corresponding fragment in the container because the
+    // fragment fully overflows the container. If the container has overflow
+    // clip, then this fragment should be under |container_fragment|.
+    // This works only when the current fragment and the overflow clip are under
+    // the same flow thread. In other cases, we just leave it broken, which will
+    // be fixed by LayoutNG block fragments hopefully.
+    if (!crossed_flow_thread) {
+      if (const auto* container_properties =
+              container_fragment->PaintProperties()) {
+        if (const auto* overflow_clip = container_properties->OverflowClip()) {
+          context.logical_top_in_flow_thread =
+              container_fragment->LogicalTopInFlowThread();
+          context.current.clip = overflow_clip;
+          return context;
+        }
       }
     }
 
@@ -3097,6 +3121,7 @@ PaintPropertyTreeBuilder::ContextForFragment(
           FragmentLogicalTopInParentFlowThread(
               ToLayoutFlowThread(*container),
               logical_top_in_containing_flow_thread);
+      crossed_flow_thread = true;
     }
   }
 
@@ -3181,8 +3206,16 @@ void PaintPropertyTreeBuilder::CreateFragmentContextsInFlowThread(
     }
 
     // Match to parent fragments from the same containing flow thread.
-    new_fragment_contexts.push_back(
-        ContextForFragment(fragment_clip, logical_top_in_flow_thread));
+    auto fragment_context =
+        ContextForFragment(fragment_clip, logical_top_in_flow_thread);
+    // ContextForFragment may override logical_top_in_flow_thread.
+    logical_top_in_flow_thread = fragment_context.logical_top_in_flow_thread;
+    // Avoid fragment with duplicated overridden logical_top_in_flow_thread.
+    if (new_fragment_contexts.size() &&
+        new_fragment_contexts.back().logical_top_in_flow_thread ==
+            logical_top_in_flow_thread)
+      break;
+    new_fragment_contexts.push_back(fragment_context);
 
     if (current_fragment_data) {
       if (!current_fragment_data->NextFragment())

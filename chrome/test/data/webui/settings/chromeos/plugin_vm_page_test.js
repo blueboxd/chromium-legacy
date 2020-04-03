@@ -131,6 +131,12 @@ suite('Details', function() {
     settings.PluginVmBrowserProxyImpl.instance_ = pluginVmBrowserProxy;
     PolymerTest.clearBody();
     page = document.createElement('settings-plugin-vm-subpage');
+    page.prefs = {
+      plugin_vm: {
+        image_exists: {value: true},
+        printers_allowed: {value: false},
+      }
+    };
     document.body.appendChild(page);
   });
 
@@ -140,6 +146,17 @@ suite('Details', function() {
 
   test('Sanity', function() {
     assertTrue(!!page.$$('#plugin-vm-shared-paths'));
+  });
+
+  test('PrintingToggle', async function() {
+    const toggle = page.$$('#plugin-vm-printer-access');
+    assertTrue(!!toggle);
+    assertTrue(!!toggle);
+    assertFalse(toggle.checked);
+    assertFalse(toggle.pref.value);
+    toggle.click();
+    assertTrue(toggle.checked);
+    assertTrue(toggle.pref.value);
   });
 });
 

@@ -14,9 +14,11 @@
 #include "ui/accessibility/ax_enum_util.h"
 
 namespace arc {
+class AccessibilityInfoDataWrapper;
 
 ax::mojom::Event ToAXEvent(mojom::AccessibilityEventType arc_event_type,
-                           mojom::AccessibilityNodeInfoData* node_info_data);
+                           AccessibilityInfoDataWrapper* source_node,
+                           AccessibilityInfoDataWrapper* focused_node);
 
 base::Optional<mojom::AccessibilityActionType> ConvertToAndroidAction(
     ax::mojom::Action action);

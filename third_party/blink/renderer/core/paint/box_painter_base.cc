@@ -450,8 +450,8 @@ void DrawTiledBackground(GraphicsContext& context,
     // the rotated space in order to position and size the background. Undo the
     // src rect rotation if necessary.
     if (respect_orientation && !image->HasDefaultOrientation()) {
-      visible_src_rect =
-          image->CorrectSrcRectForImageOrientation(visible_src_rect);
+      visible_src_rect = image->CorrectSrcRectForImageOrientation(
+          visible_src_rect.Size(), visible_src_rect);
     }
 
     context.DrawImage(image, Image::kSyncDecode, snapped_paint_rect,
@@ -593,8 +593,10 @@ inline bool PaintFastBottomLayer(Node* node,
   // to be in the unrotated image space, but we have computed it here in the
   // rotated space in order to position and size the background. Undo the src
   // rect rotation if necessaary.
-  if (info.respect_image_orientation && !image->HasDefaultOrientation())
-    src_rect = image->CorrectSrcRectForImageOrientation(src_rect);
+  if (info.respect_image_orientation && !image->HasDefaultOrientation()) {
+    src_rect =
+        image->CorrectSrcRectForImageOrientation(src_rect.Size(), src_rect);
+  }
 
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
                "data",

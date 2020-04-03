@@ -338,7 +338,7 @@ public class OfflinePageAutoFetchTest {
     @Test
     @MediumTest
     @Feature({"OfflineAutoFetch"})
-    @DisabledTest(message = "Flaky: https://crbug.com/883486#c20")
+    @DisabledTest(message = "https://crbug.com/923212")
     public void testAutoFetchRequestRetainedOnOtherTabClosed() throws Exception {
         startWebServer();
         final String testUrl = mWebServer.getBaseUrl();

@@ -64,9 +64,11 @@ cr.define('settings', function() {
     },
   };
 
-  return {RouteOriginBehaviorImpl: RouteOriginBehaviorImpl};
+  /** @polymerBehavior */
+  const RouteOriginBehavior =
+      [settings.RouteObserverBehavior, RouteOriginBehaviorImpl];
+
+  // #cr_define_end
+  return {RouteOriginBehaviorImpl, RouteOriginBehavior};
 });
 
-/** @polymerBehavior */
-settings.RouteOriginBehavior =
-    [settings.RouteObserverBehavior, settings.RouteOriginBehaviorImpl];

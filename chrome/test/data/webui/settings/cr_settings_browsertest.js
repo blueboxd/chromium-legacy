@@ -1982,7 +1982,7 @@ CrSettingsRouteTest.prototype = {
 };
 
 TEST_F('CrSettingsRouteTest', 'All', function() {
-  mocha.run();
+  runMochaSuite('route');
 });
 
 /**
@@ -1992,7 +1992,7 @@ TEST_F('CrSettingsRouteTest', 'All', function() {
 function CrSettingsNonExistentRouteTest() {}
 
 CrSettingsNonExistentRouteTest.prototype = {
-  __proto__: CrSettingsBrowserTest.prototype,
+  __proto__: CrSettingsRouteTest.prototype,
 
   /** @override */
   browsePreload: 'chrome://settings/non/existent/route',
@@ -2005,15 +2005,7 @@ GEN('#else');
 GEN('#define MAYBE_NonExistentRoute NonExistentRoute');
 GEN('#endif');
 TEST_F('CrSettingsNonExistentRouteTest', 'MAYBE_NonExistentRoute', function() {
-  suite('NonExistentRoutes', function() {
-    test('redirect to basic', function() {
-      assertEquals(
-          settings.routes.BASIC,
-          settings.Router.getInstance().getCurrentRoute());
-      assertEquals('/', location.pathname);
-    });
-  });
-  mocha.run();
+  runMochaSuite('NonExistentRoute');
 });
 
 /**
@@ -2023,56 +2015,14 @@ TEST_F('CrSettingsNonExistentRouteTest', 'MAYBE_NonExistentRoute', function() {
 function CrSettingsRouteDynamicParametersTest() {}
 
 CrSettingsRouteDynamicParametersTest.prototype = {
-  __proto__: CrSettingsBrowserTest.prototype,
+  __proto__: CrSettingsRouteTest.prototype,
 
   /** @override */
   browsePreload: 'chrome://settings/search?guid=a%2Fb&foo=42',
 };
 
 TEST_F('CrSettingsRouteDynamicParametersTest', 'All', function() {
-  suite('DynamicParameters', function() {
-    test('get parameters from URL and navigation', function(done) {
-      assertEquals(
-          settings.routes.SEARCH,
-          settings.Router.getInstance().getCurrentRoute());
-      assertEquals(
-          'a/b',
-          settings.Router.getInstance().getQueryParameters().get('guid'));
-      assertEquals(
-          '42', settings.Router.getInstance().getQueryParameters().get('foo'));
-
-      const params = new URLSearchParams();
-      params.set('bar', 'b=z');
-      params.set('biz', '3');
-      settings.Router.getInstance().navigateTo(
-          settings.routes.SEARCH_ENGINES, params);
-      assertEquals(
-          settings.routes.SEARCH_ENGINES,
-          settings.Router.getInstance().getCurrentRoute());
-      assertEquals(
-          'b=z', settings.Router.getInstance().getQueryParameters().get('bar'));
-      assertEquals(
-          '3', settings.Router.getInstance().getQueryParameters().get('biz'));
-      assertEquals('?bar=b%3Dz&biz=3', window.location.search);
-
-      window.addEventListener('popstate', function(event) {
-        assertEquals(
-            '/search', settings.Router.getInstance().getCurrentRoute().path);
-        assertEquals(
-            settings.routes.SEARCH,
-            settings.Router.getInstance().getCurrentRoute());
-        assertEquals(
-            'a/b',
-            settings.Router.getInstance().getQueryParameters().get('guid'));
-        assertEquals(
-            '42',
-            settings.Router.getInstance().getQueryParameters().get('foo'));
-        done();
-      });
-      window.history.back();
-    });
-  });
-  mocha.run();
+  runMochaSuite('DynamicParameters');
 });
 
 /**

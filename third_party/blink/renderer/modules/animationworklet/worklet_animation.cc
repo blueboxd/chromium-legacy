@@ -681,26 +681,11 @@ bool WorkletAnimation::UpdateOnCompositor() {
   }
 
   if (timeline_->IsScrollTimeline()) {
-    Node* scroll_source = To<ScrollTimeline>(*timeline_).ResolvedScrollSource();
-    LayoutBox* box = scroll_source ? scroll_source->GetLayoutBox() : nullptr;
+    auto& timeline = To<ScrollTimeline>(*timeline_);
+    Node* scroll_source = timeline.ResolvedScrollSource();
+    auto start_scroll_offset = timeline.GetResolvedStartScrollOffset();
+    auto end_scroll_offset = timeline.GetResolvedEndScrollOffset();
 
-    base::Optional<double> start_scroll_offset;
-    base::Optional<double> end_scroll_offset;
-    if (box) {
-      double current_offset;
-      double max_offset;
-      To<ScrollTimeline>(*timeline_)
-          .GetCurrentAndMaxOffset(box, current_offset, max_offset);
-
-      double resolved_start_scroll_offset = 0;
-      double resolved_end_scroll_offset = max_offset;
-      To<ScrollTimeline>(*timeline_)
-          .ResolveScrollStartAndEnd(box, max_offset,
-                                    resolved_start_scroll_offset,
-                                    resolved_end_scroll_offset);
-      start_scroll_offset = resolved_start_scroll_offset;
-      end_scroll_offset = resolved_end_scroll_offset;
-    }
     compositor_animation_->UpdateScrollTimeline(
         scroll_timeline_util::GetCompositorScrollElementId(scroll_source),
         start_scroll_offset, end_scroll_offset);

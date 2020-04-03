@@ -71,9 +71,6 @@ RealTimeUrlLookupService::RealTimeUrlLookupService(
       sync_service_(sync_service),
       pref_service_(pref_service),
       is_off_the_record_(is_off_the_record) {
-  DCHECK(cache_manager_);
-  DCHECK(identity_manager_);
-  DCHECK(pref_service_);
   token_fetcher_ =
       std::make_unique<SafeBrowsingTokenFetcher>(identity_manager_);
 }

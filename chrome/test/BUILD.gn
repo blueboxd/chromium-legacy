@@ -2679,6 +2679,7 @@ if (!is_android) {
 
     if (enable_supervised_users) {
       sources += [
+        # TODO(jamescook): Move to chrome/browser/supervised_users:test_support
         "../browser/supervised_user/logged_in_user_mixin.cc",
         "../browser/supervised_user/logged_in_user_mixin.h",
         "../browser/supervised_user/navigation_finished_waiter.cc",
@@ -2689,6 +2690,7 @@ if (!is_android) {
         "../browser/supervised_user/supervised_user_service_browsertest.cc",
         "../browser/supervised_user/supervised_user_url_filter_browsertest.cc",
       ]
+      deps += [ "//chrome/browser/supervised_user:test_support" ]
       if (enable_extensions) {
         sources += [
           "../browser/supervised_user/supervised_user_extension_browsertest.cc",
@@ -5032,6 +5034,7 @@ test("unit_tests") {
       "//components/safe_browsing/content/renderer:websocket_sb_handshake_throttle_unittest",
       "//components/safe_browsing/content/triggers:ad_redirect_trigger",
       "//components/safe_browsing/core:ping_manager_unittest",
+      "//components/safe_browsing/core/browser:safe_browsing_url_checker_unittest",
       "//components/safe_browsing/core/browser:token_fetcher_unittest",
       "//components/safe_browsing/core/db:v4_test_util",
     ]
@@ -5426,6 +5429,7 @@ test("unit_tests") {
       "../browser/supervised_user/supervised_user_whitelist_service_unittest.cc",
     ]
     deps += [
+      "//chrome/browser/supervised_user:test_support",
       "//chrome/browser/supervised_user/supervised_user_error_page:unit_tests",
     ]
   }

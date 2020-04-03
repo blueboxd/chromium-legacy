@@ -163,12 +163,16 @@ std::string BuildOSCpuInfo(bool include_android_build_number) {
   return os_cpu;
 }
 
-base::StringPiece GetFrozenUserAgent(bool mobile) {
+std::string GetFrozenUserAgent(bool mobile, std::string major_version) {
+  std::string user_agent;
 #if defined(OS_ANDROID)
-  return mobile ? frozen_user_agent_strings::kAndroidMobile
-                : frozen_user_agent_strings::kAndroid;
+  user_agent = mobile ? frozen_user_agent_strings::kAndroidMobile
+                      : frozen_user_agent_strings::kAndroid;
+#else
+  user_agent = frozen_user_agent_strings::kDesktop;
 #endif
-  return frozen_user_agent_strings::kDesktop;
+
+  return base::StringPrintf(user_agent.c_str(), major_version.c_str());
 }
 
 std::string BuildUserAgentFromProduct(const std::string& product) {

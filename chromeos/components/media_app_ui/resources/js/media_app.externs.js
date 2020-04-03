@@ -40,7 +40,6 @@ mediaApp.AbstractFile.prototype.size;
  * @type {string}
  */
 mediaApp.AbstractFile.prototype.mimeType;
-
 /**
  * A function that will overwrite the original file with the provided Blob.
  * Returns a promise that resolves when the write operations are complete. Or
@@ -50,24 +49,21 @@ mediaApp.AbstractFile.prototype.mimeType;
  * @type {function(!Blob): Promise<undefined>|undefined}
  */
 mediaApp.AbstractFile.prototype.overwriteOriginal;
-
 /**
  * A function that will delete the original file. Returns a promise that
- * resolves to an enum value (see DeleteResult in message_types) reflecting the
- * result of the deletion (SUCCESS, FILE_MOVED), rejected if the deletion fails.
+ * resolves to an enum value (see DeleteResult in chromium message_types)
+ * reflecting the result of the deletion (SUCCESS, FILE_MOVED). Rejected if an
+ * error is thrown.
  * @type {function(): Promise<number>|undefined}
  */
 mediaApp.AbstractFile.prototype.deleteOriginalFile;
-
 /**
  * A function that will rename the original file. Returns a promise that
  * resolves to an enum value (see RenameResult in message_types) reflecting the
- * result of the deletion (SUCCESS, FILE_EXISTS), rejected if the
- * rename fails.
+ * result of the rename (SUCCESS, FILE_EXISTS). Rejected if an error is thrown.
  * @type {function(string): Promise<number>|undefined}
  */
 mediaApp.AbstractFile.prototype.renameOriginalFile;
-
 /**
  * Wraps an HTML FileList object.
  * @record

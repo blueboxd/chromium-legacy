@@ -1615,6 +1615,10 @@ TEST_F(NigoriSyncBridgeImplTest,
 // custom passphrase. The bridge should report model error.
 TEST(NigoriSyncBridgeImplPersistenceTest,
      ShouldFailOnInvalidRemoteTransitionFromTrustedVaultAfterRestart) {
+  base::test::ScopedFeatureList override_features;
+  override_features.InitAndEnableFeature(
+      switches::kSyncSupportTrustedVaultPassphrase);
+
   // Emulate storing on disc.
   auto storage1 = std::make_unique<testing::NiceMock<MockNigoriStorage>>();
   sync_pb::NigoriLocalData nigori_local_data;

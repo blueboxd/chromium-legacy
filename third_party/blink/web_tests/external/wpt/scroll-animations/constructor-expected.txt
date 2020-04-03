@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 52 tests; 50 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 60 tests; 58 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS A ScrollTimeline can be created with a scrollSource
 PASS A ScrollTimeline can be created with a non-scrolling scrollSource
 PASS A ScrollTimeline created with a null scrollSource should use the document.scrollingElement
@@ -42,6 +42,14 @@ PASS 'deg' is an invalid scroll offset unit
 PASS 's' is an invalid scroll offset unit
 PASS 'Hz' is an invalid scroll offset unit
 PASS 'dpi' is an invalid scroll offset unit
+PASS '{"target":{}}' is a valid scroll offset value
+PASS '{"target":{},"threshold":0}' is a valid scroll offset value
+PASS '{"target":{},"threshold":0.5}' is a valid scroll offset value
+PASS '{"target":{},"threshold":1}' is a valid scroll offset value
+PASS '{}' is an invalid scroll offset value
+PASS '{"target":{},"threshold":"test"}' is an invalid scroll offset value
+PASS '{"target":{},"threshold":2}' is an invalid scroll offset value
+PASS '{"target":{},"threshold":-0.2}' is an invalid scroll offset value
 FAIL A ScrollTimeline created with the default timeRange should default to 'auto' Failed to construct 'ScrollTimeline': 'auto' value for timeRange not yet supported
 FAIL 'auto' is a valid timeRange value Failed to construct 'ScrollTimeline': 'auto' value for timeRange not yet supported
 PASS '0' is a valid timeRange value

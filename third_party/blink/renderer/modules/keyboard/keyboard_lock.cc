@@ -38,7 +38,7 @@ constexpr char kKeyboardLockRequestFailedErrorMsg[] =
 }  // namespace
 
 KeyboardLock::KeyboardLock(ExecutionContext* context)
-    : ExecutionContextClient(context) {}
+    : ExecutionContextClient(context), service_(context) {}
 
 KeyboardLock::~KeyboardLock() = default;
 
@@ -93,7 +93,7 @@ bool KeyboardLock::IsLocalFrameAttached() {
 }
 
 bool KeyboardLock::EnsureServiceConnected() {
-  if (!service_) {
+  if (!service_.is_bound()) {
     LocalFrame* frame = GetFrame();
     if (!frame) {
       return false;
@@ -102,7 +102,7 @@ bool KeyboardLock::EnsureServiceConnected() {
     frame->GetBrowserInterfaceBroker().GetInterface(
         service_.BindNewPipeAndPassReceiver(
             frame->GetTaskRunner(TaskType::kMiscPlatformAPI)));
-    DCHECK(service_);
+    DCHECK(service_.is_bound());
   }
 
   return true;
@@ -156,6 +156,7 @@ void KeyboardLock::LockRequestFinished(
 }
 
 void KeyboardLock::Trace(Visitor* visitor) {
+  visitor->Trace(service_);
   visitor->Trace(request_keylock_resolver_);
   ExecutionContextClient::Trace(visitor);
 }

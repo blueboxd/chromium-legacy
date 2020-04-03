@@ -58,15 +58,13 @@ class DNRManifestTest : public testing::Test {
   }
 
   // Loads the extension and verifies that the manifest info is correctly set
-  // up.. Returns the loaded extension.
+  // up.
   void LoadAndExpectSuccess(const std::vector<base::FilePath>& expected_paths) {
     std::string error;
     scoped_refptr<Extension> extension = file_util::LoadExtension(
         temp_dir_.GetPath(), Manifest::UNPACKED, Extension::NO_FLAGS, &error);
     ASSERT_TRUE(extension) << error;
     EXPECT_TRUE(error.empty());
-
-    ASSERT_TRUE(DNRManifestData::HasRuleset(*extension));
 
     const std::vector<DNRManifestData::RulesetInfo>& rulesets =
         DNRManifestData::GetRulesets(*extension);
@@ -129,6 +127,16 @@ TEST_F(DNRManifestTest, InvalidRulesFileKey) {
   LoadAndExpectError(ErrorUtils::FormatErrorMessage(
       errors::kInvalidDeclarativeRulesFileKey, keys::kDeclarativeNetRequestKey,
       keys::kDeclarativeRuleResourcesKey));
+}
+
+TEST_F(DNRManifestTest, ZeroRulesets) {
+  std::unique_ptr<base::DictionaryValue> manifest =
+      CreateManifest(kJSONRulesFilename);
+  manifest->SetList(GetRuleResourcesKey(), std::make_unique<base::ListValue>());
+
+  std::vector<base::FilePath> no_paths;
+  WriteManifestAndRuleset(*manifest, no_paths);
+  LoadAndExpectSuccess(no_paths);
 }
 
 TEST_F(DNRManifestTest, MultipleRulesFileSuccess) {

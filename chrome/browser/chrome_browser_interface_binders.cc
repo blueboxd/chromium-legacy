@@ -140,6 +140,8 @@
 #include "chromeos/components/media_app_ui/media_app_ui.h"
 #include "chromeos/components/media_app_ui/media_app_ui.mojom.h"
 #include "chromeos/components/multidevice/debug_webui/proximity_auth_ui.h"
+#include "chromeos/components/print_management/mojom/printing_manager.mojom.h"
+#include "chromeos/components/print_management/print_management_ui.h"
 #include "chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
@@ -524,6 +526,10 @@ void PopulateChromeWebUIFrameBinders(
       chromeos::InternetConfigDialogUI, chromeos::InternetDetailDialogUI,
       chromeos::NetworkUI, chromeos::OobeUI, chromeos::settings::OSSettingsUI>(
       map);
+
+  RegisterWebUIControllerInterfaceBinder<
+      chromeos::printing::printing_manager::mojom::PrintingMetadataProvider,
+      chromeos::printing::printing_manager::PrintManagementUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<help_app_ui::mojom::PageHandlerFactory,
                                          chromeos::HelpAppUI>(map);

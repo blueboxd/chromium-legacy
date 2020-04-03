@@ -313,7 +313,6 @@
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/scheduler/public/dummy_schedulers.h"
 #include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_or_worker_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
@@ -7676,7 +7675,9 @@ Document& Document::EnsureTemplateDocument() {
             .WithNewRegistrationContext());
   } else {
     template_document_ = MakeGarbageCollected<Document>(
-        DocumentInit::Create().WithURL(BlankURL()));
+        DocumentInit::Create()
+            .WithContextDocument(ContextDocument())
+            .WithURL(BlankURL()));
   }
 
   template_document_->template_document_host_ = this;  // balanced in dtor.
@@ -8097,17 +8098,7 @@ DocumentResourceCoordinator* Document::GetResourceCoordinator() {
 
 FrameOrWorkerScheduler* Document::GetScheduler() {
   DCHECK(IsMainThread());
-
-  if (ContextDocument() && ContextDocument()->GetFrame())
-    return ContextDocument()->GetFrame()->GetFrameScheduler();
-  // In most cases, ContextDocument() will get us to a relevant Frame. In some
-  // cases, though, there isn't a good candidate (most commonly when either the
-  // passed-in document or ContextDocument() used to be attached to a Frame but
-  // has since been detached).
-  if (!detached_scheduler_) {
-    detached_scheduler_ = scheduler::CreateDummyFrameScheduler();
-  }
-  return detached_scheduler_.get();
+  return GetExecutionContext()->GetScheduler();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner> Document::GetTaskRunner(

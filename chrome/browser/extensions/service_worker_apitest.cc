@@ -407,6 +407,14 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, WebRequest) {
       << message_;
 }
 
+// Tests more chrome.webRequest APIs. Any potentially flaky tests are isolated
+// here.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, WebRequest2) {
+  ASSERT_TRUE(
+      RunExtensionTest("service_worker/worker_based_background/web_request2"))
+      << message_;
+}
+
 // Tests chrome.webRequest APIs in blocking mode.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, WebRequestBlocking) {
   // Try to load the page before installing the extension, which should work.

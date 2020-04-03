@@ -35,6 +35,13 @@ public class PrefServiceBridge {
 
     /**
      * @param preference The name of the preference.
+     */
+    public void clearPref(@Pref int preference) {
+        PrefServiceBridgeJni.get().clearPref(preference);
+    }
+
+    /**
+     * @param preference The name of the preference.
      * @return Whether the specified preference is enabled.
      */
     public boolean getBoolean(@Pref int preference) {
@@ -97,6 +104,7 @@ public class PrefServiceBridge {
 
     @NativeMethods
     interface Natives {
+        void clearPref(int preference);
         boolean getBoolean(int preference);
         void setBoolean(int preference, boolean value);
         int getInteger(int preference);

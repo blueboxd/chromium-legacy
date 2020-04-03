@@ -30,10 +30,11 @@
 
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/speech/speech_recognizer.mojom-blink.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 
 namespace blink {
 
@@ -64,10 +65,14 @@ class SpeechRecognitionController final
     return Supplement<LocalFrame>::From<SpeechRecognitionController>(frame);
   }
 
- private:
-  mojo::Remote<mojom::blink::SpeechRecognizer>& GetSpeechRecognizer();
+  void Trace(Visitor* visitor) override;
 
-  mojo::Remote<mojom::blink::SpeechRecognizer> speech_recognizer_;
+ private:
+  mojom::blink::SpeechRecognizer* GetSpeechRecognizer();
+
+  HeapMojoRemote<mojom::blink::SpeechRecognizer,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      speech_recognizer_;
 };
 
 MODULES_EXPORT void ProvideSpeechRecognitionTo(LocalFrame& frame);

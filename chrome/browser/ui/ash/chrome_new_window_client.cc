@@ -107,7 +107,10 @@ constexpr std::pair<arc::mojom::ChromePage, const char*> kOSSettingsMapping[] =
      {ChromePage::KERBEROSACCOUNTS, chrome::kKerberosAccountsSubPage},
      {ChromePage::KEYBOARDOVERLAY, chrome::kKeyboardOverlaySubPage},
      {ChromePage::KNOWNNETWORKS, chrome::kKnownNetworksSubPage},
-     {ChromePage::LANGUAGES, chrome::kLanguageSubPage},
+     {ChromePage::OSLANGUAGES, chrome::kOsLanguagesSubPage},
+     {ChromePage::OSLANGUAGESDETAILS, chrome::kOsLanguagesDetailsSubPage},
+     {ChromePage::OSLANGUAGESINPUTMETHODS,
+      chrome::kOsLanguagesInputMethodsSubPage},
      {ChromePage::LOCKSCREEN, chrome::kLockScreenSubPage},
      {ChromePage::MAIN, ""},
      {ChromePage::MANAGEACCESSIBILITY, chrome::kManageAccessibilitySubPage},
@@ -118,7 +121,9 @@ constexpr std::pair<arc::mojom::ChromePage, const char*> kOSSettingsMapping[] =
      {ChromePage::PLUGINVMDETAILS, chrome::kPluginVmDetailsSubPage},
      {ChromePage::PLUGINVMSHAREDPATHS, chrome::kPluginVmSharedPathsSubPage},
      {ChromePage::OSACCESSIBILITY, chrome::kOsAccessibilitySubPage},
+     {ChromePage::OSPRINTING, chrome::kOsPrintingSubPage},
      {ChromePage::OSRESET, chrome::kOsResetSubPage},
+     {ChromePage::OSSEARCH, chrome::kOsSearchSubPage},
      {ChromePage::POINTEROVERLAY, chrome::kPointerOverlaySubPage},
      {ChromePage::POWER, chrome::kPowerSubPage},
      {ChromePage::SMARTLOCKSETTINGS, chrome::kSmartLockSettingsSubPage},
@@ -140,8 +145,11 @@ constexpr std::pair<arc::mojom::ChromePage, const char*>
         {ChromePage::PASSWORDS, chrome::kPasswordManagerSubPage},
         {ChromePage::PRIVACY, chrome::kPrivacySubPage},
         {ChromePage::RESET, chrome::kResetSubPage},
+        {ChromePage::PRINTING, chrome::kPrintingSettingsSubPage},
         {ChromePage::SEARCH, chrome::kSearchSubPage},
-        {ChromePage::SYNCSETUP, chrome::kSyncSetupSubPage}};
+        {ChromePage::SYNCSETUP, chrome::kSyncSetupSubPage},
+        {ChromePage::LANGUAGES, chrome::kLanguagesSubPage},
+};
 
 constexpr std::pair<arc::mojom::ChromePage, const char*> kAboutPagesMapping[] =
     {{ChromePage::ABOUTBLANK, url::kAboutBlankURL},
@@ -300,8 +308,7 @@ void ChromeNewWindowClient::OpenFileManager() {
       apps::AppServiceProxyFactory::GetForProfile(profile);
   DCHECK(proxy);
   proxy->AppRegistryCache().ForOneApp(
-      extension_misc::kWallpaperManagerId,
-      [proxy](const apps::AppUpdate& update) {
+      file_manager::kFileManagerAppId, [proxy](const apps::AppUpdate& update) {
         if (update.Readiness() == apps::mojom::Readiness::kReady) {
           proxy->Launch(update.AppId(),
                         apps::GetEventFlags(

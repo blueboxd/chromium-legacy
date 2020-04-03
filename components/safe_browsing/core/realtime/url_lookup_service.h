@@ -52,6 +52,8 @@ class SafeBrowsingTokenFetcher;
 // TODO(crbug.com/1050859): Add RTLookupService check flow.
 class RealTimeUrlLookupService : public KeyedService {
  public:
+  // |cache_manager|, |identity_manager|, |sync_service| and |pref_service| may
+  // be null in tests.
   RealTimeUrlLookupService(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       VerdictCacheManager* cache_manager,
@@ -85,9 +87,10 @@ class RealTimeUrlLookupService : public KeyedService {
   // when response is received.
   // Note that |request_callback| is not called if there's a valid entry in the
   // cache for |url|.
-  void StartLookup(const GURL& url,
-                   RTLookupRequestCallback request_callback,
-                   RTLookupResponseCallback response_callback);
+  // This function is overridden in unit tests.
+  virtual void StartLookup(const GURL& url,
+                           RTLookupRequestCallback request_callback,
+                           RTLookupResponseCallback response_callback);
 
   // KeyedService:
   // Called before the actual deletion of the object.

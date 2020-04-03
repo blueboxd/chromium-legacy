@@ -20,7 +20,7 @@ namespace ui {
 // layers (e.g: ozone). Linux backends (e.g: ozone/x11, aura/x11, ozone/wayland)
 // must provide a GtkUiDelegate implementation and inject its singleton instance
 // of it via |SetInstance| in order to be able to use GtkUi.
-class COMPONENT_EXPORT(UI_GTK) GtkUiDelegate {
+class COMPONENT_EXPORT(GTK) GtkUiDelegate {
  public:
   virtual ~GtkUiDelegate() = default;
 

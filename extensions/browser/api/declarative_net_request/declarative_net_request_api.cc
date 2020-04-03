@@ -35,25 +35,6 @@ namespace {
 
 namespace dnr_api = api::declarative_net_request;
 
-// Returns true if the given |extension| has a registered ruleset. If it
-// doesn't, returns false and populates |error|.
-// TODO(crbug.com/931967): Using HasRegisteredRuleset for PreRunValidation means
-// that the extension function will fail if the ruleset for the extension is
-// currently being indexed. Fix this.
-bool HasRegisteredRuleset(content::BrowserContext* context,
-                          const ExtensionId& extension_id,
-                          std::string* error) {
-  const auto* rules_monitor_service =
-      declarative_net_request::RulesMonitorService::Get(context);
-  DCHECK(rules_monitor_service);
-
-  if (rules_monitor_service->HasRegisteredRuleset(extension_id))
-    return true;
-
-  *error = "The extension must have a ruleset in order to call this function.";
-  return false;
-}
-
 // Returns whether |extension| can call getMatchedRules for the specified
 // |tab_id| and populates |error| if it can't. If no tab ID is specified, then
 // the API call is for all tabs.
@@ -108,12 +89,6 @@ DeclarativeNetRequestUpdateDynamicRulesFunction::Run() {
   return RespondLater();
 }
 
-bool DeclarativeNetRequestUpdateDynamicRulesFunction::PreRunValidation(
-    std::string* error) {
-  return ExtensionFunction::PreRunValidation(error) &&
-         HasRegisteredRuleset(browser_context(), extension_id(), error);
-}
-
 void DeclarativeNetRequestUpdateDynamicRulesFunction::OnDynamicRulesUpdated(
     base::Optional<std::string> error) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -128,12 +103,6 @@ DeclarativeNetRequestGetDynamicRulesFunction::
     DeclarativeNetRequestGetDynamicRulesFunction() = default;
 DeclarativeNetRequestGetDynamicRulesFunction::
     ~DeclarativeNetRequestGetDynamicRulesFunction() = default;
-
-bool DeclarativeNetRequestGetDynamicRulesFunction::PreRunValidation(
-    std::string* error) {
-  return ExtensionFunction::PreRunValidation(error) &&
-         HasRegisteredRuleset(browser_context(), extension_id(), error);
-}
 
 ExtensionFunction::ResponseAction
 DeclarativeNetRequestGetDynamicRulesFunction::Run() {

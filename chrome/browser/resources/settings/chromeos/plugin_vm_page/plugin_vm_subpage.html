@@ -19,8 +19,9 @@
           aria-roledescription="$i18n{subpageArrowRoleDescription}">
       </cr-icon-button>
     </div>
-    <!-- TODO(timloh): Wire this up to a pref. -->
-    <settings-toggle-button label="$i18n{pluginVmPrinterAccess}">
+    <settings-toggle-button id="plugin-vm-printer-access"
+         label="$i18n{pluginVmPrinterAccess}"
+         pref="{{prefs.plugin_vm.printers_allowed}}">
     </settings-toggle-button>
     <div id="plugin-vm-remove" class="settings-box">
       <div id="pluginVmRemoveLabel" class="start">$i18n{pluginVmRemove}</div>

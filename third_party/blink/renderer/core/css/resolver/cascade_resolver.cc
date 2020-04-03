@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
 #include "third_party/blink/renderer/core/css/css_variable_data.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
+#include "third_party/blink/renderer/core/css/resolver/cascade_priority.h"
 
 namespace blink {
 
@@ -27,6 +28,16 @@ bool CascadeResolver::AllowSubstitution(CSSVariableData* data) const {
     return !CSSAnimations::IsAnimationAffectingProperty(property);
   }
   return true;
+}
+
+void CascadeResolver::MarkUnapplied(CascadePriority* priority) const {
+  DCHECK(priority);
+  *priority = CascadePriority(*priority, 0);
+}
+
+void CascadeResolver::MarkApplied(CascadePriority* priority) const {
+  DCHECK(priority);
+  *priority = CascadePriority(*priority, generation_);
 }
 
 bool CascadeResolver::DetectCycle(const CSSProperty& property) {

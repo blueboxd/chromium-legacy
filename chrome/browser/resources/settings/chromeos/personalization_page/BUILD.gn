@@ -49,3 +49,77 @@ js_library("wallpaper_browser_proxy") {
   deps = [ "//ui/webui/resources/js:cr" ]
   externs_list = [ "$externs_path/chrome_send.js" ]
 }
+
+# TODO: Uncomment as the Polymer3 migration makes progress.
+#js_type_check("closure_compile_module") {
+#  is_polymer3 = true
+#  deps = [
+#    ":change_picture.m",
+#    ":change_picture_browser_proxy.m",
+#    ":personalization_page.m",
+#    ":wallpaper_browser_proxy.m"
+#  ]
+#}
+
+js_library("change_picture.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/personalization_page/change_picture.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":change_picture_module" ]
+}
+
+js_library("change_picture_browser_proxy.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/personalization_page/change_picture_browser_proxy.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("personalization_page.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/personalization_page/personalization_page.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":personalization_page_module" ]
+}
+
+js_library("wallpaper_browser_proxy.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/personalization_page/wallpaper_browser_proxy.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":modulize" ]
+}
+
+import("//tools/polymer/polymer.gni")
+
+group("polymer3_elements") {
+  public_deps = [
+    ":change_picture_module",
+    ":modulize",
+    ":personalization_page_module",
+  ]
+}
+
+polymer_modulizer("change_picture") {
+  js_file = "change_picture.js"
+  html_file = "change_picture.html"
+  html_type = "dom-module"
+}
+
+polymer_modulizer("personalization_page") {
+  js_file = "personalization_page.js"
+  html_file = "personalization_page.html"
+  html_type = "dom-module"
+}
+
+import("//ui/webui/resources/tools/js_modulizer.gni")
+
+js_modulizer("modulize") {
+  input_files = [
+    "change_picture_browser_proxy.js",
+    "wallpaper_browser_proxy.js",
+  ]
+}

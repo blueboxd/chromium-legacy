@@ -63,5 +63,20 @@ luci.console_view(
             category = 'ToT SwiftShader|Linux',
             short_name = 'x64',
         ),
+        luci.console_view_entry(
+            builder = 'ci/win-swangle-chromium-x86',
+            category = 'Chromium|Windows',
+            short_name = 'x86',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/mac-swangle-chromium-x64',
+            category = 'Chromium|Mac',
+            short_name = 'x64',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/linux-swangle-chromium-x64',
+            category = 'Chromium|Linux',
+            short_name = 'x64',
+        ),
     ],
 )

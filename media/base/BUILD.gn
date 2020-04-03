@@ -269,6 +269,7 @@ jumbo_source_set("base") {
     "simple_watch_timer.h",
     "sinc_resampler.cc",
     "sinc_resampler.h",
+    "speech_recognition_client.h",
     "status.cc",
     "status.h",
     "status_codes.cc",

@@ -16,15 +16,6 @@ class QuietNotificationPermissionUiState {
   // Register Profile-keyed preferences used for permission UI selection.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  // Whether the quiet UI is enabled in settings.
-  static bool IsQuietUiEnabledInPrefs(Profile* profile);
-
-  // Turns on the quiet UI in settings.
-  static void EnableQuietUiInPrefs(Profile* profile);
-
-  // Turns off the quiet UI in settings, as per user request.
-  static void DisableQuietUiInPrefs(Profile* profile);
-
   // Whether to show a promo for the prompt indicator.
   static bool ShouldShowPromo(Profile* profile);
 

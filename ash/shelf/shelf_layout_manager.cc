@@ -617,7 +617,8 @@ void ShelfLayoutManager::UpdateContextualNudges() {
             Shell::Get()->session_controller()->GetLastActiveUserPrefService(),
             contextual_tooltip::TooltipType::kInAppToHome, nullptr)) {
       shelf_widget_->ScheduleShowDragHandleNudge();
-    } else if (!shelf_widget_->GetDragHandle()->ShowingNudge()) {
+    } else if (!shelf_widget_->GetDragHandle()
+                    ->gesture_nudge_target_visibility()) {
       // If the drag handle is not yet shown, HideDragHandleNudge() should
       // cancel any scheduled show requests.
       shelf_widget_->HideDragHandleNudge(

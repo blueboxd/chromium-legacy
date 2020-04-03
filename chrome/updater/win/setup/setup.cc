@@ -68,31 +68,35 @@ void AddComServerWorkItems(HKEY root,
     return;
   }
 
-  const base::string16 clsid_reg_path = GetComServerClsidRegistryPath();
+  for (const auto& clsid :
+       {__uuidof(UpdaterClass), __uuidof(GoogleUpdate3WebUserClass)}) {
+    const base::string16 clsid_reg_path = GetComServerClsidRegistryPath(clsid);
 
-  // Delete any old registrations first.
-  for (const auto& reg_path : {clsid_reg_path}) {
-    for (const auto& key_flag : {KEY_WOW64_32KEY, KEY_WOW64_64KEY})
-      list->AddDeleteRegKeyWorkItem(root, reg_path, key_flag);
-  }
+    // Delete any old registrations first.
+    for (const auto& reg_path : {clsid_reg_path}) {
+      for (const auto& key_flag : {KEY_WOW64_32KEY, KEY_WOW64_64KEY})
+        list->AddDeleteRegKeyWorkItem(root, reg_path, key_flag);
+    }
 
-  list->AddCreateRegKeyWorkItem(root, clsid_reg_path, WorkItem::kWow64Default);
-  const base::string16 local_server32_reg_path =
-      base::StrCat({clsid_reg_path, L"\\LocalServer32"});
-  list->AddCreateRegKeyWorkItem(root, local_server32_reg_path,
-                                WorkItem::kWow64Default);
+    list->AddCreateRegKeyWorkItem(root, clsid_reg_path,
+                                  WorkItem::kWow64Default);
+    const base::string16 local_server32_reg_path =
+        base::StrCat({clsid_reg_path, L"\\LocalServer32"});
+    list->AddCreateRegKeyWorkItem(root, local_server32_reg_path,
+                                  WorkItem::kWow64Default);
 
-  base::CommandLine run_com_server_command(com_server_path);
-  run_com_server_command.AppendSwitch(kServerSwitch);
+    base::CommandLine run_com_server_command(com_server_path);
+    run_com_server_command.AppendSwitch(kServerSwitch);
 #if !defined(NDEBUG)
-  run_com_server_command.AppendSwitch(kEnableLoggingSwitch);
-  run_com_server_command.AppendSwitchASCII(kLoggingModuleSwitch,
-                                           "*/chrome/updater/*=2");
+    run_com_server_command.AppendSwitch(kEnableLoggingSwitch);
+    run_com_server_command.AppendSwitchASCII(kLoggingModuleSwitch,
+                                             "*/chrome/updater/*=2");
 #endif
 
-  list->AddSetRegValueWorkItem(
-      root, local_server32_reg_path, WorkItem::kWow64Default, L"",
-      run_com_server_command.GetCommandLineString(), true);
+    list->AddSetRegValueWorkItem(
+        root, local_server32_reg_path, WorkItem::kWow64Default, L"",
+        run_com_server_command.GetCommandLineString(), true);
+  }
 }
 
 // Adds work items to register the COM Service with Windows.
@@ -138,8 +142,10 @@ void AddComInterfacesWorkItems(HKEY root,
     return;
   }
 
-  for (const auto iid : {__uuidof(IUpdater), __uuidof(IUpdaterObserver),
-                         __uuidof(ICompleteStatus)}) {
+  for (const auto& iid :
+       {__uuidof(IUpdater), __uuidof(IUpdaterObserver),
+        __uuidof(ICompleteStatus), __uuidof(IGoogleUpdate3Web),
+        __uuidof(IAppBundleWeb), __uuidof(IAppWeb), __uuidof(ICurrentState)}) {
     const base::string16 iid_reg_path = GetComIidRegistryPath(iid);
     const base::string16 typelib_reg_path = GetComTypeLibRegistryPath(iid);
 

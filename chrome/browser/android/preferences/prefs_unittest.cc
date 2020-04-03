@@ -100,6 +100,8 @@ TEST_F(PrefsTest, TestIndex) {
   EXPECT_EQ(prefs::kHomePage, GetPrefName(HOME_PAGE));
   EXPECT_EQ(autofill::prefs::kAutofillCreditCardFidoAuthEnabled,
             GetPrefName(AUTOFILL_CREDIT_CARD_FIDO_AUTH_ENABLED));
+  EXPECT_EQ(prefs::kEnableQuietNotificationPermissionUi,
+            GetPrefName(ENABLE_QUIET_NOTIFICATION_PERMISSION_UI));
 
   // If this check fails, a pref is missing a test case above.
   EXPECT_EQ(Pref::PREF_NUM_PREFS, pref_count_);

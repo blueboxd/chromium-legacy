@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -397,7 +398,8 @@ TEST_F(ContentSettingImageModelTest, NotificationsPrompt) {
 
   auto* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  QuietNotificationPermissionUiState::EnableQuietUiInPrefs(profile);
+  profile->GetPrefs()->SetBoolean(prefs::kEnableQuietNotificationPermissionUi,
+                                  true);
 
   auto content_setting_image_model =
       ContentSettingImageModel::CreateForContentType(

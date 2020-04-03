@@ -74,7 +74,6 @@ import org.chromium.chrome.browser.toolbar.ToolbarColors;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator.UrlExpansionObserver;
-import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.animation.CancelAwareAnimatorListener;
 import org.chromium.components.browser_ui.widget.animation.Interpolators;
@@ -1660,9 +1659,8 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         if (mHomeButton == null) return;
 
         boolean hideHomeButton = !mIsHomeButtonEnabled
-                || (mIsBottomToolbarVisible && BottomToolbarVariationManager.isHomeButtonOnBottom())
-                || (StartSurfaceConfiguration.isStartSurfaceEnabled()
-                        && !StartSurfaceConfiguration.isStartSurfaceSinglePaneEnabled());
+                || (mIsBottomToolbarVisible
+                        && BottomToolbarVariationManager.isHomeButtonOnBottom());
         if (hideHomeButton) {
             removeHomeButton();
         } else {

@@ -10,25 +10,14 @@ Description:
 R8 is a proguard-like optimizer that also has the ability to dex.
 
 Local Modifications:
-Turning off vertical and horizontal class merging, as described in
-https://issuetracker.google.com/122902374#comment11. We should no longer make
-this modification once the linked bug is fixed.
-
-Turning off outlining because it caused issues when synchronized proguarding
-Trichrome due to illegal dex references (crbug.com/956839). Will only be used
-for android_apk() targets that set `disable_r8_outlining = true`):
-
-Added --feature-jar flag for doing dex splitting.
-
-local_modifications.diff created via:
-git diff >local_modifications.diff
+* Refer to commit descriptions within "patches" directory.
 
 Update Instructions:
 # Download R8:
 git clone https://r8.googlesource.com/r8
 cd r8
-# Apply the patch:
-git apply $CHROMIUM_SRC/third_party/r8/local_modifications.diff
+# Apply patches:
+git am $CHROMIUM_SRC/third_party/r8/patches *.patch
 # Build:
 tools/gradle.py r8
 # Shrink (improves r8/d8 launch time):
@@ -44,3 +33,7 @@ cipd create --pkg-def cipd.yaml # Make note of the instance ID
 # Manually update:
 * README.chromium (version number via "java -jar lib/r8.jar --version")
 * //DEPS (instance ID output by cipd create)
+
+# To create a new patch:
+* Make commits to the r8 repro
+* Run: git format-patch $R8_REVISION_BEFORE_PATCHES

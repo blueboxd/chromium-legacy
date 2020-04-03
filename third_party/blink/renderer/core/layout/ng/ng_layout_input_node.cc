@@ -71,38 +71,12 @@ MinMaxSizes NGLayoutInputNode::ComputeMinMaxSizes(
 
 void NGLayoutInputNode::IntrinsicSize(
     base::Optional<LayoutUnit>* computed_inline_size,
-    base::Optional<LayoutUnit>* computed_block_size,
-    LogicalSize* aspect_ratio) const {
+    base::Optional<LayoutUnit>* computed_block_size) const {
   DCHECK(IsReplaced());
 
-  LayoutUnit override_inline_size = OverrideIntrinsicContentInlineSize();
-  if (override_inline_size != kIndefiniteSize) {
-    *computed_inline_size = override_inline_size;
-  } else {
-    LayoutUnit default_inline_size = DefaultIntrinsicContentInlineSize();
-    if (default_inline_size != kIndefiniteSize)
-      *computed_inline_size = default_inline_size;
-  }
-
-  LayoutUnit override_block_size = OverrideIntrinsicContentBlockSize();
-  if (override_block_size != kIndefiniteSize) {
-    *computed_block_size = override_block_size;
-  } else {
-    LayoutUnit default_block_size = DefaultIntrinsicContentBlockSize();
-    if (default_block_size != kIndefiniteSize)
-      *computed_block_size = default_block_size;
-  }
-
-  if (ShouldApplySizeContainment()) {
-    if (!*computed_inline_size)
-      *computed_inline_size = LayoutUnit();
-    if (!*computed_block_size)
-      *computed_block_size = LayoutUnit();
-  }
-  if (*computed_inline_size && *computed_block_size) {
-    *aspect_ratio = LogicalSize(**computed_inline_size, **computed_block_size);
+  GetOverrideIntrinsicSize(computed_inline_size, computed_block_size);
+  if (*computed_inline_size && *computed_block_size)
     return;
-  }
 
   IntrinsicSizingInfo legacy_sizing_info;
 
@@ -111,9 +85,6 @@ void NGLayoutInputNode::IntrinsicSize(
     *computed_inline_size = LayoutUnit(legacy_sizing_info.size.Width());
   if (!*computed_block_size && legacy_sizing_info.has_height)
     *computed_block_size = LayoutUnit(legacy_sizing_info.size.Height());
-  *aspect_ratio =
-      LogicalSize(LayoutUnit(legacy_sizing_info.aspect_ratio.Width()),
-                  LayoutUnit(legacy_sizing_info.aspect_ratio.Height()));
 }
 
 NGLayoutInputNode NGLayoutInputNode::NextSibling() {
@@ -146,5 +117,36 @@ void NGLayoutInputNode::ShowNodeTree() const {
   DLOG(INFO) << "\n" << string_builder.ToString().Utf8();
 }
 #endif
+
+void NGLayoutInputNode::GetOverrideIntrinsicSize(
+    base::Optional<LayoutUnit>* computed_inline_size,
+    base::Optional<LayoutUnit>* computed_block_size) const {
+  DCHECK(IsReplaced());
+
+  LayoutUnit override_inline_size = OverrideIntrinsicContentInlineSize();
+  if (override_inline_size != kIndefiniteSize) {
+    *computed_inline_size = override_inline_size;
+  } else {
+    LayoutUnit default_inline_size = DefaultIntrinsicContentInlineSize();
+    if (default_inline_size != kIndefiniteSize)
+      *computed_inline_size = default_inline_size;
+  }
+
+  LayoutUnit override_block_size = OverrideIntrinsicContentBlockSize();
+  if (override_block_size != kIndefiniteSize) {
+    *computed_block_size = override_block_size;
+  } else {
+    LayoutUnit default_block_size = DefaultIntrinsicContentBlockSize();
+    if (default_block_size != kIndefiniteSize)
+      *computed_block_size = default_block_size;
+  }
+
+  if (ShouldApplySizeContainment()) {
+    if (!*computed_inline_size)
+      *computed_inline_size = LayoutUnit();
+    if (!*computed_block_size)
+      *computed_block_size = LayoutUnit();
+  }
+}
 
 }  // namespace blink

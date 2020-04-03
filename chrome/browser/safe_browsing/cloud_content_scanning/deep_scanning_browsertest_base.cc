@@ -4,12 +4,14 @@
 
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_browsertest_base.h"
 #include "base/bind_helpers.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_views.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/fake_deep_scanning_dialog_delegate.h"
 #include "chrome/browser/safe_browsing/dm_token_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "components/safe_browsing/core/features.h"
 
 namespace safe_browsing {
@@ -129,6 +131,13 @@ void DeepScanningBrowserTestBase::SetBlockLargeFileTransferPolicy(
 void DeepScanningBrowserTestBase::SetUnsafeEventsReportingPolicy(bool report) {
   g_browser_process->local_state()->SetBoolean(
       prefs::kUnsafeEventsReportingEnabled, report);
+}
+
+void DeepScanningBrowserTestBase::AddUrlToCheckComplianceOfDownloads(
+    const std::string& url) {
+  ListPrefUpdate(g_browser_process->local_state(),
+                 prefs::kURLsToCheckComplianceOfDownloadedContent)
+      ->Append(url);
 }
 
 void DeepScanningBrowserTestBase::SetUpDelegate() {

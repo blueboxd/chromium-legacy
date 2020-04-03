@@ -160,6 +160,8 @@
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_factory.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_service_factory.h"
+#include "chrome/browser/chromeos/printing/print_management/printing_manager.h"
+#include "chrome/browser/chromeos/printing/print_management/printing_manager_factory.h"
 #include "chrome/browser/chromeos/secure_channel/secure_channel_client_provider.h"
 #include "chrome/browser/chromeos/web_applications/chrome_help_app_ui_delegate.h"
 #include "chrome/browser/chromeos/web_applications/chrome_media_app_ui_delegate.h"
@@ -316,6 +318,28 @@ WebUIController* NewWebUI<chromeos::MediaAppUI>(WebUI* web_ui,
                                                 const GURL& url) {
   auto delegate = std::make_unique<ChromeMediaAppUIDelegate>(web_ui);
   return new chromeos::MediaAppUI(web_ui, std::move(delegate));
+}
+
+void BindPrintManagement(
+    Profile* profile,
+    mojo::PendingReceiver<
+        chromeos::printing::printing_manager::mojom::PrintingMetadataProvider>
+        receiver) {
+  chromeos::printing::print_management::PrintingManager* handler =
+      chromeos::printing::print_management::PrintingManagerFactory::
+          GetForProfile(profile);
+  if (handler)
+    handler->BindInterface(std::move(receiver));
+}
+
+template <>
+WebUIController*
+NewWebUI<chromeos::printing::printing_manager::PrintManagementUI>(
+    WebUI* web_ui,
+    const GURL& url) {
+  return new chromeos::printing::printing_manager::PrintManagementUI(
+      web_ui,
+      base::BindRepeating(&BindPrintManagement, Profile::FromWebUI(web_ui)));
 }
 
 void BindMultiDeviceSetup(
@@ -587,7 +611,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (base::FeatureList::IsEnabled(
           chromeos::features::kPrintJobManagementApp) &&
       url.host_piece() == chromeos::kChromeUIPrintManagementHost)
-    return &NewWebUI<chromeos::PrintManagementUI>;
+    return &NewWebUI<chromeos::printing::printing_manager::PrintManagementUI>;
   if (base::FeatureList::IsEnabled(chromeos::features::kScanningUI) &&
       url.host_piece() == chromeos::kChromeUIScanningHost) {
     return &NewWebUI<chromeos::ScanningUI>;

@@ -139,23 +139,21 @@ Polymer({
      * @private
      */
     listBlurred_: Boolean,
-  },
 
-  /**
-   * Mojo OS Settings Search handler used to fetch search results.
-   * @private {?mojom.SearchHandlerInterface}
-   */
-  searchHandler_: null,
+    /**
+     * TODO(crbug/1056909): Remove once Settings Search UI matches mocks.
+     * @private {Boolean}
+     */
+    useFakeSearch_: {
+      type: Boolean,
+      value: false,
+    },
+  },
 
   listeners: {
     'blur': 'onBlur_',
     'keydown': 'onKeyDown_',
     'search-changed': 'fetchSearchResults_',
-  },
-
-  /* override */
-  created() {
-    this.searchHandler_ = mojom.SearchHandler.getRemote();
   },
 
   /** @private */
@@ -164,13 +162,6 @@ Polymer({
     const searchInput = toolbarSearchField.getSearchInput();
     searchInput.addEventListener(
         'focus', this.onSearchInputFocused_.bind(this));
-  },
-
-  /**
-   * @param {?mojom.SearchHandlerInterface} searchHandler
-   */
-  setSearchHandlerForTesting(searchHandler) {
-    this.searchHandler_ = searchHandler;
   },
 
   /**
@@ -202,7 +193,7 @@ Polymer({
 
     this.spinnerActive = true;
 
-    if (!this.searchHandler_) {
+    if (this.useFakeSearch_) {
       // TODO(crbug/1056909): Remove once Settings Search is complete.
       fakeSettingsSearchHandlerSearch(query).then(results => {
         this.onSearchResultsReceived_(query, results);
@@ -214,7 +205,7 @@ Polymer({
     // strings support either 8 or 16 bit characters, and must be converted to
     // an array of 16 bit character codes that match base::string16.
     const queryMojoString16 = {data: Array.from(query, c => c.charCodeAt())};
-    this.searchHandler_.search(queryMojoString16).then(response => {
+    settings.getSearchHandler().search(queryMojoString16).then(response => {
       this.onSearchResultsReceived_(query, response.results);
     });
   },

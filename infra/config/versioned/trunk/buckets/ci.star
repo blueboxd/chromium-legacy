@@ -429,6 +429,10 @@ ci.mac_builder(
 
 ci.mac_ios_builder(
     name = 'ios-simulator',
+    executable = 'recipe:chromium',
+    properties = {
+        'xcode_build_version': '11c29',
+    },
 )
 
 

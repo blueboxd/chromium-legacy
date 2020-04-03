@@ -39,7 +39,9 @@ class PLATFORM_EXPORT GeneratedImage : public Image {
   bool HasIntrinsicSize() const override { return false; }
 
   IntSize Size() const override { return RoundedIntSize(size_); }
-  FloatSize SizeAsFloat() const override { return size_; }
+  FloatSize SizeAsFloat(RespectImageOrientationEnum) const override {
+    return size_;
+  }
 
   // Assume that generated content has no decoded data we need to worry about
   void DestroyDecodedData() override {}

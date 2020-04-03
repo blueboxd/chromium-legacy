@@ -269,15 +269,22 @@ enum class A11yNotificationType {
   // enabled yet. Note: in this case braille display connected would enable
   // spoken feeback.
   kSpokenFeedbackBrailleEnabled,
+  // Shown when Switch Access is enabled.
+  kSwitchAccessEnabled,
 };
 
 // Returns notification icon based on the A11yNotificationType.
 const gfx::VectorIcon& GetNotificationIcon(A11yNotificationType type) {
-  if (type == A11yNotificationType::kSpokenFeedbackBrailleEnabled)
-    return kNotificationAccessibilityIcon;
-  if (type == A11yNotificationType::kBrailleDisplayConnected)
-    return kNotificationAccessibilityBrailleIcon;
-  return kNotificationChromevoxIcon;
+  switch (type) {
+    case A11yNotificationType::kSpokenFeedbackBrailleEnabled:
+      return kNotificationAccessibilityIcon;
+    case A11yNotificationType::kBrailleDisplayConnected:
+      return kNotificationAccessibilityBrailleIcon;
+    case A11yNotificationType::kSwitchAccessEnabled:
+      return kSwitchAccessIcon;
+    default:
+      return kNotificationChromevoxIcon;
+  }
 }
 
 void ShowAccessibilityNotification(A11yNotificationType type) {
@@ -293,6 +300,10 @@ void ShowAccessibilityNotification(A11yNotificationType type) {
   if (type == A11yNotificationType::kBrailleDisplayConnected) {
     text = l10n_util::GetStringUTF16(
         IDS_ASH_STATUS_TRAY_BRAILLE_DISPLAY_CONNECTED);
+  } else if (type == A11yNotificationType::kSwitchAccessEnabled) {
+    title = l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_SWITCH_ACCESS_ENABLED_TITLE);
+    text = l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SWITCH_ACCESS_ENABLED);
   } else {
     bool is_tablet = Shell::Get()->tablet_mode_controller()->InTabletMode();
 
@@ -1798,6 +1809,8 @@ void AccessibilityControllerImpl::UpdateFeatureFromPref(FeatureType feature) {
     case FeatureType::kSwitchAccess:
       // Show a dialog before disabling Switch Access.
       if (!enabled) {
+        ShowAccessibilityNotification(A11yNotificationType::kNone);
+
         if (no_switch_access_disable_confirmation_dialog_for_testing_) {
           switch_access_event_handler_.reset();
         } else {
@@ -1814,6 +1827,8 @@ void AccessibilityControllerImpl::UpdateFeatureFromPref(FeatureType feature) {
         }
       } else {
         MaybeCreateSwitchAccessEventHandler();
+        ShowAccessibilityNotification(
+            A11yNotificationType::kSwitchAccessEnabled);
       }
       break;
     case FeatureType::kVirtualKeyboard:

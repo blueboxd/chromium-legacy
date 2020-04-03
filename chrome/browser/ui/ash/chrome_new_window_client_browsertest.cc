@@ -268,14 +268,20 @@ void TestAllOSSettingPages(const GURL& base_url) {
                      base_url.Resolve(chrome::kNativePrintingSettingsSubPage));
   TestOpenChromePage(ChromePage::KEYBOARDOVERLAY,
                      base_url.Resolve(chrome::kKeyboardOverlaySubPage));
-  TestOpenChromePage(ChromePage::LANGUAGES,
-                     base_url.Resolve(chrome::kLanguageSubPage));
+  TestOpenChromePage(ChromePage::OSLANGUAGES,
+                     base_url.Resolve(chrome::kOsLanguagesSubPage));
+  TestOpenChromePage(ChromePage::OSLANGUAGESDETAILS,
+                     base_url.Resolve(chrome::kOsLanguagesDetailsSubPage));
+  TestOpenChromePage(ChromePage::OSLANGUAGESINPUTMETHODS,
+                     base_url.Resolve(chrome::kOsLanguagesInputMethodsSubPage));
   TestOpenChromePage(ChromePage::LOCKSCREEN,
                      base_url.Resolve(chrome::kLockScreenSubPage));
   TestOpenChromePage(ChromePage::MANAGEACCESSIBILITY,
                      base_url.Resolve(chrome::kManageAccessibilitySubPage));
   TestOpenChromePage(ChromePage::NETWORKSTYPEVPN,
                      base_url.Resolve(chrome::kVPNSettingsSubPage));
+  TestOpenChromePage(ChromePage::OSPRINTING,
+                     base_url.Resolve(chrome::kOsPrintingSubPage));
   TestOpenChromePage(ChromePage::POINTEROVERLAY,
                      base_url.Resolve(chrome::kPointerOverlaySubPage));
   TestOpenChromePage(ChromePage::OSRESET,
@@ -322,6 +328,8 @@ void TestAllOSSettingPages(const GURL& base_url) {
                      base_url.Resolve(chrome::kPluginVmDetailsSubPage));
   TestOpenChromePage(ChromePage::PLUGINVMSHAREDPATHS,
                      base_url.Resolve(chrome::kPluginVmSharedPathsSubPage));
+  TestOpenChromePage(ChromePage::OSSEARCH,
+                     base_url.Resolve(chrome::kOsSearchSubPage));
   TestOpenChromePage(ChromePage::SMARTLOCKSETTINGS,
                      base_url.Resolve(chrome::kSmartLockSettingsSubPage));
   TestOpenChromePage(ChromePage::STYLUS,
@@ -357,10 +365,14 @@ void TestAllBrowserSettingPages(const GURL& base_url) {
                      base_url.Resolve(chrome::kPasswordManagerSubPage));
   TestOpenChromePage(ChromePage::RESET,
                      base_url.Resolve(chrome::kResetSubPage));
+  TestOpenChromePage(ChromePage::PRINTING,
+                     base_url.Resolve(chrome::kPrintingSettingsSubPage));
   TestOpenChromePage(ChromePage::SEARCH,
                      base_url.Resolve(chrome::kSearchSubPage));
   TestOpenChromePage(ChromePage::SYNCSETUP,
                      base_url.Resolve(chrome::kSyncSetupSubPage));
+  TestOpenChromePage(ChromePage::LANGUAGES,
+                     base_url.Resolve(chrome::kLanguagesSubPage));
 }
 
 void TestAllAboutPages() {

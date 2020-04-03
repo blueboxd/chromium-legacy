@@ -82,7 +82,7 @@ class BASE_EXPORT MessagePumpWin : public MessagePump {
 //
 // MessagePumpForUI implements a "traditional" Windows message pump. It contains
 // a nearly infinite loop that peeks out messages, and then dispatches them.
-// Intermixed with those peeks are callouts to DoSomeWork. When there are no
+// Intermixed with those peeks are callouts to DoWork. When there are no
 // events to be serviced, this pump goes into a wait state. In most cases, this
 // message pump handles all processing.
 //

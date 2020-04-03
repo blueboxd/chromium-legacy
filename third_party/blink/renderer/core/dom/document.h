@@ -2323,15 +2323,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // Used for document.cookie. May be null.
   Member<CookieJar> cookie_jar_;
 
-  // A dummy scheduler to return when the document is detached.
-  // All operations on it result in no-op, but due to this it's safe to
-  // use the returned value of GetScheduler() without additional checks.
-  // A task posted to a task runner obtained from one of its task runners
-  // will be forwarded to the default task runner.
-  // TODO(altimin): We should be able to remove it after we complete
-  // frame:document lifetime refactoring.
-  std::unique_ptr<FrameOrWorkerScheduler> detached_scheduler_;
-
   bool toggle_during_parsing_ = false;
 
   bool is_for_markup_sanitization_ = false;

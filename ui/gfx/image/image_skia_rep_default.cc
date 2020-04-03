@@ -9,6 +9,7 @@
 #include "cc/paint/record_paint_canvas.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "ui/gfx/color_palette.h"
 
 namespace gfx {
 
@@ -19,7 +20,7 @@ ImageSkiaRep::ImageSkiaRep(const gfx::Size& size, float scale)
     : type_(ImageRepType::kImageTypeBitmap), scale_(scale) {
   bitmap_.allocN32Pixels(static_cast<int>(size.width() * this->scale()),
                          static_cast<int>(size.height() * this->scale()));
-  bitmap_.eraseColor(SK_ColorRED);
+  bitmap_.eraseColor(kPlaceholderColor);
   bitmap_.setImmutable();
   pixel_size_.SetSize(bitmap_.width(), bitmap_.height());
   paint_image_ = cc::PaintImage::CreateFromBitmap(bitmap_);

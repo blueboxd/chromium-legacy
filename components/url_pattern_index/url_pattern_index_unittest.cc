@@ -16,6 +16,7 @@
 #include "base/strings/string_piece.h"
 #include "components/url_pattern_index/url_pattern.h"
 #include "components/url_pattern_index/url_rule_test_support.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -50,7 +51,8 @@ class UrlPatternIndexTest : public ::testing::Test {
   void AddSimpleUrlRule(std::string pattern,
                         uint32_t id,
                         uint32_t priority,
-                        uint8_t options) {
+                        uint8_t options,
+                        uint16_t element_types) {
     auto pattern_offset = flat_builder_->CreateString(pattern);
 
     flat::UrlRuleBuilder rule_builder(*flat_builder_);
@@ -58,6 +60,7 @@ class UrlPatternIndexTest : public ::testing::Test {
     rule_builder.add_url_pattern(pattern_offset);
     rule_builder.add_id(id);
     rule_builder.add_priority(priority);
+    rule_builder.add_element_types(element_types);
     auto rule_offset = rule_builder.Finish();
 
     index_builder_->IndexUrlRule(rule_offset);
@@ -85,6 +88,20 @@ class UrlPatternIndexTest : public ::testing::Test {
         url, document_origin, element_type, activation_type,
         testing::IsThirdParty(url, document_origin), disable_generic_rules,
         UrlPatternIndexMatcher::FindRuleStrategy::kAny);
+  }
+
+  std::vector<const flat::UrlRule*> FindAllMatches(
+      base::StringPiece url_string,
+      base::StringPiece document_origin_string,
+      proto::ElementType element_type,
+      proto::ActivationType activation_type,
+      bool disable_generic_rules) const {
+    const GURL url(url_string);
+    const url::Origin document_origin =
+        testing::GetOrigin(document_origin_string);
+    return index_matcher_->FindAllMatches(
+        url, document_origin, element_type, activation_type,
+        testing::IsThirdParty(url, document_origin), disable_generic_rules);
   }
 
   const flat::UrlRule* FindHighestPriorityMatch(
@@ -167,9 +184,10 @@ TEST_F(UrlPatternIndexTest, CaseSensitivity) {
   uint8_t common_options = flat::OptionFlag_APPLIES_TO_FIRST_PARTY |
                            flat::OptionFlag_APPLIES_TO_THIRD_PARTY;
   AddSimpleUrlRule("case-insensitive", 0 /* id */, 0 /* priority */,
-                   common_options | flat::OptionFlag_IS_CASE_INSENSITIVE);
+                   common_options | flat::OptionFlag_IS_CASE_INSENSITIVE,
+                   flat::ElementType_ANY);
   AddSimpleUrlRule("case-sensitive", 0 /* id */, 0 /* priority */,
-                   common_options);
+                   common_options, flat::ElementType_ANY);
   Finish();
 
   EXPECT_TRUE(FindMatch("http://abc.com/type=CASE-insEnsitIVe"));
@@ -616,6 +634,60 @@ TEST_F(UrlPatternIndexTest, OneRuleWithElementAndActivationTypes) {
                         testing::kNoElement, kDocument));
 }
 
+// Test that FindAllMatches will return the correct number of UrlRule matches
+// for incoming requests.
+TEST_F(UrlPatternIndexTest, MultipleRuleMatches) {
+  const struct {
+    uint32_t id;
+    const char* url_pattern;
+    uint16_t element_types;
+  } kRules[] = {{0, "ex1", flat::ElementType_ANY},
+                {1, "ex1", flat::ElementType_IMAGE},
+                {2, "ex1", flat::ElementType_IMAGE | flat::ElementType_FONT},
+                {3, "ex12", flat::ElementType_ANY},
+                {4, "google", flat::ElementType_ANY},
+                {5, "google", flat::ElementType_IMAGE}};
+
+  for (const auto& rule_data : kRules) {
+    AddSimpleUrlRule(rule_data.url_pattern, rule_data.id, 0 /* priority */,
+                     flat::OptionFlag_APPLIES_TO_FIRST_PARTY |
+                         flat::OptionFlag_APPLIES_TO_THIRD_PARTY,
+                     rule_data.element_types);
+  }
+  Finish();
+
+  const struct {
+    const char* url;
+    proto::ElementType element_type;
+    std::vector<uint32_t> expected_matched_ids;
+  } kTestCases[] = {{"http://ex1.com", proto::ELEMENT_TYPE_OTHER, {0}},
+                    {"http://ex1.com/font", kFont, {0, 2}},
+                    {"http://ex1.com/img", kImage, {0, 1, 2}},
+                    {"http://ex12.com", proto::ELEMENT_TYPE_OTHER, {0, 3}},
+                    {"http://ex12.com/img", kImage, {0, 1, 2, 3}},
+                    {"http://google.com", proto::ELEMENT_TYPE_OTHER, {4}},
+                    {"http://google.com/img", kImage, {4, 5}},
+                    {"http://ex12google.com/img", kImage, {0, 1, 2, 3, 4, 5}},
+                    {"http://nomatch.com/img", kImage, {}}};
+
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(::testing::Message()
+                 << "UrlPattern: " << test_case.url << "; ElementTypes: "
+                 << static_cast<int>(test_case.element_type));
+
+    std::vector<uint32_t> actual_matched_ids;
+    std::vector<const flat::UrlRule*> matched_rules = FindAllMatches(
+        test_case.url, "" /* document_origin_string */, test_case.element_type,
+        kNoActivation, false /* disable_generic_rules */);
+
+    for (const auto* rule : matched_rules)
+      actual_matched_ids.push_back(rule->id());
+
+    EXPECT_THAT(actual_matched_ids, ::testing::UnorderedElementsAreArray(
+                                        test_case.expected_matched_ids));
+  }
+}
+
 TEST_F(UrlPatternIndexTest, MatchWithDisableGenericRules) {
   const struct {
     const char* url_pattern;
@@ -804,7 +876,8 @@ TEST_F(UrlPatternIndexTest, FindMatchHighestPriority) {
     for (size_t j = 0; j < i; j++) {
       AddSimpleUrlRule(pattern, id, priorities[j],
                        flat::OptionFlag_APPLIES_TO_FIRST_PARTY |
-                           flat::OptionFlag_APPLIES_TO_THIRD_PARTY);
+                           flat::OptionFlag_APPLIES_TO_THIRD_PARTY,
+                       flat::ElementType_ANY);
       id++;
     }
   }

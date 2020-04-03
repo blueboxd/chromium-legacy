@@ -220,6 +220,16 @@ def chromium_swangle_linux_builder(*, name, **kwargs):
   )
 
 
+def chromium_swangle_mac_builder(*, name, **kwargs):
+  return chromium_swangle_builder(
+      name = name,
+      cores = None,
+      goma_backend = builders.goma.backend.RBE_PROD,
+      os = builders.os.MAC_ANY,
+      **kwargs
+  )
+
+
 def chromium_swangle_windows_builder(*, name, **kwargs):
   return chromium_swangle_builder(
       name = name,
@@ -309,6 +319,7 @@ try_ = struct(
     chromium_mac_builder = chromium_mac_builder,
     chromium_mac_ios_builder = chromium_mac_ios_builder,
     chromium_swangle_linux_builder = chromium_swangle_linux_builder,
+    chromium_swangle_mac_builder = chromium_swangle_mac_builder,
     chromium_swangle_windows_builder = chromium_swangle_windows_builder,
     chromium_win_builder = chromium_win_builder,
     gpu_chromium_android_builder = gpu_chromium_android_builder,

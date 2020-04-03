@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/trust_tokens/pending_trust_token_store.h"
+#include "services/network/trust_tokens/suitable_trust_token_origin.h"
 #include "services/network/trust_tokens/trust_token_store.h"
 #include "url/origin.h"
 
@@ -26,12 +27,8 @@ namespace network {
 class HasTrustTokensAnswerer : public mojom::HasTrustTokensAnswerer {
  public:
   // Constructs a new answerer bound to the given top frame origin.
-  //
-  // If |top_frame_origin| is not both (1) potentially trustworthy and
-  // (2) either HTTP or HTTPS, returns nullptr.
-  static std::unique_ptr<HasTrustTokensAnswerer> Create(
-      const url::Origin& top_frame_origin,
-      PendingTrustTokenStore* pending_trust_token_store);
+  HasTrustTokensAnswerer(SuitableTrustTokenOrigin top_frame_origin,
+                         PendingTrustTokenStore* pending_trust_token_store);
 
   ~HasTrustTokensAnswerer() override;
 
@@ -43,18 +40,15 @@ class HasTrustTokensAnswerer : public mojom::HasTrustTokensAnswerer {
                       HasTrustTokensCallback callback) override;
 
  private:
-  HasTrustTokensAnswerer(const url::Origin& top_frame_origin,
-                         PendingTrustTokenStore* pending_trust_token_store);
-
   // Continuation of HasTrustTokens: uses |trust_token_store| to answer a
   // HasTrusttokens query against |issuer|.
   //
   // Requires that |issuer| is potentially trustworthy and HTTP or HTTPS.
-  void AnswerQueryWithStore(const url::Origin& issuer,
+  void AnswerQueryWithStore(const SuitableTrustTokenOrigin& issuer,
                             HasTrustTokensCallback callback,
                             TrustTokenStore* trust_token_store);
 
-  const url::Origin top_frame_origin_;
+  const SuitableTrustTokenOrigin top_frame_origin_;
   PendingTrustTokenStore* pending_trust_token_store_;
 
   base::WeakPtrFactory<HasTrustTokensAnswerer> weak_factory_{this};

@@ -16,6 +16,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 
 namespace ash {
 namespace {
@@ -61,7 +62,7 @@ class DragHandleContextualNudgeTest : public ShelfLayoutManagerTestBase {
 };
 
 TEST_F(DragHandleContextualNudgeTest, ShowDragHandleNudgeWithTimer) {
-  // Creates a widget that will become maximized in tablet mode.
+  // Creates a widget to put shelf into in-app state.
   views::Widget* widget = CreateTestWidget();
   widget->Maximize();
   TabletModeControllerTestApi().EnterTabletMode();
@@ -70,15 +71,17 @@ TEST_F(DragHandleContextualNudgeTest, ShowDragHandleNudgeWithTimer) {
   // The drag handle should be showing but the nudge should not. A timer to show
   // the nudge should be initialized.
   EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->GetVisible());
-  EXPECT_FALSE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
+  EXPECT_FALSE(
+      GetShelfWidget()->GetDragHandle()->gesture_nudge_target_visibility());
   // Firing the timer should show the drag handle nudge.
   GetShelfWidget()->GetDragHandle()->fire_show_drag_handle_timer_for_testing();
   EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->GetVisible());
-  EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
+  EXPECT_TRUE(
+      GetShelfWidget()->GetDragHandle()->gesture_nudge_target_visibility());
 }
 
 TEST_F(DragHandleContextualNudgeTest, HideDragHandleNudgeHiddenOnMinimize) {
-  // Creates a widget that will become maximized in tablet mode.
+  // Creates a test window to put shelf into in-app state.
   views::Widget* widget = CreateTestWidget();
   widget->Maximize();
   TabletModeControllerTestApi().EnterTabletMode();
@@ -87,16 +90,57 @@ TEST_F(DragHandleContextualNudgeTest, HideDragHandleNudgeHiddenOnMinimize) {
   // The drag handle and nudge should be showing after the timer fires.
   GetShelfWidget()->GetDragHandle()->fire_show_drag_handle_timer_for_testing();
   EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->GetVisible());
-  EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
+  EXPECT_TRUE(
+      GetShelfWidget()->GetDragHandle()->gesture_nudge_target_visibility());
 
   // Minimizing the widget should hide the drag handle and nudge.
   widget->Minimize();
   EXPECT_FALSE(GetShelfWidget()->GetDragHandle()->GetVisible());
-  EXPECT_FALSE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
+  EXPECT_FALSE(
+      GetShelfWidget()->GetDragHandle()->gesture_nudge_target_visibility());
+}
+
+// Checks that the shelf cannot be auto hidden while animating shelf drag handle
+// nudge.
+TEST_F(DragHandleContextualNudgeTest,
+       HideDragHandleDoesNotInteruptShowNudgeAnimation) {
+  GetPrimaryShelf()->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
+  // Creates a widget to put shelf into in-app state.
+  views::Widget* widget = CreateTestWidget();
+  widget->Maximize();
+  TabletModeControllerTestApi().EnterTabletMode();
+  EXPECT_EQ(ShelfBackgroundType::kInApp, GetShelfWidget()->GetBackgroundType());
+
+  ui::ScopedAnimationDurationScaleMode normal_animation_duration(
+      ui::ScopedAnimationDurationScaleMode::SLOW_DURATION);
+  GetShelfWidget()->GetDragHandle()->MaybeShowDragHandleNudge();
+  EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->GetVisible());
+  EXPECT_TRUE(
+      GetShelfWidget()->GetDragHandle()->show_nudge_animation_in_progress());
+  GetShelfLayoutManager()->UpdateAutoHideState();
+  // Shelf auto hide should not interrupt animations to show drag handle nudge.
+  // Showing the nudge while hiding the shelf is not intended behavior.
+  EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->GetVisible());
+  EXPECT_TRUE(
+      GetShelfWidget()->GetDragHandle()->show_nudge_animation_in_progress());
+}
+
+// Checks that the drag handle nudge is not shown when entering kInApp with
+// shelf autohide turned on.
+TEST_F(DragHandleContextualNudgeTest, DragHandleNotShownForAutoHideShelf) {
+  GetPrimaryShelf()->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
+  // Creates a widget to put shelf into in-app state.
+  views::Widget* widget = CreateTestWidget();
+  widget->Maximize();
+  TabletModeControllerTestApi().EnterTabletMode();
+  EXPECT_FALSE(
+      GetShelfWidget()->GetDragHandle()->show_nudge_animation_in_progress());
+  EXPECT_FALSE(
+      GetShelfWidget()->GetDragHandle()->gesture_nudge_target_visibility());
 }
 
 TEST_F(DragHandleContextualNudgeTest, DoNotShowNudgeWithoutDragHandle) {
-  // Creates a widget that will become maximized in tablet mode.
+  // Creates a widget to put shelf into in-app state.
   views::Widget* widget = CreateTestWidget();
   widget->Maximize();
   TabletModeControllerTestApi().EnterTabletMode();
@@ -105,12 +149,13 @@ TEST_F(DragHandleContextualNudgeTest, DoNotShowNudgeWithoutDragHandle) {
   // Minimizing the widget should hide the drag handle and nudge.
   widget->Minimize();
   EXPECT_FALSE(GetShelfWidget()->GetDragHandle()->GetVisible());
-  EXPECT_FALSE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
+  EXPECT_FALSE(
+      GetShelfWidget()->GetDragHandle()->gesture_nudge_target_visibility());
 }
 
 TEST_F(DragHandleContextualNudgeTest,
        ContinueShowingDragHandleNudgeOnActiveWidgetChanged) {
-  // Creates a widget that will become maximized in tablet mode.
+  // Creates a widget to put shelf into in-app state.
   views::Widget* widget = CreateTestWidget();
   widget->Maximize();
 
@@ -118,24 +163,27 @@ TEST_F(DragHandleContextualNudgeTest,
   EXPECT_EQ(ShelfBackgroundType::kInApp, GetShelfWidget()->GetBackgroundType());
   GetShelfWidget()->GetDragHandle()->fire_show_drag_handle_timer_for_testing();
   EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->GetVisible());
-  EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
+  EXPECT_TRUE(
+      GetShelfWidget()->GetDragHandle()->gesture_nudge_target_visibility());
 
   // Maximizing and showing a different widget should not hide the drag handle
   // or nudge.
   views::Widget* new_widget = CreateTestWidget();
   new_widget->Maximize();
   EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->GetVisible());
-  EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
+  EXPECT_TRUE(
+      GetShelfWidget()->GetDragHandle()->gesture_nudge_target_visibility());
 }
 
 TEST_F(DragHandleContextualNudgeTest, DragHandleNudgeShownInAppShelf) {
-  // Creates a widget that will become maximized in tablet mode.
+  // Creates a widget to put shelf into in-app state.
   views::Widget* widget = CreateTestWidget();
   widget->Maximize();
 
   // Drag handle and nudge should not be shown in clamshell mode.
   EXPECT_FALSE(GetShelfWidget()->GetDragHandle()->GetVisible());
-  EXPECT_FALSE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
+  EXPECT_FALSE(
+      GetShelfWidget()->GetDragHandle()->gesture_nudge_target_visibility());
 
   // Test that the first time a user transitions into tablet mode with a
   // maximized window will show the drag nudge immedietly. The drag handle nudge
@@ -143,7 +191,8 @@ TEST_F(DragHandleContextualNudgeTest, DragHandleNudgeShownInAppShelf) {
   TabletModeControllerTestApi().EnterTabletMode();
   EXPECT_EQ(ShelfBackgroundType::kInApp, GetShelfWidget()->GetBackgroundType());
   EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->GetVisible());
-  EXPECT_FALSE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
+  EXPECT_FALSE(
+      GetShelfWidget()->GetDragHandle()->gesture_nudge_target_visibility());
   EXPECT_TRUE(GetShelfWidget()
                   ->GetDragHandle()
                   ->has_show_drag_handle_timer_for_testing());
@@ -152,7 +201,8 @@ TEST_F(DragHandleContextualNudgeTest, DragHandleNudgeShownInAppShelf) {
   // remain visible until the shelf state changes so the timer to hide it should
   // not be set.
   GetShelfWidget()->GetDragHandle()->fire_show_drag_handle_timer_for_testing();
-  EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
+  EXPECT_TRUE(
+      GetShelfWidget()->GetDragHandle()->gesture_nudge_target_visibility());
   EXPECT_FALSE(GetShelfWidget()
                    ->GetDragHandle()
                    ->has_hide_drag_handle_timer_for_testing());
@@ -160,13 +210,15 @@ TEST_F(DragHandleContextualNudgeTest, DragHandleNudgeShownInAppShelf) {
   // Leaving tablet mode should hide the nudge.
   TabletModeControllerTestApi().LeaveTabletMode();
   EXPECT_FALSE(GetShelfWidget()->GetDragHandle()->GetVisible());
-  EXPECT_FALSE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
+  EXPECT_FALSE(
+      GetShelfWidget()->GetDragHandle()->gesture_nudge_target_visibility());
 
   // Reentering tablet mode should show the drag handle but the nudge should
   // not. No timer should be set to show the nudge.
   TabletModeControllerTestApi().EnterTabletMode();
   EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->GetVisible());
-  EXPECT_FALSE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
+  EXPECT_FALSE(
+      GetShelfWidget()->GetDragHandle()->gesture_nudge_target_visibility());
   EXPECT_FALSE(GetShelfWidget()
                    ->GetDragHandle()
                    ->has_show_drag_handle_timer_for_testing());
@@ -179,13 +231,15 @@ TEST_F(DragHandleContextualNudgeTest, DragHandleNudgeShownInAppShelf) {
   TabletModeControllerTestApi().LeaveTabletMode();
   TabletModeControllerTestApi().EnterTabletMode();
   EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->GetVisible());
-  EXPECT_FALSE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
+  EXPECT_FALSE(
+      GetShelfWidget()->GetDragHandle()->gesture_nudge_target_visibility());
   // Firing the timer should show the nudge.
   EXPECT_TRUE(GetShelfWidget()
                   ->GetDragHandle()
                   ->has_show_drag_handle_timer_for_testing());
   GetShelfWidget()->GetDragHandle()->fire_show_drag_handle_timer_for_testing();
-  EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
+  EXPECT_TRUE(
+      GetShelfWidget()->GetDragHandle()->gesture_nudge_target_visibility());
   EXPECT_FALSE(GetShelfWidget()
                    ->GetDragHandle()
                    ->has_show_drag_handle_timer_for_testing());
@@ -196,25 +250,28 @@ TEST_F(DragHandleContextualNudgeTest, DragHandleNudgeShownInAppShelf) {
 }
 
 TEST_F(DragHandleContextualNudgeTest, DragHandleNudgeShownOnTap) {
-  // Creates a widget that will become maximized in tablet mode.
+  // Creates a widget to put shelf into in-app state.
   views::Widget* widget = CreateTestWidget();
   widget->Maximize();
   TabletModeControllerTestApi().EnterTabletMode();
   EXPECT_EQ(ShelfBackgroundType::kInApp, GetShelfWidget()->GetBackgroundType());
   EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->GetVisible());
-  EXPECT_FALSE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
+  EXPECT_FALSE(
+      GetShelfWidget()->GetDragHandle()->gesture_nudge_target_visibility());
   EXPECT_TRUE(GetShelfWidget()
                   ->GetDragHandle()
                   ->has_show_drag_handle_timer_for_testing());
   GetShelfWidget()->GetDragHandle()->fire_show_drag_handle_timer_for_testing();
-  EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
+  EXPECT_TRUE(
+      GetShelfWidget()->GetDragHandle()->gesture_nudge_target_visibility());
 
   // Exiting and re-entering tablet should hide the nudge and put the shelf into
   // the default kInApp shelf state.
   TabletModeControllerTestApi().LeaveTabletMode();
   TabletModeControllerTestApi().EnterTabletMode();
   EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->GetVisible());
-  EXPECT_FALSE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
+  EXPECT_FALSE(
+      GetShelfWidget()->GetDragHandle()->gesture_nudge_target_visibility());
 
   // Tapping the drag handle should show the drag handle nudge immedietly and
   // the show nudge timer should be set.
@@ -224,7 +281,8 @@ TEST_F(DragHandleContextualNudgeTest, DragHandleNudgeShownOnTap) {
                    ->GetDragHandle()
                    ->has_show_drag_handle_timer_for_testing());
   EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->GetVisible());
-  EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
+  EXPECT_TRUE(
+      GetShelfWidget()->GetDragHandle()->gesture_nudge_target_visibility());
   EXPECT_TRUE(GetShelfWidget()
                   ->GetDragHandle()
                   ->has_hide_drag_handle_timer_for_testing());
@@ -235,7 +293,7 @@ TEST_F(DragHandleContextualNudgeTest, DragHandleNudgeNotShownForHiddenShelf) {
 
   TabletModeControllerTestApi().EnterTabletMode();
 
-  // Creates a widget that will become maximized in tablet mode.
+  // Creates a widget to put shelf into in-app state.
   views::Widget* widget = CreateTestWidget();
   widget->Maximize();
 
@@ -244,7 +302,7 @@ TEST_F(DragHandleContextualNudgeTest, DragHandleNudgeNotShownForHiddenShelf) {
 
   // The shelf is hidden, so the drag handle nudge should not be shown.
   EXPECT_TRUE(drag_handle->GetVisible());
-  EXPECT_FALSE(drag_handle->ShowingNudge());
+  EXPECT_FALSE(drag_handle->gesture_nudge_target_visibility());
   EXPECT_FALSE(drag_handle->has_show_drag_handle_timer_for_testing());
 
   PrefService* const prefs =
@@ -263,7 +321,7 @@ TEST_F(DragHandleContextualNudgeTest, DragHandleNudgeNotShownForHiddenShelf) {
 
   ASSERT_TRUE(drag_handle->has_show_drag_handle_timer_for_testing());
   drag_handle->fire_show_drag_handle_timer_for_testing();
-  EXPECT_TRUE(drag_handle->ShowingNudge());
+  EXPECT_TRUE(drag_handle->gesture_nudge_target_visibility());
 }
 
 // Tests that drag handle show is canceled when the shelf is hidden while the
@@ -273,7 +331,7 @@ TEST_F(DragHandleContextualNudgeTest, HidingShelfCancelsDragHandleShow) {
 
   TabletModeControllerTestApi().EnterTabletMode();
 
-  // Creates a widget that will become maximized in tablet mode.
+  // Creates a widget to put shelf into in-app state.
   views::Widget* widget = CreateTestWidget();
   widget->Maximize();
 
@@ -282,7 +340,7 @@ TEST_F(DragHandleContextualNudgeTest, HidingShelfCancelsDragHandleShow) {
 
   // The shelf is hidden, so the drag handle nudge should not be shown.
   EXPECT_TRUE(drag_handle->GetVisible());
-  EXPECT_FALSE(drag_handle->ShowingNudge());
+  EXPECT_FALSE(drag_handle->gesture_nudge_target_visibility());
   EXPECT_FALSE(drag_handle->has_show_drag_handle_timer_for_testing());
 
   // Swipe up to show the shelf - this should schedule the drag handle nudge.
@@ -293,7 +351,7 @@ TEST_F(DragHandleContextualNudgeTest, HidingShelfCancelsDragHandleShow) {
   // Hide the shelf, and verify the drag handle show is canceled.
   SwipeDownOnShelf();
   EXPECT_FALSE(drag_handle->has_show_drag_handle_timer_for_testing());
-  EXPECT_FALSE(drag_handle->ShowingNudge());
+  EXPECT_FALSE(drag_handle->gesture_nudge_target_visibility());
 
   PrefService* const prefs =
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();
@@ -308,7 +366,7 @@ TEST_F(DragHandleContextualNudgeTest,
        DragHandleNudgeNotHiddenByExtendingHotseat) {
   TabletModeControllerTestApi().EnterTabletMode();
 
-  // Creates a widget that will become maximized in tablet mode.
+  // Creates a widget to put shelf into in-app state.
   views::Widget* widget = CreateTestWidget();
   widget->Maximize();
 
@@ -317,12 +375,13 @@ TEST_F(DragHandleContextualNudgeTest,
 
   ASSERT_TRUE(drag_handle->has_show_drag_handle_timer_for_testing());
   drag_handle->fire_show_drag_handle_timer_for_testing();
-  EXPECT_TRUE(drag_handle->ShowingNudge());
+  EXPECT_TRUE(drag_handle->gesture_nudge_target_visibility());
 
   // Swipe up to extend the hotseat - verify that the drag handle remain
   // visible.
   SwipeUpOnShelf();
-  EXPECT_TRUE(drag_handle->ShowingNudge());
+  EXPECT_TRUE(drag_handle->GetVisible());
+  EXPECT_TRUE(drag_handle->gesture_nudge_target_visibility());
 }
 
 // Tests that the drag handle nudge is horizontally centered in screen, and
@@ -340,7 +399,7 @@ TEST_F(DragHandleContextualNudgeTest, DragHandleNudgeBoundsInScreen) {
   EXPECT_TRUE(drag_handle->GetVisible());
   ASSERT_TRUE(drag_handle->has_show_drag_handle_timer_for_testing());
   drag_handle->fire_show_drag_handle_timer_for_testing();
-  EXPECT_TRUE(drag_handle->ShowingNudge());
+  EXPECT_TRUE(drag_handle->gesture_nudge_target_visibility());
 
   // Calculates absolute difference between horizontal margins of |inner| rect
   // within |outer| rect.
@@ -369,7 +428,8 @@ TEST_F(DragHandleContextualNudgeTest, DragHandleNudgeBoundsInScreen) {
 
   // Change the display bounds, and verify the updated drag handle bounds.
   UpdateDisplay("1200x675");
-  EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
+  EXPECT_TRUE(
+      GetShelfWidget()->GetDragHandle()->gesture_nudge_target_visibility());
 
   // Verify that nudge widget is centered in shelf.
   shelf_bounds = shelf_widget->GetWindowBoundsInScreen();
@@ -391,7 +451,7 @@ TEST_F(DragHandleContextualNudgeTest,
        DragHandleNudgeNotHiddenDuringWindowDragFromShelf) {
   TabletModeControllerTestApi().EnterTabletMode();
 
-  // Creates a widget that will become maximized in tablet mode.
+  // Creates a widget to put shelf into in-app state.
   views::Widget* widget = CreateTestWidget();
   widget->Maximize();
 
@@ -400,7 +460,7 @@ TEST_F(DragHandleContextualNudgeTest,
 
   ASSERT_TRUE(drag_handle->has_show_drag_handle_timer_for_testing());
   drag_handle->fire_show_drag_handle_timer_for_testing();
-  EXPECT_TRUE(drag_handle->ShowingNudge());
+  EXPECT_TRUE(drag_handle->gesture_nudge_target_visibility());
 
   TabletModeControllerTestApi().LeaveTabletMode();
   // Advance time for more than a day (which should enable the nudge again).
@@ -429,12 +489,13 @@ TEST_F(DragHandleContextualNudgeTest,
                   drag_handle->has_hide_drag_handle_timer_for_testing());
             }
             const bool scroll_end = type == ui::ET_GESTURE_SCROLL_END;
-            EXPECT_EQ(!scroll_end, drag_handle->ShowingNudge());
+            EXPECT_EQ(!scroll_end,
+                      drag_handle->gesture_nudge_target_visibility());
           },
           drag_handle));
 
   // The nudge should be hidden when the gesture completes.
-  EXPECT_FALSE(drag_handle->ShowingNudge());
+  EXPECT_FALSE(drag_handle->gesture_nudge_target_visibility());
 }
 
 // Tests that window drag from shelf cancels drag handle contextual nudge from
@@ -443,7 +504,7 @@ TEST_F(DragHandleContextualNudgeTest,
        DragHandleNudgeNotShownDuringWindowDragFromShelf) {
   TabletModeControllerTestApi().EnterTabletMode();
 
-  // Creates a widget that will become maximized in tablet mode.
+  // Creates a widget to put shelf into in-app state.
   views::Widget* widget = CreateTestWidget();
   widget->Maximize();
 
@@ -478,12 +539,12 @@ TEST_F(DragHandleContextualNudgeTest,
                     drag_handle->has_show_drag_handle_timer_for_testing());
               }
             }
-            EXPECT_FALSE(drag_handle->ShowingNudge());
+            EXPECT_FALSE(drag_handle->gesture_nudge_target_visibility());
           },
           drag_handle));
 
   // The nudge should be hidden when the gesture completes.
-  EXPECT_FALSE(drag_handle->ShowingNudge());
+  EXPECT_FALSE(drag_handle->gesture_nudge_target_visibility());
 }
 
 // Tests that drag handle nudge gets hidden when the user performs window drag
@@ -491,7 +552,7 @@ TEST_F(DragHandleContextualNudgeTest,
 TEST_F(DragHandleContextualNudgeTest, FlingFromShelfToHomeHidesTheNudge) {
   TabletModeControllerTestApi().EnterTabletMode();
 
-  // Creates a widget that will become maximized in tablet mode.
+  // Creates a widget to put shelf into in-app state.
   views::Widget* widget = CreateTestWidget();
   widget->Maximize();
 
@@ -500,7 +561,7 @@ TEST_F(DragHandleContextualNudgeTest, FlingFromShelfToHomeHidesTheNudge) {
 
   ASSERT_TRUE(drag_handle->has_show_drag_handle_timer_for_testing());
   drag_handle->fire_show_drag_handle_timer_for_testing();
-  EXPECT_TRUE(drag_handle->ShowingNudge());
+  EXPECT_TRUE(drag_handle->gesture_nudge_target_visibility());
 
   const gfx::Point start = drag_handle->GetBoundsInScreen().CenterPoint();
   // Simulates window drag from shelf gesture, and verifies that the timer to
@@ -514,12 +575,13 @@ TEST_F(DragHandleContextualNudgeTest, FlingFromShelfToHomeHidesTheNudge) {
           [](DragHandle* drag_handle, ui::EventType type,
              const gfx::Vector2dF& offset) {
             const bool scroll_end = type == ui::ET_GESTURE_SCROLL_END;
-            EXPECT_EQ(!scroll_end, drag_handle->ShowingNudge());
+            EXPECT_EQ(!scroll_end,
+                      drag_handle->gesture_nudge_target_visibility());
           },
           drag_handle));
 
   // The nudge should be hidden when the gesture completes.
-  EXPECT_FALSE(drag_handle->ShowingNudge());
+  EXPECT_FALSE(drag_handle->gesture_nudge_target_visibility());
   GetAppListTestHelper()->CheckVisibility(true);
 }
 
@@ -528,7 +590,7 @@ TEST_F(DragHandleContextualNudgeTest, FlingFromShelfToHomeHidesTheNudge) {
 TEST_F(DragHandleContextualNudgeTest, DragFromShelfToHomeHidesTheNudge) {
   TabletModeControllerTestApi().EnterTabletMode();
 
-  // Creates a widget that will become maximized in tablet mode.
+  // Creates a widget to put shelf into in-app state.
   views::Widget* widget = CreateTestWidget();
   widget->Maximize();
 
@@ -537,7 +599,7 @@ TEST_F(DragHandleContextualNudgeTest, DragFromShelfToHomeHidesTheNudge) {
 
   ASSERT_TRUE(drag_handle->has_show_drag_handle_timer_for_testing());
   drag_handle->fire_show_drag_handle_timer_for_testing();
-  EXPECT_TRUE(drag_handle->ShowingNudge());
+  EXPECT_TRUE(drag_handle->gesture_nudge_target_visibility());
 
   const gfx::Point start = drag_handle->GetBoundsInScreen().CenterPoint();
   // Simulates window drag from shelf gesture, and verifies that the timer to
@@ -558,12 +620,13 @@ TEST_F(DragHandleContextualNudgeTest, DragFromShelfToHomeHidesTheNudge) {
                   window_drag_controller);
             }
             const bool scroll_end = type == ui::ET_GESTURE_SCROLL_END;
-            EXPECT_EQ(!scroll_end, drag_handle->ShowingNudge());
+            EXPECT_EQ(!scroll_end,
+                      drag_handle->gesture_nudge_target_visibility());
           },
           drag_handle));
 
   // The nudge should be hidden when the gesture completes.
-  EXPECT_FALSE(drag_handle->ShowingNudge());
+  EXPECT_FALSE(drag_handle->gesture_nudge_target_visibility());
 
   GetAppListTestHelper()->CheckVisibility(false);
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
@@ -573,7 +636,7 @@ TEST_F(DragHandleContextualNudgeTest, DragFromShelfToHomeHidesTheNudge) {
 TEST_F(DragHandleContextualNudgeTest, OverviewCancelsNudgeShow) {
   TabletModeControllerTestApi().EnterTabletMode();
 
-  // Creates a widget that will become maximized in tablet mode.
+  // Creates a widget to put shelf into in-app state.
   views::Widget* widget = CreateTestWidget();
   widget->Maximize();
 
@@ -589,7 +652,7 @@ TEST_F(DragHandleContextualNudgeTest, OverviewCancelsNudgeShow) {
 TEST_F(DragHandleContextualNudgeTest, DragHandleTapShowNudgeInOverview) {
   TabletModeControllerTestApi().EnterTabletMode();
 
-  // Creates a widget that will become maximized in tablet mode.
+  // Creates a widget to put shelf into in-app state.
   views::Widget* widget = CreateTestWidget();
   widget->Maximize();
 
@@ -598,7 +661,7 @@ TEST_F(DragHandleContextualNudgeTest, DragHandleTapShowNudgeInOverview) {
 
   ASSERT_TRUE(drag_handle->has_show_drag_handle_timer_for_testing());
   drag_handle->fire_show_drag_handle_timer_for_testing();
-  EXPECT_TRUE(drag_handle->ShowingNudge());
+  EXPECT_TRUE(drag_handle->gesture_nudge_target_visibility());
 
   TabletModeControllerTestApi().LeaveTabletMode();
   TabletModeControllerTestApi().EnterTabletMode();
@@ -610,16 +673,16 @@ TEST_F(DragHandleContextualNudgeTest, DragHandleTapShowNudgeInOverview) {
       drag_handle->GetBoundsInScreen().CenterPoint());
 
   EXPECT_TRUE(drag_handle->GetVisible());
-  EXPECT_TRUE(drag_handle->ShowingNudge());
+  EXPECT_TRUE(drag_handle->gesture_nudge_target_visibility());
 
   EXPECT_TRUE(drag_handle->has_hide_drag_handle_timer_for_testing());
   drag_handle->fire_hide_drag_handle_timer_for_testing();
-  EXPECT_FALSE(drag_handle->ShowingNudge());
+  EXPECT_FALSE(drag_handle->gesture_nudge_target_visibility());
 
   // Tapping the drag handle again will show the nudge again.
   GetEventGenerator()->GestureTapAt(
       drag_handle->GetBoundsInScreen().CenterPoint());
-  EXPECT_TRUE(drag_handle->ShowingNudge());
+  EXPECT_TRUE(drag_handle->gesture_nudge_target_visibility());
 }
 
 }  // namespace ash

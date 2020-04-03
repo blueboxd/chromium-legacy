@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "extensions/browser/api/declarative_net_request/request_action.h"
 #include "extensions/browser/api/declarative_net_request/rules_monitor_service.h"
+#include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
@@ -221,11 +222,14 @@ void ActionTracker::ResetTrackedInfoForTab(int tab_id, int64_t navigation_id) {
 
   DCHECK(rules_monitor_service);
 
-  // Use |extensions_with_rulesets| because there may not be an entry for some
+  // Use GetExtensionsWithRulesets() because there may not be an entry for some
   // extensions in |rules_tracked_|. However, the action count should still be
   // surfaced for those extensions if the preference is enabled.
+  // TODO(kelvinjiang): Investigate if calling UpdateActionCount for all
+  // extensions with rulesets is necessary now that we don't show the action
+  // count if it is zero.
   for (const auto& extension_id :
-       rules_monitor_service->extensions_with_rulesets()) {
+       rules_monitor_service->ruleset_manager()->GetExtensionsWithRulesets()) {
     ExtensionNavigationIdKey navigation_key(extension_id, navigation_id);
 
     TrackedInfo& tab_info = rules_tracked_[{extension_id, tab_id}];

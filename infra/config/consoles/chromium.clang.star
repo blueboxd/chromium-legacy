@@ -195,12 +195,17 @@ luci.console_view(
         ),
         luci.console_view_entry(
             builder = 'ci/ToTiOS',
-            category = 'iOS',
+            category = 'iOS|public',
             short_name = 'sim',
         ),
         luci.console_view_entry(
             builder = 'ci/ToTiOSDevice',
-            category = 'iOS',
+            category = 'iOS|public',
+            short_name = 'dev',
+        ),
+        luci.console_view_entry(
+            builder = 'chrome:ci/clang-tot-device',
+            category = 'iOS|internal',
             short_name = 'dev',
         ),
         luci.console_view_entry(

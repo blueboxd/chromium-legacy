@@ -4,6 +4,7 @@
 
 #include "services/device/geolocation/win/location_provider_winrt.h"
 
+#include <windows.devices.enumeration.h>
 #include <windows.foundation.h>
 #include <wrl/event.h>
 
@@ -18,6 +19,10 @@
 
 namespace device {
 namespace {
+using ABI::Windows::Devices::Enumeration::DeviceAccessStatus;
+using ABI::Windows::Devices::Enumeration::DeviceClass;
+using ABI::Windows::Devices::Enumeration::IDeviceAccessInformation;
+using ABI::Windows::Devices::Enumeration::IDeviceAccessInformationStatics;
 using ABI::Windows::Devices::Geolocation::Geolocator;
 using ABI::Windows::Devices::Geolocation::IGeocoordinate;
 using ABI::Windows::Devices::Geolocation::IGeolocator;
@@ -83,6 +88,33 @@ base::Optional<DOUBLE> GetReferenceOptionalDouble(F&& getter) {
     return reference_value->get_Value(value);
   });
 }
+
+bool IsSystemLocationSettingEnabled() {
+  ComPtr<IDeviceAccessInformationStatics> dev_access_info_statics;
+  HRESULT hr = base::win::GetActivationFactory<
+      IDeviceAccessInformationStatics,
+      RuntimeClass_Windows_Devices_Enumeration_DeviceAccessInformation>(
+      &dev_access_info_statics);
+  if (FAILED(hr)) {
+    VLOG(1) << "IDeviceAccessInformationStatics failed: " << hr;
+    return true;
+  }
+
+  ComPtr<IDeviceAccessInformation> dev_access_info;
+  hr = dev_access_info_statics->CreateFromDeviceClass(
+      DeviceClass::DeviceClass_Location, &dev_access_info);
+  if (FAILED(hr)) {
+    VLOG(1) << "IDeviceAccessInformation failed: " << hr;
+    return true;
+  }
+
+  auto status = DeviceAccessStatus::DeviceAccessStatus_Unspecified;
+  dev_access_info->get_CurrentStatus(&status);
+
+  return !(status == DeviceAccessStatus::DeviceAccessStatus_DeniedBySystem ||
+           status == DeviceAccessStatus::DeviceAccessStatus_DeniedByUser);
+}
+
 }  // namespace
 
 // LocationProviderWinrt
@@ -429,7 +461,7 @@ HRESULT LocationProviderWinrt::GetGeolocator(IGeolocator** geo_locator) {
 std::unique_ptr<LocationProvider> NewSystemLocationProvider() {
   if (!base::FeatureList::IsEnabled(
           features::kWinrtGeolocationImplementation) ||
-      !IsWinRTSupported()) {
+      !IsWinRTSupported() || !IsSystemLocationSettingEnabled()) {
     return nullptr;
   }
 

@@ -154,10 +154,20 @@ class CORE_EXPORT StyleCascade {
                           CascadePriority,
                           const ActiveInterpolations&,
                           CascadeResolver&);
+  // Surrogates (such as css-logical properties) require special handling, since
+  // both the surrogate and the original property exist in the cascade at the
+  // same time. For example, 'inline-size' and 'width' may both exist in the
+  // CascadeMap, and the winner must be determined Apply-time, since we don't
+  // know which physical property 'inline-size' corresponds to before
+  // 'writing-mode' and 'direction' have been applied.
+  void ApplySurrogate(const CSSProperty&, CascadePriority, CascadeResolver&);
 
   // Looks up a value with random access, and applies it.
   void LookupAndApply(const CSSPropertyName&, CascadeResolver&);
   void LookupAndApply(const CSSProperty&, CascadeResolver&);
+  void LookupAndApplyValue(const CSSProperty&,
+                           CascadePriority,
+                           CascadeResolver&);
   void LookupAndApplyDeclaration(const CSSProperty&,
                                  CascadePriority,
                                  CascadeResolver&);
@@ -215,53 +225,6 @@ class CORE_EXPORT StyleCascade {
     String base_url_;
     WTF::TextEncoding charset_;
   };
-
-  enum class Surrogate { kSkip, kApply, kNoSurrogate };
-
-  // A property can be skipped apply-time if it's a surrogate property.
-  //
-  // A surrogate property is an alias-like property that shares a storage
-  // location on ComputedStyle with the property it's a surrogate for. Unlike
-  // aliases, they are not resolved parse-time, but exist alongside the original
-  // property in the parsed rule.
-  //
-  // For example, consider a rule:
-  //
-  // div {
-  //   inline-size: 20px;
-  //   width: 10px;
-  // }
-  //
-  // The inline-size property is a surrogate of width in this case. When we
-  // encounter inline-size during Apply, we check the CascadePriority of the
-  // the original property (width). Since width has a higher priority (it
-  // appears later), we skip applying inline-size.
-  //
-  // Had the order been reversed:
-  //
-  //  div {
-  //    width: 10px;
-  //    inline-size: 20px;
-  //  }
-  //
-  // we would first apply width (it's unaware that it has surrogates pointing to
-  // it), and then later also apply inline-size (we check the CascadePriority
-  // of width and find that it's lower than inline-size's).
-  //
-  // Surrogate properties should be skipped (i.e. not applied after all) if
-  // the corresponding original property has a higher priority.
-  //
-  Surrogate ResolveSurrogate(const CSSProperty&,
-                             CascadePriority,
-                             CascadeResolver&);
-
-  inline Surrogate ResolveIfSurrogate(const CSSProperty& property,
-                                      CascadePriority priority,
-                                      CascadeResolver& resolver) {
-    if (!property.IsSurrogate())
-      return Surrogate::kNoSurrogate;
-    return ResolveSurrogate(property, priority, resolver);
-  }
 
   // Resolving Values
   //
@@ -330,6 +293,7 @@ class CORE_EXPORT StyleCascade {
   void MarkHasVariableReference(const CSSProperty&);
 
   const Document& GetDocument() const;
+  const CSSProperty& SurrogateFor(const CSSProperty& surrogate) const;
 
   bool HasAuthorDeclaration(const CSSProperty&) const;
   bool HasAuthorBorder() const;

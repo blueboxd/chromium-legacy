@@ -271,7 +271,7 @@ void MessagePumpFuchsia::Run(Delegate* delegate) {
   AutoReset<bool> auto_reset_keep_running(&keep_running_, true);
 
   for (;;) {
-    const Delegate::NextWorkInfo next_work_info = delegate->DoSomeWork();
+    const Delegate::NextWorkInfo next_work_info = delegate->DoWork();
     if (!keep_running_)
       break;
 

@@ -30,6 +30,7 @@ class DeepScanningBrowserTestBase : public InProcessBrowserTest {
       BlockUnsupportedFiletypesValues state);
   void SetBlockLargeFileTransferPolicy(BlockLargeFileTransferValues state);
   void SetUnsafeEventsReportingPolicy(bool report);
+  void AddUrlToCheckComplianceOfDownloads(const std::string& url);
 
   // Sets up a FakeDeepScanningDialogDelegate to use this class's StatusCallback
   // and EncryptionStatusCallback. Also sets up a test DM token.

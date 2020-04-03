@@ -8,8 +8,6 @@
 #include "base/android/jni_string.h"
 #include "content/browser/android/content_startup_flags.h"
 #include "content/browser/browser_main_loop.h"
-#include "ppapi/buildflags/buildflags.h"
-
 #include "content/public/android/content_jni_headers/BrowserStartupControllerImpl_jni.h"
 
 using base::android::JavaParamRef;
@@ -36,14 +34,6 @@ static void JNI_BrowserStartupControllerImpl_SetCommandLineFlags(
     JNIEnv* env,
     jboolean single_process) {
   SetContentCommandLineFlags(static_cast<bool>(single_process));
-}
-
-static jboolean JNI_BrowserStartupControllerImpl_IsOfficialBuild(JNIEnv* env) {
-#if defined(OFFICIAL_BUILD)
-  return true;
-#else
-  return false;
-#endif
 }
 
 static void JNI_BrowserStartupControllerImpl_FlushStartupTasks(JNIEnv* env) {

@@ -6,6 +6,7 @@
 import ast
 import collections
 import json
+import re
 
 
 def GetAllConfigsMaster(masters):
@@ -169,15 +170,16 @@ def CheckMasterBucketConsistency(errs, masters_file, buckets_file):
 
   # Cross check builders
   configs_by_builder = _GetConfigsByBuilder(master_contents['masters'])
-  for builders in bucket_contents['buckets'].values():
+  for bucketname, builders in bucket_contents['buckets'].items():
     missing = check_missing(builders, configs_by_builder)
-    errs.extend('Builder "%s" from mb_config_buckets.pyl '
-                'not found in mb_config.pyl' % builder for builder in missing)
+    errs.extend('Builder "%s" in bucket "%s" from mb_config_buckets.pyl '
+                'not found in mb_config.pyl' % (builder, bucketname)
+                for builder in missing)
 
     for buildername, config in builders.items():
       if config not in configs_by_builder[buildername]:
-        errs.append('Builder "%s" from mb_config_buckets.pyl '
-                    'doesn\'t match mb_config.pyl' % buildername)
+        errs.append('Builder "%s" in bucket "%s" from mb_config_buckets.pyl '
+                    'doesn\'t match mb_config.pyl' % (buildername, bucketname))
 
   def check_mismatch(bucket_dict, master_dict):
     mismatched = []

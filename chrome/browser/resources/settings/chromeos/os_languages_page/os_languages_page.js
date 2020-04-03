@@ -87,7 +87,7 @@ Polymer({
     // fire once.
     assert(!oldConfig);
     this.focusConfig.set(
-        settings.routes.INPUT_METHODS.path,
+        settings.routes.OS_LANGUAGES_INPUT_METHODS.path,
         () => cr.ui.focusWithoutInk(this.$.manageInputMethods));
   },
 
@@ -188,7 +188,8 @@ Polymer({
    * @private
    */
   onManageInputMethodsTap_() {
-    settings.Router.getInstance().navigateTo(settings.routes.INPUT_METHODS);
+    settings.Router.getInstance().navigateTo(
+        settings.routes.OS_LANGUAGES_INPUT_METHODS);
   },
 
   /**

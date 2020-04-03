@@ -1128,7 +1128,8 @@ void BaseRenderingContext2D::DrawImageInternal(cc::PaintCanvas* c,
     FloatRect corrected_src_rect = src_rect;
     if (respect_orientation == kRespectImageOrientation &&
         !image->HasDefaultOrientation()) {
-      corrected_src_rect = image->CorrectSrcRectForImageOrientation(src_rect);
+      corrected_src_rect =
+          image->CorrectSrcRectForImageOrientation(src_rect.Size(), src_rect);
     }
     image_flags.setAntiAlias(ShouldDrawImageAntialiased(dst_rect));
     image->Draw(c, image_flags, dst_rect, corrected_src_rect,

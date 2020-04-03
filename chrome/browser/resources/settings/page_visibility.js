@@ -119,6 +119,13 @@ cr.define('settings', function() {
     // </if>
   }
 
+  /* #export */ function setPageVisibilityForTesting(testVisibility) {
+    settings.pageVisibility = testVisibility;
+  }
+
   // #cr_define_end
-  return {pageVisibility: pageVisibility};
+  return {
+    pageVisibility: pageVisibility,
+    setPageVisibilityForTesting: setPageVisibilityForTesting,
+  };
 });

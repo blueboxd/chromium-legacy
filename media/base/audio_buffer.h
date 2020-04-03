@@ -157,6 +157,10 @@ class MEDIA_EXPORT AudioBuffer
   // Return the sample rate.
   int sample_rate() const { return sample_rate_; }
 
+  // Return the sample format of the internal buffer, not that of what is
+  // returned by ReadFrames().
+  int sample_format() const { return sample_format_; }
+
   // Return the channel layout.
   ChannelLayout channel_layout() const { return channel_layout_; }
 

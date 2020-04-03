@@ -335,6 +335,7 @@ scoped_refptr<viz::ContextProviderCommandBuffer> CreateOffscreenContext(
   attributes.lose_context_when_out_of_memory = true;
   attributes.enable_gles2_interface = support_gles2_interface;
   attributes.enable_raster_interface = support_raster_interface;
+  attributes.enable_grcontext = support_grcontext;
   // Using RasterDecoder for OOP-R backend, so we need support_raster_interface
   // and !support_gles2_interface.
   attributes.enable_oop_rasterization = support_oop_rasterization &&
@@ -1220,8 +1221,8 @@ scoped_refptr<viz::ContextProviderCommandBuffer>
 RenderThreadImpl::SharedMainThreadContextProvider() {
   DCHECK(IsMainThread());
   if (shared_main_thread_contexts_ &&
-      shared_main_thread_contexts_->ContextGL()->GetGraphicsResetStatusKHR() ==
-          GL_NO_ERROR)
+      shared_main_thread_contexts_->RasterInterface()
+              ->GetGraphicsResetStatusKHR() == GL_NO_ERROR)
     return shared_main_thread_contexts_;
 
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(

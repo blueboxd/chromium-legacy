@@ -113,22 +113,16 @@ RulesMonitorService* RulesMonitorService::Get(
       browser_context);
 }
 
-bool RulesMonitorService::HasAnyRegisteredRulesets() const {
-  return !extensions_with_rulesets_.empty();
-}
-
-bool RulesMonitorService::HasRegisteredRuleset(
-    const ExtensionId& extension_id) const {
-  return extensions_with_rulesets_.find(extension_id) !=
-         extensions_with_rulesets_.end();
-}
-
 void RulesMonitorService::UpdateDynamicRules(
     const Extension& extension,
     std::vector<int> rule_ids_to_remove,
     std::vector<api::declarative_net_request::Rule> rules_to_add,
     DynamicRuleUpdateUICallback callback) {
-  DCHECK(HasRegisteredRuleset(extension.id()));
+  // TODO(crbug.com/953894): Subtle: The extension might just have been enabled
+  // and the ruleset for that extension might still be loading. In that case,
+  // the ruleset loading might race with updating the dynamic rules. If updating
+  // the dynamic rules wins the race, the subsequent completion of load will
+  // cause a DCHECK in RulesetManager::AddRuleset.
 
   LoadRequestData data(extension.id());
 
@@ -153,7 +147,12 @@ RulesMonitorService::RulesMonitorService(
       context_(browser_context),
       ruleset_manager_(browser_context),
       action_tracker_(browser_context) {
-  registry_observer_.Add(extension_registry_);
+  // Don't monitor extension lifecycle if the API is not available. This is
+  // useful since we base some of our actions (like loading dynamic ruleset on
+  // extension load) on the presence of certain extension prefs. These may still
+  // be remaining from an earlier install on which the feature was available.
+  if (IsAPIAvailable())
+    registry_observer_.Add(extension_registry_);
 }
 
 RulesMonitorService::~RulesMonitorService() = default;
@@ -180,11 +179,6 @@ void RulesMonitorService::OnExtensionLoaded(
     const Extension* extension) {
   DCHECK_EQ(context_, browser_context);
 
-  if (!declarative_net_request::DNRManifestData::HasRuleset(*extension))
-    return;
-
-  DCHECK(IsAPIAvailable());
-
   LoadRequestData load_data(extension->id());
   int expected_ruleset_checksum;
 
@@ -193,19 +187,22 @@ void RulesMonitorService::OnExtensionLoaded(
     std::vector<RulesetSource> static_rulesets =
         RulesetSource::CreateStatic(*extension);
 
-    // TODO(crbug.com/754526): Load all static rulesets for the extension.
-    RulesetInfo static_ruleset(std::move(static_rulesets[0]));
-    bool has_checksum = prefs_->GetDNRStaticRulesetChecksum(
-        extension->id(), static_ruleset.source().id(),
-        &expected_ruleset_checksum);
+    if (!static_rulesets.empty()) {
+      // TODO(crbug.com/754526): Load all static rulesets for the extension.
+      RulesetInfo static_ruleset(std::move(static_rulesets[0]));
+      bool has_checksum = prefs_->GetDNRStaticRulesetChecksum(
+          extension->id(), static_ruleset.source().id(),
+          &expected_ruleset_checksum);
 
-    if (!has_checksum) {
-      // This might happen on prefs corruption.
-      warning_service_->AddWarnings(
-          {Warning::CreateRulesetFailedToLoadWarning(load_data.extension_id)});
-    } else {
-      static_ruleset.set_expected_checksum(expected_ruleset_checksum);
-      load_data.rulesets.push_back(std::move(static_ruleset));
+      if (!has_checksum) {
+        // This might happen on prefs corruption.
+        warning_service_->AddWarnings(
+            {Warning::CreateRulesetFailedToLoadWarning(
+                load_data.extension_id)});
+      } else {
+        static_ruleset.set_expected_checksum(expected_ruleset_checksum);
+        load_data.rulesets.push_back(std::move(static_ruleset));
+      }
     }
   }
 
@@ -234,12 +231,10 @@ void RulesMonitorService::OnExtensionUnloaded(
   DCHECK_EQ(context_, browser_context);
 
   // Return early if the extension does not have an active indexed ruleset.
-  if (!extensions_with_rulesets_.erase(extension->id()))
+  if (!ruleset_manager_.GetMatcherForExtension(extension->id()))
     return;
 
-  DCHECK(IsAPIAvailable());
-
-  UnloadRuleset(extension->id());
+  UnloadRulesets(extension->id());
 }
 
 void RulesMonitorService::OnExtensionUninstalled(
@@ -272,29 +267,25 @@ void RulesMonitorService::OnExtensionUninstalled(
 }
 
 void RulesMonitorService::OnRulesetLoaded(LoadRequestData load_data) {
-  // Currently we only support a single static and an optional dynamic ruleset
-  // per extension.
-  DCHECK(load_data.rulesets.size() == 1u || load_data.rulesets.size() == 2u);
-  RulesetInfo& static_ruleset = load_data.rulesets[0];
-  DCHECK_GE(static_ruleset.source().id(), kMinValidStaticRulesetID)
-      << static_ruleset.source().id();
+  DCHECK(!load_data.rulesets.empty());
 
-  RulesetInfo* dynamic_ruleset =
-      load_data.rulesets.size() == 2 ? &load_data.rulesets[1] : nullptr;
-  DCHECK(!dynamic_ruleset ||
-         dynamic_ruleset->source().id() == kDynamicRulesetID)
-      << dynamic_ruleset->source().id();
+  // Update checksums for all rulesets.
+  // TODO(crbug.com/754526): The extension may have been uninstalled by this
+  // point, in which case setting the prefs is incorrect.
+  for (const RulesetInfo& ruleset : load_data.rulesets) {
+    if (!ruleset.new_checksum())
+      continue;
 
-  // Update the ruleset checksums if needed.
-  if (static_ruleset.new_checksum()) {
-    prefs_->SetDNRStaticRulesetChecksum(load_data.extension_id,
-                                        static_ruleset.source().id(),
-                                        *(static_ruleset.new_checksum()));
-  }
+    const bool is_dynamic_ruleset = ruleset.source().id() == kDynamicRulesetID;
 
-  if (dynamic_ruleset && dynamic_ruleset->new_checksum()) {
-    prefs_->SetDNRDynamicRulesetChecksum(load_data.extension_id,
-                                         *(dynamic_ruleset->new_checksum()));
+    if (is_dynamic_ruleset) {
+      prefs_->SetDNRDynamicRulesetChecksum(load_data.extension_id,
+                                           *(ruleset.new_checksum()));
+    } else {
+      prefs_->SetDNRStaticRulesetChecksum(load_data.extension_id,
+                                          ruleset.source().id(),
+                                          *(ruleset.new_checksum()));
+    }
   }
 
   // It's possible that the extension has been disabled since the initial load
@@ -304,11 +295,11 @@ void RulesMonitorService::OnRulesetLoaded(LoadRequestData load_data) {
     return;
 
   CompositeMatcher::MatcherList matchers;
-  if (static_ruleset.did_load_successfully()) {
-    matchers.push_back(static_ruleset.TakeMatcher());
-  }
-  if (dynamic_ruleset && dynamic_ruleset->did_load_successfully()) {
-    matchers.push_back(dynamic_ruleset->TakeMatcher());
+  for (RulesetInfo& ruleset : load_data.rulesets) {
+    if (!ruleset.did_load_successfully())
+      continue;
+
+    matchers.push_back(ruleset.TakeMatcher());
   }
 
   // A ruleset failed to load. Notify the user.
@@ -320,9 +311,8 @@ void RulesMonitorService::OnRulesetLoaded(LoadRequestData load_data) {
   if (matchers.empty())
     return;
 
-  extensions_with_rulesets_.insert(load_data.extension_id);
-  LoadRuleset(load_data.extension_id,
-              std::make_unique<CompositeMatcher>(std::move(matchers)));
+  LoadRulesets(load_data.extension_id,
+               std::make_unique<CompositeMatcher>(std::move(matchers)));
 }
 
 void RulesMonitorService::OnDynamicRulesUpdated(
@@ -364,7 +354,7 @@ void RulesMonitorService::OnDynamicRulesUpdated(
   UpdateRuleset(load_data.extension_id, dynamic_ruleset.TakeMatcher());
 }
 
-void RulesMonitorService::UnloadRuleset(const ExtensionId& extension_id) {
+void RulesMonitorService::UnloadRulesets(const ExtensionId& extension_id) {
   bool had_extra_headers_matcher = ruleset_manager_.HasAnyExtraHeadersMatcher();
   ruleset_manager_.RemoveRuleset(extension_id);
   action_tracker_.ClearExtensionData(extension_id);
@@ -376,7 +366,7 @@ void RulesMonitorService::UnloadRuleset(const ExtensionId& extension_id) {
   }
 }
 
-void RulesMonitorService::LoadRuleset(
+void RulesMonitorService::LoadRulesets(
     const ExtensionId& extension_id,
     std::unique_ptr<CompositeMatcher> matcher) {
   bool increment_extra_headers =
@@ -397,7 +387,16 @@ void RulesMonitorService::UpdateRuleset(
 
   CompositeMatcher* matcher =
       ruleset_manager_.GetMatcherForExtension(extension_id);
-  DCHECK(matcher);
+
+  // The extension didn't have any active rulesets.
+  if (!matcher) {
+    CompositeMatcher::MatcherList matchers;
+    matchers.push_back(std::move(ruleset_matcher));
+    LoadRulesets(extension_id,
+                 std::make_unique<CompositeMatcher>(std::move(matchers)));
+    return;
+  }
+
   matcher->AddOrUpdateRuleset(std::move(ruleset_matcher));
 
   bool has_extra_headers_matcher = ruleset_manager_.HasAnyExtraHeadersMatcher();

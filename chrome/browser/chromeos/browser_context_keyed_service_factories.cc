@@ -27,13 +27,6 @@
 #include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
 #include "chrome/browser/chromeos/smb_client/smb_service_factory.h"
 #include "chrome/browser/chromeos/tether/tether_service_factory.h"
-#include "chrome/browser/extensions/api/platform_keys/verify_trust_api.h"
-#include "chrome/browser/extensions/api/terminal/terminal_private_api.h"
-#include "extensions/browser/api/clipboard/clipboard_api.h"
-#include "extensions/browser/api/networking_config/networking_config_service_factory.h"
-#include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_private_api.h"
-#include "extensions/browser/api/vpn_provider/vpn_service_factory.h"
-#include "extensions/browser/api/webcam_private/webcam_private_api.h"
 
 #if defined(USE_CUPS)
 #include "chrome/browser/chromeos/extensions/printing/printing_api_handler.h"
@@ -47,28 +40,21 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   android_sms::AndroidSmsServiceFactory::GetInstance();
   arc::ArcAccessibilityHelperBridge::CreateFactory();
   bluetooth::DebugLogsManagerFactory::GetInstance();
-  guest_os::GuestOsRegistryServiceFactory::GetInstance();
-  CupsPrintJobManagerFactory::GetInstance();
-  CupsPrintersManagerFactory::GetInstance();
 #if defined(USE_CUPS)
   CupsProxyServiceManagerFactory::GetInstance();
 #endif
+  CupsPrintersManagerFactory::GetInstance();
+  CupsPrintJobManagerFactory::GetInstance();
   EasyUnlockServiceFactory::GetInstance();
-
-  extensions::ClipboardAPI::GetFactoryInstance();
   extensions::InputMethodAPI::GetFactoryInstance();
   extensions::MediaPlayerAPI::GetFactoryInstance();
-  extensions::NetworkingConfigServiceFactory::GetInstance();
-  extensions::SessionStateChangedEventDispatcher::GetFactoryInstance();
 #if defined(USE_CUPS)
   extensions::PrintingAPIHandler::GetFactoryInstance();
 #endif
   extensions::PrintJobFinishedEventDispatcher::GetFactoryInstance();
-  extensions::TerminalPrivateAPI::GetFactoryInstance();
-  extensions::VerifyTrustAPI::GetFactoryInstance();
-  extensions::VirtualKeyboardAPI::GetFactoryInstance();
-  extensions::WebcamPrivateAPI::GetFactoryInstance();
+  extensions::SessionStateChangedEventDispatcher::GetFactoryInstance();
   file_manager::EventRouterFactory::GetInstance();
+  guest_os::GuestOsRegistryServiceFactory::GetInstance();
   KerberosCredentialsManagerFactory::GetInstance();
   OwnerSettingsServiceChromeOSFactory::GetInstance();
   plugin_vm::PluginVmEngagementMetricsService::Factory::GetInstance();
@@ -79,7 +65,6 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   smb_client::SmbServiceFactory::GetInstance();
   SyncedPrintersManagerFactory::GetInstance();
   TetherServiceFactory::GetInstance();
-  VpnServiceFactory::GetInstance();
 }
 
 }  // namespace chromeos

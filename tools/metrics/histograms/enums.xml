@@ -11148,6 +11148,10 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="kSwitchToClamshell"/>
   <int value="4" label="kExitToHomeScreen"/>
   <int value="5" label="kTimeout"/>
+  <int value="6" label="kActiveWindowChanged"/>
+  <int value="7" label="kNavigationEntryChanged"/>
+  <int value="8" label="kBackGestureStarted"/>
+  <int value="9" label="kUserSessionInactive"/>
 </enum>
 
 <enum name="ContextualSearchBarOverlapSeen">

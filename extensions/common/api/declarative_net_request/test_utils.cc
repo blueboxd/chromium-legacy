@@ -90,13 +90,19 @@ std::unique_ptr<base::DictionaryValue> CreateManifest(
     rule_resources_builder.Append(ruleset.ToValue());
   }
 
-  return DictionaryBuilder()
-      .Set(keys::kName, "Test extension")
-      .Set(keys::kDeclarativeNetRequestKey,
-           DictionaryBuilder()
-               .Set(keys::kDeclarativeRuleResourcesKey,
-                    rule_resources_builder.Build())
-               .Build())
+  DictionaryBuilder manifest_builder;
+
+  if (flags & kConfig_OmitDeclarativeNetRequestKey) {
+    DCHECK(ruleset_info.empty());
+  } else {
+    manifest_builder.Set(keys::kDeclarativeNetRequestKey,
+                         DictionaryBuilder()
+                             .Set(keys::kDeclarativeRuleResourcesKey,
+                                  rule_resources_builder.Build())
+                             .Build());
+  }
+
+  return manifest_builder.Set(keys::kName, "Test extension")
       .Set(keys::kPermissions, ToListValue(permissions))
       .Set(keys::kVersion, "1.0")
       .Set(keys::kManifestVersion, 2)

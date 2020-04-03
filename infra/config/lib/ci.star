@@ -383,10 +383,10 @@ def memory_builder(
   )
 
 
-def swangle_builder(*, name, **kwargs):
+def swangle_builder(*, name, builderless=True, **kwargs):
   return ci.builder(
       name = name,
-      builderless = True,
+      builderless = builderless,
       mastername = 'chromium.swangle',
       service_account =
       'chromium-ci-gpu-builder@chops-service-accounts.iam.gserviceaccount.com',
@@ -402,6 +402,20 @@ def swangle_linux_builder(
       name = name,
       goma_backend = builders.goma.backend.RBE_PROD,
       os = builders.os.LINUX_DEFAULT,
+      **kwargs
+  )
+
+
+def swangle_mac_builder(
+    *,
+    name,
+    **kwargs):
+  return swangle_builder(
+      name = name,
+      builderless = False,
+      cores = 4,
+      goma_backend = builders.goma.backend.RBE_PROD,
+      os = builders.os.MAC_ANY,
       **kwargs
   )
 
@@ -455,6 +469,7 @@ ci = struct(
     mac_ios_builder = mac_ios_builder,
     memory_builder = memory_builder,
     swangle_linux_builder = swangle_linux_builder,
+    swangle_mac_builder = swangle_mac_builder,
     swangle_windows_builder = swangle_windows_builder,
     win_builder = win_builder,
 )

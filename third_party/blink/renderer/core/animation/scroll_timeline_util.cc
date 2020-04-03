@@ -36,21 +36,8 @@ scoped_refptr<CompositorScrollTimeline> ToCompositorScrollTimeline(
   CompositorScrollTimeline::ScrollDirection orientation = ConvertOrientation(
       scroll_timeline->GetOrientation(), box ? box->Style() : nullptr);
 
-  base::Optional<double> start_scroll_offset;
-  base::Optional<double> end_scroll_offset;
-  if (box) {
-    double current_offset;
-    double max_offset;
-    scroll_timeline->GetCurrentAndMaxOffset(box, current_offset, max_offset);
-
-    double resolved_start_scroll_offset = 0;
-    double resolved_end_scroll_offset = max_offset;
-    scroll_timeline->ResolveScrollStartAndEnd(box, max_offset,
-                                              resolved_start_scroll_offset,
-                                              resolved_end_scroll_offset);
-    start_scroll_offset = resolved_start_scroll_offset;
-    end_scroll_offset = resolved_end_scroll_offset;
-  }
+  auto start_scroll_offset = scroll_timeline->GetResolvedStartScrollOffset();
+  auto end_scroll_offset = scroll_timeline->GetResolvedEndScrollOffset();
 
   return CompositorScrollTimeline::Create(
       element_id, orientation, start_scroll_offset, end_scroll_offset,

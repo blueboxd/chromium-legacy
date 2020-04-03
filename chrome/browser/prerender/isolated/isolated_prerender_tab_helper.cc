@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service_factory.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_features.h"
@@ -33,7 +34,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
-#include "content/public/common/user_agent.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_isolation_key.h"
@@ -545,7 +545,7 @@ void IsolatedPrerenderTabHelper::CreateIsolatedURLLoaderFactory() {
       IsolatedPrerenderServiceFactory::GetForProfile(profile_);
 
   auto context_params = network::mojom::NetworkContextParams::New();
-  context_params->user_agent = content::GetFrozenUserAgent(true).as_string();
+  context_params->user_agent = ::GetUserAgent();
   context_params->initial_custom_proxy_config =
       isolated_prerender_service->proxy_configurator()
           ->CreateCustomProxyConfig();

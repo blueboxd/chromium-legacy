@@ -1415,28 +1415,29 @@ void TSFTextStore::GetStyle(const TF_DISPLAYATTRIBUTE& attribute,
   // any style or not.
   span->thickness = attribute.fBoldLine ? ImeTextSpan::Thickness::kThick
                                         : ImeTextSpan::Thickness::kThin;
-  span->underline_style = ImeTextSpan::UnderlineStyle::kSolid;
-  if (attribute.lsStyle != TF_LS_NONE) {
-    switch (attribute.lsStyle) {
-      case TF_LS_SOLID: {
-        span->underline_style = ImeTextSpan::UnderlineStyle::kSolid;
-        break;
-      }
-      case TF_LS_DOT: {
-        span->underline_style = ImeTextSpan::UnderlineStyle::kDot;
-        break;
-      }
-      case TF_LS_DASH: {
-        span->underline_style = ImeTextSpan::UnderlineStyle::kDash;
-        break;
-      }
-      case TF_LS_SQUIGGLE: {
-        span->underline_style = ImeTextSpan::UnderlineStyle::kSquiggle;
-        break;
-      }
-      default: {
-        span->underline_style = ImeTextSpan::UnderlineStyle::kSolid;
-      }
+  switch (attribute.lsStyle) {
+    case TF_LS_SOLID: {
+      span->underline_style = ImeTextSpan::UnderlineStyle::kSolid;
+      break;
+    }
+    case TF_LS_DOT: {
+      span->underline_style = ImeTextSpan::UnderlineStyle::kDot;
+      break;
+    }
+    case TF_LS_DASH: {
+      span->underline_style = ImeTextSpan::UnderlineStyle::kDash;
+      break;
+    }
+    case TF_LS_SQUIGGLE: {
+      span->underline_style = ImeTextSpan::UnderlineStyle::kSquiggle;
+      break;
+    }
+    case TF_LS_NONE: {
+      span->underline_style = ImeTextSpan::UnderlineStyle::kNone;
+      break;
+    }
+    default: {
+      span->underline_style = ImeTextSpan::UnderlineStyle::kSolid;
     }
   }
   if (attribute.crText.type != TF_CT_NONE) {

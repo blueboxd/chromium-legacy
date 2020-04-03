@@ -5,11 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SHAPEDETECTION_BARCODE_DETECTOR_STATICS_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SHAPEDETECTION_BARCODE_DETECTOR_STATICS_H_
 
-#include "mojo/public/cpp/bindings/remote.h"
 #include "services/shape_detection/public/mojom/barcodedetection_provider.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -47,7 +48,8 @@ class BarcodeDetectorStatics final
       const Vector<shape_detection::mojom::blink::BarcodeFormat>&);
   void OnConnectionError();
 
-  mojo::Remote<shape_detection::mojom::blink::BarcodeDetectionProvider>
+  HeapMojoRemote<shape_detection::mojom::blink::BarcodeDetectionProvider,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
       service_;
 
   // Holds Promises returned by EnumerateSupportedFormats() so that they can be

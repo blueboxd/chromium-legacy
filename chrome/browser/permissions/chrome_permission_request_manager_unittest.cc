@@ -346,8 +346,8 @@ TEST_F(ChromePermissionRequestManagerTest,
   auto* permission_ui_enabler =
       AdaptiveQuietNotificationPermissionUiEnabler::GetForProfile(profile());
 
-  EXPECT_FALSE(
-      QuietNotificationPermissionUiState::IsQuietUiEnabledInPrefs(profile()));
+  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
+      prefs::kEnableQuietNotificationPermissionUi));
   // TODO(hkamila): Collapse the below blocks into a single for statement.
   GURL notification1("http://www.notification1.com/");
   NavigateAndCommit(notification1);
@@ -437,8 +437,8 @@ TEST_F(ChromePermissionRequestManagerTest,
   manager_->AddRequest(&notification7_request);
   WaitForBubbleToBeShown();
   EXPECT_TRUE(manager_->ShouldCurrentRequestUseQuietUI());
-  EXPECT_TRUE(
-      QuietNotificationPermissionUiState::IsQuietUiEnabledInPrefs(profile()));
+  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(
+      prefs::kEnableQuietNotificationPermissionUi));
   Accept();
 
   base::SimpleTestClock clock_;
@@ -462,7 +462,7 @@ TEST_F(ChromePermissionRequestManagerTest,
   // not change the state of the currently showing quiet UI.
   permission_ui_enabler->ClearInteractionHistory(base::Time(),
                                                  base::Time::Max());
-  QuietNotificationPermissionUiState::DisableQuietUiInPrefs(profile());
+  profile()->GetPrefs()->ClearPref(prefs::kEnableQuietNotificationPermissionUi);
   EXPECT_TRUE(manager_->ShouldCurrentRequestUseQuietUI());
   Deny();
 
@@ -574,8 +574,10 @@ TEST_F(ChromePermissionRequestManagerTest, TestCrowdDenyHoldbackChance) {
          {QuietNotificationPermissionUiConfig::kCrowdDenyHoldBackChance,
           test.holdback_chance}});
 
-    if (test.enabled_in_prefs)
-      QuietNotificationPermissionUiState::EnableQuietUiInPrefs(profile());
+    if (test.enabled_in_prefs) {
+      profile()->GetPrefs()->SetBoolean(
+          prefs::kEnableQuietNotificationPermissionUi, true);
+    }
 
     permissions::MockPermissionRequest request(
         "request", permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS,

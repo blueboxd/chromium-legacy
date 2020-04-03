@@ -958,7 +958,7 @@ chrome_java_resources = [
   "java/res/drawable/ic_swap_vert_round.xml",
   "java/res/drawable/ic_sync_error_40dp.xml",
   "java/res/drawable/ic_sync_green_40dp.xml",
-  "java/res/drawable/ic_toolbar_share_24dp.xml",
+  "java/res/drawable/ic_toolbar_share_offset_24dp.xml",
   "java/res/drawable/ic_tv_options_input_settings_rotated_grey.xml",
   "java/res/drawable/ic_videocam_24dp.xml",
   "java/res/drawable/ic_videocam_36dp.xml",

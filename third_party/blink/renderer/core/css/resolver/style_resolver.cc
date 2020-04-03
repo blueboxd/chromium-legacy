@@ -1357,7 +1357,10 @@ bool StyleResolver::ApplyAnimatedStandardProperties(
   if (!HasAnimationsOrTransitions(state))
     return false;
 
-  CalculateAnimationUpdate(state);
+  if (!state.IsAnimationInterpolationMapReady() ||
+      RuntimeEnabledFeatures::CSSCascadeEnabled()) {
+    CalculateAnimationUpdate(state);
+  }
 
   CSSAnimations::CalculateCompositorAnimationUpdate(
       state.AnimationUpdate(), animating_element, element, *state.Style(),

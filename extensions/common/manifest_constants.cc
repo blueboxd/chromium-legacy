@@ -384,8 +384,8 @@ const char kInvalidCssList[] =
     "Required value 'content_scripts[*].css' is invalid.";
 const char kInvalidDeclarativeNetRequestKey[] = "Invalid value for '*' key";
 const char kInvalidDeclarativeRulesFileKey[] =
-    "Invalid value for '*.*' key. It must be a non-empty list containing "
-    "Ruleset dictionaries.";
+    "Invalid value for '*.*' key. It must be a list containing Ruleset "
+    "dictionaries.";
 const char kInvalidDefaultLocale[] =
     "Invalid value for default locale - locale name must be a string.";
 const char kInvalidDescription[] =

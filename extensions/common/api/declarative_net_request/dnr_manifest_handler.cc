@@ -63,14 +63,6 @@ bool DNRManifestHandler::Parse(Extension* extension, base::string16* error) {
     return false;
   }
 
-  // TODO(crbug.com/953894): Extension should be able to specify zero rulesets.
-  if (rulesets.empty()) {
-    *error = ErrorUtils::FormatErrorMessageUTF16(
-        errors::kInvalidDeclarativeRulesFileKey,
-        keys::kDeclarativeNetRequestKey, keys::kDeclarativeRuleResourcesKey);
-    return false;
-  }
-
   if (rulesets.size() >
       static_cast<size_t>(dnr_api::MAX_NUMBER_OF_STATIC_RULESETS)) {
     *error = ErrorUtils::FormatErrorMessageUTF16(

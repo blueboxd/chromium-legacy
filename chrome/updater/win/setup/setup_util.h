@@ -19,8 +19,7 @@ namespace updater {
 bool RegisterUpdateAppsTask(const base::CommandLine& run_command);
 void UnregisterUpdateAppsTask();
 
-base::string16 GetComServerClsid();
-base::string16 GetComServerClsidRegistryPath();
+base::string16 GetComServerClsidRegistryPath(REFCLSID clsid);
 base::string16 GetComServiceClsid();
 base::string16 GetComServiceClsidRegistryPath();
 base::string16 GetComServiceAppidRegistryPath();

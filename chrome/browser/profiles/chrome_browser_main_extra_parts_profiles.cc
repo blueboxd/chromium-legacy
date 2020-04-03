@@ -81,6 +81,7 @@
 #include "chrome/browser/ui/find_bar/find_bar_state_factory.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/tabs/pinned_tab_service_factory.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_model_factory.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
@@ -137,7 +138,6 @@
 #include "chrome/browser/apps/platform_apps/api/browser_context_keyed_service_factories.h"
 #include "chrome/browser/apps/platform_apps/browser_context_keyed_service_factories.h"
 #include "chrome/browser/extensions/browser_context_keyed_service_factories.h"
-#include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/ui/web_applications/web_app_metrics_factory.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "extensions/browser/browser_context_keyed_service_factories.h"
@@ -194,26 +194,26 @@ void ChromeBrowserMainExtraPartsProfiles::
     EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   apps::EnsureBrowserContextKeyedServiceFactoriesBuilt();
-  extensions::EnsureBrowserContextKeyedServiceFactoriesBuilt();
-  extensions::ExtensionManagementFactory::GetInstance();
-  chrome_extensions::EnsureBrowserContextKeyedServiceFactoriesBuilt();
   chrome_apps::EnsureBrowserContextKeyedServiceFactoriesBuilt();
-  chrome_apps::api::EnsureAPIBrowserContextKeyedServiceFactoriesBuilt();
+  chrome_apps::api::EnsureBrowserContextKeyedServiceFactoriesBuilt();
+  chrome_extensions::EnsureBrowserContextKeyedServiceFactoriesBuilt();
+  extensions::EnsureBrowserContextKeyedServiceFactoriesBuilt();
 #endif
-
 #if defined(OS_CHROMEOS)
   chromeos::EnsureBrowserContextKeyedServiceFactoriesBuilt();
-  app_list::AppListSyncableServiceFactory::GetInstance();
 #endif
 
-#if !defined(OS_ANDROID)
-  apps::AppServiceProxyFactory::GetInstance();
-#endif
   AboutSigninInternalsFactory::GetInstance();
   AccountConsistencyModeManagerFactory::GetInstance();
   AccountInvestigatorFactory::GetInstance();
   AccountReconcilorFactory::GetInstance();
   AdaptiveQuietNotificationPermissionUiEnabler::Factory::GetInstance();
+#if defined(OS_CHROMEOS)
+  app_list::AppListSyncableServiceFactory::GetInstance();
+#endif
+#if !defined(OS_ANDROID)
+  apps::AppServiceProxyFactory::GetInstance();
+#endif
   AutocompleteClassifierFactory::GetInstance();
   autofill::PersonalDataManagerFactory::GetInstance();
 #if BUILDFLAG(ENABLE_BACKGROUND_CONTENTS)
@@ -221,8 +221,8 @@ void ChromeBrowserMainExtraPartsProfiles::
 #endif
   BookmarkModelFactory::GetInstance();
   BookmarkUndoServiceFactory::GetInstance();
-  BrowsingDataHistoryObserverService::Factory::GetInstance();
   browser_sync::UserEventServiceFactory::GetInstance();
+  BrowsingDataHistoryObserverService::Factory::GetInstance();
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   CaptivePortalServiceFactory::GetInstance();
 #endif
@@ -230,13 +230,15 @@ void ChromeBrowserMainExtraPartsProfiles::
   ChromeBrowsingDataRemoverDelegateFactory::GetInstance();
   ChromeSigninClientFactory::GetInstance();
   ClientHintsFactory::GetInstance();
+#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
+  cloud_print::PrivetNotificationServiceFactory::GetInstance();
+#endif
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OS_CHROMEOS)
   CloudPrintProxyServiceFactory::GetInstance();
 #endif
   ConsentAuditorFactory::GetInstance();
   ContentSuggestionsServiceFactory::GetInstance();
   CookieSettingsFactory::GetInstance();
-  NotifierStateTrackerFactory::GetInstance();
   DomainDiversityReporterFactory::GetInstance();
   dom_distiller::DomDistillerServiceFactory::GetInstance();
   DownloadCoreServiceFactory::GetInstance();
@@ -245,7 +247,6 @@ void ChromeBrowserMainExtraPartsProfiles::
   explore_sites::ExploreSitesServiceFactory::GetInstance();
 #endif
   FaviconServiceFactory::GetInstance();
-  HistoryUiFaviconRequestHandlerFactory::GetInstance();
 #if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
   feature_engagement::BookmarkTrackerFactory::GetInstance();
   feature_engagement::IncognitoWindowTrackerFactory::GetInstance();
@@ -262,66 +263,61 @@ void ChromeBrowserMainExtraPartsProfiles::
 #endif
   GoogleSearchDomainMixingMetricsEmitterFactory::GetInstance();
   HistoryServiceFactory::GetInstance();
+  HistoryUiFaviconRequestHandlerFactory::GetInstance();
   HostContentSettingsMapFactory::GetInstance();
   IdentityManagerFactory::EnsureFactoryAndDependeeFactoriesBuilt();
   InMemoryURLIndexFactory::GetInstance();
 #if !defined(OS_ANDROID)
   InstantServiceFactory::GetInstance();
 #endif
-#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
-  cloud_print::PrivetNotificationServiceFactory::GetInstance();
-#endif
-  RendererUpdaterFactory::GetInstance();
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  SupervisedUserServiceFactory::GetInstance();
-#endif
   LanguageModelManagerFactory::GetInstance();
 #if !defined(OS_ANDROID)
   LoginUIServiceFactory::GetInstance();
 #endif
+#if defined(OS_ANDROID)
+  MediaDrmOriginIdManagerFactory::GetInstance();
+#endif
   if (MediaEngagementService::IsEnabled())
     MediaEngagementServiceFactory::GetInstance();
+  media_feeds::MediaFeedsServiceFactory::GetInstance();
+#if !defined(OS_ANDROID)
+  MediaGalleriesPreferencesFactory::GetInstance();
+#endif
+  if (base::FeatureList::IsEnabled(media::kUseMediaHistoryStore))
+    media_history::MediaHistoryKeyedServiceFactory::GetInstance();
   media_router::MediaRouterFactory::GetInstance();
 #if !defined(OS_ANDROID)
   media_router::MediaRouterUIServiceFactory::GetInstance();
 #endif
-#if defined(OS_ANDROID)
-  MediaDrmOriginIdManagerFactory::GetInstance();
-#endif
-#if !defined(OS_ANDROID)
-  MediaGalleriesPreferencesFactory::GetInstance();
-#endif
-  media_feeds::MediaFeedsServiceFactory::GetInstance();
-  if (base::FeatureList::IsEnabled(media::kUseMediaHistoryStore))
-    media_history::MediaHistoryKeyedServiceFactory::GetInstance();
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   metrics::DesktopProfileSessionDurationsServiceFactory::GetInstance();
 #endif
   ModelTypeStoreServiceFactory::GetInstance();
+  NotifierStateTrackerFactory::GetInstance();
 #if !defined(OS_ANDROID)
   NTPResourceCacheFactory::GetInstance();
 #endif
   PasswordStoreFactory::GetInstance();
 #if !defined(OS_ANDROID)
   PinnedTabServiceFactory::GetInstance();
-  ThemeServiceFactory::GetInstance();
 #endif
 #if BUILDFLAG(ENABLE_PLUGINS)
   PluginPrefsFactory::GetInstance();
 #endif
   PrefsTabHelper::GetServiceInstance();
+  policy::UserCloudPolicyInvalidatorFactory::GetInstance();
 #if !defined(OS_CHROMEOS)
   policy::UserPolicySigninServiceFactory::GetInstance();
 #endif
-  policy::UserCloudPolicyInvalidatorFactory::GetInstance();
   predictors::AutocompleteActionPredictorFactory::GetInstance();
-  predictors::PredictorDatabaseFactory::GetInstance();
   predictors::LoadingPredictorFactory::GetInstance();
+  predictors::PredictorDatabaseFactory::GetInstance();
   prerender::PrerenderLinkManagerFactory::GetInstance();
   prerender::PrerenderManagerFactory::GetInstance();
   ProfileSyncServiceFactory::GetInstance();
   ProtocolHandlerRegistryFactory::GetInstance();
+  RendererUpdaterFactory::GetInstance();
 #if !defined(OS_ANDROID)
   resource_coordinator::LocalSiteCharacteristicsDataStoreFactory::GetInstance();
 #endif
@@ -338,10 +334,8 @@ void ChromeBrowserMainExtraPartsProfiles::
   SharingServiceFactory::GetInstance();
   ShortcutsBackendFactory::GetInstance();
   SigninProfileAttributesUpdaterFactory::GetInstance();
-
   if (SiteEngagementService::IsEnabled())
     SiteEngagementServiceFactory::GetInstance();
-
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   SpellcheckServiceFactory::GetInstance();
 #endif
@@ -349,9 +343,18 @@ void ChromeBrowserMainExtraPartsProfiles::
   StorageNotificationServiceFactory::GetInstance();
 #endif
   suggestions::SuggestionsServiceFactory::GetInstance();
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  SupervisedUserServiceFactory::GetInstance();
+#endif
   TabRestoreServiceFactory::GetInstance();
   TemplateURLFetcherFactory::GetInstance();
   TemplateURLServiceFactory::GetInstance();
+#if !defined(OS_ANDROID)
+  ThemeServiceFactory::GetInstance();
+#endif
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  ToolbarActionsModelFactory::GetInstance();
+#endif
   TopSitesFactory::GetInstance();
   translate::TranslateRankerFactory::GetInstance();
 #if defined(OS_WIN)
@@ -363,8 +366,8 @@ void ChromeBrowserMainExtraPartsProfiles::
   UsbChooserContextFactory::GetInstance();
 #endif
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  web_app::WebAppProviderFactory::GetInstance();
   web_app::WebAppMetricsFactory::GetInstance();
+  web_app::WebAppProviderFactory::GetInstance();
 #endif
   WebDataServiceFactory::GetInstance();
   webrtc_event_logging::WebRtcEventLogManagerKeyedServiceFactory::GetInstance();

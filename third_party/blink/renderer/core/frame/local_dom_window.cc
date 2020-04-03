@@ -111,6 +111,7 @@
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/scheduler/public/dummy_schedulers.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -360,7 +361,11 @@ BrowserInterfaceBrokerProxy& LocalDOMWindow::GetBrowserInterfaceBroker() {
 }
 
 FrameOrWorkerScheduler* LocalDOMWindow::GetScheduler() {
-  return GetFrame() ? GetFrame()->GetFrameScheduler() : nullptr;
+  if (GetFrame())
+    return GetFrame()->GetFrameScheduler();
+  if (!detached_scheduler_)
+    detached_scheduler_ = scheduler::CreateDummyFrameScheduler();
+  return detached_scheduler_.get();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner> LocalDOMWindow::GetTaskRunner(
@@ -616,6 +621,12 @@ MediaQueryList* LocalDOMWindow::matchMedia(const String& media) {
 }
 
 void LocalDOMWindow::FrameDestroyed() {
+  // In the Reset() case, this Document::Shutdown() early-exits because it was
+  // already called earlier in the commit process.
+  // TODO(japhet): Can we merge this function and Reset()? At least, this
+  // function should be renamed to Detach(), since in the Reset() case the frame
+  // is not being destroyed.
+  document()->Shutdown();
   NotifyContextDestroyed();
   RemoveAllEventListeners();
   DisconnectFromFrame();

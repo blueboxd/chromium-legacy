@@ -75,6 +75,19 @@ void DeepScanningClientResponseToDownloadCheckResult(
     }
   }
 
+  if (response.has_malware_scan_verdict() &&
+      response.malware_scan_verdict().verdict() ==
+          MalwareDeepScanningVerdict::SCAN_FAILURE) {
+    *download_result = DownloadCheckResult::UNKNOWN;
+    return;
+  }
+
+  if (response.has_dlp_scan_verdict() &&
+      response.dlp_scan_verdict().status() != DlpDeepScanningVerdict::SUCCESS) {
+    *download_result = DownloadCheckResult::UNKNOWN;
+    return;
+  }
+
   *download_result = DownloadCheckResult::DEEP_SCANNED_SAFE;
 }
 

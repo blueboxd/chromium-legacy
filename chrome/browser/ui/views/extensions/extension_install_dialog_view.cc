@@ -208,7 +208,16 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
   int buttons = prompt_->GetDialogButtons();
   DCHECK(buttons & ui::DIALOG_BUTTON_CANCEL);
 
-  DialogDelegate::SetDefaultButton(ui::DIALOG_BUTTON_CANCEL);
+  int default_button = ui::DIALOG_BUTTON_CANCEL;
+
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  // When we require parent permission next, we
+  // set the default button to OK.
+  if (prompt_->requires_parent_permission())
+    default_button = ui::DIALOG_BUTTON_OK;
+#endif
+
+  DialogDelegate::SetDefaultButton(default_button);
   DialogDelegate::SetButtons(buttons);
   DialogDelegate::set_draggable(true);
   if (prompt_->has_webstore_data()) {

@@ -1323,6 +1323,12 @@
       <structure name="IDR_OS_SETTINGS_METRICS_RECORDER_JS"
                  file="chromeos/metrics_recorder.js"
                  type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_SEARCH_HANDLER_HTML"
+                 file="chromeos/search_handler.html"
+                 type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_SEARCH_HANDLER_JS"
+                 file="chromeos/search_handler.js"
+                 type="chrome_html" />
     </structures>
   </release>
 </grit>

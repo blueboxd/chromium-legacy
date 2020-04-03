@@ -24,14 +24,17 @@ namespace {
 const uint16_t kUsbVersion2_1 = 0x0210;
 }  // namespace
 
-UsbDeviceWin::UsbDeviceWin(const base::string16& device_path,
-                           const base::string16& hub_path,
-                           uint32_t bus_number,
-                           uint32_t port_number,
-                           const base::string16& driver_name)
+UsbDeviceWin::UsbDeviceWin(
+    const base::string16& device_path,
+    const base::string16& hub_path,
+    const std::vector<base::string16>& child_device_paths,
+    uint32_t bus_number,
+    uint32_t port_number,
+    const base::string16& driver_name)
     : UsbDevice(bus_number, port_number),
       device_path_(device_path),
       hub_path_(hub_path),
+      child_device_paths_(child_device_paths),
       driver_name_(driver_name) {}
 
 UsbDeviceWin::~UsbDeviceWin() {}

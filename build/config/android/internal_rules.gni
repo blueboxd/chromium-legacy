@@ -858,7 +858,7 @@ if (enable_java_templates) {
         lint_suppressions_file = "//build/android/lint/suppressions.xml"
       }
 
-      _min_sdk_version = 19
+      _min_sdk_version = default_min_sdk_version
       if (defined(invoker.min_sdk_version)) {
         _min_sdk_version = invoker.min_sdk_version
       }
@@ -1146,6 +1146,10 @@ if (enable_java_templates) {
   #   disable_incremental: Disable incremental dexing.
   template("dex") {
     assert(defined(invoker.output))
+    _min_sdk_version = default_min_sdk_version
+    if (defined(invoker.min_sdk_version)) {
+      _min_sdk_version = invoker.min_sdk_version
+    }
 
     _proguard_enabled =
         defined(invoker.proguard_enabled) && invoker.proguard_enabled
@@ -1153,13 +1157,18 @@ if (enable_java_templates) {
         _proguard_enabled && !defined(invoker.proguard_jar_path)
     _enable_multidex =
         !defined(invoker.enable_multidex) || invoker.enable_multidex
-    _enable_main_dex_list =
-        _enable_multidex &&
-        (!defined(invoker.min_sdk_version) || invoker.min_sdk_version < 21)
+    _enable_main_dex_list = _enable_multidex && _min_sdk_version < 21
     if (!_enable_main_dex_list) {
       if (defined(invoker.negative_main_dex_globs)) {
         not_needed(invoker, [ "negative_main_dex_globs" ])
       }
+    }
+
+    # When using d8 to desugar, the dex merge step must not be set to a higher
+    # minSdkVersion than the libraries in order for the proper backported
+    # methods to be included.
+    if (invoker.enable_desugar && defined(invoker.input_dex_filearg)) {
+      _min_sdk_version = default_min_sdk_version
     }
 
     assert(!_proguard_enabled || !(defined(invoker.input_dex_filearg) ||
@@ -1214,6 +1223,7 @@ if (enable_java_templates) {
         args = [
           "--proguard-configs=@FileArg($_rebased_build_config:deps_info:proguard_all_configs)",
           "--input-paths=@FileArg($_rebased_build_config:deps_info:java_runtime_classpath)",
+          "--min-api=$_min_sdk_version",
         ]
         if (defined(invoker.proguard_args)) {
           args += invoker.proguard_args
@@ -1230,13 +1240,6 @@ if (enable_java_templates) {
           _rebased_apply_mapping_path =
               rebase_path(invoker.apply_mapping, root_build_dir)
           args += [ "--apply-mapping=$_rebased_apply_mapping_path" ]
-        }
-
-        if (defined(invoker.min_sdk_version)) {
-          args += [
-            "--min-api",
-            "${invoker.min_sdk_version}",
-          ]
         }
 
         if (_proguarding_with_r8 && _enable_main_dex_list) {
@@ -1368,6 +1371,7 @@ if (enable_java_templates) {
           rebase_path(depfile, root_build_dir),
           "--output",
           rebase_path(outputs[0], root_build_dir),
+          "--min-api=$_min_sdk_version",
         ]
 
         if (_proguard_enabled) {
@@ -1439,13 +1443,6 @@ if (enable_java_templates) {
 
         if (!is_java_debug) {
           args += [ "--release" ]
-        }
-
-        if (defined(invoker.min_sdk_version)) {
-          args += [
-            "--min-api",
-            "${invoker.min_sdk_version}",
-          ]
         }
 
         if (invoker.enable_desugar) {
@@ -2780,6 +2777,14 @@ if (enable_java_templates) {
       _java_srcjars += [ "$_dep_gen_dir/$_dep_name.srcjar" ]
     }
 
+    # generated_jar_path is an output when use_turbine and an input otherwise.
+    if (!invoker.use_turbine && defined(invoker.generated_jar_path)) {
+      _annotation_processing = false
+      _java_srcjars += [ invoker.generated_jar_path ]
+    } else {
+      _annotation_processing = true
+    }
+
     _javac_args = []
     if (defined(invoker.javac_args)) {
       _javac_args = invoker.javac_args
@@ -2820,15 +2825,22 @@ if (enable_java_templates) {
         "--jar-path=$_rebased_output_jar_path",
         "--java-srcjars=$_rebased_java_srcjars",
         "--classpath=@FileArg($_rebased_build_config:deps_info:javac_full_interface_classpath)",
-        "--processorpath=@FileArg($_rebased_build_config:javac:processor_classpath)",
-        "--processors=@FileArg($_rebased_build_config:javac:processor_classes)",
       ]
+      if (_annotation_processing) {
+        args += [
+          "--processorpath=@FileArg($_rebased_build_config:javac:processor_classpath)",
+          "--processors=@FileArg($_rebased_build_config:javac:processor_classes)",
+        ]
+      }
       if (invoker.use_turbine) {
         _turbine_jar_path = "//third_party/turbine/turbine.jar"
         inputs += [ _turbine_jar_path ]
+        outputs += [ invoker.generated_jar_path ]
         args += [
           "--turbine-jar-path",
           rebase_path(_turbine_jar_path, root_build_dir),
+          "--generated-jar-path",
+          rebase_path(invoker.generated_jar_path, root_build_dir),
         ]
       }
 
@@ -3193,6 +3205,7 @@ if (enable_java_templates) {
 
       if (_has_sources) {
         _javac_jar_path = "$target_gen_dir/$_main_target_name.javac.jar"
+        _generated_jar_path = "$target_gen_dir/$_main_target_name.generated.jar"
       }
 
       if (_is_prebuilt) {
@@ -3437,6 +3450,17 @@ if (enable_java_templates) {
       }
     }
 
+    if (_has_sources || _is_prebuilt) {
+      _header_target_name = "${target_name}__header"
+
+      # TODO(wnwen): Enable turbine for non-chromium code when r8 optimizes out
+      #              bridge methods.
+      _enable_turbine = _has_sources && _chromium_code
+      if (defined(invoker.enable_turbine)) {
+        _enable_turbine = invoker.enable_turbine
+      }
+    }
+
     if (_has_sources) {
       if (defined(invoker.enable_errorprone)) {
         _enable_errorprone = invoker.enable_errorprone
@@ -3464,8 +3488,11 @@ if (enable_java_templates) {
           chromium_code = _chromium_code
           supports_android = _supports_android
           requires_android = _requires_android
-          deps = _java_header_deps + _accumulated_deps +
-                 [ ":$_build_config_target_name" ]
+          if (!defined(deps)) {
+            deps = []
+          }
+          deps += _java_header_deps + _accumulated_deps +
+                  [ ":$_build_config_target_name" ]
 
           # android_apk and junit_binary pass R.java srcjars via srcjar_deps.
           if (_type == "java_library" && _requires_android) {
@@ -3483,11 +3510,25 @@ if (enable_java_templates) {
         "jar_excluded_patterns",
         "never_goma",
       ]
+
+      if (_enable_turbine) {
+        compile_java_helper(_header_target_name) {
+          forward_variables_from(invoker, _compile_java_forward_variables)
+          use_turbine = true
+          output_jar_path = _final_ijar_path
+          generated_jar_path = _generated_jar_path
+        }
+      }
+
       _analysis_public_deps = []
       _compile_java_target = "${_main_target_name}__compile_java"
       compile_java_helper(_compile_java_target) {
         forward_variables_from(invoker, _compile_java_forward_variables)
         output_jar_path = _javac_jar_path
+        if (_enable_turbine) {
+          deps = [ ":$_header_target_name" ]
+          generated_jar_path = _generated_jar_path
+        }
       }
       if (_enable_errorprone) {
         _compile_java_errorprone_target = "${_main_target_name}__errorprone"
@@ -3499,6 +3540,10 @@ if (enable_java_templates) {
               javac_args = []
             }
             javac_args += invoker.errorprone_args
+          }
+          if (_enable_turbine) {
+            deps = [ ":$_header_target_name" ]
+            generated_jar_path = _generated_jar_path
           }
           output_jar_path = "$target_out_dir/$target_name.errorprone.stamp"
         }
@@ -3538,19 +3583,8 @@ if (enable_java_templates) {
       }
     }  # _has_sources
 
-    if (_is_prebuilt || _has_sources) {
-      _header_target_name = "${target_name}__header"
-      _enable_turbine = _has_sources && _chromium_code
-      if (defined(invoker.enable_turbine)) {
-        _enable_turbine = invoker.enable_turbine
-      }
-      if (_enable_turbine) {
-        compile_java_helper(_header_target_name) {
-          forward_variables_from(invoker, _compile_java_forward_variables)
-          use_turbine = true
-          output_jar_path = _final_ijar_path
-        }
-      } else {
+    if (_has_sources || _is_prebuilt) {
+      if (!_enable_turbine) {
         generate_interface_jar(_header_target_name) {
           # Always used the unfiltered .jar to create the interface jar so that
           # other targets will resolve filtered classes when depending on
@@ -3566,7 +3600,7 @@ if (enable_java_templates) {
         }
       }
       _public_deps += [ ":$_header_target_name" ]
-    }  # _is_prebuilt || _has_sources
+    }
 
     if (defined(_final_jar_path)) {
       if (_is_system_library) {

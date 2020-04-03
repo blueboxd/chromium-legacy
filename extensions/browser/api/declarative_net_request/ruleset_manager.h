@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 #include <memory>
+#include <set>
 #include <vector>
 
 #include "base/containers/flat_set.h"
@@ -62,6 +63,9 @@ class RulesetManager {
   // Removes the ruleset for |extension_id|. Should be called only after a
   // corresponding AddRuleset.
   void RemoveRuleset(const ExtensionId& extension_id);
+
+  // Returns the set of extensions which have active rulesets.
+  std::set<ExtensionId> GetExtensionsWithRulesets() const;
 
   // Returns the CompositeMatcher corresponding to the |extension_id| or null
   // if no matcher is present for the extension.

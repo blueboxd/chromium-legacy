@@ -1002,6 +1002,9 @@ void PaintLayerScrollableArea::UpdateAfterLayout() {
   if (NeedsScrollbarReconstruction()) {
     SetHasHorizontalScrollbar(false);
     SetHasVerticalScrollbar(false);
+    // In case that DelayScrollOffsetClampScope prevented destruction of the
+    // scrollbars.
+    scrollbar_manager_.DestroyDetachedScrollbars();
   }
 
   UpdateScrollDimensions();

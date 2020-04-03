@@ -62,13 +62,12 @@ namespace {
 // Instantiates all weblayer KeyedService factories, which is
 // especially important for services that should be created at profile
 // creation time as compared to lazily on first access.
-static void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
-  StatefulSSLHostStateDelegateFactory::GetInstance();
-  HostContentSettingsMapFactory::GetInstance();
-
+void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   CaptivePortalServiceFactory::GetInstance();
 #endif
+  HostContentSettingsMapFactory::GetInstance();
+  StatefulSSLHostStateDelegateFactory::GetInstance();
 }
 
 void StopMessageLoop(base::OnceClosure quit_closure) {

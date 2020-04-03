@@ -1364,7 +1364,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.browser_tests_killer",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],

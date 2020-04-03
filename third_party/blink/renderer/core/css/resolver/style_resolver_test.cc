@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
@@ -124,6 +125,24 @@ TEST_F(StyleResolverTest, BasePresentIfFontRelativeUnitsAbsent) {
 
   EXPECT_TRUE(resolver->StyleForElement(div));
   EXPECT_TRUE(animations.BaseComputedStyle());
+}
+
+TEST_F(StyleResolverTest, NoCrashWhenAnimatingWithoutCascade) {
+  ScopedCSSCascadeForTest scoped_cascade(false);
+
+  GetDocument().documentElement()->setInnerHTML(R"HTML(
+    <style>
+      @keyframes test {
+        from { width: 10px; }
+        to { width: 20px; }
+      }
+      div {
+        animation: test 1s;
+      }
+    </style>
+    <div id="div">Test</div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
 }
 
 class StyleResolverFontRelativeUnitTest

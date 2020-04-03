@@ -34,7 +34,7 @@ class ThreadControllerForTest
       : ThreadControllerWithMessagePumpImpl(std::move(pump), settings) {}
 
   using ThreadControllerWithMessagePumpImpl::DoIdleWork;
-  using ThreadControllerWithMessagePumpImpl::DoSomeWork;
+  using ThreadControllerWithMessagePumpImpl::DoWork;
   using ThreadControllerWithMessagePumpImpl::EnsureWorkScheduled;
   using ThreadControllerWithMessagePumpImpl::Quit;
   using ThreadControllerWithMessagePumpImpl::Run;
@@ -159,43 +159,43 @@ TEST_F(ThreadControllerWithMessagePumpTest, ScheduleDelayedWork) {
   MockCallback<OnceClosure> task3;
   task_source_.AddTask(FROM_HERE, task3.Get(), Seconds(20));
 
-  // Call a no-op DoSomeWork. Expect that it doesn't do any work.
+  // Call a no-op DoWork. Expect that it doesn't do any work.
   clock_.SetNowTicks(Seconds(5));
   EXPECT_CALL(*message_pump_, ScheduleDelayedWork(_)).Times(0);
   {
-    auto next_work_info = thread_controller_.DoSomeWork();
+    auto next_work_info = thread_controller_.DoWork();
     EXPECT_FALSE(next_work_info.is_immediate());
     EXPECT_EQ(next_work_info.delayed_run_time, Seconds(10));
   }
   testing::Mock::VerifyAndClearExpectations(message_pump_);
 
-  // Call DoSomeWork after the expiration of the delay.
+  // Call DoWork after the expiration of the delay.
   // Expect that |task1| runs and the return value indicates that |task2| can
   // run immediately.
   clock_.SetNowTicks(Seconds(11));
   EXPECT_CALL(task1, Run()).Times(1);
   {
-    auto next_work_info = thread_controller_.DoSomeWork();
+    auto next_work_info = thread_controller_.DoWork();
     EXPECT_TRUE(next_work_info.is_immediate());
   }
   testing::Mock::VerifyAndClearExpectations(&task1);
 
-  // Call DoSomeWork. Expect |task2| to be run and the delayed run time of
+  // Call DoWork. Expect |task2| to be run and the delayed run time of
   // |task3| to be returned.
   EXPECT_CALL(task2, Run()).Times(1);
   {
-    auto next_work_info = thread_controller_.DoSomeWork();
+    auto next_work_info = thread_controller_.DoWork();
     EXPECT_FALSE(next_work_info.is_immediate());
     EXPECT_EQ(next_work_info.delayed_run_time, Seconds(20));
   }
   testing::Mock::VerifyAndClearExpectations(&task2);
 
-  // Call DoSomeWork for the last task and expect to be told
+  // Call DoWork for the last task and expect to be told
   // about the lack of further delayed work (next run time being TimeTicks()).
   clock_.SetNowTicks(Seconds(21));
   EXPECT_CALL(task3, Run()).Times(1);
   {
-    auto next_work_info = thread_controller_.DoSomeWork();
+    auto next_work_info = thread_controller_.DoWork();
     EXPECT_FALSE(next_work_info.is_immediate());
     EXPECT_EQ(next_work_info.delayed_run_time, TimeTicks::Max());
   }
@@ -220,17 +220,16 @@ TEST_F(ThreadControllerWithMessagePumpTest, DelayedWork_CapAtOneDay) {
   MockCallback<OnceClosure> task1;
   task_source_.AddTask(FROM_HERE, task1.Get(), Days(10));
 
-  auto next_work_info = thread_controller_.DoSomeWork();
+  auto next_work_info = thread_controller_.DoWork();
   EXPECT_EQ(next_work_info.delayed_run_time, Days(1));
 }
 
-TEST_F(ThreadControllerWithMessagePumpTest,
-       DoSomeWorkDoesntScheduleDelayedWork) {
+TEST_F(ThreadControllerWithMessagePumpTest, DoWorkDoesntScheduleDelayedWork) {
   MockCallback<OnceClosure> task1;
   task_source_.AddTask(FROM_HERE, task1.Get(), Seconds(10));
 
   EXPECT_CALL(*message_pump_, ScheduleDelayedWork(_)).Times(0);
-  auto next_work_info = thread_controller_.DoSomeWork();
+  auto next_work_info = thread_controller_.DoWork();
   EXPECT_EQ(next_work_info.delayed_run_time, Seconds(10));
 }
 
@@ -246,16 +245,16 @@ TEST_F(ThreadControllerWithMessagePumpTest, NestedExecution) {
       .WillOnce(Invoke([&log, this](MessagePump::Delegate* delegate) {
         log.push_back("entering top-level runloop");
         EXPECT_EQ(delegate, &thread_controller_);
-        EXPECT_TRUE(delegate->DoSomeWork().is_immediate());
-        EXPECT_TRUE(delegate->DoSomeWork().is_immediate());
-        EXPECT_EQ(delegate->DoSomeWork().delayed_run_time, TimeTicks::Max());
+        EXPECT_TRUE(delegate->DoWork().is_immediate());
+        EXPECT_TRUE(delegate->DoWork().is_immediate());
+        EXPECT_EQ(delegate->DoWork().delayed_run_time, TimeTicks::Max());
         log.push_back("exiting top-level runloop");
       }))
       .WillOnce(Invoke([&log, this](MessagePump::Delegate* delegate) {
         log.push_back("entering nested runloop");
         EXPECT_EQ(delegate, &thread_controller_);
         EXPECT_FALSE(thread_controller_.IsTaskExecutionAllowed());
-        EXPECT_EQ(delegate->DoSomeWork().delayed_run_time, TimeTicks::Max());
+        EXPECT_EQ(delegate->DoWork().delayed_run_time, TimeTicks::Max());
         log.push_back("exiting nested runloop");
       }));
 
@@ -311,15 +310,15 @@ TEST_F(ThreadControllerWithMessagePumpTest,
       .WillOnce(Invoke([&log, this](MessagePump::Delegate* delegate) {
         log.push_back("entering top-level runloop");
         EXPECT_EQ(delegate, &thread_controller_);
-        EXPECT_EQ(delegate->DoSomeWork().delayed_run_time, TimeTicks::Max());
+        EXPECT_EQ(delegate->DoWork().delayed_run_time, TimeTicks::Max());
         log.push_back("exiting top-level runloop");
       }))
       .WillOnce(Invoke([&log, this](MessagePump::Delegate* delegate) {
         log.push_back("entering nested runloop");
         EXPECT_EQ(delegate, &thread_controller_);
         EXPECT_TRUE(thread_controller_.IsTaskExecutionAllowed());
-        EXPECT_TRUE(delegate->DoSomeWork().is_immediate());
-        EXPECT_EQ(delegate->DoSomeWork().delayed_run_time, TimeTicks::Max());
+        EXPECT_TRUE(delegate->DoWork().is_immediate());
+        EXPECT_EQ(delegate->DoWork().delayed_run_time, TimeTicks::Max());
         log.push_back("exiting nested runloop");
       }));
 
@@ -389,14 +388,14 @@ TEST_F(ThreadControllerWithMessagePumpTest, EnsureWorkScheduled) {
   testing::Mock::VerifyAndClearExpectations(message_pump_);
 
   // EnsureWorkScheduled() doesn't need to do anything because there's a pending
-  // DoSomeWork.
+  // DoWork.
   EXPECT_CALL(*message_pump_, ScheduleWork()).Times(0);
   thread_controller_.EnsureWorkScheduled();
   testing::Mock::VerifyAndClearExpectations(message_pump_);
 
-  EXPECT_EQ(thread_controller_.DoSomeWork().delayed_run_time, TimeTicks::Max());
+  EXPECT_EQ(thread_controller_.DoWork().delayed_run_time, TimeTicks::Max());
 
-  // EnsureWorkScheduled() calls the pump because there's no pending DoSomeWork.
+  // EnsureWorkScheduled() calls the pump because there's no pending DoWork.
   EXPECT_CALL(*message_pump_, ScheduleWork()).Times(1);
   thread_controller_.EnsureWorkScheduled();
   testing::Mock::VerifyAndClearExpectations(message_pump_);
@@ -411,7 +410,7 @@ TEST_F(ThreadControllerWithMessagePumpTest, WorkBatching) {
   int task_count = 0;
   EXPECT_CALL(*message_pump_, Run(_))
       .WillOnce(Invoke([&](MessagePump::Delegate* delegate) {
-        EXPECT_EQ(delegate->DoSomeWork().delayed_run_time, TimeTicks::Max());
+        EXPECT_EQ(delegate->DoWork().delayed_run_time, TimeTicks::Max());
         EXPECT_EQ(5, task_count);
       }));
 
@@ -436,16 +435,16 @@ TEST_F(ThreadControllerWithMessagePumpTest, QuitInterruptsBatch) {
   int task_count = 0;
   EXPECT_CALL(*message_pump_, Run(_))
       .WillOnce(Invoke([&](MessagePump::Delegate* delegate) {
-        EXPECT_EQ(delegate->DoSomeWork().delayed_run_time, TimeTicks::Max());
+        EXPECT_EQ(delegate->DoWork().delayed_run_time, TimeTicks::Max());
         EXPECT_EQ(1, task_count);
 
         // Somewhat counter-intuitive, but if the pump keeps calling us after
         // Quit(), the delegate should still run tasks as normally. This is
         // needed to support nested OS-level runloops that still pump
         // application tasks (e.g., showing a popup menu on Mac).
-        EXPECT_EQ(delegate->DoSomeWork().delayed_run_time, TimeTicks::Max());
+        EXPECT_EQ(delegate->DoWork().delayed_run_time, TimeTicks::Max());
         EXPECT_EQ(2, task_count);
-        EXPECT_EQ(delegate->DoSomeWork().delayed_run_time, TimeTicks::Max());
+        EXPECT_EQ(delegate->DoWork().delayed_run_time, TimeTicks::Max());
         EXPECT_EQ(3, task_count);
       }));
   EXPECT_CALL(*message_pump_, Quit());
@@ -479,8 +478,8 @@ TEST_F(ThreadControllerWithMessagePumpTest, EarlyQuit) {
   EXPECT_CALL(*message_pump_, Run(_))
       .WillOnce(Invoke([this](MessagePump::Delegate* delegate) {
         EXPECT_EQ(delegate, &thread_controller_);
-        EXPECT_TRUE(delegate->DoSomeWork().is_immediate());
-        EXPECT_EQ(delegate->DoSomeWork().delayed_run_time, TimeTicks::Max());
+        EXPECT_TRUE(delegate->DoWork().is_immediate());
+        EXPECT_EQ(delegate->DoWork().delayed_run_time, TimeTicks::Max());
       }));
 
   RunLoop run_loop;
@@ -518,7 +517,7 @@ TEST_F(ThreadControllerWithMessagePumpTest, NativeNestedMessageLoop) {
         // There's no pending work so the native loop should go
         // idle.
         EXPECT_CALL(*message_pump_, ScheduleWork()).Times(0);
-        EXPECT_EQ(thread_controller_.DoSomeWork().delayed_run_time,
+        EXPECT_EQ(thread_controller_.DoWork().delayed_run_time,
                   TimeTicks::Max());
         testing::Mock::VerifyAndClearExpectations(message_pump_);
 
@@ -546,7 +545,7 @@ TEST_F(ThreadControllerWithMessagePumpTest, NativeNestedMessageLoop) {
   // Simulate a PostTask that enters a native nested message loop.
   EXPECT_CALL(*message_pump_, ScheduleWork());
   thread_controller_.ScheduleWork();
-  EXPECT_TRUE(thread_controller_.DoSomeWork().is_immediate());
+  EXPECT_TRUE(thread_controller_.DoWork().is_immediate());
   EXPECT_TRUE(did_run);
 }
 
@@ -562,17 +561,15 @@ TEST_F(ThreadControllerWithMessagePumpTest, RunWithTimeout) {
       .WillOnce(Invoke([&](MessagePump::Delegate*) {
         clock_.SetNowTicks(Seconds(5));
         EXPECT_CALL(task1, Run()).Times(1);
-        EXPECT_EQ(thread_controller_.DoSomeWork().delayed_run_time,
-                  Seconds(10));
+        EXPECT_EQ(thread_controller_.DoWork().delayed_run_time, Seconds(10));
 
         clock_.SetNowTicks(Seconds(10));
         EXPECT_CALL(task2, Run()).Times(1);
-        EXPECT_EQ(thread_controller_.DoSomeWork().delayed_run_time,
-                  Seconds(15));
+        EXPECT_EQ(thread_controller_.DoWork().delayed_run_time, Seconds(15));
 
         clock_.SetNowTicks(Seconds(15));
         EXPECT_CALL(task3, Run()).Times(0);
-        EXPECT_EQ(thread_controller_.DoSomeWork().delayed_run_time,
+        EXPECT_EQ(thread_controller_.DoWork().delayed_run_time,
                   TimeTicks::Max());
 
         EXPECT_CALL(*message_pump_, Quit());

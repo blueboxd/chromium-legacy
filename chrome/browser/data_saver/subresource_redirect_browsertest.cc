@@ -967,7 +967,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
 // This test verifies that the image redirect to lite page is disabled via
 // finch, and only the coverage metrics are recorded.
 IN_PROC_BROWSER_TEST_F(RedirectDisabledSubresourceRedirectBrowserTest,
-                       ImagesNotRedirected) {
+                       DISABLE_ON_WIN_MAC_CHROMEOS(ImagesNotRedirected)) {
   EnableDataSaver(true);
   CreateUkmRecorder();
   SetUpPublicImageURLPaths("/load_image/image_delayed_load.html",
@@ -1141,7 +1141,7 @@ IN_PROC_BROWSER_TEST_F(
 // Disabled due to flakes. See https://crbug.com/1063736.
 IN_PROC_BROWSER_TEST_F(
     SubresourceRedirectBrowserTest,
-    DISABLED_TestCSSBackgroundImageRedirect) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(TestCSSBackgroundImageRedirect)) {
   EnableDataSaver(true);
   CreateUkmRecorder();
   SetUpPublicImageURLPaths("/load_image/css_background_image.html",
@@ -1164,6 +1164,7 @@ IN_PROC_BROWSER_TEST_F(
       net::HTTP_TEMPORARY_REDIRECT, 1);
 
   EXPECT_EQ(request_url().port(), compression_url().port());
+  WaitForImageCompressionUkmMetrics(1);
   VerifyCompressibleImageUkm(1);
   VerifyIneligibleImageHintsUnavailableUkm(0);
   VerifyIneligibleMissingInImageHintsUkm(0);
@@ -1175,8 +1176,9 @@ IN_PROC_BROWSER_TEST_F(
 // Disabling for all as it was already Disabled on Mac, Win and ChromeOS and it
 // now seems to be flaky on Linux
 // Disabled due to flakes. See https://crbug.com/1063736.
-IN_PROC_BROWSER_TEST_F(RedirectDisabledSubresourceRedirectBrowserTest,
-                       DISABLED_TestCSSBackgroundImageRedirect) {
+IN_PROC_BROWSER_TEST_F(
+    RedirectDisabledSubresourceRedirectBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(TestCSSBackgroundImageRedirect)) {
   EnableDataSaver(true);
   CreateUkmRecorder();
   SetUpPublicImageURLPaths("/load_image/css_background_image.html",
@@ -1197,6 +1199,7 @@ IN_PROC_BROWSER_TEST_F(RedirectDisabledSubresourceRedirectBrowserTest,
   histogram_tester()->ExpectTotalCount(
       "SubresourceRedirect.DidCompress.CompressionPercent", 0);
 
+  WaitForImageCompressionUkmMetrics(1);
   VerifyCompressibleImageUkm(1);
   VerifyIneligibleImageHintsUnavailableUkm(0);
   VerifyIneligibleMissingInImageHintsUkm(0);

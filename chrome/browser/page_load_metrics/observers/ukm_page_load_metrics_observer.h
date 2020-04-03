@@ -88,9 +88,6 @@ class UkmPageLoadMetricsObserver
       content::RenderFrameHost* subframe_rfh,
       const page_load_metrics::mojom::CpuTiming& timing) override;
 
-  void OnLoadingBehaviorObserved(content::RenderFrameHost* rfh,
-                                 int behavior_flags) override;
-
   // Whether the current page load is an Offline Preview. Must be called from
   // OnCommit. Virtual for testing.
   virtual bool IsOfflinePreview(content::WebContents* web_contents) const;
@@ -210,8 +207,6 @@ class UkmPageLoadMetricsObserver
   // same document.
   // Unique across the lifetime of the browser process.
   int main_document_sequence_number_ = -1;
-
-  bool render_delayed_for_web_font_preloading_observed_ = false;
 
   // The connection info for the committed URL.
   base::Optional<net::HttpResponseInfo::ConnectionInfo> connection_info_;

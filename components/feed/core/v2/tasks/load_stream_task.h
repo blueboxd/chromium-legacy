@@ -25,6 +25,9 @@ class FeedStream;
 class LoadStreamTask : public offline_pages::Task {
  public:
   struct Result {
+    Result() = default;
+    explicit Result(LoadStreamStatus a_final_status)
+        : final_status(a_final_status) {}
     // Final status of loading the stream.
     LoadStreamStatus final_status = LoadStreamStatus::kNoStatus;
     // Status of just loading the stream from the persistent store, if that

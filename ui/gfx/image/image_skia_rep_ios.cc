@@ -5,6 +5,7 @@
 #include "ui/gfx/image/image_skia_rep_ios.h"
 
 #include "base/logging.h"
+#include "ui/gfx/color_palette.h"
 
 namespace gfx {
 
@@ -13,7 +14,7 @@ ImageSkiaRep::ImageSkiaRep() : scale_(0.0f) {}
 ImageSkiaRep::ImageSkiaRep(const gfx::Size& size, float scale) : scale_(scale) {
   bitmap_.allocN32Pixels(static_cast<int>(size.width() * this->scale()),
                          static_cast<int>(size.height() * this->scale()));
-  bitmap_.eraseColor(SK_ColorRED);
+  bitmap_.eraseColor(kPlaceholderColor);
   bitmap_.setImmutable();
   pixel_size_.SetSize(bitmap_.width(), bitmap_.height());
 }

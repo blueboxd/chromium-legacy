@@ -522,6 +522,10 @@ void LayerTreeImpl::PushPropertyTreesTo(LayerTreeImpl* target_tree) {
     scrolling_node = scroll_tree.FindNodeFromElementId(scrolling_element_id);
   }
   target_tree->SetCurrentlyScrollingNode(scrolling_node);
+
+  std::vector<EventMetrics> events_metrics;
+  events_metrics.swap(events_metrics_from_main_thread_);
+  target_tree->AppendEventsMetricsFromMainThread(std::move(events_metrics));
 }
 
 void LayerTreeImpl::PushSurfaceRangesTo(LayerTreeImpl* target_tree) {
@@ -2423,6 +2427,21 @@ void LayerTreeImpl::SetPendingPageScaleAnimation(
 std::unique_ptr<PendingPageScaleAnimation>
 LayerTreeImpl::TakePendingPageScaleAnimation() {
   return std::move(pending_page_scale_animation_);
+}
+
+void LayerTreeImpl::AppendEventsMetricsFromMainThread(
+    std::vector<EventMetrics> events_metrics) {
+  events_metrics_from_main_thread_.reserve(
+      events_metrics_from_main_thread_.size() + events_metrics.size());
+  events_metrics_from_main_thread_.insert(
+      events_metrics_from_main_thread_.end(), events_metrics.begin(),
+      events_metrics.end());
+}
+
+std::vector<EventMetrics> LayerTreeImpl::TakeEventsMetrics() {
+  std::vector<EventMetrics> main_event_metrics_result;
+  main_event_metrics_result.swap(events_metrics_from_main_thread_);
+  return main_event_metrics_result;
 }
 
 bool LayerTreeImpl::TakeForceSendMetadataRequest() {

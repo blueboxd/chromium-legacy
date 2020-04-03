@@ -1363,7 +1363,7 @@ if (enable_java_templates) {
         android_manifest = "//build/android/AndroidManifest.xml"
       }
       arsc_output = _resource_arsc_output
-      min_sdk_version = 19
+      min_sdk_version = default_min_sdk_version
       target_sdk_version = 23
     }
 
@@ -1852,7 +1852,7 @@ if (enable_java_templates) {
       supports_android = true
       requires_android = true
       if (!defined(invoker.min_sdk_version)) {
-        min_sdk_version = 19
+        min_sdk_version = default_min_sdk_version
       }
 
       if (!defined(jar_excluded_patterns)) {
@@ -2104,7 +2104,7 @@ if (enable_java_templates) {
   #     static_library_provider target will provide the dex file(s) for this
   #     target.
   #   min_sdk_version: The minimum Android SDK version this target supports.
-  #     Optional, default 19.
+  #     Optional, default $default_min_sdk_version.
   #   target_sdk_version: The target Android SDK version for this target.
   #     Optional, default 23.
   #   max_sdk_version: The maximum Android SDK version this target supports.
@@ -2137,7 +2137,7 @@ if (enable_java_templates) {
     _build_config = "$target_gen_dir/$target_name.build_config"
     _build_config_target = "$target_name$build_config_target_suffix"
 
-    _min_sdk_version = 19
+    _min_sdk_version = default_min_sdk_version
     _target_sdk_version = 23
     if (defined(invoker.min_sdk_version)) {
       _min_sdk_version = invoker.min_sdk_version

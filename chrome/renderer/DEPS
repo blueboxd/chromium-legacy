@@ -63,6 +63,7 @@ include_rules = [
   "+gin",
   "+google_apis",
   "+media/base",
+  "+media/mojo",
   "+ppapi/shared_impl",
   "+services/network/public/cpp",
   "+services/network/public/mojom",

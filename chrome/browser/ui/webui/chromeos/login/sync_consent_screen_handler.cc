@@ -110,6 +110,16 @@ void SyncConsentScreenHandler::DeclareLocalizedValues(
                          IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT_AND_CONTINUE,
                          builder);
 
+  // SplitSettingsSync strings.
+  RememberLocalizedValue("syncConsentScreenOsSyncName",
+                         IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_NAME, builder);
+  RememberLocalizedValue("syncConsentScreenOsSyncDescription",
+                         IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_DESCRIPTION,
+                         builder);
+  RememberLocalizedValue(
+      "syncConsentReviewBrowserSyncOptions",
+      IDS_LOGIN_SYNC_CONSENT_SCREEN_REVIEW_BROWSER_SYNC_OPTIONS, builder);
+
   // SplitSyncConsent strings. The version of the dialog to show is chosen
   // after the WebUI is loaded, so always supply both sets of strings.
   RememberLocalizedValue("osSyncConsentTitle", IDS_LOGIN_OS_SYNC_CONSENT_TITLE,
@@ -152,6 +162,8 @@ void SyncConsentScreenHandler::RegisterMessages() {
 
 void SyncConsentScreenHandler::GetAdditionalParameters(
     base::DictionaryValue* parameters) {
+  parameters->SetBoolean("splitSettingsSyncEnabled",
+                         chromeos::features::IsSplitSettingsSyncEnabled());
   parameters->SetBoolean("splitSyncConsent",
                          chromeos::features::IsSplitSyncConsentEnabled());
   BaseScreenHandler::GetAdditionalParameters(parameters);

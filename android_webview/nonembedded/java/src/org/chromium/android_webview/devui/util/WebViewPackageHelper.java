@@ -135,6 +135,13 @@ public final class WebViewPackageHelper {
     }
 
     /**
+     * Check if the system currently has a valid WebView implementation.
+     */
+    public static boolean hasValidWebViewImplementation(Context context) {
+        return getCurrentWebViewPackage(context) != null;
+    }
+
+    /**
      * Loads a label for the app specified by {@code mContext}. This is designed to be consistent
      * with how the system's WebView chooser labels WebView packages (see {@code
      * com.android.settings.webview.WebViewAppPicker.WebViewAppInfo#loadLabel()} in the AOSP source

@@ -692,12 +692,6 @@ void SandboxedUnpacker::IndexAndPersistJSONRulesetsIfNeeded() {
   DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(extension_);
 
-  if (!declarative_net_request::DNRManifestData::HasRuleset(*extension_)) {
-    // The extension did not provide a ruleset.
-    CheckComputeHashes();
-    return;
-  }
-
   declarative_net_request::IndexHelper::Start(
       declarative_net_request::RulesetSource::CreateStatic(*extension_),
       base::BindOnce(&SandboxedUnpacker::OnJSONRulesetsIndexed, this));
@@ -706,6 +700,12 @@ void SandboxedUnpacker::IndexAndPersistJSONRulesetsIfNeeded() {
 void SandboxedUnpacker::OnJSONRulesetsIndexed(
     std::vector<declarative_net_request::IndexAndPersistJSONRulesetResult>
         results) {
+  // Early return if there were no rulesets to index originally.
+  if (results.empty()) {
+    CheckComputeHashes();
+    return;
+  }
+
   base::TimeDelta total_index_and_persist_time;
   size_t total_rules_count = 0;
 
@@ -734,6 +734,7 @@ void SandboxedUnpacker::OnJSONRulesetsIndexed(
       total_index_and_persist_time);
   UMA_HISTOGRAM_COUNTS_100000(
       declarative_net_request::kManifestRulesCountHistogram, total_rules_count);
+
   CheckComputeHashes();
 }
 

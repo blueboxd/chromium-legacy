@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_FEED_CORE_V2_PUBLIC_FEED_STREAM_API_H_
 #define COMPONENTS_FEED_CORE_V2_PUBLIC_FEED_STREAM_API_H_
 
+#include <vector>
+
 #include "base/observer_list_types.h"
 #include "base/util/type_safety/id_type.h"
 #include "components/feed/core/proto/v2/wire/content_id.pb.h"
@@ -30,10 +32,8 @@ class FeedStreamApi {
  public:
   class SurfaceInterface : public base::CheckedObserver {
    public:
-    // Called once after registering the observer. Provides complete
-    // initial state.
-    virtual void InitialStreamState(const feedui::StreamUpdate&) = 0;
-    // Called only after InitialStreamState, for each subsequent update.
+    // Called after registering the observer to provide the full stream state.
+    // Also called whenever the stream changes.
     virtual void StreamUpdate(const feedui::StreamUpdate&) = 0;
   };
 

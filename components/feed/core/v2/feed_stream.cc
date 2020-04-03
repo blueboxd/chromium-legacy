@@ -30,37 +30,51 @@
 namespace feed {
 
 // Tracks UI changes in |StreamModel| and forwards them to |SurfaceInterface|s.
-// Has the same lifetime as |StreamModel|.
-class FeedStream::ModelMonitor : public StreamModel::Observer {
+// TODO(harringtond): implement spinner slice.
+class FeedStream::SurfaceUpdater : public StreamModel::Observer {
  public:
   using ContentRevision = ContentRevision;
-  ModelMonitor(StreamModel* model,
-               const base::ObserverList<SurfaceInterface>* surfaces)
-      : model_(model), surfaces_(surfaces) {
-    model_->SetObserver(this);
-    const std::vector<ContentRevision>& content_list = model_->GetContentList();
-    current_content_set_.insert(content_list.begin(), content_list.end());
+  explicit SurfaceUpdater(const base::ObserverList<SurfaceInterface>* surfaces)
+      : surfaces_(surfaces) {}
+  ~SurfaceUpdater() override = default;
+  SurfaceUpdater(const SurfaceUpdater&) = delete;
+  SurfaceUpdater& operator=(const SurfaceUpdater&) = delete;
+
+  void SetModel(StreamModel* model) {
+    if (model_ == model)
+      return;
+    if (model_)
+      model_->SetObserver(nullptr);
+    model_ = model;
+    if (model_) {
+      model_->SetObserver(this);
+
+      const std::vector<ContentRevision>& content_list =
+          model_->GetContentList();
+      current_content_set_.insert(content_list.begin(), content_list.end());
+      for (SurfaceInterface& surface : *surfaces_) {
+        surface.StreamUpdate(GetUpdateForNewSurface(*model_));
+      }
+    }
   }
-  ~ModelMonitor() override = default;
-  ModelMonitor(const ModelMonitor&) = delete;
-  ModelMonitor& operator=(const ModelMonitor&) = delete;
 
   // StreamModel::Observer.
   void OnUiUpdate(const StreamModel::UiUpdate& update) override {
-    // TODO(harringtond): add shared states too.
+    DCHECK(model_);  // The update comes from the model.
+
     if (!update.content_list_changed)
       return;
     feedui::StreamUpdate stream_update;
     const std::vector<ContentRevision>& content_list = model_->GetContentList();
     for (ContentRevision content_revision : content_list) {
-      AddSliceUpdate(content_revision,
+      AddSliceUpdate(*model_, content_revision,
                      current_content_set_.count(content_revision) == 0,
                      &stream_update);
     }
     for (const StreamModel::UiUpdate::SharedStateInfo& info :
          update.shared_states) {
       if (info.updated)
-        AddSharedState(info.shared_state_id, &stream_update);
+        AddSharedState(*model_, info.shared_state_id, &stream_update);
     }
 
     current_content_set_.clear();
@@ -73,7 +87,28 @@ class FeedStream::ModelMonitor : public StreamModel::Observer {
 
   // Sends the initial stream state to a newly connected surface.
   void SurfaceAdded(SurfaceInterface* surface) {
-    surface->InitialStreamState(GetUpdateForNewSurface());
+    if (model_) {
+      surface->StreamUpdate(GetUpdateForNewSurface(*model_));
+    }
+  }
+
+  void LoadStreamFailed(LoadStreamStatus load_stream_status) {
+    auto zero_state_type = feedui::ZeroStateSlice::NO_CARDS_AVAILABLE;
+    switch (load_stream_status) {
+      case LoadStreamStatus::kProtoTranslationFailed:
+      case LoadStreamStatus::kNoResponseBody:
+      case LoadStreamStatus::kCannotLoadFromNetworkOffline:
+      case LoadStreamStatus::kCannotLoadFromNetworkThrottled:
+        zero_state_type = feedui::ZeroStateSlice::CANT_REFRESH;
+        break;
+      default:
+        break;
+    }
+    // Note that with multiple surface, it's possible that we send a zero-state
+    // to a single surface multiple times.
+    for (SurfaceInterface& surface : *surfaces_) {
+      SendZeroStateUpdate(zero_state_type, &surface);
+    }
   }
 
  private:
@@ -83,10 +118,32 @@ class FeedStream::ModelMonitor : public StreamModel::Observer {
                        sizeof(integer_value));
   }
 
-  void AddSharedState(const std::string& shared_state_id,
-                      feedui::StreamUpdate* stream_update) {
+  static feedui::StreamUpdate GetUpdateForNewSurface(const StreamModel& model) {
+    feedui::StreamUpdate result;
+    for (ContentRevision content_revision : model.GetContentList()) {
+      AddSliceUpdate(model, content_revision, /*is_content_new=*/true, &result);
+    }
+    for (std::string& id : model.GetSharedStateIds()) {
+      AddSharedState(model, id, &result);
+    }
+
+    return result;
+  }
+
+  static void SendZeroStateUpdate(feedui::ZeroStateSlice::Type zero_state_type,
+                                  SurfaceInterface* surface) {
+    feedui::StreamUpdate update;
+    feedui::Slice* slice = update.add_updated_slices()->mutable_slice();
+    slice->mutable_zero_state_slice()->set_type(zero_state_type);
+    slice->set_slice_id("zero-state");
+    surface->StreamUpdate(update);
+  }
+
+  static void AddSharedState(const StreamModel& model,
+                             const std::string& shared_state_id,
+                             feedui::StreamUpdate* stream_update) {
     const std::string* shared_state_data =
-        model_->FindSharedStateData(shared_state_id);
+        model.FindSharedStateData(shared_state_id);
     if (!shared_state_data)
       return;
     feedui::SharedState* added_shared_state =
@@ -95,14 +152,15 @@ class FeedStream::ModelMonitor : public StreamModel::Observer {
     added_shared_state->set_xsurface_shared_state(*shared_state_data);
   }
 
-  void AddSliceUpdate(ContentRevision content_revision,
-                      bool is_content_new,
-                      feedui::StreamUpdate* stream_update) {
+  static void AddSliceUpdate(const StreamModel& model,
+                             ContentRevision content_revision,
+                             bool is_content_new,
+                             feedui::StreamUpdate* stream_update) {
     if (is_content_new) {
       feedui::Slice* slice =
           stream_update->add_updated_slices()->mutable_slice();
       slice->set_slice_id(ToSliceId(content_revision));
-      const feedstore::Content* content = model_->FindContent(content_revision);
+      const feedstore::Content* content = model.FindContent(content_revision);
       DCHECK(content);
       slice->mutable_xsurface_slice()->set_xsurface_frame(content->frame());
     } else {
@@ -111,20 +169,9 @@ class FeedStream::ModelMonitor : public StreamModel::Observer {
     }
   }
 
-  feedui::StreamUpdate GetUpdateForNewSurface() {
-    feedui::StreamUpdate result;
-    for (ContentRevision content_revision : model_->GetContentList()) {
-      AddSliceUpdate(content_revision, /*is_content_new=*/true, &result);
-    }
-    for (std::string& id : model_->GetSharedStateIds()) {
-      AddSharedState(id, &result);
-    }
-
-    return result;
-  }
-
   // Owned by |FeedStream|.
-  StreamModel* model_;
+  // Warning!: Null when the model is not yet loaded.
+  StreamModel* model_ = nullptr;
   const base::ObserverList<SurfaceInterface>* surfaces_;
 
   std::set<ContentRevision> current_content_set_;
@@ -164,6 +211,8 @@ FeedStream::FeedStream(
   static WireResponseTranslator default_translator;
   wire_response_translator_ = &default_translator;
 
+  surface_updater_ = std::make_unique<SurfaceUpdater>(&surfaces_);
+
   // Inserting this task first ensures that |store_| is initialized before
   // it is used.
   task_queue_.AddTask(std::make_unique<WaitForStoreInitializeTask>(store_));
@@ -182,20 +231,18 @@ void FeedStream::InitializeScheduling() {
 FeedStream::~FeedStream() = default;
 
 void FeedStream::TriggerStreamLoad() {
-  if (model_monitor_ || model_loading_in_progress_)
+  if (model_ || model_loading_in_progress_)
     return;
 
-  if (!delegate_->IsEulaAccepted()) {
-    stream_event_observer_->OnLoadStream(
-        LoadStreamStatus::kNoStatus,
-        LoadStreamStatus::kLoadNotAllowedEulaNotAccepted);
+  // If we should not load the stream, abort and send a zero-state update.
+  if (!IsArticlesListVisible()) {
+    LoadStreamTaskComplete(LoadStreamTask::Result(
+        LoadStreamStatus::kLoadNotAllowedArticlesListHidden));
     return;
   }
-
-  if (!IsArticlesListVisible()) {
-    stream_event_observer_->OnLoadStream(
-        LoadStreamStatus::kNoStatus,
-        LoadStreamStatus::kLoadNotAllowedArticlesListHidden);
+  if (!delegate_->IsEulaAccepted()) {
+    LoadStreamTaskComplete(LoadStreamTask::Result(
+        LoadStreamStatus::kLoadNotAllowedEulaNotAccepted));
     return;
   }
 
@@ -212,15 +259,17 @@ void FeedStream::LoadStreamTaskComplete(LoadStreamTask::Result result) {
            << result.load_from_store_status
            << " final_status=" << result.final_status;
   model_loading_in_progress_ = false;
+
+  // If loading failed, update surfaces with an appropriate zero-state error.
+  if (!model_) {
+    surface_updater_->LoadStreamFailed(result.final_status);
+  }
 }
 
 void FeedStream::AttachSurface(SurfaceInterface* surface) {
   surfaces_.AddObserver(surface);
-  if (model_monitor_) {
-    model_monitor_->SurfaceAdded(surface);
-  } else {
-    TriggerStreamLoad();
-  }
+  surface_updater_->SurfaceAdded(surface);
+  TriggerStreamLoad();
 }
 
 void FeedStream::DetachSurface(SurfaceInterface* surface) {
@@ -385,18 +434,14 @@ void FeedStream::MaybeTriggerRefresh(TriggerType trigger,
 void FeedStream::LoadModel(std::unique_ptr<StreamModel> model) {
   DCHECK(!model_);
   model_ = std::move(model);
-  model_monitor_ =
-      std::make_unique<FeedStream::ModelMonitor>(model_.get(), &surfaces_);
   model_->SetStoreObserver(this);
-  for (SurfaceInterface& surface : surfaces_) {
-    model_monitor_->SurfaceAdded(&surface);
-  }
+  surface_updater_->SetModel(model_.get());
 }
 
 void FeedStream::UnloadModel() {
   if (!model_)
     return;
-  model_monitor_.reset();
+  surface_updater_->SetModel(nullptr);
   model_.reset();
 }
 

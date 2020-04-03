@@ -126,6 +126,9 @@ class AXTreeSourceArc : public ui::AXTreeSource<AccessibilityInfoDataWrapper*,
   AccessibilityInfoDataWrapper* FindFirstFocusableNode(
       AccessibilityInfoDataWrapper* info_data) const;
 
+  AccessibilityInfoDataWrapper* GetSelectedNodeInfoFromAdapterView(
+      mojom::AccessibilityEventData* event_data) const;
+
   void UpdateAXNameCache(AccessibilityInfoDataWrapper* focused_node,
                          const std::vector<std::string>& event_text);
 

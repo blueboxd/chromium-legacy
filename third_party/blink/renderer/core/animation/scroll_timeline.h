@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_SCROLL_TIMELINE_H_
 
 #include "third_party/blink/renderer/core/animation/animation_timeline.h"
+#include "third_party/blink/renderer/core/animation/scroll_timeline_offset.h"
 #include "third_party/blink/renderer/core/animation/timing.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -43,8 +44,8 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   ScrollTimeline(Document*,
                  Element*,
                  ScrollDirection,
-                 CSSPrimitiveValue*,
-                 CSSPrimitiveValue*,
+                 ScrollTimelineOffset*,
+                 ScrollTimelineOffset*,
                  double);
 
   // AnimationTimeline implementation.
@@ -61,25 +62,35 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   // IDL API implementation.
   Element* scrollSource();
   String orientation();
-  String startScrollOffset();
-  String endScrollOffset();
+  void startScrollOffset(
+      StringOrScrollTimelineElementBasedOffset& result) const;
+  void endScrollOffset(StringOrScrollTimelineElementBasedOffset& result) const;
+
   void timeRange(DoubleOrScrollTimelineAutoKeyword&);
 
   // Returns the Node that should actually have the ScrollableArea (if one
   // exists). This can differ from |scrollSource| when |scroll_source_| is the
-  // Document's scrollingElement, and it may be null if the document was removed
-  // before the ScrollTimeline was created.
+  // Document's scrollingElement, and it may be null if the document was
+  // removed before the ScrollTimeline was created.
   Node* ResolvedScrollSource() const { return resolved_scroll_source_; }
+
+  // Return the latest resolved start scroll offset. This will be nullopt when
+  // timeline is inactive.
+  base::Optional<double> GetResolvedStartScrollOffset() const {
+    return timeline_state_snapshotted_.start_offset;
+  }
+
+  // Return the latest resolved end scroll offset. This will be nullopt when
+  // timeline is inactive.
+  base::Optional<double> GetResolvedEndScrollOffset() const {
+    return timeline_state_snapshotted_.end_offset;
+  }
 
   ScrollDirection GetOrientation() const { return orientation_; }
 
   void GetCurrentAndMaxOffset(const LayoutBox*,
                               double& current_offset,
                               double& max_offset) const;
-  void ResolveScrollStartAndEnd(const LayoutBox*,
-                                double max_offset,
-                                double& resolved_start_scroll_offset,
-                                double& resolved_end_scroll_offset) const;
   // Invalidates scroll timeline as a result of scroller properties change.
   // This may lead the timeline to request a new animation frame.
   virtual void Invalidate();
@@ -113,17 +124,45 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   bool ComputeIsActive() const;
   PhaseAndTime ComputeCurrentPhaseAndTime() const;
 
+  // Resolve scroll offsets The resolution process turns length-based values
+  // into concrete length values resolving percentages and zoom factor. For
+  // element-based values it computes the corresponding length value that maps
+  // to the particular element intersection. See
+  // |ScrollTimelineOffset::ResolveOffset()| for more details.
+  void ResolveScrollOffsets(double* start_offset, double* end_offset) const;
+
+  struct TimelineState {
+    TimelinePhase phase;
+    base::Optional<base::TimeDelta> current_time;
+    // The resolved version of start and end offset. These values are nullopts
+    // when timeline is inactive (e.g., when source does not overflow).
+    base::Optional<double> start_offset;
+    base::Optional<double> end_offset;
+
+    bool operator==(const TimelineState& other) const {
+      return phase == other.phase && current_time == other.current_time &&
+             start_offset == other.start_offset &&
+             end_offset == other.end_offset;
+    }
+  };
+
+  TimelineState ComputeTimelineState() const;
+
   // Use |scroll_source_| only to implement the web-exposed API but use
   // resolved_scroll_source_ to actually access the scroll related properties.
   Member<Element> scroll_source_;
   Member<Node> resolved_scroll_source_;
   ScrollDirection orientation_;
-  Member<CSSPrimitiveValue> start_scroll_offset_;
-  Member<CSSPrimitiveValue> end_scroll_offset_;
+
+  // These define the total range of the scroller that the ScrollTimeline is
+  // active within.
+  Member<ScrollTimelineOffset> start_scroll_offset_;
+  Member<ScrollTimelineOffset> end_scroll_offset_;
+
   double time_range_;
 
   // Snapshotted value produced by the last SnapshotState call.
-  PhaseAndTime phase_and_time_snapshotted_;
+  TimelineState timeline_state_snapshotted_;
 };
 
 template <>

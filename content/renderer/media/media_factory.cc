@@ -350,7 +350,6 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
       std::move(event_handler));
 
   base::WeakPtr<media::MediaObserver> media_observer;
-
   auto factory_selector = CreateRendererFactorySelector(
       media_log.get(), use_media_player_renderer,
       render_frame_->GetRenderFrameMediaPlaybackOptions()
@@ -562,7 +561,8 @@ MediaFactory::CreateRendererFactorySelector(
         std::make_unique<media::DefaultRendererFactory>(
             media_log, decoder_factory,
             base::BindRepeating(&RenderThreadImpl::GetGpuFactories,
-                                base::Unretained(render_thread))));
+                                base::Unretained(render_thread)),
+            render_frame_->CreateSpeechRecognitionClient()));
   }
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)

@@ -195,6 +195,19 @@ void SecurityStateTabHelper::DidStartNavigation(
     UMA_HISTOGRAM_BOOLEAN(
         "Security.LegacyTLS.FormSubmission",
         GetLegacyTLSWarningStatus(*GetVisibleSecurityState()));
+    if (navigation_handle->IsInMainFrame() &&
+        !security_state::IsSchemeCryptographic(
+            GetVisibleSecurityState()->url)) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "Security.SecurityLevel.InsecureMainFrameFormSubmission",
+          GetSecurityLevel(), security_state::SECURITY_LEVEL_COUNT);
+    }
+  } else if (navigation_handle->IsInMainFrame() &&
+             !security_state::IsSchemeCryptographic(
+                 GetVisibleSecurityState()->url)) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Security.SecurityLevel.InsecureMainFrameNonFormNavigation",
+        GetSecurityLevel(), security_state::SECURITY_LEVEL_COUNT);
   }
 }
 

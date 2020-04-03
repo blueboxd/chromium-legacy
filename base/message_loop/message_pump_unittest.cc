@@ -39,7 +39,7 @@ class MockMessagePumpDelegate : public MessagePump::Delegate {
   // MessagePump::Delegate:
   void BeforeDoInternalWork() override {}
   void BeforeWait() override {}
-  MOCK_METHOD0(DoSomeWork, MessagePump::Delegate::NextWorkInfo());
+  MOCK_METHOD0(DoWork, MessagePump::Delegate::NextWorkInfo());
   MOCK_METHOD0(DoIdleWork, bool());
 
  private:
@@ -60,7 +60,7 @@ TEST_P(MessagePumpTest, QuitStopsWork) {
   testing::StrictMock<MockMessagePumpDelegate> delegate;
 
   // Not expecting any calls to DoIdleWork after quitting.
-  EXPECT_CALL(delegate, DoSomeWork).WillOnce(Invoke([this] {
+  EXPECT_CALL(delegate, DoWork).WillOnce(Invoke([this] {
     message_pump_->Quit();
     return MessagePump::Delegate::NextWorkInfo{TimeTicks::Max()};
   }));
@@ -75,17 +75,17 @@ TEST_P(MessagePumpTest, QuitStopsWorkWithNestedRunLoop) {
   testing::StrictMock<MockMessagePumpDelegate> delegate;
   testing::StrictMock<MockMessagePumpDelegate> nested_delegate;
 
-  // We first schedule a call to DoSomeWork, which runs a nested run loop. After
-  // the nested loop exits, we schedule another DoSomeWork which quits the outer
+  // We first schedule a call to DoWork, which runs a nested run loop. After
+  // the nested loop exits, we schedule another DoWork which quits the outer
   // (original) run loop. The test verifies that there are no extra calls to
-  // DoSomeWork after the outer loop quits.
-  EXPECT_CALL(delegate, DoSomeWork).WillOnce(Invoke([&] {
+  // DoWork after the outer loop quits.
+  EXPECT_CALL(delegate, DoWork).WillOnce(Invoke([&] {
     message_pump_->ScheduleWork();
     message_pump_->Run(&nested_delegate);
     message_pump_->ScheduleWork();
     return MessagePump::Delegate::NextWorkInfo{TimeTicks::Max()};
   }));
-  EXPECT_CALL(nested_delegate, DoSomeWork).WillOnce(Invoke([&] {
+  EXPECT_CALL(nested_delegate, DoWork).WillOnce(Invoke([&] {
     // Quit the nested run loop.
     message_pump_->Quit();
     return MessagePump::Delegate::NextWorkInfo{TimeTicks::Max()};
@@ -93,7 +93,7 @@ TEST_P(MessagePumpTest, QuitStopsWorkWithNestedRunLoop) {
 
   // The outer pump may or may not trigger idle work at this point.
   EXPECT_CALL(delegate, DoIdleWork()).Times(AnyNumber());
-  EXPECT_CALL(delegate, DoSomeWork).WillOnce(Invoke([this] {
+  EXPECT_CALL(delegate, DoWork).WillOnce(Invoke([this] {
     message_pump_->Quit();
     return MessagePump::Delegate::NextWorkInfo{TimeTicks::Max()};
   }));
@@ -121,7 +121,7 @@ class TimerSlackTestDelegate : public MessagePump::Delegate {
   void BeforeDoInternalWork() override {}
   void BeforeWait() override {}
 
-  MessagePump::Delegate::NextWorkInfo DoSomeWork() override {
+  MessagePump::Delegate::NextWorkInfo DoWork() override {
     switch (action_.load()) {
       case NONE:
         break;
@@ -193,7 +193,7 @@ TEST_P(MessagePumpTest, RunWithoutScheduleWorkInvokesDoWork) {
 #if defined(OS_IOS)
   EXPECT_CALL(delegate, DoIdleWork).Times(AnyNumber());
 #endif
-  EXPECT_CALL(delegate, DoSomeWork).WillOnce(Invoke([this] {
+  EXPECT_CALL(delegate, DoWork).WillOnce(Invoke([this] {
     message_pump_->Quit();
     return MessagePump::Delegate::NextWorkInfo{TimeTicks::Max()};
   }));
@@ -205,12 +205,12 @@ TEST_P(MessagePumpTest, NestedRunWithoutScheduleWorkInvokesDoWork) {
 #if defined(OS_IOS)
   EXPECT_CALL(delegate, DoIdleWork).Times(AnyNumber());
 #endif
-  EXPECT_CALL(delegate, DoSomeWork).WillOnce(Invoke([this] {
+  EXPECT_CALL(delegate, DoWork).WillOnce(Invoke([this] {
     testing::StrictMock<MockMessagePumpDelegate> nested_delegate;
 #if defined(OS_IOS)
     EXPECT_CALL(nested_delegate, DoIdleWork).Times(AnyNumber());
 #endif
-    EXPECT_CALL(nested_delegate, DoSomeWork).WillOnce(Invoke([this] {
+    EXPECT_CALL(nested_delegate, DoWork).WillOnce(Invoke([this] {
       message_pump_->Quit();
       return MessagePump::Delegate::NextWorkInfo{TimeTicks::Max()};
     }));

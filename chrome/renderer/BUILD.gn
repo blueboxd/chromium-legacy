@@ -64,6 +64,8 @@ jumbo_static_library("renderer") {
     "media/chrome_key_systems.h",
     "media/chrome_key_systems_provider.cc",
     "media/chrome_key_systems_provider.h",
+    "media/chrome_speech_recognition_client.cc",
+    "media/chrome_speech_recognition_client.h",
     "media/flash_embed_rewrite.cc",
     "media/flash_embed_rewrite.h",
     "media/media_feeds.cc",

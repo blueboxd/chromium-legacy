@@ -212,6 +212,26 @@ public class FileUtilsTest {
     // TOOD(huangs): Implement testCopyStreamToFile().
     // TOOD(huangs): Implement testReadStream().
     // TOOD(huangs): Implement testGetUriForFile().
-    // TOOD(huangs): Implement testGetExtension().
+
+    @Test
+    public void testGetExtension() {
+        assertEquals("txt", FileUtils.getExtension("foo.txt"));
+        assertEquals("txt", FileUtils.getExtension("fOo.TxT"));
+        assertEquals("", FileUtils.getExtension(""));
+        assertEquals("", FileUtils.getExtension("No_extension"));
+        assertEquals("foo_config", FileUtils.getExtension(".foo_conFIG"));
+        assertEquals("6", FileUtils.getExtension("a.1.2.3.4.5.6"));
+        assertEquals("a1z2_a8z9", FileUtils.getExtension("a....a1z2_A8Z9"));
+        assertEquals("", FileUtils.getExtension("dotAtEnd."));
+        assertEquals("ext", FileUtils.getExtension("/Full/PATH/To/File.Ext"));
+        assertEquals("", FileUtils.getExtension("/Full.PATH/To.File/Extra"));
+        assertEquals("", FileUtils.getExtension("../../file"));
+        assertEquals("", FileUtils.getExtension("./etc/passwd"));
+        assertEquals("", FileUtils.getExtension("////////"));
+        assertEquals("", FileUtils.getExtension("........"));
+        assertEquals("", FileUtils.getExtension("././././"));
+        assertEquals("", FileUtils.getExtension("/./././."));
+    }
+
     // TOOD(huangs): Implement testQueryBitmapFromContentProvider().
 }

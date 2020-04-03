@@ -8,7 +8,7 @@
  */
 cr.define('settings', function() {
   /** @const {number} */
-  const MAX_SIGNIN_PROMO_IMPRESSION = 10;
+  /* #export */ const MAX_SIGNIN_PROMO_IMPRESSION = 10;
 
   Polymer({
     is: 'settings-sync-account-control',

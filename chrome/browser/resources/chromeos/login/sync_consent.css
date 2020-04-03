@@ -6,18 +6,8 @@
   color: #333;
 }
 
-.overview-list-item {
-  background-color: var(--google-grey-100);
-  margin-bottom: 16px;
-  padding: 16px;
-}
-
 .overview-list-item:last-of-type {
   margin-bottom: 0;
-}
-
-.overview-list-item-icon {
-  padding-inline-end: 16px;
 }
 
 .overview-list-item-title {
@@ -25,7 +15,19 @@
   margin-bottom: 4px;
 }
 
-cr-checkbox {
+/* Styles for the traditional dialog. */
+
+#syncConsentOverviewDialog .overview-list-item {
+  background-color: var(--google-grey-100);
+  margin-bottom: 16px;
+  padding: 16px;
+}
+
+#syncConsentOverviewDialog .overview-list-item-icon {
+  padding-inline-end: 16px;
+}
+
+#syncConsentOverviewDialog cr-checkbox {
   align-self: start; /* Prevent label from spanning the whole width. */
   margin-top: 28px; /* 40 to label base line => 40 - 16/2 - 13/3 = 28 */
   padding-inline-start: 8px;
@@ -33,6 +35,24 @@ cr-checkbox {
 }
 
 /* Styles used with SplitSettingsSync. */
+
+#splitSettingsSyncConsentDialog .overview-list-item {
+  margin-bottom: 16px;
+  padding: 16px;
+}
+
+#splitSettingsSyncConsentDialog .overview-list-item-icon {
+  margin-top: 2px;
+  padding-inline-end: 16px;
+}
+
+#splitSettingsSyncConsentDialog cr-checkbox {
+  align-self: start; /* Prevent label from spanning the whole width. */
+  margin-top: 16px;
+  --cr-checkbox-label-padding-start: 12px;
+}
+
+/* Styles used with SplitSyncConsent. */
 
 #osSyncConsentFooter {
   border-bottom: solid 1px var(--google-grey-300);

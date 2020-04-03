@@ -463,8 +463,7 @@ public class CrashesListFragment extends Fragment {
         }
 
         Activity activity = (Activity) mContext;
-        return new PersistentErrorView(
-                activity, R.id.crash_consent_error, PersistentErrorView.Type.ERROR)
+        return new PersistentErrorView(activity, R.id.crash_consent_error)
                 .setText("Crash collection is disabled. Tap for more info.")
                 .setDialog(dialogBuilder.create());
     }

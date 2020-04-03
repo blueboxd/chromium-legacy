@@ -65,4 +65,23 @@ Polymer({
     settings.Router.getInstance().navigateTo(route, params);
     this.fire('navigated-to-result-route');
   },
+
+  /**
+   * @return {string} The name of the icon to use.
+   * @private
+   */
+  getResultIcon_() {
+    const Icon = chromeos.settings.mojom.SearchResultIcon;
+    switch (this.searchResult.icon) {
+      case Icon.kCellular:
+        return 'os-settings:multidevice-better-together-suite';
+      case Icon.kEthernet:
+        return 'os-settings:settings-ethernet';
+      case Icon.kWifi:
+        return 'os-settings:network-wifi';
+      default:
+        // TODO(crbug/1056909): assertNotReached() when all icons are added.
+        return 'os-settings:settings-general';
+    }
+  },
 });

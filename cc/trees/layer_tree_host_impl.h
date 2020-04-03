@@ -1359,9 +1359,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   EventsMetricsManager events_metrics_manager_;
 
-  // Event metrics that are reported back from the main thread.
-  std::vector<EventMetrics> events_metrics_from_main_thread_;
-
   // Must be the last member to ensure this is destroyed first in the
   // destruction order and invalidates all weak pointers.
   base::WeakPtrFactory<LayerTreeHostImpl> weak_factory_{this};

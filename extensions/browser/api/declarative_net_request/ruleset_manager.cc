@@ -83,9 +83,11 @@ void RulesetManager::AddRuleset(const ExtensionId& extension_id,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsAPIAvailable());
 
-  bool inserted;
-  std::tie(std::ignore, inserted) = rulesets_.emplace(
-      extension_id, prefs_->GetInstallTime(extension_id), std::move(matcher));
+  bool inserted =
+      rulesets_
+          .emplace(extension_id, prefs_->GetInstallTime(extension_id),
+                   std::move(matcher))
+          .second;
   DCHECK(inserted) << "AddRuleset called twice in succession for "
                    << extension_id;
 
@@ -105,12 +107,10 @@ void RulesetManager::RemoveRuleset(const ExtensionId& extension_id) {
         return ruleset_data.extension_id == extension_id;
       };
 
-  DCHECK(std::find_if(rulesets_.begin(), rulesets_.end(), compare_by_id) !=
-         rulesets_.end())
+  size_t erased_count = base::EraseIf(rulesets_, compare_by_id);
+  DCHECK_EQ(1u, erased_count)
       << "RemoveRuleset called without a corresponding AddRuleset for "
       << extension_id;
-
-  base::EraseIf(rulesets_, compare_by_id);
 
   if (test_observer_)
     test_observer_->OnRulesetCountChanged(rulesets_.size());
@@ -118,6 +118,13 @@ void RulesetManager::RemoveRuleset(const ExtensionId& extension_id) {
   // Clear the renderers' cache so that they take the removed rules into
   // account.
   ClearRendererCacheOnNavigation();
+}
+
+std::set<ExtensionId> RulesetManager::GetExtensionsWithRulesets() const {
+  std::set<ExtensionId> extension_ids;
+  for (const ExtensionRulesetData& data : rulesets_)
+    extension_ids.insert(data.extension_id);
+  return extension_ids;
 }
 
 CompositeMatcher* RulesetManager::GetMatcherForExtension(

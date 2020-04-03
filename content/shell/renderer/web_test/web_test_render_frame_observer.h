@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "content/shell/common/blink_test.mojom.h"
+#include "content/shell/common/web_test/blink_test.mojom.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 

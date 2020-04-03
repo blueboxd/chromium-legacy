@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "content/public/renderer/render_thread_observer.h"
-#include "content/shell/common/web_test.mojom.h"
+#include "content/shell/common/web_test/web_test.mojom.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 

@@ -27,7 +27,7 @@ interface SodaService {
 // service. The remote lives in the renderer process and the receiver
 // lives in the SODA process.
 interface SodaRecognizer {
-  // Initialize the SODA instance. SODA will use the soda_recognition_client
+  // Initialize the SODA instance. SODA will use the SODA recognition client
   // to return the recognition events containing the transcribed audio back
   // to the originating media.
   SendAudioToSoda(AudioDataS16 buffer);

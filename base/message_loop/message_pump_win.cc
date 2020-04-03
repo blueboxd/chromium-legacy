@@ -128,7 +128,7 @@ void MessagePumpForUI::ScheduleDelayedWork(const TimeTicks& delayed_work_time) {
   // Since this is always called from |bound_thread_|, there is almost always
   // nothing to do as the loop is already running. When the loop becomes idle,
   // it will typically WaitForWork() in DoRunLoop() with the timeout provided by
-  // DoSomeWork(). The only alternative to this is entering a native nested loop
+  // DoWork(). The only alternative to this is entering a native nested loop
   // (e.g. modal dialog) under a ScopedNestableTaskAllower, in which case
   // HandleWorkMessage() will be invoked when the system picks up kMsgHaveWork
   // and it will ScheduleNativeTimer() if it's out of immediate work. However,
@@ -214,7 +214,7 @@ void MessagePumpForUI::DoRunLoop() {
     if (state_->should_quit)
       break;
 
-    Delegate::NextWorkInfo next_work_info = state_->delegate->DoSomeWork();
+    Delegate::NextWorkInfo next_work_info = state_->delegate->DoWork();
     in_native_loop_ = false;
     more_work_is_plausible |= next_work_info.is_immediate();
     if (state_->should_quit)
@@ -316,7 +316,7 @@ void MessagePumpForUI::HandleWorkMessage() {
   // messages that may be in the Windows message queue.
   ProcessPumpReplacementMessage();
 
-  Delegate::NextWorkInfo next_work_info = state_->delegate->DoSomeWork();
+  Delegate::NextWorkInfo next_work_info = state_->delegate->DoWork();
   if (next_work_info.is_immediate()) {
     ScheduleWork();
   } else {
@@ -347,7 +347,7 @@ void MessagePumpForUI::HandleTimerMessage() {
   if (!state_)
     return;
 
-  Delegate::NextWorkInfo next_work_info = state_->delegate->DoSomeWork();
+  Delegate::NextWorkInfo next_work_info = state_->delegate->DoWork();
   if (next_work_info.is_immediate()) {
     ScheduleWork();
   } else {
@@ -619,7 +619,7 @@ void MessagePumpForIO::DoRunLoop() {
     // had no work, then it is a good time to consider sleeping (waiting) for
     // more work.
 
-    Delegate::NextWorkInfo next_work_info = state_->delegate->DoSomeWork();
+    Delegate::NextWorkInfo next_work_info = state_->delegate->DoWork();
     bool more_work_is_plausible = next_work_info.is_immediate();
     if (state_->should_quit)
       break;

@@ -26,6 +26,16 @@ class NetworkHealth
     chromeos::network_config::mojom::ConnectionStateType connection_state;
   };
 
+  // Structure for a single device's status.
+  struct DeviceState {
+    DeviceState();
+    ~DeviceState();
+
+    std::string mac_address;
+    chromeos::network_config::mojom::NetworkType type;
+    chromeos::network_config::mojom::DeviceStateType state;
+  };
+
   // Structure containing the current snapshot of the state of Network Health.
   struct NetworkHealthState {
     NetworkHealthState();
@@ -33,6 +43,7 @@ class NetworkHealth
     ~NetworkHealthState();
 
     std::vector<NetworkState> active_networks;
+    std::vector<DeviceState> devices;
   };
 
   NetworkHealth();
@@ -42,20 +53,24 @@ class NetworkHealth
   // Returns the current NetworkHealthState.
   NetworkHealthState GetNetworkHealthState();
 
-  // Handler for receiving new active networks.
+  // Handler for receiving active networks.
   void OnActiveNetworksReceived(
       std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>);
+
+  // Handler for receiving networking devices.
+  void OnDeviceStateListReceived(
+      std::vector<chromeos::network_config::mojom::DeviceStatePropertiesPtr>);
 
   // CrosNetworkConfigObserver implementation
   void OnActiveNetworksChanged(
       std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>)
       override;
+  void OnDeviceStateListChanged() override;
 
   // CrosNetworkConfigObserver unimplemented callbacks
   void OnNetworkStateListChanged() override {}
   void OnNetworkStateChanged(
       chromeos::network_config::mojom::NetworkStatePropertiesPtr) override {}
-  void OnDeviceStateListChanged() override {}
   void OnVpnProvidersChanged() override {}
   void OnNetworkCertificatesChanged() override {}
 
@@ -63,6 +78,7 @@ class NetworkHealth
   // Asynchronous call that refreshes the current Network Health State.
   void RefreshNetworkHealthState();
   void RequestActiveNetworks();
+  void RequestDeviceStateList();
 
   mojo::Remote<chromeos::network_config::mojom::CrosNetworkConfig>
       remote_cros_network_config_;

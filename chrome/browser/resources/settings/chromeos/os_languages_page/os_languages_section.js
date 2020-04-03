@@ -27,9 +27,9 @@ Polymer({
       type: Object,
       value() {
         const map = new Map();
-        if (settings.routes.LANGUAGES_DETAILS) {
+        if (settings.routes.OS_LANGUAGES_DETAILS) {
           map.set(
-              settings.routes.LANGUAGES_DETAILS.path,
+              settings.routes.OS_LANGUAGES_DETAILS.path,
               '#languagesSubpageTrigger');
         }
         return map;
@@ -40,7 +40,8 @@ Polymer({
   /** @private */
   onLanguagesTap_() {
     // TODO(crbug.com/950007): Add UMA metric for opening language details.
-    settings.Router.getInstance().navigateTo(settings.routes.LANGUAGES_DETAILS);
+    settings.Router.getInstance().navigateTo(
+        settings.routes.OS_LANGUAGES_DETAILS);
   },
 
   /**

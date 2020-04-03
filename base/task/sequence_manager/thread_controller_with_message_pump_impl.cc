@@ -233,7 +233,7 @@ void ThreadControllerWithMessagePumpImpl::BeforeWait() {
 }
 
 MessagePump::Delegate::NextWorkInfo
-ThreadControllerWithMessagePumpImpl::DoSomeWork() {
+ThreadControllerWithMessagePumpImpl::DoWork() {
   // Nested runloops are covered by the parent loop hang watch scope.
   // TODO(crbug/1034046): Provide more granular scoping that reuses the parent
   // scope deadline.
@@ -252,7 +252,7 @@ ThreadControllerWithMessagePumpImpl::DoSomeWork() {
                                      : WorkDeduplicator::NextTask::kIsDelayed;
   if (work_deduplicator_.DidCheckForMoreWork(next_task) ==
       ShouldScheduleWork::kScheduleImmediate) {
-    // Need to run new work immediately, but due to the contract of DoSomeWork
+    // Need to run new work immediately, but due to the contract of DoWork
     // we only need to return a null TimeTicks to ensure that happens.
     return MessagePump::Delegate::NextWorkInfo();
   }

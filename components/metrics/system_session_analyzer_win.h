@@ -24,10 +24,12 @@ namespace metrics {
 class SystemSessionAnalyzer {
  public:
   enum Status {
-    FAILED = 0,
-    CLEAN = 1,
-    UNCLEAN = 2,
-    OUTSIDE_RANGE = 3,
+    CLEAN = 0,
+    UNCLEAN = 1,
+    OUTSIDE_RANGE = 2,
+    INITIALIZE_FAILED = 3,
+    FETCH_EVENTS_FAILED = 4,
+    PROCESS_SESSION_FAILED = 5,
   };
 
   // Minimal information about a log event.

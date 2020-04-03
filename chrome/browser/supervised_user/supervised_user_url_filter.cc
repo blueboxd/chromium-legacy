@@ -391,6 +391,15 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(
     return BLOCK;
   }
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // The user requested the Chrome Webstore, and it
+  // hasn't specifically been blocked above, so allow.
+  if (policy::url_util::Normalize(effective_url).host() ==
+      extension_urls::GetWebstoreLaunchURL().host()) {
+    return ALLOW;
+  }
+#endif
+
   // Fall back to the default behavior.
   *reason = supervised_user_error_page::DEFAULT;
   return default_behavior_;

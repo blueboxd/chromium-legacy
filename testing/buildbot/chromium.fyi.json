@@ -12199,6 +12199,28 @@
     ],
     "gtest_tests": [
       {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.accessibility_unittests.filter"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "inside_docker": "1",
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "accessibility_unittests",
+        "test_target": "//ui/accessibility:accessibility_unittests"
+      },
+      {
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -12559,6 +12581,25 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test": "google_apis_unittests",
+        "test_target": "//google_apis:google_apis_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "inside_docker": "1",
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
         "test": "gpu_unittests",
         "test_target": "//gpu:gpu_unittests"
       },
@@ -12877,6 +12918,25 @@
         },
         "test": "web_runner_integration_tests",
         "test_target": "//fuchsia/runners:web_runner_integration_tests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "inside_docker": "1",
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "wtf_unittests",
+        "test_target": "//third_party/blink/renderer/platform/wtf:wtf_unittests"
       }
     ]
   },
@@ -12886,6 +12946,27 @@
     ],
     "gtest_tests": [
       {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.accessibility_unittests.filter"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "accessibility_unittests",
+        "test_target": "//ui/accessibility:accessibility_unittests"
+      },
+      {
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -13233,6 +13314,24 @@
         },
         "test": "gfx_unittests",
         "test_target": "//ui/gfx:gfx_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "google_apis_unittests",
+        "test_target": "//google_apis:google_apis_unittests"
       },
       {
         "merge": {
@@ -13551,6 +13650,24 @@
         },
         "test": "web_runner_integration_tests",
         "test_target": "//fuchsia/runners:web_runner_integration_tests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "wtf_unittests",
+        "test_target": "//third_party/blink/renderer/platform/wtf:wtf_unittests"
       }
     ]
   },
@@ -13559,6 +13676,27 @@
       "all"
     ],
     "gtest_tests": [
+      {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.accessibility_unittests.filter"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "accessibility_unittests",
+        "test_target": "//ui/accessibility:accessibility_unittests"
+      },
       {
         "merge": {
           "args": [],
@@ -13907,6 +14045,24 @@
         },
         "test": "gfx_unittests",
         "test_target": "//ui/gfx:gfx_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "google_apis_unittests",
+        "test_target": "//google_apis:google_apis_unittests"
       },
       {
         "merge": {
@@ -14246,6 +14402,24 @@
         },
         "test": "web_runner_integration_tests",
         "test_target": "//fuchsia/runners:web_runner_integration_tests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "wtf_unittests",
+        "test_target": "//third_party/blink/renderer/platform/wtf:wtf_unittests"
       }
     ],
     "isolated_scripts": [
@@ -14697,7 +14871,8 @@
               "path": "Xcode.app"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module"
       },
@@ -19705,7 +19880,8 @@
               "path": "Xcode.app"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module"
       },
@@ -19744,7 +19920,8 @@
               "path": "Xcode.app"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module"
       },
@@ -19783,7 +19960,8 @@
               "path": "Xcode.app"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module"
       },
@@ -19822,7 +20000,8 @@
               "path": "Xcode.app"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module"
       },
@@ -19861,7 +20040,8 @@
               "path": "Xcode.app"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module"
       },
@@ -26130,7 +26310,8 @@
               "path": "Xcode.app"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module"
       },
@@ -26169,7 +26350,8 @@
               "path": "Xcode.app"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module"
       },

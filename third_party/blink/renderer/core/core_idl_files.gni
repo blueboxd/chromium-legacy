@@ -612,6 +612,7 @@ core_dictionary_idl_files =
                     "animation/keyframe_animation_options.idl",
                     "animation/keyframe_effect_options.idl",
                     "animation/optional_effect_timing.idl",
+                    "animation/scroll_timeline_element_based_offset.idl",
                     "animation/scroll_timeline_options.idl",
                     "css/css_style_sheet_init.idl",
                     "css/font_face_descriptors.idl",

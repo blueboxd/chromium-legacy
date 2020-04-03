@@ -119,12 +119,29 @@ class DownloadDeepScanningBrowserTest
     SafeBrowsingService::RegisterFactory(nullptr);
   }
 
+  void SetUpOnMainThread() override {
+    embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
+    ASSERT_TRUE(embedded_test_server()->Start());
+    AddUrlToCheckComplianceOfDownloads(
+        embedded_test_server()->base_url().spec());
+
+    SetBinaryUploadServiceTestFactory();
+    SetUrlLoaderInterceptor();
+    ObserveDownloadManager();
+    AuthorizeForDeepScanning();
+
+    SetDMTokenForTesting(
+        policy::DMToken::CreateValidTokenForTesting("dm_token"));
+    SetDlpPolicy(CheckContentComplianceValues::CHECK_DOWNLOADS);
+    SetMalwarePolicy(SendFilesForMalwareCheckValues::SEND_DOWNLOADS);
+  }
+
   void WaitForDownloadToFinish() {
     content::DownloadManager* download_manager =
         content::BrowserContext::GetDownloadManager(browser()->profile());
     content::DownloadTestObserverTerminal observer(
         download_manager, 1,
-        content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_IGNORE);
+        content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_QUIT);
     observer.WaitForFinished();
   }
 
@@ -267,18 +284,6 @@ class DownloadDeepScanningBrowserTest
 
 IN_PROC_BROWSER_TEST_F(DownloadDeepScanningBrowserTest,
                        SafeDownloadHasCorrectDangerType) {
-  embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  SetBinaryUploadServiceTestFactory();
-  SetUrlLoaderInterceptor();
-  ObserveDownloadManager();
-  AuthorizeForDeepScanning();
-
-  SetDMTokenForTesting(policy::DMToken::CreateValidTokenForTesting("dm_token"));
-  SetDlpPolicy(CheckContentComplianceValues::CHECK_DOWNLOADS);
-  SetMalwarePolicy(SendFilesForMalwareCheckValues::SEND_DOWNLOADS);
-
   // The file is SAFE according to the metadata check
   ClientDownloadResponse metadata_response;
   metadata_response.set_verdict(ClientDownloadResponse::SAFE);
@@ -315,6 +320,126 @@ IN_PROC_BROWSER_TEST_F(DownloadDeepScanningBrowserTest,
       item->GetDangerType(),
       download::DownloadDangerType::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE);
   EXPECT_EQ(item->GetState(), download::DownloadItem::COMPLETE);
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadDeepScanningBrowserTest, FailedScanFailsOpen) {
+  // The file is SAFE according to the metadata check
+  ClientDownloadResponse metadata_response;
+  metadata_response.set_verdict(ClientDownloadResponse::SAFE);
+  ExpectMetadataResponse(metadata_response);
+
+  // The DLP scan runs synchronously, but doesn't find anything.
+  DeepScanningClientResponse sync_response;
+  sync_response.mutable_dlp_scan_verdict()->set_status(
+      DlpDeepScanningVerdict::SUCCESS);
+  ExpectDeepScanSynchronousResponse(/*is_advanced_protection=*/false,
+                                    sync_response);
+
+  GURL url = embedded_test_server()->GetURL(
+      "/safe_browsing/download_protection/zipfile_two_archives.zip");
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url, WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+
+  WaitForDeepScanRequest(/*is_advanced_protection=*/false);
+
+  // The malware scan finishes asynchronously, and fails
+  DeepScanningClientResponse async_response;
+  async_response.set_token(last_enterprise_request().request_token());
+  async_response.mutable_malware_scan_verdict()->set_verdict(
+      MalwareDeepScanningVerdict::SCAN_FAILURE);
+  SendFcmMessage(async_response);
+
+  WaitForDownloadToFinish();
+
+  // The file should be safe, but not deep scanned.
+  ASSERT_EQ(download_items().size(), 1u);
+  download::DownloadItem* item = *download_items().begin();
+  EXPECT_EQ(item->GetDangerType(),
+            download::DownloadDangerType::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+  EXPECT_EQ(item->GetState(), download::DownloadItem::COMPLETE);
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadDeepScanningBrowserTest,
+                       PartialFailureShowsMalwareWarning) {
+  // The file is SAFE according to the metadata check
+  ClientDownloadResponse metadata_response;
+  metadata_response.set_verdict(ClientDownloadResponse::SAFE);
+  ExpectMetadataResponse(metadata_response);
+
+  // The DLP scan runs synchronously, and fails.
+  DeepScanningClientResponse sync_response;
+  sync_response.mutable_dlp_scan_verdict()->set_status(
+      DlpDeepScanningVerdict::FAILURE);
+  ExpectDeepScanSynchronousResponse(/*is_advanced_protection=*/false,
+                                    sync_response);
+
+  GURL url = embedded_test_server()->GetURL(
+      "/safe_browsing/download_protection/zipfile_two_archives.zip");
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url, WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+
+  WaitForDeepScanRequest(/*is_advanced_protection=*/false);
+
+  // The malware scan finishes asynchronously, and finds malware.
+  DeepScanningClientResponse async_response;
+  async_response.set_token(last_enterprise_request().request_token());
+  async_response.mutable_malware_scan_verdict()->set_verdict(
+      MalwareDeepScanningVerdict::MALWARE);
+  SendFcmMessage(async_response);
+
+  WaitForDownloadToFinish();
+
+  // The file should be dangerous.
+  ASSERT_EQ(download_items().size(), 1u);
+  download::DownloadItem* item = *download_items().begin();
+  EXPECT_EQ(
+      item->GetDangerType(),
+      download::DownloadDangerType::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT);
+  EXPECT_EQ(item->GetState(), download::DownloadItem::IN_PROGRESS);
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadDeepScanningBrowserTest,
+                       PartialFailureShowsDlpWarning) {
+  // The file is SAFE according to the metadata check
+  ClientDownloadResponse metadata_response;
+  metadata_response.set_verdict(ClientDownloadResponse::SAFE);
+  ExpectMetadataResponse(metadata_response);
+
+  // The DLP scan runs synchronously, and finds a violation.
+  DeepScanningClientResponse sync_response;
+  sync_response.mutable_dlp_scan_verdict()->set_status(
+      DlpDeepScanningVerdict::SUCCESS);
+  sync_response.mutable_dlp_scan_verdict()->add_triggered_rules()->set_action(
+      DlpDeepScanningVerdict::TriggeredRule::BLOCK);
+  ExpectDeepScanSynchronousResponse(/*is_advanced_protection=*/false,
+                                    sync_response);
+
+  GURL url = embedded_test_server()->GetURL(
+      "/safe_browsing/download_protection/zipfile_two_archives.zip");
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url, WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+
+  WaitForDeepScanRequest(/*is_advanced_protection=*/false);
+
+  // The malware scan finishes asynchronously, and fails.
+  DeepScanningClientResponse async_response;
+  async_response.set_token(last_enterprise_request().request_token());
+  async_response.mutable_malware_scan_verdict()->set_verdict(
+      MalwareDeepScanningVerdict::SCAN_FAILURE);
+  SendFcmMessage(async_response);
+
+  WaitForDownloadToFinish();
+
+  // The file should be blocked for sensitive content.
+  ASSERT_EQ(download_items().size(), 1u);
+  download::DownloadItem* item = *download_items().begin();
+  EXPECT_EQ(item->GetDangerType(),
+            download::DownloadDangerType::
+                DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK);
+  EXPECT_EQ(item->GetState(), download::DownloadItem::INTERRUPTED);
 }
 
 }  // namespace safe_browsing

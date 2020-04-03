@@ -285,6 +285,8 @@ if (is_chromeos) {
       deps += [ "//chrome/browser/resources/settings/chromeos:build" ]
     } else {
       source = "settings/os_settings_resources.grd"
+      deps +=
+          [ "//chrome/browser/resources/settings/chromeos:polymer3_elements" ]
     }
 
     grit_flags = [

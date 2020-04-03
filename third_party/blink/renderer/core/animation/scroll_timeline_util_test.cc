@@ -13,6 +13,16 @@
 
 namespace blink {
 
+namespace {
+
+StringOrScrollTimelineElementBasedOffset OffsetFromString(const String& value) {
+  StringOrScrollTimelineElementBasedOffset result;
+  result.SetString(value);
+  return result;
+}
+
+}  // namespace
+
 namespace scroll_timeline_util {
 
 using ScrollTimelineUtilTest = PageTestBase;
@@ -47,8 +57,8 @@ TEST_F(ScrollTimelineUtilTest, ToCompositorScrollTimeline) {
   options->setTimeRange(
       DoubleOrScrollTimelineAutoKeyword::FromDouble(time_range));
   options->setOrientation("block");
-  options->setStartScrollOffset("50px");
-  options->setEndScrollOffset("auto");
+  options->setStartScrollOffset(OffsetFromString("50px"));
+  options->setEndScrollOffset(OffsetFromString("auto"));
   ScrollTimeline* timeline =
       ScrollTimeline::Create(GetDocument(), options, ASSERT_NO_EXCEPTION);
 
@@ -80,8 +90,10 @@ TEST_F(ScrollTimelineUtilTest, ToCompositorScrollTimelineNullScrollSource) {
   // scrollSource. The alternative approach would require us to remove the
   // documentElement from the document.
   Element* scroll_source = nullptr;
-  CSSPrimitiveValue* start_scroll_offset = nullptr;
-  CSSPrimitiveValue* end_scroll_offset = nullptr;
+  ScrollTimelineOffset* start_scroll_offset =
+      MakeGarbageCollected<ScrollTimelineOffset>();
+  ScrollTimelineOffset* end_scroll_offset =
+      MakeGarbageCollected<ScrollTimelineOffset>();
   ScrollTimeline* timeline = MakeGarbageCollected<ScrollTimeline>(
       &GetDocument(), scroll_source, ScrollTimeline::Block, start_scroll_offset,
       end_scroll_offset, 100);

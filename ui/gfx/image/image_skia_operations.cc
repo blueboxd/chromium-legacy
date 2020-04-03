@@ -15,6 +15,7 @@
 #include "third_party/skia/include/core/SkClipOp.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -47,7 +48,7 @@ gfx::Rect DIPToPixelBounds(gfx::Rect dip_bounds, float scale) {
 ImageSkiaRep GetErrorImageRep(float scale, const gfx::Size& pixel_size) {
   SkBitmap bitmap;
   bitmap.allocN32Pixels(pixel_size.width(), pixel_size.height());
-  bitmap.eraseColor(SK_ColorRED);
+  bitmap.eraseColor(kPlaceholderColor);
   return gfx::ImageSkiaRep(bitmap, scale);
 }
 

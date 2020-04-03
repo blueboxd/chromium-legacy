@@ -272,9 +272,9 @@ class FixtureWithMockMessagePump : public Fixture {
   }
 
   void RunDoWorkOnce() override {
-    pump_->SetQuitAfterDoSomeWork(true);
+    pump_->SetQuitAfterDoWork(true);
     RunLoop().Run();
-    pump_->SetQuitAfterDoSomeWork(false);
+    pump_->SetQuitAfterDoWork(false);
   }
 
   SequenceManagerForTest* sequence_manager() const override {

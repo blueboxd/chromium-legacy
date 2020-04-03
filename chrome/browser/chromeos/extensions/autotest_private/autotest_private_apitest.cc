@@ -71,8 +71,7 @@ class AutotestPrivateApiTest : public ExtensionApiTest {
   DISALLOW_COPY_AND_ASSIGN(AutotestPrivateApiTest);
 };
 
-// Flaky on linux-chromeos-rel (see https://crbug.com/1032993)
-IN_PROC_BROWSER_TEST_F(AutotestPrivateApiTest, DISABLED_AutotestPrivate) {
+IN_PROC_BROWSER_TEST_F(AutotestPrivateApiTest, AutotestPrivate) {
   ASSERT_TRUE(RunComponentExtensionTestWithArg("autotest_private", "default"))
       << message_;
 }

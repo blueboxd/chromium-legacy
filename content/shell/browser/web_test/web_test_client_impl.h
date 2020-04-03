@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "content/shell/common/web_test.mojom.h"
+#include "content/shell/common/web_test/web_test.mojom.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"

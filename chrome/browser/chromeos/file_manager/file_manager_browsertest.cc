@@ -499,6 +499,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("openQuickViewSniffedText"),
         TestCase("openQuickViewScrollText"),
         TestCase("openQuickViewScrollHtml"),
+        TestCase("openQuickViewMhtml"),
         TestCase("openQuickViewBackgroundColorHtml"),
         TestCase("openQuickViewDrive"),
         TestCase("openQuickViewSmbfs").EnableSmbfs(),

@@ -127,7 +127,7 @@ void SupervisedUserPrefStore::OnNewSettingsAvailable(
     prefs_->SetBoolean(prefs::kForceGoogleSafeSearch, true);
     prefs_->SetInteger(prefs::kForceYouTubeRestrict,
                        safe_search_util::YOUTUBE_RESTRICT_MODERATE);
-    prefs_->SetBoolean(prefs::kHideWebStoreIcon, true);
+    prefs_->SetBoolean(prefs::kHideWebStoreIcon, false);
     prefs_->SetBoolean(prefs::kSigninAllowed, false);
     prefs_->SetBoolean(feed::prefs::kEnableSnippets, false);
 

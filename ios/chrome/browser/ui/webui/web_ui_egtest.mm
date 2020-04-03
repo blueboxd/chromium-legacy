@@ -122,7 +122,7 @@ bool WaitForOmniboxURLString(std::string URL, bool exact_match = true) {
   // Verify that the resulting page is chrome://terms.
   GREYAssert(WaitForOmniboxURLString(kChromeUITermsURL),
              @"Omnibox does not contain URL.");
-  const std::string kTermsText = "Google Chrome Terms of Service";
+  const std::string kTermsText = "Terms of Service";
   [ChromeEarlGrey waitForWebStateContainingText:kTermsText];
 }
 

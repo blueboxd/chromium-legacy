@@ -26,26 +26,6 @@ void QuietNotificationPermissionUiState::RegisterProfilePrefs(
 }
 
 // static
-bool QuietNotificationPermissionUiState::IsQuietUiEnabledInPrefs(
-    Profile* profile) {
-  return profile->GetPrefs()->GetBoolean(
-      prefs::kEnableQuietNotificationPermissionUi);
-}
-
-// static
-void QuietNotificationPermissionUiState::EnableQuietUiInPrefs(
-    Profile* profile) {
-  profile->GetPrefs()->SetBoolean(prefs::kEnableQuietNotificationPermissionUi,
-                                  true /* value */);
-}
-
-// static
-void QuietNotificationPermissionUiState::DisableQuietUiInPrefs(
-    Profile* profile) {
-  profile->GetPrefs()->ClearPref(prefs::kEnableQuietNotificationPermissionUi);
-}
-
-// static
 bool QuietNotificationPermissionUiState::ShouldShowPromo(Profile* profile) {
   return profile->GetPrefs()->GetBoolean(
              prefs::kEnableQuietNotificationPermissionUi) &&

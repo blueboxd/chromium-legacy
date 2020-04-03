@@ -86,7 +86,8 @@ class RuleIndexingTestBase : public DNRTestBase {
  protected:
   // Loads the extension and verifies the indexed ruleset location and histogram
   // counts.
-  void LoadAndExpectSuccess(size_t expected_indexed_rules_count) {
+  void LoadAndExpectSuccess(size_t expected_indexed_rules_count,
+                            bool expect_rulesets_indexed = true) {
     base::HistogramTester tester;
     WriteExtensionData();
 
@@ -105,7 +106,7 @@ class RuleIndexingTestBase : public DNRTestBase {
     EXPECT_TRUE(error_reporter()->GetErrors()->empty());
 
     // The histograms below are not logged for unpacked extensions.
-    if (GetParam() == ExtensionLoadType::PACKED) {
+    if (GetParam() == ExtensionLoadType::PACKED && expect_rulesets_indexed) {
       tester.ExpectTotalCount(kIndexAndPersistRulesTimeHistogram,
                               1 /* count */);
       tester.ExpectBucketCount(kManifestRulesCountHistogram,
@@ -699,6 +700,12 @@ TEST_P(MultipleRulesetsIndexingTest, Success) {
 
   LoadAndExpectSuccess(kNumRulesets *
                        kRulesPerRuleset /* expected_indexed_rules_count */);
+}
+
+// Tests an extension with no static rulesets.
+TEST_P(MultipleRulesetsIndexingTest, ZeroRulesets) {
+  LoadAndExpectSuccess(0 /* expected_indexed_rules_count */,
+                       false /* expect_rulesets_indexed */);
 }
 
 // Tests an extension with multiple empty rulesets.

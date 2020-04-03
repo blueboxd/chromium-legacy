@@ -20,6 +20,7 @@ import time
 import threading
 import uuid
 
+from symbolizer import RunSymbolizer
 from symbolizer import SymbolizerFilter
 
 FAR = common.GetHostToolPathFromPlatform('far')
@@ -34,6 +35,36 @@ def _AttachKernelLogReader(target):
   logging.info('Attaching kernel logger.')
   return target.RunCommandPiped(['dlog', '-f'], stdin=open(os.devnull, 'r'),
                                 stdout=subprocess.PIPE)
+
+
+def _BuildIdsPaths(package_paths):
+  """Generate build ids paths for symbolizer processes."""
+  build_ids_paths = map(
+      lambda package_path: os.path.join(
+          os.path.dirname(package_path), 'ids.txt'),
+      package_paths)
+  return build_ids_paths
+
+
+def StartSystemLogReader(target, package_paths, isolated_outputs_dir):
+  """Start a system log reader as a long-running SSH task.
+
+  Returns listener and symbolizer popen objects so that the caller can control
+  the popen process lifetimes."""
+  logging.info('Starting system log reader')
+
+  listener_proc = target.RunCommandPiped(['log_listener'],
+                                         stdout=subprocess.PIPE,
+                                         stderr=subprocess.STDOUT)
+
+  listener_log_path = os.path.join(isolated_outputs_dir, 'log_listener_log')
+  build_ids_paths = _BuildIdsPaths(package_paths)
+  listener_log = open(listener_log_path,'w', buffering=1)
+  symbolizer_proc = RunSymbolizer(listener_proc.stdout,
+                                  listener_log,
+                                  build_ids_paths)
+
+  return (listener_proc, symbolizer_proc)
 
 
 class MergedInputStream(object):
@@ -194,10 +225,7 @@ def RunPackage(output_dir, target, package_paths, package_name,
         output_stream = process.stdout
 
       # Run the log data through the symbolizer process.
-      build_ids_paths = map(
-          lambda package_path: os.path.join(
-              os.path.dirname(package_path), 'ids.txt'),
-          package_paths)
+      build_ids_paths = _BuildIdsPaths(package_paths)
       output_stream = SymbolizerFilter(output_stream, build_ids_paths)
 
       for next_line in output_stream:

@@ -235,6 +235,11 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // Internal name. Propagated to the NativeWidget. Useful for debugging.
     std::string name;
 
+    // False if this widget behaves like a top-level widget, true otherwise. A
+    // top-level widget has its own focus and IME state, independent of any
+    // other widget. A widget for which child is true should have a parent; if
+    // it doesn't, it will not handle keyboard events or IME input at all.
+    // TODO(https://crbug.com/1057758): DCHECK(parent || !child)
     bool child = false;
 
     // If kTranslucent, the widget may be fully or partially transparent.
@@ -280,6 +285,31 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // Whether the widget should be maximized or minimized.
     ui::WindowShowState show_state = ui::SHOW_STATE_DEFAULT;
 
+    // The native *view* (not native *window*) to which this widget should be
+    // parented. If this widget has a parent, then:
+    // * If that parent closes, this widget is closed too
+    // * If that parent is hidden, this widget is hidden too
+    // * This widget is stacked above the parent widget (always on Mac, usually
+    //   elsewhere)
+    // * This widget's initial bounds are constrained to the parent widget's
+    //   bounds, which prevents window restoration from placing windows
+    //   offscreen
+    // Note: on some platforms (Mac) this directly implies a parent-child
+    // relationship in the backing native windows, but on Aura platforms it does
+    // not necessarily.
+    //
+    // Windows with no parent window are permitted, although in Aura these
+    // windows instead need a "context". On Aura systems, if a widget has no
+    // parent set, its backing aura::Window is parented to the Aura root window.
+    //
+    // TODO(https://crbug.com/1057758): It makes no sense that this is a
+    // NativeView instead of a NativeWindow. On Aura, NativeView and
+    // NativeWindow are synonyms, and NativeWidgetAura immediately treats the
+    // provided NativeView as an aura::Window; on Mac, the NativeView is
+    // immediately converted to an NSWindow (ie a gfx::NativeWindow) and used
+    // that way throughout. This should simply be a NativeWindow - windows are
+    // parented to other windows, not to views, and it being a view confuses
+    // the concept with bubble anchoring a la BubbleDialogDelegateView.
     gfx::NativeView parent = nullptr;
 
     // Specifies the initial bounds of the Widget. Default is empty, which means

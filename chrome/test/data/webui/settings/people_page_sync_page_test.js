@@ -141,7 +141,9 @@ cr.define('settings_people_page_sync_page', function() {
       assertTrue(syncPage.$$('#sync-separator').hidden);
       assertTrue(otherItems.classList.contains('list-frame'));
       assertEquals(
-          otherItems.querySelectorAll(':scope > .list-item').length, 4);
+          otherItems.querySelectorAll(':scope > .list-item').length, 1);
+      assertEquals(
+          otherItems.querySelectorAll(':scope > cr-link-row').length, 3);
 
       // Test sync paused state.
       syncPage.syncStatus = {

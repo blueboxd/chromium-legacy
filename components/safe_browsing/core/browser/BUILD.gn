@@ -50,6 +50,22 @@ if (!is_ios) {
       "//net:extras",
     ]
   }
+
+  source_set("safe_browsing_url_checker_unittest") {
+    testonly = true
+    sources = [ "safe_browsing_url_checker_impl_unittest.cc" ]
+    deps = [
+      ":browser",
+      "//base/test:test_support",
+      "//components/safe_browsing/core/common:test_support",
+      "//components/safe_browsing/core/common:thread_utils",
+      "//components/safe_browsing/core/db:test_database_manager",
+      "//components/safe_browsing/core/db:util",
+      "//components/safe_browsing/core/realtime:url_lookup_service",
+      "//content/public/browser:browser",
+      "//testing/gtest",
+    ]
+  }
 }
 
 source_set("referrer_chain_provider") {

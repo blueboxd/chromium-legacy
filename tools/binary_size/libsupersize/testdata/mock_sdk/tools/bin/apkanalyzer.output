@@ -191,3 +191,14 @@ M d 1	1	256	org.chromium.chrome.browser.compositor.layouts.phone.stack.StackAnim
 M d 1	1	79	org.chromium.chrome.browser.compositor.layouts.phone.stack.StackAnimationLandscape float getScreenPositionInScrollDirection(org.chromium.chrome.browser.compositor.layouts.phone.stack.StackTab)
 M d 1	1	54	org.chromium.chrome.browser.compositor.layouts.phone.stack.StackAnimationLandscape float getScreenSizeInScrollDirection()
 M d 1	1	52	org.chromium.chrome.browser.compositor.layouts.phone.stack.StackAnimationLandscape boolean isDefaultDiscardDirectionPositive()
+C d 10	12	255	org.chromium.chrome.browser.compositor.layouts.phone.stack.-$$Lambda$StackAnimation$Nested1$kjevdDQ8V2zqCrdieLqWLHzk.dex
+M d 1	1	35	org.chromium.chrome.browser.compositor.layouts.phone.stack.-$$Lambda$StackAnimation$Nested1$kjevdDQ8V2zqCrdieLqWLHzk.dex <init>()
+F d 0	0	10	org.chromium.chrome.browser.compositor.layouts.phone.stack.-$$Lambda$StackAnimation$Nested1$kjevdDQ8V2zqCrdieLqWLHzk.dex Object $instance
+C d 10	12	255	org.chromium.chrome.browser.compositor.layouts.phone.stack.-$$Lambda$StackAnimation$Nested1$kjevdDQ8V2zqCrdieLqWLHzkB.dex
+M d 1	1	35	org.chromium.chrome.browser.compositor.layouts.phone.stack.-$$Lambda$StackAnimation$Nested1$kjevdDQ8V2zqCrdieLqWLHzkB.dex <init>()
+C d 10	12	255	org.chromium.chrome.browser.compositor.layouts.phone.stack.-$$Lambda$StackAnimation$Nested2$kjevdDQ8V2zqCrdieLqWLHzk.dex
+M d 1	1	35	org.chromium.chrome.browser.compositor.layouts.phone.stack.-$$Lambda$StackAnimation$Nested2$kjevdDQ8V2zqCrdieLqWLHzk.dex <init>()
+F d 0	0	10	org.chromium.chrome.browser.compositor.layouts.phone.stack.-$$Lambda$StackAnimation$Nested2$kjevdDQ8V2zqCrdieLqWLHzk.dex Object $instance
+C d 10	12	255	org.chromium.chrome.browser.compositor.layouts.phone.stack.-$$Lambda$StackAnimation$kjevdDQ8V2zqCrdieLqWLHzk.dex
+M d 1	1	35	org.chromium.chrome.browser.compositor.layouts.phone.stack.-$$Lambda$StackAnimation$kjevdDQ8V2zqCrdieLqWLHzk.dex <init>()
+F d 0	0	10	org.chromium.chrome.browser.compositor.layouts.phone.stack.-$$Lambda$StackAnimation$kjevdDQ8V2zqCrdieLqWLHzk.dex Object $instance

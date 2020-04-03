@@ -49,6 +49,10 @@ void PrintingManager::BindInterface(
   receiver_.Bind(std::move(pending_receiver));
 }
 
+void PrintingManager::Shutdown() {
+  receiver_.reset();
+}
+
 }  // namespace print_management
 }  // namespace printing
 }  // namespace chromeos

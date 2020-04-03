@@ -20,12 +20,9 @@
 #include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
 #include "chrome/android/chrome_jni_headers/WebsitePreferenceBridge_jni.h"
-#include "chrome/browser/notifications/notification_permission_context.h"
-#include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/pref_names.h"
 #include "components/browser_ui/site_settings/android/storage_info_fetcher.h"
 #include "components/browsing_data/content/local_storage_helper.h"
 #include "components/cdm/browser/media_drm_storage_impl.h"
@@ -485,7 +482,10 @@ static void JNI_WebsitePreferenceBridge_SetNotificationSettingForOrigin(
           profile, url, GURL(), ContentSettingsType::NOTIFICATIONS,
           permissions::PermissionSourceUI::SITE_SETTINGS);
 
-  NotificationPermissionContext::UpdatePermission(profile, url, setting);
+  GetHostContentSettingsMap(is_incognito)
+      ->SetContentSettingDefaultScope(
+          url, GURL(), ContentSettingsType::NOTIFICATIONS,
+          content_settings::ResourceIdentifier(), setting);
   content_settings::LogWebSiteSettingsPermissionChange(
       ContentSettingsType::NOTIFICATIONS, setting);
 }
@@ -1264,24 +1264,4 @@ static jboolean JNI_WebsitePreferenceBridge_GetMicManagedByCustodian(
     JNIEnv* env) {
   return IsContentSettingManagedByCustodian(
       ContentSettingsType::MEDIASTREAM_MIC);
-}
-
-static jboolean JNI_WebsitePreferenceBridge_GetQuietNotificationsUiEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& jprofile) {
-  return QuietNotificationPermissionUiState::IsQuietUiEnabledInPrefs(
-      ProfileAndroid::FromProfileAndroid(jprofile));
-}
-
-static void JNI_WebsitePreferenceBridge_SetQuietNotificationsUiEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& jprofile,
-    jboolean enabled) {
-  if (enabled) {
-    QuietNotificationPermissionUiState::EnableQuietUiInPrefs(
-        ProfileAndroid::FromProfileAndroid(jprofile));
-  } else {
-    QuietNotificationPermissionUiState::DisableQuietUiInPrefs(
-        ProfileAndroid::FromProfileAndroid(jprofile));
-  }
 }

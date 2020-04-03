@@ -268,11 +268,6 @@ bool UnpackedInstaller::LoadExtension(Manifest::Location location,
 bool UnpackedInstaller::IndexAndPersistRulesIfNeeded(std::string* error) {
   DCHECK(extension());
 
-  if (!declarative_net_request::DNRManifestData::HasRuleset(*extension())) {
-    // The extension did not provide a ruleset.
-    return true;
-  }
-
   using RulesetSource = declarative_net_request::RulesetSource;
 
   // TODO(crbug.com/761107): Change this so that we don't need to parse JSON
@@ -280,6 +275,7 @@ bool UnpackedInstaller::IndexAndPersistRulesIfNeeded(std::string* error) {
   // TODO(crbug.com/754526): Impose a limit on the total number of rules across
   // all the rulesets for an extension. Also, limit the number of install
   // warnings across all rulesets.
+  // Note |sources| may be empty.
   std::vector<RulesetSource> sources =
       RulesetSource::CreateStatic(*extension());
 

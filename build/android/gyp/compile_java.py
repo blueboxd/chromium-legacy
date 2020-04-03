@@ -9,9 +9,10 @@ import logging
 import multiprocessing
 import optparse
 import os
-import shutil
 import re
+import shutil
 import sys
+import time
 import zipfile
 
 from util import build_utils
@@ -133,6 +134,9 @@ ERRORPRONE_WARNINGS_TO_TURN_OFF = [
     'UnnecessaryAnonymousClass',
     # Nice to have.
     'LiteProtoToString',
+    # Must be off since we are now passing in annotation processor generated
+    # code as a source jar (deduplicating work with turbine).
+    'RefersToDaggerCodegen',
 ]
 
 # Full list of checks: https://errorprone.info/bugpatterns
@@ -455,12 +459,14 @@ def _RunCompiler(options, javac_cmd, java_files, classpath, jar_path,
       logging.debug('Build command %s', cmd)
       os.makedirs(classes_dir)
       os.makedirs(annotation_processor_outputs_dir)
+      start = time.time()
       build_utils.CheckOutput(
           cmd,
           print_stdout=options.chromium_code,
           stdout_filter=ProcessJavacOutput,
           stderr_filter=ProcessJavacOutput)
-      logging.info('Finished build command')
+      end = time.time() - start
+      logging.info('Java compilation took %ss', end)
 
     if save_outputs:
       annotation_processor_java_files = build_utils.FindInDirectory(
@@ -650,6 +656,12 @@ def main(argv):
 
   if options.processors:
     javac_args.extend(['-processor', ','.join(options.processors)])
+  else:
+    # This effectively disables all annotation processors, even including
+    # annotation processors in service provider configuration files named
+    # META-INF/. See the following link for reference:
+    #     https://docs.oracle.com/en/java/javase/11/tools/javac.html
+    javac_args.extend(['-proc:none'])
 
   if options.bootclasspath:
     javac_args.extend(['-bootclasspath', ':'.join(options.bootclasspath)])

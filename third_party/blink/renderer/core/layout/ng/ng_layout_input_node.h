@@ -25,7 +25,6 @@ class LayoutBox;
 class NGConstraintSpace;
 class NGPaintFragment;
 struct MinMaxSizes;
-struct LogicalSize;
 struct PhysicalSize;
 
 // Input to the min/max inline size calculation algorithm for child nodes. Child
@@ -164,9 +163,9 @@ class CORE_EXPORT NGLayoutInputNode {
   // Returns intrinsic sizing information for replaced elements.
   // ComputeReplacedSize can use it to compute actual replaced size.
   // Corresponds to Legacy's LayoutReplaced::IntrinsicSizingInfo.
+  // Use NGBlockNode::GetAspectRatio to get the aspect ratio.
   void IntrinsicSize(base::Optional<LayoutUnit>* computed_inline_size,
-                     base::Optional<LayoutUnit>* computed_block_size,
-                     LogicalSize* aspect_ratio) const;
+                     base::Optional<LayoutUnit>* computed_block_size) const;
 
   // Returns the next sibling.
   NGLayoutInputNode NextSibling();
@@ -244,6 +243,10 @@ class CORE_EXPORT NGLayoutInputNode {
  protected:
   NGLayoutInputNode(LayoutBox* box, NGLayoutInputNodeType type)
       : box_(box), type_(type) {}
+
+  void GetOverrideIntrinsicSize(
+      base::Optional<LayoutUnit>* computed_inline_size,
+      base::Optional<LayoutUnit>* computed_block_size) const;
 
   LayoutBox* box_;
 

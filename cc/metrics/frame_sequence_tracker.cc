@@ -376,6 +376,7 @@ void FrameSequenceTrackerCollection::StopSequence(
   frame_trackers_.erase(type);
   tracker->ScheduleTerminate();
   removal_trackers_.push_back(std::move(tracker));
+  DestroyTrackers();
 }
 
 void FrameSequenceTrackerCollection::StartCustomSequence(int sequence_id) {
@@ -436,6 +437,11 @@ void FrameSequenceTrackerCollection::NotifyImplFrameCausedNoDamage(
     tracker.second->ReportImplFrameCausedNoDamage(ack);
   for (auto& tracker : custom_frame_trackers_)
     tracker.second->ReportImplFrameCausedNoDamage(ack);
+
+  // Removal trackers continue to process any frames which they started
+  // observing.
+  for (auto& tracker : removal_trackers_)
+    tracker->ReportImplFrameCausedNoDamage(ack);
 }
 
 void FrameSequenceTrackerCollection::NotifyMainFrameCausedNoDamage(
@@ -466,6 +472,13 @@ void FrameSequenceTrackerCollection::NotifySubmitFrame(
     tracker.second->ReportSubmitFrame(frame_token, has_missing_content, ack,
                                       origin_args);
   }
+
+  // Removal trackers continue to process any frames which they started
+  // observing.
+  for (auto& tracker : removal_trackers_) {
+    tracker->ReportSubmitFrame(frame_token, has_missing_content, ack,
+                               origin_args);
+  }
 }
 
 void FrameSequenceTrackerCollection::NotifyFrameEnd(
@@ -475,6 +488,12 @@ void FrameSequenceTrackerCollection::NotifyFrameEnd(
     tracker.second->ReportFrameEnd(args, main_args);
   for (auto& tracker : custom_frame_trackers_)
     tracker.second->ReportFrameEnd(args, main_args);
+
+  // Removal trackers continue to process any frames which they started
+  // observing.
+  for (auto& tracker : removal_trackers_)
+    tracker->ReportFrameEnd(args, main_args);
+  DestroyTrackers();
 }
 
 void FrameSequenceTrackerCollection::NotifyFramePresented(
@@ -514,24 +533,6 @@ void FrameSequenceTrackerCollection::NotifyFramePresented(
         accumulated_metrics_.erase(key);
       }
 
-#if DCHECK_IS_ON()
-      // Handling the case like b(100)s(150)e(100)b(200)n(200), and then
-      // StopSequence() is called which put this tracker in removal_trackers_.
-      // Then P(150). In this case, frame 200 isn't processed yet, because this
-      // no damage impl frame is considered 'processed' at e(200).
-      const bool incomplete_frame_had_no_damage =
-          !tracker->compositor_frame_submitted_ &&
-          tracker->frame_had_no_compositor_damage_;
-      if (tracker->is_inside_frame_ && incomplete_frame_had_no_damage)
-        --metrics->impl_throughput().frames_received;
-
-      if (metrics->impl_throughput().frames_received !=
-          metrics->impl_throughput().frames_processed) {
-        std::string output = tracker->frame_sequence_trace_.str().substr(
-            tracker->ignored_trace_char_count_);
-        NOTREACHED() << output;
-      }
-#endif
       if (metrics->HasEnoughDataForReporting())
         metrics->ReportMetrics();
       if (metrics->HasDataLeftForReporting())
@@ -539,7 +540,10 @@ void FrameSequenceTrackerCollection::NotifyFramePresented(
     }
   }
 
-  // Destroy the trackers that are ready to be terminated.
+  DestroyTrackers();
+}
+
+void FrameSequenceTrackerCollection::DestroyTrackers() {
   base::EraseIf(
       removal_trackers_,
       [](const std::unique_ptr<FrameSequenceTracker>& tracker) {
@@ -588,6 +592,15 @@ FrameSequenceTracker* FrameSequenceTrackerCollection::GetTrackerForTesting(
   return frame_trackers_[type].get();
 }
 
+FrameSequenceTracker*
+FrameSequenceTrackerCollection::GetRemovalTrackerForTesting(
+    FrameSequenceTrackerType type) {
+  for (const auto& tracker : removal_trackers_)
+    if (tracker->type_ == type)
+      return tracker.get();
+  return nullptr;
+}
+
 void FrameSequenceTrackerCollection::SetUkmManager(UkmManager* manager) {
   DCHECK(frame_trackers_.empty());
   if (manager)
@@ -616,19 +629,12 @@ FrameSequenceTracker::FrameSequenceTracker(
 FrameSequenceTracker::~FrameSequenceTracker() = default;
 
 void FrameSequenceTracker::ScheduleTerminate() {
-  termination_status_ = TerminationStatus::kScheduledForTermination;
-  // It could happen that a main/impl frame is generated, but never processed
-  // (didn't report no damage and didn't submit) when this happens.
-  if (last_processed_impl_sequence_ < last_started_impl_sequence_) {
-    DCHECK_GE(impl_throughput().frames_expected,
-              begin_impl_frame_data_.previous_sequence_delta)
-        << TRACKER_DCHECK_MSG;
-    impl_throughput().frames_expected -=
-        begin_impl_frame_data_.previous_sequence_delta;
-#if DCHECK_IS_ON()
-    --impl_throughput().frames_received;
-#endif
-  }
+  // If the last frame has ended and there is no frame awaiting presentation,
+  // then it is ready to terminate.
+  if (!is_inside_frame_ && last_submitted_frame_ == 0)
+    termination_status_ = TerminationStatus::kReadyForTermination;
+  else
+    termination_status_ = TerminationStatus::kScheduledForTermination;
 }
 
 void FrameSequenceTracker::ReportBeginImplFrame(
@@ -641,10 +647,9 @@ void FrameSequenceTracker::ReportBeginImplFrame(
 
   TRACKER_TRACE_STREAM << "b(" << args.frame_id.sequence_number << ")";
 
-#if DCHECK_IS_ON()
   DCHECK(!is_inside_frame_) << TRACKER_DCHECK_MSG;
   is_inside_frame_ = true;
-
+#if DCHECK_IS_ON()
   if (args.type == viz::BeginFrameArgs::NORMAL)
     impl_frames_.insert(args.frame_id);
 #endif
@@ -761,8 +766,8 @@ void FrameSequenceTracker::ReportSubmitFrame(
     bool has_missing_content,
     const viz::BeginFrameAck& ack,
     const viz::BeginFrameArgs& origin_args) {
-  if (termination_status_ != TerminationStatus::kActive ||
-      ShouldIgnoreBeginFrameSource(ack.frame_id.source_id) ||
+  DCHECK_NE(termination_status_, TerminationStatus::kReadyForTermination);
+  if (ShouldIgnoreBeginFrameSource(ack.frame_id.source_id) ||
       ShouldIgnoreSequence(ack.frame_id.sequence_number)) {
     ignored_frame_tokens_.insert(frame_token);
     return;
@@ -794,8 +799,11 @@ void FrameSequenceTracker::ReportSubmitFrame(
   const bool main_change_had_no_damage =
       last_no_main_damage_sequence_ != 0 &&
       origin_args.frame_id.sequence_number == last_no_main_damage_sequence_;
+  const bool origin_args_is_valid = origin_args.frame_id.sequence_number <=
+                                    begin_main_frame_data_.previous_sequence;
 
-  if (!ShouldIgnoreBeginFrameSource(origin_args.frame_id.source_id)) {
+  if (!ShouldIgnoreBeginFrameSource(origin_args.frame_id.source_id) &&
+      origin_args_is_valid) {
     if (main_changes_after_sequence_started &&
         main_changes_include_new_changes && !main_change_had_no_damage) {
       submitted_frame_had_new_main_content_ = true;
@@ -825,8 +833,7 @@ void FrameSequenceTracker::ReportSubmitFrame(
 void FrameSequenceTracker::ReportFrameEnd(
     const viz::BeginFrameArgs& args,
     const viz::BeginFrameArgs& main_args) {
-  if (termination_status_ != TerminationStatus::kActive)
-    return;
+  DCHECK_NE(termination_status_, TerminationStatus::kReadyForTermination);
 
   if (ShouldIgnoreBeginFrameSource(args.frame_id.source_id))
     return;
@@ -843,9 +850,7 @@ void FrameSequenceTracker::ReportFrameEnd(
   }
 
   if (should_ignore_sequence) {
-#if DCHECK_IS_ON()
     is_inside_frame_ = false;
-#endif
     return;
   }
 
@@ -879,15 +884,18 @@ void FrameSequenceTracker::ReportFrameEnd(
 #endif
     begin_impl_frame_data_.previous_sequence = 0;
   }
+  // last_submitted_frame_ == 0 means the last impl frame has been presented.
+  if (termination_status_ == TerminationStatus::kScheduledForTermination &&
+      last_submitted_frame_ == 0)
+    termination_status_ = TerminationStatus::kReadyForTermination;
+
   frame_had_no_compositor_damage_ = false;
   compositor_frame_submitted_ = false;
   submitted_frame_had_new_main_content_ = false;
   last_processed_main_sequence_latency_ = 0;
 
-#if DCHECK_IS_ON()
   DCHECK(is_inside_frame_) << TRACKER_DCHECK_MSG;
   is_inside_frame_ = false;
-#endif
 
   DCHECK_EQ(last_started_impl_sequence_, last_processed_impl_sequence_)
       << TRACKER_DCHECK_MSG;
@@ -897,15 +905,18 @@ void FrameSequenceTracker::ReportFrameEnd(
 void FrameSequenceTracker::ReportFramePresented(
     uint32_t frame_token,
     const gfx::PresentationFeedback& feedback) {
+  // !viz::FrameTokenGT(a, b) is equivalent to b >= a.
   const bool frame_token_acks_last_frame =
-      frame_token == last_submitted_frame_ ||
-      viz::FrameTokenGT(frame_token, last_submitted_frame_);
+      !viz::FrameTokenGT(last_submitted_frame_, frame_token);
 
   // Update termination status if this is scheduled for termination, and it is
   // not waiting for any frames, or it has received the presentation-feedback
   // for the latest frame it is tracking.
+  //
+  // We should always wait for an impl frame to end, that is, ReportFrameEnd.
   if (termination_status_ == TerminationStatus::kScheduledForTermination &&
-      (last_submitted_frame_ == 0 || frame_token_acks_last_frame)) {
+      (last_submitted_frame_ == 0 || frame_token_acks_last_frame) &&
+      !is_inside_frame_) {
     termination_status_ = TerminationStatus::kReadyForTermination;
   }
 
@@ -920,6 +931,9 @@ void FrameSequenceTracker::ReportFramePresented(
 
   if (ignored_frame_tokens_.contains(frame_token))
     return;
+  base::EraseIf(ignored_frame_tokens_, [frame_token](const uint32_t& token) {
+    return viz::FrameTokenGT(frame_token, token);
+  });
 
   uint32_t impl_frames_produced = 0;
   uint32_t main_frames_produced = 0;
@@ -1025,16 +1039,15 @@ void FrameSequenceTracker::ReportFramePresented(
 
 void FrameSequenceTracker::ReportImplFrameCausedNoDamage(
     const viz::BeginFrameAck& ack) {
-  if (termination_status_ != TerminationStatus::kActive)
-    return;
+  DCHECK_NE(termination_status_, TerminationStatus::kReadyForTermination);
 
   if (ShouldIgnoreBeginFrameSource(ack.frame_id.source_id))
     return;
 
   TRACKER_TRACE_STREAM << "n(" << ack.frame_id.sequence_number << ")";
 
-  // It is possible that this is called before a begin-impl-frame has been
-  // dispatched for this frame-sequence. In such cases, ignore this call.
+  // This tracker would be scheduled to terminate, and this frame doesn't belong
+  // to that tracker.
   if (ShouldIgnoreSequence(ack.frame_id.sequence_number))
     return;
 
@@ -1133,13 +1146,18 @@ bool FrameSequenceTracker::ShouldIgnoreBeginFrameSource(
   return source_id != begin_impl_frame_data_.previous_source;
 }
 
-// This check ensures that when ReportBeginMainFrame, or ReportSubmitFrame, or
-// ReportFramePresented is called for a particular arg, the ReportBeginImplFrame
-// is been called already.
+// This check handles two cases:
+// 1. When there is a call to ReportBeginMainFrame, or ReportSubmitFrame, or
+// ReportFramePresented, there must be a ReportBeginImplFrame for that sequence.
+// Otherwise, the begin_impl_frame_data_.previous_sequence would be 0.
+// 2. A tracker is scheduled to terminate, then any new request to handle a new
+// impl frame whose sequence_number > begin_impl_frame_data_.previous_sequence
+// should be ignored.
+// Note that sequence_number < begin_impl_frame_data_.previous_sequence cannot
+// happen.
 bool FrameSequenceTracker::ShouldIgnoreSequence(
     uint64_t sequence_number) const {
-  return begin_impl_frame_data_.previous_sequence == 0 ||
-         sequence_number < begin_impl_frame_data_.previous_sequence;
+  return sequence_number != begin_impl_frame_data_.previous_sequence;
 }
 
 std::unique_ptr<base::trace_event::TracedValue>
@@ -1162,6 +1180,11 @@ bool FrameSequenceTracker::ShouldReportMetricsNow(
 }
 
 std::unique_ptr<FrameSequenceMetrics> FrameSequenceTracker::TakeMetrics() {
+#if DCHECK_IS_ON()
+  DCHECK_EQ(impl_throughput().frames_received,
+            impl_throughput().frames_processed)
+      << frame_sequence_trace_.str().substr(ignored_trace_char_count_);
+#endif
   return std::move(metrics_);
 }
 

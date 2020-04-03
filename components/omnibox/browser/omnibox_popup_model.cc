@@ -186,13 +186,13 @@ void OmniboxPopupModel::SetSelectedLine(size_t line,
     return;  // Nothing else to do.
 
   // We need to update selection before calling InvalidateLine(), since it will
-  // check them to determine how to draw.  We also need to update
+  // use selection to determine how to draw.  We also need to update
   // |selection_.line| before calling OnPopupDataChanged(), so that when the
   // edit notifies its controller that something has changed, the controller
   // can get the correct updated data.
-  const size_t prev_selected_line = selected_line();
+  const Selection old_selection = selection_;
   selection_ = Selection(line, NORMAL);
-  view_->OnSelectedLineChanged(prev_selected_line, selected_line());
+  view_->OnSelectionChanged(old_selection, selection_);
 
   if (line == kNoMatch)
     return;

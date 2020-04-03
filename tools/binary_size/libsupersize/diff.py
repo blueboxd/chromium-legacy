@@ -25,6 +25,7 @@ def _Key1(s):
   name = _STRIP_NUMBERS_PATTERN.sub('', s.full_name)
   # Prefer source_path over object_path since object_path for native files have
   # the target_name in it (which can get renamed).
+  # Also because object_path of Java lambdas symbols contains a hash.
   path = s.source_path or s.object_path
   # Use section rather than section_name since clang & gcc use
   # .data.rel.ro vs. .data.rel.ro.local.

@@ -2254,7 +2254,7 @@
   {
     "name": "enable-winrt-geolocation-implementation",
     "owners": [ "pelavall@microsoft.com" ],
-    "expiry_milestone": 81
+    "expiry_milestone": 86
   },
   {
     "name": "enable-winrt-sensor-implementation",

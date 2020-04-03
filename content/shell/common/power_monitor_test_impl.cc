@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "content/shell/common/power_monitor_test.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 

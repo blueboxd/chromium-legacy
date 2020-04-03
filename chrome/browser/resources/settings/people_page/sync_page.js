@@ -25,6 +25,12 @@ Polymer({
       notify: true,
     },
 
+    /** @private {!Map<string, (string|Function)>} */
+    focusConfig: {
+      type: Object,
+      observer: 'onFocusConfigChange_',
+    },
+
     /** @private */
     pages_: {
       type: Object,
@@ -232,6 +238,14 @@ Polymer({
   },
 
   /** @private */
+  onFocusConfigChange_() {
+    const router = settings.Router.getInstance();
+    this.focusConfig.set(router.getRoutes().SYNC_ADVANCED, () => {
+      cr.ui.focusWithoutInk(assert(this.$$('#sync-advanced-row')));
+    });
+  },
+
+  /** @private */
   onSetupCancelDialogBack_() {
     /** @type {!CrDialogElement} */ (this.$$('#setupCancelDialog')).cancel();
     chrome.metricsPrivate.recordUserAction(
@@ -381,9 +395,15 @@ Polymer({
   },
 
   /** @private */
-  onActivityControlsTap_() {
+  onActivityControlsClick_() {
     chrome.metricsPrivate.recordUserAction('Sync_OpenActivityControlsPage');
     this.browserProxy_.openActivityControlsUrl();
+    window.open(loadTimeData.getString('activityControlsUrl'));
+  },
+
+  /** @private */
+  onSyncDashboardLinkClick_() {
+    window.open(loadTimeData.getString('syncDashboardUrl'));
   },
 
   /**
@@ -512,7 +532,7 @@ Polymer({
   },
 
   /** @private */
-  onSyncAdvancedTap_() {
+  onSyncAdvancedClick_() {
     const router = settings.Router.getInstance();
     router.navigateTo(router.getRoutes().SYNC_ADVANCED);
   },

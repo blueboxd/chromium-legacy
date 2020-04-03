@@ -29,7 +29,7 @@ BarcodeDetectorStatics* BarcodeDetectorStatics::From(
 }
 
 BarcodeDetectorStatics::BarcodeDetectorStatics(ExecutionContext& document)
-    : Supplement<ExecutionContext>(document) {}
+    : Supplement<ExecutionContext>(document), service_(&document) {}
 
 BarcodeDetectorStatics::~BarcodeDetectorStatics() = default;
 
@@ -55,11 +55,12 @@ ScriptPromise BarcodeDetectorStatics::EnumerateSupportedFormats(
 
 void BarcodeDetectorStatics::Trace(Visitor* visitor) {
   Supplement<ExecutionContext>::Trace(visitor);
+  visitor->Trace(service_);
   visitor->Trace(get_supported_format_requests_);
 }
 
 void BarcodeDetectorStatics::EnsureServiceConnection() {
-  if (service_)
+  if (service_.is_bound())
     return;
 
   ExecutionContext* context = GetSupplementable();

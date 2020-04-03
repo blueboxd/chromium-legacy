@@ -770,13 +770,14 @@ static_library("web_test_support") {
     "//ui/gfx/geometry",
     "//v8",
 
-    # This is required to ensure content/shell/common/blink_test.mojom.h is
-    # generated before attempting to build this target. The file is included
+    # This is required to ensure
+    #   content/shell/common/web_test/blink_test.mojom.h
+    # is generated before attempting to build this target. The file is included
     # through content/shell/renderer/web_test/blink_test_runner.h. However
     # adding a dependency on //content/shell:content_shell_lib as that would
     # cause a circular dependency. Instead add this dependency directly to
     # fix a flaky build (see https://crbug.com/971978 for more details).
-    "//content/shell:mojo_bindings",
+    "//content/shell:web_test_common_mojom",
   ]
 }
 
@@ -1163,8 +1164,8 @@ test("content_browsertests") {
     "//content/public/gpu",
     "//content/public/renderer",
     "//content/renderer:for_content_tests",
+    "//content/shell:content_browsertests_mojom",
     "//content/shell:content_shell_lib",
-    "//content/shell:mojo_bindings",
     "//content/shell:pak",
     "//content/test:mojo_web_test_bindings",
     "//content/test:test_support",

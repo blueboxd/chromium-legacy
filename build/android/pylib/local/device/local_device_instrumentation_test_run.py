@@ -549,34 +549,10 @@ class LocalDeviceInstrumentationTestRun(
     time_ms = lambda: int(time.time() * 1e3)
     start_ms = time_ms()
 
-    stream_name = 'logcat_%s_%s_%s' % (
-        test_name.replace('#', '.'),
-        time.strftime('%Y%m%dT%H%M%S-UTC', time.gmtime()),
-        device.serial)
-
     with ui_capture_dir:
-      with self._env.output_manager.ArchivedTempfile(
-          stream_name, 'logcat') as logcat_file:
-        logmon = None
-        try:
-          with logcat_monitor.LogcatMonitor(
-              device.adb,
-              filter_specs=local_device_environment.LOGCAT_FILTERS,
-              output_file=logcat_file.name,
-              transform_func=self._test_instance.MaybeDeobfuscateLines,
-              check_error=False) as logmon:
-            with _LogTestEndpoints(device, test_name):
-              with contextlib_ext.Optional(
-                  trace_event.trace(test_name),
-                  self._env.trace_output):
-                output = device.StartInstrumentation(
-                    target, raw=True, extras=extras, timeout=timeout, retries=0)
-        finally:
-          if logmon:
-            logmon.Close()
-
-      if logcat_file.Link():
-        logging.info('Logcat saved to %s', logcat_file.Link())
+      with self._ArchiveLogcat(device, test_name) as logcat_file:
+        output = device.StartInstrumentation(
+            target, raw=True, extras=extras, timeout=timeout, retries=0)
 
       duration_ms = time_ms() - start_ms
 
@@ -789,8 +765,9 @@ class LocalDeviceInstrumentationTestRun(
           timeout = 120
           if self._test_instance.wait_for_java_debugger:
             timeout = None
-          test_list_run_output = dev.StartInstrumentation(
-              target, extras=extras, retries=0, timeout=timeout)
+          with self._ArchiveLogcat(dev, 'list_tests'):
+            test_list_run_output = dev.StartInstrumentation(
+                target, extras=extras, retries=0, timeout=timeout)
           if any(test_list_run_output):
             logging.error('Unexpected output while listing tests:')
             for line in test_list_run_output:
@@ -816,6 +793,35 @@ class LocalDeviceInstrumentationTestRun(
 
     instrumentation_test_instance.SaveTestsToPickle(pickle_path, raw_tests)
     return raw_tests
+
+  @contextlib.contextmanager
+  def _ArchiveLogcat(self, device, test_name):
+    stream_name = 'logcat_%s_%s_%s' % (
+        test_name.replace('#', '.'),
+        time.strftime('%Y%m%dT%H%M%S-UTC', time.gmtime()),
+        device.serial)
+
+    logcat_file = None
+    logmon = None
+    try:
+      with self._env.output_manager.ArchivedTempfile(
+          stream_name, 'logcat') as logcat_file:
+        with logcat_monitor.LogcatMonitor(
+            device.adb,
+            filter_specs=local_device_environment.LOGCAT_FILTERS,
+            output_file=logcat_file.name,
+            transform_func=self._test_instance.MaybeDeobfuscateLines,
+            check_error=False) as logmon:
+          with _LogTestEndpoints(device, test_name):
+            with contextlib_ext.Optional(
+                trace_event.trace(test_name),
+                self._env.trace_output):
+              yield logcat_file
+    finally:
+      if logmon:
+        logmon.Close()
+      if logcat_file and logcat_file.Link():
+        logging.info('Logcat saved to %s', logcat_file.Link())
 
   def _SaveTraceData(self, trace_device_file, device, test_class):
     trace_host_file = self._env.trace_output

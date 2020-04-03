@@ -8,7 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/shelf/contextual_nudge.h"
 #include "ash/shelf/contextual_nudge_status_tracker.h"
-#include "ash/shelf/shelf_widget.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -25,7 +25,8 @@ namespace ash {
 class ASH_EXPORT DragHandle : public views::View,
                               public views::ViewTargeterDelegate,
                               public OverviewObserver,
-                              public ShellObserver {
+                              public ShellObserver,
+                              public ui::ImplicitAnimationObserver {
  public:
   explicit DragHandle(int drag_handle_corner_radius);
   DragHandle(const DragHandle&) = delete;
@@ -39,10 +40,15 @@ class ASH_EXPORT DragHandle : public views::View,
   bool DoesIntersectRect(const views::View* target,
                          const gfx::Rect& rect) const override;
 
+  // Checks whether the drag handle nudge should be shown. Handles the
+  // |show_drag_handle_nudge_timer_|, |nudge_visible_|, and
+  // |show_nudge_animation_in_progress_|.
+  // Returns whether the nudge will be shown.
+  bool MaybeShowDragHandleNudge();
+
   // Animates drag handle and tooltip for drag handle teaching users that
   // swiping up on will take the user back to the home screen.
-  // Returns whether the nudge has been shown.
-  bool ShowDragHandleNudge();
+  void ShowDragHandleNudge();
 
   // Schedule showing the drag handle.
   void ScheduleShowDragHandleNudge();
@@ -65,7 +71,13 @@ class ASH_EXPORT DragHandle : public views::View,
   // ShellObserver:
   void OnShellDestroying() override;
 
-  bool ShowingNudge() { return showing_nudge_; }
+  bool gesture_nudge_target_visibility() const {
+    return gesture_nudge_target_visibility_;
+  }
+
+  bool show_nudge_animation_in_progress() const {
+    return show_nudge_animation_in_progress_;
+  }
 
   bool has_show_drag_handle_timer_for_testing() {
     return show_drag_handle_nudge_timer_.IsRunning();
@@ -88,6 +100,9 @@ class ASH_EXPORT DragHandle : public views::View,
   }
 
  private:
+  // ui::ImplicitAnimationObserver:
+  void OnImplicitAnimationsCompleted() override;
+
   // Animates tooltip for drag handle gesture.
   void ShowDragHandleTooltip();
 
@@ -119,7 +134,13 @@ class ASH_EXPORT DragHandle : public views::View,
   // Timer to animate the drag handle and show the nudge.
   base::OneShotTimer show_drag_handle_nudge_timer_;
 
-  bool showing_nudge_ = false;
+  // Tracks the target visibility of the gesture nudge.
+  bool gesture_nudge_target_visibility_ = false;
+
+  // Tracks whether the in app shelf to home nudge is animating to the visible
+  // state. Set to true when animation starts, set to false when animation
+  // completes.
+  bool show_nudge_animation_in_progress_ = false;
 
   // Whether window drag from shelf (i.e. gesture from in-app shelf to home or
   // overview) is currently in progress. If the contextual nudge is shown when
@@ -130,6 +151,8 @@ class ASH_EXPORT DragHandle : public views::View,
   // A label used to educate users about swipe gestures on the drag handle.
   ContextualNudge* drag_handle_nudge_ = nullptr;
 
+  std::unique_ptr<Shelf::ScopedAutoHideLock> auto_hide_lock_;
+
   ScopedObserver<OverviewController, OverviewObserver> overview_observer_{this};
 
   ScopedObserver<Shell,
@@ -137,6 +160,7 @@ class ASH_EXPORT DragHandle : public views::View,
                  &Shell::AddShellObserver,
                  &Shell::RemoveShellObserver>
       shell_observer_{this};
+
   base::WeakPtrFactory<DragHandle> weak_factory_{this};
 };
 

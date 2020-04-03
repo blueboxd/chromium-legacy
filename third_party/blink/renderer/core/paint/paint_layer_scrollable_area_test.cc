@@ -1486,15 +1486,18 @@ TEST_P(PaintLayerScrollableAreaTest, SetSnapContainerDataNeedsUpdate) {
 
 class ScrollTimelineForTest : public ScrollTimeline {
  public:
-  ScrollTimelineForTest(
-      Document* document,
-      Element* scroll_source,
-      CSSPrimitiveValue* start_scroll_offset =
-          CSSNumericLiteralValue::Create(10.0,
-                                         CSSPrimitiveValue::UnitType::kPixels),
-      CSSPrimitiveValue* end_scroll_offset =
-          CSSNumericLiteralValue::Create(90.0,
-                                         CSSPrimitiveValue::UnitType::kPixels))
+  ScrollTimelineForTest(Document* document,
+                        Element* scroll_source,
+                        ScrollTimelineOffset* start_scroll_offset =
+                            MakeGarbageCollected<ScrollTimelineOffset>(
+                                CSSNumericLiteralValue::Create(
+                                    10.0,
+                                    CSSPrimitiveValue::UnitType::kPixels)),
+                        ScrollTimelineOffset* end_scroll_offset =
+                            MakeGarbageCollected<ScrollTimelineOffset>(
+                                CSSNumericLiteralValue::Create(
+                                    90.0,
+                                    CSSPrimitiveValue::UnitType::kPixels)))
       : ScrollTimeline(document,
                        scroll_source,
                        ScrollTimeline::Vertical,

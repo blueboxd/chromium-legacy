@@ -60,7 +60,7 @@ void NestedMessagePumpAndroid::Run(Delegate* delegate) {
     if (state_->should_quit)
       break;
 
-    Delegate::NextWorkInfo next_work_info = delegate->DoSomeWork();
+    Delegate::NextWorkInfo next_work_info = delegate->DoWork();
     bool has_more_immediate_work = next_work_info.is_immediate();
     if (state_->should_quit)
       break;

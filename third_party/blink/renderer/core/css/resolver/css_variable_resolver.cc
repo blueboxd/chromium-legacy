@@ -536,6 +536,9 @@ CSSVariableResolver::CSSVariableResolver(const StyleResolverState& state)
     : state_(state),
       inherited_variables_(state.Style()->InheritedVariables()),
       non_inherited_variables_(state.Style()->NonInheritedVariables()),
-      registry_(state.GetDocument().GetPropertyRegistry()) {}
+      registry_(state.GetDocument().GetPropertyRegistry()) {
+  DCHECK(!RuntimeEnabledFeatures::CSSCascadeEnabled())
+      << "Use StyleCascade instead";
+}
 
 }  // namespace blink

@@ -5,11 +5,12 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/infobars/mock_infobar_service.h"
-#include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/permissions/permission_request_manager.h"
 #include "components/permissions/test/mock_permission_request.h"
+#include "components/prefs/pref_service.h"
 
 class PermissionPromptAndroidTest : public ChromeRenderViewHostTestHarness {
  public:
@@ -23,7 +24,8 @@ class PermissionPromptAndroidTest : public ChromeRenderViewHostTestHarness {
     // Ensure that the test uses the mini-infobar variant.
     scoped_feature_list_.InitAndEnableFeature(
         features::kQuietNotificationPrompts);
-    QuietNotificationPermissionUiState::EnableQuietUiInPrefs(profile());
+    profile()->GetPrefs()->SetBoolean(
+        prefs::kEnableQuietNotificationPermissionUi, true);
 
     NavigateAndCommit(GURL("http://example.com"));
 

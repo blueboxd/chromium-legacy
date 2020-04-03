@@ -471,6 +471,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   // Plugin Vm
   (*s_whitelist)[plugin_vm::prefs::kPluginVmImageExists] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[plugin_vm::prefs::kPluginVmPrintersAllowed] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Android Apps.
   (*s_whitelist)[arc::prefs::kArcEnabled] =

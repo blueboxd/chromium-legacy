@@ -152,6 +152,13 @@ void ProxyManagerImpl::ProxyRequest(
     ProxyRequestCallback cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  if (!delegate_->IsPrinterAccessAllowed()) {
+    DVLOG(1) << "Printer access not allowed";
+    std::move(cb).Run(/*headers=*/{}, /*ipp_message=*/{},
+                      HTTP_STATUS_FORBIDDEN);
+    return;
+  }
+
   // If we already have an in-flight request, we fail this incoming one
   // directly.
   if (in_flight_) {
@@ -236,10 +243,11 @@ void ProxyManagerImpl::OnParseIpp(
 }
 
 void ProxyManagerImpl::SpoofGetPrinters() {
-  auto printers = FilterPrintersForPluginVm(
+  std::vector<chromeos::Printer> printers = FilterPrintersForPluginVm(
       delegate_->GetPrinters(chromeos::PrinterClass::kSaved),
       delegate_->GetPrinters(chromeos::PrinterClass::kEnterprise));
-  auto response = BuildGetDestsResponse(in_flight_->request, printers);
+  base::Optional<IppResponse> response =
+      BuildGetDestsResponse(in_flight_->request, printers);
   if (!response.has_value()) {
     return Fail("Failed to spoof CUPS-Get-Printers response",
                 HTTP_STATUS_SERVER_ERROR);

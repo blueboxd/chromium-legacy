@@ -35,10 +35,10 @@ namespace base {
 //
 //  void FooBar(){
 //    HangWatchScope scope(base::TimeDelta::FromSeconds(5));
-//    DoSomeWork();
+//    DoWork();
 //  }
 //
-// If DoSomeWork() takes more than 5s to run and the HangWatcher
+// If DoWork() takes more than 5s to run and the HangWatcher
 // inspects the thread state before Foobar returns a hang will be
 // reported.
 //

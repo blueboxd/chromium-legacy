@@ -62,6 +62,7 @@ struct GPU_EXPORT ContextCreationAttribs {
   bool own_offscreen_surface = false;
   bool single_buffer = false;
   bool enable_gles2_interface = true;
+  bool enable_grcontext = false;
   bool enable_raster_interface = false;
   bool enable_oop_rasterization = false;
   bool enable_swap_timestamps_if_supported = false;

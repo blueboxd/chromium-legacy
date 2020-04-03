@@ -35,6 +35,12 @@ const char* PrefServiceBridge::GetPrefNameExposedToJava(int pref_index) {
 // Native JNI methods
 // ----------------------------------------------------------------------------
 
+static void JNI_PrefServiceBridge_ClearPref(JNIEnv* env,
+                                            const jint j_pref_index) {
+  GetPrefService()->ClearPref(
+      PrefServiceBridge::GetPrefNameExposedToJava(j_pref_index));
+}
+
 static jboolean JNI_PrefServiceBridge_GetBoolean(
     JNIEnv* env,
     const jint j_pref_index) {

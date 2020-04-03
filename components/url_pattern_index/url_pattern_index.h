@@ -162,7 +162,10 @@ class UrlPatternIndexMatcher {
 
     // If multiple rules match, any of the rules with the highest priority is
     // returned.
-    kHighestPriority
+    kHighestPriority,
+
+    // All matching rules are returned.
+    kAll,
   };
 
   // Creates an instance to access the given |flat_index|. If |flat_index| is
@@ -212,6 +215,27 @@ class UrlPatternIndexMatcher {
                                  bool is_third_party,
                                  bool disable_generic_rules,
                                  FindRuleStrategy strategy) const;
+
+  // Same as FindMatch, except this function returns all UrlRules that match the
+  // request for the index. If no UrlRules match, returns an empty vector.
+  std::vector<const flat::UrlRule*> FindAllMatches(
+      const GURL& url,
+      const url::Origin& first_party_origin,
+      proto::ElementType element_type,
+      proto::ActivationType activation_type,
+      bool is_third_party,
+      bool disable_generic_rules) const;
+
+  // Helper function to work with flat::*Type(s). Returns all UrlRules that
+  // match the request for the index. If no UrlRules match, returns an empty
+  // vector.
+  std::vector<const flat::UrlRule*> FindAllMatches(
+      const GURL& url,
+      const url::Origin& first_party_origin,
+      flat::ElementType element_type,
+      flat::ActivationType activation_type,
+      bool is_third_party,
+      bool disable_generic_rules) const;
 
  private:
   // Must outlive this instance.

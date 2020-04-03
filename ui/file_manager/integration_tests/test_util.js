@@ -712,6 +712,17 @@ const ENTRIES = {
     typeText: 'Plain text',
   }),
 
+  mHtml: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'page.mhtml',
+    targetPath: 'page.mhtml',
+    mimeType: 'multipart/related',
+    lastModifiedTime: 'Sep 4, 1998, 12:34 PM',
+    nameText: 'page.mhtml',
+    sizeText: '421 bytes',
+    typeText: 'HTML document',
+  }),
+
   tallHtml: new TestEntryInfo({
     type: EntryType.FILE,
     sourceFileName: 'tall.html',

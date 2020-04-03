@@ -1616,8 +1616,11 @@ TEST_P(ScrollbarAppearanceTest, NativeScrollbarChangeToMobileByEmulator) {
       height: 2000px;
     }
     </style>
-    <div id='d1'>
-      <div id='d2'/>
+    <!-- flex creates DelayScrollOffsetClampScope to increase test coverge -->
+    <div style='display: flex'>
+      <div id='d1'>
+        <div id='d2'/>
+      </div>
     </div>
   )HTML");
 

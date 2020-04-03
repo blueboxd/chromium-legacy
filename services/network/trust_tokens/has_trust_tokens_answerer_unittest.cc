@@ -16,24 +16,11 @@
 
 namespace network {
 
-TEST(HasTrustTokensAnswerer, CreatesOnlyForGoodToplevelOrigin) {
-  PendingTrustTokenStore pending_store;
-  // Opaque origin (not potentially trustworthy):
-  EXPECT_FALSE(HasTrustTokensAnswerer::Create(url::Origin(), &pending_store));
-
-  // Potentially trustworthy, but non-HTTP/HTTPS origin:
-  EXPECT_FALSE(HasTrustTokensAnswerer::Create(
-      url::Origin::Create(GURL("file:///hello.txt")), &pending_store));
-
-  // Potentially trustworthy, HTTP/HTTPS origin:
-  EXPECT_TRUE(HasTrustTokensAnswerer::Create(
-      url::Origin::Create(GURL("http://localhost")), &pending_store));
-}
-
 TEST(HasTrustTokensAnswerer, HandlesInsecureIssuerOrigin) {
   PendingTrustTokenStore pending_store;
-  auto answerer = HasTrustTokensAnswerer::Create(
-      url::Origin::Create(GURL("https://toplevel.com")), &pending_store);
+  auto answerer = std::make_unique<HasTrustTokensAnswerer>(
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com")),
+      &pending_store);
 
   mojom::HasTrustTokensResultPtr result;
 
@@ -51,8 +38,9 @@ TEST(HasTrustTokensAnswerer, HandlesInsecureIssuerOrigin) {
 
 TEST(HasTrustTokensAnswerer, HandlesNonHttpNonHttpsIssuerOrigin) {
   PendingTrustTokenStore pending_store;
-  auto answerer = HasTrustTokensAnswerer::Create(
-      url::Origin::Create(GURL("https://toplevel.com")), &pending_store);
+  auto answerer = std::make_unique<HasTrustTokensAnswerer>(
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com")),
+      &pending_store);
 
   mojom::HasTrustTokensResultPtr result;
 
@@ -72,8 +60,8 @@ TEST(HasTrustTokensAnswerer, HandlesNonHttpNonHttpsIssuerOrigin) {
 TEST(HasTrustTokensAnswerer, HandlesFailureToAssociateIssuer) {
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
 
-  const url::Origin kToplevel =
-      url::Origin::Create(GURL("https://toplevel.com"));
+  const SuitableTrustTokenOrigin kToplevel =
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com"));
 
   // This max-number-of-issuer limit is expected to be quite small (as of
   // writing, 2).
@@ -81,12 +69,13 @@ TEST(HasTrustTokensAnswerer, HandlesFailureToAssociateIssuer) {
     ASSERT_TRUE(store->SetAssociation(
         url::Origin::Create(
             GURL(base::StringPrintf("https://issuer%d.com", i))),
-        kToplevel));
+        kToplevel.origin()));
   }
 
   PendingTrustTokenStore pending_store;
   pending_store.OnStoreReady(std::move(store));
-  auto answerer = HasTrustTokensAnswerer::Create(kToplevel, &pending_store);
+  auto answerer =
+      std::make_unique<HasTrustTokensAnswerer>(kToplevel, &pending_store);
 
   mojom::HasTrustTokensResultPtr result;
 
@@ -109,13 +98,14 @@ TEST(HasTrustTokensAnswerer, SuccessWithNoTokens) {
   TrustTokenStore* raw_store = store.get();
 
   const url::Origin kIssuer = url::Origin::Create(GURL("https://issuer.com"));
-  const url::Origin kToplevel =
-      url::Origin::Create(GURL("https://toplevel.com"));
+  const SuitableTrustTokenOrigin kToplevel =
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com"));
 
   PendingTrustTokenStore pending_store;
   pending_store.OnStoreReady(std::move(store));
 
-  auto answerer = HasTrustTokensAnswerer::Create(kToplevel, &pending_store);
+  auto answerer =
+      std::make_unique<HasTrustTokensAnswerer>(kToplevel, &pending_store);
 
   mojom::HasTrustTokensResultPtr result;
 
@@ -132,7 +122,7 @@ TEST(HasTrustTokensAnswerer, SuccessWithNoTokens) {
   EXPECT_FALSE(result->has_trust_tokens);
 
   // The query should have associated the issuer with the top-level origin.
-  EXPECT_TRUE(raw_store->IsAssociated(kIssuer, kToplevel));
+  EXPECT_TRUE(raw_store->IsAssociated(kIssuer, kToplevel.origin()));
 }
 
 TEST(HasTrustTokensAnswerer, SuccessWithTokens) {
@@ -140,12 +130,13 @@ TEST(HasTrustTokensAnswerer, SuccessWithTokens) {
   TrustTokenStore* raw_store = store.get();
 
   const url::Origin kIssuer = url::Origin::Create(GURL("https://issuer.com"));
-  const url::Origin kToplevel =
-      url::Origin::Create(GURL("https://toplevel.com"));
+  const SuitableTrustTokenOrigin kToplevel =
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com"));
 
   PendingTrustTokenStore pending_store;
   pending_store.OnStoreReady(std::move(store));
-  auto answerer = HasTrustTokensAnswerer::Create(kToplevel, &pending_store);
+  auto answerer =
+      std::make_unique<HasTrustTokensAnswerer>(kToplevel, &pending_store);
 
   // Populate the store, giving the issuer a key commitment for the key "issuing
   // key" and a token issued with that key.

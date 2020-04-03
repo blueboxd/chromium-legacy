@@ -113,6 +113,15 @@
         ],
         'identifier': 'iPad (6th generation) 13.3'
     },
+    'SIM_IPHONE_6S_12_4': {
+        'args': [
+            '--platform',
+            'iPhone 6s',
+            '--version',
+            '12.4',
+        ],
+        'identifier': 'iPhone 6s 12.4'
+    },
     'SIM_IPHONE_6S_13_3': {
         'args': [
             '--platform',
@@ -148,6 +157,15 @@
             '13.3',
         ],
         'identifier': 'iPhone 7 13.3'
+    },
+    'SIM_IPHONE_SE_13_3': {
+        'args': [
+            '--platform',
+            'iPhone SE',
+            '--version',
+            '13.3',
+        ],
+        'identifier': 'iPhone SE 13.3'
     },
     'SIM_IPHONE_X_12_4': {
         'args': [

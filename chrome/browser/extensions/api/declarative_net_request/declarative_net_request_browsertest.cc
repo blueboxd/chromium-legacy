@@ -325,21 +325,20 @@ class DeclarativeNetRequestBrowserTest
 
   void set_config_flags(unsigned flags) { flags_ = flags; }
 
-  // Loads an extension with the given declarative |rules| in the given
-  // |directory|. Generates a fatal failure if the extension failed to load.
-  // |hosts| specifies the host permissions, the extensions should
-  // have.
-  void LoadExtensionWithRules(const std::vector<TestRule>& rules,
-                              const std::string& directory,
-                              const std::vector<std::string>& hosts) {
+  // Loads an extension with the given |rulesets| in the given |directory|.
+  // Generates a fatal failure if the extension failed to load. |hosts|
+  // specifies the host permissions the extensions should have.
+  void LoadExtensionWithRulesets(const std::vector<TestRulesetInfo>& rulesets,
+                                 const std::string& directory,
+                                 const std::vector<std::string>& hosts,
+                                 size_t expected_rules_count) {
     base::ScopedAllowBlockingForTesting scoped_allow_blocking;
     base::HistogramTester tester;
 
     base::FilePath extension_dir = temp_dir_.GetPath().AppendASCII(directory);
     EXPECT_TRUE(base::CreateDirectory(extension_dir));
 
-    TestRulesetInfo info = {kJSONRulesFilename, std::move(*ToListValue(rules))};
-    WriteManifestAndRuleset(extension_dir, info, hosts, flags_);
+    WriteManifestAndRulesets(extension_dir, rulesets, hosts, flags_);
 
     background_page_ready_listener_->Reset();
     const Extension* extension = nullptr;
@@ -358,18 +357,22 @@ class DeclarativeNetRequestBrowserTest
     // Ensure the ruleset is also loaded on the IO thread.
     content::RunAllTasksUntilIdle();
 
+    size_t expected_histogram_counts = rulesets.empty() ? 0 : 1;
+
     // The histograms below are not logged for unpacked extensions.
     if (GetParam() == ExtensionLoadType::PACKED) {
       tester.ExpectTotalCount(kIndexAndPersistRulesTimeHistogram,
-                              1 /* count */);
+                              expected_histogram_counts);
       tester.ExpectBucketCount(kManifestRulesCountHistogram,
-                               rules.size() /*sample*/, 1 /* count */);
+                               expected_rules_count /*sample*/,
+                               expected_histogram_counts);
     }
     tester.ExpectTotalCount(
-        "Extensions.DeclarativeNetRequest.CreateVerifiedMatcherTime", 1);
+        "Extensions.DeclarativeNetRequest.CreateVerifiedMatcherTime",
+        expected_histogram_counts);
     tester.ExpectUniqueSample(
         "Extensions.DeclarativeNetRequest.LoadRulesetResult",
-        RulesetMatcher::kLoadSuccess /*sample*/, 1 /*count*/);
+        RulesetMatcher::kLoadSuccess /*sample*/, expected_histogram_counts);
 
     EXPECT_TRUE(AreAllIndexedStaticRulesetsValid(*extension, profile()));
 
@@ -379,6 +382,16 @@ class DeclarativeNetRequestBrowserTest
 
     // Ensure no load errors were reported.
     EXPECT_TRUE(LoadErrorReporter::GetInstance()->GetErrors()->empty());
+  }
+
+  // Specialization of LoadExtensionWithRulesets above for an extension with a
+  // single static ruleset.
+  void LoadExtensionWithRules(const std::vector<TestRule>& rules,
+                              const std::string& directory,
+                              const std::vector<std::string>& hosts) {
+    std::vector<TestRulesetInfo> rulesets;
+    rulesets.push_back({kJSONRulesFilename, std::move(*ToListValue(rules))});
+    LoadExtensionWithRulesets(rulesets, directory, hosts, rules.size());
   }
 
   void LoadExtensionWithRules(const std::vector<TestRule>& rules) {
@@ -1597,6 +1610,44 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
       "example.com", "/pages_with_script/page2.html")));
 }
 
+// Tests than an extension can omit the "declarative_net_request" manifest key
+// but can still use dynamic rules.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, ZeroRulesets) {
+  set_config_flags(ConfigFlag::kConfig_HasBackgroundScript |
+                   ConfigFlag::kConfig_OmitDeclarativeNetRequestKey);
+
+  // Set-up an observer for RulesetMatcher to monitor the number of extension
+  // rulesets.
+  RulesetCountWaiter ruleset_count_waiter(ruleset_manager());
+
+  ASSERT_NO_FATAL_FAILURE(
+      LoadExtensionWithRulesets({} /* rulesets */, "extension_directory",
+                                {} /* hosts */, 0 /* expected_rules_count */));
+  const ExtensionId extension_id = last_loaded_extension_id();
+  EXPECT_EQ(0u, ruleset_manager()->GetMatcherCountForTest());
+
+  const GURL url = embedded_test_server()->GetURL(
+      "example.com", "/pages_with_script/page.html");
+  EXPECT_FALSE(IsNavigationBlocked(url));
+
+  // Add dynamic rule to block main-frame requests to "page.html".
+  TestRule rule = CreateGenericRule();
+  rule.condition->url_filter = std::string("page.html");
+  rule.condition->resource_types = std::vector<std::string>({"main_frame"});
+  ASSERT_NO_FATAL_FAILURE(AddDynamicRules(extension_id, {rule}));
+  ruleset_count_waiter.WaitForRulesetCount(1);
+
+  EXPECT_TRUE(IsNavigationBlocked(url));
+
+  DisableExtension(extension_id);
+  ruleset_count_waiter.WaitForRulesetCount(0);
+  EXPECT_FALSE(IsNavigationBlocked(url));
+
+  EnableExtension(extension_id);
+  ruleset_count_waiter.WaitForRulesetCount(1);
+  EXPECT_TRUE(IsNavigationBlocked(url));
+}
+
 // Ensure that Blink's in-memory cache is cleared on adding/removing rulesets.
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, RendererCacheCleared) {
   // Set-up an observer for RulesetMatcher to monitor requests to
@@ -1978,9 +2029,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules({rule}));
 
   const ExtensionId extension_id = last_loaded_extension_id();
-  const auto* rules_monitor_service =
-      declarative_net_request::RulesMonitorService::Get(profile());
-  EXPECT_TRUE(rules_monitor_service->HasRegisteredRuleset(extension_id));
+  EXPECT_TRUE(ruleset_manager()->GetMatcherForExtension(extension_id));
 
   const Extension* extension = extension_registry()->GetExtensionById(
       last_loaded_extension_id(), ExtensionRegistry::ENABLED);
@@ -1999,7 +2048,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
       ExtensionRegistry::Get(profile()), extension_id);
   DisableExtension(extension_id);
   ASSERT_TRUE(registry_observer.WaitForExtensionUnloaded());
-  EXPECT_FALSE(rules_monitor_service->HasRegisteredRuleset(extension_id));
+  EXPECT_FALSE(ruleset_manager()->GetMatcherForExtension(extension_id));
 
   // Both loading the indexed ruleset and reindexing the ruleset should fail
   // now.
@@ -2013,7 +2062,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   EXPECT_THAT(warning_service->GetWarningTypesAffectingExtension(extension_id),
               ::testing::ElementsAre(Warning::kRulesetFailedToLoad));
 
-  EXPECT_FALSE(rules_monitor_service->HasRegisteredRuleset(extension_id));
+  EXPECT_FALSE(ruleset_manager()->GetMatcherForExtension(extension_id));
 
   // Verify that loading the ruleset failed due to checksum mismatch.
   EXPECT_EQ(1, tester.GetBucketCount(
@@ -2043,16 +2092,14 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   ruleset_count_waiter.WaitForRulesetCount(1);
 
   const ExtensionId extension_id = last_loaded_extension_id();
-  const auto* rules_monitor_service =
-      declarative_net_request::RulesMonitorService::Get(profile());
-  EXPECT_TRUE(rules_monitor_service->HasRegisteredRuleset(extension_id));
+  EXPECT_TRUE(ruleset_manager()->GetMatcherForExtension(extension_id));
 
   // Add a dynamic rule.
   AddDynamicRules(extension_id, {rule});
 
   DisableExtension(extension_id);
   ruleset_count_waiter.WaitForRulesetCount(0);
-  EXPECT_FALSE(rules_monitor_service->HasRegisteredRuleset(extension_id));
+  EXPECT_FALSE(ruleset_manager()->GetMatcherForExtension(extension_id));
 
   // Now change the current indexed ruleset format version. This should cause a
   // version mismatch when the extension is loaded again, but reindexing should
@@ -2065,7 +2112,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   base::HistogramTester tester;
   EnableExtension(extension_id);
   ruleset_count_waiter.WaitForRulesetCount(1);
-  EXPECT_TRUE(rules_monitor_service->HasRegisteredRuleset(extension_id));
+  EXPECT_TRUE(ruleset_manager()->GetMatcherForExtension(extension_id));
 
   // Verify that loading the static and dynamic rulesets would have failed
   // initially due to version header mismatch and later succeeded.

@@ -56,16 +56,6 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
   static BrowserContextKeyedAPIFactory<RulesMonitorService>*
   GetFactoryInstance();
 
-  bool HasAnyRegisteredRulesets() const;
-
-  // Returns true if there is registered declarative ruleset corresponding to
-  // the given |extension_id|.
-  bool HasRegisteredRuleset(const ExtensionId& extension_id) const;
-
-  const std::set<ExtensionId>& extensions_with_rulesets() const {
-    return extensions_with_rulesets_;
-  }
-
   // Updates the dynamic rules for the |extension| and then invokes
   // |callback| with an optional error.
   using DynamicRuleUpdateUICallback =
@@ -115,16 +105,19 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
                              LoadRequestData load_data,
                              base::Optional<std::string> error);
 
-  void UnloadRuleset(const ExtensionId& extension_id);
-  void LoadRuleset(const ExtensionId& extension_id,
-                   std::unique_ptr<CompositeMatcher> matcher);
+  // Unloads all rulesets for the given |extension_id|.
+  void UnloadRulesets(const ExtensionId& extension_id);
+
+  // Loads the given |matcher| for the given |extension_id|.
+  void LoadRulesets(const ExtensionId& extension_id,
+                    std::unique_ptr<CompositeMatcher> matcher);
+
+  // Adds the given ruleset for the given |extension_id|.
   void UpdateRuleset(const ExtensionId& extension_id,
                      std::unique_ptr<RulesetMatcher> ruleset_matcher);
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       registry_observer_{this};
-
-  std::set<ExtensionId> extensions_with_rulesets_;
 
   // Helper to bridge tasks to a sequence which allows file IO.
   std::unique_ptr<const FileSequenceBridge> file_sequence_bridge_;

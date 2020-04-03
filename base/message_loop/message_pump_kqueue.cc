@@ -152,7 +152,7 @@ void MessagePumpKqueue::Run(Delegate* delegate) {
     if (!keep_running_)
       break;
 
-    Delegate::NextWorkInfo next_work_info = delegate->DoSomeWork();
+    Delegate::NextWorkInfo next_work_info = delegate->DoWork();
     do_more_work |= next_work_info.is_immediate();
     if (!keep_running_)
       break;
@@ -197,7 +197,7 @@ void MessagePumpKqueue::ScheduleWork() {
 
 void MessagePumpKqueue::ScheduleDelayedWork(
     const TimeTicks& delayed_work_time) {
-  // Nothing to do. This MessagePump uses DoSomeWork().
+  // Nothing to do. This MessagePump uses DoWork().
 }
 
 bool MessagePumpKqueue::WatchMachReceivePort(

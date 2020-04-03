@@ -31,6 +31,9 @@ class CupsProxyServiceDelegate {
   // CupsProxyService internal managers.
   base::WeakPtr<CupsProxyServiceDelegate> GetWeakPtr();
 
+  // Printer access can be disabled by either policy or settings.
+  virtual bool IsPrinterAccessAllowed() const = 0;
+
   virtual std::vector<chromeos::Printer> GetPrinters(
       chromeos::PrinterClass printer_class) = 0;
   virtual base::Optional<chromeos::Printer> GetPrinter(

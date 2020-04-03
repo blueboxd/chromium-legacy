@@ -17,7 +17,7 @@ cr.define('settings', function() {
     r.SIGN_OUT = r.BASIC.createChild('/signOut');
     r.SIGN_OUT.isNavigableDialog = true;
 
-    r.SEARCH = r.BASIC.createSection('/search', 'search');
+    r.OS_SEARCH = r.BASIC.createSection('/osSearch', 'osSearch');
     if (!loadTimeData.getBoolean('isGuest')) {
       r.PEOPLE = r.BASIC.createSection('/people', 'people');
       r.SYNC = r.PEOPLE.createChild('/syncSetup');
@@ -93,19 +93,19 @@ cr.define('settings', function() {
           r.PLUGIN_VM.createChild('/pluginVm/sharedPaths');
     }
 
-    r.GOOGLE_ASSISTANT = r.SEARCH.createChild('/googleAssistant');
+    r.GOOGLE_ASSISTANT = r.OS_SEARCH.createChild('/googleAssistant');
 
     r.ADVANCED = new settings.Route('/advanced');
 
     r.PRIVACY = r.ADVANCED.createSection('/privacy', 'privacy');
 
     // Languages and input
-    r.LANGUAGES = r.ADVANCED.createSection('/languages', 'languages');
-    r.LANGUAGES_DETAILS = r.LANGUAGES.createChild('/languages/details');
-    r.INPUT_METHODS =
-        r.LANGUAGES_DETAILS.createChild('/languages/inputMethods');
+    r.OS_LANGUAGES = r.ADVANCED.createSection('/osLanguages', 'osLanguages');
+    r.OS_LANGUAGES_DETAILs = r.OS_LANGUAGES.createChild('/osLanguages/details');
+    r.OS_LANGUAGES_INPUT_METHODs =
+        r.OS_LANGUAGES.createChild('/osLanguages/inputMethods');
 
-    r.PRINTING = r.ADVANCED.createSection('/printing', 'printing');
+    r.OS_PRINTING = r.ADVANCED.createSection('/osPrinting', 'osPrinting');
 
     r.OS_ACCESSIBILITY = r.ADVANCED.createSection('/osAccessibility', 'a11y');
 
@@ -150,7 +150,7 @@ cr.define('settings', function() {
     r.DATETIME = r.ADVANCED.createSection('/dateTime', 'dateTime');
     r.DATETIME_TIMEZONE_SUBPAGE = r.DATETIME.createChild('/dateTime/timeZone');
 
-    r.CUPS_PRINTERS = r.PRINTING.createChild('/cupsPrinters');
+    r.CUPS_PRINTERS = r.OS_PRINTING.createChild('/cupsPrinters');
 
     r.MANAGE_ACCESSIBILITY =
         r.OS_ACCESSIBILITY.createChild('/manageAccessibility');

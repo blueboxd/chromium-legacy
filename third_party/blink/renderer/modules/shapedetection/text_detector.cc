@@ -22,7 +22,7 @@ TextDetector* TextDetector::Create(ExecutionContext* context) {
   return MakeGarbageCollected<TextDetector>(context);
 }
 
-TextDetector::TextDetector(ExecutionContext* context) : ShapeDetector() {
+TextDetector::TextDetector(ExecutionContext* context) : text_service_(context) {
   // See https://bit.ly/2S0zRAS for task types.
   auto task_runner = context->GetTaskRunner(TaskType::kMiscPlatformAPI);
   context->GetBrowserInterfaceBroker().GetInterface(
@@ -35,7 +35,7 @@ TextDetector::TextDetector(ExecutionContext* context) : ShapeDetector() {
 ScriptPromise TextDetector::DoDetect(ScriptPromiseResolver* resolver,
                                      SkBitmap bitmap) {
   ScriptPromise promise = resolver->Promise();
-  if (!text_service_) {
+  if (!text_service_.is_bound()) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotSupportedError,
         "Text detection service unavailable."));
@@ -90,6 +90,7 @@ void TextDetector::OnTextServiceConnectionError() {
 
 void TextDetector::Trace(Visitor* visitor) {
   ShapeDetector::Trace(visitor);
+  visitor->Trace(text_service_);
   visitor->Trace(text_service_requests_);
 }
 

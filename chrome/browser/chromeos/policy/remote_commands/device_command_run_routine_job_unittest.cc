@@ -153,10 +153,9 @@ class DeviceCommandRunRoutineJobTest : public testing::Test {
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum routine,
       base::Value params);
 
-  bool RunJob(RemoteCommandJob* job,
-              chromeos::cros_healthd::mojom::DiagnosticRoutineEnum routine,
+  bool RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum routine,
               base::Value params_dict,
-              base::RepeatingClosure callback);
+              base::RepeatingCallback<void(RemoteCommandJob*)> callback);
 
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
@@ -197,17 +196,17 @@ void DeviceCommandRunRoutineJobTest::InitializeJob(
 }
 
 bool DeviceCommandRunRoutineJobTest::RunJob(
-    RemoteCommandJob* job,
     chromeos::cros_healthd::mojom::DiagnosticRoutineEnum routine,
     base::Value params_dict,
-    base::RepeatingClosure callback) {
+    base::RepeatingCallback<void(RemoteCommandJob*)> callback) {
+  auto job = std::make_unique<DeviceCommandRunRoutineJob>();
   InitializeJob(
-      job, kUniqueID, test_start_time_, base::TimeDelta::FromSeconds(30),
+      job.get(), kUniqueID, test_start_time_, base::TimeDelta::FromSeconds(30),
       /*terminate_upon_input=*/false, routine, std::move(params_dict));
   base::RunLoop run_loop;
   bool success = job->Run(base::Time::Now(), base::TimeTicks::Now(),
                           base::BindLambdaForTesting([&]() {
-                            std::move(callback).Run();
+                            std::move(callback).Run(job.get());
                             run_loop.Quit();
                           }));
   run_loop.Run();
@@ -215,9 +214,8 @@ bool DeviceCommandRunRoutineJobTest::RunJob(
 }
 
 TEST_F(DeviceCommandRunRoutineJobTest, InvalidRoutineEnumInCommandPayload) {
+  auto job = std::make_unique<DeviceCommandRunRoutineJob>();
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_FALSE(job->Init(
       base::TimeTicks::Now(),
       GenerateCommandProto(
@@ -237,9 +235,8 @@ TEST_F(DeviceCommandRunRoutineJobTest, InvalidRoutineEnumInCommandPayload) {
 
 // Test that not specifying a routine causes the job initialization to fail.
 TEST_F(DeviceCommandRunRoutineJobTest, CommandPayloadMissingRoutine) {
+  auto job = std::make_unique<DeviceCommandRunRoutineJob>();
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_FALSE(job->Init(
       base::TimeTicks::Now(),
       GenerateCommandProto(kUniqueID, base::TimeTicks::Now() - test_start_time_,
@@ -255,8 +252,7 @@ TEST_F(DeviceCommandRunRoutineJobTest, CommandPayloadMissingRoutine) {
 // Test that not including a parameters dictionary causes the routine
 // initialization to fail.
 TEST_F(DeviceCommandRunRoutineJobTest, CommandPayloadMissingParamDict) {
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
+  auto job = std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_FALSE(job->Init(
       base::TimeTicks::Now(),
       GenerateCommandProto(
@@ -279,12 +275,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunBatteryCapacityRoutineSuccess) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kLowMahFieldName, /*low_mah=*/90812);
   params_dict.SetIntKey(kHighMahFieldName, /*high_mah=*/986909);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(RunJob(
-      job.get(),
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryCapacity,
-      std::move(params_dict), base::BindLambdaForTesting([&]() {
+      std::move(params_dict),
+      base::BindLambdaForTesting([](RemoteCommandJob* job) {
         EXPECT_EQ(job->status(), RemoteCommandJob::SUCCEEDED);
         std::unique_ptr<std::string> payload = job->GetResultPayload();
         EXPECT_TRUE(payload);
@@ -297,12 +291,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunBatteryCapacityRoutineSuccess) {
 TEST_F(DeviceCommandRunRoutineJobTest, RunBatteryCapacityRoutineMissingLowMah) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kHighMahFieldName, /*high_mah=*/986909);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(RunJob(
-      job.get(),
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryCapacity,
-      std::move(params_dict), base::BindLambdaForTesting([&]() {
+      std::move(params_dict),
+      base::BindLambdaForTesting([](RemoteCommandJob* job) {
         EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
         std::unique_ptr<std::string> payload = job->GetResultPayload();
         EXPECT_TRUE(payload);
@@ -316,12 +308,10 @@ TEST_F(DeviceCommandRunRoutineJobTest,
        RunBatteryCapacityRoutineMissingHighMah) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kLowMahFieldName, /*low_mah=*/90812);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(RunJob(
-      job.get(),
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryCapacity,
-      std::move(params_dict), base::BindLambdaForTesting([&]() {
+      std::move(params_dict),
+      base::BindLambdaForTesting([](RemoteCommandJob* job) {
         EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
         std::unique_ptr<std::string> payload = job->GetResultPayload();
         EXPECT_TRUE(payload);
@@ -335,12 +325,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunBatteryCapacityRoutineInvalidLowMah) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kLowMahFieldName, /*low_mah=*/-1);
   params_dict.SetIntKey(kHighMahFieldName, /*high_mah=*/986909);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(RunJob(
-      job.get(),
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryCapacity,
-      std::move(params_dict), base::BindLambdaForTesting([&]() {
+      std::move(params_dict),
+      base::BindLambdaForTesting([](RemoteCommandJob* job) {
         EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
         std::unique_ptr<std::string> payload = job->GetResultPayload();
         EXPECT_TRUE(payload);
@@ -355,12 +343,10 @@ TEST_F(DeviceCommandRunRoutineJobTest,
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kLowMahFieldName, /*low_mah=*/90812);
   params_dict.SetIntKey(kHighMahFieldName, /*high_mah=*/-1);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(RunJob(
-      job.get(),
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryCapacity,
-      std::move(params_dict), base::BindLambdaForTesting([&]() {
+      std::move(params_dict),
+      base::BindLambdaForTesting([](RemoteCommandJob* job) {
         EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
         std::unique_ptr<std::string> payload = job->GetResultPayload();
         EXPECT_TRUE(payload);
@@ -378,12 +364,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunBatteryHealthRoutineSuccess) {
                         /*maximum_cycle_count=*/12);
   params_dict.SetIntKey(kPercentBatteryWearAllowedFieldName,
                         /*percent_battery_wear_allowed=*/78);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(RunJob(
-      job.get(),
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryHealth,
-      std::move(params_dict), base::BindLambdaForTesting([&]() {
+      std::move(params_dict),
+      base::BindLambdaForTesting([](RemoteCommandJob* job) {
         EXPECT_EQ(job->status(), RemoteCommandJob::SUCCEEDED);
         std::unique_ptr<std::string> payload = job->GetResultPayload();
         EXPECT_TRUE(payload);
@@ -398,12 +382,10 @@ TEST_F(DeviceCommandRunRoutineJobTest,
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kPercentBatteryWearAllowedFieldName,
                         /*percent_battery_wear_allowed=*/78);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(RunJob(
-      job.get(),
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryHealth,
-      std::move(params_dict), base::BindLambdaForTesting([&]() {
+      std::move(params_dict),
+      base::BindLambdaForTesting([](RemoteCommandJob* job) {
         EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
         std::unique_ptr<std::string> payload = job->GetResultPayload();
         EXPECT_TRUE(payload);
@@ -418,12 +400,10 @@ TEST_F(DeviceCommandRunRoutineJobTest,
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kMaximumCycleCountFieldName,
                         /*maximum_cycle_count=*/12);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(RunJob(
-      job.get(),
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryHealth,
-      std::move(params_dict), base::BindLambdaForTesting([&]() {
+      std::move(params_dict),
+      base::BindLambdaForTesting([](RemoteCommandJob* job) {
         EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
         std::unique_ptr<std::string> payload = job->GetResultPayload();
         EXPECT_TRUE(payload);
@@ -440,12 +420,10 @@ TEST_F(DeviceCommandRunRoutineJobTest,
                         /*maximum_cycle_count=*/-1);
   params_dict.SetIntKey(kPercentBatteryWearAllowedFieldName,
                         /*percent_battery_wear_allowed=*/78);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(RunJob(
-      job.get(),
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryHealth,
-      std::move(params_dict), base::BindLambdaForTesting([&]() {
+      std::move(params_dict),
+      base::BindLambdaForTesting([](RemoteCommandJob* job) {
         EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
         std::unique_ptr<std::string> payload = job->GetResultPayload();
         EXPECT_TRUE(payload);
@@ -462,12 +440,10 @@ TEST_F(DeviceCommandRunRoutineJobTest,
                         /*maximum_cycle_count=*/12);
   params_dict.SetIntKey(kPercentBatteryWearAllowedFieldName,
                         /*percent_battery_wear_allowed=*/-1);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(RunJob(
-      job.get(),
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryHealth,
-      std::move(params_dict), base::BindLambdaForTesting([&]() {
+      std::move(params_dict),
+      base::BindLambdaForTesting([](RemoteCommandJob* job) {
         EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
         std::unique_ptr<std::string> payload = job->GetResultPayload();
         EXPECT_TRUE(payload);
@@ -483,32 +459,30 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunUrandomRoutineSuccess) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kLengthSecondsFieldName,
                         /*length_seconds=*/2342);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
-  EXPECT_TRUE(RunJob(
-      job.get(), chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kUrandom,
-      std::move(params_dict), base::BindLambdaForTesting([&]() {
-        EXPECT_EQ(job->status(), RemoteCommandJob::SUCCEEDED);
-        std::unique_ptr<std::string> payload = job->GetResultPayload();
-        EXPECT_TRUE(payload);
-        EXPECT_EQ(CreateSuccessPayload(kId, kStatus), *payload);
-      })));
+  EXPECT_TRUE(
+      RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kUrandom,
+             std::move(params_dict),
+             base::BindLambdaForTesting([](RemoteCommandJob* job) {
+               EXPECT_EQ(job->status(), RemoteCommandJob::SUCCEEDED);
+               std::unique_ptr<std::string> payload = job->GetResultPayload();
+               EXPECT_TRUE(payload);
+               EXPECT_EQ(CreateSuccessPayload(kId, kStatus), *payload);
+             })));
 }
 
 // Test that leaving out the lengthSeconds parameter causes the urandom routine
 // to fail.
 TEST_F(DeviceCommandRunRoutineJobTest, RunUrandomRoutineMissingLengthSeconds) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
-  EXPECT_TRUE(RunJob(
-      job.get(), chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kUrandom,
-      std::move(params_dict), base::BindLambdaForTesting([&]() {
-        EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
-        std::unique_ptr<std::string> payload = job->GetResultPayload();
-        EXPECT_TRUE(payload);
-        EXPECT_EQ(CreateInvalidParametersFailurePayload(), *payload);
-      })));
+  EXPECT_TRUE(
+      RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kUrandom,
+             std::move(params_dict),
+             base::BindLambdaForTesting([](RemoteCommandJob* job) {
+               EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
+               std::unique_ptr<std::string> payload = job->GetResultPayload();
+               EXPECT_TRUE(payload);
+               EXPECT_EQ(CreateInvalidParametersFailurePayload(), *payload);
+             })));
 }
 
 // Test that a negative lengthSeconds parameter causes the urandom routine to
@@ -517,16 +491,15 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunUrandomRoutineInvalidLengthSeconds) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kLengthSecondsFieldName,
                         /*length_seconds=*/-1);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
-  EXPECT_TRUE(RunJob(
-      job.get(), chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kUrandom,
-      std::move(params_dict), base::BindLambdaForTesting([&]() {
-        EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
-        std::unique_ptr<std::string> payload = job->GetResultPayload();
-        EXPECT_TRUE(payload);
-        EXPECT_EQ(CreateInvalidParametersFailurePayload(), *payload);
-      })));
+  EXPECT_TRUE(
+      RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kUrandom,
+             std::move(params_dict),
+             base::BindLambdaForTesting([](RemoteCommandJob* job) {
+               EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
+               std::unique_ptr<std::string> payload = job->GetResultPayload();
+               EXPECT_TRUE(payload);
+               EXPECT_EQ(CreateInvalidParametersFailurePayload(), *payload);
+             })));
 }
 
 // Note that the smartctl check routine has no parameters, so we only need to
@@ -537,12 +510,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunSmartctlCheckRoutineSuccess) {
   chromeos::cros_healthd::FakeCrosHealthdClient::Get()
       ->SetRunRoutineResponseForTesting(run_routine_response);
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(RunJob(
-      job.get(),
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kSmartctlCheck,
-      std::move(params_dict), base::BindLambdaForTesting([&]() {
+      std::move(params_dict),
+      base::BindLambdaForTesting([](RemoteCommandJob* job) {
         EXPECT_EQ(job->status(), RemoteCommandJob::SUCCEEDED);
         std::unique_ptr<std::string> payload = job->GetResultPayload();
         EXPECT_TRUE(payload);
@@ -563,16 +534,15 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunAcPowerRoutineSuccess) {
           chromeos::cros_healthd::mojom::AcPowerStatusEnum::kConnected));
   params_dict.SetStringKey(kExpectedPowerTypeFieldName,
                            /*expected_power_type=*/"power_type");
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
-  EXPECT_TRUE(RunJob(
-      job.get(), chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kAcPower,
-      std::move(params_dict), base::BindLambdaForTesting([&]() {
-        EXPECT_EQ(job->status(), RemoteCommandJob::SUCCEEDED);
-        std::unique_ptr<std::string> payload = job->GetResultPayload();
-        EXPECT_TRUE(payload);
-        EXPECT_EQ(CreateSuccessPayload(kId, kStatus), *payload);
-      })));
+  EXPECT_TRUE(
+      RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kAcPower,
+             std::move(params_dict),
+             base::BindLambdaForTesting([](RemoteCommandJob* job) {
+               EXPECT_EQ(job->status(), RemoteCommandJob::SUCCEEDED);
+               std::unique_ptr<std::string> payload = job->GetResultPayload();
+               EXPECT_TRUE(payload);
+               EXPECT_EQ(CreateSuccessPayload(kId, kStatus), *payload);
+             })));
 }
 
 // Test that the AC power routine succeeds without the optional parameter
@@ -588,16 +558,15 @@ TEST_F(DeviceCommandRunRoutineJobTest,
       kExpectedStatusFieldName,
       /*expected_status=*/static_cast<int>(
           chromeos::cros_healthd::mojom::AcPowerStatusEnum::kConnected));
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
-  EXPECT_TRUE(RunJob(
-      job.get(), chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kAcPower,
-      std::move(params_dict), base::BindLambdaForTesting([&]() {
-        EXPECT_EQ(job->status(), RemoteCommandJob::SUCCEEDED);
-        std::unique_ptr<std::string> payload = job->GetResultPayload();
-        EXPECT_TRUE(payload);
-        EXPECT_EQ(CreateSuccessPayload(kId, kStatus), *payload);
-      })));
+  EXPECT_TRUE(
+      RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kAcPower,
+             std::move(params_dict),
+             base::BindLambdaForTesting([](RemoteCommandJob* job) {
+               EXPECT_EQ(job->status(), RemoteCommandJob::SUCCEEDED);
+               std::unique_ptr<std::string> payload = job->GetResultPayload();
+               EXPECT_TRUE(payload);
+               EXPECT_EQ(CreateSuccessPayload(kId, kStatus), *payload);
+             })));
 }
 
 // Test that leaving out the expectedStatus parameter causes the AC power
@@ -606,16 +575,15 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunAcPowerRoutineMissingExpectedStatus) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetStringKey(kExpectedPowerTypeFieldName,
                            /*expected_power_type=*/"power_type");
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
-  EXPECT_TRUE(RunJob(
-      job.get(), chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kAcPower,
-      std::move(params_dict), base::BindLambdaForTesting([&]() {
-        EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
-        std::unique_ptr<std::string> payload = job->GetResultPayload();
-        EXPECT_TRUE(payload);
-        EXPECT_EQ(CreateInvalidParametersFailurePayload(), *payload);
-      })));
+  EXPECT_TRUE(
+      RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kAcPower,
+             std::move(params_dict),
+             base::BindLambdaForTesting([](RemoteCommandJob* job) {
+               EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
+               std::unique_ptr<std::string> payload = job->GetResultPayload();
+               EXPECT_TRUE(payload);
+               EXPECT_EQ(CreateInvalidParametersFailurePayload(), *payload);
+             })));
 }
 
 // Test that an invalid value for the expectedStatus parameter causes the AC
@@ -630,16 +598,15 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunAcPowerRoutineInvalidExpectedStatus) {
                         static_cast<int>(expected_status));
   params_dict.SetStringKey(kExpectedPowerTypeFieldName,
                            /*expected_power_type=*/"power_type");
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
-  EXPECT_TRUE(RunJob(
-      job.get(), chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kAcPower,
-      std::move(params_dict), base::BindLambdaForTesting([&]() {
-        EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
-        std::unique_ptr<std::string> payload = job->GetResultPayload();
-        EXPECT_TRUE(payload);
-        EXPECT_EQ(CreateInvalidParametersFailurePayload(), *payload);
-      })));
+  EXPECT_TRUE(
+      RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kAcPower,
+             std::move(params_dict),
+             base::BindLambdaForTesting([](RemoteCommandJob* job) {
+               EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
+               std::unique_ptr<std::string> payload = job->GetResultPayload();
+               EXPECT_TRUE(payload);
+               EXPECT_EQ(CreateInvalidParametersFailurePayload(), *payload);
+             })));
 }
 
 TEST_F(DeviceCommandRunRoutineJobTest, RunCpuCacheRoutineSuccess) {
@@ -650,12 +617,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunCpuCacheRoutineSuccess) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kLengthSecondsFieldName,
                         /*length_seconds=*/2342);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(
-      RunJob(job.get(),
-             chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kCpuCache,
-             std::move(params_dict), base::BindLambdaForTesting([&]() {
+      RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kCpuCache,
+             std::move(params_dict),
+             base::BindLambdaForTesting([](RemoteCommandJob* job) {
                EXPECT_EQ(job->status(), RemoteCommandJob::SUCCEEDED);
                std::unique_ptr<std::string> payload = job->GetResultPayload();
                EXPECT_TRUE(payload);
@@ -667,12 +632,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunCpuCacheRoutineSuccess) {
 // routine to fail.
 TEST_F(DeviceCommandRunRoutineJobTest, RunCpuCacheRoutineMissingLengthSeconds) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(
-      RunJob(job.get(),
-             chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kCpuCache,
-             std::move(params_dict), base::BindLambdaForTesting([&]() {
+      RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kCpuCache,
+             std::move(params_dict),
+             base::BindLambdaForTesting([](RemoteCommandJob* job) {
                EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
                std::unique_ptr<std::string> payload = job->GetResultPayload();
                EXPECT_TRUE(payload);
@@ -686,12 +649,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunCpuCacheRoutineInvalidLengthSeconds) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kLengthSecondsFieldName,
                         /*length_seconds=*/-1);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(
-      RunJob(job.get(),
-             chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kCpuCache,
-             std::move(params_dict), base::BindLambdaForTesting([&]() {
+      RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kCpuCache,
+             std::move(params_dict),
+             base::BindLambdaForTesting([](RemoteCommandJob* job) {
                EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
                std::unique_ptr<std::string> payload = job->GetResultPayload();
                EXPECT_TRUE(payload);
@@ -707,12 +668,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunCpuStressRoutineSuccess) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kLengthSecondsFieldName,
                         /*length_seconds=*/2342);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(
-      RunJob(job.get(),
-             chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kCpuStress,
-             std::move(params_dict), base::BindLambdaForTesting([&]() {
+      RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kCpuStress,
+             std::move(params_dict),
+             base::BindLambdaForTesting([](RemoteCommandJob* job) {
                EXPECT_EQ(job->status(), RemoteCommandJob::SUCCEEDED);
                std::unique_ptr<std::string> payload = job->GetResultPayload();
                EXPECT_TRUE(payload);
@@ -725,12 +684,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunCpuStressRoutineSuccess) {
 TEST_F(DeviceCommandRunRoutineJobTest,
        RunCpuStressRoutineMissingLengthSeconds) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(
-      RunJob(job.get(),
-             chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kCpuStress,
-             std::move(params_dict), base::BindLambdaForTesting([&]() {
+      RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kCpuStress,
+             std::move(params_dict),
+             base::BindLambdaForTesting([](RemoteCommandJob* job) {
                EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
                std::unique_ptr<std::string> payload = job->GetResultPayload();
                EXPECT_TRUE(payload);
@@ -745,12 +702,10 @@ TEST_F(DeviceCommandRunRoutineJobTest,
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kLengthSecondsFieldName,
                         /*length_seconds=*/-1);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(
-      RunJob(job.get(),
-             chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kCpuStress,
-             std::move(params_dict), base::BindLambdaForTesting([&]() {
+      RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kCpuStress,
+             std::move(params_dict),
+             base::BindLambdaForTesting([](RemoteCommandJob* job) {
                EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
                std::unique_ptr<std::string> payload = job->GetResultPayload();
                EXPECT_TRUE(payload);
@@ -766,12 +721,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunFloatingPointAccuracyRoutineSuccess) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kLengthSecondsFieldName,
                         /*length_seconds=*/2342);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
-  EXPECT_TRUE(RunJob(job.get(),
-                     chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::
+  EXPECT_TRUE(RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::
                          kFloatingPointAccuracy,
-                     std::move(params_dict), base::BindLambdaForTesting([&]() {
+                     std::move(params_dict),
+                     base::BindLambdaForTesting([](RemoteCommandJob* job) {
                        EXPECT_EQ(job->status(), RemoteCommandJob::SUCCEEDED);
                        std::unique_ptr<std::string> payload =
                            job->GetResultPayload();
@@ -785,13 +738,11 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunFloatingPointAccuracyRoutineSuccess) {
 TEST_F(DeviceCommandRunRoutineJobTest,
        RunFloatingPointAccuracyRoutineMissingLengthSeconds) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(
-      RunJob(job.get(),
-             chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::
+      RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::
                  kFloatingPointAccuracy,
-             std::move(params_dict), base::BindLambdaForTesting([&]() {
+             std::move(params_dict),
+             base::BindLambdaForTesting([](RemoteCommandJob* job) {
                EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
                std::unique_ptr<std::string> payload = job->GetResultPayload();
                EXPECT_TRUE(payload);
@@ -806,13 +757,11 @@ TEST_F(DeviceCommandRunRoutineJobTest,
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kLengthSecondsFieldName,
                         /*length_seconds=*/-1);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(
-      RunJob(job.get(),
-             chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::
+      RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::
                  kFloatingPointAccuracy,
-             std::move(params_dict), base::BindLambdaForTesting([&]() {
+             std::move(params_dict),
+             base::BindLambdaForTesting([](RemoteCommandJob* job) {
                EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
                std::unique_ptr<std::string> payload = job->GetResultPayload();
                EXPECT_TRUE(payload);
@@ -828,12 +777,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunNvmeWearLevelRoutineSuccess) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kWearLevelThresholdFieldName,
                         /*wear_level_threshold=*/50);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(RunJob(
-      job.get(),
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kNvmeWearLevel,
-      std::move(params_dict), base::BindLambdaForTesting([&]() {
+      std::move(params_dict),
+      base::BindLambdaForTesting([](RemoteCommandJob* job) {
         EXPECT_EQ(job->status(), RemoteCommandJob::SUCCEEDED);
         std::unique_ptr<std::string> payload = job->GetResultPayload();
         EXPECT_TRUE(payload);
@@ -846,12 +793,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunNvmeWearLevelRoutineSuccess) {
 TEST_F(DeviceCommandRunRoutineJobTest,
        RunNvmeWearLevelRoutineMissingWearLevelThreshold) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(RunJob(
-      job.get(),
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kNvmeWearLevel,
-      std::move(params_dict), base::BindLambdaForTesting([&]() {
+      std::move(params_dict),
+      base::BindLambdaForTesting([](RemoteCommandJob* job) {
         EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
         std::unique_ptr<std::string> payload = job->GetResultPayload();
         EXPECT_TRUE(payload);
@@ -866,12 +811,10 @@ TEST_F(DeviceCommandRunRoutineJobTest,
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kWearLevelThresholdFieldName,
                         /*wear_level_threshold=*/-1);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(RunJob(
-      job.get(),
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kNvmeWearLevel,
-      std::move(params_dict), base::BindLambdaForTesting([&]() {
+      std::move(params_dict),
+      base::BindLambdaForTesting([](RemoteCommandJob* job) {
         EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
         std::unique_ptr<std::string> payload = job->GetResultPayload();
         EXPECT_TRUE(payload);
@@ -889,12 +832,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunNvmeSelfTestRoutineSuccess) {
       kNvmeSelfTestTypeFieldName,
       /*nvme_self_test_type=*/static_cast<int>(
           chromeos::cros_healthd::mojom::NvmeSelfTestTypeEnum::kShortSelfTest));
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(RunJob(
-      job.get(),
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kNvmeSelfTest,
-      std::move(params_dict), base::BindLambdaForTesting([&]() {
+      std::move(params_dict),
+      base::BindLambdaForTesting([](RemoteCommandJob* job) {
         EXPECT_EQ(job->status(), RemoteCommandJob::SUCCEEDED);
         std::unique_ptr<std::string> payload = job->GetResultPayload();
         EXPECT_TRUE(payload);
@@ -907,12 +848,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunNvmeSelfTestRoutineSuccess) {
 TEST_F(DeviceCommandRunRoutineJobTest,
        RunNvmeSelfTestRoutineMissingSelfTestType) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(RunJob(
-      job.get(),
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kNvmeSelfTest,
-      std::move(params_dict), base::BindLambdaForTesting([&]() {
+      std::move(params_dict),
+      base::BindLambdaForTesting([](RemoteCommandJob* job) {
         EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
         std::unique_ptr<std::string> payload = job->GetResultPayload();
         EXPECT_TRUE(payload);
@@ -929,12 +868,10 @@ TEST_F(DeviceCommandRunRoutineJobTest,
       chromeos::cros_healthd::mojom::NvmeSelfTestTypeEnum>::type>::max();
   params_dict.SetIntKey(kNvmeSelfTestTypeFieldName,
                         static_cast<int>(nvme_self_test_type));
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(RunJob(
-      job.get(),
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kNvmeSelfTest,
-      std::move(params_dict), base::BindLambdaForTesting([&]() {
+      std::move(params_dict),
+      base::BindLambdaForTesting([](RemoteCommandJob* job) {
         EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
         std::unique_ptr<std::string> payload = job->GetResultPayload();
         EXPECT_TRUE(payload);
@@ -957,12 +894,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunDiskReadRoutineSuccess) {
                         /*length_seconds=*/2342);
   params_dict.SetIntKey(kFileSizeMbFieldName,
                         /*file_size_mb=*/512);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(
-      RunJob(job.get(),
-             chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kDiskRead,
-             std::move(params_dict), base::BindLambdaForTesting([&]() {
+      RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kDiskRead,
+             std::move(params_dict),
+             base::BindLambdaForTesting([](RemoteCommandJob* job) {
                EXPECT_EQ(job->status(), RemoteCommandJob::SUCCEEDED);
                std::unique_ptr<std::string> payload = job->GetResultPayload();
                EXPECT_TRUE(payload);
@@ -978,12 +913,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunDiskReadRoutineMissingType) {
                         /*length_seconds=*/2342);
   params_dict.SetIntKey(kFileSizeMbFieldName,
                         /*file_size_mb=*/512);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(
-      RunJob(job.get(),
-             chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kDiskRead,
-             std::move(params_dict), base::BindLambdaForTesting([&]() {
+      RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kDiskRead,
+             std::move(params_dict),
+             base::BindLambdaForTesting([](RemoteCommandJob* job) {
                EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
                std::unique_ptr<std::string> payload = job->GetResultPayload();
                EXPECT_TRUE(payload);
@@ -1001,12 +934,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunDiskReadRoutineMissingLengthSeconds) {
           chromeos::cros_healthd::mojom::DiskReadRoutineTypeEnum::kLinearRead));
   params_dict.SetIntKey(kFileSizeMbFieldName,
                         /*file_size_mb=*/512);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(
-      RunJob(job.get(),
-             chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kDiskRead,
-             std::move(params_dict), base::BindLambdaForTesting([&]() {
+      RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kDiskRead,
+             std::move(params_dict),
+             base::BindLambdaForTesting([](RemoteCommandJob* job) {
                EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
                std::unique_ptr<std::string> payload = job->GetResultPayload();
                EXPECT_TRUE(payload);
@@ -1024,12 +955,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunDiskReadRoutineMissingFileSizeMb) {
           chromeos::cros_healthd::mojom::DiskReadRoutineTypeEnum::kLinearRead));
   params_dict.SetIntKey(kLengthSecondsFieldName,
                         /*length_seconds=*/2342);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(
-      RunJob(job.get(),
-             chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kDiskRead,
-             std::move(params_dict), base::BindLambdaForTesting([&]() {
+      RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kDiskRead,
+             std::move(params_dict),
+             base::BindLambdaForTesting([](RemoteCommandJob* job) {
                EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
                std::unique_ptr<std::string> payload = job->GetResultPayload();
                EXPECT_TRUE(payload);
@@ -1051,12 +980,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunDiskReadRoutineInvalidType) {
                         /*length_seconds=*/2342);
   params_dict.SetIntKey(kFileSizeMbFieldName,
                         /*file_size_mb=*/512);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(
-      RunJob(job.get(),
-             chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kDiskRead,
-             std::move(params_dict), base::BindLambdaForTesting([&]() {
+      RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kDiskRead,
+             std::move(params_dict),
+             base::BindLambdaForTesting([](RemoteCommandJob* job) {
                EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
                std::unique_ptr<std::string> payload = job->GetResultPayload();
                EXPECT_TRUE(payload);
@@ -1076,12 +1003,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunDiskReadRoutineInvalidLengthSeconds) {
                         /*length_seconds=*/-1);
   params_dict.SetIntKey(kFileSizeMbFieldName,
                         /*file_size_mb=*/512);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(
-      RunJob(job.get(),
-             chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kDiskRead,
-             std::move(params_dict), base::BindLambdaForTesting([&]() {
+      RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kDiskRead,
+             std::move(params_dict),
+             base::BindLambdaForTesting([](RemoteCommandJob* job) {
                EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
                std::unique_ptr<std::string> payload = job->GetResultPayload();
                EXPECT_TRUE(payload);
@@ -1101,12 +1026,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunDiskReadRoutineInvalidFileSizeMb) {
                         /*length_seconds=*/2342);
   params_dict.SetIntKey(kFileSizeMbFieldName,
                         /*file_size_mb=*/-1);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(
-      RunJob(job.get(),
-             chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kDiskRead,
-             std::move(params_dict), base::BindLambdaForTesting([&]() {
+      RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kDiskRead,
+             std::move(params_dict),
+             base::BindLambdaForTesting([](RemoteCommandJob* job) {
                EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
                std::unique_ptr<std::string> payload = job->GetResultPayload();
                EXPECT_TRUE(payload);
@@ -1125,12 +1048,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunPrimeSearchRoutineSuccess) {
                         /*length_seconds=*/2342);
   params_dict.SetIntKey(kMaxNumFieldName,
                         /*max_num=*/100000);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(
-      RunJob(job.get(),
-             chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kPrimeSearch,
-             std::move(params_dict), base::BindLambdaForTesting([&]() {
+      RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kPrimeSearch,
+             std::move(params_dict),
+             base::BindLambdaForTesting([](RemoteCommandJob* job) {
                EXPECT_EQ(job->status(), RemoteCommandJob::SUCCEEDED);
                std::unique_ptr<std::string> payload = job->GetResultPayload();
                EXPECT_TRUE(payload);
@@ -1145,12 +1066,10 @@ TEST_F(DeviceCommandRunRoutineJobTest,
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kMaxNumFieldName,
                         /*max_num=*/100000);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(
-      RunJob(job.get(),
-             chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kPrimeSearch,
-             std::move(params_dict), base::BindLambdaForTesting([&]() {
+      RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kPrimeSearch,
+             std::move(params_dict),
+             base::BindLambdaForTesting([](RemoteCommandJob* job) {
                EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
                std::unique_ptr<std::string> payload = job->GetResultPayload();
                EXPECT_TRUE(payload);
@@ -1164,12 +1083,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunPrimeSearchRoutineMissingMaxNum) {
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kLengthSecondsFieldName,
                         /*length_seconds=*/2342);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(
-      RunJob(job.get(),
-             chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kPrimeSearch,
-             std::move(params_dict), base::BindLambdaForTesting([&]() {
+      RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kPrimeSearch,
+             std::move(params_dict),
+             base::BindLambdaForTesting([](RemoteCommandJob* job) {
                EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
                std::unique_ptr<std::string> payload = job->GetResultPayload();
                EXPECT_TRUE(payload);
@@ -1186,12 +1103,10 @@ TEST_F(DeviceCommandRunRoutineJobTest,
                         /*length_seconds=*/-1);
   params_dict.SetIntKey(kMaxNumFieldName,
                         /*max_num=*/100000);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(
-      RunJob(job.get(),
-             chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kPrimeSearch,
-             std::move(params_dict), base::BindLambdaForTesting([&]() {
+      RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kPrimeSearch,
+             std::move(params_dict),
+             base::BindLambdaForTesting([](RemoteCommandJob* job) {
                EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
                std::unique_ptr<std::string> payload = job->GetResultPayload();
                EXPECT_TRUE(payload);
@@ -1207,12 +1122,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunPrimeSearchRoutineInvalidMaxNum) {
                         /*length_seconds=*/2342);
   params_dict.SetIntKey(kMaxNumFieldName,
                         /*max_num=*/-1);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(
-      RunJob(job.get(),
-             chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kPrimeSearch,
-             std::move(params_dict), base::BindLambdaForTesting([&]() {
+      RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kPrimeSearch,
+             std::move(params_dict),
+             base::BindLambdaForTesting([](RemoteCommandJob* job) {
                EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
                std::unique_ptr<std::string> payload = job->GetResultPayload();
                EXPECT_TRUE(payload);
@@ -1229,12 +1142,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunBatteryDischargeRoutineSuccess) {
   params_dict.SetIntKey(kLengthSecondsFieldName, /*length_seconds=*/10);
   params_dict.SetIntKey(kMaximumDischargePercentAllowedFieldName,
                         /*maximum_discharge_percent_allowed=*/76);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(RunJob(
-      job.get(),
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryDischarge,
-      std::move(params_dict), base::BindLambdaForTesting([&]() {
+      std::move(params_dict),
+      base::BindLambdaForTesting([](RemoteCommandJob* job) {
         EXPECT_EQ(job->status(), RemoteCommandJob::SUCCEEDED);
         std::unique_ptr<std::string> payload = job->GetResultPayload();
         EXPECT_TRUE(payload);
@@ -1249,12 +1160,10 @@ TEST_F(DeviceCommandRunRoutineJobTest,
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kMaximumDischargePercentAllowedFieldName,
                         /*maximum_discharge_percent_allowed=*/76);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(RunJob(
-      job.get(),
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryDischarge,
-      std::move(params_dict), base::BindLambdaForTesting([&]() {
+      std::move(params_dict),
+      base::BindLambdaForTesting([](RemoteCommandJob* job) {
         EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
         std::unique_ptr<std::string> payload = job->GetResultPayload();
         EXPECT_TRUE(payload);
@@ -1268,12 +1177,10 @@ TEST_F(DeviceCommandRunRoutineJobTest,
   // the routine to fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kLengthSecondsFieldName, /*length_seconds=*/10);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(RunJob(
-      job.get(),
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryDischarge,
-      std::move(params_dict), base::BindLambdaForTesting([&]() {
+      std::move(params_dict),
+      base::BindLambdaForTesting([](RemoteCommandJob* job) {
         EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
         std::unique_ptr<std::string> payload = job->GetResultPayload();
         EXPECT_TRUE(payload);
@@ -1288,12 +1195,10 @@ TEST_F(DeviceCommandRunRoutineJobTest,
   params_dict.SetIntKey(kLengthSecondsFieldName, /*length_seconds=*/-10);
   params_dict.SetIntKey(kMaximumDischargePercentAllowedFieldName,
                         /*maximum_discharge_percent_allowed=*/76);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(RunJob(
-      job.get(),
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryDischarge,
-      std::move(params_dict), base::BindLambdaForTesting([&]() {
+      std::move(params_dict),
+      base::BindLambdaForTesting([](RemoteCommandJob* job) {
         EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
         std::unique_ptr<std::string> payload = job->GetResultPayload();
         EXPECT_TRUE(payload);
@@ -1309,12 +1214,10 @@ TEST_F(DeviceCommandRunRoutineJobTest,
   params_dict.SetIntKey(kLengthSecondsFieldName, /*length_seconds=*/10);
   params_dict.SetIntKey(kMaximumDischargePercentAllowedFieldName,
                         /*maximum_discharge_percent_allowed=*/-76);
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_TRUE(RunJob(
-      job.get(),
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryDischarge,
-      std::move(params_dict), base::BindLambdaForTesting([&]() {
+      std::move(params_dict),
+      base::BindLambdaForTesting([](RemoteCommandJob* job) {
         EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
         std::unique_ptr<std::string> payload = job->GetResultPayload();
         EXPECT_TRUE(payload);

@@ -149,3 +149,259 @@ js_library("storage") {
     "//ui/webui/resources/js/cr/ui:focus_without_ink",
   ]
 }
+
+# TODO: Uncomment as the Polymer3 migration makes progress.
+#js_type_check("closure_compile_module") {
+#  is_polymer3 = true
+#  deps = [
+#    ":device_page.m",
+#    ":device_page_browser_proxy.m",
+#    ":display.m",
+#    ":display_layout.m",
+#    ":display_overscan_dialog.m",
+#    ":drag_behavior.m",
+#    ":keyboard.m",
+#    ":layout_behavior.m",
+#    ":night_light_slider.m",
+#    ":pointers.m",
+#    ":power.m",
+#    ":storage.m",
+#    ":storage_external.m",
+#    ":storage_external_entry.m",
+#    ":stylus.m"
+#  ]
+#}
+
+js_library("device_page.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/device_page/device_page.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":device_page_module" ]
+}
+
+js_library("device_page_browser_proxy.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/device_page/device_page_browser_proxy.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":modulize" ]
+}
+
+# TODO: Fix and re-enable
+#js_library("display.m") {
+#  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/device_page/display.m.js" ]
+#  deps = [
+#    # TODO: Fill those in.
+#  ]
+#  extra_deps = [ ":display_module" ]
+#}
+
+js_library("display_layout.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/device_page/display_layout.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":display_layout_module" ]
+}
+
+js_library("display_overscan_dialog.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/device_page/display_overscan_dialog.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":display_overscan_dialog_module" ]
+}
+
+js_library("drag_behavior.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/device_page/drag_behavior.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":modulize" ]
+}
+
+# TODO: Fix and re-enable
+#js_library("keyboard.m") {
+#  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/device_page/keyboard.m.js" ]
+#  deps = [
+#    # TODO: Fill those in.
+#  ]
+#  extra_deps = [ ":keyboard_module" ]
+#}
+
+js_library("layout_behavior.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/device_page/layout_behavior.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("night_light_slider.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/device_page/night_light_slider.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":night_light_slider_module" ]
+}
+
+js_library("pointers.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/device_page/pointers.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":pointers_module" ]
+}
+
+js_library("power.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/device_page/power.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":power_module" ]
+}
+
+# TODO: Fix and re-enable
+#js_library("storage.m") {
+#  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/device_page/storage.m.js" ]
+#  deps = [
+#    # TODO: Fill those in.
+#  ]
+#  extra_deps = [ ":storage_module" ]
+#}
+
+js_library("storage_external.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/device_page/storage_external.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":storage_external_module" ]
+}
+
+js_library("storage_external_entry.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/device_page/storage_external_entry.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":storage_external_entry_module" ]
+}
+
+js_library("stylus.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/device_page/stylus.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":stylus_module" ]
+}
+
+import("//tools/polymer/polymer.gni")
+
+group("polymer3_elements") {
+  public_deps = [
+    ":device_page_module",
+    ":display_layout_module",
+
+    # TODO: Fix and re-enable
+    #":display_module",
+    ":display_overscan_dialog_module",
+
+    # TODO: Fix and re-enable
+    #":keyboard_module",
+    ":modulize",
+    ":night_light_slider_module",
+    ":pointers_module",
+    ":power_module",
+    ":storage_external_entry_module",
+    ":storage_external_module",
+
+    # TODO: Fix and re-enable
+    #":storage_module",
+    ":stylus_module",
+  ]
+}
+
+polymer_modulizer("device_page") {
+  js_file = "device_page.js"
+  html_file = "device_page.html"
+  html_type = "dom-module"
+}
+
+# TODO: Fix and re-enable
+#polymer_modulizer("display") {
+#  js_file = "display.js"
+#  html_file = "display.html"
+#  html_type = "dom-module"
+#}
+
+polymer_modulizer("display_layout") {
+  js_file = "display_layout.js"
+  html_file = "display_layout.html"
+  html_type = "dom-module"
+}
+
+polymer_modulizer("display_overscan_dialog") {
+  js_file = "display_overscan_dialog.js"
+  html_file = "display_overscan_dialog.html"
+  html_type = "dom-module"
+}
+
+# TODO: Fix and re-enable
+#polymer_modulizer("keyboard") {
+#  js_file = "keyboard.js"
+#  html_file = "keyboard.html"
+#  html_type = "dom-module"
+#}
+
+polymer_modulizer("night_light_slider") {
+  js_file = "night_light_slider.js"
+  html_file = "night_light_slider.html"
+  html_type = "dom-module"
+}
+
+polymer_modulizer("pointers") {
+  js_file = "pointers.js"
+  html_file = "pointers.html"
+  html_type = "dom-module"
+}
+
+polymer_modulizer("power") {
+  js_file = "power.js"
+  html_file = "power.html"
+  html_type = "dom-module"
+}
+
+# TODO: Fix and re-enable
+#polymer_modulizer("storage") {
+#  js_file = "storage.js"
+#  html_file = "storage.html"
+#  html_type = "dom-module"
+#}
+
+polymer_modulizer("storage_external") {
+  js_file = "storage_external.js"
+  html_file = "storage_external.html"
+  html_type = "dom-module"
+}
+
+polymer_modulizer("storage_external_entry") {
+  js_file = "storage_external_entry.js"
+  html_file = "storage_external_entry.html"
+  html_type = "dom-module"
+}
+
+polymer_modulizer("stylus") {
+  js_file = "stylus.js"
+  html_file = "stylus.html"
+  html_type = "dom-module"
+}
+
+import("//ui/webui/resources/tools/js_modulizer.gni")
+
+js_modulizer("modulize") {
+  input_files = [
+    "device_page_browser_proxy.js",
+    "drag_behavior.js",
+    "layout_behavior.js",
+  ]
+}

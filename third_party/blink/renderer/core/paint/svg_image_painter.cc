@@ -63,11 +63,27 @@ void SVGImagePainter::PaintForeground(const PaintInfo& paint_info) {
 
   scoped_refptr<Image> image = image_resource->GetImage(image_viewport_size);
   FloatRect dest_rect = layout_svg_image_.ObjectBoundingBox();
-  FloatRect src_rect(FloatPoint(), image->SizeAsFloat());
 
+  FloatRect src_rect;
   auto* image_element = To<SVGImageElement>(layout_svg_image_.GetElement());
-  image_element->preserveAspectRatio()->CurrentValue()->TransformRect(dest_rect,
-                                                                      src_rect);
+  if (!image->HasDefaultOrientation()) {
+    // We need the oriented source rect for adjusting the aspect ratio
+    FloatRect oriented_src_rect(FloatPoint(),
+                                image->SizeAsFloat(kRespectImageOrientation));
+    FloatSize unadjusted_size(oriented_src_rect.Size());
+    image_element->preserveAspectRatio()->CurrentValue()->TransformRect(
+        dest_rect, oriented_src_rect);
+
+    // Map the oriented_src_rect back into the src_rect space
+    src_rect = image->CorrectSrcRectForImageOrientation(unadjusted_size,
+                                                        oriented_src_rect);
+  } else {
+    src_rect = FloatRect(FloatPoint(),
+                         image->SizeAsFloat(kDoNotRespectImageOrientation));
+    image_element->preserveAspectRatio()->CurrentValue()->TransformRect(
+        dest_rect, src_rect);
+  }
+
   ScopedInterpolationQuality interpolation_quality_scope(
       paint_info.context,
       layout_svg_image_.StyleRef().GetInterpolationQuality());
@@ -117,7 +133,8 @@ FloatSize SVGImagePainter::ComputeImageViewportSize() const {
     return svg_image->ConcreteObjectSize(
         layout_svg_image_.ObjectBoundingBox().Size());
   }
-  return image->SizeAsFloat();
+  // The orientation here does not matter. Just use kRespectImageOrientation.
+  return image->SizeAsFloat(kRespectImageOrientation);
 }
 
 }  // namespace blink

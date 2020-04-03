@@ -340,6 +340,8 @@ crbug.com/997202 external/wpt/css/css-images/image-orientation/image-orientation
 crbug.com/997202 external/wpt/css/css-images/image-orientation/image-orientation-from-image-dynamic2.html [ Failure ]
 crbug.com/997202 external/wpt/css/css-images/image-orientation/image-orientation-none-content-images.html [ Failure ]
 crbug.com/997202 external/wpt/css/css-images/image-orientation/image-orientation-none.html [ Failure ]
+crbug.com/997202 external/wpt/css/css-images/image-orientation/svg-image-orientation.html [ Failure ]
+crbug.com/997202 external/wpt/css/css-images/image-orientation/svg-image-orientation-aspect-ratio.html [ Failure ]
 
 crbug.com/1042453 [ Win ] external/wpt/css/filter-effects/idlharness.any.html [ Timeout Pass ]
 crbug.com/1042453 [ Mac ] external/wpt/css/filter-effects/idlharness.any.html [ Timeout Pass ]
@@ -1036,6 +1038,7 @@ crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/mult
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-nested-margin-004.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-nested-margin-005.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-overflow-000.xht [ Failure ]
+crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-overflow-clip.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-overflowing-001.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-reduce-000.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-000.xht [ Failure ]
@@ -4108,6 +4111,9 @@ crbug.com/626703 external/wpt/css/css-ui/text-overflow-011.html [ Failure Crash 
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/margin-collapsing-quirks/multicol-quirks-mode.html [ Pass Crash ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/margin-collapsing-quirks/multicol-standards-mode.html [ Pass Crash Failure ]
 
+# Other untriaged test failures, timeouts and crashes from newly-imported WPT tests.
+crbug.com/626703 external/wpt/html/browsers/history/the-location-interface/location-protocol-setter-non-broken.html [ Failure Pass ]
+
 # Underline offset and thickness are not implemented yet.
 crbug.com/785230 external/wpt/css/css-text-decor/text-underline-offset-001.html [ Skip ]
 crbug.com/785230 external/wpt/css/css-text-decor/text-underline-offset-scroll-001.html [ Skip ]
@@ -5557,7 +5563,6 @@ crbug.com/942134 [ Win ] virtual/exotic-color-space/images/feature-policy-oversi
 crbug.com/943388 [ Win ] http/tests/devtools/network/network-recording-after-reload-with-screenshots-enabled.js [ Pass Failure ]
 
 # Sheriff 2019-03-20
-crbug.com/732103 [ Mac10.11 ] http/tests/shapedetection/shapedetection-cross-origin.html [ Timeout Pass ]
 crbug.com/943969 [ Win ] inspector-protocol/css/css-get-media-queries.js [ Pass Failure ]
 crbug.com/943969 [ Mac10.10 ] inspector-protocol/css/css-get-media-queries.js [ Pass Failure ]
 crbug.com/943969 [ Mac10.11 ] inspector-protocol/css/css-get-media-queries.js [ Pass Failure ]

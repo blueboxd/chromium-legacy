@@ -144,20 +144,6 @@ void StyleCascade::Reset() {
   generation_ = 0;
 }
 
-StyleCascade::Surrogate StyleCascade::ResolveSurrogate(
-    const CSSProperty& surrogate,
-    CascadePriority priority,
-    CascadeResolver& resolver) {
-  DCHECK(surrogate.IsSurrogate());
-  const CSSProperty* original = surrogate.SurrogateFor(
-      state_.Style()->Direction(), state_.Style()->GetWritingMode());
-  DCHECK(original && original->IsLonghand());
-  LookupAndApply(*original, resolver);
-  if (map_.At(original->GetCSSPropertyName()) < priority)
-    return Surrogate::kApply;
-  return Surrogate::kSkip;
-}
-
 const CSSValue* StyleCascade::Resolve(const CSSPropertyName& name,
                                       const CSSValue& value,
                                       CascadeResolver& resolver) {
@@ -282,8 +268,10 @@ void StyleCascade::ApplyMatchResult(CascadeResolver& resolver) {
         continue;
       *p = priority;
       const CSSProperty& property = e.Property();
-      if (ResolveIfSurrogate(property, priority, resolver) == Surrogate::kSkip)
+      if (property.IsSurrogate()) {
+        ApplySurrogate(property, priority, resolver);
         continue;
+      }
       const CSSValue* value = Resolve(property, e.Value(), resolver);
       StyleBuilder::ApplyProperty(property, state_, *value);
     }
@@ -322,8 +310,10 @@ void StyleCascade::ApplyInterpolationMap(const ActiveInterpolationsMap& map,
     }
     *p = priority;
 
-    if (ResolveIfSurrogate(property, priority, resolver) == Surrogate::kSkip)
+    if (property.IsSurrogate()) {
+      ApplySurrogate(property, priority, resolver);
       continue;
+    }
 
     ApplyInterpolation(property, priority, entry.value, resolver);
   }
@@ -368,6 +358,29 @@ void StyleCascade::ApplyInterpolation(
   }
 }
 
+void StyleCascade::ApplySurrogate(const CSSProperty& surrogate,
+                                  CascadePriority surrogate_priority,
+                                  CascadeResolver& resolver) {
+  DCHECK(surrogate.IsSurrogate());
+
+  const CSSProperty& original = SurrogateFor(surrogate);
+  CascadePriority* original_priority = map_.Find(original.GetCSSPropertyName());
+
+  if (original_priority) {
+    if (surrogate_priority < *original_priority) {
+      // The original has a higher priority, so skip the surrogate property.
+      return;
+    }
+
+    // The surrogate has a higher priority, so skip the original property.
+    // The original might have been applied already, but that doesn't matter,
+    // as we're about to overwrite it.
+    resolver.MarkApplied(original_priority);
+  }
+
+  LookupAndApplyValue(surrogate, surrogate_priority, resolver);
+}
+
 void StyleCascade::LookupAndApply(const CSSPropertyName& name,
                                   CascadeResolver& resolver) {
   CSSPropertyRef ref(name, state_.GetDocument());
@@ -390,9 +403,17 @@ void StyleCascade::LookupAndApply(const CSSProperty& property,
 
   if (resolver.filter_.Rejects(property))
     return;
-  if (ResolveIfSurrogate(property, priority, resolver) == Surrogate::kSkip)
+  if (property.IsSurrogate()) {
+    ApplySurrogate(property, priority, resolver);
     return;
+  }
 
+  LookupAndApplyValue(property, priority, resolver);
+}
+
+void StyleCascade::LookupAndApplyValue(const CSSProperty& property,
+                                       CascadePriority priority,
+                                       CascadeResolver& resolver) {
   if (priority.GetOrigin() < CascadeOrigin::kAnimation)
     LookupAndApplyDeclaration(property, priority, resolver);
   else if (priority.GetOrigin() >= CascadeOrigin::kAnimation)
@@ -779,6 +800,15 @@ void StyleCascade::MarkHasVariableReference(const CSSProperty& property) {
 
 const Document& StyleCascade::GetDocument() const {
   return state_.GetDocument();
+}
+
+const CSSProperty& StyleCascade::SurrogateFor(
+    const CSSProperty& surrogate) const {
+  DCHECK(surrogate.IsSurrogate());
+  const CSSProperty* original = surrogate.SurrogateFor(
+      state_.Style()->Direction(), state_.Style()->GetWritingMode());
+  DCHECK(original);
+  return *original;
 }
 
 bool StyleCascade::HasAuthorDeclaration(const CSSProperty& property) const {

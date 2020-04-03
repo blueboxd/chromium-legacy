@@ -1,0 +1,37 @@
+From c090e841899461437cc91adbdfc7c74ef8091a53 Mon Sep 17 00:00:00 2001
+From: Andrew Grieve <agrieve@chromium.org>
+Date: Wed, 1 Apr 2020 10:06:15 -0400
+Subject: [PATCH 4/5] Make class merging and outlining settable via
+ command-line
+
+---
+ .../java/com/android/tools/r8/utils/InternalOptions.java    | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/src/main/java/com/android/tools/r8/utils/InternalOptions.java b/src/main/java/com/android/tools/r8/utils/InternalOptions.java
+index 232b54a54..fd45dfe36 100644
+--- a/src/main/java/com/android/tools/r8/utils/InternalOptions.java
++++ b/src/main/java/com/android/tools/r8/utils/InternalOptions.java
+@@ -198,8 +198,8 @@ public class InternalOptions {
+   public boolean enableFieldAssignmentTracker = true;
+   public boolean enableFieldBitAccessAnalysis =
+       System.getProperty("com.android.tools.r8.fieldBitAccessAnalysis") != null;
+-  public boolean enableHorizontalClassMerging = true;
+-  public boolean enableVerticalClassMerging = true;
++  public boolean enableHorizontalClassMerging = System.getProperty("com.android.tools.r8.enableHorizontalClassMerging") != null;
++  public boolean enableVerticalClassMerging = System.getProperty("com.android.tools.r8.enableVerticalClassMerging") != null;
+   public boolean enableArgumentRemoval = true;
+   public boolean enableUnusedArgumentRemoval = true;
+   public boolean enableUnusedInterfaceRemoval = true;
+@@ -956,7 +956,7 @@ public class InternalOptions {
+     public static final String CLASS_NAME = "com.android.tools.r8.GeneratedOutlineSupport";
+     public static final String METHOD_PREFIX = "outline";
+ 
+-    public boolean enabled = true;
++    public boolean enabled = System.getProperty("com.android.tools.r8.disableOutlining") == null;
+     public int minSize = 3;
+     public int maxSize = 99;
+     public int threshold = 20;
+-- 
+2.26.0.rc2.310.g2932bb562d-goog
+

@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/notification_utils.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -47,8 +48,7 @@ void GestureEducationNotificationController::OnActiveUserPrefServiceChanged(
     PrefService* prefs) {
   if (!tablet_mode_supported_ ||
       prefs->GetBoolean(prefs::kGestureEducationNotificationShown) ||
-      prefs->GetBoolean(
-          prefs::kAccessibilityTabletModeShelfNavigationButtonsEnabled)) {
+      ShelfConfig::Get()->ShelfControlsForcedShownForAccessibility()) {
     return;
   }
   GenerateGestureEducationNotification();

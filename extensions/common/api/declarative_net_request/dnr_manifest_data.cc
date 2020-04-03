@@ -7,30 +7,28 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "extensions/common/manifest_constants.h"
 
 namespace extensions {
 namespace declarative_net_request {
 
 DNRManifestData::DNRManifestData(std::vector<RulesetInfo> rulesets)
-    : rulesets(std::move(rulesets)) {
-  // TODO(crbug.com/953894): Remove this DCHECK when we support specifying 0
-  // rulesets.
-  DCHECK(!(this->rulesets.empty()));
-}
+    : rulesets(std::move(rulesets)) {}
 DNRManifestData::~DNRManifestData() = default;
-
-// static
-bool DNRManifestData::HasRuleset(const Extension& extension) {
-  return extension.GetManifestData(manifest_keys::kDeclarativeNetRequestKey);
-}
 
 // static
 const std::vector<DNRManifestData::RulesetInfo>& DNRManifestData::GetRulesets(
     const Extension& extension) {
+  // Since we return a reference, use a function local static for the case where
+  // the extension didn't specify any rulesets.
+  static const base::NoDestructor<std::vector<DNRManifestData::RulesetInfo>>
+      empty_vector;
+
   Extension::ManifestData* data =
       extension.GetManifestData(manifest_keys::kDeclarativeNetRequestKey);
-  DCHECK(data);
+  if (!data)
+    return *empty_vector;
 
   return static_cast<DNRManifestData*>(data)->rulesets;
 }

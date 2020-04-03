@@ -1619,15 +1619,13 @@ public class TabsTest {
         final int toX = toolbarPos[0] + (direction == ScrollDirection.LEFT ? 0 : width);
         final int y = toolbarPos[1] + height / 2;
         final int stepCount = 25;
+        final long duration = 500;
 
         View toolbarRoot = mActivityTestRule.getActivity()
                                    .getFullscreenManager()
                                    .getControlContainer()
                                    .getView();
-        long downTime = SystemClock.uptimeMillis();
-        TouchCommon.dragStart(toolbarRoot, fromX, y, downTime);
-        TouchCommon.dragTo(toolbarRoot, fromX, toX, y, y, stepCount, downTime);
-        TouchCommon.dragEnd(toolbarRoot, toX, y, downTime);
+        TouchCommon.performDrag(toolbarRoot, fromX, toX, y, y, stepCount, duration);
     }
 
     /**

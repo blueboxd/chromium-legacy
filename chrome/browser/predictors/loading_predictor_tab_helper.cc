@@ -308,8 +308,12 @@ void LoadingPredictorTabHelper::OnOptimizationGuideDecision(
   if (decision != optimization_guide::OptimizationGuideDecision::kTrue)
     return;
 
-  if (!metadata.loading_predictor_metadata())
+  if (!metadata.loading_predictor_metadata()) {
+    // Metadata is not applicable, so just log an unknown decision.
+    last_optimization_guide_prediction_->decision =
+        optimization_guide::OptimizationGuideDecision::kUnknown;
     return;
+  }
 
   PreconnectPrediction prediction;
   url::Origin main_frame_origin =

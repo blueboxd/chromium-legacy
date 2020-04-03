@@ -196,7 +196,7 @@ bool WaitForOpenInDownloadsButton() {
 
   // Load a URL in a separate Tab and close that tab.
   [ChromeEarlGrey loadURL:GURL(kChromeUITermsURL)];
-  const char kTermsText[] = "Google Chrome Terms of Service";
+  const char kTermsText[] = "Terms of Service";
   [ChromeEarlGrey waitForWebStateContainingText:kTermsText];
   [ChromeEarlGrey closeCurrentTab];
   GREYAssert(WaitForOpenInButton(), @"Open in... button did not show up");

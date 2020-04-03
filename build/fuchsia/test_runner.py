@@ -18,7 +18,7 @@ import time
 
 from common_args import AddCommonArgs, ConfigureLogging, GetDeploymentTargetForArgs
 from net_test_server import SetupTestServer
-from run_package import RunPackage, RunPackageArgs
+from run_package import RunPackage, RunPackageArgs, StartSystemLogReader
 
 DEFAULT_TEST_SERVER_CONCURRENCY = 4
 
@@ -145,6 +145,12 @@ def main():
       target.PutFile(args.test_launcher_filter_file, TEST_FILTER_PATH,
                      for_package=args.package_name)
       child_args.append('--test-launcher-filter-file=' + TEST_FILTER_PATH)
+
+    isolated_outputs_dir = os.path.dirname(args.system_log_file)
+    if os.path.isdir(isolated_outputs_dir):
+      # Store logging popen objects so that they live as long as the target.
+      system_log_procs = StartSystemLogReader(target, args.package,
+                                              isolated_outputs_dir)
 
     test_server = None
     if args.enable_test_server:

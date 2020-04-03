@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src = "../resources/runner.js"></script>
+<script type="text/javascript" id="worker">
+/*
+    Because of task scheduling worker toBlob operations can be take an
+    unexpectedly long time, even for small canvases. crbug.com/1053477
+*/
+function offscreenCanvasToBlobOnWorker() {
+  const offscreenCanvas = new OffscreenCanvas(32, 32);
+  const ctx = offscreenCanvas.getContext("2d");
+  ctx.fillStyle = "red";
+  ctx.fillRect(0, 0, 32, 32);
+  const startTime = performance.now();
+  offscreenCanvas.convertToBlob({type: "image/png"}).then((blob) => {
+    postMessage(performance.now() - startTime);
+  });
+}
+
+self.addEventListener("message", (e) => {
+  if (e.data == "load") {
+    postMessage("loaded");
+  }
+  if (e.data == "start") {
+    offscreenCanvasToBlobOnWorker();
+  }
+});
+</script>
+
+<script>
+var isDone = false;
+
+function invokeToBlobInWorker() {
+    const worker = new Worker(
+        URL.createObjectURL(
+            new Blob(
+                [document.querySelector("#worker").textContent],
+                {type: 'text/javascript'}
+            )
+        )
+    );
+    worker.postMessage("load");
+    worker.onmessage = e => {
+        if (e.data === "loaded")
+            worker.postMessage("start");
+        else {
+            PerfTestRunner.measureValueAsync(e.data);
+            if (!isDone) runTest();
+        }
+    }
+}
+
+function runTest() {
+    invokeToBlobInWorker();
+}
+
+window.onload = function () {
+    PerfTestRunner.startMeasureValuesAsync({
+        unit: 'ms',
+        done: function () {
+            isDone = true;
+        },
+        run: function() {
+            runTest();
+        },
+        description: "Measures the time for executing toBlob in a worker."
+    });
+};
+</script>
+</body>
+</html>
+

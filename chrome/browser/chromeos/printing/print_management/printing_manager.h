@@ -7,6 +7,7 @@
 
 #include "chrome/browser/chromeos/printing/history/print_job_info.pb.h"
 #include "chromeos/components/print_management/mojom/printing_manager.mojom.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
@@ -17,7 +18,8 @@ namespace printing {
 namespace mojom = printing_manager::mojom;
 namespace print_management {
 
-class PrintingManager : public mojom::PrintingMetadataProvider {
+class PrintingManager : public mojom::PrintingMetadataProvider,
+                        public KeyedService {
  public:
   explicit PrintingManager(Profile* profile);
   ~PrintingManager() override;
@@ -25,13 +27,16 @@ class PrintingManager : public mojom::PrintingMetadataProvider {
   PrintingManager(const PrintingManager&) = delete;
   PrintingManager& operator=(const PrintingManager&) = delete;
 
-  // mojom::PrintingMetadataProvider implementation
+  // mojom::PrintingMetadataProvider:
   void GetPrintJobs(GetPrintJobsCallback callback) override;
 
   void BindInterface(
       mojo::PendingReceiver<mojom::PrintingMetadataProvider> pending_receiver);
 
  private:
+  // KeyedService:
+  void Shutdown() override;
+
   void OnPrintJobsRetrieved(
       GetPrintJobsCallback callback,
       bool success,
@@ -39,6 +44,7 @@ class PrintingManager : public mojom::PrintingMetadataProvider {
           print_job_info_protos);
 
   mojo::Receiver<mojom::PrintingMetadataProvider> receiver_{this};
+
   Profile* profile_;  // Not Owned.
 };
 

@@ -1105,8 +1105,8 @@ std::string GetUserAgent() {
 
   if (base::FeatureList::IsEnabled(blink::features::kFreezeUserAgent)) {
     return content::GetFrozenUserAgent(
-               command_line->HasSwitch(switches::kUseMobileUserAgent))
-        .as_string();
+        command_line->HasSwitch(switches::kUseMobileUserAgent),
+        version_info::GetMajorVersionNumber());
   }
 
   std::string product = GetProduct();

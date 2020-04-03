@@ -86,6 +86,8 @@ bindings_core_generated_union_type_files = [
   "$bindings_core_v8_output_dir/string_or_element_creation_options.h",
   "$bindings_core_v8_output_dir/string_or_performance_measure_options.cc",
   "$bindings_core_v8_output_dir/string_or_performance_measure_options.h",
+  "$bindings_core_v8_output_dir/string_or_scroll_timeline_element_based_offset.cc",
+  "$bindings_core_v8_output_dir/string_or_scroll_timeline_element_based_offset.h",
   "$bindings_core_v8_output_dir/string_or_string_sequence.cc",
   "$bindings_core_v8_output_dir/string_or_string_sequence.h",
   "$bindings_core_v8_output_dir/string_or_trusted_html_or_trusted_script_or_trusted_script_url.cc",

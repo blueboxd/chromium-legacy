@@ -42,6 +42,7 @@ class UsbServiceWin final : public DeviceMonitorWin::Observer,
   void HelperStarted();
   void CreateDeviceObject(const base::string16& device_path,
                           const base::string16& hub_path,
+                          const std::vector<base::string16>& child_device_paths,
                           uint32_t bus_number,
                           uint32_t port_number,
                           const base::string16& driver_name);

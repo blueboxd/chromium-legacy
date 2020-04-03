@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_util.h"
+#include "chrome/browser/chromeos/arc/accessibility/accessibility_info_data_wrapper.h"
 
 #include "components/arc/mojom/accessibility_helper.mojom.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -15,9 +16,9 @@ using AXIntListProperty = mojom::AccessibilityIntListProperty;
 using AXNodeInfoData = mojom::AccessibilityNodeInfoData;
 using AXStringProperty = mojom::AccessibilityStringProperty;
 
-ax::mojom::Event ToAXEvent(
-    mojom::AccessibilityEventType arc_event_type,
-    mojom::AccessibilityNodeInfoData* focused_node_info_data) {
+ax::mojom::Event ToAXEvent(mojom::AccessibilityEventType arc_event_type,
+                           AccessibilityInfoDataWrapper* source_node,
+                           AccessibilityInfoDataWrapper* focused_node) {
   switch (arc_event_type) {
     case mojom::AccessibilityEventType::VIEW_FOCUSED:
     case mojom::AccessibilityEventType::VIEW_ACCESSIBILITY_FOCUSED:
@@ -30,7 +31,7 @@ ax::mojom::Event ToAXEvent(
     case mojom::AccessibilityEventType::VIEW_TEXT_SELECTION_CHANGED:
       return ax::mojom::Event::kTextSelectionChanged;
     case mojom::AccessibilityEventType::WINDOW_STATE_CHANGED: {
-      if (focused_node_info_data)
+      if (focused_node)
         return ax::mojom::Event::kFocus;
       else
         return ax::mojom::Event::kLayoutComplete;
@@ -50,16 +51,14 @@ ax::mojom::Event ToAXEvent(
     case mojom::AccessibilityEventType::VIEW_SCROLLED:
       return ax::mojom::Event::kScrollPositionChanged;
     case mojom::AccessibilityEventType::VIEW_SELECTED: {
-      // In Android, VIEW_SELECTED event is fired in the two cases below:
-      // 1. Changing a value in ProgressBar or TimePicker.
-      //    (this usage is NOT documented)
-      // 2. Selecting an item in the context of an AdapterView.
-      //    (officially documented in Android Developer doc below)
-      //    https://developer.android.com/reference/android/view/accessibility/AccessibilityEvent#TYPE_VIEW_SELECTED
-      if (focused_node_info_data && focused_node_info_data->range_info)
+      // VIEW_SELECTED event is not selection event in Chrome.
+      // See the comment on AXTreeSourceArc::NotifyAccessibilityEvent.
+      if (source_node && source_node->IsNode() &&
+          source_node->GetNode()->range_info) {
         return ax::mojom::Event::kValueChanged;
-      else
-        return ax::mojom::Event::kSelection;
+      } else {
+        return ax::mojom::Event::kFocus;
+      }
     }
     case mojom::AccessibilityEventType::VIEW_HOVER_EXIT:
     case mojom::AccessibilityEventType::TOUCH_EXPLORATION_GESTURE_START:

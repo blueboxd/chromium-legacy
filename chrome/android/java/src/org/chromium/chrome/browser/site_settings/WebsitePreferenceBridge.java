@@ -541,18 +541,6 @@ public class WebsitePreferenceBridge {
                 contentSettingType, primaryPattern, secondaryPattern, setting);
     }
 
-    public static boolean isQuietNotificationsUiEnabled() {
-        return WebsitePreferenceBridgeJni.get().getQuietNotificationsUiEnabled(getProfile());
-    }
-
-    public static void setQuietNotificationsUiEnabled(boolean enabled) {
-        WebsitePreferenceBridgeJni.get().setQuietNotificationsUiEnabled(getProfile(), enabled);
-    }
-
-    private static Profile getProfile() {
-        return Profile.getLastUsedRegularProfile();
-    }
-
     @VisibleForTesting
     @NativeMethods
     public interface Natives {
@@ -656,7 +644,5 @@ public class WebsitePreferenceBridge {
         void setSensorsEnabled(boolean enabled);
         void setSoundEnabled(boolean enabled);
         void setVrEnabled(boolean enabled);
-        boolean getQuietNotificationsUiEnabled(Profile profile);
-        void setQuietNotificationsUiEnabled(Profile profile, boolean enabled);
     }
 }

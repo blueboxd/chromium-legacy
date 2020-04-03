@@ -308,12 +308,13 @@
   "chromeos/components/print_management/resources/print_management_resources.grd": {
     "META": {"join": 2},
     "includes": [2600],
+    "structures": [2620],
   },
   "chromeos/components/sample_system_web_app_ui/resources/sample_system_web_app_resources.grd": {
-    "includes": [2620],
+    "includes": [2640],
   },
   "chromeos/resources/chromeos_resources.grd": {
-    "includes": [2640],
+    "includes": [2660],
   },
   # END chromeos/ section.
 

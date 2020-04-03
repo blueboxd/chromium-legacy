@@ -456,7 +456,6 @@ void LocalFrame::DetachImpl(FrameDetachType type) {
   // frame which should be stopped by Detach.
   loader_.Detach();
   DomWindow()->FrameDestroyed();
-  GetDocument()->Shutdown();
 
   if (content_capture_manager_) {
     content_capture_manager_->Shutdown();

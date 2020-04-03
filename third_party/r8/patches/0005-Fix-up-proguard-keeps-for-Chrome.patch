@@ -1,0 +1,29 @@
+From fe0cf2feb23d4cdcf4dc287bddba9ea07538aa35 Mon Sep 17 00:00:00 2001
+From: Andrew Grieve <agrieve@chromium.org>
+Date: Wed, 1 Apr 2020 10:06:57 -0400
+Subject: [PATCH 5/5] Fix up proguard keeps for Chrome
+
+---
+ src/main/keep.txt | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/src/main/keep.txt b/src/main/keep.txt
+index b0c58c916..5e4405175 100644
+--- a/src/main/keep.txt
++++ b/src/main/keep.txt
+@@ -27,4 +27,10 @@
+ -keep public class com.android.tools.r8.compatproguard.CompatProguard { public static void main(java.lang.String[]); }
+ 
+ # Compatibility command line program used by in google3.
+--keep public class com.android.tools.r8.compatdx.CompatDx { public static void main(java.lang.String[]); }
+\ No newline at end of file
++-keep public class com.android.tools.r8.compatdx.CompatDx { public static void main(java.lang.String[]); }
++
++-keep public class com.android.tools.r8.SwissArmyKnife { *; }
++
++# Chrome: We want to maintain stack traces from the R8 tool, so disable
++# optimizations.
++-dontoptimize
+-- 
+2.26.0.rc2.310.g2932bb562d-goog
+

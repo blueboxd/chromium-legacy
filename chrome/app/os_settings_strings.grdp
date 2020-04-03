@@ -402,7 +402,7 @@
     Show navigation buttons
   </message>
   <message name="IDS_SETTINGS_A11Y_TABLET_MODE_SHELF_BUTTONS_DESCRIPTION" desc="The description for the setting within accessibility settings that controls whether Chrome OS system shelf navigation buttons should be shown when the device is in tablet mode. The buttons whose visibility the setting controls are the button to go home (to launcher), the button to go back, and the button to go to overview.">
-    Show Launcher, Back, Overview buttons in Shelf in tablet mode. Turned on when ChromeVox (spoken feedback) or Switch Access is enabled.
+    Navigate home, back, and switch apps with buttons in tablet mode. Turned on when ChromeVox or Automatic clicks is enabled.
   </message>
 
   <!-- A11y (OS Settings) -->

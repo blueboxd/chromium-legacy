@@ -20,6 +20,10 @@ namespace {
 
 const char kFormSubmissionSecurityLevelHistogram[] =
     "Security.SecurityLevel.FormSubmission";
+const char kInsecureMainFrameFormSubmissionSecurityLevelHistogram[] =
+    "Security.SecurityLevel.InsecureMainFrameFormSubmission";
+const char kInsecureMainFrameNonFormNavigationSecurityLevelHistogram[] =
+    "Security.SecurityLevel.InsecureMainFrameNonFormNavigation";
 
 // Stores the Insecure Input Events to the entry's SSLStatus user data.
 void SetInputEvents(content::NavigationEntry* entry,
@@ -51,6 +55,25 @@ class SecurityStateTabHelperHistogramTest
   }
 
  protected:
+  // content::MockNavigationHandle doesn't have a test helper for setting
+  // whether a navigation is in the top frame, so subclass it to override
+  // IsInMainFrame() for testing subframe navigations.
+  class MockNavigationHandle : public content::MockNavigationHandle {
+   public:
+    MockNavigationHandle(const GURL& url,
+                         content::RenderFrameHost* render_frame_host)
+        : content::MockNavigationHandle(url, render_frame_host) {}
+
+    bool IsInMainFrame() override { return is_in_main_frame_; }
+
+    void set_is_in_main_frame(bool is_in_main_frame) {
+      is_in_main_frame_ = is_in_main_frame;
+    }
+
+   private:
+    bool is_in_main_frame_ = true;
+  };
+
   void ClearInputEvents() {
     content::NavigationEntry* entry =
         web_contents()->GetController().GetVisibleEntry();
@@ -58,10 +81,11 @@ class SecurityStateTabHelperHistogramTest
     helper_->DidChangeVisibleSecurityState();
   }
 
-  void StartFormSubmissionNavigation() {
-    content::MockNavigationHandle handle(GURL("http://example.test"),
-                                         web_contents()->GetMainFrame());
-    handle.set_is_form_submission(true);
+  void StartNavigation(bool is_form, bool is_main_frame) {
+    MockNavigationHandle handle(GURL("http://example.test"),
+                                web_contents()->GetMainFrame());
+    handle.set_is_form_submission(is_form);
+    handle.set_is_in_main_frame(is_main_frame);
     helper_->DidStartNavigation(&handle);
 
     handle.set_has_committed(true);
@@ -69,6 +93,7 @@ class SecurityStateTabHelperHistogramTest
   }
 
   void NavigateToHTTP() { NavigateAndCommit(GURL("http://example.test")); }
+  void NavigateToHTTPS() { NavigateAndCommit(GURL("https://example.test")); }
 
  private:
   SecurityStateTabHelper* helper_;
@@ -77,7 +102,7 @@ class SecurityStateTabHelperHistogramTest
 
 TEST_F(SecurityStateTabHelperHistogramTest, FormSubmissionHistogram) {
   base::HistogramTester histograms;
-  StartFormSubmissionNavigation();
+  StartNavigation(/*is_form=*/true, /*is_main_frame=*/true);
   histograms.ExpectUniqueSample(kFormSubmissionSecurityLevelHistogram,
                                 security_state::WARNING, 1);
 }
@@ -92,7 +117,7 @@ TEST_F(SecurityStateTabHelperHistogramTest, LegacyTLSFormSubmissionHistogram) {
       CreateLegacyTLSNavigation(GURL(kLegacyTLSURL), web_contents());
   navigation->Commit();
 
-  StartFormSubmissionNavigation();
+  StartNavigation(/*is_form=*/true, /*is_main_frame=*/true);
 
   histograms.ExpectUniqueSample("Security.LegacyTLS.FormSubmission", true, 1);
 }
@@ -109,7 +134,7 @@ TEST_F(SecurityStateTabHelperHistogramTest,
       CreateLegacyTLSNavigation(GURL(kLegacyTLSURL), web_contents());
   navigation->Commit();
 
-  StartFormSubmissionNavigation();
+  StartNavigation(/*is_form=*/true, /*is_main_frame=*/true);
 
   histograms.ExpectUniqueSample("Security.LegacyTLS.FormSubmission", false, 1);
 }
@@ -125,9 +150,52 @@ TEST_F(SecurityStateTabHelperHistogramTest,
       CreateNonlegacyTLSNavigation(GURL("https://good.test"), web_contents());
   navigation->Commit();
 
-  StartFormSubmissionNavigation();
+  StartNavigation(/*is_form=*/true, /*is_main_frame=*/true);
 
   histograms.ExpectUniqueSample("Security.LegacyTLS.FormSubmission", false, 1);
+}
+
+// Tests that insecure mainframe form submission histograms are recorded
+// correctly.
+TEST_F(SecurityStateTabHelperHistogramTest,
+       InsecureMainFrameFormSubmissionHistogram) {
+  base::HistogramTester histograms;
+  // Subframe submissions should not be logged.
+  StartNavigation(/*is_form=*/true, /*is_main_frame=*/false);
+  histograms.ExpectTotalCount(
+      kInsecureMainFrameFormSubmissionSecurityLevelHistogram, 0);
+
+  // Only form submissions from non-HTTPS pages should be logged.
+  StartNavigation(/*is_form=*/true, /*is_main_frame=*/true);
+  histograms.ExpectUniqueSample(
+      kInsecureMainFrameFormSubmissionSecurityLevelHistogram,
+      security_state::WARNING, 1);
+  NavigateToHTTPS();
+  StartNavigation(/*is_form=*/true, /*is_main_frame=*/true);
+  histograms.ExpectTotalCount(
+      kInsecureMainFrameFormSubmissionSecurityLevelHistogram, 1);
+}
+
+// Tests that insecure mainframe non-form navigation histograms are recorded
+// correctly.
+TEST_F(SecurityStateTabHelperHistogramTest,
+       InsecureMainFrameNonFormNavigationHistogram) {
+  base::HistogramTester histograms;
+  // Subframe navigations and form submissions should not be logged.
+  StartNavigation(/*is_form=*/true, /*is_main_frame=*/false);
+  StartNavigation(/*is_form=*/true, /*is_main_frame=*/true);
+  histograms.ExpectTotalCount(
+      kInsecureMainFrameNonFormNavigationSecurityLevelHistogram, 0);
+
+  // Only non-HTTPS navigations should be logged.
+  StartNavigation(/*is_form=*/false, /*is_main_frame=*/true);
+  histograms.ExpectUniqueSample(
+      kInsecureMainFrameNonFormNavigationSecurityLevelHistogram,
+      security_state::WARNING, 1);
+  NavigateToHTTPS();
+  StartNavigation(/*is_form=*/false, /*is_main_frame=*/true);
+  histograms.ExpectTotalCount(
+      kInsecureMainFrameNonFormNavigationSecurityLevelHistogram, 1);
 }
 
 }  // namespace

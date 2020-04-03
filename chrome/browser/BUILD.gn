@@ -4477,7 +4477,7 @@ jumbo_static_library("browser") {
       "//ui/snapshot",
     ]
     if (use_gtk) {
-      deps += [ "//chrome/browser/ui/gtk" ]
+      deps += [ "//ui/gtk" ]
     }
   }
 

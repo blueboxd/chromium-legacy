@@ -25,12 +25,10 @@ class OmniboxPopupView {
   // Invalidates one line of the autocomplete popup.
   virtual void InvalidateLine(size_t line) = 0;
 
-  // Invoked when the selected line changes. Either |old_selected_line| or
-  // |new_selected_line| can be OmniboxPopupModel::kNoMatch. This method is
-  // invoked by the model, and when it is, the view should consider the
-  // LineState to have been reset to NORMAL.
-  virtual void OnSelectedLineChanged(size_t old_selected_line,
-                                     size_t new_selected_line) {}
+  // Invoked when the selection changes. The |line| field in either selection
+  // may be OmniboxPopupModel::kNoMatch. This method is invoked by the model.
+  virtual void OnSelectionChanged(OmniboxPopupModel::Selection old_selection,
+                                  OmniboxPopupModel::Selection new_selection) {}
 
   // Redraws the popup window to match any changes in the result set; this may
   // mean opening or closing the window.

@@ -68,6 +68,9 @@ if (is_android || is_chromeos) {
     }
   }
 
+  # Our build rules support only KitKat+.
+  default_min_sdk_version = 19
+
   if (!defined(default_android_ndk_root)) {
     default_android_ndk_root = "//third_party/android_ndk"
     default_android_ndk_version = "r20"
@@ -232,7 +235,7 @@ if (is_android || is_chromeos) {
     java_warnings_as_errors = !is_java_debug
 
     # Desugar with D8 rather than Desugar tool.
-    desugar_with_d8 = false
+    desugar_with_d8 = is_java_debug
   }
 
   # Path to where selected build variables are written to.

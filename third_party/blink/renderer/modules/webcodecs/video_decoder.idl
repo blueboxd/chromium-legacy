@@ -4,23 +4,84 @@
 
 // https://github.com/WICG/web-codecs
 
+// A VideoDecoder processes a queue of configure, decode, and flush requests.
+// Requests are taken from the queue sequentially but may be processed
+// concurrently.
+//
+// TODO(sandersd): Specify a tune() implementation for changing decoder
+// parameters (separate from stream parameters). This is more important for
+// encoders.
 [RuntimeEnabled=WebCodecs]
 interface VideoDecoder {
-  // TODO(sandersd): Configure properties of streams (type and high water mark).
-  [CallWith=ScriptState] constructor();
+  // |init| includes an |output| callback for emitting VideoFrames and an
+  // |error| callback for emitting decode errors.
+  //
+  // When in an error state, methods other than reset() will fail.
+  //
+  // TODO(sandersd): Consider adding a state or last error attribute.
+  // TODO(sandersd): Consider aborting pending decodes on error, rather than
+  // waiting for reset().
+  [CallWith=ScriptState, RaisesException] constructor(VideoDecoderInit init);
 
-  // Configure or reconfigure the decoder.
+  // The number of queued decode requests. This does not include requests that
+  // have been taken for processing.
   //
-  // |writable| and |readable| will be errored and set to null.
+  // Applications can minimize underflow by enqueueing decode requests until
+  // |decodeQueueSize| is greater than a constant.
+  readonly attribute long decodeQueueSize;
+
+  // The number of decode requests currently being processed.
   //
-  // If configuration is successful, |writable| and |readable| will be set to
-  // new streams.
+  // Applications can minimize resource consumption and decode latency by
+  // enqueueing decode requests only when |decodeQueueSize| and
+  // |decodeProcessingCount| are small.
+  //
+  // TODO(sandersd): Consider counting queued decode requests as well. This
+  // could be simpler for apps.
+  readonly attribute long decodeProcessingCount;
+
+  // Enqueue a request to set or change the stream configuration.
+  //
+  // The next enqueued decode request must be for a keyframe.
+  //
+  // Resolved after emitting output for all earlier decode requests.
+  //
+  // TODO(sandersd): Test that resolution (a microtask) interleaves between
+  // outputs callback calls in all cases.
+  // TODO(sandersd): Move the keyframe rule into the bytestream registry.
   [RaisesException] Promise<void> configure(EncodedVideoConfig config);
 
-  // Closing |writable| will flush the decoder, then close |readable|.
-  // Aborting |writable| will error |readable|.
-  readonly attribute WritableStream? writable;  // of EncodedVideoChunk
+  // Enqueue a request to decode an input chunk.
+  //
+  // You must call configure() before calling enqueue() for the first time.
+  //
+  // Resolved after decoding of the input chunk has started (that is, after
+  // decreasing |decodeQueueSize|).
+  //
+  // TODO(sandersd): Change to a dictionary type.
+  // TODO(sandersd): Should we guarantee that resolution occurs in order?
+  // TODO(sandersd): Add status to result.
+  // TODO(sandersd): Buffer return.
+  [RaisesException] Promise<void> decode(EncodedVideoChunk chunk);
 
-  // Canceling |readable| will error |writable|.
-  readonly attribute ReadableStream? readable;  // of VideoFrame
+  // Enqueue a request to finish decoding queued input chunks.
+  //
+  // The next enqueued input chunk must be a keyframe.
+  //
+  // Resolved after emitting output for all earlier decode requests.
+  //
+  // TODO(sandersd): Consider relaxing the keyframe requirement.
+  [RaisesException] Promise<void> flush();
+
+  // Discard all pending work.
+  //
+  // Output for earlier decode requests will not be emitted, even if processing
+  // has already started.
+  //
+  // The next enqueued input chunk must be a keyframe.
+  //
+  // Resolved after all earlier enqueue() promises have been resolved.
+  //
+  // TODO(sandersd): Require configure() after reset()?
+  [RaisesException] Promise<void> reset();
 };

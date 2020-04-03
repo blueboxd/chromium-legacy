@@ -38,6 +38,7 @@
 #include "chrome/browser/extensions/chrome_extension_cookies_factory.h"
 #include "chrome/browser/extensions/extension_garbage_collector_factory.h"
 #include "chrome/browser/extensions/extension_gcm_app_handler.h"
+#include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/extension_web_ui_override_registrar.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
@@ -46,7 +47,6 @@
 #include "chrome/browser/extensions/plugin_manager.h"
 #include "chrome/browser/extensions/warning_badge_service_factory.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api.h"
-#include "chrome/browser/ui/toolbar/toolbar_actions_model_factory.h"
 #include "chrome/common/buildflags.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_api.h"
@@ -55,6 +55,11 @@
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_WIN)
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/extensions/api/platform_keys/verify_trust_api.h"
+#include "chrome/browser/extensions/api/terminal/terminal_private_api.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
@@ -89,6 +94,8 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::DeveloperPrivateAPI::GetFactoryInstance();
   extensions::ExtensionActionAPI::GetFactoryInstance();
   extensions::ExtensionGarbageCollectorFactory::GetInstance();
+  extensions::ExtensionGCMAppHandler::GetFactoryInstance();
+  extensions::ExtensionManagementFactory::GetInstance();
   extensions::ExtensionSystemFactory::GetInstance();
   extensions::ExtensionWebUIOverrideRegistrar::GetFactoryInstance();
   extensions::FontSettingsAPI::GetFactoryInstance();
@@ -128,12 +135,16 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::SystemIndicatorManagerFactory::GetInstance();
   extensions::TabCaptureRegistry::GetFactoryInstance();
   extensions::TabsWindowsAPI::GetFactoryInstance();
+#if defined(OS_CHROMEOS)
+  extensions::TerminalPrivateAPI::GetFactoryInstance();
+#endif
   extensions::TtsAPI::GetFactoryInstance();
+#if defined(OS_CHROMEOS)
+  extensions::VerifyTrustAPI::GetFactoryInstance();
+#endif
   extensions::WarningBadgeServiceFactory::GetInstance();
   extensions::WebNavigationAPI::GetFactoryInstance();
   extensions::WebrtcAudioPrivateEventService::GetFactoryInstance();
-  ToolbarActionsModelFactory::GetInstance();
-  extensions::ExtensionGCMAppHandler::GetFactoryInstance();
 }
 
 }  // namespace chrome_extensions

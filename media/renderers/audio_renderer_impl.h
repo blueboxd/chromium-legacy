@@ -58,6 +58,10 @@ class MEDIA_EXPORT AudioRendererImpl
  public:
   using PlayDelayCBForTesting = base::RepeatingCallback<void(base::TimeDelta)>;
 
+  // Send the audio to the speech recognition service for caption transcription.
+  using TranscribeAudioCallback =
+      base::RepeatingCallback<void(scoped_refptr<media::AudioBuffer>)>;
+
   // |task_runner| is the thread on which AudioRendererImpl will execute.
   //
   // |sink| is used as the destination for the rendered audio.
@@ -67,7 +71,8 @@ class MEDIA_EXPORT AudioRendererImpl
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       AudioRendererSink* sink,
       const CreateAudioDecodersCB& create_audio_decoders_cb,
-      MediaLog* media_log);
+      MediaLog* media_log,
+      const TranscribeAudioCallback& transcribe_audio_callback);
   ~AudioRendererImpl() override;
 
   // TimeSource implementation.
@@ -344,6 +349,8 @@ class MEDIA_EXPORT AudioRendererImpl
   PlayDelayCBForTesting play_delay_cb_for_testing_;
 
   // End variables which must be accessed under |lock_|. ----------------------
+
+  TranscribeAudioCallback transcribe_audio_callback_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<AudioRendererImpl> weak_factory_{this};

@@ -10,7 +10,7 @@ import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.ntp.NewTabPage;
-import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.ui.native_page.NativePageHost;
 
@@ -26,11 +26,11 @@ public class FeedNewTabPage extends NewTabPage {
      * @param tabModelSelector The {@link TabModelSelector} for the containing activity.
      * @param activityTabProvider Allows us to check if we are the current tab.
      * @param activityLifecycleDispatcher Allows us to subscribe to backgrounding events.
-     * @param tab The {@link TabImpl} that contains this new tab page.
+     * @param tab The {@link Tab} that contains this new tab page.
      */
     public FeedNewTabPage(ChromeActivity activity, NativePageHost nativePageHost,
             TabModelSelector tabModelSelector, ActivityTabProvider activityTabProvider,
-            ActivityLifecycleDispatcher activityLifecycleDispatcher, TabImpl tab) {
+            ActivityLifecycleDispatcher activityLifecycleDispatcher, Tab tab) {
         super(activity, nativePageHost, tabModelSelector, activityTabProvider,
                 activityLifecycleDispatcher, tab);
     }

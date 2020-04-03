@@ -515,6 +515,27 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Accel_ARC_Zoom_Ui_In">
+  <owner>sarakato@chromium.org</owner>
+  <description>
+    Record how often accelerator to increase density is used in ARC++.
+  </description>
+</action>
+
+<action name="Accel_ARC_Zoom_Ui_Out">
+  <owner>sarakato@chromium.org</owner>
+  <description>
+    Record how often accelerator to decrease density is used in ARC++.
+  </description>
+</action>
+
+<action name="Accel_ARC_Zoom_Ui_Reset">
+  <owner>sarakato@chromium.org</owner>
+  <description>
+    Record how often accelerator to increase density is used in ARC++.
+  </description>
+</action>
+
 <action name="Accel_Back_Backspace">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

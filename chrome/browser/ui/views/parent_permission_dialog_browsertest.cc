@@ -15,11 +15,11 @@
 #include "chrome/browser/supervised_user/supervised_user_features.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/parent_permission_dialog_view.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "content/public/test/test_utils.h"
@@ -112,16 +112,7 @@ class ParentPermissionDialogBrowserTest
   void InitializeFamilyData() {
     // Set up the child user's custodians (AKA parents).
     ASSERT_TRUE(browser());
-    PrefService* prefs = browser()->profile()->GetPrefs();
-    prefs->SetString(prefs::kSupervisedUserCustodianEmail,
-                     "test_parent_0@google.com");
-    prefs->SetString(prefs::kSupervisedUserCustodianObfuscatedGaiaId,
-                     "239029320");
-
-    prefs->SetString(prefs::kSupervisedUserSecondCustodianEmail,
-                     "test_parent_1@google.com");
-    prefs->SetString(prefs::kSupervisedUserSecondCustodianObfuscatedGaiaId,
-                     "85948533");
+    supervised_user_test_util::AddCustodians(browser()->profile());
 
     // Set up the identity test environment, which provides fake
     // OAuth refresh tokens.

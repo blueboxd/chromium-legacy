@@ -27,3 +27,49 @@ js_library("google_assistant_page") {
     "//ui/webui/resources/js:web_ui_listener_behavior",
   ]
 }
+
+# TODO: Uncomment as the Polymer3 migration makes progress.
+#js_type_check("closure_compile_module") {
+#  is_polymer3 = true
+#  deps = [
+#    ":google_assistant_browser_proxy.m",
+#    ":google_assistant_page.m"
+#  ]
+#}
+
+js_library("google_assistant_browser_proxy.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/google_assistant_page/google_assistant_browser_proxy.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("google_assistant_page.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/google_assistant_page/google_assistant_page.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":google_assistant_page_module" ]
+}
+
+import("//tools/polymer/polymer.gni")
+
+group("polymer3_elements") {
+  public_deps = [
+    ":google_assistant_page_module",
+    ":modulize",
+  ]
+}
+
+polymer_modulizer("google_assistant_page") {
+  js_file = "google_assistant_page.js"
+  html_file = "google_assistant_page.html"
+  html_type = "dom-module"
+}
+
+import("//ui/webui/resources/tools/js_modulizer.gni")
+
+js_modulizer("modulize") {
+  input_files = [ "google_assistant_browser_proxy.js" ]
+}

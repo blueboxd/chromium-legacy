@@ -201,7 +201,10 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
   if (!image || image->IsNull())
     return;
 
-  FloatRect src_rect(FloatPoint(), image->SizeAsFloat());
+  // Do not respect the image orientation when computing the source rect. It is
+  // in the un-orientated dimensions.
+  FloatRect src_rect(FloatPoint(),
+                     image->SizeAsFloat(kDoNotRespectImageOrientation));
   // If the content rect requires clipping, adjust |srcRect| and
   // |pixelSnappedDestRect| over using a clip.
   if (!content_rect.Contains(dest_rect)) {

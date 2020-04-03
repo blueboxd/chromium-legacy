@@ -12,7 +12,7 @@
 #include "ui/views/linux_ui/linux_ui.h"
 
 #if BUILDFLAG(USE_GTK)
-#include "chrome/browser/ui/gtk/gtk_ui.h"
+#include "ui/gtk/gtk_ui.h"
 #include "ui/gtk/gtk_ui_delegate.h"
 #endif
 

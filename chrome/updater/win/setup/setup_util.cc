@@ -39,12 +39,9 @@ void UnregisterUpdateAppsTask() {
   task_scheduler->DeleteTask(kTaskName);
 }
 
-base::string16 GetComServerClsid() {
-  return base::win::String16FromGUID(__uuidof(UpdaterClass));
-}
-
-base::string16 GetComServerClsidRegistryPath() {
-  return base::StrCat({L"Software\\Classes\\CLSID\\", GetComServerClsid()});
+base::string16 GetComServerClsidRegistryPath(REFCLSID clsid) {
+  return base::StrCat(
+      {L"Software\\Classes\\CLSID\\", base::win::String16FromGUID(clsid)});
 }
 
 base::string16 GetComServiceClsid() {

@@ -24,6 +24,7 @@ namespace arc {
 
 using AXBooleanProperty = mojom::AccessibilityBooleanProperty;
 using AXEventData = mojom::AccessibilityEventData;
+using AXEventIntProperty = mojom::AccessibilityEventIntProperty;
 using AXEventType = mojom::AccessibilityEventType;
 using AXIntProperty = mojom::AccessibilityIntProperty;
 using AXIntListProperty = mojom::AccessibilityIntListProperty;
@@ -143,6 +144,26 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
       android_focused_id_ = IsValid(adjusted_node) ? adjusted_node->GetId()
                                                    : event_data->source_id;
     }
+  } else if (event_data->event_type == AXEventType::VIEW_SELECTED) {
+    // In Android, VIEW_SELECTED event is dispatched in the two cases below:
+    // 1. Changing a value in ProgressBar or TimePicker.
+    // 2. Selecting an item in the context of an AdapterView.
+    AccessibilityInfoDataWrapper* source_node =
+        GetFromId(event_data->source_id);
+    if (!source_node || !source_node->IsNode())
+      return;
+    AXNodeInfoData* node_info = source_node->GetNode();
+    DCHECK(node_info);
+
+    bool is_range_change = !node_info->range_info.is_null();
+    if (!is_range_change) {
+      AccessibilityInfoDataWrapper* selected_node =
+          GetSelectedNodeInfoFromAdapterView(event_data);
+      if (!selected_node)
+        return;
+
+      android_focused_id_ = selected_node->GetId();
+    }
   } else if (event_data->event_type == AXEventType::WINDOW_STATE_CHANGED) {
     // When accessibility window changed, a11y event of WINDOW_CONTENT_CHANGED
     // is fired from Android multiple times.
@@ -196,8 +217,8 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
 
   event_bundle.events.emplace_back();
   ui::AXEvent& event = event_bundle.events.back();
-  event.event_type = ToAXEvent(
-      event_data->event_type, focused_node ? focused_node->GetNode() : nullptr);
+  event.event_type = ToAXEvent(event_data->event_type,
+                               GetFromId(event_data->source_id), focused_node);
   event.id = event_data->source_id;
 
   if (HasProperty(event_data->int_properties,
@@ -450,6 +471,57 @@ AccessibilityInfoDataWrapper* AXTreeSourceArc::FindFirstFocusableNode(
   }
 
   return nullptr;
+}
+
+AccessibilityInfoDataWrapper*
+AXTreeSourceArc::GetSelectedNodeInfoFromAdapterView(
+    AXEventData* event_data) const {
+  AccessibilityInfoDataWrapper* source_node = GetFromId(event_data->source_id);
+  if (!source_node || !source_node->IsNode())
+    return nullptr;
+
+  AXNodeInfoData* node_info = source_node->GetNode();
+  if (!node_info)
+    return nullptr;
+
+  AccessibilityInfoDataWrapper* selected_node = source_node;
+  if (!node_info->collection_item_info) {
+    // The event source is not an item of AdapterView. If the event source is
+    // AdapterView, select the child. Otherwise, this is an unrelated event.
+    int item_count, from_index, current_item_index;
+    if (!GetProperty(event_data->int_properties, AXEventIntProperty::ITEM_COUNT,
+                     &item_count) ||
+        !GetProperty(event_data->int_properties, AXEventIntProperty::FROM_INDEX,
+                     &from_index) ||
+        !GetProperty(event_data->int_properties,
+                     AXEventIntProperty::CURRENT_ITEM_INDEX,
+                     &current_item_index)) {
+      return nullptr;
+    }
+
+    int index = current_item_index - from_index;
+    if (index < 0)
+      return nullptr;
+
+    std::vector<AccessibilityInfoDataWrapper*> children;
+    source_node->GetChildren(&children);
+    if (index >= static_cast<int>(children.size()))
+      return nullptr;
+
+    selected_node = children[index];
+  }
+
+  // Sometimes a collection item is wrapped by a non-focusable node.
+  // Find a node with focusable property.
+  while (selected_node && !GetBooleanProperty(selected_node->GetNode(),
+                                              AXBooleanProperty::FOCUSABLE)) {
+    std::vector<AccessibilityInfoDataWrapper*> children;
+    selected_node->GetChildren(&children);
+    if (children.size() != 1)
+      break;
+    selected_node = children[0];
+  }
+  return selected_node;
 }
 
 void AXTreeSourceArc::UpdateAXNameCache(

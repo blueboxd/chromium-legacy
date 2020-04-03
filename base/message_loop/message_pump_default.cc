@@ -36,7 +36,7 @@ void MessagePumpDefault::Run(Delegate* delegate) {
     mac::ScopedNSAutoreleasePool autorelease_pool;
 #endif
 
-    Delegate::NextWorkInfo next_work_info = delegate->DoSomeWork();
+    Delegate::NextWorkInfo next_work_info = delegate->DoWork();
     bool has_more_immediate_work = next_work_info.is_immediate();
     if (!keep_running_)
       break;

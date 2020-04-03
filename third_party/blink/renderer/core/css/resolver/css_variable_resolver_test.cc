@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -43,8 +44,11 @@ static const Color kTestColor = Color(255, 0, 0);
 
 }  // namespace
 
-class CSSVariableResolverTest : public PageTestBase {
+class CSSVariableResolverTest : public PageTestBase,
+                                private ScopedCSSCascadeForTest {
  public:
+  CSSVariableResolverTest() : ScopedCSSCascadeForTest(false) {}
+
   void SetUp() override {
     PageTestBase::SetUp();
 

@@ -21,6 +21,13 @@ struct WebUsbPlatformCapabilityDescriptor;
 
 class UsbDeviceWin : public UsbDevice {
  public:
+  UsbDeviceWin(const base::string16& device_path,
+               const base::string16& hub_path,
+               const std::vector<base::string16>& child_device_paths,
+               uint32_t bus_number,
+               uint32_t port_number,
+               const base::string16& driver_name);
+
   // UsbDevice implementation:
   void Open(OpenCallback callback) override;
 
@@ -28,16 +35,12 @@ class UsbDeviceWin : public UsbDevice {
   friend class UsbServiceWin;
   friend class UsbDeviceHandleWin;
 
-  // Called by UsbServiceWin only.
-  UsbDeviceWin(const base::string16& device_path,
-               const base::string16& hub_path,
-               uint32_t bus_number,
-               uint32_t port_number,
-               const base::string16& driver_name);
-
   ~UsbDeviceWin() override;
 
   const base::string16& device_path() const { return device_path_; }
+  const std::vector<base::string16>& child_device_paths() const {
+    return child_device_paths_;
+  }
   const base::string16& driver_name() const { return driver_name_; }
 
   // Opens the device's parent hub in order to read the device, configuration
@@ -73,6 +76,7 @@ class UsbDeviceWin : public UsbDevice {
 
   const base::string16 device_path_;
   const base::string16 hub_path_;
+  const std::vector<base::string16> child_device_paths_;
   const base::string16 driver_name_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbDeviceWin);

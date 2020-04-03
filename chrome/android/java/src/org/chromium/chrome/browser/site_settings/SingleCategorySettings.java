@@ -548,7 +548,15 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
             PrefServiceBridge.getInstance().setBoolean(
                     Pref.NOTIFICATIONS_VIBRATE_ENABLED, (boolean) newValue);
         } else if (NOTIFICATIONS_QUIET_UI_TOGGLE_KEY.equals(preference.getKey())) {
-            WebsitePreferenceBridge.setQuietNotificationsUiEnabled((boolean) newValue);
+            boolean boolValue = (boolean) newValue;
+            if (boolValue) {
+                PrefServiceBridge.getInstance().setBoolean(
+                        Pref.ENABLE_QUIET_NOTIFICATION_PERMISSION_UI, true);
+            } else {
+                // Clear the pref so if the default changes later the user will get the new default.
+                PrefServiceBridge.getInstance().clearPref(
+                        Pref.ENABLE_QUIET_NOTIFICATION_PERMISSION_UI);
+            }
         }
         return true;
     }
@@ -1108,7 +1116,8 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                 quiet_ui_pref = (ChromeBaseCheckBoxPreference) getPreferenceScreen().findPreference(
                         NOTIFICATIONS_QUIET_UI_TOGGLE_KEY);
             }
-            quiet_ui_pref.setChecked(WebsitePreferenceBridge.isQuietNotificationsUiEnabled());
+            quiet_ui_pref.setChecked(PrefServiceBridge.getInstance().getBoolean(
+                    Pref.ENABLE_QUIET_NOTIFICATION_PERMISSION_UI));
         } else if (quiet_ui_pref != null) {
             // Save a reference to allow re-adding it to the screen.
             mNotificationsQuietUiPref = quiet_ui_pref;

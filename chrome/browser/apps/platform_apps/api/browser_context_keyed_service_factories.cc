@@ -11,7 +11,7 @@
 namespace chrome_apps {
 namespace api {
 
-void EnsureAPIBrowserContextKeyedServiceFactoriesBuilt() {
+void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #if defined(OS_CHROMEOS)
   ArcAppsPrivateAPI::GetFactoryInstance();
 #endif

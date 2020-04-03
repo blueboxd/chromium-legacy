@@ -572,9 +572,11 @@ size_t GetLongestMatchingSubdomain(const url::Origin& origin,
   return 0;
 }
 
-// |sorted_candidates| is sorted in descending order by priority. This returns
-// the first matching rule i.e. the rule with the highest priority in
-// |sorted_candidates| or null if no rule matches.
+// |sorted_candidates| is sorted in descending order by priority. If
+// |matched_rules| is specified, then all rule matches in |sorted_candidates|
+// will be added to |matched_rules| and null is returned. If |matched_rules| is
+// not specified, then this returns the first matching rule i.e. the rule with
+// the highest priority in |sorted_candidates| or null if no rule matches.
 const flat::UrlRule* FindMatchAmongCandidates(
     const FlatUrlRuleList* sorted_candidates,
     const UrlPattern::UrlInfo& url,
@@ -582,7 +584,8 @@ const flat::UrlRule* FindMatchAmongCandidates(
     flat::ElementType element_type,
     flat::ActivationType activation_type,
     bool is_third_party,
-    bool disable_generic_rules) {
+    bool disable_generic_rules,
+    std::vector<const flat::UrlRule*>* matched_rules) {
   if (!sorted_candidates)
     return nullptr;
 
@@ -601,7 +604,10 @@ const flat::UrlRule* FindMatchAmongCandidates(
 
     if (DoesOriginMatchDomainList(document_origin, *rule,
                                   disable_generic_rules)) {
-      return rule;
+      if (matched_rules)
+        matched_rules->push_back(rule);
+      else
+        return rule;
     }
   }
 
@@ -610,7 +616,9 @@ const flat::UrlRule* FindMatchAmongCandidates(
 
 // Returns whether the network request matches a UrlPattern |index| represented
 // in its FlatBuffers format. |is_third_party| should reflect the relation
-// between |url| and |document_origin|.
+// between |url| and |document_origin|. If |strategy| is kAll, then
+// |matched_rules| will be populated with all matching UrlRules and nullptr is
+// returned.
 const flat::UrlRule* FindMatchInFlatUrlPatternIndex(
     const flat::UrlPatternIndex& index,
     const UrlPattern::UrlInfo& url,
@@ -619,8 +627,13 @@ const flat::UrlRule* FindMatchInFlatUrlPatternIndex(
     flat::ActivationType activation_type,
     bool is_third_party,
     bool disable_generic_rules,
-    UrlPatternIndexMatcher::FindRuleStrategy strategy) {
+    UrlPatternIndexMatcher::FindRuleStrategy strategy,
+    std::vector<const flat::UrlRule*>* matched_rules) {
   using FindRuleStrategy = UrlPatternIndexMatcher::FindRuleStrategy;
+
+  // Check that the outparam |matched_rules| is specified if and only if
+  // |strategy| is kAll.
+  DCHECK_EQ(strategy == FindRuleStrategy::kAll, !!matched_rules);
 
   const FlatNGramIndex* hash_table = index.ngram_index();
   const flat::NGramToRules* empty_slot = index.ngram_index_empty_slot();
@@ -659,7 +672,7 @@ const flat::UrlRule* FindMatchInFlatUrlPatternIndex(
       continue;
     const flat::UrlRule* rule = FindMatchAmongCandidates(
         entry->rule_list(), url, document_origin, element_type, activation_type,
-        is_third_party, disable_generic_rules);
+        is_third_party, disable_generic_rules, matched_rules);
     if (!rule)
       continue;
 
@@ -671,18 +684,22 @@ const flat::UrlRule* FindMatchInFlatUrlPatternIndex(
       case FindRuleStrategy::kHighestPriority:
         max_priority_rule = get_max_priority_rule(max_priority_rule, rule);
         break;
+      case FindRuleStrategy::kAll:
+        continue;
     }
   }
 
   const flat::UrlRule* rule = FindMatchAmongCandidates(
       index.fallback_rules(), url, document_origin, element_type,
-      activation_type, is_third_party, disable_generic_rules);
+      activation_type, is_third_party, disable_generic_rules, matched_rules);
 
   switch (strategy) {
     case FindRuleStrategy::kAny:
       return rule;
     case FindRuleStrategy::kHighestPriority:
       return get_max_priority_rule(max_priority_rule, rule);
+    case FindRuleStrategy::kAll:
+      return nullptr;
   }
 
   NOTREACHED();
@@ -789,15 +806,60 @@ const flat::UrlRule* UrlPatternIndexMatcher::FindMatch(
     return nullptr;
   }
 
+  // FindAllMatches should be used instead to find all matches.
+  DCHECK_NE(strategy, FindRuleStrategy::kAll);
+
   auto* rule = FindMatchInFlatUrlPatternIndex(
       *flat_index_, UrlPattern::UrlInfo(url), first_party_origin, element_type,
-      activation_type, is_third_party, disable_generic_rules, strategy);
+      activation_type, is_third_party, disable_generic_rules, strategy,
+      nullptr /* matched_rules */);
   if (rule) {
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("loading"),
                  "UrlPatternIndexMatcher::FindMatch", "pattern",
                  FlatUrlRuleToFilterlistString(rule));
   }
   return rule;
+}
+
+std::vector<const flat::UrlRule*> UrlPatternIndexMatcher::FindAllMatches(
+    const GURL& url,
+    const url::Origin& first_party_origin,
+    proto::ElementType element_type,
+    proto::ActivationType activation_type,
+    bool is_third_party,
+    bool disable_generic_rules) const {
+  return FindAllMatches(url, first_party_origin,
+                        ProtoToFlatElementType(element_type),
+                        ProtoToFlatActivationType(activation_type),
+                        is_third_party, disable_generic_rules);
+}
+
+std::vector<const flat::UrlRule*> UrlPatternIndexMatcher::FindAllMatches(
+    const GURL& url,
+    const url::Origin& first_party_origin,
+    flat::ElementType element_type,
+    flat::ActivationType activation_type,
+    bool is_third_party,
+    bool disable_generic_rules) const {
+  // Ignore URLs that are greater than the max URL length. Since those will be
+  // disallowed elsewhere in the loading stack, we can save compute time by
+  // avoiding matching here.
+  if (!flat_index_ || !url.is_valid() ||
+      url.spec().length() > url::kMaxURLChars) {
+    return std::vector<const flat::UrlRule*>();
+  }
+  if ((element_type == flat::ElementType_NONE) ==
+      (activation_type == flat::ActivationType_NONE)) {
+    return std::vector<const flat::UrlRule*>();
+  }
+
+  std::vector<const flat::UrlRule*> rules;
+  FindMatchInFlatUrlPatternIndex(
+      *flat_index_, UrlPattern::UrlInfo(url), first_party_origin, element_type,
+      activation_type, is_third_party, disable_generic_rules,
+      FindRuleStrategy::kAll, &rules);
+
+  return rules;
 }
 
 }  // namespace url_pattern_index

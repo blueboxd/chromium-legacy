@@ -5,11 +5,13 @@
 #include "chrome/browser/predictors/loading_predictor_tab_helper.h"
 
 #include "base/test/gmock_callback_support.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_test_util.h"
+#include "chrome/browser/predictors/predictors_enums.h"
 #include "chrome/browser/predictors/predictors_features.h"
 #include "chrome/browser/sessions/session_tab_helper_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -26,10 +28,12 @@ using ::testing::_;
 using ::testing::ByRef;
 using ::testing::DoAll;
 using ::testing::Eq;
+using ::testing::Invoke;
 using ::testing::Mock;
 using ::testing::NiceMock;
 using ::testing::SaveArg;
 using ::testing::StrictMock;
+using ::testing::WithArg;
 
 namespace predictors {
 
@@ -105,7 +109,6 @@ void LoadingPredictorTabHelperTest::SetUp() {
                     return std::make_unique<MockOptimizationGuideKeyedService>(
                         context);
                   })));
-
   LoadingPredictorTabHelper::CreateForWebContents(web_contents());
   tab_helper_ = LoadingPredictorTabHelper::FromWebContents(web_contents());
 
@@ -342,6 +345,8 @@ class LoadingPredictorTabHelperOptimizationGuideDeciderTest
 // id and optimization guide prediction.
 TEST_F(LoadingPredictorTabHelperOptimizationGuideDeciderTest,
        DocumentOnLoadCompletedOptimizationGuide) {
+  base::HistogramTester histogram_tester;
+
   optimization_guide::OptimizationMetadata optimization_metadata;
   optimization_guide::proto::LoadingPredictorMetadata lp_metadata;
   lp_metadata.add_subresources()->set_url("http://test.org/resource1");
@@ -383,12 +388,141 @@ TEST_F(LoadingPredictorTabHelperOptimizationGuideDeciderTest,
   EXPECT_CALL(*mock_collector_,
               RecordMainFrameLoadComplete(navigation_id, prediction));
   tab_helper_->DocumentOnLoadCompletedInMainFrame();
+
+  histogram_tester.ExpectUniqueSample(
+      "LoadingPredictor.OptimizationHintsReceiveStatus",
+      OptimizationHintsReceiveStatus::kBeforeNavigationFinish, 1);
+}
+
+// Tests that document on load completed is recorded with correct navigation
+// id and optimization guide prediction.
+TEST_F(LoadingPredictorTabHelperOptimizationGuideDeciderTest,
+       DocumentOnLoadCompletedOptimizationGuidePredictionComesAfterCommit) {
+  base::HistogramTester histogram_tester;
+
+  optimization_guide::OptimizationMetadata optimization_metadata;
+  optimization_guide::proto::LoadingPredictorMetadata lp_metadata;
+  lp_metadata.add_subresources()->set_url("http://test.org/resource1");
+  lp_metadata.add_subresources()->set_url("http://other.org/resource2");
+  lp_metadata.add_subresources()->set_url("http://other.org/resource3");
+  optimization_metadata.set_loading_predictor_metadata(lp_metadata);
+  optimization_guide::OptimizationGuideDecisionCallback callback;
+  EXPECT_CALL(
+      *mock_optimization_guide_keyed_service_,
+      CanApplyOptimizationAsync(_, optimization_guide::proto::LOADING_PREDICTOR,
+                                base::test::IsNotNullCallback()))
+      .WillOnce(WithArg<2>(
+          Invoke([&](optimization_guide::OptimizationGuideDecisionCallback
+                         got_callback) -> void {
+            callback = std::move(got_callback);
+          })));
+  NavigateAndCommitInMainFrameAndVerifyMetrics("http://test.org");
+  auto navigation_id =
+      CreateNavigationID(GetTabID(), "http://test.org",
+                         web_contents()->GetLastCommittedSourceId());
+
+  // Invoke callback after commit.
+  std::move(callback).Run(optimization_guide::OptimizationGuideDecision::kTrue,
+                          optimization_metadata);
+
+  // Adding subframe navigation to ensure that the committed main frame url will
+  // be used.
+  auto* subframe =
+      content::RenderFrameHostTester::For(main_rfh())->AppendChild("subframe");
+  NavigateAndCommitInFrame("http://sub.test.org", subframe);
+
+  base::Optional<OptimizationGuidePrediction> prediction =
+      OptimizationGuidePrediction();
+  prediction->decision = optimization_guide::OptimizationGuideDecision::kTrue;
+  url::Origin main_frame_origin = url::Origin::Create(GURL("http://test.org"));
+  PreconnectPrediction preconnect_prediction = CreatePreconnectPrediction(
+      "", false,
+      {{url::Origin::Create(GURL("http://test.org")), 1,
+        net::NetworkIsolationKey(main_frame_origin, main_frame_origin)},
+       {url::Origin::Create(GURL("http://other.org")), 1,
+        net::NetworkIsolationKey(main_frame_origin, main_frame_origin)}});
+  prediction->preconnect_prediction = preconnect_prediction;
+  prediction->predicted_subresources = {GURL("http://test.org/resource1"),
+                                        GURL("http://other.org/resource2"),
+                                        GURL("http://other.org/resource3")};
+  EXPECT_CALL(*mock_collector_,
+              RecordMainFrameLoadComplete(navigation_id, prediction));
+  tab_helper_->DocumentOnLoadCompletedInMainFrame();
+
+  // Optimization guide predictions came after commit.
+  histogram_tester.ExpectUniqueSample(
+      "LoadingPredictor.OptimizationHintsReceiveStatus",
+      OptimizationHintsReceiveStatus::kAfterNavigationFinish, 1);
+}
+
+// Tests that an old and new navigation ids are correctly set if a navigation
+// has redirects.
+TEST_F(LoadingPredictorTabHelperOptimizationGuideDeciderTest,
+       DocumentOnLoadCompletedOptimizationGuidePredictionArrivedAfterRedirect) {
+  base::HistogramTester histogram_tester;
+
+  auto navigation = content::NavigationSimulator::CreateRendererInitiated(
+      GURL("http://test.org"), main_rfh());
+  // The problem here is that mock_collector_ is a strict mock, which expects
+  // a particular set of loading events and fails when extra is present.
+  // TOOO(ahemery): Consider refactoring this to rely on loading events
+  // in NavigationSimulator.
+  navigation->SetKeepLoading(true);
+  NavigationID initial_navigation_id;
+  EXPECT_CALL(*mock_collector_, RecordStartNavigation(_))
+      .WillOnce(SaveArg<0>(&initial_navigation_id));
+  optimization_guide::OptimizationMetadata optimization_metadata;
+  optimization_guide::proto::LoadingPredictorMetadata lp_metadata;
+  lp_metadata.add_subresources()->set_url("http://test.org/resource1");
+  lp_metadata.add_subresources()->set_url("http://other.org/resource2");
+  lp_metadata.add_subresources()->set_url("http://other.org/resource3");
+  optimization_metadata.set_loading_predictor_metadata(lp_metadata);
+  optimization_guide::OptimizationGuideDecisionCallback callback;
+  EXPECT_CALL(
+      *mock_optimization_guide_keyed_service_,
+      CanApplyOptimizationAsync(_, optimization_guide::proto::LOADING_PREDICTOR,
+                                base::test::IsNotNullCallback()))
+      .WillOnce(WithArg<2>(
+          Invoke([&](optimization_guide::OptimizationGuideDecisionCallback
+                         got_callback) -> void {
+            callback = std::move(got_callback);
+          })));
+  navigation->Start();
+  navigation->Redirect(GURL("http://test2.org"));
+  navigation->Redirect(GURL("http://test3.org"));
+
+  std::move(callback).Run(optimization_guide::OptimizationGuideDecision::kTrue,
+                          optimization_metadata);
+
+  NavigationID new_navigation_id;
+  EXPECT_CALL(*mock_collector_,
+              RecordFinishNavigation(initial_navigation_id, _,
+                                     /* is_error_page */ false))
+      .WillOnce(SaveArg<1>(&new_navigation_id));
+  navigation->Commit();
+
+  // Prediction decision should be unknown since what came in was for the wrong
+  // navigation ID.
+  base::Optional<OptimizationGuidePrediction> optimization_guide_prediction =
+      OptimizationGuidePrediction();
+  optimization_guide_prediction->decision =
+      optimization_guide::OptimizationGuideDecision::kUnknown;
+  EXPECT_CALL(*mock_collector_,
+              RecordMainFrameLoadComplete(new_navigation_id,
+                                          optimization_guide_prediction));
+  tab_helper_->DocumentOnLoadCompletedInMainFrame();
+
+  histogram_tester.ExpectUniqueSample(
+      "LoadingPredictor.OptimizationHintsReceiveStatus",
+      OptimizationHintsReceiveStatus::kAfterRedirectOrNextNavigationStart, 1);
 }
 
 // Tests that document on load completed is recorded with correct navigation
 // id and optimization guide prediction when the prediction has not arrived.
 TEST_F(LoadingPredictorTabHelperOptimizationGuideDeciderTest,
        DocumentOnLoadCompletedOptimizationGuidePredictionHasNotArrived) {
+  base::HistogramTester histogram_tester;
+
   EXPECT_CALL(
       *mock_optimization_guide_keyed_service_,
       CanApplyOptimizationAsync(_, optimization_guide::proto::LOADING_PREDICTOR,
@@ -411,12 +545,18 @@ TEST_F(LoadingPredictorTabHelperOptimizationGuideDeciderTest,
   EXPECT_CALL(*mock_collector_,
               RecordMainFrameLoadComplete(navigation_id, prediction));
   tab_helper_->DocumentOnLoadCompletedInMainFrame();
+
+  // Histogram should not be recorded since prediction did not come back.
+  histogram_tester.ExpectTotalCount(
+      "LoadingPredictor.OptimizationHintsReceiveStatus", 0);
 }
 
 // Tests that document on load completed is recorded with correct navigation
 // id and optimization guide prediction with no prediction..
 TEST_F(LoadingPredictorTabHelperOptimizationGuideDeciderTest,
        DocumentOnLoadCompletedOptimizationGuidePredictionArrivedNoPrediction) {
+  base::HistogramTester histogram_tester;
+
   // The problem here is that mock_collector_ is a strict mock, which expects
   // a particular set of loading events and fails when extra is present.
   // TOOO(ahemery): Consider refactoring this to rely on loading events
@@ -446,6 +586,59 @@ TEST_F(LoadingPredictorTabHelperOptimizationGuideDeciderTest,
   EXPECT_CALL(*mock_collector_,
               RecordMainFrameLoadComplete(navigation_id, prediction));
   tab_helper_->DocumentOnLoadCompletedInMainFrame();
+
+  // Histogram should still be recorded even though no predictions were
+  // returned.
+  histogram_tester.ExpectUniqueSample(
+      "LoadingPredictor.OptimizationHintsReceiveStatus",
+      OptimizationHintsReceiveStatus::kBeforeNavigationFinish, 1);
+}
+
+// Tests that document on load completed is recorded with correct navigation
+// id and optimization guide prediction with no prediction..
+TEST_F(
+    LoadingPredictorTabHelperOptimizationGuideDeciderTest,
+    DocumentOnLoadCompletedOptimizationGuidePredictionArrivedNoLoadingPredictorMetadata) {
+  base::HistogramTester histogram_tester;
+
+  // The problem here is that mock_collector_ is a strict mock, which expects
+  // a particular set of loading events and fails when extra is present.
+  // TOOO(ahemery): Consider refactoring this to rely on loading events
+  // in NavigationSimulator.
+  optimization_guide::OptimizationMetadata optimization_metadata;
+  EXPECT_CALL(
+      *mock_optimization_guide_keyed_service_,
+      CanApplyOptimizationAsync(_, optimization_guide::proto::LOADING_PREDICTOR,
+                                base::test::IsNotNullCallback()))
+      .WillOnce(base::test::RunOnceCallback<2>(
+          optimization_guide::OptimizationGuideDecision::kTrue,
+          ByRef(optimization_metadata)));
+  NavigateAndCommitInMainFrameAndVerifyMetrics("http://test.org");
+  auto navigation_id =
+      CreateNavigationID(GetTabID(), "http://test.org",
+                         web_contents()->GetLastCommittedSourceId());
+
+  // Adding subframe navigation to ensure that the committed main frame url will
+  // be used.
+  auto* subframe =
+      content::RenderFrameHostTester::For(main_rfh())->AppendChild("subframe");
+  NavigateAndCommitInFrame("http://sub.test.org", subframe);
+
+  // Decision should be unknown since we got invalid data.
+  base::Optional<OptimizationGuidePrediction> optimization_guide_prediction =
+      OptimizationGuidePrediction();
+  optimization_guide_prediction->decision =
+      optimization_guide::OptimizationGuideDecision::kUnknown;
+  EXPECT_CALL(*mock_collector_,
+              RecordMainFrameLoadComplete(navigation_id,
+                                          optimization_guide_prediction));
+  tab_helper_->DocumentOnLoadCompletedInMainFrame();
+
+  // Histogram should still be recorded even though no predictions were
+  // returned.
+  histogram_tester.ExpectUniqueSample(
+      "LoadingPredictor.OptimizationHintsReceiveStatus",
+      OptimizationHintsReceiveStatus::kBeforeNavigationFinish, 1);
 }
 
 class TestLoadingDataCollector : public LoadingDataCollector {

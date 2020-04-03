@@ -2697,7 +2697,7 @@ jumbo_static_library("ui") {
     }
     if (use_gtk) {
       # This is the only component that can interact with gtk.
-      deps += [ "//chrome/browser/ui/gtk" ]
+      deps += [ "//ui/gtk" ]
     }
   }
 
@@ -3571,7 +3571,6 @@ jumbo_static_library("ui") {
         ]
         if (use_gtk) {
           deps += [
-            "//chrome/browser/ui/gtk",
             "//ui/gtk",
           ]
           if (use_x11) {

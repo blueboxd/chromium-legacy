@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBarCompactLayout;
 import org.chromium.components.browser_ui.widget.text.AccessibleTextView;
 
@@ -96,14 +97,19 @@ public class ReaderModeInfoBar extends InfoBar {
      * Create and show the Reader Mode {@link InfoBar}.
      * @param tab The tab that the {@link InfoBar} should be shown in.
      */
-    public static void showReaderModeInfoBar(Tab tab, ReaderModeManager manager) {
-        ReaderModeInfoBarJni.get().create(tab, manager);
+    public static void showReaderModeInfoBar(Tab tab) {
+        ReaderModeInfoBarJni.get().create(tab);
     }
 
-    /** @return The {@link ReaderModeManager} for this infobar. */
+    /**
+     * @return The {@link ReaderModeManager} for this infobar.
+     */
     private ReaderModeManager getReaderModeManager() {
         if (getNativeInfoBarPtr() == 0) return null;
-        return ReaderModeInfoBarJni.get().getReaderModeManager(getNativeInfoBarPtr());
+        Tab tab = ReaderModeInfoBarJni.get().getTab(getNativeInfoBarPtr(), ReaderModeInfoBar.this);
+
+        if (tab == null || ((TabImpl) tab).getActivity() == null) return null;
+        return ((TabImpl) tab).getActivity().getReaderModeManager();
     }
 
     /**
@@ -116,7 +122,7 @@ public class ReaderModeInfoBar extends InfoBar {
 
     @NativeMethods
     interface Natives {
-        void create(Tab tab, ReaderModeManager manager);
-        ReaderModeManager getReaderModeManager(long nativeReaderModeInfoBar);
+        void create(Tab tab);
+        Tab getTab(long nativeReaderModeInfoBar, ReaderModeInfoBar caller);
     }
 }

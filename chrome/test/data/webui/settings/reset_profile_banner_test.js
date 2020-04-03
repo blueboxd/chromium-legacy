@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {Router, routes, ResetBrowserProxyImpl} from 'chrome://settings/settings.js';
+// #import {TestResetBrowserProxy} from 'chrome://test/settings/test_reset_browser_proxy.m.js';
+// clang-format on
+
 suite('BannerTests', function() {
   let resetBanner = null;
   let browserProxy = null;

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {getMetadataProvider} from './mojo_interface_provider.js';
 
 /**
  * @fileoverview
@@ -13,10 +14,21 @@ Polymer({
 
   _template: html`{__html_template__}`,
 
+  /**
+   * @private {
+   *  ?chromeos.printing.printingManager.mojom.PrintingMetadataProviderInterface
+   * }
+   */
+  mojoInterfaceProvider_: null,
+
+  /** @override */
+  created() {
+    this.mojoInterfaceProvider_ = getMetadataProvider();
+  },
+
   /** @override */
   ready() {
     // TODO(jimmyxgong): Remove this once the app has more capabilities.
     this.$$('#header').textContent = 'Print Management';
   },
-
 });

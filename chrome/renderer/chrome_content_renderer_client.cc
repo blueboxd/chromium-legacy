@@ -48,6 +48,7 @@
 #include "chrome/renderer/chrome_render_thread_observer.h"
 #include "chrome/renderer/content_settings_agent_impl.h"
 #include "chrome/renderer/loadtimes_extension_bindings.h"
+#include "chrome/renderer/media/chrome_speech_recognition_client.h"
 #include "chrome/renderer/media/flash_embed_rewrite.h"
 #include "chrome/renderer/media/webrtc_logging_agent_impl.h"
 #include "chrome/renderer/net/net_error_helper.h"
@@ -1412,6 +1413,12 @@ std::unique_ptr<blink::WebContentSettingsClient>
 ChromeContentRendererClient::CreateWorkerContentSettingsClient(
     content::RenderFrame* render_frame) {
   return std::make_unique<WorkerContentSettingsClient>(render_frame);
+}
+
+std::unique_ptr<media::SpeechRecognitionClient>
+ChromeContentRendererClient::CreateSpeechRecognitionClient(
+    content::RenderFrame* render_frame) {
+  return std::make_unique<ChromeSpeechRecognitionClient>(render_frame);
 }
 
 bool ChromeContentRendererClient::IsPluginAllowedToUseDevChannelAPIs() {

@@ -23,6 +23,7 @@
 #include "content/public/renderer/url_loader_throttle_provider.h"
 #include "content/public/renderer/websocket_handshake_throttle_provider.h"
 #include "media/base/audio_parameters.h"
+#include "media/base/speech_recognition_client.h"
 #include "media/base/supported_types.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
@@ -285,6 +286,10 @@ class CONTENT_EXPORT ContentRendererClient {
   // Creates a permission client for in-renderer worker.
   virtual std::unique_ptr<blink::WebContentSettingsClient>
   CreateWorkerContentSettingsClient(RenderFrame* render_frame);
+
+  // Creates a speech recognition client used to transcribe audio into captions.
+  virtual std::unique_ptr<media::SpeechRecognitionClient>
+  CreateSpeechRecognitionClient(RenderFrame* render_frame);
 
   // Returns true if the page at |url| can use Pepper CameraDevice APIs.
   virtual bool IsPluginAllowedToUseCameraDeviceAPI(const GURL& url);

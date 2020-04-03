@@ -4220,6 +4220,34 @@
           'all',
         ],
       },
+      'ios-simulator': {
+        'additional_compile_targets': [
+          'all',
+        ],
+        'mixins': [
+          'mac_10.14',
+          'mac_toolchain',
+          'out_dir_arg',
+          'xcode_11c29',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'ios_simulator_tests',
+        }
+      },
+      'ios-simulator-full-configs': {
+        'additional_compile_targets': [
+          'all'
+        ],
+        'mixins': [
+          'mac_10.14',
+          'mac_toolchain',
+          'out_dir_arg',
+          'xcode_11c29',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'ios_simulator_full_configs_test'
+        },
+      },
     },
   },
   {
@@ -4381,6 +4409,7 @@
     'name': 'chromium.swangle',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
+      'linux-swangle-chromium-x64' : {},
       'linux-swangle-tot-angle-x64' : {
         'mixins': [
           'code-coverage',
@@ -4441,6 +4470,8 @@
           'gtest_tests': 'swangle_gtests',
         },
       },
+      'mac-swangle-chromium-x64' : {},
+      'win-swangle-chromium-x86' : {},
       'win-swangle-tot-angle-x64' : {
         'mixins': [
           'x86-64',

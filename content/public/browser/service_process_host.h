@@ -42,7 +42,7 @@ namespace content {
 //       kFooServiceIdleTimeout,
 //       base::BindRepeating(
 //           /* Something to reset |foo_service|,  killing the process. */));
-//   foo_service->DoSomeWork();
+//   foo_service->DoWork();
 //
 class CONTENT_EXPORT ServiceProcessHost {
  public:

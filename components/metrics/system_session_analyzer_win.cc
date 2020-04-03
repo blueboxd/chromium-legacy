@@ -94,16 +94,16 @@ SystemSessionAnalyzer::~SystemSessionAnalyzer() {}
 SystemSessionAnalyzer::Status SystemSessionAnalyzer::IsSessionUnclean(
     base::Time timestamp) {
   if (!EnsureInitialized())
-    return FAILED;
+    return INITIALIZE_FAILED;
 
   while (timestamp < coverage_start_ && sessions_queried_ < max_session_cnt_) {
     // Fetch the next session start and end events.
     std::vector<EventInfo> events;
     if (!FetchEvents(2U, &events) || events.size() != 2)
-      return FAILED;
+      return FETCH_EVENTS_FAILED;
 
     if (!ProcessSession(events[0], events[1]))
-      return FAILED;
+      return PROCESS_SESSION_FAILED;
 
     ++sessions_queried_;
   }

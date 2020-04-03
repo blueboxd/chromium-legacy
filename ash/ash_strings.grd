@@ -249,6 +249,12 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_SPOKEN_FEEDBACK_BRAILLE_ENABLED_TITLE" desc="The message shown on a notification when both the spoken feedback and braille are enabled">
         Braille and ChromeVox are enabled
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_SWITCH_ACCESS_ENABLED" desc="The message shown on a notification when Switch Access is enabled">
+        Switch Access can be disabled in Settings > Accessibility.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_SWITCH_ACCESS_ENABLED_TITLE" desc="The title message shown on a notification when Switch Access is enabled.">
+        Switch Access enabled
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_USER_INFO_ACCESSIBILITY" desc="The accessibility string used for an item in user chooser that tells the user name and the mail address.">
         <ph name="USERNAME">$1<ex>Jane Doe</ex></ph> (<ph name="MAIL">$2<ex>janedoe@example.com</ex></ph>)
       </message>

@@ -228,7 +228,7 @@ cr.define('settings', function() {
   /**
    * @return {!settings.Router} A router with the browser settings routes.
    */
-  function buildRouter() {
+  /* #export */ function buildRouter() {
     return new settings.Router(createBrowserSettingsRoutes());
   }
 

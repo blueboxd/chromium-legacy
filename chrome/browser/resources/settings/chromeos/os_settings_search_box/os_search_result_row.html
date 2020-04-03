@@ -1,7 +1,10 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_row_behavior.html">
+<link rel="import" href="../os_icons.html">
 <link rel="import" href="../os_route.html">
+<link rel="import" href="../search_handler.html">
 <link rel="import" href="../../router.html">
 <link rel="import" href="../../settings_shared_css.html">
 
@@ -9,35 +12,56 @@
   <template>
     <style include="settings-shared">
       :host {
-        display: flex;
-        flex-basis: 100%;
-        height: 40px;
+        width: 100%;
       }
 
-      :host([selected]) #searchResultContainer {
+      :host([selected]) [focus-row-container] {
         background-color: var(--cros-menu-button-bg-color-active);
       }
 
-      :host(:not([selected])) #searchResultContainer:hover {
+      :host(:not([selected])) [focus-row-container]:hover {
         background-color: var(--cros-menu-button-bg-color-hover);
       }
 
+      [focus-row-container] {
+        width: inherit;
+      }
+
       #searchResultContainer {
+        align-items: center;
         display: flex;
-        flex-basis: 100%;
+        height: 40px;
+        justify-content: center;
       }
 
       #resultText {
-        flex-basis: 100%;
+        flex-grow: 1;
+      }
+
+      #resultIcon {
+        margin-inline-end: 20px;
+        margin-inline-start: 16px;
+      }
+
+      #actionTypeIcon {
+        margin-inline-end: 16px;
+        margin-inline-start: 20px;
       }
     </style>
-    <div id="searchResultContainer" on-click="navigateToSearchResultRoute"
-        focus-row-container>
-      <!-- TODO(crbug/1056909): Focus right hand icon instead; move
-           focus-row-control to that icon when available-->
-      <div id="resultText" focus-row-control selectable
-          on-keypress="onKeyPress_" focus-type="rowWrapper">
-        [[getResultText_(searchResult)]]
+    <div focus-row-container>
+      <div focus-row-control
+          focus-type="rowWrapper"
+          id="searchResultContainer"
+          on-click="navigateToSearchResultRoute"
+          on-keypress="onKeyPress_"
+          selectable>
+        <iron-icon id="resultIcon" icon="[[getResultIcon_(searchResult)]]">
+        </iron-icon>
+        <div id="resultText">
+          [[getResultText_(searchResult)]]
+        </div>
+        <iron-icon id="actionTypeIcon" icon="cr:arrow-forward">
+        </iron-icon>
       </div>
     </div>
   </template>

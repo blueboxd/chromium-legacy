@@ -67,8 +67,8 @@ class ComServer : public App {
   void FirstTaskRun() override;
 
   // Registers and unregisters the out-of-process COM class factories.
-  HRESULT RegisterClassObject();
-  void UnregisterClassObject();
+  HRESULT RegisterClassObjects();
+  void UnregisterClassObjects();
 
   // Waits until the last COM object is released.
   void WaitForExitSignal();
@@ -83,7 +83,7 @@ class ComServer : public App {
   void Stop();
 
   // Identifier of registered class objects used for unregistration.
-  DWORD cookies_[1] = {};
+  DWORD cookies_[2] = {};
 
   // While this object lives, COM can be used by all threads in the program.
   base::win::ScopedCOMInitializer com_initializer_;
@@ -115,7 +115,7 @@ void ComServer::InitializeThreadPool() {
   base::ThreadPoolInstance::Get()->Start(init_params);
 }
 
-HRESULT ComServer::RegisterClassObject() {
+HRESULT ComServer::RegisterClassObjects() {
   auto& module = Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::GetModule();
 
   Microsoft::WRL::ComPtr<IUnknown> factory;
@@ -129,20 +129,38 @@ HRESULT ComServer::RegisterClassObject() {
     return hr;
   }
 
-  Microsoft::WRL::ComPtr<IClassFactory> class_factory;
-  hr = factory.As(&class_factory);
+  Microsoft::WRL::ComPtr<IClassFactory> class_factory_updater;
+  hr = factory.As(&class_factory_updater);
+  if (FAILED(hr)) {
+    LOG(ERROR) << "IClassFactory object creation failed; hr: " << hr;
+    return hr;
+  }
+  factory.Reset();
+
+  hr = Microsoft::WRL::Details::CreateClassFactory<
+      Microsoft::WRL::SimpleClassFactory<LegacyOnDemandImpl>>(
+      &flags, nullptr, __uuidof(IClassFactory), &factory);
+  if (FAILED(hr)) {
+    LOG(ERROR) << "Factory creation failed; hr: " << hr;
+    return hr;
+  }
+
+  Microsoft::WRL::ComPtr<IClassFactory> class_factory_legacy_ondemand;
+  hr = factory.As(&class_factory_legacy_ondemand);
   if (FAILED(hr)) {
     LOG(ERROR) << "IClassFactory object creation failed; hr: " << hr;
     return hr;
   }
 
   // The pointer in this array is unowned. Do not release it.
-  IClassFactory* class_factories[] = {class_factory.Get()};
+  IClassFactory* class_factories[] = {class_factory_updater.Get(),
+                                      class_factory_legacy_ondemand.Get()};
   static_assert(
       std::extent<decltype(cookies_)>() == base::size(class_factories),
       "Arrays cookies_ and class_factories must be the same size.");
 
-  IID class_ids[] = {__uuidof(UpdaterClass)};
+  IID class_ids[] = {__uuidof(UpdaterClass),
+                     __uuidof(GoogleUpdate3WebUserClass)};
   DCHECK_EQ(base::size(cookies_), base::size(class_ids));
   static_assert(std::extent<decltype(cookies_)>() == base::size(class_ids),
                 "Arrays cookies_ and class_ids must be the same size.");
@@ -157,7 +175,7 @@ HRESULT ComServer::RegisterClassObject() {
   return hr;
 }
 
-void ComServer::UnregisterClassObject() {
+void ComServer::UnregisterClassObjects() {
   auto& module = Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::GetModule();
   const HRESULT hr =
       module.UnregisterCOMObject(nullptr, cookies_, base::size(cookies_));
@@ -172,7 +190,7 @@ void ComServer::CreateWRLModule() {
 
 void ComServer::Stop() {
   VLOG(2) << __func__ << ": COM server is shutting down.";
-  UnregisterClassObject();
+  UnregisterClassObjects();
   Shutdown(0);
 }
 
@@ -189,12 +207,204 @@ void ComServer::FirstTaskRun() {
   main_task_runner_ = base::SequencedTaskRunnerHandle::Get();
   service_ = base::MakeRefCounted<UpdateServiceInProcess>(config_);
   CreateWRLModule();
-  HRESULT hr = RegisterClassObject();
+  HRESULT hr = RegisterClassObjects();
   if (FAILED(hr))
     Shutdown(hr);
 }
 
 }  // namespace
+
+STDMETHODIMP LegacyOnDemandImpl::createAppBundleWeb(
+    IDispatch** app_bundle_web) {
+  DCHECK(app_bundle_web);
+
+  Microsoft::WRL::ComPtr<IAppBundleWeb> app_bundle(this);
+  *app_bundle_web = app_bundle.Detach();
+  return S_OK;
+}
+
+STDMETHODIMP LegacyOnDemandImpl::createApp(BSTR app_id,
+                                           BSTR brand_code,
+                                           BSTR language,
+                                           BSTR ap) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP LegacyOnDemandImpl::createInstalledApp(BSTR app_id) {
+  return S_OK;
+}
+STDMETHODIMP LegacyOnDemandImpl::createAllInstalledApps() {
+  return E_NOTIMPL;
+}
+STDMETHODIMP LegacyOnDemandImpl::get_displayLanguage(BSTR* language) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP LegacyOnDemandImpl::put_displayLanguage(BSTR language) {
+  return S_OK;
+}
+STDMETHODIMP LegacyOnDemandImpl::put_parentHWND(ULONG_PTR hwnd) {
+  return S_OK;
+}
+STDMETHODIMP LegacyOnDemandImpl::get_length(int* number) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP LegacyOnDemandImpl::get_appWeb(int index, IDispatch** app_web) {
+  DCHECK(index == 0);
+  DCHECK(app_web);
+
+  Microsoft::WRL::ComPtr<IAppWeb> app(this);
+  *app_web = app.Detach();
+  return S_OK;
+}
+STDMETHODIMP LegacyOnDemandImpl::initialize() {
+  return S_OK;
+}
+STDMETHODIMP LegacyOnDemandImpl::checkForUpdate() {
+  return S_OK;
+}
+STDMETHODIMP LegacyOnDemandImpl::download() {
+  return E_NOTIMPL;
+}
+STDMETHODIMP LegacyOnDemandImpl::install() {
+  return S_OK;
+}
+STDMETHODIMP LegacyOnDemandImpl::pause() {
+  return E_NOTIMPL;
+}
+STDMETHODIMP LegacyOnDemandImpl::resume() {
+  return E_NOTIMPL;
+}
+STDMETHODIMP LegacyOnDemandImpl::cancel() {
+  return E_NOTIMPL;
+}
+STDMETHODIMP LegacyOnDemandImpl::downloadPackage(BSTR app_id,
+                                                 BSTR package_name) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP LegacyOnDemandImpl::get_currentState(VARIANT* current_state) {
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP LegacyOnDemandImpl::get_appId(BSTR* app_id) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP LegacyOnDemandImpl::get_currentVersionWeb(IDispatch** current) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP LegacyOnDemandImpl::get_nextVersionWeb(IDispatch** next) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP LegacyOnDemandImpl::get_command(BSTR command_id,
+                                             IDispatch** command) {
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP LegacyOnDemandImpl::get_currentState(IDispatch** current_state) {
+  DCHECK(current_state);
+
+  Microsoft::WRL::ComPtr<ICurrentState> state(this);
+  *current_state = state.Detach();
+  return S_OK;
+}
+STDMETHODIMP LegacyOnDemandImpl::launch() {
+  return E_NOTIMPL;
+}
+STDMETHODIMP LegacyOnDemandImpl::uninstall() {
+  return E_NOTIMPL;
+}
+STDMETHODIMP LegacyOnDemandImpl::get_serverInstallDataIndex(BSTR* language) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP LegacyOnDemandImpl::put_serverInstallDataIndex(BSTR language) {
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP LegacyOnDemandImpl::get_stateValue(LONG* state_value) {
+  DCHECK(state_value);
+
+  *state_value = STATE_NO_UPDATE;
+  return S_OK;
+}
+STDMETHODIMP LegacyOnDemandImpl::get_availableVersion(BSTR* available_version) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP LegacyOnDemandImpl::get_bytesDownloaded(ULONG* bytes_downloaded) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP LegacyOnDemandImpl::get_totalBytesToDownload(
+    ULONG* total_bytes_to_download) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP LegacyOnDemandImpl::get_downloadTimeRemainingMs(
+    LONG* download_time_remaining_ms) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP LegacyOnDemandImpl::get_nextRetryTime(ULONGLONG* next_retry_time) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP LegacyOnDemandImpl::get_installProgress(
+    LONG* install_progress_percentage) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP LegacyOnDemandImpl::get_installTimeRemainingMs(
+    LONG* install_time_remaining_ms) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP LegacyOnDemandImpl::get_isCanceled(VARIANT_BOOL* is_canceled) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP LegacyOnDemandImpl::get_errorCode(LONG* error_code) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP LegacyOnDemandImpl::get_extraCode1(LONG* extra_code1) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP LegacyOnDemandImpl::get_completionMessage(
+    BSTR* completion_message) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP LegacyOnDemandImpl::get_installerResultCode(
+    LONG* installer_result_code) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP LegacyOnDemandImpl::get_installerResultExtraCode1(
+    LONG* installer_result_extra_code1) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP LegacyOnDemandImpl::get_postInstallLaunchCommandLine(
+    BSTR* post_install_launch_command_line) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP LegacyOnDemandImpl::get_postInstallUrl(BSTR* post_install_url) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP LegacyOnDemandImpl::get_postInstallAction(
+    LONG* post_install_action) {
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP LegacyOnDemandImpl::GetTypeInfoCount(UINT*) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP LegacyOnDemandImpl::GetTypeInfo(UINT, LCID, ITypeInfo**) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP LegacyOnDemandImpl::GetIDsOfNames(REFIID,
+                                               LPOLESTR*,
+                                               UINT,
+                                               LCID,
+                                               DISPID*) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP LegacyOnDemandImpl::Invoke(DISPID,
+                                        REFIID,
+                                        LCID,
+                                        WORD,
+                                        DISPPARAMS*,
+                                        VARIANT*,
+                                        EXCEPINFO*,
+                                        UINT*) {
+  return E_NOTIMPL;
+}
 
 STDMETHODIMP CompleteStatusImpl::get_statusCode(LONG* code) {
   DCHECK(code);

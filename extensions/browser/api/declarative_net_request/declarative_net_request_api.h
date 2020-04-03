@@ -27,7 +27,6 @@ class DeclarativeNetRequestUpdateDynamicRulesFunction
   ~DeclarativeNetRequestUpdateDynamicRulesFunction() override;
 
   // ExtensionFunction override:
-  bool PreRunValidation(std::string* error) override;
   ExtensionFunction::ResponseAction Run() override;
 
  private:
@@ -46,7 +45,6 @@ class DeclarativeNetRequestGetDynamicRulesFunction : public ExtensionFunction {
   ~DeclarativeNetRequestGetDynamicRulesFunction() override;
 
   // ExtensionFunction override:
-  bool PreRunValidation(std::string* error) override;
   ExtensionFunction::ResponseAction Run() override;
 
  private:

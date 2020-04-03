@@ -31,7 +31,11 @@ enum class DismissNudgeReason {
   kSwitchToClamshell = 3,
   kExitToHomeScreen = 4,
   kTimeout = 5,
-  kMaxValue = kTimeout,
+  kActiveWindowChanged = 6,     // dismisses back gesture nudge
+  kNavigationEntryChanged = 7,  // dismisses back gesture nudge
+  kBackGestureStarted = 8,      // dismisses back gesture nudge
+  kUserSessionInactive = 9,     // dismisses back gesture nudge
+  kMaxValue = kUserSessionInactive,
 };
 
 // Maximum number of times a user can be shown a contextual nudge if the user

@@ -22,6 +22,7 @@ using AXBooleanProperty = mojom::AccessibilityBooleanProperty;
 using AXCollectionInfoData = mojom::AccessibilityCollectionInfoData;
 using AXCollectionItemInfoData = mojom::AccessibilityCollectionItemInfoData;
 using AXEventData = mojom::AccessibilityEventData;
+using AXEventIntProperty = mojom::AccessibilityEventIntProperty;
 using AXEventType = mojom::AccessibilityEventType;
 using AXIntListProperty = mojom::AccessibilityIntListProperty;
 using AXIntProperty = mojom::AccessibilityIntProperty;
@@ -94,6 +95,15 @@ void SetProperty(AXWindowInfoData* window,
         base::flat_map<AXWindowIntListProperty, std::vector<int>>();
   }
   auto& prop_map = window->int_list_properties.value();
+  base::EraseIf(prop_map, [prop](auto it) { return it.first == prop; });
+  prop_map.insert(std::make_pair(prop, value));
+}
+
+void SetProperty(AXEventData* event, AXEventIntProperty prop, int32_t value) {
+  if (!event->int_properties) {
+    event->int_properties = base::flat_map<AXEventIntProperty, int>();
+  }
+  auto& prop_map = event->int_properties.value();
   base::EraseIf(prop_map, [prop](auto it) { return it.first == prop; });
   prop_map.insert(std::make_pair(prop, value));
 }
@@ -965,6 +975,7 @@ TEST_F(AXTreeSourceArcTest, GetTreeDataAppliesFocus) {
 TEST_F(AXTreeSourceArcTest, OnViewSelectedEvent) {
   auto event = AXEventData::New();
   event->task_id = 1;
+  event->event_type = AXEventType::VIEW_SELECTED;
 
   event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
   event->window_data->emplace_back(AXWindowInfoData::New());
@@ -973,32 +984,83 @@ TEST_F(AXTreeSourceArcTest, OnViewSelectedEvent) {
   root_window->root_node_id = 10;
 
   event->node_data.emplace_back(AXNodeInfoData::New());
-  event->source_id = 1;  // button->id
   AXNodeInfoData* root = event->node_data.back().get();
   root->id = 10;
   SetProperty(root, AXIntListProperty::CHILD_NODE_IDS, std::vector<int>({1}));
 
-  // Add child node.
   event->node_data.emplace_back(AXNodeInfoData::New());
-  AXNodeInfoData* button = event->node_data.back().get();
-  button->id = 1;
-  SetProperty(button, AXBooleanProperty::FOCUSABLE, true);
-  SetProperty(button, AXBooleanProperty::IMPORTANCE, true);
+  AXNodeInfoData* list = event->node_data.back().get();
+  list->id = 1;
+  SetProperty(list, AXBooleanProperty::FOCUSABLE, true);
+  SetProperty(list, AXBooleanProperty::IMPORTANCE, true);
+  SetProperty(list, AXIntListProperty::CHILD_NODE_IDS,
+              std::vector<int>({2, 3, 4}));
 
-  // Ensure that button has a focus.
-  event->event_type = AXEventType::VIEW_FOCUSED;
-  CallNotifyAccessibilityEvent(event.get());
+  // Slider.
+  event->node_data.emplace_back(AXNodeInfoData::New());
+  AXNodeInfoData* slider = event->node_data.back().get();
+  slider->id = 2;
+  SetProperty(slider, AXBooleanProperty::FOCUSABLE, true);
+  SetProperty(slider, AXBooleanProperty::IMPORTANCE, true);
+  slider->range_info = AXRangeInfoData::New();
 
-  // Without range_info, kSelection event should be emitted. Usually this event
-  // is fired from AdapterView.
-  event->event_type = AXEventType::VIEW_SELECTED;
-  CallNotifyAccessibilityEvent(event.get());
-  EXPECT_EQ(1, GetDispatchedEventCount(ax::mojom::Event::kSelection));
+  // Simple list item.
+  event->node_data.emplace_back(AXNodeInfoData::New());
+  AXNodeInfoData* simple_item = event->node_data.back().get();
+  simple_item->id = 3;
+  SetProperty(simple_item, AXBooleanProperty::FOCUSABLE, true);
+  SetProperty(simple_item, AXBooleanProperty::IMPORTANCE, true);
+  simple_item->collection_item_info = AXCollectionItemInfoData::New();
 
-  // Set range_info, the event should be kValueChanged.
-  button->range_info = AXRangeInfoData::New();
+  // This node is not focusable.
+  event->node_data.emplace_back(AXNodeInfoData::New());
+  AXNodeInfoData* wrap_node = event->node_data.back().get();
+  wrap_node->id = 4;
+  SetProperty(wrap_node, AXBooleanProperty::IMPORTANCE, true);
+  SetProperty(wrap_node, AXIntListProperty::CHILD_NODE_IDS,
+              std::vector<int>({5}));
+  wrap_node->collection_item_info = AXCollectionItemInfoData::New();
+
+  // A list item expected to get the focus.
+  event->node_data.emplace_back(AXNodeInfoData::New());
+  AXNodeInfoData* item = event->node_data.back().get();
+  item->id = 5;
+  SetProperty(item, AXBooleanProperty::FOCUSABLE, true);
+  SetProperty(item, AXBooleanProperty::IMPORTANCE, true);
+
+  // A selected event from Slider is kValueChanged.
+  event->source_id = slider->id;
   CallNotifyAccessibilityEvent(event.get());
   EXPECT_EQ(1, GetDispatchedEventCount(ax::mojom::Event::kValueChanged));
+
+  // A selected event from a collection. In Android, these event properties are
+  // populated by AdapterView.
+  event->source_id = list->id;
+  SetProperty(event.get(), AXEventIntProperty::ITEM_COUNT, 3);
+  SetProperty(event.get(), AXEventIntProperty::FROM_INDEX, 0);
+  SetProperty(event.get(), AXEventIntProperty::CURRENT_ITEM_INDEX, 2);
+  CallNotifyAccessibilityEvent(event.get());
+  EXPECT_EQ(1, GetDispatchedEventCount(ax::mojom::Event::kFocus));
+
+  ui::AXTreeData data;
+  EXPECT_TRUE(CallGetTreeData(&data));
+  EXPECT_EQ(item->id, data.focus_id);
+
+  // A selected event from a collection item.
+  event->source_id = simple_item->id;
+  event->int_properties->clear();
+  CallNotifyAccessibilityEvent(event.get());
+  EXPECT_EQ(2, GetDispatchedEventCount(ax::mojom::Event::kFocus));
+
+  EXPECT_TRUE(CallGetTreeData(&data));
+  EXPECT_EQ(simple_item->id, data.focus_id);
+
+  // A selected event from non collection node is dropped.
+  event->source_id = item->id;
+  event->int_properties->clear();
+  CallNotifyAccessibilityEvent(event.get());
+  EXPECT_EQ(2,
+            GetDispatchedEventCount(ax::mojom::Event::kFocus));  // not changed
 }
 
 TEST_F(AXTreeSourceArcTest, OnWindowStateChangedEvent) {

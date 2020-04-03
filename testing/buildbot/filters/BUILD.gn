@@ -123,6 +123,7 @@ source_set("e2e_sync_integration_tests_filters") {
 
 source_set("fuchsia_filters") {
   data = [
+    "//testing/buildbot/filters/fuchsia.accessibility_unittests.filter",
     "//testing/buildbot/filters/fuchsia.base_perftests.filter",
     "//testing/buildbot/filters/fuchsia.components_unittests.filter",
     "//testing/buildbot/filters/fuchsia.cc_unittests.filter",

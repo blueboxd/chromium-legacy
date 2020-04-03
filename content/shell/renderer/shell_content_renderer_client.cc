@@ -14,7 +14,6 @@
 #include "components/cdm/renderer/external_clear_key_key_system_properties.h"
 #include "components/web_cache/renderer/web_cache_impl.h"
 #include "content/public/test/test_service.mojom.h"
-#include "content/shell/common/power_monitor_test.mojom.h"
 #include "content/shell/common/power_monitor_test_impl.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/shell_render_view_observer.h"

@@ -70,7 +70,7 @@ class SVGImageForContainer final : public Image {
   }
 
   IntSize Size() const override;
-  FloatSize SizeAsFloat() const override;
+  FloatSize SizeAsFloat(RespectImageOrientationEnum) const override;
 
   bool HasIntrinsicSize() const override { return image_->HasIntrinsicSize(); }
 

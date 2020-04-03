@@ -101,6 +101,9 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   bool IsAtomicInlineLevel() const;
   bool HasAspectRatio() const;
 
+  // Returns the aspect ratio of a replaced element.
+  LogicalSize GetAspectRatio() const;
+
   // Returns true if this node should fill the viewport.
   // This occurs when we are in quirks-mode and we are *not* OOF-positioned,
   // floating, or inline-level.

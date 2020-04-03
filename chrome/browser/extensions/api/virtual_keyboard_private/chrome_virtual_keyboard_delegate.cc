@@ -253,7 +253,7 @@ bool ChromeVirtualKeyboardDelegate::ShowLanguageSettings() {
 
   base::RecordAction(base::UserMetricsAction("OpenLanguageOptionsDialog"));
   chrome::ShowSettingsSubPageForProfile(ProfileManager::GetActiveUserProfile(),
-                                        chrome::kLanguageSubPage);
+                                        chrome::kLanguagesSubPage);
   return true;
 }
 

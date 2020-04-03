@@ -726,6 +726,42 @@
   };
 
   /**
+   * Tests opening Quick View with a '.mhtml' filename extension.
+   */
+  testcase.openQuickViewMhtml = async () => {
+    const caller = getCaller();
+
+    /**
+     * The text <webview> resides in the #quick-view shadow DOM, as a child of
+     * the #dialog element.
+     */
+    const webView = ['#quick-view', 'files-safe-media[type="html"]', 'webview'];
+
+    // Open Files app on Downloads containing ENTRIES.plainText.
+    const appId =
+        await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.mHtml], []);
+
+    // Open the file in Quick View.
+    await openQuickView(appId, ENTRIES.mHtml.nameText);
+
+    // Wait for the Quick View <webview> to load and display its content.
+    function checkWebViewTextLoaded(elements) {
+      let haveElements = Array.isArray(elements) && elements.length === 1;
+      if (haveElements) {
+        haveElements = elements[0].styles.display.includes('block');
+      }
+      if (!haveElements || !elements[0].attributes.src) {
+        return pending(caller, 'Waiting for <webview> to load.');
+      }
+      return;
+    }
+    await repeatUntil(async () => {
+      return checkWebViewTextLoaded(await remoteCall.callRemoteTestUtil(
+          'deepQueryAllElements', appId, [webView, ['display']]));
+    });
+  };
+
+  /**
    * Tests opening Quick View and scrolling its <webview> which contains a tall
    * html document.
    */

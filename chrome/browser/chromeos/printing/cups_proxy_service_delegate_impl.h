@@ -33,6 +33,8 @@ class CupsProxyServiceDelegateImpl
   CupsProxyServiceDelegateImpl();
   ~CupsProxyServiceDelegateImpl() override;
 
+  bool IsPrinterAccessAllowed() const override;
+
   // Look for a printer with the given id in any class.  Returns a copy of the
   // printer if found, nullptr otherwise.
   base::Optional<Printer> GetPrinter(const std::string& id) override;

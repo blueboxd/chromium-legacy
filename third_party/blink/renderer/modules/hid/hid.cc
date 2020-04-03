@@ -82,6 +82,7 @@ mojom::blink::HidDeviceFilterPtr ConvertDeviceFilter(
 
 HID::HID(ExecutionContext& context)
     : ExecutionContextClient(&context),
+      service_(&context),
       feature_handle_for_scheduler_(context.GetScheduler()->RegisterFeature(
           SchedulingPolicy::Feature::kWebHID,
           {SchedulingPolicy::RecordMetricsForBackForwardCache()})) {}
@@ -225,7 +226,7 @@ void HID::FinishRequestDevice(
 void HID::EnsureServiceConnection() {
   DCHECK(GetExecutionContext());
 
-  if (service_)
+  if (service_.is_bound())
     return;
 
   auto task_runner =
@@ -253,6 +254,7 @@ void HID::OnServiceConnectionError() {
 }
 
 void HID::Trace(Visitor* visitor) {
+  visitor->Trace(service_);
   visitor->Trace(get_devices_promises_);
   visitor->Trace(request_device_promises_);
   visitor->Trace(device_cache_);

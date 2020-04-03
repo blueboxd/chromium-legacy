@@ -31,12 +31,8 @@ struct DNRManifestData : Extension::ManifestData {
   explicit DNRManifestData(std::vector<RulesetInfo> ruleset);
   ~DNRManifestData() override;
 
-  // Returns true if the extension specified the kDeclarativeNetRequestKey
-  // manifest key.
-  static bool HasRuleset(const Extension& extension);
-
-  // Returns the RulesetInfo for the |extension|. This must be called only if
-  // HasRuleset returns true for the |extension|.
+  // Returns the RulesetInfo for the |extension|. For an extension, which didn't
+  // specify a static ruleset, an empty vector is returned.
   static const std::vector<RulesetInfo>& GetRulesets(
       const Extension& extension);
 

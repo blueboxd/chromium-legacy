@@ -91,6 +91,8 @@ public class StartSurfaceTest {
     @Feature({"StartSurface"})
     @CommandLineFlags.Add({BASE_PARAMS + "/tasksonly"})
     public void testShowAndHide_TasksOnlySurface() {
+        onView(withId(R.id.home_button)).check(matches(isDisplayed()));
+
         TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
 
         onView(withId(R.id.primary_tasks_surface_view)).check(matches(isDisplayed()));
@@ -112,6 +114,8 @@ public class StartSurfaceTest {
             "/hide_switch_when_no_incognito_tabs/true"})
     public void testShowAndHide_OmniboxOnlySurface() {
         // clang-format on
+        onView(withId(R.id.home_button)).check(matches(isDisplayed()));
+
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         TabUiTestHelper.enterTabSwitcher(cta);
 
@@ -147,6 +151,8 @@ public class StartSurfaceTest {
     @Feature({"StartSurface"})
     @CommandLineFlags.Add({BASE_PARAMS + "/twopanes"})
     public void testShowAndHide_TwoPanesSurface() {
+        onView(withId(R.id.home_button)).check(matches(isDisplayed()));
+
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         TabUiTestHelper.enterTabSwitcher(cta);
 
@@ -354,6 +360,8 @@ public class StartSurfaceTest {
     @Feature({"StartSurface"})
     @CommandLineFlags.Add({BASE_PARAMS + "/single"})
     public void testShowAndHide_TabSwitcherInSingleSurface() {
+        onView(withId(R.id.home_button)).check(matches(isDisplayed()));
+
         TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
 
         onView(withId(R.id.secondary_tasks_surface_view)).check(matches(isDisplayed()));

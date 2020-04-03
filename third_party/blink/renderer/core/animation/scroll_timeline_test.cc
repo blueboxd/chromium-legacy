@@ -17,6 +17,16 @@
 
 namespace blink {
 
+namespace {
+
+StringOrScrollTimelineElementBasedOffset OffsetFromString(const String& value) {
+  StringOrScrollTimelineElementBasedOffset result;
+  result.SetString(value);
+  return result;
+}
+
+}  // namespace
+
 class ScrollTimelineTest : public RenderingTest {
   void SetUp() override {
     EnableCompositing();
@@ -34,15 +44,19 @@ class ScrollTimelineTest : public RenderingTest {
 
 class TestScrollTimeline : public ScrollTimeline {
  public:
-  TestScrollTimeline(
-      Document* document,
-      Element* scroll_source,
-      CSSPrimitiveValue* start_scroll_offset =
-          CSSNumericLiteralValue::Create(10.0,
-                                         CSSPrimitiveValue::UnitType::kPixels),
-      CSSPrimitiveValue* end_scroll_offset =
-          CSSNumericLiteralValue::Create(90.0,
-                                         CSSPrimitiveValue::UnitType::kPixels))
+  TestScrollTimeline(Document* document,
+                     Element* scroll_source,
+                     ScrollTimelineOffset* start_scroll_offset =
+                         MakeGarbageCollected<ScrollTimelineOffset>(
+                             CSSNumericLiteralValue::Create(
+                                 10.0,
+                                 CSSPrimitiveValue::UnitType::kPixels)),
+
+                     ScrollTimelineOffset* end_scroll_offset =
+                         MakeGarbageCollected<ScrollTimelineOffset>(
+                             CSSNumericLiteralValue::Create(
+                                 90.0,
+                                 CSSPrimitiveValue::UnitType::kPixels)))
       : ScrollTimeline(document,
                        scroll_source,
                        ScrollTimeline::Vertical,
@@ -110,8 +124,8 @@ TEST_F(ScrollTimelineTest,
       DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
   options->setTimeRange(time_range);
   options->setScrollSource(GetElementById("scroller"));
-  options->setStartScrollOffset("10px");
-  options->setEndScrollOffset("90px");
+  options->setStartScrollOffset(OffsetFromString("10px"));
+  options->setEndScrollOffset(OffsetFromString("90px"));
   ScrollTimeline* scroll_timeline =
       ScrollTimeline::Create(GetDocument(), options, ASSERT_NO_EXCEPTION);
 
@@ -187,8 +201,8 @@ TEST_F(ScrollTimelineTest,
       DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
   options->setTimeRange(time_range);
   options->setScrollSource(GetElementById("scroller"));
-  options->setStartScrollOffset("80px");
-  options->setEndScrollOffset("40px");
+  options->setStartScrollOffset(OffsetFromString("80px"));
+  options->setEndScrollOffset(OffsetFromString("40px"));
   ScrollTimeline* scroll_timeline =
       ScrollTimeline::Create(GetDocument(), options, ASSERT_NO_EXCEPTION);
 
@@ -245,8 +259,8 @@ TEST_F(ScrollTimelineTest, PhasesAreCorrectWhenUsingOffsets) {
       DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
   options->setTimeRange(time_range);
   options->setScrollSource(GetElementById("scroller"));
-  options->setStartScrollOffset("10px");
-  options->setEndScrollOffset("90px");
+  options->setStartScrollOffset(OffsetFromString("10px"));
+  options->setEndScrollOffset(OffsetFromString("90px"));
   ScrollTimeline* scroll_timeline =
       ScrollTimeline::Create(GetDocument(), options, ASSERT_NO_EXCEPTION);
 
@@ -340,8 +354,8 @@ TEST_F(ScrollTimelineTest, AttachOrDetachAnimationWithNullScrollSource) {
   // scrollSource. The alternative approach would require us to remove the
   // documentElement from the document.
   Element* scroll_source = nullptr;
-  CSSPrimitiveValue* start_scroll_offset = nullptr;
-  CSSPrimitiveValue* end_scroll_offset = nullptr;
+  ScrollTimelineOffset* start_scroll_offset = nullptr;
+  ScrollTimelineOffset* end_scroll_offset = nullptr;
   Persistent<ScrollTimeline> scroll_timeline =
       MakeGarbageCollected<ScrollTimeline>(
           &GetDocument(), scroll_source, ScrollTimeline::Block,
@@ -437,9 +451,13 @@ TEST_F(ScrollTimelineTest, ScheduleFrameWhenScrollerLayoutChanges) {
   scrollable_area->SetScrollOffset(ScrollOffset(0, 20),
                                    mojom::blink::ScrollType::kProgrammatic);
   Element* scroller_element = GetElementById("scroller");
+
+  // Use empty offsets as 'auto'.
   TestScrollTimeline* scroll_timeline =
-      MakeGarbageCollected<TestScrollTimeline>(&GetDocument(), scroller_element,
-                                               nullptr, nullptr);
+      MakeGarbageCollected<TestScrollTimeline>(
+          &GetDocument(), scroller_element,
+          MakeGarbageCollected<ScrollTimelineOffset>(),
+          MakeGarbageCollected<ScrollTimelineOffset>());
   NonThrowableExceptionState exception_state;
   Timing timing;
   timing.iteration_duration = AnimationTimeDelta::FromSecondsD(30);
@@ -452,7 +470,9 @@ TEST_F(ScrollTimelineTest, ScheduleFrameWhenScrollerLayoutChanges) {
                         scroll_timeline, exception_state);
   scroll_animation->play();
   UpdateAllLifecyclePhasesForTest();
-  // Validate that frame is scheduled when scroller layout changes.
+  // Validate that frame is scheduled when scroller layout changes that causes
+  // current time to change. Here we change the scroller max offset which
+  // affects current time because endScrollOffset is 'auto'.
   Element* spacer_element = GetElementById("spacer");
   spacer_element->setAttribute(html_names::kStyleAttr, "height:1000px;");
   scroll_timeline->ResetNextServiceScheduled();

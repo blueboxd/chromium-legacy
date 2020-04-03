@@ -67,7 +67,7 @@ std::unique_ptr<Renderer> TestMojoMediaClient::CreateRenderer(
   if (!renderer_factory_) {
     renderer_factory_ = std::make_unique<DefaultRendererFactory>(
         media_log, decoder_factory_.get(),
-        DefaultRendererFactory::GetGpuFactoriesCB());
+        DefaultRendererFactory::GetGpuFactoriesCB(), nullptr);
   }
 
   // We cannot share AudioOutputStreamSink or NullVideoSink among different

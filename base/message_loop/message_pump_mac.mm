@@ -496,7 +496,7 @@ bool MessagePumpCFRunLoopBase::RunWork() {
   // released promptly even in the absence of UI events.
   MessagePumpScopedAutoreleasePool autorelease_pool(this);
 
-  Delegate::NextWorkInfo next_work_info = delegate_->DoSomeWork();
+  Delegate::NextWorkInfo next_work_info = delegate_->DoWork();
 
   if (next_work_info.is_immediate()) {
     CFRunLoopSourceSignal(work_source_);

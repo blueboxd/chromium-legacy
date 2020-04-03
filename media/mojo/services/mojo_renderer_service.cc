@@ -124,6 +124,12 @@ void MojoRendererService::SetVolume(float volume) {
 }
 
 void MojoRendererService::SetCdm(int32_t cdm_id, SetCdmCallback callback) {
+  if (cdm_context_ref_) {
+    DVLOG(1) << "Switching CDM not supported";
+    std::move(callback).Run(false);
+    return;
+  }
+
   if (!mojo_cdm_service_context_) {
     DVLOG(1) << "CDM service context not available.";
     std::move(callback).Run(false);

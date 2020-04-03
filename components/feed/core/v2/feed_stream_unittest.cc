@@ -95,11 +95,11 @@ std::string ModelStateFor(FeedStore* store) {
 class TestSurface : public FeedStream::SurfaceInterface {
  public:
   // FeedStream::SurfaceInterface.
-  void InitialStreamState(const feedui::StreamUpdate& stream_update) override {
-    initial_state = stream_update;
-  }
   void StreamUpdate(const feedui::StreamUpdate& stream_update) override {
+    if (!initial_state)
+      initial_state = stream_update;
     update = stream_update;
+    ++update_count_;
   }
 
   // Test functions.
@@ -107,10 +107,35 @@ class TestSurface : public FeedStream::SurfaceInterface {
   void Clear() {
     initial_state = base::nullopt;
     update = base::nullopt;
+    update_count_ = 0;
+  }
+
+  // Describe what is shown on the surface in a format that can be easily
+  // asserted against.
+  std::string Describe() {
+    if (!initial_state)
+      return "empty";
+
+    if (update->updated_slices().size() == 1 &&
+        update->updated_slices()[0].has_slice() &&
+        update->updated_slices()[0].slice().has_zero_state_slice()) {
+      return "zero-state";
+    }
+
+    std::stringstream ss;
+    ss << update->updated_slices().size() << " slices";
+    // If there's more than one update, we want to know that.
+    if (update_count_ > 1) {
+      ss << " " << update_count_ << " updates";
+    }
+    return ss.str();
   }
 
   base::Optional<feedui::StreamUpdate> initial_state;
   base::Optional<feedui::StreamUpdate> update;
+
+ private:
+  int update_count_ = 0;
 };
 
 class TestUserClassifier : public UserClassifier {
@@ -370,9 +395,9 @@ TEST_F(FeedStreamTest, SurfaceReceivesInitialContentLoadedAfterAttach) {
     stream_->LoadModelForTesting(std::move(model));
   }
 
-  ASSERT_TRUE(surface.initial_state);
+  ASSERT_EQ("2 slices", surface.Describe());
   const feedui::StreamUpdate& initial_state = surface.initial_state.value();
-  ASSERT_EQ(2, initial_state.updated_slices().size());
+
   EXPECT_NE("", initial_state.updated_slices(0).slice().slice_id());
   EXPECT_EQ("f:0", initial_state.updated_slices(0)
                        .slice()
@@ -407,7 +432,7 @@ TEST_F(FeedStreamTest, SurfaceReceivesUpdatedContent) {
   const feedui::StreamUpdate& initial_state = surface.initial_state.value();
   const feedui::StreamUpdate& update = surface.update.value();
 
-  ASSERT_EQ(2, update.updated_slices().size());
+  ASSERT_EQ("2 slices 2 updates", surface.Describe());
   // First slice is just an ID that matches the old 1st slice ID.
   EXPECT_EQ(initial_state.updated_slices(0).slice().slice_id(),
             update.updated_slices(0).slice_id());
@@ -433,7 +458,6 @@ TEST_F(FeedStreamTest, SurfaceReceivesSecondUpdatedContent) {
   });
 
   // Clear the last update and add #3.
-  surface.update = {};
   stream_->ExecuteOperations({
       MakeOperation(MakeCluster(3, MakeRootId())),
       MakeOperation(MakeContentNode(3, MakeClusterId(3))),
@@ -442,7 +466,7 @@ TEST_F(FeedStreamTest, SurfaceReceivesSecondUpdatedContent) {
 
   // The last update should have only one new piece of content.
   // This verifies the current content set is tracked properly.
-  ASSERT_TRUE(surface.update);
+  ASSERT_EQ("4 slices 3 updates", surface.Describe());
 
   ASSERT_EQ(4, surface.update->updated_slices().size());
   EXPECT_FALSE(surface.update->updated_slices(0).has_slice());
@@ -464,6 +488,7 @@ TEST_F(FeedStreamTest, DetachSurface) {
   stream_->AttachSurface(&surface);
   EXPECT_TRUE(surface.initial_state);
   stream_->DetachSurface(&surface);
+  surface.Clear();
 
   // Arbitrary stream change. Surface should not see the update.
   stream_->ExecuteOperations({
@@ -481,8 +506,7 @@ TEST_F(FeedStreamTest, LoadFromNetwork) {
 
   EXPECT_TRUE(network_.query_request_sent);
   EXPECT_TRUE(response_translator_.InjectedResponseConsumed());
-  ASSERT_TRUE(surface.initial_state);
-  ASSERT_EQ(2, surface.initial_state->updated_slices().size());
+  EXPECT_EQ("2 slices", surface.Describe());
   // Verify the model is filled correctly.
   EXPECT_STRINGS_EQUAL(ModelStateFor(MakeTypicalInitialModelState()),
                        stream_->GetModel()->DumpStateForTesting());
@@ -530,10 +554,10 @@ TEST_F(FeedStreamTest, DoNotLoadFromNetworkWhenOffline) {
   TestSurface surface;
   stream_->AttachSurface(&surface);
   WaitForIdleTaskQueue();
-  // TODO(harringtond): Implement zero-state and check that it is triggered.
+
   EXPECT_EQ(LoadStreamStatus::kCannotLoadFromNetworkOffline,
             event_observer_.load_stream_status);
-  EXPECT_FALSE(network_.query_request_sent);
+  EXPECT_EQ("zero-state", surface.Describe());
 }
 
 TEST_F(FeedStreamTest, DoNotLoadStreamWhenArticleListIsHidden) {
@@ -542,9 +566,10 @@ TEST_F(FeedStreamTest, DoNotLoadStreamWhenArticleListIsHidden) {
   TestSurface surface;
   stream_->AttachSurface(&surface);
   WaitForIdleTaskQueue();
-  // TODO(harringtond): Implement zero-state and check that it is triggered.
+
   EXPECT_EQ(LoadStreamStatus::kLoadNotAllowedArticlesListHidden,
             event_observer_.load_stream_status);
+  EXPECT_EQ("zero-state", surface.Describe());
 }
 
 TEST_F(FeedStreamTest, DoNotLoadStreamWhenEulaIsNotAccepted) {
@@ -553,10 +578,10 @@ TEST_F(FeedStreamTest, DoNotLoadStreamWhenEulaIsNotAccepted) {
   TestSurface surface;
   stream_->AttachSurface(&surface);
   WaitForIdleTaskQueue();
-  // TODO(harringtond): Implement zero-state and check that it is triggered.
-  EXPECT_FALSE(network_.query_request_sent);
+
   EXPECT_EQ(LoadStreamStatus::kLoadNotAllowedEulaNotAccepted,
             event_observer_.load_stream_status);
+  EXPECT_EQ("zero-state", surface.Describe());
 }
 
 TEST_F(FeedStreamTest, DoNotLoadFromNetworkAfterHistoryIsDeleted) {
@@ -568,7 +593,8 @@ TEST_F(FeedStreamTest, DoNotLoadFromNetworkAfterHistoryIsDeleted) {
   stream_->AttachSurface(&surface);
   WaitForIdleTaskQueue();
 
-  ASSERT_FALSE(surface.initial_state);
+  EXPECT_EQ("zero-state", surface.Describe());
+
   EXPECT_EQ(LoadStreamStatus::kCannotLoadFromNetworkSupressedForHistoryDelete,
             event_observer_.load_stream_status);
 
@@ -577,8 +603,7 @@ TEST_F(FeedStreamTest, DoNotLoadFromNetworkAfterHistoryIsDeleted) {
   stream_->AttachSurface(&surface);
   WaitForIdleTaskQueue();
 
-  ASSERT_TRUE(surface.initial_state);
-  ASSERT_EQ(2, surface.initial_state->updated_slices().size());
+  EXPECT_EQ("2 slices 2 updates", surface.Describe());
 }
 
 TEST_F(FeedStreamTest, ShouldMakeFeedQueryRequestConsumesQuota) {
@@ -602,9 +627,8 @@ TEST_F(FeedStreamTest, LoadStreamFromStore) {
   stream_->AttachSurface(&surface);
   WaitForIdleTaskQueue();
 
-  ASSERT_TRUE(surface.initial_state);
+  ASSERT_EQ("2 slices", surface.Describe());
   EXPECT_FALSE(network_.query_request_sent);
-  EXPECT_EQ(2, surface.initial_state->updated_slices().size());
   // Verify the model is filled correctly.
   EXPECT_STRINGS_EQUAL(ModelStateFor(MakeTypicalInitialModelState()),
                        stream_->GetModel()->DumpStateForTesting());
@@ -617,8 +641,8 @@ TEST_F(FeedStreamTest, DetachSurfaceWhileLoadingModel) {
   stream_->DetachSurface(&surface);
   WaitForIdleTaskQueue();
 
+  EXPECT_EQ("empty", surface.Describe());
   EXPECT_TRUE(network_.query_request_sent);
-  EXPECT_FALSE(surface.initial_state);
 }
 
 TEST_F(FeedStreamTest, AttachMultipleSurfacesLoadsModelOnce) {

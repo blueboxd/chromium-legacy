@@ -2,11 +2,12 @@
 
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/util.html">
+<link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
@@ -93,6 +94,11 @@
         left: auto;
         right: 0;
       }
+
+      cr-link-row {
+        padding-inline-start: 0;
+        padding-inline-end: 8px;
+      }
     </style>
     <template is="dom-if" if="[[shouldShowSyncAccountControl_(
         syncStatus.syncSystemEnabled)]]">
@@ -157,34 +163,18 @@
       <div id="[[pages_.CONFIGURE]]"
           hidden$="[[!isStatus_(pages_.CONFIGURE, pageStatus_)]]">
         <div id="other-sync-items" class="list-frame">
-          <div id="sync-advanced-row" class="list-item first"
-              on-click="onSyncAdvancedTap_" actionable>
-            <div class="start" id="page-title" aria-hidden="true">
-              $i18n{syncAdvancedPageTitle}
-            </div>
-            <cr-icon-button class="subpage-arrow" aria-labelledby="page-title"
-                aria-roledescription="$i18n{subpageArrowRoleDescription}">
-            </cr-icon-button>
-          </div>
+          <cr-link-row id="sync-advanced-row"
+              label="$i18n{syncAdvancedPageTitle}"
+              on-click="onSyncAdvancedClick_"></cr-link-row>
 
-          <a class="inherit-color no-outline list-item" tabindex="-1"
-              target="_blank" href="$i18n{activityControlsUrl}"
-              on-click="onActivityControlsTap_">
-            <div class="start settings-box-text">
-              $i18n{personalizeGoogleServicesTitle}
-            </div>
-            <cr-icon-button class="icon-external"></cr-icon-button>
-          </a>
+          <cr-link-row class="hr"
+              label="$i18n{personalizeGoogleServicesTitle}"
+              on-click="onActivityControlsClick_" external></cr-link-row>
 
-          <a id="syncDashboardLink"
-              class="inherit-color no-outline list-item"
-              tabindex="-1" target="_blank" href="$i18n{syncDashboardUrl}"
-              hidden="[[syncStatus.supervisedUser]]">
-            <div class="start settings-box-text">
-              $i18n{manageSyncedDataTitle}
-            </div>
-            <cr-icon-button class="icon-external"></cr-icon-button>
-          </a>
+          <cr-link-row id="syncDashboardLink" class="hr"
+              label="$i18n{manageSyncedDataTitle}"
+              on-click="onSyncDashboardLinkClick_"
+              hidden="[[syncStatus.supervisedUser]]" external></cr-link-row>
 
           <template is="dom-if" if="[[!syncSetupFriendlySettings_]]">
             <div id="encryptionDescription"

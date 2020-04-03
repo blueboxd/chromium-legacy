@@ -804,6 +804,12 @@
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_TITLE" desc="The title of the dialog that welcomes the user on the first log in, and explains Chrome Sync and privacy options.">
     You're signed in!
   </message>
+  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_NAME" desc="Title of the 'Settings sync' section of the sync confirmation dialog that is displayed on the first user log in.">
+    Settings sync
+  </message>
+  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_DESCRIPTION" desc="Description of 'Settings sync' section of the sync confirmation dialog that is displayed on the first user log in.">
+    Your apps, settings, and other customizations will sync across all Chrome OS devices signed in with your Google Account.
+  </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_CHROME_SYNC_NAME" desc="Title of the 'Chrome sync' section of the sync confirmation dialog that is displayed on the first user log in.">
     Chrome sync
   </message>
@@ -818,6 +824,9 @@
   </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_REVIEW_SYNC_OPTIONS_LATER" desc="The label to the checkbox explaining that when checked, it will trigger user settings screen opened after session start.">
     Review sync options following setup
+  </message>
+  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_REVIEW_BROWSER_SYNC_OPTIONS" desc="Label for the checkbox that will open browser sync settings after session start.">
+    Review browser sync options following setup
   </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT_AND_CONTINUE" desc="The label on the button that closes dialog while accepting the selected settings.">
     Accept and continue
@@ -900,7 +909,7 @@
     Show navigation buttons
   </message>
   <message name="IDS_MARKETING_OPT_IN_ACCESSIBILITY_NAV_BUTTON_SETTING_DESCRIPTION" desc="The descripton of the accessibility option that forces shelf navigation buttons (button to go home, back, or the active apps overview) to be always shown. These buttons are hidden by default when the device is in tablet mode.">
-    Show Launcher, Back, Overview buttons in Shelf in tablet mode.
+    Navigate home, back, and switch apps with buttons in tablet mode.
   </message>
   <message name="IDS_MARKETING_OPT_IN_ACCESSIBILITY_DONE_BUTTON" desc="The label for the button on the accessibility page that is part of the the marketing opt in dialog screen, the last OOBE screen shown to the user on their first login to the Chrome OS device. The button closes the screen, and ends the OOBE (which will start the user session).">
     Done

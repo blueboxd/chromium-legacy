@@ -17,9 +17,12 @@
 #include "chrome/browser/permissions/crowd_deny_preload_data.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/pref_names.h"
 #include "components/permissions/permission_request.h"
+#include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/db/database_manager.h"
 
 namespace {
@@ -172,7 +175,8 @@ void ContextualNotificationPermissionUiSelector::OnCrowdDenyTriggerEvaluated(
 
   // Still show the quiet UI if it is enabled for all sites, even if crowd deny
   // did not trigger showing the quiet UI on this origin.
-  if (QuietNotificationPermissionUiState::IsQuietUiEnabledInPrefs(profile_)) {
+  if (profile_->GetPrefs()->GetBoolean(
+          prefs::kEnableQuietNotificationPermissionUi)) {
     Notify(UiToUse::kQuietUi, QuietUiReason::kEnabledInPrefs);
     return;
   }

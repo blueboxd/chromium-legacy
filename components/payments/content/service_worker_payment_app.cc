@@ -533,12 +533,15 @@ void ServiceWorkerPaymentApp::OnPaymentAppIdentity(const url::Origin& origin,
 
 ukm::SourceId ServiceWorkerPaymentApp::UkmSourceId() {
   if (ukm_source_id_ == ukm::kInvalidSourceId) {
+    GURL sw_scope = needs_installation_
+                        ? GURL(installable_web_app_info_->sw_scope)
+                        : stored_payment_app_info_->scope;
     // At this point we know that the payment handler window is open for this
     // app since this getter is called for the invoked app inside the
     // PaymentRequest::OnPaymentHandlerOpenWindowCalled function.
-    ukm_source_id_ = content::PaymentAppProvider::GetInstance()
-                         ->GetSourceIdForPaymentAppFromScope(
-                             GURL(stored_payment_app_info_->scope).GetOrigin());
+    ukm_source_id_ =
+        content::PaymentAppProvider::GetInstance()
+            ->GetSourceIdForPaymentAppFromScope(sw_scope.GetOrigin());
   }
   return ukm_source_id_;
 }

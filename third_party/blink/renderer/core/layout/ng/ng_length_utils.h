@@ -326,7 +326,7 @@ ComputeBlockSizeForFragment(const NGConstraintSpace&,
 // - neither out_aspect_ratio, nor out_replaced_size
 // SVG elements can return any of the three options above.
 CORE_EXPORT void ComputeReplacedSize(
-    const NGLayoutInputNode&,
+    const NGBlockNode&,
     const NGConstraintSpace&,
     const base::Optional<MinMaxSizes>&,
     base::Optional<LogicalSize>* out_replaced_size,

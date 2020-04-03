@@ -12,6 +12,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/unguessable_token.h"
+#include "media/base/cdm_context.h"
 #include "media/base/decode_status.h"
 #include "media/base/overlay_info.h"
 #include "media/base/video_decoder.h"
@@ -110,8 +111,9 @@ class MEDIA_MOJO_EXPORT MojoVideoDecoderService final
   // Helper for reading DecoderBuffer data from the DataPipe.
   std::unique_ptr<MojoDecoderBufferReader> mojo_decoder_buffer_reader_;
 
-  // Holds the CdmContextRef to keep the CdmContext alive for the lifetime of
-  // the |decoder_|.
+  // The CDM ID and the corresponding CdmContextRef, which must be held to keep
+  // the CdmContext alive for the lifetime of the |decoder_|.
+  int cdm_id_ = CdmContext::kInvalidCdmId;
   std::unique_ptr<CdmContextRef> cdm_context_ref_;
 
   std::unique_ptr<media::VideoDecoder> decoder_;

@@ -365,7 +365,7 @@ class WebMediaPlayerImplTest
         RendererFactoryType::kDefault,
         std::make_unique<DefaultRendererFactory>(
             media_log.get(), decoder_factory_.get(),
-            DefaultRendererFactory::GetGpuFactoriesCB()));
+            DefaultRendererFactory::GetGpuFactoriesCB(), nullptr));
 #if defined(OS_ANDROID)
     factory_selector->StartRequestRemotePlayStateCB(base::DoNothing());
 #endif

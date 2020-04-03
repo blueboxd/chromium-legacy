@@ -7,10 +7,13 @@
 #include <utility>
 
 #include "base/task/post_task.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager_factory.h"
 #include "chrome/browser/chromeos/printing/printer_configurer.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
 
 namespace chromeos {
@@ -24,6 +27,12 @@ CupsProxyServiceDelegateImpl::CupsProxyServiceDelegateImpl()
 }
 
 CupsProxyServiceDelegateImpl::~CupsProxyServiceDelegateImpl() = default;
+
+bool CupsProxyServiceDelegateImpl::IsPrinterAccessAllowed() const {
+  const PrefService* prefs = profile_->GetPrefs();
+  return prefs->GetBoolean(prefs::kPrintingEnabled) &&
+         prefs->GetBoolean(plugin_vm::prefs::kPluginVmPrintersAllowed);
+}
 
 base::Optional<Printer> CupsProxyServiceDelegateImpl::GetPrinter(
     const std::string& id) {

@@ -10,15 +10,16 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
+using chromeos::network_config::mojom::NetworkType;
+
 namespace {
 
 // Constant values for fake device and service.
 constexpr char kServicePath[] = "/service/0";
 constexpr char kServiceName[] = "service_name";
-constexpr char kServiceGUID[] = "wifi_guid";
-constexpr char kDevicePath[] = "/device/wifi";
+constexpr char kServiceGUID[] = "eth_guid";
+constexpr char kDevicePath[] = "/device/eth";
 constexpr char kDeviceName[] = "device_name";
-constexpr char kDefaultProfle[] = "/profile/default";
 
 }  // namespace
 
@@ -26,7 +27,10 @@ namespace chromeos {
 
 class NetworkHealthTest : public ::testing::Test {
  public:
-  NetworkHealthTest() {}
+  NetworkHealthTest() {
+    // Wait until CrosNetworkConfigTestHelper is fully setup.
+    task_environment_.RunUntilIdle();
+  }
 
  protected:
   content::BrowserTaskEnvironment task_environment_;
@@ -35,26 +39,28 @@ class NetworkHealthTest : public ::testing::Test {
 };
 
 TEST_F(NetworkHealthTest, GetNetworkHealthSucceeds) {
-  // Create an active network.
+  // Check that the default wifi device created by CrosNetworkConfigTestHelper
+  // exists.
+  auto network_health_state = network_health_.GetNetworkHealthState();
+  ASSERT_EQ(network_health_state.devices.size(), std::size_t(1));
+
+  // Create an ethernet device and service, and make it the active network.
   cros_network_config_test_helper_.network_state_helper().AddDevice(
-      kDevicePath, shill::kTypeWifi, kDeviceName);
+      kDevicePath, shill::kTypeEthernet, kDeviceName);
 
   cros_network_config_test_helper_.network_state_helper()
       .service_test()
-      ->AddService(kServicePath, kServiceGUID, kServiceName, shill::kTypeWifi,
-                   shill::kStateOnline, true);
-
-  cros_network_config_test_helper_.network_state_helper()
-      .profile_test()
-      ->AddService(kDefaultProfle, kServicePath);
+      ->AddService(kServicePath, kServiceGUID, kServiceName,
+                   shill::kTypeEthernet, shill::kStateOnline, true);
 
   // Wait until the network and service have been created and configured.
   task_environment_.RunUntilIdle();
 
-  auto network_health_state = network_health_.GetNetworkHealthState();
-
+  network_health_state = network_health_.GetNetworkHealthState();
+  EXPECT_EQ(network_health_state.devices.size(), std::size_t(2));
   EXPECT_EQ(network_health_state.active_networks.size(), std::size_t(1));
   EXPECT_EQ(network_health_state.active_networks[0].name, kServiceName);
+  EXPECT_EQ(network_health_state.devices[1].type, NetworkType::kEthernet);
 }
 
 }  // namespace chromeos

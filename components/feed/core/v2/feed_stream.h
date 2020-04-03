@@ -173,7 +173,7 @@ class FeedStream : public FeedStreamApi,
       std::unique_ptr<UserClassifier> user_classifier);
 
  private:
-  class ModelMonitor;
+  class SurfaceUpdater;
   class ModelStoreChangeMonitor;
   void MaybeTriggerRefresh(TriggerType trigger,
                            bool clear_all_before_refresh = false);
@@ -202,8 +202,7 @@ class FeedStream : public FeedStreamApi,
   // Whether the model is being loaded. Used to prevent multiple simultaneous
   // attempts to load the model.
   bool model_loading_in_progress_ = false;
-  // Monitors |model_|. Null when |model_| is null.
-  std::unique_ptr<ModelMonitor> model_monitor_;
+  std::unique_ptr<SurfaceUpdater> surface_updater_;
   // The stream model. Null if not yet loaded.
   // Internally, this should only be changed by |LoadModel()| and
   // |UnloadModel()|.

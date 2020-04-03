@@ -64,7 +64,7 @@ BarcodeDetector* BarcodeDetector::Create(ExecutionContext* context,
 BarcodeDetector::BarcodeDetector(ExecutionContext* context,
                                  const BarcodeDetectorOptions* options,
                                  ExceptionState& exception_state)
-    : ShapeDetector() {
+    : service_(context) {
   auto barcode_detector_options =
       shape_detection::mojom::blink::BarcodeDetectorOptions::New();
 
@@ -138,7 +138,7 @@ String BarcodeDetector::BarcodeFormatToString(
 ScriptPromise BarcodeDetector::DoDetect(ScriptPromiseResolver* resolver,
                                         SkBitmap bitmap) {
   ScriptPromise promise = resolver->Promise();
-  if (!service_) {
+  if (!service_.is_bound()) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotSupportedError,
         "Barcode detection service unavailable."));
@@ -195,6 +195,7 @@ void BarcodeDetector::OnConnectionError() {
 
 void BarcodeDetector::Trace(Visitor* visitor) {
   ShapeDetector::Trace(visitor);
+  visitor->Trace(service_);
   visitor->Trace(detect_requests_);
 }
 

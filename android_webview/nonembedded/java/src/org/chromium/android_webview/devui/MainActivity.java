@@ -51,8 +51,6 @@ public class MainActivity extends FragmentActivity {
         mSwitchFragmentOnResume = true;
 
         mDifferentPackageError = new WebViewPackageError(this);
-        // show the dialog once when the activity is created.
-        mDifferentPackageError.showDialogIfDifferent();
 
         // Set up bottom navigation bar:
         mFragmentIdMap.put(R.id.navigation_home, FRAGMENT_ID_HOME);

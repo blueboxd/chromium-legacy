@@ -21,6 +21,7 @@
 #include "cc/input/overscroll_behavior.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/layer_list_iterator.h"
+#include "cc/metrics/event_metrics.h"
 #include "cc/paint/discardable_image_map.h"
 #include "cc/resources/ui_resource_client.h"
 #include "cc/trees/browser_controls_params.h"
@@ -640,6 +641,10 @@ class CC_EXPORT LayerTreeImpl {
       std::unique_ptr<PendingPageScaleAnimation> pending_animation);
   std::unique_ptr<PendingPageScaleAnimation> TakePendingPageScaleAnimation();
 
+  void AppendEventsMetricsFromMainThread(
+      std::vector<EventMetrics> events_metrics);
+  std::vector<EventMetrics> TakeEventsMetrics();
+
   // Requests that we force send RenderFrameMetadata with the next frame.
   void RequestForceSendMetadata() { force_send_metadata_request_ = true; }
   bool TakeForceSendMetadataRequest();
@@ -852,6 +857,9 @@ class CC_EXPORT LayerTreeImpl {
   gfx::OverlayTransform display_transform_hint_ = gfx::OVERLAY_TRANSFORM_NONE;
 
   std::vector<LayerTreeHost::PresentationTimeCallback> presentation_callbacks_;
+
+  // Event metrics that are reported back from the main thread.
+  std::vector<EventMetrics> events_metrics_from_main_thread_;
 };
 
 }  // namespace cc

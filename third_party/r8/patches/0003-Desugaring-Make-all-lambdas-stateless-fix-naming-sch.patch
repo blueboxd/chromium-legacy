@@ -1,0 +1,39 @@
+From 6c3009d363b1e50adc83279dba27b4e0a350ead7 Mon Sep 17 00:00:00 2001
+From: Andrew Grieve <agrieve@chromium.org>
+Date: Wed, 1 Apr 2020 10:03:46 -0400
+Subject: [PATCH 3/5] Desugaring: Make all lambdas stateless & fix naming
+ scheme of method references
+
+Statefull lambdas regress dex size.
+
+Bug: b/129997269
+---
+ .../java/com/android/tools/r8/ir/desugar/LambdaClass.java    | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/src/main/java/com/android/tools/r8/ir/desugar/LambdaClass.java b/src/main/java/com/android/tools/r8/ir/desugar/LambdaClass.java
+index 0831e6d93..0abb97180 100644
+--- a/src/main/java/com/android/tools/r8/ir/desugar/LambdaClass.java
++++ b/src/main/java/com/android/tools/r8/ir/desugar/LambdaClass.java
+@@ -128,7 +128,8 @@ public final class LambdaClass {
+     // If the lambda class should match 1:1 the class it is accessed from, we
+     // just add the name of this type to make lambda class name unique.
+     // It also helps link the class lambda originated from in some cases.
+-    if (match.delegatesToLambdaImplMethod() || match.needsAccessor(accessedFrom)) {
++    if (true || match.delegatesToLambdaImplMethod() || match.needsAccessor(accessedFrom)) {
++      // Chrome: This class name is required for supersize to map the symbol to source .java file.
+       lambdaClassDescriptor.append(accessedFrom.getName()).append('$');
+     }
+ 
+@@ -206,7 +207,7 @@ public final class LambdaClass {
+   }
+ 
+   public final boolean isStateless() {
+-    return descriptor.isStateless();
++    return false;  // descriptor.isStateless();
+   }
+ 
+   void addSynthesizedFrom(DexProgramClass clazz) {
+-- 
+2.26.0.rc2.310.g2932bb562d-goog
+

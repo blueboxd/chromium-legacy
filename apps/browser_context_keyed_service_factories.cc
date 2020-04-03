@@ -9,13 +9,11 @@
 #include "apps/saved_files_service.h"
 #include "apps/saved_files_service_factory.h"
 #include "content/public/browser/browser_context.h"
-#include "extensions/browser/app_window/app_window_geometry_cache.h"
 
 namespace apps {
 
 void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
-  apps::AppRestoreServiceFactory::GetInstance();
-  extensions::AppWindowGeometryCache::Factory::GetInstance();
+  AppRestoreServiceFactory::GetInstance();
 }
 
 void NotifyApplicationTerminating(content::BrowserContext* browser_context) {

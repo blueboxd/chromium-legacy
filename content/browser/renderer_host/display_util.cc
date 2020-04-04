@@ -20,7 +20,8 @@ void DisplayUtil::DisplayToScreenInfo(ScreenInfo* screen_info,
   // TODO(husky): Remove any Android system controls from availableRect.
   screen_info->available_rect = display.work_area();
   screen_info->device_scale_factor = display.device_scale_factor();
-  screen_info->color_space = display.color_spaces().GetRasterColorSpace();
+  screen_info->color_space = display.color_spaces().GetOutputColorSpace(
+      gfx::ContentColorUsage::kHDR, false);
   screen_info->depth = display.color_depth();
   screen_info->depth_per_component = display.depth_per_component();
   screen_info->is_monochrome = display.is_monochrome();

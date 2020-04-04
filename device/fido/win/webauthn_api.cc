@@ -235,18 +235,14 @@ AuthenticatorMakeCredentialBlocking(WinWebAuthnApi* webauthn_api,
   if (request.cred_protect) {
     // MakeCredentialRequestHandler rejects a request with credProtect
     // enforced=true if webauthn.dll does not support credProtect.
-    if (request.cred_protect_enforce &&
+    if (request.cred_protect->second &&
         webauthn_api->Version() < WEBAUTHN_API_VERSION_2) {
       NOTREACHED();
       return {CtapDeviceResponseCode::kCtap2ErrNotAllowed, base::nullopt};
     }
-    // Windows doesn't support the concept of
-    // CredProtectRequest::kUVOrCredIDRequiredOrBetter. So an authenticators
-    // that defaults to credProtect level three will only use level two when
-    // Chrome is setting the credProtect level for discoverable credentials.
     maybe_cred_protect_extension = WEBAUTHN_CRED_PROTECT_EXTENSION_IN{
-        /*dwCredProtect=*/static_cast<uint8_t>(*request.cred_protect),
-        /*bRequireCredProtect=*/request.cred_protect_enforce,
+        /*dwCredProtect=*/static_cast<uint8_t>(request.cred_protect->first),
+        /*bRequireCredProtect=*/request.cred_protect->second,
     };
     extensions.emplace_back(WEBAUTHN_EXTENSION{
         /*pwszExtensionIdentifier=*/WEBAUTHN_EXTENSIONS_IDENTIFIER_CRED_PROTECT,

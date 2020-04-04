@@ -139,6 +139,15 @@ declare_args() {
   # 'use_xcode_clang' may call old clang.
   init_stack_vars =
       !is_android && !use_xcode_clang && (!is_official_build || is_linux)
+
+  # This argument is to control whether enabling text section splitting in the
+  # final binary. When enabled, the separated text sections with prefix
+  # '.text.hot', '.text.unlikely', '.text.startup' and '.text.exit' will not be
+  # merged to '.text' section. This allows us to identify the hot code section
+  # ('.text.hot') in the binary which may be mlocked or mapped to huge page to
+  # reduce TLB misses which gives performance improvement on cpu usage.
+  # The gold linker by default has text section splitting enabled.
+  use_text_section_splitting = false
 }
 
 declare_args() {
@@ -483,6 +492,12 @@ config("compiler") {
     } else {
       ldflags += [ "-Wl,--color-diagnostics" ]
     }
+  }
+
+  # Enable text section splitting only on linux when using lld for now. Other
+  # platforms can be added later if needed.
+  if (is_linux && use_lld && use_text_section_splitting) {
+    ldflags += [ "-Wl,-z,keep-text-section-prefix" ]
   }
 
   if (is_clang && !is_nacl && !use_xcode_clang) {

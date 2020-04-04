@@ -98,6 +98,8 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   void FocusRootView() override;
   blink::mojom::PointerLockResult LockMouse(
       bool request_unadjusted_movement) override;
+  blink::mojom::PointerLockResult ChangeMouseLock(
+      bool request_unadjusted_movement) override;
   void UnlockMouse() override;
   void EnableAutoResize(const gfx::Size& min_size,
                         const gfx::Size& max_size) override;

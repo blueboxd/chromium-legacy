@@ -80,13 +80,10 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
 
   // cred_protect indicates the level of protection afforded to a credential.
   // This depends on a CTAP2 extension that not all authenticators will support.
-  // This is filled out by |MakeCredentialRequestHandler|.
-  base::Optional<CredProtect> cred_protect;
-  // If |cred_protect| is not |nullopt|, this is true if the credProtect level
-  // must be provided by the target authenticator for the MakeCredential request
-  // to be sent. This only makes sense when there is a collection of
-  // authenticators to consider, i.e. for the Windows API.
-  bool cred_protect_enforce = false;
+  // The second element is true if the indicated protection level must be
+  // provided by the target authenticator for the MakeCredential request to be
+  // sent.
+  base::Optional<std::pair<CredProtect, bool>> cred_protect;
 
   base::Optional<AndroidClientDataExtensionInput> android_client_data_ext;
 };

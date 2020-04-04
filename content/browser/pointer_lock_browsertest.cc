@@ -773,4 +773,107 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTestWithOptions,
   EXPECT_EQ("[6,7,10,11]", EvalJs(root, "JSON.stringify([x,y,mX,mY])"));
 }
 #endif
+
+#if defined(USE_AURA)
+// TODO(https://crbug.com/982379): Remove failure test when fully implemented
+#if defined(OS_WIN)
+#define MAYBE_ChangeUnadjustedMovementFailure \
+  DISABLED_ChangeUnadjustedMovementFailure
+#else
+#define MAYBE_ChangeUnadjustedMovementFailure ChangeUnadjustedMovementFailure
+#endif
+// Tests that a subsequent request to RequestPointerLock with different
+// options inside a Child view gets piped to the proper places and gives
+// the proper unsupported error(this option is only supported on Windows
+// This was prompted by this bug: https://crbug.com/1062702
+IN_PROC_BROWSER_TEST_F(PointerLockBrowserTestWithOptions,
+                       MAYBE_ChangeUnadjustedMovementFailure) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* child = root->child_at(0);
+  RenderWidgetHostViewBase* child_view = static_cast<RenderWidgetHostViewBase*>(
+      child->current_frame_host()->GetView());
+
+  WaitForHitTestData(child->current_frame_host());
+
+  // Request a pointer lock on the child frame's body and wait for the promise
+  // to resolve.
+  EXPECT_EQ(nullptr, EvalJs(child, "document.body.requestPointerLock()"));
+
+  // Child frame should have been granted pointer lock.
+  EXPECT_EQ(true,
+            EvalJs(child, "document.pointerLockElement == document.body"));
+  EXPECT_TRUE(child_view->IsMouseLocked());
+  EXPECT_FALSE(root->current_frame_host()
+                   ->GetView()
+                   ->GetIsMouseLockedUnadjustedMovementForTesting());
+  EXPECT_EQ(child_view->host(), web_contents()->GetMouseLockWidget());
+
+  // Request to change pointer lock options and wait for return.
+  EXPECT_EQ(
+      "a JavaScript error: \"NotSupportedError: The options asked for in this "
+      "request are not supported on this platform.\"\n",
+      EvalJs(child,
+             "document.body.requestPointerLock({unadjustedMovement:true})")
+          .error);
+
+  // The change errored out but the original lock should still be in place.
+  EXPECT_TRUE(child_view->IsMouseLocked());
+  EXPECT_FALSE(root->current_frame_host()
+                   ->GetView()
+                   ->GetIsMouseLockedUnadjustedMovementForTesting());
+  EXPECT_EQ(child_view->host(), web_contents()->GetMouseLockWidget());
+}
+#endif
+
+#if defined(USE_AURA)
+#if defined(OS_WIN)
+// Tests that a subsequent request to RequestPointerLock with different
+// options inside a Child view gets piped to the proper places and updates
+// the option(this option is only supported on Windows).
+// This was prompted by this bug: https://crbug.com/1062702
+IN_PROC_BROWSER_TEST_F(PointerLockBrowserTestWithOptions,
+                       ChangeUnadjustedMovementSuccess) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* child = root->child_at(0);
+  RenderWidgetHostViewBase* child_view = static_cast<RenderWidgetHostViewBase*>(
+      child->current_frame_host()->GetView());
+
+  WaitForHitTestData(child->current_frame_host());
+
+  // Request a pointer lock on the child frame's body and wait for the promise
+  // to resolve.
+  EXPECT_EQ(nullptr, EvalJs(child, "document.body.requestPointerLock()"));
+
+  // Child frame should have been granted pointer lock.
+  EXPECT_EQ(true,
+            EvalJs(child, "document.pointerLockElement == document.body"));
+  EXPECT_TRUE(child_view->IsMouseLocked());
+  EXPECT_FALSE(root->current_frame_host()
+                   ->GetView()
+                   ->GetIsMouseLockedUnadjustedMovementForTesting());
+  EXPECT_EQ(child_view->host(), web_contents()->GetMouseLockWidget());
+
+  // Request to change pointer lock options and wait for return.
+  EXPECT_EQ(
+      nullptr,
+      EvalJs(child,
+             "document.body.requestPointerLock({unadjustedMovement:true})"));
+
+  // The new changed lock should now be in place.
+  EXPECT_TRUE(child_view->IsMouseLocked());
+  EXPECT_TRUE(root->current_frame_host()
+                  ->GetView()
+                  ->GetIsMouseLockedUnadjustedMovementForTesting());
+  EXPECT_EQ(child_view->host(), web_contents()->GetMouseLockWidget());
+}
+#endif  // WIN_OS
+#endif  // USE_AURA
 }  // namespace content

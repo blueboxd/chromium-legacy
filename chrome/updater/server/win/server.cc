@@ -21,6 +21,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -32,6 +33,7 @@
 #include "chrome/updater/configurator.h"
 #include "chrome/updater/update_service.h"
 #include "chrome/updater/update_service_in_process.h"
+#include "components/update_client/update_client_errors.h"
 
 namespace updater {
 namespace {
@@ -230,6 +232,8 @@ STDMETHODIMP LegacyOnDemandImpl::createApp(BSTR app_id,
   return E_NOTIMPL;
 }
 STDMETHODIMP LegacyOnDemandImpl::createInstalledApp(BSTR app_id) {
+  app_id_ = base::UTF16ToASCII(app_id);
+
   return S_OK;
 }
 STDMETHODIMP LegacyOnDemandImpl::createAllInstalledApps() {
@@ -258,7 +262,66 @@ STDMETHODIMP LegacyOnDemandImpl::get_appWeb(int index, IDispatch** app_web) {
 STDMETHODIMP LegacyOnDemandImpl::initialize() {
   return S_OK;
 }
+
+void LegacyOnDemandImpl::UpdateStateCallback(
+    UpdateService::UpdateState state_update) {
+  switch (state_update) {
+    case UpdateService::UpdateState::kNotStarted:
+      state_value_ = STATE_INIT;
+      break;
+    case UpdateService::UpdateState::kCheckingForUpdates:
+      state_value_ = STATE_CHECKING_FOR_UPDATE;
+      break;
+    case UpdateService::UpdateState::kDownloading:
+      state_value_ = STATE_DOWNLOADING;
+      break;
+    case UpdateService::UpdateState::kInstalling:
+      state_value_ = STATE_INSTALLING;
+      break;
+    case UpdateService::UpdateState::kUpdated:
+      state_value_ = STATE_INSTALL_COMPLETE;
+      break;
+    case UpdateService::UpdateState::kNoUpdate:
+      state_value_ = STATE_NO_UPDATE;
+      break;
+    case UpdateService::UpdateState::kUpdateError:
+      state_value_ = STATE_ERROR;
+      break;
+    default:
+      break;
+  }
+}
+
+void LegacyOnDemandImpl::UpdateResultCallback(UpdateService::Result result) {
+  if (result == update_client::Error::NONE) {
+    state_value_ = STATE_INSTALL_COMPLETE;
+    error_code_ = S_OK;
+  } else {
+    state_value_ = STATE_ERROR;
+    error_code_ = E_FAIL;
+  }
+}
+
 STDMETHODIMP LegacyOnDemandImpl::checkForUpdate() {
+  using LegacyOnDemandImplPtr = Microsoft::WRL::ComPtr<LegacyOnDemandImpl>;
+
+  // Invoke the in-process |update_service| on the main sequence.
+  auto com_server = ComServer::Instance();
+  com_server->main_task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](scoped_refptr<UpdateService> update_service,
+             LegacyOnDemandImplPtr legacy_on_demand_impl) {
+            update_service->Update(
+                legacy_on_demand_impl->app_id_,
+                UpdateService::Priority::kForeground,
+                base::BindRepeating(&LegacyOnDemandImpl::UpdateStateCallback,
+                                    legacy_on_demand_impl),
+                base::BindOnce(&LegacyOnDemandImpl::UpdateResultCallback,
+                               legacy_on_demand_impl));
+          },
+          com_server->service(), LegacyOnDemandImplPtr(this)));
+
   return S_OK;
 }
 STDMETHODIMP LegacyOnDemandImpl::download() {
@@ -321,7 +384,7 @@ STDMETHODIMP LegacyOnDemandImpl::put_serverInstallDataIndex(BSTR language) {
 STDMETHODIMP LegacyOnDemandImpl::get_stateValue(LONG* state_value) {
   DCHECK(state_value);
 
-  *state_value = STATE_NO_UPDATE;
+  *state_value = state_value_;
   return S_OK;
 }
 STDMETHODIMP LegacyOnDemandImpl::get_availableVersion(BSTR* available_version) {
@@ -353,7 +416,9 @@ STDMETHODIMP LegacyOnDemandImpl::get_isCanceled(VARIANT_BOOL* is_canceled) {
   return E_NOTIMPL;
 }
 STDMETHODIMP LegacyOnDemandImpl::get_errorCode(LONG* error_code) {
-  return E_NOTIMPL;
+  *error_code = error_code_;
+
+  return S_OK;
 }
 STDMETHODIMP LegacyOnDemandImpl::get_extraCode1(LONG* extra_code1) {
   return E_NOTIMPL;

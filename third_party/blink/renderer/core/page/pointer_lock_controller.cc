@@ -186,7 +186,12 @@ DOMException* PointerLockController::ConvertResultToException(
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kWrongDocumentError,
           "The element has been destroyed while making this request.");
-    default:
+    case mojom::blink::PointerLockResult::kUserRejected:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kSecurityError,
+          "The user has exited the lock before this request was completed.");
+    case mojom::blink::PointerLockResult::kSuccess:
+    case mojom::blink::PointerLockResult::kUnknownError:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kUnknownError,
           "If you see this error we have a bug. Please report this bug to "

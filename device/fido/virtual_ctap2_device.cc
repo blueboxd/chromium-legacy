@@ -465,11 +465,6 @@ VirtualCtap2Device::VirtualCtap2Device(scoped_refptr<State> state,
     options.is_platform_device = true;
   }
 
-  if (config.cred_protect_support) {
-    options_updated = true;
-    options.default_cred_protect = config.default_cred_protect;
-  }
-
   if (options_updated) {
     device_info_->options = std::move(options);
   }
@@ -768,18 +763,18 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
                            cbor::Value(true));
   }
 
-  CredProtect cred_protect = config_.default_cred_protect;
+  base::Optional<CredProtect> cred_protect;
   if (request.cred_protect) {
-    cred_protect = *request.cred_protect;
+    cred_protect = request.cred_protect->first;
   }
   if (config_.force_cred_protect) {
-    cred_protect = *config_.force_cred_protect;
+    cred_protect = config_.force_cred_protect;
   }
 
-  if (request.cred_protect ||
-      cred_protect != device::CredProtect::kUVOptional) {
-    extensions_map.emplace(cbor::Value(kExtensionCredProtect),
-                           cbor::Value(static_cast<int64_t>(cred_protect)));
+  if (cred_protect) {
+    extensions_map.emplace(
+        cbor::Value(kExtensionCredProtect),
+        cbor::Value(cred_protect == CredProtect::kUVRequired ? 3 : 2));
   }
 
   if (config_.add_extra_extension) {
@@ -939,9 +934,10 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnGetAssertion(
           [user_verified, &request](
               const std::pair<base::span<const uint8_t>, RegistrationData*>&
                   candidate) -> bool {
-            switch (candidate.second->protection) {
-              case CredProtect::kUVOptional:
-                return false;
+            if (!candidate.second->protection) {
+              return false;
+            }
+            switch (*candidate.second->protection) {
               case CredProtect::kUVOrCredIDRequired:
                 return request.allow_list.empty() && !user_verified;
               case CredProtect::kUVRequired:

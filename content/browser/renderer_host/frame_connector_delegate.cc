@@ -79,11 +79,13 @@ bool FrameConnectorDelegate::HasFocus() {
 
 blink::mojom::PointerLockResult FrameConnectorDelegate::LockMouse(
     bool request_unadjusted_movement) {
+  NOTREACHED();
   return blink::mojom::PointerLockResult::kUnknownError;
 }
 
 blink::mojom::PointerLockResult FrameConnectorDelegate::ChangeMouseLock(
     bool request_unadjusted_movement) {
+  NOTREACHED();
   return blink::mojom::PointerLockResult::kUnknownError;
 }
 

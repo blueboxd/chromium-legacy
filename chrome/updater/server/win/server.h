@@ -11,6 +11,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string16.h"
 #include "chrome/updater/server/win/updater_idl.h"
+#include "chrome/updater/update_service.h"
 
 namespace updater {
 
@@ -109,6 +110,13 @@ class LegacyOnDemandImpl
                         UINT*) override;
 
  private:
+  void UpdateStateCallback(UpdateService::UpdateState state_update);
+  void UpdateResultCallback(UpdateService::Result result);
+
+  std::string app_id_;
+  int state_value_ = STATE_INIT;
+  HRESULT error_code_ = S_OK;
+
   ~LegacyOnDemandImpl() override = default;
 };
 

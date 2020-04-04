@@ -730,7 +730,9 @@ TEST_F(SafetyCheckHandlerTest, CheckPasswords_Error) {
           kPasswords,
           static_cast<int>(SafetyCheckHandler::PasswordsStatus::kError));
   ASSERT_TRUE(event);
-  VerifyDisplayString(event, "Browser can't check your passwords.");
+  VerifyDisplayString(event,
+                      "Browser can't check your passwords. Try again "
+                      "later.");
   histogram_tester_.ExpectBucketCount(
       "Settings.SafetyCheck.PasswordsResult",
       SafetyCheckHandler::PasswordsStatus::kError, 1);

@@ -2,12 +2,17 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="is">
 <translation id="1124772482545689468">Notandi</translation>
+<translation id="1178581264944972037">Gera hlé</translation>
 <translation id="1181037720776840403">Fjarlægja</translation>
 <translation id="1201402288615127009">Áfram</translation>
 <translation id="1383876407941801731">Leita</translation>
+<translation id="1384959399684842514">Gert var hlé á niðurhali</translation>
+<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="2079545284768500474">Afturkalla</translation>
 <translation id="2148716181193084225">Í dag</translation>
 <translation id="2359808026110333948">Halda áfram</translation>
+<translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
+<translation id="2434158240863470628">Niðurhali lokið <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2501278716633472235">Fara til baka</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{Lokað á eitt fótspor}one{Lokað á # fótspor}other{Lokað á # fótspor}}</translation>
 <translation id="257931822824936280">Stækkað – smelltu til að minnka.</translation>
@@ -19,6 +24,7 @@
 <translation id="3479552764303398839">Ekki núna</translation>
 <translation id="385051799172605136">Til baka</translation>
 <translation id="3987993985790029246">Afrita tengil</translation>
+<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="4002066346123236978">Heiti</translation>
 <translation id="4570913071927164677">Nánar</translation>
 <translation id="4645575059429386691">Stjórnað af foreldri þínu</translation>
@@ -40,6 +46,7 @@
 <translation id="6206551242102657620">Örugg tenging. Upplýsingar um vefsvæði</translation>
 <translation id="6216432067784365534">Valkostir fyrir <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6527303717912515753">Deila</translation>
+<translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6746124502594467657">Færa niður</translation>
 <translation id="6818926723028410516">Veldu atriði</translation>
 <translation id="6910211073230771657">Eytt</translation>
@@ -48,6 +55,7 @@
 <translation id="6965382102122355670">Í lagi</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 valið}one{# valið}other{# valin}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> valin.  Valkostir eru ofarlega á skjánum</translation>
+<translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> valin</translation>
 <translation id="7649070708921625228">Hjálp</translation>
 <translation id="7658239707568436148">Hætta við</translation>
@@ -55,7 +63,9 @@
 <translation id="7791543448312431591">Bæta við</translation>
 <translation id="780301667611848630">Nei, takk</translation>
 <translation id="7846076177841592234">Hætta við val</translation>
+<translation id="802154636333426148">Niðurhal mistókst</translation>
 <translation id="8131740175452115882">Staðfesta</translation>
+<translation id="8200772114523450471">Halda áfram</translation>
 <translation id="8206354486702514201">Stjórnandi valdi þessa stillingu.</translation>
 <translation id="8249310407154411074">Færa efst</translation>
 <translation id="8261506727792406068">Eyða</translation>

@@ -51,7 +51,6 @@
 <translation id="2309047409763057870">ही Google Chrome ची दुय्यम स्थापना असून त्यास तुमचा डीफॉल्ट ब्राउझर बनवू शकत नाही.</translation>
 <translation id="2341767445688917208">Chrome OS तुमचे पासवर्ड सिंक करू शकले नाही. आता निराकरण करा.</translation>
 <translation id="2348335408836342058">या साइटसाठी Chrome ला तुमचा कॅमेरा आणि मायक्रोफोन ॲक्सेस करण्याची परवानगी हवी आहे</translation>
-<translation id="234869673307233423">Chrome तुमचे पासवर्ड तपासू शकत नाही. नंतर पुन्हा प्रयत्न करा.</translation>
 <translation id="2429317896000329049">आपल्या डोमेनसाठी संकालन उपलब्ध नसल्यामुळे Google Chrome तुमचा डेटा संकालित करू शकले नाही.</translation>
 <translation id="2467438592969358367">Google Chrome ला तुमचे पासवर्ड निर्यात करायचे आहेत. हे करू देण्यासाठी तुमचा Windows पासवर्ड टाइप करा.</translation>
 <translation id="2485422356828889247">अनइंस्टॉल करा</translation>
@@ -66,7 +65,6 @@
 <translation id="2689103672227170538">तुम्ही Chrome सुरू करता तेव्हा कोणते पेज दर्शविले जाते हे या एक्स्टेंशनने बदलले आहे.</translation>
 <translation id="2765403129283291972">या साइटसाठी Chrome ला तुमचा मायक्रोफोन ॲक्सेस करण्याची परवानगी हवी आहे</translation>
 <translation id="2770231113462710648">डीफॉल्ट ब्राउझर यावर बदला:</translation>
-<translation id="2775140325783767197">Chrome तुमचे पासवर्ड तपासू शकत नाही. तुमचे इंटरनेट कनेक्शन तपासून पहा.</translation>
 <translation id="2799223571221894425">पुन्हा लाँच करा</translation>
 <translation id="2847461019998147611">Google Chrome या भाषेत डिस्प्ले करा</translation>
 <translation id="2857540653560290388">Chrome लाँच करत आहे...</translation>
@@ -124,7 +122,6 @@
 <translation id="4600710005438004015">Chrome नवीनतम आवृत्तीवर अपडेट होऊ शकले नाही, त्यामुळे तुम्ही नवीन वैशिष्ट्ये आणि सुरक्षितता निराकरणे गमावत आहात.</translation>
 <translation id="4631713731678262610">Chrome मेनूमध्‍ये लपवा</translation>
 <translation id="4633000520311261472">Chrome ला अधिक सुरक्षित करण्यासाठी, आम्ही <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> मध्ये सूचीबद्ध नसलेले काही विस्तार अक्षम केले आणि ते कदाचित आपल्या माहिती शिवाय जोडले गेले असावेत.</translation>
-<translation id="4653397506175047429">Chrome तुमचे सर्व पासवर्ड तपासू शकत नाही. २४ तासांनंतर पुन्हा प्रयत्न करा.</translation>
 <translation id="4728575227883772061">नमूद न केलेल्या एररमुळे स्थापना अयशस्वी. जर Google Chrome सध्या चालू असेल तर, कृपया त्यास बंद करा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="4750550185319565338"><ph name="PLUGIN_NAME" /> सुरू करण्‍यासाठी Chrome रीस्टार्ट करा</translation>
 <translation id="4754614261631455953">Google Chrome कॅनरी (mDNS-मध्ये)</translation>
@@ -248,7 +245,6 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="8862326446509486874">तुमच्याकडे सिस्टम स्तरावरील इंस्टॉलसाठी योग्य अधिकार नाहीत. ॲडमिनिस्ट्रेटर म्हणून पुन्हा इंस्टॉलर चालविण्याचा प्रयत्न करा.</translation>
 <translation id="8914504000324227558">Chrome रीलाँच करा</translation>
 <translation id="8999208279178790196">{0,plural, =0{Chrome अपडेट उपलब्ध आहे}=1{Chrome अपडेट उपलब्ध आहे}other{Chrome अपडेट # दिवसांसाठी उपलब्ध आहे}}</translation>
-<translation id="9025321516765676895">Chrome तुमचे पासवर्ड तपासू शकत नाही कारण ते खूप जास्त आहेत</translation>
 <translation id="9026991721384951619">तुमचे खाते साइन इन तपशील कालबाह्य झाल्यामुळे Chrome OS तुमचा डेटा संकालित करू शकले नाही.</translation>
 <translation id="9067395829937117663">Google Chrome साठी Windows 7 किंवा त्यानंतरची आवृत्ती आवश्यक आहे.</translation>
 <translation id="911206726377975832">तुमचा ब्राउझिंग डेटा देखील हटवायचा?</translation>

@@ -59,7 +59,6 @@
 <translation id="1373696734384179344">নির্বাচিত কন্টেন্ট ডাউনলোড করার জন্য যথেষ্ট মেমরি নেই৷</translation>
 <translation id="1376578503827013741">গণনা করছে...</translation>
 <translation id="1383876407941801731">সার্চ করুন</translation>
-<translation id="1384959399684842514">ডাউনলোড পজ করা আছে</translation>
 <translation id="1386674309198842382"><ph name="LAST_UPDATED" /> দিন আগে ব্যবহার করা হয়েছে</translation>
 <translation id="1397811292916898096"><ph name="PRODUCT_NAME" /> এর সাহায্যে খুঁজুন</translation>
 <translation id="1406000523432664303">"ট্র্যাক করবেন না"</translation>
@@ -117,7 +116,6 @@
 <translation id="1919345977826869612">বিজ্ঞাপন</translation>
 <translation id="1919950603503897840">পরিচিতিগুলি বেছে নিন</translation>
 <translation id="1922076542920281912">Chrome যাতে আপনার লোকেশন অ্যাক্সেস করতে পারে তার জন্য <ph name="BEGIN_LINK" />Android সেটিংস<ph name="END_LINK" />-এ গিয়ে লোকেশন চালু করুন।</translation>
-<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1925021887439448749">কাস্টম ওয়েব ঠিকানা লিখুন</translation>
 <translation id="1928696683969751773">আপডেটগুলি</translation>
 <translation id="19288952978244135">Chrome আবার খুলুন।</translation>
@@ -193,13 +191,11 @@
 <translation id="2369533728426058518">খোলা ট্যাবগুলি</translation>
 <translation id="2387895666653383613">পাঠ্য স্কেলিং</translation>
 <translation id="2394602618534698961">আপনার ডাউনলোড করা ফাইল এখানে দেখানো হয়</translation>
-<translation id="2402980924095424747"><ph name="MEGABYTES" /> এমবি</translation>
 <translation id="2407481962792080328">আপনার Google অ্যাকাউন্টে সাইন-ইন করলে এই ফিচারটি চালু হয়ে যাবে</translation>
 <translation id="2410754283952462441">একটি অ্যাকাউন্ট বেছে নিন</translation>
 <translation id="2414886740292270097">অন্ধকার</translation>
 <translation id="2426805022920575512">অন্য একটি অ্যাকাউন্ট বেছে নিন</translation>
 <translation id="2433507940547922241">উপস্থিতি</translation>
-<translation id="2434158240863470628"><ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /> ডাউনলোড সম্পূর্ণ হয়েছে</translation>
 <translation id="2440823041667407902">লোকেশন অ্যাক্সেস</translation>
 <translation id="2450083983707403292">আপনি কি আবার <ph name="FILE_NAME" /> ডাউনলোড করা শুরু করতে চান?</translation>
 <translation id="2450907520913474542">পৃষ্ঠা থেকে না বেরিয়েই ওয়েবসাইটের বিষয়গুলির ব্যাপারে জানুন। 'টাচ করে সার্চ করুন' ফিচারটি Google Search-এ একটি শব্দ ও তার আনুষঙ্গিক প্রসঙ্গ পাঠায়, যার উত্তরে Google Search বিভিন্ন সংজ্ঞা, ছবি, সার্চের ফলাফল ও অন্যান্য বিবরণ দেখায়।
@@ -415,7 +411,6 @@
 <translation id="3987993985790029246">লিঙ্ক কপি করুন</translation>
 <translation id="3988213473815854515">লোকেশন অনুমোদিত হয়েছে</translation>
 <translation id="3988466920954086464">সার্চের ফলাফল ঝটপট এই প্যানেলে দেখুন</translation>
-<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="3997476611815694295">গুরুত্বহীন সঞ্চয়স্থান</translation>
 <translation id="4000212216660919741">অফলাইন হোম</translation>
 <translation id="4008040567710660924">কোনও নির্দিষ্ট সাইটের জন্য কুকিকে অনুমতি দিন।</translation>
@@ -657,6 +652,7 @@
 <translation id="5763514718066511291">এই অ্যাপের ইউআরএল কপি করতে ট্যাপ করুন</translation>
 <translation id="5765780083710877561">বর্ণনা:</translation>
 <translation id="5793665092639000975"><ph name="SPACE_AVAILABLE" /> এর <ph name="SPACE_USED" /> ব্যবহার করা হচ্ছে</translation>
+<translation id="5795872532621730126">সার্চ এবং ব্রাউজ করুন</translation>
 <translation id="5797070761912323120">সার্চ, বিজ্ঞাপন এবং অন্যান্য Google পরিষেবাকে আপনার মতো করে সাজিয়ে নিতে Google আপনার ইতিহাস ব্যবহার করতে পারে</translation>
 <translation id="5804241973901381774">অনুমতিগুলি</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# ঘণ্টা আগে}one{# ঘণ্টা আগে}other{# ঘণ্টা আগে}}</translation>
@@ -774,7 +770,6 @@
 <translation id="6593061639179217415">ডেস্কটপ সাইট</translation>
 <translation id="6597891566292541626">এই ফ্রেমের মধ্যে QR/বার কোড বসান।</translation>
 <translation id="6600954340915313787">Chrome-এ প্রতিলিপি করা হয়েছে</translation>
-<translation id="6608650720463149374"><ph name="GIGABYTES" /> জিবি</translation>
 <translation id="6612358246767739896">সুরক্ষিত কন্টেন্ট</translation>
 <translation id="6627583120233659107">ফোল্ডার সম্পাদনা করুন</translation>
 <translation id="6643016212128521049">সাফ করুন</translation>
@@ -843,7 +838,6 @@
 <translation id="7149158118503947153"><ph name="DOMAIN_NAME" /> থেকে <ph name="BEGIN_LINK" />মূল পৃষ্ঠাটি লোড করুন<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">গত ২৪ ঘণ্টা</translation>
 <translation id="7173114856073700355">সেটিংস খুলুন</translation>
-<translation id="7176368934862295254"><ph name="KILOBYTES" /> কেবি</translation>
 <translation id="7177466738963138057">আপনি পরে সেটিংসে এই পরিবর্তন করতে পারবেন</translation>
 <translation id="7180611975245234373">রিফ্রেশ করুন</translation>
 <translation id="7189372733857464326">Google Play পরিষেবাগুলির আপডেট শেষ হওয়ার জন্য অপেক্ষা করছে</translation>
@@ -955,7 +949,6 @@
 <translation id="8007176423574883786">এই ডিভাইসের জন্য বন্ধ করা আছে</translation>
 <translation id="8013372441983637696">এছাড়া এই ডিভাইস থেকে Chrome ডেটা সরিয়ে ফেলুন</translation>
 <translation id="8015452622527143194">পৃষ্ঠার সবকিছুকে ডিফল্ট আকারে ফিরিয়ে আনুন</translation>
-<translation id="802154636333426148">ডাউনলোড করা যায়নি</translation>
 <translation id="8026334261755873520">ব্রাউজ করা ডেটা সাফ করুন</translation>
 <translation id="8035133914807600019">নতুন ফোল্ডার...</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> দিন বাকি আছে</translation>

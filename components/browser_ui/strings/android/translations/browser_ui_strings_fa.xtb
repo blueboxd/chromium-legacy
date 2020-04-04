@@ -2,12 +2,17 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
 <translation id="1124772482545689468">کاربر</translation>
+<translation id="1178581264944972037">مکث</translation>
 <translation id="1181037720776840403">حذف</translation>
 <translation id="1201402288615127009">بعدی</translation>
 <translation id="1383876407941801731">جستجو</translation>
+<translation id="1384959399684842514">بارگیری موقتاً متوقف شد</translation>
+<translation id="1923695749281512248">‎<ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" />‎</translation>
 <translation id="2079545284768500474">لغو</translation>
 <translation id="2148716181193084225">امروز</translation>
 <translation id="2359808026110333948">ادامه</translation>
+<translation id="2402980924095424747"><ph name="MEGABYTES" /> مگابایت</translation>
+<translation id="2434158240863470628">بارگیری کامل شد <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2501278716633472235">بازگشت</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{۱ کوکی مسدود شده است}one{# کوکی مسدود شده است}other{# کوکی مسدود شده است}}</translation>
 <translation id="257931822824936280">بزرگ‌شده - برای کوچک کردن کلیک کنید.</translation>
@@ -19,6 +24,7 @@
 <translation id="3479552764303398839">اکنون نه</translation>
 <translation id="385051799172605136">بازگشت</translation>
 <translation id="3987993985790029246">کپی پیوند</translation>
+<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> از ؟</translation>
 <translation id="4002066346123236978">عنوان</translation>
 <translation id="4570913071927164677">جزئیات</translation>
 <translation id="4645575059429386691">مدیریت شده توسط والدین شما</translation>
@@ -40,6 +46,7 @@
 <translation id="6206551242102657620">اتصال امن است. اطلاعات سایت</translation>
 <translation id="6216432067784365534">گزینه‌های <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6527303717912515753">اشتراک‌گذاری</translation>
+<translation id="6608650720463149374"><ph name="GIGABYTES" /> گیگابایت</translation>
 <translation id="6746124502594467657">انتقال به پایین</translation>
 <translation id="6818926723028410516">انتخاب موارد</translation>
 <translation id="6910211073230771657">حذف شد</translation>
@@ -48,6 +55,7 @@
 <translation id="6965382102122355670">قبول</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{۱ مورد انتخاب شد}one{# مورد انتخاب شد}other{# مورد انتخاب شد}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> مورد انتخاب شد.  گزینه‌ها در نزدیکی بالای صفحه دردسترس است</translation>
+<translation id="7176368934862295254"><ph name="KILOBYTES" /> کیلوبایت</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> مورد انتخاب شد</translation>
 <translation id="7649070708921625228">راهنما</translation>
 <translation id="7658239707568436148">لغو</translation>
@@ -55,7 +63,9 @@
 <translation id="7791543448312431591">افزودن</translation>
 <translation id="780301667611848630">نه متشکرم</translation>
 <translation id="7846076177841592234">لغو انتخاب</translation>
+<translation id="802154636333426148">بارگیری نشد</translation>
 <translation id="8131740175452115882">تأیید</translation>
+<translation id="8200772114523450471">ازسرگیری</translation>
 <translation id="8206354486702514201">این تنظیم توسط سرپرست شما اجباری شده است.</translation>
 <translation id="8249310407154411074">انتقال به بالا</translation>
 <translation id="8261506727792406068">حذف</translation>

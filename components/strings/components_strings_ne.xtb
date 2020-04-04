@@ -169,6 +169,7 @@
 <translation id="1644574205037202324">इतिहास</translation>
 <translation id="1645368109819982629">असमर्थित प्रोटोकल</translation>
 <translation id="1652415888492971589">JIS B8</translation>
+<translation id="1656024727720460136">Chrome ले यो पृष्ठ पढ्न अझ सजिलो बनाउन यसलाई सरलीकृत गर्‍यो। Chrome ले एउटा सुरक्षित इन्टरनेटमार्फत मूल पृष्ठ पुनः प्राप्त गर्‍यो।</translation>
 <translation id="1656489000284462475">पिकअप</translation>
 <translation id="1662550410081243962">क्रेडिट कार्डसम्बन्धी जानकारी सुरक्षित गरी फारमहरू भर्नुहोस्</translation>
 <translation id="1663943134801823270">कार्ड र ठेगानाहरू Chrome बाट प्राप्त भएका हुन्। तपाईं <ph name="BEGIN_LINK" />सेटिङहरू<ph name="END_LINK" />मा गई तिनीहरूलाई व्यवस्थित गर्न सक्नुहुन्छ।</translation>
@@ -560,6 +561,7 @@
 <translation id="342781501876943858">तपाईंले आफ्नो पासवर्ड अन्य साइटहरूमा प्रयोग गर्नुभएका खण्डमा Chromium ले तपाईंको पासवर्ड रिसेट गर्न सिफारिस गर्दछ।</translation>
 <translation id="3428151540071562330">DnsOverHttpsTemplates सर्भरका टेम्प्लेटका एक वा सोभन्दा बढी URI हरू अमान्य भएकाले तिनको प्रयोग गरिने छैन।</translation>
 <translation id="3431636764301398940">यस कार्डलाई यस यन्त्रमा सुरक्षित गर्नुहोस्</translation>
+<translation id="3432601291244612633">पृष्ठ बन्द गर्नुहोस्</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">यस यन्त्रको मालिकले डायनासोर खेल बन्द गर्‍यो।</translation>
 <translation id="3447884698081792621">प्रमाणपत्र देखाउनुहोस् (<ph name="ISSUER" /> द्वारा जारी गरिएको)</translation>
@@ -865,6 +867,7 @@
 <translation id="4731967714531604179">Prc2 (Envelope)</translation>
 <translation id="4733082559415072992"><ph name="URL" /> तपाईंको यन्त्रको स्थान प्रयोग गर्न चाहन्छ</translation>
 <translation id="4736825316280949806">Chromium लाई पुनः सुरु गर्नुहोस्</translation>
+<translation id="4737121147659370456">तपाईंका प्रशासकले तपाईंको ब्राउजरमा Chrome Enterprise का कनेक्टरहरू समक्ष पार्नुभएको छ। यी कनेक्टरहरूले तपाईंका केही डेटा प्रयोग गर्न सक्छन्।</translation>
 <translation id="473775607612524610">अद्यावधिक गर्नुहोस्</translation>
 <translation id="4738601419177586157"><ph name="TEXT" /> को खोजसम्बन्धी सुझाव</translation>
 <translation id="4742407542027196863">पासवर्डहरूको व्यवस्थापन गर्नुहोस्…</translation>
@@ -1200,6 +1203,8 @@
 <translation id="610911394827799129">तपाईंको Google खाताको <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> मा ब्राउजिङ इतिहासका अन्य ढाँचाहरू रहेका हुनसक्छन्।</translation>
 <translation id="6116338172782435947">क्लिपबोर्डमा प्रतिलिपि गरिएका पाठ र छविहरू हेर्नुहोस्</translation>
 <translation id="6120179357481664955">आफ्नो UPI ID सम्झने हो?</translation>
+<translation id="6124432979022149706">Chrome Enterprise का कनेक्टरहरू</translation>
+<translation id="6135641591018127088">एउटा भरपर्दो पासवर्ड सिर्जना गर्न आफ्नो Google खाता प्रयोग गर्नुहोस्</translation>
 <translation id="6146055958333702838">तपाइँले प्रयोग गरिेहेको कुनै पनि केबुलहरू जाँच्नुहोस् र कुनै पनि राउटरहरू, मोडेमहरू, वा अन्य 
         नेटवर्क यन्त्रहरू रिबुट गर्नुहोस्।</translation>
 <translation id="614940544461990577">यसो गरी हेर्नुहोस्:</translation>
@@ -1245,6 +1250,7 @@
 <translation id="6328639280570009161">सञ्जाल भविष्यवाणि असक्षम गर्नुहोस्</translation>
 <translation id="6328784461820205019">"तपाईंको जडान व्यक्तिगत छैन" वा "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" वा "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" वा "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" वा "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" वा "SSL प्रमाणपत्रसम्बन्धी त्रुटि"</translation>
 <translation id="6328786501058569169">यो साइट भ्रमपूर्ण छ</translation>
+<translation id="6333334544069706521">आफ्नो Google खातामा भण्डारण गरिएका पासवर्डहरू प्रयोग गर्नुहोस्</translation>
 <translation id="6337133576188860026"><ph name="SIZE" /> भन्दा कम ठाउँ खाली गर्दछ। तपाईं अर्कोपटक आउँदा केही साइटहरू अझ ढिलोगरी लोड हुनसक्छन्।</translation>
 <translation id="6337534724793800597">नामद्वारा नीतिहरू फिल्टर गर्छ</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{कुनै पनि होइन}=1{<ph name="DOMAIN_LIST" /> को १ पासवर्ड (सिंक गरिएको छ)}=2{<ph name="DOMAIN_LIST" /> का २ पासवर्डहरू (सिंक गरिएका छन्)}other{<ph name="DOMAIN_LIST" /> का # पासवर्डहरू (सिंक गरिएका छन्)}}</translation>
@@ -1290,6 +1296,7 @@
 <translation id="6521745193039995384">सक्रिय छैन</translation>
 <translation id="6529602333819889595">मेटाउने कार्य &amp;पुन: गर्नुहोस्</translation>
 <translation id="6534179046333460208">वास्तविक वेब सम्बन्धी सुझावहरू</translation>
+<translation id="6543609420755597723">Chrome Enterprise का कनेक्टरहरूले फ्ल्याग गरेर तपाईंका़ प्रशासकलाई पठाएका सुरक्षासम्बन्धी घटनाका डेटा उपलब्ध गराउनुहोस्। यसमा तपाईंले हेर्ने पृष्ठका URL, फाइलका नाम, मेटाडेटा र तपाईंले आफ्नो यन्त्र र Chrome मा साइन इन गर्न प्रयोग गर्ने प्रयोगकर्ता नाम समावेश हुन सक्छन्।</translation>
 <translation id="6545864417968258051">ब्लुटुथ स्क्यान गर्दै</translation>
 <translation id="6547208576736763147">बायाँपट्टि दुई प्वाल</translation>
 <translation id="6554795675067793129">तपाईंको खाता <ph name="ENROLLMENT_DOMAIN" /> द्वारा व्यवस्थापन गरिएको छ।</translation>
@@ -1355,6 +1362,7 @@
 <translation id="6874604403660855544">&amp;रिडु जोड</translation>
 <translation id="6884662655240309489">आकार १</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
+<translation id="6888584790432772780">Chrome ले यो पृष्ठ पढ्न अझ सजिलो बनाउन यसलाई सरलीकृत गर्‍यो। Chrome ले एउटा असुरक्षित इन्टरनेटमार्फत मूल पृष्ठ पुनः प्राप्त गर्‍यो।</translation>
 <translation id="6891596781022320156">नीति तह समर्थित छैन।</translation>
 <translation id="6895330447102777224">तपाईंको कार्डको पुष्टि भयो</translation>
 <translation id="6897140037006041989">प्रयोगकर्ता एजेन्ट</translation>
@@ -1583,6 +1591,7 @@
 <translation id="777702478322588152">प्रशासकिय क्षेत्र</translation>
 <translation id="7791196057686275387">गाँठो</translation>
 <translation id="7791543448312431591">थप्नुहोस्</translation>
+<translation id="7798389633136518089">यो नीति क्लाउडको स्रोतले सेट नगरेको हुनाले बेवास्ता गरियो।</translation>
 <translation id="7800304661137206267">जडानलाई <ph name="CIPHER" /> प्रयोग गरेर गुप्तलेखन गरिएको छ, र साथमा सन्देश प्रमाणीकरणको लागि <ph name="MAC" /> प्रयोग गरिन्छ र कुञ्जी आदान प्रदान संयन्त्रको रूपमा <ph name="KX" /> लाई प्रयोग गरिन्छ।</translation>
 <translation id="7802523362929240268">साइट वैध छ</translation>
 <translation id="780301667611848630">भयो, धन्यवाद</translation>
@@ -1718,6 +1727,7 @@
 <translation id="8371889962595521444">आफू अनुकूल मूल प्रमाणपत्रहरू</translation>
 <translation id="8380941800586852976">खतरनाक</translation>
 <translation id="8381674639488873545">यी शुल्कहरू एक पटक तिरे पुग्ने वा बारम्बार तिर्नु पर्ने हुन सक्छन् र यससम्बन्धी विवरणहरू स्पष्ट रूपमा उल्लेख नगरिएको हुन सक्छ। <ph name="BEGIN_LINK" />जे भए पनि देखाउनुहोस्<ph name="END_LINK" /></translation>
+<translation id="8405166164747488837"><ph name="ENROLLMENT_DOMAIN" /> ले तपाईंको ब्राउजरमा Chrome Enterprise का कनेक्टरहरू सक्षम पारेको छ। यी कनेक्टरहरूले तपाईंका केही डेटा प्रयोग गर्न सक्छन्।</translation>
 <translation id="8412145213513410671">क्रयासहरू (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">तपाइँले एउटै पासफ्रेज दुईटपक प्रविष्ट गर्नुपर्छ।</translation>
 <translation id="8416694386774425977">नेटवर्कको कन्फिगुरेसन अमान्य छ र आयात गर्न सकिएन।

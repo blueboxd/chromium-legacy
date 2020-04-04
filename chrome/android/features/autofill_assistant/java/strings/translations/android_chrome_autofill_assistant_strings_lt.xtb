@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lt">
+<translation id="1552477655783980595">Įsigykite bilietus į kiną \n vos keliais palietimais</translation>
 <translation id="1625889395409731085">Atidaryti išorinę nuorodą?</translation>
 <translation id="1699570257714336246">Trūksta informacijos</translation>
 <translation id="1932278019417741381">Kad padėtų atlikti užduotis, „Google“ gaus svetainių, kuriose naudojate Padėjėją, URL ir turinį bei informaciją, kurią pateikiate naudodami Padėjėją. Ši informacija gali būti saugoma jūsų „Google“ paskyroje. Padėjėją galite išjungti „Chrome“ nustatymuose. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
@@ -11,8 +12,10 @@
 <translation id="4850886885716139402">Žiūrėti</translation>
 <translation id="4952448020231702394">„Google“ padėjėjas padeda sutaupyti laiko atliekant veiksmus žiniatinklyje, pvz., ieškant ir atsiskaitant.</translation>
 <translation id="5267269112080050255">Programa „Google Assistant“ naršyklėje „Chrome“ atidaryta viso aukščio.</translation>
+<translation id="6111473266581160404">Išsinuomokite automobilį \n vos keliais palietimais</translation>
 <translation id="6555233628095991027">Programa „Google Assistant“ naršyklėje „Chrome“ atidaryta pusės aukščio.</translation>
 <translation id="6620345200476149840">Išbandykite „Google“ padėjėją \n naršyklėje „Chrome“</translation>
+<translation id="6785872064505734160">„Google“ padėjėjas naršyklėje „Chrome“ gali atlikti veiksmus svetainėse už jus</translation>
 <translation id="6973932557599545801">Deja, negaliu padėti, tolesnius veiksmus atlikite patys.</translation>
 <translation id="7658239707568436148">Atšaukti</translation>
 <translation id="8253702004019660079">„Google Assistant“ sistemoje „Chrome“.</translation>

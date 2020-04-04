@@ -18,6 +18,7 @@
 <translation id="1190609913194133056">Pusat Notifikasi</translation>
 <translation id="1195412055398077112">pemindaian berlebih</translation>
 <translation id="119944043368869598">Hapus semua</translation>
+<translation id="1199716647557067911">Yakin ingin menonaktifkan Tombol Akses?</translation>
 <translation id="1247372569136754018">Mikrofon (internal)</translation>
 <translation id="1252999807265626933">Mengisi daya dari <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Gimana kondisi cuaca?</translation>
@@ -63,7 +64,7 @@
 <translation id="1743570585616704562">Tidak dikenali</translation>
 <translation id="1746730358044914197">Metode masukan dikonfigurasi oleh administrator.</translation>
 <translation id="1747827819627189109">Keyboard di layar diaktifkan</translation>
-<translation id="1761222317188459878">Alihkan sambungan jaringan. <ph name="STATE_TEXT" /></translation>
+<translation id="1761222317188459878">Alihkan koneksi jaringan. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Scroll ke kanan</translation>
 <translation id="181103072419391116">Kekuatan Sinyal <ph name="SIGNAL_STRENGTH" />, Dikelola oleh Administrator Anda</translation>
 <translation id="1812997170047690955">Konten apa yang ada di layar saya?</translation>
@@ -212,7 +213,7 @@
 <translation id="3593646411856133110">Geser ke atas dan tahan untuk melihat aplikasi yang terbuka</translation>
 <translation id="3595596368722241419">Baterai penuh</translation>
 <translation id="3604801046548457007">Desktop <ph name="DESK_TITILE" /> dibuat</translation>
-<translation id="3606978283550408104">Layar Braille tersambung.</translation>
+<translation id="3606978283550408104">Penampil Braille tersambung.</translation>
 <translation id="3621202678540785336">Masukan</translation>
 <translation id="3621712662352432595">Setelan Audio</translation>
 <translation id="3626281679859535460">Kecerahan</translation>
@@ -430,6 +431,7 @@
 <translation id="6537924328260219877">Kekuatan Sinyal <ph name="SIGNAL_STRENGTH" />, Baterai Ponsel <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">Transmisikan ke <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Tanyakan kepada Administrator</translation>
+<translation id="6584550827717945790">Nonaktifkan Tombol Akses</translation>
 <translation id="6585808820553845416">Sesi berakhir dalam <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, Kekuatan Sinyal <ph name="SIGNAL_STRENGTH" />, Dikelola oleh Administrator Anda</translation>
 <translation id="6614169507485700968">Layar privasi aktif</translation>
@@ -603,6 +605,7 @@
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8825863694328519386">Geser dari kiri untuk kembali</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">Tombol kembali</translation>
 <translation id="8843682306134542540">Alihkan kunci rotasi. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">Aplikasi tidak mendukung layar terpisah.</translation>

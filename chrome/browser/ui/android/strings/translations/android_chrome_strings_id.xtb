@@ -59,7 +59,6 @@
 <translation id="1373696734384179344">Memori tidak cukup untuk mendownload konten yang dipilih.</translation>
 <translation id="1376578503827013741">Menghitung…</translation>
 <translation id="1383876407941801731">Telusuri</translation>
-<translation id="1384959399684842514">Download dijeda</translation>
 <translation id="1386674309198842382">Aktif <ph name="LAST_UPDATED" /> hari lalu</translation>
 <translation id="1397811292916898096">Telusuri dengan <ph name="PRODUCT_NAME" /></translation>
 <translation id="1406000523432664303">“Jangan Lacak”</translation>
@@ -117,7 +116,6 @@
 <translation id="1919345977826869612">Iklan</translation>
 <translation id="1919950603503897840">Pilih kontak</translation>
 <translation id="1922076542920281912">Untuk mengizinkan Chrome mengakses lokasi Anda, aktifkan juga lokasi di <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" />.</translation>
-<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1925021887439448749">Masukkan alamat web khusus</translation>
 <translation id="1928696683969751773">Pembaruan</translation>
 <translation id="19288952978244135">Buka Chrome lagi.</translation>
@@ -188,18 +186,16 @@ Ketuk kata apa pun untuk menelusuri. Untuk menyaring penelusuran, sentuh lama un
 <translation id="2328985652426384049">Tidak dapat login</translation>
 <translation id="234265804618409743">Tidak dapat membuka kamera Anda. Terjadi error.</translation>
 <translation id="2349710944427398404">Total data yang digunakan oleh Chrome, termasuk akun, bookmark, dan setelan yang tersimpan</translation>
-<translation id="2353636109065292463">Memeriksa sambungan internet Anda</translation>
+<translation id="2353636109065292463">Memeriksa koneksi internet Anda</translation>
 <translation id="2359808026110333948">Lanjutkan</translation>
 <translation id="2369533728426058518">tab terbuka</translation>
 <translation id="2387895666653383613">Ukuran teks</translation>
 <translation id="2394602618534698961">File yang Anda download muncul di sini</translation>
-<translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2407481962792080328">Saat login ke Akun Google Anda, fitur ini akan diaktifkan</translation>
 <translation id="2410754283952462441">Pilih akun</translation>
 <translation id="2414886740292270097">Gelap</translation>
 <translation id="2426805022920575512">Pilih akun lain</translation>
 <translation id="2433507940547922241">Tampilan</translation>
-<translation id="2434158240863470628">Download selesai <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">Akses lokasi</translation>
 <translation id="2450083983707403292">Ingin mulai mendownload <ph name="FILE_NAME" /> lagi?</translation>
 <translation id="2450907520913474542">Pelajari topik di situs tanpa meninggalkan halaman. Fitur Sentuh untuk Menelusuri mengirimkan kata dan konteks di sekitarnya ke Google Penelusuran, yang kemudian menampilkan definisi, gambar, hasil penelusuran, dan detail lainnya.
@@ -413,7 +409,6 @@ Hanya Anda yang dapat melihat hal-hal yang dilihat kamera Anda. Situs ini tidak 
 <translation id="3987993985790029246">Salin link</translation>
 <translation id="3988213473815854515">Lokasi diaktifkan</translation>
 <translation id="3988466920954086464">Lihat hasil penelusuran instan di panel ini</translation>
-<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="3997476611815694295">Penyimpanan tidak penting</translation>
 <translation id="4000212216660919741">Beranda Offline</translation>
 <translation id="4008040567710660924">Izinkan cookie untuk situs tertentu.</translation>
@@ -450,7 +445,7 @@ Hanya Anda yang dapat melihat hal-hal yang dilihat kamera Anda. Situs ini tidak 
 <translation id="4298388696830689168">Situs tertaut</translation>
 <translation id="4307992518367153382">Dasar</translation>
 <translation id="4314815835985389558">Kelola sinkronisasi</translation>
-<translation id="4320177379694898372">Tidak ada sambungan internet</translation>
+<translation id="4320177379694898372">Tidak ada koneksi internet</translation>
 <translation id="4321739720395210191">Tidak dapat membuka kamera Anda. Mulai ulang perangkat Anda dan coba lagi.</translation>
 <translation id="4351244548802238354">Tutup dialog</translation>
 <translation id="4353114845960720315">Ketika Anda berada dalam VR, situs ini mungkin dapat mempelajari:</translation>
@@ -655,6 +650,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5763514718066511291">Ketuk untuk menyalin URL aplikasi ini</translation>
 <translation id="5765780083710877561">Deskripsi:</translation>
 <translation id="5793665092639000975"><ph name="SPACE_USED" /> terpakai dari <ph name="SPACE_AVAILABLE" /></translation>
+<translation id="5795872532621730126">Penelusuran dan penjelajahan</translation>
 <translation id="5797070761912323120">Google dapat menggunakan histori Anda untuk mempersonalisasi Penelusuran, iklan, dan layanan Google lainnya</translation>
 <translation id="5804241973901381774">Izin</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# jam yang lalu}other{# jam yang lalu}}</translation>
@@ -772,7 +768,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6593061639179217415">Situs desktop</translation>
 <translation id="6597891566292541626">Letakkan kode batang/QR dalam bingkai ini.</translation>
 <translation id="6600954340915313787">Disalin ke Chrome</translation>
-<translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Konten dilindungi</translation>
 <translation id="6627583120233659107">Edit folder</translation>
 <translation id="6643016212128521049">Hapus</translation>
@@ -841,7 +836,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Muat halaman asli<ph name="END_LINK" /> dari <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">24 jam terakhir</translation>
 <translation id="7173114856073700355">Buka Setelan</translation>
-<translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">Anda dapat mengubah ini nanti di Setelan</translation>
 <translation id="7180611975245234373">Perbarui</translation>
 <translation id="7189372733857464326">Menunggu Layanan Google Play selesai di-update</translation>
@@ -953,7 +947,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="8007176423574883786">Dinonaktifkan untuk perangkat ini</translation>
 <translation id="8013372441983637696">Hapus juga data Chrome Anda dari perangkat ini</translation>
 <translation id="8015452622527143194">Mengembalikan semua di halaman ke ukuran default</translation>
-<translation id="802154636333426148">Download gagal</translation>
 <translation id="8026334261755873520">Hapus data penjelajahan</translation>
 <translation id="8035133914807600019">Folder baru…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> hari lagi</translation>

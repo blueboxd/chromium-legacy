@@ -2,12 +2,17 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
 <translation id="1124772482545689468">用户</translation>
+<translation id="1178581264944972037">暂停</translation>
 <translation id="1181037720776840403">删除</translation>
 <translation id="1201402288615127009">下一步</translation>
 <translation id="1383876407941801731">搜索</translation>
+<translation id="1384959399684842514">已暂停下载</translation>
+<translation id="1923695749281512248">已下载 <ph name="BYTES_DOWNLOADED_WITH_UNITS" />，共 <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="2079545284768500474">撤消</translation>
 <translation id="2148716181193084225">今天</translation>
 <translation id="2359808026110333948">继续</translation>
+<translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
+<translation id="2434158240863470628">下载完成 <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2501278716633472235">返回</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{已拦截 1 个 Cookie}other{已拦截 # 个 Cookie}}</translation>
 <translation id="257931822824936280">已展开 - 点击此处即可收起。</translation>
@@ -19,6 +24,7 @@
 <translation id="3479552764303398839">以后再说</translation>
 <translation id="385051799172605136">后退</translation>
 <translation id="3987993985790029246">复制链接</translation>
+<translation id="3991845972263764475">已下载 <ph name="BYTES_DOWNLOADED_WITH_UNITS" />，总大小不明</translation>
 <translation id="4002066346123236978">标题</translation>
 <translation id="4570913071927164677">详情</translation>
 <translation id="4645575059429386691">由您父母管理</translation>
@@ -40,6 +46,7 @@
 <translation id="6206551242102657620">连接是安全的。网站信息</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />选项</translation>
 <translation id="6527303717912515753">分享</translation>
+<translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6746124502594467657">下移</translation>
 <translation id="6818926723028410516">选择内容</translation>
 <translation id="6910211073230771657">已删除</translation>
@@ -48,6 +55,7 @@
 <translation id="6965382102122355670">确定</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{已选择 1 项}other{已选择 # 项}}</translation>
 <translation id="7087918508125750058">已选择 <ph name="ITEM_COUNT" /> 项。选项位于屏幕顶部附近</translation>
+<translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7250468141469952378">已选择 <ph name="ITEM_COUNT" /> 项</translation>
 <translation id="7649070708921625228">帮助</translation>
 <translation id="7658239707568436148">取消</translation>
@@ -55,7 +63,9 @@
 <translation id="7791543448312431591">添加</translation>
 <translation id="780301667611848630">不用了，谢谢</translation>
 <translation id="7846076177841592234">取消选择</translation>
+<translation id="802154636333426148">下载失败</translation>
 <translation id="8131740175452115882">确认</translation>
+<translation id="8200772114523450471">继续</translation>
 <translation id="8206354486702514201">此设置是由您的管理员执行的。</translation>
 <translation id="8249310407154411074">移至顶部</translation>
 <translation id="8261506727792406068">删除</translation>

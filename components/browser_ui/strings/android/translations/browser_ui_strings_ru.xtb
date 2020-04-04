@@ -2,12 +2,17 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
 <translation id="1124772482545689468">Пользователь</translation>
+<translation id="1178581264944972037">Пауза</translation>
 <translation id="1181037720776840403">Удалить</translation>
 <translation id="1201402288615127009">Далее</translation>
 <translation id="1383876407941801731">Поиск</translation>
+<translation id="1384959399684842514">Скачивание приостановлено.</translation>
+<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> из <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="2079545284768500474">Отмена</translation>
 <translation id="2148716181193084225">Сегодня</translation>
 <translation id="2359808026110333948">Продолжить</translation>
+<translation id="2402980924095424747"><ph name="MEGABYTES" /> МБ</translation>
+<translation id="2434158240863470628">Скачивание завершено <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2501278716633472235">Назад</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{Заблокирован 1 файл cookie}one{Заблокирован # файл cookie}few{Заблокировано # файла cookie}many{Заблокировано # файлов cookie}other{Заблокировано # файла cookie}}</translation>
 <translation id="257931822824936280">Развернуто. Нажмите, чтобы свернуть.</translation>
@@ -19,6 +24,7 @@
 <translation id="3479552764303398839">Не сейчас</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3987993985790029246">Копировать ссылку</translation>
+<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> из ?</translation>
 <translation id="4002066346123236978">Название</translation>
 <translation id="4570913071927164677">Подробнее…</translation>
 <translation id="4645575059429386691">Управляется вашими родителями</translation>
@@ -40,6 +46,7 @@
 <translation id="6206551242102657620">Подключение защищено. Информация о сайте</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />: параметры</translation>
 <translation id="6527303717912515753">Поделиться</translation>
+<translation id="6608650720463149374"><ph name="GIGABYTES" /> ГБ</translation>
 <translation id="6746124502594467657">Переместить вниз</translation>
 <translation id="6818926723028410516">Выберите объекты</translation>
 <translation id="6910211073230771657">Удалено</translation>
@@ -48,6 +55,7 @@
 <translation id="6965382102122355670">ОК</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Выбран 1 объект}one{Выбран # объект}few{Выбрано # объекта}many{Выбрано # объектов}other{Выбрано # объекта}}</translation>
 <translation id="7087918508125750058">Выбрано: <ph name="ITEM_COUNT" />. Меню находится в верхней части экрана.</translation>
+<translation id="7176368934862295254"><ph name="KILOBYTES" /> КБ</translation>
 <translation id="7250468141469952378">Выбрано: <ph name="ITEM_COUNT" /></translation>
 <translation id="7649070708921625228">Справка</translation>
 <translation id="7658239707568436148">Отмена</translation>
@@ -55,7 +63,9 @@
 <translation id="7791543448312431591">Добавить</translation>
 <translation id="780301667611848630">Спасибо, не надо</translation>
 <translation id="7846076177841592234">Отменить выбор</translation>
+<translation id="802154636333426148">Ошибка скачивания</translation>
 <translation id="8131740175452115882">Подтвердить</translation>
+<translation id="8200772114523450471">Возобновить</translation>
 <translation id="8206354486702514201">Этот параметр включен администратором.</translation>
 <translation id="8249310407154411074">Переместить в начало</translation>
 <translation id="8261506727792406068">Удалить</translation>

@@ -51,7 +51,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="2309047409763057870">Dit is een tweede installatie van Google Chrome en kan niet als standaardbrowser worden ingesteld.</translation>
 <translation id="2341767445688917208">Chrome OS kan je wachtwoorden niet synchroniseren. Los dit nu op.</translation>
 <translation id="2348335408836342058">Chrome heeft toegangsrechten voor je camera en microfoon nodig voor deze site</translation>
-<translation id="234869673307233423">Chrome kan je wachtwoorden niet checken. Probeer het later opnieuw.</translation>
 <translation id="2429317896000329049">Google Chrome kan je gegevens niet synchroniseren, omdat synchronisatie niet beschikbaar is voor je domein.</translation>
 <translation id="2467438592969358367">Google Chrome wil je wachtwoorden exporteren. Geef je Windows-wachtwoord op om dit toe te staan.</translation>
 <translation id="2485422356828889247">Installatie ongedaan maken</translation>
@@ -66,7 +65,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="2689103672227170538">Deze extensie heeft gewijzigd welke pagina wordt weergegeven wanneer je Chrome start.</translation>
 <translation id="2765403129283291972">Chrome heeft toegangsrechten voor je microfoon nodig voor deze site</translation>
 <translation id="2770231113462710648">Standaardbrowser wijzigen in:</translation>
-<translation id="2775140325783767197">Chrome kan je wachtwoorden niet checken. Check de internetverbinding.</translation>
 <translation id="2799223571221894425">Opnieuw starten</translation>
 <translation id="2847461019998147611">Google Chrome weergegeven in deze taal</translation>
 <translation id="2857540653560290388">Chrome starten…</translation>
@@ -124,7 +122,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="4600710005438004015">Chrome kan niet worden geüpdatet naar de nieuwste versie, dus je loopt nieuwe functies en beveiligingsoplossingen mis.</translation>
 <translation id="4631713731678262610">Verbergen in Chrome-menu</translation>
 <translation id="4633000520311261472">Om Chrome veiliger te maken, hebben we een aantal extensies uitgeschakeld die niet worden vermeld in de <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> en mogelijk zonder je medeweten zijn geïnstalleerd.</translation>
-<translation id="4653397506175047429">Chrome kan niet al je wachtwoorden checken. Probeer het over 24 uur opnieuw.</translation>
 <translation id="4728575227883772061">De installatie is mislukt wegens een onbekende fout. Als Google Chrome momenteel actief is, sluit je het programma af en probeer je het opnieuw.</translation>
 <translation id="4750550185319565338">Start Chrome opnieuw op om <ph name="PLUGIN_NAME" /> in te schakelen</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
@@ -246,7 +243,6 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="8862326446509486874">Je hebt geen rechten om op systeemniveau te installeren. Meld je aan als beheerder en voer het installatieprogramma opnieuw uit.</translation>
 <translation id="8914504000324227558">Chrome opnieuw starten</translation>
 <translation id="8999208279178790196">{0,plural, =0{Er is een Chrome-update beschikbaar}=1{Er is een Chrome-update beschikbaar}other{Er is al # dagen een Chrome-update beschikbaar}}</translation>
-<translation id="9025321516765676895">Chrome kan je wachtwoorden niet checken omdat er te veel zijn</translation>
 <translation id="9026991721384951619">Chrome OS kan je gegevens niet synchroniseren omdat de inloggegevens voor je account zijn verouderd.</translation>
 <translation id="9067395829937117663">Voor Google Chrome is Windows 7 of hoger vereist.</translation>
 <translation id="911206726377975832">Ook browsegegevens wissen?</translation>

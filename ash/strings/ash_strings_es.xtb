@@ -18,6 +18,7 @@
 <translation id="1190609913194133056">Centro de notificaciones</translation>
 <translation id="1195412055398077112">reajustar</translation>
 <translation id="119944043368869598">Eliminar todo</translation>
+<translation id="1199716647557067911">¿Seguro que quieres desactivar la accesibilidad mediante interruptores?</translation>
 <translation id="1247372569136754018">Micrófono (interno)</translation>
 <translation id="1252999807265626933">Cargando a través de <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">¿Qué tiempo hace?</translation>
@@ -431,6 +432,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="6537924328260219877">Intensidad de la señal: <ph name="SIGNAL_STRENGTH" />, batería del teléfono: <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">Enviando contenido a <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Pregunta al administrador</translation>
+<translation id="6584550827717945790">Desactivar la accesibilidad mediante interruptores</translation>
 <translation id="6585808820553845416">La sesión finalizará dentro de <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, intensidad de la señal: <ph name="SIGNAL_STRENGTH" />, gestionada por el administrador</translation>
 <translation id="6614169507485700968">La pantalla de privacidad está activada</translation>
@@ -604,6 +606,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8825863694328519386">Desliza el dedo desde la izquierda para volver</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">Botón Atrás</translation>
 <translation id="8843682306134542540">Activa o desactiva el bloqueo. <ph name="STATE_TEXT" />.</translation>
 <translation id="8850991929411075241">Buscar+Esc</translation>
 <translation id="8870509716567206129">La aplicación no admite la pantalla dividida.</translation>

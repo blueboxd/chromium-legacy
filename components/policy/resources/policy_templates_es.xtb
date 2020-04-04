@@ -2145,6 +2145,15 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
 <translation id="4039085364173654945">Permite controlar si el contenido secundario de terceros de una página web se puede mostrar en un cuadro de diálogo emergente de autenticación básica HTTP.
 
           Esta opción suele estar inhabilitada para defender al usuario frente a los ataques de phishing. Si no se establece esta política, esta opción estará inhabilitada y el contenido secundario de terceros no podrá mostrarse como un cuadro de diálogo emergente de autenticación básica HTTP.</translation>
+<translation id="4044054366426171256">Permite configurar los nombres de dominio del host obligatorios que se aplicarán a los hosts de acceso remoto e impide que los usuarios los modifiquen.
+
+          Si se habilita esta opción y se le asignan uno o más dominios, los hosts solo se podrán compartir con cuentas registradas en uno de los nombres de dominio especificados.
+
+          Si se inhabilita esta opción, no se establece o se le asigna una lista vacía, los hosts se podrán compartir con cualquier cuenta.
+
+          Esta opción anulará RemoteAccessHostDomain (si está presente).
+
+          Consulta también RemoteAccessHostClientDomainList.</translation>
 <translation id="4056910949759281379">Inhabilitar protocolo SPDY</translation>
 <translation id="4061590579642538878">Proporcionar información de informes sobre fallos</translation>
 <translation id="4075675819066819571">Colocar la estantería en la parte izquierda de la pantalla</translation>
@@ -3895,6 +3904,7 @@ Si la política está establecida en False, no se informará sobre los usuarios.
 <translation id="6734521799274931721">Controlar si el uso compartido de archivos del sistema estará disponible en Chrome OS</translation>
 <translation id="6735701345096330595">Forzar que se habilite el corrector ortográfico de idiomas</translation>
 <translation id="6757613329154374267">Copia de seguridad y restauración habilitada</translation>
+<translation id="6758659208493449452">Esta política controla si los usuarios registrados en el Programa de Protección Avanzada tienen acceso a funciones de protección adicionales. Puede que algunas de estas funciones impliquen compartir datos con Google (por ejemplo, los usuarios de Protección Avanzada podrán enviar sus descargas a Google para que realice un análisis de software malicioso). Si se asigna el valor "True" a esta política o no se le asigna ningún valor, los usuarios registrados tendrán acceso a funciones de protección adicionales. Si se le asigna el valor "False", los usuarios de Protección Avanzada solo tendrán acceso a las funciones estándar.</translation>
 <translation id="6762235610019366960">Permite controlar la presentación de contenido promocional y educativo que ocupe toda la pestaña en <ph name="PRODUCT_NAME" />.
 
       Si se habilita (si se le asigna el valor "True"), <ph name="PRODUCT_NAME" /> podrá mostrar a los usuarios contenido que ocupe toda la pestaña para proporcionarles información del producto.
@@ -4374,6 +4384,15 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
           Si no se establece esta política o se le asigna el valor "Enabled", Google Chrome aceptará los contenidos web de tipo Signed HTTP Exchanges.
 
           Si se le asigna el valor "Disabled", los Signed HTTP Exchanges no se podrán cargar.</translation>
+<translation id="7506758875409719208">Permite configurar los nombres de dominio de cliente obligatorios que se aplicarán a los clientes de acceso remoto e impide que los usuarios los modifiquen.
+
+          Si se habilita esta opción y se le asignan uno o más dominios, solo se podrán conectar al host los clientes de uno de los dominios especificados.
+
+          Si se inhabilita esta opción, no se establece o se le asigna una lista vacía, se aplicará la política predeterminada para el tipo de conexión. Para la asistencia remota, esta opción permite que los clientes de cualquier dominio puedan conectarse al host. En el caso del acceso remoto en cualquier momento, solo puede conectarse el propietario del host.
+
+          Está opción anulará RemoteAccessHostClientDomain si está presente.
+
+          Consulta también RemoteAccessHostDomainList.</translation>
 <translation id="7509496865303347769">Permite configurar la URL de la página principal predeterminada de <ph name="PRODUCT_NAME" /> y evita que los usuarios la modifiquen.
 
           La página principal es la página que abre el botón de página de inicio. En ordenadores, las páginas que se abren al iniciarse el navegador están controladas por las políticas RestoreOnStartup.

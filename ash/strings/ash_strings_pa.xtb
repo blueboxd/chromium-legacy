@@ -18,6 +18,7 @@
 <translation id="1190609913194133056">ਸੂਚਨਾ ਕੇਂਦਰ</translation>
 <translation id="1195412055398077112">ਓਵਰਸਕੈਨ</translation>
 <translation id="119944043368869598">ਸਾਰੇ ਹਟਾਓ</translation>
+<translation id="1199716647557067911">ਕੀ ਤੁਸੀਂ ਪੱਕਾ ਸਵਿੱਚ ਪਹੁੰਚ ਨੂੰ ਬੰਦ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?</translation>
 <translation id="1247372569136754018">ਮਾਈਕ੍ਰੋਫ਼ੋਨ (ਅੰਦਰੂਨੀ)</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> ਤੋਂ ਚਾਰਜ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ</translation>
 <translation id="1255033239764210633">ਮੌਸਮ ਕਿਹੋ ਜਿਹਾ ਹੈ?</translation>
@@ -430,6 +431,7 @@
 <translation id="6537924328260219877">ਸਿਗਨਲ ਦੀ ਤੀਬਰਤਾ <ph name="SIGNAL_STRENGTH" />, ਫ਼ੋਨ ਦੀ ਬੈਟਰੀ <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> 'ਤੇ ਕਾਸਟ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ</translation>
 <translation id="6559976592393364813">ਪ੍ਰਸ਼ਾਸਕ ਨੂੰ ਪੁੱਛੋ</translation>
+<translation id="6584550827717945790">ਸਵਿੱਚ ਪਹੁੰਚ ਨੂੰ ਬੰਦ ਕਰੋ</translation>
 <translation id="6585808820553845416">ਸੈਸ਼ਨ <ph name="SESSION_TIME_REMAINING" /> ਵਿੱਚ ਖ਼ਤਮ ਹੋਵੇਗਾ।</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, ਸਿਗਨਲ ਦੀ ਤੀਬਰਤਾ <ph name="SIGNAL_STRENGTH" />, ਤੁਹਾਡੇ ਪ੍ਰਸ਼ਾਸਕ ਵੱਲੋਂ ਪ੍ਰਬੰਧਿਤ ਕੀਤਾ ਜਾਂਦਾ ਹੈ</translation>
 <translation id="6614169507485700968">ਪਰਦੇਦਾਰੀ ਸਕ੍ਰੀਨ ਚਾਲੂ ਹੈ</translation>
@@ -603,6 +605,7 @@
 <translation id="8814190375133053267">ਵਾਈ-ਫਾਈ</translation>
 <translation id="8825863694328519386">ਪਿੱਛੇ ਜਾਣ ਲਈ ਖੱਬੇ ਪਾਸੇ ਤੋਂ ਸਵਾਈਪ ਕਰੋ</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">'ਪਿੱਛੇ' ਬਟਨ</translation>
 <translation id="8843682306134542540">ਘੁਮਾਅ ਸੰਬੰਧੀ ਲਾਕ ਨੂੰ ਟੌਗਲ ਕਰੋ। <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">ਐਪ ਸਪਲਿਟ ਸਕ੍ਰੀਨ ਦਾ ਸਮਰਥਨ ਨਹੀਂ ਕਰਦੀ।</translation>

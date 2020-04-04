@@ -47,7 +47,6 @@
 <translation id="2309047409763057870">Dies ist eine Zweitinstallation, daher kann Google Chrome nicht als Standardbrowser festgelegt werden.</translation>
 <translation id="2341767445688917208">Chrome OS konnte Ihre Passwörter nicht synchronisieren. Jetzt beheben.</translation>
 <translation id="2348335408836342058">Chrome benötigt für diese Website die Berechtigung, auf Ihre Kamera und Ihr Mikrofon zuzugreifen</translation>
-<translation id="234869673307233423">Chrome kann Ihre Passwörter nicht prüfen. Versuchen Sie es später noch einmal.</translation>
 <translation id="2429317896000329049">Google Chrome konnte Ihre Daten nicht synchronisieren, da die Synchronisierung für Ihre Domain nicht zur Verfügung steht.</translation>
 <translation id="2467438592969358367">Google Chrome möchte Ihre Passwörter exportieren. Wenn Sie dies zulassen möchten, geben Sie Ihr Windows-Passwort ein.</translation>
 <translation id="2485422356828889247">Deinstallieren</translation>
@@ -62,7 +61,6 @@
 <translation id="2689103672227170538">Die beim Start von Chrome angezeigte Seite wurde durch diese Erweiterung geändert.</translation>
 <translation id="2765403129283291972">Chrome benötigt für diese Website die Berechtigung, auf Ihr Mikrofon zuzugreifen</translation>
 <translation id="2770231113462710648">Standardbrowser ändern in:</translation>
-<translation id="2775140325783767197">Chrome kann Ihre Passwörter nicht prüfen. Überprüfen Sie Ihre Internetverbindung.</translation>
 <translation id="2799223571221894425">Neu starten</translation>
 <translation id="2847461019998147611">Google Chrome in dieser Sprache anzeigen</translation>
 <translation id="2857540653560290388">Chrome wird gestartet…</translation>
@@ -120,7 +118,6 @@
 <translation id="4600710005438004015">Chrome konnte nicht auf die neueste Version aktualisiert werden. In Ihrer Version fehlen daher einige neue Funktionen und Sicherheitspatches.</translation>
 <translation id="4631713731678262610">Ins Chrome-Menü verschieben</translation>
 <translation id="4633000520311261472">Um Chrome sicherer zu machen, haben wir einige Erweiterungen deaktiviert, die nicht im <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> aufgeführt sind und möglicherweise ohne Ihr Wissen hinzugefügt wurden.</translation>
-<translation id="4653397506175047429">Chrome kann nicht alle Ihre Passwörter prüfen. Bitte versuchen Sie es in 24 Stunden noch einmal.</translation>
 <translation id="4728575227883772061">Installation aufgrund von unbekanntem Fehler fehlgeschlagen. Falls Google Chrome bereits ausgeführt wird, schließen Sie es und versuchen Sie es erneut.</translation>
 <translation id="4750550185319565338">Chrome neu starten, um <ph name="PLUGIN_NAME" /> zu aktivieren</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
@@ -240,7 +237,6 @@
 <translation id="8862326446509486874">Sie verfügen nicht über die erforderlichen Rechte für eine systemweite Installation. Starten Sie das Installationsprogramm als Administrator.</translation>
 <translation id="8914504000324227558">Chrome neu starten</translation>
 <translation id="8999208279178790196">{0,plural, =0{Ein Chrome-Update ist verfügbar}=1{Ein Chrome-Update ist verfügbar}other{Ein Chrome-Update ist seit # Tagen verfügbar}}</translation>
-<translation id="9025321516765676895">Chrome kann Ihre Passwörter nicht prüfen, da es zu viele sind</translation>
 <translation id="9026991721384951619">Chrome OS konnte Ihre Daten nicht synchronisieren, da die Anmeldedaten Ihres Kontos veraltet sind.</translation>
 <translation id="9067395829937117663">Für Google Chrome ist Windows 7 oder höher erforderlich.</translation>
 <translation id="911206726377975832">Auch die Browserdaten löschen?</translation>

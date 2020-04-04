@@ -18,6 +18,7 @@
 <translation id="1190609913194133056">مرکز اعلان</translation>
 <translation id="1195412055398077112">بزرگ‌تر از صفحه</translation>
 <translation id="119944043368869598">پاک کردن همه</translation>
+<translation id="1199716647557067911">مطمئنید می‌خواهید «دسترسی کلیدی» را خاموش کنید؟</translation>
 <translation id="1247372569136754018">میکروفون (داخلی)</translation>
 <translation id="1252999807265626933">در حال شارژ شدن از <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">‏?‎What's the weather (آب‌وهوا چطور است؟)</translation>
@@ -430,6 +431,7 @@
 <translation id="6537924328260219877">قدرت سیگنال <ph name="SIGNAL_STRENGTH" />، باتری تلفن <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">ارسال محتوا به <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">سؤال از سرپرست</translation>
+<translation id="6584550827717945790">خاموش کردن «دسترسی کلیدی»</translation>
 <translation id="6585808820553845416">جلسه در <ph name="SESSION_TIME_REMAINING" /> به پایان می‌رسد.</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />، قدرت سیگنال <ph name="SIGNAL_STRENGTH" />، تحت‌مدیریت سرپرست</translation>
 <translation id="6614169507485700968">صفحه حریم‌خصوصی روشن است</translation>
@@ -603,6 +605,7 @@
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8825863694328519386">برای برگشتن به عقب از سمت راست تند بکشید</translation>
 <translation id="8828714802988429505">۹۰°</translation>
+<translation id="8841375032071747811">دکمه برگشت</translation>
 <translation id="8843682306134542540">تغییر وضعیت قفل چرخش. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">برنامه از تقسیم صفحه پشتیبانی نمی‌کند.</translation>

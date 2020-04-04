@@ -2,12 +2,17 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
 <translation id="1124772482545689468">Người dùng</translation>
+<translation id="1178581264944972037">Tạm dừng</translation>
 <translation id="1181037720776840403">Xóa</translation>
 <translation id="1201402288615127009">Tiếp theo</translation>
 <translation id="1383876407941801731">Tìm kiếm</translation>
+<translation id="1384959399684842514">Đã tạm dừng quá trình tải xuống</translation>
+<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="2079545284768500474">Hoàn tác</translation>
 <translation id="2148716181193084225">Hôm nay</translation>
 <translation id="2359808026110333948">Tiếp tục</translation>
+<translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
+<translation id="2434158240863470628">Quá trình tải xuống hoàn tất <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2501278716633472235">Quay lại</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{Đã chặn 1 cookie}other{Đã chặn # cookie}}</translation>
 <translation id="257931822824936280">Đã mở rộng - nhấp để thu gọn.</translation>
@@ -19,6 +24,7 @@
 <translation id="3479552764303398839">Không phải bây giờ</translation>
 <translation id="385051799172605136">Quay lại</translation>
 <translation id="3987993985790029246">Sao chép đường liên kết</translation>
+<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="4002066346123236978">Tiêu đề</translation>
 <translation id="4570913071927164677">Chi tiết</translation>
 <translation id="4645575059429386691">Do cha mẹ của bạn quản lý</translation>
@@ -40,6 +46,7 @@
 <translation id="6206551242102657620">Kết nối an toàn. Thông tin trang web</translation>
 <translation id="6216432067784365534">Tùy chọn <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6527303717912515753">Chia sẻ</translation>
+<translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6746124502594467657">Di chuyển xuống</translation>
 <translation id="6818926723028410516">Chọn mục</translation>
 <translation id="6910211073230771657">Đã xóa</translation>
@@ -48,6 +55,7 @@
 <translation id="6965382102122355670">OK</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Đã chọn 1 mục}other{Đã chọn # mục}}</translation>
 <translation id="7087918508125750058">Đã chọn <ph name="ITEM_COUNT" /> mục. Bạn có thể sử dụng các tùy chọn ở gần đầu màn hình</translation>
+<translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7250468141469952378">Đã chọn <ph name="ITEM_COUNT" /></translation>
 <translation id="7649070708921625228">Trợ giúp</translation>
 <translation id="7658239707568436148">Hủy</translation>
@@ -55,7 +63,9 @@
 <translation id="7791543448312431591">Thêm</translation>
 <translation id="780301667611848630">Không, cảm ơn</translation>
 <translation id="7846076177841592234">Hủy chọn</translation>
+<translation id="802154636333426148">Tải xuống không thành công</translation>
 <translation id="8131740175452115882">Xác nhận</translation>
+<translation id="8200772114523450471">Tiếp tục</translation>
 <translation id="8206354486702514201">Cài đặt này được quản trị viên của bạn thực thi.</translation>
 <translation id="8249310407154411074">Chuyển lên trên cùng</translation>
 <translation id="8261506727792406068">Xóa</translation>

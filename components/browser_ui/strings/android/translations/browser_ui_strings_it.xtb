@@ -2,12 +2,17 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
 <translation id="1124772482545689468">Utente</translation>
+<translation id="1178581264944972037">Pausa</translation>
 <translation id="1181037720776840403">Rimuovi</translation>
 <translation id="1201402288615127009">Avanti</translation>
 <translation id="1383876407941801731">Cerca</translation>
+<translation id="1384959399684842514">Download sospeso</translation>
+<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> di <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="2079545284768500474">Annulla</translation>
 <translation id="2148716181193084225">Oggi</translation>
 <translation id="2359808026110333948">Continua</translation>
+<translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
+<translation id="2434158240863470628">Download completato: <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2501278716633472235">Indietro</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 cookie bloccato}other{# cookie bloccati}}</translation>
 <translation id="257931822824936280">Espanso. Fai clic per comprimere.</translation>
@@ -19,6 +24,7 @@
 <translation id="3479552764303398839">Non adesso</translation>
 <translation id="385051799172605136">Indietro</translation>
 <translation id="3987993985790029246">Copia link</translation>
+<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> di ?</translation>
 <translation id="4002066346123236978">Titolo</translation>
 <translation id="4570913071927164677">Dettagli</translation>
 <translation id="4645575059429386691">Gestito da un genitore</translation>
@@ -40,6 +46,7 @@
 <translation id="6206551242102657620">La connessione è sicura. Informazioni sul sito</translation>
 <translation id="6216432067784365534">Opzioni <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6527303717912515753">Condividi</translation>
+<translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6746124502594467657">Sposta giù</translation>
 <translation id="6818926723028410516">Seleziona elementi</translation>
 <translation id="6910211073230771657">Eliminato</translation>
@@ -48,6 +55,7 @@
 <translation id="6965382102122355670">OK</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 elemento selezionato}other{# elementi selezionati}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> elementi selezionati. Opzioni disponibili nella parte superiore dello schermo</translation>
+<translation id="7176368934862295254"><ph name="KILOBYTES" /> kB</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> elementi selezionati</translation>
 <translation id="7649070708921625228">Guida</translation>
 <translation id="7658239707568436148">Annulla</translation>
@@ -55,7 +63,9 @@
 <translation id="7791543448312431591">Aggiungi</translation>
 <translation id="780301667611848630">No grazie</translation>
 <translation id="7846076177841592234">Annulla selezione</translation>
+<translation id="802154636333426148">Download non riuscito</translation>
 <translation id="8131740175452115882">Conferma</translation>
+<translation id="8200772114523450471">Riprendi</translation>
 <translation id="8206354486702514201">Questa impostazione è stata applicata dall'amministratore.</translation>
 <translation id="8249310407154411074">Sposta in alto</translation>
 <translation id="8261506727792406068">Elimina</translation>

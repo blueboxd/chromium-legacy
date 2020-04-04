@@ -59,7 +59,6 @@
 <translation id="1373696734384179344">Memoria insuficiente para descargar o contido seleccionado.</translation>
 <translation id="1376578503827013741">Calculando...</translation>
 <translation id="1383876407941801731">Buscar</translation>
-<translation id="1384959399684842514">Pausouse a descarga</translation>
 <translation id="1386674309198842382">Dispositivo activo hai <ph name="LAST_UPDATED" />días</translation>
 <translation id="1397811292916898096">Buscar con <ph name="PRODUCT_NAME" /></translation>
 <translation id="1406000523432664303">Non facer seguimento</translation>
@@ -117,7 +116,6 @@
 <translation id="1919345977826869612">Anuncios</translation>
 <translation id="1919950603503897840">Seleccionar contactos</translation>
 <translation id="1922076542920281912">Para permitir que Chrome acceda á túa localización, actívaa tamén en <ph name="BEGIN_LINK" />Configuración de Android<ph name="END_LINK" />.</translation>
-<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1925021887439448749">Introducir enderezo web personalizado</translation>
 <translation id="1928696683969751773">Actualizacións</translation>
 <translation id="19288952978244135">Abre Chrome de novo.</translation>
@@ -193,13 +191,11 @@ Toca calquera palabra para buscala. Mantena premida para seleccionar máis ou me
 <translation id="2369533728426058518">pestanas abertas</translation>
 <translation id="2387895666653383613">Axuste de texto</translation>
 <translation id="2394602618534698961">Os ficheiros descargados aparecen aquí</translation>
-<translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2407481962792080328">Cando inicies sesión na túa Conta de Google, activarase esta función</translation>
 <translation id="2410754283952462441">Escolle unha conta</translation>
 <translation id="2414886740292270097">Escuro</translation>
 <translation id="2426805022920575512">Escoller outra conta</translation>
 <translation id="2433507940547922241">Aparencia</translation>
-<translation id="2434158240863470628">Completouse a descarga <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">Acceso á localización</translation>
 <translation id="2450083983707403292">Queres empezar a descargar <ph name="FILE_NAME" /> de novo?</translation>
 <translation id="2450907520913474542">Obtén información sobre os temas en sitios web sen saír da páxina. A función Tocar para buscar envía unha palabra e o contexto que a rodea á Busca de Google, o cal permite obter definicións, imaxes, resultados de busca e outros detalles.
@@ -413,7 +409,6 @@ Só ti podes ver a que apunta a túa cámara. O sitio non pode ver as imaxes da 
 <translation id="3987993985790029246">Copiar ligazón</translation>
 <translation id="3988213473815854515">A localización está permitida</translation>
 <translation id="3988466920954086464">Consulta os resultados da busca instantáneos neste panel</translation>
-<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="3997476611815694295">Datos non importantes</translation>
 <translation id="4000212216660919741">Inicio sen conexión</translation>
 <translation id="4008040567710660924">Permite cookies para un sitio específico.</translation>
@@ -655,6 +650,7 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5763514718066511291">Tocar para copiar o URL para esta aplicación</translation>
 <translation id="5765780083710877561">Descrición:</translation>
 <translation id="5793665092639000975">Espazo utilizado: <ph name="SPACE_USED" /> de <ph name="SPACE_AVAILABLE" /></translation>
+<translation id="5795872532621730126">Busca e navegación</translation>
 <translation id="5797070761912323120">Google pode utilizar o teu historial para personalizar a Busca, os anuncios e outros servizos seus.</translation>
 <translation id="5804241973901381774">Permisos</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{Hai # hora}other{Hai # horas}}</translation>
@@ -772,7 +768,6 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="6593061639179217415">Sitio para ordenadores</translation>
 <translation id="6597891566292541626">Coloca o código QR ou o código de barras neste marco.</translation>
 <translation id="6600954340915313787">Copiouse en Chrome</translation>
-<translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Contido protexido</translation>
 <translation id="6627583120233659107">Editar cartafol</translation>
 <translation id="6643016212128521049">Borrar</translation>
@@ -841,7 +836,6 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Cargar páxina orixinal<ph name="END_LINK" /> desde <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Últimas 24 horas</translation>
 <translation id="7173114856073700355">Abrir Configuración</translation>
-<translation id="7176368934862295254"><ph name="KILOBYTES" /> kB</translation>
 <translation id="7177466738963138057">Podes cambiar esta opción máis tarde en Configuración</translation>
 <translation id="7180611975245234373">Actualizar</translation>
 <translation id="7189372733857464326">Esperando a que os servizos de Google Play rematen de actualizarse</translation>
@@ -953,7 +947,6 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="8007176423574883786">Desactivada para este dispositivo</translation>
 <translation id="8013372441983637696">Borrar tamén deste dispositivo os teus datos de Chrome</translation>
 <translation id="8015452622527143194">Recuperar o tamaño predeterminado da páxina</translation>
-<translation id="802154636333426148">Produciuse un erro na descarga</translation>
 <translation id="8026334261755873520">Borrar datos de navegación</translation>
 <translation id="8035133914807600019">Cartafol novo...</translation>
 <translation id="8037750541064988519">Quedan <ph name="DAYS" /> días</translation>

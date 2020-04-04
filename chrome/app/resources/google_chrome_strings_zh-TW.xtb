@@ -48,7 +48,6 @@
 <translation id="2309047409763057870">這是以並存形式安裝的次要 Google Chrome，無法設為您的預設瀏覽器。</translation>
 <translation id="2341767445688917208">Chrome 作業系統無法同步處理你的密碼。立即修正。</translation>
 <translation id="2348335408836342058">Chrome 需要相關權限，才能讓這個網站使用你的攝影機和麥克風</translation>
-<translation id="234869673307233423">Chrome 無法檢查你的密碼，請稍後再試。</translation>
 <translation id="2429317896000329049">你的網域無法使用「同步功能」，因此 Google Chrome 無法同步處理你的資料。</translation>
 <translation id="2467438592969358367">Google Chrome 要求匯出你的密碼。如果允許，請輸入你的 Windows 密碼。</translation>
 <translation id="2485422356828889247">解除安裝</translation>
@@ -63,7 +62,6 @@
 <translation id="2689103672227170538">這個擴充功能已變更 Chrome 啟動時所顯示的網頁。</translation>
 <translation id="2765403129283291972">Chrome 需要相關權限，才能讓這個網站使用你的麥克風</translation>
 <translation id="2770231113462710648">將預設瀏覽器變更為：</translation>
-<translation id="2775140325783767197">Chrome 無法檢查你的密碼，請查看你的網際網路連線狀態。</translation>
 <translation id="2799223571221894425">重新啟動</translation>
 <translation id="2847461019998147611">將 Google Chrome 的介面文字設為這種語言</translation>
 <translation id="2857540653560290388">正在啟動 Chrome…</translation>
@@ -121,7 +119,6 @@
 <translation id="4600710005438004015">Chrome 無法更新至最新版本，因此你並未取得最新功能和安全性問題修正。</translation>
 <translation id="4631713731678262610">在 Chrome 選單中隱藏</translation>
 <translation id="4633000520311261472">為了讓 Chrome 的安全性更有保障，我們已將部分未列在 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> 中的擴充功能停用，它們可能在你不知情的情況下加入瀏覽器。</translation>
-<translation id="4653397506175047429">Chrome 無法檢查你所有的密碼，請於 24 小時後再試一次。</translation>
 <translation id="4728575227883772061">安裝因不明錯誤而失敗。如果 Google Chrome 目前正在執行中，請將其關閉然後再試一次。</translation>
 <translation id="4750550185319565338">重新啟動 Chrome 即可啟用 <ph name="PLUGIN_NAME" /></translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
@@ -244,7 +241,6 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="8862326446509486874">你沒有在系統層級進行安裝的權限，請以管理員的身分執行安裝檔。</translation>
 <translation id="8914504000324227558">重新啟動 Chrome</translation>
 <translation id="8999208279178790196">{0,plural, =0{有可用的 Chrome 更新}=1{有可用的 Chrome 更新}other{Chrome 更新已發布 # 天}}</translation>
-<translation id="9025321516765676895">你的密碼過多，Chrome 無從檢查</translation>
 <translation id="9026991721384951619">你的帳戶登入詳細資料尚未更新，因此 Chrome 作業系統無法同步處理你的資料。</translation>
 <translation id="9067395829937117663">Google Chrome 僅支援 Windows 7 以上版本的作業系統。</translation>
 <translation id="911206726377975832">你要一併刪除瀏覽資料嗎？</translation>

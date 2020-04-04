@@ -26,6 +26,7 @@
 <translation id="5573014823074921752">Chromium 提示。要查看更多的标签页选项，请轻触并按住工具栏（位于屏幕底部或顶部）中的“显示标签页”按钮。</translation>
 <translation id="5862307444128926510">欢迎使用 Chromium</translation>
 <translation id="5945387852661427312">您正要登录由 <ph name="DOMAIN" /> 管理的帐号，并要授权其管理员控制您的 Chromium 数据。您的数据将与此帐号永久关联。退出 Chromium 后，您的数据将从这台设备上删除，但仍会保留在您的 Google 帐号中。</translation>
+<translation id="602807004951640891">使用 Chromium 即表示您同意接受<ph name="BEGIN_LINK_TOS" />服务条款<ph name="END_LINK_TOS" />。</translation>
 <translation id="6068866989048414399">Chromium 服务条款</translation>
 <translation id="6268381023930128611">退出 Chromium？</translation>
 <translation id="6424492062988593837">Chromium 刚刚经过了改进！新版本已推出。</translation>

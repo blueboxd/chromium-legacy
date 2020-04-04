@@ -59,7 +59,6 @@
 <translation id="1373696734384179344">चयन गरिएको सामग्री डाउनलोड गर्नको लागि मेमोरी अपर्याप्त।</translation>
 <translation id="1376578503827013741">हिसाब गर्दै…</translation>
 <translation id="1383876407941801731">खोज्नुहोस्</translation>
-<translation id="1384959399684842514">डाउनलोड रोकिएको छ</translation>
 <translation id="1386674309198842382"><ph name="LAST_UPDATED" /> दिनअघि सक्रिय</translation>
 <translation id="1397811292916898096"><ph name="PRODUCT_NAME" /> मार्फत खोज्नुहोस्</translation>
 <translation id="1406000523432664303">“ट्रयाक नगर्नुहोस्”</translation>
@@ -104,6 +103,7 @@
 <translation id="1782483593938241562">अन्तिम मिति: <ph name="DATE" /></translation>
 <translation id="1791662854739702043">स्थापना गरियो</translation>
 <translation id="1792959175193046959">पूर्वनिर्धारित डाउनलोड स्थान जुनसुकै बेला परिवर्तन गर्नुहोस्</translation>
+<translation id="1795251344124198516">Chrome र Chrome OS का सेवाका अतिरिक्त सर्तहरू</translation>
 <translation id="1807246157184219062">हल्का</translation>
 <translation id="1810845389119482123">सिंक गर्ने कार्यको प्रारम्भिक सेटअप पूरा भएको छैन</translation>
 <translation id="1821253160463689938">तपाईं ती पृष्ठहरूमा नजानुभए तापनि तपाईंका प्राथमिकताहरू सम्झनका लागि कुकीहरूको प्रयोग गर्छ</translation>
@@ -116,7 +116,6 @@
 <translation id="1919345977826869612">विज्ञापनहरू</translation>
 <translation id="1919950603503897840">सम्पर्कहरू चयन गर्नुहोस्</translation>
 <translation id="1922076542920281912">Chrome लाई तपाईंको स्थानमाथि पहुँच राख्न दिन <ph name="BEGIN_LINK" />Android का सेटिङहरू<ph name="END_LINK" /> मा गई स्थानसम्बन्धी सेवा सक्रिय गर्नुहोस्।</translation>
-<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1925021887439448749">आफू अनुकूल पारिएको वेब ठेगाना प्रविष्टि गर्नुहोस्</translation>
 <translation id="1928696683969751773">अद्यावधिकहरू</translation>
 <translation id="19288952978244135">Chrome पुनः खोल्नुहोस्।</translation>
@@ -192,13 +191,11 @@
 <translation id="2369533728426058518">ट्याबहरू खोल्नुहोस्</translation>
 <translation id="2387895666653383613">पाठ स्केलिङ</translation>
 <translation id="2394602618534698961">तपाईंले डाउनलोड गर्ने फाइलहरू यहाँ देखिन्छन्</translation>
-<translation id="2402980924095424747"><ph name="MEGABYTES" /> एम.बि.</translation>
 <translation id="2407481962792080328">तपाईंले आफ्नो Google खातामा साइन इन गर्दा यो सुविधा सक्रिय हुन्छ</translation>
 <translation id="2410754283952462441">कुनै खाता छान्नुहोस्</translation>
 <translation id="2414886740292270097">अँध्यारो</translation>
 <translation id="2426805022920575512">कुनै अर्को खाता छनौट गर्नुहोस्‌</translation>
 <translation id="2433507940547922241">रूपरंग</translation>
-<translation id="2434158240863470628">डाउनलोड सम्पन्न भयो <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">स्थान पहुँच</translation>
 <translation id="2450083983707403292">तपाईं <ph name="FILE_NAME" /> लाई फेरि डाउनलोड गर्न चाहनुहुन्छ?</translation>
 <translation id="2450907520913474542">यो पृष्ठ नछोडिकन वेबसाइटहरूमा रहेका शीर्षकहरूबारे जान्नुहोस्। खोज्नका लागि छुनुहोस् नामक सुविधाले कुनै शब्द र त्यसको सन्दर्भलाई Google खोजमा पठाउँछ र उक्त शब्दको परिभाषा, त्यससँग सम्बन्धित तस्बिर, खोज परिणाम र अन्य विवरणहरू देखाउँछ।
@@ -236,6 +233,7 @@
 <translation id="2650751991977523696">फाइल पुनः डाउनलोड गर्ने हो?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# अडियो फाइल}other{# अडियो फाइलहरू}}</translation>
 <translation id="2687403674020088961">सबै कुकीहरूमाथि रोक लगाउनुहोस् (सिफारिस गरिँदैन)</translation>
+<translation id="2689830683995595741">Chrome प्रयोग गरेर तपाईं <ph name="BEGIN_LINK1" />Google का सेवाका सर्तहरू<ph name="END_LINK1" /> र <ph name="BEGIN_LINK2" />Google Chrome र Chrome OS का सेवाका अतिरिक्त सर्तहरू<ph name="END_LINK2" />मा सहमति जनाउनुहुन्छ। <ph name="BEGIN_LINK3" />Family Link मार्फत व्यवस्थापन गरिएका Google खाताहरूको गोपनीयता सूचना<ph name="END_LINK3" /> पनि लागू हुन्छ।</translation>
 <translation id="2707726405694321444">पृष्ठ ताजा गर्नुहोस्</translation>
 <translation id="2709516037105925701">स्वत:भर्नुहोस्</translation>
 <translation id="2717722538473713889">इमेल ठेगानाहरू</translation>
@@ -376,6 +374,7 @@
 <translation id="3749259744154402564">असमर्थित</translation>
 <translation id="3771001275138982843">अद्यावधिक डाउनलोड गर्न सकिएन</translation>
 <translation id="3771033907050503522">इन्कग्निटो ट्याबहरू</translation>
+<translation id="3771694256347217732">Google का सेवाका सर्तहरू</translation>
 <translation id="3773755127849930740">जोडा बनाउने प्रक्रियालाई अनुमति दिन <ph name="BEGIN_LINK" />ब्लुटुथ<ph name="END_LINK" /> लाई सक्रिय गर्नुहोस्</translation>
 <translation id="3775705724665058594">आफ्ना यन्त्रहरूमा पठाउनुहोस्</translation>
 <translation id="3778956594442850293">गृह स्क्रिनमा थपियो</translation>
@@ -403,13 +402,13 @@
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{यन्त्र तयार भएपछि Chrome ले तपाईंको पृष्ठ लोड गर्ने छ}other{यन्त्र तयार भएपछि Chrome ले तपाईंका पृष्ठहरू लोड गर्ने छ}}</translation>
 <translation id="3963007978381181125">पासफ्रेजमार्फत इन्क्रिप्सन गर्ने कार्यअन्तर्गत Google Pay का भुक्तानी विधि र ठेगानाहरू समावेश हुँदैनन्। तपाईंको पासफ्रेज थाहा हुने व्यक्तिले मात्र तपाईंको इन्क्रिप्ट गरिएको डेटा पढ्न सक्छ। उक्त पासफ्रेज Google मा पठाइँदैन वा त्यहाँ भण्डारण गरिँदैन। तपाईंले आफ्नो पासफ्रेज बिर्सनुभयो वा तपाईं यो सेटिङ परिवर्तन गर्न चाहनुहुन्छ भने तपाईंले सिंक रिसेट गर्नु पर्ने हुन्छ। <ph name="BEGIN_LINK" />थप जान्नुहोस्<ph name="END_LINK" /></translation>
 <translation id="3967822245660637423">डाउनलोड पूर्ण भयो</translation>
+<translation id="3974987681202239636"><ph name="APP_NAME" /> Chrome मा खुल्ने छ। जारी राखेर तपाईं <ph name="BEGIN_LINK1" />Google का सेवाका सर्तहरू<ph name="END_LINK1" /> र <ph name="BEGIN_LINK2" />Google Chrome र Chrome OS का सेवाका अतिरिक्त सर्तहरू<ph name="END_LINK2" />मा सहमति जनाउनुहुन्छ। <ph name="BEGIN_LINK3" />Family Link मार्फत व्यवस्थापन गरिएका Google खाताहरूको गोपनीयता सूचना<ph name="END_LINK3" /> पनि लागू हुन्छ।</translation>
 <translation id="397583555483684758">सिंकले काम गर्न छाड्यो</translation>
 <translation id="3976396876660209797">यो सर्टकट हटाउनुहोस्‌ र यसलाई पुन: सिर्जना गर्नुहोस्‌</translation>
 <translation id="3985215325736559418">तपाईं फेरि <ph name="FILE_NAME" /> डाउनलोड गर्न चाहनुहुन्छ?</translation>
 <translation id="3987993985790029246">लिंक प्रतिलिपि गर्नुहोस्</translation>
 <translation id="3988213473815854515">स्थानलाई अनुमति दिइएको छ</translation>
 <translation id="3988466920954086464">यस प्यानलमा खोजका तात्कालिक परिणामहरू हेर्नुहोस्</translation>
-<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="3997476611815694295">अनावश्यक भण्डारण</translation>
 <translation id="4000212216660919741">अफलाइन गृहपृष्ठ</translation>
 <translation id="4008040567710660924">कुनै खास साइटमा कुकीहरूलाई अनुमति दिनुहोस्।</translation>
@@ -650,6 +649,7 @@
 <translation id="5763514718066511291">यस अनुप्रयोगको URL प्रतिलिपि गर्न ट्याप गर्नुहोस्</translation>
 <translation id="5765780083710877561">विवरण:</translation>
 <translation id="5793665092639000975"><ph name="SPACE_AVAILABLE" /> मध्ये <ph name="SPACE_USED" /> प्रयोग गरिँदै</translation>
+<translation id="5795872532621730126">खोज्नुहोस् तथा ब्राउज गर्नुहोस्</translation>
 <translation id="5797070761912323120">Google ले खोज, विज्ञापन र Google का अन्य सेवाहरूलाई वैयक्तीकृत गर्न तपाईंको इतिहाससम्बन्धी जानकारी प्रयोग गर्न सक्छ</translation>
 <translation id="5804241973901381774">अनुमतिहरू</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# घन्टा अघि}other{# घन्टा अघि}}</translation>
@@ -712,6 +712,7 @@
 <translation id="6255999984061454636">सामग्रीसम्बन्धी सुझावहरू</translation>
 <translation id="6270391203985052864">साइटहरूले सूचनाहरू पठाउनका निम्ति अनुमति माग्न सक्छन्।</translation>
 <translation id="6277522088822131679">पृष्ठ मुद्रण गर्नमा एक समस्या थियो। कृपया पुन: प्रयास गर्नुहोस्।</translation>
+<translation id="6292420053234093573">Chrome प्रयोग गरेर तपाईं <ph name="BEGIN_LINK1" />Google का सेवाका सर्तहरू<ph name="END_LINK1" /> र <ph name="BEGIN_LINK2" />Google Chrome र Chrome OS का सेवाका अतिरिक्त सर्तहरू<ph name="END_LINK2" />मा सहमति जनाउनुहुन्छ।</translation>
 <translation id="6295158916970320988">सबै साइटहरू</translation>
 <translation id="629730747756840877">खाता</translation>
 <translation id="6297765934698848803">तपाईंको यन्त्रको व्यवस्थापन गर्ने सङ्गठनले तपाईंको यन्त्रको क्यामेरा निष्क्रिय पारेको छ।</translation>
@@ -726,6 +727,7 @@
 <translation id="6364438453358674297">इतिहासबाट सुझाव हटाउने?</translation>
 <translation id="6369229450655021117">यहाँबाट तपाईं वेबमा खोजी गर्न, साथीहरूसँग आदान प्रदान गर्न र खुला पृष्ठहरू हेर्न सक्नुहुन्छ</translation>
 <translation id="6378173571450987352">विवरणहरू: प्रयोग गरिएको डेटाको मात्राअनुसार क्रमबद्ध गरिएको</translation>
+<translation id="6379829913050047669"><ph name="APP_NAME" /> Chrome मा खुल्ने छ। जारी राखेर तपाईं <ph name="BEGIN_LINK1" />Google का सेवाका सर्तहरू<ph name="END_LINK1" /> र <ph name="BEGIN_LINK2" />Google Chrome र Chrome OS का सेवाका अतिरिक्त सर्तहरू<ph name="END_LINK2" />मा सहमति जनाउनुहुन्छ।</translation>
 <translation id="6381421346744604172">वेबसाइटहरू अँध्यारो पार्नुहोस्</translation>
 <translation id="6388207532828177975">खाली गरेर रिसेट गर्नुहोस्</translation>
 <translation id="6395288395575013217">लिंक</translation>
@@ -765,7 +767,6 @@
 <translation id="6593061639179217415">डेस्कटप साइट</translation>
 <translation id="6597891566292541626">QR/बार कोडलाई यस फ्रेमभित्र पार्नुहोस्।</translation>
 <translation id="6600954340915313787">Chrome मा प्रतिलिपि गरियो</translation>
-<translation id="6608650720463149374"><ph name="GIGABYTES" /> जि.बि.</translation>
 <translation id="6612358246767739896">संरक्षित सामग्री</translation>
 <translation id="6627583120233659107">फोल्डर सम्पादन गर्नुहोस्</translation>
 <translation id="6643016212128521049">खालि गर्नुहोस्</translation>
@@ -834,7 +835,6 @@
 <translation id="7149158118503947153"><ph name="DOMAIN_NAME" /> को <ph name="BEGIN_LINK" />मूल पृष्ठ लोड गर्नुहोस्<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">पछिल्ला २४ घन्टा</translation>
 <translation id="7173114856073700355">सेटिङहरू खोल्नुहोस्</translation>
-<translation id="7176368934862295254"><ph name="KILOBYTES" /> के.बि.</translation>
 <translation id="7177466738963138057">तपाईं सेटिङहरूमा पछि यो परिवर्तन गर्न सक्नुहुन्छ</translation>
 <translation id="7180611975245234373">ताजा गर्नुहोस्</translation>
 <translation id="7189372733857464326">Google Play Services ले अद्यावधिक गर्ने कार्य सम्पन्न गरोस् भनी कुर्दै</translation>
@@ -946,7 +946,6 @@
 <translation id="8007176423574883786">यस यन्त्रका लागि बन्द गरियो।</translation>
 <translation id="8013372441983637696">यो यन्त्रबाट आफ्नो Chrome को डेटा पनि हटाउनुहोस्</translation>
 <translation id="8015452622527143194">पृष्ठमा रहेको सबै कुरालाई पूर्वनिर्धारित आकारमा ल्याउनुहोस्</translation>
-<translation id="802154636333426148">डाउनलोड गर्न सकिएन</translation>
 <translation id="8026334261755873520">ब्राउजिङ लगत खालि गर्नुहोस्</translation>
 <translation id="8035133914807600019">नयाँ फोल्डर...</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> दिन बाँकी छ</translation>

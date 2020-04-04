@@ -18,6 +18,7 @@
 <translation id="1190609913194133056">Ծանուցումների կենտրոն</translation>
 <translation id="1195412055398077112">էկրանի եզերվածք</translation>
 <translation id="119944043368869598">Մաքրել բոլորը</translation>
+<translation id="1199716647557067911">Իսկապե՞ս ուզում եք անջատել Switch Access-ը</translation>
 <translation id="1247372569136754018">Խոսափող (ներքին)</translation>
 <translation id="1252999807265626933">Լիցքավորվում է <ph name="POWER_SOURCE" />-ից</translation>
 <translation id="1255033239764210633">Ի՞նչ եղանակ է հիմա։</translation>
@@ -430,6 +431,7 @@
 <translation id="6537924328260219877">Ազդանշանի ուժգնությունը՝ <ph name="SIGNAL_STRENGTH" />, մարտկոցի լիցքը՝ <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">Հեռարձակում «<ph name="RECEIVER_NAME" />» սարքին</translation>
 <translation id="6559976592393364813">Հարցրեք ադմինիստրատորին</translation>
+<translation id="6584550827717945790">Անջատել Switch Access-ը</translation>
 <translation id="6585808820553845416">Աշխատաշրջանն ավարտվում է <ph name="SESSION_TIME_REMAINING" />-ից:</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, ազդանշանի ուժգնությունը՝ <ph name="SIGNAL_STRENGTH" />, կառավարվում է ձեր ադմինիստրատորի կողմից</translation>
 <translation id="6614169507485700968">Գաղտնիության էկրանը միացված է</translation>
@@ -603,6 +605,7 @@
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8825863694328519386">Սահեցրեք մատը ձախից՝ հետ գնալու համար</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">«Հետ» կոճակ</translation>
 <translation id="8843682306134542540">Միացնել/անջատել պտտման կողպումը: <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Որոնել+Esc</translation>
 <translation id="8870509716567206129">Հավելվածը չի աջակցում էկրանի տրոհումը:</translation>

@@ -59,7 +59,6 @@
 <translation id="1373696734384179344">حافظه برای بارگیری محتوای انتخابی کافی نیست.</translation>
 <translation id="1376578503827013741">درحال محاسبه…</translation>
 <translation id="1383876407941801731">جستجو</translation>
-<translation id="1384959399684842514">بارگیری موقتاً متوقف شد</translation>
 <translation id="1386674309198842382">آخرین فعالیت: <ph name="LAST_UPDATED" /> روز قبل</translation>
 <translation id="1397811292916898096">جستجو با <ph name="PRODUCT_NAME" /></translation>
 <translation id="1406000523432664303">«ردیابی نشود»</translation>
@@ -117,7 +116,6 @@
 <translation id="1919345977826869612">آگهی‌ها</translation>
 <translation id="1919950603503897840">انتخاب مخاطبین</translation>
 <translation id="1922076542920281912">‏برای اینکه به Chrome امکان دهید به مکانتان دسترسی یابد، در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> هم مکان را روشن کنید.</translation>
-<translation id="1923695749281512248">‎<ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" />‎</translation>
 <translation id="1925021887439448749">نشانی وب سفارشی وارد کنید</translation>
 <translation id="1928696683969751773">به‌روزرسانی‌ها</translation>
 <translation id="19288952978244135">‏Chrome را دوباره باز کنید.</translation>
@@ -193,13 +191,11 @@
 <translation id="2369533728426058518">برگه‌های باز</translation>
 <translation id="2387895666653383613">اندازه قلم نوشتار</translation>
 <translation id="2394602618534698961">فایل‌هایی که بارگیری می‌کنید، اینجا نشان داده می‌شود</translation>
-<translation id="2402980924095424747"><ph name="MEGABYTES" /> مگابایت</translation>
 <translation id="2407481962792080328">‏وقتی به «حساب Google» خود وارد می‌شوید، این ویژگی روشن می‌شود</translation>
 <translation id="2410754283952462441">انتخاب حساب</translation>
 <translation id="2414886740292270097">تاریک</translation>
 <translation id="2426805022920575512">انتخاب حسابی دیگر</translation>
 <translation id="2433507940547922241">شکل ظاهری</translation>
-<translation id="2434158240863470628">بارگیری کامل شد <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">دسترسی به موقعیت مکانی</translation>
 <translation id="2450083983707403292">می‌خواهید بارگیری <ph name="FILE_NAME" /> را دوباره شروع کنید؟</translation>
 <translation id="2450907520913474542">‏بدون اینکه صفحه را ترک کنید، درباره موضوعات در وب‌سایت‌ها اطلاعاتی کسب کنید. «لمس برای جستجو»، کلمه و زمینه اطراف آن را برای «جستجوی Google» ارسال می‌کند و معانی، تصاویر، نتایج جستجو و سایر جزئیات را بازمی‌گرداند.
@@ -413,7 +409,6 @@
 <translation id="3987993985790029246">کپی پیوند</translation>
 <translation id="3988213473815854515">مکان مجاز است</translation>
 <translation id="3988466920954086464">نتایج جستجوی فوری را در این پانل مشاهده کنید</translation>
-<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> از ؟</translation>
 <translation id="3997476611815694295">فضای ذخیره غیرمهم</translation>
 <translation id="4000212216660919741">صفحه اصلیِ آفلاین</translation>
 <translation id="4008040567710660924">کوکی‌ها را برای سایت خاصی مجاز کنید.</translation>
@@ -655,6 +650,7 @@
 <translation id="5763514718066511291">برای کپی کردن نشانی وب این برنامه ضربه بزنید</translation>
 <translation id="5765780083710877561">توضیح:</translation>
 <translation id="5793665092639000975">درحال استفاده از <ph name="SPACE_USED" /> از <ph name="SPACE_AVAILABLE" /></translation>
+<translation id="5795872532621730126">جستجو و مرور</translation>
 <translation id="5797070761912323120">‏Google ممکن است از سابقه مرور شما برای شخصی کردن جستجو، آگهی‌ها و سایر سرویس‌های Google استفاده کند</translation>
 <translation id="5804241973901381774">مجوزها</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{۱ ساعت قبل}one{# ساعت قبل}other{# ساعت قبل}}</translation>
@@ -772,7 +768,6 @@
 <translation id="6593061639179217415">سایت مخصوص رایانه</translation>
 <translation id="6597891566292541626">‏کد QR/بارکد را در این قاب قرار دهید.</translation>
 <translation id="6600954340915313787">‏کپی در Chrome</translation>
-<translation id="6608650720463149374"><ph name="GIGABYTES" /> گیگابایت</translation>
 <translation id="6612358246767739896">محتوای محافظت‌شده</translation>
 <translation id="6627583120233659107">ویرایش پوشه</translation>
 <translation id="6643016212128521049">پاک کردن</translation>
@@ -841,7 +836,6 @@
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />بار کردن صفحه اصلی<ph name="END_LINK" /> از <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">۲۴ ساعت گذشته</translation>
 <translation id="7173114856073700355">باز کردن تنظیمات</translation>
-<translation id="7176368934862295254"><ph name="KILOBYTES" /> کیلوبایت</translation>
 <translation id="7177466738963138057">می‌توانید بعداً این مورد را در تنظیمات تغییر دهید</translation>
 <translation id="7180611975245234373">بازخوانی</translation>
 <translation id="7189372733857464326">‏در انتظار «سرویس‌های Google Play» برای اتمام به‌روزرسانی است</translation>
@@ -953,7 +947,6 @@
 <translation id="8007176423574883786">برای این دستگاه غیرفعال شد</translation>
 <translation id="8013372441983637696">‏داده‌های این Chrome هم از این دستگاه پاک شود</translation>
 <translation id="8015452622527143194">برگرداندن همه‌چیز در صفحه به‌اندازه پیش‌فرض</translation>
-<translation id="802154636333426148">بارگیری نشد</translation>
 <translation id="8026334261755873520">پاک کردن داده‌های مرور</translation>
 <translation id="8035133914807600019">پوشه جدید…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> روز باقی‌مانده است</translation>

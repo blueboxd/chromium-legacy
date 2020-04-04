@@ -52,7 +52,6 @@
 <translation id="2309047409763057870">Ово је секундарна инсталација Google Chrome-а па не можете да га подесите као подразумевани прегледач.</translation>
 <translation id="2341767445688917208">Chrome ОС није успео да синхронизује лозинке. Решите проблем.</translation>
 <translation id="2348335408836342058">Chrome тражи дозволу да приступи камери и микрофону за овај сајт</translation>
-<translation id="234869673307233423">Chrome не може да вам проверава лозинке. Пробајте поново касније.</translation>
 <translation id="2429317896000329049">Google Chrome не може да синхронизује податке јер Синхронизација није доступна за домен.</translation>
 <translation id="2467438592969358367">Google Chrome жели да извезе лозинке. Унесите лозинку за Windows да бисте то омогућили.</translation>
 <translation id="2485422356828889247">Деинсталирај</translation>
@@ -67,7 +66,6 @@
 <translation id="2689103672227170538">Овај додатак је променио страницу која се приказује када покренете Chrome.</translation>
 <translation id="2765403129283291972">Chrome тражи дозволу да приступи микрофону за овај сајт</translation>
 <translation id="2770231113462710648">Промени подразумевани прегледач у:</translation>
-<translation id="2775140325783767197">Chrome не може да вам проверава лозинке. Проверите интернет везу.</translation>
 <translation id="2799223571221894425">Поново покрени</translation>
 <translation id="2847461019998147611">Приказуј Google Chrome на овом језику</translation>
 <translation id="2857540653560290388">Покреће се Chrome...</translation>
@@ -125,7 +123,6 @@
 <translation id="4600710005438004015">Chrome није успео да се ажурира на најновију верзију, па пропуштате нове функције и безбедносне исправке.</translation>
 <translation id="4631713731678262610">Сакриј у Chrome менију</translation>
 <translation id="4633000520311261472">Да бисмо учинили Chrome безбеднијим, онемогућили смо неке додатке које не наводи <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> и који су можда додати без вашег знања.</translation>
-<translation id="4653397506175047429">Chrome не може да вам проверава све лозинке. Пробајте поново за 24 сата.</translation>
 <translation id="4728575227883772061">Инсталација није успела због неодређене грешке. Ако је Google Chrome тренутно отворен, затворите га и покушајте поново.</translation>
 <translation id="4750550185319565338">Поново покрените Chrome да бисте омогућили <ph name="PLUGIN_NAME" /></translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
@@ -250,7 +247,6 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="8862326446509486874">Немате одговарајућа права за инсталацију на нивоу система. Пробајте поново да покренете програм за инсталацију, овога пута као администратор.</translation>
 <translation id="8914504000324227558">Поново покрени Chrome</translation>
 <translation id="8999208279178790196">{0,plural, =0{Ажурирање за Chrome је доступно}=1{Ажурирање за Chrome је доступно}one{Ажурирање за Chrome је доступно већ # дан}few{Ажурирање за Chrome је доступно већ # дана}other{Ажурирање за Chrome је доступно већ # дана}}</translation>
-<translation id="9025321516765676895">Chrome не може да вам проверава лозинке јер их има превише</translation>
 <translation id="9026991721384951619">Chrome ОС не може да синхронизује податке зато што су подаци за пријављивање на налог застарели.</translation>
 <translation id="9067395829937117663">За Google Chrome је потребан Windows 7 или новија верзија.</translation>
 <translation id="911206726377975832">Желите ли да избришете и податке прегледања?</translation>

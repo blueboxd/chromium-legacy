@@ -2,12 +2,17 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-HK">
 <translation id="1124772482545689468">使用者</translation>
+<translation id="1178581264944972037">暫停</translation>
 <translation id="1181037720776840403">移除</translation>
 <translation id="1201402288615127009">下一個</translation>
 <translation id="1383876407941801731">搜尋</translation>
+<translation id="1384959399684842514">已暫停下載</translation>
+<translation id="1923695749281512248">已下載：<ph name="BYTES_DOWNLOADED_WITH_UNITS" />，總大小：<ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="2079545284768500474">復原</translation>
 <translation id="2148716181193084225">今天</translation>
 <translation id="2359808026110333948">繼續</translation>
+<translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
+<translation id="2434158240863470628">下載完成 <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2501278716633472235">返回</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{已封鎖 1 個 Cookie}other{已封鎖 # 個 Cookie}}</translation>
 <translation id="257931822824936280">已展開 - 點擊即可收合。</translation>
@@ -19,6 +24,7 @@
 <translation id="3479552764303398839">略過</translation>
 <translation id="385051799172605136">返回</translation>
 <translation id="3987993985790029246">複製連結</translation>
+<translation id="3991845972263764475">已下載：<ph name="BYTES_DOWNLOADED_WITH_UNITS" />，總大小：不明</translation>
 <translation id="4002066346123236978">標題</translation>
 <translation id="4570913071927164677">詳細資料</translation>
 <translation id="4645575059429386691">由您的家長管理</translation>
@@ -40,6 +46,7 @@
 <translation id="6206551242102657620">連線安全。網站資料</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />選項</translation>
 <translation id="6527303717912515753">分享</translation>
+<translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6746124502594467657">下移</translation>
 <translation id="6818926723028410516">選取項目</translation>
 <translation id="6910211073230771657">已刪除</translation>
@@ -48,6 +55,7 @@
 <translation id="6965382102122355670">確定</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{已選取 1 個項目}other{已選取 # 個項目}}</translation>
 <translation id="7087918508125750058">揀咗 <ph name="ITEM_COUNT" /> 個。選項喺螢幕頂部</translation>
+<translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7250468141469952378">揀咗 <ph name="ITEM_COUNT" /> 個</translation>
 <translation id="7649070708921625228">說明</translation>
 <translation id="7658239707568436148">取消</translation>
@@ -55,7 +63,9 @@
 <translation id="7791543448312431591">新增</translation>
 <translation id="780301667611848630">不用了，謝謝</translation>
 <translation id="7846076177841592234">取消選取</translation>
+<translation id="802154636333426148">下載失敗</translation>
 <translation id="8131740175452115882">確定</translation>
+<translation id="8200772114523450471">繼續</translation>
 <translation id="8206354486702514201">這項設定由管理員執行。</translation>
 <translation id="8249310407154411074">移至頂部</translation>
 <translation id="8261506727792406068">刪除</translation>

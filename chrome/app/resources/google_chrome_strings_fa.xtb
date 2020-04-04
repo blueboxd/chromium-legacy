@@ -48,7 +48,6 @@
 <translation id="2309047409763057870">‏این نصب ثانویه Google Chrome است و نمی‌تواند مرورگر پیش‌فرضتان شود.</translation>
 <translation id="2341767445688917208">‏سیستم‌عامل Chrome نتوانست گذرواژه‌هایتان را همگام‌سازی کند. اکنون مشکل رفع شود.</translation>
 <translation id="2348335408836342058">‏Chrome برای این سایت به مجوز دسترسی به دوربین و میکروفون نیاز دارد</translation>
-<translation id="234869673307233423">‏Chrome نمی‌تواند گذرواژه‌هایتان را بررسی کند. بعداً دوباره امتحان کنید.</translation>
 <translation id="2429317896000329049">‏Google Chrome قادر به همگام‌سازی داده‌های شما نبود زیرا همگام‌سازی برای دامنه شما قابل دسترسی نیست.</translation>
 <translation id="2467438592969358367">‏Google Chrome می‌خواهد گذرواژه‌های شما را صادر کند. برای اجازه به این کار، گذرواژه Windows خود را تایپ کنید.</translation>
 <translation id="2485422356828889247">حذف نصب</translation>
@@ -63,7 +62,6 @@
 <translation id="2689103672227170538">‏این افزونه، صفحه‌ای را تغییر داده است که هنگام راه‌اندازی Chrome نشان داده می‌شود.</translation>
 <translation id="2765403129283291972">‏Chrome برای این سایت به مجوز دسترسی به میکروفون نیاز دارد</translation>
 <translation id="2770231113462710648">تغییر مرورگر پیش‌فرض به:</translation>
-<translation id="2775140325783767197">‏Chrome نمی‌تواند گذرواژه‌هایتان را بررسی کند. اتصال اینترنت را بررسی کنید.</translation>
 <translation id="2799223571221894425">راه‌اندازی مجدد</translation>
 <translation id="2847461019998147611">‏نمایش Google Chrome به این زبان</translation>
 <translation id="2857540653560290388">‏درحال راه‌اندازی Chrome…</translation>
@@ -121,7 +119,6 @@
 <translation id="4600710005438004015">‏Chrome به جدیدترین نسخه به‌روزرسانی نشد، بنابراین قابلیت‌های جدید و رفع اشکال‌های امنیتی را ندارید.</translation>
 <translation id="4631713731678262610">‏پنهان در منوی Chrome</translation>
 <translation id="4633000520311261472">‏برای ایمن‌تر کردن Chrome، برخی از افزونه‌هایی را که در<ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> فهرست نشده‌اند و ممکن است بدون اطلاع شما اضافه شده باشند، غیرفعال کردیم.</translation>
-<translation id="4653397506175047429">‏Chrome نمی‌تواند همه گذرواژه‌هایتان را بررسی کند. بعد از ۲۴ ساعت دوباره امتحان کنید.</translation>
 <translation id="4728575227883772061">‏به دلیل خطای نامشخص نصب ناموفق بود. اگر Google Chrome در حال اجرا است، لطفاً آن را ببندید و دوباره سعی کنید.</translation>
 <translation id="4750550185319565338">‏برای فعال کردن <ph name="PLUGIN_NAME" />، ‏Chrome را راه‌اندازی مجدد کنید</translation>
 <translation id="4754614261631455953">‏Google Chrome Canary (ورودی mDNS)</translation>
@@ -242,7 +239,6 @@
 <translation id="8862326446509486874">شما حقوق لازم برای نصب در سطح سیستم را ندارید. دوباره به‌عنوان سرپرست نصب‌کننده را اجرا کنید.</translation>
 <translation id="8914504000324227558">‏راه‌اندازی مجدد Chrome</translation>
 <translation id="8999208279178790196">{0,plural, =0{‏به‌روزرسانی Chrome دردسترس است}=1{‏به‌روزرسانی Chrome دردسترس است}one{‏به‌روزرسانی Chrome از # روز پیش دردسترس است}other{‏به‌روزرسانی Chrome از # روز پیش دردسترس است}}</translation>
-<translation id="9025321516765676895">‏چون تعداد گذرواژه‌هایتان خیلی زیاد است، Chrome نمی‌تواند آن‌ها را بررسی کند</translation>
 <translation id="9026991721384951619">‏سیستم‌عامل Chrome قادر به همگام‌سازی داده‌هایتان نبود زیرا جزئیات ورود به سیستم حساب شما به‌روز نیست.</translation>
 <translation id="9067395829937117663">‏Google Chrome به Windows 7 یا بالاتر نیاز دارد.</translation>
 <translation id="911206726377975832">داده‌های مرور شما نیز حذف شود؟</translation>

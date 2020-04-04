@@ -59,7 +59,6 @@
 <translation id="1373696734384179344">Insufficient memory to download the selected content.</translation>
 <translation id="1376578503827013741">Computing…</translation>
 <translation id="1383876407941801731">Search</translation>
-<translation id="1384959399684842514">Download paused</translation>
 <translation id="1386674309198842382">Active <ph name="LAST_UPDATED" /> days ago</translation>
 <translation id="1397811292916898096">Search with <ph name="PRODUCT_NAME" /></translation>
 <translation id="1406000523432664303">‘Do Not Track’</translation>
@@ -117,7 +116,6 @@
 <translation id="1919345977826869612">Ads</translation>
 <translation id="1919950603503897840">Select contacts</translation>
 <translation id="1922076542920281912">To let Chrome access your location, also turn on location in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
-<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1925021887439448749">Enter custom web address</translation>
 <translation id="1928696683969751773">Updates</translation>
 <translation id="19288952978244135">Reopen Chrome.</translation>
@@ -193,13 +191,11 @@ Tap any word to search. To refine your search, touch and hold to select more or 
 <translation id="2369533728426058518">open tabs</translation>
 <translation id="2387895666653383613">Text scaling</translation>
 <translation id="2394602618534698961">Files that you download appear here</translation>
-<translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2407481962792080328">When you sign in to your Google account, this feature is turned on</translation>
 <translation id="2410754283952462441">Choose an account</translation>
 <translation id="2414886740292270097">Dark</translation>
 <translation id="2426805022920575512">Choose another account</translation>
 <translation id="2433507940547922241">Appearance</translation>
-<translation id="2434158240863470628">Download complete <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">Location access</translation>
 <translation id="2450083983707403292">Do you want to start downloading <ph name="FILE_NAME" /> again?</translation>
 <translation id="2450907520913474542">Learn about topics on websites without leaving the page. Touch to search sends a word and its surrounding context to Google Search, returning definitions, pictures, search results and other details.
@@ -413,7 +409,6 @@ Only you can see what your camera is looking at. The site can't see your camera'
 <translation id="3987993985790029246">Copy link</translation>
 <translation id="3988213473815854515">Location is allowed</translation>
 <translation id="3988466920954086464">See instant search results in this panel</translation>
-<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="3997476611815694295">Unimportant storage</translation>
 <translation id="4000212216660919741">Offline Home</translation>
 <translation id="4008040567710660924">Allow cookies for a specific site.</translation>
@@ -773,7 +768,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6593061639179217415">Desktop site</translation>
 <translation id="6597891566292541626">Position QR/barcode in this frame.</translation>
 <translation id="6600954340915313787">Copied to Chrome</translation>
-<translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Protected content</translation>
 <translation id="6627583120233659107">Edit folder</translation>
 <translation id="6643016212128521049">Clear</translation>
@@ -842,7 +836,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Load original page<ph name="END_LINK" /> from <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Last 24 Hours</translation>
 <translation id="7173114856073700355">Open Settings</translation>
-<translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">You can change this later in Settings</translation>
 <translation id="7180611975245234373">Refresh</translation>
 <translation id="7189372733857464326">Waiting for Google Play Services to finish updating</translation>
@@ -954,7 +947,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8007176423574883786">Turned off for this device</translation>
 <translation id="8013372441983637696">Also clear your Chrome data from this device</translation>
 <translation id="8015452622527143194">Return everything on the page to default size</translation>
-<translation id="802154636333426148">Download failed</translation>
 <translation id="8026334261755873520">Clear browsing data</translation>
 <translation id="8035133914807600019">New folder…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> days left</translation>

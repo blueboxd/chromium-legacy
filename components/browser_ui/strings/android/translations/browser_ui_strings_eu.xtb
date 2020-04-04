@@ -2,12 +2,17 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="eu">
 <translation id="1124772482545689468">Erabiltzailea</translation>
+<translation id="1178581264944972037">Pausatu</translation>
 <translation id="1181037720776840403">Kendu</translation>
 <translation id="1201402288615127009">Hurrengoa</translation>
 <translation id="1383876407941801731">Bilaketa</translation>
+<translation id="1384959399684842514">Pausatu da deskarga</translation>
+<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="2079545284768500474">Desegin</translation>
 <translation id="2148716181193084225">Gaur</translation>
 <translation id="2359808026110333948">Jarraitu</translation>
+<translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
+<translation id="2434158240863470628">Deskargatu da <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2501278716633472235">Egin atzera</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 cookie blokeatuta}other{# cookie blokeatuta}}</translation>
 <translation id="257931822824936280">Zabalduta; egin klik tolesteko.</translation>
@@ -19,6 +24,7 @@
 <translation id="3479552764303398839">Orain ez</translation>
 <translation id="385051799172605136">Atzera</translation>
 <translation id="3987993985790029246">Kopiatu esteka</translation>
+<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">Izena</translation>
 <translation id="4570913071927164677">Xehetasunak</translation>
 <translation id="4645575059429386691">Gurasoek kudeatuta</translation>
@@ -40,6 +46,7 @@
 <translation id="6206551242102657620">Konexioa segurua da. Webguneari buruzko informazioa</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> - Aukerak</translation>
 <translation id="6527303717912515753">Partekatu</translation>
+<translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6746124502594467657">Eraman behera</translation>
 <translation id="6818926723028410516">Hautatu elementuak</translation>
 <translation id="6910211073230771657">Ezabatu egin da</translation>
@@ -48,6 +55,7 @@
 <translation id="6965382102122355670">Ados</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 hautatuta}other{# hautatuta}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> hautatu dira. Pantailaren goialdean daude aukera erabilgarriak.</translation>
+<translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> hautatu dira</translation>
 <translation id="7649070708921625228">Laguntza</translation>
 <translation id="7658239707568436148">Utzi</translation>
@@ -55,7 +63,9 @@
 <translation id="7791543448312431591">Gehitu</translation>
 <translation id="780301667611848630">Ez, eskerrik asko</translation>
 <translation id="7846076177841592234">Utzi hautapena bertan behera</translation>
+<translation id="802154636333426148">Ezin izan da deskargatu</translation>
 <translation id="8131740175452115882">Berretsi</translation>
+<translation id="8200772114523450471">Berrekin</translation>
 <translation id="8206354486702514201">Administratzaileak betearazten du ezarpena.</translation>
 <translation id="8249310407154411074">Eraman goraino</translation>
 <translation id="8261506727792406068">Ezabatu</translation>

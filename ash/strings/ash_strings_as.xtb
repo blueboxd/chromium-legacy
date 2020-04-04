@@ -18,6 +18,7 @@
 <translation id="1190609913194133056">জাননী কেন্দ্ৰ</translation>
 <translation id="1195412055398077112">অ'ভাৰস্কেন</translation>
 <translation id="119944043368869598">সকলো মচক</translation>
+<translation id="1199716647557067911">আপুনি ছুইচৰ দ্বাৰা এক্সেছ কৰা সুবিধাটো নিশ্চিতভাৱে অফ কৰিবলৈ বিচাৰেনে?</translation>
 <translation id="1247372569136754018">মাইক্ৰফ’ন (আভ্যন্তৰীণ)</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" />ৰ পৰা চাৰ্জ কৰি থকা হৈছে</translation>
 <translation id="1255033239764210633">বতৰ কেনে?</translation>
@@ -430,6 +431,7 @@
 <translation id="6537924328260219877">ছিগনেলৰ ক্ষমতা <ph name="SIGNAL_STRENGTH" />, ফ’নৰ বেটাৰী <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> লৈ কাষ্ট কৰি থকা হৈছে</translation>
 <translation id="6559976592393364813">প্ৰশাসকক সোধক</translation>
+<translation id="6584550827717945790">ছুইচৰ দ্বাৰা এক্সেছ কৰা সুবিধাটো অফ কৰক</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" />ত ছেশ্বন অন্ত পৰিব।</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, ছিগনেলৰ ক্ষমতা <ph name="SIGNAL_STRENGTH" />, আপোনাৰ প্ৰশাসকে পৰিচালনা কৰে</translation>
 <translation id="6614169507485700968">গোপনীয়তাৰ স্ক্ৰীনখন অন আছে</translation>
@@ -600,6 +602,7 @@
 <translation id="8814190375133053267">ৱাই-ফাই</translation>
 <translation id="8825863694328519386">উভতি যাবলৈ বাওঁফালৰ পৰা ছোৱাইপ কৰক</translation>
 <translation id="8828714802988429505">৯০°</translation>
+<translation id="8841375032071747811">পূর্বৱর্তী পৃষ্ঠালৈ যোৱা বুটাম</translation>
 <translation id="8843682306134542540">ঘূৰ্ণন লক ট’গল কৰক৷<ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">এপটোৱে বিভাজিত স্ক্ৰীণ সমৰ্থন নকৰে।</translation>

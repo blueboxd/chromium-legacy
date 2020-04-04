@@ -59,7 +59,6 @@
 <translation id="1373696734384179344">Недостатъчно памет за изтегляне на избраното съдържание.</translation>
 <translation id="1376578503827013741">Изчислява се…</translation>
 <translation id="1383876407941801731">Търсене</translation>
-<translation id="1384959399684842514">Изтеглянето е на пауза</translation>
 <translation id="1386674309198842382">Активно преди <ph name="LAST_UPDATED" /> дни</translation>
 <translation id="1397811292916898096">Търсене чрез <ph name="PRODUCT_NAME" /></translation>
 <translation id="1406000523432664303">Заявка „Do Not Track“</translation>
@@ -117,7 +116,6 @@
 <translation id="1919345977826869612">Реклами</translation>
 <translation id="1919950603503897840">Избор на контакти</translation>
 <translation id="1922076542920281912">За да разрешите на Chrome да осъществява достъп до местоположението ви, то трябва да бъде включено и от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
-<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> от <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1925021887439448749">Въведете персонализиран уеб адрес</translation>
 <translation id="1928696683969751773">Актуализации</translation>
 <translation id="19288952978244135">Отворете отново Chrome.</translation>
@@ -193,13 +191,11 @@
 <translation id="2369533728426058518">отваряне на раздели</translation>
 <translation id="2387895666653383613">Мащабиране на текста</translation>
 <translation id="2394602618534698961">Изтеглените от вас файлове се показват тук</translation>
-<translation id="2402980924095424747"><ph name="MEGABYTES" /> МБ</translation>
 <translation id="2407481962792080328">Когато влезете в профила си в Google, тази функция се включва</translation>
 <translation id="2410754283952462441">Изберете профил</translation>
 <translation id="2414886740292270097">Тъмно</translation>
 <translation id="2426805022920575512">Избиране на друг профил</translation>
 <translation id="2433507940547922241">Облик</translation>
-<translation id="2434158240863470628">Изтеглянето завърши <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">Достъп до местоположението</translation>
 <translation id="2450083983707403292">Искате ли да започнете да изтегляте „<ph name="FILE_NAME" />“ още веднъж?</translation>
 <translation id="2450907520913474542">Научавайте за теми от уебсайтовете, без да излизате от страницата. Функцията за търсене чрез докосване изпраща до Google Търсене дума и заобикалящия я текст, след което извежда определения, снимки, резултати и други подробности.
@@ -413,7 +409,6 @@
 <translation id="3987993985790029246">Връзка: Коп.</translation>
 <translation id="3988213473815854515">Местоположението е разрешено</translation>
 <translation id="3988466920954086464">Отворете този панел, за да видите динамичните резултати от търсенето</translation>
-<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> от ?</translation>
 <translation id="3997476611815694295">Маловажни данни в хранилището</translation>
 <translation id="4000212216660919741">Начална страница в офлайн режим</translation>
 <translation id="4008040567710660924">Разрешаване на „бисквитките“ за конкретен сайт.</translation>
@@ -655,6 +650,7 @@
 <translation id="5763514718066511291">Докоснете, за да копирате URL адреса за това приложение</translation>
 <translation id="5765780083710877561">Описание:</translation>
 <translation id="5793665092639000975">Използвано място: <ph name="SPACE_USED" /> от <ph name="SPACE_AVAILABLE" /></translation>
+<translation id="5795872532621730126">Търсене и сърфиране</translation>
 <translation id="5797070761912323120">Възможно е да използваме историята ви, за да персонализираме търсенето, рекламите и други услуги на Google</translation>
 <translation id="5804241973901381774">Разрешения</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{преди # час}other{преди # часа}}</translation>
@@ -772,7 +768,6 @@
 <translation id="6593061639179217415">Настолен сайт</translation>
 <translation id="6597891566292541626">Поставете QR кода/баркода в тази рамка.</translation>
 <translation id="6600954340915313787">Копирано в Chrome</translation>
-<translation id="6608650720463149374"><ph name="GIGABYTES" /> ГБ</translation>
 <translation id="6612358246767739896">Защитено съдържание</translation>
 <translation id="6627583120233659107">Редактиране на папката</translation>
 <translation id="6643016212128521049">Изчистване</translation>
@@ -841,7 +836,6 @@
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Зареждане на оригиналната страница<ph name="END_LINK" /> от <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Последните 24 часа</translation>
 <translation id="7173114856073700355">Към настройките</translation>
-<translation id="7176368934862295254"><ph name="KILOBYTES" /> КБ</translation>
 <translation id="7177466738963138057">Можете да промените това по-късно от настройките</translation>
 <translation id="7180611975245234373">Опресняване</translation>
 <translation id="7189372733857464326">Изчаква се актуализирането на услугите за Google Play да приключи</translation>
@@ -953,7 +947,6 @@
 <translation id="8007176423574883786">Изключено за това устройство</translation>
 <translation id="8013372441983637696">Изчистване на данните ви в Chrome и от това устройство</translation>
 <translation id="8015452622527143194">Стандартен размер на всички елементи на страницата</translation>
-<translation id="802154636333426148">Изтеглянето не бе успешно</translation>
 <translation id="8026334261755873520">Изчистване на данните за сърфирането</translation>
 <translation id="8035133914807600019">Нова папка…</translation>
 <translation id="8037750541064988519">Остават <ph name="DAYS" /> дни</translation>

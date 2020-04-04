@@ -2,12 +2,17 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
 <translation id="1124772482545689468">Utilizator</translation>
+<translation id="1178581264944972037">Întrerupe</translation>
 <translation id="1181037720776840403">Elimină</translation>
 <translation id="1201402288615127009">Înainte</translation>
 <translation id="1383876407941801731">Caută</translation>
+<translation id="1384959399684842514">Descărcare întreruptă</translation>
+<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="2079545284768500474">Anulează</translation>
 <translation id="2148716181193084225">Astăzi</translation>
 <translation id="2359808026110333948">Continuă</translation>
+<translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
+<translation id="2434158240863470628">Descărcare finalizată <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2501278716633472235">Înapoi</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{Un cookie blocat}few{# cookie-uri blocate}other{# de cookie-uri blocate}}</translation>
 <translation id="257931822824936280">Afișare extinsă – dă clic pentru a restrânge.</translation>
@@ -19,6 +24,7 @@
 <translation id="3479552764303398839">Nu acum</translation>
 <translation id="385051799172605136">Înapoi</translation>
 <translation id="3987993985790029246">Copiază linkul</translation>
+<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">Titlu</translation>
 <translation id="4570913071927164677">Detalii</translation>
 <translation id="4645575059429386691">Gestionat de părintele tău</translation>
@@ -40,6 +46,7 @@
 <translation id="6206551242102657620">Conexiunea este sigură. Informații despre site</translation>
 <translation id="6216432067784365534">Opțiuni pentru <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6527303717912515753">Trimite</translation>
+<translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6746124502594467657">Mutați în jos</translation>
 <translation id="6818926723028410516">Selectează elementele</translation>
 <translation id="6910211073230771657">Șters</translation>
@@ -48,6 +55,7 @@
 <translation id="6965382102122355670">OK</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 selectat}few{# selectate}other{# selectate}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> selectate.  Opțiunile sunt disponibile în partea de sus a ecranului</translation>
+<translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> selectate</translation>
 <translation id="7649070708921625228">Ajutor</translation>
 <translation id="7658239707568436148">Anulează</translation>
@@ -55,7 +63,9 @@
 <translation id="7791543448312431591">Adaugă</translation>
 <translation id="780301667611848630">Nu, mulțumesc</translation>
 <translation id="7846076177841592234">Anulează selecția</translation>
+<translation id="802154636333426148">Descărcarea nu a reușit</translation>
 <translation id="8131740175452115882">Confirmați</translation>
+<translation id="8200772114523450471">Reia</translation>
 <translation id="8206354486702514201">Această setare este impusă de administratorul dvs.</translation>
 <translation id="8249310407154411074">Mută la început</translation>
 <translation id="8261506727792406068">Șterge</translation>

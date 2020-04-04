@@ -2,12 +2,17 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="tr">
 <translation id="1124772482545689468">Kullanıcı</translation>
+<translation id="1178581264944972037">Duraklat</translation>
 <translation id="1181037720776840403">Kaldır</translation>
 <translation id="1201402288615127009">İleri</translation>
 <translation id="1383876407941801731">Ara</translation>
+<translation id="1384959399684842514">İndirme işlemi duraklatıldı</translation>
+<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="2079545284768500474">Geri al</translation>
 <translation id="2148716181193084225">Bugün</translation>
 <translation id="2359808026110333948">Devam et</translation>
+<translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
+<translation id="2434158240863470628">İndirme işlemi tamamlandı <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2501278716633472235">Geri dön</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 çerez engellendi}other{# çerez engellendi}}</translation>
 <translation id="257931822824936280">Genişletildi - Daraltmak için tıklayın.</translation>
@@ -19,6 +24,7 @@
 <translation id="3479552764303398839">Şimdi değil</translation>
 <translation id="385051799172605136">Geri</translation>
 <translation id="3987993985790029246">Bağlantıyı kopyala</translation>
+<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">Başlık</translation>
 <translation id="4570913071927164677">Ayrıntılar</translation>
 <translation id="4645575059429386691">Ebeveyniniz tarafından yönetiliyor</translation>
@@ -40,6 +46,7 @@
 <translation id="6206551242102657620">Bağlantı güvenli. Site bilgileri</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> Seçenekleri</translation>
 <translation id="6527303717912515753">Paylaş</translation>
+<translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6746124502594467657">Aşağı taşı</translation>
 <translation id="6818926723028410516">Öğe seçin</translation>
 <translation id="6910211073230771657">Silindi</translation>
@@ -48,6 +55,7 @@
 <translation id="6965382102122355670">Tamam</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 öğe seçildi}other{# öğe seçildi}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> öğe seçildi. Seçenekler, ekranın üst kısmına yakın bir yerde bulunur</translation>
+<translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> öğe seçildi</translation>
 <translation id="7649070708921625228">Yardım</translation>
 <translation id="7658239707568436148">İptal</translation>
@@ -55,7 +63,9 @@
 <translation id="7791543448312431591">Ekle</translation>
 <translation id="780301667611848630">Hayır, teşekkürler</translation>
 <translation id="7846076177841592234">Seçimi iptal et</translation>
+<translation id="802154636333426148">İndirilemedi</translation>
 <translation id="8131740175452115882">Onayla</translation>
+<translation id="8200772114523450471">Sürdür</translation>
 <translation id="8206354486702514201">Bu seçenek, yöneticiniz tarafınızdan denetleniyor.</translation>
 <translation id="8249310407154411074">En üste taşı</translation>
 <translation id="8261506727792406068">Sil</translation>

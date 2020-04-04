@@ -18,6 +18,7 @@
 <translation id="1190609913194133056">Centro de notificacións</translation>
 <translation id="1195412055398077112">sobrevarrido</translation>
 <translation id="119944043368869598">Borrar todo</translation>
+<translation id="1199716647557067911">Seguro que queres desactivar a función Acceso con interruptores?</translation>
 <translation id="1247372569136754018">Micrófono (interno)</translation>
 <translation id="1252999807265626933">Cargando a través de <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Que tempo fai?</translation>
@@ -431,6 +432,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="6537924328260219877">Intensidade do sinal do <ph name="SIGNAL_STRENGTH" />, batería do teléfono ao <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">Emitindo en: <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Pedirllo ao administrador</translation>
+<translation id="6584550827717945790">Desactivar a función Acceso con interruptores</translation>
 <translation id="6585808820553845416">A sesión finaliza dentro de <ph name="SESSION_TIME_REMAINING" /> .</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, intensidade do sinal do <ph name="SIGNAL_STRENGTH" />, xestionada polo teu administrador</translation>
 <translation id="6614169507485700968">A pantalla de privacidade está activada</translation>
@@ -604,6 +606,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="8814190375133053267">Wifi</translation>
 <translation id="8825863694328519386">Pasa o dedo desde a esquerda para volver</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">Botón Atrás</translation>
 <translation id="8843682306134542540">Activar/desactivar o bloqueo de rotación. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Busca+Esc</translation>
 <translation id="8870509716567206129">A aplicación non é compatible coa función de pantalla dividida.</translation>

@@ -18,6 +18,7 @@
 <translation id="1190609913194133056">مركز الإشعارات</translation>
 <translation id="1195412055398077112">الخروج عن إطار الشاشة</translation>
 <translation id="119944043368869598">محو الكل</translation>
+<translation id="1199716647557067911">هل تريد فعلًا إيقاف ميزة "الوصول عبر مفتاح التحويل"؟</translation>
 <translation id="1247372569136754018">ميكروفون (داخلي)</translation>
 <translation id="1252999807265626933">جارٍ الشحن من <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">ما حالة الطقس؟</translation>
@@ -431,6 +432,7 @@
 <translation id="6537924328260219877">قوة الإشارة <ph name="SIGNAL_STRENGTH" />، بطارية الهاتف <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">البث على <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">الطلب من المشرف</translation>
+<translation id="6584550827717945790">إيقاف ميزة "الوصول عبر مفتاح التحويل"</translation>
 <translation id="6585808820553845416">تنتهي الجلسة في <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="661203523074512333">حالة الأمان <ph name="SECURITY_STATUS" />، قوة الإشارة <ph name="SIGNAL_STRENGTH" />، يديرها المشرف</translation>
 <translation id="6614169507485700968">تم تفعيل شاشة الخصوصية.</translation>
@@ -604,6 +606,7 @@
 <translation id="8814190375133053267">‏لاسلكي، Wi-Fi</translation>
 <translation id="8825863694328519386">التمرير السريع من اليسار للرجوع</translation>
 <translation id="8828714802988429505">90 درجة</translation>
+<translation id="8841375032071747811">زر الرجوع</translation>
 <translation id="8843682306134542540">تبديل قفل التدوير. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">التطبيق لا يتيح تقسيم الشاشة.</translation>

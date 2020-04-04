@@ -18,6 +18,7 @@
 <translation id="1190609913194133056">Цэнтр апавяшчэнняў</translation>
 <translation id="1195412055398077112">вылет разгорткі</translation>
 <translation id="119944043368869598">Выдаліць усё</translation>
+<translation id="1199716647557067911">Сапраўды выключыць доступ праз пераключальнікі?</translation>
 <translation id="1247372569136754018">Мікрафон (унутраны)</translation>
 <translation id="1252999807265626933">Зараджаецца ад крыніцы сілкавання <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Якое надвор'е?</translation>
@@ -430,6 +431,7 @@
 <translation id="6537924328260219877">Магутнасць сігналу – <ph name="SIGNAL_STRENGTH" />, зарад акумулятара тэлефона – <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">Вядзецца трансляцыя на прыладу "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="6559976592393364813">Спытайце адміністратара</translation>
+<translation id="6584550827717945790">Выключэнне доступу праз пераключальнікі</translation>
 <translation id="6585808820553845416">Сеанс скончыцца праз <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, магутнасць сігналу – <ph name="SIGNAL_STRENGTH" />, знаходзіцца пад кіраваннем адміністратара</translation>
 <translation id="6614169507485700968">Экран прыватнасці ўключаны</translation>
@@ -603,6 +605,7 @@
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8825863694328519386">Каб вярнуцца назад, правядзіце пальцам з левага краю</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">Кнопка "Назад"</translation>
 <translation id="8843682306134542540">Уключыць або выключыць блакіроўку павароту. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Клавіша пошуку + Esc</translation>
 <translation id="8870509716567206129">Праграма не падтрымлівае рэжым падзеленага экрана.</translation>

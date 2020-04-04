@@ -52,7 +52,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2309047409763057870">This is a secondary installation of Google Chrome, and cannot be made your default browser.</translation>
 <translation id="2341767445688917208">Chrome OS could not sync your passwords. Fix now.</translation>
 <translation id="2348335408836342058">Chrome needs permission to access your camera and microphone for this site</translation>
-<translation id="234869673307233423">Chrome can't check your passwords. Try again later.</translation>
 <translation id="2429317896000329049">Google Chrome could not sync your data because Sync is not available for your domain.</translation>
 <translation id="2467438592969358367">Google Chrome wants to export your passwords. Type your Windows password to allow this.</translation>
 <translation id="2485422356828889247">Uninstall</translation>
@@ -67,7 +66,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2689103672227170538">This extension has changed the page that is shown when you start Chrome.</translation>
 <translation id="2765403129283291972">Chrome needs permission to access your microphone for this site</translation>
 <translation id="2770231113462710648">Change default browser to:</translation>
-<translation id="2775140325783767197">Chrome can't check your passwords. Try checking your Internet connection.</translation>
 <translation id="2799223571221894425">Relaunch</translation>
 <translation id="2847461019998147611">Display Google Chrome in this language</translation>
 <translation id="2857540653560290388">Launching Chrome...</translation>
@@ -125,7 +123,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4600710005438004015">Chrome couldn't update to the latest version, so you're missing out on new features and security fixes.</translation>
 <translation id="4631713731678262610">Hide in Chrome menu</translation>
 <translation id="4633000520311261472">To make Chrome safer, we disabled some extensions that aren't listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> and may have been added without your knowledge.</translation>
-<translation id="4653397506175047429">Chrome can't check all your passwords. Try again after 24 hours.</translation>
 <translation id="4728575227883772061">Installation failed due to unspecified error. If Google Chrome is currently running, please close it and try again.</translation>
 <translation id="4750550185319565338">Restart Chrome to enable <ph name="PLUGIN_NAME" /></translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
@@ -250,7 +247,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="8862326446509486874">You do not have appropriate rights for system-level installation. Try running the installer again as Administrator.</translation>
 <translation id="8914504000324227558">Relaunch Chrome</translation>
 <translation id="8999208279178790196">{0,plural, =0{A Chrome update is available}=1{A Chrome update is available}other{A Chrome update has been available for # days}}</translation>
-<translation id="9025321516765676895">Chrome can't check your passwords because there are too many</translation>
 <translation id="9026991721384951619">Chrome OS could not sync your data because your account sign-in details are out of date.</translation>
 <translation id="9067395829937117663">Google Chrome requires Windows 7 or higher.</translation>
 <translation id="911206726377975832">Also delete your browsing data?</translation>

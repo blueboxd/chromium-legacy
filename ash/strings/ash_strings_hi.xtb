@@ -18,6 +18,7 @@
 <translation id="1190609913194133056">सूचना केंद्र</translation>
 <translation id="1195412055398077112">ओवरस्कैन</translation>
 <translation id="119944043368869598">सारा डेटा मिटाएं</translation>
+<translation id="1199716647557067911">क्या आप वाकई ऐक्सेस करने का तरीका बदलने की सुविधा बंद करना चाहते हैं?</translation>
 <translation id="1247372569136754018">माइक्रोफ़ोन (आंतरिक)</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> से चार्ज हो रहा है</translation>
 <translation id="1255033239764210633">मौसम कैसा है?</translation>
@@ -431,6 +432,7 @@
 <translation id="6537924328260219877">सिग्नल की क्षमता <ph name="SIGNAL_STRENGTH" />, फ़ोन की बैटरी <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> पर कास्ट किया जा रहा है</translation>
 <translation id="6559976592393364813">एडमिन से पूछें</translation>
+<translation id="6584550827717945790">ऐक्सेस करने का तरीका बदलने की सुविधा को बंद करें</translation>
 <translation id="6585808820553845416">सत्र <ph name="SESSION_TIME_REMAINING" /> में खत्म होने वाला है.</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, सिग्नल की क्षमता <ph name="SIGNAL_STRENGTH" />, आपका एडमिन प्रबंधित करता है</translation>
 <translation id="6614169507485700968">निजता स्क्रीन चालू है</translation>
@@ -604,6 +606,7 @@
 <translation id="8814190375133053267">वाई-फ़ाई </translation>
 <translation id="8825863694328519386">वापस जाने के लिए, स्क्रीन के बाएं किनारे से स्वाइप करें</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">वापस जाएं बटन</translation>
 <translation id="8843682306134542540">रोटेशन लॉक को टॉगल करें. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">ऐप्लिकेशन दो-स्क्रीन मोड में काम नहीं करता है.</translation>

@@ -59,7 +59,6 @@
 <translation id="1373696734384179344">ਚੁਣੀ ਗਈ ਸਮੱਗਰੀ ਡਾਊਨਲੋਡ ਕਰਨ ਲਈ ਲੋੜੀਂਦੀ ਮੈਮੋਰੀ ਨਹੀਂ।</translation>
 <translation id="1376578503827013741">ਗਣਨਾ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ…</translation>
 <translation id="1383876407941801731">ਖੋਜੋ</translation>
-<translation id="1384959399684842514">ਡਾਊਨਲੋਡ ਰੋਕਿਆ ਗਿਆ</translation>
 <translation id="1386674309198842382"><ph name="LAST_UPDATED" /> ਦਿਨ ਪਹਿਲਾਂ ਕਿਰਿਆਸ਼ੀਲ</translation>
 <translation id="1397811292916898096"><ph name="PRODUCT_NAME" /> ਨਾਲ ਖੋਜੋ</translation>
 <translation id="1406000523432664303">‘ਟਰੈਕ ਨਾ ਕਰੋ’</translation>
@@ -117,7 +116,6 @@
 <translation id="1919345977826869612">ਵਿਗਿਆਪਨ</translation>
 <translation id="1919950603503897840">ਸੰਪਰਕ ਚੁਣੋ</translation>
 <translation id="1922076542920281912">Chrome ਨੂੰ ਆਪਣੇ ਟਿਕਾਣੇ ਤੱਕ ਪਹੁੰਚ ਕਰਨ ਦੇਣ ਲਈ <ph name="BEGIN_LINK" />Android ਸੈਟਿੰਗਾਂ<ph name="END_LINK" /> ਵਿੱਚ ਟਿਕਾਣਾ ਵੀ ਚਾਲੂ ਕਰੋ।</translation>
-<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1925021887439448749">ਵਿਉਂਤਬੱਧ ਵੈੱਬ ਪਤਾ ਦਾਖਲ ਕਰੋ</translation>
 <translation id="1928696683969751773">ਅਪਡੇਟਾਂ</translation>
 <translation id="19288952978244135">Chrome ਨੂੰ ਮੁੜ-ਖੋਲ੍ਹੋ।</translation>
@@ -193,13 +191,11 @@
 <translation id="2369533728426058518">ਟੈਬਾਂ ਖੋਲ੍ਹੋ</translation>
 <translation id="2387895666653383613">ਟੈਕਸਟ ਸਕੇਲਿੰਗ</translation>
 <translation id="2394602618534698961">ਤੁਹਾਡੇ ਵੱਲੋਂ ਡਾਊਨਲੋਡ ਕੀਤੀਆਂ ਫ਼ਾਈਲਾਂ ਇੱਥੇ ਦਿਸਦੀਆਂ ਹਨ</translation>
-<translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2407481962792080328">ਜਦੋਂ ਤੁਸੀਂ ਆਪਣੇ Google ਖਾਤੇ ਵਿੱਚ ਸਾਈਨ-ਇਨ ਕਰਦੇ ਹੋ, ਤਾਂ ਇਹ ਵਿਸ਼ੇਸ਼ਤਾ ਚਾਲੂ ਹੋ ਜਾਂਦੀ ਹੈ</translation>
 <translation id="2410754283952462441">ਕੋਈ ਖਾਤਾ ਚੁਣੋ</translation>
 <translation id="2414886740292270097">ਡਾਰਕ</translation>
 <translation id="2426805022920575512">ਕੋਈ ਹੋਰ ਖਾਤਾ ਚੁਣੋ</translation>
 <translation id="2433507940547922241">ਪ੍ਰਗਟਾਅ</translation>
-<translation id="2434158240863470628">ਡਾਊਨਲੋਡ ਮੁਕੰਮਲ ਹੋਇਆ <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">ਨਿਰਧਾਰਿਤ ਸਥਾਨ ਪਹੁੰਚ</translation>
 <translation id="2450083983707403292">ਕੀ ਤੁਸੀਂ <ph name="FILE_NAME" /> ਨੂੰ ਦੁਬਾਰਾ ਡਾਊਨਲੋਡ ਕਰਨਾ ਸ਼ੁਰੂ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?</translation>
 <translation id="2450907520913474542">ਪੰਨਾ ਛੱਡੇ ਬਿਨਾਂ ਵੈੱਬਸਾਈਟਾਂ 'ਤੇ ਵਿਸ਼ਿਆਂ ਬਾਰੇ ਜਾਣੋ। 'ਖੋਜਣ ਲਈ ਸਪਰਸ਼ ਕਰੋ' ਵਿਸ਼ੇਸ਼ਤਾ 'Google ਖੋਜ', ਵਾਪਸੀ ਪਰਿਭਾਸ਼ਾਵਾਂ, ਤਸਵੀਰਾਂ, ਖੋਜ ਨਤੀਜਿਆਂ ਅਤੇ ਹੋਰਾਂ ਵੇਰਵਿਆਂ ਨੂੰ ਇੱਕ ਸ਼ਬਦ ਅਤੇ ਉਸਦੇ ਨੇੜਲੇ ਸੰਦਰਭ ਭੇਜਦੀ ਹੈ।
@@ -413,7 +409,6 @@
 <translation id="3987993985790029246">ਲਿੰਕ ਕਾਪੀ ਕਰੋ</translation>
 <translation id="3988213473815854515">ਨਿਰਧਾਰਿਤ ਸਥਾਨ ਦੀ ਆਗਿਆ ਹੈ</translation>
 <translation id="3988466920954086464">ਇਸ ਪੈਨਲ ਵਿੱਚ ਤਤਕਾਲ ਖੋਜ ਨਤੀਜੇ ਦੇਖੋ</translation>
-<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="3997476611815694295">ਗੈਰ-ਮਹੱਤਵਪੂਰਨ ਸਟੋਰੇਜ</translation>
 <translation id="4000212216660919741">ਆਫ਼ਲਾਈਨ ਹੋਮ</translation>
 <translation id="4008040567710660924">ਕਿਸੇ ਖਾਸ ਸਾਈਟ ਨੂੰ ਕੁਕੀਜ਼ ਨੂੰ ਵਰਤਣ ਦਿਓ।</translation>
@@ -655,6 +650,7 @@
 <translation id="5763514718066511291">ਇਸ ਐਪ ਲਈ URL ਕਾਪੀ ਕਰਨ ਲਈ ਟੈਪ ਕਰੋ</translation>
 <translation id="5765780083710877561">ਵਰਣਨ:</translation>
 <translation id="5793665092639000975"><ph name="SPACE_AVAILABLE" /> ਵਿੱਚੋਂ <ph name="SPACE_USED" /> ਦੀ ਵਰਤੋਂ ਹੋ ਰਹੀ ਹੈ</translation>
+<translation id="5795872532621730126">ਖੋਜੋ ਅਤੇ ਬ੍ਰਾਊਜ਼ ਕਰੋ</translation>
 <translation id="5797070761912323120">Google ਖੋਜ, ਵਿਗਿਆਪਨਾਂ ਅਤੇ ਹੋਰਾਂ Google ਸੇਵਾਵਾਂ ਨੂੰ ਵਿਅਕਤੀਗਤ ਬਣਾਉਣ ਲਈ ਤੁਹਾਡੇ ਇਤਿਹਾਸ ਦੀ ਵਰਤੋਂ ਕਰ ਸਕਦਾ ਹੈ</translation>
 <translation id="5804241973901381774">ਅਨੁਮਤੀਆਂ</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# ਘੰਟਾ ਪਹਿਲਾਂ}one{# ਘੰਟੇ ਪਹਿਲਾਂ}other{# ਘੰਟੇ ਪਹਿਲਾਂ}}</translation>
@@ -772,7 +768,6 @@
 <translation id="6593061639179217415">ਡੈਸਕਟਾਪ ਸਾਈਟ</translation>
 <translation id="6597891566292541626">QR/ਬਾਰ ਕੋਡ ਨੂੰ ਇਸ ਫਰੇਮ ਵਿੱਚ ਰੱਖੋ।</translation>
 <translation id="6600954340915313787">Chrome 'ਤੇ ਕਾਪੀ ਕੀਤਾ</translation>
-<translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">ਸੁਰੱਖਿਅਤ ਸਮੱਗਰੀ</translation>
 <translation id="6627583120233659107">ਫੋਲਡਰ ਸੰਪਾਦਿਤ ਕਰੋ</translation>
 <translation id="6643016212128521049">ਹਟਾਓ</translation>
@@ -841,7 +836,6 @@
 <translation id="7149158118503947153"><ph name="DOMAIN_NAME" /> ਤੋਂ <ph name="BEGIN_LINK" />ਮੂਲ ਪੰਨਾ ਲੋਡ ਕਰੋ<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">ਪਿਛਲੇ 24 ਘੰਟੇ</translation>
 <translation id="7173114856073700355">ਸੈਟਿੰਗਾਂ ਖੋਲ੍ਹੋ</translation>
-<translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">ਤੁਸੀਂ ਇਸਨੂੰ ਬਾਅਦ ਵਿੱਚ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਬਦਲ ਸਕਦੇ ਹੋ</translation>
 <translation id="7180611975245234373">ਰਿਫ੍ਰੈਸ਼ ਕਰੋ</translation>
 <translation id="7189372733857464326">Google Play ਸੇਵਾਵਾਂ ਦੁਆਰਾ ਅੱਪਡੇਟ ਕਰਨਾ ਪੂਰਾ ਕਰਨ ਲਈ ਉਡੀਕ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ</translation>
@@ -953,7 +947,6 @@
 <translation id="8007176423574883786">ਇਸ ਡਿਵਾਈਸ ਲਈ ਬੰਦ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="8013372441983637696">ਇਸ ਡੀਵਾਈਸ ਤੋਂ ਤੁਹਾਡਾ Chrome ਡਾਟਾ ਵੀ ਕਲੀਅਰ ਕਰੋ</translation>
 <translation id="8015452622527143194">ਪੰਨੇ 'ਤੇ ਹਰੇਕ ਚੀਜ਼ ਨੂੰ ਪੂਰਵ-ਨਿਰਧਾਰਤ ਆਕਾਰ 'ਚ ਵਾਪਸ ਪਰਤਾਓ</translation>
-<translation id="802154636333426148">ਡਾਊਨਲੋਡ ਅਸਫਲ ਰਿਹਾ</translation>
 <translation id="8026334261755873520">ਬ੍ਰਾਊਜ਼ਿੰਗ ਡਾਟਾ ਹਟਾਓ</translation>
 <translation id="8035133914807600019">ਨਵਾਂ ਫੋਲਡਰ…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> ਦਿਨ ਬਾਕੀ</translation>

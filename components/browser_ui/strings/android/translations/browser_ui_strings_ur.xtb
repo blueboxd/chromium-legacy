@@ -2,12 +2,17 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ur">
 <translation id="1124772482545689468">صارف</translation>
+<translation id="1178581264944972037">موقوف کریں</translation>
 <translation id="1181037720776840403">ہٹائیں</translation>
 <translation id="1201402288615127009">اگلا</translation>
 <translation id="1383876407941801731">تلاش کریں</translation>
+<translation id="1384959399684842514">ڈاؤن لوڈ موقوف ہوگیا</translation>
+<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="2079545284768500474">کالعدم کریں</translation>
 <translation id="2148716181193084225">آج</translation>
 <translation id="2359808026110333948">جاری رکھیں</translation>
+<translation id="2402980924095424747">‎<ph name="MEGABYTES" /> MB</translation>
+<translation id="2434158240863470628">ڈاؤن لوڈ مکمل ہو گیا <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2501278716633472235">پیچھے جائیں</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 کوکی مسدود ہو گئی}other{# کوکیز مسدود ہو گئیں}}</translation>
 <translation id="257931822824936280">پھیلایا ہوا - سکیڑنے کیلئے کلک کریں۔</translation>
@@ -19,6 +24,7 @@
 <translation id="3479552764303398839">ابھی نہیں</translation>
 <translation id="385051799172605136">پیچھے</translation>
 <translation id="3987993985790029246">لنک کاپی کریں</translation>
+<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">عنوان</translation>
 <translation id="4570913071927164677">تفاصیل</translation>
 <translation id="4645575059429386691">آپ کے والدین کے زیر انتظام</translation>
@@ -40,6 +46,7 @@
 <translation id="6206551242102657620">کنیکشن محفوظ ہے۔ سائٹ کی معلومات</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> اختیارات</translation>
 <translation id="6527303717912515753">اشتراک کریں</translation>
+<translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6746124502594467657">نیچے منتقل کریں</translation>
 <translation id="6818926723028410516">آئٹمز منتخب کریں</translation>
 <translation id="6910211073230771657">حذف کردہ</translation>
@@ -48,6 +55,7 @@
 <translation id="6965382102122355670">ٹھیک ہے</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 منتخب ہے}other{# منتخب کردہ}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> منتخب ہو گئے۔ اختیارات اسکرین کے اوپری حصہ کے قریب دستیاب ہیں</translation>
+<translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> منتخب ہو گئے</translation>
 <translation id="7649070708921625228">مدد</translation>
 <translation id="7658239707568436148">منسوخ کریں</translation>
@@ -55,7 +63,9 @@
 <translation id="7791543448312431591">شامل کریں</translation>
 <translation id="780301667611848630">نہیں شکریہ</translation>
 <translation id="7846076177841592234">انتخاب منسوخ کریں</translation>
+<translation id="802154636333426148">ڈاؤن لوڈ ناکام ہوگیا</translation>
 <translation id="8131740175452115882">تصدیق کریں</translation>
+<translation id="8200772114523450471">دوبارہ شروع کریں</translation>
 <translation id="8206354486702514201">اس ترتیب کو آپ کے منتظم نے نافذ کیا ہے۔</translation>
 <translation id="8249310407154411074">اوپر منتقل کریں</translation>
 <translation id="8261506727792406068">حذف کریں</translation>

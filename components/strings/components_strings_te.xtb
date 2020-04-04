@@ -171,6 +171,7 @@
 <translation id="1644574205037202324">చరిత్ర</translation>
 <translation id="1645368109819982629">ప్రోటోకాల్‌కు మద్దతు లేదు</translation>
 <translation id="1652415888492971589">JIS B8</translation>
+<translation id="1656024727720460136">మరింత తేలికగా చదవడానికి వీలుగా Chrome ఈ పేజీని సులభతరం చేసింది. సురక్షిత కనెక్షన్ ద్వారా Chrome అసలు పేజీని తిరిగి పొందింది.</translation>
 <translation id="1656489000284462475">పికప్</translation>
 <translation id="1662550410081243962">చెల్లింపు పద్ధతులను సేవ్ చేసి, పూరించండి</translation>
 <translation id="1663943134801823270">కార్డ్‌లు మరియు చిరునామాలు Chrome నుండి పొందినవి. మీరు <ph name="BEGIN_LINK" />సెట్టింగ్‌లు<ph name="END_LINK" />లో వాటిని నిర్వహించవచ్చు.</translation>
@@ -567,6 +568,7 @@
 <translation id="342781501876943858">మీరు మీ పాస్‌వర్డ్‌ని ఇతర సైట్‌లలో తిరిగి ఉపయోగించినట్లయితే దీనిని రీసెట్ చేయాల్సిందిగా Chromium సిఫార్సు చేస్తోంది.</translation>
 <translation id="3428151540071562330">DnsOverHttpsTemplates సర్వర్ టెంప్లేట్‌ URIలు చెల్లవు, ఉపయోగించబడవు.</translation>
 <translation id="3431636764301398940">ఈ కార్డ్‌ను ఈ పరికరానికి సేవ్ చేయి</translation>
+<translation id="3432601291244612633">పేజీని మూసివేయండి</translation>
 <translation id="3443726618221119081">జుర్రో-కు-కాయ్</translation>
 <translation id="3447661539832366887">ఈ పరికర యజమాని డైనోసార్ గేమ్‌ను ఆఫ్ చేసారు.</translation>
 <translation id="3447884698081792621">సర్టిఫికేట్‌ను చూపు (<ph name="ISSUER" /> ద్వారా జారీ చేయబడింది)</translation>
@@ -873,6 +875,7 @@
 <translation id="4731967714531604179">Prc2 (ఎన్వలప్)</translation>
 <translation id="4733082559415072992"><ph name="URL" /> మీ పరికర స్థానాన్ని ఉపయోగించాలని అనుకుంటోంది</translation>
 <translation id="4736825316280949806">Chromiumని పునఃప్రారంభించండి</translation>
+<translation id="4737121147659370456">మీ అడ్మినిస్ట్రేటర్, మీ బ్రౌజర్‌లో Chrome Enterprise కనెక్టర్‌లను ఎనేబుల్ చేశారు. ఈ కనెక్టర్‌లకు మీ డేటాలో కొంత డేటాకు యాక్సెస్ ఉంది.</translation>
 <translation id="473775607612524610">అప్‌డేట్‌</translation>
 <translation id="4738601419177586157"><ph name="TEXT" /> శోధన సూచన</translation>
 <translation id="4742407542027196863">పాస్‌వర్డ్‌లను నిర్వహించు…</translation>
@@ -1212,6 +1215,8 @@
 <translation id="610911394827799129">మీ Google ఖాతా <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />లో ఇతర రూపాల్లో ఉన్న బ్రౌజింగ్ చరిత్రను కలిగి ఉండవచ్చు</translation>
 <translation id="6116338172782435947">క్లిప్‌బోర్డ్‌కు కాపీ చేసిన వచనం మరియు చిత్రాలను చూడండి</translation>
 <translation id="6120179357481664955">మీ UPI ID గుర్తుందా?</translation>
+<translation id="6124432979022149706">Chrome Enterprise కనెక్టర్‌లు</translation>
+<translation id="6135641591018127088">శక్తివంతమైన పాస్‌వర్డ్‌ను రూపొందించడానికి మీ Google ఖాతాను ఉపయోగించండి</translation>
 <translation id="6146055958333702838">ఏవైనా కేబుల్‌లను తనిఖీ చేయండి మరియు మీరు ఉపయోగించే ఏవైనా రూటర్‌లు, మోడెమ్‌లు
         లేదా ఇతర నెట్‌వర్క్ పరికరాలను రీబూట్ చేయండి.</translation>
 <translation id="614940544461990577">ఇలా చేసి ప్రయత్నించండి:</translation>
@@ -1257,6 +1262,7 @@
 <translation id="6328639280570009161">నెట్‌వర్క్ సూచనను నిలిపివేసి ప్రయత్నించండి</translation>
 <translation id="6328784461820205019">"మీ కనెక్షన్ ప్రైవేట్ కాదు" లేదా "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" లేదా "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" లేదా "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" లేదా "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" లేదా "SSL సర్టిఫికెట్ ఎర్రర్"</translation>
 <translation id="6328786501058569169">ఈ సైట్ మోసపూరితమైనది</translation>
+<translation id="6333334544069706521">మీ Google ఖాతాలో స్టోర్ చేయబడిన పాస్‌వర్డ్‌లను ఉపయోగించండి</translation>
 <translation id="6337133576188860026"><ph name="SIZE" /> కంటే తక్కువ స్థలాన్ని ఖాళీ చేస్తుంది. మీ తదుపరి సందర్శనలో కొన్ని సైట్‌లు మరింత నెమ్మదిగా లోడ్ కావచ్చు.</translation>
 <translation id="6337534724793800597">పేరు ద్వారా విధానాలను ఫిల్టర్ చేయి</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{ఏవీ లేవు}=1{1 పాస్‌వర్డ్ (<ph name="DOMAIN_LIST" />కు చెందినది, సింక్ చేయబడింది)}=2{2 పాస్‌వర్డ్‌లు (<ph name="DOMAIN_LIST" />కు చెందినవి, సింక్ చేయబడ్డాయి)}other{# పాస్‌వర్డ్‌లు (<ph name="DOMAIN_LIST" />కు చెందినవి, సింక్ చేయబడ్డాయి)}}</translation>
@@ -1302,6 +1308,7 @@
 <translation id="6521745193039995384">యాక్టివ్‌గా లేదు</translation>
 <translation id="6529602333819889595">&amp;తొలగించడాన్ని పునరావృతం చేయి</translation>
 <translation id="6534179046333460208">ప్రత్యక్ష వెబ్ సూచనలు</translation>
+<translation id="6543609420755597723">Chrome Enterprise కనెక్టర్‌ల ద్వారా ఫ్లాగ్ చేయబడిన భద్రతా ఈవెంట్‌ల గురించిన డేటాను మీ అడ్మినిస్ట్రేటర్‌కు షేర్ చేయండి. ఇందులో మీరు సందర్శించే పేజీలకు సంబంధించిన URLలు, ఫైల్ పేర్లు లేదా మెటాడేటా, అలాగే మీ పరికరం, Chromeలో సైన్ ఇన్ చేయడానికి మీరు ఉపయోగించే యూజర్‌నేమ్ ఉండవచ్చు.</translation>
 <translation id="6545864417968258051">బ్లూటూత్ స్కానింగ్</translation>
 <translation id="6547208576736763147">ఎడమవైపు రెండు రంధ్రాలు</translation>
 <translation id="6554795675067793129">మీ ఖాతా <ph name="ENROLLMENT_DOMAIN" /> నిర్వహణలో ఉంది.</translation>
@@ -1367,6 +1374,7 @@
 <translation id="6874604403660855544">&amp;జోడించడాన్ని పునరావృతం చేయి</translation>
 <translation id="6884662655240309489">పరిమాణం 1</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
+<translation id="6888584790432772780">మరింత తేలికగా చదవడానికి వీలుగా Chrome ఈ పేజీని సులభతరం చేసింది. సురక్షితం కాని కనెక్షన్ ద్వారా Chrome అసలు పేజీని తిరిగి పొందింది.</translation>
 <translation id="6891596781022320156">విధాన స్థాయికి మద్దతు లేదు.</translation>
 <translation id="6895330447102777224">మీ కార్డ్ నిర్ధారించబడింది</translation>
 <translation id="6897140037006041989">వినియోగదారు ప్రతినిధి</translation>
@@ -1595,6 +1603,7 @@
 <translation id="777702478322588152">అధికారిక నివాసం</translation>
 <translation id="7791196057686275387">బండిల్</translation>
 <translation id="7791543448312431591">జోడించు</translation>
+<translation id="7798389633136518089">ఈ పాలసీ, క్లౌడ్ సోర్స్ ద్వారా సెట్ చేయబడనందున విస్మరించబడింది.</translation>
 <translation id="7800304661137206267"><ph name="KX" />‌ను కీ మార్పిడి విధానం లాగా మరియు సందేశ ప్రామాణీకరణ కోసం <ph name="CIPHER" />‌ను <ph name="MAC" />తో ఉపయోగించడం ద్వారా కనెక్షన్ గుప్తీకరించబడింది.</translation>
 <translation id="7802523362929240268">సైట్ చట్టబద్ధమైనది</translation>
 <translation id="780301667611848630">వద్దు , ధన్యవాదాలు</translation>
@@ -1730,6 +1739,7 @@
 <translation id="8371889962595521444">అనుకూల రూట్ సెట్టింగ్‌లు</translation>
 <translation id="8380941800586852976">అపాయకరమైనది</translation>
 <translation id="8381674639488873545">ఈ ఛార్జ్‌లు ఒకసారి చెల్లించేవి లేదా పునరావృతంగా చెల్లించాల్సినవి కావచ్చు, అది స్పష్టంగా పేర్కొనబడకపోవచ్చు. <ph name="BEGIN_LINK" />ఏదేమైనా చూపు<ph name="END_LINK" /></translation>
+<translation id="8405166164747488837"><ph name="ENROLLMENT_DOMAIN" />, మీ బ్రౌజర్‌లో Chrome Enterprise కనెక్టర్లను ఎనేబుల్ చేసింది. ఈ కనెక్టర్‌లకు మీ డేటాలో కొంత డేటాకు యాక్సెస్ ఉంది.</translation>
 <translation id="8412145213513410671">క్రాష్‌లు (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">అదే రహస్య పదబంధాన్ని రెండుసార్లు ఖచ్చితంగా మీరు నమోదు చేయాలి.</translation>
 <translation id="8416694386774425977">నెట్‌వర్క్ కాన్ఫిగరేషన్ చెల్లదు, కాబట్టి దిగుమతి చేయడం సాధ్యం కాదు.

@@ -2012,6 +2012,15 @@
 <translation id="402759845255257575">不允許任何網站執行 JavaScript</translation>
 <translation id="4027608872760987929">啟用預設搜尋引擎</translation>
 <translation id="4039085364173654945">控制是否允許網頁上的第三方附屬內容彈出「HTTP 基本驗證」對話方塊。為了防止網路釣魚，這項功能通常會停用。如果未設定這項政策，系統會停用這項功能，並且不允許第三方附屬內容彈出「HTTP 基本驗證」對話方塊。</translation>
+<translation id="4044054366426171256">這會設定必要的主機網域名稱並套用到遠端存取主機，同時防止使用者變更這些名稱。
+
+          如果啟用這項設定並設為一個以上的網域，主機只能透過在任一指定名稱的網域所註冊的帳戶進行共用。
+
+          如果停用這項設定、不設定或設為空白清單，則主機可透過任何帳戶進行共用。
+
+          這項設定會覆寫 RemoteAccessHostDomain 設定 (如有設定的話)。
+
+          另請參閱 RemoteAccessHostClientDomainList。</translation>
 <translation id="4056910949759281379">停用 SPDY 通訊協定</translation>
 <translation id="4061590579642538878">回報當機報告相關資訊。</translation>
 <translation id="4075675819066819571">將檔案櫃放在畫面的左側</translation>
@@ -3634,6 +3643,7 @@
 <translation id="6734521799274931721">控管是否允許在 Chrome 作業系統使用網路檔案共用功能</translation>
 <translation id="6735701345096330595">強制執行拼字檢查的語言</translation>
 <translation id="6757613329154374267">已啟用備份與還原功能</translation>
+<translation id="6758659208493449452">這項政策可控管已加入進階保護計畫的使用者是否可以享有額外的防護。部分功能可能涉及與 Google 共用資料 (例如，進階保護計畫的使用者可將下載內容傳送至 Google 進行惡意軟體掃描)。如果設為 True 或不予設定，已加入計畫的使用者將能享有額外的防護。如果設為 False，進階保護計畫的使用者只能享有標準的消費者功能。</translation>
 <translation id="6762235610019366960">讓你控制 <ph name="PRODUCT_NAME" /> 能否以完整分頁顯示宣傳和/或教學內容。
 
       如果未設定或啟用這項政策 (設為 true)，<ph name="PRODUCT_NAME" /> 可能會向使用者顯示完整分頁內容，藉此提供產品資訊。
@@ -4089,6 +4099,15 @@
           如果未設定這項政策或設為啟用，Google Chrome 將接受透過 Signed HTTP Exchange 提供的網路內容。
 
           如果將這項政策設為停用，系統將無法載入 Signed HTTP Exchange。</translation>
+<translation id="7506758875409719208">這會設定必要的用戶端網域名稱並套用到遠端存取主機，同時防止使用者變更這些名稱。
+
+          如果啟用這項設定並設為一個以上的網域，只有任一指定網域中的用戶端才能連線到主機。
+
+          如果停用這項設定、不設定或設為空白清單，則系統會套用連線類型的預設政策。如果啟用這項政策，當使用者執行遠端協助時，系統會允許任何網域中的用戶端連線到主機；使用者執行遠端存取時，則只有主機擁有者可以連線到主機。
+
+          這項設定會覆寫 RemoteAccessHostClientDomain 設定 (如有設定的話)。
+
+          另請參閱 RemoteAccessHostDomainList。</translation>
 <translation id="7509496865303347769">設定 <ph name="PRODUCT_NAME" /> 的預設首頁網址，並禁止使用者變更這項設定。
 
           首頁是指點選首頁按鈕後開啟的網頁。以桌上型電腦來說，啟動時開啟的網頁由 RestoreOnStartup 政策控管。

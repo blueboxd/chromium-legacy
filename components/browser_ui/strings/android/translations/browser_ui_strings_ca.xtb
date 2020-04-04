@@ -2,12 +2,17 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
 <translation id="1124772482545689468">Usuari</translation>
+<translation id="1178581264944972037">Posa en pausa</translation>
 <translation id="1181037720776840403">Suprimeix</translation>
 <translation id="1201402288615127009">Següent</translation>
 <translation id="1383876407941801731">Cerca</translation>
+<translation id="1384959399684842514">La baixada s'ha posat en pausa</translation>
+<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="2079545284768500474">Desfés</translation>
 <translation id="2148716181193084225">Avui</translation>
 <translation id="2359808026110333948">Continua</translation>
+<translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
+<translation id="2434158240863470628">S'ha completat la baixada <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2501278716633472235">Torna</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 galeta bloquejada}other{# galetes bloquejades}}</translation>
 <translation id="257931822824936280">Vista desplegada (feu clic per replegar-la)</translation>
@@ -19,6 +24,7 @@
 <translation id="3479552764303398839">Ara no</translation>
 <translation id="385051799172605136">Enrere</translation>
 <translation id="3987993985790029246">Copia l'enllaç</translation>
+<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="4002066346123236978">Títol</translation>
 <translation id="4570913071927164677">Detalls</translation>
 <translation id="4645575059429386691">Gestionat pels pares</translation>
@@ -40,6 +46,7 @@
 <translation id="6206551242102657620">La connexió és segura. Informació del lloc web</translation>
 <translation id="6216432067784365534">Opcions per a <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6527303717912515753">Comparteix</translation>
+<translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6746124502594467657">Mou avall</translation>
 <translation id="6818926723028410516">Selecciona elements</translation>
 <translation id="6910211073230771657">Suprimit</translation>
@@ -48,6 +55,7 @@
 <translation id="6965382102122355670">D'acord</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 seleccionat}other{# seleccionats}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> elements seleccionats. Hi ha opcions disponibles a prop de la part superior de la pantalla.</translation>
+<translation id="7176368934862295254"><ph name="KILOBYTES" /> kB</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> elements seleccionats</translation>
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7658239707568436148">Cancel·la</translation>
@@ -55,7 +63,9 @@
 <translation id="7791543448312431591">Afegeix</translation>
 <translation id="780301667611848630">No, gràcies</translation>
 <translation id="7846076177841592234">Cancel·la la selecció</translation>
+<translation id="802154636333426148">Error de baixada</translation>
 <translation id="8131740175452115882">Confirma</translation>
+<translation id="8200772114523450471">Reprèn</translation>
 <translation id="8206354486702514201">L'administrador aplica aquesta opció de configuració.</translation>
 <translation id="8249310407154411074">Mou a la part superior</translation>
 <translation id="8261506727792406068">Suprimeix</translation>

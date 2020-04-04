@@ -1458,7 +1458,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'e8e12250f4d0f5b6a9664b288d20eebb1914cc5c',
+    Var('webrtc_git') + '/src.git' + '@' + '2e3e36312b10b8711c467e7bdc4582c01914e4d0',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1533,7 +1533,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c4b4871ed0d41ef4520db44f434a3032fd5405c7',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@e63558923a2b744f1654950b11e0017c7d934563',
     'condition': 'checkout_src_internal',
   },
 

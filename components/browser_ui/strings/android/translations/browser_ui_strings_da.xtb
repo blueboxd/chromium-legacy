@@ -2,12 +2,17 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
 <translation id="1124772482545689468">Bruger</translation>
+<translation id="1178581264944972037">Pause</translation>
 <translation id="1181037720776840403">Fjern</translation>
 <translation id="1201402288615127009">Næste</translation>
 <translation id="1383876407941801731">Søg</translation>
+<translation id="1384959399684842514">Download er sat på pause</translation>
+<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="2079545284768500474">Fortryd</translation>
 <translation id="2148716181193084225">I dag</translation>
 <translation id="2359808026110333948">Fortsæt</translation>
+<translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
+<translation id="2434158240863470628">Downloaden er fuldført <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2501278716633472235">Gå tilbage</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 cookie blev blokeret}one{# cookie blev blokeret}other{# cookies blev blokeret}}</translation>
 <translation id="257931822824936280">Udvidet – klik for at skjule.</translation>
@@ -19,6 +24,7 @@
 <translation id="3479552764303398839">Ikke nu</translation>
 <translation id="385051799172605136">Tilbage</translation>
 <translation id="3987993985790029246">Kopiér linket</translation>
+<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4570913071927164677">Info</translation>
 <translation id="4645575059429386691">Administreret af en af dine forældre</translation>
@@ -40,6 +46,7 @@
 <translation id="6206551242102657620">Forbindelsen er sikker. Websiteoplysninger</translation>
 <translation id="6216432067784365534">Valgmuligheder for <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6527303717912515753">Del</translation>
+<translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6746124502594467657">Flyt ned</translation>
 <translation id="6818926723028410516">Vælg elementer</translation>
 <translation id="6910211073230771657">Slettet</translation>
@@ -48,6 +55,7 @@
 <translation id="6965382102122355670">OK</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 er valgt}one{# er valgt}other{# er valgt}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> er markeret. De tilgængelige valgmuligheder er øverst på skærmen</translation>
+<translation id="7176368934862295254"><ph name="KILOBYTES" /> kB</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> er markeret</translation>
 <translation id="7649070708921625228">Hjælp</translation>
 <translation id="7658239707568436148">Annuller</translation>
@@ -55,7 +63,9 @@
 <translation id="7791543448312431591">Tilføj</translation>
 <translation id="780301667611848630">Nej tak</translation>
 <translation id="7846076177841592234">Annuller valg</translation>
+<translation id="802154636333426148">Download mislykkedes</translation>
 <translation id="8131740175452115882">Bekræft</translation>
+<translation id="8200772114523450471">Genoptag</translation>
 <translation id="8206354486702514201">Denne indstilling håndhæves af din administrator.</translation>
 <translation id="8249310407154411074">Flyt til toppen</translation>
 <translation id="8261506727792406068">Slet</translation>

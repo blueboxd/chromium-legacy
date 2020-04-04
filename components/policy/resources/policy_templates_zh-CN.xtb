@@ -1991,6 +1991,15 @@
 <translation id="402759845255257575">不允许任何网站运行 JavaScript</translation>
 <translation id="4027608872760987929">启用默认搜索服务提供商</translation>
 <translation id="4039085364173654945">控制是否允许网页上的第三方子内容弹出 HTTP 基本身份认证对话框。通常情况下，为了防止网上诱骗，此设置是停用的。如果未设置此政策，就会停用此设置，而不允许第三方子内容弹出 HTTP 基本身份认证对话框。</translation>
+<translation id="4044054366426171256">配置要强制远程访问主机使用的必要主机域名，并禁止用户更改此设置。
+
+          如果启用了此设置并将其设为一个或多个域名，则必须使用已通过某一个指定域名注册的帐号才能共享主机。
+
+          如果停用了/不指定此设置，或将其设为一个空列表，则可以使用任意帐号共享主机。
+
+          此设置会覆盖 RemoteAccessHostDomain（如果存在）。
+
+          另请参阅 RemoteAccessHostClientDomainList。</translation>
 <translation id="4056910949759281379">停用 SPDY 协议</translation>
 <translation id="4061590579642538878">报告有关崩溃报告的信息。</translation>
 <translation id="4075675819066819571">将文件架放置到屏幕左侧</translation>
@@ -3605,6 +3614,7 @@
 <translation id="6734521799274931721">控制是否允许在 Chrome 操作系统中使用网络文件共享功能</translation>
 <translation id="6735701345096330595">强制检查语言拼写</translation>
 <translation id="6757613329154374267">已启用备份和恢复服务</translation>
+<translation id="6758659208493449452">此政策用于控制已加入“高级保护”计划的用户是否可获享额外的保护。其中的部分功能可能会涉及与 Google 分享数据（例如，已加入“高级保护”计划的用户将能够把他们的下载内容发送给 Google 进行恶意软件扫描）。如果此政策设为 True 或未设置，已加入“高级保护”计划的用户将会获享额外的保护。如果此政策设为 False，已加入“高级保护”计划的用户将只能获享标准的消费者级别功能。</translation>
 <translation id="6762235610019366960">让您能够控制是否在 <ph name="PRODUCT_NAME" /> 中使用整个标签页显示宣传内容和/或教育内容。
 
       如果未配置或已启用（设为 true），<ph name="PRODUCT_NAME" /> 便可能会使用整个标签页向用户提供产品信息。
@@ -4059,6 +4069,15 @@
           如果此政策设为“Enabled”或未设置，Google Chrome 将会接受作为 Signed HTTP Exchange 提供的内容。
 
           如果此政策设为“Disabled”，则无法加载 Signed HTTP Exchange。</translation>
+<translation id="7506758875409719208">配置要强制远程访问客户端使用的必要客户端域名，并禁止用户更改此设置。
+
+          如果启用了此设置并将其设为一个或多个域名，则只有来自某一个指定域名的客户端才能连接到主机。
+
+          如果停用了/不指定此设置，或将其设为一个空列表，则会应用与连接类型对应的默认政策。对于远程协助，这会允许来自任何域名的客户端连接到主机；对于无时间限制的远程访问，只有主机所有者可以连接到主机。
+
+          此设置会覆盖 RemoteAccessHostClientDomain（如果存在）。
+
+          另请参阅 RemoteAccessHostDomainList。</translation>
 <translation id="7509496865303347769">配置 <ph name="PRODUCT_NAME" /> 中的默认主页网址，并禁止用户更改此配置。
 
           主页是由“主页”按钮打开的网页。在桌面设备上，启动时打开的网页是由 RestoreOnStartup 政策控制的。

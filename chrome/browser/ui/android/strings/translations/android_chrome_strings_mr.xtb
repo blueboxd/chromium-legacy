@@ -59,7 +59,6 @@
 <translation id="1373696734384179344">निवडलेला आशय डाउनलोड करण्यासाठी अपुरी मेमरी.</translation>
 <translation id="1376578503827013741">गणना करत आहे...</translation>
 <translation id="1383876407941801731">शोधा</translation>
-<translation id="1384959399684842514">डाउनलोडला विराम दिला</translation>
 <translation id="1386674309198842382"><ph name="LAST_UPDATED" /> दिवसांपूर्वी ॲक्टिव्ह होते</translation>
 <translation id="1397811292916898096"><ph name="PRODUCT_NAME" /> सह शोधा</translation>
 <translation id="1406000523432664303">“Do Not Track”</translation>
@@ -117,7 +116,6 @@
 <translation id="1919345977826869612">जाहिराती</translation>
 <translation id="1919950603503897840">संपर्क निवडा</translation>
 <translation id="1922076542920281912">Chrome ला तुमच्या स्थानाचा अ‍ॅक्सेस द्या, <ph name="BEGIN_LINK" />Android सेटिंग्ज<ph name="END_LINK" /> मध्ये देखील स्थान सुरू करा.</translation>
-<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1925021887439448749">कस्टम वेब पत्ता एंटर करा</translation>
 <translation id="1928696683969751773">अपडेट</translation>
 <translation id="19288952978244135">Chrome पुन्हा उघडा.</translation>
@@ -193,13 +191,11 @@
 <translation id="2369533728426058518">खुले टॅब</translation>
 <translation id="2387895666653383613">मजकूर स्केलिग</translation>
 <translation id="2394602618534698961">तुम्ही डाउनलोड केलेल्या फायली येथे दिसतात</translation>
-<translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2407481962792080328">तुम्ही तुमच्या Google खात्यामध्ये साइन इन केल्यावर, हे वैशिष्ट्य सुरू केले जाते</translation>
 <translation id="2410754283952462441">एक खाते निवडा</translation>
 <translation id="2414886740292270097">गडद</translation>
 <translation id="2426805022920575512">दुसरे खाते निवडा</translation>
 <translation id="2433507940547922241">स्वरूप</translation>
-<translation id="2434158240863470628">डाउनलोड पूर्ण झाले <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">स्थान ॲक्सेस</translation>
 <translation id="2450083983707403292">तुम्हाला <ph name="FILE_NAME" /> चे डाउनलोड पुन्हा सुरू करायचे आहे का?</translation>
 <translation id="2450907520913474542">पेज न सोडता वेबसाइटवरील विषयांबद्दल जाणून घ्या. शोधण्यासाठी स्पर्श करा हे शब्द आणि त्याच्या आसपासचा संदर्भ Google Search ला पाठवते आणि व्याख्या, पिक्चर, शोध परिणाम आणि इतर तपशील मिळवते.
@@ -413,7 +409,6 @@
 <translation id="3987993985790029246">लिंक कॉपी करा</translation>
 <translation id="3988213473815854515">स्थानास अनुमती आहे</translation>
 <translation id="3988466920954086464">या पॅनलमध्ये इंस्टंट शोध परिणाम पहा</translation>
-<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="3997476611815694295">महत्त्वाचा नसलेले स्टोरेज</translation>
 <translation id="4000212216660919741">ऑफलाइन होम</translation>
 <translation id="4008040567710660924">विशिष्ट साइटसाठी कुकीना अनुमती द्या.</translation>
@@ -655,6 +650,7 @@
 <translation id="5763514718066511291">या ॲपची URL कॉपी करण्यासाठी टॅप करा</translation>
 <translation id="5765780083710877561">वर्णन:</translation>
 <translation id="5793665092639000975"><ph name="SPACE_AVAILABLE" /> पैकी <ph name="SPACE_USED" /> वापरत आहे</translation>
+<translation id="5795872532621730126">शोधा आणि ब्राउझ करा</translation>
 <translation id="5797070761912323120">शोध, जाहिरात आणि इतर Google सेवा पर्सनलाइझ करण्यासाठी Google कदाचित तुमच्या इतिहासाचा वापर करू शकते</translation>
 <translation id="5804241973901381774">परवानग्या</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# तासापूर्वी}other{# तासांपूर्वी}}</translation>
@@ -772,7 +768,6 @@
 <translation id="6593061639179217415">डेस्कटॉप साइट</translation>
 <translation id="6597891566292541626">या फ्रेममध्ये QR/बार कोडची स्थिती निश्चित करा.</translation>
 <translation id="6600954340915313787">Chrome वर कॉपी केले</translation>
-<translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">संरक्षित आशय</translation>
 <translation id="6627583120233659107">फोल्डर संपादित करा</translation>
 <translation id="6643016212128521049">साफ करा</translation>
@@ -841,7 +836,6 @@
 <translation id="7149158118503947153"><ph name="DOMAIN_NAME" /> वरून <ph name="BEGIN_LINK" />मुळचे पेज लोड करा<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">शेवटच्या 72 तासांमधील</translation>
 <translation id="7173114856073700355">सेटिंग्ज उघडा</translation>
-<translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">तुम्ही हे नंतर सेटिंग्ज मध्ये बदलू शकता.</translation>
 <translation id="7180611975245234373">रिफ्रेश करा</translation>
 <translation id="7189372733857464326">Google Play सेवांंनी अपडेट करणे समाप्त करण्याची प्रतीक्षा करीत आहे</translation>
@@ -953,7 +947,6 @@
 <translation id="8007176423574883786">या डिव्हाइससाठी बंद करा</translation>
 <translation id="8013372441983637696">तुमचा या डिव्हाइसवरील Chrome डेटा देखील साफ करा</translation>
 <translation id="8015452622527143194">पेजवरील प्रत्येक गोष्ट डीफॉल्ट आकारमानावर परत करा</translation>
-<translation id="802154636333426148">डाउनलोड अयशस्वी झाले</translation>
 <translation id="8026334261755873520">ब्राउझिंग डेटा साफ करा</translation>
 <translation id="8035133914807600019">नवीन फोल्डर…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> दिवस शिल्लक</translation>

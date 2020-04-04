@@ -2,12 +2,17 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
 <translation id="1124772482545689468">User</translation>
+<translation id="1178581264944972037">I-pause</translation>
 <translation id="1181037720776840403">Alisin</translation>
 <translation id="1201402288615127009">Susunod</translation>
 <translation id="1383876407941801731">Hanapin</translation>
+<translation id="1384959399684842514">Na-pause ang pag-download</translation>
+<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="2079545284768500474">I-undo</translation>
 <translation id="2148716181193084225">Ngayon</translation>
 <translation id="2359808026110333948">Magpatuloy</translation>
+<translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
+<translation id="2434158240863470628">Tapos nang mag-download <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2501278716633472235">Bumalik</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 cookie ang na-block}one{# cookies ang na-block}other{# na cookies ang na-block}}</translation>
 <translation id="257931822824936280">Pinalawak - i-click upang i-collapse.</translation>
@@ -19,6 +24,7 @@
 <translation id="3479552764303398839">Hindi ngayon</translation>
 <translation id="385051799172605136">Bumalik</translation>
 <translation id="3987993985790029246">Kopyahin ang link</translation>
+<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">Pamagat</translation>
 <translation id="4570913071927164677">Mga Detalye</translation>
 <translation id="4645575059429386691">Pinamamahalaan ng iyong magulang</translation>
@@ -40,6 +46,7 @@
 <translation id="6206551242102657620">Secure ang koneksyon. Impormasyon ng site</translation>
 <translation id="6216432067784365534">Mga Opsyon sa <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6527303717912515753">Ibahagi</translation>
+<translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6746124502594467657">Ibaba</translation>
 <translation id="6818926723028410516">Pumili ng mga item</translation>
 <translation id="6910211073230771657">Na-delete</translation>
@@ -48,6 +55,7 @@
 <translation id="6965382102122355670">OK</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 ang napili}one{# ang napili}other{# ang napili}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> ang napili.  Available ang mga opsyon malapit sa itaas ng screen</translation>
+<translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> ang napili</translation>
 <translation id="7649070708921625228">Tulong</translation>
 <translation id="7658239707568436148">Kanselahin</translation>
@@ -55,7 +63,9 @@
 <translation id="7791543448312431591">Idagdag</translation>
 <translation id="780301667611848630">Hindi salamat</translation>
 <translation id="7846076177841592234">Kanselahin ang pinili</translation>
+<translation id="802154636333426148">Hindi na-download</translation>
 <translation id="8131740175452115882">Kumpirmahin</translation>
+<translation id="8200772114523450471">Resume</translation>
 <translation id="8206354486702514201">Ipinapatupad ng iyong administrator ang setting na ito.</translation>
 <translation id="8249310407154411074">Ilipat sa itaas</translation>
 <translation id="8261506727792406068">I-delete</translation>

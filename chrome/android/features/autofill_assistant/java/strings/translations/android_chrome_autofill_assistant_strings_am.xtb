@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="am">
+<translation id="1552477655783980595">በጥቂት መታ ማድረጎች ብቻ \n የፊልም ቲኬቶችን ይግዙ</translation>
 <translation id="1625889395409731085">ውጫዊ አገናኝ ይከፈት?</translation>
 <translation id="1699570257714336246">መረጃ ይጎድላል</translation>
 <translation id="1932278019417741381">ተግባራትን እንዲያጠናቅቁ ለማገዝ Google ረዳትን የሚጠቀሙባቸው የጣቢያዎች ዩአርኤሎች እና ይዘቶችና እንዲሁም በረዳት በኩል የሚያስገቡት መረጃን ይቀበላል። ይህ መረጃ በGoogle መለያዎ ላይ ሊከማች ይችላል። ረዳትን በChrome ቅንብሮች ላይ ማጥፋት ይችላሉ። <ph name="BEGIN_LINK" />የበለጠ ለመረዳት<ph name="END_LINK" /></translation>
@@ -11,8 +12,10 @@
 <translation id="4850886885716139402">አሳይ</translation>
 <translation id="4952448020231702394">Google ረዳት እንደ ፍለጋ እና ተመዝግቦ መውጣት የመሳሰለ ድርጊትን በድር ላይ እንዲያጠናቅቁ በማገዝ የእርስዎን ጊዜ ይቆጥባል።</translation>
 <translation id="5267269112080050255">Google ረዳት በChrome ውስጥ ሙሉ ቁመት ላይ ተከፍቷል።</translation>
+<translation id="6111473266581160404">በጥቂት መታ ማድረጎች ብቻ \n መኪና ይከራዩ</translation>
 <translation id="6555233628095991027">Google ረዳት በChrome ውስጥ ግማሽ ቁመት ላይ ተከፍቷል።</translation>
 <translation id="6620345200476149840">በChrome ውስጥ \n Google ረዳትን ይሞክሩ</translation>
+<translation id="6785872064505734160">በChrome ውስጥ Google ረዳት በመላ ድር ጣቢያዎች ላይ ለእርስዎ እርምጃዎችን ማጠናቀቅ ይችላል</translation>
 <translation id="6973932557599545801">ከእንግዲህ ላግዝ አልችልም፣ እባክዎ በራስዎ ይቀጥሉ።</translation>
 <translation id="7658239707568436148">ይቅር</translation>
 <translation id="8253702004019660079">በChrome ውስጥ Google ረዳት።</translation>

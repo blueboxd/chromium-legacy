@@ -48,7 +48,6 @@
 <translation id="2309047409763057870">这是 Google Chrome 的并行安装，您无法将此浏览器设为默认浏览器。</translation>
 <translation id="2341767445688917208">Chrome 操作系统无法同步您的密码。请立即修正。</translation>
 <translation id="2348335408836342058">Chrome 需要获得相应权限，才能允许此网站使用您的摄像头和麦克风</translation>
-<translation id="234869673307233423">Chrome 无法检查您的密码。请稍后重试。</translation>
 <translation id="2429317896000329049">由于您的网域停用了同步功能，Google Chrome无法同步您的数据。</translation>
 <translation id="2467438592969358367">Google Chrome 想导出您的密码。请输入您的 Windows 密码以允许此操作。</translation>
 <translation id="2485422356828889247">卸载</translation>
@@ -63,7 +62,6 @@
 <translation id="2689103672227170538">此扩展程序更改了 Chrome 启动后系统显示的页面。</translation>
 <translation id="2765403129283291972">Chrome 需要获得相应权限，才能允许此网站使用您的麦克风</translation>
 <translation id="2770231113462710648">将默认浏览器更改为：</translation>
-<translation id="2775140325783767197">Chrome 无法检查您的密码。请检查您的互联网连接。</translation>
 <translation id="2799223571221894425">重新启动</translation>
 <translation id="2847461019998147611">以这种语言显示 Google Chrome</translation>
 <translation id="2857540653560290388">正在启动 Chrome…</translation>
@@ -121,7 +119,6 @@
 <translation id="4600710005438004015">Chrome 无法更新至最新版本，因此您未能获得最新的功能和安全修复程序。</translation>
 <translation id="4631713731678262610">在 Chrome 菜单中隐藏</translation>
 <translation id="4633000520311261472">为了提高 Chrome 的安全性，系统停用了一些未列在 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />中、可能是在您不知情的情况下添加的扩展程序。</translation>
-<translation id="4653397506175047429">Chrome 无法检查您的所有密码。请 24 小时后重试。</translation>
 <translation id="4728575227883772061">未知错误导致安装失败。如果 Google Chrome 浏览器正在运行，请将其关闭，然后重试。</translation>
 <translation id="4750550185319565338">重新启动 Chrome 以启用 <ph name="PLUGIN_NAME" /></translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
@@ -242,7 +239,6 @@
 <translation id="8862326446509486874">您的权限不足，无法进行系统级安装。请尝试以管理员身份再次运行安装程序。</translation>
 <translation id="8914504000324227558">重启 Chrome</translation>
 <translation id="8999208279178790196">{0,plural, =0{有一项可用的 Chrome 更新}=1{有一项可用的 Chrome 更新}other{有一项可用的 Chrome 更新（已发布 # 天）}}</translation>
-<translation id="9025321516765676895">Chrome 无法检查您的密码，因为密码太多</translation>
 <translation id="9026991721384951619">您的帐号登录详细信息已过期，Chrome操作系统无法同步您的数据。</translation>
 <translation id="9067395829937117663">Google Chrome 仅支持 Windows 7 或更高版本的操作系统。</translation>
 <translation id="911206726377975832">同时删除您的浏览数据吗？</translation>

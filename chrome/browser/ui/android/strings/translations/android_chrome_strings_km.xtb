@@ -59,7 +59,6 @@
 <translation id="1373696734384179344">មេម៉ូរីមិនគ្រប់គ្រាន់ដើម្បីទាញយកមាតិកាដែលបានជ្រើសនេះទេ។</translation>
 <translation id="1376578503827013741">កំពុងគណនា...</translation>
 <translation id="1383876407941801731">ស្វែងរក</translation>
-<translation id="1384959399684842514">បានផ្អាកការទាញយក</translation>
 <translation id="1386674309198842382">ដំណើរការ <ph name="LAST_UPDATED" /> ថ្ងៃ​មុន</translation>
 <translation id="1397811292916898096">ស្វែងរក​ដោយ​ប្រើ <ph name="PRODUCT_NAME" /></translation>
 <translation id="1406000523432664303">“កុំតាមដាន”</translation>
@@ -117,7 +116,6 @@
 <translation id="1919345977826869612">ពាណិជ្ជកម្ម</translation>
 <translation id="1919950603503897840">ជ្រើសរើស​ទំនាក់ទំនង</translation>
 <translation id="1922076542920281912">ដើម្បីអនុញ្ញាតឱ្យ Chrome ចូលប្រើទីតាំង​របស់អ្នក អ្នកក៏ត្រូវបើក​ទីតាំង​នៅក្នុង<ph name="BEGIN_LINK" />ការកំណត់ Android<ph name="END_LINK" /> ផងដែរ។</translation>
-<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1925021887439448749">បញ្ចូល​អាសយដ្ឋាន​ទំព័រ​ផ្ទាល់ខ្លួន</translation>
 <translation id="1928696683969751773">ធ្វើបច្ចុប្បន្នភាព</translation>
 <translation id="19288952978244135">បើក Chrome ឡើងវិញ។</translation>
@@ -193,13 +191,11 @@
 <translation id="2369533728426058518">បើកផ្ទាំង</translation>
 <translation id="2387895666653383613">ការសម្រួលមាត្រដ្ឋានអត្ថបទ</translation>
 <translation id="2394602618534698961">ឯកសារ​ដែលអ្នកទាញយក​បង្ហាញ​នៅទីនេះ</translation>
-<translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2407481962792080328">នៅពេលអ្នក​ចូលគណនី Google របស់អ្នក មុខងារនេះ​ត្រូវបានបើក</translation>
 <translation id="2410754283952462441">ជ្រើសរើស​គណនី</translation>
 <translation id="2414886740292270097">ងងឹត</translation>
 <translation id="2426805022920575512">ជ្រើសរើស​គណនី​ផ្សេងទៀត</translation>
 <translation id="2433507940547922241">ការបង្ហាញខ្លួន</translation>
-<translation id="2434158240863470628">ការទាញយក​បានបញ្ចប់ <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">ទីតាំងការចូលប្រើ</translation>
 <translation id="2450083983707403292">តើអ្នក​ចង់​ចាប់ផ្តើម​ទាញយក <ph name="FILE_NAME" /> ឡើងវិញដែរ?</translation>
 <translation id="2450907520913474542">ស្វែងយល់​អំពី​ប្រធានបទ​នៅលើ​គេហទំព័រ​ដោយមិន​ចាំបាច់​ចាកចេញ​ពីទំព័រ។ មុខងារចុច​ដើម្បី​ស្វែងរក​ផ្ញើពាក្យ និង​បរិបទ​នៅជុំវិញ​ពាក្យនោះទៅ​កម្មវិធីស្វែងរកនៅលើ Google ដែលបញ្ជូន​ត្រឡប់មកវិញនូវ​និយមន័យ រូបភាព លទ្ធផល​ស្វែងរក និងព័ត៌មាន​លម្អិតផ្សេងទៀត។
@@ -413,7 +409,6 @@
 <translation id="3987993985790029246">ចម្លងតំណ</translation>
 <translation id="3988213473815854515">ទីតាំងត្រូវបានអនុញ្ញាត</translation>
 <translation id="3988466920954086464">មើល​លទ្ធផល​ស្វែងរកភ្លាមៗ​នៅក្នុង​ផ្ទាំង​នេះ</translation>
-<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="3997476611815694295">ទំហំផ្ទុកមិនសំខាន់</translation>
 <translation id="4000212216660919741">Home គ្មាន​អ៊ីនធឺណិតទេ</translation>
 <translation id="4008040567710660924">អនុញ្ញាតខូគី​សម្រាប់គេហទំព័រ​ជាក់លាក់។</translation>
@@ -655,6 +650,7 @@
 <translation id="5763514718066511291">ចុច​ដើម្បី​ចម្លង URL សម្រាប់​កម្មវិធី​នេះ</translation>
 <translation id="5765780083710877561">ការពិពណ៌នា៖</translation>
 <translation id="5793665092639000975">ប្រើ​អស់ <ph name="SPACE_USED" /> នៃ <ph name="SPACE_AVAILABLE" /></translation>
+<translation id="5795872532621730126">ស្វែងរក និង​រុករក</translation>
 <translation id="5797070761912323120">Google អាចនឹង​ប្រើ​ប្រវត្តិ​របស់អ្នក ដើម្បី​ធ្វើឱ្យ​ការស្វែងរក ការផ្សាយ​ពាណិជ្ជកម្ម និងសេវាកម្ម Google ផ្សេងទៀតស្របនឹងអ្នក</translation>
 <translation id="5804241973901381774">ការអនុញ្ញាត</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# ម៉ោងមុន}other{# ម៉ោងមុន}}</translation>
@@ -772,7 +768,6 @@
 <translation id="6593061639179217415">ទំព័រ​អេក្រង់​កុំព្យូទ័រ</translation>
 <translation id="6597891566292541626">ដាក់កូដ QR/បារកូដនៅក្នុងស៊ុមនេះ។</translation>
 <translation id="6600954340915313787">បានចម្លងទៅ Chrome</translation>
-<translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">មាតិកាដែលបានការពារ</translation>
 <translation id="6627583120233659107">កែសម្រួលថតឯកសារ</translation>
 <translation id="6643016212128521049">ជម្រះ</translation>
@@ -841,7 +836,6 @@
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />ផ្ទុក​ទំព័រដើម<ph name="END_LINK" />ពី <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">24 ម៉ោងមុន</translation>
 <translation id="7173114856073700355">បើកការកំណត់</translation>
-<translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">អ្នក​អាច​ប្ដូរ​វា​ពេល​ក្រោយ​ក្នុង​ការ​កំណត់។</translation>
 <translation id="7180611975245234373">ធ្វើឲ្យថ្មីឡើងវិញ…</translation>
 <translation id="7189372733857464326">កំពុង​រង់ចាំ​សេវាកម្ម​ Google Play ដើម្បី​បញ្ចប់​ការ​ធ្វើបច្ចុប្បន្នភាព</translation>
@@ -953,7 +947,6 @@
 <translation id="8007176423574883786">បានបិទសម្រាប់ឧបករណ៍នេះ</translation>
 <translation id="8013372441983637696">ក៏សម្អាតទិន្នន័យ​ Chrome ​របស់អ្នកពី​ឧបករណ៍នេះផងដែរ</translation>
 <translation id="8015452622527143194">ផ្លាស់ប្តូរអ្វីគ្រប់យ៉ាងនៅលើទំព័រនេះទៅទំហំតាមលំនាំដើម</translation>
-<translation id="802154636333426148">បានបរាជ័យក្នុងការទាញយក</translation>
 <translation id="8026334261755873520">ជម្រះទិន្នន័យរុករក</translation>
 <translation id="8035133914807600019">ថតឯកសារថ្មី…</translation>
 <translation id="8037750541064988519">នៅសល់ <ph name="DAYS" /> ថ្ងៃទៀត</translation>

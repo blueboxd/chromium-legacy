@@ -18,6 +18,7 @@
 <translation id="1190609913194133056">सूचना केंद्र</translation>
 <translation id="1195412055398077112">ओव्हरस्कॅन</translation>
 <translation id="119944043368869598">सर्व साफ करा</translation>
+<translation id="1199716647557067911">तुम्हाला स्विच अ‍ॅक्सेस नक्की बंद करायचे आहे?</translation>
 <translation id="1247372569136754018">मायक्रोफोन (अंतर्गत)</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> पासून चार्ज होत आहे</translation>
 <translation id="1255033239764210633">हवामान कसे आहे?</translation>
@@ -430,6 +431,7 @@
 <translation id="6537924328260219877">सिग्नल क्षमता <ph name="SIGNAL_STRENGTH" />, फोन बॅटरी <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> वर कास्ट करत आहे</translation>
 <translation id="6559976592393364813">अ‍ॅडमिनिस्ट्रेटरला विचारा</translation>
+<translation id="6584550827717945790">स्विच अ‍ॅक्सेस बंद करा</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> मध्ये सेशन समाप्त होते.</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, सिग्नल क्षमता <ph name="SIGNAL_STRENGTH" />, तुमच्या अ‍ॅडमिनिस्ट्रेटरने व्यवस्थापित केलेले</translation>
 <translation id="6614169507485700968">गोपनीयता स्क्रीन सुरू आहे</translation>
@@ -603,6 +605,7 @@
 <translation id="8814190375133053267">वाय-फाय</translation>
 <translation id="8825863694328519386">मागे जाण्यासाठी डावीकडून स्वाइप करा</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">मागे जा बटण</translation>
 <translation id="8843682306134542540">रोटेशन लॉक टॉगल करा. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">ॲप विभाजित-स्क्रीनला सपोर्ट करत नाही.</translation>

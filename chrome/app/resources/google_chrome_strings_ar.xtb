@@ -50,7 +50,6 @@
 <translation id="2309047409763057870">‏هذا تثبيت ثانوي من Google Chrome، ولا يمكن جعله متصفحك التلقائي.</translation>
 <translation id="2341767445688917208">‏تعذّر على نظام التشغيل Chrome مزامنة كلمات المرور. إصلاح المشكلة الآن</translation>
 <translation id="2348335408836342058">‏يحتاج Chrome إلى إذن للوصول إلى الكاميرا والميكروفون من أجل موقع الويب هذا.</translation>
-<translation id="234869673307233423">‏يتعذّر على Chrome التحقّق من كلمات المرور. يُرجى إعادة المحاولة.</translation>
 <translation id="2429317896000329049">‏تعذر على Google Chrome مزامنة البيانات نظرًا لأن المزامنة غير متاحة في نطاقك.</translation>
 <translation id="2467438592969358367">‏يرغب Google Chrome في تصدير كلمات مرورك، لذا يُرجى كتابة كلمة مرور Windows للسماح بذلك.</translation>
 <translation id="2485422356828889247">إزالة التثبيت</translation>
@@ -65,7 +64,6 @@
 <translation id="2689103672227170538">‏غيّرت هذه الإضافة الصفحة التي تظهر عند بدء تشغيل Chrome.</translation>
 <translation id="2765403129283291972">‏يحتاج Chrome إلى إذن للوصول إلى الميكروفون من أجل موقع الويب هذا.</translation>
 <translation id="2770231113462710648">تغيير المتصفح التلقائي إلى:</translation>
-<translation id="2775140325783767197">‏يتعذّر على Chrome التحقّق من كلمات المرور. يُرجى التحقّق من اتصال الإنترنت.</translation>
 <translation id="2799223571221894425">إعادة تشغيل</translation>
 <translation id="2847461019998147611">‏عرض Google Chrome بهذه اللغة</translation>
 <translation id="2857540653560290388">‏جارٍ إطلاق Chrome...</translation>
@@ -123,7 +121,6 @@
 <translation id="4600710005438004015">‏تعذّرت إعادة التحميل Chrome إلى آخر إصدار، لذلك قد تفوتك الميزات وعمليات إصلاح الأمان الجديدة.</translation>
 <translation id="4631713731678262610">‏الإخفاء في قائمة Chrome</translation>
 <translation id="4633000520311261472">‏لجعل Chrome أكثر أمانًا، تم إيقاف بعض الإضافات غير المدرجة في <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> والتي ربما تمت إضافتها بدون علمك.</translation>
-<translation id="4653397506175047429">‏يتعذّر على Chrome التحقّق من جميع كلمات المرور. يُرجى إعادة المحاولة بعد 24 ساعة.</translation>
 <translation id="4728575227883772061">‏فشلت عملية التثبيت بسبب خطأ غير محدد. إذا كان Google Chrome في حالة التشغيل حاليًا، يُرجى إغلاقه وإعادة المحاولة.</translation>
 <translation id="4750550185319565338">‏إعادة تشغيل Chrome لتفعيل <ph name="PLUGIN_NAME" /></translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
@@ -246,7 +243,6 @@
 <translation id="8862326446509486874">لا تملك الحقوق الكافية للتثبيت على مستوى النظام. جرّب تشغيل المثبِّت بصفة مشرف.</translation>
 <translation id="8914504000324227558">‏إعادة تشغيل Chrome</translation>
 <translation id="8999208279178790196">{0,plural, =0{‏يتوفر تحديث لمتصفح Chrome}=1{‏يتوفر تحديث لمتصفح Chrome}two{‏يتوفر تحديث لمتصفح Chrome منذ يومين}few{‏يتوفر تحديث لمتصفح Chrome منذ # أيام}many{‏يتوفر تحديث لمتصفح Chrome منذ # يومًا}other{‏يتوفر تحديث لمتصفح Chrome منذ # يوم}}</translation>
-<translation id="9025321516765676895">‏يتعذّر على Chrome التحقّق من كلمات المرور بسبب عددها الكبير.</translation>
 <translation id="9026991721384951619">‏تعذر على نظام التشغيل Chrome مزامنة البيانات نظرًا لأن تفاصيل تسجيل الدخول إلى حسابك قديمة.</translation>
 <translation id="9067395829937117663">‏يتطلب متصفح Google Chrome نظام التشغيل Windows 7 أو إصدارًا أحدث.</translation>
 <translation id="911206726377975832">هل تريد أيضًا حذف بيانات التصفح؟</translation>

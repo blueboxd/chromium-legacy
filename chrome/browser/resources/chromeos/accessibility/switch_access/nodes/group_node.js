@@ -72,7 +72,7 @@ class GroupNode extends SAChildNode {
       return false;
     }
     for (let i = 0; i < this.children_.length; i++) {
-      if (other.children_[i].equals(this.children_[i])) {
+      if (!other.children_[i].equals(this.children_[i])) {
         return false;
       }
     }

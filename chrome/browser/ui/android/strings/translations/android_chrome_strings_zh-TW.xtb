@@ -59,7 +59,6 @@
 <translation id="1373696734384179344">記憶體不足，無法下載您選取的這項內容。</translation>
 <translation id="1376578503827013741">計算中…</translation>
 <translation id="1383876407941801731">搜尋</translation>
-<translation id="1384959399684842514">已暫停下載</translation>
 <translation id="1386674309198842382">上次使用時間：<ph name="LAST_UPDATED" /> 天前</translation>
 <translation id="1397811292916898096">使用 <ph name="PRODUCT_NAME" /> 搜尋</translation>
 <translation id="1406000523432664303">「不追蹤」</translation>
@@ -116,7 +115,6 @@
 <translation id="1919345977826869612">廣告</translation>
 <translation id="1919950603503897840">選取聯絡人</translation>
 <translation id="1922076542920281912">如要讓 Chrome 存取你的位置，請一併在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中開啟定位功能。</translation>
-<translation id="1923695749281512248">已下載：<ph name="BYTES_DOWNLOADED_WITH_UNITS" />，總大小：<ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1925021887439448749">輸入自訂網址</translation>
 <translation id="1928696683969751773">更新</translation>
 <translation id="19288952978244135">重新開啟 Chrome。</translation>
@@ -192,13 +190,11 @@
 <translation id="2369533728426058518">開啟的分頁</translation>
 <translation id="2387895666653383613">文字大小</translation>
 <translation id="2394602618534698961">你下載的檔案會顯示在這裡</translation>
-<translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2407481962792080328">登入 Google 帳戶時，系統會啟用這項功能</translation>
 <translation id="2410754283952462441">選擇帳戶</translation>
 <translation id="2414886740292270097">深色</translation>
 <translation id="2426805022920575512">選擇其他帳戶</translation>
 <translation id="2433507940547922241">外觀</translation>
-<translation id="2434158240863470628">下載完成 <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">位置資訊存取權</translation>
 <translation id="2450083983707403292">要重新下載「<ph name="FILE_NAME" />」嗎？</translation>
 <translation id="2450907520913474542">不須離開網頁即可瞭解網站上的主題。「輕觸搜尋」功能可將特定字詞及其上下文內容傳送給 Google 搜尋，並傳回定義、圖片、搜尋結果和其他詳細資料。
@@ -409,7 +405,6 @@
 <translation id="3987993985790029246">複製連結</translation>
 <translation id="3988213473815854515">禁止存取位置資訊</translation>
 <translation id="3988466920954086464">你可以在這個面板中查看即時搜尋結果</translation>
-<translation id="3991845972263764475">已下載：<ph name="BYTES_DOWNLOADED_WITH_UNITS" />，總大小：不明</translation>
 <translation id="3997476611815694295">不重要網站的儲存資料量</translation>
 <translation id="4000212216660919741">離線首頁</translation>
 <translation id="4008040567710660924">允許特定網站的 Cookie。</translation>
@@ -651,6 +646,7 @@
 <translation id="5763514718066511291">輕觸即可複製這個應用程式的網址</translation>
 <translation id="5765780083710877561">說明：</translation>
 <translation id="5793665092639000975">使用量：<ph name="SPACE_USED" /> (共 <ph name="SPACE_AVAILABLE" />)</translation>
+<translation id="5795872532621730126">搜尋和瀏覽</translation>
 <translation id="5797070761912323120">Google 可能會使用你的歷史記錄，為你提供個人化的搜尋服務、廣告內容和其他各項 Google 服務</translation>
 <translation id="5804241973901381774">權限</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# 小時前}other{# 小時前}}</translation>
@@ -766,7 +762,6 @@
 <translation id="6593061639179217415">電腦版網站</translation>
 <translation id="6597891566292541626">將這個方框對準 QR 圖碼/條碼。</translation>
 <translation id="6600954340915313787">已複製到 Chrome</translation>
-<translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">受保護內容</translation>
 <translation id="6627583120233659107">編輯資料夾</translation>
 <translation id="6643016212128521049">清除</translation>
@@ -835,7 +830,6 @@
 <translation id="7149158118503947153">從 <ph name="DOMAIN_NAME" /> <ph name="BEGIN_LINK" />載入原始頁面<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">過去 24 小時</translation>
 <translation id="7173114856073700355">開啟設定</translation>
-<translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">日後可前往設定頁面進行變更</translation>
 <translation id="7180611975245234373">重新整理</translation>
 <translation id="7189372733857464326">正在等待 Google Play 服務完成更新</translation>
@@ -947,7 +941,6 @@
 <translation id="8007176423574883786">已在這個裝置上關閉</translation>
 <translation id="8013372441983637696">一併清除你在這個裝置上的 Chrome 資料</translation>
 <translation id="8015452622527143194">將網頁上的所有內容都回復為預設大小</translation>
-<translation id="802154636333426148">下載失敗</translation>
 <translation id="8026334261755873520">清除瀏覽資料</translation>
 <translation id="8035133914807600019">新資料夾…</translation>
 <translation id="8037750541064988519">還剩 <ph name="DAYS" /> 天</translation>

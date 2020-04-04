@@ -59,7 +59,6 @@
 <translation id="1373696734384179344">Za mało pamięci, by pobrać te treści.</translation>
 <translation id="1376578503827013741">Obliczam…</translation>
 <translation id="1383876407941801731">Szukaj</translation>
-<translation id="1384959399684842514">Pobieranie wstrzymane</translation>
 <translation id="1386674309198842382">Aktywność <ph name="LAST_UPDATED" /> dni temu</translation>
 <translation id="1397811292916898096">Szukaj w <ph name="PRODUCT_NAME" /></translation>
 <translation id="1406000523432664303">„Bez śledzenia”</translation>
@@ -117,7 +116,6 @@
 <translation id="1919345977826869612">Reklamy</translation>
 <translation id="1919950603503897840">Wybierz kontakty</translation>
 <translation id="1922076542920281912">Aby zezwolić Chrome na dostęp do lokalizacji, musisz ją też włączyć w <ph name="BEGIN_LINK" />Ustawieniach Androida<ph name="END_LINK" />.</translation>
-<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1925021887439448749">Wpisz niestandardowy adres internetowy</translation>
 <translation id="1928696683969751773">Aktualizacje</translation>
 <translation id="19288952978244135">Uruchom ponownie Chrome.</translation>
@@ -193,13 +191,11 @@ Aby coś wyszukać, dotknij dowolnego słowa. Aby doprecyzować wyszukiwanie, na
 <translation id="2369533728426058518">otwarte karty</translation>
 <translation id="2387895666653383613">Skalowanie tekstu</translation>
 <translation id="2394602618534698961">Tutaj pojawią się pobrane pliki</translation>
-<translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2407481962792080328">Ta funkcja zostanie włączona, gdy zalogujesz się na swoje konto Google</translation>
 <translation id="2410754283952462441">Wybierz konto</translation>
 <translation id="2414886740292270097">Ciemny</translation>
 <translation id="2426805022920575512">Wybierz inne konto</translation>
 <translation id="2433507940547922241">Wygląd</translation>
-<translation id="2434158240863470628">Ukończono pobieranie <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">Dostęp do lokalizacji</translation>
 <translation id="2450083983707403292">Czy chcesz jeszcze raz rozpocząć pobieranie pliku <ph name="FILE_NAME" />?</translation>
 <translation id="2450907520913474542">Poznaj tematy omawiane w witrynach, nie opuszczając strony. Funkcja „Dotknij, by wyszukać” wysyła słowo i najbliższy kontekst do wyszukiwarki Google, a następnie zwraca definicje, zdjęcia, wyniki wyszukiwania i inne informacje.
@@ -413,7 +409,6 @@ Obraz z kamery będziesz widzieć tylko Ty. Strona nie będzie mieć do niego d
 <translation id="3987993985790029246">Kopiuj link</translation>
 <translation id="3988213473815854515">Lokalizacja jest dozwolona</translation>
 <translation id="3988466920954086464">Zobacz wyniki wyszukiwania dynamicznego w tym panelu</translation>
-<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="3997476611815694295">Nieistotne dane</translation>
 <translation id="4000212216660919741">Ekran główny offline</translation>
 <translation id="4008040567710660924">Zezwalaj na pliki cookie z określonej strony internetowej.</translation>
@@ -773,7 +768,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6593061639179217415">Wersja na komputer</translation>
 <translation id="6597891566292541626">Umieść kod QR lub kod kreskowy w tej ramce.</translation>
 <translation id="6600954340915313787">Skopiowana do Chrome</translation>
-<translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Treść chroniona</translation>
 <translation id="6627583120233659107">Edytuj folder</translation>
 <translation id="6643016212128521049">Wyczyść</translation>
@@ -842,7 +836,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Załaduj oryginalną stronę<ph name="END_LINK" /> z domeny <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Ostatnie 24 godziny</translation>
 <translation id="7173114856073700355">Otwórz Ustawienia</translation>
-<translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">Możesz zmienić to później w Ustawieniach</translation>
 <translation id="7180611975245234373">Odśwież</translation>
 <translation id="7189372733857464326">Czekam na zakończenie aktualizacji Usług Google Play</translation>
@@ -954,7 +947,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8007176423574883786">Wyłączona na tym urządzeniu</translation>
 <translation id="8013372441983637696">Usuń też swoje dane Chrome z tego urządzenia</translation>
 <translation id="8015452622527143194">Powróć do normalnego rozmiaru całej treści strony</translation>
-<translation id="802154636333426148">Nie udało się pobrać</translation>
 <translation id="8026334261755873520">Wyczyść dane przeglądania</translation>
 <translation id="8035133914807600019">Nowy folder…</translation>
 <translation id="8037750541064988519">Pozostało: <ph name="DAYS" /> dni</translation>

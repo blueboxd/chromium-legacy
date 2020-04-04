@@ -59,7 +59,6 @@
 <translation id="1373696734384179344">ଚୟନ କରାଯାଇଥିବା ବିଷୟବସ୍ତୁ ଡାଉନ୍‌ଲୋଡ୍ କରିବା ପାଇଁ ପର୍ଯ୍ୟାପ୍ତ ମେମୋରୀ ନାହିଁ।</translation>
 <translation id="1376578503827013741">ଗଣନା ହେଉଛି…</translation>
 <translation id="1383876407941801731">ସନ୍ଧାନ</translation>
-<translation id="1384959399684842514">ଡାଉନ୍‌ଲୋଡ୍ ବିରତ ହୋଇଛି</translation>
 <translation id="1386674309198842382"><ph name="LAST_UPDATED" /> ଦିନ ପୂର୍ବେ ସକ୍ରିୟ ଥିଲା</translation>
 <translation id="1397811292916898096"><ph name="PRODUCT_NAME" /> ମାଧ୍ୟମରେ ସନ୍ଧାନ କରନ୍ତୁ</translation>
 <translation id="1406000523432664303">“ଟ୍ରାକ୍ କରନ୍ତୁ ନାହିଁ”</translation>
@@ -104,6 +103,7 @@
 <translation id="1782483593938241562">ଶେଷ ତାରିଖ <ph name="DATE" /></translation>
 <translation id="1791662854739702043">ଇନ୍‍ଷ୍ଟଲ୍ କରାଯାଇଛି</translation>
 <translation id="1792959175193046959">ଯେକୌଣସି ସମୟରେ ଡିଫଲ୍ଟ ଡାଉନ୍‌ଲୋଡ୍ ଲୋକେସନ୍ ପରିବର୍ତ୍ତନ କରନ୍ତୁ</translation>
+<translation id="1795251344124198516">Chrome ଓ Chrome OS ଅତିରିକ୍ତ ସେବାର ସର୍ତ୍ତାବଳୀ</translation>
 <translation id="1807246157184219062">ଫିକା</translation>
 <translation id="1810845389119482123">ପ୍ରାରମ୍ଭିକ ସିଙ୍କ୍ ସେଟ୍‌ଅପ୍ ସମାପ୍ତ ହୋଇ ନାହିଁ</translation>
 <translation id="1821253160463689938">ଆପଣ ସେହି ପୃଷ୍ଠାଗୁଡ଼ିକୁ ନ ଯାଉଥିଲେ ମଧ୍ୟ, ଆପଣଙ୍କର ପ୍ରାଥମିକତାକୁ ମନେରଖିବା ପାଇଁ ଏହା କୁକୀଗୁଡ଼ିକ ବ୍ୟବହାର କରେ</translation>
@@ -116,7 +116,6 @@
 <translation id="1919345977826869612">ବିଜ୍ଞାପନ</translation>
 <translation id="1919950603503897840">ଯୋଗାଯୋଗଗୁଡ଼ିକ ଚୟନ କରନ୍ତୁ</translation>
 <translation id="1922076542920281912">Chromeକୁ ଆପଣଙ୍କର ଲୋକେସନ୍ ଆକ୍ସେସ୍ ଦେବା ପାଇଁ, <ph name="BEGIN_LINK" />Android ସେଟିଂସ୍ <ph name="END_LINK" />ରେ ଲୋକେସନ୍ ମଧ୍ୟ ଚାଲୁ କରନ୍ତୁ।</translation>
-<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1925021887439448749">ଏକ କଷ୍ଟମ୍ ୱେବ୍ ଠିକଣା ଲେଖନ୍ତୁ</translation>
 <translation id="1928696683969751773">ଅପ୍‌ଡେଟ୍</translation>
 <translation id="19288952978244135">Chrome ପୁଣି ଖୋଲନ୍ତୁ।</translation>
@@ -192,13 +191,11 @@
 <translation id="2369533728426058518">ଖୋଲାଥିବା ଟାବ୍</translation>
 <translation id="2387895666653383613">ଟେକ୍ସଟ୍‌ ସ୍କେଲିଂ</translation>
 <translation id="2394602618534698961">ଆପଣ ଡାଉନ୍‌ଲୋଡ୍ କରିଥିବା ଫାଇଲ୍‌ଗୁଡ଼ିକ ଏଠାରେ ଦେଖାଯିବ</translation>
-<translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2407481962792080328">ଆପଣ ଆପଣଙ୍କର Google ଆକାଉଣ୍ଟରେ ସାଇନ୍ ଇନ୍ କଲେ ଏହି ଫିଚର୍ ଚାଲୁ ହୁଏ</translation>
 <translation id="2410754283952462441">ଗୋଟିଏ ଆକାଉଣ୍ଟ ବାଛନ୍ତୁ</translation>
 <translation id="2414886740292270097">ଗାଢ଼</translation>
 <translation id="2426805022920575512">ଅନ୍ୟ ଏକ ଆକାଉଣ୍ଟ ବାଛନ୍ତୁ</translation>
 <translation id="2433507940547922241">ଦୃଶ୍ୟମାନତା</translation>
-<translation id="2434158240863470628">ଡାଉନ୍‌ଲୋଡ୍ ଶେଷ ହେଲା <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">ଲୋକେସନ୍ ଆକ୍ସେସ୍</translation>
 <translation id="2450083983707403292">ଆପଣ କ’ଣ ପୁଣି <ph name="FILE_NAME" /> ଡାଉନ୍‌ଲୋଡ୍‌ କରିବାକୁ ଚାହୁଁଛନ୍ତି?</translation>
 <translation id="2450907520913474542">ପୃଷ୍ଠାରେ ରହି ୱେବସାଇଟରେ ବିଷୟଗୁଡ଼ିକ ସମ୍ବନ୍ଧରେ ଜାଣନ୍ତୁ। ’ଟଚ୍ ଟୁ ସର୍ଚ୍ଚ’ ସୁବିଧା, କୌଣସି ଶବ୍ଦ ଏବଂ ଏହାର ପାରିପାର୍ଶ୍ଵିକ ପ୍ରସଙ୍ଗକୁ Google Searchକୁ ପଠାଏ ଏବଂ ସଂଜ୍ଞା, ଛବି, ସନ୍ଧାନ ଫଳାଫଳଗୁଡ଼ିକ ଓ ଅନ୍ୟ ବିବରଣୀ ଦେଖାଇଥାଏ।
@@ -236,6 +233,7 @@
 <translation id="2650751991977523696">ଫାଇଲ୍‌ଟି ପୁଣି ଡାଉନ୍‌ଲୋଡ୍ କରିବେ?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{#ଟି ଅଡିଓ ଫାଇଲ୍‌}other{#ଟି ଅଡିଓ ଫାଇଲ୍‌}}</translation>
 <translation id="2687403674020088961">ସମସ୍ତ କୁକୀ ବ୍ଲକ୍ କରନ୍ତୁ (ସୁପାରିଶ କରାଯାଇ ନାହିଁ)</translation>
+<translation id="2689830683995595741">Chrome ବ୍ୟବହାର କରିବା ଦ୍ୱାରା, ଆପଣ <ph name="BEGIN_LINK1" />Google ସେବାର ସର୍ତ୍ତାବଳୀ<ph name="END_LINK1" /> ଏବଂ <ph name="BEGIN_LINK2" />Google Chrome ଏବଂ Chrome OS ଅତିରିକ୍ତ ସେବାର ସର୍ତ୍ତାବଳୀ<ph name="END_LINK2" /> ସହିତ ସହମତ ହେଉଛନ୍ତି। <ph name="BEGIN_LINK3" />Family Link ମାଧ୍ୟମରେ ପରିଚାଳନା କରାଯାଇଥିବା Google ଆକାଉଣ୍ଟଗୁଡ଼ିକ ପାଇଁ ଗୋପନୀୟତା ନୋଟିସ୍<ph name="END_LINK3" /> ମଧ୍ୟ ଲାଗୁ ହୋଇଥାଏ।</translation>
 <translation id="2707726405694321444">ପୃଷ୍ଠା ରିଫ୍ରେସ୍ କରନ୍ତୁ</translation>
 <translation id="2709516037105925701">ସ୍ୱତଃପୂରଣ</translation>
 <translation id="2717722538473713889">ଇମେଲ୍ ଠିକଣାଗୁଡ଼ିକ</translation>
@@ -376,6 +374,7 @@
 <translation id="3749259744154402564">ସମର୍ଥିତ ନୁହେଁ</translation>
 <translation id="3771001275138982843">ଅପ୍‌ଡେଟ୍ ଡାଉନ୍‌ଲୋଡ୍ କରିପାରିଲା ନାହିଁ</translation>
 <translation id="3771033907050503522">ଇନ୍‍କଗ୍ନିଟୋ ଟାବ୍‍</translation>
+<translation id="3771694256347217732">Google ସେବାର ସର୍ତ୍ତାବଳୀ</translation>
 <translation id="3773755127849930740">ପେୟାରିଂକୁ ଅନୁମତି ଦେବା ପାଇଁ <ph name="BEGIN_LINK" />ବ୍ଲୁଟୁଥ୍ ଚାଲୁ କରନ୍ତୁ<ph name="END_LINK" /></translation>
 <translation id="3775705724665058594">ଆପଣଙ୍କର ଡିଭାଇସ୍‌ଗୁଡ଼ିକୁ ପଠାନ୍ତୁ</translation>
 <translation id="3778956594442850293">ଏହାକୁ ମୂଳ ସ୍କ୍ରିନ୍‌ରେ ଯୋଗ କରାଯାଇଛି</translation>
@@ -403,13 +402,13 @@
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{ଯେତେବେଳେ ପ୍ରସ୍ତୁତ ହୋ‍ଇଯିବ, ସେତେବେଳେ Chrome ଆପଣଙ୍କର ପୃଷ୍ଠା ଲୋଡ୍‌ କରିବ}other{ଯେତେବେଳେ ପ୍ରସ୍ତୁତ ହୋ‍ଇଯିବ, ସେତେବେଳେ Chrome ଆପଣଙ୍କର ପୃଷ୍ଠା ଲୋଡ୍‌ କରିବ}}</translation>
 <translation id="3963007978381181125">ପାସଫ୍ରେଜ୍ ଏନକ୍ରିପ୍ସନ୍, Google Payରୁ ପେମେଣ୍ଟ ପଦ୍ଧତି ଓ ଠିକଣାଗୁଡ଼ିକୁ ଅନ୍ତର୍ଭୁକ୍ତ କରେ ନାହିଁ। ଆପଣଙ୍କ ଏନ୍‌କ୍ରିପ୍ଟ ହୋଇଥିବା ଡାଟାକୁ କେବଳ ଆପଣଙ୍କ ପାସ୍‍‍ଫ୍ରେଜ୍ ଥିବା ଜଣେ ବ୍ୟକ୍ତି ପଢ଼ିପାରିବେ। ଏହି ପାସଫ୍ରେଜ୍ Googleକୁ ପଠାଯାଏ ନାହିଁ କିମ୍ବା Google.ଦ୍ୱାରା ଷ୍ଟୋର୍ କରାଯାଏ ନାହିଁ। ଯଦି ଆପଣ ଆପଣଙ୍କର ପାସଫ୍ରେଜ୍ ଭୁଲିଯାଇଛନ୍ତି କିମ୍ବା ଏହି ସେଟିଂ ପରିବର୍ତ୍ତନ କରିବାକୁ ଚାହୁଁଛନ୍ତି, ତେବେ ଆପଣଙ୍କୁ ସିଙ୍କ ରିସେଟ୍ କରିବାକୁ ହେବ। <ph name="BEGIN_LINK" />ଅଧିକ ଜାଣନ୍ତୁ<ph name="END_LINK" /></translation>
 <translation id="3967822245660637423">ଡାଉନ୍‍‍‍ଲୋଡ୍ ଶେଷ ହୋଇଛି</translation>
+<translation id="3974987681202239636"><ph name="APP_NAME" /> Chromeରେ ଖୋଲିବ। ଜାରି ରଖିବା ଦ୍ୱାରା, ଆପଣ <ph name="BEGIN_LINK1" />Google ସେବାର ସର୍ତ୍ତାବଳୀ<ph name="END_LINK1" /> ଏବଂ <ph name="BEGIN_LINK2" />Google Chrome ଏବଂ Chrome OS ଅତିରିକ୍ତ ସେବାର ସର୍ତ୍ତାବଳୀ<ph name="END_LINK2" /> ସହିତ ସହମତ ହେଉଛନ୍ତି। <ph name="BEGIN_LINK3" />Family Link ମାଧ୍ୟମରେ ପରିଚାଳନା କରାଯାଇଥିବା Google ଆକାଉଣ୍ଟଗୁଡ଼ିକ ପାଇଁ ଗୋପନୀୟତା ନୋଟିସ୍<ph name="END_LINK3" /> ମଧ୍ୟ ଲାଗୁ ହୋଇଥାଏ।</translation>
 <translation id="397583555483684758">ସିଙ୍କ କାର୍ଯ୍ୟ କରିବା ବନ୍ଦ କରିଦେଇଛି।</translation>
 <translation id="3976396876660209797">ଏହି ସର୍ଟକଟ କୁ ବାହାର କରନ୍ତୁ ଏବଂ ପୁଣି ତିଆରି କରନ୍ତୁ</translation>
 <translation id="3985215325736559418">ଆପଣ କ’ଣ ପୁଣି <ph name="FILE_NAME" /> ଡାଉନ୍‌ଲୋଡ୍‍ କରିବାକୁ ଚାହିଁବେ?</translation>
 <translation id="3987993985790029246">ଲିଙ୍କ୍ କପି କରନ୍ତୁ</translation>
 <translation id="3988213473815854515">ଲୋକେସନ୍‌କୁ ଅନୁମତି ଦିଆଯାଇଛି</translation>
 <translation id="3988466920954086464">ଏହି ପ୍ୟାନେଲ୍‌ରେ ତତ୍‍କ୍ଷଣାତ୍ ସର୍ଚ୍ଚ ପରିଣାମ ଦେଖନ୍ତୁ</translation>
-<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="3997476611815694295">ଗୁରୁତ୍ୱବିହୀନ ଷ୍ଟୋରେଜ୍</translation>
 <translation id="4000212216660919741">ଅଫ୍‌ଲାଇନ୍ ହୋମ୍</translation>
 <translation id="4008040567710660924">ଏକ ନିର୍ଦ୍ଦିଷ୍ଟ ସାଇଟ୍ ପାଇଁ କୁକୀଗୁଡ଼ିକୁ ଅନୁମତି ଦିଏ।</translation>
@@ -651,6 +650,7 @@
 <translation id="5763514718066511291">ଏହି ଆପ୍ ପାଇଁ URL କପି କରିବାକୁ ଟାପ୍ କରନ୍ତୁ</translation>
 <translation id="5765780083710877561">ବିବରଣୀ:</translation>
 <translation id="5793665092639000975"><ph name="SPACE_AVAILABLE" />ର <ph name="SPACE_USED" /> ବ୍ୟବହାର କରୁଛନ୍ତି</translation>
+<translation id="5795872532621730126">ସର୍ଚ୍ଚ କରି ବ୍ରାଉଜ୍ କରନ୍ତୁ</translation>
 <translation id="5797070761912323120">ଆପଣ କରୁଥିବା ସର୍ଚ୍ଚ, ଦେଖୁଥିବା ବିଜ୍ଞାପନ, ଏବଂ ଅନ୍ୟାନ୍ୟ Google ସେବାକୁ ବ୍ୟକ୍ତିଗତକରଣ କରିବା ପାଇଁ Google ଆପଣଙ୍କର ଇତିବୃତ୍ତିକୁ ବ୍ୟବହାର କରିପାରେ</translation>
 <translation id="5804241973901381774">ଅନୁମତିଗୁଡ଼ିକ</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# ଘଣ୍ଟା ପୂର୍ବେ}other{# ଘଣ୍ଟା ପୂର୍ବେ}}</translation>
@@ -713,6 +713,7 @@
 <translation id="6255999984061454636">ବିଷୟବସ୍ତୁ ପରାମର୍ଶ</translation>
 <translation id="6270391203985052864">ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକୁ ପଠାଇବାକୁ ସାଇଟ୍‌ଗୁଡ଼ିକ ପଚାରିପାରିବେ</translation>
 <translation id="6277522088822131679">ପୃଷ୍ଟା ପ୍ରିଣ୍ଟ କରିବାରେ କିଛି ସମସ୍ୟା ଦେଖାଦେଇଛି। ଦୟାକରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।</translation>
+<translation id="6292420053234093573">Chrome ବ୍ୟବହାର କରିବା ଦ୍ୱାରା, ଆପଣ <ph name="BEGIN_LINK1" />Google ସେବାର ସର୍ତ୍ତାବଳୀ<ph name="END_LINK1" /> ଏବଂ <ph name="BEGIN_LINK2" />Google Chrome ଏବଂ Chrome OS ଅତିରିକ୍ତ ସେବାର ସର୍ତ୍ତାବଳୀ<ph name="END_LINK2" /> ସହିତ ସହମତ ହେଉଛନ୍ତି।</translation>
 <translation id="6295158916970320988">ସମସ୍ତ ସାଇଟ୍‍ଗୁଡ଼ିକ</translation>
 <translation id="629730747756840877">ଆକାଉଣ୍ଟ</translation>
 <translation id="6297765934698848803">ଆପଣଙ୍କର ଡିଭାଇସକୁ ପରିଚାଳନା କରୁଥିବା ସଂସ୍ଥା ଆପଣଙ୍କ କ୍ୟାମେରାକୁ ବନ୍ଦ କରିଦେଇଛି।</translation>
@@ -727,6 +728,7 @@
 <translation id="6364438453358674297">ଇତିବୃତ୍ତିରୁ ପ୍ରସ୍ତାବକୁ କାଢ଼ି ଦେବେକି?</translation>
 <translation id="6369229450655021117">ଆପଣ ଏଠାରୁ, ୱେବ୍‌ରେ ସନ୍ଧାନ କରିପାରିବେ, ସାଙ୍ଗମାନଙ୍କ ସହିତ ସେୟାର୍ କରିପାରିବେ ଏବଂ ଖୋଲା ପୃଷ୍ଠାଗୁଡ଼ିକ ଦେଖିପାରିବେ</translation>
 <translation id="6378173571450987352">ବିବରଣୀ: ବ୍ୟବହାର କରାଯାଇଥିବା ଡାଟାର ପରିମାଣ ଅନୁସାରେ କ୍ରମବଦ୍ଧ କରାଯାଇଛି</translation>
+<translation id="6379829913050047669"><ph name="APP_NAME" /> Chromeରେ ଖୋଲିବ। ଜାରି ରଖିବା ଦ୍ୱାରା, ଆପଣ <ph name="BEGIN_LINK1" />Google ସେବାର ସର୍ତ୍ତାବଳୀ<ph name="END_LINK1" /> ଏବଂ <ph name="BEGIN_LINK2" />Google Chrome ଏବଂ Chrome OS ଅତିରିକ୍ତ ସେବାର ସର୍ତ୍ତାବଳୀ<ph name="END_LINK2" /> ସହିତ ସହମତ ହେଉଛନ୍ତି।</translation>
 <translation id="6381421346744604172">ଡାର୍କ କରାଯାଇଥିବା ୱେବ୍‌ସାଇଟ୍</translation>
 <translation id="6388207532828177975">ଖାଲି ଏବଂ ରିସେଟ୍ କରନ୍ତୁ</translation>
 <translation id="6395288395575013217">ଲିଙ୍କ୍</translation>
@@ -766,7 +768,6 @@
 <translation id="6593061639179217415">ଡେସ୍କଟପ୍ ସାଇଟ୍</translation>
 <translation id="6597891566292541626">ଏହି ଫ୍ରେମରେ QR/ବାରକୋଡର ସ୍ଥିତି।</translation>
 <translation id="6600954340915313787">କପି କରାଯାଇ Chromeକୁ ନିଆଗଲା</translation>
-<translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">ସୁରକ୍ଷିତ ବିଷୟବସ୍ତୁ</translation>
 <translation id="6627583120233659107">ଫୋଲ୍ଡର୍ ଏଡିଟ୍ କରନ୍ତୁ</translation>
 <translation id="6643016212128521049">ଖାଲି କରନ୍ତୁ</translation>
@@ -835,7 +836,6 @@
 <translation id="7149158118503947153"><ph name="DOMAIN_NAME" />ରୁ <ph name="BEGIN_LINK" />ମୂଳ ପୃଷ୍ଠା ଲୋଡ୍‌ କରନ୍ତୁ<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">ଶେଷ 24 ଘଣ୍ଟା</translation>
 <translation id="7173114856073700355">ସେଟିଂସ୍ ଖୋଲନ୍ତୁ</translation>
-<translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">ଆପଣ ଏହାକୁ ପରେ ସେଟିଂସ୍‌ରେ ପରିବର୍ତ୍ତନ କରିପାରିବେ।</translation>
 <translation id="7180611975245234373">ରିଫ୍ରେଶ୍</translation>
 <translation id="7189372733857464326">ଅପ୍‍‍ଡେଟ୍ ସମାପ୍ତ କରିବାକୁ Google Play ସେବାଗୁଡ଼ିକ ପାଇଁ ଅପେକ୍ଷା କରାଯାଉଛି</translation>
@@ -947,7 +947,6 @@
 <translation id="8007176423574883786">ଏହି ଡିଭାଇସ୍‌ ପାଇଁ ବନ୍ଦ କରନ୍ତୁ</translation>
 <translation id="8013372441983637696">ଏହି ଡିଭାଇସ୍‍ରୁ ଆପଣଙ୍କର Chrome ଡାଟା ମଧ୍ୟ ଖାଲି କରନ୍ତୁ</translation>
 <translation id="8015452622527143194">ପୃଷ୍ଠାକୁ ଡିଫଲ୍ଟ ଆକାରରେ ସବୁକିଛି ଫେରାଇଥାଏ</translation>
-<translation id="802154636333426148">ଡାଉନ୍‌ଲୋଡ୍ ବିଫଳ ହୋଇଛି</translation>
 <translation id="8026334261755873520">ବ୍ରାଉଜିଂ ଡାଟା ଖାଲି କରନ୍ତୁ</translation>
 <translation id="8035133914807600019">ନୂଆ ଫୋଲ୍ଡର…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> ଦିନ ବାକି ଅଛି</translation>
@@ -1083,6 +1082,7 @@
 <translation id="9065203028668620118">ସମ୍ପାଦନ</translation>
 <translation id="9070377983101773829">ଭଏସ୍ ସନ୍ଧାନ ଆରମ୍ଭ କରନ୍ତୁ</translation>
 <translation id="9074336505530349563">Google ଦ୍ୱାରା ପରାମର୍ଶ ଦିଆଯାଇଥିବା ବିଷୟବସ୍ତୁ ପ୍ରାପ୍ତ କରିବାକୁ ସାଇନ୍‍ ଇନ୍‌ କରନ୍ତୁ ଏବଂ ସିଙ୍କ୍‍ ଚାଲୁ କରନ୍ତୁ</translation>
+<translation id="9086302186042011942">ସିଙ୍କ୍ ହେଉଛି</translation>
 <translation id="9086455579313502267">ନେଟ୍‌ୱାର୍କ ଆକ୍ସେସ୍ କରିବାରେ ଅକ୍ଷମ</translation>
 <translation id="9100505651305367705">ସମର୍ଥିତ ହେଲେ, ପ୍ରବନ୍ଧଗୁଡ଼ିକର ସରଳିକୃତ ଦୃଶ୍ୟ ଦେଖାଇବାକୁ ଅଫର୍ କରେ</translation>
 <translation id="9100610230175265781">ପାସଫ୍ରେଜ୍ ଆବଶ୍ୟକ ଅଟେ</translation>

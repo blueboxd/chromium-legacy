@@ -2,12 +2,17 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
 <translation id="1124772482545689468">Käyttäjä</translation>
+<translation id="1178581264944972037">Tauko</translation>
 <translation id="1181037720776840403">Poista</translation>
 <translation id="1201402288615127009">Seuraava</translation>
 <translation id="1383876407941801731">Haku</translation>
+<translation id="1384959399684842514">Lataus keskeytettiin.</translation>
+<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="2079545284768500474">Kumoa</translation>
 <translation id="2148716181193084225">Tänään</translation>
 <translation id="2359808026110333948">Jatka</translation>
+<translation id="2402980924095424747"><ph name="MEGABYTES" /> Mt</translation>
+<translation id="2434158240863470628">Lataus valmis <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2501278716633472235">Takaisin</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 eväste estetty}other{# evästettä estetty}}</translation>
 <translation id="257931822824936280">Laajennettu – tiivistä klikkaamalla.</translation>
@@ -19,6 +24,7 @@
 <translation id="3479552764303398839">Ei nyt</translation>
 <translation id="385051799172605136">Edellinen</translation>
 <translation id="3987993985790029246">Kopioi linkki</translation>
+<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">Nimi</translation>
 <translation id="4570913071927164677">Tiedot</translation>
 <translation id="4645575059429386691">Vanhempasi hallinnoima</translation>
@@ -40,6 +46,7 @@
 <translation id="6206551242102657620">Yhteys on turvallinen. Sivuston tiedot</translation>
 <translation id="6216432067784365534">Vaihtoehdot: <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6527303717912515753">Jaa</translation>
+<translation id="6608650720463149374"><ph name="GIGABYTES" /> Gt</translation>
 <translation id="6746124502594467657">Siirrä alas</translation>
 <translation id="6818926723028410516">Valitse kohteet</translation>
 <translation id="6910211073230771657">Poistettu</translation>
@@ -48,6 +55,7 @@
 <translation id="6965382102122355670">OK</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 valittu}other{# valittu}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> valittu. Toimintoja on käytettävissä näytön yläosassa.</translation>
+<translation id="7176368934862295254"><ph name="KILOBYTES" /> kt</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> valittu</translation>
 <translation id="7649070708921625228">Ohje</translation>
 <translation id="7658239707568436148">Peruuta</translation>
@@ -55,7 +63,9 @@
 <translation id="7791543448312431591">Lisää</translation>
 <translation id="780301667611848630">Ei kiitos</translation>
 <translation id="7846076177841592234">Peruuta valinta</translation>
+<translation id="802154636333426148">Lataus epäonnistui.</translation>
 <translation id="8131740175452115882">Vahvista</translation>
+<translation id="8200772114523450471">Jatka</translation>
 <translation id="8206354486702514201">Järjestelmänvalvojasi hallinnoi tätä asetusta.</translation>
 <translation id="8249310407154411074">Siirrä ylimmäksi</translation>
 <translation id="8261506727792406068">Poista</translation>

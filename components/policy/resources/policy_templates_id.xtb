@@ -746,7 +746,7 @@ Jika Anda menonaktifkan kebijakan ini, scroll halaman web ke fragmen teks terten
 
       Kebijakan ini hanya berlaku jika proxy dikonfigurasi (misalnya melalui kebijakan, oleh pengguna di chrome://settings, atau dengan ekstensi).
 
-      Jika setelan ini diaktifkan, semua halaman autentikasi captive portal (semua halaman mulai dari halaman login captive portal hingga <ph name="PRODUCT_NAME" /> mendeteksi sambungan internet yang berhasil) akan ditampilkan di jendela terpisah dengan mengabaikan semua setelan dan batasan kebijakan bagi pengguna saat ini.
+      Jika setelan ini diaktifkan, semua halaman autentikasi captive portal (semua halaman mulai dari halaman login captive portal hingga <ph name="PRODUCT_NAME" /> mendeteksi koneksi internet yang berhasil) akan ditampilkan di jendela terpisah dengan mengabaikan semua setelan dan batasan kebijakan bagi pengguna saat ini.
 
       Jika setelan ini dinonaktifkan atau tidak ditetapkan, semua halaman autentikasi captive portal akan ditampilkan di tab browser baru (reguler), menggunakan setelan proxy pengguna saat ini.</translation>
 <translation id="21394354835637379">Memungkinkan Anda menentukan URL yang diizinkan menginstal ekstensi, aplikasi, dan tema.
@@ -1031,7 +1031,7 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
 
       Jika kebijakan ini tidak ditetapkan, fitur Click to Call akan diaktifkan secara default.</translation>
 <translation id="2482676533225429905">Perpesanan Asli</translation>
-<translation id="2483146640187052324">Prediksi tindakan jaringan di sambungan jaringan apa pun</translation>
+<translation id="2483146640187052324">Prediksi tindakan jaringan di koneksi jaringan apa pun</translation>
 <translation id="2484208301968418871">Kebijakan ini mengontrol penerapan filter URL SafeSites.
       Filter ini menggunakan Google Safe Search API untuk mengklasifikasikan URL sebagai pornografi atau tidak.
 
@@ -2105,6 +2105,15 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 <translation id="402759845255257575">Jangan izinkan situs apa pun menjalankan JavaScript</translation>
 <translation id="4027608872760987929">Aktifkan penyedia penelusuran default</translation>
 <translation id="4039085364173654945">Mengontrol apakah sub-konten pihak ketiga pada halaman diizinkan untuk memunculkan kotak dialog HTTP Otorisasi Dasar. Biasanya, kebijakan ini dinonaktifkan sebagai pertahanan atas phishing. Jika tidak disetel, kebijakan ini akan dinonaktifkan dan sub-konten pihak ketiga tidak akan diizinkan untuk memunculkan kotak dialog HTTP Otorisasi Dasar.</translation>
+<translation id="4044054366426171256">Mengonfigurasi nama domain host yang diperlukan, yang akan diterapkan pada host akses jarak jauh dan mencegah pengguna mengubahnya.
+
+          Jika setelan ini diaktifkan dan ditetapkan ke satu atau beberapa domain, host hanya dapat dibagikan menggunakan akun yang terdaftar pada salah satu nama domain yang telah ditentukan.
+
+          Jika setelan ini dinonaktifkan, tidak ditetapkan, atau ditetapkan ke daftar kosong, host dapat dibagikan menggunakan akun apa pun.
+
+          Setelan ini akan mengganti RemoteAccessHostDomain, jika ada.
+
+          Lihat juga RemoteAccessHostClientDomainList.</translation>
 <translation id="4056910949759281379">Nonaktifkan protokol SPDY</translation>
 <translation id="4061590579642538878">Laporkan informasi tentang laporan kerusakan.</translation>
 <translation id="4075675819066819571">Posisikan rak di sisi kiri layar</translation>
@@ -3794,6 +3803,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="6734521799274931721">Mengontrol fitur Berbagi File Jaringan untuk ketersediaan ChromeOS</translation>
 <translation id="6735701345096330595">Mengaktifkan paksa pemeriksaan ejaan bahasa</translation>
 <translation id="6757613329154374267">Pencadangan dan pemulihan diaktifkan</translation>
+<translation id="6758659208493449452">Kebijakan ini mengontrol apakah pengguna yang terdaftar dalam Program Perlindungan Lanjutan menerima perlindungan tambahan. Beberapa fitur ini dapat mencakup pembagian data dengan Google (misalnya, pengguna Perlindungan Lanjutan akan dapat mengirimkan hasil downloadnya ke Google untuk pemindaian malware). Jika ditetapkan ke Benar atau tidak ditetapkan, pengguna terdaftar akan menerima perlindungan tambahan. Jika ditetapkan ke Salah, pengguna Perlindungan Lanjutan hanya akan menerima fitur konsumen standar.</translation>
 <translation id="6762235610019366960">Memungkinkan Anda mengontrol penyajian konten promosi dan/atau edukasi tab penuh di <ph name="PRODUCT_NAME" />.
 
       Jika tidak dikonfigurasi atau diaktifkan (disetel ke true), <ph name="PRODUCT_NAME" /> dapat menampilkan konten tab penuh kepada pengguna untuk memberikan informasi produk.
@@ -4260,6 +4270,15 @@ Jika kebijakan ini tidak disetel atau kosong, pengguna dapat menyetel akun Googl
           Jika kebijakan ini tidak ditetapkan atau ditetapkan ke Aktif, Google Chrome akan menerima konten web yang ditayangkan sebagai Signed HTTP Exchange.
 
           Jika kebijakan ini ditetapkan ke Nonaktif, Signed HTTP Exchange tidak dapat dimuat.</translation>
+<translation id="7506758875409719208">Mengonfigurasi nama domain klien yang diperlukan, yang akan diterapkan pada klien akses jarak jauh dan mencegah pengguna mengubahnya.
+
+          Jika setelan ini diaktifkan dan ditetapkan ke satu atau beberapa domain, hanya klien dari salah satu domain yang telah ditentukan yang dapat tersambung ke host.
+
+          Jika setelan ini dinonaktifkan, tidak ditetapkan, atau ditetapkan ke daftar kosong, kebijakan default untuk jenis koneksi akan berlaku. Untuk bantuan jarak jauh, setelan ini memungkinkan klien dari domain mana pun tersambung ke host; untuk akses jarak jauh kapan saja, hanya pemilik host yang dapat tersambung.
+
+          Setelan ini akan menggantikan RemoteAccessHostClientDomain, jika tersedia.
+
+          Lihat juga RemoteAccessHostDomainList.</translation>
 <translation id="7509496865303347769">Mengonfigurasi URL halaman beranda default di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubahnya.
 
           Halaman beranda adalah halaman yang dibuka oleh tombol Layar Utama. Di desktop, halaman yang terbuka saat browser diluncurkan dikontrol oleh kebijakan RestoreOnStartup.
@@ -4527,7 +4546,7 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
       Permintaan penginstalan ekstensi akan dibuat saat pengguna mencoba menginstal ekstensi yang tidak diizinkan oleh <ph name="EXTENSION_INSTALL_WHITELIST" /> atau <ph name="EXTENSION_SETTINGS" />.
 
       Kebijakan ini hanya berlaku saat perangkat didaftarkan dengan <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> dan <ph name="CLOUD_REPORTING_ENABLED" /> diaktifkan.</translation>
-<translation id="7941975817681987555">Jangan memprediksi tindakan jaringan di sambungan jaringan apa pun</translation>
+<translation id="7941975817681987555">Jangan memprediksi tindakan jaringan di koneksi jaringan apa pun</translation>
 <translation id="7951605113561734721">Menentukan sertifikat klien di seluruh perangkat yang seharusnya didaftarkan menggunakan protokol pengelolaan perangkat.</translation>
 <translation id="7952007677054834789">Mengonfigurasi halaman yang akan dimuat saat permulaan, halaman beranda default, dan halaman tab baru default di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubahnya.
 
@@ -5051,7 +5070,7 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
 
       Jika kebijakan tidak disetel, atau disetel ke false, lokasi tidak akan dilaporkan.</translation>
 <translation id="8818768076343557335">Memprediksi tindakan jaringan pada jaringan apa pun yang bukan seluler.
-          (Penggunaan dihentikan di nilai 50, dihapus di nilai 52. Setelah 52, jika nilai 1 disetel, nilai akan diperlakukan sebagai 0 - memprediksi tindakan jaringan di sambungan jaringan apa pun.)</translation>
+          (Penggunaan dihentikan di nilai 50, dihapus di nilai 52. Setelah 52, jika nilai 1 disetel, nilai akan diperlakukan sebagai 0 - memprediksi tindakan jaringan di koneksi jaringan apa pun.)</translation>
 <translation id="8825782996899863372">Peringatan perlindungan sandi dipicu oleh penggunaan ulang sandi di halaman phishing</translation>
 <translation id="8833109046074170275">Autentikasi melalui alur GAIA default</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> menyimpan Aplikasi dan Ekstensi dalam cache untuk pemasangan oleh banyak pengguna pada perangkat tunggal guna menghindari download ulang oleh setiap pengguna.

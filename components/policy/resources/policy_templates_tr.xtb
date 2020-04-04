@@ -2133,6 +2133,15 @@ False (yanlış) olarak ayarlanırsa veya hiç ayarlanmazsa, hiçbir sertifika o
 <translation id="4039085364173654945">Bir sayfadaki üçüncü taraf alt içeriğinin bir HTTP Basic Auth iletişim kutusu görüntülemesine izin verilip verilmeyeceğini denetler.
 
           Genellikle, kimlik avından korunma amacıyla bu özellik devre dışı bırakılır. Bu politika ayarlanmazsa, bu özellik devre dışı bırakılır ve üçüncü taraf alt içeriğinin bir HTTP Basic Auth iletişim kutusu görüntülemesine izin verilmez.</translation>
+<translation id="4044054366426171256">Uzaktan erişim ana makinelerinde uygulanacak gerekli ana makine alan adlarını yapılandırır ve kullanıcıların bunu değiştirmesini önler.
+
+          Bu ayar etkinleştirilir ve bir veya daha fazla alan adına ayarlanırsa ana makineler yalnızca belirtilen alan adlarından birinde kayıtlı hesaplar kullanılarak paylaşılabilir.
+
+          Bu ayar devre dışı bırakılırsa, ayarlanmazsa veya boş bir listeye ayarlanırsa ana makineler herhangi bir hesap kullanılarak paylaşılabilir.
+
+          Bu ayar mevcut olması halinde RemoteAccessHostDomain politikasını geçersiz kılar.
+
+          RemoteAccessHostClientDomainList politikasına da bakın.</translation>
 <translation id="4056910949759281379">SPDY protokolünü devre dışı bırak</translation>
 <translation id="4061590579642538878">Kilitlenme raporlarıyla ilgili bilgileri raporlama</translation>
 <translation id="4075675819066819571">Rafı ekranın sol tarafında konumlandır</translation>
@@ -3857,6 +3866,7 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
 <translation id="6734521799274931721">ChromeOS için Ağ Üzerinde Dosya Paylaşımı'nın kullanılabilirliğini kontrol eder</translation>
 <translation id="6735701345096330595">Yazım denetimi dillerini etkinleştirmeye zorla</translation>
 <translation id="6757613329154374267">Yedekleme ve geri yükleme özelliği etkinleştirildi</translation>
+<translation id="6758659208493449452">Bu politika, Gelişmiş Koruma programına kayıtlı kullanıcılara ekstra özellikler sunulup sunulmayacağını kontrol eder. Bu özelliklerin bazıları kapsamında Google ile veri paylaşılabilir (örneğin, Gelişmiş Koruma kullanıcıları indirdikleri dosyaları Google'a göndererek kötü amaçlı yazılıma karşı taranmasını sağlayabilir). Bu politika True (Doğru) değerine ayarlanır veya ayarlanmadan bırakılırsa kayıtlı kullanıcılara ekstra özellikler sunulur. Bu politika False (Yanlış) değerine ayarlanırsa Gelişmiş Koruma kullanıcılarına yalnızca standart tüketici özellikleri sunulur.</translation>
 <translation id="6762235610019366960"><ph name="PRODUCT_NAME" /> içindeki tam sekme tanıtım ve/veya eğitim amaçlı içeriğin sunumunu kontrol etmeye izin verir.
 
       Yapılandırılmaz veya etkinleştirilmezse (doğru (true) seçeneğine ayarlanmazsa), <ph name="PRODUCT_NAME" /> kullanıcılara ürün bilgilerini sunmak için tam sekme içeriği gösterebilir.
@@ -4337,6 +4347,15 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
           Bu politika ayarlanmazsa veya Enabled (Etkin) değerine ayarlanırsa Google Chrome, İmzalı HTTP Değişimi olarak yayınlanan web içeriklerini kabul eder.
 
           Bu politika Disabled (Devre Dışı) değerine ayarlanırsa İmzalı HTTP Değişimleri yüklenemez.</translation>
+<translation id="7506758875409719208">Uzaktan erişim istemcilerine uygulanacak gerekli istemci alan adlarını yapılandırır ve kullanıcıların bunu değiştirmesini önler.
+
+          Bu ayar etkinleştirilir ve bir veya daha fazla etki alanına ayarlanırsa yalnızca belirtilen alan adlarından birinden gelen istemciler ana makineye bağlanabilir.
+
+          Bu ayar devre dışı bırakılırsa, ayarlanmazsa veya boş bir listeye ayarlanırsa bağlantı türü için varsayılan politika uygulanır. Bu durum, uzaktan yardım açısından, herhangi bir alan adındaki istemcilerin ana makineye bağlanmasına olanak tanır. Herhangi bir zamanda gerçekleştirilen uzaktan erişim için yalnızca ana makine sahibi bağlantı kurabilir.
+
+          Bu ayar yapılandırılırsa RemoteAccessHostClientDomain politikasını geçersiz kılar.
+
+          Ayrıca RemoteAccessHostDomainList politikasına bakın.</translation>
 <translation id="7509496865303347769"><ph name="PRODUCT_NAME" /> ürününde varsayılan ana sayfa URL'sini yapılandırır ve kullanıcıların bu ayarı değiştirmesini önler.
 
           Ana sayfa, Ana Sayfa düğmesine basıldığında açılan sayfadır. Masaüstünde, başlangıçta açılan sayfalar RestoreOnStartup politikalarıyla kontrol edilir.

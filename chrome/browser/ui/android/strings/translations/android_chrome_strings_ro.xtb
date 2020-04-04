@@ -59,7 +59,6 @@
 <translation id="1373696734384179344">Memorie insuficientă pentru descărcarea conținutului selectat.</translation>
 <translation id="1376578503827013741">Se calculează…</translation>
 <translation id="1383876407941801731">Caută</translation>
-<translation id="1384959399684842514">Descărcare întreruptă</translation>
 <translation id="1386674309198842382">Activ acum <ph name="LAST_UPDATED" /> zile</translation>
 <translation id="1397811292916898096">Caută folosind <ph name="PRODUCT_NAME" /></translation>
 <translation id="1406000523432664303">„Nu urmări”</translation>
@@ -117,7 +116,6 @@
 <translation id="1919345977826869612">Anunțuri</translation>
 <translation id="1919950603503897840">Selectează persoane de contact</translation>
 <translation id="1922076542920281912">Pentru a permite Chrome să acceseze locația, activează locația și în <ph name="BEGIN_LINK" />Setările Android<ph name="END_LINK" />.</translation>
-<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1925021887439448749">Introdu adresa web personalizată</translation>
 <translation id="1928696683969751773">Actualizări</translation>
 <translation id="19288952978244135">Redeschide Chrome.</translation>
@@ -193,13 +191,11 @@ Atinge orice cuvânt pentru a-l căuta. Ca să rafinezi căutarea, atinge lung p
 <translation id="2369533728426058518">file deschise</translation>
 <translation id="2387895666653383613">Scalarea textului</translation>
 <translation id="2394602618534698961">Fișierele pe care le descarci apar aici</translation>
-<translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2407481962792080328">Când te conectezi la Contul Google, această funcție este activată</translation>
 <translation id="2410754283952462441">Alege un cont</translation>
 <translation id="2414886740292270097">Întunecat</translation>
 <translation id="2426805022920575512">Alege alt cont</translation>
 <translation id="2433507940547922241">Aspect</translation>
-<translation id="2434158240863470628">Descărcare finalizată <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">Accesul la locație</translation>
 <translation id="2450083983707403292">Dorești să se înceapă din nou descărcarea pentru <ph name="FILE_NAME" />?</translation>
 <translation id="2450907520913474542">Află despre subiectele de pe site-uri fără să părăsești pagina. Funcția Atinge pentru a căuta trimite un cuvânt și contextul aferent către Căutarea Google și returnează definiții, imagini, rezultate ale căutării și alte detalii.
@@ -413,7 +409,6 @@ Doar tu poți vedea ce vede camera. Site-ul nu vede imaginile de pe cameră.</tr
 <translation id="3987993985790029246">Copiază linkul</translation>
 <translation id="3988213473815854515">Accesul la locație este permis</translation>
 <translation id="3988466920954086464">Afișează rezultatele căutării instantanee în acest panou</translation>
-<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="3997476611815694295">Stocare neimportantă</translation>
 <translation id="4000212216660919741">Pagina de pornire offline</translation>
 <translation id="4008040567710660924">Permite cookie-uri pentru un anumit site.</translation>
@@ -655,6 +650,7 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="5763514718066511291">Atinge pentru a copia adresa URL pentru această aplicație</translation>
 <translation id="5765780083710877561">Descriere:</translation>
 <translation id="5793665092639000975">Se utilizează <ph name="SPACE_USED" /> din <ph name="SPACE_AVAILABLE" /></translation>
+<translation id="5795872532621730126">Caută și răsfoiește</translation>
 <translation id="5797070761912323120">Google poate folosi istoricul pentru a personaliza Căutarea, anunțurile și alte servicii Google</translation>
 <translation id="5804241973901381774">Permisiuni</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{Acum # oră}few{Acum # ore}other{Acum # de ore}}</translation>
@@ -772,7 +768,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6593061639179217415">Versiune site desktop</translation>
 <translation id="6597891566292541626">Poziționează codul QR/de bare în acest cadru.</translation>
 <translation id="6600954340915313787">Copiat în Chrome</translation>
-<translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Conținut protejat</translation>
 <translation id="6627583120233659107">Editați dosarul</translation>
 <translation id="6643016212128521049">Șterge</translation>
@@ -841,7 +836,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Încarcă pagina originală<ph name="END_LINK" /> de la <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Ultimele 24 de ore</translation>
 <translation id="7173114856073700355">Deschide Setările</translation>
-<translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">Poți modifica ulterior această opțiune în Setări</translation>
 <translation id="7180611975245234373">Actualizați</translation>
 <translation id="7189372733857464326">Se așteaptă finalizarea actualizării pentru serviciile Google Play</translation>
@@ -953,7 +947,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="8007176423574883786">Dezactivată pentru acest dispozitiv</translation>
 <translation id="8013372441983637696">Șterge și datele Chrome de pe acest dispozitiv</translation>
 <translation id="8015452622527143194">Readuce pagina la dimensiunea prestabilită</translation>
-<translation id="802154636333426148">Descărcarea nu a reușit</translation>
 <translation id="8026334261755873520">Șterge datele de navigare</translation>
 <translation id="8035133914807600019">Dosar nou…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> zile rămase</translation>

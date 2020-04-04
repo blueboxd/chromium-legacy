@@ -59,7 +59,6 @@
 <translation id="1373696734384179344">Недастаткова памяці, каб спампаваць выбранае змесціва.</translation>
 <translation id="1376578503827013741">Вылічэнне…</translation>
 <translation id="1383876407941801731">Пошук</translation>
-<translation id="1384959399684842514">Спампоўка прыпынена</translation>
 <translation id="1386674309198842382">Апошнія дзеянні: <ph name="LAST_UPDATED" /> сут таму</translation>
 <translation id="1397811292916898096">Шукаць з дапамогай <ph name="PRODUCT_NAME" /></translation>
 <translation id="1406000523432664303">"Не адсочваць"</translation>
@@ -117,7 +116,6 @@
 <translation id="1919345977826869612">Рэклама</translation>
 <translation id="1919950603503897840">Выберыце кантакты</translation>
 <translation id="1922076542920281912">Каб даць браўзеру Chrome доступ да даных пра ваша месцазнаходжанне, уключыце апошнія ў <ph name="BEGIN_LINK" />Наладах Android<ph name="END_LINK" />.</translation>
-<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1925021887439448749">Увядзіце карыстальніцкі вэб-адрас</translation>
 <translation id="1928696683969751773">Абнаўленні</translation>
 <translation id="19288952978244135">Адкрыйце Chrome яшчэ раз.</translation>
@@ -193,13 +191,11 @@
 <translation id="2369533728426058518">адкрыць укладкі</translation>
 <translation id="2387895666653383613">Маштаб тэксту</translation>
 <translation id="2394602618534698961">Спампаваныя вамі файлы з'явяцца тут</translation>
-<translation id="2402980924095424747"><ph name="MEGABYTES" /> МБ</translation>
 <translation id="2407481962792080328">Гэта функцыя будзе ўключацца пры ўваходзе ва Уліковы запіс Google</translation>
 <translation id="2410754283952462441">Выберыце ўліковы запіс</translation>
 <translation id="2414886740292270097">Цёмная</translation>
 <translation id="2426805022920575512">Выбраць іншы ўліковы запіс</translation>
 <translation id="2433507940547922241">Выгляд</translation>
-<translation id="2434158240863470628">Спампоўванне завершана <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">Доступ да даных геалакацыі</translation>
 <translation id="2450083983707403292">Пачаць спампоўваць файл "<ph name="FILE_NAME" />" зноў?</translation>
 <translation id="2450907520913474542">Даведайцеся больш пра тэмы на вэб-сайтах, не пакідаючы старонку. Функцыя "Пошук дотыкам" адпраўляе слова і яго кантэкст у Google Пошук і паказвае вынікі пошуку па запыце: азначэнні, фота і іншыя звесткі.
@@ -413,7 +409,6 @@
 <translation id="3987993985790029246">Скапіраваць спасылку</translation>
 <translation id="3988213473815854515">Вызначэнне месцазнаходжання дазволена</translation>
 <translation id="3988466920954086464">Імгненныя вынікі пошуку будуць паказвацца ў гэтай панэлі</translation>
-<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="3997476611815694295">Другараднае сховішча</translation>
 <translation id="4000212216660919741">Пазасеткавы рэжым</translation>
 <translation id="4008040567710660924">Дазвол выкарыстання файлаў cookie ад канкрэтнага сайта.</translation>
@@ -655,6 +650,7 @@
 <translation id="5763514718066511291">Дакраніцеся, каб скапіраваць URL-адрас гэтай праграмы</translation>
 <translation id="5765780083710877561">Апісанне:</translation>
 <translation id="5793665092639000975">Выкарыстоўваецца: <ph name="SPACE_USED" /> з <ph name="SPACE_AVAILABLE" /></translation>
+<translation id="5795872532621730126">Пошук і прагляд</translation>
 <translation id="5797070761912323120">Google можа выкарыстоўваць вашу гісторыю, каб персаналізаваць пошук, паказ рэкламы і іншыя сэрвісы Google</translation>
 <translation id="5804241973901381774">Дазволы</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# гадзіну таму}one{# гадзіну таму}few{# гадзіны таму}many{# гадзін таму}other{# гадзіны таму}}</translation>
@@ -772,7 +768,6 @@
 <translation id="6593061639179217415">Версія для ПК</translation>
 <translation id="6597891566292541626">Змясціце QR-код або штрыхкод у гэтай рамцы.</translation>
 <translation id="6600954340915313787">Скапіравана ў Chrome</translation>
-<translation id="6608650720463149374"><ph name="GIGABYTES" /> ГБ</translation>
 <translation id="6612358246767739896">Абароненае змесціва</translation>
 <translation id="6627583120233659107">Рэдагаваць папку</translation>
 <translation id="6643016212128521049">Ачысціць</translation>
@@ -841,7 +836,6 @@
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Загрузіць зыходную старонку<ph name="END_LINK" /> з дамена <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">За апошнія 24 гадзіны</translation>
 <translation id="7173114856073700355">Адкрыць Налады</translation>
-<translation id="7176368934862295254"><ph name="KILOBYTES" /> КБ</translation>
 <translation id="7177466738963138057">Вы можаце змяніць гэта пазней у Наладах</translation>
 <translation id="7180611975245234373">Абнавіць</translation>
 <translation id="7189372733857464326">Чакаем, пакуль завершыцца абнаўленне Сэрвісаў Google Play</translation>
@@ -953,7 +947,6 @@
 <translation id="8007176423574883786">Выключана для гэтай прылады</translation>
 <translation id="8013372441983637696">Таксама выдаліць даныя Chrome з гэтай прылады</translation>
 <translation id="8015452622527143194">Вярнуць усё на старонцы да стандартнага памеру</translation>
-<translation id="802154636333426148">Збой спампоўкі</translation>
 <translation id="8026334261755873520">Выдаленне гісторыі праглядаў</translation>
 <translation id="8035133914807600019">Новая папка…</translation>
 <translation id="8037750541064988519">Засталося дзён: <ph name="DAYS" /></translation>
@@ -1089,6 +1082,7 @@
 <translation id="9065203028668620118">Змяніць</translation>
 <translation id="9070377983101773829">Пачаць галасавы пошук</translation>
 <translation id="9074336505530349563">Каб Google рэкамендаваў вам персаналізаванае змесціва, увайдзіце ва ўліковы запіс і ўключыце сінхранізацыю</translation>
+<translation id="9086302186042011942">Сінхранізацыя</translation>
 <translation id="9086455579313502267">Не ўдалося атрымаць доступ да сеткі</translation>
 <translation id="9100505651305367705">Прапаноўваць паказваць артыкулы ў спрошчаным выглядзе, калі гэта падтрымліваецца</translation>
 <translation id="9100610230175265781">Патрабуецца фраза-пароль</translation>

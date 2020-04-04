@@ -2102,6 +2102,15 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 <translation id="402759845255257575">Ausführung von JavaScript für keine Website zulassen</translation>
 <translation id="4027608872760987929">Standardsuchmaschine aktivieren</translation>
 <translation id="4039085364173654945">Bestimmt, ob untergeordnete Inhalte von Drittanbietern auf einer Seite in einem HTTP-Basic-Authentifizierungs-Pop-up erscheinen dürfen. In der Regel ist dies zur Abwehr gegen Phishing deaktiviert. Wenn die Richtlinie nicht konfiguriert ist, so ist die Einstellung standardmäßig deaktiviert, sodass untergeordnete Inhalte von Drittanbietern nicht in einem HTTP-Basic-Authentifizierungs-Pop-up erscheinen dürfen.</translation>
+<translation id="4044054366426171256">Mit dieser Richtlinie werden die erforderlichen Domainnamen der Hosts für den Remotezugriff konfiguriert. Außerdem wird verhindert, dass Nutzer diese ändern.
+
+          Wenn diese Einstellung aktiviert und für eine oder mehrere Domains konfiguriert ist, können Hosts nur über Konten gemeinsam genutzt werden, die unter einem der angegebenen Domainnamen registriert sind.
+
+          Ist sie deaktiviert oder nicht konfiguriert oder ist eine leere Liste festgelegt, können Hosts über alle Konten gemeinsam genutzt werden.
+
+          Sofern vorhanden, wird "RemoteAccessHostDomain" mit dieser Einstellung überschrieben.
+
+          Siehe auch "RemoteAccessHostClientDomainList".</translation>
 <translation id="4056910949759281379">SPDY-Protokoll deaktivieren</translation>
 <translation id="4061590579642538878">Informationen über Absturzberichte melden.</translation>
 <translation id="4075675819066819571">Ablage auf der linken Seite des Bildschirms anzeigen</translation>
@@ -3797,6 +3806,7 @@ Wenn diese Richtlinie nicht konfiguriert ist, können die Nutzer selbst wählen,
 <translation id="6734521799274931721">Steuert die Verfügbarkeit von Netzwerkfreigaben unter Chrome OS</translation>
 <translation id="6735701345096330595">Aktivierung von Sprachen für die Rechtschreibprüfung erzwingen</translation>
 <translation id="6757613329154374267">"Sichern und wiederherstellen" aktiviert</translation>
+<translation id="6758659208493449452">Mit dieser Richtlinie wird festgelegt, ob Teilnehmer am erweiterten Sicherheitsprogramm zusätzlich geschützt werden. Bei manchen dieser Funktionen werden unter Umständen Daten mit Google geteilt. Teilnehmer am erweiterten Sicherheitsprogramm können beispielsweise ihre heruntergeladenen Dateien für einen Malware-Scan an Google senden. Wird die Richtlinie auf "true" gesetzt oder nicht konfiguriert, werden entsprechende Nutzer zusätzlich geschützt. Wird die Richtlinie auf "false" gesetzt, stehen ihnen nur die Standardfunktionen für Privatnutzer zur Verfügung.</translation>
 <translation id="6762235610019366960">Mit dieser Richtlinie wird festgelegt, ob in <ph name="PRODUCT_NAME" /> Werbung und/oder Bildungsinhalte auf einem ganzen Tab angezeigt werden dürfen.
 
       Falls sie nicht konfiguriert oder aktiviert (auf "true" gesetzt) ist, dürfen Nutzern in <ph name="PRODUCT_NAME" /> Inhalte auf einem ganzen Tab angezeigt werden, um ihnen Produktinformationen zu geben.
@@ -4263,6 +4273,15 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
           Wenn die Richtlinie nicht konfiguriert oder auf "Enabled" festgelegt ist, werden Webinhalte, die als Signed HTTP Exchanges bereitgestellt werden, von Google Chrome akzeptiert.
 
           Ist die Richtlinie auf "Disabled" festgelegt, können Signed HTTP Exchanges nicht geladen werden.</translation>
+<translation id="7506758875409719208">Mit dieser Richtlinie werden die erforderlichen Domainnamen der Clients für den Remotezugriff konfiguriert. Außerdem wird verhindert, dass Nutzer diese ändern.
+
+          Wenn diese Einstellung aktiviert und für eine oder mehrere Domains konfiguriert ist, können nur Clients aus einer der angegebenen Domains eine Verbindung zum Host herstellen.
+
+          Ist sie deaktiviert oder nicht konfiguriert oder ist eine leere Liste festgelegt, wird die Standardrichtlinie für den Verbindungstyp angewendet. Zu Zwecken der Remote-Unterstützung können Clients aus jeder beliebigen Domain eine Verbindung zum Host herstellen, bei einem stetigen Remotezugriff kann nur der Hosteigentümer eine Verbindung herstellen.
+
+          Sofern vorhanden, wird "RemoteAccessHostClientDomain" mit dieser Einstellung überschrieben.
+
+          Siehe auch "RemoteAccessHostDomainList".</translation>
 <translation id="7509496865303347769">Hiermit wird die Standard-URL für die Startseite in <ph name="PRODUCT_NAME" /> konfiguriert und verhindert, dass diese von Nutzern geändert werden kann.
 
           Die Startseite wird über die Schaltfläche "Startseite" geöffnet. Auf dem Desktop werden die Seiten, die beim Hochfahren geöffnet werden, über die Richtlinien "RestoreOnStartup" kontrolliert.

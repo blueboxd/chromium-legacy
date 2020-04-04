@@ -59,7 +59,6 @@
 <translation id="1373696734384179344">தேர்ந்தெடுத்ததைப் பதிவிறக்க, போதுமான நினைவகம் இல்லை.</translation>
 <translation id="1376578503827013741">கணக்கிடுகிறது…</translation>
 <translation id="1383876407941801731">தேடல்</translation>
-<translation id="1384959399684842514">பதிவிறக்கம் இடைநிறுத்தப்பட்டது</translation>
 <translation id="1386674309198842382"><ph name="LAST_UPDATED" /> நாட்களுக்கு முன் பயன்படுத்தியுள்ளார்</translation>
 <translation id="1397811292916898096"><ph name="PRODUCT_NAME" /> மூலம் தேடுக</translation>
 <translation id="1406000523432664303">'கண்காணிக்க வேண்டாம்'</translation>
@@ -116,7 +115,6 @@
 <translation id="1919345977826869612">விளம்பரங்கள்</translation>
 <translation id="1919950603503897840">தொடர்புகளைத் தேர்ந்தெடுக்கவும்</translation>
 <translation id="1922076542920281912">Chrome உங்கள் இருப்பிடத் தகவலை அணுக அனுமதிப்பதற்கு <ph name="BEGIN_LINK" />Android அமைப்புகளிலும்<ph name="END_LINK" /> இருப்பிடத்தை இயக்கவும்.</translation>
-<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1925021887439448749">பிரத்தியேக இணைய முகவரியை உள்ளிடவும்</translation>
 <translation id="1928696683969751773">புதுப்பிப்புகள்</translation>
 <translation id="19288952978244135">Chromeமை மீண்டும் திறக்கவும்.</translation>
@@ -192,13 +190,11 @@
 <translation id="2369533728426058518">திறக்கப்பட்டுள்ள தாவல்கள்</translation>
 <translation id="2387895666653383613">உரை அளவிடல்</translation>
 <translation id="2394602618534698961">நீங்கள் பதிவிறக்கிய கோப்புகளை இங்கே பார்க்கலாம்</translation>
-<translation id="2402980924095424747"><ph name="MEGABYTES" /> மெ.பை.</translation>
 <translation id="2407481962792080328">உங்கள் Google கணக்கில் உள்நுழையும்போது இந்த அம்சம் ஆன் செய்யப்படும்</translation>
 <translation id="2410754283952462441">கணக்கைத் தேர்வு செய்யவும்</translation>
 <translation id="2414886740292270097">அடர்</translation>
 <translation id="2426805022920575512">மற்றொரு கணக்கைத் தேர்வுசெய்க</translation>
 <translation id="2433507940547922241">தோற்றம்</translation>
-<translation id="2434158240863470628">பதிவிறக்கம் முடிந்தது <ph name="SEPARATOR" /><ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">இருப்பிட அணுகல்</translation>
 <translation id="2450083983707403292"><ph name="FILE_NAME" />ஐ மீண்டும் பதிவிறக்கவா?</translation>
 <translation id="2450907520913474542">பக்கத்தை விட்டு வெளியேறாமலேயே இணையதளங்களில் தலைப்புகளைப் பற்றித் தெரிந்துகொள்ளலாம். 'தேடுவதற்குத் தொடு' அம்சமானது சொல்லையும் அதன் சூழலையும் Google தேடலுக்கு அனுப்பி விளக்கங்கள், படங்கள், தேடல் முடிவுகள் மற்றும் பிற விவரங்களை வழங்குகிறது.
@@ -409,7 +405,6 @@
 <translation id="3987993985790029246">இணைப்பை நகலெடு</translation>
 <translation id="3988213473815854515">இருப்பிடம் அனுமதிக்கப்படும்</translation>
 <translation id="3988466920954086464">இந்தப் பேனலில் உடனடித் தேடல் முடிவுகளைப் பார்க்கவும்</translation>
-<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="3997476611815694295">முக்கியமில்லா சேமிப்பகம்</translation>
 <translation id="4000212216660919741">Home ஆஃப்லைனில் உள்ளது</translation>
 <translation id="4008040567710660924">குறிப்பிட்ட தளத்திற்கு, குக்கீகளை அனுமதிக்கும்.</translation>
@@ -651,6 +646,7 @@
 <translation id="5763514718066511291">இந்த ஆப்ஸின் URLஐ நகலெடுக்க, தட்டவும்</translation>
 <translation id="5765780083710877561">விவரம்:</translation>
 <translation id="5793665092639000975"><ph name="SPACE_AVAILABLE" /> இல் <ph name="SPACE_USED" /> பயன்படுத்தப்படுகிறது</translation>
+<translation id="5795872532621730126">தேடல் &amp; உலாவல்</translation>
 <translation id="5797070761912323120">தேடல், விளம்பரங்கள் மற்றும் பிற Google சேவைகளைத் தனிப்பயனாக்க, உங்கள் வரலாற்றை Google பயன்படுத்தக்கூடும்</translation>
 <translation id="5804241973901381774">அனுமதிகள்</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# மணிநேரம் முன்பு}other{# மணிநேரம் முன்பு}}</translation>
@@ -766,7 +762,6 @@
 <translation id="6593061639179217415">டெஸ்க்டாப் தளம்</translation>
 <translation id="6597891566292541626">இந்த ஃப்ரேமில் QR/பார்கோடு தெரியுமாறு வைக்கவும்.</translation>
 <translation id="6600954340915313787">Chromeக்கு நகலெடுக்கப்பட்டது</translation>
-<translation id="6608650720463149374"><ph name="GIGABYTES" /> ஜி.பை.</translation>
 <translation id="6612358246767739896">பாதுகாக்கப்பட்ட உள்ளடக்கம்</translation>
 <translation id="6627583120233659107">கோப்புறையைத் திருத்து</translation>
 <translation id="6643016212128521049">அழி</translation>
@@ -835,7 +830,6 @@
 <translation id="7149158118503947153"><ph name="DOMAIN_NAME" /> இலிருந்து <ph name="BEGIN_LINK" />அசல் பக்கத்தை ஏற்று<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">கடந்த 24 மணிநேரம்</translation>
 <translation id="7173114856073700355">ஒத்திசைவு அமைப்புகளைப் பார்க்கவும்</translation>
-<translation id="7176368934862295254"><ph name="KILOBYTES" /> கி.பை.</translation>
 <translation id="7177466738963138057">இதைப் பிறகு அமைப்புகளில் மாற்றலாம்</translation>
 <translation id="7180611975245234373">புதுப்பி</translation>
 <translation id="7189372733857464326">Google Play சேவைகள் புதுப்பிப்பதை முடிப்பதற்காக, காத்திருக்கிறது</translation>
@@ -947,7 +941,6 @@
 <translation id="8007176423574883786">இந்தச் சாதனத்திற்கு முடக்கப்பட்டுள்ளது</translation>
 <translation id="8013372441983637696">அத்துடன் இந்தச் சாதனத்திலிருந்து எனது Chrome தரவையும் அழி</translation>
 <translation id="8015452622527143194">பக்கத்திலுள்ள அனைத்தையும் இயல்பு அளவுக்கு மாற்றும்</translation>
-<translation id="802154636333426148">பதிவிறக்க முடியவில்லை</translation>
 <translation id="8026334261755873520">உலாவிய தரவை அழி</translation>
 <translation id="8035133914807600019">புதிய கோப்புறை…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> நாட்கள் மீதமுள்ளன</translation>

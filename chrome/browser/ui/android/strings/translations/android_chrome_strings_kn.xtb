@@ -59,7 +59,6 @@
 <translation id="1373696734384179344">ಆಯ್ಕೆಮಾಡಲಾದ ವಿಷಯವನ್ನು ಡೌನ್‌ಲೋಡ್‌ ಮಾಡಲು ಮೆಮೊರಿಯು ಸಾಕಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="1376578503827013741">ಲೆಕ್ಕ ಮಾಡುತ್ತಿದೆ...</translation>
 <translation id="1383876407941801731">ಹುಡುಕಾಟ</translation>
-<translation id="1384959399684842514">ಡೌನ್‌ಲೋಡ್ ವಿರಾಮಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="1386674309198842382"><ph name="LAST_UPDATED" /> ದಿನಗಳ ಹಿಂದೆ ಸಕ್ರಿಯ</translation>
 <translation id="1397811292916898096"><ph name="PRODUCT_NAME" /> ಮೂಲಕ ಹುಡುಕಿ</translation>
 <translation id="1406000523432664303">“ಟ್ರ್ಯಾಕ್ ಮಾಡಬೇಡಿ”</translation>
@@ -118,7 +117,6 @@
 <translation id="1919345977826869612">ಜಾಹೀರಾತುಗಳು</translation>
 <translation id="1919950603503897840">ಸಂಪರ್ಕಗಳನ್ನು ಆಯ್ಕೆ ಮಾಡಿ</translation>
 <translation id="1922076542920281912">Chrome ನಿಮ್ಮ ಸ್ಥಳವನ್ನು ಪ್ರವೇಶಿಸುವುದಕ್ಕೆ ಅನುಮತಿಸಲು, <ph name="BEGIN_LINK" />Android ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="END_LINK" /> ಸ್ಥಳವನ್ನು ಕೂಡ ಆನ್ ಮಾಡಬೇಕಾಗುತ್ತದೆ.</translation>
-<translation id="1923695749281512248"><ph name="FILE_SIZE_WITH_UNITS" /> ರಲ್ಲಿ <ph name="BYTES_DOWNLOADED_WITH_UNITS" /> ಡೌನ್‌ಲೋಡ್ ಆಗಿದೆ</translation>
 <translation id="1925021887439448749">ಕಸ್ಟಮ್ ವೆಬ್ ವಿಳಾಸವನ್ನು ನಮೂದಿಸಿ</translation>
 <translation id="1928696683969751773">ಅಪ್‌ಡೇಟ್‌ಗಳು</translation>
 <translation id="19288952978244135">Chrome ಮರುತೆರೆಯಿರಿ.</translation>
@@ -194,13 +192,11 @@
 <translation id="2369533728426058518">ತೆರೆದ ಟ್ಯಾಬ್‌ಗಳು</translation>
 <translation id="2387895666653383613">ಪಠ್ಯ ಸ್ಕೇಲಿಂಗ್</translation>
 <translation id="2394602618534698961">ನೀವು ಡೌನ್‌ಲೋಡ್ ಮಾಡುವ ಫೈಲ್‌ಗಳು ಇಲ್ಲಿ ಗೋಚರಿಸುತ್ತವೆ</translation>
-<translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2407481962792080328">ನಿಮ್ಮ Google ಖಾತೆಗೆ ನೀವು ಸೈನ್ ಇನ್ ಮಾಡಿದಾಗ, ಈ ವೈಶಿಷ್ಟ್ಯವು ಆನ್ ಆಗುತ್ತದೆ</translation>
 <translation id="2410754283952462441">ಖಾತೆಯೊಂದನ್ನು ಆರಿಸಿ</translation>
 <translation id="2414886740292270097">ಗಾಢ</translation>
 <translation id="2426805022920575512">ಇನ್ನೊಂದು ಖಾತೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="2433507940547922241">ಗೋಚರತೆ</translation>
-<translation id="2434158240863470628">ಡೌನ್‌ಲೋಡ್‌‌ ಪೂರ್ಣಗೊಂಡಿದೆ <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">ಸ್ಥಳ ಪ್ರವೇಶ</translation>
 <translation id="2450083983707403292">ನೀವು <ph name="FILE_NAME" /> ಅನ್ನು ಪುನಃ ಡೌನ್‌ಲೋಡ್ ಮಾಡಲು ಬಯಸುತ್ತೀರಾ?</translation>
 <translation id="2450907520913474542">ಪುಟದಿಂದ ಹೊರಹೋಗದೆಯೇ ವೆಬ್‌ಸೈಟ್‌ನಲ್ಲಿನ ವಿಷಯಗಳ ಕುರಿತು ತಿಳಿದುಕೊಳ್ಳಿ. 'ಹುಡುಕಾಟ' ಸ್ಪರ್ಶಿಸಿದರೆ ಅದು, ಪದ ಮತ್ತು ಪದಕ್ಕೆ ಸಂಬಂಧಿಸಿದ ಸಾಂದರ್ಭಿಕ ವಿವರಣೆಗಳನ್ನು Google ಹುಡುಕಾಟಕ್ಕೆ ರವಾನಿಸುತ್ತದೆ. ಆ ಮೂಲಕ ವಿವರಗಳು, ಚಿತ್ರಗಳು ಮತ್ತು ಇತರ ಹುಡುಕಾಟ ಫಲಿತಾಂಶಗಳನ್ನು ಒದಗಿಸುತ್ತದೆ.
@@ -414,7 +410,6 @@
 <translation id="3987993985790029246">ಲಿಂಕ್ ನಕಲಿಸಿ</translation>
 <translation id="3988213473815854515">ಸ್ಥಳವನ್ನು ಅನುಮತಿಸಲಾಗಿದೆ</translation>
 <translation id="3988466920954086464">ಈ ಫಲಕದಲ್ಲಿ ತತ್‌ಕ್ಷಣ ಹುಡುಕಾಟ ಫಲಿತಾಂಶಗಳನ್ನು ನೋಡಿ</translation>
-<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="3997476611815694295">ಪ್ರಮುಖವಲ್ಲದ ಸಂಗ್ರಹಣೆ</translation>
 <translation id="4000212216660919741">ಆಫ್‌ಲೈನ್ ಹೋಮ್</translation>
 <translation id="4008040567710660924">ನಿರ್ದಿಷ್ಟ ಸೈಟ್‌ ಒಂದಕ್ಕೆ ಕುಕೀಗಳನ್ನು ಅನುಮತಿಸಿ.</translation>
@@ -655,6 +650,7 @@
 <translation id="5763514718066511291">ಈ ಅಪ್ಲಿಕೇಶನ್‌ಗಾಗಿ URL ನಕಲಿಸಲು ಟ್ಯಾಪ್ ಮಾಡಿ</translation>
 <translation id="5765780083710877561">ವಿವರಣೆ:</translation>
 <translation id="5793665092639000975"><ph name="SPACE_AVAILABLE" /> ಯಲ್ಲಿ <ph name="SPACE_USED" /> ಬಳಸಲಾಗುತ್ತಿದೆ</translation>
+<translation id="5795872532621730126">ಹುಡುಕಿ ಮತ್ತು ಬ್ರೌಸ್ ಮಾಡಿ</translation>
 <translation id="5797070761912323120">ಹುಡುಕಾಟ, ಜಾಹೀರಾತುಗಳು ಮತ್ತು ಇತರ Google ಸೇವೆಗಳನ್ನು ವೈಯಕ್ತೀಕರಿಸಲು ನಿಮ್ಮ ಇತಿಹಾಸವನ್ನು Google ಬಳಸಬಹುದು</translation>
 <translation id="5804241973901381774">ಅನುಮತಿಗಳು</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# ಗಂಟೆಯ ಹಿಂದೆ}one{# ಗಂಟೆಗಳ ಹಿಂದೆ}other{# ಗಂಟೆಗಳ ಹಿಂದೆ}}</translation>
@@ -772,7 +768,6 @@
 <translation id="6593061639179217415">ಡೆಸ್ಕ್‌ಟಾಪ್‌ ಸೈಟ್‌</translation>
 <translation id="6597891566292541626">ಈ ಫ್ರೇಮ್‌ನಲ್ಲಿ QR/ಬಾರ್‌ಕೋಡ್‌ ಅನ್ನು ಸರಿಯಾಗಿ ಇರಿಸಿ.</translation>
 <translation id="6600954340915313787">Chrome ಗೆ ನಕಲಿಸಲಾಗಿದೆ</translation>
-<translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">ಸಂರಕ್ಷಿಸಿದ ವಿಷಯ</translation>
 <translation id="6627583120233659107">ಫೋಲ್ಡರ್ ಎಡಿಟ್ ಮಾಡಿ</translation>
 <translation id="6643016212128521049">ತೆರವುಗೊಳಿಸಿ</translation>
@@ -842,7 +837,6 @@
 <translation id="7149158118503947153"><ph name="DOMAIN_NAME" /> ನಿಂದ <ph name="BEGIN_LINK" />ಮೂಲ ಪುಟವನ್ನು ಲೋಡ್ ಮಾಡಿ<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">ಕಳೆದ 24 ಗಂಟೆಗಳು</translation>
 <translation id="7173114856073700355">ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
-<translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">ನೀವು ಇದನ್ನು ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ನಂತರ ಬದಲಾಯಿಸಬಹುದು</translation>
 <translation id="7180611975245234373">ರಿಫ್ರೆಶ್ ಮಾಡಿ</translation>
 <translation id="7189372733857464326">Google Play ಸೇವೆಗಳು ಅಪ್‌ಡೇಟ್ ಮಾಡುವಿಕೆಯನ್ನು ಪೂರ್ಣಗೊಳಿಸಲು ನಿರೀಕ್ಷಿಸಲಾಗುತ್ತಿದೆ</translation>
@@ -954,7 +948,6 @@
 <translation id="8007176423574883786">ಈ ಸಾಧನಕ್ಕೆ ಆಫ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="8013372441983637696">ಈ ಸಾಧನದಿಂದ ನಿಮ್ಮ Chrome ಡೇಟಾವನ್ನು ಸಹ ತೆರವುಗೊಳಿಸಿ</translation>
 <translation id="8015452622527143194">ಪುಟದಲ್ಲಿರುವ ಪ್ರತಿಯೊಂದನ್ನೂ ಡೀಫಾಲ್ಟ್ ಗಾತ್ರಕ್ಕೆ ಹಿಂತಿರುಗಿಸಿ</translation>
-<translation id="802154636333426148">ಡೌನ್‌ಲೋಡ್‌ ವಿಫಲಗೊಂಡಿದೆ</translation>
 <translation id="8026334261755873520">ಬ್ರೌಸಿಂಗ್ ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸಿ</translation>
 <translation id="8035133914807600019">ಹೊಸ ಫೋಲ್ಡರ್‌…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> ದಿನಗಳು ಉಳಿದಿವೆ</translation>

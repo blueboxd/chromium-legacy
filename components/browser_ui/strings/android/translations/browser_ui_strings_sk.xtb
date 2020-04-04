@@ -2,12 +2,17 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sk">
 <translation id="1124772482545689468">Používateľ</translation>
+<translation id="1178581264944972037">Pozastaviť</translation>
 <translation id="1181037720776840403">Odstrániť</translation>
 <translation id="1201402288615127009">Ďalej</translation>
 <translation id="1383876407941801731">Vyhľadávanie</translation>
+<translation id="1384959399684842514">Sťahovanie bolo pozastavené</translation>
+<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="2079545284768500474">Späť</translation>
 <translation id="2148716181193084225">Dnes</translation>
 <translation id="2359808026110333948">Pokračovať</translation>
+<translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
+<translation id="2434158240863470628">Sťahovanie bolo dokončené <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2501278716633472235">Prejsť späť</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 zablokovaný súbor cookie}few{# zablokované súbory cookie}many{# cookies blocked}other{# zablokovaných súborov cookie}}</translation>
 <translation id="257931822824936280">Rozbalená (zbalíte ju kliknutím)</translation>
@@ -19,6 +24,7 @@
 <translation id="3479552764303398839">Teraz nie</translation>
 <translation id="385051799172605136">Naspäť</translation>
 <translation id="3987993985790029246">Kopírovať odkaz</translation>
+<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">Názov</translation>
 <translation id="4570913071927164677">Podrobnosti</translation>
 <translation id="4645575059429386691">Spravované vaším rodičom</translation>
@@ -40,6 +46,7 @@
 <translation id="6206551242102657620">Spojenie je zabezpečené. Informácie o webe</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> – možnosti</translation>
 <translation id="6527303717912515753">Zdieľať</translation>
+<translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6746124502594467657">Presunúť nadol</translation>
 <translation id="6818926723028410516">Vyberte položky</translation>
 <translation id="6910211073230771657">Odstránené</translation>
@@ -48,6 +55,7 @@
 <translation id="6965382102122355670">OK</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 vybratá položka}few{# vybraté položky}many{Niekoľko (#) vybratých položiek}other{# vybratých položiek}}</translation>
 <translation id="7087918508125750058">Vybrané: <ph name="ITEM_COUNT" />.  Možnosti sú k dispozícii v hornej časti obrazovky.</translation>
+<translation id="7176368934862295254"><ph name="KILOBYTES" /> kB</translation>
 <translation id="7250468141469952378">Vybrané: <ph name="ITEM_COUNT" /></translation>
 <translation id="7649070708921625228">Pomocník</translation>
 <translation id="7658239707568436148">Zrušiť</translation>
@@ -55,7 +63,9 @@
 <translation id="7791543448312431591">Pridať</translation>
 <translation id="780301667611848630">Nie, ďakujem</translation>
 <translation id="7846076177841592234">Zrušiť výber</translation>
+<translation id="802154636333426148">Stiahnutie zlyhalo</translation>
 <translation id="8131740175452115882">Potvrdiť</translation>
+<translation id="8200772114523450471">Pokračovať</translation>
 <translation id="8206354486702514201">Toto nastavenie je vynútené správcom.</translation>
 <translation id="8249310407154411074">Presunúť na začiatok</translation>
 <translation id="8261506727792406068">Odstrániť</translation>

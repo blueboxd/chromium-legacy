@@ -59,7 +59,6 @@
 <translation id="1373696734384179344">内存不足，无法下载所选内容。</translation>
 <translation id="1376578503827013741">正在计算…</translation>
 <translation id="1383876407941801731">搜索</translation>
-<translation id="1384959399684842514">已暂停下载</translation>
 <translation id="1386674309198842382"><ph name="LAST_UPDATED" /> 天前曾有活动</translation>
 <translation id="1397811292916898096">使用 <ph name="PRODUCT_NAME" /> 进行搜索</translation>
 <translation id="1406000523432664303">“不跟踪”</translation>
@@ -116,7 +115,6 @@
 <translation id="1919345977826869612">广告</translation>
 <translation id="1919950603503897840">选择联系人</translation>
 <translation id="1922076542920281912">要让 Chrome 访问您的位置信息，您还需要在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中开启位置信息服务。</translation>
-<translation id="1923695749281512248">已下载 <ph name="BYTES_DOWNLOADED_WITH_UNITS" />，共 <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1925021887439448749">输入自定义网址</translation>
 <translation id="1928696683969751773">更新</translation>
 <translation id="19288952978244135">重新打开 Chrome。</translation>
@@ -192,13 +190,11 @@
 <translation id="2369533728426058518">打开的标签页</translation>
 <translation id="2387895666653383613">文字大小</translation>
 <translation id="2394602618534698961">您下载的文件会显示在此处</translation>
-<translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2407481962792080328">当您登录自己的 Google 帐号后，系统即会启用此功能</translation>
 <translation id="2410754283952462441">选择帐号</translation>
 <translation id="2414886740292270097">深色调</translation>
 <translation id="2426805022920575512">选择其他帐号</translation>
 <translation id="2433507940547922241">外观</translation>
-<translation id="2434158240863470628">下载完成 <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">位置信息使用权</translation>
 <translation id="2450083983707403292">要重新开始下载 <ph name="FILE_NAME" /> 吗？</translation>
 <translation id="2450907520913474542">无需离开所在页面，便可了解网站上的主题。“触摸搜索”功能会将被触摸的字词及上下文一起发送给 Google 搜索，后者随即会据此返回相应的定义、图片、搜索结果及其他详情。
@@ -409,7 +405,6 @@
 <translation id="3987993985790029246">复制链接</translation>
 <translation id="3988213473815854515">允许访问位置信息</translation>
 <translation id="3988466920954086464">您可以在此面板查看即时搜索结果</translation>
-<translation id="3991845972263764475">已下载 <ph name="BYTES_DOWNLOADED_WITH_UNITS" />，总大小不明</translation>
 <translation id="3997476611815694295">不重要网站的存储数据</translation>
 <translation id="4000212216660919741">离线版首页</translation>
 <translation id="4008040567710660924">允许特定网站使用 Cookie。</translation>
@@ -651,6 +646,7 @@
 <translation id="5763514718066511291">点按即可复制该应用的网址</translation>
 <translation id="5765780083710877561">说明：</translation>
 <translation id="5793665092639000975">已使用 <ph name="SPACE_USED" />，共 <ph name="SPACE_AVAILABLE" /></translation>
+<translation id="5795872532621730126">搜索和浏览</translation>
 <translation id="5797070761912323120">Google 可能会利用您的历史记录为您提供个性化的 Google 搜索、广告和其他 Google 服务</translation>
 <translation id="5804241973901381774">权限</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# 小时前}other{# 小时前}}</translation>
@@ -766,7 +762,6 @@
 <translation id="6593061639179217415">桌面版网站</translation>
 <translation id="6597891566292541626">将二维码/条形码放到框内。</translation>
 <translation id="6600954340915313787">已复制到 Chrome</translation>
-<translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">受保护的内容</translation>
 <translation id="6627583120233659107">修改文件夹</translation>
 <translation id="6643016212128521049">清除</translation>
@@ -835,7 +830,6 @@
 <translation id="7149158118503947153">从 <ph name="DOMAIN_NAME" /> <ph name="BEGIN_LINK" />加载原始网页<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">过去 24 小时</translation>
 <translation id="7173114856073700355">打开“设置”</translation>
-<translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">以后，您可以在“设置”中更改此设置。</translation>
 <translation id="7180611975245234373">刷新</translation>
 <translation id="7189372733857464326">正在等待 Google Play 服务完成更新</translation>
@@ -947,7 +941,6 @@
 <translation id="8007176423574883786">已对此设备停用</translation>
 <translation id="8013372441983637696">同时从此设备中清除您的 Chrome 数据</translation>
 <translation id="8015452622527143194">将网页上的所有内容恢复到默认大小</translation>
-<translation id="802154636333426148">下载失败</translation>
 <translation id="8026334261755873520">清除浏览数据</translation>
 <translation id="8035133914807600019">新建文件夹…</translation>
 <translation id="8037750541064988519">还剩 <ph name="DAYS" /> 天</translation>

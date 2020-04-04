@@ -59,7 +59,6 @@
 <translation id="1373696734384179344">선택한 콘텐츠를 다운로드할 공간이 부족합니다.</translation>
 <translation id="1376578503827013741">계산 중...</translation>
 <translation id="1383876407941801731">검색</translation>
-<translation id="1384959399684842514">다운로드 일시중지됨</translation>
 <translation id="1386674309198842382"><ph name="LAST_UPDATED" />일 전 동기화됨</translation>
 <translation id="1397811292916898096"><ph name="PRODUCT_NAME" />에서 검색</translation>
 <translation id="1406000523432664303">'추적 안함'</translation>
@@ -117,7 +116,6 @@
 <translation id="1919345977826869612">광고</translation>
 <translation id="1919950603503897840">연락처 선택</translation>
 <translation id="1922076542920281912">Chrome에서 위치 정보에 액세스하도록 허용하려면 <ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />에서도 위치를 사용 설정하세요.</translation>
-<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1925021887439448749">맞춤 웹 주소 입력</translation>
 <translation id="1928696683969751773">업데이트</translation>
 <translation id="19288952978244135">Chrome을 다시 여세요.</translation>
@@ -193,13 +191,11 @@
 <translation id="2369533728426058518">열린 탭</translation>
 <translation id="2387895666653383613">텍스트 크기 조정</translation>
 <translation id="2394602618534698961">다운로드한 파일이 여기 표시됩니다.</translation>
-<translation id="2402980924095424747"><ph name="MEGABYTES" />MB</translation>
 <translation id="2407481962792080328">Google 계정에 로그인하면 이 기능이 사용 설정됩니다.</translation>
 <translation id="2410754283952462441">계정 선택</translation>
 <translation id="2414886740292270097">어둡게</translation>
 <translation id="2426805022920575512">다른 계정 선택</translation>
 <translation id="2433507940547922241">모양</translation>
-<translation id="2434158240863470628">다운로드 완료: <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">위치 정보 액세스</translation>
 <translation id="2450083983707403292"><ph name="FILE_NAME" />의 다운로드를 다시 시작하시겠습니까?</translation>
 <translation id="2450907520913474542">페이지에서 나가지 않고도 웹사이트의 주제에 관해 알아봅니다. 터치하여 검색 기능은 단어와 관련 맥락을 Google 검색으로 전송하여 정의, 사진, 검색결과 등의 세부정보를 제공합니다.
@@ -413,7 +409,6 @@
 <translation id="3987993985790029246">링크 복사</translation>
 <translation id="3988213473815854515">위치 허용됨</translation>
 <translation id="3988466920954086464">이 패널에서 순간 검색결과 보기</translation>
-<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="3997476611815694295">중요하지 않은 저장공간</translation>
 <translation id="4000212216660919741">오프라인 홈</translation>
 <translation id="4008040567710660924">특정 사이트의 쿠키를 허용합니다.</translation>
@@ -655,6 +650,7 @@
 <translation id="5763514718066511291">탭하여 이 앱의 URL 복사하기</translation>
 <translation id="5765780083710877561">설명:</translation>
 <translation id="5793665092639000975"><ph name="SPACE_AVAILABLE" /> 중 <ph name="SPACE_USED" /> 사용 중</translation>
+<translation id="5795872532621730126">검색 및 탐색</translation>
 <translation id="5797070761912323120">Google에서 내 방문 기록을 사용하여 Google 검색, 광고 및 다른 Google 서비스를 맞춤설정할 수 있습니다.</translation>
 <translation id="5804241973901381774">권한</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{#시간 전}other{#시간 전}}</translation>
@@ -772,7 +768,6 @@
 <translation id="6593061639179217415">데스크톱 사이트</translation>
 <translation id="6597891566292541626">프레임 안에 QR/바코드를 위치시키세요.</translation>
 <translation id="6600954340915313787">Chrome에 복사됨</translation>
-<translation id="6608650720463149374"><ph name="GIGABYTES" />GB</translation>
 <translation id="6612358246767739896">보호된 콘텐츠</translation>
 <translation id="6627583120233659107">폴더 수정</translation>
 <translation id="6643016212128521049">삭제</translation>
@@ -841,7 +836,6 @@
 <translation id="7149158118503947153"><ph name="DOMAIN_NAME" />에서 <ph name="BEGIN_LINK" />원본 페이지 로드<ph name="END_LINK" />하기</translation>
 <translation id="7149893636342594995">지난 24시간</translation>
 <translation id="7173114856073700355">설정 열기</translation>
-<translation id="7176368934862295254"><ph name="KILOBYTES" />KB</translation>
 <translation id="7177466738963138057">나중에 설정에서 변경 가능</translation>
 <translation id="7180611975245234373">새로고침</translation>
 <translation id="7189372733857464326">Google Play 서비스 업데이트 완료 대기 중</translation>
@@ -953,7 +947,6 @@
 <translation id="8007176423574883786">기기에 대해 사용 중지됨</translation>
 <translation id="8013372441983637696">이 기기에서 내 Chrome 데이터 삭제</translation>
 <translation id="8015452622527143194">페이지의 모든 항목을 기본 크기로 되돌리기</translation>
-<translation id="802154636333426148">다운로드 실패</translation>
 <translation id="8026334261755873520">인터넷 사용 기록 삭제</translation>
 <translation id="8035133914807600019">새 폴더…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" />일 남음</translation>

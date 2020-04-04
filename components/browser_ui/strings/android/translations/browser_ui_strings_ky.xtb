@@ -2,12 +2,17 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ky">
 <translation id="1124772482545689468">Колдонуучу</translation>
+<translation id="1178581264944972037">Бир азга токтотуу</translation>
 <translation id="1181037720776840403">Алып салуу</translation>
 <translation id="1201402288615127009">Кийинки</translation>
 <translation id="1383876407941801731">Издөө</translation>
+<translation id="1384959399684842514">Жүктөп алуу тындырылды</translation>
+<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="2079545284768500474">Кайтаруу</translation>
 <translation id="2148716181193084225">Бүгүн</translation>
 <translation id="2359808026110333948">Улантуу</translation>
+<translation id="2402980924095424747"><ph name="MEGABYTES" /> Мб</translation>
+<translation id="2434158240863470628">Жүктөлүп алынды: <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2501278716633472235">Артка кайтуу</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 cookie файлы бөгөттөлдү}other{# cookie файлы бөгөттөлдү}}</translation>
 <translation id="257931822824936280">Жайылып көрсөтүлгөн – жыйнап коюу үчүн чыкылдатыңыз.</translation>
@@ -19,6 +24,7 @@
 <translation id="3479552764303398839">Азыр эмес</translation>
 <translation id="385051799172605136">Артка</translation>
 <translation id="3987993985790029246">Шилтм көчр</translation>
+<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">Аталышы</translation>
 <translation id="4570913071927164677">Чоо-жайы</translation>
 <translation id="4645575059429386691">Ата-энеңиз башкарат</translation>
@@ -40,6 +46,7 @@
 <translation id="6206551242102657620">Туташуу корголгон. Сайт тууралуу маалымат</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> Параметрлер</translation>
 <translation id="6527303717912515753">Бөлүшүү</translation>
+<translation id="6608650720463149374"><ph name="GIGABYTES" /> Гб</translation>
 <translation id="6746124502594467657">Төмөн жылдыруу</translation>
 <translation id="6818926723028410516">Элементтерди тандоо</translation>
 <translation id="6910211073230771657">Жок кылынды</translation>
@@ -48,6 +55,7 @@
 <translation id="6965382102122355670">OK</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 тандалды}other{# тандалды}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> тандалды.  Параметрлер экрандын жогору жагында берилген</translation>
+<translation id="7176368934862295254"><ph name="KILOBYTES" /> Кб</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> нерсе тандалды</translation>
 <translation id="7649070708921625228">Жардам</translation>
 <translation id="7658239707568436148">Жокко чыгаруу</translation>
@@ -55,7 +63,9 @@
 <translation id="7791543448312431591">Кошуу</translation>
 <translation id="780301667611848630">Жок, рахмат</translation>
 <translation id="7846076177841592234">Тандоону жокко чыгаруу</translation>
+<translation id="802154636333426148">Жүктөлүп алынбай калды</translation>
 <translation id="8131740175452115882">Ырастоо</translation>
+<translation id="8200772114523450471">Улантуу</translation>
 <translation id="8206354486702514201">Бул жөндөөнү администраторуңуз күчүнө киргизген.</translation>
 <translation id="8249310407154411074">Башына жылдыруу</translation>
 <translation id="8261506727792406068">Жок кылуу</translation>

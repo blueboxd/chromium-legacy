@@ -14,7 +14,7 @@ For example, if you want to use the flag in src/content, you should add a base::
 If you want to use the flag in blink, you should also read
 [Runtime Enable Features](https://www.chromium.org/blink/runtime-enabled-features).
 
-You can refer to [this CL](https://chromium-review.googlesource.com/c/554510/) and [this document](https://chromium.googlesource.com/chromium/src/+/HEAD/content/child/InitializeBlinkFeatures.md)
+You can refer to [this CL](https://chromium-review.googlesource.com/c/554510/) and [this document](initialize_blink_features.md)
 to see
 
 1. where to add the base::Feature

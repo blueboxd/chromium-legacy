@@ -18,6 +18,7 @@
 <translation id="1190609913194133056">Центр уведомлений</translation>
 <translation id="1195412055398077112">Каемка экрана</translation>
 <translation id="119944043368869598">Удалить все</translation>
+<translation id="1199716647557067911">Отключить функцию Switch Access?</translation>
 <translation id="1247372569136754018">Микрофон (встроенный)</translation>
 <translation id="1252999807265626933">Подключен источник питания: <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Какая сейчас погода?</translation>
@@ -430,6 +431,7 @@
 <translation id="6537924328260219877">Уровень сигнала – <ph name="SIGNAL_STRENGTH" />, заряд батареи – <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">Трансляция на устройство "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="6559976592393364813">Обратитесь к администратору</translation>
+<translation id="6584550827717945790">Подтвердите действие</translation>
 <translation id="6585808820553845416">Сеанс закончится через <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="661203523074512333">Статус защиты – "<ph name="SECURITY_STATUS" />", уровень сигнала – <ph name="SIGNAL_STRENGTH" />, под управлением администратора</translation>
 <translation id="6614169507485700968">Экран конфиденциальности включен</translation>
@@ -603,6 +605,7 @@
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8825863694328519386">Чтобы вернуться, проведите по экрану от левого края</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">Назад</translation>
 <translation id="8843682306134542540">Изменить настройки автоповорота экрана. <ph name="STATE_TEXT" />.</translation>
 <translation id="8850991929411075241">Клавиша поиска + Esc</translation>
 <translation id="8870509716567206129">Приложение не поддерживает разделение экрана.j</translation>

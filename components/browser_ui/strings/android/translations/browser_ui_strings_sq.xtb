@@ -2,12 +2,17 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sq">
 <translation id="1124772482545689468">Përdoruesi</translation>
+<translation id="1178581264944972037">Pauzë</translation>
 <translation id="1181037720776840403">Hiq</translation>
 <translation id="1201402288615127009">Tjetra</translation>
 <translation id="1383876407941801731">Kërko</translation>
+<translation id="1384959399684842514">Shkarkimi u ndërpre</translation>
+<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="2079545284768500474">Zhbëj</translation>
 <translation id="2148716181193084225">Sot</translation>
 <translation id="2359808026110333948">Vazhdo</translation>
+<translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
+<translation id="2434158240863470628">Shkarkimi përfundoi <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2501278716633472235">Kthehu prapa</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 kuki është bllokuar}other{# kuki janë bllokuar}}</translation>
 <translation id="257931822824936280">I zgjeruar - kliko për ta palosur.</translation>
@@ -19,6 +24,7 @@
 <translation id="3479552764303398839">Jo tani</translation>
 <translation id="385051799172605136">Prapa</translation>
 <translation id="3987993985790029246">Kopjo lidhjen</translation>
+<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">Titulli</translation>
 <translation id="4570913071927164677">Detajet</translation>
 <translation id="4645575059429386691">Menaxhohet nga prindi yt</translation>
@@ -40,6 +46,7 @@
 <translation id="6206551242102657620">Lidhja është e sigurt. Informacioni i faqes</translation>
 <translation id="6216432067784365534">Opsionet për <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6527303717912515753">Ndaj</translation>
+<translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6746124502594467657">Lëviz poshtë</translation>
 <translation id="6818926723028410516">Zgjidh artikujt</translation>
 <translation id="6910211073230771657">Fshirë</translation>
@@ -48,6 +55,7 @@
 <translation id="6965382102122355670">Në rregull</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 i zgjedhur}other{# të zgjedhur}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> të zgjedhura. Opsionet ofrohen pranë kreut të ekranit</translation>
+<translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> të zgjedhura</translation>
 <translation id="7649070708921625228">Ndihma</translation>
 <translation id="7658239707568436148">Anulo</translation>
@@ -55,7 +63,9 @@
 <translation id="7791543448312431591">Shtoje</translation>
 <translation id="780301667611848630">Jo, faleminderit</translation>
 <translation id="7846076177841592234">Anulo zgjedhjen</translation>
+<translation id="802154636333426148">Shkarkimi dështoi</translation>
 <translation id="8131740175452115882">Konfirmo</translation>
+<translation id="8200772114523450471">Vazhdo</translation>
 <translation id="8206354486702514201">Ky cilësim zbatohet nga administratori yt.</translation>
 <translation id="8249310407154411074">Lëvize në krye</translation>
 <translation id="8261506727792406068">Fshi</translation>

@@ -169,6 +169,7 @@
 <translation id="1644574205037202324">История</translation>
 <translation id="1645368109819982629">Неподдерживаемый протокол</translation>
 <translation id="1652415888492971589">JIS B8</translation>
+<translation id="1656024727720460136">Браузер Chrome упростил вид страницы, чтобы ее было удобнее читать. Исходная страница была получена с использованием защищенного соединения.</translation>
 <translation id="1656489000284462475">Получение</translation>
 <translation id="1662550410081243962">Сохранять и автоматически подставлять платежные данные</translation>
 <translation id="1663943134801823270">Это карты и адреса, указанные в Chrome. Вы можете изменить их на странице <ph name="BEGIN_LINK" />Настройки<ph name="END_LINK" />.</translation>
@@ -560,6 +561,7 @@
 <translation id="342781501876943858">Chromium рекомендует сбросить пароль, если вы использовали его на других сайтах.</translation>
 <translation id="3428151540071562330">Один или несколько серверных шаблонов URI DnsOverHttpsTemplates недействительны и не будут использоваться.</translation>
 <translation id="3431636764301398940">Сохранить карту на этом устройстве</translation>
+<translation id="3432601291244612633">Закрыть страницу</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">Владелец этого устройства отключил игру с динозавром.</translation>
 <translation id="3447884698081792621">Показать сертификат (издатель: <ph name="ISSUER" />)</translation>
@@ -865,6 +867,7 @@
 <translation id="4731967714531604179">Prc2 (конверт)</translation>
 <translation id="4733082559415072992">Сайт <ph name="URL" /> запрашивает данные о местоположении вашего устройства.</translation>
 <translation id="4736825316280949806">Перезапустите Chromium.</translation>
+<translation id="4737121147659370456">Администратор включил в браузере коннекторы Chrome Enterprise. У них есть доступ к некоторым вашим данным.</translation>
 <translation id="473775607612524610">Обновить</translation>
 <translation id="4738601419177586157">Подсказка при поиске "<ph name="TEXT" />"</translation>
 <translation id="4742407542027196863">Управление паролями</translation>
@@ -1200,6 +1203,8 @@
 <translation id="610911394827799129">Информация о других ваших действиях в Интернете может также храниться на странице <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6116338172782435947">Просмотр текста и изображений, скопированных в буфер обмена</translation>
 <translation id="6120179357481664955">Запомнить идентификатор UPI?</translation>
+<translation id="6124432979022149706">Коннекторы Chrome Enterprise</translation>
+<translation id="6135641591018127088">Использовать аккаунт Google, чтобы сгенерировать надежный пароль</translation>
 <translation id="6146055958333702838">Проверьте соединение кабелей, перезагрузите маршрутизаторы, модемы и другие
     сетевые устройства.</translation>
 <translation id="614940544461990577">Попробуйте сделать следующее:</translation>
@@ -1245,6 +1250,7 @@
 <translation id="6328639280570009161">Отключите предсказание сетевых действий</translation>
 <translation id="6328784461820205019">"Подключение не защищено", "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" или "Ошибка сертификата SSL"</translation>
 <translation id="6328786501058569169">Это поддельный сайт</translation>
+<translation id="6333334544069706521">Использовать пароли, хранящиеся в аккаунте Google</translation>
 <translation id="6337133576188860026">Освободится менее <ph name="SIZE" /> пространства. После этого некоторые веб-страницы могут загружаться дольше обычного.</translation>
 <translation id="6337534724793800597">Фильтровать политики по названию</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Нет}=1{1 пароль (для <ph name="DOMAIN_LIST" />, синхронизировано)}=2{2 пароля (для <ph name="DOMAIN_LIST" />, синхронизировано)}one{# пароль (для <ph name="DOMAIN_LIST" />, синхронизировано)}few{# пароля (для <ph name="DOMAIN_LIST" />, синхронизировано)}many{# паролей (для <ph name="DOMAIN_LIST" />, синхронизировано)}other{# пароля (для <ph name="DOMAIN_LIST" />, синхронизировано)}}</translation>
@@ -1290,6 +1296,7 @@
 <translation id="6521745193039995384">Не выбрано</translation>
 <translation id="6529602333819889595">&amp;Повторить удаление</translation>
 <translation id="6534179046333460208">Интернет вокруг нас: рекомендации</translation>
+<translation id="6543609420755597723">Отправлять администратору данные о событиях безопасности, которые были помечены коннекторами Chrome Enterprise как потенциально опасные. Такими данными могут быть URL страниц, которые вы посещаете, названия файлов и метаданные, а также ваше имя пользователя для входа в систему на устройстве и в браузер Chrome.</translation>
 <translation id="6545864417968258051">Поиск Bluetooth-устройств</translation>
 <translation id="6547208576736763147">Два отверстия слева</translation>
 <translation id="6554795675067793129">Ваш аккаунт принадлежит домену <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1355,6 +1362,7 @@
 <translation id="6874604403660855544">&amp;Повторить добавление</translation>
 <translation id="6884662655240309489">Размер: 1</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" />, <ph name="SHORT_URL" /></translation>
+<translation id="6888584790432772780">Браузер Chrome упростил вид страницы, чтобы ее было удобнее читать. Исходная страница была получена с использованием незащищенного соединения.</translation>
 <translation id="6891596781022320156">Значение правила не поддерживается.</translation>
 <translation id="6895330447102777224">Ваша карта подтверждена</translation>
 <translation id="6897140037006041989">User Agent</translation>
@@ -1583,6 +1591,7 @@
 <translation id="777702478322588152">Префектура</translation>
 <translation id="7791196057686275387">Прессование</translation>
 <translation id="7791543448312431591">Добавить</translation>
+<translation id="7798389633136518089">Правило игнорируется, так как оно задано не из облачного источника.</translation>
 <translation id="7800304661137206267">Соединение зашифровано с помощью <ph name="CIPHER" />, для аутентификации сообщений используется <ph name="MAC" />, для обмена ключами используется <ph name="KX" />.</translation>
 <translation id="7802523362929240268">Сайт безопасен</translation>
 <translation id="780301667611848630">Спасибо, не надо</translation>
@@ -1718,6 +1727,7 @@
 <translation id="8371889962595521444">Пользовательские корневые сертификаты</translation>
 <translation id="8380941800586852976">Опасно</translation>
 <translation id="8381674639488873545">Списание может быть разовым или повторяющимся без каких-либо уведомлений. <ph name="BEGIN_LINK" />Все равно продолжить<ph name="END_LINK" /></translation>
+<translation id="8405166164747488837">Домен <ph name="ENROLLMENT_DOMAIN" /> включил в браузере коннекторы Chrome Enterprise. У них есть доступ к некоторым вашим данным.</translation>
 <translation id="8412145213513410671">Сбои (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Необходимо дважды ввести одну и ту же кодовую фразу.</translation>
 <translation id="8416694386774425977">Импорт невозможен: недопустимая конфигурация сети.

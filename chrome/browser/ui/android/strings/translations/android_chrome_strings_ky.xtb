@@ -59,7 +59,6 @@
 <translation id="1373696734384179344">Тандалган мазмунду жүктөп алуу үчүн эстутум жетишсиз.</translation>
 <translation id="1376578503827013741">Эсептелүүдө…</translation>
 <translation id="1383876407941801731">Издөө</translation>
-<translation id="1384959399684842514">Жүктөп алуу тындырылды</translation>
 <translation id="1386674309198842382"><ph name="LAST_UPDATED" /> күн мурун жигердүү болгон</translation>
 <translation id="1397811292916898096"><ph name="PRODUCT_NAME" /> аркылуу издөө</translation>
 <translation id="1406000523432664303">Байкоо салынбасын</translation>
@@ -117,7 +116,6 @@
 <translation id="1919345977826869612">Жарнамалар</translation>
 <translation id="1919950603503897840">Байланыштарды тандоо</translation>
 <translation id="1922076542920281912">Chrome'го жайгашкан жериңизге кирүүгө уруксат берүү үчүн, <ph name="BEGIN_LINK" />Android Жөндөөлөрүнөн<ph name="END_LINK" /> жайгашкан жер кызматын күйгүзүңүз.</translation>
-<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1925021887439448749">Жеке веб дарегин киргизиңиз</translation>
 <translation id="1928696683969751773">Жаңыртуулар</translation>
 <translation id="19288952978244135">Chrome'ду кайра ачуу.</translation>
@@ -193,13 +191,11 @@
 <translation id="2369533728426058518">ачык өтмөктөр</translation>
 <translation id="2387895666653383613">Текстти чен өлчөмдөө</translation>
 <translation id="2394602618534698961">Жүктөп алган файлдар ушул жерде көрүнөт</translation>
-<translation id="2402980924095424747"><ph name="MEGABYTES" /> Мб</translation>
 <translation id="2407481962792080328">Google аккаунтуңузга киргенде, бул функция күйгүзүлөт</translation>
 <translation id="2410754283952462441">Аккаунт тандоо</translation>
 <translation id="2414886740292270097">Кочкул</translation>
 <translation id="2426805022920575512">Башка аккаунтту тандоо</translation>
 <translation id="2433507940547922241">Көрүнүш</translation>
-<translation id="2434158240863470628">Жүктөлүп алынды: <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">Жайгашкн жерд көрп туруу</translation>
 <translation id="2450083983707403292"><ph name="FILE_NAME" /> файлын кайрадан жүктөп аласызбы?</translation>
 <translation id="2450907520913474542">Барактан кетпестен темалар жөнүндө желе аркылуу билип алыңыз. Ыкчам издөө мүмкүнчүлүгү сөздү жана анын контекстин Google Издөөгө жөнөтүп, аныктамаларды, сүрөттөрдү, издөө жыйынтыктарын жана башка чоо-жайларды кайтарып берет.
@@ -413,7 +409,6 @@
 <translation id="3987993985790029246">Шилтм көчр</translation>
 <translation id="3988213473815854515">Жайгашкан жер дайындарына уруксат берилген</translation>
 <translation id="3988466920954086464">Ыкчам издөө жыйынтыктарын ушул панелде көрүү</translation>
-<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="3997476611815694295">Маанилүү эмес дайындар</translation>
 <translation id="4000212216660919741">Үйдө оффлайн режиминде</translation>
 <translation id="4008040567710660924">Белгилүү бир сайттын cookie файлдарына уруксат берүү.</translation>
@@ -655,6 +650,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="5763514718066511291">Бул колдонмонун URL'ин көчүрүү үчүн таптап коюңуз</translation>
 <translation id="5765780083710877561">Сүрөттөлүшү:</translation>
 <translation id="5793665092639000975"><ph name="SPACE_AVAILABLE" /> ичинен <ph name="SPACE_USED" /> колдонулууда</translation>
+<translation id="5795872532621730126">Издөө жана серептөө</translation>
 <translation id="5797070761912323120">Издөө, жарнама жана башка Google кызматтарын жекечелештирүү үчүн, Google таржымалыңызды колдонушу мүмкүн</translation>
 <translation id="5804241973901381774">Уруксаттар</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# саат мурун}other{# саат мурун}}</translation>
@@ -772,7 +768,6 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="6593061639179217415">Компьютер версиясы</translation>
 <translation id="6597891566292541626">QR/штрих кодду берилген алкакта жайгаштыруу.</translation>
 <translation id="6600954340915313787">Chrome'го көчүрүлдү</translation>
-<translation id="6608650720463149374"><ph name="GIGABYTES" /> Гб</translation>
 <translation id="6612358246767739896">Корголгон мазмун</translation>
 <translation id="6627583120233659107">Куржунду түзөтүү</translation>
 <translation id="6643016212128521049">Тазалоо</translation>
@@ -841,7 +836,6 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="7149158118503947153"><ph name="DOMAIN_NAME" /> домениндеги <ph name="BEGIN_LINK" />түпнуска баракты жүктөө<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">Акыркы 24 саат</translation>
 <translation id="7173114856073700355">Жөндөөлөрдү ачуу</translation>
-<translation id="7176368934862295254"><ph name="KILOBYTES" /> Кб</translation>
 <translation id="7177466738963138057">Муну кийинчерээк Жөндөөлөрдөн өзгөртсөңүз болот</translation>
 <translation id="7180611975245234373">Жаңылоо</translation>
 <translation id="7189372733857464326">Google Play кызматтары жаңыртылууда</translation>
@@ -953,7 +947,6 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="8007176423574883786">Бул түзмөк үчүн өчүрүлгөн</translation>
 <translation id="8013372441983637696">Ошондой эле Chrome дайындары бул түзмөктөн өчүрүлсүн</translation>
 <translation id="8015452622527143194">Баракта бардык нерселерди демейки өлчөмгө кайтаруу</translation>
-<translation id="802154636333426148">Жүктөлүп алынбай калды</translation>
 <translation id="8026334261755873520">Серептөө дайындарын тазалап салуу</translation>
 <translation id="8035133914807600019">Жаңы куржун…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> күн калды</translation>

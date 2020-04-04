@@ -2,12 +2,17 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="be">
 <translation id="1124772482545689468">Карыстальнік</translation>
+<translation id="1178581264944972037">Прыпыніць</translation>
 <translation id="1181037720776840403">Выдаліць</translation>
 <translation id="1201402288615127009">Далей</translation>
 <translation id="1383876407941801731">Пошук</translation>
+<translation id="1384959399684842514">Спампоўка прыпынена</translation>
+<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="2079545284768500474">Адмяніць</translation>
 <translation id="2148716181193084225">Сёння</translation>
 <translation id="2359808026110333948">Працягнуць</translation>
+<translation id="2402980924095424747"><ph name="MEGABYTES" /> МБ</translation>
+<translation id="2434158240863470628">Спампоўванне завершана <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2501278716633472235">Назад</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 файл cookie заблакіраваны}one{# файл cookie заблакіраваны}few{# файлы cookie заблакіраваны}many{# файлаў cookie заблакіраваны}other{# файла cookie заблакіраваны}}</translation>
 <translation id="257931822824936280">Разгорнута. Націсніце, каб згарнуць.</translation>
@@ -19,6 +24,7 @@
 <translation id="3479552764303398839">Не зараз</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3987993985790029246">Скапіраваць спасылку</translation>
+<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">Назва</translation>
 <translation id="4570913071927164677">Падрабязныя звесткі</translation>
 <translation id="4645575059429386691">Пад кіраваннем вашых бацькоў</translation>
@@ -40,6 +46,7 @@
 <translation id="6206551242102657620">Падключэнне бяспечнае. Звесткі пра сайт</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />: параметры</translation>
 <translation id="6527303717912515753">Абагуліць</translation>
+<translation id="6608650720463149374"><ph name="GIGABYTES" /> ГБ</translation>
 <translation id="6746124502594467657">Перамясціць ніжэй</translation>
 <translation id="6818926723028410516">Выберыце элементы</translation>
 <translation id="6910211073230771657">Выдалена</translation>
@@ -48,6 +55,7 @@
 <translation id="6965382102122355670">ОК</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Выбраны 1 элемент}one{Выбраны # элемент}few{Выбрана # элементы}many{Выбрана # элементаў}other{Выбрана # элемента}}</translation>
 <translation id="7087918508125750058">Выбрана: <ph name="ITEM_COUNT" />.  Параметры знаходзяцца ўверсе экрана</translation>
+<translation id="7176368934862295254"><ph name="KILOBYTES" /> КБ</translation>
 <translation id="7250468141469952378">Выбрана: <ph name="ITEM_COUNT" /></translation>
 <translation id="7649070708921625228">Даведка</translation>
 <translation id="7658239707568436148">Адмяніць</translation>
@@ -55,7 +63,9 @@
 <translation id="7791543448312431591">Дадаць</translation>
 <translation id="780301667611848630">Не, дзякуй</translation>
 <translation id="7846076177841592234">Скасаваць выбар</translation>
+<translation id="802154636333426148">Збой спампоўкі</translation>
 <translation id="8131740175452115882">Пацвердзіць</translation>
+<translation id="8200772114523450471">Узнавіць</translation>
 <translation id="8206354486702514201">Гэтай наладай кіруе адміністратар.</translation>
 <translation id="8249310407154411074">Перамясціць уверх</translation>
 <translation id="8261506727792406068">Выдаліць</translation>

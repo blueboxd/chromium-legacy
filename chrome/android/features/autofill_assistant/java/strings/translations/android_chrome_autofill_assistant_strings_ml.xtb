@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ml">
+<translation id="1552477655783980595">ഏതാനും ടാപ്പുകളിലൂടെ \n സിനിമാ ടിക്കറ്റുകൾ വാങ്ങുക</translation>
 <translation id="1625889395409731085">ബാഹ്യ ലിങ്ക് തുറക്കണോ?</translation>
 <translation id="1699570257714336246">വിവരങ്ങൾ സമ്പൂർണ്ണമല്ല</translation>
 <translation id="1932278019417741381">ടാസ്‌ക്കുകൾ പൂർത്തിയാക്കാൻ നിങ്ങളെ സഹായിക്കുന്നതിനായി, നിങ്ങൾ അസിസ്‌റ്റന്റ് ഉപയോഗിക്കുന്ന സൈറ്റുകളുടെ URL-കളും അവയിലെ ഉള്ളടക്കവും അസിസ്‌റ്റന്റിലൂടെ നിങ്ങൾ സമർപ്പിക്കുന്ന വിവരങ്ങളും Google-ന് ലഭിക്കും. ഈ വിവരങ്ങൾ നിങ്ങളുടെ Google അക്കൗണ്ടിൽ സംഭരിച്ചേക്കാം. നിങ്ങൾക്ക് Chrome ക്രമീകരണത്തിൽ അസിസ്‌റ്റന്റ് ഓഫാക്കാം. <ph name="BEGIN_LINK" />കൂടുതലറിയുക<ph name="END_LINK" /></translation>
@@ -11,8 +12,10 @@
 <translation id="4850886885716139402">കാണുക</translation>
 <translation id="4952448020231702394">തിരയൽ, ചെക്ക്ഔട്ട് പോലെയുള്ള വെബിലെ പ്രവർത്തനങ്ങൾ വേഗത്തിലാക്കി Google അസിസ്‌റ്റന്റ് നിങ്ങളുടെ സമയം ലാഭിക്കുന്നു.</translation>
 <translation id="5267269112080050255">Chrome-ലെ Google അസിസ്‌റ്റൻ്റ് മുഴുവൻ ഉയരത്തിൽ തുറന്നു.</translation>
+<translation id="6111473266581160404">ഏതാനും ടാപ്പുകളിലൂടെ \n കാർ വാടകയ്‌ക്ക് എടുക്കുക</translation>
 <translation id="6555233628095991027">Chrome-ലെ Google അസിസ്‌റ്റൻ്റ് പകുതി ഉയരത്തിൽ തുറന്നു.</translation>
 <translation id="6620345200476149840">Chrome-ൽ Google Assistant \n പരീക്ഷിക്കുക</translation>
+<translation id="6785872064505734160">Chrome-ലെ Google Assistant-ന് വെബ്‌സൈറ്റുകളിലുടനീളം നിങ്ങൾക്കായി പ്രവർത്തനങ്ങൾ പൂർത്തിയാക്കാനാവും</translation>
 <translation id="6973932557599545801">ക്ഷമിക്കണം, എനിക്ക് സഹായിക്കാൻ കഴിയില്ല, സ്വയം പൂരിപ്പിക്കുക.</translation>
 <translation id="7658239707568436148">റദ്ദാക്കൂ</translation>
 <translation id="8253702004019660079">Chrome-ലെ Google അസിസ്‌റ്റൻ്റ്.</translation>

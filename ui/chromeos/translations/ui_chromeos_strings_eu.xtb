@@ -57,7 +57,7 @@
 <translation id="1547964879613821194">Ingelesa (Kanada)</translation>
 <translation id="1556189134700913550">Aplikatu guztiei</translation>
 <translation id="1572585716423026576">Ezarri horma-paper gisa</translation>
-<translation id="158809615184981282">Teklatu faroearra</translation>
+<translation id="158809615184981282">Teklatu faroetarra</translation>
 <translation id="1589128298353575783"><ph name="NUMBER_OF_PB" /> PB</translation>
 <translation id="1646136617204068573">Teklatu hungariarra</translation>
 <translation id="164729547906544836">Teklatu tamildarra (itrans)</translation>
@@ -82,7 +82,7 @@
 <translation id="1864756863218646478">Ezin izan da aurkitu fitxategia.</translation>
 <translation id="1921986354447415460">Turkierako F teklatua</translation>
 <translation id="1924372192547904021">Formateatu da <ph name="DRIVE_NAME" /></translation>
-<translation id="1931134289871235022">Eslovakiera</translation>
+<translation id="1931134289871235022">Eslovakiarra</translation>
 <translation id="1933345018156373194">Ezin izan da mugitu ustekabeko errore hau gertatu delako: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">Finlandiarra</translation>
 <translation id="1942765061641586207">Irudiaren bereizmena</translation>
@@ -152,13 +152,13 @@
 <translation id="2843806747483486897">Aldatu ekintza lehenetsia…</translation>
 <translation id="2850124913210091882">Egin babeskopia</translation>
 <translation id="2870836398458454343">Transliterazioa (marhaban ← مرحبا)</translation>
-<translation id="288024221176729610">Txekiera</translation>
+<translation id="288024221176729610">Txekiarra</translation>
 <translation id="2887525882758501333">PDF dokumentua</translation>
 <translation id="2888807692577297075">Ez dago &lt;b&gt;"<ph name="SEARCH_STRING" />"&lt;/b&gt; bilaketarekin bat datorren elementurik</translation>
 <translation id="2894654529758326923">Informazioa</translation>
 <translation id="2902312830803030883">Ekintza gehiago</translation>
 <translation id="2902734494705624966">AEBko teklatu hedatua</translation>
-<translation id="2923240520113693977">Estoniera</translation>
+<translation id="2923240520113693977">Estoniarra</translation>
 <translation id="2924296707677495905">Transliterazioa (namaskaram → ನಮಸ್ಕಾರ)</translation>
 <translation id="2925966894897775835">Kalkulu-orriak</translation>
 <translation id="2938685643439809023">Mongoliarra</translation>
@@ -188,7 +188,7 @@
 <translation id="3202131003361292969">Bide-izena</translation>
 <translation id="3224239078034945833">Kanadar eleanitza</translation>
 <translation id="3236289833370040187"><ph name="DESTINATION_DOMAIN" /> domeinuari transferituko zaio jabetza.</translation>
-<translation id="3241720467332021590">Gaelikoa</translation>
+<translation id="3241720467332021590">Irlandarra</translation>
 <translation id="3245321423178950146">Artista ezezaguna</translation>
 <translation id="3252266817569339921">Frantsesa</translation>
 <translation id="3254434849914415189">Aukeratu <ph name="FILE_TYPE" /> fitxategiekin erabili beharreko aplikazio lehenetsia:</translation>
@@ -234,7 +234,7 @@
 <translation id="3786301125658655746">Ez zaude konektatuta</translation>
 <translation id="3789841737615482174">Instalatu</translation>
 <translation id="3798449238516105146">Bertsioa</translation>
-<translation id="3801082500826908679">Faroera</translation>
+<translation id="3801082500826908679">Faroetarra</translation>
 <translation id="3809272675881623365">Untxia</translation>
 <translation id="3811494700605067549">Fitxategi bat hautatu da</translation>
 <translation id="3815016854028376614">Zhuyin idazketa-metodoa</translation>
@@ -242,7 +242,7 @@
 <translation id="38275787300541712">Amaitzean, sakatu Sartu</translation>
 <translation id="3830674330436234648">Ez dago erreprodukziorik</translation>
 <translation id="3833761542219863804">Transliterazioa (mausam → ਮੌਸਮ)</translation>
-<translation id="383652340667548381">Serbiera</translation>
+<translation id="383652340667548381">Serbiarra</translation>
 <translation id="385051799172605136">Atzera</translation>
 <translation id="3855472144336161447">Neo 2 alemana</translation>
 <translation id="3856075812838139784">Irakurtzeko soilik</translation>
@@ -307,7 +307,7 @@
 <translation id="4732760563705710320">Igorpen-gailuak ez du bideo hau onartzen.</translation>
 <translation id="4734518477988699048">Idatzitakoak ez du balio.</translation>
 <translation id="4737050008115666127">Lurreratzea</translation>
-<translation id="4747271164117300400">Mazedoniera</translation>
+<translation id="4747271164117300400">Mazedoniarra</translation>
 <translation id="4749157430980974800">Teklatu georgiarra</translation>
 <translation id="4755240240651974342">Teklatu finlandiarra</translation>
 <translation id="4759238208242260848">Deskargak</translation>
@@ -346,7 +346,7 @@
 <translation id="5068919226082848014">Pizza</translation>
 <translation id="5081517858322016911">Fitxategiei dagozkien <ph name="TOTAL_FILE_SIZE" /> ezabatuko dira</translation>
 <translation id="509429900233858213">Errore bat gertatu da.</translation>
-<translation id="5098629044894065541">Hebreera</translation>
+<translation id="5098629044894065541">Hebrearra</translation>
 <translation id="5123433949759960244">Saskibaloiko baloia</translation>
 <translation id="5129662217315786329">Poloniarra</translation>
 <translation id="5144820558584035333">3. hangul-karaktere sorta (390)</translation>
@@ -417,9 +417,9 @@
 <translation id="5776325638577448643">Ezabatu eduki guztia eta formatea ezazu</translation>
 <translation id="57838592816432529">Desaktibatu audioa</translation>
 <translation id="5788127256798019331">Play fitxategiak</translation>
-<translation id="5790193330357274855">Kazakhera</translation>
+<translation id="5790193330357274855">Kazakhtarra</translation>
 <translation id="5817397429773072584">Txinatar tradizionala</translation>
-<translation id="5818003990515275822">Koreera</translation>
+<translation id="5818003990515275822">Korearra</translation>
 <translation id="5819442873484330149">3. hangul-karaktere sorta (azkena)</translation>
 <translation id="5833610766403489739">Fitxategia beste nonbaitera joan da. Egiaztatu deskargetarako ezarri duzun kokapena eta saiatu berriro.</translation>
 <translation id="5838451609423551646">Kendu dira sarrera guztiak hautapenetik.</translation>
@@ -478,7 +478,7 @@
 <translation id="6485131920355264772">Ezin izan da berreskuratu zuriuneei buruzko informazioa</translation>
 <translation id="6503256918647795660">Teklatu frantses suitzarra</translation>
 <translation id="6505918941256367791">Teklatu tamildarra (InScript)</translation>
-<translation id="6509122719576673235">Norvegiera</translation>
+<translation id="6509122719576673235">Norvegiarra</translation>
 <translation id="6527303717912515753">Partekatu</translation>
 <translation id="653019979737152879"><ph name="FILE_NAME" /> sinkronizatzen…</translation>
 <translation id="6549689063733911810">Azkenak</translation>
@@ -555,16 +555,16 @@
 <translation id="7417705661718309329">Google mapa</translation>
 <translation id="7419631653042041064">Teklatu katalana</translation>
 <translation id="7434823369735508263">Erresuma Batuko Dvorak teklatua</translation>
-<translation id="7460898608667578234">Ukrainera</translation>
+<translation id="7460898608667578234">Ukrainarra</translation>
 <translation id="7474889694310679759">Teklatu ingeles kanadarra</translation>
 <translation id="7489215562877293245"><ph name="FILE_COUNT" /> aurkitu dira
     <ph name="LINE_BREAK1" />
     <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" />-n babeskopia egiteko prest</translation>
 <translation id="7505167922889582512">Erakutsi ezkutatutako fitxategiak</translation>
 <translation id="7508545000531937079">Diapositiba-aurkezpena</translation>
-<translation id="751507702149411736">Bielorrusiera</translation>
+<translation id="751507702149411736">Bielorrusiarra</translation>
 <translation id="7544853251252956727">Ausazko erreprodukzioa</translation>
-<translation id="7547811415869834682">Nederlandera</translation>
+<translation id="7547811415869834682">Nederlandarra</translation>
 <translation id="7576032389798113292">6x4</translation>
 <translation id="7589661784326793847">Itxaron segundotxo batez</translation>
 <translation id="7603724359189955920">Saretak</translation>
@@ -666,7 +666,7 @@
 <translation id="8487700953926739672">Konexiorik gabe erabilgarri</translation>
 <translation id="8521441079177373948">Erresuma Batukoa</translation>
 <translation id="8525306231823319788">Pantaila osoa</translation>
-<translation id="8551494947769799688">Letoniera</translation>
+<translation id="8551494947769799688">Letoniarra</translation>
 <translation id="8561206103590473338">Elefantea</translation>
 <translation id="8569764466147087991">Hautatu irekitzeko fitxategi bat</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" /> elementu sinkronizatzen…</translation>
@@ -688,7 +688,7 @@
 <translation id="8860454412039442620">Excel-eko kalkulu-orria</translation>
 <translation id="8900820606136623064">Hungariarra</translation>
 <translation id="8901822611024316615">Teklatu txekiarra (QWERTY)</translation>
-<translation id="8919081441417203123">Daniera</translation>
+<translation id="8919081441417203123">Daniarra</translation>
 <translation id="8960999352790021682">Teklatu bengalarra (fonetikoa)</translation>
 <translation id="8965697826696209160">Ez dago memoria nahikorik.</translation>
 <translation id="9017798300203431059">Fonetika errusiarra</translation>

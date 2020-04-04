@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ky">
+<translation id="1552477655783980595">Бир нече жолу таптап, \n киного билет сатып алыңыз</translation>
 <translation id="1625889395409731085">Тышкы шилтеме ачылсынбы?</translation>
 <translation id="1699570257714336246">Маалымат жетишсиз</translation>
 <translation id="1932278019417741381">Тапшырмаларды аткарууга жардам берүү үчүн Google Жардамчыны колдонгон сайттардын URL даректерин жана мазмунун, ошондой эле Жардамчы аркылуу тапшырган маалыматты алат. Бул маалымат Google аккаунтуңузда сакталышы мүмкүн. Жардамчыны Chrome'дун жөндөөлөрүнөн өчүрсөңүз болот. <ph name="BEGIN_LINK" />Кеңири маалымат<ph name="END_LINK" /></translation>
@@ -11,8 +12,10 @@
 <translation id="4850886885716139402">Көрүнүш</translation>
 <translation id="4952448020231702394">Google Жардамчы издөө жана төлөө сыяктуу аракеттерди тездетип, убакытыңызды үнөмдөйт.</translation>
 <translation id="5267269112080050255">Chrome'догу Google Жардамчы толук экранда ачылды.</translation>
+<translation id="6111473266581160404">Бир нече жолу таптап, \n ижарага унаа алыңыз</translation>
 <translation id="6555233628095991027">Chrome'догу Google Жардамчы экрандын жарымында ачылды.</translation>
 <translation id="6620345200476149840">Google Жардамчыны \n Chrome'до колдонуп көрүңүз</translation>
+<translation id="6785872064505734160">Chrome'догу Google Жардамчы вебсайттардагы аракеттерди сиз үчүн аткара алат</translation>
 <translation id="6973932557599545801">Кечиресиз, мен жардам бере албайм, өзүңүз улантыңыз.</translation>
 <translation id="7658239707568436148">Жокко чыгаруу</translation>
 <translation id="8253702004019660079">Chrome'догу Google Жардамчы.</translation>

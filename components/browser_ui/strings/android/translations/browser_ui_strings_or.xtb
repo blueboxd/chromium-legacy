@@ -2,12 +2,17 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="or">
 <translation id="1124772482545689468">ଉପଯୋଗକର୍ତ୍ତା</translation>
+<translation id="1178581264944972037">ବିରତି</translation>
 <translation id="1181037720776840403">ଅପସାରଣ</translation>
 <translation id="1201402288615127009">ପରବର୍ତ୍ତୀ</translation>
 <translation id="1383876407941801731">ସନ୍ଧାନ</translation>
+<translation id="1384959399684842514">ଡାଉନ୍‌ଲୋଡ୍ ବିରତ ହୋଇଛି</translation>
+<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="2079545284768500474">ପୂର୍ବବତ୍</translation>
 <translation id="2148716181193084225">ଆଜି</translation>
 <translation id="2359808026110333948">ଜାରି ରଖନ୍ତୁ</translation>
+<translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
+<translation id="2434158240863470628">ଡାଉନ୍‌ଲୋଡ୍ ଶେଷ ହେଲା <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2501278716633472235">ଫେରନ୍ତୁ</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1ଟି କୁକୀ ବ୍ଲକ୍ କରାଯାଇଛି}other{#ଟି କୁକୀ ବ୍ଲକ୍ କରାଯାଇଛି}}</translation>
 <translation id="257931822824936280">ସଂପ୍ରସାରିତ - ସଙ୍କୁଚିତ କରିବାକୁ କ୍ଲିକ୍ କରନ୍ତୁ।</translation>
@@ -19,6 +24,7 @@
 <translation id="3479552764303398839">ଏବେ ନୁହେଁ</translation>
 <translation id="385051799172605136">ପଛକୁ</translation>
 <translation id="3987993985790029246">ଲିଙ୍କ୍ କପି କରନ୍ତୁ</translation>
+<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">ଆଖ୍ୟା</translation>
 <translation id="4570913071927164677">ବିବରଣୀ</translation>
 <translation id="4645575059429386691">ଆପଣଙ୍କର ଅଭିବାବକଙ୍କ ଦ୍ୱାରା ପରିଚାଳିତ</translation>
@@ -40,6 +46,7 @@
 <translation id="6206551242102657620">ସଂଯୋଗ ସୁରକ୍ଷିତ ଅଟେ। ସାଇଟ୍ ସୂଚନା</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> ବିକଳ୍ପ</translation>
 <translation id="6527303717912515753">ସେୟାର୍ କରନ୍ତୁ</translation>
+<translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6746124502594467657">ତଳକୁ ଚାଳନ କରନ୍ତୁ</translation>
 <translation id="6818926723028410516">ଆଇଟମ୍ ଚୟନ କରନ୍ତୁ</translation>
 <translation id="6910211073230771657">ଡିଲିଟ୍ କରାଗଲା</translation>
@@ -48,6 +55,7 @@
 <translation id="6965382102122355670">ଓକେ ବଟନ୍</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1ଟି ଚୟନ କରାଯାଇଛି}other{#ଟି ଚୟନ କରାଯାଇଛି}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" />ଟି ଚୟନ କରାଯାଇଛି।  ସ୍କ୍ରିନ୍‌ର ଶୀର୍ଷଭାଗରେ ବିକଳ୍ପଗୁଡ଼ିକ ଉପଲବ୍ଧ ଅଛି</translation>
+<translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> ଚୟନିତ</translation>
 <translation id="7649070708921625228">ସହାୟତା</translation>
 <translation id="7658239707568436148">ବାତିଲ୍</translation>
@@ -55,7 +63,9 @@
 <translation id="7791543448312431591">ଯୋଡନ୍ତୁ</translation>
 <translation id="780301667611848630">ନାଁ, ଥାଉ</translation>
 <translation id="7846076177841592234">ଚୟନିତ ଆଇଟମ୍ ବାତିଲ୍ କରନ୍ତୁ</translation>
+<translation id="802154636333426148">ଡାଉନ୍‌ଲୋଡ୍ ବିଫଳ ହୋଇଛି</translation>
 <translation id="8131740175452115882">ନିଶ୍ଚିତ କରନ୍ତୁ</translation>
+<translation id="8200772114523450471">ସାରାଶଂ</translation>
 <translation id="8206354486702514201">ଏହି ସେଟିଂସ୍ ଆପଣଙ୍କର ବ୍ୟବସ୍ଥାପକଙ୍କ ଦ୍ୱାରା ଲାଗୁ କରାଯାଇଛି।</translation>
 <translation id="8249310407154411074">ଉପରକୁ ଘୁଞ୍ଚାନ୍ତୁ</translation>
 <translation id="8261506727792406068">ବିଲୋପ</translation>

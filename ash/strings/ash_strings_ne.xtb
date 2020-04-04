@@ -18,6 +18,7 @@
 <translation id="1190609913194133056">सूचना केन्द्र</translation>
 <translation id="1195412055398077112">अत्याधिकस्क्यान</translation>
 <translation id="119944043368869598">सबै सफा गर्नुहोस्</translation>
+<translation id="1199716647557067911">तपाईंलाई साँच्चिकै स्विचमार्फत पहुँच राख्ने सुविधा निष्क्रिय पार्न चाहनुहुन्छ?</translation>
 <translation id="1247372569136754018">माइक्रोफोन (आन्तरिक)</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> द्वारा चार्ज हुँदै</translation>
 <translation id="1255033239764210633">मौसम कस्तो छ?</translation>
@@ -430,6 +431,7 @@
 <translation id="6537924328260219877">सिग्नलको क्षमता <ph name="SIGNAL_STRENGTH" />, <ph name="BATTERY_STATUS" /> फोनको ब्याट्री</translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> मा Cast गर्दै</translation>
 <translation id="6559976592393364813">प्रशासकलाई सोध्नुहोस्</translation>
+<translation id="6584550827717945790">स्विचमार्फत पहुँच राख्ने सुविधा निष्क्रिय पार्नुहोस्</translation>
 <translation id="6585808820553845416">सत्र <ph name="SESSION_TIME_REMAINING" /> मा समाप्त हुन्छ।</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, सिग्नलको क्षमता <ph name="SIGNAL_STRENGTH" />, तपाईंका प्रशासकले व्यवस्थित गर्नुभएको छ</translation>
 <translation id="6614169507485700968">गोपनीयताको स्क्रिन सक्रिय छ</translation>
@@ -603,6 +605,7 @@
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8825863694328519386">पछि फर्कन दायाँबाट स्वाइप गर्नुहोस्</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">पछाडि नामक बटन</translation>
 <translation id="8843682306134542540">परिक्रमासम्बन्धी लक टगल गर्नुहोस्। <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">अनुप्रयोगले विभाजित-स्क्रिनलाई समर्थन गर्दैन।</translation>

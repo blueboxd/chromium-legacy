@@ -2,12 +2,17 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="mk">
 <translation id="1124772482545689468">Корисник</translation>
+<translation id="1178581264944972037">Пауза</translation>
 <translation id="1181037720776840403">Отстрани</translation>
 <translation id="1201402288615127009">Следно</translation>
 <translation id="1383876407941801731">Барај</translation>
+<translation id="1384959399684842514">Преземањето е паузирано</translation>
+<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="2079545284768500474">Врати</translation>
 <translation id="2148716181193084225">Денес</translation>
 <translation id="2359808026110333948">Продолжи</translation>
+<translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
+<translation id="2434158240863470628">Преземањето е завршено <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2501278716633472235">Врати се</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 колаче е блокирано}one{# колаче е блокирано}other{# колачиња се блокирани}}</translation>
 <translation id="257931822824936280">Проширено - кликни да се сокрие.</translation>
@@ -19,6 +24,7 @@
 <translation id="3479552764303398839">Не сега</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3987993985790029246">Копирај линк</translation>
+<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="4002066346123236978">Наслов</translation>
 <translation id="4570913071927164677">Детали</translation>
 <translation id="4645575059429386691">Управувано од вашиот родител</translation>
@@ -40,6 +46,7 @@
 <translation id="6206551242102657620">Врската е безбедна. Информации за сајтот</translation>
 <translation id="6216432067784365534">Опции за <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6527303717912515753">Сподели</translation>
+<translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6746124502594467657">Премести долу</translation>
 <translation id="6818926723028410516">Изберете ставки</translation>
 <translation id="6910211073230771657">Избришано</translation>
@@ -48,6 +55,7 @@
 <translation id="6965382102122355670">Во ред</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Избрана е 1}one{Избрана е #}other{Избрани се #}}</translation>
 <translation id="7087918508125750058">Избрани ставки: <ph name="ITEM_COUNT" />. Достапни се опции во горниот дел од екранот</translation>
+<translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7250468141469952378">Избрани ставки: <ph name="ITEM_COUNT" /></translation>
 <translation id="7649070708921625228">Помош</translation>
 <translation id="7658239707568436148">Откажи</translation>
@@ -55,7 +63,9 @@
 <translation id="7791543448312431591">Додај</translation>
 <translation id="780301667611848630">Не, фала</translation>
 <translation id="7846076177841592234">Откажи избор</translation>
+<translation id="802154636333426148">Неуспешно преземање</translation>
 <translation id="8131740175452115882">Потврди</translation>
+<translation id="8200772114523450471">Продолжи</translation>
 <translation id="8206354486702514201">Поставката ја наметнува администраторот.</translation>
 <translation id="8249310407154411074">Премести најгоре</translation>
 <translation id="8261506727792406068">Избриши</translation>

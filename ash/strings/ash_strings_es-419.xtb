@@ -18,6 +18,7 @@
 <translation id="1190609913194133056">Centro de notificaciones</translation>
 <translation id="1195412055398077112">desajuste de dimensiones</translation>
 <translation id="119944043368869598">Borrar todo</translation>
+<translation id="1199716647557067911">¿Confirmas que quieres desactivar la accesibilidad mejorada?</translation>
 <translation id="1247372569136754018">Micrófono (interno)</translation>
 <translation id="1252999807265626933">Cargando desde <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">¿Cómo está el clima?</translation>
@@ -431,6 +432,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="6537924328260219877">Intensidad de la señal: <ph name="SIGNAL_STRENGTH" />, nivel de batería del teléfono: <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">Transmitiendo a <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Pregúntale al administrador</translation>
+<translation id="6584550827717945790">Desactiva la accesibilidad mejorada</translation>
 <translation id="6585808820553845416">La sesión terminará en <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, intensidad de la señal: <ph name="SIGNAL_STRENGTH" />, administrada por tu administrador</translation>
 <translation id="6614169507485700968">La pantalla de privacidad está activada</translation>
@@ -604,6 +606,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8825863694328519386">Para volver, desliza el dedo desde la izquierda</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">Botón Atrás</translation>
 <translation id="8843682306134542540">Activar o desactivar el bloqueo de rotación: <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Tecla de búsqueda + Esc</translation>
 <translation id="8870509716567206129">La app no es compatible con la función de pantalla dividida.</translation>

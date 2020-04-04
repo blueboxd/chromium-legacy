@@ -2,12 +2,17 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lt">
 <translation id="1124772482545689468">Naudotojas</translation>
+<translation id="1178581264944972037">Pristabdyti</translation>
 <translation id="1181037720776840403">Pašalinti</translation>
 <translation id="1201402288615127009">Kitas</translation>
 <translation id="1383876407941801731">Ieškoti</translation>
+<translation id="1384959399684842514">Atsisiuntimas pristabdytas</translation>
+<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> iš <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="2079545284768500474">Anuliuoti</translation>
 <translation id="2148716181193084225">Šiandien</translation>
 <translation id="2359808026110333948">Tęskite</translation>
+<translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
+<translation id="2434158240863470628">Atsisiųsta: <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2501278716633472235">Grįžti</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{Užblokuotas 1 slapukas}one{Užblokuotas # slapukas}few{Užblokuoti # slapukai}many{Užblokuota # slapuko}other{Užblokuota # slapukų}}</translation>
 <translation id="257931822824936280">Išskleista – spustelėkite, kad sutrauktumėte</translation>
@@ -19,6 +24,7 @@
 <translation id="3479552764303398839">Ne dabar</translation>
 <translation id="385051799172605136">Atgal</translation>
 <translation id="3987993985790029246">Kop. nuor.</translation>
+<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> iš ?</translation>
 <translation id="4002066346123236978">Pavadinimas</translation>
 <translation id="4570913071927164677">Išsami informacija</translation>
 <translation id="4645575059429386691">Tvarko vienas iš jūsų tėvų</translation>
@@ -40,6 +46,7 @@
 <translation id="6206551242102657620">Ryšys yra saugus. Svetainės informacija</translation>
 <translation id="6216432067784365534">„<ph name="NAME_OF_LIST_ITEM" />“ parinktys</translation>
 <translation id="6527303717912515753">Bendrinti</translation>
+<translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6746124502594467657">Perkelti žemyn</translation>
 <translation id="6818926723028410516">Pasirinkite elementus</translation>
 <translation id="6910211073230771657">Ištrintas</translation>
@@ -48,6 +55,7 @@
 <translation id="6965382102122355670">Gerai</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Pasirinktas 1 elementas}one{Pasirinktas # elementas}few{Pasirinkti # elementai}many{Pasirinkta # elemento}other{Pasirinkta # elementų}}</translation>
 <translation id="7087918508125750058">Pasirinkta: <ph name="ITEM_COUNT" />. Parinktys pasiekiamos netoli ekrano viršaus</translation>
+<translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7250468141469952378">Pasirinkta: <ph name="ITEM_COUNT" /></translation>
 <translation id="7649070708921625228">Žinynas</translation>
 <translation id="7658239707568436148">Atšaukti</translation>
@@ -55,7 +63,9 @@
 <translation id="7791543448312431591">Pridėti</translation>
 <translation id="780301667611848630">Ačiū, ne</translation>
 <translation id="7846076177841592234">Atšaukti pasirinkimą</translation>
+<translation id="802154636333426148">Įvyko atsisiuntimo klaida</translation>
 <translation id="8131740175452115882">Patvirtinti</translation>
+<translation id="8200772114523450471">Atnaujinti</translation>
 <translation id="8206354486702514201">Šį nustatymą vykdo jūsų administratorius.</translation>
 <translation id="8249310407154411074">Perkelti į viršų</translation>
 <translation id="8261506727792406068">Ištrinti</translation>

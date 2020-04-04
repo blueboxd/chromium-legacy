@@ -2150,6 +2150,15 @@ Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les n
 <translation id="4039085364173654945">Contrôle si un sous-contenu tiers sur une page est autorisé à ouvrir une boîte de dialogue d'authentification de base HTTP ( Basic Auth) dans une fenêtre pop-up. 
 
 Cette option est habituellement désactivée dans le cadre de la protection contre le phishing. Si cette règle n'est pas configurée, cette option est désactivée et le sous-contenu tiers n'est pas autorisé à afficher une boîte de dialogue d'authentification de base HTTP.</translation>
+<translation id="4044054366426171256">Cette règle configure les noms de domaines obligatoires de l'hôte qui sont imposés aux hôtes d'accès à distance et empêche les utilisateurs d'y apporter des modifications.
+
+          Si ce paramètre est activé et défini sur un ou plusieurs domaines, les hôtes ne peuvent être partagés qu'à l'aide des comptes enregistrés sur les noms de domaines spécifiés.
+
+          Si ce paramètre est désactivé, s'il n'est pas configuré ou s'il est défini sur une liste vide, les hôtes peuvent être partagés via n'importe quel compte.
+
+          Ce paramètre ignore la règle RemoteAccessHostDomain, le cas échéant.
+
+          Voir aussi RemoteAccessHostClientDomainList.</translation>
 <translation id="4056910949759281379">Désactiver le protocole SPDY</translation>
 <translation id="4061590579642538878">Transmettre les informations liées aux rapports d'erreur.</translation>
 <translation id="4075675819066819571">Placer l'étagère sur le côté gauche de l'écran</translation>
@@ -3889,6 +3898,7 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 <translation id="6734521799274931721">Vérifie la disponibilité de la fonctionnalité Partages de fichiers en réseau pour Chrome OS</translation>
 <translation id="6735701345096330595">Forcer l'activation des langues de la vérification orthographique</translation>
 <translation id="6757613329154374267">Service de sauvegarde et de restauration activé</translation>
+<translation id="6758659208493449452">Cette règle détermine si les utilisateurs inscrits au Programme Protection Avancée bénéficient de protections supplémentaires. Ces fonctionnalités peuvent impliquer le partage de données avec Google (par exemple, les utilisateurs du programme Protection Avancée peuvent envoyer leurs téléchargements à Google pour les faire analyser afin de détecter d'éventuels logiciels malveillants). Si cette règle est définie sur "True" ou si elle n'est pas configurée, les utilisateurs inscrits bénéficieront de protections supplémentaires. Si elle est définie sur "False", les utilisateurs du programme Protection Avancée ne bénéficieront que des fonctionnalités grand public standards.</translation>
 <translation id="6762235610019366960">Vous permet de contrôler la présentation de contenus promotionnels et/ou éducatifs en mode Plein onglet dans <ph name="PRODUCT_NAME" />.
 
       Si cette règle n'est pas configurée ni activée (définie sur "true"), <ph name="PRODUCT_NAME" /> peut présenter du contenu en mode Plein onglet aux utilisateurs pour leur fournir des informations sur le produit.
@@ -4363,6 +4373,15 @@ Si elle est définie sur "False" ou si elle n'est pas configurée, ces publicit�
           Si cette règle n'est pas définie ou si elle est définie sur "Activé", Google Chrome accepte les contenus Web transmis en tant qu'échanges HTTP signés.
 
           Si cette règle est définie sur "Désactivé", les échanges HTTP signés ne peuvent pas être chargés.</translation>
+<translation id="7506758875409719208">Cette règle configure les noms de domaines obligatoires du client qui sont imposés aux clients d'accès à distance et empêche les utilisateurs d'y apporter des modifications.
+
+          Si ce paramètre est activé et défini sur un ou plusieurs domaines, seuls les clients de l'un des domaines indiqués peuvent se connecter à l'hôte.
+
+          Si ce paramètre est désactivé, s'il n'est pas configuré ou s'il est défini sur une liste vide, la règle par défaut pour le type de connexion concerné est appliquée. Dans le cadre d'une assistance à distance, cela permet aux clients de n'importe quel domaine de se connecter à l'hôte. Concernant l'accès à distance à tout moment, seul le propriétaire de l'hôte peut se connecter.
+
+          Ce paramètre remplace RemoteAccessHostClientDomain, le cas échéant.
+
+          Voir aussi RemoteAccessHostDomainList.</translation>
 <translation id="7509496865303347769">Permet de configurer l'URL de la page d'accueil par défaut dans <ph name="PRODUCT_NAME" /> et d'empêcher les utilisateurs de la modifier.
 
           La page d'accueil est la page qui s'ouvre lorsque l'utilisateur sélectionne le bouton d'accueil. Sur ordinateur, les pages qui s'affichent au démarrage sont gérées par les règles RestoreOnStartup.

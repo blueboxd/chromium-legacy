@@ -18,6 +18,7 @@
 <translation id="1190609913194133056">Meddelandecenter</translation>
 <translation id="1195412055398077112">överskanning</translation>
 <translation id="119944043368869598">Ta bort alla</translation>
+<translation id="1199716647557067911">Vill du inaktivera brytarstyrning?</translation>
 <translation id="1247372569136754018">Mikrofon (inbyggd)</translation>
 <translation id="1252999807265626933">Laddar från <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Vad är det för väder?</translation>
@@ -430,6 +431,7 @@
 <translation id="6537924328260219877">Signalstyrka <ph name="SIGNAL_STRENGTH" />, telefonens batteri<ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">Castar till <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Fråga administratören</translation>
+<translation id="6584550827717945790">Inaktivera brytarstyrning</translation>
 <translation id="6585808820553845416">Sessionen upphör om <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, signalstyrka <ph name="SIGNAL_STRENGTH" />, hanteras av administratören</translation>
 <translation id="6614169507485700968">Sekretesskärmen är aktiverad</translation>
@@ -603,6 +605,7 @@
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8825863694328519386">Återgå genom att svepa från vänster</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">Bakåtknapp</translation>
 <translation id="8843682306134542540">Aktivera och inaktivera rotationslås. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Sök+Escape</translation>
 <translation id="8870509716567206129">Appen har inte stöd för delad skärm.</translation>

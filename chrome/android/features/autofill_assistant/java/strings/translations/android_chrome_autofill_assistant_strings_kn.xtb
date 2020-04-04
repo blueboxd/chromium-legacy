@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="kn">
+<translation id="1552477655783980595">ಕೆಲವೇ ಟ್ಯಾಪ್‌ಗಳ ಮೂಲಕ \n ಚಲನಚಿತ್ರದ ಟಿಕೆಟ್‌ಗಳನ್ನು ಖರೀದಿಸಿ</translation>
 <translation id="1625889395409731085">ಬಾಹ್ಯ ಲಿಂಕ್ ತೆರೆಯುವುದೇ?</translation>
 <translation id="1699570257714336246">ಮಾಹಿತಿ ಕಾಣೆಯಾಗಿದೆ</translation>
 <translation id="1932278019417741381">ಕಾರ್ಯಗಳನ್ನು ಪೂರ್ಣಗೊಳಿಸುವುದಕ್ಕೆ ನಿಮಗೆ ಸಹಾಯ ಮಾಡಲು, ನೀವು ಅಸಿಸ್ಟೆಂಟ್ ಅನ್ನು ಬಳಸಿದ ಸೈಟ್‌ಗಳ URL ಗಳು ಮತ್ತು ವಿಷಯಗಳು ಹಾಗೂ ಅಸಿಸ್ಟೆಂಟ್ ಮೂಲಕ ನೀವು ಸಲ್ಲಿಸಿದ ಮಾಹಿತಿಯನ್ನು Google ಸ್ವೀಕರಿಸುತ್ತದೆ. ಈ ಮಾಹಿತಿಯನ್ನು Google ಖಾತೆಯಲ್ಲಿ ಸಂಗ್ರಹಿಸಿರಬಹುದು. ಅಸಿಸ್ಟೆಂಟ್ ಅನ್ನು Chrome ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಆಫ್ ಮಾಡಬಹುದು. <ph name="BEGIN_LINK" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="END_LINK" /></translation>
@@ -11,8 +12,10 @@
 <translation id="4850886885716139402">ವೀಕ್ಷಣೆ</translation>
 <translation id="4952448020231702394">ಹುಡುಕಾಟ ಮತ್ತು ಚೆಕ್‌ ಔಟ್‌ನಂತಹ ವೆಬ್‌ನಲ್ಲಿನ ಕ್ರಿಯೆಗಳನ್ನು ಪೂರ್ಣಗೊಳಿಸಲು ನಿಮಗೆ ಸಹಾಯ ಮಾಡುವ ಮೂಲಕ Google ಅಸಿಸ್ಟೆಂಟ್ ನಿಮ್ಮ ಸಮಯವನ್ನು ಉಳಿಸುತ್ತದೆ.</translation>
 <translation id="5267269112080050255">Chrome ನಲ್ಲಿ Google ಅಸಿಸ್ಟೆಂಟ್ ಅನ್ನು ಪೂರ್ಣ ಎತ್ತರದಲ್ಲಿ ತೆರೆಯಲಾಗಿದೆ.</translation>
+<translation id="6111473266581160404">ಕೆಲವೇ ಟ್ಯಾಪ್‌ಗಳ ಮೂಲಕ \n ಕಾರನ್ನು ಬಾಡಿಗೆಗೆ ಪಡೆಯಿರಿ</translation>
 <translation id="6555233628095991027">Chrome ನಲ್ಲಿ Google ಅಸಿಸ್ಟೆಂಟ್ ಅನ್ನು ಅರ್ಧ ಎತ್ತರದಲ್ಲಿ ತೆರೆಯಲಾಗಿದೆ.</translation>
 <translation id="6620345200476149840">Chrome ನಲ್ಲಿ \n Google Assistant ಅನ್ನು ಪ್ರಯತ್ನಿಸಿ</translation>
+<translation id="6785872064505734160">Chrome ನಲ್ಲಿರುವ Google Assistant, ನಿಮಗಾಗಿ ವೆಬ್‌ಸೈಟ್‌ಗಳಾದ್ಯಂತದ ಕ್ರಿಯೆಗಳನ್ನು ಪೂರ್ಣಗೊಳಿಸಬಲ್ಲದು</translation>
 <translation id="6973932557599545801">ಕ್ಷಮಿಸಿ, ನನ್ನಿಂದ ಸಹಾಯ ಮಾಡಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ, ನಿಮ್ಮ ವಿವೇಚನೆಗೆ ತಕ್ಕಂತೆ ಮುಂದುವರಿಸಿ.</translation>
 <translation id="7658239707568436148">ರದ್ದುಮಾಡಿ</translation>
 <translation id="8253702004019660079">Chrome ನಲ್ಲಿ Google ಅಸಿಸ್ಟೆಂಟ್.</translation>

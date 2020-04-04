@@ -2,12 +2,17 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
 <translation id="1124772482545689468">Χρήστης</translation>
+<translation id="1178581264944972037">Παύση</translation>
 <translation id="1181037720776840403">Κατάργηση</translation>
 <translation id="1201402288615127009">Επόμενο</translation>
 <translation id="1383876407941801731">Αναζήτηση</translation>
+<translation id="1384959399684842514">Η λήψη διακόπηκε προσωρινά.</translation>
+<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="2079545284768500474">Αναίρεση</translation>
 <translation id="2148716181193084225">Σήμερα</translation>
 <translation id="2359808026110333948">Συνέχεια</translation>
+<translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
+<translation id="2434158240863470628">Η λήψη ολοκληρώθηκε <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2501278716633472235">Επιστροφή</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{Αποκλείστηκε ένα cookie}other{Αποκλείστηκαν # cookie}}</translation>
 <translation id="257931822824936280">Αναπτυγμένη - Κάντε κλικ για σύμπτυξη</translation>
@@ -19,6 +24,7 @@
 <translation id="3479552764303398839">Όχι τώρα</translation>
 <translation id="385051799172605136">Πίσω</translation>
 <translation id="3987993985790029246">Αντ. συνδ.</translation>
+<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">Τίτλος</translation>
 <translation id="4570913071927164677">Λεπτομέρειες</translation>
 <translation id="4645575059429386691">Διαχειρίζεται από τους γονείς σου</translation>
@@ -40,6 +46,7 @@
 <translation id="6206551242102657620">Η σύνδεση είναι ασφαλής. Πληροφορίες ιστοτόπου</translation>
 <translation id="6216432067784365534">Επιλογές <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6527303717912515753">Κοινοποίηση</translation>
+<translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6746124502594467657">Μετακίνηση προς τα κάτω</translation>
 <translation id="6818926723028410516">Επιλέξτε στοιχεία</translation>
 <translation id="6910211073230771657">Διαγράφηκε</translation>
@@ -48,6 +55,7 @@
 <translation id="6965382102122355670">OK</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 επιλεγμένο}other{# επιλεγμένα}}</translation>
 <translation id="7087918508125750058">Επιλέχθηκαν <ph name="ITEM_COUNT" />. Οι επιλογές είναι διαθέσιμες κοντά στο επάνω μέρος της οθόνης</translation>
+<translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7250468141469952378">Επιλέχθηκαν <ph name="ITEM_COUNT" /></translation>
 <translation id="7649070708921625228">Βοήθεια</translation>
 <translation id="7658239707568436148">Ακύρωση</translation>
@@ -55,7 +63,9 @@
 <translation id="7791543448312431591">Προσθήκη</translation>
 <translation id="780301667611848630">Όχι, ευχαριστώ</translation>
 <translation id="7846076177841592234">Ακύρωση επιλογής</translation>
+<translation id="802154636333426148">Η λήψη απέτυχε</translation>
 <translation id="8131740175452115882">Επιβεβαίωση</translation>
+<translation id="8200772114523450471">Συνέχιση</translation>
 <translation id="8206354486702514201">Η ρύθμιση αυτή επιβάλλεται από τον διαχειριστή σας.</translation>
 <translation id="8249310407154411074">Μετακίνηση επάνω</translation>
 <translation id="8261506727792406068">Διαγραφή</translation>

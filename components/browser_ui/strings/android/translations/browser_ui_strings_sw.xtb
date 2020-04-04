@@ -2,12 +2,17 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sw">
 <translation id="1124772482545689468">Mtumiaji</translation>
+<translation id="1178581264944972037">Sitisha</translation>
 <translation id="1181037720776840403">Ondoa</translation>
 <translation id="1201402288615127009">Endelea</translation>
 <translation id="1383876407941801731">Tafuta</translation>
+<translation id="1384959399684842514">Upakuaji umesitishwa</translation>
+<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="2079545284768500474">Tendua</translation>
 <translation id="2148716181193084225">Leo</translation>
 <translation id="2359808026110333948">Endelea</translation>
+<translation id="2402980924095424747">MB <ph name="MEGABYTES" /></translation>
+<translation id="2434158240863470628">Upakuaji umekamilika <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2501278716633472235">Rudi nyuma</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{Kidakuzi kimoja kimezuiwa}other{Vidakuzi # vimezuiwa}}</translation>
 <translation id="257931822824936280">Imepanuliwa - bofya ili ukunje.</translation>
@@ -19,6 +24,7 @@
 <translation id="3479552764303398839">Si sasa</translation>
 <translation id="385051799172605136">Rudi nyuma</translation>
 <translation id="3987993985790029246">Nakili kiungo</translation>
+<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">Kichwa</translation>
 <translation id="4570913071927164677">Maelezo</translation>
 <translation id="4645575059429386691">Inadhibitiwa na wazazi wako</translation>
@@ -40,6 +46,7 @@
 <translation id="6206551242102657620">Muunganisho ni salama. Maelezo ya tovuti</translation>
 <translation id="6216432067784365534">Chaguo za <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6527303717912515753">Shiriki</translation>
+<translation id="6608650720463149374">GB <ph name="GIGABYTES" /></translation>
 <translation id="6746124502594467657">Songa chini</translation>
 <translation id="6818926723028410516">Chagua vipengee</translation>
 <translation id="6910211073230771657">Imeondolewa</translation>
@@ -48,6 +55,7 @@
 <translation id="6965382102122355670">Sawa</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 imechaguliwa}other{# vimechaguliwa}}</translation>
 <translation id="7087918508125750058">Imechagua <ph name="ITEM_COUNT" />. Chaguo zinapatikana karibu na sehemu ya juu ya skrini</translation>
+<translation id="7176368934862295254">KB <ph name="KILOBYTES" /></translation>
 <translation id="7250468141469952378">Imechagua <ph name="ITEM_COUNT" /></translation>
 <translation id="7649070708921625228">Usaidizi</translation>
 <translation id="7658239707568436148">Ghairi</translation>
@@ -55,7 +63,9 @@
 <translation id="7791543448312431591">Ongeza</translation>
 <translation id="780301667611848630">Hapana</translation>
 <translation id="7846076177841592234">Ghairi uchaguzi</translation>
+<translation id="802154636333426148">Haikuweza kupakua</translation>
 <translation id="8131740175452115882">Thibitisha</translation>
+<translation id="8200772114523450471">Endelea</translation>
 <translation id="8206354486702514201">Mpangilio huu umetekelezwa na msimamizi wako.</translation>
 <translation id="8249310407154411074">Sogeza juu</translation>
 <translation id="8261506727792406068">Futa</translation>

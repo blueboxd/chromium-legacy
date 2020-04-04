@@ -2,12 +2,17 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ne">
 <translation id="1124772482545689468">प्रयोगकर्ता</translation>
+<translation id="1178581264944972037">पज गर्नुहोस्</translation>
 <translation id="1181037720776840403">हटाउनुहोस्</translation>
 <translation id="1201402288615127009">अर्को</translation>
 <translation id="1383876407941801731">खोज्नुहोस्</translation>
+<translation id="1384959399684842514">डाउनलोड रोकिएको छ</translation>
+<translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="2079545284768500474">अन्डू गर्नुहोस्</translation>
 <translation id="2148716181193084225">आज</translation>
 <translation id="2359808026110333948">जारी राख्नुहोस्</translation>
+<translation id="2402980924095424747"><ph name="MEGABYTES" /> एम.बि.</translation>
+<translation id="2434158240863470628">डाउनलोड सम्पन्न भयो <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2501278716633472235">पछाडि जानुहोस्</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{१ कुकीमाथि रोक लगाइयो}other{# कुकीहरूमाथि रोक लगाइयो}}</translation>
 <translation id="257931822824936280">विस्तृत गरिएको - संक्षिप्त पार्न क्लिक गर्नुहोस्</translation>
@@ -19,6 +24,7 @@
 <translation id="3479552764303398839">अहिले होइन</translation>
 <translation id="385051799172605136">पछाडि जानुहोस्</translation>
 <translation id="3987993985790029246">लिंक प्रतिलिपि गर्नुहोस्</translation>
+<translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">शीर्षक</translation>
 <translation id="4570913071927164677">विवरणहरू</translation>
 <translation id="4645575059429386691">तपाईँको अविभावक द्वारा प्रबन्ध गरिएको</translation>
@@ -40,6 +46,7 @@
 <translation id="6206551242102657620">जडान सुरक्षित छ। साइटसम्बन्धी जानकारी</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> विकल्पहरू</translation>
 <translation id="6527303717912515753">साझा गर्नुहोस्</translation>
+<translation id="6608650720463149374"><ph name="GIGABYTES" /> जि.बि.</translation>
 <translation id="6746124502594467657">तल सार्नुहोस्</translation>
 <translation id="6818926723028410516">वस्तुहरू छनाैट गर्नुहोस्</translation>
 <translation id="6910211073230771657">मेटाइएको</translation>
@@ -48,6 +55,7 @@
 <translation id="6965382102122355670">ठिक छ</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{१ चयन गरियो}other{# चयन गरिए}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> चयन गरिए।  विकल्पहरू स्क्रिनको शीर्षभागको नजिकै उपलब्ध छन्</translation>
+<translation id="7176368934862295254"><ph name="KILOBYTES" /> के.बि.</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> चयन गरिए</translation>
 <translation id="7649070708921625228">मद्दत</translation>
 <translation id="7658239707568436148">रद्द गर्नुहोस्</translation>
@@ -55,7 +63,9 @@
 <translation id="7791543448312431591">थप्नुहोस्</translation>
 <translation id="780301667611848630">भयो, धन्यवाद</translation>
 <translation id="7846076177841592234">चयन रद्द गर्नुहोस्</translation>
+<translation id="802154636333426148">डाउनलोड गर्न सकिएन</translation>
 <translation id="8131740175452115882">निश्चित</translation>
+<translation id="8200772114523450471">रिजुमी</translation>
 <translation id="8206354486702514201">यो सेटिङ तपाईंको प्रशासकद्वारा जोड दिएको छ।</translation>
 <translation id="8249310407154411074">शीर्षभागमा सार्नुहोस्</translation>
 <translation id="8261506727792406068">मेट्नुहोस्</translation>

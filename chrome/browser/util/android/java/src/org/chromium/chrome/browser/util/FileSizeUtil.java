@@ -12,6 +12,8 @@ import android.text.SpannableString;
 import android.text.format.Formatter;
 import android.text.style.TtsSpan;
 
+import org.chromium.components.browser_ui.util.ConversionUtils;
+
 /**
  * Helper functions for file size info that is shown to the user.
  */

@@ -24,7 +24,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.base.SuggestionDrawableState;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
-import org.chromium.chrome.browser.util.ConversionUtils;
+import org.chromium.components.browser_ui.util.ConversionUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.ArrayList;

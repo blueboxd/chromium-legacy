@@ -12,6 +12,7 @@
 #include "gpu/vulkan/vulkan_image.h"
 #include "gpu/vulkan/vulkan_instance.h"
 #include "gpu/vulkan/vulkan_surface.h"
+#include "gpu/vulkan/vulkan_util.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -25,6 +26,8 @@ VulkanImplementationWin32::~VulkanImplementationWin32() = default;
 bool VulkanImplementationWin32::InitializeVulkanInstance(bool using_surface) {
   DCHECK(using_surface);
   std::vector<const char*> required_extensions = {
+      VK_KHR_EXTERNAL_MEMORY_CAPABILITIES_EXTENSION_NAME,
+      VK_KHR_EXTERNAL_SEMAPHORE_CAPABILITIES_EXTENSION_NAME,
       VK_KHR_SURFACE_EXTENSION_NAME,
       VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
   };
@@ -87,7 +90,12 @@ VulkanImplementationWin32::GetRequiredDeviceExtensions() {
 
 std::vector<const char*>
 VulkanImplementationWin32::GetOptionalDeviceExtensions() {
-  return {};
+  return {
+      VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME,
+      VK_KHR_EXTERNAL_MEMORY_WIN32_EXTENSION_NAME,
+      VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME,
+      VK_KHR_EXTERNAL_SEMAPHORE_WIN32_EXTENSION_NAME,
+  };
 }
 
 VkFence VulkanImplementationWin32::CreateVkFenceForGpuFence(
@@ -105,21 +113,22 @@ VulkanImplementationWin32::ExportVkFenceToGpuFence(VkDevice vk_device,
 
 VkSemaphore VulkanImplementationWin32::CreateExternalSemaphore(
     VkDevice vk_device) {
-  NOTIMPLEMENTED();
-  return VK_NULL_HANDLE;
+  return CreateExternalVkSemaphore(
+      vk_device, VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_BIT);
 }
 
 VkSemaphore VulkanImplementationWin32::ImportSemaphoreHandle(
     VkDevice vk_device,
     SemaphoreHandle handle) {
-  NOTIMPLEMENTED();
-  return VK_NULL_HANDLE;
+  return ImportVkSemaphoreHandle(vk_device, std::move(handle));
 }
 
 SemaphoreHandle VulkanImplementationWin32::GetSemaphoreHandle(
     VkDevice vk_device,
     VkSemaphore vk_semaphore) {
-  return SemaphoreHandle();
+  return GetVkSemaphoreHandle(
+      vk_device, vk_semaphore,
+      VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_BIT);
 }
 
 VkExternalMemoryHandleTypeFlagBits

@@ -977,8 +977,6 @@ ui::AXNodeData* PdfAccessibilityTree::CreateTextFieldNode(
     text_field_node->AddState(ax::mojom::State::kRequired);
   if (text_field.is_password)
     text_field_node->AddState(ax::mojom::State::kProtected);
-  if (!text_field.is_read_only)
-    text_field_node->AddState(ax::mojom::State::kEditable);
   text_field_node->relative_bounds.bounds =
       PpFloatRectToGfxRectF(text_field.bounds);
   return text_field_node;

@@ -11,6 +11,8 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.xsurface.FeedActionsHandler;
+import org.chromium.chrome.browser.xsurface.SurfaceActionsHandler;
 import org.chromium.components.feed.proto.FeedUiProto.StreamUpdate;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
@@ -24,7 +26,7 @@ import java.util.List;
  * Created once for each StreamSurfaceMediator corresponding to each NTP/start surface.
  */
 @JNINamespace("feed")
-public class FeedStreamSurface implements FeedActionHandler {
+public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHandler {
     private final long mNativeFeedStreamSurface;
     private final ChromeActivity mActivity;
 
@@ -35,6 +37,11 @@ public class FeedStreamSurface implements FeedActionHandler {
     public FeedStreamSurface(ChromeActivity activity) {
         mNativeFeedStreamSurface = FeedStreamSurfaceJni.get().init(FeedStreamSurface.this);
         mActivity = activity;
+
+        FeedListContentManager manager = new FeedListContentManager(this, this);
+
+        // TODO(jianli): Get HybridListRender in order to bind FeedListContentManager to it.
+        // Then add the returned RecyclerView to NTP layout.
     }
 
     /**
@@ -50,27 +57,33 @@ public class FeedStreamSurface implements FeedActionHandler {
     }
 
     @Override
-    public void navigate(String url) {
+    public void navigateTab(String url) {
         LoadUrlParams loadUrlParams = new LoadUrlParams(url);
         loadUrlParams.setTransitionType(PageTransition.AUTO_BOOKMARK);
         mActivity.getActivityTabProvider().get().loadUrl(loadUrlParams);
-        FeedStreamSurfaceJni.get().navigationStarted(
+        FeedStreamSurfaceJni.get().reportNavigationStarted(
                 mNativeFeedStreamSurface, FeedStreamSurface.this, url, false /*inNewTab*/);
     }
 
     @Override
-    public void navigateInNewTab(String url) {
+    public void navigateNewTab(String url) {
         TabModelSelector tabModelSelector = mActivity.getTabModelSelector();
         Tab tab = mActivity.getActivityTabProvider().get();
         tabModelSelector.openNewTab(
                 new LoadUrlParams(url), TabLaunchType.FROM_CHROME_UI, tab, tab.isIncognito());
-        FeedStreamSurfaceJni.get().navigationStarted(
+        FeedStreamSurfaceJni.get().reportNavigationStarted(
                 mNativeFeedStreamSurface, FeedStreamSurface.this, url, true /*inNewTab*/);
     }
 
     @Override
     public void loadMore() {
         FeedStreamSurfaceJni.get().loadMore(mNativeFeedStreamSurface, FeedStreamSurface.this);
+    }
+
+    @Override
+    public void processThereAndBackAgainData(byte[] data) {
+        FeedStreamSurfaceJni.get().processThereAndBackAgain(
+                mNativeFeedStreamSurface, FeedStreamSurface.this, data);
     }
 
     @Override
@@ -95,14 +108,6 @@ public class FeedStreamSurface implements FeedActionHandler {
     }
 
     /**
-     * Handles uploading data for ThereAndBackAgain.
-     */
-    public void processThereAndBackAgain(byte[] data) {
-        FeedStreamSurfaceJni.get().processThereAndBackAgain(
-                mNativeFeedStreamSurface, FeedStreamSurface.this, data);
-    }
-
-    /**
      * Informs that the surface is opened. We can request the initial set of content now. Once
      * the content is available, onStreamUpdated will be called.
      */
@@ -120,10 +125,19 @@ public class FeedStreamSurface implements FeedActionHandler {
     @NativeMethods
     interface Natives {
         long init(FeedStreamSurface caller);
-        void navigationStarted(long nativeFeedStreamSurface, FeedStreamSurface caller, String url,
-                boolean inNewTab);
-        void navigationDone(long nativeFeedStreamSurface, FeedStreamSurface caller, String url,
-                boolean inNewTab);
+        void reportNavigationStarted(long nativeFeedStreamSurface, FeedStreamSurface caller,
+                String url, boolean inNewTab);
+        // TODO(jianli): Call this function at the appropriate time.
+        void reportNavigationDone(long nativeFeedStreamSurface, FeedStreamSurface caller,
+                String url, boolean inNewTab);
+        // TODO(jianli): Call this function at the appropriate time.
+        void reportContentRemoved(long nativeFeedStreamSurface, FeedStreamSurface caller);
+        // TODO(jianli): Call this function at the appropriate time.
+        void reportNotInterestedIn(long nativeFeedStreamSurface, FeedStreamSurface caller);
+        // TODO(jianli): Call this function at the appropriate time.
+        void reportManageInterests(long nativeFeedStreamSurface, FeedStreamSurface caller);
+        // TODO(jianli): Call this function at the appropriate time.
+        void reportContextMenuOpened(long nativeFeedStreamSurface, FeedStreamSurface caller);
         void loadMore(long nativeFeedStreamSurface, FeedStreamSurface caller);
         void processThereAndBackAgain(
                 long nativeFeedStreamSurface, FeedStreamSurface caller, byte[] data);

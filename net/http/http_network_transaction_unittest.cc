@@ -5586,7 +5586,7 @@ TEST_F(HttpNetworkTransactionTest, SameDestinationForDifferentProxyTypes) {
           std::make_unique<ProxyConfigServiceFixed>(ProxyConfigWithAnnotation(
               ProxyConfig::CreateAutoDetect(), TRAFFIC_ANNOTATION_FOR_TESTS)),
           std::make_unique<SameProxyWithDifferentSchemesProxyResolverFactory>(),
-          nullptr);
+          nullptr, /*quick_check_enabled=*/true);
 
   std::unique_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
 
@@ -6007,7 +6007,7 @@ TEST_F(HttpNetworkTransactionTest, ProxyResolvedWithNetworkIsolationKey) {
               proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS)),
           std::make_unique<CapturingProxyResolverFactory>(
               &capturing_proxy_resolver),
-          nullptr);
+          nullptr, /*quick_check_enabled=*/true);
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -6611,7 +6611,7 @@ TEST_F(HttpNetworkTransactionTest, ProxiedH2SessionAppearsDuringAuth) {
               proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS)),
           std::make_unique<CapturingProxyResolverFactory>(
               &capturing_proxy_resolver),
-          nullptr);
+          nullptr, /*quick_check_enabled=*/true);
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -7150,7 +7150,7 @@ TEST_F(HttpNetworkTransactionTest, SpdyProxyIsolation1) {
               proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS)),
           std::make_unique<CapturingProxyResolverFactory>(
               &capturing_proxy_resolver),
-          nullptr);
+          nullptr, /*quick_check_enabled=*/true);
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -7285,7 +7285,7 @@ TEST_F(HttpNetworkTransactionTest, SpdyProxyIsolation2) {
               proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS)),
           std::make_unique<CapturingProxyResolverFactory>(
               &capturing_proxy_resolver),
-          nullptr);
+          nullptr, /*quick_check_enabled=*/true);
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   // Fetch https://proxy:70/ via HTTP/2.
@@ -14184,7 +14184,7 @@ TEST_F(HttpNetworkTransactionTest, UseOriginNotAlternativeForProxy) {
   session_deps_.proxy_resolution_service =
       std::make_unique<ConfiguredProxyResolutionService>(
           std::move(proxy_config_service), std::move(proxy_resolver_factory),
-          &net_log);
+          &net_log, /*quick_check_enabled=*/true);
 
   session_deps_.net_log = &net_log;
 
@@ -14265,7 +14265,7 @@ TEST_F(HttpNetworkTransactionTest, UseAlternativeServiceForTunneledNpnSpdy) {
               proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS)),
           std::make_unique<CapturingProxyResolverFactory>(
               &capturing_proxy_resolver),
-          nullptr);
+          nullptr, /*quick_check_enabled=*/true);
   RecordingTestNetLog net_log;
   session_deps_.net_log = &net_log;
 
@@ -17647,7 +17647,7 @@ TEST_F(HttpNetworkTransactionTest, DoNotUseSpdySessionIfCertDoesNotMatch) {
       std::make_unique<ConfiguredProxyResolutionService>(
           std::make_unique<ProxyConfigServiceFixed>(ProxyConfigWithAnnotation(
               proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS)),
-          nullptr, nullptr);
+          nullptr, nullptr, /*quick_check_enabled=*/true);
 
   SSLSocketDataProvider ssl1(ASYNC, OK);  // to the proxy
   ssl1.next_proto = kProtoHTTP2;
@@ -19290,7 +19290,8 @@ TEST_F(HttpNetworkTransactionTest, ProxyResolutionFailsSync) {
       new ConfiguredProxyResolutionService(
           std::make_unique<ProxyConfigServiceFixed>(ProxyConfigWithAnnotation(
               proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS)),
-          std::make_unique<FailingProxyResolverFactory>(), nullptr));
+          std::make_unique<FailingProxyResolverFactory>(), nullptr,
+          /*quick_check_enabled=*/true));
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -19320,7 +19321,8 @@ TEST_F(HttpNetworkTransactionTest, ProxyResolutionFailsAsync) {
       new ConfiguredProxyResolutionService(
           std::make_unique<ProxyConfigServiceFixed>(ProxyConfigWithAnnotation(
               proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS)),
-          base::WrapUnique(proxy_resolver_factory), nullptr));
+          base::WrapUnique(proxy_resolver_factory), nullptr,
+          /*quick_check_enabled=*/true));
   HttpRequestInfo request;
   request.method = "GET";
   request.url = GURL("http://www.example.org/");

@@ -27,7 +27,6 @@
 #include "url/url_util.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/android/chrome_jni_headers/ChromePermissionsClient_jni.h"
 #include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -274,11 +273,6 @@ void ChromePermissionsClient::RepromptForAndroidPermissions(
     PermissionsUpdatedCallback callback) {
   PermissionUpdateInfoBarDelegate::Create(web_contents, content_settings_types,
                                           std::move(callback));
-}
-
-base::android::ScopedJavaLocalRef<jobject>
-ChromePermissionsClient::GetJavaObject() {
-  return Java_ChromePermissionsClient_get(base::android::AttachCurrentThread());
 }
 
 int ChromePermissionsClient::MapToJavaDrawableId(int resource_id) {

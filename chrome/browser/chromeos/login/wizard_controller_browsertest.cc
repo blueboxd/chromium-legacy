@@ -980,15 +980,22 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
 IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
                        ControlFlowWrongHWIDScreenFromLogin) {
   CheckCurrentScreen(WelcomeView::kScreenId);
-
   LoginDisplayHost::default_host()->StartSignInScreen();
   EXPECT_FALSE(ExistingUserController::current_controller() == NULL);
-  ExistingUserController::current_controller()->ShowWrongHWIDScreen();
+
+  EXPECT_CALL(*mock_wrong_hwid_screen_, ShowImpl()).Times(1);
+  EXPECT_CALL(*mock_welcome_screen_, HideImpl()).Times(1);
+  EXPECT_CALL(*mock_welcome_screen_, SetConfiguration(IsNull())).Times(1);
+  WizardController::default_controller()->AdvanceToScreen(
+      WrongHWIDScreenView::kScreenId);
 
   CheckCurrentScreen(WrongHWIDScreenView::kScreenId);
 
   // After warning is skipped, user returns to sign-in screen.
   // And this destroys WizardController.
+  EXPECT_CALL(*mock_wrong_hwid_screen_, HideImpl()).Times(1);
+  EXPECT_CALL(*mock_welcome_screen_, ShowImpl()).Times(1);
+  EXPECT_CALL(*mock_welcome_screen_, SetConfiguration(NotNull())).Times(1);
   GetWrongHWIDScreen()->OnExit();
   EXPECT_FALSE(ExistingUserController::current_controller() == NULL);
 }

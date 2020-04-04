@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "media/mojo/buildflags.h"
 #include "media/mojo/services/gpu_mojo_media_client.h"
 #include "media/mojo/services/media_service.h"
@@ -20,9 +21,7 @@ namespace media {
 
 std::unique_ptr<MediaService> CreateMediaService(
     mojo::PendingReceiver<mojom::MediaService> receiver) {
-#if BUILDFLAG(ENABLE_TEST_MOJO_MEDIA_CLIENT)
-  return CreateMediaServiceForTesting(std::move(receiver));
-#elif defined(OS_ANDROID)
+#if defined(OS_ANDROID)
   return std::make_unique<MediaService>(
       std::make_unique<AndroidMojoMediaClient>(), std::move(receiver));
 #else

@@ -48,6 +48,7 @@
 #include "net/dns/dns_server_iterator.h"
 #include "net/dns/dns_session.h"
 #include "net/dns/dns_util.h"
+#include "net/dns/public/dns_over_https_server_config.h"
 #include "net/dns/public/dns_protocol.h"
 #include "net/dns/resolve_context.h"
 #include "net/http/http_request_headers.h"
@@ -571,7 +572,7 @@ void ConstructDnsHTTPAttempt(DnsSession* session,
   DCHECK_GE(doh_server_index, 0);
   DCHECK_LT(doh_server_index,
             (int)session->config().dns_over_https_servers.size());
-  const DnsConfig::DnsOverHttpsServerConfig& doh_config =
+  const DnsOverHttpsServerConfig& doh_config =
       session->config().dns_over_https_servers[doh_server_index];
   GURL gurl_without_parameters(
       GetURLFromTemplateWithoutParameters(doh_config.server_template));

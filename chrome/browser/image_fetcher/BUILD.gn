@@ -10,6 +10,7 @@ android_library("java") {
     "//base:jni_java",
     "//chrome/browser/profiles/android:java",
     "//chrome/browser/util:java",
+    "//components/browser_ui/util/android:java",
     "//content/public/android:content_java",
     "//third_party/gif_player:gif_player_java",
   ]

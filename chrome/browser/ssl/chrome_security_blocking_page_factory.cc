@@ -330,8 +330,9 @@ void ChromeSecurityBlockingPageFactory::OpenLoginTabForWebContents(
   base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>
       dns_over_https_servers;
   SystemNetworkContextManager::GetStubResolverConfigReader()->GetConfiguration(
-      &insecure_stub_resolver_enabled,
-      &secure_dns_mode, &dns_over_https_servers);
+      false /* force_check_parental_controls */,
+      &insecure_stub_resolver_enabled, &secure_dns_mode,
+      nullptr /* dns_over_https_servers */);
 
   // If the DNS mode is SECURE, captive portal login tabs should be opened in
   // new popup windows where secure DNS will be disabled.

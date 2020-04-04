@@ -12,6 +12,9 @@
 namespace embedder_support {
 
 extern const char kDisablePopupBlocking[];
+extern const char kOriginTrialDisabledFeatures[];
+extern const char kOriginTrialDisabledTokens[];
+extern const char kOriginTrialPublicKey[];
 
 }  // namespace embedder_support
 

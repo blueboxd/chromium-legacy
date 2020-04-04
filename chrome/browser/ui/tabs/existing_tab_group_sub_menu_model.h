@@ -19,7 +19,9 @@ class TabGroupId;
 class ExistingTabGroupSubMenuModel : public ui::SimpleMenuModel,
                                      ui::SimpleMenuModel::Delegate {
  public:
-  ExistingTabGroupSubMenuModel(TabStripModel* model, int context_index);
+  ExistingTabGroupSubMenuModel(ui::SimpleMenuModel::Delegate* parent_delegate,
+                               TabStripModel* model,
+                               int context_index);
   ~ExistingTabGroupSubMenuModel() override = default;
 
   bool IsCommandIdChecked(int command_id) const override;
@@ -41,6 +43,8 @@ class ExistingTabGroupSubMenuModel : public ui::SimpleMenuModel,
   // and executing commands, which must be in order. Otherwise, ListTabGroups()
   // is cheaper and sufficient for determining visibility and size of the menu.
   std::vector<tab_groups::TabGroupId> GetOrderedTabGroups();
+
+  ui::SimpleMenuModel::Delegate* parent_delegate_;
 
   // Unowned; |model_| must outlive this instance.
   TabStripModel* model_;

@@ -890,6 +890,10 @@ void glImportMemoryFdEXTFn(GLuint memory,
                            GLuint64 size,
                            GLenum handleType,
                            GLint fd) override {}
+void glImportMemoryWin32HandleEXTFn(GLuint memory,
+                                    GLuint64 size,
+                                    GLenum handleType,
+                                    void* handle) override {}
 void glImportMemoryZirconHandleANGLEFn(GLuint memory,
                                        GLuint64 size,
                                        GLenum handleType,
@@ -897,6 +901,9 @@ void glImportMemoryZirconHandleANGLEFn(GLuint memory,
 void glImportSemaphoreFdEXTFn(GLuint semaphore,
                               GLenum handleType,
                               GLint fd) override {}
+void glImportSemaphoreWin32HandleEXTFn(GLuint semaphore,
+                                       GLenum handleType,
+                                       void* handle) override {}
 void glImportSemaphoreZirconHandleANGLEFn(GLuint semaphore,
                                           GLenum handleType,
                                           GLuint handle) override {}

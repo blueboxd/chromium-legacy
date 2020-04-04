@@ -109,7 +109,13 @@ TEST(VideoEncoderInfoStructTraitTest, RoundTrip) {
   EXPECT_EQ(input, output);
 }
 
-TEST(SpatialLayerStructTraitTest, RoundTrip) {
+// This test is failing on msan: crbug.com/1067758
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_RoundTrip DISABLED_RoundTrip
+#else
+#define MAYBE_RoundTrip RoundTrip
+#endif
+TEST(SpatialLayerStructTraitTest, MAYBE_RoundTrip) {
   ::media::VideoEncodeAccelerator::Config::SpatialLayer input_spatial_layer;
   input_spatial_layer.width = 320u;
   input_spatial_layer.width = 180u;

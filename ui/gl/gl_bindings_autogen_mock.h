@@ -1279,6 +1279,10 @@ static void GL_BINDING_CALL Mock_glImportMemoryFdEXT(GLuint memory,
                                                      GLuint64 size,
                                                      GLenum handleType,
                                                      GLint fd);
+static void GL_BINDING_CALL Mock_glImportMemoryWin32HandleEXT(GLuint memory,
+                                                              GLuint64 size,
+                                                              GLenum handleType,
+                                                              void* handle);
 static void GL_BINDING_CALL
 Mock_glImportMemoryZirconHandleANGLE(GLuint memory,
                                      GLuint64 size,
@@ -1287,6 +1291,10 @@ Mock_glImportMemoryZirconHandleANGLE(GLuint memory,
 static void GL_BINDING_CALL Mock_glImportSemaphoreFdEXT(GLuint semaphore,
                                                         GLenum handleType,
                                                         GLint fd);
+static void GL_BINDING_CALL
+Mock_glImportSemaphoreWin32HandleEXT(GLuint semaphore,
+                                     GLenum handleType,
+                                     void* handle);
 static void GL_BINDING_CALL
 Mock_glImportSemaphoreZirconHandleANGLE(GLuint semaphore,
                                         GLenum handleType,

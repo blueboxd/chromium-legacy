@@ -30,6 +30,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kCornerShortcuts;
 // Enables a modal dialog when resolution or refresh rate change.
 ASH_PUBLIC_EXPORT extern const base::Feature kDisplayChangeModal;
 
+// Enables identification overlays on each display.
+ASH_PUBLIC_EXPORT extern const base::Feature kDisplayIdentification;
+
 // Enables the docked (a.k.a. picture-in-picture) magnifier.
 // TODO(afakhry): Remove this after the feature is fully launched.
 // https://crbug.com/709824.
@@ -209,6 +212,8 @@ ASH_PUBLIC_EXPORT bool AreContextualNudgesEnabled();
 ASH_PUBLIC_EXPORT bool IsCornerShortcutsEnabled();
 
 ASH_PUBLIC_EXPORT bool IsSystemTrayMicGainSettingEnabled();
+
+ASH_PUBLIC_EXPORT bool IsDisplayIdentificationlEnabled();
 
 // These two functions are supposed to be temporary functions to set or get
 // whether "WebUITabStrip" feature is enabled from Chrome.

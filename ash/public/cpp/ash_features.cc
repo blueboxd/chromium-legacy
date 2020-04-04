@@ -27,6 +27,9 @@ const base::Feature kContextualNudges{"ContextualNudges",
 const base::Feature kDisplayChangeModal{"DisplayChangeModal",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kDisplayIdentification{"DisplayIdentification",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kDockedMagnifier{"DockedMagnifier",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -250,6 +253,10 @@ bool IsCornerShortcutsEnabled() {
 
 bool IsSystemTrayMicGainSettingEnabled() {
   return base::FeatureList::IsEnabled(kSystemTrayMicGainSetting);
+}
+
+bool IsDisplayIdentificationlEnabled() {
+  return base::FeatureList::IsEnabled(kDisplayIdentification);
 }
 
 namespace {

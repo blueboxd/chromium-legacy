@@ -4447,6 +4447,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"print-job-management-app", flag_descriptions::kPrintJobManagementAppName,
      flag_descriptions::kPrintJobManagementAppDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kPrintJobManagementApp)},
+
+    {"display-identification", flag_descriptions::kDisplayIdentificationName,
+     flag_descriptions::kDisplayIdentificationDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kDisplayIdentification)},
 #endif  // OS_CHROMEOS
 
     {"autofill-off-no-server-data",
@@ -5197,6 +5201,12 @@ const FeatureEntry kFeatureEntries[] = {
     {"media-history", flag_descriptions::kMediaHistoryName,
      flag_descriptions::kMediaHistoryDescription, kOsAll,
      FEATURE_VALUE_TYPE(media::kUseMediaHistoryStore)},
+
+#if !defined(OS_ANDROID)
+    {"nearby-sharing", flag_descriptions::kNearbySharingName,
+     flag_descriptions::kNearbySharingDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kNearbySharing)},
+#endif  // !defined(OS_ANDROID)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

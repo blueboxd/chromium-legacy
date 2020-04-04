@@ -26,7 +26,7 @@ class ConversionStorage;
 
 // UI thread class that manages the lifetime of the underlying conversion
 // storage. Owned by the storage partition.
-class ConversionManager : public ConversionStorage::Delegate {
+class ConversionManager {
  public:
   // |storage_task_runner| should run with base::TaskPriority::BEST_EFFORT.
   ConversionManager(
@@ -34,7 +34,7 @@ class ConversionManager : public ConversionStorage::Delegate {
       scoped_refptr<base::SequencedTaskRunner> storage_task_runner);
   ConversionManager(const ConversionManager& other) = delete;
   ConversionManager& operator=(const ConversionManager& other) = delete;
-  ~ConversionManager() override;
+  ~ConversionManager();
 
   // Process a newly registered conversion. Will create and log any new
   // conversion reports to storage.
@@ -43,11 +43,6 @@ class ConversionManager : public ConversionStorage::Delegate {
   const ConversionPolicy& GetConversionPolicy() const;
 
  private:
-  // ConversionStorageDelegate
-  void ProcessNewConversionReports(
-      std::vector<ConversionReport>* reports) override;
-  int GetMaxConversionsPerImpression() const override;
-
   void OnInitCompleted(bool success);
 
   // Task runner used to perform operations on |storage_|. Runs with

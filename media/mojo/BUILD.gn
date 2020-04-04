@@ -21,7 +21,6 @@ buildflag_header("buildflags") {
   if (!enable_mojo_media) {
     assert(mojo_media_services == [], "Mojo media is not enabled")
     assert(mojo_media_host == "none", "Mojo media is not enabled")
-    assert(!enable_test_mojo_media_client, "Mojo media is not enabled")
   } else {
     assert(mojo_media_services != [], "No mojo media service specified")
     foreach(service, mojo_media_services) {
@@ -52,7 +51,6 @@ buildflag_header("buildflags") {
   flags = [
     "ENABLE_CAST_RENDERER=$enable_cast_renderer",
     "ENABLE_MOJO_MEDIA=$enable_mojo_media",
-    "ENABLE_TEST_MOJO_MEDIA_CLIENT=$enable_test_mojo_media_client",
     "ENABLE_MOJO_RENDERER=$enable_mojo_renderer",
     "ENABLE_MOJO_CDM=$enable_mojo_cdm",
     "ENABLE_MOJO_AUDIO_DECODER=$enable_mojo_audio_decoder",

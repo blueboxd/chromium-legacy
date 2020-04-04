@@ -79,8 +79,10 @@ class ConversionStorageTest : public testing::Test {
  public:
   ConversionStorageTest() {
     EXPECT_TRUE(dir_.CreateUniqueTempDir());
-    storage_ = std::make_unique<ConversionStorageSql>(dir_.GetPath(),
-                                                      &delegate_, &clock_);
+    auto delegate = std::make_unique<MockStorageDelegate>();
+    delegate_ = delegate.get();
+    storage_ = std::make_unique<ConversionStorageSql>(
+        dir_.GetPath(), std::move(delegate), &clock_);
     EXPECT_TRUE(storage_->Initialize());
   }
 
@@ -104,7 +106,7 @@ class ConversionStorageTest : public testing::Test {
   }
 
   void AddAttributionCredits(AttributionCredits credits) {
-    delegate_.AddCredits(credits);
+    delegate_->AddCredits(credits);
   }
 
   base::SimpleTestClock* clock() { return &clock_; }
@@ -112,7 +114,7 @@ class ConversionStorageTest : public testing::Test {
   ConversionStorage* storage() { return storage_.get(); }
 
  private:
-  MockStorageDelegate delegate_;
+  MockStorageDelegate* delegate_;
   base::SimpleTestClock clock_;
   base::ScopedTempDir dir_;
   std::unique_ptr<ConversionStorage> storage_;

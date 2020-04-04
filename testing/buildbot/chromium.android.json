@@ -18881,7 +18881,9 @@
       {
         "args": [
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
+          "--recover-devices",
+          "--timeout-scale",
+          "2.0"
         ],
         "merge": {
           "args": [

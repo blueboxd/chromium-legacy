@@ -690,6 +690,9 @@ extern const char kMouseSubframeNoImplicitCaptureDescription[];
 extern const char kNativeFileSystemAPIName[];
 extern const char kNativeFileSystemAPIDescription[];
 
+extern const char kNearbySharingName[];
+extern const char kNearbySharingDescription[];
+
 extern const char kUsernameFirstFlowName[];
 extern const char kUsernameFirstFlowDescription[];
 
@@ -1849,6 +1852,9 @@ extern const char kDisableExplicitDmaFencesDescription[];
 
 extern const char kDisplayChangeModalName[];
 extern const char kDisplayChangeModalDescription[];
+
+extern const char kDisplayIdentificationName[];
+extern const char kDisplayIdentificationDescription[];
 
 extern const char kEnableUseHDRTransferFunctionName[];
 extern const char kEnableUseHDRTransferFunctionDescription[];

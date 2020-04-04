@@ -11,7 +11,29 @@ public interface FeedActionsHandler {
     String KEY = "FeedActions";
 
     /**
+     * Requests additional content to be loaded. Once the load is completed, onStreamUpdated will be
+     * called.
+     */
+    void loadMore();
+
+    /**
      * Sends data back to the server when content is clicked.
      */
     void processThereAndBackAgainData(byte[] data);
+
+    /**
+     * Requests to dismiss a card. A change ID will be returned and it can be used to commit or
+     * discard the change.
+     */
+    int requestDismissal();
+
+    /**
+     * Commits a previous requested dismissal denoted by change ID.
+     */
+    void commitDismissal(int changeId);
+
+    /**
+     * Discards a previous requested dismissal denoted by change ID.
+     */
+    void discardDismissal(int changeId);
 }

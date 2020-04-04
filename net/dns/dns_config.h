@@ -13,6 +13,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
 #include "net/dns/dns_hosts.h"
+#include "net/dns/public/dns_over_https_server_config.h"
 
 namespace base {
 class Value;
@@ -49,15 +50,6 @@ struct NET_EXPORT DnsConfig {
   bool IsValid() const {
     return !nameservers.empty() || !dns_over_https_servers.empty();
   }
-
-  struct NET_EXPORT DnsOverHttpsServerConfig {
-    DnsOverHttpsServerConfig(const std::string& server_template, bool use_post);
-
-    bool operator==(const DnsOverHttpsServerConfig& other) const;
-
-    std::string server_template;
-    bool use_post;
-  };
 
   // The SecureDnsMode specifies what types of lookups (secure/insecure) should
   // be performed and in what order when resolving a specific query. The int

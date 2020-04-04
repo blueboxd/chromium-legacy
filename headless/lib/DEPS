@@ -2,8 +2,8 @@ specific_include_rules = {
   "headless_browser_browsertest.cc": [
     "+third_party/crashpad/crashpad/client",
   ],
-  "headless_content_client.h|headless_origin_trial_policy.h": [
-    "+third_party/blink/public/common/origin_trials/origin_trial_policy.h",
+  "headless_content_client.cc": [
+      "+components/embedder_support/origin_trials",
   ],
   "headless_content_main_delegate.cc": [
     "+cc/base/switches.h",

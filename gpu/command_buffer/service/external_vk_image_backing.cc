@@ -37,19 +37,15 @@
 #include "gpu/vulkan/fuchsia/vulkan_fuchsia_ext.h"
 #endif
 
-#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
 #define GL_DEDICATED_MEMORY_OBJECT_EXT 0x9581
 #define GL_TEXTURE_TILING_EXT 0x9580
 #define GL_TILING_TYPES_EXT 0x9583
 #define GL_OPTIMAL_TILING_EXT 0x9584
 #define GL_LINEAR_TILING_EXT 0x9585
 #define GL_HANDLE_TYPE_OPAQUE_FD_EXT 0x9586
-#endif
-
-#if defined(OS_FUCHSIA)
+#define GL_HANDLE_TYPE_OPAQUE_WIN32_EXT 0x9587
 #define GL_HANDLE_TYPE_ZIRCON_VMO_ANGLE 0x93AE
 #define GL_HANDLE_TYPE_ZIRCON_EVENT_ANGLE 0x93AF
-#endif
 
 namespace gpu {
 
@@ -536,8 +532,6 @@ ExternalVkImageBacking::ProduceDawn(SharedImageManager* manager,
 }
 
 GLuint ExternalVkImageBacking::ProduceGLTextureInternal() {
-#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_FUCHSIA) || \
-    defined(OS_WIN)
   GrVkImageInfo image_info;
   bool result = backend_texture_.getVkImageInfo(&image_info);
   DCHECK(result);
@@ -558,6 +552,19 @@ GLuint ExternalVkImageBacking::ProduceGLTextureInternal() {
     api->glImportMemoryFdEXTFn(memory_object, image_info.fAlloc.fSize,
                                GL_HANDLE_TYPE_OPAQUE_FD_EXT,
                                memory_fd.release());
+#elif defined(OS_WIN)
+    auto memory_handle = image_->GetMemoryHandle();
+    if (!memory_handle.IsValid()) {
+      return 0;
+    }
+
+    api->glCreateMemoryObjectsEXTFn(1, &memory_object);
+    int dedicated = GL_TRUE;
+    api->glMemoryObjectParameterivEXTFn(
+        memory_object, GL_DEDICATED_MEMORY_OBJECT_EXT, &dedicated);
+    api->glImportMemoryWin32HandleEXTFn(memory_object, image_info.fAlloc.fSize,
+                                        GL_HANDLE_TYPE_OPAQUE_WIN32_EXT,
+                                        memory_handle.Take());
 #elif defined(OS_FUCHSIA)
     zx::vmo vmo = image_->GetMemoryZirconHandle();
     if (!vmo)
@@ -570,10 +577,6 @@ GLuint ExternalVkImageBacking::ProduceGLTextureInternal() {
     api->glImportMemoryZirconHandleANGLEFn(
         memory_object, image_info.fAlloc.fSize, GL_HANDLE_TYPE_ZIRCON_VMO_ANGLE,
         vmo.release());
-#elif defined(OS_WIN)
-    // TODO(penghuang): support interop on Windows
-    NOTIMPLEMENTED();
-    return 0;
 #else
 #error Unsupported OS
 #endif
@@ -608,9 +611,6 @@ GLuint ExternalVkImageBacking::ProduceGLTextureInternal() {
   }
   api->glBindTextureFn(GL_TEXTURE_2D, old_texture_binding);
   return texture_service_id;
-#else  // !defined(OS_LINUX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
-#error Unsupported OS
-#endif
 }
 
 std::unique_ptr<SharedImageRepresentationGLTexture>
@@ -622,8 +622,6 @@ ExternalVkImageBacking::ProduceGLTexture(SharedImageManager* manager,
     return nullptr;
   }
 
-#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_FUCHSIA) || \
-    defined(OS_WIN)
   if (!texture_) {
     GLuint texture_service_id = ProduceGLTextureInternal();
     if (!texture_service_id)
@@ -651,9 +649,6 @@ ExternalVkImageBacking::ProduceGLTexture(SharedImageManager* manager,
   }
   return std::make_unique<ExternalVkImageGLRepresentation>(
       manager, this, tracker, texture_, texture_->service_id());
-#else
-#error Unsupported OS
-#endif
 }
 
 std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
@@ -666,8 +661,6 @@ ExternalVkImageBacking::ProduceGLTexturePassthrough(
     return nullptr;
   }
 
-#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_FUCHSIA) || \
-    defined(OS_WIN)
   if (!texture_passthrough_) {
     GLuint texture_service_id = ProduceGLTextureInternal();
     if (!texture_service_id)
@@ -684,9 +677,6 @@ ExternalVkImageBacking::ProduceGLTexturePassthrough(
 
   return std::make_unique<ExternalVkImageGLPassthroughRepresentation>(
       manager, this, tracker, texture_passthrough_->service_id());
-#else
-#error Unsupported OS
-#endif
 }
 
 std::unique_ptr<SharedImageRepresentationSkia>

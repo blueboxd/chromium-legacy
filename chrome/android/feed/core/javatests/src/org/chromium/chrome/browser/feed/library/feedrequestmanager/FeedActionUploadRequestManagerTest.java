@@ -51,6 +51,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /** Test of the {@link FeedActionUploadRequestManager} class. */
@@ -72,6 +73,8 @@ public class FeedActionUploadRequestManagerTest {
                     .build();
     private static final String CONTENT_ID = "contentId";
     private static final String CONTENT_ID_2 = "contentId2";
+    private static final String CONTENT_ID_LONG =
+            "extremely-long-content-id-that-should-take-a-lot-of-bytes";
     private static final byte[] SEMANTIC_PROPERTIES_BYTES = new byte[] {0x1, 0xa};
     private static final SemanticProperties SEMANTIC_PROPERTIES =
             SemanticProperties.newBuilder()
@@ -176,7 +179,7 @@ public class FeedActionUploadRequestManagerTest {
                         .put(ConfigKey.FEED_ACTION_SERVER_METHOD, HttpMethod.GET)
                         .put(ConfigKey.FEED_ACTION_TTL_SECONDS, 1000L)
                         .put(ConfigKey.FEED_ACTION_SERVER_MAX_SIZE_PER_REQUEST, 20L)
-                        .put(ConfigKey.FEED_ACTION_MAX_UPLOAD_ATTEMPTS, 2L)
+                        .put(ConfigKey.FEED_ACTION_MAX_UPLOAD_ATTEMPTS, 1L)
                         .put(ConfigKey.FEED_ACTION_SERVER_MAX_ACTIONS_PER_REQUEST, 2L)
                         .build();
         mRequestManager = createRequestManager(configuration);
@@ -247,7 +250,7 @@ public class FeedActionUploadRequestManagerTest {
     }
 
     @Test
-    public void testTriggerUploadActions_batchFirstReachesMax() throws Exception {
+    public void testTriggerUploadActions_batchFirstReachesMaxNumActions() throws Exception {
         Configuration configuration =
                 new Configuration.Builder()
                         .put(ConfigKey.FEED_ACTION_SERVER_METHOD, HttpMethod.GET)
@@ -266,6 +269,53 @@ public class FeedActionUploadRequestManagerTest {
             assertThat(input.getValue().toByteArray()).isEqualTo(TOKEN_2.toByteArray());
         });
         mFakeNetworkClient.addResponse(createHttpResponse(/* responseCode= */ 200, RESPONSE_1));
+        mRequestManager.triggerUploadActions(actionSet, TOKEN_1, mConsumer);
+
+        assertThat(mConsumer.isCalled()).isTrue();
+    }
+
+    @Test
+    public void testTriggerUploadActions_batchFirstReachesMaxSize() throws Exception {
+        Configuration configuration =
+                new Configuration.Builder()
+                        .put(ConfigKey.FEED_ACTION_SERVER_METHOD, HttpMethod.GET)
+                        .put(ConfigKey.FEED_ACTION_TTL_SECONDS, 1000L)
+                        .put(ConfigKey.FEED_ACTION_MAX_UPLOAD_ATTEMPTS, 2L)
+                        .put(ConfigKey.FEED_ACTION_SERVER_MAX_SIZE_PER_REQUEST, 20L)
+                        .put(ConfigKey.FEED_ACTION_SERVER_MAX_ACTIONS_PER_REQUEST, 1L)
+                        .build();
+        mRequestManager = createRequestManager(configuration);
+        Set<StreamUploadableAction> actionSet = orderedSetOf(
+                StreamUploadableAction.newBuilder().setFeatureContentId(CONTENT_ID_LONG).build(),
+                StreamUploadableAction.newBuilder().setFeatureContentId(CONTENT_ID).build());
+        mConsumer = new RequiredConsumer<>(input -> {
+            mFakeThreadUtils.checkNotMainThread();
+            assertThat(input.isSuccessful()).isTrue();
+            assertThat(input.getValue().toByteArray()).isEqualTo(TOKEN_2.toByteArray());
+        });
+        mFakeNetworkClient.addResponse(createHttpResponse(/* responseCode= */ 200, RESPONSE_1));
+        mRequestManager.triggerUploadActions(actionSet, TOKEN_1, mConsumer);
+
+        assertThat(mConsumer.isCalled()).isTrue();
+    }
+
+    @Test
+    public void testTriggerUploadActions_batchNoUploadableActions() throws Exception {
+        Configuration configuration =
+                new Configuration.Builder()
+                        .put(ConfigKey.FEED_ACTION_SERVER_METHOD, HttpMethod.GET)
+                        .put(ConfigKey.FEED_ACTION_TTL_SECONDS, 1000L)
+                        .put(ConfigKey.FEED_ACTION_MAX_UPLOAD_ATTEMPTS, 2L)
+                        .put(ConfigKey.FEED_ACTION_SERVER_MAX_SIZE_PER_REQUEST, 20L)
+                        .put(ConfigKey.FEED_ACTION_SERVER_MAX_ACTIONS_PER_REQUEST, 1L)
+                        .build();
+        mRequestManager = createRequestManager(configuration);
+        Set<StreamUploadableAction> actionSet = setOf(
+                StreamUploadableAction.newBuilder().setFeatureContentId(CONTENT_ID_LONG).build());
+        mConsumer = new RequiredConsumer<>(input -> {
+            mFakeThreadUtils.checkNotMainThread();
+            assertThat(input.isSuccessful()).isFalse();
+        });
         mRequestManager.triggerUploadActions(actionSet, TOKEN_1, mConsumer);
 
         assertThat(mConsumer.isCalled()).isTrue();
@@ -321,9 +371,14 @@ public class FeedActionUploadRequestManagerTest {
         ActionRequest request = getActionRequestFromHttpRequestBody(httpRequest);
         UploadableActionsRequestBuilder builder =
                 new UploadableActionsRequestBuilder(mFakeProtocolAdapter);
+        Set<StreamUploadableAction> expectedActionSet =
+                setOf(StreamUploadableAction.newBuilder()
+                                .setFeatureContentId(CONTENT_ID)
+                                .setUploadAttempts(1)
+                                .build());
         ActionRequest expectedRequest =
                 builder.setConsistencyToken(ConsistencyToken.getDefaultInstance())
-                        .setActions(actionSet)
+                        .setActions(expectedActionSet)
                         .build();
         assertThat(request.toByteArray()).isEqualTo(expectedRequest.toByteArray());
 
@@ -392,6 +447,12 @@ public class FeedActionUploadRequestManagerTest {
 
     private static <T> Set<T> setOf(T... items) {
         Set<T> result = new HashSet<>();
+        Collections.addAll(result, items);
+        return result;
+    }
+
+    private static <T> Set<T> orderedSetOf(T... items) {
+        Set<T> result = new LinkedHashSet<>();
         Collections.addAll(result, items);
         return result;
     }

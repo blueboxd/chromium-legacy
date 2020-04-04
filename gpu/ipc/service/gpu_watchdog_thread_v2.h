@@ -227,6 +227,11 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   bool foregrounded_event_ = false;
   bool power_resumed_event_ = false;
 
+  // TODO (magche@): Debugging only. This has a measurable performance impact
+  // and should be removed once valid crash dumps are collected.
+  base::AtomicFlag hits_termination_;
+  base::subtle::Atomic32 arm_disarm_counter_main_thread_ = 0;
+
   // For gpu testing only.
   const bool is_test_mode_;
   // Set by the watchdog thread and Read by the test thread.

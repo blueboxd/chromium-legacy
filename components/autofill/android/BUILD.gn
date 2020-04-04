@@ -58,6 +58,7 @@ android_library("provider_java") {
     "//base:base_java",
     "//base:jni_java",
     "//components/autofill/core/common/mojom:mojo_types_java",
+    "//components/version_info/android:version_constants_java",
     "//content/public/android:content_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//ui/android:ui_java",

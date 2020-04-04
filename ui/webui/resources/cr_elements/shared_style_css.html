@@ -89,12 +89,17 @@
         opacity: var(--cr-container-shadow-max-opacity);
       }
 
-      .cr-section {
+      .cr-row {
         align-items: center;
         border-top: var(--cr-separator-line);
         display: flex;
         min-height: var(--cr-section-min-height);
         padding: 0 var(--cr-section-padding);
+      }
+
+      .cr-row.first,
+      .cr-row.continuation {
+        border-top: none;
       }
 
       /* Typography */

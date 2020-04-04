@@ -35,8 +35,8 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.gsa.GSAState;
-import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.components.browser_ui.util.ConversionUtils;
 import org.chromium.components.search_engines.TemplateUrlService;
 
 import java.util.Arrays;

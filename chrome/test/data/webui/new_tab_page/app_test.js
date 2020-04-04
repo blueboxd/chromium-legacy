@@ -22,6 +22,7 @@ function createTheme() {
     backgroundImageAttribution1: '',
     backgroundImageAttribution2: '',
     backgroundImageAttributionUrl: null,
+    dailyRefreshCollectionId: '',
   };
 }
 

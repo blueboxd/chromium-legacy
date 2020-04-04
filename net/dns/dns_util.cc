@@ -308,12 +308,11 @@ DnsQueryType AddressFamilyToDnsQueryType(AddressFamily address_family) {
   }
 }
 
-std::vector<DnsConfig::DnsOverHttpsServerConfig>
-GetDohUpgradeServersFromDotHostname(
+std::vector<DnsOverHttpsServerConfig> GetDohUpgradeServersFromDotHostname(
     const std::string& dot_server,
     const std::vector<std::string>& excluded_providers) {
   const std::vector<DohProviderEntry>& entries = GetDohProviderList();
-  std::vector<DnsConfig::DnsOverHttpsServerConfig> doh_servers;
+  std::vector<DnsOverHttpsServerConfig> doh_servers;
 
   if (dot_server.empty())
     return doh_servers;
@@ -326,7 +325,7 @@ GetDohUpgradeServersFromDotHostname(
       std::string server_method;
       CHECK(dns_util::IsValidDohTemplate(entry.dns_over_https_template,
                                          &server_method));
-      doh_servers.push_back(DnsConfig::DnsOverHttpsServerConfig(
+      doh_servers.push_back(DnsOverHttpsServerConfig(
           entry.dns_over_https_template, server_method == "POST"));
       break;
     }
@@ -334,25 +333,24 @@ GetDohUpgradeServersFromDotHostname(
   return doh_servers;
 }
 
-std::vector<DnsConfig::DnsOverHttpsServerConfig>
-GetDohUpgradeServersFromNameservers(
+std::vector<DnsOverHttpsServerConfig> GetDohUpgradeServersFromNameservers(
     const std::vector<IPEndPoint>& dns_servers,
     const std::vector<std::string>& excluded_providers) {
   std::vector<const DohProviderEntry*> entries =
       GetDohProviderEntriesFromNameservers(dns_servers, excluded_providers);
-  std::vector<DnsConfig::DnsOverHttpsServerConfig> doh_servers;
+  std::vector<DnsOverHttpsServerConfig> doh_servers;
   std::string server_method;
   for (const auto* entry : entries) {
     CHECK(dns_util::IsValidDohTemplate(entry->dns_over_https_template,
                                        &server_method));
-    doh_servers.push_back(DnsConfig::DnsOverHttpsServerConfig(
+    doh_servers.push_back(DnsOverHttpsServerConfig(
         entry->dns_over_https_template, server_method == "POST"));
   }
   return doh_servers;
 }
 
 std::string GetDohProviderIdForHistogramFromDohConfig(
-    const DnsConfig::DnsOverHttpsServerConfig& doh_server) {
+    const DnsOverHttpsServerConfig& doh_server) {
   const std::vector<DohProviderEntry>& entries = GetDohProviderList();
   for (const auto& entry : entries) {
     if (doh_server.server_template == entry.dns_over_https_template) {

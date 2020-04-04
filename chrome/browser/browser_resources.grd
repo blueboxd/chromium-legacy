@@ -10,7 +10,6 @@
     <structures>
       <if expr="is_win or is_macosx or desktop_linux or chromeos">
         <structure name="IDR_SIGNIN_SHARED_CSS_JS" file="${root_gen_dir}\chrome\browser\resources\signin\signin_shared_css.js" use_base_dir="false" preprocess="true" type="chrome_html" />
-        <structure name="IDR_SIGNIN_SHARED_OLD_CSS_HTML" file="resources\signin\signin_shared_old_css.html" preprocess="true" allowexternalscript="true" type="chrome_html" />
       </if>
       <if expr="not is_android">
         <!-- New Tab Page WebUI. -->
@@ -193,8 +192,7 @@
         <include name="IDR_SIGNIN_EMAIL_CONFIRMATION_APP_JS" file="${root_gen_dir}\chrome\browser\resources\signin\signin_email_confirmation\signin_email_confirmation_app.js" use_base_dir="false" preprocess="true" type="BINDATA" />
         <include name="IDR_SIGNIN_ERROR_HTML" file="resources\signin\signin_error\signin_error.html" type="BINDATA" />
         <include name="IDR_SIGNIN_ERROR_JS" file="resources\signin\signin_error\signin_error.js" type="BINDATA" />
-        <include name="IDR_SIGNIN_ERROR_APP_HTML" file="resources\signin\signin_error\signin_error_app.html" preprocess="true" type="BINDATA" />
-        <include name="IDR_SIGNIN_ERROR_APP_JS" file="resources\signin\signin_error\signin_error_app.js" type="BINDATA" />
+        <include name="IDR_SIGNIN_ERROR_APP_JS" file="${root_gen_dir}\chrome\browser\resources\signin\signin_error\signin_error_app.js" use_base_dir="false" preprocess="true" type="BINDATA" />
       </if>
       <include name="IDR_USB_ENUMERATION_OPTIONS_MOJOM_LITE_JS" file="${root_gen_dir}\services\device\public\mojom\usb_enumeration_options.mojom-lite.js" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
       <include name="IDR_USB_DEVICE_MANAGER_CLIENT_MOJOM_LITE_JS" file="${root_gen_dir}\services\device\public\mojom\usb_manager_client.mojom-lite.js" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />

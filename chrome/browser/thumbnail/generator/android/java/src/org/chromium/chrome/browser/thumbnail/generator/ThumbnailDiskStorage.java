@@ -26,7 +26,7 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.BackgroundOnlyAsyncTask;
 import org.chromium.chrome.browser.thumbnail.generator.ThumbnailCacheEntry.ContentId;
 import org.chromium.chrome.browser.thumbnail.generator.ThumbnailCacheEntry.ThumbnailEntry;
-import org.chromium.chrome.browser.util.ConversionUtils;
+import org.chromium.components.browser_ui.util.ConversionUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;

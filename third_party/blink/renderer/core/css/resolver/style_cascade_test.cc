@@ -1344,6 +1344,159 @@ TEST_F(StyleCascadeTest, RevertRegisteredInheritedFallback) {
   cascade.Apply();
   EXPECT_EQ("1px", cascade.ComputedValue("--x"));
 }
+
+TEST_F(StyleCascadeTest, RevertUASurrogate) {
+  TestCascade cascade(GetDocument());
+
+  // User-agent:
+
+  // Only logical:
+  cascade.Add("inline-size:10px", CascadeOrigin::kUserAgent);
+  cascade.Add("min-inline-size:11px", CascadeOrigin::kUserAgent);
+  // Only physical:
+  cascade.Add("height:12px", CascadeOrigin::kUserAgent);
+  cascade.Add("min-height:13px", CascadeOrigin::kUserAgent);
+  // Physical first:
+  cascade.Add("margin-left:14px", CascadeOrigin::kUserAgent);
+  cascade.Add("padding-left:15px", CascadeOrigin::kUserAgent);
+  cascade.Add("margin-inline-start:16px", CascadeOrigin::kUserAgent);
+  cascade.Add("padding-inline-start:17px", CascadeOrigin::kUserAgent);
+  // Logical first:
+  cascade.Add("margin-inline-end:18px", CascadeOrigin::kUserAgent);
+  cascade.Add("padding-inline-end:19px", CascadeOrigin::kUserAgent);
+  cascade.Add("margin-right:20px", CascadeOrigin::kUserAgent);
+  cascade.Add("padding-right:21px", CascadeOrigin::kUserAgent);
+
+  // Author:
+
+  cascade.Add("width:100px", CascadeOrigin::kAuthor);
+  cascade.Add("height:101px", CascadeOrigin::kAuthor);
+  cascade.Add("margin:102px", CascadeOrigin::kAuthor);
+  cascade.Add("padding:103px", CascadeOrigin::kAuthor);
+  cascade.Add("min-width:104px", CascadeOrigin::kAuthor);
+  cascade.Add("min-height:105px", CascadeOrigin::kAuthor);
+  // Revert via physical:
+  cascade.Add("width:revert", CascadeOrigin::kAuthor);
+  cascade.Add("height:revert", CascadeOrigin::kAuthor);
+  cascade.Add("margin-left:revert", CascadeOrigin::kAuthor);
+  cascade.Add("margin-right:revert", CascadeOrigin::kAuthor);
+  // Revert via logical:
+  cascade.Add("min-inline-size:revert", CascadeOrigin::kAuthor);
+  cascade.Add("min-block-size:revert", CascadeOrigin::kAuthor);
+  cascade.Add("padding-inline-start:revert", CascadeOrigin::kAuthor);
+  cascade.Add("padding-inline-end:revert", CascadeOrigin::kAuthor);
+
+  cascade.Apply();
+
+  EXPECT_EQ("10px", cascade.ComputedValue("width"));
+  EXPECT_EQ("12px", cascade.ComputedValue("height"));
+  EXPECT_EQ("11px", cascade.ComputedValue("min-width"));
+  EXPECT_EQ("13px", cascade.ComputedValue("min-height"));
+  EXPECT_EQ("102px", cascade.ComputedValue("margin-top"));
+  EXPECT_EQ("20px", cascade.ComputedValue("margin-right"));
+  EXPECT_EQ("102px", cascade.ComputedValue("margin-bottom"));
+  EXPECT_EQ("16px", cascade.ComputedValue("margin-left"));
+  EXPECT_EQ("103px", cascade.ComputedValue("padding-top"));
+  EXPECT_EQ("21px", cascade.ComputedValue("padding-right"));
+  EXPECT_EQ("103px", cascade.ComputedValue("padding-bottom"));
+  EXPECT_EQ("17px", cascade.ComputedValue("padding-left"));
+
+  EXPECT_EQ("10px", cascade.ComputedValue("inline-size"));
+  EXPECT_EQ("12px", cascade.ComputedValue("block-size"));
+  EXPECT_EQ("11px", cascade.ComputedValue("min-inline-size"));
+  EXPECT_EQ("13px", cascade.ComputedValue("min-block-size"));
+  EXPECT_EQ("102px", cascade.ComputedValue("margin-block-start"));
+  EXPECT_EQ("20px", cascade.ComputedValue("margin-inline-end"));
+  EXPECT_EQ("102px", cascade.ComputedValue("margin-block-end"));
+  EXPECT_EQ("16px", cascade.ComputedValue("margin-inline-start"));
+  EXPECT_EQ("103px", cascade.ComputedValue("padding-block-start"));
+  EXPECT_EQ("21px", cascade.ComputedValue("padding-inline-end"));
+  EXPECT_EQ("103px", cascade.ComputedValue("padding-block-end"));
+  EXPECT_EQ("17px", cascade.ComputedValue("padding-inline-start"));
+}
+
+TEST_F(StyleCascadeTest, RevertWithImportantPhysical) {
+  TestCascade cascade(GetDocument());
+  cascade.Add("inline-size:10px", CascadeOrigin::kUserAgent);
+  cascade.Add("block-size:11px", CascadeOrigin::kUserAgent);
+
+  cascade.Add("width:100px", CascadeOrigin::kAuthor);
+  cascade.Add("height:101px", CascadeOrigin::kAuthor);
+  cascade.Add("width:revert !important", CascadeOrigin::kAuthor);
+  cascade.Add("inline-size:101px", CascadeOrigin::kAuthor);
+  cascade.Add("block-size:102px", CascadeOrigin::kAuthor);
+  cascade.Add("height:revert !important", CascadeOrigin::kAuthor);
+  cascade.Apply();
+
+  EXPECT_EQ("10px", cascade.ComputedValue("width"));
+  EXPECT_EQ("11px", cascade.ComputedValue("height"));
+  EXPECT_EQ("10px", cascade.ComputedValue("inline-size"));
+  EXPECT_EQ("11px", cascade.ComputedValue("block-size"));
+}
+
+TEST_F(StyleCascadeTest, RevertWithImportantLogical) {
+  TestCascade cascade(GetDocument());
+  cascade.Add("inline-size:10px", CascadeOrigin::kUserAgent);
+  cascade.Add("block-size:11px", CascadeOrigin::kUserAgent);
+
+  cascade.Add("inline-size:revert !important", CascadeOrigin::kAuthor);
+  cascade.Add("width:100px", CascadeOrigin::kAuthor);
+  cascade.Add("height:101px", CascadeOrigin::kAuthor);
+  cascade.Add("block-size:revert !important", CascadeOrigin::kAuthor);
+  cascade.Apply();
+
+  EXPECT_EQ("10px", cascade.ComputedValue("width"));
+  EXPECT_EQ("11px", cascade.ComputedValue("height"));
+  EXPECT_EQ("10px", cascade.ComputedValue("inline-size"));
+  EXPECT_EQ("11px", cascade.ComputedValue("block-size"));
+}
+
+TEST_F(StyleCascadeTest, RevertSurrogateChain) {
+  TestCascade cascade(GetDocument());
+
+  cascade.Add("inline-size:revert", CascadeOrigin::kUserAgent);
+  cascade.Add("block-size:10px", CascadeOrigin::kUserAgent);
+  cascade.Add("min-inline-size:11px", CascadeOrigin::kUserAgent);
+  cascade.Add("min-block-size:12px", CascadeOrigin::kUserAgent);
+  cascade.Add("margin-inline:13px", CascadeOrigin::kUserAgent);
+  cascade.Add("margin-block:14px", CascadeOrigin::kUserAgent);
+  cascade.Add("margin-top:revert", CascadeOrigin::kUserAgent);
+  cascade.Add("margin-left:15px", CascadeOrigin::kUserAgent);
+  cascade.Add("margin-bottom:16px", CascadeOrigin::kUserAgent);
+  cascade.Add("margin-block-end:17px", CascadeOrigin::kUserAgent);
+
+  cascade.Add("inline-size:101px", CascadeOrigin::kUser);
+  cascade.Add("block-size:102px", CascadeOrigin::kUser);
+  cascade.Add("width:revert", CascadeOrigin::kUser);
+  cascade.Add("height:revert", CascadeOrigin::kUser);
+  cascade.Add("min-inline-size:103px", CascadeOrigin::kUser);
+  cascade.Add("min-block-size:104px", CascadeOrigin::kUser);
+  cascade.Add("margin:105px", CascadeOrigin::kUser);
+  cascade.Add("margin-block-start:revert", CascadeOrigin::kUser);
+  cascade.Add("margin-inline-start:106px", CascadeOrigin::kUser);
+  cascade.Add("margin-block-end:revert", CascadeOrigin::kUser);
+  cascade.Add("margin-right:107px", CascadeOrigin::kUser);
+
+  cascade.Add("inline-size:revert", CascadeOrigin::kAuthor);
+  cascade.Add("block-size:revert", CascadeOrigin::kAuthor);
+  cascade.Add("min-inline-size:revert", CascadeOrigin::kAuthor);
+  cascade.Add("min-block-size:1001px", CascadeOrigin::kAuthor);
+  cascade.Add("margin:1002px", CascadeOrigin::kAuthor);
+  cascade.Add("margin-top:revert", CascadeOrigin::kAuthor);
+  cascade.Add("margin-left:1003px", CascadeOrigin::kAuthor);
+  cascade.Add("margin-bottom:1004px", CascadeOrigin::kAuthor);
+  cascade.Add("margin-right:1005px", CascadeOrigin::kAuthor);
+  cascade.Apply();
+
+  EXPECT_EQ("auto", cascade.ComputedValue("width"));
+  EXPECT_EQ("10px", cascade.ComputedValue("height"));
+  EXPECT_EQ("103px", cascade.ComputedValue("min-width"));
+  EXPECT_EQ("1001px", cascade.ComputedValue("min-height"));
+  EXPECT_EQ("0px", cascade.ComputedValue("margin-top"));
+  EXPECT_EQ("1005px", cascade.ComputedValue("margin-right"));
+  EXPECT_EQ("1004px", cascade.ComputedValue("margin-bottom"));
+  EXPECT_EQ("1003px", cascade.ComputedValue("margin-left"));
+}
 TEST_F(StyleCascadeTest, RegisteredInitial) {
   RegisterProperty(GetDocument(), "--x", "<length>", "0px", false);
 

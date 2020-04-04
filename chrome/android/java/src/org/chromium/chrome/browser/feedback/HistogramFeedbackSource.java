@@ -10,7 +10,7 @@ import org.chromium.base.SysUtils;
 import org.chromium.base.metrics.JSONVerbosityLevel;
 import org.chromium.base.metrics.StatisticsRecorderAndroid;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.util.ConversionUtils;
+import org.chromium.components.browser_ui.util.ConversionUtils;
 
 /** Grabs feedback about the UMA histograms. */
 // TODO(dtrainor): Make this class protected and HISTOGRAMS_KEY private once grabbing specific log

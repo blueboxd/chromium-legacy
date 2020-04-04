@@ -65,22 +65,23 @@ HtmlTemplate FindHtmlTemplate(const base::StringPiece& source) {
 }
 
 // Escape quotes and backslashes ('"\).
-std::string PolymerParameterEscape(const std::string& in_string) {
+std::string PolymerParameterEscape(const std::string& in_string,
+                                   bool is_javascript) {
   std::string out;
   out.reserve(in_string.size() * 2);
   for (const char c : in_string) {
     switch (c) {
       case '\\':
-        out.append("\\\\");
+        out.append(is_javascript ? R"(\\\\)" : R"(\\)");
         break;
       case '\'':
-        out.append("\\'");
+        out.append(is_javascript ? R"(\\')" : R"(\')");
         break;
       case '"':
         out.append("&quot;");
         break;
       case ',':
-        out.append("\\\\,");
+        out.append(is_javascript ? R"(\\,)" : R"(\,)");
         break;
       default:
         out += c;
@@ -182,7 +183,7 @@ bool ReplaceTemplateExpressionsInternal(
       // Pass the replacement through unchanged.
     } else if (context == "Polymer") {
       // Escape quotes and backslash for '$i18nPolymer{}' use (i.e. quoted).
-      replacement = PolymerParameterEscape(replacement);
+      replacement = PolymerParameterEscape(replacement, is_javascript);
     } else {
       CHECK(false) << "Unknown context " << context;
     }

@@ -126,12 +126,6 @@ class VdaVideoDecoder : public VideoDecoder,
                              uint32_t textures_per_buffer,
                              const gfx::Size& dimensions,
                              uint32_t texture_target) override;
-  void ProvidePictureBuffersWithVisibleRect(uint32_t requested_num_of_buffers,
-                                            VideoPixelFormat format,
-                                            uint32_t textures_per_buffer,
-                                            const gfx::Size& dimensions,
-                                            const gfx::Rect& visible_rect,
-                                            uint32_t texture_target) override;
   void DismissPictureBuffer(int32_t picture_buffer_id) override;
   void PictureReady(const Picture& picture) override;
   void NotifyEndOfBitstreamBuffer(int32_t bitstream_buffer_id) override;

@@ -382,13 +382,6 @@ try_.chromium_linux_builder(
 )
 
 try_.chromium_linux_builder(
-    name = 'linux-ozone-x11-and-wayland-rel',
-    tryjob = try_.job(
-        experiment_percentage = 1,
-    ),
-)
-
-try_.chromium_linux_builder(
     name = 'linux-trusty-rel',
     goma_jobs = goma.jobs.J150,
     os = os.LINUX_TRUSTY,
@@ -597,10 +590,12 @@ try_.chromium_mac_ios_builder(
 
 try_.chromium_mac_ios_builder(
     name = 'ios13-beta-simulator',
+    executable = 'recipe:chromium_trybot',
 )
 
 try_.chromium_mac_ios_builder(
     name = 'ios13-sdk-simulator',
+    executable = 'recipe:chromium_trybot',
 )
 
 try_.chromium_win_builder(

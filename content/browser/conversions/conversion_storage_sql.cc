@@ -58,12 +58,13 @@ base::Time DeserializeTime(int64_t microseconds) {
 
 ConversionStorageSql::ConversionStorageSql(
     const base::FilePath& path_to_database_dir,
-    Delegate* delegate,
+    std::unique_ptr<Delegate> delegate,
     base::Clock* clock)
     : path_to_database_(path_to_database_dir.Append(kDatabaseName)),
       clock_(clock),
-      delegate_(delegate),
+      delegate_(std::move(delegate)),
       weak_factory_(this) {
+  DCHECK(delegate_);
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 

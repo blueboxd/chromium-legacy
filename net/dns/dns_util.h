@@ -15,6 +15,7 @@
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
 #include "net/dns/dns_config.h"
+#include "net/dns/public/dns_over_https_server_config.h"
 #include "net/dns/public/dns_query_type.h"
 
 namespace net {
@@ -114,7 +115,7 @@ AddressFamilyToDnsQueryType(AddressFamily address_family);
 // Uses the hardcoded upgrade mapping to discover DoH service(s) associated
 // with a DoT hostname. Providers listed in |excluded_providers| are not
 // eligible for upgrade.
-NET_EXPORT_PRIVATE std::vector<DnsConfig::DnsOverHttpsServerConfig>
+NET_EXPORT_PRIVATE std::vector<DnsOverHttpsServerConfig>
 GetDohUpgradeServersFromDotHostname(
     const std::string& dot_server,
     const std::vector<std::string>& excluded_providers);
@@ -123,7 +124,7 @@ GetDohUpgradeServersFromDotHostname(
 // with a list of insecure DNS servers. Server ordering is preserved across
 // the mapping. Providers listed in |excluded_providers| are not
 // eligible for upgrade.
-NET_EXPORT_PRIVATE std::vector<DnsConfig::DnsOverHttpsServerConfig>
+NET_EXPORT_PRIVATE std::vector<DnsOverHttpsServerConfig>
 GetDohUpgradeServersFromNameservers(
     const std::vector<IPEndPoint>& dns_servers,
     const std::vector<std::string>& excluded_providers);
@@ -131,7 +132,7 @@ GetDohUpgradeServersFromNameservers(
 // Returns the provider id to use in UMA histogram names. If there is no
 // provider id that matches |doh_server|, returns "Other".
 NET_EXPORT_PRIVATE std::string GetDohProviderIdForHistogramFromDohConfig(
-    const DnsConfig::DnsOverHttpsServerConfig& doh_server);
+    const DnsOverHttpsServerConfig& doh_server);
 
 // Returns the provider id to use in UMA histogram names. If there is no
 // provider id that matches |nameserver|, returns "Other".

@@ -18,6 +18,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
@@ -25,6 +27,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
+#include "chrome/browser/ui/webui/signin/signin_utils_desktop.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/about_signin_internals.h"
@@ -148,17 +151,20 @@ void ImportCredentialsFromProvider(Profile* profile,
 // true, importing refresh_token is allowed even if the profile has primary
 // account for the user authenticated through credential provider.
 void ExtractCredentialImportPreferences(
-    base::string16* cred_provider_user_gaia_id,
+    base::string16* cred_provider_gaia_id,
+    base::string16* cred_provider_email,
     bool* allow_import_only_on_first_run,
     bool* allow_import_when_primary_account_exists) {
-  DCHECK(cred_provider_user_gaia_id);
+  DCHECK(cred_provider_gaia_id);
+  DCHECK(cred_provider_email);
   DCHECK(allow_import_only_on_first_run);
   DCHECK(allow_import_when_primary_account_exists);
 
   // Initialize to more restricted configuration.
   *allow_import_only_on_first_run = true;
   *allow_import_when_primary_account_exists = false;
-  cred_provider_user_gaia_id->clear();
+  cred_provider_gaia_id->clear();
+  cred_provider_email->clear();
 
   base::win::RegKey key;
   if (key.Open(HKEY_CURRENT_USER, credential_provider::kRegHkcuAccountsPath,
@@ -174,9 +180,16 @@ void ExtractCredentialImportPreferences(
   if (!key_account.Valid())
     return;
 
+  base::string16 email;
+  if (key_account.ReadValue(
+          base::UTF8ToUTF16(credential_provider::kKeyEmail).c_str(), &email) !=
+      ERROR_SUCCESS) {
+    return;
+  }
+
   // No need to return immediately if reading following registries fail. They
-  // will set to be stricter by default. cred_provider_user_gaia_id will be
-  // correctly set, though.
+  // will set to be stricter by default. cred_provider_gaia_id and
+  // cred_provider_email will be correctly set, though.
   DWORD reg_import_only_on_first_run = 1;
   key_account.ReadValueDW(credential_provider::kAllowImportOnlyOnFirstRun,
                           &reg_import_only_on_first_run);
@@ -186,7 +199,8 @@ void ExtractCredentialImportPreferences(
       credential_provider::kAllowImportWhenPrimaryAccountExists,
       &reg_import_when_primary_account_exists);
 
-  *cred_provider_user_gaia_id = it.Name();
+  *cred_provider_gaia_id = it.Name();
+  *cred_provider_email = email;
   *allow_import_only_on_first_run = (reg_import_only_on_first_run == 1);
   *allow_import_when_primary_account_exists =
       (reg_import_when_primary_account_exists == 1);
@@ -263,43 +277,75 @@ void SetDiceTurnSyncOnHelperDelegateForTesting(
   GetDiceTurnSyncOnHelperDelegateForTestingStorage()->swap(delegate);
 }
 
+// Credential provider needs to stick to profile it previously used to import
+// credentials. Thus, if there is another profile that was previously signed in
+// with credential provider regardless of whether user signed in or out,
+// credential provider shouldn't attempt to import credentials into current
+// profile.
+bool IsGCPWUsedInOtherProfile(Profile* profile) {
+  DCHECK(profile);
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  if (profile_manager) {
+    std::vector<ProfileAttributesEntry*> entries =
+        profile_manager->GetProfileAttributesStorage()
+            .GetAllProfilesAttributes();
+
+    for (const ProfileAttributesEntry* entry : entries) {
+      if (entry->GetPath() == profile->GetPath())
+        continue;
+
+      if (entry->IsSignedInWithCredentialProvider())
+        return true;
+    }
+  }
+
+  return false;
+}
+
+// Chrome doesn't allow signing into current profile if the same user is signed
+// in another profile.
+bool CanSignInToCurrentProfile(const std::string& gaia_id,
+                               const std::string& email,
+                               Profile* profile) {
+  std::string error_message;
+  return CanOfferSignin(profile, CAN_OFFER_SIGNIN_FOR_ALL_ACCOUNTS, gaia_id,
+                        email, &error_message);
+}
+
 void SigninWithCredentialProviderIfPossible(Profile* profile) {
   bool import_only_on_first_run = true;
   bool import_when_primary_account_exists = false;
-  base::string16 cred_provider_user_gaia_id;
+  base::string16 cred_provider_gaia_id;
+  base::string16 cred_provider_email;
 
-  ExtractCredentialImportPreferences(&cred_provider_user_gaia_id,
-                                     &import_only_on_first_run,
-                                     &import_when_primary_account_exists);
-
-  if (cred_provider_user_gaia_id.empty())
+  ExtractCredentialImportPreferences(
+      &cred_provider_gaia_id, &cred_provider_email, &import_only_on_first_run,
+      &import_when_primary_account_exists);
+  if (cred_provider_gaia_id.empty() || cred_provider_email.empty())
     return;
+
+  if (!CanSignInToCurrentProfile(base::UTF16ToUTF8(cred_provider_gaia_id),
+                                 base::UTF16ToUTF8(cred_provider_email),
+                                 profile) ||
+      IsGCPWUsedInOtherProfile(profile)) {
+    return;
+  }
 
   if (import_only_on_first_run && !first_run::IsChromeFirstRun())
     return;
 
-  if (g_browser_process->profile_manager()->GetInitialProfileDir() !=
-      profile->GetPath().BaseName()) {
-    return;
-  }
-
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
+  base::string16 gaia_id;
   if (identity_manager->HasPrimaryAccount()) {
-    base::string16 gaia_id =
-        base::UTF8ToUTF16(identity_manager->GetPrimaryAccountInfo().gaia);
+    gaia_id = base::UTF8ToUTF16(identity_manager->GetPrimaryAccountInfo().gaia);
 
-    if (!import_when_primary_account_exists ||
-        (gaia_id != cred_provider_user_gaia_id)) {
+    if (!import_when_primary_account_exists) {
       return;
     }
-
-    // If there is already a primary account in the profile, this means sync was
-    // turned on. So it shouldn't be turned on again.
-    TrySigninWithCredentialProvider(profile, gaia_id, false);
-    return;
   }
 
-  TrySigninWithCredentialProvider(profile, base::string16(), true);
+  TrySigninWithCredentialProvider(profile, gaia_id, gaia_id.empty());
 }
 
 bool ReauthWithCredentialProviderIfPossible(Profile* profile) {

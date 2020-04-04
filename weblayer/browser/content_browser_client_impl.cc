@@ -560,4 +560,23 @@ void ContentBrowserClientImpl::GetAdditionalMappedFilesForChildProcess(
 }
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
+void ContentBrowserClientImpl::AppendExtraCommandLineSwitches(
+    base::CommandLine* command_line,
+    int child_process_id) {
+  const base::CommandLine& browser_command_line(
+      *base::CommandLine::ForCurrentProcess());
+  std::string process_type =
+      command_line->GetSwitchValueASCII(::switches::kProcessType);
+  if (process_type == ::switches::kRendererProcess) {
+    // Please keep this in alphabetical order.
+    static const char* const kSwitchNames[] = {
+        embedder_support::kOriginTrialDisabledFeatures,
+        embedder_support::kOriginTrialDisabledTokens,
+        embedder_support::kOriginTrialPublicKey,
+    };
+    command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
+                                   base::size(kSwitchNames));
+  }
+}
+
 }  // namespace weblayer

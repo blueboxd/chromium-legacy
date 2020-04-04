@@ -2,9 +2,10 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-(function() {
+import {addWebUIListener} from 'chrome://resources/js/cr.m.js';
+
 function initialize() {
-  cr.addWebUIListener('clear-focus', clearFocus);
+  addWebUIListener('clear-focus', clearFocus);
 
   // Prefer using |document.body.offsetHeight| instead of
   // |document.body.scrollHeight| as it returns the correct height of the
@@ -17,4 +18,3 @@ function clearFocus() {
 }
 
 document.addEventListener('DOMContentLoaded', initialize);
-})();

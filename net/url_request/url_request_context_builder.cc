@@ -498,17 +498,7 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
     proxy_resolution_service_ = CreateProxyResolutionService(
         std::move(proxy_config_service_), context.get(),
         context->host_resolver(), context->network_delegate(),
-        context->net_log());
-
-    // Although CreateProxyResolutionService() tries its best to set the PAC
-    // quick check flag, it may be overridden by a child class. We should make
-    // sure we set that value here if applicable.
-    ConfiguredProxyResolutionService* configured_proxy_resolution_service =
-        nullptr;
-    if (proxy_resolution_service_->CastToConfiguredProxyResolutionService(
-            &configured_proxy_resolution_service))
-      configured_proxy_resolution_service->set_quick_check_enabled(
-          pac_quick_check_enabled_);
+        context->net_log(), pac_quick_check_enabled_);
   }
   ProxyResolutionService* proxy_resolution_service =
       proxy_resolution_service_.get();
@@ -634,9 +624,10 @@ URLRequestContextBuilder::CreateProxyResolutionService(
     URLRequestContext* url_request_context,
     HostResolver* host_resolver,
     NetworkDelegate* network_delegate,
-    NetLog* net_log) {
+    NetLog* net_log,
+    bool pac_quick_check_enabled) {
   return ConfiguredProxyResolutionService::CreateUsingSystemProxyResolver(
-      std::move(proxy_config_service), pac_quick_check_enabled_, net_log);
+      std::move(proxy_config_service), net_log, pac_quick_check_enabled);
 }
 
 }  // namespace net

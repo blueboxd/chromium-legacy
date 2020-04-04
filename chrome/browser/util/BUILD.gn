@@ -11,7 +11,6 @@ android_library("java") {
     "android/java/src/org/chromium/chrome/browser/util/BitmapCache.java",
     "android/java/src/org/chromium/chrome/browser/util/ChromeContextUtil.java",
     "android/java/src/org/chromium/chrome/browser/util/ChromeFileProvider.java",
-    "android/java/src/org/chromium/chrome/browser/util/ConversionUtils.java",
     "android/java/src/org/chromium/chrome/browser/util/FileSizeUtil.java",
     "android/java/src/org/chromium/chrome/browser/util/HashUtil.java",
     "android/java/src/org/chromium/chrome/browser/util/KeyNavigationUtil.java",
@@ -21,6 +20,7 @@ android_library("java") {
   deps = [
     "//base:base_java",
     "//base:jni_java",
+    "//components/browser_ui/util/android:java",
     "//components/embedder_support/android:util_java",
     "//content/public/android:content_java",
     "//third_party/android_deps:androidx_collection_collection_java",

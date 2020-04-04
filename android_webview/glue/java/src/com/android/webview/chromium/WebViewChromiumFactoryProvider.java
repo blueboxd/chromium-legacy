@@ -611,7 +611,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
     AutofillProvider createAutofillProvider(Context context, ViewGroup containerView) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return null;
-        return new AutofillProviderImpl(context, containerView);
+        return new AutofillProviderImpl(context, containerView, "Android WebView");
     }
 
     void startYourEngines(boolean onMainThread) {

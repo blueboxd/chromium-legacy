@@ -21,6 +21,9 @@ namespace feed {
 class FeedStreamSurface : public FeedStreamApi::SurfaceInterface {
  public:
   explicit FeedStreamSurface(const base::android::JavaRef<jobject>& j_this);
+  FeedStreamSurface(const FeedStreamSurface&) = delete;
+  FeedStreamSurface& operator=(const FeedStreamSurface&) = delete;
+
   ~FeedStreamSurface() override;
 
   // SurfaceInterface implementation.
@@ -28,18 +31,7 @@ class FeedStreamSurface : public FeedStreamApi::SurfaceInterface {
 
   void OnStreamUpdated(const feedui::StreamUpdate& stream_update);
 
-  void NavigationStarted(JNIEnv* env,
-                         const base::android::JavaParamRef<jobject>& caller,
-                         const base::android::JavaParamRef<jstring>& url,
-                         jboolean in_new_tab);
-
-  void NavigationDone(JNIEnv* env,
-                      const base::android::JavaParamRef<jobject>& caller,
-                      const base::android::JavaParamRef<jstring>& url,
-                      jboolean in_new_tab);
-
-  void LoadMore(JNIEnv* env,
-                const base::android::JavaParamRef<jobject>& caller);
+  void LoadMore(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
   void ProcessThereAndBackAgain(
       JNIEnv* env,
@@ -47,28 +39,55 @@ class FeedStreamSurface : public FeedStreamApi::SurfaceInterface {
       const base::android::JavaParamRef<jbyteArray>& data);
 
   int ExecuteEphemeralChange(JNIEnv* env,
-                             const base::android::JavaParamRef<jobject>& caller,
+                             const base::android::JavaParamRef<jobject>& obj,
                              const base::android::JavaParamRef<jobject>& data);
 
   void CommitEphemeralChange(JNIEnv* env,
-                             const base::android::JavaParamRef<jobject>& caller,
+                             const base::android::JavaParamRef<jobject>& obj,
                              int change_id);
 
-  void DiscardEphemeralChange(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& caller,
-      int change_id);
+  void DiscardEphemeralChange(JNIEnv* env,
+                              const base::android::JavaParamRef<jobject>& obj,
+                              int change_id);
 
   void SurfaceOpened(JNIEnv* env,
-                     const base::android::JavaParamRef<jobject>& caller);
+                     const base::android::JavaParamRef<jobject>& obj);
 
   void SurfaceClosed(JNIEnv* env,
-                     const base::android::JavaParamRef<jobject>& caller);
+                     const base::android::JavaParamRef<jobject>& obj);
+
+  // Event reporting functions. These have no side-effect beyond recording
+  // metrics.
+
+  void ReportNavigationStarted(JNIEnv* env,
+                               const base::android::JavaParamRef<jobject>& obj,
+                               const base::android::JavaParamRef<jstring>& url,
+                               jboolean in_new_tab);
+
+  void ReportNavigationDone(JNIEnv* env,
+                            const base::android::JavaParamRef<jobject>& obj,
+                            const base::android::JavaParamRef<jstring>& url,
+                            jboolean in_new_tab);
+
+  // A piece of content was removed or dismissed explicitly by the user.
+  void ReportContentRemoved(JNIEnv* env,
+                            const base::android::JavaParamRef<jobject>& obj);
+
+  // The 'Not Interested In' menu item was selected.
+  void ReportNotInterestedIn(JNIEnv* env,
+                             const base::android::JavaParamRef<jobject>& obj);
+
+  // The 'Manage Interests' menu item was selected.
+  void ReportManageInterests(JNIEnv* env,
+                             const base::android::JavaParamRef<jobject>& obj);
+
+  // The user opened the context menu (three dot, or long press).
+  void ReportContextMenuOpened(JNIEnv* env,
+                               const base::android::JavaParamRef<jobject>& obj);
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
   FeedStreamApi* feed_stream_api_;
-  DISALLOW_COPY_AND_ASSIGN(FeedStreamSurface);
 };
 
 }  // namespace feed

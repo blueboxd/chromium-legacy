@@ -24,11 +24,9 @@
 #define GL_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_EXT 0x9531
 
 #define GL_HANDLE_TYPE_OPAQUE_FD_EXT 0x9586
-
-#if defined(OS_FUCHSIA)
+#define GL_HANDLE_TYPE_OPAQUE_WIN32_EXT 0x9587
 #define GL_HANDLE_TYPE_ZIRCON_VMO_ANGLE 0x93AE
 #define GL_HANDLE_TYPE_ZIRCON_EVENT_ANGLE 0x93AF
-#endif
 
 namespace gpu {
 
@@ -203,6 +201,21 @@ GLuint ExternalVkImageGLRepresentationShared::ImportVkSemaphoreIntoGL(
                                 fd.release());
 
   return gl_semaphore;
+#elif defined(OS_WIN)
+  if (handle.vk_handle_type() !=
+      VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_BIT) {
+    DLOG(ERROR) << "Importing semaphore handle of unexpected type:"
+                << handle.vk_handle_type();
+    return 0;
+  }
+  auto win32_handle = handle.TakeHandle();
+  gl::GLApi* api = gl::g_current_gl_context;
+  GLuint gl_semaphore;
+  api->glGenSemaphoresEXTFn(1, &gl_semaphore);
+  api->glImportSemaphoreWin32HandleEXTFn(
+      gl_semaphore, GL_HANDLE_TYPE_OPAQUE_WIN32_EXT, win32_handle.Take());
+
+  return gl_semaphore;
 #elif defined(OS_FUCHSIA)
   if (handle.vk_handle_type() !=
       VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_TEMP_ZIRCON_EVENT_BIT_FUCHSIA) {
@@ -217,9 +230,6 @@ GLuint ExternalVkImageGLRepresentationShared::ImportVkSemaphoreIntoGL(
   api->glImportSemaphoreZirconHandleANGLEFn(
       gl_semaphore, GL_HANDLE_TYPE_ZIRCON_EVENT_ANGLE, event.release());
   return gl_semaphore;
-#elif defined(OS_WIN)
-  NOTIMPLEMENTED();
-  return 0;
 #else
 #error Unsupported OS
 #endif

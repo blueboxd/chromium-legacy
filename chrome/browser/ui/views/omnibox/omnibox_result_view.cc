@@ -249,10 +249,15 @@ void OmniboxResultView::OnSelectionStateChanged() {
     // but this selection event allows the screen reader to get more details
     // about the list and the user's position within it.
     NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
-  }
 
+    // TODO(orinj): Eventually the deep digging in this class should get
+    //  replaced with a single local point of access to all selection state.
+    ShowKeyword(popup_contents_view_->model()->selection().state ==
+                OmniboxPopupModel::KEYWORD);
+  } else {
+    ShowKeyword(false);
+  }
   ApplyThemeAndRefreshIcons();
-  ShowKeyword(false);
 }
 
 bool OmniboxResultView::IsSelected() const {

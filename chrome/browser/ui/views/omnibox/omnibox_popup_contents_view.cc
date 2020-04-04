@@ -223,11 +223,7 @@ void OmniboxPopupContentsView::InvalidateLine(size_t line) {
     webui_view_->GetWebUIHandler()->InvalidateLine(line);
     return;
   }
-
-  OmniboxResultView* result = result_view_at(line);
-  result->ApplyThemeAndRefreshIcons();
-  result->ShowKeyword(IsSelectedIndex(line) && model_->selected_line_state() ==
-                                                   OmniboxPopupModel::KEYWORD);
+  result_view_at(line)->OnSelectionStateChanged();
 }
 
 void OmniboxPopupContentsView::OnSelectionChanged(
@@ -239,11 +235,13 @@ void OmniboxPopupContentsView::OnSelectionChanged(
     return;
   }
 
-  if (old_selection.line != OmniboxPopupModel::kNoMatch)
-    result_view_at(old_selection.line)->OnSelectionStateChanged();
+  if (old_selection.line != OmniboxPopupModel::kNoMatch) {
+    InvalidateLine(old_selection.line);
+  }
 
-  if (new_selection.line != OmniboxPopupModel::kNoMatch)
-    result_view_at(new_selection.line)->OnSelectionStateChanged();
+  if (new_selection.line != OmniboxPopupModel::kNoMatch) {
+    InvalidateLine(new_selection.line);
+  }
 }
 
 void OmniboxPopupContentsView::UpdatePopupAppearance() {

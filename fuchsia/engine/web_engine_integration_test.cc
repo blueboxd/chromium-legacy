@@ -10,9 +10,12 @@
 #include <zircon/processargs.h>
 
 #include "base/command_line.h"
+#include "base/files/file_enumerator.h"
 #include "base/fuchsia/default_context.h"
 #include "base/fuchsia/file_utils.h"
+#include "base/fuchsia/filtered_service_directory.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/scoped_service_binding.h"
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/test/task_environment.h"
@@ -22,6 +25,8 @@
 #include "fuchsia/base/result_receiver.h"
 #include "fuchsia/base/test_devtools_list_fetcher.h"
 #include "fuchsia/base/test_navigation_listener.h"
+#include "media/base/media_switches.h"
+#include "media/fuchsia/audio/fake_audio_consumer.h"
 #include "net/http/http_request_headers.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -34,6 +39,16 @@ constexpr char kValidUserAgentVersion[] = "dev.12345";
 constexpr char kValidUserAgentProductAndVersion[] = "TestProduct/dev.12345";
 constexpr char kInvalidUserAgentProduct[] = "Test/Product";
 constexpr char kInvalidUserAgentVersion[] = "dev/12345";
+
+fuchsia::web::ContentDirectoryProvider CreateTestDataDirectoryProvider() {
+  fuchsia::web::ContentDirectoryProvider provider;
+  provider.set_name("testdata");
+  base::FilePath pkg_path;
+  CHECK(base::PathService::Get(base::DIR_ASSETS, &pkg_path));
+  provider.set_directory(base::fuchsia::OpenDirectory(
+      pkg_path.AppendASCII("fuchsia/engine/test/data")));
+  return provider;
+}
 
 }  // namespace
 
@@ -50,9 +65,10 @@ class WebEngineIntegrationTest : public testing::Test {
     ASSERT_TRUE(embedded_test_server_.Start());
   }
 
-  void StartWebEngine() {
-    web_context_provider_ =
-        cr_fuchsia::ConnectContextProvider(web_engine_controller_.NewRequest());
+  void StartWebEngine(base::CommandLine command_line =
+                          base::CommandLine(base::CommandLine::NO_PROGRAM)) {
+    web_context_provider_ = cr_fuchsia::ConnectContextProvider(
+        web_engine_controller_.NewRequest(), std::move(command_line));
     web_context_provider_.set_error_handler(
         [](zx_status_t status) { ADD_FAILURE(); });
   }
@@ -391,15 +407,38 @@ TEST_F(WebEngineIntegrationTest, ContentDirectoryProvider) {
 }
 
 TEST_F(WebEngineIntegrationTest, PlayAudio) {
-  StartWebEngine();
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitch(switches::kEnableFuchsiaAudioConsumer);
+  StartWebEngine(std::move(command_line));
 
-  fuchsia::web::CreateContextParams create_params =
-      DefaultContextParamsWithTestData();
-  auto features = fuchsia::web::ContextFeatureFlags::AUDIO;
-  if (create_params.has_features())
-    features |= create_params.features();
-  create_params.set_features(features);
+  // Use a FilteredServiceDirectory in order to inject a fake AudioConsumer
+  // service.
+  base::fuchsia::FilteredServiceDirectory filtered_services(
+      base::fuchsia::ComponentContextForCurrentProcess()->svc().get());
+  fidl::InterfaceHandle<fuchsia::io::Directory> svc_dir;
+  filtered_services.ConnectClient(svc_dir.NewRequest());
+
+  // Push all services from /svc to the service directory.
+  base::FileEnumerator file_enum(base::FilePath("/svc"), false,
+                                 base::FileEnumerator::FILES);
+  for (auto file = file_enum.Next(); !file.empty(); file = file_enum.Next()) {
+    filtered_services.AddService(file.BaseName().value().c_str());
+  }
+
+  // Publish fake AudioConsumer in the service directory.
+  media::FakeAudioConsumerService fake_audio_consumer_service(
+      filtered_services.outgoing_directory()->GetOrCreateDirectory("svc"));
+
+  // Create Context and Frame.
+  fuchsia::web::CreateContextParams create_params;
+  create_params.set_service_directory(std::move(svc_dir));
+  create_params.mutable_content_directories()->push_back(
+      CreateTestDataDirectoryProvider());
+  create_params.set_features(fuchsia::web::ContextFeatureFlags::AUDIO);
   CreateContextAndFrame(std::move(create_params));
+
+  static uint16_t kTestMediaSessionId = 43;
+  frame_->SetMediaSessionId(kTestMediaSessionId);
 
   fuchsia::web::LoadUrlParams load_url_params;
 
@@ -412,6 +451,17 @@ TEST_F(WebEngineIntegrationTest, PlayAudio) {
       "fuchsia-dir://testdata/play_audio.html"));
 
   navigation_listener_->RunUntilTitleEquals("ended");
+
+  ASSERT_EQ(fake_audio_consumer_service.num_instances(), 1U);
+
+  auto pos = fake_audio_consumer_service.instance(0)->GetMediaPosition();
+  EXPECT_GT(pos, base::TimeDelta::FromSecondsD(2.0));
+  EXPECT_LT(pos, base::TimeDelta::FromSecondsD(2.5));
+
+  EXPECT_EQ(fake_audio_consumer_service.instance(0)->session_id(),
+            kTestMediaSessionId);
+  EXPECT_EQ(fake_audio_consumer_service.instance(0)->volume(), 1.0);
+  EXPECT_FALSE(fake_audio_consumer_service.instance(0)->is_muted());
 }
 
 void WebEngineIntegrationTest::RunPermissionTest(bool grant) {

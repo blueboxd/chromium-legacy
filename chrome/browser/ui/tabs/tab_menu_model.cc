@@ -41,16 +41,17 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
   AddItemWithStringId(TabStripModel::CommandNewTabToRight,
                       IDS_TAB_CXMENU_NEWTABTORIGHT);
   if (base::FeatureList::IsEnabled(features::kTabGroups)) {
-    AddItemWithStringId(TabStripModel::CommandAddToNewGroup,
-                        IDS_TAB_CXMENU_ADD_TAB_TO_NEW_GROUP);
-
-    // Create submenu with existing groups
     if (ExistingTabGroupSubMenuModel::ShouldShowSubmenu(tab_strip, index)) {
+      // Create submenu with existing groups
       add_to_existing_group_submenu_ =
-          std::make_unique<ExistingTabGroupSubMenuModel>(tab_strip, index);
+          std::make_unique<ExistingTabGroupSubMenuModel>(delegate(), tab_strip,
+                                                         index);
       AddSubMenuWithStringId(TabStripModel::CommandAddToExistingGroup,
-                             IDS_TAB_CXMENU_ADD_TAB_TO_EXISTING_GROUP,
+                             IDS_TAB_CXMENU_ADD_TAB_TO_GROUP,
                              add_to_existing_group_submenu_.get());
+    } else {
+      AddItemWithStringId(TabStripModel::CommandAddToNewGroup,
+                          IDS_TAB_CXMENU_ADD_TAB_TO_NEW_GROUP);
     }
 
     for (size_t index = 0; index < affected_indices.size(); index++) {
@@ -62,11 +63,7 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
     }
   }
 
-  if (!ExistingWindowSubMenuModel::ShouldShowSubmenu(tab_strip->profile())) {
-    AddItem(TabStripModel::CommandMoveTabsToNewWindow,
-            l10n_util::GetPluralStringFUTF16(
-                IDS_TAB_CXMENU_MOVE_TABS_TO_NEW_WINDOW, num_affected_tabs));
-  } else {
+  if (ExistingWindowSubMenuModel::ShouldShowSubmenu(tab_strip->profile())) {
     // Create submenu with existing windows
     add_to_existing_window_submenu_ =
         std::make_unique<ExistingWindowSubMenuModel>(delegate(), tab_strip,
@@ -75,6 +72,10 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
                l10n_util::GetPluralStringFUTF16(
                    IDS_TAB_CXMENU_MOVETOANOTHERWINDOW, num_affected_tabs),
                add_to_existing_window_submenu_.get());
+  } else {
+    AddItem(TabStripModel::CommandMoveTabsToNewWindow,
+            l10n_util::GetPluralStringFUTF16(
+                IDS_TAB_CXMENU_MOVE_TABS_TO_NEW_WINDOW, num_affected_tabs));
   }
 
   AddSeparator(ui::NORMAL_SEPARATOR);

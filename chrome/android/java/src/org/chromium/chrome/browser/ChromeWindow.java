@@ -11,10 +11,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
-import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.webapps.WebApkActivity;
-import org.chromium.ui.base.ActivityAndroidPermissionDelegate;
 import org.chromium.ui.base.ActivityKeyboardVisibilityDelegate;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -58,21 +55,6 @@ public class ChromeWindow extends ActivityWindowAndroid {
     public ModalDialogManager getModalDialogManager() {
         ChromeActivity activity = (ChromeActivity) getActivity().get();
         return activity == null ? null : activity.getModalDialogManager();
-    }
-
-    @Override
-    protected ActivityAndroidPermissionDelegate createAndroidPermissionDelegate() {
-        return new ActivityAndroidPermissionDelegate(getActivity()) {
-            @Override
-            protected void logUMAOnRequestPermissionDenied(String permission) {
-                Activity activity = getActivity().get();
-                if (activity instanceof WebApkActivity
-                        && ((ChromeActivity) activity).didFinishNativeInitialization()) {
-                    WebApkUma.recordAndroidRuntimePermissionDeniedInWebApk(
-                            new String[] {permission});
-                }
-            }
-        };
     }
 
     @Override

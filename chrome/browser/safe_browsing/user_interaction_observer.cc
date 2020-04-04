@@ -6,13 +6,21 @@
 
 #include <string>
 
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "components/safe_browsing/core/features.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/blink/public/common/input/web_mouse_event.h"
 
 namespace safe_browsing {
+
+// If true, a delayed warning will be shown when the user clicks on the page.
+// If false, the warning won't be shown, but a metric will be recorded on the
+// first click.
+const base::FeatureParam<bool> kEnableMouseClicks{&kDelayedWarnings, "mouse",
+                                                  /*default_value=*/false};
 
 const char kDelayedWarningsHistogram[] = "SafeBrowsing.DelayedWarnings.Event";
 
@@ -39,6 +47,9 @@ SafeBrowsingUserInteractionObserver::SafeBrowsingUserInteractionObserver(
   key_press_callback_ =
       base::BindRepeating(&SafeBrowsingUserInteractionObserver::HandleKeyPress,
                           base::Unretained(this));
+  mouse_event_callback_ = base::BindRepeating(
+      &SafeBrowsingUserInteractionObserver::HandleMouseEvent,
+      base::Unretained(this));
   // Pass a callback to the render widget host instead of implementing
   // WebContentsObserver::DidGetUserInteraction(). The reason for this is that
   // render widget host handles keyboard events earlier and the callback can
@@ -46,13 +57,16 @@ SafeBrowsingUserInteractionObserver::SafeBrowsingUserInteractionObserver(
   // (DidGetUserInteraction() can only observe and not cancel the event.)
   web_contents->GetRenderViewHost()->GetWidget()->AddKeyPressEventCallback(
       key_press_callback_);
-
+  web_contents->GetRenderViewHost()->GetWidget()->AddMouseEventCallback(
+      mouse_event_callback_);
   RecordUMA(DelayedWarningEvent::kPageLoaded);
 }
 
 SafeBrowsingUserInteractionObserver::~SafeBrowsingUserInteractionObserver() {
   web_contents_->GetRenderViewHost()->GetWidget()->RemoveKeyPressEventCallback(
       key_press_callback_);
+  web_contents_->GetRenderViewHost()->GetWidget()->RemoveMouseEventCallback(
+      mouse_event_callback_);
   if (!interstitial_shown_) {
     RecordUMA(DelayedWarningEvent::kWarningNotShown);
   }
@@ -64,7 +78,13 @@ void SafeBrowsingUserInteractionObserver::CreateForWebContents(
     const security_interstitials::UnsafeResource& resource,
     bool is_main_frame,
     scoped_refptr<SafeBrowsingUIManager> ui_manager) {
-  DCHECK(!FromWebContents(web_contents));
+  // This method is called for all unsafe resources on |web_contents|. Only
+  // create an observer if there isn't one.
+  // TODO(crbug.com/1057157): The observer should observe all unsafe resources
+  // instead of the first one only.
+  if (FromWebContents(web_contents)) {
+    return;
+  }
   auto observer = std::make_unique<SafeBrowsingUserInteractionObserver>(
       web_contents, resource, is_main_frame, ui_manager);
   web_contents->SetUserData(kWebContentsUserDataKey, std::move(observer));
@@ -83,6 +103,9 @@ void SafeBrowsingUserInteractionObserver::RenderViewHostChanged(
     content::RenderViewHost* new_host) {
   old_host->GetWidget()->RemoveKeyPressEventCallback(key_press_callback_);
   new_host->GetWidget()->AddKeyPressEventCallback(key_press_callback_);
+
+  old_host->GetWidget()->RemoveMouseEventCallback(mouse_event_callback_);
+  new_host->GetWidget()->AddMouseEventCallback(mouse_event_callback_);
 }
 
 void SafeBrowsingUserInteractionObserver::WebContentsDestroyed() {
@@ -101,18 +124,46 @@ void SafeBrowsingUserInteractionObserver::DidStartNavigation(
 
 bool SafeBrowsingUserInteractionObserver::HandleKeyPress(
     const content::NativeWebKeyboardEvent& event) {
-  CleanUp();
-  // Show the interstitial.
-  interstitial_shown_ = true;
-  RecordUMA(DelayedWarningEvent::kWarningShownOnKeypress);
-  SafeBrowsingUIManager::StartDisplayingBlockingPage(ui_manager_, resource_);
+  ShowInterstitial(DelayedWarningEvent::kWarningShownOnKeypress);
   // DO NOT add code past this point. |this| is destroyed.
   return true;
+}
+
+bool SafeBrowsingUserInteractionObserver::HandleMouseEvent(
+    const blink::WebMouseEvent& event) {
+  if (event.GetType() != blink::WebInputEvent::kMouseDown) {
+    return false;
+  }
+  // If warning isn't enabled for mouse clicks, still record the first time when
+  // the user clicks.
+  if (!kEnableMouseClicks.Get()) {
+    if (!mouse_click_with_no_warning_recorded_) {
+      RecordUMA(DelayedWarningEvent::kWarningNotTriggeredOnMouseClick);
+      mouse_click_with_no_warning_recorded_ = true;
+    }
+    return false;
+  }
+  ShowInterstitial(DelayedWarningEvent::kWarningShownOnMouseClick);
+  // DO NOT add code past this point. |this| is destroyed.
+  return true;
+}
+
+void SafeBrowsingUserInteractionObserver::ShowInterstitial(
+    DelayedWarningEvent event) {
+  // Show the interstitial.
+  DCHECK(!interstitial_shown_);
+  interstitial_shown_ = true;
+  CleanUp();
+  RecordUMA(event);
+  SafeBrowsingUIManager::StartDisplayingBlockingPage(ui_manager_, resource_);
+  // DO NOT add code past this point. |this| is destroyed.
 }
 
 void SafeBrowsingUserInteractionObserver::CleanUp() {
   web_contents_->GetRenderViewHost()->GetWidget()->RemoveKeyPressEventCallback(
       key_press_callback_);
+  web_contents_->GetRenderViewHost()->GetWidget()->RemoveMouseEventCallback(
+      mouse_event_callback_);
 }
 
 }  // namespace safe_browsing

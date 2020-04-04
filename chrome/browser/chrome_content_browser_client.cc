@@ -205,6 +205,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/dom_distiller/core/url_constants.h"
+#include "components/embedder_support/switches.h"
 #include "components/error_page/common/error_page_switches.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/feature_list.h"
@@ -2192,9 +2193,9 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kForceUIDirection,
       switches::kJavaScriptHarmony,
       switches::kEnableExperimentalWebAssemblyFeatures,
-      switches::kOriginTrialDisabledFeatures,
-      switches::kOriginTrialDisabledTokens,
-      switches::kOriginTrialPublicKey,
+      embedder_support::kOriginTrialDisabledFeatures,
+      embedder_support::kOriginTrialDisabledTokens,
+      embedder_support::kOriginTrialPublicKey,
       switches::kPpapiFlashArgs,
       switches::kPpapiFlashPath,
       switches::kPpapiFlashVersion,
@@ -4114,12 +4115,6 @@ void ChromeContentBrowserClient::OverridePageVisibilityState(
       prerender_manager->IsWebContentsPrerendering(web_contents, nullptr)) {
     *visibility_state = content::PageVisibilityState::kHiddenButPainting;
   }
-}
-
-void ChromeContentBrowserClient::InitWebContextInterfaces() {
-  frame_interfaces_ = std::make_unique<service_manager::BinderRegistry>();
-  frame_interfaces_parameterized_ = std::make_unique<
-      service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>>();
 }
 
 void ChromeContentBrowserClient::InitNetworkContextsParentDirectory() {

@@ -5,13 +5,9 @@
 #include "components/permissions/permissions_client.h"
 
 #include "base/callback.h"
-#include "build/build_config.h"
 #include "components/permissions/notification_permission_ui_selector.h"
 
-#if defined(OS_ANDROID)
-#include "base/android/jni_android.h"
-#include "components/permissions/android/jni_headers/PermissionsClient_jni.h"
-#else
+#if !defined(OS_ANDROID)
 #include "ui/gfx/paint_vector_icon.h"
 #endif
 
@@ -123,10 +119,6 @@ void PermissionsClient::RepromptForAndroidPermissions(
     const std::vector<ContentSettingsType>& content_settings_types,
     PermissionsUpdatedCallback callback) {
   std::move(callback).Run(false);
-}
-
-base::android::ScopedJavaLocalRef<jobject> PermissionsClient::GetJavaObject() {
-  return Java_PermissionsClient_get(base::android::AttachCurrentThread());
 }
 
 int PermissionsClient::MapToJavaDrawableId(int resource_id) {

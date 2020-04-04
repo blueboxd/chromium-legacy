@@ -112,6 +112,35 @@ CascadeOrigin TargetOriginForRevert(CascadeOrigin origin) {
   }
 }
 
+// When doing 'revert' on a surrogate property (e.g. inline-size), or the
+// corresponding original property (e.g. width), we have to check which of the
+// two properties won the cascade in the target origin. The property with the
+// highest priority in the target origin is the property we need to revert to.
+//
+// For example, if the UA sheet specifies:
+//
+//  h1 { margin-block-end: 0.67em }
+//
+// And the author specifies:
+//
+//  h1 { margin-bottom: revert }
+//
+// Then the expectation is to revert to 0.67em. Without computing the correct
+// target property, we'd revert to 'margin-bottom' in the user-agent origin,
+// which isn't present, and hence it resolve to 'unset', which is not correct.
+const CSSProperty* TargetPropertyForRevert(const CSSProperty& original,
+                                           const CSSProperty* surrogate,
+                                           CascadeOrigin origin,
+                                           CascadeMap& map) {
+  if (!surrogate)
+    return &original;
+  CascadePriority surrogate_priority =
+      map.At(surrogate->GetCSSPropertyName(), origin);
+  CascadePriority original_priority =
+      map.At(original.GetCSSPropertyName(), origin);
+  return (original_priority < surrogate_priority) ? surrogate : &original;
+}
+
 }  // namespace
 
 MatchResult& StyleCascade::MutableMatchResult() {
@@ -383,12 +412,18 @@ void StyleCascade::ApplySurrogate(const CSSProperty& surrogate,
                                   CascadeResolver& resolver) {
   DCHECK(surrogate.IsSurrogate());
 
+  CascadeResolver::AutoSurrogateScope surrogate_scope(surrogate, resolver);
+
   const CSSProperty& original = SurrogateFor(surrogate);
   CascadePriority* original_priority = map_.Find(original.GetCSSPropertyName());
 
   if (original_priority) {
     if (surrogate_priority < *original_priority) {
       // The original has a higher priority, so skip the surrogate property.
+      // However, we need to force-reapply the original property, since applying
+      // with and without surrogate scope can yield different results.
+      resolver.MarkUnapplied(original_priority);
+      LookupAndApply(original, resolver);
       return;
     }
 
@@ -656,6 +691,18 @@ const CSSValue* StyleCascade::ResolveRevert(const CSSProperty& property,
                                             CascadeOrigin origin,
                                             CascadeResolver& resolver) {
   CascadeOrigin target_origin = TargetOriginForRevert(origin);
+  const CSSProperty* target_property = &property;
+
+  // A 'revert' in a surrogate property (e.g. inline-size), or a 'revert' in
+  // a corresponding original property (e.g. width) could mean we need to revert
+  // to a different property on the previous origin.
+  if (const auto* current_surrogate = resolver.current_surrogate_) {
+    const CSSProperty& surrogate_target = SurrogateFor(*current_surrogate);
+    if (&property == &surrogate_target || &property == current_surrogate) {
+      target_property = TargetPropertyForRevert(
+          surrogate_target, current_surrogate, target_origin, map_);
+    }
+  }
 
   switch (target_origin) {
     case CascadeOrigin::kTransition:
@@ -666,11 +713,12 @@ const CSSValue* StyleCascade::ResolveRevert(const CSSProperty& property,
     case CascadeOrigin::kAuthor:
     case CascadeOrigin::kAnimation: {
       CascadePriority* p =
-          map_.Find(property.GetCSSPropertyName(), target_origin);
+          map_.Find(target_property->GetCSSPropertyName(), target_origin);
       if (!p)
         return cssvalue::CSSUnsetValue::Create();
-      return Resolve(property, *ValueAt(match_result_, p->GetPosition()),
-                     target_origin, resolver);
+      return Resolve(*target_property,
+                     *ValueAt(match_result_, p->GetPosition()), target_origin,
+                     resolver);
     }
   }
 }

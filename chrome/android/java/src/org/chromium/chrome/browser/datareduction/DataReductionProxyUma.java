@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.datareduction;
 
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.util.ConversionUtils;
+import org.chromium.components.browser_ui.util.ConversionUtils;
 
 /**
  * Centralizes UMA data collection for the Data Reduction Proxy.

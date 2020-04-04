@@ -8,23 +8,239 @@ The `defaults` struct provides module-level defaults for the arguments to
 corresponding attribute on `defaults` that is a `lucicfg.var` that can be used
 to set the default value. Can also be accessed through `ci.defaults`.
 """
+load('@stdlib//internal/graph.star', 'graph')
+load('@stdlib//internal/luci/common.star', 'keys')
 
 load('./builders.star', 'builders')
+load('./args.star', 'args')
 
 
-defaults = builders.defaults
+defaults = args.defaults(
+    extends=builders.defaults,
+    add_to_console_view = False,
+    console_view = args.COMPUTE,
+)
 
 
-def ci_builder(*, name, **kwargs):
-  """Define a CI builder.
+def _console_view_ordering_graph_key(console_name):
+  return graph.key('@chromium', '', 'console_view_ordering', console_name)
 
-  Arguments:
-    * name - name of the builder, will show up in UIs and logs. Required.
+
+def _console_view_ordering_impl(ctx, *, console_name, ordering):
+  key = _console_view_ordering_graph_key(console_name)
+  graph.add_node(key, props = {
+      'ordering': ordering,
+  })
+  graph.add_edge(keys.project(), key)
+  return graph.keyset(key)
+
+_console_view_ordering = lucicfg.rule(impl=_console_view_ordering_impl)
+
+
+
+def _category_join(parent, category):
+  return '|'.join([c for c in (parent, category) if c])
+
+
+def _level_sort_key(category, ordering):
+  """Compute the key for a single level of ordering.
+
+  A key that can be used to sort categories/short names at the same
+  category nesting level.
   """
-  return builders.builder(
+  for i, c in enumerate(ordering):
+    if c == category:
+      # We found the category in the ordering, so the index in the ordering is
+      # sufficient for sorting
+      return (i,)
+  # We didn't find the category, the key uses:
+  # 1. The length of the ordering so that it sorts after all the categories in
+  #    the ordering
+  # 2. The category itself, which lexicographically sorts all of the categories
+  #    that do not match the ordering
+  return (len(ordering), category)
+
+
+def _builder_sort_key(console_name, console_ordering, builder):
+  """Compute the key for a builder.
+
+  Builders are sorted lexicographically by the sequence of category
+  components, then lexicographically by the short name, then by the
+  builder names. The ordering for the console_view modifies the sorting
+  for category components and short names for given prefixes of the
+  category component sequence. Builders with no short name will sort
+  before builders with a short name for a given category, which cannot
+  be modified by the ordering.
+
+  Returns:
+    A key that can be used to sort builder entries within the same console.
+  """
+  category = None
+
+  # Build the category key as a sequence of the keys for each level
+  category_key = []
+  if builder.category:
+    for c in builder.category.split('|'):
+      ordering = console_ordering.get(category, [])
+      if type(ordering) == type(struct()):
+        ordering = ordering.categories
+      category_key.append(_level_sort_key(c, ordering))
+      category = _category_join(category, c)
+
+  short_name_key = ()
+  if builder.short_name:
+    ordering = console_ordering.get(category, [])
+    short_name_ordering = getattr(ordering, 'short_names', [])
+    short_name_key = _level_sort_key(builder.short_name, short_name_ordering)
+
+  return (
+      category_key,
+      short_name_key,
+      list(builder.name),
+  )
+
+
+def _sort_consoles(ctx):
+  milo = ctx.output['luci-milo.cfg']
+  for console in milo.consoles:
+    graph_key = graph.key('@chromium', '', 'console_view_ordering', console.id)
+    node = graph.node(graph_key)
+    if node != None:
+      def key_fn(b):
+        return _builder_sort_key(console.id, node.props.ordering, b)
+      console.builders = sorted(console.builders, key_fn)
+  milo.consoles = sorted(milo.consoles, lambda c: c.id)
+
+lucicfg.generator(_sort_consoles)
+
+
+def ordering(*, short_names=None, categories=None):
+  """Specifies the sorting behavior for a category.
+
+  Args:
+    short_names - A list of strings that specifies the order short names
+      should appear for builders in the same category. Builders without
+      short names will appear before all others and builders with short
+      names that do not appear in the list will be sorted
+      lexicographically after short names that do appear in the list. By
+      default, short names are sorted lexicographically.
+    categories - A list of strings that specifies the order the next
+      category component should appear for builders with matching
+      category prefix. Builders without any additional category
+      components will appear before all others and builders whose next
+      category component do not appear in the list will be sorted
+      lexicographically by the next category component. By default, the
+      next category components are sorted lexicographically.
+  """
+  return struct(
+      short_names = short_names or [],
+      categories = categories or [],
+  )
+
+
+def console_view(*, name, ordering=None, **kwargs):
+  """Create a console view, optionally providing an entry ordering.
+
+  Args:
+    name - The name of the console view.
+    ordering - A dictionary defining the ordering of categories for the
+      console. If not provided, the console will not be sorted.
+
+      The keys of the dictionary indicate the category that the values
+      applies the sorting to and can take one of two forms:
+      1.  None: Controls the ordering of the top-level categories and/or
+          the short names of builders that have no category.
+      2.  str: Category string to apply the ordering to the next nested
+          level of categories and/or the short names of builders with
+          that category.
+
+      The value for each entry defines the ordering to be applied to
+      builders that have matched the sequence of category components
+      identified by the key and can take one of two forms:
+      1.  struct created using `ci.ordering`: See `ci.ordering` for
+          details.
+      2.  list of category components: Equivalent to a `ci.ordering`
+          call that only specifies `categories` with the given list.
+  """
+  luci.console_view(
       name = name,
       **kwargs
   )
+
+  _console_view_ordering(
+      console_name = name,
+      ordering = ordering or {},
+  )
+
+
+def console_view_entry(*, category=None, short_name=None):
+  """Specifies the details of a console view entry.
+
+  See https://chromium.googlesource.com/infra/luci/luci-go/+/refs/heads/master/lucicfg/doc/README.md#luci.console_view_entry
+  for details on the arguments.
+
+  Returns:
+    A struct that can be passed to the `console_view_entry` argument of
+    `ci.builder` to add an entry to the console for the builder's
+    mastername.
+  """
+  return struct(
+      category = category,
+      short_name = short_name,
+  )
+
+
+def ci_builder(
+    *,
+    name,
+    add_to_console_view=args.DEFAULT,
+    console_view=args.DEFAULT,
+    console_view_entry=None,
+    **kwargs):
+  """Define a CI builder.
+
+  Arguments:
+    name - name of the builder, will show up in UIs and logs. Required.
+    add_to_console_view - A bool indicating whether an entry should be
+      created for the builder in the console identified by
+      `console_view`. Supports a module-level default that defaults to
+      False.
+    console_view - A string identifying the ID of the console view to
+      add an entry to. Supports a module-level default that defaults to
+      the mastername of the builder, if provided. An entry will be added
+      only if `add_to_console_view` is True and `console_view_entry` is
+      provided.
+   console_view_entry - A structure providing the details of the entry
+      to add to the console view. See `ci.console_view_entry` for details.
+  """
+  # Define the builder first so that any validation of luci.builder arguments
+  # (e.g. bucket) occurs before we try to use it
+  ret = builders.builder(
+      name = name,
+      **kwargs
+  )
+
+  if console_view_entry:
+    console_view = defaults.get_value('console_view', console_view)
+    if console_view == args.COMPUTE:
+      console_view = defaults.get_value_from_kwargs('mastername', kwargs)
+
+    if console_view:
+      bucket = defaults.get_value_from_kwargs('bucket', kwargs)
+      add_to_console_view = defaults.get_value(
+          'add_to_console_view', add_to_console_view)
+
+      builder = '{}/{}'.format(bucket, name)
+
+      if add_to_console_view:
+        luci.console_view_entry(
+            builder = builder,
+            console_view = console_view,
+            category = console_view_entry.category,
+            short_name = console_view_entry.short_name,
+        )
+
+  return ret
 
 
 def android_builder(
@@ -441,7 +657,10 @@ def win_builder(*, name, os=builders.os.WINDOWS_DEFAULT, **kwargs):
 
 ci = struct(
     builder = ci_builder,
+    console_view = console_view,
+    console_view_entry = console_view_entry,
     defaults = defaults,
+    ordering = ordering,
 
     android_builder = android_builder,
     android_fyi_builder = android_fyi_builder,

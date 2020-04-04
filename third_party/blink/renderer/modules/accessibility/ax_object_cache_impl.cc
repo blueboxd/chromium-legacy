@@ -89,6 +89,21 @@
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
+// Prevent code that runs during the lifetime of the stack from altering the
+// document lifecycle. Usually doc is the same as document_, but it can be
+// different when it is a popup document. Because it's harmless to test both
+// documents, even if they are the same, the scoped check is initialized for
+// both documents.
+// clang-format off
+#if DCHECK_IS_ON()
+#define SCOPED_DISALLOW_LIFECYCLE_TRANSITION(doc)                           \
+  DocumentLifecycle::DisallowTransitionScope scoped1((doc).Lifecycle());     \
+  DocumentLifecycle::DisallowTransitionScope scoped2(document_->Lifecycle())
+#else
+#define SCOPED_DISALLOW_LIFECYCLE_TRANSITION(doc)
+#endif
+// clang-format on
+
 namespace blink {
 
 namespace {
@@ -939,6 +954,8 @@ void AXObjectCacheImpl::FocusableChangedWithCleanLayout(Element* element) {
 }
 
 void AXObjectCacheImpl::DocumentTitleChanged() {
+  DocumentLifecycle::DisallowTransitionScope disallow(document_->Lifecycle());
+
   PostNotification(Root(), ax::mojom::Event::kDocumentTitleChanged);
 }
 
@@ -1034,8 +1051,7 @@ void AXObjectCacheImpl::ProcessDeferredAccessibilityEvents(Document& document) {
 }
 
 void AXObjectCacheImpl::ProcessUpdates(Document& document) {
-  // None of the updates should alter the document lifecycle.
-  DocumentLifecycle::DisallowTransitionScope disallow(document.Lifecycle());
+  SCOPED_DISALLOW_LIFECYCLE_TRANSITION(document);
 
   TreeUpdateCallbackQueue old_tree_update_callback_queue;
   tree_update_callback_queue_.swap(old_tree_update_callback_queue);
@@ -1165,6 +1181,8 @@ void AXObjectCacheImpl::FireAXEventImmediately(
     if (layout_object && layout_object->View())
       DCHECK(!layout_object->View()->GetLayoutState());
   }
+
+  SCOPED_DISALLOW_LIFECYCLE_TRANSITION(*obj->GetDocument());
 #endif
 
   PostPlatformNotification(obj, event_type, event_from);
@@ -1233,6 +1251,8 @@ void AXObjectCacheImpl::ListboxSelectedChildrenChanged(
 }
 
 void AXObjectCacheImpl::ListboxActiveIndexChanged(HTMLSelectElement* select) {
+  SCOPED_DISALLOW_LIFECYCLE_TRANSITION(select->GetDocument());
+
   auto* ax_object = DynamicTo<AXListBox>(Get(select));
   if (!ax_object)
     return;
@@ -1246,6 +1266,8 @@ void AXObjectCacheImpl::LocationChanged(LayoutObject* layout_object) {
 
 void AXObjectCacheImpl::RadiobuttonRemovedFromGroup(
     HTMLInputElement* group_member) {
+  SCOPED_DISALLOW_LIFECYCLE_TRANSITION(group_member->GetDocument());
+
   auto* ax_object = DynamicTo<AXRadioInput>(Get(group_member));
   if (!ax_object)
     return;
@@ -1271,6 +1293,8 @@ void AXObjectCacheImpl::ImageLoaded(LayoutObject* layout_object) {
 void AXObjectCacheImpl::HandleLayoutComplete(LayoutObject* layout_object) {
   if (!layout_object)
     return;
+
+  SCOPED_DISALLOW_LIFECYCLE_TRANSITION(layout_object->GetDocument());
 
   modification_count_++;
 
@@ -1300,14 +1324,18 @@ void AXObjectCacheImpl::HandleAriaExpandedChangeWithCleanLayout(Node* node) {
   if (!node)
     return;
 
+  SCOPED_DISALLOW_LIFECYCLE_TRANSITION(node->GetDocument());
+
   DCHECK(!node->GetDocument().NeedsLayoutTreeUpdateForNode(*node));
   if (AXObject* obj = GetOrCreate(node))
     obj->HandleAriaExpandedChanged();
 }
 
 void AXObjectCacheImpl::HandleAriaSelectedChangedWithCleanLayout(Node* node) {
+  SCOPED_DISALLOW_LIFECYCLE_TRANSITION(node->GetDocument());
+
   DCHECK(node);
-  DCHECK(!node->GetDocument().NeedsLayoutTreeUpdateForNode(*node));
+  DCHECK(!document_->NeedsLayoutTreeUpdateForNode(*node));
   AXObject* obj = Get(node);
   if (!obj)
     return;
@@ -1734,6 +1762,13 @@ void AXObjectCacheImpl::MarkElementDirty(const Element* element, bool subtree) {
 void AXObjectCacheImpl::HandleFocusedUIElementChanged(
     Element* old_focused_element,
     Element* new_focused_element) {
+#if DCHECK_IS_ON()
+  // The focus can be in a different document when a popup is open.
+  Document& focused_doc =
+      new_focused_element ? new_focused_element->GetDocument() : *document_;
+  SCOPED_DISALLOW_LIFECYCLE_TRANSITION(focused_doc);
+#endif
+
   RemoveValidationMessageObject();
 
   if (!new_focused_element) {
@@ -1763,6 +1798,8 @@ void AXObjectCacheImpl::HandleInitialFocus() {
 void AXObjectCacheImpl::HandleEditableTextContentChanged(Node* node) {
   if (!node)
     return;
+
+  SCOPED_DISALLOW_LIFECYCLE_TRANSITION(node->GetDocument());
 
   AXObject* obj = nullptr;
   // We shouldn't create a new AX object here because we might be in the middle
@@ -1809,37 +1846,46 @@ void AXObjectCacheImpl::HandleUpdateActiveMenuOption(LayoutObject* menu_list,
   if (!ax_object)
     return;
 
+  SCOPED_DISALLOW_LIFECYCLE_TRANSITION(*ax_object->GetDocument());
+
   ax_object->DidUpdateActiveOption(option_index);
 }
 
 void AXObjectCacheImpl::DidShowMenuListPopup(LayoutObject* menu_list) {
-  auto* ax_object = DynamicTo<AXMenuList>(Get(menu_list));
-  if (!ax_object)
-    return;
+  SCOPED_DISALLOW_LIFECYCLE_TRANSITION(menu_list->GetDocument());
 
-  ax_object->DidShowPopup();
+  auto* ax_object = DynamicTo<AXMenuList>(Get(menu_list));
+  if (ax_object)
+    ax_object->DidShowPopup();
 }
 
 void AXObjectCacheImpl::DidHideMenuListPopup(LayoutObject* menu_list) {
-  auto* ax_object = DynamicTo<AXMenuList>(Get(menu_list));
-  if (!ax_object)
-    return;
+  SCOPED_DISALLOW_LIFECYCLE_TRANSITION(menu_list->GetDocument());
 
-  ax_object->DidHidePopup();
+  auto* ax_object = DynamicTo<AXMenuList>(Get(menu_list));
+  if (ax_object)
+    ax_object->DidHidePopup();
 }
 
 void AXObjectCacheImpl::HandleLoadComplete(Document* document) {
+  SCOPED_DISALLOW_LIFECYCLE_TRANSITION(*document);
+
   PostNotification(GetOrCreate(document), ax::mojom::Event::kLoadComplete);
   AddPermissionStatusListener();
 }
 
 void AXObjectCacheImpl::HandleLayoutComplete(Document* document) {
+  SCOPED_DISALLOW_LIFECYCLE_TRANSITION(*document);
+
   PostNotification(GetOrCreate(document), ax::mojom::Event::kLayoutComplete);
 }
 
 void AXObjectCacheImpl::HandleScrolledToAnchor(const Node* anchor_node) {
   if (!anchor_node)
     return;
+
+  SCOPED_DISALLOW_LIFECYCLE_TRANSITION(anchor_node->GetDocument());
+
   AXObject* obj = GetOrCreate(anchor_node->GetLayoutObject());
   if (!obj)
     return;
@@ -1854,18 +1900,22 @@ void AXObjectCacheImpl::HandleFrameRectsChanged(Document& document) {
 
 void AXObjectCacheImpl::HandleScrollPositionChanged(
     LocalFrameView* frame_view) {
-  AXObject* target_ax_object =
-      GetOrCreate(frame_view->GetFrame().GetDocument());
+  SCOPED_DISALLOW_LIFECYCLE_TRANSITION(*frame_view->GetFrame().GetDocument());
+
+  AXObject* target_ax_object = GetOrCreate(document_);
   PostNotification(target_ax_object, ax::mojom::Event::kScrollPositionChanged);
 }
 
 void AXObjectCacheImpl::HandleScrollPositionChanged(
     LayoutObject* layout_object) {
+  SCOPED_DISALLOW_LIFECYCLE_TRANSITION(layout_object->GetDocument());
   PostNotification(GetOrCreate(layout_object),
                    ax::mojom::Event::kScrollPositionChanged);
 }
 
 const AtomicString& AXObjectCacheImpl::ComputedRoleForNode(Node* node) {
+  SCOPED_DISALLOW_LIFECYCLE_TRANSITION(node->GetDocument());
+
   AXObject* obj = GetOrCreate(node);
   if (!obj)
     return AXObject::RoleName(ax::mojom::Role::kUnknown);
@@ -1873,6 +1923,8 @@ const AtomicString& AXObjectCacheImpl::ComputedRoleForNode(Node* node) {
 }
 
 String AXObjectCacheImpl::ComputedNameForNode(Node* node) {
+  SCOPED_DISALLOW_LIFECYCLE_TRANSITION(node->GetDocument());
+
   AXObject* obj = GetOrCreate(node);
   if (!obj)
     return "";
@@ -1881,6 +1933,11 @@ String AXObjectCacheImpl::ComputedNameForNode(Node* node) {
 }
 
 void AXObjectCacheImpl::OnTouchAccessibilityHover(const IntPoint& location) {
+  // TODO(aleventhal) This triggers a DCHECK when running
+  // content_browsertests --gtest_filter=TouchAccessibility*.TouchExploration*
+  // DocumentLifecycle::DisallowTransitionScope
+  //   disallow(document_->Lifecycle());
+
   AXObject* hit = Root()->AccessibilityHitTest(location);
   if (hit) {
     // Ignore events on a frame or plug-in, because the touch events
@@ -1897,6 +1954,8 @@ void AXObjectCacheImpl::OnTouchAccessibilityHover(const IntPoint& location) {
 void AXObjectCacheImpl::SetCanvasObjectBounds(HTMLCanvasElement* canvas,
                                               Element* element,
                                               const LayoutRect& rect) {
+  SCOPED_DISALLOW_LIFECYCLE_TRANSITION(element->GetDocument());
+
   AXObject* obj = GetOrCreate(element);
   if (!obj)
     return;

@@ -61,6 +61,6 @@ TEST_F(TabMenuModelTest, AddToExistingGroupSubmenu) {
       menu.GetIndexOfCommandId(TabStripModel::CommandAddToExistingGroup);
   ui::MenuModel* submenu = menu.GetSubmenuModelAt(submenu_index);
 
-  EXPECT_EQ(submenu->GetItemCount(), 3);
+  EXPECT_EQ(submenu->GetItemCount(), 5);
   EXPECT_TRUE(submenu->HasIcons());
 }

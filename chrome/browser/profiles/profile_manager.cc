@@ -1637,6 +1637,10 @@ void ProfileManager::AddProfileToStorage(Profile* profile) {
       // The ProfileAttributesStorage's info must match the Identity Manager.
       entry->SetAuthInfo(account_info.gaia, username,
                          is_consented_primary_account);
+
+      entry->SetSignedInWithCredentialProvider(profile->GetPrefs()->GetBoolean(
+          prefs::kSignedInWithCredentialProvider));
+
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
       // Sign out if force-sign-in policy is enabled and profile is not signed
       // in.
@@ -1687,13 +1691,16 @@ void ProfileManager::AddProfileToStorage(Profile* profile) {
                      username, is_consented_primary_account, icon_index,
                      supervised_user_id, account_id);
 
-  if (profile->GetPrefs()->GetBoolean(prefs::kForceEphemeralProfiles)) {
-    ProfileAttributesEntry* entry;
-    bool has_entry = storage.GetProfileAttributesWithPath(profile->GetPath(),
-                                                          &entry);
-    DCHECK(has_entry);
+  ProfileAttributesEntry* entry;
+  bool has_entry =
+      storage.GetProfileAttributesWithPath(profile->GetPath(), &entry);
+  DCHECK(has_entry);
+
+  if (profile->GetPrefs()->GetBoolean(prefs::kForceEphemeralProfiles))
     entry->SetIsEphemeral(true);
-  }
+
+  entry->SetSignedInWithCredentialProvider(
+      profile->GetPrefs()->GetBoolean(prefs::kSignedInWithCredentialProvider));
 }
 
 void ProfileManager::SetNonPersonalProfilePrefs(Profile* profile) {

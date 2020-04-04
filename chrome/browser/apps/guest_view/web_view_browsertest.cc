@@ -3390,15 +3390,9 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, TestPlugin) {
   TestHelper("testPlugin", "web_view/shim", NEEDS_TEST_SERVER);
 }
 
-#if defined(OS_WIN)
-// Test is disabled on Windows because it times out often.
+// Test is disabled because it times out often.
 // http://crbug.com/403325
-#define MAYBE_WebViewInBackgroundPage \
-    DISABLED_WebViewInBackgroundPage
-#else
-#define MAYBE_WebViewInBackgroundPage WebViewInBackgroundPage
-#endif
-IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_WebViewInBackgroundPage) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_WebViewInBackgroundPage) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("platform_apps/web_view/background"))
       << message_;

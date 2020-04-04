@@ -23,7 +23,6 @@
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/focus/focus_manager.h"
@@ -69,19 +68,12 @@ bool ShouldShowAeroShadowBorder() {
 // static
 const char MessageView::kViewClassName[] = "MessageView";
 
-class MessageView::HighlightPathGenerator
-    : public views::HighlightPathGenerator {
- public:
-  HighlightPathGenerator() = default;
+MessageView::HighlightPathGenerator::HighlightPathGenerator() = default;
 
-  // views::HighlightPathGenerator:
-  SkPath GetHighlightPath(const views::View* view) override {
-    return static_cast<const MessageView*>(view)->GetHighlightPath();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(HighlightPathGenerator);
-};
+SkPath MessageView::HighlightPathGenerator::GetHighlightPath(
+    const views::View* view) {
+  return static_cast<const MessageView*>(view)->GetHighlightPath();
+}
 
 MessageView::MessageView(const Notification& notification)
     : notification_id_(notification.id()), slide_out_controller_(this, this) {

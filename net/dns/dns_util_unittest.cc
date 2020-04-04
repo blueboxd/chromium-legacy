@@ -136,7 +136,7 @@ TEST_F(DNSUtilTest, GetURLFromTemplateWithoutParameters) {
 }
 
 TEST_F(DNSUtilTest, GetDohUpgradeServersFromDotHostname) {
-  std::vector<DnsConfig::DnsOverHttpsServerConfig> doh_servers =
+  std::vector<DnsOverHttpsServerConfig> doh_servers =
       GetDohUpgradeServersFromDotHostname("", std::vector<std::string>());
   EXPECT_EQ(0u, doh_servers.size());
 
@@ -176,7 +176,7 @@ TEST_F(DNSUtilTest, GetDohUpgradeServersFromNameservers) {
   nameservers.push_back(IPEndPoint(dns_ip3, dns_protocol::kDefaultPort));
   nameservers.push_back(IPEndPoint(dns_ip4, dns_protocol::kDefaultPort));
 
-  std::vector<DnsConfig::DnsOverHttpsServerConfig> doh_servers =
+  std::vector<DnsOverHttpsServerConfig> doh_servers =
       GetDohUpgradeServersFromNameservers(std::vector<IPEndPoint>(),
                                           std::vector<std::string>());
   EXPECT_EQ(0u, doh_servers.size());

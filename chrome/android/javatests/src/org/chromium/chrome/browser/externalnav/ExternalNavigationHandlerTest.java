@@ -1218,6 +1218,16 @@ public class ExternalNavigationHandlerTest {
 
     @Test
     @SmallTest
+    public void testUsafeIntentFlagsFiltered() {
+        checkUrl("intent://#Intent;package=com.test.package;launchFlags=0x7FFFFFFF;end;")
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
+        Assert.assertEquals(ExternalNavigationHandler.ALLOWED_INTENT_FLAGS,
+                mDelegate.startActivityIntent.getFlags());
+    }
+
+    @Test
+    @SmallTest
     public void testIntentWithMissingReferrer() {
         mDelegate.add(new IntentActivity("http://refertest.com", "refertest"));
         mDelegate.add(new IntentActivity("https://refertest.com", "refertest"));

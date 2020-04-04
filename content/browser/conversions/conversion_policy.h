@@ -10,8 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/time/time.h"
-#include "content/browser/conversions/conversion_report.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -40,22 +38,6 @@ class CONTENT_EXPORT ConversionPolicy {
   ConversionPolicy(const ConversionPolicy& other) = delete;
   ConversionPolicy& operator=(const ConversionPolicy& other) = delete;
   virtual ~ConversionPolicy();
-
-  // Get the time a conversion report should be sent, by batching reports into
-  // set reporting windows based on their impression time. This strictly delays
-  // the time a report will be sent.
-  virtual base::Time GetReportTimeForConversion(
-      const ConversionReport& report) const;
-
-  // Maximum number of times the an impression is allowed to convert.
-  virtual int GetMaxConversionsPerImpression() const;
-
-  // Given a set of conversion reports for a single conversion registrations,
-  // assigns attribution credits to each one which will be sent at report time.
-  // By default, this performs "last click" attribution which assigns the report
-  // for the most recent impression a credit of 100, and the rest a credit of 0.
-  virtual void AssignAttributionCredits(
-      std::vector<ConversionReport>* reports) const;
 
   // Gets the sanitized conversion data for a conversion. This strips entropy
   // from the provided to data to at most 3 bits of information.

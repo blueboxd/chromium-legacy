@@ -42,7 +42,7 @@ import org.chromium.chrome.browser.omaha.metrics.UpdateSuccessMetrics;
 import org.chromium.chrome.browser.omaha.metrics.UpdateSuccessMetrics.UpdateType;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.util.ConversionUtils;
+import org.chromium.components.browser_ui.util.ConversionUtils;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.io.File;

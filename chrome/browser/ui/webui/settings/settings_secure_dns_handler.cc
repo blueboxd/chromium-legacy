@@ -22,6 +22,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "net/dns/public/dns_over_https_server_config.h"
 #include "net/dns/public/doh_provider_list.h"
 #include "net/dns/public/util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -39,13 +40,12 @@ std::unique_ptr<base::DictionaryValue> CreateSecureDnsSettingDict() {
   // parental controls have been detected.
   bool insecure_stub_resolver_enabled = false;
   net::DnsConfig::SecureDnsMode secure_dns_mode;
-  base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>
-      dns_over_https_servers;
+  std::vector<net::DnsOverHttpsServerConfig> dns_over_https_servers;
   chrome_browser_net::SecureDnsUiManagementMode management_mode;
   SystemNetworkContextManager::GetStubResolverConfigReader()->GetConfiguration(
-      &insecure_stub_resolver_enabled,
-      &secure_dns_mode, &dns_over_https_servers, false /* record_metrics */,
-      &management_mode);
+      true /* force_check_parental_controls_for_automatic_mode */,
+      &insecure_stub_resolver_enabled, &secure_dns_mode,
+      &dns_over_https_servers, &management_mode);
 
   std::string secure_dns_mode_str;
   switch (secure_dns_mode) {
@@ -63,10 +63,8 @@ std::unique_ptr<base::DictionaryValue> CreateSecureDnsSettingDict() {
   }
 
   auto secure_dns_templates = std::make_unique<base::ListValue>();
-  if (dns_over_https_servers.has_value()) {
-    for (const auto& doh_server : *dns_over_https_servers) {
-      secure_dns_templates->Append(doh_server->server_template);
-    }
+  for (const auto& doh_server : dns_over_https_servers) {
+    secure_dns_templates->Append(doh_server.server_template);
   }
 
   auto dict = std::make_unique<base::DictionaryValue>();
@@ -241,9 +239,8 @@ void SecureDnsHandler::HandleProbeCustomDnsTemplate(
   // We only send probe queries to templates that have already passed a format
   // validation check.
   CHECK(net::dns_util::IsValidDohTemplate(server_template, &server_method));
-  overrides.dns_over_https_servers.emplace(
-      {net::DnsConfig::DnsOverHttpsServerConfig(server_template,
-                                                server_method == "POST")});
+  overrides.dns_over_https_servers.emplace({net::DnsOverHttpsServerConfig(
+      server_template, server_method == "POST")});
   auto* network_context =
       network_context_for_testing_
           ? network_context_for_testing_

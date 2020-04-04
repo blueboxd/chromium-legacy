@@ -638,6 +638,12 @@
           'shards': 14,
         },
       },
+      'Marshmallow Tablet Tester': {
+        'args': [
+          '--timeout-scale',
+          '2.0',
+        ],
+      },
       'Oreo Phone Tester': {
         # TODO(https://crbug.com/884413): Re-enable this once the tests are
         # either passing or there is more capacity.

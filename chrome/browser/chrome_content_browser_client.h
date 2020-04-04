@@ -29,7 +29,6 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 
 class ChromeContentBrowserClientParts;
 class PrefRegistrySimple;
@@ -393,10 +392,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::RenderFrameHost* render_frame_host,
       service_manager::BinderMapWithContext<content::RenderFrameHost*>* map)
       override;
-  void BindInterfaceRequestFromFrame(
-      content::RenderFrameHost* render_frame_host,
-      const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle interface_pipe) override;
   void BindCredentialManagerReceiver(
       content::RenderFrameHost* render_frame_host,
       mojo::PendingReceiver<blink::mojom::CredentialManager> receiver) override;
@@ -686,9 +681,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   friend class DisableWebRtcEncryptionFlagTest;
   friend class InProcessBrowserTest;
 
-  // Populates |frame_interfaces_| and |frame_interfaces_parameterized_|.
-  void InitWebContextInterfaces();
-
   // Initializes |network_contexts_parent_directory_| on the UI thread.
   void InitNetworkContextsParentDirectory();
 
@@ -722,11 +714,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   scoped_refptr<safe_browsing::SafeBrowsingService> safe_browsing_service_;
   scoped_refptr<safe_browsing::UrlCheckerDelegate>
       safe_browsing_url_checker_delegate_;
-
-  std::unique_ptr<service_manager::BinderRegistry> frame_interfaces_;
-  std::unique_ptr<
-      service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>>
-      frame_interfaces_parameterized_;
 
   StartupData* startup_data_;
 

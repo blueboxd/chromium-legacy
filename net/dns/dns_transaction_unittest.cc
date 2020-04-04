@@ -36,6 +36,7 @@
 #include "net/dns/dns_session.h"
 #include "net/dns/dns_test_util.h"
 #include "net/dns/dns_util.h"
+#include "net/dns/public/dns_over_https_server_config.h"
 #include "net/dns/public/dns_protocol.h"
 #include "net/dns/resolve_context.h"
 #include "net/log/net_log.h"
@@ -260,12 +261,11 @@ class TestSocketFactory : public MockClientSocketFactory {
   struct RemoteNameserver {
     explicit RemoteNameserver(IPEndPoint insecure_nameserver)
         : insecure_nameserver(insecure_nameserver) {}
-    explicit RemoteNameserver(
-        DnsConfig::DnsOverHttpsServerConfig secure_nameserver)
+    explicit RemoteNameserver(DnsOverHttpsServerConfig secure_nameserver)
         : secure_nameserver(secure_nameserver) {}
 
     base::Optional<IPEndPoint> insecure_nameserver;
-    base::Optional<DnsConfig::DnsOverHttpsServerConfig> secure_nameserver;
+    base::Optional<DnsOverHttpsServerConfig> secure_nameserver;
   };
 
   std::vector<RemoteNameserver> remote_endpoints_;
@@ -600,7 +600,7 @@ class DnsTransactionTestBase : public testing::Test {
                                       base::StringPrintf("doh_test_%zu", i)) +
                                   "{?dns}");
       config_.dns_over_https_servers.push_back(
-          DnsConfig::DnsOverHttpsServerConfig(server_template, use_post));
+          DnsOverHttpsServerConfig(server_template, use_post));
     }
     ConfigureFactory();
 

@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.download.home;
 
-import static org.chromium.chrome.browser.util.ConversionUtils.BYTES_PER_MEGABYTE;
+import static org.chromium.components.browser_ui.util.ConversionUtils.BYTES_PER_MEGABYTE;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.SysUtils;

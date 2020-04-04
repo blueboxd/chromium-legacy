@@ -183,23 +183,25 @@ void SafeBrowsingUrlCheckerImpl::OnUrlResult(const GURL& url,
 
   TRACE_EVENT_ASYNC_END1("safe_browsing", "CheckUrl", this, "url", url.spec());
 
-  if (base::FeatureList::IsEnabled(kDelayedWarnings)) {
-    // Delayed warnings experiment delays the warning until a user interaction
-    // happens. Create an interaction observer and continue like there wasn't
-    // a warning. The observer will create the interstitial when necessary.
-    security_interstitials::UnsafeResource unsafe_resource =
-        MakeUnsafeResource(url, threat_type, metadata);
-    unsafe_resource.is_delayed_warning = true;
-    url_checker_delegate_
-        ->StartObservingInteractionsForDelayedBlockingPageHelper(
-            unsafe_resource, resource_type_ == ResourceType::kMainFrame);
-
-    // Let the navigation continue.
-    threat_type = SB_THREAT_TYPE_SAFE;
-    state_ = STATE_DELAYED_BLOCKING_PAGE;
-    if (!RunNextCallback(true, false))
-      return;
-    // No need to call ProcessUrls, it'll return early.
+  // Handle main frame and subresources. We do this to catch resources flagged
+  // as phishing even if the top frame isn't flagged.
+  if (threat_type == SB_THREAT_TYPE_URL_PHISHING &&
+      base::FeatureList::IsEnabled(kDelayedWarnings)) {
+    if (state_ != STATE_DELAYED_BLOCKING_PAGE) {
+      // Delayed warnings experiment delays the warning until a user interaction
+      // happens. Create an interaction observer and continue like there wasn't
+      // a warning. The observer will create the interstitial when necessary.
+      security_interstitials::UnsafeResource unsafe_resource =
+          MakeUnsafeResource(url, threat_type, metadata);
+      unsafe_resource.is_delayed_warning = true;
+      url_checker_delegate_
+          ->StartObservingInteractionsForDelayedBlockingPageHelper(
+              unsafe_resource, resource_type_ == ResourceType::kMainFrame);
+      state_ = STATE_DELAYED_BLOCKING_PAGE;
+    }
+    // Let the navigation continue in case of delayed warnings.
+    // No need to call ProcessUrls here, it'll return early.
+    RunNextCallback(true, false);
     return;
   }
 

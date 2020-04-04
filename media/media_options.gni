@@ -168,10 +168,6 @@ declare_args() {
       (is_android || is_chromeos || is_mac || is_win || enable_library_cdms ||
        (is_desktop_linux && use_vaapi) || is_chromecast)
 
-  # Enable the TestMojoMediaClient to be used in mojo MediaService. This is for
-  # testing only and will override the default platform MojoMediaClient, if any.
-  enable_test_mojo_media_client = false
-
   # When enabled, this feature allows developers to use a runtime flag to
   # choose the implementation of the renderer that is used. On a build which
   # enables the mojo renderer, if --disable-mojo-renderer is passed at start-up,

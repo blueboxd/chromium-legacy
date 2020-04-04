@@ -224,6 +224,7 @@ def chromium_swangle_mac_builder(*, name, **kwargs):
   return chromium_swangle_builder(
       name = name,
       cores = None,
+      ssd = None,
       goma_backend = builders.goma.backend.RBE_PROD,
       os = builders.os.MAC_ANY,
       **kwargs

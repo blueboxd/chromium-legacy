@@ -106,7 +106,6 @@ luci.list_view(
         'try/linux-chromeos-rel',
         'try/linux-libfuzzer-asan-rel',
         'try/linux-ozone-rel',
-        'try/linux-ozone-x11-and-wayland-rel',
         'try/linux_android_dbg_ng',
         'try/linux_angle_deqp_rel_ng',
         'try/linux_angle_ozone_rel_ng',

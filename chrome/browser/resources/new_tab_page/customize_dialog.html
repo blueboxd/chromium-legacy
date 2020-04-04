@@ -1,4 +1,4 @@
-<style include="cr-icons">
+<style include="cr-hidden-style cr-icons">
   ::part(dialog) {
     min-width: 800px;
   }
@@ -12,7 +12,7 @@
     color: var(--ntp-primary-text-color);
     display: flex;
     flex-direction: row;
-    height: 80px;
+    height: 58px;
     padding: 0;
   }
 
@@ -24,6 +24,10 @@
     padding: 0;
   }
 
+  div[slot=button-container] {
+    padding-top: 16px;
+  }
+
   #menuContainer,
   #pagesContainer {
     max-height: 391px;
@@ -33,6 +37,13 @@
   #leftTitleSpacer,
   #menuContainer {
     flex-basis: 232px;
+  }
+
+  #title {
+    line-height: 1.5;
+    margin-bottom: -2px;
+    padding-inline-end: 24px;
+    user-select: none;
   }
 
   #title,
@@ -128,8 +139,22 @@
     /* So that the arrow aligns with the grid. */
     margin-inline-start: -12px;
   }
+
+  #titleNavigation {
+    align-items: center;
+    display: flex;
+    flex-direction: row;
+  }
+
+  cr-toggle {
+    margin-inline-end: 12px;
+  }
+
+  #collectionTitle {
+    flex-grow: 1;
+  }
 </style>
-<cr-dialog id="dialog" show-on-attach>
+<cr-dialog id="dialog" on-cancel="onCancel_" show-on-attach>
   <div slot="title">
     <div id="leftTitleSpacer"></div>
     <div id="title">
@@ -140,7 +165,11 @@
         <cr-icon-button id="backButton" class="icon-arrow-back"
             on-click="onBackClick_" title="$i18n{backButton}">
         </cr-icon-button>
-        [[selectedCollection_.label]]
+        <div id="collectionTitle">[[selectedCollection_.label]]</div>
+        <cr-toggle id="refreshToggle" checked="[[isRefreshToggleChecked_]]"
+            on-change="onBackgroundDailyRefreshToggleChange_">
+        </cr-toggle>
+        $i18n{refreshDaily}
       </div>
     </div>
   </div>

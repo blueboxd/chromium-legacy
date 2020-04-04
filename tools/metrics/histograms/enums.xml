@@ -37546,6 +37546,7 @@ from previous Chrome versions.
   <int value="-2047832738" label="enable-system-timezone-automatic-detection"/>
   <int value="-2047822258" label="enable-avfoundation"/>
   <int value="-2047190657" label="SyncUserConsentSeparateType:enabled"/>
+  <int value="-2047071651" label="NearbySharing:enabled"/>
   <int value="-2043128632" label="enable-tab-switcher-in-document-mode"/>
   <int value="-2040471724" label="CrOSComponent:disabled"/>
   <int value="-2040115518" label="load-media-router-component-extension"/>
@@ -37692,6 +37693,7 @@ from previous Chrome versions.
   <int value="-1892555086" label="disable-compositor-animation-timelines"/>
   <int value="-1892000374" label="SeccompSandboxAndroid:enabled"/>
   <int value="-1890374564" label="OobeRecommendAppsScreen:disabled"/>
+  <int value="-1888578524" label="DisplayIdentification:enabled"/>
   <int value="-1888273969" label="tab-capture-upscale-quality"/>
   <int value="-1887862464" label="SpannableInlineAutocomplete:disabled"/>
   <int value="-1887053262"
@@ -37964,6 +37966,7 @@ from previous Chrome versions.
   <int value="-1553477903" label="ash-disable-text-filtering-in-overview-mode"/>
   <int value="-1552898031" label="SingleTabMode:enabled"/>
   <int value="-1550760918" label="PipRoundedCorners:disabled"/>
+  <int value="-1550541457" label="DisplayIdentification:disabled"/>
   <int value="-1549871007" label="OneGoogleBarOnLocalNtp:disabled"/>
   <int value="-1549356351" label="SyncPseudoUSSExtensionSettings:enabled"/>
   <int value="-1547247328" label="OverrideTranslateTriggerInIndia:disabled"/>
@@ -37973,6 +37976,7 @@ from previous Chrome versions.
   <int value="-1544248549" label="ArcUseAuthEndpoint:enabled"/>
   <int value="-1543316040"
       label="DisplayPersistenceToggleInPermissionPrompts:disabled"/>
+  <int value="-1541362086" label="NearbySharing:disabled"/>
   <int value="-1541187160" label="UsernameFirstFlow:disabled"/>
   <int value="-1538492024" label="OmniboxReverseAnswers:enabled"/>
   <int value="-1537773844"
@@ -57603,6 +57607,10 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="0" label="User loaded a page with a delayed warning"/>
   <int value="1" label="User left the page and the warning was never shown"/>
   <int value="2" label="The warning is shown because the user pressed a key"/>
+  <int value="3"
+      label="User clicked on the page at least once but the feature isn't
+             configured to show warnings on mouse clicks."/>
+  <int value="4" label="User clicked on the page and the warning was shown."/>
 </enum>
 
 <enum name="SafeBrowsingParseV4HashResult">

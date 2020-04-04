@@ -18,7 +18,7 @@ import org.chromium.chrome.browser.datareduction.settings.DataReductionStatsPref
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.settings.datareduction.DataReductionProxySavingsClearedReason;
-import org.chromium.chrome.browser.util.ConversionUtils;
+import org.chromium.components.browser_ui.util.ConversionUtils;
 import org.chromium.components.embedder_support.util.UrlConstants;
 
 import java.util.ArrayList;

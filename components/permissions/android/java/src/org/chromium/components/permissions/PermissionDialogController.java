@@ -204,8 +204,8 @@ public class PermissionDialogController
             // accept callback.
             mState = State.REQUEST_ANDROID_PERMISSIONS;
             if (!AndroidPermissionRequester.requestAndroidPermissions(mDialogDelegate.getWindow(),
-                        mDialogDelegate.getContentSettingsTypes(), PermissionDialogController.this,
-                        mDialogDelegate.getClient())) {
+                        mDialogDelegate.getContentSettingsTypes(),
+                        PermissionDialogController.this)) {
                 onAndroidPermissionAccepted();
             }
         } else {

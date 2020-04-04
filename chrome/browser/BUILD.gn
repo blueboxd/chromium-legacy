@@ -5445,25 +5445,11 @@ jumbo_static_library("browser") {
       deps += [ "//device/vr/public/mojom" ]
     }
 
-    if (!is_android) {
-      sources += [
-        "vr/service/isolated_device_provider.cc",
-        "vr/service/isolated_device_provider.h",
-      ]
-    }
-
     sources += [
       "component_updater/vr_assets_component_installer.cc",
       "component_updater/vr_assets_component_installer.h",
       "vr/chrome_xr_integration_client.cc",
       "vr/chrome_xr_integration_client.h",
-      "vr/service/browser_xr_runtime_impl.cc",
-      "vr/service/browser_xr_runtime_impl.h",
-      "vr/service/vr_service_impl.cc",
-      "vr/service/vr_service_impl.h",
-      "vr/service/xr_runtime_manager_impl.cc",
-      "vr/service/xr_runtime_manager_impl.h",
-      "vr/xr_runtime_manager_statics.h",
     ]
 
     deps += [

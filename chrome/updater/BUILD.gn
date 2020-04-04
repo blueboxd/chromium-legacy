@@ -81,6 +81,9 @@ if (is_win || is_mac) {
       "configurator.h",
       "installer.cc",
       "installer.h",
+      "lib_util.h",
+      "tag.cc",
+      "tag.h",
       "update_apps.h",
       "update_service_in_process.cc",
       "update_service_in_process.h",
@@ -91,6 +94,7 @@ if (is_win || is_mac) {
     if (is_mac) {
       sources += [
         "installer_mac.cc",
+        "lib_util_mac.mm",
         "mac/update_service_out_of_process.h",
         "mac/update_service_out_of_process.mm",
         "server/mac/server.h",
@@ -107,6 +111,7 @@ if (is_win || is_mac) {
     if (is_win) {
       sources += [
         "installer_win.cc",
+        "lib_util_win.cc",
         "server/win/server.cc",
         "server/win/server.h",
         "server/win/service_main.cc",
@@ -179,16 +184,21 @@ if (is_win || is_mac) {
     testonly = true
 
     sources = [
+      "lib_util_unittest.cc",
       "persisted_data_unittest.cc",
       "prefs_unittest.cc",
       "run_all_unittests.cc",
+      "tag_unittest.cc",
       "test/integration_tests.cc",
       "test/integration_tests.h",
+      "unittest_util.cc",
+      "unittest_util.h",
       "updater_unittest.cc",
     ]
 
     deps = [
       ":base",
+      ":lib",
       ":updater",
       ":version_header",
       "//base",

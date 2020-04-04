@@ -57,6 +57,7 @@ if (is_android) {
       "//base:base_java",
       "//base:jni_java",
       "//chrome/browser/util:java",
+      "//components/browser_ui/util/android:java",
       "//content/public/android:content_java",
       "//third_party/android_deps:android_support_v4_java",
       "//third_party/android_deps:androidx_annotation_annotation_java",

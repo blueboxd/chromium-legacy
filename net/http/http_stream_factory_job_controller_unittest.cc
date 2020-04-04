@@ -363,7 +363,8 @@ TEST_F(HttpStreamFactoryJobControllerTest, ProxyResolutionFailsSync) {
       new ConfiguredProxyResolutionService(
           std::make_unique<ProxyConfigServiceFixed>(ProxyConfigWithAnnotation(
               proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS)),
-          std::make_unique<FailingProxyResolverFactory>(), nullptr));
+          std::make_unique<FailingProxyResolverFactory>(), nullptr,
+          /*quick_check_enabled=*/true));
   HttpRequestInfo request_info;
   request_info.method = "GET";
   request_info.url = GURL("http://www.google.com");
@@ -401,7 +402,8 @@ TEST_F(HttpStreamFactoryJobControllerTest, ProxyResolutionFailsAsync) {
       new ConfiguredProxyResolutionService(
           std::make_unique<ProxyConfigServiceFixed>(ProxyConfigWithAnnotation(
               proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS)),
-          base::WrapUnique(proxy_resolver_factory), nullptr));
+          base::WrapUnique(proxy_resolver_factory), nullptr,
+          /*quick_check_enabled=*/true));
   HttpRequestInfo request_info;
   request_info.method = "GET";
   request_info.url = GURL("http://www.google.com");

@@ -337,7 +337,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                     mScrimModel = new PropertyModel.Builder(ScrimProperties.ALL_KEYS)
                                           .with(ScrimProperties.ANCHOR_VIEW, scrimTarget)
                                           .with(ScrimProperties.SHOW_IN_FRONT_OF_ANCHOR_VIEW, true)
-                                          .with(ScrimProperties.AFFECTS_STATUS_BAR, true)
+                                          .with(ScrimProperties.AFFECTS_STATUS_BAR, false)
                                           .with(ScrimProperties.TOP_MARGIN, topMargin)
                                           .with(ScrimProperties.CLICK_DELEGATE, clickDelegate)
                                           .with(ScrimProperties.VISIBILITY_CALLBACK,

@@ -34,10 +34,12 @@ const skipEvery = targetMainFps > 0 ? parseInt(60 / targetMainFps) : 0;
 
 const query = window.location.search.substr(1).split('&');
 const shouldJank = query.indexOf('jank') >= 0;
+const shouldExtremeJank = query.indexOf('extremejank') >= 0;
 const offscreen = query.indexOf('offscreen') >= 0;
 if (offscreen) {
   document.body.style.marginTop = '5000px';
 }
+const jankAmount = shouldExtremeJank ? 5000 : 16;
 
 var currentValue = 0;
 const maxValue = 150;
@@ -61,9 +63,9 @@ function animateStep() {
       if (currentValue <= minValue)
         incrementing = true;
     }
-    if (shouldJank) {
+    if (shouldJank || shouldExtremeJank) {
       const now = new Date();
-      while ((new Date() - now) < 16) {}
+      while ((new Date() - now) < jankAmount) {}
     }
     mainanim.style[attributeName] = setProp(currentValue);
   }

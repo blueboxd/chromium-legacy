@@ -182,27 +182,27 @@ void RulesMonitorService::OnExtensionLoaded(
   LoadRequestData load_data(extension->id());
   int expected_ruleset_checksum;
 
-  // Static ruleset.
+  // Static rulesets.
   {
-    std::vector<RulesetSource> static_rulesets =
+    std::vector<RulesetSource> sources =
         RulesetSource::CreateStatic(*extension);
-
-    if (!static_rulesets.empty()) {
-      // TODO(crbug.com/754526): Load all static rulesets for the extension.
-      RulesetInfo static_ruleset(std::move(static_rulesets[0]));
-      bool has_checksum = prefs_->GetDNRStaticRulesetChecksum(
-          extension->id(), static_ruleset.source().id(),
-          &expected_ruleset_checksum);
-
-      if (!has_checksum) {
+    bool ruleset_failed_to_load = false;
+    for (auto& source : sources) {
+      if (!prefs_->GetDNRStaticRulesetChecksum(extension->id(), source.id(),
+                                               &expected_ruleset_checksum)) {
         // This might happen on prefs corruption.
-        warning_service_->AddWarnings(
-            {Warning::CreateRulesetFailedToLoadWarning(
-                load_data.extension_id)});
-      } else {
-        static_ruleset.set_expected_checksum(expected_ruleset_checksum);
-        load_data.rulesets.push_back(std::move(static_ruleset));
+        ruleset_failed_to_load = true;
+        continue;
       }
+
+      RulesetInfo static_ruleset(std::move(source));
+      static_ruleset.set_expected_checksum(expected_ruleset_checksum);
+      load_data.rulesets.push_back(std::move(static_ruleset));
+    }
+
+    if (ruleset_failed_to_load) {
+      warning_service_->AddWarnings(
+          {Warning::CreateRulesetFailedToLoadWarning(load_data.extension_id)});
     }
   }
 
@@ -223,7 +223,7 @@ void RulesMonitorService::OnExtensionLoaded(
   }
 
   auto load_ruleset_callback = base::BindOnce(
-      &RulesMonitorService::OnRulesetLoaded, weak_factory_.GetWeakPtr());
+      &RulesMonitorService::OnRulesetsLoaded, weak_factory_.GetWeakPtr());
   file_sequence_bridge_->LoadRulesets(std::move(load_data),
                                       std::move(load_ruleset_callback));
 }
@@ -270,7 +270,7 @@ void RulesMonitorService::OnExtensionUninstalled(
                      source.json_path().DirName(), false /* recursive */));
 }
 
-void RulesMonitorService::OnRulesetLoaded(LoadRequestData load_data) {
+void RulesMonitorService::OnRulesetsLoaded(LoadRequestData load_data) {
   DCHECK(!load_data.rulesets.empty());
 
   if (test_observer_)

@@ -9,7 +9,10 @@
 
 #include "base/synchronization/lock.h"
 #include "content/public/common/content_client.h"
-#include "headless/lib/headless_origin_trial_policy.h"
+
+namespace embedder_support {
+class OriginTrialPolicyImpl;
+}
 
 namespace headless {
 
@@ -29,7 +32,7 @@ class HeadlessContentClient : public content::ContentClient {
  private:
   // Used to lock when |origin_trial_policy_| is initialized.
   base::Lock origin_trial_policy_lock_;
-  std::unique_ptr<HeadlessOriginTrialPolicy> origin_trial_policy_;
+  std::unique_ptr<embedder_support::OriginTrialPolicyImpl> origin_trial_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessContentClient);
 };

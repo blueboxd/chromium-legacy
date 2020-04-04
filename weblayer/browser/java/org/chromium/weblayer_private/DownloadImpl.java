@@ -11,6 +11,7 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.os.Build;
 import android.os.RemoteException;
 import android.text.TextUtils;
@@ -401,6 +402,9 @@ public final class DownloadImpl extends IDownload.Stub {
 
         mBuilder.mActions.clear();
 
+        Context context = ContextUtils.getApplicationContext();
+        Resources resources = context.getResources();
+
         if (state == DownloadState.COMPLETE) {
             Intent openIntent = createIntent();
             openIntent.setAction(OPEN_INTENT);
@@ -408,8 +412,8 @@ public final class DownloadImpl extends IDownload.Stub {
             openIntent.putExtra(EXTRA_NOTIFICATION_PROFILE, mProfileName);
             openIntent.putExtra(EXTRA_NOTIFICATION_LOCATION, getLocation());
             openIntent.putExtra(EXTRA_NOTIFICATION_MIME_TYPE, getMimeType());
-            PendingIntent openPendingIntent = PendingIntent.getBroadcast(
-                    ContextUtils.getApplicationContext(), mNotificationId, openIntent, 0);
+            PendingIntent openPendingIntent =
+                    PendingIntent.getBroadcast(context, mNotificationId, openIntent, 0);
 
             mBuilder.setProgress(100, 100, false)
                     .setOngoing(false)
@@ -417,8 +421,7 @@ public final class DownloadImpl extends IDownload.Stub {
                     .setContentIntent(openPendingIntent)
                     .setAutoCancel(true);
         } else if (state == DownloadState.FAILED) {
-            // TODO(jam): make these strings translated
-            mBuilder.setContentText("Download failed")
+            mBuilder.setContentText(resources.getString(R.string.download_notification_failed))
                     .setOngoing(false)
                     .setSmallIcon(android.R.drawable.stat_sys_download_done);
         } else if (state == DownloadState.IN_PROGRESS) {
@@ -426,18 +429,22 @@ public final class DownloadImpl extends IDownload.Stub {
             pauseIntent.setAction(PAUSE_INTENT);
             pauseIntent.putExtra(EXTRA_NOTIFICATION_ID, mNotificationId);
             pauseIntent.putExtra(EXTRA_NOTIFICATION_PROFILE, mProfileName);
-            PendingIntent pausePendingIntent = PendingIntent.getBroadcast(
-                    ContextUtils.getApplicationContext(), mNotificationId, pauseIntent, 0);
-            mBuilder.addAction(0 /* no icon */, "Pause", pausePendingIntent)
+            PendingIntent pausePendingIntent =
+                    PendingIntent.getBroadcast(context, mNotificationId, pauseIntent, 0);
+            mBuilder.addAction(0 /* no icon */,
+                            resources.getString(R.string.download_notification_pause_button),
+                            pausePendingIntent)
                     .setSmallIcon(android.R.drawable.stat_sys_download);
         } else if (state == DownloadState.PAUSED) {
             Intent resumeIntent = createIntent();
             resumeIntent.setAction(RESUME_INTENT);
             resumeIntent.putExtra(EXTRA_NOTIFICATION_ID, mNotificationId);
             resumeIntent.putExtra(EXTRA_NOTIFICATION_PROFILE, mProfileName);
-            PendingIntent resumePendingIntent = PendingIntent.getBroadcast(
-                    ContextUtils.getApplicationContext(), mNotificationId, resumeIntent, 0);
-            mBuilder.addAction(0 /* no icon */, "Resume", resumePendingIntent)
+            PendingIntent resumePendingIntent =
+                    PendingIntent.getBroadcast(context, mNotificationId, resumeIntent, 0);
+            mBuilder.addAction(0 /* no icon */,
+                            resources.getString(R.string.download_notification_resume_button),
+                            resumePendingIntent)
                     .setSmallIcon(android.R.drawable.ic_media_pause);
         }
 
@@ -446,9 +453,11 @@ public final class DownloadImpl extends IDownload.Stub {
             cancelIntent.setAction(CANCEL_INTENT);
             cancelIntent.putExtra(EXTRA_NOTIFICATION_ID, mNotificationId);
             cancelIntent.putExtra(EXTRA_NOTIFICATION_PROFILE, mProfileName);
-            PendingIntent cancelPendingIntent = PendingIntent.getBroadcast(
-                    ContextUtils.getApplicationContext(), mNotificationId, cancelIntent, 0);
-            mBuilder.addAction(0 /* no icon */, "Cancel", cancelPendingIntent);
+            PendingIntent cancelPendingIntent =
+                    PendingIntent.getBroadcast(context, mNotificationId, cancelIntent, 0);
+            mBuilder.addAction(0 /* no icon */,
+                    resources.getString(R.string.download_notification_cancel_button),
+                    cancelPendingIntent);
         }
 
         if (notificationManager != null) {

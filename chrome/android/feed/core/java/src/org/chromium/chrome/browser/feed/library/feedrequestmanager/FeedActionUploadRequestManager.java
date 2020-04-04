@@ -52,7 +52,9 @@ public final class FeedActionUploadRequestManager implements ActionUploadRequest
     private final long mMaxActionUploadAttempts;
     // Total number of actions that can be uploaded in a chained batch request.
     private final long mMaxActionsUploadsPerBatchedRequest;
-    // Maximum bytes that can be uploaded in a single request.
+    // Maximum bytes of StreamUploadableAction that can be uploaded in a single request. The actual
+    // request is made of ActionPayloads and SemanticProperties, not StreamUploadableActions, so
+    // this serves as a proxy.
     private final long mMaxBytesPerRequest;
     private final long mMaxActionUploadTtl;
 
@@ -99,17 +101,54 @@ public final class FeedActionUploadRequestManager implements ActionUploadRequest
         UploadableActionsRequestBuilder requestBuilder =
                 new UploadableActionsRequestBuilder(mProtocolAdapter);
         int actionPayloadBytes = 0;
+
         Set<StreamUploadableAction> actionsToUpload = new HashSet<>();
+        Set<StreamUploadableAction> actionsRemaining = new HashSet<>();
         ArrayList<String> contentIds = new ArrayList<>();
+
+        UploadableActionMutation actionMutation = mStore.editUploadableActions();
+
+        // Select which actions to send in this request, and update their attempt count. Remaining
+        // actions are collected and sent next. Stale actions are removed from the store.
         for (StreamUploadableAction action : actions) {
-            int actionBytes = action.toByteArray().length;
-            if (mMaxBytesPerRequest > actionPayloadBytes + actionBytes) {
-                actionsToUpload.add(action);
-                contentIds.add(action.getFeatureContentId());
-                actionPayloadBytes += actionBytes;
-            } else {
-                break;
+            if (isStale(action)) {
+                actionMutation.remove(action, action.getFeatureContentId());
+                continue;
             }
+
+            int actionBytes = action.toByteArray().length;
+            if (actionPayloadBytes + actionBytes < mMaxBytesPerRequest) {
+                actionPayloadBytes += actionBytes;
+                actionMutation.remove(action, action.getFeatureContentId());
+                StreamUploadableAction actionToUpload =
+                        action.toBuilder()
+                                .setUploadAttempts(action.getUploadAttempts() + 1)
+                                .build();
+                actionMutation.upsert(actionToUpload, actionToUpload.getFeatureContentId());
+                actionsToUpload.add(actionToUpload);
+
+                contentIds.add(actionToUpload.getFeatureContentId());
+            } else {
+                actionsRemaining.add(action);
+            }
+        }
+
+        CommitResult commitResult = actionMutation.commit();
+        if (commitResult != CommitResult.SUCCESS) {
+            Logger.e(TAG, "Upserting uploaded actions failed");
+            consumer.accept(Result.failure());
+            return;
+        }
+
+        if (actionsToUpload.isEmpty()) {
+            if (actionsRemaining.isEmpty()) {
+                // All actions were too stale to be uploaded.
+                consumer.accept(Result.success(token));
+            } else {
+                Logger.e(TAG, "No action fitted in the request.");
+                consumer.accept(Result.failure());
+            }
+            return;
         }
 
         Result<List<SemanticPropertiesWithId>> semanticPropertiesResult =
@@ -123,9 +162,8 @@ public final class FeedActionUploadRequestManager implements ActionUploadRequest
         Consumer<Result<ConsistencyToken>> tokenConsumer = result -> {
             mThreadUtils.checkNotMainThread();
             if (result.isSuccessful()) {
-                actions.removeAll(actionsToUpload);
-                if (!actions.isEmpty()) {
-                    triggerUploadActions(actions, result.getValue(), consumer,
+                if (!actionsRemaining.isEmpty()) {
+                    triggerUploadActions(actionsRemaining, result.getValue(), consumer,
                             uploadCount + actionsToUpload.size());
                 } else {
                     consumer.accept(Result.success(result.getValue()));
@@ -188,7 +226,6 @@ public final class FeedActionUploadRequestManager implements ActionUploadRequest
                         mExtensionRegistry.getExtensionRegistry());
             } catch (IOException e) {
                 Logger.e(TAG, e, "Response parse failed");
-                handleUpdatingActionsOnFailure(actions);
                 consumer.accept(Result.failure());
                 return;
             }
@@ -208,31 +245,15 @@ public final class FeedActionUploadRequestManager implements ActionUploadRequest
                 }
             } else {
                 contextResult = Result.failure();
-                handleUpdatingActionsOnFailure(actions);
             }
             consumer.accept(contextResult);
         });
     }
 
-    private void handleUpdatingActionsOnFailure(Set<StreamUploadableAction> actions) {
-        UploadableActionMutation actionMutation = mStore.editUploadableActions();
-        for (StreamUploadableAction action : actions) {
-            int uploadAttempts = action.getUploadAttempts();
-            long currentTime = TimeUnit.MILLISECONDS.toSeconds(mClock.currentTimeMillis());
-            long timeSinceUpload = currentTime - action.getTimestampSeconds();
-            if (uploadAttempts < mMaxActionUploadAttempts
-                    && timeSinceUpload < mMaxActionUploadTtl) {
-                actionMutation.upsert(
-                        action.toBuilder().setUploadAttempts(uploadAttempts + 1).build(),
-                        action.getFeatureContentId());
-            } else {
-                actionMutation.remove(action, action.getFeatureContentId());
-            }
-            CommitResult commitResult = actionMutation.commit();
-            if (commitResult != CommitResult.SUCCESS) {
-                // TODO:log failure to the basicLoggingApi
-                Logger.e(TAG, "Upserting actions on failure failed");
-            }
-        }
+    private boolean isStale(StreamUploadableAction action) {
+        int uploadAttempts = action.getUploadAttempts();
+        long currentTime = TimeUnit.MILLISECONDS.toSeconds(mClock.currentTimeMillis());
+        long timeSinceUpload = currentTime - action.getTimestampSeconds();
+        return uploadAttempts >= mMaxActionUploadAttempts || timeSinceUpload > mMaxActionUploadTtl;
     }
 }

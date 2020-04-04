@@ -67,12 +67,11 @@ void SigninErrorUI::Initialize(Browser* browser, bool is_system_profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUISigninErrorHost);
   source->UseStringsJs();
+  source->EnableReplaceI18nInJS();
   source->SetDefaultResource(IDR_SIGNIN_ERROR_HTML);
-  source->AddResourcePath("signin_error_app.html", IDR_SIGNIN_ERROR_APP_HTML);
   source->AddResourcePath("signin_error_app.js", IDR_SIGNIN_ERROR_APP_JS);
   source->AddResourcePath("signin_error.js", IDR_SIGNIN_ERROR_JS);
-  source->AddResourcePath("signin_shared_old_css.html",
-                          IDR_SIGNIN_SHARED_OLD_CSS_HTML);
+  source->AddResourcePath("signin_shared_css.js", IDR_SIGNIN_SHARED_CSS_JS);
   source->AddBoolean("isSystemProfile", is_system_profile);
 
   // Retrieve the last signin error message and email used.

@@ -15,10 +15,6 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "url/origin.h"
 
-#if defined(OS_ANDROID)
-#include "base/android/scoped_java_ref.h"
-#endif
-
 class GURL;
 class HostContentSettingsMap;
 
@@ -172,9 +168,6 @@ class PermissionsClient {
       content::WebContents* web_contents,
       const std::vector<ContentSettingsType>& content_settings_types,
       PermissionsUpdatedCallback callback);
-
-  // Returns a handle to the Java counterpart of this class.
-  virtual base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
   // Converts the given chromium |resource_id| (e.g. IDR_INFOBAR_TRANSLATE) to
   // an Android drawable resource ID. Returns 0 if a mapping wasn't found.

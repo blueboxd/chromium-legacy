@@ -4,16 +4,39 @@
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
+import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
 import 'chrome://resources/polymer/v3_0/iron-selector/iron-selector.js';
 import './customize_backgrounds.js';
 import './customize_shortcuts.js';
 import './customize_themes.js';
 
+import {assert} from 'chrome://resources/js/assert.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BrowserProxy} from './browser_proxy.js';
 import {createScrollBorders} from './utils.js';
+
+/** @enum {number} */
+export const BackgroundSelectionType = {
+  NO_SELECTION: 0,
+  NO_BACKGROUND: 1,
+  IMAGE: 2,
+  DAILY_REFRESH: 3,
+};
+
+/**
+ * A user can make three types of background selections: no background, image
+ * or daily refresh for a selected collection. The selection is tracked an
+ * object of this type.
+ * @typedef {{
+ *   type: !BackgroundSelectionType,
+ *   image: (!newTabPage.mojom.BackgroundImage|undefined),
+ *   dailyRefreshCollectionId: (string|undefined),
+ * }}
+ */
+export let BackgroundSelection;
 
 /**
  * Dialog that lets the user customize the NTP such as the background color or
@@ -30,6 +53,18 @@ class CustomizeDialogElement extends PolymerElement {
 
   static get properties() {
     return {
+      /**
+       * This is the background selection which is two-way bound to ntp-app for
+       * previewing the background and ntp-customize-background which makes the
+       * image and no background selections.
+       * @type {!BackgroundSelection}
+       */
+      backgroundSelection: {
+        type: Object,
+        value: () => ({type: BackgroundSelectionType.NO_SELECTION}),
+        notify: true,
+      },
+
       /** @type {!newTabPage.mojom.Theme} */
       theme: Object,
 
@@ -50,6 +85,13 @@ class CustomizeDialogElement extends PolymerElement {
             'computeShowTitleNavigation_(selectedPage_, selectedCollection_)',
         value: false,
       },
+
+      /** @private */
+      isRefreshToggleChecked_: {
+        type: Boolean,
+        computed: `computeIsRefreshToggleChecked_(theme, selectedCollection_,
+            backgroundSelection)`,
+      },
     };
   }
 
@@ -64,6 +106,7 @@ class CustomizeDialogElement extends PolymerElement {
   /** @override */
   disconnectedCallback() {
     super.disconnectedCallback();
+    this.backgroundSelection = {type: BackgroundSelectionType.NO_SELECTION};
     this.intersectionObservers_.forEach(observer => {
       observer.disconnect();
     });
@@ -80,8 +123,13 @@ class CustomizeDialogElement extends PolymerElement {
   }
 
   /** @private */
-  onCancelClick_() {
+  onCancel_() {
     this.pageHandler_.revertThemeChanges();
+    this.backgroundSelection = {type: BackgroundSelectionType.NO_SELECTION};
+  }
+
+  /** @private */
+  onCancelClick_() {
     this.$.dialog.cancel();
   }
 
@@ -89,6 +137,21 @@ class CustomizeDialogElement extends PolymerElement {
   onDoneClick_() {
     this.pageHandler_.confirmThemeChanges();
     this.shadowRoot.querySelector('ntp-customize-shortcuts').apply();
+    switch (this.backgroundSelection.type) {
+      case BackgroundSelectionType.NO_BACKGROUND:
+        this.pageHandler_.setNoBackgroundImage();
+        break;
+      case BackgroundSelectionType.IMAGE:
+        const {attribution1, attribution2, attributionUrl, imageUrl} =
+            assert(this.backgroundSelection.image);
+        this.pageHandler_.setBackgroundImage(
+            attribution1, attribution2, attributionUrl, imageUrl);
+        break;
+      case BackgroundSelectionType.DAILY_REFRESH:
+        this.pageHandler_.setDailyRefreshCollectionId(
+            assert(this.backgroundSelection.dailyRefreshCollectionId));
+    }
+    this.backgroundSelection = {type: BackgroundSelectionType.NO_SELECTION};
     this.$.dialog.close();
   }
 
@@ -110,14 +173,48 @@ class CustomizeDialogElement extends PolymerElement {
     this.$.pages.scrollTop = 0;
   }
 
-  /** @private */
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeIsRefreshToggleChecked_() {
+    if (!this.selectedCollection_) {
+      return false;
+    }
+    switch (this.backgroundSelection.type) {
+      case BackgroundSelectionType.NO_SELECTION:
+        return !!this.theme &&
+            this.selectedCollection_.id === this.theme.dailyRefreshCollectionId;
+      case BackgroundSelectionType.DAILY_REFRESH:
+        return this.selectedCollection_.id ===
+            this.backgroundSelection.dailyRefreshCollectionId;
+    }
+    return false;
+  }
+
+  /**
+   * @return {boolean}
+   * @private
+   */
   computeShowTitleNavigation_() {
-    return this.selectedPage_ === 'backgrounds' && this.selectedCollection_;
+    return this.selectedPage_ === 'backgrounds' && !!this.selectedCollection_;
   }
 
   /** @private */
   onBackClick_() {
     this.selectedCollection_ = null;
+  }
+
+  /** @private */
+  onBackgroundDailyRefreshToggleChange_() {
+    if (this.$.refreshToggle.checked) {
+      this.backgroundSelection = {
+        type: BackgroundSelectionType.DAILY_REFRESH,
+        dailyRefreshCollectionId: this.selectedCollection_.id,
+      };
+    } else {
+      this.backgroundSelection = {type: BackgroundSelectionType.NO_BACKGROUND};
+    }
   }
 }
 

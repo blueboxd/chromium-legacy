@@ -39,8 +39,13 @@ struct BackgroundCollection {
 
 // A background image in a collection.
 struct BackgroundImage {
-  // Localized string of extra image info.
-  string label;
+  // Human readable attributions of the background image.
+  string attribution_1;
+  string attribution_2;
+  // URL associated with the background image. Used for href.
+  url.mojom.Url attribution_url;
+  // URL of image. Can point to untrusted content.
+  url.mojom.Url image_url;
   // URL to a preview of the image. Can point to untrusted content.
   url.mojom.Url preview_image_url;
 };
@@ -90,6 +95,8 @@ struct Theme {
   bool is_dark;
   // Color of Google logo. If not set show the logo multi-colored.
   skia.mojom.SkColor? logo_color;
+  // Selected collection for daily refresh.
+  string? daily_refresh_collection_id;
   // URL to the background image. Can point to untrusted content.
   url.mojom.Url? background_image_url;
   // Human readable attributions of the background image.
@@ -136,6 +143,14 @@ interface PageHandler {
   ReorderMostVisitedTile(url.mojom.Url url, uint8 new_pos);
   // Replaces the custom and most-visited tiles with the default tile set.
   RestoreMostVisitedDefaults();
+  // Sets the background image and notifies all NTPs of the change.
+  SetBackgroundImage(string attribution_1, string attribution_2,
+      url.mojom.Url attribution_url, url.mojom.Url image_url);
+  // Sets collection id for daily refresh. When |collection_id| is empty, the
+  // daily refresh is turned off.
+  SetDailyRefreshCollectionId(string collection_id);
+  // Clears the background and daily refresh settings.
+  SetNoBackgroundImage();
   // Set the visibility and whether custom links are enabled.
   SetMostVisitedSettings(bool customLinksEnabled, bool visible);
   // Undoes the last action done to the tiles (add, delete, reorder, restore or

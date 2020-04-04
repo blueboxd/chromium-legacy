@@ -30,6 +30,7 @@ luci.gitiles_poller(
 )
 
 
+ci.defaults.add_to_console_view.set(vars.is_master)
 ci.defaults.bucket.set(vars.ci_bucket)
 ci.defaults.bucketed_triggers.set(True)
 ci.defaults.triggered_by.set([vars.ci_poller])
@@ -478,29 +479,49 @@ ci.memory_builder(
 
 ci.win_builder(
     name = 'Win7 Tests (dbg)(1)',
+    console_view_entry = ci.console_view_entry(
+        category = 'debug|tester',
+        short_name = '7',
+    ),
     os = os.WINDOWS_7,
     triggered_by = [builder_name('Win Builder (dbg)')],
 )
 
 ci.win_builder(
     name = 'Win 7 Tests x64 (1)',
+    console_view_entry = ci.console_view_entry(
+        category = 'release|tester',
+        short_name = '64',
+    ),
     os = os.WINDOWS_7,
     triggered_by = [builder_name('Win x64 Builder')],
 )
 
 ci.win_builder(
     name = 'Win Builder (dbg)',
+    console_view_entry = ci.console_view_entry(
+        category = 'debug|builder',
+        short_name = '32',
+    ),
     cores = 32,
     os = os.WINDOWS_ANY,
 )
 
 ci.win_builder(
     name = 'Win x64 Builder',
+    console_view_entry = ci.console_view_entry(
+        category = 'release|builder',
+        short_name = '64',
+    ),
     cores = 32,
     os = os.WINDOWS_ANY,
 )
 
 ci.win_builder(
     name = 'Win10 Tests x64',
+    console_view_entry = ci.console_view_entry(
+        category = 'release|tester',
+        short_name = 'w10',
+    ),
     triggered_by = [builder_name('Win x64 Builder')],
 )

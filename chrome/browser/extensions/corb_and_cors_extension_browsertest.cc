@@ -75,10 +75,18 @@ enum TestParam {
 
 const char kCorsErrorWhenFetching[] = "error: TypeError: Failed to fetch";
 
-// The manifest.json used below has a "key" entry that will result in the hash
-// of extension id that is captured in kExpectedHashedExtensionId.  Knowing
-// the hash constant helps with simulating distributing the hash via field trial
-// param.
+// The manifest.json used by tests uses |kExpectedKey| that will result in the
+// hash of extension id that is captured in |kExpectedHashedExtensionId|.
+// Knowing the hash constant helps with simulating distributing the hash via
+// field trial param (e.g. via CorbAllowlistAlsoAppliesToOorCorsParamName).
+const char kExtensionKey[] =
+    "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjzv7dI7Ygyh67VHE1DdidudpYf8PFf"
+    "v8iucWvzO+3xpF/"
+    "Dm5xNo7aQhPNiEaNfHwJQ7lsp4gc+C+4bbaVewBFspTruoSJhZc5uEfqxwovJwN+v1/"
+    "SUFXTXQmQBv6gs0qZB4gBbl4caNQBlqrFwAMNisnu1V6UROna8rOJQ90D7Nv7TCwoVPKBfVshp"
+    "FjdDOTeBg4iLctO3S/"
+    "06QYqaTDrwVceSyHkVkvzBY6tc6mnYX0RZu78J9iL8bdqwfllOhs69cqoHHgrLdI6JdOyiuh6p"
+    "BP6vxMlzSKWJ3YTNjaQTPwfOYaLMuzdl0v+YdzafIzV9zwe4Xiskk+5JNGt8b2rQIDAQAB";
 const char kExpectedHashedExtensionId[] =
     "14B587526D9AC6ADCACAA8A4AAE3DB281CA2AB53";
 
@@ -212,7 +220,7 @@ class CorbAndCorsExtensionBrowserTest
     const char kManifestTemplate[] = R"(
         {
           "name": "CrossOriginReadBlockingTest - Extension",
-          "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjzv7dI7Ygyh67VHE1DdidudpYf8PFfv8iucWvzO+3xpF/Dm5xNo7aQhPNiEaNfHwJQ7lsp4gc+C+4bbaVewBFspTruoSJhZc5uEfqxwovJwN+v1/SUFXTXQmQBv6gs0qZB4gBbl4caNQBlqrFwAMNisnu1V6UROna8rOJQ90D7Nv7TCwoVPKBfVshpFjdDOTeBg4iLctO3S/06QYqaTDrwVceSyHkVkvzBY6tc6mnYX0RZu78J9iL8bdqwfllOhs69cqoHHgrLdI6JdOyiuh6pBP6vxMlzSKWJ3YTNjaQTPwfOYaLMuzdl0v+YdzafIzV9zwe4Xiskk+5JNGt8b2rQIDAQAB",
+          "key": "%s",
           "version": "1.0",
           "manifest_version": 2,
           "permissions": [
@@ -229,7 +237,7 @@ class CorbAndCorsExtensionBrowserTest
           "background": {"scripts": ["background_script.js"]}
         } )";
     dir_.WriteManifest(base::StringPrintf(
-        kManifestTemplate,
+        kManifestTemplate, kExtensionKey,
         use_declarative_content_script ? kContentScriptManifestEntry : ""));
 
     dir_.WriteFile(FILE_PATH_LITERAL("background_script.js"), "");
@@ -407,16 +415,16 @@ class CorbAndCorsExtensionBrowserTest
   const Extension* InstallExtensionWithPermissionToAllUrls() {
     // Note that the hardcoded "key" below matches kExpectedHashedExtensionId
     // (used by the test suite for allowlisting the extension as needed).
-    const char kManifest[] = R"(
+    const char kManifestTemplate[] = R"(
         {
           "name": "CrossOriginReadBlockingTest - Extension/AllUrls",
-          "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjzv7dI7Ygyh67VHE1DdidudpYf8PFfv8iucWvzO+3xpF/Dm5xNo7aQhPNiEaNfHwJQ7lsp4gc+C+4bbaVewBFspTruoSJhZc5uEfqxwovJwN+v1/SUFXTXQmQBv6gs0qZB4gBbl4caNQBlqrFwAMNisnu1V6UROna8rOJQ90D7Nv7TCwoVPKBfVshpFjdDOTeBg4iLctO3S/06QYqaTDrwVceSyHkVkvzBY6tc6mnYX0RZu78J9iL8bdqwfllOhs69cqoHHgrLdI6JdOyiuh6pBP6vxMlzSKWJ3YTNjaQTPwfOYaLMuzdl0v+YdzafIzV9zwe4Xiskk+5JNGt8b2rQIDAQAB",
+          "key": "%s",
           "version": "1.0",
           "manifest_version": 2,
           "permissions": [ "tabs", "<all_urls>" ],
           "background": {"scripts": ["background_script.js"]}
         } )";
-    dir_.WriteManifest(kManifest);
+    dir_.WriteManifest(base::StringPrintf(kManifestTemplate, kExtensionKey));
     dir_.WriteFile(FILE_PATH_LITERAL("background_script.js"), "");
     extension_ = LoadExtension(dir_.UnpackedPath());
     DCHECK(extension_);
@@ -526,10 +534,6 @@ class CorbAndCorsExtensionBrowserTest
         browser()->profile(), extension_->id(), background_script);
   }
 
- protected:
-  policy::MockConfigurationPolicyProvider policy_provider_;
-
- private:
   void AllowlistExtensionIfNeeded(const Extension& extension) {
     // Sanity check that the field trial param (which has to be registered via
     // ScopedFeatureList early) uses the right extension id hash.
@@ -551,6 +555,10 @@ class CorbAndCorsExtensionBrowserTest
     }
   }
 
+ protected:
+  policy::MockConfigurationPolicyProvider policy_provider_;
+
+ private:
   // Executes |regular_script| in |web_contents|.
   //
   // This is an implementation of FetchCallback.
@@ -1356,7 +1364,7 @@ IN_PROC_BROWSER_TEST_P(CorbAndCorsExtensionBrowserTest,
 // by the service worker and/or 2) are ignored by the service worker and fall
 // back to the network).
 IN_PROC_BROWSER_TEST_P(CorbAndCorsExtensionBrowserTest,
-                       FromServiceWorker_NoSniffXml) {
+                       FromRegisteredServiceWorker_NoSniffXml) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(InstallExtension());
 
@@ -1443,6 +1451,96 @@ IN_PROC_BROWSER_TEST_P(CorbAndCorsExtensionBrowserTest,
 
     // Verify that no blocking occurred.
     EXPECT_EQ("nosniff.xml - body\n", fetch_result);
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(CorbAndCorsExtensionBrowserTest,
+                       FromBackgroundServiceWorker_NoSniffXml) {
+  // Install the extension with a service worker that can be asked to start a
+  // fetch to an arbitrary URL.
+  const char kManifestTemplate[] = R"(
+      {
+        "name": "CrossOriginReadBlockingTest - Extension/BgServiceWorker",
+        "key": "%s",
+        "version": "1.0",
+        "manifest_version": 2,
+        "permissions": [
+            "*://cross-site.com/*"
+            // This list intentionally does NOT include
+            // other-without-permission.com.
+        ],
+        "background": {"service_worker": "sw.js"}
+      } )";
+  const char kServiceWorker[] = R"(
+      chrome.runtime.onMessage.addListener(
+          function(request, sender, sendResponse) {
+            if (request.url) {
+              fetch(request.url)
+                .then(response => response.text())
+                .then(text => sendResponse(text))
+                .catch(err => sendResponse('error: ' + err));
+              return true;
+            }
+          });
+  )";
+  dir_.WriteManifest(base::StringPrintf(kManifestTemplate, kExtensionKey));
+  dir_.WriteFile(FILE_PATH_LITERAL("sw.js"), kServiceWorker);
+  dir_.WriteFile(FILE_PATH_LITERAL("page.html"), "<body>Hello World!</body>");
+  const Extension* extension = LoadExtension(dir_.UnpackedPath());
+  ASSERT_TRUE(extension);
+  AllowlistExtensionIfNeeded(*extension);
+
+  // Navigate a foreground tab to an extension URL, so that from this tab we can
+  // ask the background service worker to initiate test fetches.
+  ui_test_utils::NavigateToURL(browser(),
+                               extension->GetResourceURL("page.html"));
+  const char kFetchTemplate[] = R"(
+      chrome.runtime.sendMessage({url: $1}, function(response) {
+          domAutomationController.send(response);
+      });
+  )";
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Test a request to a website covered by extension permissions.
+  {
+    GURL nosniff_xml_with_permission(
+        embedded_test_server()->GetURL("cross-site.com", "/nosniff.xml"));
+    content::DOMMessageQueue queue;
+    base::HistogramTester histograms;
+    content::ExecuteScriptAsync(
+        active_web_contents(),
+        content::JsReplace(kFetchTemplate, nosniff_xml_with_permission));
+    std::string fetch_result = PopString(&queue);
+
+    // Verify that no CORB or CORS blocking occurred.
+    EXPECT_EQ("nosniff.xml - body\n", fetch_result);
+
+    // CORB should be disabled for extension origins.
+    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+    EXPECT_EQ(
+        0u,
+        histograms.GetTotalCountsForPrefix("SiteIsolation.XSD.Browser").size());
+  }
+
+  // Test a request to a website *not* covered by extension permissions.
+  {
+    GURL nosniff_xml_with_permission(embedded_test_server()->GetURL(
+        "other-without-permission.com", "/nosniff.xml"));
+    content::DOMMessageQueue queue;
+    base::HistogramTester histograms;
+    content::ExecuteScriptAsync(
+        active_web_contents(),
+        content::JsReplace(kFetchTemplate, nosniff_xml_with_permission));
+    std::string fetch_result = PopString(&queue);
+
+    // Verify that CORS blocked the response.
+    EXPECT_EQ(kCorsErrorWhenFetching, fetch_result);
+
+    // CORB should be disabled for extension origins.
+    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+    EXPECT_EQ(
+        0u,
+        histograms.GetTotalCountsForPrefix("SiteIsolation.XSD.Browser").size());
   }
 }
 

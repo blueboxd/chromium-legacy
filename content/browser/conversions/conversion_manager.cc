@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/task_runner_util.h"
 #include "base/time/default_clock.h"
+#include "content/browser/conversions/conversion_storage_delegate_impl.h"
 #include "content/browser/conversions/conversion_storage_sql.h"
 
 namespace content {
@@ -18,7 +19,10 @@ ConversionManager::ConversionManager(
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : storage_task_runner_(std::move(task_runner)),
       clock_(base::DefaultClock::GetInstance()),
-      storage_(new ConversionStorageSql(user_data_directory, this, clock_),
+      storage_(new ConversionStorageSql(
+                   user_data_directory,
+                   std::make_unique<ConversionStorageDelegateImpl>(),
+                   clock_),
                base::OnTaskRunnerDeleter(storage_task_runner_)),
       conversion_policy_(std::make_unique<ConversionPolicy>()),
       weak_factory_(this) {
@@ -52,19 +56,6 @@ void ConversionManager::HandleConversion(const StorableConversion& conversion) {
 
 const ConversionPolicy& ConversionManager::GetConversionPolicy() const {
   return *conversion_policy_;
-}
-
-void ConversionManager::ProcessNewConversionReports(
-    std::vector<ConversionReport>* reports) {
-  for (ConversionReport& report : *reports) {
-    report.report_time = conversion_policy_->GetReportTimeForConversion(report);
-  }
-
-  conversion_policy_->AssignAttributionCredits(reports);
-}
-
-int ConversionManager::GetMaxConversionsPerImpression() const {
-  return conversion_policy_->GetMaxConversionsPerImpression();
 }
 
 void ConversionManager::OnInitCompleted(bool success) {

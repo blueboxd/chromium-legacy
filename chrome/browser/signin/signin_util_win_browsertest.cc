@@ -15,7 +15,10 @@
 #include "base/win/wincrypt_shim.h"
 #include "build/build_config.h"
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_util_win.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -79,8 +82,16 @@ struct SigninUtilWinBrowserTestParams {
 };
 
 void AssertSigninStarted(bool expect_is_started, Profile* profile) {
-  ASSERT_EQ(expect_is_started, profile->GetPrefs()->GetBoolean(
-                                   prefs::kSignedInWithCredentialProvider));
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+
+  ProfileAttributesStorage& storage =
+      profile_manager->GetProfileAttributesStorage();
+
+  ProfileAttributesEntry* entry;
+
+  ASSERT_TRUE(storage.GetProfileAttributesWithPath(profile->GetPath(), &entry));
+
+  ASSERT_EQ(expect_is_started, entry->IsSignedInWithCredentialProvider());
 }
 
 }  // namespace
@@ -143,6 +154,7 @@ class BrowserTestHelper {
             base::ASCIIToUTF16(credential_provider::kKeyRefreshToken).c_str()));
   }
 
+ public:
   void SetSigninUtilRegistry() {
     base::win::RegKey key;
     CreateRegKey(&key);
@@ -177,8 +189,15 @@ class BrowserTestHelper {
   bool IsPreTest() {
     std::string test_name =
         ::testing::UnitTest::GetInstance()->current_test_info()->name();
-    LOG(WARNING) << "test_name " << test_name;
+    LOG(INFO) << "PRE_ test_name " << test_name;
     return test_name.find("PRE_") != std::string::npos;
+  }
+
+  bool IsPrePreTest() {
+    std::string test_name =
+        ::testing::UnitTest::GetInstance()->current_test_info()->name();
+    LOG(INFO) << "PRE_PRE_ test_name " << test_name;
+    return test_name.find("PRE_PRE_") != std::string::npos;
   }
 
  private:
@@ -526,3 +545,220 @@ INSTANTIATE_TEST_SUITE_P(AllowProfileWithPrimaryAccount_SameUser,
                              /*import_on_primary_account=*/1,
                              /*existing_email=*/L"foo@gmail.com",
                              /*expect_is_started=*/true)));
+
+void UnblockOnProfileCreation(Profile::CreateStatus expected_final_status,
+                              const base::Closure& quit_closure,
+                              Profile* profile,
+                              Profile::CreateStatus status) {
+  // If the status is CREATE_STATUS_CREATED, then the function will be called
+  // again with CREATE_STATUS_INITIALIZED.
+  if (status == Profile::CREATE_STATUS_CREATED)
+    return;
+
+  EXPECT_EQ(expected_final_status, status);
+  quit_closure.Run();
+}
+
+void UnblockOnProfileInitialized(const base::Closure& quit_closure,
+                                 Profile* profile,
+                                 Profile::CreateStatus status) {
+  UnblockOnProfileCreation(Profile::CREATE_STATUS_INITIALIZED, quit_closure,
+                           profile, status);
+}
+
+void CreateAndSwitchToProfile(const std::string& basepath) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ASSERT_TRUE(profile_manager);
+
+  base::FilePath path = profile_manager->user_data_dir().AppendASCII(basepath);
+  base::RunLoop run_loop;
+  profile_manager->CreateProfileAsync(
+      path, base::Bind(&UnblockOnProfileInitialized, run_loop.QuitClosure()),
+      base::string16(), std::string());
+  // Run the message loop to allow profile creation to take place; the loop is
+  // terminated by UnblockOnProfileCreation when the profile is created.
+  run_loop.Run();
+
+  profiles::SwitchToProfile(path, false, ProfileManager::CreateCallback());
+}
+
+struct ExistingWinBrowserProfilesSigninUtilTestParams {
+  ExistingWinBrowserProfilesSigninUtilTestParams(
+      const base::string16& email_in_other_profile,
+      bool cred_provider_used_other_profile,
+      const base::string16& current_profile,
+      const base::string16& email_in_current_profile,
+      bool expect_is_started)
+      : email_in_other_profile(email_in_other_profile),
+        cred_provider_used_other_profile(cred_provider_used_other_profile),
+        current_profile(current_profile),
+        email_in_current_profile(email_in_current_profile),
+        expect_is_started(expect_is_started) {}
+
+  base::string16 email_in_other_profile;
+  bool cred_provider_used_other_profile;
+  base::string16 current_profile;
+  base::string16 email_in_current_profile;
+  bool expect_is_started;
+};
+
+class ExistingWinBrowserProfilesSigninUtilTest
+    : public BrowserTestHelper,
+      public InProcessBrowserTest,
+      public testing::WithParamInterface<
+          ExistingWinBrowserProfilesSigninUtilTestParams> {
+ public:
+  ExistingWinBrowserProfilesSigninUtilTest()
+      : BrowserTestHelper(L"gaia_id_for_foo_gmail.com",
+                          L"foo@gmail.com",
+                          "lst-123456",
+                          0,
+                          1) {}
+
+ protected:
+  bool SetUpUserDataDirectory() override {
+    registry_override_.OverrideRegistry(HKEY_CURRENT_USER);
+
+    signin_util::SetDiceTurnSyncOnHelperDelegateForTesting(
+        std::unique_ptr<DiceTurnSyncOnHelper::Delegate>(
+            new TestDiceTurnSyncOnHelperDelegate()));
+    if (!IsPreTest()) {
+      SetSigninUtilRegistry();
+    } else if (IsPrePreTest() && GetParam().cred_provider_used_other_profile) {
+      BrowserTestHelper(L"gaia_id_for_bar_gmail.com", L"bar@gmail.com",
+                        "lst-123456", 0, 1)
+          .SetSigninUtilRegistry();
+    }
+
+    return InProcessBrowserTest::SetUpUserDataDirectory();
+  }
+
+ private:
+  registry_util::RegistryOverrideManager registry_override_;
+};
+
+// In PRE_PRE_Run, browser starts for the first time with the initial profile
+// dir. If needed by the test, this step can set |email_in_other_profile| as the
+// primary account in the profile or it can sign in with credential provider,
+// but before this step ends, |current_profile| is created and browser switches
+// to that profile just to prepare the browser for the next step.
+IN_PROC_BROWSER_TEST_P(ExistingWinBrowserProfilesSigninUtilTest, PRE_PRE_Run) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+
+  Profile* profile =
+      profile_manager->GetLastUsedProfile(profile_manager->user_data_dir());
+
+  ASSERT_EQ(profile_manager->GetInitialProfileDir(),
+            profile->GetPath().BaseName());
+
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
+  ASSERT_TRUE(identity_manager);
+  ASSERT_TRUE(identity_manager->HasPrimaryAccount() ==
+              GetParam().cred_provider_used_other_profile);
+
+  if (!GetParam().cred_provider_used_other_profile &&
+      !GetParam().email_in_other_profile.empty()) {
+    signin::MakePrimaryAccountAvailable(
+        identity_manager, base::UTF16ToUTF8(GetParam().email_in_other_profile));
+
+    ASSERT_TRUE(identity_manager->HasPrimaryAccount());
+  }
+
+  CreateAndSwitchToProfile(base::UTF16ToUTF8(GetParam().current_profile));
+}
+
+// Browser starts with the |current_profile| profile created in the previous
+// step. If needed by the test, this step can set |email_in_current_profile| as
+// the primary account in the profile.
+IN_PROC_BROWSER_TEST_P(ExistingWinBrowserProfilesSigninUtilTest, PRE_Run) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  Profile* profile =
+      profile_manager->GetLastUsedProfile(profile_manager->user_data_dir());
+
+  ASSERT_EQ(GetParam().current_profile, profile->GetPath().BaseName().value());
+
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
+  ASSERT_TRUE(identity_manager);
+  ASSERT_FALSE(identity_manager->HasPrimaryAccount());
+
+  if (!GetParam().email_in_current_profile.empty()) {
+    signin::MakePrimaryAccountAvailable(
+        identity_manager,
+        base::UTF16ToUTF8(GetParam().email_in_current_profile));
+
+    ASSERT_TRUE(identity_manager->HasPrimaryAccount());
+  }
+}
+
+// Before this step runs, refresh token is written into fake registry. Browser
+// starts with the |current_profile| profile. Depending on the test case,
+// profile may have a primary account. Similarly the other profile(initial
+// profile in this case) may have a primary account as well.
+IN_PROC_BROWSER_TEST_P(ExistingWinBrowserProfilesSigninUtilTest, Run) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  Profile* profile =
+      profile_manager->GetLastUsedProfile(profile_manager->user_data_dir());
+
+  ASSERT_EQ(GetParam().current_profile, profile->GetPath().BaseName().value());
+  AssertSigninStarted(GetParam().expect_is_started, profile);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    AllowCurrentProfile_NoUserSignedIn,
+    ExistingWinBrowserProfilesSigninUtilTest,
+    testing::Values(ExistingWinBrowserProfilesSigninUtilTestParams(
+        /*email_in_other_profile*/ L"",
+        /*cred_provider_used_other_profile*/ false,
+        /*current_profile*/ L"profile1",
+        /*email_in_current_profile=*/L"",
+        /*expect_is_started=*/true)));
+
+INSTANTIATE_TEST_SUITE_P(
+    AllowCurrentProfile_SameUserSignedIn,
+    ExistingWinBrowserProfilesSigninUtilTest,
+    testing::Values(ExistingWinBrowserProfilesSigninUtilTestParams(
+        /*email_in_other_profile*/ L"",
+        /*cred_provider_used_other_profile*/ false,
+        /*current_profile*/ L"profile1",
+        /*email_in_current_profile=*/L"foo@gmail.com",
+        /*expect_is_started=*/true)));
+
+INSTANTIATE_TEST_SUITE_P(
+    DisallowCurrentProfile_DifferentUserSignedIn,
+    ExistingWinBrowserProfilesSigninUtilTest,
+    testing::Values(ExistingWinBrowserProfilesSigninUtilTestParams(
+        /*email_in_other_profile*/ L"",
+        /*cred_provider_used_other_profile*/ false,
+        /*current_profile*/ L"profile1",
+        /*email_in_current_profile=*/L"bar@gmail.com",
+        /*expect_is_started=*/false)));
+
+INSTANTIATE_TEST_SUITE_P(
+    DisallowCurrentProfile_SameUserSignedInDefaultProfile,
+    ExistingWinBrowserProfilesSigninUtilTest,
+    testing::Values(ExistingWinBrowserProfilesSigninUtilTestParams(
+        /*email_in_other_profile*/ L"foo@gmail.com",
+        /*cred_provider_used_other_profile*/ false,
+        /*current_profile*/ L"profile1",
+        /*email_in_current_profile=*/L"",
+        /*expect_is_started=*/false)));
+
+INSTANTIATE_TEST_SUITE_P(
+    AllowCurrentProfile_DifferentUserSignedInDefaultProfile,
+    ExistingWinBrowserProfilesSigninUtilTest,
+    testing::Values(ExistingWinBrowserProfilesSigninUtilTestParams(
+        /*email_in_other_profile*/ L"bar@gmail.com",
+        /*cred_provider_used_other_profile*/ false,
+        /*current_profile*/ L"profile1",
+        /*email_in_current_profile=*/L"",
+        /*expect_is_started=*/true)));
+
+INSTANTIATE_TEST_SUITE_P(
+    DisallowCurrentProfile_CredProviderUsedDefaultProfile,
+    ExistingWinBrowserProfilesSigninUtilTest,
+    testing::Values(ExistingWinBrowserProfilesSigninUtilTestParams(
+        /*email_in_other_profile*/ L"",
+        /*cred_provider_used_other_profile*/ true,
+        /*current_profile*/ L"profile1",
+        /*email_in_current_profile=*/L"",
+        /*expect_is_started=*/false)));

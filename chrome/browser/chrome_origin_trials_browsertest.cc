@@ -5,10 +5,10 @@
 #include "base/command_line.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "components/embedder_support/switches.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -76,17 +76,20 @@ class ChromeOriginTrialsTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(ChromeOriginTrialsTest, NoPublicKeySet) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  EXPECT_FALSE(command_line->HasSwitch(switches::kOriginTrialPublicKey));
+  EXPECT_FALSE(
+      command_line->HasSwitch(embedder_support::kOriginTrialPublicKey));
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeOriginTrialsTest, NoDisabledFeatures) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  EXPECT_FALSE(command_line->HasSwitch(switches::kOriginTrialDisabledFeatures));
+  EXPECT_FALSE(
+      command_line->HasSwitch(embedder_support::kOriginTrialDisabledFeatures));
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeOriginTrialsTest, NoDisabledTokens) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  EXPECT_FALSE(command_line->HasSwitch(switches::kOriginTrialDisabledTokens));
+  EXPECT_FALSE(
+      command_line->HasSwitch(embedder_support::kOriginTrialDisabledTokens));
 }
 
 // Tests to verify that the public key is correctly read from prefs and
@@ -100,7 +103,8 @@ IN_PROC_BROWSER_TEST_F(ChromeOriginTrialsTest, PRE_PublicKeySetOnCommandLine) {
 IN_PROC_BROWSER_TEST_F(ChromeOriginTrialsTest, PublicKeySetOnCommandLine) {
   ASSERT_EQ(kNewPublicKey,
             local_state()->GetString(prefs::kOriginTrialPublicKey));
-  std::string actual = GetCommandLineSwitch(switches::kOriginTrialPublicKey);
+  std::string actual =
+      GetCommandLineSwitch(embedder_support::kOriginTrialPublicKey);
   EXPECT_EQ(kNewPublicKey, actual);
 }
 
@@ -120,7 +124,7 @@ IN_PROC_BROWSER_TEST_P(ChromeOriginTrialsDisabledFeaturesTest,
                        DisabledFeaturesSetOnCommandLine) {
   ASSERT_TRUE(local_state()->HasPrefPath(prefs::kOriginTrialDisabledFeatures));
   std::string actual =
-      GetCommandLineSwitch(switches::kOriginTrialDisabledFeatures);
+      GetCommandLineSwitch(embedder_support::kOriginTrialDisabledFeatures);
   EXPECT_EQ(GetParam().expected_switch, actual);
 }
 
@@ -144,7 +148,7 @@ IN_PROC_BROWSER_TEST_P(ChromeOriginTrialsDisabledTokensTest,
                        DisabledTokensSetOnCommandLine) {
   ASSERT_TRUE(local_state()->HasPrefPath(prefs::kOriginTrialDisabledTokens));
   std::string actual =
-      GetCommandLineSwitch(switches::kOriginTrialDisabledTokens);
+      GetCommandLineSwitch(embedder_support::kOriginTrialDisabledTokens);
   EXPECT_EQ(GetParam().expected_switch, actual);
 }
 

@@ -76,10 +76,10 @@ LocaleOutputHelper = class {
         contextNode.detectedLanguage || contextNode.language || '';
     const newLocale = this.computeNewLocale_(nodeLocale);
     let outputString = text;
-    const shouldUpdate = this.shouldUpdateLocale_(newLocale);
+    const shouldAlert = newLocale !== this.currentLocale_;
     if (this.hasVoiceForLocale_(newLocale)) {
       this.setCurrentLocale_(newLocale);
-      if (shouldUpdate) {
+      if (shouldAlert) {
         // Prepend the human-readable locale to |outputString|.
         const displayLanguage =
             chrome.accessibilityPrivate.getDisplayNameForLocale(
@@ -114,24 +114,6 @@ LocaleOutputHelper = class {
     }
 
     return LocaleOutputHelper.BROWSER_UI_LOCALE_;
-  }
-
-  // TODO(akihiroota): http://crbug.com/1061222
-  /**
-   * Only compares the language components of each locale.
-   * Note: Locale validation is the responsibility of the caller.
-   * Ex: 'fr-fr' and 'fr-ca' have the same language component, but different
-   * country components. We would return false in the above case. Ex: 'fr-ca'
-   * and 'en-ca' have different language components, but the same country
-   * components. We would return true in the above case.
-   * @param {string} newLocale
-   * @return {boolean}
-   * @private
-   */
-  shouldUpdateLocale_(newLocale) {
-    const newComponents = newLocale.split('-');
-    const currentComponents = this.currentLocale_.split('-');
-    return newComponents[0] !== currentComponents[0];
   }
 
   /**

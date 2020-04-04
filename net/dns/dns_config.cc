@@ -133,14 +133,4 @@ std::unique_ptr<base::Value> DnsConfig::ToValue() const {
   return std::move(dict);
 }
 
-DnsConfig::DnsOverHttpsServerConfig::DnsOverHttpsServerConfig(
-    const std::string& server_template,
-    bool use_post)
-    : server_template(server_template), use_post(use_post) {}
-
-bool DnsConfig::DnsOverHttpsServerConfig::operator==(
-    const DnsOverHttpsServerConfig& other) const {
-  return server_template == other.server_template && use_post == other.use_post;
-}
-
 }  // namespace net

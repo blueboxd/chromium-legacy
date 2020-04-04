@@ -15,8 +15,6 @@ import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.chrome.browser.metrics.WebApkUma;
-import org.chromium.chrome.browser.webapps.WebApkActivity;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.base.WindowAndroid;
@@ -71,9 +69,6 @@ class PermissionUpdateInfoBarDelegate implements PermissionCallback {
         Activity activity = windowAndroid.getActivity().get();
         if (canRequestAllPermissions) {
             windowAndroid.requestPermissions(mAndroidPermisisons, this);
-            if (activity instanceof WebApkActivity) {
-                WebApkUma.recordAndroidRuntimePermissionPromptInWebApk(mAndroidPermisisons);
-            }
         } else {
             if (activity == null) {
                 PermissionUpdateInfoBarDelegateJni.get().onPermissionResult(

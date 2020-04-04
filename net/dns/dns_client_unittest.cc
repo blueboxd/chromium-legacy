@@ -14,6 +14,7 @@
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_session.h"
 #include "net/dns/dns_test_util.h"
+#include "net/dns/public/dns_over_https_server_config.h"
 #include "net/dns/resolve_context.h"
 #include "net/socket/socket_test_util.h"
 #include "net/test/test_with_task_environment.h"
@@ -60,8 +61,8 @@ class DnsClientTest : public TestWithTaskEnvironment {
     if (!doh_only) {
       config = BasicValidConfig();
     }
-    config.dns_over_https_servers = {DnsConfig::DnsOverHttpsServerConfig(
-        "www.doh.com", true /* use_post */)};
+    config.dns_over_https_servers = {
+        DnsOverHttpsServerConfig("www.doh.com", true /* use_post */)};
     return config;
   }
 

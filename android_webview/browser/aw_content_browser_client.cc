@@ -213,11 +213,6 @@ void AwContentsMessageFilter::OnSubFrameCreated(int parent_render_frame_id,
                                             child_render_frame_id);
 }
 
-// A dummy binder for mojo interface autofill::mojom::PasswordManagerDriver.
-void DummyBindPasswordManagerDriver(
-    mojo::PendingReceiver<autofill::mojom::PasswordManagerDriver> receiver,
-    content::RenderFrameHost* render_frame_host) {}
-
 void PassMojoCookieManagerToAwCookieManager(
     CookieManager* cookie_manager,
     const mojo::Remote<network::mojom::NetworkContext>& network_context) {
@@ -323,13 +318,6 @@ AwContentBrowserClient::AwContentBrowserClient(
   // take the PrefService owned by the creator as the Local State instead
   // of loading the JSON file from disk.
   DCHECK(aw_feature_list_creator_);
-
-  // Although WebView does not support password manager feature, renderer code
-  // could still request this interface, so we register a dummy binder which
-  // just drops the incoming request, to avoid the 'Failed to locate a binder
-  // for interface' error log..
-  frame_interfaces_.AddInterface(
-      base::BindRepeating(&DummyBindPasswordManagerDriver));
   sniff_file_urls_ = AwSettings::GetAllowSniffingFileUrls();
 }
 
@@ -690,14 +678,6 @@ AwContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
   if (name == content::mojom::kBrowserServiceName)
     return GetAWContentBrowserOverlayManifest();
   return base::nullopt;
-}
-
-void AwContentBrowserClient::BindInterfaceRequestFromFrame(
-    content::RenderFrameHost* render_frame_host,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle interface_pipe) {
-  frame_interfaces_.TryBindInterface(interface_name, &interface_pipe,
-                                     render_frame_host);
 }
 
 bool AwContentBrowserClient::BindAssociatedReceiverFromFrame(

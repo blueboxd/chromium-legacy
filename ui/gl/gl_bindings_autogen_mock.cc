@@ -2929,6 +2929,15 @@ MockGLInterface::Mock_glImportMemoryFdEXT(GLuint memory,
 }
 
 void GL_BINDING_CALL
+MockGLInterface::Mock_glImportMemoryWin32HandleEXT(GLuint memory,
+                                                   GLuint64 size,
+                                                   GLenum handleType,
+                                                   void* handle) {
+  MakeGlMockFunctionUnique("glImportMemoryWin32HandleEXT");
+  interface_->ImportMemoryWin32HandleEXT(memory, size, handleType, handle);
+}
+
+void GL_BINDING_CALL
 MockGLInterface::Mock_glImportMemoryZirconHandleANGLE(GLuint memory,
                                                       GLuint64 size,
                                                       GLenum handleType,
@@ -2943,6 +2952,14 @@ MockGLInterface::Mock_glImportSemaphoreFdEXT(GLuint semaphore,
                                              GLint fd) {
   MakeGlMockFunctionUnique("glImportSemaphoreFdEXT");
   interface_->ImportSemaphoreFdEXT(semaphore, handleType, fd);
+}
+
+void GL_BINDING_CALL
+MockGLInterface::Mock_glImportSemaphoreWin32HandleEXT(GLuint semaphore,
+                                                      GLenum handleType,
+                                                      void* handle) {
+  MakeGlMockFunctionUnique("glImportSemaphoreWin32HandleEXT");
+  interface_->ImportSemaphoreWin32HandleEXT(semaphore, handleType, handle);
 }
 
 void GL_BINDING_CALL
@@ -6029,11 +6046,17 @@ MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<GLFunctionPointerType>(Mock_glHint);
   if (strcmp(name, "glImportMemoryFdEXT") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glImportMemoryFdEXT);
+  if (strcmp(name, "glImportMemoryWin32HandleEXT") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glImportMemoryWin32HandleEXT);
   if (strcmp(name, "glImportMemoryZirconHandleANGLE") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_glImportMemoryZirconHandleANGLE);
   if (strcmp(name, "glImportSemaphoreFdEXT") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glImportSemaphoreFdEXT);
+  if (strcmp(name, "glImportSemaphoreWin32HandleEXT") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glImportSemaphoreWin32HandleEXT);
   if (strcmp(name, "glImportSemaphoreZirconHandleANGLE") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_glImportSemaphoreZirconHandleANGLE);

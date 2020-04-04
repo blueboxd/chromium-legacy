@@ -40,23 +40,13 @@
     flex-grow: 1;
   }
 
-  .cr-section.block {
+  .section {
     box-sizing: border-box;
-    display: block;
-    padding-bottom: var(--cr-section-vertical-padding);
-    padding-top: var(--cr-section-vertical-padding);
+    padding: var(--cr-section-vertical-padding) var(--cr-section-padding);
   }
 
-  .cr-section.continuation {
-    border-top: none;
-  }
-
-  .cr-section.control-line {
+  .cr-row.control-line {
     justify-content: space-between;
-  }
-
-  .cr-section:first-child {
-    border: none;
   }
 
   .section-content {
@@ -146,7 +136,7 @@
         [[data.name]]
       </span>
     </div>
-    <div class="cr-section continuation control-line" id="enable-section">
+    <div class="cr-row first control-line" id="enable-section">
       <span class$="[[computeEnabledStyle_(data.state)]]">
         [[computeEnabledText_(data.state, '$i18nPolymer{itemOn}',
             '$i18nPolymer{itemOff}')]]
@@ -178,7 +168,7 @@
     </div>
     <div id="warnings" hidden$="[[!hasWarnings_(data.*)]]">
       <div id="runtime-warnings" hidden$="[[!data.runtimeWarnings.length]]"
-          class="cr-section continuation warning control-line">
+          class="cr-row continuation warning control-line">
         <iron-icon class="warning-icon" icon="cr:error"></iron-icon>
         <span>
           <template is="dom-repeat" items="[[data.runtimeWarnings]]">
@@ -192,7 +182,7 @@
           </cr-button>
         </template>
       </div>
-      <div class="cr-section continuation warning" id="suspicious-warning"
+      <div class="cr-row continuation warning" id="suspicious-warning"
           hidden$="[[!data.disableReasons.suspiciousInstall]]">
         <iron-icon class="warning-icon" icon="cr:warning"></iron-icon>
         <span>
@@ -202,7 +192,7 @@
           </a>
         </span>
       </div>
-      <div class="cr-section continuation warning control-line"
+      <div class="cr-row continuation warning control-line"
           id="corrupted-warning"
           hidden$="[[!showRepairButton_(data.disableReasons.corruptInstall)]]">
         <iron-icon class="warning-icon" icon="cr:warning"></iron-icon>
@@ -212,18 +202,18 @@
           $i18n{itemRepair}
         </cr-button>
       </div>
-      <div class="cr-section continuation warning" id="blacklisted-warning"
+      <div class="cr-row continuation warning" id="blacklisted-warning"
           hidden$="[[!data.blacklistText]]">
         <iron-icon class="warning-icon" icon="cr:warning"></iron-icon>
         <span>[[data.blacklistText]]</span>
       </div>
-      <div class="cr-section continuation warning" id="update-required-warning"
+      <div class="cr-row continuation warning" id="update-required-warning"
           hidden$="[[!data.disableReasons.updateRequired]]">
         <iron-icon class="warning-icon" icon="cr:warning"></iron-icon>
         <span>$i18n{updateRequiredByPolicy}</span>
       </div>
     </div>
-    <div class="cr-section continuation block">
+    <div class="section">
       <div class="section-title" role="heading" aria-level="2">
         $i18n{itemDescriptionLabel}
       </div>
@@ -231,13 +221,13 @@
         [[getDescription_(data.description, '$i18nPolymer{noDescription}')]]
       </div>
     </div>
-    <div class="cr-section block">
+    <div class="section hr">
       <div class="section-title" role="heading" aria-level="2">
         $i18n{itemVersion}
       </div>
       <div class="section-content">[[data.version]]</div>
     </div>
-    <div class="cr-section block">
+    <div class="section hr">
       <div class="section-title" role="heading" aria-level="2">
         $i18n{itemSize}
       </div>
@@ -247,14 +237,14 @@
         </paper-spinner-lite>
       </div>
     </div>
-    <div class="cr-section block" id="id-section" hidden$="[[!inDevMode]]">
+    <div class="section hr" id="id-section" hidden$="[[!inDevMode]]">
       <div class="section-title" role="heading" aria-level="2">
         $i18n{itemIdHeading}
       </div>
       <div class="section-content">[[data.id]]</div>
     </div>
     <template is="dom-if" if="[[inDevMode]]">
-      <div class="cr-section block" id="inspectable-views">
+      <div class="section hr" id="inspectable-views">
         <div class="section-title" role="heading" aria-level="2">
           $i18n{itemInspectViews}
         </div>
@@ -275,7 +265,7 @@
         </div>
       </div>
     </template>
-    <div class="cr-section block">
+    <div class="section hr">
       <div class="section-title" role="heading" aria-level="2">
         $i18n{itemPermissions}
       </div>
@@ -299,7 +289,7 @@
         </ul>
       </div>
     </div>
-    <div class="cr-section block">
+    <div class="section hr">
       <div class="section-title" role="heading" aria-level="2">
         $i18n{itemSiteAccess}
       </div>
@@ -328,7 +318,7 @@
     </div>
     <template is="dom-if"
         if="[[hasDependentExtensions_(data.dependentExtensions.splices)]]">
-      <div class="cr-section block">
+      <div class="section hr">
         <div class="section-title" role="heading" aria-level="2">
           $i18n{itemDependencies}
         </div>
@@ -389,7 +379,7 @@
     <cr-link-row class="hr" hidden="[[!data.webStoreUrl.length]]"
         id="viewInStore" label="$i18n{viewInStore}"
         on-click="onViewInStoreTap_" external></cr-link-row>
-    <div class="cr-section block">
+    <div class="section hr">
       <div class="section-title" role="heading" aria-level="2">
         $i18n{itemSource}
       </div>

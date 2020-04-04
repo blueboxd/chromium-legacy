@@ -5,16 +5,6 @@ include_rules = [
   "+cc/trees",
   "+chrome/android/features/vr/jni_headers",
   "+device/vr/util",
-
-  # VRService is currently being moved to content/ so no new dependencies should
-  # be added. (Note that this rule is both here and chrome/browser/DEPS because
-  # we get access to it again since it's our own subdirectory).)
-  "-chrome/browser/vr/service",
-
-  # Most metrics files will also be moving.
-  "-chrome/browser/vr/metrics",
-  "+chrome/browser/vr/metrics/consent_flow_metrics_helper.h",
-  "+chrome/browser/vr/metrics/metrics_helper.h",
 ]
 
 # Test files may access VRService as they will either move with it, or we can
@@ -23,8 +13,5 @@ specific_include_rules = {
   ".*test.*\.cc": [
     "+device/vr/test/test_hook.h",
     "+third_party/openvr/src/headers/openvr.h",
-  ],
-  ".*mock.*" : [
-    "+chrome/browser/vr/service",
   ]
 }

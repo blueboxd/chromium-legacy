@@ -126,7 +126,8 @@ public class FlingingControllerAdapter implements FlingingController, MediaContr
             return;
         }
 
-        mSessionController.safelySeek(position).setResultCallback(this::onMediaCommandResult);
+        mSessionController.getRemoteMediaClient().seek(position).setResultCallback(
+                this::onMediaCommandResult);
         mStreamPositionExtrapolator.onSeek(position);
     }
 

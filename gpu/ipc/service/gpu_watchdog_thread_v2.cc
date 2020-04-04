@@ -378,7 +378,12 @@ void GpuWatchdogThreadImplV2::UpdateInitializationFlag() {
 void GpuWatchdogThreadImplV2::Arm() {
   DCHECK(watched_gpu_task_runner_->BelongsToCurrentThread());
 
-  base::subtle::NoBarrier_AtomicIncrement(&arm_disarm_counter_, 1);
+  if (hits_termination_.IsSet()) {
+    base::subtle::NoBarrier_AtomicIncrement(&arm_disarm_counter_, 1);
+  } else {
+    arm_disarm_counter_main_thread_ =
+        base::subtle::NoBarrier_AtomicIncrement(&arm_disarm_counter_, 1);
+  }
 
   // Arm/Disarm are always called in sequence. Now it's an odd number.
   DCHECK(IsArmed());
@@ -387,7 +392,12 @@ void GpuWatchdogThreadImplV2::Arm() {
 void GpuWatchdogThreadImplV2::Disarm() {
   DCHECK(watched_gpu_task_runner_->BelongsToCurrentThread());
 
-  base::subtle::NoBarrier_AtomicIncrement(&arm_disarm_counter_, 1);
+  if (hits_termination_.IsSet()) {
+    base::subtle::NoBarrier_AtomicIncrement(&arm_disarm_counter_, 1);
+  } else {
+    arm_disarm_counter_main_thread_ =
+        base::subtle::NoBarrier_AtomicIncrement(&arm_disarm_counter_, 1);
+  }
 
   // Arm/Disarm are always called in sequence. Now it's an even number.
   DCHECK(!IsArmed());
@@ -397,7 +407,13 @@ void GpuWatchdogThreadImplV2::InProgress() {
   DCHECK(watched_gpu_task_runner_->BelongsToCurrentThread());
 
   // Increment by 2. This is equivalent to Disarm() + Arm().
-  base::subtle::NoBarrier_AtomicIncrement(&arm_disarm_counter_, 2);
+
+  if (hits_termination_.IsSet()) {
+    base::subtle::NoBarrier_AtomicIncrement(&arm_disarm_counter_, 2);
+  } else {
+    arm_disarm_counter_main_thread_ =
+        base::subtle::NoBarrier_AtomicIncrement(&arm_disarm_counter_, 2);
+  }
 
   // Now it's an odd number.
   DCHECK(IsArmed());
@@ -585,6 +601,10 @@ void GpuWatchdogThreadImplV2::DeliberatelyTerminateToRecoverFromHang() {
     test_result_timeout_and_gpu_hang_.Set();
     return;
   }
+
+  // Debug only. To be deleted
+  hits_termination_.Set();
+  base::debug::Alias(&arm_disarm_counter_main_thread_);
 
 #if defined(OS_WIN)
   if (IsDebuggerPresent())

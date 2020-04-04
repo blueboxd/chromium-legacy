@@ -153,7 +153,7 @@ let MethodData;
     if (callCount === 1) {
       return resolvers[0].promise;
     }
-    return Promise.all(resolvers.slice(callCount).map(r => r.promise));
+    return Promise.all(resolvers.slice(0, callCount).map(r => r.promise));
   }
 
   /**

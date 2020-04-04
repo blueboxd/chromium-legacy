@@ -216,8 +216,10 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
                                        uint32_t texture_target) = 0;
 
     // This is the same as ProvidePictureBuffers() except that |visible_rect| is
-    // also included. The default implementation of VDA would call
-    // ProvidePictureBuffers().
+    // also included. The default implementation calls ProvidePictureBuffers()
+    // setting |dimensions| = GetRectSizeFromOrigin(|visible_rect|) when
+    // |texture_target| is GL_TEXTURE_EXTERNAL_OES; otherwise, it passes along
+    // all parameters to ProvidePictureBuffers() as they are.
     virtual void ProvidePictureBuffersWithVisibleRect(
         uint32_t requested_num_of_buffers,
         VideoPixelFormat format,

@@ -1,4 +1,6 @@
 vars = struct(
+    # Switch this to False for branches
+    is_master = True,
     ref = 'refs/heads/master',
     ci_bucket = 'ci',
     ci_poller = 'master-gitiles-trigger',

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/vr/test/mock_xr_device_hook_base.h"
-#include "chrome/browser/vr/service/xr_device_service.h"
+#include "content/public/test/xr_test_utils.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 
 // TODO(https://crbug.com/891832): Remove these conversion functions as part of
@@ -52,7 +52,7 @@ device_test::mojom::ControllerFrameDataPtr DeviceToMojoControllerFrameData(
 MockXRDeviceHookBase::MockXRDeviceHookBase()
     : tracked_classes_{
           device_test::mojom::TrackedDeviceClass::kTrackedDeviceInvalid} {
-  vr::GetXRDeviceService()->BindTestHook(
+  content::GetXRDeviceServiceForTesting()->BindTestHook(
       service_test_hook_.BindNewPipeAndPassReceiver());
 
   mojo::ScopedAllowSyncCallForTesting scoped_allow_sync;

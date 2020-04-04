@@ -847,7 +847,8 @@ const ConfiguredProxyResolutionService::PacPollPolicy*
 ConfiguredProxyResolutionService::ConfiguredProxyResolutionService(
     std::unique_ptr<ProxyConfigService> config_service,
     std::unique_ptr<ProxyResolverFactory> resolver_factory,
-    NetLog* net_log)
+    NetLog* net_log,
+    bool quick_check_enabled)
     : config_service_(std::move(config_service)),
       resolver_factory_(std::move(resolver_factory)),
       current_state_(STATE_NONE),
@@ -855,7 +856,7 @@ ConfiguredProxyResolutionService::ConfiguredProxyResolutionService(
       net_log_(net_log),
       stall_proxy_auto_config_delay_(
           TimeDelta::FromMilliseconds(kDelayAfterNetworkChangesMs)),
-      quick_check_enabled_(true) {
+      quick_check_enabled_(quick_check_enabled) {
   NetworkChangeNotifier::AddIPAddressObserver(this);
   NetworkChangeNotifier::AddDNSObserver(this);
   config_service_->AddObserver(this);
@@ -865,8 +866,8 @@ ConfiguredProxyResolutionService::ConfiguredProxyResolutionService(
 std::unique_ptr<ConfiguredProxyResolutionService>
 ConfiguredProxyResolutionService::CreateUsingSystemProxyResolver(
     std::unique_ptr<ProxyConfigService> proxy_config_service,
-    bool quick_check_enabled,
-    NetLog* net_log) {
+    NetLog* net_log,
+    bool quick_check_enabled) {
   DCHECK(proxy_config_service);
 
   if (!ProxyResolverFactoryForSystem::IsSupported()) {
@@ -879,8 +880,7 @@ ConfiguredProxyResolutionService::CreateUsingSystemProxyResolver(
           std::move(proxy_config_service),
           std::make_unique<ProxyResolverFactoryForSystem>(
               kDefaultNumPacThreads),
-          net_log);
-  proxy_resolution_service->set_quick_check_enabled(quick_check_enabled);
+          net_log, quick_check_enabled);
   return proxy_resolution_service;
 }
 
@@ -891,7 +891,8 @@ ConfiguredProxyResolutionService::CreateWithoutProxyResolver(
     NetLog* net_log) {
   return std::make_unique<ConfiguredProxyResolutionService>(
       std::move(proxy_config_service),
-      std::make_unique<ProxyResolverFactoryForNullResolver>(), net_log);
+      std::make_unique<ProxyResolverFactoryForNullResolver>(), net_log,
+      /*quick_check_enabled=*/false);
 }
 
 // static
@@ -901,8 +902,8 @@ ConfiguredProxyResolutionService::CreateFixed(
   // TODO(eroman): This isn't quite right, won't work if |pc| specifies
   //               a PAC script.
   return CreateUsingSystemProxyResolver(
-      std::make_unique<ProxyConfigServiceFixed>(pc),
-      /*quick_check_enabled=*/true, nullptr);
+      std::make_unique<ProxyConfigServiceFixed>(pc), nullptr,
+      /*quick_check_enabled=*/true);
 }
 
 // static
@@ -922,7 +923,8 @@ ConfiguredProxyResolutionService::CreateDirect() {
   // Use direct connections.
   return std::make_unique<ConfiguredProxyResolutionService>(
       std::make_unique<ProxyConfigServiceDirect>(),
-      std::make_unique<ProxyResolverFactoryForNullResolver>(), nullptr);
+      std::make_unique<ProxyResolverFactoryForNullResolver>(), nullptr,
+      /*quick_check_enabled=*/true);
 }
 
 // static
@@ -940,7 +942,8 @@ ConfiguredProxyResolutionService::CreateFixedFromPacResult(
 
   return std::make_unique<ConfiguredProxyResolutionService>(
       std::move(proxy_config_service),
-      std::make_unique<ProxyResolverFactoryForPacResult>(pac_string), nullptr);
+      std::make_unique<ProxyResolverFactoryForPacResult>(pac_string), nullptr,
+      /*quick_check_enabled=*/true);
 }
 
 // static
@@ -954,7 +957,8 @@ ConfiguredProxyResolutionService::CreateFixedFromAutoDetectedPacResult(
 
   return std::make_unique<ConfiguredProxyResolutionService>(
       std::move(proxy_config_service),
-      std::make_unique<ProxyResolverFactoryForPacResult>(pac_string), nullptr);
+      std::make_unique<ProxyResolverFactoryForPacResult>(pac_string), nullptr,
+      /*quick_check_enabled=*/true);
 }
 
 int ConfiguredProxyResolutionService::ResolveProxy(
@@ -994,10 +998,9 @@ int ConfiguredProxyResolutionService::ResolveProxy(
     return rv;
   }
 
-  std::unique_ptr<ConfiguredProxyResolutionRequest> req =
-      std::make_unique<ConfiguredProxyResolutionRequest>(
-          this, url, method, network_isolation_key, result, std::move(callback),
-          net_log);
+  auto req = std::make_unique<ConfiguredProxyResolutionRequest>(
+      this, url, method, network_isolation_key, result, std::move(callback),
+      net_log);
 
   if (current_state_ == STATE_READY) {
     // Start the resolve request.

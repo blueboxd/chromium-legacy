@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.settings;
 
 import android.accounts.Account;
-import android.os.Build.VERSION_CODES;
 import android.support.test.filters.SmallTest;
 import android.text.TextUtils;
 
@@ -23,7 +22,6 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.about_settings.AboutChromeSettings;
 import org.chromium.chrome.browser.accessibility.settings.AccessibilitySettings;
@@ -80,11 +78,13 @@ public class MainSettingsFragmentTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         DeveloperSettings.setIsEnabledForTests(true);
+        NightModeUtils.setNightModeSupportedForTesting(true);
     }
 
     @After
     public void tearDown() {
         DeveloperSettings.setIsEnabledForTests(null);
+        NightModeUtils.setNightModeSupportedForTesting(null);
         if (mActualTemplateUrlService != null) {
             // Reset the actual service if the mock is used.
             TemplateUrlServiceFactory.setInstanceForTesting(mActualTemplateUrlService);
@@ -117,7 +117,6 @@ public class MainSettingsFragmentTest {
      */
     @Test
     @SmallTest
-    @DisableIf.Build(sdk_is_less_than = VERSION_CODES.LOLLIPOP)
     public void testStartup() {
         launchSettingsActivity();
 

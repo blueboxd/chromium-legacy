@@ -110,8 +110,9 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
                               const Extension* extension,
                               UninstallReason reason) override;
 
-  // Invoked when we have loaded the ruleset on |file_task_runner_|.
-  void OnRulesetLoaded(LoadRequestData load_data);
+  // Invoked when we have loaded the rulesets in |load_data| on
+  // |file_task_runner_|.
+  void OnRulesetsLoaded(LoadRequestData load_data);
 
   // Invoked when the dynamic rules for the extension have been updated.
   void OnDynamicRulesUpdated(DynamicRuleUpdateUICallback callback,

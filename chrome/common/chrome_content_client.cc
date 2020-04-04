@@ -39,6 +39,7 @@
 #include "chrome/grit/common_resources.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/dom_distiller/core/url_constants.h"
+#include "components/embedder_support/origin_trials/origin_trial_policy_impl.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/services/heap_profiling/public/cpp/profiling_client.h"
 #include "content/public/common/cdm_info.h"
@@ -831,7 +832,8 @@ blink::OriginTrialPolicy* ChromeContentClient::GetOriginTrialPolicy() {
   // separate worker thread).
   base::AutoLock auto_lock(origin_trial_policy_lock_);
   if (!origin_trial_policy_)
-    origin_trial_policy_ = std::make_unique<ChromeOriginTrialPolicy>();
+    origin_trial_policy_ =
+        std::make_unique<embedder_support::OriginTrialPolicyImpl>();
   return origin_trial_policy_.get();
 }
 

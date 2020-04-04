@@ -37,14 +37,6 @@ class ChromeXrIntegrationClient : public content::XrIntegrationClient {
       mojo::PendingRemote<device::mojom::XRCompositorHost> compositor) override;
 #endif
 
-  // TODO(1031622): Once all consumers have been moved to content/, this should
-  // be removed, and those consumers should be updated to get this instance from
-  // the ContentBrowserClient.
-  // Nothing in this class should rely on this singleton behavior.
-  // This is simply created as a "Singleton" here to ensure that callers don't
-  // just create an instance of this and cache the value.
-  static ChromeXrIntegrationClient* GetInstance();
-
  private:
   ChromeXrIntegrationClient() = default;
 };

@@ -14,8 +14,10 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller_test.h"
@@ -160,6 +162,40 @@ TEST_P(FrameOverlayTest, DeviceEmulationScale) {
     graphics_layer->Paint();
     check_paint_results(graphics_layer->GetPaintController());
   }
+}
+
+TEST_P(FrameOverlayTest, LayerOrder) {
+  // This test doesn't apply in CompositeAfterPaint.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
+  auto frame_overlay1 = CreateSolidYellowOverlay();
+  auto frame_overlay2 = CreateSolidYellowOverlay();
+  frame_overlay1->UpdatePrePaint();
+  frame_overlay2->UpdatePrePaint();
+
+  auto* parent_layer = GetWebView()
+                           ->MainFrameImpl()
+                           ->GetFrameView()
+                           ->GetLayoutView()
+                           ->Compositor()
+                           ->PaintRootGraphicsLayer();
+  ASSERT_EQ(3u, parent_layer->Children().size());
+  EXPECT_EQ(parent_layer, frame_overlay1->GetGraphicsLayer()->Parent());
+  EXPECT_EQ(parent_layer->Children()[1], frame_overlay1->GetGraphicsLayer());
+  EXPECT_EQ(parent_layer, frame_overlay2->GetGraphicsLayer()->Parent());
+  EXPECT_EQ(parent_layer->Children()[2], frame_overlay2->GetGraphicsLayer());
+
+  auto extra_layer = std::make_unique<GraphicsLayer>(parent_layer->Client());
+  parent_layer->AddChild(extra_layer.get());
+
+  frame_overlay1->UpdatePrePaint();
+  frame_overlay2->UpdatePrePaint();
+  ASSERT_EQ(4u, parent_layer->Children().size());
+  EXPECT_EQ(parent_layer, frame_overlay1->GetGraphicsLayer()->Parent());
+  EXPECT_EQ(parent_layer->Children()[2], frame_overlay1->GetGraphicsLayer());
+  EXPECT_EQ(parent_layer, frame_overlay2->GetGraphicsLayer()->Parent());
+  EXPECT_EQ(parent_layer->Children()[3], frame_overlay2->GetGraphicsLayer());
 }
 
 TEST_P(FrameOverlayTest, VisualRect) {

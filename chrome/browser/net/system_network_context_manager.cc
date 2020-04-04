@@ -5,7 +5,6 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 
 #include <algorithm>
-#include <set>
 #include <unordered_map>
 #include <utility>
 
@@ -14,7 +13,6 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/process/process_handle.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_split.h"
@@ -34,7 +32,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/certificate_transparency/ct_known_logs.h"
-#include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/net_log/net_export_file_writer.h"
 #include "components/net_log/net_log_proxy_source.h"
 #include "components/network_session_configurator/common/network_features.h"
@@ -71,10 +68,6 @@
 #include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 
-#if defined(OS_ANDROID)
-#include "base/android/build_info.h"
-#endif  // defined(OS_ANDROID)
-
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/net/dhcp_wpad_url_client.h"
@@ -109,20 +102,6 @@ bool g_enable_certificate_transparency = kCertificateTransparencyEnabled;
 
 // The global instance of the SystemNetworkContextmanager.
 SystemNetworkContextManager* g_system_network_context_manager = nullptr;
-
-void OnStubResolverConfigChanged(PrefService* local_state,
-                                 const std::string& pref_name) {
-  bool insecure_stub_resolver_enabled;
-  net::DnsConfig::SecureDnsMode secure_dns_mode;
-  base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>
-      dns_over_https_servers;
-  SystemNetworkContextManager::GetStubResolverConfigReader()->GetConfiguration(
-      &insecure_stub_resolver_enabled, &secure_dns_mode,
-      &dns_over_https_servers);
-  content::GetNetworkService()->ConfigureStubHostResolver(
-      insecure_stub_resolver_enabled, secure_dns_mode,
-      std::move(dns_over_https_servers));
-}
 
 // Constructs HttpAuthStaticParams based on |local_state|.
 network::mojom::HttpAuthStaticParamsPtr CreateHttpAuthStaticParams(
@@ -188,20 +167,6 @@ void OnAuthPrefsChanged(PrefService* local_state,
                         const std::string& pref_name) {
   content::GetNetworkService()->ConfigureHttpAuthPrefs(
       CreateHttpAuthDynamicParams(local_state));
-}
-
-// Check the AsyncDns field trial and return true if it should be enabled. On
-// Android this includes checking the Android version in the field trial.
-bool ShouldEnableAsyncDns() {
-  bool feature_can_be_enabled = true;
-#if defined(OS_ANDROID)
-  int min_sdk =
-      base::GetFieldTrialParamByFeatureAsInt(features::kAsyncDns, "min_sdk", 0);
-  if (base::android::BuildInfo::GetInstance()->sdk_int() < min_sdk)
-    feature_can_be_enabled = false;
-#endif
-  return feature_can_be_enabled &&
-         base::FeatureList::IsEnabled(features::kAsyncDns);
 }
 
 #if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
@@ -374,55 +339,6 @@ SystemNetworkContextManager::SystemNetworkContextManager(
 
   pref_change_registrar_.Init(local_state_);
 
-  // Update the DnsClient and DoH default preferences based on the corresponding
-  // features before registering change callbacks for these preferences.
-  local_state_->SetDefaultPrefValue(prefs::kBuiltInDnsClientEnabled,
-                                    base::Value(ShouldEnableAsyncDns()));
-  std::string default_doh_mode = chrome_browser_net::kDnsOverHttpsModeOff;
-  std::string default_doh_templates = "";
-  if (base::FeatureList::IsEnabled(features::kDnsOverHttps)) {
-    if (features::kDnsOverHttpsFallbackParam.Get()) {
-      default_doh_mode = chrome_browser_net::kDnsOverHttpsModeAutomatic;
-    } else {
-      default_doh_mode = chrome_browser_net::kDnsOverHttpsModeSecure;
-    }
-    default_doh_templates = features::kDnsOverHttpsTemplatesParam.Get();
-  }
-  local_state_->SetDefaultPrefValue(prefs::kDnsOverHttpsMode,
-                                    base::Value(default_doh_mode));
-  local_state_->SetDefaultPrefValue(prefs::kDnsOverHttpsTemplates,
-                                    base::Value(default_doh_templates));
-
-  // If the user has explicitly enabled or disabled the DoH experiment in
-  // chrome://flags and the DoH UI setting is not visible, store that choice
-  // in the user prefs so that it can be persisted after the experiment ends.
-  // Also make sure to remove the stored prefs value if the user has changed
-  // their chrome://flags selection to the default.
-  if (!features::kDnsOverHttpsShowUiParam.Get()) {
-    flags_ui::PrefServiceFlagsStorage flags_storage(local_state_);
-    std::set<std::string> entries = flags_storage.GetFlags();
-    if (entries.count("dns-over-https@1")) {
-      // The user has "Enabled" selected.
-      local_state_->SetString(prefs::kDnsOverHttpsMode,
-                              chrome_browser_net::kDnsOverHttpsModeAutomatic);
-    } else if (entries.count("dns-over-https@2")) {
-      // The user has "Disabled" selected.
-      local_state_->SetString(prefs::kDnsOverHttpsMode,
-                              chrome_browser_net::kDnsOverHttpsModeOff);
-    } else {
-      // The user has "Default" selected.
-      local_state_->ClearPref(prefs::kDnsOverHttpsMode);
-    }
-  }
-
-  PrefChangeRegistrar::NamedChangeCallback dns_pref_callback =
-      base::BindRepeating(&OnStubResolverConfigChanged,
-                          base::Unretained(local_state_));
-  pref_change_registrar_.Add(prefs::kBuiltInDnsClientEnabled,
-                             dns_pref_callback);
-  pref_change_registrar_.Add(prefs::kDnsOverHttpsMode, dns_pref_callback);
-  pref_change_registrar_.Add(prefs::kDnsOverHttpsTemplates, dns_pref_callback);
-
   PrefChangeRegistrar::NamedChangeCallback auth_pref_callback =
       base::BindRepeating(&OnAuthPrefsChanged, base::Unretained(local_state_));
   pref_change_registrar_.Add(prefs::kAuthServerWhitelist, auth_pref_callback);
@@ -466,15 +382,7 @@ SystemNetworkContextManager::~SystemNetworkContextManager() {
 
 // static
 void SystemNetworkContextManager::RegisterPrefs(PrefRegistrySimple* registry) {
-  // Register the DnsClient and DoH preferences. The feature list has not been
-  // initialized yet, so setting the preference defaults here to reflect the
-  // corresponding features will only cause the preference defaults to reflect
-  // the feature defaults (feature values set via the command line will not be
-  // captured). Thus, the preference defaults are updated in the constructor
-  // for SystemNetworkContextManager, at which point the feature list is ready.
-  registry->RegisterBooleanPref(prefs::kBuiltInDnsClientEnabled, false);
-  registry->RegisterStringPref(prefs::kDnsOverHttpsMode, std::string());
-  registry->RegisterStringPref(prefs::kDnsOverHttpsTemplates, std::string());
+  StubResolverConfigReader::RegisterPrefs(registry);
 
   // Static auth params
   registry->RegisterStringPref(prefs::kAuthSchemes,
@@ -575,16 +483,7 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
 
   // Configure the stub resolver. This must be done after the system
   // NetworkContext is created, but before anything has the chance to use it.
-  bool insecure_stub_resolver_enabled;
-  net::DnsConfig::SecureDnsMode secure_dns_mode;
-  base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>
-      dns_over_https_servers;
-  stub_resolver_config_reader_.GetConfiguration(
-      &insecure_stub_resolver_enabled, &secure_dns_mode,
-      &dns_over_https_servers, true /* record_metrics */);
-  content::GetNetworkService()->ConfigureStubHostResolver(
-      insecure_stub_resolver_enabled, secure_dns_mode,
-      std::move(dns_over_https_servers));
+  stub_resolver_config_reader_.UpdateNetworkService(true /* record_metrics */);
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   const base::CommandLine& command_line =

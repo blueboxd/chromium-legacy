@@ -130,24 +130,24 @@ std::unique_ptr<ImageDecoder> ImageDecoder::Create(
 
   std::unique_ptr<ImageDecoder> decoder;
   if (MatchesJPEGSignature(contents)) {
-    decoder.reset(new JPEGImageDecoder(alpha_option, color_behavior,
-                                       max_decoded_bytes, allow_decode_to_yuv));
+    decoder = std::make_unique<JPEGImageDecoder>(
+        alpha_option, color_behavior, max_decoded_bytes, allow_decode_to_yuv);
   } else if (MatchesPNGSignature(contents)) {
-    decoder.reset(new PNGImageDecoder(alpha_option,
-                                      high_bit_depth_decoding_option,
-                                      color_behavior, max_decoded_bytes));
+    decoder = std::make_unique<PNGImageDecoder>(
+        alpha_option, high_bit_depth_decoding_option, color_behavior,
+        max_decoded_bytes);
   } else if (MatchesGIFSignature(contents)) {
-    decoder.reset(
-        new GIFImageDecoder(alpha_option, color_behavior, max_decoded_bytes));
+    decoder = std::make_unique<GIFImageDecoder>(alpha_option, color_behavior,
+                                                max_decoded_bytes);
   } else if (MatchesWebPSignature(contents)) {
-    decoder.reset(
-        new WEBPImageDecoder(alpha_option, color_behavior, max_decoded_bytes));
+    decoder = std::make_unique<WEBPImageDecoder>(alpha_option, color_behavior,
+                                                 max_decoded_bytes);
   } else if (MatchesICOSignature(contents) || MatchesCURSignature(contents)) {
-    decoder.reset(
-        new ICOImageDecoder(alpha_option, color_behavior, max_decoded_bytes));
+    decoder = std::make_unique<ICOImageDecoder>(alpha_option, color_behavior,
+                                                max_decoded_bytes);
   } else if (MatchesBMPSignature(contents)) {
-    decoder.reset(
-        new BMPImageDecoder(alpha_option, color_behavior, max_decoded_bytes));
+    decoder = std::make_unique<BMPImageDecoder>(alpha_option, color_behavior,
+                                                max_decoded_bytes);
   }
 
   if (decoder)

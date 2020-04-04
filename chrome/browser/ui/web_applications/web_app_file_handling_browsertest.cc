@@ -17,8 +17,8 @@
 #include "chrome/browser/web_applications/components/file_handler_manager.h"
 #include "chrome/browser/web_applications/components/web_app_prefs_utils.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/web_application_info.h"
+#include "components/embedder_support/switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/url_loader_interceptor.h"
@@ -429,7 +429,7 @@ class WebAppFileHandlingOriginTrialTest
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WebAppControllerBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kOriginTrialPublicKey,
+    command_line->AppendSwitchASCII(embedder_support::kOriginTrialPublicKey,
                                     kOriginTrialPublicKeyForTesting);
   }
 

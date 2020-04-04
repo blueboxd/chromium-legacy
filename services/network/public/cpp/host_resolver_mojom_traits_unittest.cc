@@ -7,6 +7,7 @@
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "net/base/net_errors.h"
+#include "net/dns/public/dns_over_https_server_config.h"
 #include "services/network/public/cpp/ip_address_mojom_traits.h"
 #include "services/network/public/cpp/ip_endpoint_mojom_traits.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
@@ -43,7 +44,7 @@ TEST(HostResolverMojomTraitsTest, DnsConfigOverridesRoundtrip_FullySpecified) {
   original.rotate = true;
   original.use_local_ipv6 = false;
   original.dns_over_https_servers.emplace(
-      {net::DnsConfig::DnsOverHttpsServerConfig("example.com", false)});
+      {net::DnsOverHttpsServerConfig("example.com", false)});
   original.secure_dns_mode = net::DnsConfig::SecureDnsMode::SECURE;
   original.allow_dns_over_https_upgrade = true;
   original.disabled_upgrade_providers.emplace({std::string("provider_name")});
@@ -70,7 +71,7 @@ TEST(HostResolverMojomTraitsTest, DnsConfigOverrides_BadInt) {
 TEST(HostResolverMojomTraitsTest, DnsConfigOverrides_OnlyDnsOverHttpsServers) {
   net::DnsConfigOverrides original;
   original.dns_over_https_servers.emplace(
-      {net::DnsConfig::DnsOverHttpsServerConfig("example.com", false)});
+      {net::DnsOverHttpsServerConfig("example.com", false)});
 
   net::DnsConfigOverrides deserialized;
   EXPECT_TRUE(mojo::test::SerializeAndDeserialize<mojom::DnsConfigOverrides>(

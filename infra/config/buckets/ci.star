@@ -24,6 +24,19 @@ exec('//versioned/milestones/m83/buckets/ci.star')
 
 
 # *** After this point everything is trunk only ***
+ci.console_view(
+    name = 'chromium.win',
+    header = '//consoles/chromium-header.textpb',
+    repo = 'https://chromium.googlesource.com/chromium/src',
+    ordering = {
+        None: ['release', 'debug'],
+        'debug|builder': ci.ordering(short_names=['64', '32']),
+        'debug|tester': ci.ordering(short_names=['7', '10']),
+    },
+)
+
+
+ci.defaults.add_to_console_view.set(True)
 ci.defaults.bucket.set('ci')
 ci.defaults.triggered_by.set(['master-gitiles-trigger'])
 
@@ -1792,17 +1805,29 @@ ci.swangle_windows_builder(
 
 ci.win_builder(
     name = 'WebKit Win10',
+    console_view_entry = ci.console_view_entry(
+        category = 'misc',
+        short_name = 'wbk',
+    ),
     triggered_by = ['Win Builder'],
 )
 
 ci.win_builder(
     name = 'Win Builder',
+    console_view_entry = ci.console_view_entry(
+        category = 'release|builder',
+        short_name = '32',
+    ),
     cores = 32,
     os = os.WINDOWS_ANY,
 )
 
 ci.win_builder(
     name = 'Win x64 Builder (dbg)',
+    console_view_entry = ci.console_view_entry(
+        category = 'debug|builder',
+        short_name = '64',
+    ),
     cores = 32,
     builderless = True,
     os = os.WINDOWS_ANY,
@@ -1810,23 +1835,39 @@ ci.win_builder(
 
 ci.win_builder(
     name = 'Win10 Tests x64 (dbg)',
+    console_view_entry = ci.console_view_entry(
+        category = 'debug|tester',
+        short_name = '10',
+    ),
     triggered_by = ['Win x64 Builder (dbg)'],
 )
 
 ci.win_builder(
     name = 'Win7 (32) Tests',
+    console_view_entry = ci.console_view_entry(
+        category = 'release|tester',
+        short_name = '32',
+    ),
     os = os.WINDOWS_7,
     triggered_by = ['Win Builder'],
 )
 
 ci.win_builder(
     name = 'Win7 Tests (1)',
+    console_view_entry = ci.console_view_entry(
+        category = 'release|tester',
+        short_name = '32',
+    ),
     os = os.WINDOWS_7,
     triggered_by = ['Win Builder'],
 )
 
 ci.win_builder(
     name = 'Windows deterministic',
+    console_view_entry = ci.console_view_entry(
+        category = 'misc',
+        short_name = 'det',
+    ),
     executable = 'recipe:swarming/deterministic_build',
     execution_timeout = 6 * time.hour,
 )

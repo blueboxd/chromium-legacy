@@ -13,7 +13,7 @@ import org.chromium.base.CollectionUtil;
 import org.chromium.base.LocaleUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.chrome.browser.util.ConversionUtils;
+import org.chromium.components.browser_ui.util.ConversionUtils;
 
 import java.io.File;
 import java.util.Map;

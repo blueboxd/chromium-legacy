@@ -40,9 +40,6 @@ public class PermissionDialogDelegate {
     /** Text shown on the secondary button, e.g. "Block". */
     private String mSecondaryButtonText;
 
-    /** Client to access embedder logic. */
-    private PermissionsClient mClient;
-
     /** The {@link ContentSettingsType}s requested in this dialog.  */
     private int[] mContentSettingsTypes;
 
@@ -68,10 +65,6 @@ public class PermissionDialogDelegate {
 
     public String getSecondaryButtonText() {
         return mSecondaryButtonText;
-    }
-
-    public PermissionsClient getClient() {
-        return mClient;
     }
 
     public void onAccept() {
@@ -123,9 +116,9 @@ public class PermissionDialogDelegate {
     @CalledByNative
     private static PermissionDialogDelegate create(long nativeDelegatePtr, WindowAndroid window,
             int[] contentSettingsTypes, int iconId, String message, String primaryButtonText,
-            String secondaryButtonText, PermissionsClient client) {
+            String secondaryButtonText) {
         return new PermissionDialogDelegate(nativeDelegatePtr, window, contentSettingsTypes, iconId,
-                message, primaryButtonText, secondaryButtonText, client);
+                message, primaryButtonText, secondaryButtonText);
     }
 
     /**
@@ -133,7 +126,7 @@ public class PermissionDialogDelegate {
      */
     private PermissionDialogDelegate(long nativeDelegatePtr, WindowAndroid window,
             int[] contentSettingsTypes, int iconId, String message, String primaryButtonText,
-            String secondaryButtonText, PermissionsClient client) {
+            String secondaryButtonText) {
         mNativeDelegatePtr = nativeDelegatePtr;
         mWindow = window;
         mContentSettingsTypes = contentSettingsTypes;
@@ -141,7 +134,6 @@ public class PermissionDialogDelegate {
         mMessageText = message;
         mPrimaryButtonText = primaryButtonText;
         mSecondaryButtonText = secondaryButtonText;
-        mClient = client;
     }
 
     @NativeMethods

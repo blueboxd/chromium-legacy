@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_CASCADE_RESOLVER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_CASCADE_RESOLVER_H_
 
+#include "base/auto_reset.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_property_name.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
@@ -16,6 +17,7 @@ namespace blink {
 class CascadePriority;
 class CSSProperty;
 class CSSVariableData;
+class CSSProperty;
 
 namespace cssvalue {
 
@@ -69,8 +71,22 @@ class CORE_EXPORT CascadeResolver {
     CascadeResolver& resolver_;
   };
 
+  // Automatically sets (and resets) the current surrogate.
+  //
+  // We need to know the current surrogate in order to make 'revert' work for
+  // e.g. css-logical properties. See TargetPropertyForRevert for more
+  // information.
+  class CORE_EXPORT AutoSurrogateScope
+      : private base::AutoReset<const CSSProperty*> {
+    STACK_ALLOCATED();
+
+   public:
+    AutoSurrogateScope(const CSSProperty& surrogate, CascadeResolver&);
+  };
+
  private:
   friend class AutoLock;
+  friend class AutoSurrogateScope;
   friend class StyleCascade;
   friend class TestCascadeResolver;
 
@@ -96,6 +112,7 @@ class CORE_EXPORT CascadeResolver {
   wtf_size_t cycle_depth_ = kNotFound;
   CascadeFilter filter_;
   const uint8_t generation_ = 0;
+  const CSSProperty* current_surrogate_ = nullptr;
 
   // A very simple cache for CSSPendingSubstitutionValues. We cache only the
   // most recently parsed CSSPendingSubstitutionValue, such that consecutive

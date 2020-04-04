@@ -27,8 +27,6 @@
 #endif  // OS_WIN/OS_ANDROID
 
 namespace {
-vr::ChromeXrIntegrationClient* g_instance = nullptr;
-
 bool IsXrDeviceConsentPromptDisabledForTesting() {
   static bool is_xr_device_consent_prompt_disabled_for_testing =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -53,13 +51,6 @@ class AutoGrantingXrConsentHelperForTesting : public content::XrConsentHelper {
     std::move(response_callback).Run(consent_level, true);
   }
 };
-
-ChromeXrIntegrationClient* ChromeXrIntegrationClient::GetInstance() {
-  if (!g_instance)
-    g_instance = new ChromeXrIntegrationClient();
-
-  return g_instance;
-}
 
 std::unique_ptr<content::XrInstallHelper>
 ChromeXrIntegrationClient::GetInstallHelper(

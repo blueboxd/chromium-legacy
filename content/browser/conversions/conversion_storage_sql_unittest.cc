@@ -28,8 +28,9 @@ class ConversionStorageSqlTest : public testing::Test {
 
   void OpenDatabase() {
     storage_.reset();
-    storage_ = std::make_unique<ConversionStorageSql>(temp_directory_.GetPath(),
-                                                      &delegate_, &clock_);
+    storage_ = std::make_unique<ConversionStorageSql>(
+        temp_directory_.GetPath(), std::make_unique<EmptyStorageDelegate>(),
+        &clock_);
     EXPECT_TRUE(storage_->Initialize());
   }
 
@@ -52,7 +53,6 @@ class ConversionStorageSqlTest : public testing::Test {
   base::ScopedTempDir temp_directory_;
   std::unique_ptr<ConversionStorage> storage_;
   base::SimpleTestClock clock_;
-  EmptyStorageDelegate delegate_;
 };
 
 TEST_F(ConversionStorageSqlTest,

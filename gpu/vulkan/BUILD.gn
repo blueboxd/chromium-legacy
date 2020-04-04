@@ -28,6 +28,9 @@ if (enable_vulkan) {
     if (is_fuchsia) {
       defines = [ "VK_USE_PLATFORM_FUCHSIA" ]
     }
+    if (is_win) {
+      defines = [ "VK_USE_PLATFORM_WIN32_KHR" ]
+    }
   }
 
   jumbo_component("vulkan") {
@@ -89,7 +92,10 @@ if (enable_vulkan) {
     }
 
     if (is_win) {
-      sources += [ "vulkan_image_win.cc" ]
+      sources += [
+        "vulkan_image_win.cc",
+        "vulkan_util_win32.cc",
+      ]
     }
 
     if (is_fuchsia) {

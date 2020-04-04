@@ -29,8 +29,7 @@ namespace media {
 class MediaGpuChannelManager;
 
 // Creates a MediaService instance using the default MojoMediaClient on each
-// platform. Uses the TestMojoMediaClient if |enable_test_mojo_media_client| is
-// true.
+// platform.
 std::unique_ptr<MediaService> MEDIA_MOJO_EXPORT
 CreateMediaService(mojo::PendingReceiver<mojom::MediaService> receiver);
 

@@ -20,7 +20,10 @@ group("polymer3_elements") {
     "sync_confirmation:polymer3_elements",
   ]
   if (!is_chromeos) {
-    public_deps += [ "signin_email_confirmation:polymer3_elements" ]
+    public_deps += [
+      "signin_email_confirmation:polymer3_elements",
+      "signin_error:polymer3_elements",
+    ]
   }
 }
 

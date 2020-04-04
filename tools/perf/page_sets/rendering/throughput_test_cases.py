@@ -112,6 +112,13 @@ class MainSixtyWithJankImplZero(ThroughputMetricStory):
          'main-animations-throughput.html?jank#60')
 
 
+class MainSixtyWithExtremeJankImplZero(ThroughputMetricStory):
+  BASE_NAME = 'main_60fps_with_extreme_jank_impl_0fps'
+  SUPPORTED_PLATFORMS = platforms.ALL_PLATFORMS
+  URL = ('file://../../../../chrome/test/data/perf/throughput_test_cases/'
+         'main-animations-throughput.html?extremejank#60')
+
+
 class MainZeroWithJankImplZero(ThroughputMetricStory):
   BASE_NAME = 'main_0fps_with_jank_impl_0fps'
   SUPPORTED_PLATFORMS = platforms.ALL_PLATFORMS

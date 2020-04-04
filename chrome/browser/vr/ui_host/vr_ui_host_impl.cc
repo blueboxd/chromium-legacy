@@ -17,11 +17,11 @@
 #include "chrome/browser/usb/usb_tab_helper.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/browser/vr/win/vr_browser_renderer_thread_win.h"
-#include "chrome/browser/vr/xr_runtime_manager_statics.h"
 #include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_result.h"
 #include "content/public/browser/device_service.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/xr_runtime_manager.h"
 #include "device/base/features.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -128,7 +128,7 @@ VRUiHostImpl::VRUiHostImpl(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(1) << __func__;
 
-  auto* runtime_manager = XRRuntimeManagerStatics::GetInstanceIfCreated();
+  auto* runtime_manager = content::XRRuntimeManager::GetInstanceIfCreated();
   DCHECK(runtime_manager != nullptr);
   content::BrowserXRRuntime* runtime = runtime_manager->GetRuntime(device_id);
   if (runtime) {
@@ -165,7 +165,7 @@ void VRUiHostImpl::SetWebXRWebContents(content::WebContents* contents) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (!IsValidInfo(info_)) {
-    XRRuntimeManagerStatics::ExitImmersivePresentation();
+    content::XRRuntimeManager::ExitImmersivePresentation();
     return;
   }
 
@@ -248,7 +248,7 @@ void VRUiHostImpl::SetVRDisplayInfo(
   DVLOG(3) << __func__;
 
   if (!IsValidInfo(display_info)) {
-    XRRuntimeManagerStatics::ExitImmersivePresentation();
+    content::XRRuntimeManager::ExitImmersivePresentation();
     return;
   }
 

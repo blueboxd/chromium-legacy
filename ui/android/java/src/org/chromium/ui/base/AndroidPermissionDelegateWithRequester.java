@@ -63,10 +63,7 @@ public abstract class AndroidPermissionDelegateWithRequester implements AndroidP
         // a preference associated with it before.
         String permissionQueriedKey = getHasRequestedPermissionKey(permission);
         SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
-        if (!prefs.getBoolean(permissionQueriedKey, false)) return true;
-
-        logUMAOnRequestPermissionDenied(permission);
-        return false;
+        return !prefs.getBoolean(permissionQueriedKey, false);
     }
 
     /** @see PackageManager.isPermissionRevokedByPolicy */
@@ -115,8 +112,6 @@ public abstract class AndroidPermissionDelegateWithRequester implements AndroidP
         callback.onRequestPermissionsResult(permissions, grantResults);
         return true;
     }
-
-    protected void logUMAOnRequestPermissionDenied(String permission) {}
 
     /** @see Activity.requestPermissions */
     protected abstract boolean requestPermissionsFromRequester(

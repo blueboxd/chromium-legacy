@@ -67,7 +67,12 @@ void ArImageTransport::Initialize(vr::WebXrPresentationState* webxr,
 
   glGenFramebuffersEXT(1, &camera_fbo_);
 
-  shared_buffer_draw_ = base::AndroidHardwareBufferCompat::IsSupportAvailable();
+  // TODO(https://crbug.com/1067795): frames are arriving out of order when
+  // using shared buffers.
+  //
+  // This should equal base::AndroidHardwareBufferCompat::IsSupportAvailable(),
+  // but force use of the Mailbox-to-Surface copy path until the bug is fixed.
+  shared_buffer_draw_ = false;
 
   if (shared_buffer_draw_) {
     DVLOG(2) << __func__ << ": UseSharedBuffer()=true";

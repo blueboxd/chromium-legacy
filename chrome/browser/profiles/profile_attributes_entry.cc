@@ -20,6 +20,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/profile_metrics/state.h"
+#include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -376,6 +377,10 @@ bool ProfileAttributesEntry::IsAuthError() const {
   return GetBool(kIsAuthErrorKey);
 }
 
+bool ProfileAttributesEntry::IsSignedInWithCredentialProvider() const {
+  return GetBool(prefs::kSignedInWithCredentialProvider);
+}
+
 size_t ProfileAttributesEntry::GetAvatarIconIndex() const {
   std::string icon_url = GetString(kAvatarIconKey);
   size_t icon_index = 0;
@@ -467,6 +472,12 @@ void ProfileAttributesEntry::SetIsSigninRequired(bool value) {
   }
   if (is_force_signin_enabled_)
     LockForceSigninProfile(value);
+}
+
+void ProfileAttributesEntry::SetSignedInWithCredentialProvider(bool value) {
+  if (value != GetBool(prefs::kSignedInWithCredentialProvider)) {
+    SetBool(prefs::kSignedInWithCredentialProvider, value);
+  }
 }
 
 void ProfileAttributesEntry::LockForceSigninProfile(bool is_lock) {

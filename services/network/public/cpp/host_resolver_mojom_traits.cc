@@ -5,6 +5,7 @@
 #include "services/network/public/cpp/host_resolver_mojom_traits.h"
 
 #include "mojo/public/cpp/base/time_mojom_traits.h"
+#include "net/dns/public/dns_over_https_server_config.h"
 #include "services/network/public/cpp/ip_address_mojom_traits.h"
 #include "services/network/public/cpp/ip_endpoint_mojom_traits.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
@@ -87,8 +88,7 @@ bool ReadHostData(mojo::ArrayDataView<DnsHostDataView> data,
 
 bool ReadDnsOverHttpsServerData(
     mojo::ArrayDataView<DnsOverHttpsServerDataView> data,
-    base::Optional<std::vector<net::DnsConfig::DnsOverHttpsServerConfig>>*
-        out) {
+    base::Optional<std::vector<net::DnsOverHttpsServerConfig>>* out) {
   if (data.is_null()) {
     out->reset();
     return true;
@@ -191,7 +191,7 @@ StructTraits<DnsConfigOverridesDataView, net::DnsConfigOverrides>::
     return base::nullopt;
 
   std::vector<DnsOverHttpsServerPtr> out_servers;
-  for (net::DnsConfig::DnsOverHttpsServerConfig server :
+  for (net::DnsOverHttpsServerConfig server :
        overrides.dns_over_https_servers.value()) {
     out_servers.push_back(
         DnsOverHttpsServer::New(server.server_template, server.use_post));

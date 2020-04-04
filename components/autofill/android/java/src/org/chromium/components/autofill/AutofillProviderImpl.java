@@ -10,6 +10,7 @@ import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Build;
+import android.os.Bundle;
 import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +22,7 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.DoNotInline;
 import org.chromium.base.metrics.ScopedSysTraceEvent;
+import org.chromium.components.version_info.VersionConstants;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroid;
@@ -220,6 +222,7 @@ public class AutofillProviderImpl extends AutofillProvider {
         }
     }
 
+    private final String mProviderName;
     private AutofillManagerWrapper mAutofillManager;
     private ViewGroup mContainerView;
     private WebContents mWebContents;
@@ -230,13 +233,14 @@ public class AutofillProviderImpl extends AutofillProvider {
     private AutofillManagerWrapper.InputUIObserver mInputUIObserver;
     private long mAutofillTriggeredTimeMillis;
 
-    public AutofillProviderImpl(Context context, ViewGroup containerView) {
-        this(containerView, new AutofillManagerWrapper(context), context);
+    public AutofillProviderImpl(Context context, ViewGroup containerView, String providerName) {
+        this(containerView, new AutofillManagerWrapper(context), context, providerName);
     }
 
     @VisibleForTesting
-    public AutofillProviderImpl(
-            ViewGroup containerView, AutofillManagerWrapper manager, Context context) {
+    public AutofillProviderImpl(ViewGroup containerView, AutofillManagerWrapper manager,
+            Context context, String providerName) {
+        mProviderName = providerName;
         try (ScopedSysTraceEvent e =
                         ScopedSysTraceEvent.scoped("AutofillProviderImpl.constructor")) {
             assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
@@ -268,6 +272,13 @@ public class AutofillProviderImpl extends AutofillProvider {
         // control outside of the scope of autofill, e.g. the URL bar, in this case, we simply
         // return.
         if (mRequest == null) return;
+
+        Bundle bundle = structure.getExtras();
+        if (bundle != null) {
+            bundle.putCharSequence("VIRTUAL_STRUCTURE_PROVIDER_NAME", mProviderName);
+            bundle.putCharSequence(
+                    "VIRTUAL_STRUCTURE_PROVIDER_VERSION", VersionConstants.PRODUCT_VERSION);
+        }
         mRequest.fillViewStructure(structure);
         if (AutofillManagerWrapper.isLoggable()) {
             AutofillManagerWrapper.log(

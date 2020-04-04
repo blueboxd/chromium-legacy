@@ -1,4 +1,5 @@
 include_rules = [
+  "+components/embedder_support/origin_trials",
   "+content/app/resources",
   "+content/public/common",
   "+gpu/config",

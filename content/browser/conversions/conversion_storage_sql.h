@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_CONVERSIONS_CONVERSION_STORAGE_SQL_H_
 #define CONTENT_BROWSER_CONVERSIONS_CONVERSION_STORAGE_SQL_H_
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -26,7 +28,7 @@ namespace content {
 class CONTENT_EXPORT ConversionStorageSql : public ConversionStorage {
  public:
   ConversionStorageSql(const base::FilePath& path_to_database_dir,
-                       Delegate* delegate,
+                       std::unique_ptr<Delegate> delegate,
                        base::Clock* clock);
   ConversionStorageSql(const ConversionStorageSql& other) = delete;
   ConversionStorageSql& operator=(const ConversionStorageSql& other) = delete;
@@ -53,8 +55,7 @@ class CONTENT_EXPORT ConversionStorageSql : public ConversionStorage {
   // Must outlive |this|.
   base::Clock* const clock_;
 
-  // Must outlive |this|.
-  Delegate* const delegate_;
+  std::unique_ptr<Delegate> delegate_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<ConversionStorageSql> weak_factory_;

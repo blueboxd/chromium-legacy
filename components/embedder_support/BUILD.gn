@@ -13,9 +13,14 @@ static_library("embedder_support") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = []
+  sources = [ "origin_trials/origin_trial_policy_impl_unittest.cc" ]
 
-  deps = []
+  deps = [
+    "//base",
+    "//components/embedder_support",
+    "//components/embedder_support/origin_trials",
+    "//testing/gtest",
+  ]
 
   if (is_android) {
     sources += [ "android/util/url_utilities_unittest.cc" ]
@@ -23,8 +28,6 @@ source_set("unit_tests") {
       "android:native_j_unittests_jni_headers",
       "android:native_java_unittests_java",
       "android:util",
-      "//base",
-      "//testing/gtest",
     ]
   }
 }

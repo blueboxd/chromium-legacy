@@ -204,8 +204,8 @@ public final class TabImpl extends ITab.Stub {
                 selectionController.setNonSelectionActionModeCallback(null);
             } else {
                 // Set up |mAutofillProvider| to operate in the new Context.
-                mAutofillProvider = new AutofillProviderImpl(
-                        mBrowser.getContext(), mBrowser.getViewAndroidDelegateContainerView());
+                mAutofillProvider = new AutofillProviderImpl(mBrowser.getContext(),
+                        mBrowser.getViewAndroidDelegateContainerView(), "WebLayer");
                 mAutofillProvider.setWebContents(mWebContents);
 
                 selectionController.setNonSelectionActionModeCallback(

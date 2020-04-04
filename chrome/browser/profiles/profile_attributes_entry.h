@@ -126,6 +126,8 @@ class ProfileAttributesEntry {
   // Returns true if the profile is signed in but is in an authentication error
   // state.
   bool IsAuthError() const;
+  // Indicates that profile was signed in through native OS credential provider.
+  bool IsSignedInWithCredentialProvider() const;
   // Returns the index of the default icon used by the profile.
   size_t GetAvatarIconIndex() const;
   // Returns the metrics bucket this profile should be recorded in.
@@ -152,6 +154,7 @@ class ProfileAttributesEntry {
   void SetGAIAPicture(const std::string& image_url_with_size, gfx::Image image);
   void SetIsUsingGAIAPicture(bool value);
   void SetIsSigninRequired(bool value);
+  void SetSignedInWithCredentialProvider(bool value);
   void SetIsEphemeral(bool value);
   void SetIsUsingDefaultName(bool value);
   void SetIsUsingDefaultAvatar(bool value);

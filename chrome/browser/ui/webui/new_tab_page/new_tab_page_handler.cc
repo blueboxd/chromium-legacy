@@ -77,6 +77,9 @@ new_tab_page::mojom::ThemePtr MakeTheme(const NtpTheme& ntp_theme) {
     theme->background_image_attribution_url =
         ntp_theme.custom_background_attribution_action_url;
   }
+  if (!ntp_theme.collection_id.empty()) {
+    theme->daily_refresh_collection_id = ntp_theme.collection_id;
+  }
   return theme;
 }
 
@@ -220,6 +223,32 @@ void NewTabPageHandler::RevertThemeChanges() {
   chrome_colors_service_->RevertThemeChanges();
 }
 
+void NewTabPageHandler::SetBackgroundImage(const std::string& attribution_1,
+                                           const std::string& attribution_2,
+                                           const GURL& attribution_url,
+                                           const GURL& image_url) {
+  // Populating the |collection_id| turns on refresh daily which overrides the
+  // the selected image.
+  instant_service_->SetCustomBackgroundInfo(image_url, attribution_1,
+                                            attribution_2, attribution_url,
+                                            /* collection_id= */ "");
+}
+
+void NewTabPageHandler::SetDailyRefreshCollectionId(
+    const std::string& collection_id) {
+  // Populating the |collection_id| turns on refresh daily which overrides the
+  // the selected image.
+  instant_service_->SetCustomBackgroundInfo(
+      /* image_url */ GURL(), /* attribution_1= */ "", /* attribution_2= */ "",
+      /* attribution_url= */ GURL(), collection_id);
+}
+
+void NewTabPageHandler::SetNoBackgroundImage() {
+  instant_service_->SetCustomBackgroundInfo(
+      /* image_url */ GURL(), /* attribution_1= */ "", /* attribution_2= */ "",
+      /* attribution_url= */ GURL(), /* collection_id= */ "");
+}
+
 void NewTabPageHandler::UpdateMostVisitedInfo() {
   instant_service_->UpdateMostVisitedInfo();
 }
@@ -347,8 +376,12 @@ void NewTabPageHandler::OnCollectionImagesAvailable() {
   for (const auto& info : ntp_background_service_->collection_images()) {
     DCHECK(info.collection_id == collection_id);
     auto image = new_tab_page::mojom::BackgroundImage::New();
-    image->preview_image_url = GURL(info.thumbnail_image_url);
-    image->label = !info.attribution.empty() ? info.attribution[0] : "";
+    image->attribution_1 = !info.attribution.empty() ? info.attribution[0] : "";
+    image->attribution_2 =
+        info.attribution.size() > 1 ? info.attribution[1] : "";
+    image->attribution_url = info.attribution_action_url;
+    image->image_url = info.image_url;
+    image->preview_image_url = info.thumbnail_image_url;
     images.push_back(std::move(image));
   }
   std::move(background_images_callback_).Run(std::move(images));

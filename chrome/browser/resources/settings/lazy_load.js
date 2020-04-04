@@ -52,22 +52,6 @@ import './system_page/system_page.m.js';
 import './languages_page/edit_dictionary_page.m.js';
 // </if>
 
-// Dependencies imported separately for tests
-import './controls/controlled_button.m.js';
-import './controls/settings_slider.m.js';
-import './controls/settings_textarea.m.js';
-// <if expr="_google_chrome and is_win">
-import './incompatible_applications_page/incompatible_applications_page.m.js';
-// </if>
-import './search_engines_page/omnibox_extension_entry.m.js';
-import './search_engines_page/search_engine_dialog.m.js';
-import './search_engines_page/search_engine_entry.m.js';
-import './site_settings/chooser_exception_list_entry.m.js';
-import './site_settings/site_details_permission.m.js';
-import './site_settings/site_entry.m.js';
-import './site_settings/site_list_entry.m.js';
-import './site_settings/site_list.m.js';
-
 // <if expr="_google_chrome and is_win">
 export {CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW} from './chrome_cleanup_page/items_to_remove_list.m.js';
 export {ChromeCleanupIdleReason} from './chrome_cleanup_page/chrome_cleanup_page.m.js';
@@ -98,7 +82,6 @@ export {SetPINDialogPage} from './privacy_page/security_keys_set_pin_dialog.m.js
 export {CredentialManagementDialogPage} from './privacy_page/security_keys_credential_management_dialog.m.js';
 export {BioEnrollDialogPage} from './privacy_page/security_keys_bio_enroll_dialog.m.js';
 export {WebsiteUsageBrowserProxyImpl} from './site_settings/website_usage_browser_proxy.m.js';
-export {MAX_SIGNIN_PROMO_IMPRESSION} from './people_page/sync_account_control.m.js';
 
 // <if expr="not chromeos">
 export {SystemPageBrowserProxyImpl} from './system_page/system_page_browser_proxy.m.js';

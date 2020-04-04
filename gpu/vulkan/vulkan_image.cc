@@ -15,10 +15,6 @@
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 
-#if defined(OS_FUCHSIA)
-#include "gpu/vulkan/fuchsia/vulkan_fuchsia_ext.h"
-#endif
-
 namespace gpu {
 
 namespace {
@@ -164,30 +160,7 @@ base::ScopedFD VulkanImage::GetMemoryFd(
 
   return base::ScopedFD(memory_fd);
 }
-#endif
-
-#if defined(OS_FUCHSIA)
-zx::vmo VulkanImage::GetMemoryZirconHandle() {
-  DCHECK(handle_types_ &
-         VK_EXTERNAL_MEMORY_HANDLE_TYPE_TEMP_ZIRCON_VMO_BIT_FUCHSIA);
-  VkMemoryGetZirconHandleInfoFUCHSIA get_handle_info = {
-      .sType = VK_STRUCTURE_TYPE_TEMP_MEMORY_GET_ZIRCON_HANDLE_INFO_FUCHSIA,
-      .memory = device_memory_,
-      .handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_TEMP_ZIRCON_VMO_BIT_FUCHSIA,
-  };
-
-  VkDevice device = device_queue_->GetVulkanDevice();
-  zx::vmo vmo;
-  VkResult result = vkGetMemoryZirconHandleFUCHSIA(device, &get_handle_info,
-                                                   vmo.reset_and_get_address());
-  if (result != VK_SUCCESS) {
-    DLOG(ERROR) << "vkGetMemoryFuchsiaHandleKHR failed: " << result;
-    vmo.reset();
-  }
-
-  return vmo;
-}
-#endif
+#endif  // defined(OS_POSIX)
 
 bool VulkanImage::Initialize(VulkanDeviceQueue* device_queue,
                              const gfx::Size& size,
@@ -300,6 +273,8 @@ bool VulkanImage::InitializeWithExternalMemory(VulkanDeviceQueue* device_queue,
 #if defined(OS_FUCHSIA)
   constexpr auto kHandleType =
       VK_EXTERNAL_MEMORY_HANDLE_TYPE_TEMP_ZIRCON_VMO_BIT_FUCHSIA;
+#elif defined(OS_WIN)
+  constexpr auto kHandleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT;
 #else
   constexpr auto kHandleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT;
 #endif

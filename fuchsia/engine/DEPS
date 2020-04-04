@@ -5,6 +5,7 @@ include_rules = [
   "+gpu/command_buffer/service",
   "+gpu/config/gpu_finch_features.h",
   "+media/base",
+  "+media/fuchsia",
   "+mojo/public",
   "+services/service_manager",
   "+third_party/widevine/cdm/widevine_cdm_common.h",

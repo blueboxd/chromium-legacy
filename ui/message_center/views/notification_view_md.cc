@@ -644,6 +644,10 @@ NotificationViewMD::NotificationViewMD(const Notification& notification)
   views::HighlightPathGenerator::Install(this,
                                          std::move(highlight_path_generator));
 
+  DCHECK(focus_ring());
+  focus_ring()->SetPathGenerator(
+      std::make_unique<MessageView::HighlightPathGenerator>());
+
   UpdateCornerRadius(kNotificationCornerRadius, kNotificationCornerRadius);
 }
 

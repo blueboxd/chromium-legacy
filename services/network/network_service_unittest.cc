@@ -32,6 +32,7 @@
 #include "net/dns/dns_test_util.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_manager.h"
+#include "net/dns/public/dns_over_https_server_config.h"
 #include "net/dns/public/dns_protocol.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_auth_scheme.h"
@@ -532,7 +533,7 @@ TEST_F(NetworkServiceTest, DnsOverHttpsEnableDisable) {
                                        net::DnsConfig::SecureDnsMode::AUTOMATIC,
                                        std::move(dns_over_https_servers_ptr));
   EXPECT_TRUE(service()->host_resolver_manager()->GetDnsConfigAsValue());
-  std::vector<net::DnsConfig::DnsOverHttpsServerConfig> dns_over_https_servers =
+  std::vector<net::DnsOverHttpsServerConfig> dns_over_https_servers =
       dns_client_ptr->GetEffectiveConfig()->dns_over_https_servers;
   ASSERT_EQ(1u, dns_over_https_servers.size());
   EXPECT_EQ(kServer1, dns_over_https_servers[0].server_template);
@@ -604,7 +605,7 @@ TEST_F(NetworkServiceTest, DisableDohUpgradeProviders) {
   service()->host_resolver_manager()->SetDnsClientForTesting(
       std::move(dns_client));
 
-  std::vector<net::DnsConfig::DnsOverHttpsServerConfig> expected_doh_servers = {
+  std::vector<net::DnsOverHttpsServerConfig> expected_doh_servers = {
       {"https://doh.cleanbrowsing.org/doh/family-filter{?dns}",
        false /* use_post */}};
   EXPECT_TRUE(dns_client_ptr->GetEffectiveConfig());

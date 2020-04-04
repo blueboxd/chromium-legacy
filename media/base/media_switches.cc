@@ -390,12 +390,6 @@ const base::Feature kUseNewMediaCache{"use-new-media-cache",
 const base::Feature kUseMediaHistoryStore{"UseMediaHistoryStore",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Causes video.requestAniationFrame to use a microtask instead of running with
-// the rendering steps. TODO(crbug.com/1012063): Remove this once we figure out
-// which implementation to use.
-const base::Feature kUseMicrotaskForVideoRAF{"UseMicrotaskForVideoRAF",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Use R16 texture for 9-16 bit channel instead of half-float conversion by CPU.
 const base::Feature kUseR16Texture{"use-r16-texture",
                                    base::FEATURE_DISABLED_BY_DEFAULT};

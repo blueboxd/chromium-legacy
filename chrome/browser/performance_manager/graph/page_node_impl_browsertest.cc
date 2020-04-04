@@ -10,9 +10,9 @@
 #include "base/strings/string_util.h"
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/embedder_support/switches.h"
 #include "components/performance_manager/graph/page_node_impl.h"
 #include "components/performance_manager/performance_manager_impl.h"
 #include "components/performance_manager/public/graph/frame_node.h"
@@ -254,7 +254,7 @@ class PageNodeImplBrowserTest : public InProcessBrowserTest {
 
   void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
     InProcessBrowserTest::SetUpDefaultCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kOriginTrialPublicKey,
+    command_line->AppendSwitchASCII(embedder_support::kOriginTrialPublicKey,
                                     kOriginTrialTestPublicKey);
   }
 

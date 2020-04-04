@@ -341,13 +341,13 @@ bool SharedContextState::InitializeGL(
       gpu_preferences.use_vulkan ==
           gpu::VulkanImplementationName::kForcedNative;
 
-  // Swiftshader GL and Vulkan report supporting external objects extensions,
-  // but they don't.
   bool gl_supports_memory_object =
       gl::g_current_gl_driver->ext.b_GL_EXT_memory_object_fd ||
+      gl::g_current_gl_driver->ext.b_GL_EXT_memory_object_win32 ||
       gl::g_current_gl_driver->ext.b_GL_ANGLE_memory_object_fuchsia;
   bool gl_supports_semaphore =
       gl::g_current_gl_driver->ext.b_GL_EXT_semaphore_fd ||
+      gl::g_current_gl_driver->ext.b_GL_EXT_semaphore_win32 ||
       gl::g_current_gl_driver->ext.b_GL_ANGLE_semaphore_fuchsia;
   bool vk_supports_external_memory = false;
   bool vk_supports_external_semaphore = false;
@@ -355,16 +355,17 @@ bool SharedContextState::InitializeGL(
   if (vk_context_provider_) {
     const auto& extensions =
         vk_context_provider_->GetDeviceQueue()->enabled_extensions();
-#if !defined(OS_FUCHSIA)
+#if defined(OS_WIN)
     vk_supports_external_memory =
         gfx::HasExtension(extensions, VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME) &&
-        gfx::HasExtension(extensions, VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME);
+        gfx::HasExtension(extensions,
+                          VK_KHR_EXTERNAL_MEMORY_WIN32_EXTENSION_NAME);
     vk_supports_external_semaphore =
         gfx::HasExtension(extensions,
                           VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME) &&
         gfx::HasExtension(extensions,
-                          VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME);
-#else
+                          VK_KHR_EXTERNAL_SEMAPHORE_WIN32_EXTENSION_NAME);
+#elif defined(OS_FUCHSIA)
     vk_supports_external_memory =
         gfx::HasExtension(extensions, VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME) &&
         gfx::HasExtension(extensions,
@@ -374,10 +375,21 @@ bool SharedContextState::InitializeGL(
                           VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME) &&
         gfx::HasExtension(extensions,
                           VK_FUCHSIA_EXTERNAL_SEMAPHORE_EXTENSION_NAME);
+#else
+    vk_supports_external_memory =
+        gfx::HasExtension(extensions, VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME) &&
+        gfx::HasExtension(extensions, VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME);
+    vk_supports_external_semaphore =
+        gfx::HasExtension(extensions,
+                          VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME) &&
+        gfx::HasExtension(extensions,
+                          VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME);
 #endif
   }
 #endif  // BUILDFLAG(ENABLE_VULKAN)
 
+  // Swiftshader GL and Vulkan report supporting external objects extensions,
+  // but they don't.
   support_vulkan_external_object_ =
       !gl::g_current_gl_version->is_swiftshader && is_native_vulkan &&
       gl_supports_memory_object && gl_supports_semaphore &&

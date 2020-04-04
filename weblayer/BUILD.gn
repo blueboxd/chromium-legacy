@@ -238,6 +238,7 @@ source_set("weblayer_lib_base") {
     "//components/crash/core/app",
     "//components/crash/core/common",
     "//components/embedder_support",
+    "//components/embedder_support/origin_trials",
     "//components/find_in_page",
     "//components/keyed_service/content",
     "//components/metrics",

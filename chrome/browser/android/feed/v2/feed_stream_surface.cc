@@ -59,16 +59,6 @@ void FeedStreamSurface::StreamUpdate(
   Java_FeedStreamSurface_onStreamUpdated(env, java_ref_, j_data);
 }
 
-void FeedStreamSurface::NavigationStarted(JNIEnv* env,
-                                          const JavaParamRef<jobject>& obj,
-                                          const JavaParamRef<jstring>& url,
-                                          jboolean in_new_tab) {}
-
-void FeedStreamSurface::NavigationDone(JNIEnv* env,
-                                       const JavaParamRef<jobject>& obj,
-                                       const JavaParamRef<jstring>& url,
-                                       jboolean in_new_tab) {}
-
 void FeedStreamSurface::LoadMore(JNIEnv* env,
                                  const JavaParamRef<jobject>& obj) {}
 
@@ -97,5 +87,43 @@ void FeedStreamSurface::SurfaceOpened(JNIEnv* env,
 
 void FeedStreamSurface::SurfaceClosed(JNIEnv* env,
                                       const JavaParamRef<jobject>& obj) {}
+
+void FeedStreamSurface::ReportNavigationStarted(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& url,
+    jboolean in_new_tab) {
+  // TODO(harringtond): Implement this.
+}
+
+void FeedStreamSurface::ReportNavigationDone(JNIEnv* env,
+                                             const JavaParamRef<jobject>& obj,
+                                             const JavaParamRef<jstring>& url,
+                                             jboolean in_new_tab) {
+  // TODO(harringtond): Implement this.
+}
+
+void FeedStreamSurface::ReportContentRemoved(JNIEnv* env,
+                                             const JavaParamRef<jobject>& obj) {
+  // TODO(harringtond): Implement this.
+}
+
+void FeedStreamSurface::ReportNotInterestedIn(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  // TODO(harringtond): Implement this.
+}
+
+void FeedStreamSurface::ReportManageInterests(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  // TODO(harringtond): Implement this.
+}
+
+void FeedStreamSurface::ReportContextMenuOpened(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  // TODO(harringtond): Implement this.
+}
 
 }  // namespace feed

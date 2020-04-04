@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/trace_event/trace_event.h"
-#include "media/base/media_switches.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_frame_metadata.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/scripted_animation_controller.h"
@@ -17,7 +16,6 @@
 #include "third_party/blink/renderer/core/timing/performance.h"
 #include "third_party/blink/renderer/core/timing/time_clamper.h"
 #include "third_party/blink/renderer/modules/video_raf/video_frame_request_callback_collection.h"
-#include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -92,24 +90,12 @@ void VideoRequestAnimationFrameImpl::ScheduleCallbackExecution() {
     return;
 
   pending_execution_ = true;
-  if (base::FeatureList::IsEnabled(media::kUseMicrotaskForVideoRAF)) {
-    auto& time_converter =
-        GetSupplementable()->GetDocument().Loader()->GetTiming();
-    Microtask::EnqueueMicrotask(WTF::Bind(
-        &VideoRequestAnimationFrameImpl::OnRenderingSteps,
-        WrapWeakPersistent(this),
-        // TODO(crbug.com/1012063): Now is probably not the right value.
-        GetClampedTimeInMillis(
-            time_converter.MonotonicTimeToZeroBasedDocumentTime(
-                base::TimeTicks::Now()))));
-  } else {
-    GetSupplementable()
-        ->GetDocument()
-        .GetScriptedAnimationController()
-        .ScheduleVideoRafExecution(
-            WTF::Bind(&VideoRequestAnimationFrameImpl::OnRenderingSteps,
-                      WrapWeakPersistent(this)));
-  }
+  GetSupplementable()
+      ->GetDocument()
+      .GetScriptedAnimationController()
+      .ScheduleVideoRafExecution(
+          WTF::Bind(&VideoRequestAnimationFrameImpl::OnRenderingSteps,
+                    WrapWeakPersistent(this)));
 }
 
 void VideoRequestAnimationFrameImpl::OnRequestAnimationFrame() {

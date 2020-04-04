@@ -45,15 +45,8 @@ pkg_config("atk_base") {
 config("atk") {
   configs = [ ":atk_base" ]
 
-  cflags = [
-    # G_DEFINE_TYPE automatically generates a *get_instance_private
-    # inline function after glib 2.37. That's unused. Prevent to
-    # complain about it.
-    "-Wno-unused-function",
-  ]
-
   if (is_clang) {
     # glib uses the pre-c++11 typedef-as-static_assert hack.
-    cflags += [ "-Wno-unused-local-typedef" ]
+    cflags = [ "-Wno-unused-local-typedef" ]
   }
 }

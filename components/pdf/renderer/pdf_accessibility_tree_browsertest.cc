@@ -630,7 +630,6 @@ TEST_F(PdfAccessibilityTreeTest, TestTextFieldNodeCreation) {
                         ax::mojom::StringAttribute::kValue));
   EXPECT_FALSE(text_field_node->data().HasState(ax::mojom::State::kRequired));
   EXPECT_FALSE(text_field_node->data().HasState(ax::mojom::State::kProtected));
-  EXPECT_TRUE(text_field_node->data().HasState(ax::mojom::State::kEditable));
   EXPECT_NE(ax::mojom::Restriction::kReadOnly,
             text_field_node->data().GetRestriction());
   EXPECT_EQ(gfx::RectF(1.0f, 1.0f, 5.0f, 6.0f),
@@ -646,7 +645,6 @@ TEST_F(PdfAccessibilityTreeTest, TestTextFieldNodeCreation) {
                           ax::mojom::StringAttribute::kValue));
   EXPECT_TRUE(text_field_node->data().HasState(ax::mojom::State::kRequired));
   EXPECT_TRUE(text_field_node->data().HasState(ax::mojom::State::kProtected));
-  EXPECT_FALSE(text_field_node->data().HasState(ax::mojom::State::kEditable));
   EXPECT_EQ(ax::mojom::Restriction::kReadOnly,
             text_field_node->data().GetRestriction());
   EXPECT_EQ(gfx::RectF(1.0f, 10.0f, 5.0f, 6.0f),

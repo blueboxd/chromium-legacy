@@ -58,6 +58,13 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   // block, otherwise returns the node of this layout object.
   Node* GetNodeOrContainingBlockNode() const;
 
+  // DOM and layout tree access.
+  Node* GetNode() const override;
+  Document* GetDocument() const override;
+  LocalFrameView* DocumentFrameView() const override;
+  Element* AnchorElement() const override;
+  AtomicString Language() const override;
+
  protected:
   LayoutObject* layout_object_;
 
@@ -167,13 +174,6 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
 
   // Properties of the object's owning document or page.
   double EstimatedLoadingProgress() const override;
-
-  // DOM and layout tree access.
-  Node* GetNode() const override;
-  Document* GetDocument() const override;
-  LocalFrameView* DocumentFrameView() const override;
-  Element* AnchorElement() const override;
-  AtomicString Language() const override;
 
   // Notifications that this object may have changed.
   void HandleActiveDescendantChanged() override;

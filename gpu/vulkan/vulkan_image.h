@@ -16,6 +16,10 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
+#if defined(OS_WIN)
+#include "base/win/scoped_handle.h"
+#endif
+
 #if defined(OS_FUCHSIA)
 #include <lib/zx/vmo.h>
 #endif
@@ -77,6 +81,12 @@ class VULKAN_EXPORT VulkanImage {
 #if defined(OS_POSIX)
   base::ScopedFD GetMemoryFd(VkExternalMemoryHandleTypeFlagBits handle_type =
                                  VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT);
+#endif
+
+#if defined(OS_WIN)
+  base::win::ScopedHandle GetMemoryHandle(
+      VkExternalMemoryHandleTypeFlagBits handle_type =
+          VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT);
 #endif
 
 #if defined(OS_FUCHSIA)

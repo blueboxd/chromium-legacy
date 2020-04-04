@@ -13,7 +13,7 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.Callback;
 import org.chromium.base.DiscardableReferencePool;
 import org.chromium.chrome.browser.util.BitmapCache;
-import org.chromium.chrome.browser.util.ConversionUtils;
+import org.chromium.components.browser_ui.util.ConversionUtils;
 
 import jp.tomorrowkey.android.gifplayer.BaseGifImage;
 

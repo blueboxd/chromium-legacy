@@ -386,6 +386,13 @@ bool GpuVideoDecodeAccelerator::Initialize(
       stub_->channel()->gpu_channel_manager()->gpu_driver_bug_workarounds();
   const gpu::GpuPreferences& gpu_preferences =
       stub_->channel()->gpu_channel_manager()->gpu_preferences();
+
+  if (config.output_mode !=
+      VideoDecodeAccelerator::Config::OutputMode::ALLOCATE) {
+    DLOG(ERROR) << "Only ALLOCATE mode is supported";
+    return false;
+  }
+
   video_decode_accelerator_ =
       vda_factory->CreateVDA(this, config, gpu_workarounds, gpu_preferences);
   if (!video_decode_accelerator_) {

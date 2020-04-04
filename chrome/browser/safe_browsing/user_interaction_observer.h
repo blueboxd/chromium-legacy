@@ -12,6 +12,10 @@
 
 #include <memory>
 
+namespace blink {
+class WebMouseEvent;
+}
+
 namespace safe_browsing {
 
 // Used for UMA. There may be more than one event per navigation (e.g.
@@ -23,9 +27,14 @@ enum class DelayedWarningEvent {
   kPageLoaded = 0,
   // User left the page and the warning was never shown.
   kWarningNotShown = 1,
-  // The warning is shown because the user pressed a key.
+  // User pressed a key and the warning was shown.
   kWarningShownOnKeypress = 2,
-  kMaxValue = kWarningShownOnKeypress,
+  // User clicked on the page at least once but the feature isn't configured to
+  // show warnings on mouse clicks.
+  kWarningNotTriggeredOnMouseClick = 3,
+  // User clicked on the page and the warning was shown.
+  kWarningShownOnMouseClick = 4,
+  kMaxValue = kWarningShownOnMouseClick,
 };
 
 // Name of the histogram.
@@ -69,14 +78,19 @@ class SafeBrowsingUserInteractionObserver
       content::WebContents* web_contents);
 
   bool HandleKeyPress(const content::NativeWebKeyboardEvent& event);
+  bool HandleMouseEvent(const blink::WebMouseEvent& event);
+
+  void ShowInterstitial(DelayedWarningEvent event);
   void CleanUp();
 
   content::RenderWidgetHost::KeyPressEventCallback key_press_callback_;
+  content::RenderWidgetHost::MouseEventCallback mouse_event_callback_;
 
   content::WebContents* web_contents_;
   security_interstitials::UnsafeResource resource_;
   scoped_refptr<SafeBrowsingUIManager> ui_manager_;
   bool interstitial_shown_ = false;
+  bool mouse_click_with_no_warning_recorded_ = false;
 };
 
 }  // namespace safe_browsing

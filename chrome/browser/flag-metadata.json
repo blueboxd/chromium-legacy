@@ -890,6 +890,11 @@
     "owners": [ "baileyberro", "zentaro" ],
     "expiry_milestone": 85
   },
+  {
+    "name": "display-identification",
+    "owners": [ "baileyberro", "cros-peripherals@google.com" ],
+    "expiry_milestone": 85
+  },
   { "name": "dns-httpssvc",
     "owners": [ "dmcardle", "ericorth" ],
     "expiry_milestone": 85
@@ -2822,6 +2827,11 @@
     "name": "native-file-system-api",
     "owners": [ "mek", "pwnall" ],
     "expiry_milestone":  84
+  },
+  {
+    "name": "nearby-sharing",
+    "owners": [ "vecore@google.com", "cros-system-services@google.com", "cross-device-team@google.com"],
+    "expiry_milestone":  90
   },
   {
     "name": "network-service-in-process",

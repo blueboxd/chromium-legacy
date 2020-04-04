@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/color_palette.h"
 #include "ui/views/views_export.h"
 
 namespace gfx {
@@ -68,14 +67,8 @@ VIEWS_EXPORT void SetImageFromVectorIconWithColor(ImageButton* button,
                                                   int dip_size,
                                                   SkColor icon_color);
 
-// As above, but sets the toggled images for a toggled image button.
-VIEWS_EXPORT void SetToggledImageFromVectorIcon(
-    ToggleImageButton* button,
-    const gfx::VectorIcon& icon,
-    int dip_size,
-    SkColor related_text_color = gfx::kGoogleGrey900);
-
-// As above, but with a given icon color instead of deriving from a text color.
+// As above, but sets the toggled images for a toggled image button
+// with a given icon color instead of deriving from a text color.
 VIEWS_EXPORT void SetToggledImageFromVectorIconWithColor(
     ToggleImageButton* button,
     const gfx::VectorIcon& icon,

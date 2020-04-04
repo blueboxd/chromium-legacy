@@ -5,7 +5,10 @@
 #include "media/video/video_decode_accelerator.h"
 
 #include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+
 #include "base/logging.h"
+#include "media/base/video_util.h"
 
 namespace media {
 
@@ -36,8 +39,31 @@ void VideoDecodeAccelerator::Client::ProvidePictureBuffersWithVisibleRect(
     const gfx::Size& dimensions,
     const gfx::Rect& visible_rect,
     uint32_t texture_target) {
-  ProvidePictureBuffers(requested_num_of_buffers, format, textures_per_buffer,
-                        dimensions, texture_target);
+  if (texture_target == GL_TEXTURE_EXTERNAL_OES) {
+    // In ALLOCATE mode and when the texture target is GL_TEXTURE_EXTERNAL_OES,
+    // |video_decode_accelerator_| is responsible for allocating storage for the
+    // result of the decode. However, we are responsible for creating the GL
+    // texture to which we'll attach the decoded image. The decoder needs the
+    // buffer to be of size = coded size, but for the purposes of working with a
+    // graphics API (e.g., GL), the client does not need to know about the
+    // non-visible area. For example, for a 360p H.264 video with a visible
+    // rectangle of 0,0,640x360, the coded size is 640x368, but the GL texture
+    // that the client uses should be only 640x360. Therefore, we pass
+    // |visible_rect|.size() here as the requested size of the picture buffers.
+    //
+    // Note that we use GetRectSizeFromOrigin() to handle the unusual case in
+    // which the visible rectangle does not start at (0, 0). For example, for an
+    // H.264 video with a visible rectangle of 2,2,635x360, the coded size is
+    // 640x360, but the GL texture that the client uses should be 637x362. This
+    // is because we want the texture to include the non-visible area to the
+    // left and on the top of the visible rectangle so that the compositor can
+    // calculate the UV coordinates to omit the non-visible area.
+    ProvidePictureBuffers(requested_num_of_buffers, format, textures_per_buffer,
+                          GetRectSizeFromOrigin(visible_rect), texture_target);
+  } else {
+    ProvidePictureBuffers(requested_num_of_buffers, format, textures_per_buffer,
+                          dimensions, texture_target);
+  }
 }
 
 VideoDecodeAccelerator::~VideoDecodeAccelerator() = default;

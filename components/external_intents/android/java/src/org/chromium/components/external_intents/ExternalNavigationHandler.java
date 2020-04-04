@@ -66,6 +66,15 @@ public class ExternalNavigationHandler {
     @VisibleForTesting
     public static final String EXTRA_MARKET_REFERRER = "market_referrer";
 
+    // A mask of flags that are safe for untrusted content to use when starting an Activity.
+    // This list is not exhaustive and flags not listed here are not necessarily unsafe.
+    @VisibleForTesting
+    public static final int ALLOWED_INTENT_FLAGS = Intent.FLAG_EXCLUDE_STOPPED_PACKAGES
+            | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP
+            | Intent.FLAG_ACTIVITY_MATCH_EXTERNAL | Intent.FLAG_ACTIVITY_NEW_TASK
+            | Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT
+            | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS | Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT;
+
     // These values are persisted in histograms. Please do not renumber. Append only.
     @IntDef({AiaIntent.FALLBACK_USED, AiaIntent.SERP, AiaIntent.OTHER})
     @Retention(RetentionPolicy.SOURCE)
@@ -915,6 +924,7 @@ public class ExternalNavigationHandler {
      * ensuring that web pages cannot bypass browser security.
      */
     private void sanitizeQueryIntentActivitiesIntent(Intent intent) {
+        intent.setFlags(intent.getFlags() & ALLOWED_INTENT_FLAGS);
         intent.addCategory(Intent.CATEGORY_BROWSABLE);
         intent.setComponent(null);
         Intent selector = intent.getSelector();

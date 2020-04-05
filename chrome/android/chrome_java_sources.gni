@@ -1661,7 +1661,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/tasks/EngagementTimeUtil.java",
   "java/src/org/chromium/chrome/browser/tasks/JourneyManager.java",
   "java/src/org/chromium/chrome/browser/tasks/ReturnToChromeExperimentsUtil.java",
-  "java/src/org/chromium/chrome/browser/tasks/TaskRecognizer.java",
   "java/src/org/chromium/chrome/browser/tasks/TasksUma.java",
   "java/src/org/chromium/chrome/browser/toolbar/AppThemeColorProvider.java",
   "java/src/org/chromium/chrome/browser/toolbar/ButtonData.java",

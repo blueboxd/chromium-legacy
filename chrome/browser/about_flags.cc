@@ -1893,9 +1893,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"related-searches", flag_descriptions::kRelatedSearchesName,
      flag_descriptions::kRelatedSearchesDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kRelatedSearches)},
-    {"shopping-assist", flag_descriptions::kShoppingAssistName,
-     flag_descriptions::kShoppingAssistDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kShoppingAssist)},
 #endif  // OS_ANDROID
     {"show-autofill-type-predictions",
      flag_descriptions::kShowAutofillTypePredictionsName,

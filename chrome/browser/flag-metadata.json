@@ -3620,12 +3620,6 @@
     "expiry_milestone": 82
   },
   {
-    "name": "shopping-assist",
-    "owners": [ "yusufo", "donnd" ],
-    // This is a shopping assistance experiment for Android.
-    "expiry_milestone": 77
-  },
-  {
     "name": "show-autofill-type-predictions",
     "owners": [ "ftirelo", "mathp" ],
     // This is used by autofill devs to debug on Android.

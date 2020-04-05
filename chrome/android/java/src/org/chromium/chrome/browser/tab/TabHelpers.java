@@ -9,11 +9,9 @@ import org.chromium.chrome.browser.complex_tasks.TaskTabHelper;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchTabHelper;
 import org.chromium.chrome.browser.crypto.CipherFactory;
 import org.chromium.chrome.browser.dom_distiller.TabDistillabilityProvider;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.media.ui.MediaSessionTabHelper;
 import org.chromium.chrome.browser.paint_preview.PaintPreviewTabHelper;
-import org.chromium.chrome.browser.tasks.TaskRecognizer;
 
 /**
  * Helper class that initializes various tab UserData objects.
@@ -32,10 +30,6 @@ public final class TabHelpers {
         TabThemeColorHelper.createForTab(tab);
         InterceptNavigationDelegateImpl.createForTab(tab);
         ContextualSearchTabHelper.createForTab(tab);
-        if (ChromeFeatureList.isInitialized()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.SHOPPING_ASSIST)) {
-            TaskRecognizer.createForTab(tab);
-        }
         MediaSessionTabHelper.createForTab(tab);
         TaskTabHelper.createForTab(tab, parentTab);
         TabBrowserControlsConstraintsHelper.createForTab(tab);

@@ -113,13 +113,6 @@ class CORE_EXPORT PreloadRequest {
     return is_image_set_ == ResourceFetcher::kImageIsImageSet;
   }
 
-  void SetIsLazyLoadImageEnabled(bool is_enabled) {
-    is_lazy_load_image_enabled_ = is_enabled;
-  }
-  bool IsLazyLoadImageEnabledForTesting() {
-    return is_lazy_load_image_enabled_;
-  }
-
  private:
   PreloadRequest(const String& initiator_name,
                  const TextPosition& initiator_position,

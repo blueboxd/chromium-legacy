@@ -329,23 +329,9 @@ class TokenPreloadScanner::StartTagScanner {
           break;
       }
       // Do not preload if lazyload is possible but metadata fetch is disabled.
-      if (is_lazy_load_image_enabled &&
-          !RuntimeEnabledFeatures::LazyImageLoadingMetadataFetchEnabled()) {
+      if (is_lazy_load_image_enabled) {
         return nullptr;
       }
-      // LazyLoad: Do not preload if absolute dimensions are mentioned in width
-      // and height attributes or in the inline style, and the dimensions are
-      // not small enough.
-      if (is_lazy_load_image_enabled &&
-          ((width_attr_dimension_type_ ==
-                HTMLImageElement::LazyLoadDimensionType::kAbsoluteNotSmall &&
-            height_attr_dimension_type_ ==
-                HTMLImageElement::LazyLoadDimensionType::kAbsoluteNotSmall) ||
-           inline_style_dimensions_type_ ==
-               HTMLImageElement::LazyLoadDimensionType::kAbsoluteNotSmall)) {
-        return nullptr;
-      }
-      request->SetIsLazyLoadImageEnabled(is_lazy_load_image_enabled);
     }
 
     request->SetIntegrityMetadata(integrity_metadata_);

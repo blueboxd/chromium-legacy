@@ -140,11 +140,6 @@ Resource* PreloadRequest::Start(Document* document) {
     // the async request to the blocked script here.
   }
 
-  if (resource_type_ == ResourceType::kImage &&
-      params.Url().ProtocolIsInHTTPFamily() && is_lazy_load_image_enabled_) {
-    params.SetLazyImagePlaceholder();
-  }
-
   return PreloadHelper::StartPreload(resource_type_, params, *document);
 }
 

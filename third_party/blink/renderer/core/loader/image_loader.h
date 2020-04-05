@@ -250,7 +250,6 @@ class CORE_EXPORT ImageLoader : public GarbageCollected<ImageLoader>,
 
   bool image_complete_ : 1;
   bool suppress_error_events_ : 1;
-  bool was_fully_deferred_ : 1;  // Used by LazyImageLoad.
 
   LazyImageLoadState lazy_image_load_state_;
 

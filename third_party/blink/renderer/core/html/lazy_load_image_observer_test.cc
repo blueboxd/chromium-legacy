@@ -55,8 +55,7 @@ class LazyLoadImagesSimTest : public ::testing::WithParamInterface<bool>,
  protected:
   LazyLoadImagesSimTest()
       : scoped_lazy_image_loading_for_test_(GetParam()),
-        scoped_automatic_lazy_image_loading_for_test_(GetParam()),
-        scoped_lazy_image_loading_metadata_fetch_for_test_(GetParam()) {}
+        scoped_automatic_lazy_image_loading_for_test_(GetParam()) {}
 
   void SetLazyLoadEnabled(bool enabled) {
     WebView().GetPage()->GetSettings().SetLazyLoadEnabled(enabled);
@@ -205,8 +204,6 @@ class LazyLoadImagesSimTest : public ::testing::WithParamInterface<bool>,
   ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test_;
   ScopedAutomaticLazyImageLoadingForTest
       scoped_automatic_lazy_image_loading_for_test_;
-  ScopedLazyImageLoadingMetadataFetchForTest
-      scoped_lazy_image_loading_metadata_fetch_for_test_ = true;
   ScopedRestrictAutomaticLazyImageLoadingToDataSaverForTest
       scoped_restrict_automatic_lazy_image_loading_to_data_saver_for_test_ =
           false;
@@ -325,13 +322,6 @@ INSTANTIATE_TEST_SUITE_P(All,
                          LazyLoadImagesSimTest,
                          ::testing::Bool() /*is_lazyload_image_enabled*/);
 
-SimRequestBase::Params BuildRequestParamsForRangeResponse() {
-  SimRequestBase::Params params;
-  params.response_http_headers = {{"content-range", "bytes 0-2047/9311"}};
-  params.response_http_status = 206;
-  return params;
-}
-
 void ExpectResourceIsFullImage(Resource* resource) {
   EXPECT_TRUE(resource);
   EXPECT_TRUE(resource->IsLoaded());
@@ -339,15 +329,6 @@ void ExpectResourceIsFullImage(Resource* resource) {
       resource->GetResourceRequest().HttpHeaderFields().Contains("range"));
   EXPECT_EQ(ResourceType::kImage, resource->GetType());
   EXPECT_FALSE(ToImageResource(resource)->ShouldShowLazyImagePlaceholder());
-}
-
-void ExpectResourceIsLazyImagePlaceholder(Resource* resource) {
-  EXPECT_TRUE(resource);
-  EXPECT_TRUE(resource->IsLoaded());
-  EXPECT_EQ("bytes=0-2047",
-            resource->GetResourceRequest().HttpHeaderField("range"));
-  EXPECT_EQ(ResourceType::kImage, resource->GetType());
-  EXPECT_TRUE(ToImageResource(resource)->ShouldShowLazyImagePlaceholder());
 }
 
 class ScopedDataSaverSetting {
@@ -373,9 +354,7 @@ enum class LazyImageLoadingFeatureStatus {
   // LazyImageLoading is enabled, but AutomaticLazyImageLoading is disabled.
   kEnabledExplicit,
   // Both LazyImageLoading and AutomaticLazyImageLoading are enabled.
-  kEnabledExplicitMetadataFetchDisabled,  // Metadata fetch feature disabled.
   kEnabledAutomatic,
-  kEnabledAutomaticMetadataFetchDisabled,  // Metadata fetch feature disabled.
   // LazyImageLoading, AutomaticLazyImageLoading, and
   // RestrictAutomaticLazyImageLoadingToDataSaver are enabled, while data saver
   // is off.
@@ -410,16 +389,7 @@ class LazyLoadImagesParamsTest : public SimTest,
         scoped_data_saver_setting_(
             lazy_image_loading_feature_status_ ==
             LazyImageLoadingFeatureStatus::
-                kEnabledAutomaticRestrictedAndDataSaverOn),
-        scoped_lazy_image_loading_metadata_fetch_for_test_(
-            lazy_image_loading_feature_status_ !=
-                LazyImageLoadingFeatureStatus::kDisabled &&
-            lazy_image_loading_feature_status_ !=
-                LazyImageLoadingFeatureStatus::
-                    kEnabledExplicitMetadataFetchDisabled &&
-            lazy_image_loading_feature_status_ !=
-                LazyImageLoadingFeatureStatus::
-                    kEnabledAutomaticMetadataFetchDisabled) {}
+                kEnabledAutomaticRestrictedAndDataSaverOn) {}
 
   void SetUp() override {
     GetNetworkStateNotifier().SetNetworkConnectionInfoOverride(
@@ -463,27 +433,14 @@ class LazyLoadImagesParamsTest : public SimTest,
       case LazyImageLoadingFeatureStatus::kEnabledExplicit:
       case LazyImageLoadingFeatureStatus::
           kEnabledAutomaticRestrictedAndDataSaverOff:
-      case LazyImageLoadingFeatureStatus::kEnabledExplicitMetadataFetchDisabled:
         return false;
       case LazyImageLoadingFeatureStatus::kEnabledAutomatic:
       case LazyImageLoadingFeatureStatus::
           kEnabledAutomaticRestrictedAndDataSaverOn:
-      case LazyImageLoadingFeatureStatus::
-          kEnabledAutomaticMetadataFetchDisabled:
         return true;
     }
     NOTREACHED();
     return false;
-  }
-  bool IsMetadataFetchExpected() {
-    switch (lazy_image_loading_feature_status_) {
-      case LazyImageLoadingFeatureStatus::kEnabledExplicitMetadataFetchDisabled:
-      case LazyImageLoadingFeatureStatus::
-          kEnabledAutomaticMetadataFetchDisabled:
-        return false;
-      default:
-        return true;
-    }
   }
 
  private:
@@ -494,8 +451,6 @@ class LazyLoadImagesParamsTest : public SimTest,
   ScopedRestrictAutomaticLazyImageLoadingToDataSaverForTest
       scoped_restrict_automatic_lazy_image_loading_to_data_saver_for_test_;
   ScopedDataSaverSetting scoped_data_saver_setting_;
-  ScopedLazyImageLoadingMetadataFetchForTest
-      scoped_lazy_image_loading_metadata_fetch_for_test_;
 };
 
 TEST_P(LazyLoadImagesParamsTest, NearViewport) {
@@ -507,22 +462,9 @@ TEST_P(LazyLoadImagesParamsTest, NearViewport) {
                                        "image/png");
   base::Optional<SimSubresourceRequest> lazy_resource, auto_resource,
       unset_resource;
-  if (RuntimeEnabledFeatures::LazyImageLoadingEnabled() &&
-      IsMetadataFetchExpected()) {
-    lazy_resource.emplace("https://example.com/lazy.png", "image/png",
-                          BuildRequestParamsForRangeResponse());
-  } else {
     lazy_resource.emplace("https://example.com/lazy.png", "image/png");
-  }
-  if (IsAutomaticLazyImageLoadingExpected() && IsMetadataFetchExpected()) {
-    auto_resource.emplace("https://example.com/auto.png", "image/png",
-                          BuildRequestParamsForRangeResponse());
-    unset_resource.emplace("https://example.com/unset.png", "image/png",
-                           BuildRequestParamsForRangeResponse());
-  } else {
     auto_resource.emplace("https://example.com/auto.png", "image/png");
     unset_resource.emplace("https://example.com/unset.png", "image/png");
-  }
   LoadURL("https://example.com/");
 
   main_resource.Complete(String::Format(
@@ -550,29 +492,6 @@ TEST_P(LazyLoadImagesParamsTest, NearViewport) {
   ASSERT_LT(2048U, full_image.size());
   Vector<char> partial_image;
   partial_image.Append(full_image.data(), 2048U);
-
-  if (RuntimeEnabledFeatures::LazyImageLoadingEnabled() &&
-      IsMetadataFetchExpected()) {
-    lazy_resource->Complete(partial_image);
-    ExpectResourceIsLazyImagePlaceholder(
-        GetDocument().Fetcher()->CachedResource(
-            KURL("https://example.com/lazy.png")));
-    lazy_resource.emplace("https://example.com/lazy.png", "image/png");
-  }
-
-  if (IsAutomaticLazyImageLoadingExpected() && IsMetadataFetchExpected()) {
-    auto_resource->Complete(partial_image);
-    ExpectResourceIsLazyImagePlaceholder(
-        GetDocument().Fetcher()->CachedResource(
-            KURL("https://example.com/auto.png")));
-    auto_resource.emplace("https://example.com/auto.png", "image/png");
-
-    unset_resource->Complete(partial_image);
-    ExpectResourceIsLazyImagePlaceholder(
-        GetDocument().Fetcher()->CachedResource(
-            KURL("https://example.com/unset.png")));
-    unset_resource.emplace("https://example.com/unset.png", "image/png");
-  }
 
   Compositor().BeginFrame();
   test::RunPendingTasks();
@@ -640,22 +559,9 @@ TEST_P(LazyLoadImagesParamsTest, FarFromViewport) {
                                        "image/png");
   base::Optional<SimSubresourceRequest> lazy_resource, auto_resource,
       unset_resource;
-  if (RuntimeEnabledFeatures::LazyImageLoadingEnabled() &&
-      IsMetadataFetchExpected()) {
-    lazy_resource.emplace("https://example.com/lazy.png", "image/png",
-                          BuildRequestParamsForRangeResponse());
-  } else {
     lazy_resource.emplace("https://example.com/lazy.png", "image/png");
-  }
-  if (IsAutomaticLazyImageLoadingExpected() && IsMetadataFetchExpected()) {
-    auto_resource.emplace("https://example.com/auto.png", "image/png",
-                          BuildRequestParamsForRangeResponse());
-    unset_resource.emplace("https://example.com/unset.png", "image/png",
-                           BuildRequestParamsForRangeResponse());
-  } else {
     auto_resource.emplace("https://example.com/auto.png", "image/png");
     unset_resource.emplace("https://example.com/unset.png", "image/png");
-  }
 
   LoadURL("https://example.com/");
 
@@ -701,8 +607,13 @@ TEST_P(LazyLoadImagesParamsTest, FarFromViewport) {
   Compositor().BeginFrame();
   test::RunPendingTasks();
 
-  if (std::get<LazyImageLoadingFeatureStatus>(GetParam()) !=
-      LazyImageLoadingFeatureStatus::kEnabledAutomaticMetadataFetchDisabled) {
+  LazyImageLoadingFeatureStatus lazy_image_loading_feature_status =
+      std::get<LazyImageLoadingFeatureStatus>(GetParam());
+  if (lazy_image_loading_feature_status !=
+          LazyImageLoadingFeatureStatus::kEnabledAutomatic &&
+      lazy_image_loading_feature_status !=
+          LazyImageLoadingFeatureStatus::
+              kEnabledAutomaticRestrictedAndDataSaverOn) {
     EXPECT_FALSE(ConsoleMessages().Contains("main body onload"));
   }
   EXPECT_TRUE(ConsoleMessages().Contains("eager onload"));
@@ -710,35 +621,13 @@ TEST_P(LazyLoadImagesParamsTest, FarFromViewport) {
   EXPECT_FALSE(ConsoleMessages().Contains("auto onload"));
   EXPECT_FALSE(ConsoleMessages().Contains("unset onload"));
 
-  if (RuntimeEnabledFeatures::LazyImageLoadingEnabled()) {
-    if (IsMetadataFetchExpected()) {
-      lazy_resource->Complete(partial_image);
-      ExpectResourceIsLazyImagePlaceholder(
-          GetDocument().Fetcher()->CachedResource(
-              KURL("https://example.com/lazy.png")));
-      lazy_resource.emplace("https://example.com/lazy.png", "image/png");
-    }
-  } else {
+  if (!RuntimeEnabledFeatures::LazyImageLoadingEnabled()) {
     lazy_resource->Complete(full_image);
     ExpectResourceIsFullImage(GetDocument().Fetcher()->CachedResource(
         KURL("https://example.com/lazy.png")));
   }
 
-  if (IsAutomaticLazyImageLoadingExpected()) {
-    if (IsMetadataFetchExpected()) {
-      auto_resource->Complete(partial_image);
-      ExpectResourceIsLazyImagePlaceholder(
-          GetDocument().Fetcher()->CachedResource(
-              KURL("https://example.com/auto.png")));
-
-      unset_resource->Complete(partial_image);
-      ExpectResourceIsLazyImagePlaceholder(
-          GetDocument().Fetcher()->CachedResource(
-              KURL("https://example.com/unset.png")));
-      auto_resource.emplace("https://example.com/auto.png", "image/png");
-      unset_resource.emplace("https://example.com/unset.png", "image/png");
-    }
-  } else {
+  if (!IsAutomaticLazyImageLoadingExpected()) {
     auto_resource->Complete(full_image);
     ExpectResourceIsFullImage(GetDocument().Fetcher()->CachedResource(
         KURL("https://example.com/auto.png")));
@@ -748,8 +637,11 @@ TEST_P(LazyLoadImagesParamsTest, FarFromViewport) {
         KURL("https://example.com/unset.png")));
   }
 
-  if (std::get<LazyImageLoadingFeatureStatus>(GetParam()) !=
-      LazyImageLoadingFeatureStatus::kEnabledAutomaticMetadataFetchDisabled) {
+  if (lazy_image_loading_feature_status !=
+          LazyImageLoadingFeatureStatus::kEnabledAutomatic &&
+      lazy_image_loading_feature_status !=
+          LazyImageLoadingFeatureStatus::
+              kEnabledAutomaticRestrictedAndDataSaverOn) {
     Compositor().BeginFrame();
     test::RunPendingTasks();
   }
@@ -817,11 +709,7 @@ INSTANTIATE_TEST_SUITE_P(
                           LazyImageLoadingFeatureStatus::
                               kEnabledAutomaticRestrictedAndDataSaverOff,
                           LazyImageLoadingFeatureStatus::
-                              kEnabledAutomaticRestrictedAndDataSaverOn,
-                          LazyImageLoadingFeatureStatus::
-                              kEnabledExplicitMetadataFetchDisabled,
-                          LazyImageLoadingFeatureStatus::
-                              kEnabledAutomaticMetadataFetchDisabled),
+                              kEnabledAutomaticRestrictedAndDataSaverOn),
         ::testing::Values(WebEffectiveConnectionType::kTypeUnknown,
                           WebEffectiveConnectionType::kTypeOffline,
                           WebEffectiveConnectionType::kTypeSlow2G,
@@ -883,27 +771,7 @@ class LazyLoadAutomaticImagesTest : public SimTest {
   }
 
   void TestLoadImageExpectingLazyLoad(const char* image_attributes) {
-    SimSubresourceRequest image_range_resource(
-        "https://example.com/image.png", "image/png",
-        BuildRequestParamsForRangeResponse());
-
     LoadMainResourceWithImageFarFromViewport(image_attributes);
-
-    EXPECT_FALSE(ConsoleMessages().Contains("main body onload"));
-    EXPECT_FALSE(ConsoleMessages().Contains("image onload"));
-
-    Vector<char> partial_image = ReadTestImage();
-    EXPECT_LT(2048U, partial_image.size());
-    partial_image.resize(2048U);
-
-    image_range_resource.Complete(partial_image);
-    ExpectResourceIsLazyImagePlaceholder(
-        GetDocument().Fetcher()->CachedResource(
-            KURL("https://example.com/image.png")));
-
-    Compositor().BeginFrame();
-    test::RunPendingTasks();
-
     EXPECT_TRUE(ConsoleMessages().Contains("main body onload"));
     EXPECT_FALSE(ConsoleMessages().Contains("image onload"));
   }
@@ -975,8 +843,6 @@ class LazyLoadAutomaticImagesTest : public SimTest {
       scoped_automatic_lazy_image_loading_for_test_;
   ScopedRestrictAutomaticLazyImageLoadingToDataSaverForTest
       scoped_restrict_automatic_lazy_image_loading_to_data_saver_for_test_;
-  ScopedLazyImageLoadingMetadataFetchForTest
-      scoped_lazy_image_loading_metadata_fetch_for_test_ = true;
   ScopedLazyImageVisibleLoadTimeMetricsForTest
       scoped_lazy_image_visible_load_time_metrics_for_test_ = true;
 };
@@ -1119,8 +985,6 @@ TEST_F(LazyLoadAutomaticImagesTest, TinyImageViaStyleWidth11Height1) {
 }
 
 TEST_F(LazyLoadAutomaticImagesTest, FirstKImagesLoaded) {
-  ScopedLazyImageLoadingMetadataFetchForTest
-      scoped_lazy_image_loading_metadata_fetch_for_test = false;
   SetLazyImageFirstKFullyLoad(1);
 
   SimRequest main_resource("https://example.com/", "text/html");
@@ -1280,9 +1144,6 @@ TEST_F(LazyLoadAutomaticImagesTest, ImageInsideLazyLoadedFrame) {
                                      "text/css");
   SimSubresourceRequest eager_resource("https://example.com/eager.png",
                                        "image/png");
-  SimSubresourceRequest lazy_range_resource(
-      "https://example.com/lazy.png", "image/png",
-      BuildRequestParamsForRangeResponse());
   SimSubresourceRequest auto_resource("https://example.com/auto.png",
                                       "image/png");
   SimSubresourceRequest unset_resource("https://example.com/unset.png",
@@ -1330,11 +1191,6 @@ TEST_F(LazyLoadAutomaticImagesTest, ImageInsideLazyLoadedFrame) {
   ExpectResourceIsFullImage(child_frame_document->Fetcher()->CachedResource(
       KURL("https://example.com/eager.png")));
 
-  lazy_range_resource.Complete(partial_image);
-  ExpectResourceIsLazyImagePlaceholder(
-      child_frame_document->Fetcher()->CachedResource(
-          KURL("https://example.com/lazy.png")));
-
   auto_resource.Complete(full_image);
   ExpectResourceIsFullImage(child_frame_document->Fetcher()->CachedResource(
       KURL("https://example.com/auto.png")));
@@ -1381,8 +1237,6 @@ TEST_F(LazyLoadAutomaticImagesTest, ImageInsideLazyLoadedFrame) {
 }
 
 TEST_F(LazyLoadAutomaticImagesTest, LazyLoadDisabledOnReload) {
-  ScopedLazyImageLoadingMetadataFetchForTest
-      scoped_lazy_image_loading_metadata_fetch_for_test = false;
   String main_resource_html = String::Format(
       R"HTML(
         <body onload='console.log("main body onload");'>
@@ -1455,8 +1309,6 @@ TEST_F(LazyLoadAutomaticImagesTest, LazyLoadDisabledOnReload) {
 }
 
 TEST_F(LazyLoadAutomaticImagesTest, AboveTheFoldImageLoadedBeforeVisible) {
-  ScopedLazyImageLoadingMetadataFetchForTest
-      scoped_lazy_image_loading_metadata_fetch_for_test = false;
   HistogramTester histogram_tester;
 
   // Since the image is above the fold, ensure that the image starts loading
@@ -1495,8 +1347,6 @@ TEST_F(LazyLoadAutomaticImagesTest, AboveTheFoldImageLoadedBeforeVisible) {
 }
 
 TEST_F(LazyLoadAutomaticImagesTest, AboveTheFoldImageVisibleBeforeLoaded) {
-  ScopedLazyImageLoadingMetadataFetchForTest
-      scoped_lazy_image_loading_metadata_fetch_for_test = false;
   HistogramTester histogram_tester;
 
   SimRequest main_resource("https://example.com/", "text/html");
@@ -1538,8 +1388,6 @@ TEST_F(LazyLoadAutomaticImagesTest, AboveTheFoldImageVisibleBeforeLoaded) {
 }
 
 TEST_F(LazyLoadAutomaticImagesTest, BelowTheFoldImageLoadedBeforeVisible) {
-  ScopedLazyImageLoadingMetadataFetchForTest
-      scoped_lazy_image_loading_metadata_fetch_for_test = false;
   HistogramTester histogram_tester;
 
   SimRequest main_resource("https://example.com/", "text/html");
@@ -1595,8 +1443,6 @@ TEST_F(LazyLoadAutomaticImagesTest, BelowTheFoldImageLoadedBeforeVisible) {
 }
 
 TEST_F(LazyLoadAutomaticImagesTest, BelowTheFoldImageVisibleBeforeLoaded) {
-  ScopedLazyImageLoadingMetadataFetchForTest
-      scoped_lazy_image_loading_metadata_fetch_for_test = false;
   HistogramTester histogram_tester;
 
   SimRequest main_resource("https://example.com/", "text/html");

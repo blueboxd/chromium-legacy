@@ -132,7 +132,6 @@ class LazyLoadWithoutLiteModeBrowserTest
     scoped_feature_list_.InitWithFeaturesAndParameters(
         {{features::kLazyImageLoading,
           {{"automatic-lazy-load-images-enabled", "true"},
-           {"enable-lazy-load-images-metadata-fetch", "true"},
            {"lazy_image_first_k_fully_load", "4G:0"}}},
          {features::kLazyFrameLoading,
           {{"automatic-lazy-load-frames-enabled", "true"}}}},
@@ -151,7 +150,6 @@ class LazyLoadWithLiteModeBrowserTest
     scoped_feature_list_.InitWithFeaturesAndParameters(
         {{features::kLazyImageLoading,
           {{"automatic-lazy-load-images-enabled", "true"},
-           {"enable-lazy-load-images-metadata-fetch", "true"},
            {"lazy_image_first_k_fully_load", "4G:0"}}},
          {features::kLazyFrameLoading,
           {{"automatic-lazy-load-frames-enabled", "true"}}}},
@@ -462,11 +460,9 @@ IN_PROC_BROWSER_TEST_F(LazyLoadWithLiteModeBrowserTest,
                        LazyLoadImagesImgElement) {
   // Choose reasonable minimum, any savings is indicative of the mechanism
   // working.
-  EXPECT_LE(
-      10000,
-      NavigateAndGetDataSavings(
-        "/lazyload/img.html",
-        10 /* main html, favicon, 8 images (2 eager, 4 placeholder, 2 full)*/));
+  EXPECT_LE(10000, NavigateAndGetDataSavings(
+                       "/lazyload/img.html",
+                       6 /* main html, favicon, 4 images (2 eager, 2 full)*/));
 }
 
 IN_PROC_BROWSER_TEST_F(LazyLoadWithLiteModeBrowserTest,
@@ -474,7 +470,7 @@ IN_PROC_BROWSER_TEST_F(LazyLoadWithLiteModeBrowserTest,
   // Choose reasonable minimum, any savings is indicative of the mechanism
   // working.
   // TODO(rajendrant): Check why sometimes data savings goes negative.
-  EXPECT_GE(0, NavigateAndGetDataSavingsAfterScroll("/lazyload/img.html", 10,
+  EXPECT_GE(0, NavigateAndGetDataSavingsAfterScroll("/lazyload/img.html", 6,
                                                     2 /* lazyloaded image */));
 }
 

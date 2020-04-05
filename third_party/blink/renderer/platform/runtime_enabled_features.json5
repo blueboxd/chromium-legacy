@@ -966,10 +966,6 @@
       status: "stable",
     },
     {
-      name: "LazyImageLoadingMetadataFetch",
-      depends_on: ["LazyImageLoading"],
-    },
-    {
       name: "LazyImageVisibleLoadTimeMetrics",
     },
     {

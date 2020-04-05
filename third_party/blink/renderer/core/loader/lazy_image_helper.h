@@ -22,7 +22,6 @@ class LazyImageHelper final {
   enum class Eligibility {
     kDisabled,
     kEnabledFullyDeferred,
-    kEnabledFetchPlaceholder,
   };
 
   static void StartMonitoring(Element* element);

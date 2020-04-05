@@ -193,9 +193,11 @@ class HTMLMockHTMLResourcePreloader : public ResourcePreloader {
   }
 
   void LazyLoadImageEnabledVerification(bool expected_enabled) {
-    ASSERT_TRUE(preload_request_.get());
-    EXPECT_EQ(expected_enabled,
-              preload_request_->IsLazyLoadImageEnabledForTesting());
+    if (expected_enabled) {
+      EXPECT_FALSE(preload_request_) << preload_request_->ResourceURL();
+    } else {
+      ASSERT_TRUE(preload_request_.get());
+    }
   }
 
  protected:
@@ -1215,8 +1217,6 @@ TEST_F(HTMLPreloadScannerTest, LazyLoadImage_DisabledForSmallImages) {
   ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(true);
   ScopedAutomaticLazyImageLoadingForTest
       scoped_automatic_lazy_image_loading_for_test(true);
-  ScopedLazyImageLoadingMetadataFetchForTest
-      scoped_lazy_image_loading_metadata_fetch_for_test(true);
   ScopedRestrictAutomaticLazyImageLoadingToDataSaverForTest
       scoped_restrict_automatic_lazy_image_loading_to_data_saver_for_test(
           false);
@@ -1256,8 +1256,6 @@ TEST_F(HTMLPreloadScannerTest,
   ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(true);
   ScopedAutomaticLazyImageLoadingForTest
       scoped_automatic_lazy_image_loading_for_test(true);
-  ScopedLazyImageLoadingMetadataFetchForTest
-      scoped_lazy_image_loading_metadata_fetch_for_test(true);
   ScopedRestrictAutomaticLazyImageLoadingToDataSaverForTest
       scoped_restrict_automatic_lazy_image_loading_to_data_saver_for_test(
           false);
@@ -1279,8 +1277,6 @@ TEST_F(HTMLPreloadScannerTest,
 TEST_F(HTMLPreloadScannerTest,
        LazyLoadImage_FeatureExplicitEnabledWithAttribute) {
   ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(true);
-  ScopedLazyImageLoadingMetadataFetchForTest
-      scoped_lazy_image_loading_metadata_fetch_for_test(true);
   GetDocument().GetSettings()->SetLazyLoadEnabled(true);
   RunSetUp(kViewportEnabled);
   LazyLoadImageTestCase test_cases[] = {
@@ -1298,8 +1294,6 @@ TEST_F(HTMLPreloadScannerTest,
   ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(true);
   ScopedAutomaticLazyImageLoadingForTest
       scoped_automatic_lazy_image_loading_for_test(true);
-  ScopedLazyImageLoadingMetadataFetchForTest
-      scoped_lazy_image_loading_metadata_fetch_for_test(true);
   ScopedRestrictAutomaticLazyImageLoadingToDataSaverForTest
       scoped_restrict_automatic_lazy_image_loading_to_data_saver_for_test(
           false);
@@ -1341,8 +1335,6 @@ TEST_F(HTMLPreloadScannerTest,
        LazyLoadImage_FeatureExplicitPreloadForLargeImages) {
   // Large images should not be preloaded, when loading is lazy.
   ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(true);
-  ScopedLazyImageLoadingMetadataFetchForTest
-      scoped_lazy_image_loading_metadata_fetch_for_test(true);
   GetDocument().GetSettings()->SetLazyLoadEnabled(true);
   RunSetUp(kViewportEnabled);
   PreloadScannerTestCase test_cases[] = {
@@ -1372,7 +1364,6 @@ TEST_F(HTMLPreloadScannerTest,
 TEST_F(HTMLPreloadScannerTest, LazyLoadImage_DisableMetadataFetch) {
   GetDocument().GetSettings()->SetLazyLoadEnabled(true);
   struct TestCase {
-    bool metadata_fetch_feature_enabled;
     bool automatic_lazy_image_loading_enabled;
     const char* loading_attr_value;
     bool expected_is_preload;
@@ -1383,28 +1374,19 @@ TEST_F(HTMLPreloadScannerTest, LazyLoadImage_DisableMetadataFetch) {
       // The lazyload eligible cases should not trigger any preload when
       // metadata fetch feature disabled, and trigger placeholder fetch if
       // metadata fetch feature is active.
-      {false, false, "lazy", false, false},
-      {false, true, "lazy", false, false},
-      {false, true, "auto", false, false},
-      {true, false, "lazy", true, true},
-      {true, true, "lazy", true, true},
-      {true, true, "auto", true, true},
+      {false, "lazy", false, false},
+      {true, "lazy", false, false},
+      {true, "auto", false, false},
 
       // Lazyload ineligible case.
-      {false, false, "auto", true, false},
-      {true, false, "auto", true, false},
+      {false, "auto", true, false},
 
       // Full image should be fetched when loading='eager' irrespective of
       // automatic lazyload or metadata fetch feature states.
-      {false, false, "eager", true, false},
-      {false, true, "eager", true, false},
-      {true, false, "eager", true, false},
-      {true, true, "eager", true, false},
+      {false, "eager", true, false},
+      {true, "eager", true, false},
   };
   for (const auto& test_case : test_cases) {
-    ScopedLazyImageLoadingMetadataFetchForTest
-        scoped_lazy_image_loading_metadata_fetch_for_test(
-            test_case.metadata_fetch_feature_enabled);
     ScopedAutomaticLazyImageLoadingForTest
         scoped_automatic_lazy_image_loading_for_test(
             test_case.automatic_lazy_image_loading_enabled);

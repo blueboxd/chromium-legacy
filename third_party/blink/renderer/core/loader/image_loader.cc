@@ -170,7 +170,6 @@ ImageLoader::ImageLoader(Element* element)
     : element_(element),
       image_complete_(true),
       suppress_error_events_(false),
-      was_fully_deferred_(false),
       lazy_image_load_state_(LazyImageLoadState::kNone) {
   RESOURCE_LOADING_DVLOG(1) << "new ImageLoader " << this;
 }
@@ -303,8 +302,7 @@ bool ImageLoader::ShouldUpdateOnInsertedInto(
 }
 
 bool ImageLoader::ImageIsPotentiallyAvailable() const {
-  bool is_lazyload = lazy_image_load_state_ == LazyImageLoadState::kDeferred &&
-                     was_fully_deferred_;
+  bool is_lazyload = lazy_image_load_state_ == LazyImageLoadState::kDeferred;
 
   bool image_has_loaded = image_content_ && !image_content_->IsLoading() &&
                           !image_content_->ErrorOccurred();
@@ -525,28 +523,16 @@ void ImageLoader::DoUpdateFromElement(
             *frame, html_image, params.Url())) {
           case LazyImageHelper::Eligibility::kEnabledFullyDeferred:
             lazy_image_load_state_ = LazyImageLoadState::kDeferred;
-            was_fully_deferred_ = true;
             params.SetLazyImageDeferred();
             if (frame->Client()) {
               frame->Client()->DidObserveLazyLoadBehavior(
                   WebLocalFrameClient::LazyLoadBehavior::kDeferredImage);
             }
             break;
-          case LazyImageHelper::Eligibility::kEnabledFetchPlaceholder:
-            lazy_image_load_state_ = LazyImageLoadState::kDeferred;
-            params.SetLazyImagePlaceholder();
-            break;
           case LazyImageHelper::Eligibility::kDisabled:
             break;
         }
       }
-    }
-
-    // If the image was previously set to full image and had no dimensions, it
-    // is a full load of a placeholder image.
-    if (!was_fully_deferred_ &&
-        lazy_image_load_state_ == LazyImageLoadState::kFullImage) {
-      params.SetLazyImageAutoReload();
     }
 
     // Enable subresource redirect for <img> elements created by parser when
@@ -591,9 +577,7 @@ void ImageLoader::DoUpdateFromElement(
       new_image_content == old_image_content) {
     ToLayoutImage(element_->GetLayoutObject())->IntrinsicSizeChanged();
   } else {
-    bool is_lazyload =
-        lazy_image_load_state_ == LazyImageLoadState::kDeferred &&
-        was_fully_deferred_;
+    bool is_lazyload = lazy_image_load_state_ == LazyImageLoadState::kDeferred;
 
     // Loading didn't start (loading of images was disabled). We show fallback
     // contents here, while we don't dispatch an 'error' event etc., because
@@ -943,7 +927,7 @@ void ImageLoader::LoadDeferredImage(
   // If the image has been fully deferred (no placeholder fetch), report it as
   // fully loaded now.
   LocalFrame* frame = element_->GetDocument().GetFrame();
-  if (was_fully_deferred_ && frame && frame->Client()) {
+  if (frame && frame->Client()) {
     frame->Client()->DidObserveLazyLoadBehavior(
         WebLocalFrameClient::LazyLoadBehavior::kLazyLoadedImage);
   }

@@ -489,10 +489,6 @@ void SetRuntimeFeaturesFromFieldTrialParams() {
       base::GetFieldTrialParamByFeatureAsBool(
           features::kLazyImageLoading,
           "restrict-lazy-load-images-to-data-saver-only", true));
-  WebRuntimeFeatures::EnableLazyImageLoadingMetadataFetch(
-      base::GetFieldTrialParamByFeatureAsBool(
-          features::kLazyImageLoading, "enable-lazy-load-images-metadata-fetch",
-          false));
 }
 
 // Sets blink runtime features that depend on a combination

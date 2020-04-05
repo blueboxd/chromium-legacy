@@ -127,11 +127,7 @@ LazyImageHelper::DetermineEligibilityAndTrackVisibilityMetrics(
     if (lazy_load_image_setting !=
         LocalFrame::LazyLoadImageSetting::kDisabled) {
       // Developer opt-in lazyload.
-      if (!RuntimeEnabledFeatures::LazyImageLoadingMetadataFetchEnabled() ||
-          IsDimensionAbsoluteLarge(*html_image)) {
-        return LazyImageHelper::Eligibility::kEnabledFullyDeferred;
-      }
-      return LazyImageHelper::Eligibility::kEnabledFetchPlaceholder;
+      return LazyImageHelper::Eligibility::kEnabledFullyDeferred;
     }
   }
 
@@ -174,11 +170,7 @@ LazyImageHelper::DetermineEligibilityAndTrackVisibilityMetrics(
       lazy_load_image_setting ==
           LocalFrame::LazyLoadImageSetting::kEnabledAutomatic) {
     // Automatic lazyload
-    if (!RuntimeEnabledFeatures::LazyImageLoadingMetadataFetchEnabled() ||
-        IsDimensionAbsoluteLarge(*html_image)) {
-      return LazyImageHelper::Eligibility::kEnabledFullyDeferred;
-    }
-    return LazyImageHelper::Eligibility::kEnabledFetchPlaceholder;
+    return LazyImageHelper::Eligibility::kEnabledFullyDeferred;
   }
   return LazyImageHelper::Eligibility::kDisabled;
 }

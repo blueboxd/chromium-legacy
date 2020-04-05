@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_FRAGMENT_ITEM_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_FRAGMENT_ITEM_H_
 
+#include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_offset.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
@@ -14,6 +15,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_ink_overflow.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 
@@ -26,7 +28,8 @@ struct NGTextFragmentPaintInfo;
 //
 // This class consumes less memory than a full fragment, and can be stored in a
 // flat list (NGFragmentItems) for easier and faster traversal.
-class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
+class CORE_EXPORT NGFragmentItem : public RefCounted<NGFragmentItem>,
+                                   public DisplayItemClient {
  public:
   // Represents regular text that exists in the DOM.
   struct TextItem {

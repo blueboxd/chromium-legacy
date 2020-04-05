@@ -75,8 +75,10 @@ LayoutUnit NGPhysicalTextFragment::InlinePositionForOffset(
     unsigned offset,
     LayoutUnit (*round_function)(float),
     AdjustMidCluster adjust_mid_cluster) const {
-  return NGFragmentItem(*this).InlinePositionForOffset(
-      Text(), offset, round_function, adjust_mid_cluster);
+  scoped_refptr<NGFragmentItem> item =
+      base::MakeRefCounted<NGFragmentItem>(*this);
+  return item->InlinePositionForOffset(Text(), offset, round_function,
+                                       adjust_mid_cluster);
 }
 
 // TODO(yosin): We should move |NGFragmentItem::InlinePositionForOffset" to
@@ -120,14 +122,17 @@ LayoutUnit NGFragmentItem::InlinePositionForOffset(StringView text,
 
 LayoutUnit NGPhysicalTextFragment::InlinePositionForOffset(
     unsigned offset) const {
-  return NGFragmentItem(*this).InlinePositionForOffset(Text(), offset);
+  scoped_refptr<NGFragmentItem> item =
+      base::MakeRefCounted<NGFragmentItem>(*this);
+  return item->InlinePositionForOffset(Text(), offset);
 }
 
 std::pair<LayoutUnit, LayoutUnit>
 NGPhysicalTextFragment::LineLeftAndRightForOffsets(unsigned start_offset,
                                                    unsigned end_offset) const {
-  return NGFragmentItem(*this).LineLeftAndRightForOffsets(Text(), start_offset,
-                                                          end_offset);
+  scoped_refptr<NGFragmentItem> item =
+      base::MakeRefCounted<NGFragmentItem>(*this);
+  return item->LineLeftAndRightForOffsets(Text(), start_offset, end_offset);
 }
 
 // TODO(yosin): We should move |NGFragmentItem::InlinePositionForOffset" to
@@ -154,7 +159,9 @@ std::pair<LayoutUnit, LayoutUnit> NGFragmentItem::LineLeftAndRightForOffsets(
 
 PhysicalRect NGPhysicalTextFragment::LocalRect(unsigned start_offset,
                                                unsigned end_offset) const {
-  return NGFragmentItem(*this).LocalRect(Text(), start_offset, end_offset);
+  scoped_refptr<NGFragmentItem> item =
+      base::MakeRefCounted<NGFragmentItem>(*this);
+  return item->LocalRect(Text(), start_offset, end_offset);
 }
 
 // TODO(yosin): We should move |NGFragmentItem::InlinePositionForOffset" to

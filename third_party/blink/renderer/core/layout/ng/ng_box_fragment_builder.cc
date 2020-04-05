@@ -78,7 +78,7 @@ void GatherInlineContainerFragmentsFromLinebox(
 }
 
 void GatherInlineContainerFragmentsFromItems(
-    const Vector<std::unique_ptr<NGFragmentItem>>& items,
+    const Vector<scoped_refptr<NGFragmentItem>>& items,
     const PhysicalOffset& box_offset,
     NGBoxFragmentBuilder::InlineContainingBlockMap* inline_containing_block_map,
     HashMap<const LayoutObject*, LineBoxPair>* containing_linebox_map) {

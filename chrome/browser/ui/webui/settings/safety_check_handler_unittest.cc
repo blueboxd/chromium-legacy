@@ -1008,9 +1008,12 @@ TEST_F(SafetyCheckHandlerTest, CheckExtensions_Error) {
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckParentRanDisplayString) {
-  // 1 second before midnight, so that -(24h-1s) is still on the same day.
+  // 1 second before midnight Dec 31st 2020, so that -(24h-1s) is still on the
+  // same day. This test time is hard coded to prevent DST flakiness, see
+  // crbug.com/1066576.
   const base::Time systemTime =
-      base::Time::Now().LocalMidnight() - base::TimeDelta::FromSeconds(1);
+      base::Time::FromDoubleT(1609459199).LocalMidnight() -
+      base::TimeDelta::FromSeconds(1);
   // Display strings for given time deltas in seconds.
   std::vector<std::tuple<std::string, int>> tuples{
       std::make_tuple("Safety check ran a moment ago", 1),

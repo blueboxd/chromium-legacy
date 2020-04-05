@@ -67,7 +67,7 @@ class CORE_EXPORT NGFragmentItemsBuilder {
   // containing block geometry for OOF-positioned nodes.
   //
   // Once this method has been called, new items cannot be added.
-  const Vector<std::unique_ptr<NGFragmentItem>>&
+  const Vector<scoped_refptr<NGFragmentItem>>&
   Items(WritingMode, TextDirection, const PhysicalSize& outer_size);
 
   // Build a |NGFragmentItems|. The builder cannot build twice because data set
@@ -84,7 +84,7 @@ class CORE_EXPORT NGFragmentItemsBuilder {
                          TextDirection direction,
                          const PhysicalSize& outer_size);
 
-  Vector<std::unique_ptr<NGFragmentItem>> items_;
+  Vector<scoped_refptr<NGFragmentItem>> items_;
   Vector<LogicalOffset> offsets_;
   String text_content_;
   String first_line_text_content_;

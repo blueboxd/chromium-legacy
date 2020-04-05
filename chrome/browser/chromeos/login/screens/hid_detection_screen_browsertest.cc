@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
+#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/hid_detection_screen_handler.h"
@@ -102,12 +103,18 @@ class HIDDetectionScreenTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(HIDDetectionScreenTest);
 };
 
-IN_PROC_BROWSER_TEST_F(HIDDetectionScreenTest, HIDDetectionScreenNotAllowed) {
-  // Set device type to one that should not invoke HIDDetectionScreen logic.
-  base::SysInfo::SetChromeOSVersionInfoForTest("DEVICETYPE=CHROMEBOOK",
-                                               base::Time::Now());
+class HIDDetectionScreenChromebookTest : public OobeBaseTest {
+ public:
+  HIDDetectionScreenChromebookTest() {
+    // Set device type to one that should not invoke HIDDetectionScreen logic.
+    base::SysInfo::SetChromeOSVersionInfoForTest("DEVICETYPE=CHROMEBOOK",
+                                                 base::Time::Now());
+  }
+};
 
-  ShowLoginWizard(WelcomeView::kScreenId);
+IN_PROC_BROWSER_TEST_F(HIDDetectionScreenChromebookTest,
+                       HIDDetectionScreenNotAllowed) {
+  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
   ASSERT_TRUE(WizardController::default_controller());
 
   EXPECT_FALSE(WizardController::default_controller()->HasScreen(

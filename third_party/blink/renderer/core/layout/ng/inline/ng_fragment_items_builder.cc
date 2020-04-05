@@ -50,7 +50,8 @@ void NGFragmentItemsBuilder::AddLine(const NGPhysicalLineBoxFragment& line,
 
   // All children are added. Create an item for the start of the line.
   wtf_size_t item_count = items_.size() - line_start_index;
-  items_[line_start_index] = std::make_unique<NGFragmentItem>(line, item_count);
+  items_[line_start_index] =
+      base::MakeRefCounted<NGFragmentItem>(line, item_count);
   // TODO(kojii): We probably need an end marker too for the reverse-order
   // traversals.
 
@@ -70,7 +71,7 @@ void NGFragmentItemsBuilder::AddItems(Child* child_begin, Child* child_end) {
   for (Child* child_iter = child_begin; child_iter != child_end;) {
     Child& child = *child_iter;
     if (const NGPhysicalTextFragment* text = child.fragment.get()) {
-      items_.push_back(std::make_unique<NGFragmentItem>(*text));
+      items_.push_back(base::MakeRefCounted<NGFragmentItem>(*text));
       offsets_.push_back(child.rect.offset);
       ++child_iter;
       continue;
@@ -78,14 +79,15 @@ void NGFragmentItemsBuilder::AddItems(Child* child_begin, Child* child_end) {
 
     if (child.layout_result || child.inline_item) {
       // Create an item if this box has no inline children.
-      std::unique_ptr<NGFragmentItem> item;
+      scoped_refptr<NGFragmentItem> item;
       if (child.layout_result) {
         const NGPhysicalBoxFragment& box =
             To<NGPhysicalBoxFragment>(child.layout_result->PhysicalFragment());
-        item = std::make_unique<NGFragmentItem>(box, child.ResolvedDirection());
+        item = base::MakeRefCounted<NGFragmentItem>(box,
+                                                    child.ResolvedDirection());
       } else {
         DCHECK(child.inline_item);
-        item = std::make_unique<NGFragmentItem>(
+        item = base::MakeRefCounted<NGFragmentItem>(
             *child.inline_item,
             ToPhysicalSize(child.rect.size,
                            child.inline_item->Style()->GetWritingMode()));
@@ -140,12 +142,12 @@ void NGFragmentItemsBuilder::AddListMarker(
   // Resolved direction matters only for inline items, and outside list markers
   // are not inline.
   const TextDirection resolved_direction = TextDirection::kLtr;
-  items_.push_back(
-      std::make_unique<NGFragmentItem>(marker_fragment, resolved_direction));
+  items_.push_back(base::MakeRefCounted<NGFragmentItem>(marker_fragment,
+                                                        resolved_direction));
   offsets_.push_back(offset);
 }
 
-const Vector<std::unique_ptr<NGFragmentItem>>& NGFragmentItemsBuilder::Items(
+const Vector<scoped_refptr<NGFragmentItem>>& NGFragmentItemsBuilder::Items(
     WritingMode writing_mode,
     TextDirection direction,
     const PhysicalSize& outer_size) {
@@ -166,7 +168,7 @@ void NGFragmentItemsBuilder::ConvertToPhysical(WritingMode writing_mode,
   // convert their logical offsets.
   const WritingMode line_writing_mode = ToLineWritingMode(writing_mode);
 
-  std::unique_ptr<NGFragmentItem>* item_iter = items_.begin();
+  scoped_refptr<NGFragmentItem>* item_iter = items_.begin();
   const LogicalOffset* offset = offsets_.begin();
   for (; item_iter != items_.end(); ++item_iter, ++offset) {
     DCHECK_NE(offset, offsets_.end());
@@ -205,7 +207,7 @@ void NGFragmentItemsBuilder::ConvertToPhysical(WritingMode writing_mode,
 base::Optional<LogicalOffset> NGFragmentItemsBuilder::LogicalOffsetFor(
     const LayoutObject& layout_object) const {
   DCHECK_EQ(items_.size(), offsets_.size());
-  for (const std::unique_ptr<NGFragmentItem>& item : items_) {
+  for (const scoped_refptr<NGFragmentItem>& item : items_) {
     if (item->GetLayoutObject() == &layout_object)
       return offsets_[&item - items_.begin()];
   }

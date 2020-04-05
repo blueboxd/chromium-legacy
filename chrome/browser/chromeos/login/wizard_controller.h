@@ -204,6 +204,10 @@ class WizardController {
   // Shows images login screen.
   void ShowLoginScreen();
 
+  // Check if advancing to |screen| is allowed using screen priorities. Return
+  // true if the priority of |screen| is higher or equal to current screen.
+  bool CanNavigateTo(OobeScreenId screen_id);
+
   // Shows default screen depending on device ownership.
   void OnOwnershipStatusCheckDone(
       DeviceSettingsService::OwnershipStatus status);
@@ -405,6 +409,7 @@ class WizardController {
   friend class WizardControllerFlowTest;
   friend class WizardControllerOobeConfigurationTest;
   friend class WizardControllerOobeResumeTest;
+  friend class WizardControllerScreenPriorityTest;
   friend class WizardControllerSupervisionTransitionOobeTest;
 
   std::unique_ptr<AccessibilityStatusSubscription> accessibility_subscription_;

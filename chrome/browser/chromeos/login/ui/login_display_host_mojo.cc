@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -184,8 +185,12 @@ void LoginDisplayHostMojo::StartWizard(OobeScreenId first_screen) {
   // screens to show.
   ObserveOobeUI();
 
-  wizard_controller_ = std::make_unique<WizardController>();
-  wizard_controller_->Init(first_screen);
+  if (features::IsOobeScreensPriorityEnabled() && wizard_controller_) {
+    wizard_controller_->AdvanceToScreen(first_screen);
+  } else {
+    wizard_controller_ = std::make_unique<WizardController>();
+    wizard_controller_->Init(first_screen);
+  }
 }
 
 WizardController* LoginDisplayHostMojo::GetWizardController() {

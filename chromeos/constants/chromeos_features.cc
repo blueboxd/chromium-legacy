@@ -225,6 +225,11 @@ const base::Feature kMediaApp{"MediaApp", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kNativeRuleBasedTyping{"NativeRuleBasedTyping",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether to use screen priorities to decide if transition from one
+// Oobe screen to another is allowed.
+const base::Feature kOobeScreensPriority{"OobeScreensPriority",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether to enable OS Settings fuzzy search, and disable search using
 // exact string matching.
 const base::Feature kNewOsSettingsSearch{"NewOsSettingsSearch",
@@ -389,6 +394,10 @@ bool IsImeDecoderWithSandboxEnabled() {
 bool IsInstantTetheringBackgroundAdvertisingSupported() {
   return base::FeatureList::IsEnabled(
       kInstantTetheringBackgroundAdvertisementSupport);
+}
+
+bool IsOobeScreensPriorityEnabled() {
+  return base::FeatureList::IsEnabled(kOobeScreensPriority);
 }
 
 bool IsParentalControlsSettingsEnabled() {

@@ -1503,7 +1503,21 @@ void WizardController::UpdateOobeConfiguration() {
   }
 }
 
+bool WizardController::CanNavigateTo(OobeScreenId screen_id) {
+  if (!current_screen_)
+    return true;
+  BaseScreen* next_screen = GetScreen(screen_id);
+  return next_screen->screen_priority() <= current_screen_->screen_priority();
+}
+
 void WizardController::AdvanceToScreen(OobeScreenId screen_id) {
+  if (features::IsOobeScreensPriorityEnabled() && !CanNavigateTo(screen_id)) {
+    LOG(WARNING) << "Cannot advance to screen : " << screen_id
+                 << " as it's priority is less than the current screen : "
+                 << current_screen_->screen_id();
+    return;
+  }
+
   if (screen_id == WelcomeView::kScreenId) {
     ShowWelcomeScreen();
   } else if (screen_id == NetworkScreenView::kScreenId) {

@@ -107,6 +107,8 @@ extern const base::Feature kNativeRuleBasedTyping;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kNewOsSettingsSearch;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kOobeScreensPriority;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kParentalControlsSettings;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kPluginVmShowCameraSetting;
@@ -175,6 +177,7 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsEduCoexistenceEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsImeDecoderWithSandboxEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 bool IsInstantTetheringBackgroundAdvertisingSupported();
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsOobeScreensPriorityEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsParentalControlsSettingsEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsQuickAnswersDogfood();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsQuickAnswersEnabled();

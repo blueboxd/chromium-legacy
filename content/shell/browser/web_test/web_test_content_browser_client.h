@@ -50,7 +50,7 @@ class WebTestContentBrowserClient : public ShellContentBrowserClient {
   void ResetFakeBluetoothDelegate();
 
   // ContentBrowserClient overrides.
-  void RenderProcessWillLaunch(RenderProcessHost* host) override;
+  void BrowserChildProcessHostCreated(BrowserChildProcessHost* host) override;
   void ExposeInterfacesToRenderer(
       service_manager::BinderRegistry* registry,
       blink::AssociatedInterfaceRegistry* associated_registry,

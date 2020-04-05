@@ -16,9 +16,11 @@
 #include "base/strings/pattern.h"
 #include "base/task/post_task.h"
 #include "cc/base/switches.h"
+#include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_data.h"
 #include "content/public/browser/client_hints_controller_delegate.h"
 #include "content/public/browser/login_delegate.h"
 #include "content/public/browser/overlay_window.h"
@@ -125,6 +127,33 @@ class BoundsMatchVideoSizeOverlayWindow : public OverlayWindow {
   gfx::Size size_;
 };
 
+void CreateChildProcessCrashWatcher() {
+  class ChildProcessCrashWatcher : public BrowserChildProcessObserver {
+   public:
+    ChildProcessCrashWatcher() { BrowserChildProcessObserver::Add(this); }
+    ~ChildProcessCrashWatcher() override {
+      BrowserChildProcessObserver::Remove(this);
+    }
+
+   private:
+    // BrowserChildProcessObserver implementation.
+    void BrowserChildProcessCrashed(
+        const ChildProcessData& data,
+        const ChildProcessTerminationInfo& info) override {
+      // Child processes should not crash in web tests.
+      DLOG(ERROR) << "Child process crashed with\n"
+                     "   process_type: "
+                  << data.process_type << "\n"
+                  << "   name: " << data.name;
+      CHECK(false);
+    }
+  };
+
+  // This creates the singleton object which will now watch for crashes from
+  // any BrowserChildProcessHost.
+  static base::NoDestructor<ChildProcessCrashWatcher> watcher;
+}
+
 }  // namespace
 
 WebTestContentBrowserClient::WebTestContentBrowserClient() {
@@ -172,9 +201,12 @@ WebTestContentBrowserClient::GetNextFakeBluetoothChooser() {
   return fake_bluetooth_chooser_factory_->GetNextFakeBluetoothChooser();
 }
 
-void WebTestContentBrowserClient::RenderProcessWillLaunch(
-    RenderProcessHost* host) {
-  ShellContentBrowserClient::RenderProcessWillLaunch(host);
+void WebTestContentBrowserClient::BrowserChildProcessHostCreated(
+    BrowserChildProcessHost* host) {
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
+      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI});
+  ui_task_runner->PostTask(FROM_HERE,
+                           base::BindOnce(&CreateChildProcessCrashWatcher));
 }
 
 void WebTestContentBrowserClient::ExposeInterfacesToRenderer(

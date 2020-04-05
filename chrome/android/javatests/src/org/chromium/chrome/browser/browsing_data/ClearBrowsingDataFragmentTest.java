@@ -282,6 +282,7 @@ public class ClearBrowsingDataFragmentTest {
      */
     @Test
     @LargeTest
+    @DisabledTest(message = "https://crbug.com/1062568")
     public void testDialogAboutOtherFormsOfBrowsingHistory() {
         // Sign in.
         SigninTestUtil.addAndSignInTestAccount();

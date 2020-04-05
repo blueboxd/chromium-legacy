@@ -21,7 +21,7 @@ enum OobeScreenPriority {
   SCREEN_ENABLE_DEBUGGING,
   SCREEN_ADB_SIDELOADING,
   SCREEN_UPDATE_REQUIRED,
-  DEFAULT = 100
+  DEFAULT
 };
 
 struct StaticOobeScreenId;

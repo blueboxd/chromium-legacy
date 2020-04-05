@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/login/enrollment/mock_auto_enrollment_check_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/mock_enrollment_screen.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
+#include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screens/device_disabled_screen.h"
@@ -50,6 +51,8 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
+#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_configuration_waiter.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -64,13 +67,16 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/audio/cras_audio_handler.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
 #include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
@@ -1964,6 +1970,111 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
   mock_auto_enrollment_check_screen_->RealShow();
   EXPECT_EQ(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT,
             auto_enrollment_controller()->state());
+}
+
+class WizardControllerScreenPriorityOOBETest : public OobeBaseTest {
+ protected:
+  WizardControllerScreenPriorityOOBETest() {
+    feature_list_.InitAndEnableFeature(
+        chromeos::features::kOobeScreensPriority);
+  }
+  ~WizardControllerScreenPriorityOOBETest() override = default;
+
+  void CheckCurrentScreen(OobeScreenId screen) {
+    EXPECT_EQ(WizardController::default_controller()->GetScreen(screen),
+              WizardController::default_controller()->current_screen());
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(WizardControllerScreenPriorityOOBETest,
+                       DefaultPriorityTest) {
+  ASSERT_TRUE(WizardController::default_controller() != nullptr);
+  CheckCurrentScreen(WelcomeView::kScreenId);
+
+  // Showing network screen should pass it has default priority which is same as
+  // welcome screen.
+  WizardController::default_controller()->AdvanceToScreen(
+      NetworkScreenView::kScreenId);
+  CheckCurrentScreen(NetworkScreenView::kScreenId);
+
+  // Showing eula screen should pass it has default priority which is same as
+  // network screen.
+  WizardController::default_controller()->AdvanceToScreen(EulaView::kScreenId);
+  CheckCurrentScreen(EulaView::kScreenId);
+
+  // Showing update screen should pass it has default priority which is same as
+  // eula screen.
+  WizardController::default_controller()->AdvanceToScreen(
+      UpdateView::kScreenId);
+  CheckCurrentScreen(UpdateView::kScreenId);
+}
+
+class WizardControllerScreenPriorityTest : public LoginManagerTest {
+ protected:
+  WizardControllerScreenPriorityTest()
+      : LoginManagerTest(false /* should_launch_browser */,
+                         false /* should_initialize_webui */) {
+    set_force_webui_login(false);
+    feature_list_.InitAndEnableFeature(
+        chromeos::features::kOobeScreensPriority);
+  }
+  ~WizardControllerScreenPriorityTest() override = default;
+
+  void CheckCurrentScreen(OobeScreenId screen) {
+    EXPECT_EQ(WizardController::default_controller()->GetScreen(screen),
+              WizardController::default_controller()->current_screen());
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+  std::vector<LoginManagerMixin::TestUserInfo> test_users_{
+      LoginManagerMixin::CreateRegularUsers(1)};
+  LoginManagerMixin login_manager_mixin_{&mixin_host_, test_users_};
+};
+
+// TODO(https://crbug.com/1064271) Replace this PRE test with adding adding a
+// custom part to |ChromeBrowserMainParts| in CreatedBrowserMainParts(...) and
+// then setting the pref value in the custom part's PostEarlyInitialization().
+IN_PROC_BROWSER_TEST_F(WizardControllerScreenPriorityTest,
+                       PRE_CanNavigateToTest) {
+  // Set pref to show reset screen on startup.
+  g_browser_process->local_state()->SetBoolean(prefs::kFactoryResetRequested,
+                                               true);
+}
+
+IN_PROC_BROWSER_TEST_F(WizardControllerScreenPriorityTest, CanNavigateToTest) {
+  WizardController* const wizard_controller =
+      WizardController::default_controller();
+  ASSERT_TRUE(wizard_controller != nullptr);
+  EXPECT_EQ(1, ash::LoginScreenTestApi::GetUsersCount());
+
+  // Check reset screen is visible on startup.
+  OobeScreenWaiter(ResetView::kScreenId).Wait();
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
+
+  // Showing update required screen should fail due to lower priority than reset
+  // screen.
+  LoginDisplayHost::default_host()->StartWizard(UpdateRequiredView::kScreenId);
+  CheckCurrentScreen(ResetView::kScreenId);
+  // Wizard controller should not be recreated.
+  EXPECT_EQ(wizard_controller, WizardController::default_controller());
+
+  // Showing device disabled screen is allowed due to higher priority than reset
+  // screen.
+  LoginDisplayHost::default_host()->StartWizard(
+      DeviceDisabledScreenView::kScreenId);
+  CheckCurrentScreen(DeviceDisabledScreenView::kScreenId);
+  // Wizard controller should not be recreated.
+  EXPECT_EQ(wizard_controller, WizardController::default_controller());
+
+  // Showing update required screen should fail due to lower priority than
+  // device disabled screen.
+  LoginDisplayHost::default_host()->StartWizard(UpdateRequiredView::kScreenId);
+  CheckCurrentScreen(DeviceDisabledScreenView::kScreenId);
+  EXPECT_EQ(wizard_controller, WizardController::default_controller());
 }
 
 class WizardControllerBrokenLocalStateTest : public WizardControllerTest {

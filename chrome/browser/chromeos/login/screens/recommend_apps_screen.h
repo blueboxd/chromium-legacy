@@ -27,7 +27,7 @@ class RecommendAppsScreenView;
 class RecommendAppsScreen : public BaseScreen,
                             public RecommendAppsFetcherDelegate {
  public:
-  enum class Result { SELECTED, SKIPPED };
+  enum class Result { SELECTED, SKIPPED, NOT_APPLICABLE };
 
   static std::string GetResultString(Result result);
 
@@ -52,6 +52,10 @@ class RecommendAppsScreen : public BaseScreen,
   void OnLoadSuccess(const base::Value& app_list) override;
   void OnLoadError() override;
   void OnParseResponseError() override;
+
+  // BaseScreen:
+  bool ShouldSkipScreen() override;
+  void Skip() override;
 
  private:
   // BaseScreen:

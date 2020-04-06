@@ -69,6 +69,20 @@ void FaviconHelper::Destroy(JNIEnv* env) {
   delete this;
 }
 
+jboolean FaviconHelper::GetComposedFaviconImage(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& j_profile,
+    const base::android::JavaParamRef<jobjectArray>& j_urls,
+    jint j_desired_size_in_pixel,
+    const base::android::JavaParamRef<jobject>& j_favicon_image_callback) {
+  // TODO(crbug.com/1064153): Real implementation.
+  ScopedJavaLocalRef<jobject> j_favicon_bitmap;
+  ScopedJavaLocalRef<jstring> j_icon_url;
+  Java_FaviconImageCallback_onFaviconAvailable(env, j_favicon_image_callback,
+                                               j_favicon_bitmap, j_icon_url);
+  return true;
+}
+
 jboolean FaviconHelper::GetLocalFaviconImageForURL(
     JNIEnv* env,
     const JavaParamRef<jobject>& j_profile,

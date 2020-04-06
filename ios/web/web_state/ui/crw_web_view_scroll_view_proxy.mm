@@ -11,7 +11,6 @@
 #import "base/ios/crb_protocol_observers.h"
 #include "base/mac/foundation_util.h"
 #include "ios/web/common/features.h"
-#import "ios/web/web_state/ui/crw_properties_store.h"
 #import "ios/web/web_state/ui/crw_web_view_scroll_view_delegate_proxy.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -111,132 +110,6 @@
   NSMutableDictionary<NSString*,
                       NSMapTable<id, CRWKeyValueObserverForwarder*>*>*
       _keyValueObserverForwarders;
-
-  // A storage used to preserve values of the scroll view properties on
-  // resetting the underlying scroll view.
-  CRWPropertiesStore* _propertiesStore;
-}
-
-// Returns a new instance of CRWPropertiesStore used in this class.
-+ (CRWPropertiesStore*)propertiesStore {
-  CRWPropertiesStore* store = [[CRWPropertiesStore alloc] init];
-
-  // A list of properties preserved on resetting the underlying scroll view.
-  //
-  // The underlying scroll view can be nil or can be reassigned. Properties
-  // of the underlying scroll view are usually not preserved when the scroll
-  // view is reassigned. Properties listed here will be preserved i.e.:
-  //   - If the property is assigned while the underlying scroll view is nil,
-  //     the assignment is applied when the underlying scroll view is
-  //     assigned.
-  //   - The property is preserved when the underlying scroll view is
-  //     reassigned.
-  //
-  // This list should contain all properties of UIScrollView and its
-  // ancestor classes (not limited to properties explicitly declared in
-  // CRWWebViewScrollViewProxy) which:
-  //   - is a readwrite property
-  //   - AND is supposed to be modified directly, considering it's a scroll
-  //     view of a web view. e.g., |frame| and |subviews| do not meet this
-  //     condition because they are managed by the web view.
-  //
-  // Properties not explicitly declared in CRWWebViewScrollViewProxy can still
-  // be accessed via -asUIScrollView, so they should be preserved as well.
-
-  // UIScrollView properties.
-  [store registerNonObjectPropertyWithGetter:@selector(isScrollEnabled)
-                                      setter:@selector(setScrollEnabled:)
-                                        type:@encode(BOOL)];
-  [store
-      registerNonObjectPropertyWithGetter:@selector(isDirectionalLockEnabled)
-                                   setter:@selector(setDirectionalLockEnabled:)
-                                     type:@encode(BOOL)];
-  [store registerNonObjectPropertyWithGetter:@selector(isPagingEnabled)
-                                      setter:@selector(setPagingEnabled:)
-                                        type:@encode(BOOL)];
-  [store registerNonObjectPropertyWithGetter:@selector(scrollsToTop)
-                                      setter:@selector(setScrollsToTop:)
-                                        type:@encode(BOOL)];
-  [store registerNonObjectPropertyWithGetter:@selector(bounces)
-                                      setter:@selector(setBounces:)
-                                        type:@encode(BOOL)];
-  [store registerNonObjectPropertyWithGetter:@selector(alwaysBounceVertical)
-                                      setter:@selector(setAlwaysBounceVertical:)
-                                        type:@encode(BOOL)];
-  [store
-      registerNonObjectPropertyWithGetter:@selector(alwaysBounceHorizontal)
-                                   setter:@selector(setAlwaysBounceHorizontal:)
-                                     type:@encode(BOOL)];
-  [store registerNonObjectPropertyWithGetter:@selector
-         (showsHorizontalScrollIndicator)
-                                      setter:@selector
-                                      (setShowsHorizontalScrollIndicator:)
-                                        type:@encode(BOOL)];
-  [store registerNonObjectPropertyWithGetter:@selector
-         (showsVerticalScrollIndicator)
-                                      setter:@selector
-                                      (setShowsVerticalScrollIndicator:)
-                                        type:@encode(BOOL)];
-  [store
-      registerNonObjectPropertyWithGetter:@selector(canCancelContentTouches)
-                                   setter:@selector(setCanCancelContentTouches:)
-                                     type:@encode(BOOL)];
-  [store registerNonObjectPropertyWithGetter:@selector(delaysContentTouches)
-                                      setter:@selector(setDelaysContentTouches:)
-                                        type:@encode(BOOL)];
-  [store
-      registerNonObjectPropertyWithGetter:@selector(keyboardDismissMode)
-                                   setter:@selector(setKeyboardDismissMode:)
-                                     type:@encode(
-                                              UIScrollViewKeyboardDismissMode)];
-  [store registerNonObjectPropertyWithGetter:@selector(indexDisplayMode)
-                                      setter:@selector(setIndexDisplayMode:)
-                                        type:@encode(
-                                                 UIScrollViewIndexDisplayMode)];
-  [store
-      registerNonObjectPropertyWithGetter:@selector(indicatorStyle)
-                                   setter:@selector(setIndicatorStyle:)
-                                     type:@encode(UIScrollViewIndicatorStyle)];
-
-  // UIView properties.
-  [store registerObjectPropertyWithGetter:@selector(backgroundColor)
-                                   setter:@selector(setBackgroundColor:)
-                                attribute:CRWStoredPropertyAttributeCopy];
-  [store registerNonObjectPropertyWithGetter:@selector(isHidden)
-                                      setter:@selector(setHidden:)
-                                        type:@encode(BOOL)];
-  [store registerNonObjectPropertyWithGetter:@selector(alpha)
-                                      setter:@selector(setAlpha:)
-                                        type:@encode(CGFloat)];
-  [store registerNonObjectPropertyWithGetter:@selector(isOpaque)
-                                      setter:@selector(setOpaque:)
-                                        type:@encode(BOOL)];
-  [store registerObjectPropertyWithGetter:@selector(tintColor)
-                                   setter:@selector(setTintColor:)
-                                attribute:CRWStoredPropertyAttributeStrong];
-  [store registerNonObjectPropertyWithGetter:@selector(tintAdjustmentMode)
-                                      setter:@selector(setTintAdjustmentMode:)
-                                        type:@encode(UIViewTintAdjustmentMode)];
-  [store
-      registerNonObjectPropertyWithGetter:@selector(clearsContextBeforeDrawing)
-                                   setter:@selector
-                                   (setClearsContextBeforeDrawing:)
-                                     type:@encode(BOOL)];
-  [store registerObjectPropertyWithGetter:@selector(maskView)
-                                   setter:@selector(setMaskView:)
-                                attribute:CRWStoredPropertyAttributeStrong];
-  [store
-      registerNonObjectPropertyWithGetter:@selector(isUserInteractionEnabled)
-                                   setter:@selector(setUserInteractionEnabled:)
-                                     type:@encode(BOOL)];
-  [store registerNonObjectPropertyWithGetter:@selector(isMultipleTouchEnabled)
-                                      setter:@selector(setMultipleTouchEnabled:)
-                                        type:@encode(BOOL)];
-  [store registerNonObjectPropertyWithGetter:@selector(isExclusiveTouch)
-                                      setter:@selector(setExclusiveTouch:)
-                                        type:@encode(BOOL)];
-
-  return store;
 }
 
 - (instancetype)init {
@@ -265,11 +138,6 @@
     // including those defined in third-party categories, because it provides
     // -asUIScrollView method.
     _underlyingScrollView = [[UIScrollView alloc] init];
-
-    if (base::FeatureList::IsEnabled(
-            web::features::kPreserveScrollViewProperties)) {
-      _propertiesStore = [self.class propertiesStore];
-    }
   }
   return self;
 }
@@ -296,38 +164,26 @@
     scrollView = [[UIScrollView alloc] init];
   }
 
-  // Clean up the delegate/observers of the old scroll view, and save its
-  // properties for later restoration.
+  // Clean up the delegate/observers of the old scroll view.
   [self.underlyingScrollView setDelegate:nil];
   [self stopObservingScrollView:self.underlyingScrollView];
-  if (base::FeatureList::IsEnabled(
-          web::features::kPreserveScrollViewProperties) &&
-      self.underlyingScrollView) {
-    // TODO(crbug.com/1023250): Simplify this by directly assigning the
-    // properties of the old scroll view to those in the new scroll view.
-    [_propertiesStore savePropertiesFromObject:self.underlyingScrollView];
-  }
 
-  // Set up the delegate/observers of the new scroll view, and restore its
-  // properties.
+  // Set up the delegate/observers of the new scroll view.
   DCHECK(!scrollView.delegate);
   scrollView.delegate = self.delegateProxy;
   [self startObservingScrollView:scrollView];
+
   if (base::FeatureList::IsEnabled(
-          web::features::kPreserveScrollViewProperties) &&
-      scrollView) {
-    // TODO(crbug.com/1023250): Simplify this by directly assigning the
-    // properties of the old scroll view to those in the new scroll view.
-    [_propertiesStore loadPropertiesToObject:scrollView];
-    // Clear the stored values of the properties. This prevents from keeping
-    // retaining old property values.
-    [_propertiesStore clearValues];
+          web::features::kPreserveScrollViewProperties)) {
+    [self preservePropertiesFromOldScrollView:self.underlyingScrollView
+                              toNewScrollView:scrollView];
   }
 
   self.underlyingScrollView = scrollView;
 
-  // TODO(crbug.com/1023250): Restore these using CRWPropertiesStore once the
-  // feature flag kPreserveScrollViewProperties is removed.
+  // TODO(crbug.com/1023250): Restore these in
+  // -preservePropertiesFromOldScrollView:toNewScrollView: once the feature flag
+  // kPreserveScrollViewProperties is removed.
   if (_storedClipsToBounds) {
     scrollView.clipsToBounds = *_storedClipsToBounds;
   }
@@ -341,10 +197,58 @@
   [_observers webViewScrollViewProxyDidSetScrollView:self];
 }
 
+// Preserves properties of the underlying scroll view when it changes from
+// |oldScrollView| to |newScrollView|.
+//
+// This is necessary to avoid losing properties set against the proxy when the
+// underlying scroll view is reset.
+- (void)preservePropertiesFromOldScrollView:(UIScrollView*)oldScrollView
+                            toNewScrollView:(UIScrollView*)newScrollView {
+  // This method should preserve all properties of UIScrollView and its
+  // ancestor classes (not limited to properties explicitly declared in
+  // CRWWebViewScrollViewProxy) which:
+  //   - is a readwrite property
+  //   - AND is supposed to be modified directly, considering it's a scroll
+  //     view of a web view. e.g., |frame| and |subviews| do not meet this
+  //     condition because they are managed by the web view.
+  //
+  // Properties not explicitly declared in CRWWebViewScrollViewProxy can still
+  // be accessed via -asUIScrollView, so they should be preserved as well.
+
+  // UIScrollView properties.
+  newScrollView.scrollEnabled = oldScrollView.scrollEnabled;
+  newScrollView.directionalLockEnabled = oldScrollView.directionalLockEnabled;
+  newScrollView.pagingEnabled = oldScrollView.pagingEnabled;
+  newScrollView.scrollsToTop = oldScrollView.scrollsToTop;
+  newScrollView.bounces = oldScrollView.bounces;
+  newScrollView.alwaysBounceVertical = oldScrollView.alwaysBounceVertical;
+  newScrollView.alwaysBounceHorizontal = oldScrollView.alwaysBounceHorizontal;
+  newScrollView.showsHorizontalScrollIndicator =
+      oldScrollView.showsHorizontalScrollIndicator;
+  newScrollView.showsVerticalScrollIndicator =
+      oldScrollView.showsVerticalScrollIndicator;
+  newScrollView.canCancelContentTouches = oldScrollView.canCancelContentTouches;
+  newScrollView.delaysContentTouches = oldScrollView.delaysContentTouches;
+  newScrollView.keyboardDismissMode = oldScrollView.keyboardDismissMode;
+  newScrollView.indexDisplayMode = oldScrollView.indexDisplayMode;
+  newScrollView.indicatorStyle = oldScrollView.indicatorStyle;
+
+  // UIView properties.
+  newScrollView.backgroundColor = oldScrollView.backgroundColor;
+  newScrollView.hidden = oldScrollView.hidden;
+  newScrollView.alpha = oldScrollView.alpha;
+  newScrollView.opaque = oldScrollView.opaque;
+  newScrollView.tintColor = oldScrollView.tintColor;
+  newScrollView.tintAdjustmentMode = oldScrollView.tintAdjustmentMode;
+  newScrollView.clearsContextBeforeDrawing =
+      oldScrollView.clearsContextBeforeDrawing;
+  newScrollView.maskView = oldScrollView.maskView;
+  newScrollView.userInteractionEnabled = oldScrollView.userInteractionEnabled;
+  newScrollView.multipleTouchEnabled = oldScrollView.multipleTouchEnabled;
+  newScrollView.exclusiveTouch = oldScrollView.exclusiveTouch;
+}
+
 - (BOOL)clipsToBounds {
-  if (!self.underlyingScrollView && _storedClipsToBounds) {
-    return *_storedClipsToBounds;
-  }
   return self.underlyingScrollView.clipsToBounds;
 }
 
@@ -355,13 +259,7 @@
 
 - (UIScrollViewContentInsetAdjustmentBehavior)contentInsetAdjustmentBehavior
     API_AVAILABLE(ios(11.0)) {
-  if (self.underlyingScrollView) {
-    return [self.underlyingScrollView contentInsetAdjustmentBehavior];
-  } else if (_storedContentInsetAdjustmentBehavior) {
-    return *_storedContentInsetAdjustmentBehavior;
-  } else {
-    return UIScrollViewContentInsetAdjustmentAutomatic;
-  }
+  return [self.underlyingScrollView contentInsetAdjustmentBehavior];
 }
 
 - (void)setContentInsetAdjustmentBehavior:
@@ -375,7 +273,7 @@
 }
 
 - (NSArray<__kindof UIView*>*)subviews {
-  return self.underlyingScrollView ? [self.underlyingScrollView subviews] : @[];
+  return [self.underlyingScrollView subviews];
 }
 
 #pragma mark -
@@ -422,41 +320,15 @@
 
 - (NSMethodSignature*)methodSignatureForSelector:(SEL)sel {
   // Called when this proxy is accessed through -asUIScrollView and the method
-  // is not implemented in this class. Do not call [self.underlyingScrollView
-  // methodSignatureForSelector:] here instead because self.underlyingScrollView
-  // may be nil.
-  return [UIScrollView instanceMethodSignatureForSelector:sel];
+  // is not implemented in this class.
+  return [self.underlyingScrollView methodSignatureForSelector:sel];
 }
 
 - (void)forwardInvocation:(NSInvocation*)invocation {
   // Called when this proxy is accessed through -asUIScrollView and the method
-  // is not implemented in this class.
-  if (self.underlyingScrollView) {
-    // Forwards the invocation to the undelrying scroll view.
-    [invocation invokeWithTarget:self.underlyingScrollView];
-  } else {
-    BOOL handled = NO;
-    if (base::FeatureList::IsEnabled(
-            web::features::kPreserveScrollViewProperties)) {
-      // Forwards the invocation to the property store. If it is an invocation
-      // of a getter or setter of a preserved property, it gets or sets the
-      // property in the property store, which is later restored in the
-      // underlying scroll view.
-      handled =
-          [_propertiesStore forwardInvocationToPropertiesStore:invocation];
-    }
-
-    // If it is not an invocation of a getter or setter of a preserved property,
-    // do nothing and return a zero value. This must be done explicitly because
-    // it looks not guaranteed to return a zero value if it does nothing here or
-    // call [invocation invokeWithTarget:nil].
-    if (!handled && invocation.methodSignature.methodReturnLength > 0) {
-      // NSMutableData is initialized with zero bytes.
-      NSMutableData* zeroData = [NSMutableData
-          dataWithLength:invocation.methodSignature.methodReturnLength];
-      [invocation setReturnValue:zeroData.mutableBytes];
-    }
-  }
+  // is not implemented in this class. Forwards the invocation to the undelrying
+  // scroll view.
+  [invocation invokeWithTarget:self.underlyingScrollView];
 }
 
 #pragma mark - NSObject

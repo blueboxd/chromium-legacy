@@ -8,6 +8,8 @@
 
 namespace chromeos {
 
+constexpr char BaseScreen::kNotApplicable[];
+
 BaseScreen::BaseScreen(OobeScreenId screen_id,
                        OobeScreenPriority screen_priority)
     : screen_id_(screen_id), screen_priority_(screen_priority) {}
@@ -22,6 +24,14 @@ void BaseScreen::Show() {
 void BaseScreen::Hide() {
   HideImpl();
   is_hidden_ = true;
+}
+
+bool BaseScreen::ShouldSkipScreen() {
+  return false;
+}
+
+void BaseScreen::Skip() {
+  NOTREACHED() << "Skip methog should be overriden along with ShouldSkipScreen";
 }
 
 void BaseScreen::HandleUserAction(const std::string& action_id) {

@@ -1972,6 +1972,39 @@ public class TabListMediatorUnitTest {
         }
     }
 
+    @Test
+    @Features.EnableFeatures({TAB_GROUPS_CONTINUATION_ANDROID})
+    public void testUpdateFaviconForGroup() {
+        setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
+        mMediator.setActionOnAllRelatedTabsForTesting(true);
+        mModel.get(0).model.set(TabProperties.FAVICON, null);
+        doNothing()
+                .when(mTabListFaviconProvider)
+                .getComposedFaviconImageAsync(any(), anyBoolean(), mCallbackCaptor.capture());
+
+        // Test a group of three.
+        TabImpl tab3 = prepareTab(TAB3_ID, TAB3_TITLE, TAB3_URL);
+        List<Tab> tabs = new ArrayList<>(Arrays.asList(mTab1, mTab2, tab3));
+        createTabGroup(tabs, TAB1_ID);
+        mTabObserverCaptor.getValue().onFaviconUpdated(mTab1, mFaviconBitmap);
+        List<String> urls = new ArrayList<>(Arrays.asList(TAB1_URL, TAB2_URL, TAB3_URL));
+        verify(mTabListFaviconProvider).getComposedFaviconImageAsync(eq(urls), anyBoolean(), any());
+        mCallbackCaptor.getValue().onResult(mFaviconDrawable);
+        assertThat(mModel.get(0).model.get(TabProperties.FAVICON), equalTo(mFaviconDrawable));
+
+        // Test a group of five.
+        mModel.get(1).model.set(TabProperties.FAVICON, null);
+        TabImpl tab4 = prepareTab(0, "tab 4", TAB2_URL);
+        TabImpl tab5 = prepareTab(1, "tab 5", "www.tab5.com");
+        tabs.addAll(Arrays.asList(tab4, tab5));
+        createTabGroup(tabs, TAB2_ID);
+        mTabObserverCaptor.getValue().onFaviconUpdated(mTab2, mFaviconBitmap);
+        urls = new ArrayList<>(Arrays.asList(TAB2_URL, TAB1_URL, TAB3_URL, TAB2_URL));
+        verify(mTabListFaviconProvider).getComposedFaviconImageAsync(eq(urls), anyBoolean(), any());
+        mCallbackCaptor.getValue().onResult(mFaviconDrawable);
+        assertThat(mModel.get(1).model.get(TabProperties.FAVICON), equalTo(mFaviconDrawable));
+    }
+
     private void initAndAssertAllProperties() {
         List<Tab> tabs = new ArrayList<>();
         for (int i = 0; i < mTabModel.getCount(); i++) {

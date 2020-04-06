@@ -1352,7 +1352,17 @@ void CrostiniManager::CreateLxdContainer(std::string vm_name,
   request.set_vm_name(std::move(vm_name));
   request.set_container_name(std::move(container_name));
   request.set_owner_id(owner_id_);
-  request.set_image_server(kCrostiniDefaultImageServerUrl);
+  std::string image_server_url;
+  auto* cros_component_manager =
+      g_browser_process->platform_part()->cros_component_manager();
+  if (cros_component_manager) {
+    image_server_url = cros_component_manager
+                           ->GetCompatiblePath("cros-crostini-image-server-url")
+                           .value();
+  }
+  request.set_image_server(image_server_url.empty()
+                               ? kCrostiniDefaultImageServerUrl
+                               : image_server_url);
   if (base::FeatureList::IsEnabled(
           chromeos::features::kCrostiniUseBusterImage)) {
     request.set_image_alias(kCrostiniBusterImageAlias);

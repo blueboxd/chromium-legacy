@@ -1694,7 +1694,7 @@ bool FileManagerBrowserTestBase::GetIsOffline() const {
 }
 
 bool FileManagerBrowserTestBase::GetEnableFilesNg() const {
-  return false;
+  return true;
 }
 
 bool FileManagerBrowserTestBase::GetEnableNativeSmb() const {

@@ -135,7 +135,6 @@ class LayoutFrameSet final : public LayoutBox {
 
   MinMaxSizes PreferredLogicalWidths() const override { return MinMaxSizes(); }
   MinMaxSizes ComputeIntrinsicLogicalWidths() const final {
-    NOTREACHED();
     return MinMaxSizes();
   }
 

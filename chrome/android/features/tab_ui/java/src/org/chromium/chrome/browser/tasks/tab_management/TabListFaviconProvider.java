@@ -21,12 +21,15 @@ import org.chromium.chrome.browser.ui.favicon.FaviconHelper;
 import org.chromium.chrome.browser.ui.favicon.FaviconUtils;
 import org.chromium.chrome.tab_ui.R;
 
+import java.util.List;
+
 /**
  * Provider for processed favicons in Tab list.
  */
 public class TabListFaviconProvider {
     private static Drawable sRoundedGlobeDrawable;
     private static Drawable sRoundedChromeDrawable;
+    private static Drawable sRoundedComposedDefaultDrawable;
     private final int mFaviconSize;
     private final Context mContext;
     @ColorInt
@@ -48,6 +51,8 @@ public class TabListFaviconProvider {
         mFaviconSize = context.getResources().getDimensionPixelSize(R.dimen.default_favicon_size);
 
         if (sRoundedGlobeDrawable == null) {
+            // TODO(crbug.com/1066709): From Android Developer Documentation, we should avoid
+            //  resizing vector drawable.
             Drawable globeDrawable =
                     AppCompatResources.getDrawable(context, R.drawable.ic_globe_24dp);
             Bitmap globeBitmap =
@@ -61,6 +66,10 @@ public class TabListFaviconProvider {
             Bitmap chromeBitmap =
                     BitmapFactory.decodeResource(mContext.getResources(), R.drawable.chromelogo16);
             sRoundedChromeDrawable = processBitmap(chromeBitmap);
+        }
+        if (sRoundedComposedDefaultDrawable == null) {
+            sRoundedComposedDefaultDrawable =
+                    AppCompatResources.getDrawable(context, R.drawable.ic_group_icon_16dp);
         }
         mDefaultIconColor = mContext.getResources().getColor(R.color.default_icon_color);
         mIncognitoIconColor = mContext.getResources().getColor(R.color.default_icon_color_light);
@@ -130,23 +139,44 @@ public class TabListFaviconProvider {
         }
     }
 
+    /**
+     * Asynchronously get the composed, up to 4, favicon Drawable.
+     * @param urls List of urls, up to 4, whose favicon are requested to be composed.
+     * @param isIncognito Whether the processed composed favicon is used for incognito or not.
+     * @param faviconCallback The callback that requests for the composed favicon.
+     */
+    public void getComposedFaviconImageAsync(
+            List<String> urls, boolean isIncognito, Callback<Drawable> faviconCallback) {
+        assert urls != null && urls.size() > 1 && urls.size() <= 4;
+
+        mFaviconHelper.getComposedFaviconImage(mProfile, urls, mFaviconSize, (image, iconUrl) -> {
+            if (image == null) {
+                faviconCallback.onResult(getDefaultComposedImage(isIncognito));
+            } else {
+                faviconCallback.onResult(processBitmap(image));
+            }
+        });
+    }
+
+    private Drawable getDefaultComposedImage(boolean isIncognito) {
+        return getTintedDrawable(sRoundedComposedDefaultDrawable, isIncognito);
+    }
+
     private Drawable getRoundedChromeDrawable(boolean isIncognito) {
-        @ColorInt
-        int color = isIncognito ? mIncognitoIconColor : mDefaultIconColor;
-        // Since static variable is still loaded when activity is destroyed due to configuration
-        // changes, e.g. light/dark theme changes, setColorFilter is needed when we retrieve the
-        // drawable. setColorFilter would be a no-op if color and the mode are the same.
-        sRoundedChromeDrawable.setColorFilter(color, PorterDuff.Mode.SRC_IN);
-        return sRoundedChromeDrawable;
+        return getTintedDrawable(sRoundedChromeDrawable, isIncognito);
     }
 
     private Drawable getRoundedGlobeDrawable(boolean isIncognito) {
+        return getTintedDrawable(sRoundedGlobeDrawable, isIncognito);
+    }
+
+    private Drawable getTintedDrawable(Drawable drawable, boolean isIncognito) {
         @ColorInt
         int color = isIncognito ? mIncognitoIconColor : mDefaultIconColor;
         // Since static variable is still loaded when activity is destroyed due to configuration
         // changes, e.g. light/dark theme changes, setColorFilter is needed when we retrieve the
         // drawable. setColorFilter would be a no-op if color and the mode are the same.
-        sRoundedGlobeDrawable.setColorFilter(color, PorterDuff.Mode.SRC_IN);
-        return sRoundedGlobeDrawable;
+        drawable.setColorFilter(color, PorterDuff.Mode.SRC_IN);
+        return drawable;
     }
 }

@@ -31,7 +31,7 @@
     <script src="foreground/js/main_scripts.js" defer></script>
   </head>
 
-  <body aria-label="$i18n{FILEMANAGER_APP_NAME}" tabindex="-1">
+  <body aria-label="$i18n{FILEMANAGER_APP_NAME}" tabindex="-1" class="files-ng">
     <custom-style>
       <style>
         .dialog-footer cr-input {
@@ -338,7 +338,7 @@
       </cr-menu>
     </menus>
 
-    <div class="dialog-header" role="contentinfo">
+    <div class="dialog-header files-ng" role="contentinfo">
       <div id="location-breadcrumbs" class="breadcrumbs"></div>
       <div id="read-only-indicator" hidden>
         <span id="read-only-icon"></span>
@@ -478,7 +478,7 @@
     <div class="dialog-container">
       <div class="dialog-navigation-list">
         <div class="dialog-navigation-list-contents" role="navigation">
-          <tree id="directory-tree" role="tree" tabindex="0"></tree>
+          <tree id="directory-tree" role="tree" tabindex="0" files-ng></tree>
         </div>
         <div class="dialog-navigation-list-footer" hidden>
           <div id="progress-center" hidden>

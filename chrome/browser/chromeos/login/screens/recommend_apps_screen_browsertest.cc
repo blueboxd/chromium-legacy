@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -132,6 +133,12 @@ class RecommendAppsScreenTest : public InProcessBrowserTest {
 
     InProcessBrowserTest::SetUpOnMainThread();
   }
+
+  void ShowRecommendAppsScreen() {
+    WizardController::default_controller()->AdvanceToScreen(
+        RecommendAppsScreenView::kScreenId);
+  }
+
   void TearDownOnMainThread() override {
     recommend_apps_fetcher_ = nullptr;
     recommend_apps_fetcher_factory_.reset();
@@ -200,6 +207,10 @@ class RecommendAppsScreenTest : public InProcessBrowserTest {
                LoginDisplayHost::default_host()->GetOobeWebContents(), script,
                &result) &&
            result;
+  }
+
+  policy::ProfilePolicyConnector* GetProfilePolicyConnector() {
+    return ProfileManager::GetActiveUserProfile()->GetProfilePolicyConnector();
   }
 
   RecommendAppsScreen* recommend_apps_screen_;
@@ -741,6 +752,15 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, RetryOnLoadError) {
           arc::prefs::kArcFastAppReinstallPackages);
   ASSERT_TRUE(fast_reinstall_packages);
   EXPECT_EQ(base::Value(base::Value::Type::LIST), *fast_reinstall_packages);
+}
+
+IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, SkipDueToManagedUser) {
+  GetProfilePolicyConnector()->OverrideIsManagedForTesting(true);
+
+  ShowRecommendAppsScreen();
+  WaitForScreenExit();
+  EXPECT_EQ(screen_result_.value(),
+            RecommendAppsScreen::Result::NOT_APPLICABLE);
 }
 
 }  // namespace chromeos

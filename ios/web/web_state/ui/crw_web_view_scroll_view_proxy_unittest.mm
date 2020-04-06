@@ -590,7 +590,7 @@ TEST_F(CRWWebViewScrollViewProxyTest, RemoveKVObserver) {
 //   - the setter is called when the underlying scroll view is not set
 //   - the getter is called after the underlying scroll view is still not set
 TEST_F(CRWWebViewScrollViewProxyTest,
-       PreservePropertiesWhileUnderlyingScrollViewIsNil) {
+       PreservePropertiesWhileUnderlyingScrollViewIsAbsent) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       web::features::kPreserveScrollViewProperties);

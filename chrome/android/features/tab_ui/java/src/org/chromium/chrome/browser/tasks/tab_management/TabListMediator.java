@@ -1340,9 +1340,30 @@ class TabListMediator {
     void updateFaviconForTab(Tab tab, @Nullable Bitmap icon) {
         int modelIndex = mModel.indexFromId(tab.getId());
         if (modelIndex == Tab.INVALID_TAB_ID) return;
-        // For tab group card in grid tab switcher, the favicon is set to be null.
-        if (mActionsOnAllRelatedTabs && getRelatedTabsForId(tab.getId()).size() > 1) {
-            mModel.get(modelIndex).model.set(TabProperties.FAVICON, null);
+        List<Tab> relatedTabList = getRelatedTabsForId(tab.getId());
+
+        if (mActionsOnAllRelatedTabs && relatedTabList.size() > 1) {
+            if (!TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled()) {
+                // For tab group card in grid tab switcher, the favicon is set to be null.
+                mModel.get(modelIndex).model.set(TabProperties.FAVICON, null);
+                return;
+            }
+
+            // The order of the url list matches the multi-thumbnail.
+            List<String> urls = new ArrayList<>();
+            urls.add(tab.getUrlString());
+            for (int i = 0; urls.size() < 4 && i < relatedTabList.size(); i++) {
+                if (tab.getId() == relatedTabList.get(i).getId()) continue;
+                urls.add(relatedTabList.get(i).getUrlString());
+            }
+
+            // For tab group card in grid tab switcher, the favicon is the composed favicon.
+            mTabListFaviconProvider.getComposedFaviconImageAsync(
+                    urls, tab.isIncognito(), (drawable) -> {
+                        assert drawable != null;
+                        mModel.get(modelIndex).model.set(TabProperties.FAVICON, drawable);
+                    });
+
             return;
         }
 

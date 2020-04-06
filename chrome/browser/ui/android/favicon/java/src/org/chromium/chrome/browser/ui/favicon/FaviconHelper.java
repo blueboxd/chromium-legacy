@@ -15,6 +15,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 
 import androidx.annotation.ColorInt;
+import androidx.annotation.NonNull;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.annotations.CalledByNative;
@@ -24,6 +25,8 @@ import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.url.GURL;
+
+import java.util.List;
 
 /**
  * This is a helper class to use favicon_service.cc's functionality.
@@ -214,6 +217,28 @@ public class FaviconHelper {
         FaviconHelperJni.get().touchOnDemandFavicon(mNativeFaviconHelper, profile, iconUrl);
     }
 
+    /**
+     * Get a composed, up to 4, Favicon bitmap for the requested arguments.
+     * @param profile Profile used for the FaviconService construction.
+     * @param urls The list of URLs whose favicon are requested to compose. Size should be 2 to 4.
+     * @param desiredSizeInPixel The size of the favicon in pixel we want to get.
+     * @param faviconImageCallback A method to be called back when the result is available. Note
+     *         that this callback is not called if this method returns false.
+     * @return True if GetLocalFaviconImageForURL is successfully called.
+     */
+    public boolean getComposedFaviconImage(Profile profile, @NonNull List<String> urls,
+            int desiredSizeInPixel, FaviconImageCallback faviconImageCallback) {
+        assert mNativeFaviconHelper != 0;
+
+        if (urls.size() <= 1 || urls.size() > 4) {
+            throw new IllegalStateException(
+                    "Only able to compose 2 to 4 favicon, but requested " + urls.size());
+        }
+
+        return FaviconHelperJni.get().getComposedFaviconImage(mNativeFaviconHelper, profile,
+                urls.toArray(new String[0]), desiredSizeInPixel, faviconImageCallback);
+    }
+
     private static boolean isInternalScheme(String url) {
         GURL gurl = UrlFormatter.fixupUrl(url);
         if (!gurl.isValid()) return false;
@@ -224,6 +249,8 @@ public class FaviconHelper {
     interface Natives {
         long init();
         void destroy(long nativeFaviconHelper);
+        boolean getComposedFaviconImage(long nativeFaviconHelper, Profile profile, String[] urls,
+                int desiredSizeInDip, FaviconImageCallback faviconImageCallback);
         boolean getLocalFaviconImageForURL(long nativeFaviconHelper, Profile profile,
                 String pageUrl, int desiredSizeInDip, FaviconImageCallback faviconImageCallback);
         boolean getForeignFaviconImageForURL(long nativeFaviconHelper, Profile profile,

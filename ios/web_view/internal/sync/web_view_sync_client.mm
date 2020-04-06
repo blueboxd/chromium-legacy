@@ -147,7 +147,8 @@ WebViewSyncClient::CreateDataTypeControllers(
                                    [](const auto& data_type_controller) {
                                      return data_type_controller->type() ==
                                             syncer::USER_CONSENTS;
-                                   }));
+                                   }),
+                    type_vector.end());
   return type_vector;
 }
 

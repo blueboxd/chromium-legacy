@@ -21,6 +21,10 @@ namespace chromeos {
 // method called just once.
 class BaseScreen {
  public:
+  // String which represents not applicable exit code. This exit code refers to
+  // skipping the screen due to specific unmet condition.
+  constexpr static const char kNotApplicable[] = "NotApplicable";
+
   BaseScreen(OobeScreenId screen_id, OobeScreenPriority screen_priority);
   virtual ~BaseScreen();
 
@@ -29,6 +33,13 @@ class BaseScreen {
 
   // Makes wizard screen invisible.
   void Hide();
+
+  // Returns whether the screen should be skipped i. e. should be exited due to
+  // specific unmet conditions. Override along with Skip method.
+  virtual bool ShouldSkipScreen();
+
+  // Skips the screen. Override along with ShouldSkipScreen method.
+  virtual void Skip();
 
   // Forwards user action if screen is shown.
   void HandleUserAction(const std::string& action_id);

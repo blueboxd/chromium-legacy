@@ -52,6 +52,7 @@
 #include "chrome/browser/chromeos/login/screens/app_downloading_screen.h"
 #include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen.h"
 #include "chrome/browser/chromeos/login/screens/assistant_optin_flow_screen.h"
+#include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/demo_preferences_screen.h"
 #include "chrome/browser/chromeos/login/screens/demo_setup_screen.h"
 #include "chrome/browser/chromeos/login/screens/device_disabled_screen.h"
@@ -299,19 +300,6 @@ bool IsRemoraRequisition() {
           ->browser_policy_connector_chromeos()
           ->GetDeviceCloudPolicyManager();
   return policy_manager && policy_manager->IsRemoraRequisition();
-}
-
-// Return false if the logged in user is a managed or child account. Otherwise,
-// return true if the feature flag for recommend app screen is on.
-bool ShouldShowRecommendAppsScreen() {
-  const user_manager::UserManager* user_manager =
-      user_manager::UserManager::Get();
-  DCHECK(user_manager->IsUserLoggedIn());
-  bool is_managed_account = ProfileManager::GetActiveUserProfile()
-                                ->GetProfilePolicyConnector()
-                                ->IsManaged();
-  bool is_child_account = user_manager->IsLoggedInAsChildUser();
-  return !is_managed_account && !is_child_account;
 }
 
 chromeos::LoginDisplayHost* GetLoginDisplayHost() {
@@ -808,10 +796,12 @@ void WizardController::SkipUpdateEnrollAfterEula() {
 
 void WizardController::OnScreenExit(OobeScreenId screen,
                                     const std::string& exit_reason) {
-  DCHECK(current_screen_->screen_id() == screen);
-
   VLOG(1) << "Wizard screen " << screen
           << " exited with reason: " << exit_reason;
+  // Do not perform checks and record stats for the skipped screen.
+  if (exit_reason == chromeos::BaseScreen::kNotApplicable)
+    return;
+  DCHECK(current_screen_->screen_id() == screen);
 
   RecordUMAHistogramForOOBEStepCompletionTime(
       screen, exit_reason, base::Time::Now() - screen_show_times_[screen]);
@@ -1172,16 +1162,7 @@ void WizardController::OnArcTermsOfServiceAccepted() {
     }
     return;
   }
-
-  // If the recommend app screen should be shown, show it after the user
-  // accepted the Arc TOS. Otherwise, advance to the assistant opt-in flow
-  // screen.
-  if (ShouldShowRecommendAppsScreen()) {
-    ShowRecommendAppsScreen();
-    return;
-  }
-
-  ShowAssistantOptInFlowScreen();
+  ShowRecommendAppsScreen();
 }
 
 void WizardController::OnRecommendAppsScreenExit(
@@ -1194,6 +1175,7 @@ void WizardController::OnRecommendAppsScreenExit(
       ShowAppDownloadingScreen();
       break;
     case RecommendAppsScreen::Result::SKIPPED:
+    case RecommendAppsScreen::Result::NOT_APPLICABLE:
       ShowAssistantOptInFlowScreen();
       break;
   }
@@ -1426,6 +1408,11 @@ void WizardController::SetCurrentScreen(BaseScreen* new_current) {
   VLOG(1) << "SetCurrentScreen: " << new_current->screen_id();
   if (current_screen_ == new_current || GetOobeUI() == nullptr)
     return;
+
+  if (new_current && new_current->ShouldSkipScreen()) {
+    new_current->Skip();
+    return;
+  }
 
   if (current_screen_) {
     current_screen_->Hide();

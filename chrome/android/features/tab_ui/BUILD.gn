@@ -37,6 +37,7 @@ android_resources("java_resources") {
     "java/res/drawable/fake_search_box_text_box_bg_incognito.xml",
     "java/res/drawable/hovered_tab_grid_card_background.xml",
     "java/res/drawable/ic_check_googblue_20dp_animated.xml",
+    "java/res/drawable/ic_group_icon_16dp.xml",
     "java/res/drawable/iph_drag_and_drop_animated_drawable.xml",
     "java/res/drawable/iph_drag_and_drop_drawable.xml",
     "java/res/drawable/popup_bg_dark.xml",

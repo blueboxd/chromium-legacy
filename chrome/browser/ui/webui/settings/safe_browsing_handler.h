@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_SAFE_BROWSING_HANDLER_H_
 
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
-#include "chrome/browser/ui/webui/site_settings_helper.h"
+#include "chrome/browser/ui/webui/settings/site_settings_helper.h"
 
 #include "chrome/browser/profiles/profile.h"
 

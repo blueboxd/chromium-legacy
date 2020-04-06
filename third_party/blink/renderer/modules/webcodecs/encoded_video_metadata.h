@@ -8,10 +8,14 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 
+namespace blink {
+
 struct EncodedVideoMetadata {
   bool key_frame = false;
   base::TimeDelta timestamp;
   base::Optional<base::TimeDelta> duration;
 };
+
+}  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBCODECS_ENCODED_VIDEO_METADATA_H_

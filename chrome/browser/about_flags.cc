@@ -6,6 +6,7 @@
 
 #include <iterator>
 #include <map>
+#include <memory>
 #include <set>
 #include <utility>
 
@@ -187,7 +188,6 @@
 #endif  // OS_ANDROID
 
 #if defined(OS_CHROMEOS)
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -504,7 +504,6 @@ const FeatureEntry::FeatureVariation kCloseTabSuggestionsStaleVariations[] = {
      base::size(kCloseTabSuggestionsStale_7Days), nullptr},
     {"Time & Site Engagement", kCloseTabSuggestionsTimeSiteEngagement,
      base::size(kCloseTabSuggestionsTimeSiteEngagement), nullptr},
-
 };
 #endif  // OS_ANDROID
 
@@ -3908,6 +3907,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kFilteringScrollPrediction,
                                     kFilteringPredictionFeatureVariations,
                                     "FilteringScrollPrediction")},
+
+    {"enable-first-scroll-latency-measurement",
+     flag_descriptions::kFirstScrollLatencyMeasurementName,
+     flag_descriptions::kFirstScrollLatencyMeasurementDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kFirstScrollLatencyMeasurement)},
 
     {"compositor-threaded-scrollbar-scrolling",
      flag_descriptions::kCompositorThreadedScrollbarScrollingName,

@@ -38,9 +38,6 @@ crbug.com/997202 external/wpt/infrastructure/reftest/reftest_fuzzy_ini_full.html
 crbug.com/997202 external/wpt/infrastructure/reftest/reftest_fuzzy_ini_ref_only.html [ Failure ]
 crbug.com/997202 external/wpt/infrastructure/reftest/reftest_fuzzy_ini_short.html [ Failure ]
 
-# TestRendered event isn't supported by run_web_tests.
-crbug.com/1028631 external/wpt/infrastructure/reftest/reftest_wait_TestRendered.html [ Skip ]
-
 # WPT HTTP/2 is not supported by run_web_tests.
 crbug.com/1048761 external/wpt/infrastructure/server/http2-context.sub.h2.any.html [ Skip ]
 crbug.com/1048761 external/wpt/infrastructure/server/http2-context.sub.h2.any.serviceworker.html [ Skip ]
@@ -5545,7 +5542,6 @@ crbug.com/942134 [ Win ] virtual/exotic-color-space/images/feature-policy-oversi
 crbug.com/943388 [ Win ] http/tests/devtools/network/network-recording-after-reload-with-screenshots-enabled.js [ Pass Failure ]
 
 # Sheriff 2019-03-20
-crbug.com/732103 [ Mac10.11 ] http/tests/shapedetection/shapedetection-cross-origin.html [ Timeout Pass ]
 crbug.com/943969 [ Win ] inspector-protocol/css/css-get-media-queries.js [ Pass Failure ]
 crbug.com/943969 [ Mac10.10 ] inspector-protocol/css/css-get-media-queries.js [ Pass Failure ]
 crbug.com/943969 [ Mac10.11 ] inspector-protocol/css/css-get-media-queries.js [ Pass Failure ]
@@ -6612,3 +6608,5 @@ crbug.com/1066122 virtual/threaded-no-composited-antialiasing/animations/events/
 crbug.com/1066732 fast/events/platform-wheelevent-paging-y-in-scrolling-div.html [ Pass Failure ]
 # Sheriff 2020-04-02
 crbug.com/1067084 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-with-rtl.html [ Pass Failure ]
+# Sheriff 2020-04-04
+crbug.com/1067533 [ Mac10.10 ] external/wpt/shape-detection/idlharness.https.any.sharedworker.html [ Pass Failure ]

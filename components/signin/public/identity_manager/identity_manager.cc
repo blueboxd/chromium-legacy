@@ -396,10 +396,12 @@ void IdentityManager::ForceRefreshOfExtendedAccountInfo(
 }
 
 base::android::ScopedJavaLocalRef<jobject>
-IdentityManager::GetPrimaryAccountInfo(JNIEnv* env) const {
-  if (HasPrimaryAccount())
-    return ConvertToJavaCoreAccountInfo(env, GetPrimaryAccountInfo());
-  return nullptr;
+IdentityManager::GetPrimaryAccountInfo(JNIEnv* env, jint consent_level) const {
+  CoreAccountInfo account_info =
+      GetPrimaryAccountInfo(static_cast<ConsentLevel>(consent_level));
+  if (account_info.IsEmpty())
+    return nullptr;
+  return ConvertToJavaCoreAccountInfo(env, account_info);
 }
 
 base::android::ScopedJavaLocalRef<jobject> IdentityManager::

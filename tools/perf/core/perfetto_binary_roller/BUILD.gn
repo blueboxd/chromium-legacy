@@ -5,8 +5,12 @@
 import("//build/util/generate_wrapper.gni")
 
 generate_wrapper("upload_trace_processor") {
-  data_deps =
-      [ "//third_party/perfetto/src/trace_processor:trace_processor_shell" ]
+  testonly = true
+  data_deps = [
+    "//third_party/perfetto/src/trace_processor:trace_processor_shell",
+    "//tools/perf/chrome_telemetry_build:telemetry_chrome_test_without_chrome",
+  ]
+  data = [ "//third_party/perfetto" ]
   executable = "upload_trace_processor.py"
   wrapper_script = "$root_build_dir/upload_trace_processor"
   executable_args = [

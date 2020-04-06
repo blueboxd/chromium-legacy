@@ -151,3 +151,31 @@ class WPTManifestUnitTest(unittest.TestCase):
                          'test.any.js')
         self.assertEqual(manifest.file_path_for_test_url('/test.any.worker.html'),
                          'test.any.js')
+
+    def test_crash_tests(self):
+        # Test that the manifest recognizes crash tests and that is_crash_test
+        # correctly identifies only crash tests in the manifest.
+        manifest_json = '''
+{
+    "items": {
+        "manual": {},
+        "reftest": {},
+        "testharness": {
+            "test.html": [
+                ["test.html", {}]
+            ]
+        },
+        "crashtest": {
+            "test-crash.html": [
+                ["test-crash.html", {}]
+            ]
+        }
+    }
+}
+        '''
+        manifest = WPTManifest(manifest_json)
+        self.assertEqual(manifest.all_url_items(), {u'test.html': [u'test.html', {}], u'test-crash.html': [u'test-crash.html', {}]})
+
+        self.assertTrue(manifest.is_crash_test(u'test-crash.html'))
+        self.assertFalse(manifest.is_crash_test(u'test.html'))
+        self.assertFalse(manifest.is_crash_test(u'different-test-crash.html'))

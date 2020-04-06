@@ -166,25 +166,6 @@ def make_equality_operators(cg_context):
 
     decls = ListNode([func1_def, EmptyNode(), func2_def])
 
-    # Migration adapter
-    func3_def = CxxFuncDefNode(
-        name="operator==",
-        arg_decls=["const ${class_name}& lhs", "const String& rhs"],
-        return_type="bool",
-        inline=True)
-    func3_def.set_base_template_vars(cg_context.template_bindings())
-    func3_def.body.append(TextNode("return lhs.AsString() == rhs;"))
-
-    func4_def = CxxFuncDefNode(
-        name="operator==",
-        arg_decls=["const String& lhs", "const ${class_name}& rhs"],
-        return_type="bool",
-        inline=True)
-    func4_def.set_base_template_vars(cg_context.template_bindings())
-    func4_def.body.append(TextNode("return lhs == rhs.AsString();"))
-
-    decls.extend([EmptyNode(), func3_def, EmptyNode(), func4_def])
-
     return decls, None
 
 

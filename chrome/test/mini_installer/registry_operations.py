@@ -194,6 +194,7 @@ def CleanRegistryEntry(expectation_name, expectation, variable_expander):
       'Invalid expectation for CleanRegistryEntry operation: a \'values\' ' +
       'dictionary is required for optional key %s' % key)
   for value, value_expectation in expectation['values'].iteritems():
+    value = variable_expander.Expand(value)
     assert 'type' not in value_expectation, (
         'Invalid expectation for CleanRegistryEntry operation: value %s\\%s ' +
         'must not specify a \'type\'' % key, value)

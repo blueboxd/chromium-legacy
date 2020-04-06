@@ -32,6 +32,9 @@
 - (instancetype)initWithFileURL:(NSURL*)fileURL {
   self = [super init];
   if (self) {
+    if (fileURL) {
+      DCHECK(fileURL.isFileURL) << "URL must be a file URL.";
+    }
     _fileURL = fileURL;
     _workingQueue = dispatch_queue_create(nullptr, DISPATCH_QUEUE_CONCURRENT);
   }
@@ -84,6 +87,17 @@
                               requiringSecureCoding:YES
                                               error:&error];
     DCHECK(!error) << error.debugDescription.UTF8String;
+    if (error) {
+      completion(error);
+      return;
+    }
+
+    [[NSFileManager defaultManager]
+               createDirectoryAtURL:self.fileURL.URLByDeletingLastPathComponent
+        withIntermediateDirectories:YES
+                         attributes:nil
+                              error:&error];
+
     if (error) {
       completion(error);
       return;

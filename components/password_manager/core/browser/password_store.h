@@ -107,6 +107,14 @@ class PasswordStore : protected PasswordStoreSync,
     virtual ~DatabaseCompromisedCredentialsObserver() = default;
   };
 
+  // Used to notify that unsynced credentials are about to be deleted.
+  class UnsyncedCredentialsDeletionNotifier {
+   public:
+    // Should be called from the UI thread.
+    virtual void Notify(const std::vector<autofill::PasswordForm>&) = 0;
+    virtual ~UnsyncedCredentialsDeletionNotifier() = default;
+  };
+
   // Represents a subset of autofill::PasswordForm needed for credential
   // retrievals.
   struct FormDigest {
@@ -319,6 +327,10 @@ class PasswordStore : protected PasswordStoreSync,
   // interact with PasswordSyncBridge. Must be called from the UI thread.
   std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
   CreateSyncControllerDelegate();
+
+  // Sets |deletion_notifier_|. Must not pass a nullptr.
+  void SetUnsyncedCredentialsDeletionNotifier(
+      std::unique_ptr<UnsyncedCredentialsDeletionNotifier> deletion_notifier);
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // Immediately called after |Init()| to retrieve password hash data for
@@ -810,6 +822,8 @@ class PasswordStore : protected PasswordStoreSync,
   std::unique_ptr<PasswordStoreSigninNotifier> notifier_;
   HashPasswordManager hash_password_manager_;
 #endif
+
+  std::unique_ptr<UnsyncedCredentialsDeletionNotifier> deletion_notifier_;
 
   bool shutdown_called_;
 

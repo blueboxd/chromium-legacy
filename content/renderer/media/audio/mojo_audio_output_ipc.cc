@@ -83,7 +83,6 @@ void MojoAudioOutputIPC::CreateStream(
   DCHECK_EQ(delegate_, delegate);
   // Since the creation callback won't fire if the provider receiver is gone
   // and |this| owns |stream_provider_|, unretained is safe.
-  stream_creation_start_time_ = base::TimeTicks::Now();
   mojo::PendingRemote<media::mojom::AudioOutputStreamProviderClient>
       client_remote;
   receiver_.Bind(client_remote.InitWithNewPipeAndPassReceiver());
@@ -231,8 +230,6 @@ void MojoAudioOutputIPC::Created(
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(delegate_);
 
-  UMA_HISTOGRAM_TIMES("Media.Audio.Render.OutputDeviceStreamCreationTime",
-                      base::TimeTicks::Now() - stream_creation_start_time_);
   stream_.reset();
   stream_.Bind(std::move(pending_stream));
 

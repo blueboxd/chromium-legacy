@@ -6,25 +6,19 @@
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_STORE_SIGNIN_NOTIFIER_H_
 
 #include <string>
-#include <vector>
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-
-namespace autofill {
-struct PasswordForm;
-}
 
 namespace password_manager {
 
 class PasswordStore;
 
-// Abstract class used by PasswordStore to receive/send notifications about
-// Chrome sign-in/sign-out events.
+// Abstract class for notifying PasswordStore about Chrome sign-in events.
 // The logic of receiving sign-in events and notifying PasswordStore is split
 // in the base abstract class (this class, in components/) and an
 // implementation (in the chrome/browser/), because components/ doesn't know
-// anything about Chrome sign-in/sign-out.
+// anything about Chrome sign-in.
 class PasswordStoreSigninNotifier {
  public:
   PasswordStoreSigninNotifier();
@@ -32,8 +26,6 @@ class PasswordStoreSigninNotifier {
 
   virtual void SubscribeToSigninEvents(PasswordStore* store) = 0;
   virtual void UnsubscribeFromSigninEvents() = 0;
-  virtual void NotifyUISignoutWillDeleteCredentials(
-      const std::vector<autofill::PasswordForm>& unsynced_credentials) = 0;
 
  protected:
   void set_store(PasswordStore* store) { store_ = store; }

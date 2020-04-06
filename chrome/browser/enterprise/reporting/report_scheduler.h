@@ -10,11 +10,11 @@
 
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "base/util/timer/wall_clock_timer.h"
 #include "chrome/browser/enterprise/reporting/notification/extension_request_observer_factory.h"
 #include "chrome/browser/enterprise/reporting/report_generator.h"
 #include "chrome/browser/enterprise/reporting/report_uploader.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
-#include "chrome/browser/ui/views/relaunch_notification/wall_clock_timer.h"
 #include "chrome/browser/upgrade_detector/build_state_observer.h"
 #include "components/prefs/pref_change_registrar.h"
 
@@ -105,7 +105,7 @@ class ReportScheduler : public ProfileManagerObserver,
 
   policy::CloudPolicyClient* cloud_policy_client_;
 
-  WallClockTimer request_timer_;
+  util::WallClockTimer request_timer_;
 
   std::unique_ptr<ReportUploader> report_uploader_;
 

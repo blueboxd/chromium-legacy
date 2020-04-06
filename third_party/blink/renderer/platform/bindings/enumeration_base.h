@@ -23,8 +23,16 @@ class PLATFORM_EXPORT EnumerationBase {
  public:
   ~EnumerationBase() = default;
 
+  // Returns the IDL enumeration value as a string.
+  // https://heycam.github.io/webidl/#dfn-enumeration-value
   const char* AsCStr() const { return string_literal_; }
   String AsString() const { return string_literal_; }
+
+  // Returns the string representation to be used by CHECK_OP family.
+  // This member function is meant only for CHECK_EQ, etc.
+  String ToString() const {
+    return String::Format("IDL enum value \"%s\"", string_literal_);
+  }
 
   // Migration adapter
   operator AtomicString() const { return string_literal_; }
@@ -57,34 +65,70 @@ class PLATFORM_EXPORT EnumerationBase {
   // |string_literal_| is a pointer to a string in the table.
   enum_int_t enum_value_ = 0;
   const char* string_literal_ = nullptr;
-
-  template <typename T>
-  friend typename std::
-      enable_if_t<std::is_base_of<bindings::EnumerationBase, T>::value, bool>
-      operator==(const T& lhs, const T& rhs);
-
-  template <typename T>
-  friend typename std::
-      enable_if_t<std::is_base_of<bindings::EnumerationBase, T>::value, bool>
-      operator!=(const T& lhs, const T& rhs);
 };
 
 }  // namespace bindings
 
-template <typename T>
-typename std::enable_if_t<std::is_base_of<bindings::EnumerationBase, T>::value,
-                          bool>
-operator==(const T& lhs, const T& rhs) {
+template <typename EnumTypeClass>
+typename std::enable_if_t<
+    std::is_base_of<bindings::EnumerationBase, EnumTypeClass>::value,
+    bool>
+operator==(const EnumTypeClass& lhs, const EnumTypeClass& rhs) {
   DCHECK(!lhs.IsEmpty() && !rhs.IsEmpty());
-  return lhs.string_literal_ == rhs.string_literal_;
+  return lhs.AsCStr() == rhs.AsCStr();
 }
 
-template <typename T>
-typename std::enable_if_t<std::is_base_of<bindings::EnumerationBase, T>::value,
-                          bool>
-operator!=(const T& lhs, const T& rhs) {
+template <typename EnumTypeClass>
+typename std::enable_if_t<
+    std::is_base_of<bindings::EnumerationBase, EnumTypeClass>::value,
+    bool>
+operator!=(const EnumTypeClass& lhs, const EnumTypeClass& rhs) {
   DCHECK(!lhs.IsEmpty() && !rhs.IsEmpty());
-  return lhs.string_literal_ != rhs.string_literal_;
+  return lhs.AsCStr() != rhs.AsCStr();
+}
+
+// Migration adapters
+template <typename EnumTypeClass>
+typename std::enable_if_t<
+    std::is_base_of<bindings::EnumerationBase, EnumTypeClass>::value,
+    bool>
+operator==(const EnumTypeClass& lhs, const String& rhs) {
+  DCHECK(!lhs.IsEmpty());
+  return lhs.AsString() == rhs;
+}
+
+template <typename EnumTypeClass>
+typename std::enable_if_t<
+    std::is_base_of<bindings::EnumerationBase, EnumTypeClass>::value,
+    bool>
+operator!=(const EnumTypeClass& lhs, const String& rhs) {
+  return !(lhs == rhs);
+}
+
+template <typename EnumTypeClass>
+typename std::enable_if_t<
+    std::is_base_of<bindings::EnumerationBase, EnumTypeClass>::value,
+    bool>
+operator==(const EnumTypeClass& lhs, const AtomicString& rhs) {
+  DCHECK(!lhs.IsEmpty());
+  return lhs.AsString() == rhs;
+}
+
+template <typename EnumTypeClass>
+typename std::enable_if_t<
+    std::is_base_of<bindings::EnumerationBase, EnumTypeClass>::value,
+    bool>
+operator==(const EnumTypeClass& lhs, const char* rhs) {
+  DCHECK(!lhs.IsEmpty());
+  return lhs.AsString() == rhs;
+}
+
+template <typename EnumTypeClass>
+typename std::enable_if_t<
+    std::is_base_of<bindings::EnumerationBase, EnumTypeClass>::value,
+    bool>
+operator==(const char* lhs, const EnumTypeClass& rhs) {
+  return rhs == lhs;
 }
 
 }  // namespace blink

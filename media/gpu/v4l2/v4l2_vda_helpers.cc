@@ -184,6 +184,7 @@ bool H264InputBufferFragmentSplitter::AdvanceFrameFragment(const uint8_t* data,
   h264_parser_->SetStream(data, size);
   H264NALU nalu;
   H264Parser::Result result;
+  bool has_frame_data = false;
   *endpos = 0;
 
   // Keep on peeking the next NALs while they don't indicate a frame
@@ -197,7 +198,8 @@ bool H264InputBufferFragmentSplitter::AdvanceFrameFragment(const uint8_t* data,
     }
     if (result == H264Parser::kEOStream) {
       // We've reached the end of the buffer before finding a frame boundary.
-      partial_frame_pending_ = true;
+      if (has_frame_data)
+        partial_frame_pending_ = true;
       *endpos = size;
       return true;
     }
@@ -206,6 +208,8 @@ bool H264InputBufferFragmentSplitter::AdvanceFrameFragment(const uint8_t* data,
       case H264NALU::kIDRSlice:
         if (nalu.size < 1)
           return false;
+
+        has_frame_data = true;
 
         // For these two, if the "first_mb_in_slice" field is zero, start a
         // new frame and return.  This field is Exp-Golomb coded starting on

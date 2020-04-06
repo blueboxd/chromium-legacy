@@ -492,6 +492,14 @@ PasswordStore::CreateSyncControllerDelegate() {
           base::Unretained(this)));
 }
 
+void PasswordStore::SetUnsyncedCredentialsDeletionNotifier(
+    std::unique_ptr<PasswordStore::UnsyncedCredentialsDeletionNotifier>
+        notifier) {
+  DCHECK(!deletion_notifier_);
+  DCHECK(notifier);
+  deletion_notifier_ = std::move(notifier);
+}
+
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 void PasswordStore::CheckReuse(const base::string16& input,
                                const std::string& domain,

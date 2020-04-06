@@ -2,16 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// https://github.com/WICG/web-codecs
 [
     RuntimeEnabled=WebCodecs
 ] interface VideoFrame {
+  [RaisesException] constructor(VideoFrameInit init, ImageBitmap source);
+
   void release();
 
   readonly attribute unsigned long long timestamp;  // microseconds
+  readonly attribute unsigned long long? duration;  // microseconds
 
-  readonly attribute unsigned long coded_width;
-  readonly attribute unsigned long coded_height;
+  readonly attribute unsigned long codedWidth;
+  readonly attribute unsigned long codedHeight;
 
-  readonly attribute unsigned long visible_width;
-  readonly attribute unsigned long visible_height;
+  readonly attribute unsigned long visibleWidth;
+  readonly attribute unsigned long visibleHeight;
 };

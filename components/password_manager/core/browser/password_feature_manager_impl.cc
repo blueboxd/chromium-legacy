@@ -40,6 +40,11 @@ bool PasswordFeatureManagerImpl::ShouldShowAccountStorageOptIn() const {
                                                               sync_service_);
 }
 
+bool PasswordFeatureManagerImpl::ShouldShowAccountStorageReSignin() const {
+  return password_manager_util::ShouldShowAccountStorageReSignin(pref_service_,
+                                                                 sync_service_);
+}
+
 void PasswordFeatureManagerImpl::SetAccountStorageOptIn(bool opt_in) {
   password_manager_util::SetAccountStorageOptIn(pref_service_, sync_service_,
                                                 opt_in);

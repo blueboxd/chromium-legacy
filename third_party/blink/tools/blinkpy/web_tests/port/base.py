@@ -884,6 +884,18 @@ class Port(object):
             WPTManifest.ensure_manifest(self, path)
         return WPTManifest(self._filesystem.read_text_file(manifest_path))
 
+    def is_wpt_crash_test(self, test_file):
+        """Returns whether a WPT test is a crashtest.
+
+        See https://web-platform-tests.org/writing-tests/crashtest.html.
+        """
+        match = self.WPT_REGEX.match(test_file)
+        if not match:
+            return False
+        wpt_path = match.group(1)
+        path_in_wpt = match.group(2)
+        return self.wpt_manifest(wpt_path).is_crash_test(path_in_wpt)
+
     def is_slow_wpt_test(self, test_file):
         match = self.WPT_REGEX.match(test_file)
         if not match:

@@ -286,7 +286,8 @@ void PasswordSaveManagerImpl::PresaveGeneratedPassword(
   votes_uploader_->set_has_generated_password(true);
 
   generation_manager_->PresaveGeneratedPassword(
-      std::move(parsed_form), form_fetcher_->GetAllRelevantMatches(),
+      std::move(parsed_form),
+      GetRelevantMatchesForGeneration(form_fetcher_->GetAllRelevantMatches()),
       GetFormSaverForGeneration());
 }
 
@@ -295,8 +296,10 @@ void PasswordSaveManagerImpl::GeneratedPasswordAccepted(
     base::WeakPtr<PasswordManagerDriver> driver) {
   generation_manager_ = std::make_unique<PasswordGenerationManager>(client_);
   generation_manager_->GeneratedPasswordAccepted(
-      std::move(parsed_form), form_fetcher_->GetNonFederatedMatches(),
-      form_fetcher_->GetFederatedMatches(), driver);
+      std::move(parsed_form),
+      GetRelevantMatchesForGeneration(form_fetcher_->GetNonFederatedMatches()),
+      GetRelevantMatchesForGeneration(form_fetcher_->GetFederatedMatches()),
+      driver);
 }
 
 void PasswordSaveManagerImpl::PasswordNoLongerGenerated() {
@@ -519,6 +522,12 @@ void PasswordSaveManagerImpl::UploadVotesAndMetrics(
 FormSaver* PasswordSaveManagerImpl::GetFormSaverForGeneration() {
   DCHECK(form_saver_);
   return form_saver_.get();
+}
+
+std::vector<const autofill::PasswordForm*>
+PasswordSaveManagerImpl::GetRelevantMatchesForGeneration(
+    const std::vector<const autofill::PasswordForm*>& matches) {
+  return matches;
 }
 
 void PasswordSaveManagerImpl::SaveInternal(

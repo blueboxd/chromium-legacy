@@ -5,12 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PERMISSIONS_PERMISSION_STATUS_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PERMISSIONS_PERMISSION_STATUS_H_
 
-#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_state_observer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -56,7 +56,7 @@ class PermissionStatus final : public EventTargetWithInlineData,
 
   // ExecutionContextLifecycleStateObserver implementation.
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState) override;
-  void ContextDestroyed() override;
+  void ContextDestroyed() override {}
 
   String state() const;
 
@@ -72,7 +72,7 @@ class PermissionStatus final : public EventTargetWithInlineData,
 
   MojoPermissionStatus status_;
   MojoPermissionDescriptor descriptor_;
-  mojo::Receiver<mojom::blink::PermissionObserver> receiver_{this};
+  HeapMojoReceiver<mojom::blink::PermissionObserver> receiver_;
 };
 
 }  // namespace blink

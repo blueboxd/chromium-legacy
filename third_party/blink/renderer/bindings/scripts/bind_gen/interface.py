@@ -2861,11 +2861,49 @@ def bind_installer_local_vars(code_node, cg_context):
     # parent_interface_template
     pattern = (
         "v8::Local<v8::FunctionTemplate> ${parent_interface_template}{_1};")
-    _1 = (" = ${wrapper_type_info}->parent_class->dom_template_function"
-          "(${isolate}, ${world})")
-    if not cg_context.class_like.inherited:
+    interface = cg_context.interface
+    if not interface:
+        _1 = ""
+    elif (interface and "Global" in interface.extended_attributes
+          and interface.indexed_and_named_properties
+          and interface.indexed_and_named_properties.has_named_properties):
+        # https://heycam.github.io/webidl/#named-properties-object
+        _1 = " = ${npo_interface_template}"  # npo = named properties object
+    elif interface.inherited:
+        _1 = (" = ${wrapper_type_info}->parent_class->dom_template_function"
+              "(${isolate}, ${world})")
+    else:
         _1 = ""
     local_vars.append(S("parent_interface_template", _format(pattern, _1=_1)))
+
+    # npo_interface_template
+    # npo = named properties object
+    text = """\
+// Named properties object
+v8::Local<v8::FunctionTemplate> ${npo_interface_template} =
+    v8::FunctionTemplate::New(${isolate});
+v8::Local<v8::ObjectTemplate> ${npo_prototype_template} =
+    ${npo_interface_template}->PrototypeTemplate();
+${npo_interface_template}->Inherit(
+    ${wrapper_type_info}->parent_class->dom_template_function(
+        ${isolate}, ${world}));
+${npo_prototype_template}->SetImmutableProto();
+V8DOMConfiguration::SetClassString(
+    ${isolate}, ${npo_prototype_template},
+    "${interface.identifier}Properties");
+// Make the named properties object look like the global object.  Note that
+// the named properties object is _not_ a prototype object, plus, we'd like
+// the named properties object to behave just like the global object (= the
+// wrapper object of the global object) from the point of view of named
+// properties.
+// https://heycam.github.io/webidl/#named-properties-object
+${npo_prototype_template}->SetInternalFieldCount(
+    kV8DefaultWrapperInternalFieldCount);
+"""
+    local_vars.append(S("npo_interface_template", text))
+    local_vars.append(
+        S("npo_prototype_template",
+          "<% npo_interface_template.request_symbol_definition() %>"))
 
     # Arguments have priority over local vars.
     template_vars = code_node.template_vars
@@ -3545,7 +3583,7 @@ def make_install_interface_template(
             body.extend([T(set_callback), T(set_length)])
         else:
             assert False
-    body.append(EmptyNode())
+        body.append(EmptyNode())
 
     if cross_origin_property_install_nodes:
         body.extend([
@@ -3553,9 +3591,35 @@ def make_install_interface_template(
             EmptyNode(),
         ])
 
+    if cg_context.class_like.identifier == "DOMException":
+        body.append(
+            T("""\
+// DOMException-specific settings
+// https://heycam.github.io/webidl/#es-DOMException-specialness
+{
+  v8::Local<v8::FunctionTemplate> intrinsic_error_prototype_interface_template =
+      v8::FunctionTemplate::New(${isolate});
+  intrinsic_error_prototype_interface_template->RemovePrototype();
+  intrinsic_error_prototype_interface_template->SetIntrinsicDataProperty(
+      V8AtomicString(${isolate}, "prototype"), v8::kErrorPrototype);
+  ${interface_template}->Inherit(intrinsic_error_prototype_interface_template);
+}
+"""))
+
+    if cg_context.class_like.identifier == "HTMLAllCollection":
+        body.append(
+            T("""\
+// HTMLAllCollection-specific settings
+// https://html.spec.whatwg.org/C/#the-htmlallcollection-interface
+${instance_template}->SetCallAsFunctionHandler(
+    ${class_name}::LegacyCallCustom);
+${instance_template}->MarkAsUndetectable();
+"""))
+
     if cg_context.class_like.identifier == "Location":
         body.append(
             T("""\
+// Location-specific settings
 // https://html.spec.whatwg.org/C/#the-location-interface
 // To create a Location object, run these steps:
 // step 3. Let valueOf be location's relevant
@@ -3593,17 +3657,6 @@ ${instance_template}->Set(
         body.extend([
             T("${instance_template}->SetImmutableProto();"),
             T("${prototype_template}->SetImmutableProto();"),
-            EmptyNode(),
-        ])
-
-    if cg_context.class_like.identifier == "HTMLAllCollection":
-        body.extend([
-            T("// HTMLAllCollection"),
-            T("// https://html.spec.whatwg.org/C/"
-              "#the-htmlallcollection-interface"),
-            T("${instance_template}->SetCallAsFunctionHandler"
-              "(${class_name}::LegacyCallCustom);"),
-            T("${instance_template}->MarkAsUndetectable();"),
             EmptyNode(),
         ])
 
@@ -3962,7 +4015,12 @@ ${instance_template}->SetHandler(
                 map(lambda flag: "int({})".format(flag), flags))))
         pattern = """\
 // Named properties
-${instance_template}->SetHandler(
+% if "Global" in interface.extended_attributes:
+${npo_prototype_template}
+% else:
+${instance_template}
+%endif
+->SetHandler(
     v8::NamedPropertyHandlerConfiguration(
         {impl_bridge}::NamedPropertyGetterCallback,
 % if interface.indexed_and_named_properties.named_setter:

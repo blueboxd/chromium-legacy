@@ -132,7 +132,8 @@ public class IdentityManager {
      * is no primary account yet or because the user signed out.
      */
     public @Nullable CoreAccountInfo getPrimaryAccountInfo() {
-        return IdentityManagerJni.get().getPrimaryAccountInfo(mNativeIdentityManager);
+        return IdentityManagerJni.get().getPrimaryAccountInfo(
+                mNativeIdentityManager, ConsentLevel.SYNC);
     }
 
     /**
@@ -216,7 +217,7 @@ public class IdentityManager {
     @NativeMethods
     public interface Natives {
         @Nullable
-        CoreAccountInfo getPrimaryAccountInfo(long nativeIdentityManager);
+        CoreAccountInfo getPrimaryAccountInfo(long nativeIdentityManager, int consentLevel);
         @Nullable
         CoreAccountInfo findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
                 long nativeIdentityManager, String email);

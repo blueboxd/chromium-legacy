@@ -105,6 +105,12 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
   // override this method to provide different logic for get the form saver.
   virtual FormSaver* GetFormSaverForGeneration();
 
+  // Returns the forms in |matches| that should be taken into account for
+  // conflict resolution during generation. Will be overridden in subclasses.
+  virtual std::vector<const autofill::PasswordForm*>
+  GetRelevantMatchesForGeneration(
+      const std::vector<const autofill::PasswordForm*>& matches);
+
   virtual void SaveInternal(
       const std::vector<const autofill::PasswordForm*>& matches,
       const base::string16& old_password);

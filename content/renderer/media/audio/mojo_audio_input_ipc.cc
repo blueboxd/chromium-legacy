@@ -44,7 +44,6 @@ void MojoAudioInputIPC::CreateStream(media::AudioInputIPCDelegate* delegate,
   factory_client_receiver_.set_disconnect_handler(base::BindOnce(
       &media::AudioInputIPCDelegate::OnError, base::Unretained(delegate_)));
 
-  stream_creation_start_time_ = base::TimeTicks::Now();
   mojo::PendingReceiver<audio::mojom::AudioProcessorControls> controls_receiver;
   if (source_params_.processing.has_value())
     controls_receiver = processor_controls_.BindNewPipeAndPassReceiver();
@@ -116,9 +115,6 @@ void MojoAudioInputIPC::StreamCreated(
   DCHECK(delegate_);
   DCHECK(!stream_);
   DCHECK(!stream_client_receiver_.is_bound());
-
-  UMA_HISTOGRAM_TIMES("Media.Audio.Render.InputDeviceStreamCreationTime",
-                      base::TimeTicks::Now() - stream_creation_start_time_);
 
   stream_.Bind(std::move(stream));
   stream_client_receiver_.Bind(std::move(stream_client_receiver));

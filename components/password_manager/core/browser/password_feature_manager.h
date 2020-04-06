@@ -28,6 +28,11 @@ class PasswordFeatureManager {
   // other requirements are met (i.e. there is a signed-in user etc).
   virtual bool ShouldShowAccountStorageOptIn() const = 0;
 
+  // Whether it makes sense to ask the user to signin again to access the
+  // account-based password storage. This is true if a user on this device
+  // previously opted into using the account store but is signed-out now.
+  virtual bool ShouldShowAccountStorageReSignin() const = 0;
+
   // Sets or clears the opt-in to using account storage for passwords for the
   // current signed-in user (unconsented primary account).
   virtual void SetAccountStorageOptIn(bool opt_in) = 0;

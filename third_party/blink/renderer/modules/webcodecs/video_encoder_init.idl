@@ -1,0 +1,18 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://github.com/WICG/web-codecs
+
+dictionary VideoEncoderInit {
+  DOMString codec;
+  DOMString profile;
+
+  VideoEncoderTuneOptions tuneOptions;
+
+  // Called whenever there is a new encoded video chunk available.
+  VideoEncoderOutputCallback output;
+
+  // Called when there is a decoding error.
+  WebCodecsErrorCallback error;
+};

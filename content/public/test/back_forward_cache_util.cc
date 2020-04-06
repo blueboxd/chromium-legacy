@@ -13,10 +13,6 @@
 
 namespace content {
 
-bool IsInBackForwardCache(RenderFrameHost* render_frame_host) {
-  return render_frame_host->IsInBackForwardCache();
-}
-
 class BackForwardCacheDisabledTester::Impl
     : public BackForwardCacheTestDelegate {
  public:

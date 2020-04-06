@@ -12,10 +12,13 @@ source_set("credential_provider") {
     "archivable_credential.mm",
     "archivable_credential_store.h",
     "archivable_credential_store.mm",
+    "constants.h",
+    "constants.mm",
   ]
   deps = [
     ":ui",
     "//base",
+    "//ios/chrome/common:ios_app_bundle_id_prefix_buildflags",
   ]
   libs = [ "Foundation.framework" ]
 }

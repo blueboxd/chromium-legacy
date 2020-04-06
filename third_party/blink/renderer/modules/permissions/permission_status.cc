@@ -39,7 +39,8 @@ PermissionStatus::PermissionStatus(ExecutionContext* execution_context,
                                    MojoPermissionDescriptor descriptor)
     : ExecutionContextLifecycleStateObserver(execution_context),
       status_(status),
-      descriptor_(std::move(descriptor)) {}
+      descriptor_(std::move(descriptor)),
+      receiver_(this, execution_context) {}
 
 PermissionStatus::~PermissionStatus() = default;
 
@@ -65,10 +66,6 @@ void PermissionStatus::ContextLifecycleStateChanged(
     StartListening();
   else
     StopListening();
-}
-
-void PermissionStatus::ContextDestroyed() {
-  StopListening();
 }
 
 String PermissionStatus::state() const {
@@ -102,6 +99,7 @@ void PermissionStatus::OnPermissionStatusChange(MojoPermissionStatus status) {
 }
 
 void PermissionStatus::Trace(Visitor* visitor) {
+  visitor->Trace(receiver_);
   EventTargetWithInlineData::Trace(visitor);
   ExecutionContextLifecycleStateObserver::Trace(visitor);
 }

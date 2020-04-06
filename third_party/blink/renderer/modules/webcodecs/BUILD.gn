@@ -11,6 +11,8 @@ blink_modules_sources("webcodecs") {
     "encoded_video_metadata.h",
     "video_decoder.cc",
     "video_decoder.h",
+    "video_encoder.cc",
+    "video_encoder.h",
     "video_frame.cc",
     "video_frame.h",
     "video_track_reader.cc",
@@ -35,10 +37,12 @@ source_set("unit_tests") {
   ]
 
   deps = [
+    "//base",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/blink/renderer/modules",
     "//third_party/blink/renderer/platform",
     "//third_party/blink/renderer/platform/wtf",
+    "//third_party/libyuv",
   ]
 }

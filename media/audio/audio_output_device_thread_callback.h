@@ -20,27 +20,10 @@ namespace media {
 class MEDIA_EXPORT AudioOutputDeviceThreadCallback
     : public media::AudioDeviceThread::Callback {
  public:
-  class Metrics {
-   public:
-    Metrics();
-    ~Metrics();
-
-    void OnCreated();
-    void OnProcess();
-    void OnInitializePlayStartTime();
-    void OnDestroyed();
-
-   private:
-    base::TimeTicks start_time_;
-    // If set, this is used to record the startup duration UMA stat.
-    base::Optional<base::TimeTicks> first_play_start_time_;
-  };
-
   AudioOutputDeviceThreadCallback(
       const media::AudioParameters& audio_parameters,
       base::UnsafeSharedMemoryRegion shared_memory_region,
-      media::AudioRendererSink::RenderCallback* render_callback,
-      std::unique_ptr<Metrics> metrics = nullptr);
+      media::AudioRendererSink::RenderCallback* render_callback);
   ~AudioOutputDeviceThreadCallback() override;
 
   void MapSharedMemory() override;
@@ -64,7 +47,6 @@ class MEDIA_EXPORT AudioOutputDeviceThreadCallback
   media::AudioRendererSink::RenderCallback* render_callback_;
   std::unique_ptr<media::AudioBus> output_bus_;
   uint64_t callback_num_;
-  std::unique_ptr<Metrics> metrics_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioOutputDeviceThreadCallback);
 };

@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/css/font_face_cache.h"
 #include "third_party/blink/renderer/core/css/font_face_set_load_event.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
+#include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
 #include "third_party/blink/renderer/core/css/resolver/font_style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
@@ -150,7 +151,7 @@ bool FontFaceSetDocument::ResolveFontStyle(const String& font_string,
     return false;
 
   String font_value = parsed_style->GetPropertyValue(CSSPropertyID::kFont);
-  if (font_value == "inherit" || font_value == "initial")
+  if (css_property_parser_helpers::IsCSSWideKeyword(font_value))
     return false;
 
   if (!GetDocument()->documentElement()) {

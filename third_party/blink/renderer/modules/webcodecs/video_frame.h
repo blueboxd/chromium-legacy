@@ -5,12 +5,16 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBCODECS_VIDEO_FRAME_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBCODECS_VIDEO_FRAME_H_
 
+#include "base/optional.h"
 #include "media/base/video_frame.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
+class ImageBitmap;
+class ExceptionState;
+class VideoFrameInit;
 
 class MODULES_EXPORT VideoFrame final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -18,13 +22,16 @@ class MODULES_EXPORT VideoFrame final : public ScriptWrappable {
  public:
   explicit VideoFrame(scoped_refptr<media::VideoFrame> frame);
 
-  // video_track_frame.idl implementation.
-  uint64_t timestamp() const;
+  // video_frame.idl implementation.
+  static VideoFrame* Create(VideoFrameInit*, ImageBitmap*, ExceptionState&);
 
-  uint32_t coded_width() const;
-  uint32_t coded_height() const;
-  uint32_t visible_width() const;
-  uint32_t visible_height() const;
+  uint64_t timestamp() const;
+  base::Optional<uint64_t> duration() const;
+
+  uint32_t codedWidth() const;
+  uint32_t codedHeight() const;
+  uint32_t visibleWidth() const;
+  uint32_t visibleHeight() const;
 
   void release();
 

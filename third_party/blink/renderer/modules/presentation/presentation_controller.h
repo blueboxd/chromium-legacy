@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_PRESENTATION_CONTROLLER_H_
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
@@ -16,6 +15,7 @@
 #include "third_party/blink/renderer/modules/presentation/presentation.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_availability_callbacks.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -80,7 +80,7 @@ class MODULES_EXPORT PresentationController
 
  private:
   // Implementation of ExecutionContextLifecycleObserver.
-  void ContextDestroyed() override;
+  void ContextDestroyed() override {}
 
   // mojom::blink::PresentationController implementation.
   void OnScreenAvailabilityUpdated(const KURL&,
@@ -113,8 +113,8 @@ class MODULES_EXPORT PresentationController
 
   // Lazily-initialized binding for mojom::blink::PresentationController. Sent
   // to |presentation_service_|'s implementation.
-  mojo::Receiver<mojom::blink::PresentationController>
-      presentation_controller_receiver_{this};
+  HeapMojoReceiver<mojom::blink::PresentationController>
+      presentation_controller_receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(PresentationController);
 };

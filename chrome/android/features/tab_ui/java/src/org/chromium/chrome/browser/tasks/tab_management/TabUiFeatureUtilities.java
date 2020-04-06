@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.DoubleCachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.IntCachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.StringCachedFieldTrialParameter;
+import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -43,6 +44,10 @@ public class TabUiFeatureUtilities {
     public static final StringCachedFieldTrialParameter TAB_GRID_LAYOUT_ANDROID_NEW_TAB_TILE =
             new StringCachedFieldTrialParameter(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
                     TAB_GRID_LAYOUT_ANDROID_NEW_TAB_TILE_PARAM, "");
+
+    public static final IntCachedFieldTrialParameter TAB_SWITCHER_ON_RETURN_MS =
+            new IntCachedFieldTrialParameter(ChromeFeatureList.TAB_SWITCHER_ON_RETURN,
+                    ReturnToChromeExperimentsUtil.TAB_SWITCHER_ON_RETURN_MS, -1);
 
     public static final String THUMBNAIL_ASPECT_RATIO_PARAM = "thumbnail_aspect_ratio";
     public static final DoubleCachedFieldTrialParameter THUMBNAIL_ASPECT_RATIO =

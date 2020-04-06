@@ -79,6 +79,7 @@ public class ChromeCachedFlags {
                 TabUiFeatureUtilities.ZOOMING_MIN_SDK,
                 TabUiFeatureUtilities.SKIP_SLOW_ZOOMING,
                 TabUiFeatureUtilities.TAB_GRID_LAYOUT_ANDROID_NEW_TAB_TILE,
+                TabUiFeatureUtilities.TAB_SWITCHER_ON_RETURN_MS,
                 TabUiFeatureUtilities.THUMBNAIL_ASPECT_RATIO);
         // clang-format on
         CachedFeatureFlags.cacheFieldTrialParameters(fieldTrialsToCache);

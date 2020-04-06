@@ -62,7 +62,8 @@
 }
 
 - (void)stop {
-  if (!self.presenter.isPresenting) {
+  if (![self.presenter isPresentingViewController:self.findBarController
+                                                      .findBarViewController]) {
     return;
   }
 

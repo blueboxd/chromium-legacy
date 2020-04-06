@@ -36,6 +36,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/public/identity_manager/account_info.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "crypto/sha2.h"
@@ -466,6 +467,33 @@ bool IsOptedInForAccountStorage(const PrefService* pref_service,
     return false;
 
   return AccountStorageSettingsReader(pref_service, gaia_id).IsOptedIn();
+}
+
+bool ShouldShowAccountStorageReSignin(const PrefService* pref_service,
+                                      const syncer::SyncService* sync_service) {
+  DCHECK(pref_service);
+
+  // Checks that the sync_service is not null and the feature is enabled.
+  if (!CanAccountStorageBeEnabled(sync_service)) {
+    return false;  // Opt-in wouldn't work here, so don't show the re-signin.
+  }
+
+  // In order to show a re-signin prompt, no user may be logged in.
+  if (!sync_service->HasDisableReason(
+          syncer::SyncService::DisableReason::DISABLE_REASON_NOT_SIGNED_IN)) {
+    return false;
+  }
+
+  const base::DictionaryValue* global_pref = pref_service->GetDictionary(
+      password_manager::prefs::kAccountStoragePerAccountSettings);
+  // Show the opt-in if any known previous user opted into using the account
+  // storage before and might want to access it again.
+  return std::any_of(
+      global_pref->begin(), global_pref->end(),
+      [](const std::pair<std::string, std::unique_ptr<base::Value>>& prefs) {
+        return prefs.second->FindBoolKey(kAccountStorageOptedInKey)
+            .value_or(false);
+      });
 }
 
 bool ShouldShowAccountStorageOptIn(const PrefService* pref_service,

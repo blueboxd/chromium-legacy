@@ -8725,13 +8725,20 @@ interface VideoDecoder
     method decode
     method flush
     method reset
+interface VideoEncoder
+    attribute @@toStringTag
+    method close
+    method constructor
+    method encode
+    method tune
 interface VideoFrame
     attribute @@toStringTag
-    getter coded_height
-    getter coded_width
+    getter codedHeight
+    getter codedWidth
+    getter duration
     getter timestamp
-    getter visible_height
-    getter visible_width
+    getter visibleHeight
+    getter visibleWidth
     method constructor
     method release
 interface VideoPlaybackQuality

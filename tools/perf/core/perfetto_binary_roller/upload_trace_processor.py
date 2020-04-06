@@ -35,7 +35,10 @@ def main(args):
       '--revision',
       help=('Perfetto revision. '
             'If not supplied, will try to infer from //third_party/perfetto.'))
-  args = parser.parse_args(args)
+
+  # When this script is invoked on a CI bot, there are some extra arguments
+  # that we have to ignore.
+  args, _ = parser.parse_known_args(args)
 
   revision = args.revision or _PerfettoRevision()
 

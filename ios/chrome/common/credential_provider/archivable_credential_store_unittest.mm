@@ -131,4 +131,29 @@ TEST_F(ArchivableCredentialStoreTest, persist) {
   EXPECT_TRUE(
       [credential isEqual:freshCredentialStore.credentials.firstObject]);
 }
+
+// Tests that ArchivableCredentialStore can save in a folder that doesn't exist.
+TEST_F(ArchivableCredentialStoreTest, createFolder) {
+  NSURL* deepFolderURL = [testStorageFileURL()
+      URLByAppendingPathComponent:@"a/deep/path/component"];
+  ArchivableCredentialStore* credentialStore =
+      [[ArchivableCredentialStore alloc] initWithFileURL:deepFolderURL];
+  EXPECT_TRUE(credentialStore);
+
+  ArchivableCredential* credential = TestCredential();
+  [credentialStore addCredential:credential];
+  EXPECT_EQ(1u, credentialStore.credentials.count);
+
+  __block BOOL blockWaitCompleted = false;
+  [credentialStore saveDataWithCompletion:^(NSError* error) {
+    EXPECT_FALSE(error);
+    blockWaitCompleted = true;
+  }];
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForFileOperationTimeout, ^bool {
+    return blockWaitCompleted;
+  }));
+  NSError* error = nil;
+  [deepFolderURL checkResourceIsReachableAndReturnError:&error];
+  EXPECT_FALSE(error);
+}
 }

@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -27,13 +28,16 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/web_contents.h"
 
 #if !defined(OS_ANDROID)
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/browser_task_traits.h"
 #endif  // !defined(OS_ANDROID)
@@ -57,6 +61,39 @@ void UpdateAllFormManagers(Profile* profile) {
         client->UpdateFormManagers();
     }
   }
+}
+
+class UnsyncedCredentialsDeletionNotifierImpl
+    : public PasswordStore::UnsyncedCredentialsDeletionNotifier {
+ public:
+  explicit UnsyncedCredentialsDeletionNotifierImpl(Profile* profile);
+  ~UnsyncedCredentialsDeletionNotifierImpl() override = default;
+
+  // Finds the last active tab and notifies their ManagePasswordsUIController.
+  void Notify(const std::vector<autofill::PasswordForm>& credentials) override;
+
+ private:
+  Profile* const profile_;
+};
+
+UnsyncedCredentialsDeletionNotifierImpl::
+    UnsyncedCredentialsDeletionNotifierImpl(Profile* profile)
+    : profile_(profile) {}
+
+void UnsyncedCredentialsDeletionNotifierImpl::Notify(
+    const std::vector<autofill::PasswordForm>& credentials) {
+  Browser* browser = chrome::FindBrowserWithProfile(profile_);
+  if (!browser)
+    return;
+  content::WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  if (!web_contents)
+    return;
+  auto* ui_controller =
+      ManagePasswordsUIController::FromWebContents(web_contents);
+  if (!ui_controller)
+    return;
+  ui_controller->NotifyUnsyncedCredentialsWillBeDeleted(credentials);
 }
 
 }  // namespace
@@ -137,6 +174,11 @@ AccountPasswordStoreFactory::BuildServiceInstanceFor(
       profile);
   password_manager_util::RemoveUselessCredentials(ps, profile->GetPrefs(), 60,
                                                   network_context_getter);
+
+#if !defined(OS_ANDROID)
+  ps->SetUnsyncedCredentialsDeletionNotifier(
+      std::make_unique<UnsyncedCredentialsDeletionNotifierImpl>(profile));
+#endif  // !defined(OS_ANDROID)
 
   return ps;
 }

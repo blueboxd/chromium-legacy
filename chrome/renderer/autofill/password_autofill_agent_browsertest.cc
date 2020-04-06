@@ -3265,16 +3265,8 @@ TEST_F(PasswordAutofillAgentTest,
 
 // Tests that password manager sees both autofill assisted and user entered
 // data on saving that is triggered by form submission.
-// Disabled on Win due to https://crbug.com/835865.
-#if defined(OS_WIN)
-#define MAYBE_UsernameChangedAfterPasswordInput_FormSubmitted \
-  DISABLED_UsernameChangedAfterPasswordInput_FormSubmitted
-#else
-#define MAYBE_UsernameChangedAfterPasswordInput_FormSubmitted \
-  UsernameChangedAfterPasswordInput_FormSubmitted
-#endif
 TEST_F(PasswordAutofillAgentTest,
-       MAYBE_UsernameChangedAfterPasswordInput_FormSubmitted) {
+       UsernameChangedAfterPasswordInput_FormSubmitted) {
   for (auto change_source :
        {FieldChangeSource::USER, FieldChangeSource::AUTOFILL,
         FieldChangeSource::USER_AUTOFILL}) {

@@ -3776,6 +3776,7 @@ jumbo_static_library("browser") {
     deps += [
       ":theme_properties",
       "//base/util/memory_pressure",
+      "//base/util/timer",
       "//chrome/app/vector_icons",
       "//chrome/browser/policy:path_parser",
       "//chrome/browser/profile_resetter:profile_reset_report_proto",

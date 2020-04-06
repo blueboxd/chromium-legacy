@@ -261,6 +261,16 @@ FormSaver* MultiStorePasswordSaveManager::GetFormSaverForGeneration() {
              : form_saver_.get();
 }
 
+std::vector<const autofill::PasswordForm*>
+MultiStorePasswordSaveManager::GetRelevantMatchesForGeneration(
+    const std::vector<const autofill::PasswordForm*>& matches) {
+  //  For account store users, only matches in the account store should be
+  //  considered for conflict resolution during generation.
+  return IsOptedInForAccountStorage() && account_store_form_saver_
+             ? MatchesInStore(matches, PasswordForm::Store::kAccountStore)
+             : matches;
+}
+
 bool MultiStorePasswordSaveManager::IsOptedInForAccountStorage() {
   return client_->GetPasswordFeatureManager()->IsOptedInForAccountStorage();
 }

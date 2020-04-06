@@ -1391,17 +1391,15 @@ bool V4L2VideoDecodeAccelerator::DequeueResolutionChangeEvent() {
   DCHECK_NE(decoder_state_, kUninitialized);
   DVLOGF(3);
 
-  struct v4l2_event ev;
-  memset(&ev, 0, sizeof(ev));
-
-  while (device_->Ioctl(VIDIOC_DQEVENT, &ev) == 0) {
-    if (ev.type == V4L2_EVENT_SOURCE_CHANGE) {
-      if (ev.u.src_change.changes & V4L2_EVENT_SRC_CH_RESOLUTION) {
+  while (base::Optional<struct v4l2_event> event = device_->DequeueEvent()) {
+    if (event->type == V4L2_EVENT_SOURCE_CHANGE) {
+      if (event->u.src_change.changes & V4L2_EVENT_SRC_CH_RESOLUTION) {
         VLOGF(2) << "got resolution change event.";
         return true;
       }
     } else {
-      VLOGF(1) << "got an event (" << ev.type << ") we haven't subscribed to.";
+      VLOGF(1) << "got an event (" << event->type
+               << ") we haven't subscribed to.";
     }
   }
   return false;

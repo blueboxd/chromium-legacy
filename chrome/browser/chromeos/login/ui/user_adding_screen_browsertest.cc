@@ -166,7 +166,13 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, PRE_AddingSeveralUsers) {
   StartupUtils::MarkOobeCompleted();
 }
 
-IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, AddingSeveralUsers) {
+// TODO(crbug.com/1067461): Flakes on ASAN and MSAN
+#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
+#define MAYBE_AddingSeveralUsers DISABLED_AddingSeveralUsers
+#else
+#define MAYBE_AddingSeveralUsers AddingSeveralUsers
+#endif
+IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, MAYBE_AddingSeveralUsers) {
   EXPECT_EQ(session_manager::SessionState::LOGIN_PRIMARY,
             session_manager::SessionManager::Get()->session_state());
 

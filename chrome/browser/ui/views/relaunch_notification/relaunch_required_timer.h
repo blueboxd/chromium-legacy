@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "chrome/browser/ui/views/relaunch_notification/wall_clock_timer.h"
+#include "base/util/timer/wall_clock_timer.h"
 
 // Timer that handles notification title refresh for relaunch required
 // notification. Created either by RelaunchRequiredDialogView for Chrome
@@ -43,7 +43,7 @@ class RelaunchRequiredTimer {
   base::Time deadline_;
 
   // A timer with which title refreshes are scheduled.
-  WallClockTimer refresh_timer_;
+  util::WallClockTimer refresh_timer_;
 
   // Callback which triggers the actual title update, which differs on Chrome
   // for desktop vs for Chrome OS.

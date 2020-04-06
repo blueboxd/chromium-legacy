@@ -14,6 +14,9 @@
 // Generates a QR code based on the |command| properties and displays it.
 - (void)generateQRCode:(GenerateQRCodeCommand*)command;
 
+// Dismisses the view showing a QR code, if present.
+- (void)hideQRCode;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_COMMANDS_QR_GENERATION_COMMANDS_H_

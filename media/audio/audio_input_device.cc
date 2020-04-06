@@ -81,7 +81,6 @@ class AudioInputDevice::AudioThreadCallback
   base::ReadOnlySharedMemoryRegion shared_memory_region_;
   base::ReadOnlySharedMemoryMapping shared_memory_mapping_;
   const base::TimeTicks start_time_;
-  bool no_callbacks_received_;
   size_t current_segment_id_;
   uint32_t last_buffer_id_;
   std::vector<std::unique_ptr<const media::AudioBus>> audio_buses_;
@@ -357,7 +356,6 @@ AudioInputDevice::AudioThreadCallback::AudioThreadCallback(
       enable_uma_(enable_uma),
       shared_memory_region_(std::move(shared_memory_region)),
       start_time_(base::TimeTicks::Now()),
-      no_callbacks_received_(true),
       current_segment_id_(0u),
       last_buffer_id_(UINT32_MAX),
       capture_callback_(capture_callback),
@@ -400,15 +398,6 @@ void AudioInputDevice::AudioThreadCallback::MapSharedMemory() {
 
 void AudioInputDevice::AudioThreadCallback::Process(uint32_t pending_data) {
   TRACE_EVENT_BEGIN0("audio", "AudioInputDevice::AudioThreadCallback::Process");
-
-  if (no_callbacks_received_) {
-    if (enable_uma_) {
-      UMA_HISTOGRAM_TIMES("Media.Audio.Render.InputDeviceStartTime",
-                          base::TimeTicks::Now() - start_time_);
-    }
-    no_callbacks_received_ = false;
-  }
-
   // The shared memory represents parameters, size of the data buffer and the
   // actual data buffer containing audio data. Map the memory into this
   // structure and parse out parameters and the data area.

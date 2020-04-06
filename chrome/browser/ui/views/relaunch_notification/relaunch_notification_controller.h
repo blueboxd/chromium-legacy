@@ -8,7 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "chrome/browser/ui/views/relaunch_notification/wall_clock_timer.h"
+#include "base/util/timer/wall_clock_timer.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/browser/upgrade_detector/upgrade_observer.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -188,7 +188,7 @@ class RelaunchNotificationController : public UpgradeObserver {
   // A timer used either to repeatedly reshow the relaunch recommended bubble
   // once the high annoyance level has been reached, or to trigger browser
   // relaunch once the relaunch required dialog's deadline is reached.
-  WallClockTimer timer_;
+  util::WallClockTimer timer_;
 
   DISALLOW_COPY_AND_ASSIGN(RelaunchNotificationController);
 };

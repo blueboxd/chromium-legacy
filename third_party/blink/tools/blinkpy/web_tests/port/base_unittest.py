@@ -621,40 +621,42 @@ class PortTest(LoggingTestCase):
         # Disable manifest update otherwise they'll be overwritten.
         port.set_option_default('manifest_update', False)
         filesystem = port.host.filesystem
-        filesystem.write_text_file(WEB_TEST_DIR + '/external/wpt/MANIFEST.json', json.dumps({
-            'items': {
-                'testharness': {
-                    'dom/ranges/Range-attributes.html': [
-                        ['dom/ranges/Range-attributes.html', {}]
-                    ],
-                    'dom/ranges/Range-attributes-slow.html': [
-                        ['dom/ranges/Range-attributes-slow.html', {'timeout': 'long'}]
-                    ],
-                    'console/console-is-a-namespace.any.js': [
-                        ['console/console-is-a-namespace.any.html', {}],
-                        ['console/console-is-a-namespace.any.worker.html', {'timeout': 'long'}],
-                    ],
-                    'html/parse.html': [
-                        ['html/parse.html?run_type=uri', {}],
-                        ['html/parse.html?run_type=write', {'timeout': 'long'}],
-                    ],
-                },
-                'manual': {},
-                'reftest': {
-                    'html/dom/elements/global-attributes/dir_auto-EN-L.html': [
-                        [
+        filesystem.write_text_file(
+            WEB_TEST_DIR + '/external/wpt/MANIFEST.json',
+            json.dumps({
+                'items': {
+                    'testharness': {
+                        'dom/ranges/Range-attributes.html': [['dom/ranges/Range-attributes.html', {}]],
+                        'dom/ranges/Range-attributes-slow.html': [['dom/ranges/Range-attributes-slow.html', {
+                            'timeout': 'long'
+                        }]],
+                        'console/console-is-a-namespace.any.js': [
+                            ['console/console-is-a-namespace.any.html', {}],
+                            ['console/console-is-a-namespace.any.worker.html', {
+                                'timeout': 'long'
+                            }],
+                        ],
+                        'html/parse.html': [
+                            ['html/parse.html?run_type=uri', {}],
+                            ['html/parse.html?run_type=write', {
+                                'timeout': 'long'
+                            }],
+                        ],
+                    },
+                    'manual': {},
+                    'reftest': {
+                        'html/dom/elements/global-attributes/dir_auto-EN-L.html': [[
                             'html/dom/elements/global-attributes/dir_auto-EN-L.html',
-                            [
-                                [
-                                    '/html/dom/elements/global-attributes/dir_auto-EN-L-ref.html',
-                                    '=='
-                                ]
-                            ],
-                            {'timeout': 'long'}
-                        ]
-                    ],
-                },
-            }}))
+                            [['/html/dom/elements/global-attributes/dir_auto-EN-L-ref.html', '==']], {
+                                'timeout': 'long'
+                            }
+                        ]],
+                    },
+                    'crashtest': {
+                        'portals/portals-no-frame-crash.html': [['portals/portals-no-frame-crash.html', {}]],
+                    },
+                }
+            }))
         filesystem.write_text_file(WEB_TEST_DIR + '/external/wpt/dom/ranges/Range-attributes.html', '')
         filesystem.write_text_file(WEB_TEST_DIR + '/external/wpt/dom/ranges/Range-attributes-slow.html', '')
         filesystem.write_text_file(WEB_TEST_DIR + '/external/wpt/console/console-is-a-namespace.any.js', '')
@@ -693,6 +695,7 @@ class PortTest(LoggingTestCase):
             'external/wpt/html/dom/elements/global-attributes/dir_auto-EN-L.html',
             'external/wpt/html/parse.html?run_type=uri',
             'external/wpt/html/parse.html?run_type=write',
+            'external/wpt/portals/portals-no-frame-crash.html',
         ]
         # test.any.js shows up on the filesystem as one file but it effectively becomes two test files:
         # test.any.html and test.any.worker.html. We should support running test.any.js by name and
@@ -736,6 +739,7 @@ class PortTest(LoggingTestCase):
             'virtual/virtual_wpt/external/wpt/html/dom/elements/global-attributes/dir_auto-EN-L.html',
             'virtual/virtual_wpt/external/wpt/html/parse.html?run_type=uri',
             'virtual/virtual_wpt/external/wpt/html/parse.html?run_type=write',
+            'virtual/virtual_wpt/external/wpt/portals/portals-no-frame-crash.html',
         ]
         dom_wpt = [
             'virtual/virtual_wpt_dom/external/wpt/dom/ranges/Range-attributes-slow.html',
@@ -800,6 +804,15 @@ class PortTest(LoggingTestCase):
         self.assertTrue(Port.should_use_wptserve('virtual/a-name/external/wpt/dom/interfaces.html'))
         self.assertFalse(Port.should_use_wptserve('harness-tests/wpt/console_logging.html'))
         self.assertFalse(Port.should_use_wptserve('dom/domparsing/namespaces-1.html'))
+
+    def test_is_wpt_crash_test(self):
+        port = self.make_port(with_tests=True)
+        PortTest._add_manifest_to_mock_file_system(port)
+
+        self.assertTrue(port.is_wpt_crash_test('external/wpt/portals/portals-no-frame-crash.html'))
+        self.assertFalse(port.is_wpt_crash_test('external/wpt/nonexistent/i-dont-exist-crash.html'))
+        self.assertFalse(port.is_wpt_crash_test('external/wpt/dom/ranges/Range-attributes.html'))
+        self.assertFalse(port.is_wpt_crash_test('portals/portals-no-frame-crash.html'))
 
     def test_is_slow_wpt_test(self):
         port = self.make_port(with_tests=True)

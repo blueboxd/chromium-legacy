@@ -101,8 +101,6 @@ class CONTENT_EXPORT MojoAudioOutputIPC
   media::AudioOutputIPCDelegate* delegate_ = nullptr;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
-  base::TimeTicks stream_creation_start_time_;
-
   // To make sure we don't send an "authorization completed" callback for a
   // stream after it's closed, we use this weak factory.
   base::WeakPtrFactory<MojoAudioOutputIPC> weak_factory_{this};

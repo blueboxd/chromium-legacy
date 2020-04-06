@@ -46,6 +46,8 @@ class MultiStorePasswordSaveManager : public PasswordSaveManagerImpl {
   FindSimilarSavedFormAndComputeState(
       const autofill::PasswordForm& parsed_submitted_form) const override;
   FormSaver* GetFormSaverForGeneration() override;
+  std::vector<const autofill::PasswordForm*> GetRelevantMatchesForGeneration(
+      const std::vector<const autofill::PasswordForm*>& matches) override;
 
  private:
   bool IsOptedInForAccountStorage();

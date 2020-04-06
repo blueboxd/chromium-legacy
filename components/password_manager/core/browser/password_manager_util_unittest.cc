@@ -14,6 +14,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/values.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/test_password_store.h"
@@ -68,6 +69,14 @@ autofill::PasswordForm GetTestProxyCredential() {
   form.username_value = base::ASCIIToUTF16(kTestUsername);
   form.password_value = base::ASCIIToUTF16(kTestPassword);
   return form;
+}
+
+base::Value CreateOptedInAccountPref() {
+  base::Value global_pref(base::Value::Type::DICTIONARY);
+  base::Value account_pref(base::Value::Type::DICTIONARY);
+  account_pref.SetBoolKey("opted_in", true);
+  global_pref.SetKey("some_gaia_hash", std::move(account_pref));
+  return global_pref;
 }
 
 }  // namespace
@@ -455,6 +464,86 @@ TEST(PasswordManagerUtil, AccountStoragePerAccountSettings_FeatureDisabled) {
   EXPECT_FALSE(IsOptedInForAccountStorage(&pref_service, &sync_service));
   EXPECT_EQ(GetDefaultPasswordStore(&pref_service, &sync_service),
             autofill::PasswordForm::Store::kProfileStore);
+}
+
+TEST(PasswordManagerUtil, ShowAccountStorageResignIn) {
+  TestingPrefServiceSimple pref_service;
+  syncer::TestSyncService sync_service;
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(
+      password_manager::features::kEnablePasswordsAccountStorage);
+
+  // Add an account to prefs which opted into using the account-storage.
+  pref_service.registry()->RegisterDictionaryPref(
+      password_manager::prefs::kAccountStoragePerAccountSettings);
+  pref_service.Set(password_manager::prefs::kAccountStoragePerAccountSettings,
+                   CreateOptedInAccountPref());
+
+  // SyncService is not running (because no user is signed-in).
+  sync_service.SetTransportState(syncer::SyncService::TransportState::DISABLED);
+  sync_service.SetDisableReasons(
+      {syncer::SyncService::DisableReason::DISABLE_REASON_NOT_SIGNED_IN});
+
+  EXPECT_TRUE(ShouldShowAccountStorageReSignin(&pref_service, &sync_service));
+}
+
+TEST(PasswordManagerUtil, ShowAccountStorageResignIn_FeatureDisabled) {
+  TestingPrefServiceSimple pref_service;
+  syncer::TestSyncService sync_service;
+  base::test::ScopedFeatureList features;
+  features.InitAndDisableFeature(
+      password_manager::features::kEnablePasswordsAccountStorage);
+
+  // Add an account to prefs which opted into using the account-storage.
+  pref_service.registry()->RegisterDictionaryPref(
+      password_manager::prefs::kAccountStoragePerAccountSettings);
+  pref_service.Set(password_manager::prefs::kAccountStoragePerAccountSettings,
+                   CreateOptedInAccountPref());
+
+  // SyncService is not running (because no user is signed-in).
+  sync_service.SetTransportState(syncer::SyncService::TransportState::DISABLED);
+  sync_service.SetDisableReasons(
+      {syncer::SyncService::DisableReason::DISABLE_REASON_NOT_SIGNED_IN});
+
+  EXPECT_FALSE(ShouldShowAccountStorageReSignin(&pref_service, &sync_service));
+}
+
+TEST(PasswordManagerUtil, DontShowAccountStorageResignIn_SyncActive) {
+  TestingPrefServiceSimple pref_service;
+  syncer::TestSyncService sync_service;
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(
+      password_manager::features::kEnablePasswordsAccountStorage);
+
+  // Add an account to prefs which opted into using the account-storage.
+  pref_service.registry()->RegisterDictionaryPref(
+      password_manager::prefs::kAccountStoragePerAccountSettings);
+  pref_service.Set(password_manager::prefs::kAccountStoragePerAccountSettings,
+                   CreateOptedInAccountPref());
+
+  // SyncService is running (e.g for a different signed-in user).
+  sync_service.SetTransportState(syncer::SyncService::TransportState::ACTIVE);
+
+  EXPECT_FALSE(ShouldShowAccountStorageReSignin(&pref_service, &sync_service));
+}
+
+TEST(PasswordManagerUtil, DontShowAccountStorageResignIn_NoPrefs) {
+  TestingPrefServiceSimple pref_service;
+  syncer::TestSyncService sync_service;
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(
+      password_manager::features::kEnablePasswordsAccountStorage);
+
+  // Pref is registered but not set for any account.
+  pref_service.registry()->RegisterDictionaryPref(
+      password_manager::prefs::kAccountStoragePerAccountSettings);
+
+  // SyncService is not running (because no user is signed-in).
+  sync_service.SetTransportState(syncer::SyncService::TransportState::DISABLED);
+  sync_service.SetDisableReasons(
+      {syncer::SyncService::DisableReason::DISABLE_REASON_NOT_SIGNED_IN});
+
+  EXPECT_FALSE(ShouldShowAccountStorageReSignin(&pref_service, &sync_service));
 }
 
 TEST(PasswordManagerUtil, AccountStoragePerAccountSettings) {

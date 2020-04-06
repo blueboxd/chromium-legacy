@@ -67,7 +67,7 @@ class WPTManifest(object):
 
     def __init__(self, json_content):
         self.raw_dict = json.loads(json_content)
-        self.test_types = ('manual', 'reftest', 'testharness')
+        self.test_types = ('manual', 'reftest', 'testharness', 'crashtest')
         self.test_name_to_file = {}
 
     def _items_for_file_path(self, path_in_wpt):
@@ -148,6 +148,11 @@ class WPTManifest(object):
         """Checks if url is a valid test in the manifest."""
         assert not url.startswith('/')
         return url in self.all_urls()
+
+    def is_crash_test(self, url):
+        """Checks if a WPT is a crashtest according to the manifest."""
+        items = self.raw_dict.get('items', {})
+        return url in items.get('crashtest', {})
 
     def is_slow_test(self, url):
         """Checks if a WPT is slow (long timeout) according to the manifest.

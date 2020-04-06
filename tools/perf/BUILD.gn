@@ -97,5 +97,6 @@ group("perf_without_chrome") {
 # This group makes visible those targets in subdirectories that are not
 # explicitly depended on.
 group("gn_all") {
+  testonly = true
   deps = [ "//tools/perf/core/perfetto_binary_roller:upload_trace_processor" ]
 }

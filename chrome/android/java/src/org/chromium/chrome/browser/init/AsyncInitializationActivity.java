@@ -38,6 +38,8 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcherImpl;
@@ -154,18 +156,27 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
 
     @Override
     public final void setContentViewAndLoadLibrary(Runnable onInflationCompleteCallback) {
-        // Start loading libraries before triggerLayoutInflation(). This "hides" library loading
-        // behind UI inflation and prevents stalling UI thread. See https://crbug.com/796957 for
-        // details. Note that for optimal performance AsyncInitTaskRunner.startBackgroundTasks()
-        // needs to start warmup renderer only after library is loaded.
+        boolean enableInstantStart = CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START);
+        mOnInflationCompleteCallback = onInflationCompleteCallback;
+        if (enableInstantStart) {
+            triggerLayoutInflation();
+        }
+
+        // Start loading libraries. It happens before triggerLayoutInflation() for regular startup,
+        // but after triggerLayoutInflation() for instant start because we prioritize a Java UI and
+        // not rendering web content. This "hides" library loading behind UI inflation and prevents
+        // stalling UI thread. See https://crbug.com/796957 for details. Note that for optimal
+        // performance AsyncInitTaskRunner.startBackgroundTasks() needs to start warmup renderer
+        // only after library is loaded.
 
         if (!mStartupDelayed) {
             // Kick off long running IO tasks that can be done in parallel.
             mNativeInitializationController.startBackgroundTasks(shouldAllocateChildConnection());
         }
 
-        mOnInflationCompleteCallback = onInflationCompleteCallback;
-        triggerLayoutInflation();
+        if (!enableInstantStart) {
+            triggerLayoutInflation();
+        }
         if (mLaunchBehindWorkaround != null) mLaunchBehindWorkaround.onSetContentView();
     }
 

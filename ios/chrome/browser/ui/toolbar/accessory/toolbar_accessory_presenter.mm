@@ -72,6 +72,11 @@ const CGFloat kAnimationDuration = 0.15;
   return self;
 }
 
+- (BOOL)isPresentingViewController:(UIViewController*)viewController {
+  return self.presenting && self.presentedViewController &&
+         self.presentedViewController == viewController;
+}
+
 - (void)prepareForPresentation {
   self.presenting = YES;
   self.backgroundView = [self createBackgroundView];

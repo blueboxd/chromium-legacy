@@ -18,7 +18,4 @@ const base::Feature kAccountIdMigration{"AccountIdMigration",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-const base::Feature kOAuthRemoteConsent{"OAuthRemoteConsent",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
 }  // namespace switches

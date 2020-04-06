@@ -159,6 +159,11 @@ bool IsOptedInForAccountStorage(const PrefService* pref_service,
 bool ShouldShowAccountStorageOptIn(const PrefService* pref_service,
                                    const syncer::SyncService* sync_service);
 
+// Returns true if no user is signed in but at least one account on this device
+// opted into using the account-based passwords storage before.
+bool ShouldShowAccountStorageReSignin(const PrefService* pref_service,
+                                      const syncer::SyncService* sync_service);
+
 // Sets or clears the opt-in to using account storage for passwords for the
 // current signed-in user (unconsented primary account).
 // |pref_service| and |sync_service| must not be null.

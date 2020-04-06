@@ -200,8 +200,7 @@ IN_PROC_BROWSER_TEST_F(ProfileMenuViewExtensionsTest, ThemeChanged) {
 
 // Profile chooser view should close when a tab is added.
 // Regression test for http://crbug.com/792845
-IN_PROC_BROWSER_TEST_F(ProfileMenuViewExtensionsTest,
-                       CloseBubbleOnTadAdded) {
+IN_PROC_BROWSER_TEST_F(ProfileMenuViewExtensionsTest, CloseBubbleOnTadAdded) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
   ASSERT_EQ(1, tab_strip->count());
   ASSERT_EQ(0, tab_strip->active_index());
@@ -459,8 +458,15 @@ constexpr ProfileMenuViewBase::ActionableItem kActionableItems_SyncEnabled[] = {
     // there are no other buttons at the end.
     ProfileMenuViewBase::ActionableItem::kPasswordsButton};
 
+#if defined(OS_WIN)
+// TODO(crbug.com/1068103): Flaky on Windows
+#define MAYBE_ProfileMenuClickTest_SyncEnabled \
+  DISABLED_ProfileMenuClickTest_SyncEnabled
+#else
+#define MAYBE_ProfileMenuClickTest_SyncEnabled ProfileMenuClickTest_SyncEnabled
+#endif
 PROFILE_MENU_CLICK_TEST(kActionableItems_SyncEnabled,
-                        ProfileMenuClickTest_SyncEnabled) {
+                        MAYBE_ProfileMenuClickTest_SyncEnabled) {
   ASSERT_TRUE(sync_harness()->SetupSync());
   // Check that the sync setup was successful.
   ASSERT_TRUE(identity_manager()->HasPrimaryAccount());

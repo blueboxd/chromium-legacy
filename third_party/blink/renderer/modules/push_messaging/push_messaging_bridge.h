@@ -6,11 +6,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PUSH_MESSAGING_PUSH_MESSAGING_BRIDGE_H_
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom-blink.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
@@ -40,13 +41,17 @@ class PushMessagingBridge final : public GarbageCollected<PushMessagingBridge>,
   ScriptPromise GetPermissionState(ScriptState* script_state,
                                    const PushSubscriptionOptionsInit* options);
 
+  void Trace(Visitor*) override;
+
  private:
   // Method to be invoked when the permission status has been retrieved from the
   // permission service. Will settle the given |resolver|.
   void DidGetPermissionState(ScriptPromiseResolver* resolver,
                              mojom::blink::PermissionStatus status);
 
-  mojo::Remote<mojom::blink::PermissionService> permission_service_;
+  HeapMojoRemote<mojom::blink::PermissionService,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      permission_service_;
 
   DISALLOW_COPY_AND_ASSIGN(PushMessagingBridge);
 };

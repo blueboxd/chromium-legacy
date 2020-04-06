@@ -5,6 +5,7 @@
 modules_idl_files = [
   "encoded_video_chunk.idl",
   "video_decoder.idl",
+  "video_encoder.idl",
   "video_frame.idl",
   "video_track_reader.idl",
   "video_track_writer.idl",
@@ -12,12 +13,17 @@ modules_idl_files = [
 
 modules_callback_function_idl_files = [
   "video_decoder_output_callback.idl",
-  "webcodecs_error_callback.idl",
+  "video_encoder_output_callback.idl",
+  "web_codecs_error_callback.idl",
 ]
 
 modules_dictionary_idl_files = [
   "encoded_video_config.idl",
   "video_decoder_init.idl",
+  "video_encoder_init.idl",
+  "video_encoder_encode_options.idl",
+  "video_encoder_tune_options.idl",
+  "video_frame_init.idl",
   "video_track_writer_parameters.idl",
 ]
 

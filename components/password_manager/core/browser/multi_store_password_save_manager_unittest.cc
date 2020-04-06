@@ -25,9 +25,15 @@ using testing::Return;
 namespace password_manager {
 
 namespace {
+
+MATCHER_P2(MatchesUsernameAndPassword, username, password, "") {
+  return arg.username_value == username && arg.password_value == password;
+}
+
 // Indices of username and password fields in the observed form.
 const int kUsernameFieldIndex = 1;
 const int kPasswordFieldIndex = 2;
+
 }  // namespace
 
 class MockFormSaver : public StubFormSaver {
@@ -370,16 +376,138 @@ TEST_F(MultiStorePasswordSaveManagerTest,
   password_save_manager()->Save(observed_form_, parsed_submitted_form_);
 }
 
-TEST_F(MultiStorePasswordSaveManagerTest,
-       PresaveGeneratedPasswordInAccountStoreIfAccountStoreEnabled) {
-  SetAccountStoreEnabled(/*is_enabled=*/true);
-  fetcher()->NotifyFetchCompleted();
+// Since conflicts in the profile store should not be taken into account during
+// generation, below is a parameterized fixture to run the same tests for all 4
+// combinations that can exist there (no matches, same username match, empty
+// username match, and both).
+class MultiStorePasswordSaveManagerTestGenerationConflictWithAccountStoreEnabled
+    : public MultiStorePasswordSaveManagerTest,
+      public testing::WithParamInterface<std::tuple<bool, bool>> {
+ public:
+  MultiStorePasswordSaveManagerTestGenerationConflictWithAccountStoreEnabled() {
+    SetAccountStoreEnabled(/*is_enabled=*/true);
+  }
+
+  // Returns a password form using |saved_match_| with |username|, |password|
+  // and |in_store|.
+  PasswordForm CreateSavedMatch(const base::string16& username,
+                                const base::string16& password,
+                                const PasswordForm::Store in_store) const {
+    PasswordForm form = saved_match_;
+    form.username_value = username;
+    form.password_value = password;
+    form.in_store = in_store;
+    return form;
+  }
+
+  // Returns at most two entries in the profile store, either with the same
+  // username value as |username|, or an empty one.
+  // The test parameters determine which of the conflicts should be included.
+  std::vector<PasswordForm> CreateProfileStoreMatchesForTestParameters(
+      const base::string16& username) const {
+    bool add_same_username_match, add_empty_username_match;
+    std::tie(add_same_username_match, add_empty_username_match) = GetParam();
+
+    std::vector<PasswordForm> profile_store_matches;
+    if (add_same_username_match) {
+      profile_store_matches.push_back(CreateSavedMatch(
+          username,
+          base::ASCIIToUTF16("password_for_same_username_match_in_profile"),
+          PasswordForm::Store::kProfileStore));
+    }
+    if (add_empty_username_match) {
+      profile_store_matches.push_back(CreateSavedMatch(
+          ASCIIToUTF16(""),
+          base::ASCIIToUTF16("password_for_empty_username_match_in_profile"),
+          PasswordForm::Store::kProfileStore));
+    }
+    return profile_store_matches;
+  }
+
+  // Helper function used because SetNonFederatedAndNotifyFetchCompleted() needs
+  // a vector of pointers.
+  std::vector<const PasswordForm*> GetFormPointers(
+      const std::vector<PasswordForm>& forms) const {
+    std::vector<const PasswordForm*> pointers_to_forms;
+    for (const auto& form : forms) {
+      pointers_to_forms.push_back(&form);
+    }
+    return pointers_to_forms;
+  }
+};
+
+TEST_P(
+    MultiStorePasswordSaveManagerTestGenerationConflictWithAccountStoreEnabled,
+    PresaveGeneratedPasswordWithNoMatchesInAccountStore) {
+  std::vector<PasswordForm> matches =
+      CreateProfileStoreMatchesForTestParameters(
+          parsed_submitted_form_.username_value);
+  SetNonFederatedAndNotifyFetchCompleted(GetFormPointers(matches));
 
   EXPECT_CALL(*mock_profile_form_saver(), Save(_, _, _)).Times(0);
-  EXPECT_CALL(*mock_account_form_saver(), Save(_, _, _));
+  // Presaving found no entry in the account store with the same username, so
+  // stores the form as is.
+  EXPECT_CALL(
+      *mock_account_form_saver(),
+      Save(MatchesUsernameAndPassword(parsed_submitted_form_.username_value,
+                                      parsed_submitted_form_.password_value),
+           _, _));
 
   password_save_manager()->PresaveGeneratedPassword(parsed_submitted_form_);
 }
+
+TEST_P(
+    MultiStorePasswordSaveManagerTestGenerationConflictWithAccountStoreEnabled,
+    PresaveGeneratedPasswordWithSameUsernameMatchInAccountStore) {
+  std::vector<PasswordForm> matches =
+      CreateProfileStoreMatchesForTestParameters(
+          parsed_submitted_form_.username_value);
+  matches.push_back(CreateSavedMatch(
+      parsed_submitted_form_.username_value,
+      base::ASCIIToUTF16("password_for_same_username_conflict_in_account"),
+      PasswordForm::Store::kAccountStore));
+  SetNonFederatedAndNotifyFetchCompleted(GetFormPointers(matches));
+
+  EXPECT_CALL(*mock_profile_form_saver(), Save(_, _, _)).Times(0);
+  // Presaving found an entry in the account store with the same username, so
+  // stores the form with an empty username instead.
+  EXPECT_CALL(
+      *mock_account_form_saver(),
+      Save(MatchesUsernameAndPassword(base::ASCIIToUTF16(""),
+                                      parsed_submitted_form_.password_value),
+           _, _));
+
+  password_save_manager()->PresaveGeneratedPassword(parsed_submitted_form_);
+}
+
+TEST_P(
+    MultiStorePasswordSaveManagerTestGenerationConflictWithAccountStoreEnabled,
+    PresaveGeneratedPasswordWithEmptyUsernameMatchInAccountStore) {
+  std::vector<PasswordForm> matches =
+      CreateProfileStoreMatchesForTestParameters(
+          parsed_submitted_form_.username_value);
+  matches.push_back(CreateSavedMatch(
+      base::ASCIIToUTF16(""),
+      base::ASCIIToUTF16("password_for_empty_username_conflict_in_account"),
+      PasswordForm::Store::kAccountStore));
+  SetNonFederatedAndNotifyFetchCompleted(GetFormPointers(matches));
+
+  EXPECT_CALL(*mock_profile_form_saver(), Save(_, _, _)).Times(0);
+  // Presaving found only an entry with an empty username in the account store,
+  // so stores the form as is.
+  EXPECT_CALL(
+      *mock_account_form_saver(),
+      Save(MatchesUsernameAndPassword(parsed_submitted_form_.username_value,
+                                      parsed_submitted_form_.password_value),
+           _, _));
+
+  password_save_manager()->PresaveGeneratedPassword(parsed_submitted_form_);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    MultiStorePasswordSaveManagerTestGenerationConflictWithAccountStoreEnabled,
+    MultiStorePasswordSaveManagerTestGenerationConflictWithAccountStoreEnabled,
+    testing::Combine(testing::Bool(), testing::Bool()));
 
 TEST_F(MultiStorePasswordSaveManagerTest,
        PresaveGeneratedPasswordInProfileStoreIfAccountStoreDisabled) {

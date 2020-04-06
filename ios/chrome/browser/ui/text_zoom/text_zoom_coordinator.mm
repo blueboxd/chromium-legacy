@@ -71,6 +71,10 @@
 }
 
 - (void)stop {
+  if (![self.presenter
+          isPresentingViewController:self.textZoomViewController]) {
+    return;
+  }
   // If the Text Zoom UI is still active, the dismiss should be unanimated,
   // because the UI will be brought back later.
   BOOL animated;

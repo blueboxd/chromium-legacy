@@ -97,19 +97,21 @@ class SingleTestRunner(object):
         return DriverInput(test_name, self._timeout_ms, image_hash, args)
 
     def run(self):
-        if self._options.enable_sanitizer:
-            return self._run_sanitized_test()
+        # WPT crash tests do not have baselines, so even when re-baselining we
+        # run them as normal.
+        if self._options.enable_sanitizer or self._port.is_wpt_crash_test(self._test_name):
+            return self._run_crash_test()
         if self._options.reset_results or self._options.copy_baselines:
             return self._run_rebaseline()
         if self._reference_files:
             return self._run_reftest()
         return self._run_compare_test()
 
-    def _run_sanitized_test(self):
-        # running a sanitized test means that we ignore the actual test output and just look
+    def _run_crash_test(self):
+        # running a crash test means that we ignore the actual test output and just look
         # for timeouts and crashes (real or forced by the driver). Most crashes should
         # indicate problems found by a sanitizer (ASAN, LSAN, etc.), but we will report
-        # on other crashes and timeouts as well in order to detect at least *some* basic failures.
+        # on other crashes and timeouts as well.
         driver_output = self._driver.run_test(self._driver_input())
         expected_driver_output = self._expected_driver_output()
         failures = self._handle_error(driver_output)

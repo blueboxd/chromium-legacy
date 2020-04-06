@@ -24,6 +24,10 @@ bool WebViewPasswordFeatureManager::ShouldShowAccountStorageOptIn() const {
   return false;
 }
 
+bool WebViewPasswordFeatureManager::ShouldShowAccountStorageReSignin() const {
+  return false;
+}
+
 void WebViewPasswordFeatureManager::SetAccountStorageOptIn(bool opt_in) {
   NOTREACHED();
 }

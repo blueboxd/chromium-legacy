@@ -1348,8 +1348,6 @@ jumbo_static_library("ui") {
       "webui/policy_indicator_localized_strings_provider.h",
       "webui/profile_info_watcher.cc",
       "webui/profile_info_watcher.h",
-      "webui/recent_site_settings_helper.cc",
-      "webui/recent_site_settings_helper.h",
       "webui/settings/about_handler.cc",
       "webui/settings/about_handler.h",
       "webui/settings/accessibility_main_handler.cc",
@@ -1382,6 +1380,8 @@ jumbo_static_library("ui") {
       "webui/settings/profile_info_handler.h",
       "webui/settings/protocol_handlers_handler.cc",
       "webui/settings/protocol_handlers_handler.h",
+      "webui/settings/recent_site_settings_helper.cc",
+      "webui/settings/recent_site_settings_helper.h",
       "webui/settings/reset_settings_handler.cc",
       "webui/settings/reset_settings_handler.h",
       "webui/settings/safe_browsing_handler.cc",
@@ -1412,6 +1412,8 @@ jumbo_static_library("ui") {
       "webui/settings/shared_settings_localized_strings_provider.h",
       "webui/settings/site_settings_handler.cc",
       "webui/settings/site_settings_handler.h",
+      "webui/settings/site_settings_helper.cc",
+      "webui/settings/site_settings_helper.h",
       "webui/settings_utils.cc",
       "webui/settings_utils.h",
       "webui/signin/login_ui_service.cc",
@@ -1420,8 +1422,6 @@ jumbo_static_library("ui") {
       "webui/signin/login_ui_service_factory.h",
       "webui/signin/signin_utils.cc",
       "webui/signin/signin_utils.h",
-      "webui/site_settings_helper.cc",
-      "webui/site_settings_helper.h",
       "webui/sync_file_system_internals/dump_database_handler.cc",
       "webui/sync_file_system_internals/dump_database_handler.h",
       "webui/sync_file_system_internals/extension_statuses_handler.cc",
@@ -3288,8 +3288,6 @@ jumbo_static_library("ui") {
       "views/relaunch_notification/relaunch_required_timer.h",
       "views/relaunch_notification/relaunch_required_timer_internal.cc",
       "views/relaunch_notification/relaunch_required_timer_internal.h",
-      "views/relaunch_notification/wall_clock_timer.cc",
-      "views/relaunch_notification/wall_clock_timer.h",
       "views/sad_tab_view.cc",
       "views/sad_tab_view.h",
       "views/safe_browsing/deep_scanning_failure_modal_dialog.cc",
@@ -3484,6 +3482,7 @@ jumbo_static_library("ui") {
     ]
 
     deps += [
+      "//base/util/timer",
       "//chrome/browser/ui/views",
       "//chrome/common/qr_code_generator",
       "//components/constrained_window",
@@ -3570,9 +3569,7 @@ jumbo_static_library("ui") {
           "views/chrome_browser_main_extra_parts_views_linux.h",
         ]
         if (use_gtk) {
-          deps += [
-            "//ui/gtk",
-          ]
+          deps += [ "//ui/gtk" ]
           if (use_x11) {
             deps += [
               "//ui/gfx/x",

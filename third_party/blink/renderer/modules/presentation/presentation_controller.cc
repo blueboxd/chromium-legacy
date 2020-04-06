@@ -10,6 +10,7 @@
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_availability_callbacks.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_availability_observer.h"
@@ -21,7 +22,8 @@ namespace blink {
 
 PresentationController::PresentationController(LocalFrame& frame)
     : Supplement<LocalFrame>(frame),
-      ExecutionContextLifecycleObserver(frame.GetDocument()) {}
+      ExecutionContextLifecycleObserver(frame.GetDocument()),
+      presentation_controller_receiver_(this, frame.DomWindow()) {}
 
 PresentationController::~PresentationController() = default;
 
@@ -53,6 +55,7 @@ PresentationController* PresentationController::FromContext(
 }
 
 void PresentationController::Trace(Visitor* visitor) {
+  visitor->Trace(presentation_controller_receiver_);
   visitor->Trace(presentation_);
   visitor->Trace(connections_);
   visitor->Trace(availability_state_);
@@ -130,10 +133,6 @@ void PresentationController::OnDefaultPresentationStarted(
   // InterfacePtrInfo.
   connection->Init(std::move(result->connection_remote),
                    std::move(result->connection_receiver));
-}
-
-void PresentationController::ContextDestroyed() {
-  presentation_controller_receiver_.reset();
 }
 
 ControllerPresentationConnection*

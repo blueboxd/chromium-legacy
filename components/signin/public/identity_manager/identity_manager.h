@@ -443,7 +443,8 @@ class IdentityManager : public KeyedService,
   bool HasPrimaryAccount(JNIEnv* env) const;
 
   base::android::ScopedJavaLocalRef<jobject> GetPrimaryAccountInfo(
-      JNIEnv* env) const;
+      JNIEnv* env,
+      jint consent_level) const;
 
   base::android::ScopedJavaLocalRef<jobject> GetPrimaryAccountId(
       JNIEnv* env) const;

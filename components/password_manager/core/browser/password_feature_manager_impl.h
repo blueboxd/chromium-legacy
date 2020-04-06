@@ -28,6 +28,7 @@ class PasswordFeatureManagerImpl : public PasswordFeatureManager {
 
   bool IsOptedInForAccountStorage() const override;
   bool ShouldShowAccountStorageOptIn() const override;
+  bool ShouldShowAccountStorageReSignin() const override;
   void SetAccountStorageOptIn(bool opt_in) override;
 
   bool ShouldShowPasswordStorePicker() const override;

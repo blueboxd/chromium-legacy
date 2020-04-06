@@ -77,6 +77,7 @@ import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.feed.FeedProcessScopeFactory;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.flags.ActivityType;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
@@ -646,24 +647,48 @@ public class ChromeTabbedActivity
         }
     }
 
-    private void setupCompositorContent() {
-        try (TraceEvent e = TraceEvent.scoped("ChromeTabbedActivity.setupCompositorContent")) {
-            CompositorViewHolder compositorViewHolder = getCompositorViewHolder();
-            if (isTablet()) {
-                mLayoutManager = new LayoutManagerChromeTablet(compositorViewHolder);
-            } else {
-                if (TabUiFeatureUtilities.isGridTabSwitcherEnabled()) {
-                    TabManagementDelegate tabManagementDelegate =
-                            TabManagementModuleProvider.getDelegate();
-                    if (tabManagementDelegate != null) {
-                        mStartSurface = tabManagementDelegate.createStartSurface(this);
-                        assert LibraryLoader.getInstance().isInitialized();
-                        mStartSurface.initWithNative();
-                    }
-                }
+    private void setupCompositorContentPreNativeForPhone() {
+        if (isTablet()) return;
 
-                mLayoutManager = new LayoutManagerChromePhone(compositorViewHolder, mStartSurface);
+        try (TraceEvent e = TraceEvent.scoped(
+                     "ChromeTabbedActivity.setupCompositorContentPreNativeForPhone")) {
+            CompositorViewHolder compositorViewHolder = getCompositorViewHolder();
+            if (TabUiFeatureUtilities.isGridTabSwitcherEnabled()) {
+                TabManagementDelegate tabManagementDelegate =
+                        TabManagementModuleProvider.getDelegate();
+                if (tabManagementDelegate != null) {
+                    mStartSurface = tabManagementDelegate.createStartSurface(this);
+                }
             }
+            mLayoutManager = new LayoutManagerChromePhone(compositorViewHolder, mStartSurface);
+        }
+    }
+
+    private void setupCompositorContentPreNativeForTablet() {
+        if (!isTablet()) return;
+
+        try (TraceEvent e = TraceEvent.scoped(
+                     "ChromeTabbedActivity.setupCompositorContentPreNativeForTablet")) {
+            mLayoutManager = new LayoutManagerChromeTablet(getCompositorViewHolder());
+        }
+    }
+
+    private void setupCompositorContentPostNative() {
+        try (TraceEvent e = TraceEvent.scoped(
+                     "ChromeTabbedActivity.setupCompositorContentPostNative")) {
+            if (!isLayoutManagerCreated()) {
+                if (isTablet()) {
+                    setupCompositorContentPreNativeForTablet();
+                } else {
+                    setupCompositorContentPreNativeForPhone();
+                }
+            }
+
+            if (mStartSurface != null) {
+                assert LibraryLoader.getInstance().isInitialized();
+                mStartSurface.initWithNative();
+            }
+
             mLayoutManager.setEnableAnimations(DeviceClassManager.enableAnimations());
 
             // TODO(yusufo): get rid of findViewById(R.id.url_bar).
@@ -672,6 +697,10 @@ public class ChromeTabbedActivity
 
             mTabModelSelectorImpl.setOverviewModeBehavior(mOverviewModeController);
         }
+    }
+
+    private boolean isLayoutManagerCreated() {
+        return mLayoutManager != null;
     }
 
     private void initializeToolbarManager() {
@@ -780,8 +809,9 @@ public class ChromeTabbedActivity
         }
     }
 
-    private void addOverviewModeObserver() {
-        try (TraceEvent e = TraceEvent.scoped("ChromeTabbedActivity.addOverviewModeObserver")) {
+    private void addOverviewModeObserverPreNative() {
+        try (TraceEvent e = TraceEvent.scoped(
+                     "ChromeTabbedActivity.addOverviewModeObserverPreNative")) {
             mOverviewModeController.overrideOverviewModeController(mLayoutManager);
             mOverviewModeObserver = new EmptyOverviewModeObserver() {
                 @Override
@@ -799,6 +829,15 @@ public class ChromeTabbedActivity
                 }
             };
             mOverviewModeController.addOverviewModeObserver(mOverviewModeObserver);
+        }
+    }
+
+    private void addOverviewModeObserverPostNative() {
+        try (TraceEvent e = TraceEvent.scoped(
+                     "ChromeTabbedActivity.addOverviewModeObserverPostNative")) {
+            if (mOverviewModeObserver == null) {
+                addOverviewModeObserverPreNative();
+            }
 
             if (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_ENGAGEMENT_REPORTING_ANDROID)) {
                 // The lifecycle of this object is managed by the lifecycle dispatcher.
@@ -837,7 +876,7 @@ public class ChromeTabbedActivity
                         ChromeFeatureList.DARKEN_WEBSITES_CHECKBOX_IN_THEMES_SETTING)) {
                 WebContentsDarkModeController.createInstance();
             }
-            setupCompositorContent();
+            setupCompositorContentPostNative();
 
             // All this initialization can be expensive so it's split into multiple tasks.
             PostTask.postTask(UiThreadTaskTraits.DEFAULT, this::refreshSignIn);
@@ -849,7 +888,7 @@ public class ChromeTabbedActivity
 
             PostTask.postTask(UiThreadTaskTraits.DEFAULT,
                     this::maybeGetFeedAppLifecycleAndMaybeCreatePageViewObserver);
-            PostTask.postTask(UiThreadTaskTraits.DEFAULT, this::addOverviewModeObserver);
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, this::addOverviewModeObserverPostNative);
             PostTask.postTask(UiThreadTaskTraits.DEFAULT, this::finishNativeInitialization);
             AccessibilityUtil.addObserver(this);
         }
@@ -1527,6 +1566,24 @@ public class ChromeTabbedActivity
 
         mUndoBarPopupController =
                 new UndoBarController(this, mTabModelSelectorImpl, this::getSnackbarManager);
+
+        // When the feature flag {@link ChromeFeatureList.INSTANT_START} turns on phones (not
+        // tablet), a view-only start page created on Java will be shown before native is
+        // initialized.
+        if (CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START) && !isTablet()) {
+            prepareToShowStartPagePreNative();
+        }
+    }
+
+    /**
+     * Prepares to show the start page before native is initialized. For example, create
+     * an LayoutManagerChrome object, add overview mode observer and so on.
+     */
+    private void prepareToShowStartPagePreNative() {
+        setupCompositorContentPreNativeForPhone();
+        getCompositorViewHolder().setLayoutManager(mLayoutManager);
+        mLayoutManager.setTabModelSelector(mTabModelSelectorImpl);
+        addOverviewModeObserverPreNative();
     }
 
     @Override

@@ -1990,6 +1990,18 @@ void V4L2Device::SchedulePoll() {
   device_poller_->SchedulePoll();
 }
 
+base::Optional<struct v4l2_event> V4L2Device::DequeueEvent() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+  struct v4l2_event event = {};
+
+  if (Ioctl(VIDIOC_DQEVENT, &event) != 0) {
+    VPLOGF(3) << "Failed to dequeue event";
+    return base::nullopt;
+  }
+
+  return event;
+}
+
 V4L2RequestsQueue* V4L2Device::GetRequestsQueue() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
 

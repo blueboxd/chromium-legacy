@@ -713,6 +713,9 @@ class MEDIA_GPU_EXPORT V4L2Device
   // to be called from V4L2Queue, clients should not need to call it directly.
   void SchedulePoll();
 
+  // Attempt to dequeue a V4L2 event and return it.
+  base::Optional<struct v4l2_event> DequeueEvent();
+
   // Returns requests queue to get free requests. A null pointer is returned if
   // the queue creation failed or if requests are not supported.
   V4L2RequestsQueue* GetRequestsQueue();

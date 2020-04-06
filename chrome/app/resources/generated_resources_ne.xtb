@@ -3055,7 +3055,7 @@
 <translation id="5117930984404104619">गरिएका युआरएलहरू समावेश गर्दै, अन्य विस्तारहरूको व्यवहारलाई सञ्चालन अनुश्रवण गर्नुहोस्।</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">तपाईंको हार्ड डिस्क भरिएको छ । कृपया अर्को स्थानमा बचत गर्नुहोस् वा हार्डडिस्कमा थप खाली ठाउँ बनाउनुहोस् ।</translation>
-<translation id="5122384452788334261">तपाईंको यन्त्रको भण्डारणको खाली ठाउँ कम छ। Plugin VM प्रयोग गर्न कम्तीमा पनि <ph name="RECOMMENDED_SPACE" /> ठाउँ खाली राख्न सिफारिस गरिन्छ। ठाउँ खाली गर्न यन्त्रको भण्डारणबाट फाइलहरू मेटाउनुहोस्।</translation>
+<translation id="5122384452788334261">तपाईंको यन्त्रको भण्डारणमा खाली ठाउँ कम छ। Plugin VM प्रयोग गर्न कम्तीमा पनि <ph name="RECOMMENDED_SPACE" /> ठाउँ खाली राख्न सिफारिस गरिन्छ। ठाउँ खाली गर्न यन्त्रको भण्डारणबाट फाइलहरू मेटाउनुहोस्।</translation>
 <translation id="5123433949759960244">बास्केटबल</translation>
 <translation id="5125751979347152379">अवैध URL।</translation>
 <translation id="5126611267288187364">परिवर्तनहरू हेर्नुहोस्</translation>
@@ -5294,7 +5294,7 @@
 <translation id="8118488170956489476">तपाईंको संगठनले तपाईंको <ph name="BEGIN_LINK" />ब्राउजरको व्यवस्थापन गर्छ<ph name="END_LINK" /></translation>
 <translation id="8118860139461251237">तपाइँका डाउनलोडहरू व्यवस्थापित गर्नुहोस्</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" />, र थप</translation>
-<translation id="8120715633374652536">तपाईंको यन्त्रको भण्डारणको खाली ठाउँ कम छ। Plugin VM प्रयोग गर्न कम्तीमा पनि <ph name="MINIMUM_SPACE" /> खाली ठाउँ चाहिन्छ र <ph name="RECOMMENDED_SPACE" /> भन्दा बढी ठाउँ खाली राख्न सिफारिस गरिन्छ। ठाउँ खाली गर्न यन्त्रको भण्डारणबाट फाइलहरू मेटाउनुहोस्।</translation>
+<translation id="8120715633374652536">तपाईंको यन्त्रको भण्डारणमा खाली ठाउँ कम छ। Plugin VM प्रयोग गर्न कम्तीमा पनि <ph name="MINIMUM_SPACE" /> खाली ठाउँ चाहिन्छ र <ph name="RECOMMENDED_SPACE" /> भन्दा बढी ठाउँ खाली राख्न सिफारिस गरिन्छ। ठाउँ खाली गर्न यन्त्रको भण्डारणबाट फाइलहरू मेटाउनुहोस्।</translation>
 <translation id="8123590694679414600"><ph name="TIME" /> मा तपाईंको सिंक पासफ्रेजमार्फत डेटा इन्क्रिप्ट
           गरियो। यसअन्तर्गत Google Pay का भुक्तानी विधि र ठेगानाहरू समावेश हुँदैनन्।</translation>
 <translation id="81238879832906896">पहेँलो र सेतो फुल</translation>

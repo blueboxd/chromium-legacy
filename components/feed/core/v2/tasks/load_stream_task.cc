@@ -16,6 +16,7 @@
 #include "components/feed/core/proto/v2/wire/request.pb.h"
 #include "components/feed/core/v2/feed_network.h"
 #include "components/feed/core/v2/feed_stream.h"
+#include "components/feed/core/v2/proto_util.h"
 #include "components/feed/core/v2/stream_model.h"
 #include "components/feed/core/v2/stream_model_update_request.h"
 
@@ -68,10 +69,9 @@ void LoadStreamTask::LoadFromStoreComplete(
   // TODO(harringtond): Add throttling.
   // TODO(harringtond): Request parameters here are all placeholder values.
   feedwire::Request request;
-  feedwire::ClientInfo& client_info =
-      *request.mutable_feed_request()->mutable_client_info();
-  client_info.set_platform_type(feedwire::ClientInfo::ANDROID_ID);
-  client_info.set_app_type(feedwire::ClientInfo::CHROME);
+  *request.mutable_feed_request()->mutable_client_info() =
+      CreateClientInfo(stream_->GetChromeInfo());
+
   request.mutable_feed_request()->mutable_feed_query()->set_reason(
       feedwire::FeedQuery::MANUAL_REFRESH);
 

@@ -89,5 +89,12 @@
       default_value: "true",
       depends_on: ["UnsizedMediaPolicy"],
     },
-  ],
+  {
+      name: "LayoutAnimations",
+      document_policy_name: "layout-animations",
+      value_name: "",
+      value_type: "Bool",
+      default_value: "true",
+      depends_on: ["ExperimentalProductivityFeatures"],
+    },],
 }

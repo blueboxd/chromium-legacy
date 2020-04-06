@@ -178,18 +178,15 @@ void MockPermissionService::OnConnectionError() {
 bool MockPermissionService::GetWakeLockTypeFromDescriptor(
     const PermissionDescriptorPtr& descriptor,
     WakeLockType* output) {
-  if (!descriptor->extension || !descriptor->extension->is_wake_lock())
-    return false;
-  switch (descriptor->extension->get_wake_lock()->type) {
-    case mojom::blink::WakeLockType::kScreen:
-      *output = WakeLockType::kScreen;
-      return true;
-    case mojom::blink::WakeLockType::kSystem:
-      *output = WakeLockType::kSystem;
-      return true;
-    default:
-      return false;
+  if (descriptor->name == mojom::blink::PermissionName::SCREEN_WAKE_LOCK) {
+    *output = WakeLockType::kScreen;
+    return true;
   }
+  if (descriptor->name == mojom::blink::PermissionName::SYSTEM_WAKE_LOCK) {
+    *output = WakeLockType::kSystem;
+    return true;
+  }
+  return false;
 }
 
 void MockPermissionService::WaitForPermissionRequest(WakeLockType type) {

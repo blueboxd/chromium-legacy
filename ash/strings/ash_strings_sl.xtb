@@ -105,6 +105,7 @@
 <translation id="2268813581635650749">Odjava vseh</translation>
 <translation id="2277103315734023688">Išči naprej</translation>
 <translation id="2292698582925480719">Zaslonsko razmerje</translation>
+<translation id="2295777434187870477">Mikrofon je vklopljen; če ga preklopite bo izklopljen vhodni zvok.</translation>
 <translation id="2298170939937364391">Celozaslonska lupa je omogočena. Če jo želite izklopiti, znova pritisnite Ctrl + tipko za iskanje + M.</translation>
 <translation id="2302092602801625023">Ta račun upravlja Family Link</translation>
 <translation id="2303600792989757991">Preklop pregleda okna</translation>
@@ -138,6 +139,7 @@
 <translation id="2658778018866295321">Klikanje in vlečenje</translation>
 <translation id="2700493154570097719">Nastavitev tipkovnice</translation>
 <translation id="2704781753052663061">Pridružitev drugih omrežij Wi-Fi</translation>
+<translation id="2705001408393684014">Preklop mikrofona. <ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">Nočna svetloba</translation>
 <translation id="2727977024730340865">Priključen je nizkoenergijski polnilnik. Polnjenje akumulatorja morda ne bo zanesljivo.</translation>
 <translation id="2792498699870441125">Alt + iskanje</translation>
@@ -296,6 +298,7 @@
 <translation id="4665114317261903604">Preklop načina »ne moti«. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Odklepanje naprave s kodo starša</translation>
 <translation id="4702647871202761252">Zaslon za zasebnost je izklopljen</translation>
+<translation id="4705716602320768426">Pošiljanje povratnih informacij</translation>
 <translation id="4710243778082831592">Nastavitve UNV-ja</translation>
 <translation id="4731797938093519117">Starševski dostop</translation>
 <translation id="4734965478015604180">Vodoravno</translation>
@@ -376,6 +379,7 @@
 <translation id="5901316534475909376">Shift + Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Vklopljeno</translation>
+<translation id="5920710855273935292">Zvok mikrofona je izklopljen.</translation>
 <translation id="5947494881799873997">Razveljavi</translation>
 <translation id="595202126637698455">Sledenje učinkovitosti delovanja je omogočeno</translation>
 <translation id="5957083217255311415">Prenos podatkov v mobilnem omrežju je izklopljen.</translation>

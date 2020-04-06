@@ -90,7 +90,7 @@ class FileSystemChooserBrowserTest : public ContentBrowserTest {
     return result;
   }
 
- private:
+ protected:
   base::test::ScopedFeatureList scoped_feature_list_;
   base::ScopedTempDir temp_dir_;
 };
@@ -107,6 +107,38 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, CancelDialog) {
 IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, OpenFile) {
   const std::string file_contents = "hello world!";
   const base::FilePath test_file = CreateTestFile(file_contents);
+  SelectFileDialogParams dialog_params;
+  ui::SelectFileDialog::SetFactory(
+      new FakeSelectFileDialogFactory({test_file}, &dialog_params));
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
+  EXPECT_EQ(test_file.BaseName().AsUTF8Unsafe(),
+            EvalJs(shell(),
+                   "(async () => {"
+                   "  let e = await self.chooseFileSystemEntries();"
+                   "  self.selected_entry = e;"
+                   "  return e.name; })()"));
+  EXPECT_EQ(ui::SelectFileDialog::SELECT_OPEN_FILE, dialog_params.type);
+  EXPECT_EQ(shell()->web_contents()->GetTopLevelNativeWindow(),
+            dialog_params.owning_window);
+  EXPECT_EQ(
+      file_contents,
+      EvalJs(shell(),
+             "(async () => { const file = await self.selected_entry.getFile(); "
+             "return await file.text(); })()"));
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, OpenFileNonASCII) {
+  const std::string file_contents = "hello world!";
+  const base::FilePath test_file =
+      temp_dir_.GetPath().Append(base::FilePath::FromUTF8Unsafe("😋.txt"));
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    EXPECT_EQ(
+        int{file_contents.size()},
+        base::WriteFile(test_file, file_contents.data(), file_contents.size()));
+  }
+
   SelectFileDialogParams dialog_params;
   ui::SelectFileDialog::SetFactory(
       new FakeSelectFileDialogFactory({test_file}, &dialog_params));

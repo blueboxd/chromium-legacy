@@ -638,23 +638,33 @@ bool MagnificationController::RedrawDIP(const gfx::PointF& position_in_dip,
   std::unique_ptr<RootWindowTransformer> transformer(
       CreateRootWindowTransformerForDisplay(display));
 
-  // Inverse the transformation on the keyboard container so the keyboard will
-  // remain zoomed out. Apply the same animation settings to it.
-  // Note: if |scale_| is 1.0f, the transform matrix will be an identity matrix.
-  // Applying the inverse of an identity matrix will not change the
-  // transformation.
+  // Inverse the transformation on the keyboard container and display
+  // identification highlight so the keyboard will remain zoomed out and the
+  // highlight will render around the edges of the display. Apply the same
+  // animation settings to it. Note: if |scale_| is 1.0f, the transform matrix
+  // will be an identity matrix. Applying the inverse of an identity matrix will
+  // not change the transformation.
   // TODO(spqchan): Find a way to sync the layer animations together.
-  aura::Window* virtual_keyboard_container =
-      root_window_->GetChildById(kShellWindowId_ImeWindowParentContainer);
+  gfx::Transform inverse_transform;
+  if (GetMagnifierTransform().GetInverse(&inverse_transform)) {
+    std::vector<aura::Window*> undo_transform_windows = {
+        root_window_->GetChildById(kShellWindowId_ImeWindowParentContainer)};
 
-  gfx::Transform vk_transform;
-  if (GetMagnifierTransform().GetInverse(&vk_transform)) {
-    ui::ScopedLayerAnimationSettings vk_layer_settings(
-        virtual_keyboard_container->layer()->GetAnimator());
-    vk_layer_settings.SetPreemptionStrategy(strategy);
-    vk_layer_settings.SetTweenType(tween_type);
-    vk_layer_settings.SetTransitionDuration(duration);
-    virtual_keyboard_container->SetTransform(vk_transform);
+    aura::Window* display_identification_highlight =
+        root_window_->GetChildById(kShellWindowId_ScreenRotationContainer)
+            ->GetChildById(kShellWindowId_DisplayIdentificationHighlightWindow);
+
+    if (display_identification_highlight)
+      undo_transform_windows.push_back(display_identification_highlight);
+
+    for (auto* window : undo_transform_windows) {
+      ui::ScopedLayerAnimationSettings layer_settings(
+          window->layer()->GetAnimator());
+      layer_settings.SetPreemptionStrategy(strategy);
+      layer_settings.SetTweenType(tween_type);
+      layer_settings.SetTransitionDuration(duration);
+      window->SetTransform(inverse_transform);
+    }
   }
 
   RootWindowController::ForWindow(root_window_)

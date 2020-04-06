@@ -55,6 +55,9 @@ void SendTabToSelfIconView::UpdateImpl() {
     return;
   }
 
+  if (!is_animating_label() && !omnibox_view->model()->has_focus()) {
+    sending_animation_state_ = AnimationState::kNotShown;
+  }
   if (GetVisible() ||
       base::FeatureList::IsEnabled(kSendTabToSelfOmniboxSendingAnimation)) {
     SendTabToSelfBubbleController* controller = GetController();
@@ -71,6 +74,7 @@ void SendTabToSelfIconView::UpdateImpl() {
       } else {
         AnimateIn(IDS_BROWSER_SHARING_OMNIBOX_SENDING_LABEL);
       }
+      sending_animation_state_ = AnimationState::kShowing;
     }
   }
   if (!GetVisible() && omnibox_view->model()->has_focus() &&
@@ -86,7 +90,10 @@ void SendTabToSelfIconView::UpdateImpl() {
       initial_animation_state_ = AnimationState::kShowing;
       controller->SetInitialSendAnimationShown(true);
     }
-    SetVisible(true);
+    if (!base::FeatureList::IsEnabled(kSendTabToSelfOmniboxSendingAnimation) ||
+        sending_animation_state_ == AnimationState::kNotShown) {
+      SetVisible(true);
+    }
   }
 }
 
@@ -115,9 +122,44 @@ SendTabToSelfBubbleController* SendTabToSelfIconView::GetController() const {
       web_contents);
 }
 
+void SendTabToSelfIconView::AnimationProgressed(
+    const gfx::Animation* animation) {
+  if (base::FeatureList::IsEnabled(kSendTabToSelfOmniboxSendingAnimation) &&
+      sending_animation_state_ == AnimationState::kShowing) {
+    UpdateOpacity();
+  }
+  return PageActionIconView::AnimationProgressed(animation);
+}
+
 void SendTabToSelfIconView::AnimationEnded(const gfx::Animation* animation) {
   PageActionIconView::AnimationEnded(animation);
   initial_animation_state_ = AnimationState::kShown;
+  if (base::FeatureList::IsEnabled(kSendTabToSelfOmniboxSendingAnimation) &&
+      sending_animation_state_ == AnimationState::kShowing) {
+    UpdateOpacity();
+    SetVisible(false);
+    sending_animation_state_ = AnimationState::kShown;
+  }
+}
+
+void SendTabToSelfIconView::UpdateOpacity() {
+  if (!IsShrinking()) {
+    DestroyLayer();
+    SetTextSubpixelRenderingEnabled(true);
+    return;
+  }
+
+  if (!layer()) {
+    SetPaintToLayer();
+    SetTextSubpixelRenderingEnabled(false);
+    layer()->SetFillsBoundsOpaquely(false);
+  }
+
+  // Large enough number so that there is enough granularity (1/kLargeNumber) in
+  // the opacity as the animation shrinks.
+  int kLargeNumber = 100;
+  layer()->SetOpacity(GetWidthBetween(0, kLargeNumber) /
+                      static_cast<float>(kLargeNumber));
 }
 
 }  // namespace send_tab_to_self

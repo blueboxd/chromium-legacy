@@ -107,6 +107,9 @@
           file="untrusted/promo.js" type="chrome_html" compress="gzip" />
       <structure name="IDR_NEW_TAB_PAGE_UNTRUSTED_IMAGE_HTML"
           file="untrusted/image.html" type="chrome_html" compress="gzip" />
+      <structure name="IDR_NEW_TAB_PAGE_UNTRUSTED_BACKGROUND_IMAGE_HTML"
+          file="untrusted/background_image.html" type="chrome_html"
+          compress="gzip" />
       <structure name="IDR_NEW_TAB_PAGE_UNTRUSTED_IFRAME_HTML"
           file="untrusted/iframe.html" type="chrome_html" compress="gzip" />
     </structures>

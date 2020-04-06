@@ -105,6 +105,7 @@
 <translation id="2268813581635650749">Meld almal af</translation>
 <translation id="2277103315734023688">Soek vorentoe</translation>
 <translation id="2292698582925480719">Vertoonskaal</translation>
+<translation id="2295777434187870477">Mikrofoon is aan. Wissel om invoer te demp.</translation>
 <translation id="2298170939937364391">Volskermvergrootglas is geaktiveer. Druk weer Ctrl+Search+M om dit af te skakel.</translation>
 <translation id="2302092602801625023">Hierdie rekening word deur Family Link bestuur</translation>
 <translation id="2303600792989757991">Wissel tussen vensteroorsig</translation>
@@ -138,6 +139,7 @@
 <translation id="2658778018866295321">Klik en sleep</translation>
 <translation id="2700493154570097719">Stel jou sleutelbord</translation>
 <translation id="2704781753052663061">Sluit aan by ander Wi-Fi-netwerke</translation>
+<translation id="2705001408393684014">Wissel mikrofoon. <ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">Aandbeligting</translation>
 <translation id="2727977024730340865">By 'n laekrag-laaier ingeprop. Laai van battery is dalk nie betroubaar nie.</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
@@ -297,6 +299,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="4665114317261903604">Wissel Moenie Steur Nie. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Ontsluit toestel met ouerkode</translation>
 <translation id="4702647871202761252">Privaatheidskerm is af</translation>
+<translation id="4705716602320768426">Dien terugvoer in</translation>
 <translation id="4710243778082831592">IME-instellings</translation>
 <translation id="4731797938093519117">Ouertoegang</translation>
 <translation id="4734965478015604180">Horisontaal</translation>
@@ -377,6 +380,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Aan</translation>
+<translation id="5920710855273935292">Mikrofoon is gedemp.</translation>
 <translation id="5947494881799873997">Stel terug</translation>
 <translation id="595202126637698455">Prestasie-nasporing geaktiveer</translation>
 <translation id="5957083217255311415">Mobiele data is afgeskakel.</translation>

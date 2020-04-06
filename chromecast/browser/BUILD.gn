@@ -206,6 +206,7 @@ cast_source_set("browser") {
     "//gpu",
     "//ipc",
     "//media",
+    "//media/mojo/services",
     "//net",
     "//services/media_session/public/mojom",
     "//services/network/public/mojom",
@@ -299,10 +300,6 @@ cast_source_set("browser") {
 
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
-  }
-
-  if (enable_mojo_media) {
-    deps += [ "//media/mojo/services" ]
   }
 
   if (enable_external_mojo_services) {

@@ -92,7 +92,7 @@ class PLATFORM_EXPORT ResourceError final {
     return cors_error_status_;
   }
 
-  operator WebURLError() const;
+  explicit operator WebURLError() const;
 
   static bool Compare(const ResourceError&, const ResourceError&);
 

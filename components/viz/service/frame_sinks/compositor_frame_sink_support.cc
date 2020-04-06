@@ -411,8 +411,9 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
   frame.metadata.begin_frame_ack.has_damage = true;
   DCHECK(frame.metadata.begin_frame_ack.frame_id.IsSequenceValid());
 
-  if (!ui::LatencyInfo::Verify(frame.metadata.latency_info,
-                               "RenderWidgetHostImpl::OnSwapCompositorFrame")) {
+  if (!ui::LatencyInfo::Verify(
+          frame.metadata.latency_info,
+          "CompositorFrameSinkSupport::MaybeSubmitCompositorFrame")) {
     for (auto& info : frame.metadata.latency_info) {
       info.Terminate();
     }

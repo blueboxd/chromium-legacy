@@ -114,6 +114,6 @@ class MEDIA_EXPORT SilentSinkSuspender
   DISALLOW_COPY_AND_ASSIGN(SilentSinkSuspender);
 };
 
-}  // namespace content
+}  // namespace media
 
 #endif  // MEDIA_BASE_SILENT_SINK_SUSPENDER_H_

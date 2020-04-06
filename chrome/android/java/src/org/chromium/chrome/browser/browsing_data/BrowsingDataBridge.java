@@ -72,7 +72,8 @@ public final class BrowsingDataBridge {
     }
 
     @CalledByNative
-    private void browsingDataCleared() {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    void browsingDataCleared() {
         if (mClearBrowsingDataListener != null) {
             mClearBrowsingDataListener.onBrowsingDataCleared();
             mClearBrowsingDataListener = null;

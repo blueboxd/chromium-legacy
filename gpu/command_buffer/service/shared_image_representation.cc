@@ -213,4 +213,34 @@ SharedImageRepresentationFactoryRef::~SharedImageRepresentationFactoryRef() {
   backing()->MarkForDestruction();
 }
 
+SharedImageRepresentationVaapi::SharedImageRepresentationVaapi(
+    SharedImageManager* manager,
+    SharedImageBacking* backing,
+    MemoryTypeTracker* tracker,
+    VaapiDependencies* vaapi_deps)
+    : SharedImageRepresentation(manager, backing, tracker),
+      vaapi_deps_(vaapi_deps) {}
+
+SharedImageRepresentationVaapi::~SharedImageRepresentationVaapi() = default;
+
+SharedImageRepresentationVaapi::ScopedWriteAccess::ScopedWriteAccess(
+    util::PassKey<SharedImageRepresentationVaapi> /* pass_key */,
+    SharedImageRepresentationVaapi* representation)
+    : ScopedAccessBase(representation) {}
+
+SharedImageRepresentationVaapi::ScopedWriteAccess::~ScopedWriteAccess() {
+  representation()->EndAccess();
+}
+
+const media::VASurface*
+SharedImageRepresentationVaapi::ScopedWriteAccess::va_surface() {
+  return representation()->vaapi_deps_->GetVaSurface();
+}
+
+std::unique_ptr<SharedImageRepresentationVaapi::ScopedWriteAccess>
+SharedImageRepresentationVaapi::BeginScopedWriteAccess() {
+  return std::make_unique<ScopedWriteAccess>(
+      util::PassKey<SharedImageRepresentationVaapi>(), this);
+}
+
 }  // namespace gpu

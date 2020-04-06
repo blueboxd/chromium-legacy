@@ -254,22 +254,21 @@ void WakeLock::ObtainPermission(
   //   |user_gesture| argument into account to actually implement a slightly
   //   altered version of "request permission to use", the behavior of which
   //   will match the definition of "obtain permission" in the Wake Lock spec.
-  DCHECK(type == WakeLockType::kScreen || type == WakeLockType::kSystem);
-  static_assert(
-      static_cast<mojom::blink::WakeLockType>(WakeLockType::kScreen) ==
-          mojom::blink::WakeLockType::kScreen,
-      "WakeLockType and mojom::blink::WakeLockType must have identical values");
-  static_assert(
-      static_cast<mojom::blink::WakeLockType>(WakeLockType::kSystem) ==
-          mojom::blink::WakeLockType::kSystem,
-      "WakeLockType and mojom::blink::WakeLockType must have identical values");
+  mojom::blink::PermissionName permission_name;
+  switch (type) {
+    case WakeLockType::kScreen:
+      permission_name = mojom::blink::PermissionName::SCREEN_WAKE_LOCK;
+      break;
+    case WakeLockType::kSystem:
+      permission_name = mojom::blink::PermissionName::SYSTEM_WAKE_LOCK;
+      break;
+  }
 
   auto* local_frame = GetExecutionContext()->IsDocument()
                           ? Document::From(GetExecutionContext())->GetFrame()
                           : nullptr;
   GetPermissionService()->RequestPermission(
-      CreateWakeLockPermissionDescriptor(
-          static_cast<mojom::blink::WakeLockType>(type)),
+      CreatePermissionDescriptor(permission_name),
       LocalFrame::HasTransientUserActivation(local_frame), std::move(callback));
 }
 

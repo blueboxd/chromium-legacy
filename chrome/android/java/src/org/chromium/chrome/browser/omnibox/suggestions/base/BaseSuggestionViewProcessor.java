@@ -29,11 +29,14 @@ import java.util.List;
  * A class that handles base properties and model for most suggestions.
  */
 public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor {
+    private static final String SUGGESTION_DENSITY_PARAM = "omnibox_compact_suggestions_variant";
+    private static final String SUGGESTION_DENSITY_SEMICOMPACT = "semi-compact";
     private final Context mContext;
     private final SuggestionHost mSuggestionHost;
-    private boolean mEnableCompactSuggestions;
     private final int mDesiredFaviconWidthPx;
     private int mSuggestionSizePx;
+    private @BaseSuggestionViewProperties.Density int mDensity =
+            BaseSuggestionViewProperties.Density.COMFORTABLE;
 
     /**
      * @param context Current context.
@@ -59,11 +62,17 @@ public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor
 
     @Override
     public void onNativeInitialized() {
-        mEnableCompactSuggestions =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_COMPACT_SUGGESTIONS);
-        if (mEnableCompactSuggestions) {
-            mSuggestionSizePx = mContext.getResources().getDimensionPixelSize(
-                    R.dimen.omnibox_suggestion_compact_height);
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_COMPACT_SUGGESTIONS)) {
+            if (SUGGESTION_DENSITY_SEMICOMPACT.equals(ChromeFeatureList.getFieldTrialParamByFeature(
+                        ChromeFeatureList.OMNIBOX_COMPACT_SUGGESTIONS, SUGGESTION_DENSITY_PARAM))) {
+                mDensity = BaseSuggestionViewProperties.Density.SEMICOMPACT;
+                mSuggestionSizePx = mContext.getResources().getDimensionPixelSize(
+                        R.dimen.omnibox_suggestion_semicompact_height);
+            } else {
+                mDensity = BaseSuggestionViewProperties.Density.COMPACT;
+                mSuggestionSizePx = mContext.getResources().getDimensionPixelSize(
+                        R.dimen.omnibox_suggestion_compact_height);
+            }
         }
     }
 
@@ -107,7 +116,7 @@ public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor
                 mSuggestionHost.createSuggestionViewDelegate(suggestion, position);
 
         model.set(BaseSuggestionViewProperties.SUGGESTION_DELEGATE, delegate);
-        model.set(BaseSuggestionViewProperties.IS_COMPACT, mEnableCompactSuggestions);
+        model.set(BaseSuggestionViewProperties.DENSITY, mDensity);
 
         if (canRefine(suggestion)) {
             setActionDrawableState(model,

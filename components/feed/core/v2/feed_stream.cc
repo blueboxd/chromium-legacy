@@ -186,16 +186,15 @@ FeedStream::WireResponseTranslator::TranslateWireResponse(
                                        current_time);
 }
 
-FeedStream::FeedStream(
-    RefreshTaskScheduler* refresh_task_scheduler,
-    EventObserver* stream_event_observer,
-    Delegate* delegate,
-    PrefService* profile_prefs,
-    FeedNetwork* feed_network,
-    FeedStore* feed_store,
-    const base::Clock* clock,
-    const base::TickClock* tick_clock,
-    scoped_refptr<base::SequencedTaskRunner> background_task_runner)
+FeedStream::FeedStream(RefreshTaskScheduler* refresh_task_scheduler,
+                       EventObserver* stream_event_observer,
+                       Delegate* delegate,
+                       PrefService* profile_prefs,
+                       FeedNetwork* feed_network,
+                       FeedStore* feed_store,
+                       const base::Clock* clock,
+                       const base::TickClock* tick_clock,
+                       const ChromeInfo& chrome_info)
     : refresh_task_scheduler_(refresh_task_scheduler),
       stream_event_observer_(stream_event_observer),
       delegate_(delegate),
@@ -204,7 +203,7 @@ FeedStream::FeedStream(
       store_(feed_store),
       clock_(clock),
       tick_clock_(tick_clock),
-      background_task_runner_(background_task_runner),
+      chrome_info_(chrome_info),
       task_queue_(this),
       user_classifier_(std::make_unique<UserClassifier>(profile_prefs, clock)),
       request_throttler_(profile_prefs, clock) {

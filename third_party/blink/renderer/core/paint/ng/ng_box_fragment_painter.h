@@ -18,6 +18,7 @@
 
 namespace blink {
 
+class BoxDecorationData;
 class FillLayer;
 class HitTestLocation;
 class HitTestRequest;
@@ -71,6 +72,10 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                         const PhysicalOffset& accumulated_offset,
                         HitTestFilter = kHitTestAll);
 
+  void PaintBoxDecorationBackgroundWithRectImpl(const PaintInfo&,
+                                                const PhysicalRect&,
+                                                const BoxDecorationData&);
+
  protected:
   LayoutRectOutsets ComputeBorders() const override;
   LayoutRectOutsets ComputePadding() const override;
@@ -109,6 +114,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   void PaintBoxDecorationBackgroundWithRect(const PaintInfo&,
                                             const PhysicalRect&,
                                             const DisplayItemClient&);
+
   void PaintColumnRules(const PaintInfo&, const PhysicalOffset& paint_offset);
 
   void PaintInternal(const PaintInfo&);

@@ -5,63 +5,41 @@
 #ifndef CONTENT_BROWSER_CONVERSIONS_CONVERSION_MANAGER_H_
 #define CONTENT_BROWSER_CONVERSIONS_CONVERSION_MANAGER_H_
 
-#include <memory>
-
-#include "base/files/file_path.h"
-#include "base/macros.h"
-#include "base/memory/scoped_refptr.h"
-#include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
 #include "content/browser/conversions/conversion_policy.h"
-#include "content/browser/conversions/conversion_storage.h"
 #include "content/browser/conversions/storable_conversion.h"
-
-namespace base {
-class Clock;
-}  // namespace base
+#include "content/browser/conversions/storable_impression.h"
+#include "content/common/content_export.h"
 
 namespace content {
 
-class ConversionStorage;
+class WebContents;
 
-// UI thread class that manages the lifetime of the underlying conversion
-// storage. Owned by the storage partition.
-class ConversionManager {
+// Interface that mediates data flow between the network, storage layer, and
+// blink.
+class CONTENT_EXPORT ConversionManager {
  public:
-  // |storage_task_runner| should run with base::TaskPriority::BEST_EFFORT.
-  ConversionManager(
-      const base::FilePath& user_data_directory,
-      scoped_refptr<base::SequencedTaskRunner> storage_task_runner);
-  ConversionManager(const ConversionManager& other) = delete;
-  ConversionManager& operator=(const ConversionManager& other) = delete;
-  ~ConversionManager();
+  // Provides access to a ConversionManager implementation. This layer of
+  // abstraction is to allow tests to mock out the ConversionManager without
+  // injecting a manager explicitly.
+  class Provider {
+   public:
+    virtual ~Provider() = default;
+
+    // Gets the ConversionManager that should be used for handling conversions
+    // that occur in the given |web_contents|. Returns nullptr if conversion
+    // measurement is not enabled in the given |web_contents|, e.g. when the
+    // browser context is off the record.
+    virtual ConversionManager* GetManager(WebContents* web_contents) const = 0;
+  };
+  virtual ~ConversionManager() = default;
 
   // Process a newly registered conversion. Will create and log any new
   // conversion reports to storage.
-  void HandleConversion(const StorableConversion& conversion);
+  virtual void HandleConversion(const StorableConversion& conversion) = 0;
 
-  const ConversionPolicy& GetConversionPolicy() const;
-
- private:
-  void OnInitCompleted(bool success);
-
-  // Task runner used to perform operations on |storage_|. Runs with
-  // base::TaskPriority::BEST_EFFORT.
-  scoped_refptr<base::SequencedTaskRunner> storage_task_runner_;
-
-  base::Clock* clock_;
-
-  // ConversionStorage instance which is scoped to lifetime of
-  // |storage_task_runner_|. |storage_| should be accessed by calling
-  // base::PostTask with |storage_task_runner_|, and should not be accessed
-  // directly.
-  std::unique_ptr<ConversionStorage, base::OnTaskRunnerDeleter> storage_;
-
-  // Policy used for controlling API configurations such as reporting and
-  // attribution models. Unique ptr so it can be overridden for testing.
-  std::unique_ptr<ConversionPolicy> conversion_policy_;
-
-  base::WeakPtrFactory<ConversionManager> weak_factory_;
+  // Returns the ConversionPolicy that is used to control API policies such
+  // as noise.
+  virtual const ConversionPolicy& GetConversionPolicy() const = 0;
 };
 
 }  // namespace content

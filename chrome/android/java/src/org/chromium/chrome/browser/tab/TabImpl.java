@@ -903,10 +903,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
         assert windowAndroid != null;
         mWindowAndroid = windowAndroid;
         WebContents webContents = getWebContents();
-        if (webContents != null) {
-            webContents.setTopLevelNativeWindow(mWindowAndroid);
-            webContents.notifyRendererPreferenceUpdate();
-        }
+        if (webContents != null) webContents.setTopLevelNativeWindow(mWindowAndroid);
     }
 
     TabDelegateFactory getDelegateFactory() {
@@ -1334,10 +1331,12 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
 
         mWebContentsDelegate = mDelegateFactory.createWebContentsDelegate(this);
 
-        if (getWebContents() != null) {
+        WebContents webContents = getWebContents();
+        if (webContents != null) {
             TabImplJni.get().updateDelegates(mNativeTabAndroid, TabImpl.this, mWebContentsDelegate,
                     new TabContextMenuPopulator(
                             mDelegateFactory.createContextMenuPopulator(this), this));
+            webContents.notifyRendererPreferenceUpdate();
         }
     }
 

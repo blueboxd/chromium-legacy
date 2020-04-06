@@ -50,7 +50,7 @@ public final class BaseSuggestionViewBinder<T extends View>
             updateContentViewPadding(model, view.getDecoratedSuggestionView());
         } else if (BaseSuggestionViewProperties.ACTION_ICON == propertyKey) {
             updateActionIcon(model, view);
-        } else if (BaseSuggestionViewProperties.IS_COMPACT == propertyKey) {
+        } else if (BaseSuggestionViewProperties.DENSITY == propertyKey) {
             updateContentViewPadding(model, view.getDecoratedSuggestionView());
         } else if (SuggestionCommonProperties.LAYOUT_DIRECTION == propertyKey) {
             ViewCompat.setLayoutDirection(
@@ -126,15 +126,30 @@ public final class BaseSuggestionViewBinder<T extends View>
         view.setPaddingRelative(startSpace, 0, endSpace, 0);
 
         // Compact suggestion handling: apply additional padding to the suggestion content.
-        final boolean isCompact = model.get(BaseSuggestionViewProperties.IS_COMPACT);
-        final int verticalPad = view.getResources().getDimensionPixelSize(isCompact
-                        ? R.dimen.omnibox_suggestion_compact_padding
-                        : R.dimen.omnibox_suggestion_comfortable_padding);
+        final @BaseSuggestionViewProperties.Density int density =
+                model.get(BaseSuggestionViewProperties.DENSITY);
+
+        int minimumHeightRes;
+        int verticalPadRes;
+        switch (density) {
+            case BaseSuggestionViewProperties.Density.COMPACT:
+                verticalPadRes = R.dimen.omnibox_suggestion_compact_padding;
+                minimumHeightRes = R.dimen.omnibox_suggestion_compact_height;
+                break;
+            case BaseSuggestionViewProperties.Density.SEMICOMPACT:
+                verticalPadRes = R.dimen.omnibox_suggestion_semicompact_padding;
+                minimumHeightRes = R.dimen.omnibox_suggestion_semicompact_height;
+                break;
+            case BaseSuggestionViewProperties.Density.COMFORTABLE:
+            default:
+                verticalPadRes = R.dimen.omnibox_suggestion_comfortable_padding;
+                minimumHeightRes = R.dimen.omnibox_suggestion_comfortable_height;
+                break;
+        }
+        final int verticalPad = view.getResources().getDimensionPixelSize(verticalPadRes);
         view.getContentView().setPaddingRelative(0, verticalPad, 0, verticalPad);
 
-        final int minimumHeight = view.getResources().getDimensionPixelSize(isCompact
-                        ? R.dimen.omnibox_suggestion_compact_height
-                        : R.dimen.omnibox_suggestion_comfortable_height);
+        final int minimumHeight = view.getResources().getDimensionPixelSize(minimumHeightRes);
         view.getContentView().setMinimumHeight(minimumHeight);
     }
 

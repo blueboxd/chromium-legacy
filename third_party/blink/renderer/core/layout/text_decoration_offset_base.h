@@ -27,9 +27,6 @@ class CORE_EXPORT TextDecorationOffsetBase {
       float text_decoration_thickness,
       FontVerticalPositionType) const = 0;
 
-  int ComputeUnderlineOffsetForRoman(const FontMetrics&,
-                                     float text_decoration_thickness) const;
-
   int ComputeUnderlineOffset(ResolvedUnderlinePosition,
                              const FontMetrics&,
                              float text_decoration_thickness) const;

@@ -326,36 +326,6 @@ IN_PROC_BROWSER_TEST_F(ContentScriptCssInjectionTest,
   EXPECT_TRUE(CheckStyleInjection(browser(), url, false));
 }
 
-// crbug.com/120762
-IN_PROC_BROWSER_TEST_F(
-    ExtensionApiTest,
-    DISABLED_ContentScriptStylesInjectedIntoExistingRenderers) {
-  ASSERT_TRUE(StartEmbeddedTestServer());
-
-  content::WindowedNotificationObserver signal(
-      extensions::NOTIFICATION_USER_SCRIPTS_UPDATED,
-      content::Source<Profile>(browser()->profile()));
-
-  // Start with a renderer already open at a URL.
-  GURL url(embedded_test_server()->GetURL("/extensions/test_file.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
-
-  LoadExtension(
-      test_data_dir_.AppendASCII("content_scripts/existing_renderers"));
-
-  signal.Wait();
-
-  // And check that its styles were affected by the styles that just got loaded.
-  bool styles_injected;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      "window.domAutomationController.send("
-      "    document.defaultView.getComputedStyle(document.body, null)."
-      "        getPropertyValue('background-color') == 'rgb(255, 0, 0)')",
-      &styles_injected));
-  ASSERT_TRUE(styles_injected);
-}
-
 IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ContentScriptCSSLocalization) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("content_scripts/css_l10n")) << message_;

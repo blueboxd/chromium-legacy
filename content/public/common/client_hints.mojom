@@ -5,8 +5,7 @@
 module client_hints.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
-import
-"third_party/blink/public/mojom/web_client_hints/web_client_hints_types.mojom";
+import "services/network/public/mojom/web_client_hints_types.mojom";
 import "url/mojom/origin.mojom";
 
 // Sent from renderer to browser process when the lifetime of the client hints
@@ -18,6 +17,6 @@ interface ClientHints {
   // Inputs are the origin setting the opt-in, an array of the hints that were
   // set, and the duration for which the opt-in would be valid.
   PersistClientHints(url.mojom.Origin primary_origin,
-                     array<blink.mojom.WebClientHintsType> client_hints,
+                     array<network.mojom.WebClientHintsType> client_hints,
                      mojo_base.mojom.TimeDelta expiration_duration);
 };

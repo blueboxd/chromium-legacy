@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+#include "base/containers/flat_set.h"  // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/containers/flat_set.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
@@ -23,6 +24,7 @@
 #include "components/safe_browsing/core/db/allowlist_checker_client.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
+#include "components/url_formatter/url_formatter.h"
 #include "components/zoom/zoom_controller.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -30,7 +32,6 @@
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
-#include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -77,16 +78,19 @@ std::vector<std::string> GetMatchingDomains(
   std::vector<std::string> matching_domains;
   matching_domains.reserve(matching_reused_credentials.size());
   for (const auto& credential : matching_reused_credentials) {
-    std::string domain = net::registry_controlled_domains::GetDomainAndRegistry(
+    // This only works for Web credentials. For Android credentials, there needs
+    // to be special handing and should use affiliation information instead of
+    // the signon_realm.
+    std::string domain = base::UTF16ToUTF8(url_formatter::FormatUrl(
         GURL(credential.signon_realm),
-        net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+        url_formatter::kFormatUrlOmitDefaults |
+            url_formatter::kFormatUrlOmitHTTPS |
+            url_formatter::kFormatUrlOmitTrivialSubdomains |
+            url_formatter::kFormatUrlTrimAfterHost,
+        net::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
     matching_domains.push_back(std::move(domain));
   }
-  auto matching_domains_it =
-      std::unique(matching_domains.begin(), matching_domains.end());
-  matching_domains.resize(
-      std::distance(matching_domains.begin(), matching_domains_it));
-  return matching_domains;
+  return base::flat_set<std::string>(std::move(matching_domains)).extract();
 }
 
 }  // namespace

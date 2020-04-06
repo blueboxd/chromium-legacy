@@ -826,6 +826,7 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2119349053129246860">Abrir na aplicação <ph name="APP" /></translation>
 <translation id="2120297377148151361">Atividade e interações</translation>
 <translation id="2120639962942052471">Bloqueou <ph name="PERMISSION" /></translation>
+<translation id="2121055421682309734">{COUNT,plural, =0{Os cookies estão bloqueados.}=1{Os cookies estão bloqueados, com 1 exceção.}other{Os cookies estão bloqueados, com {COUNT} exceções.}}</translation>
 <translation id="2121825465123208577">Redimensionar</translation>
 <translation id="2122305276694332719">A ligação automática a uma rede oculta permite que terceiros vejam o seu dispositivo e algumas definições da rede, pelo que não é recomendada.</translation>
 <translation id="2123766928840368256">Selecionar um ficheiro diferente</translation>

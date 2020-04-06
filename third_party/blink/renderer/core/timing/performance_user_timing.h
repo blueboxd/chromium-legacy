@@ -42,11 +42,6 @@ class UserTiming final : public GarbageCollected<UserTiming> {
  public:
   explicit UserTiming(Performance&);
 
-  PerformanceMark* CreatePerformanceMark(ScriptState*,
-                                         const AtomicString& mark_name,
-                                         PerformanceMarkOptions*,
-                                         ExceptionState&);
-
   void ClearMarks(const AtomicString& mark_name);
 
   PerformanceMeasure* Measure(ScriptState*,

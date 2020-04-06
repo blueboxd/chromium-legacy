@@ -11,7 +11,8 @@
 
 #include "base/time/time.h"
 #include "components/feed/core/proto/v2/store.pb.h"
-#include "components/feed/core/v2/public/feed_stream_api.h"
+#include "components/feed/core/v2/proto_util.h"
+#include "components/feed/core/v2/types.h"
 
 // Functions that help build a feedstore::StreamStructure for testing.
 namespace feed {

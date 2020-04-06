@@ -290,10 +290,11 @@ static ResolvedUnderlinePosition ResolveUnderlinePosition(
   // vertical text.
   switch (baseline_type) {
     case kAlphabeticBaseline:
-      if (!(style.TextUnderlinePosition() & kTextUnderlinePositionUnder)) {
-        return ResolvedUnderlinePosition::kRoman;
-      }
-      return ResolvedUnderlinePosition::kUnder;
+      if (style.TextUnderlinePosition() & kTextUnderlinePositionUnder)
+        return ResolvedUnderlinePosition::kUnder;
+      if (style.TextUnderlinePosition() & kTextUnderlinePositionFromFont)
+        return ResolvedUnderlinePosition::kNearAlphabeticBaselineFromFont;
+      return ResolvedUnderlinePosition::kNearAlphabeticBaselineAuto;
     case kIdeographicBaseline:
       // Compute language-appropriate default underline position.
       // https://drafts.csswg.org/css-text-decor-3/#default-stylesheet
@@ -310,7 +311,7 @@ static ResolvedUnderlinePosition ResolveUnderlinePosition(
       return ResolvedUnderlinePosition::kUnder;
   }
   NOTREACHED();
-  return ResolvedUnderlinePosition::kRoman;
+  return ResolvedUnderlinePosition::kNearAlphabeticBaselineAuto;
 }
 
 static bool ShouldSetDecorationAntialias(const ComputedStyle& style) {
@@ -370,7 +371,10 @@ void TextPainterBase::ComputeDecorationInfo(
           ? decoration_info.font_data->GetFontMetrics().FloatAscent()
           : 0;
 
-  if (decoration_info.underline_position == ResolvedUnderlinePosition::kRoman) {
+  if ((decoration_info.underline_position ==
+       ResolvedUnderlinePosition::kNearAlphabeticBaselineAuto) ||
+      decoration_info.underline_position ==
+          ResolvedUnderlinePosition::kNearAlphabeticBaselineFromFont) {
     decoration_info.thickness = ComputeDecorationThickness(
         decoration_info.style, decoration_info.font_data);
   } else {

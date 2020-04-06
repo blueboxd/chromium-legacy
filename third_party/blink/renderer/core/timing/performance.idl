@@ -58,12 +58,8 @@ interface Performance : EventTarget {
 
     // User Timing
     // https://w3c.github.io/user-timing/#extensions-performance-interface
-    // TODO(https://crbug.com/996275): Once our IDL parser supports it, we need
-    // to supply a default-value of '{}' to markOptions.
     [MeasureAs=UserTiming, CallWith=ScriptState, RaisesException] PerformanceMark mark(DOMString markName, optional PerformanceMarkOptions markOptions = {});
     [MeasureAs=UserTiming] void clearMarks(optional DOMString markName);
-    // TODO(https://crbug.com/996275): Once our IDL parser supports it, we need
-    // to supply a default-value of '{}' to startOrOptions.
     [MeasureAs=UserTiming, CallWith=ScriptState, RaisesException] PerformanceMeasure measure(DOMString measureName, optional (DOMString or PerformanceMeasureOptions) startOrMeasureOptions = {}, optional DOMString endMark);
     [MeasureAs=UserTiming] void clearMeasures(optional DOMString measureName);
 

@@ -1307,7 +1307,7 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="6521745193039995384">Nije aktivno</translation>
 <translation id="6529602333819889595">&amp;Ponovi brisanje</translation>
 <translation id="6534179046333460208">Prijedlozi Fizičkog weba</translation>
-<translation id="6543609420755597723">Podatke o sigurnosnim događajima koje su označili Priključci za Chrome za poduzeća podijelite s administratorom. To može uključivati URL-ove stranica koje posjetite, nazive ili metapodatke datoteka i korisničko ime koje koristite za prijavu na svoj uređaj i Chrome.</translation>
+<translation id="6543609420755597723">Podatke o sigurnosnim događajima koje su označili priključci za Chrome za poduzeća podijelite s administratorom. To može uključivati URL-ove stranica koje posjetite, nazive ili metapodatke datoteka i korisničko ime koje koristite za prijavu na svoj uređaj i Chrome.</translation>
 <translation id="6545864417968258051">Traženje Bluetootha</translation>
 <translation id="6547208576736763147">Dvostruko bušenje s lijeve strane</translation>
 <translation id="6554795675067793129">Vašim računom upravlja <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1738,7 +1738,7 @@ Dodatne pojedinosti:
 <translation id="8371889962595521444">Prilagođeni korijenski certifikati</translation>
 <translation id="8380941800586852976">Opasno</translation>
 <translation id="8381674639488873545">Ta terećenja mogu biti jednokratna ili ponavljajuća i možda nisu vidljiva odmah. <ph name="BEGIN_LINK" />Ipak prikaži<ph name="END_LINK" /></translation>
-<translation id="8405166164747488837">Domena <ph name="ENROLLMENT_DOMAIN" /> omogućila je Priključke za Chrome za poduzeća u vašem pregledniku. Ti priključci imaju pristup nekim vašim podacima.</translation>
+<translation id="8405166164747488837">Domena <ph name="ENROLLMENT_DOMAIN" /> omogućila je priključke za Chrome za poduzeća u vašem pregledniku. Ti priključci imaju pristup nekim vašim podacima.</translation>
 <translation id="8412145213513410671">Padovi (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Morate dvaput unijeti istu zaporku.</translation>
 <translation id="8416694386774425977">Konfiguracija mreže nije važeća i nije se mogla uvesti.

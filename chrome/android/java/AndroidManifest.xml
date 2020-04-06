@@ -743,35 +743,6 @@ by a child template that "extends" this file.
             {{ self.supports_vr() }}
             {{ self.extra_web_rendering_activity_definitions() }}
         </activity>
-        <activity android:name="org.chromium.chrome.browser.webapps.WebApkActivity"
-            android:theme="@style/Theme.Chromium.Webapp"
-            android:label="@string/webapp_activity_title"
-            android:launchMode="singleTop"
-            android:documentLaunchMode="intoExisting"
-            android:exported="false"
-            android:persistableMode="persistNever"
-            {{ self.supports_video_persistence() }}
-            {{ self.chrome_activity_common() }}
-        >
-            {{ self.supports_vr() }}
-            {{ self.extra_web_rendering_activity_definitions() }}
-        </activity>
-        {% for i in range(10) %}
-        <activity android:name="org.chromium.chrome.browser.webapps.WebApkActivity{{ i }}"
-            android:theme="@style/Theme.Chromium.Webapp"
-            android:icon="@mipmap/app_shortcut_icon"
-            android:label="@string/webapp_activity_title"
-            android:launchMode="singleTask"
-            android:exported="false"
-            android:persistableMode="persistNever"
-            android:taskAffinity="{{ manifest_package }}.webapps.WebApkActivity{{ i }}"
-            {{ self.supports_video_persistence() }}
-            {{ self.chrome_activity_common() }}
-        >
-            {{ self.supports_vr() }}
-            {{ self.extra_web_rendering_activity_definitions() }}
-        </activity>
-        {% endfor %}
 
         <activity android:name="org.chromium.chrome.browser.webapps.ActivateWebApkActivity"
             android:theme="@android:style/Theme.NoDisplay"

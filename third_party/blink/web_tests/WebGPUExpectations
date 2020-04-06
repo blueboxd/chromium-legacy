@@ -187,6 +187,9 @@ crbug.com/dawn/243 wpt_internal/webgpu/cts.html?worker=1&q=cts:validation/create
 crbug.com/966582 wpt_internal/webgpu/cts.html?worker=0&q=cts:copyImageBitmapToTexture:from_canvas~ [ Failure ]
 crbug.com/966582 wpt_internal/webgpu/cts.html?worker=1&q=cts:copyImageBitmapToTexture:from_canvas~ [ Failure ]
 
+crbug.com/dawn/375 wpt_internal/webgpu/cts.html?worker=0&q=cts:validation/createBindGroup:buffer_offset_and_size_for_bind_groups_match={"offset":1024,"size":0} [ Failure ]
+crbug.com/dawn/375 wpt_internal/webgpu/cts.html?worker=1&q=cts:validation/createBindGroup:buffer_offset_and_size_for_bind_groups_match={"offset":1024,"size":0} [ Failure ]
+
 #
 # Mac (Metal) specific
 #

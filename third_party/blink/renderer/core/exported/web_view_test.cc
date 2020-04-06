@@ -5878,7 +5878,10 @@ TEST_F(WebViewTest, RootLayerAttachment) {
 
 // Verifies that we emit Blink.UseCounter.FeaturePolicy.PotentialAnimation for
 // CSS and JS animations in a document.
-TEST_F(WebViewTest, PotentialViolationReportsForLayoutAnimations) {
+// TODO(crbug.com/1066620): enable this test after metrics for document policy
+// are added. Needs to update histogram name to document policy equivalent
+// when re-enabled.
+TEST_F(WebViewTest, DISABLED_PotentialViolationReportsForLayoutAnimations) {
   const char* kHistogramName =
       "Blink.UseCounter.FeaturePolicy.PotentialViolation";
   WebViewImpl* web_view = web_view_helper_.Initialize();

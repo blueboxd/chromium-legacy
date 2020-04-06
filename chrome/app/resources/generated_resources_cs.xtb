@@ -3057,7 +3057,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="5117930984404104619">Sledovat chování ostatních rozšíření (včetně navštívených adres URL)</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Pevný disk je plný. Uložte prosím soubor do jiného umístění nebo uvolněte místo na disku.</translation>
-<translation id="5122384452788334261">V zařízení dochází úložný prostor K používání pluginu Plugin VM se doporučuje alespoň <ph name="RECOMMENDED_SPACE" /> volného místa. Místo uvolníte smazáním souborů z úložiště zařízení.</translation>
+<translation id="5122384452788334261">V zařízení dochází úložný prostor Chcete-li používat Plugin VM, doporučuje se alespoň <ph name="RECOMMENDED_SPACE" /> volného místa. Místo uvolníte smazáním souborů z úložiště zařízení.</translation>
 <translation id="5123433949759960244">Basketbal</translation>
 <translation id="5125751979347152379">Neplatná adresa URL.</translation>
 <translation id="5126611267288187364">Zobrazit změny</translation>
@@ -5298,7 +5298,7 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8118488170956489476">Váš <ph name="BEGIN_LINK" />prohlížeč je spravován<ph name="END_LINK" /> vaší organizací</translation>
 <translation id="8118860139461251237">Správa stahování</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" /> a další</translation>
-<translation id="8120715633374652536">V zařízení dochází úložný prostor K používání pluginu Plugin VM je potřeba alespoň <ph name="MINIMUM_SPACE" /> volného místa a doporučuje se více než <ph name="RECOMMENDED_SPACE" /> volného místa. Místo uvolníte smazáním souborů z úložiště zařízení.</translation>
+<translation id="8120715633374652536">V zařízení dochází úložný prostor Použití modulu Plugin VM vyžaduje alespoň <ph name="MINIMUM_SPACE" /> volného místa a doporučuje se více než <ph name="RECOMMENDED_SPACE" /> volného místa. Místo uvolníte smazáním souborů z úložiště zařízení.</translation>
 <translation id="8123590694679414600">Data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro synchronizaci. Toto šifrování se nevztahuje na platební metody a adresy z Google Pay.</translation>
 <translation id="81238879832906896">Žluto-bílá květina</translation>
 <translation id="8124313775439841391">Spravovaná ONC</translation>

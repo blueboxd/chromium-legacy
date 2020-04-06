@@ -16,6 +16,8 @@
 #include "media/blink/webmediaplayer_params.h"
 #include "media/media_buildflags.h"
 #include "media/mojo/buildflags.h"
+#include "media/mojo/clients/mojo_renderer_factory.h"
+#include "media/mojo/mojom/interface_factory.mojom.h"
 #include "media/mojo/mojom/remoting.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/platform/web_media_player_source.h"
@@ -23,11 +25,6 @@
 #include "third_party/blink/public/platform/web_set_sink_id_callbacks.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_media_inspector.h"
-
-#if BUILDFLAG(ENABLE_MOJO_MEDIA)
-#include "media/mojo/clients/mojo_renderer_factory.h"  // nogncheck
-#include "media/mojo/mojom/interface_factory.mojom.h"  // nogncheck
-#endif
 
 namespace blink {
 class BrowserInterfaceBrokerProxy;
@@ -142,18 +139,16 @@ class MediaFactory {
 
   media::CdmFactory* GetCdmFactory();
 
-#if BUILDFLAG(ENABLE_MOJO_MEDIA)
   media::mojom::InterfaceFactory* GetMediaInterfaceFactory();
 
   std::unique_ptr<media::MojoRendererFactory> CreateMojoRendererFactory();
 
-  // The media interface provider attached to this frame, lazily initialized.
-  std::unique_ptr<MediaInterfaceFactory> media_interface_factory_;
-#endif
-
   // The render frame we're helping. RenderFrameImpl owns this factory, so the
   // pointer will always be valid.
   RenderFrameImpl* render_frame_;
+
+  // The media interface provider attached to this frame, lazily initialized.
+  std::unique_ptr<MediaInterfaceFactory> media_interface_factory_;
 
   // Injected callback for requesting overlay routing tokens.
   media::RequestRoutingTokenCallback request_routing_token_cb_;

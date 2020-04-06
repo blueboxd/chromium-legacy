@@ -112,6 +112,16 @@ public final class SyncTestUtil {
     }
 
     /**
+     * Waits for sync being in the desired TrustedVaultKeyRequired state.
+     */
+    public static void waitForTrustedVaultKeyRequired(boolean desiredValue) {
+        CriteriaHelper.pollUiThread(
+                Criteria.equals(
+                        desiredValue, () -> ProfileSyncService.get().isTrustedVaultKeyRequired()),
+                TIMEOUT_MS, INTERVAL_MS);
+    }
+
+    /**
      * Triggers a sync cycle.
      */
     public static void triggerSync() {

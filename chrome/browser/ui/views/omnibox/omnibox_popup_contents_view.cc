@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
+#include "chrome/browser/ui/views/omnibox/omnibox_row_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/omnibox/rounded_omnibox_results_frame.h"
 #include "chrome/browser/ui/views/omnibox/webui_omnibox_popup_view.h"
@@ -207,7 +208,7 @@ OmniboxResultView* OmniboxPopupContentsView::result_view_at(size_t i) {
   if (i >= children().size())
     return nullptr;
 
-  return static_cast<OmniboxResultView*>(children()[i]);
+  return static_cast<OmniboxRowView*>(children()[i])->result_view();
 }
 
 bool OmniboxPopupContentsView::InExplicitExperimentalKeywordMode() {
@@ -303,19 +304,26 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
       // be expensive to create due to loading font data, this saves time and
       // memory during browser startup.
       if (children().size() == i) {
-        AddChildView(std::make_unique<OmniboxResultView>(this, i));
+        AddChildView(std::make_unique<OmniboxRowView>(
+            std::make_unique<OmniboxResultView>(this, i)));
       }
 
-      OmniboxResultView* view = result_view_at(i);
+      OmniboxRowView* const row_view =
+          static_cast<OmniboxRowView*>(children()[i]);
+      row_view->SetVisible(true);
+
+      OmniboxResultView* const result_view = row_view->result_view();
       const AutocompleteMatch& match = GetMatchAtIndex(i);
-      view->SetMatch(match);
-      view->SetVisible(true);
+      result_view->SetMatch(match);
+
       const SkBitmap* bitmap = model_->RichSuggestionBitmapAt(i);
-      if (bitmap)
-        view->SetRichSuggestionImage(
+      if (bitmap) {
+        result_view->SetRichSuggestionImage(
             gfx::ImageSkia::CreateFrom1xBitmap(*bitmap));
+      }
     }
 
+    // If we have more views than matches, hide the surplus ones.
     for (auto i = children().begin() + result_size; i != children().end(); ++i)
       (*i)->SetVisible(false);
   }

@@ -552,7 +552,7 @@ void ResourceLoader::DidFinishLoadingBody() {
 }
 
 void ResourceLoader::DidFailLoadingBody() {
-  DidFail(ResourceError::Failure(resource_->Url()), 0, 0, 0);
+  DidFail(WebURLError(ResourceError::Failure(resource_->Url())), 0, 0, 0);
 }
 
 void ResourceLoader::DidCancelLoadingBody() {

@@ -292,7 +292,7 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::DidFail(
 }
 
 void WebAssociatedURLLoaderImpl::ClientAdapter::DidFailRedirectCheck() {
-  DidFail(ResourceError::Failure(NullURL()));
+  DidFail(WebURLError(ResourceError::Failure(NullURL())));
 }
 
 void WebAssociatedURLLoaderImpl::ClientAdapter::EnableErrorNotifications() {
@@ -453,8 +453,9 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
   }
 
   if (!loader_) {
-    client_adapter_->DidFail(ResourceError::CancelledDueToAccessCheckError(
-        request.Url(), ResourceRequestBlockedReason::kOther));
+    client_adapter_->DidFail(
+        WebURLError(ResourceError::CancelledDueToAccessCheckError(
+            request.Url(), ResourceRequestBlockedReason::kOther)));
   }
   client_adapter_->EnableErrorNotifications();
 }
@@ -501,7 +502,7 @@ void WebAssociatedURLLoaderImpl::DocumentDestroyed() {
   if (!client_)
     return;
 
-  ReleaseClient()->DidFail(ResourceError::CancelledError(KURL()));
+  ReleaseClient()->DidFail(WebURLError(ResourceError::CancelledError(KURL())));
   // |this| may be dead here.
 }
 

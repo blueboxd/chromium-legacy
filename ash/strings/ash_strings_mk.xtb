@@ -105,6 +105,7 @@
 <translation id="2268813581635650749">Одјави се од сите</translation>
 <translation id="2277103315734023688">Премотај нанапред</translation>
 <translation id="2292698582925480719">Приказ на скала</translation>
+<translation id="2295777434187870477">Микрофонот е вклучен. Ако смените, ќе се исклучи звукот на влезот.</translation>
 <translation id="2298170939937364391">Овозможена е лупата за цел екран. Притиснете Ctrl+Search+M повторно за да ја исклучите.</translation>
 <translation id="2302092602801625023">Оваа сметка е управувана од Family Link</translation>
 <translation id="2303600792989757991">Префрли преглед во прозорец</translation>
@@ -138,6 +139,7 @@
 <translation id="2658778018866295321">Кликни и повлечи</translation>
 <translation id="2700493154570097719">Поставете ја вашата тастатура</translation>
 <translation id="2704781753052663061">Поврзете се на други Wi-Fi мрежи</translation>
+<translation id="2705001408393684014">Вклучете/исклучете го микрофонот. <ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">Ноќно светло</translation>
 <translation id="2727977024730340865">Приклучен на полнач со мало напојување. Полнењето на батеријата може да не е веродостојно.</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
@@ -297,6 +299,7 @@
 <translation id="4665114317261903604">Вклучи/исклучи „Не вознемирувај“. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Отклучете го уредот со код на родител</translation>
 <translation id="4702647871202761252">Исклучен е екранот за приватност</translation>
+<translation id="4705716602320768426">Испратете повратни информации</translation>
 <translation id="4710243778082831592">Поставки за IME</translation>
 <translation id="4731797938093519117">Пристап за родители</translation>
 <translation id="4734965478015604180">Хоризонтално</translation>
@@ -377,6 +380,7 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Вклучено</translation>
+<translation id="5920710855273935292">Звукот на микрофонот е исклучен.</translation>
 <translation id="5947494881799873997">Врати</translation>
 <translation id="595202126637698455">Овозможено е следење на изведбата</translation>
 <translation id="5957083217255311415">Мобилниот интернет е исклучен.</translation>

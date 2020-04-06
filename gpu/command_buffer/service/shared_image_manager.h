@@ -18,6 +18,7 @@
 namespace gpu {
 class SharedImageRepresentationFactoryRef;
 class SharedImageBatchAccessManager;
+class VaapiDependenciesFactory;
 
 class GPU_GLES2_EXPORT SharedImageManager {
  public:
@@ -63,6 +64,10 @@ class GPU_GLES2_EXPORT SharedImageManager {
   std::unique_ptr<SharedImageRepresentationOverlay> ProduceOverlay(
       const Mailbox& mailbox,
       MemoryTypeTracker* ref);
+  std::unique_ptr<SharedImageRepresentationVaapi> ProduceVASurface(
+      const Mailbox& mailbox,
+      MemoryTypeTracker* ref,
+      VaapiDependenciesFactory* dep_factory);
 
   // Called by SharedImageRepresentation in the destructor.
   void OnRepresentationDestroyed(const Mailbox& mailbox,

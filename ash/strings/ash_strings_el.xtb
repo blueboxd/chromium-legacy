@@ -105,6 +105,7 @@
 <translation id="2268813581635650749">Αποσύνδεση όλων</translation>
 <translation id="2277103315734023688">Αναζήτηση προς τα εμπρός</translation>
 <translation id="2292698582925480719">Κλίμακα προβολής</translation>
+<translation id="2295777434187870477">Το μικρόφωνο είναι ενεργοποιημένο, η εναλλαγή θα ενεργοποιήσει τη σίγαση εισόδου.</translation>
 <translation id="2298170939937364391">Η Μεγέθυνση πλήρους οθόνης ενεργοποιήθηκε. Πατήστε Ctrl+Search+M ξανά για να τον απενεργοποιήσετε.</translation>
 <translation id="2302092602801625023">Αυτός ο λογαριασμός είναι διαχειριζόμενος από το Family Link</translation>
 <translation id="2303600792989757991">Επισκόπηση εναλλαγής παραθύρων</translation>
@@ -138,6 +139,7 @@
 <translation id="2658778018866295321">Κάντε κλικ και σύρετε</translation>
 <translation id="2700493154570097719">Ρύθμιση του πληκτρολογίου σας</translation>
 <translation id="2704781753052663061">Σύνδεση σε άλλα δίκτυα Wi-Fi</translation>
+<translation id="2705001408393684014">Εναλλαγή μικροφώνου. <ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">Νυχτερινός φωτισμός</translation>
 <translation id="2727977024730340865">Σύνδεση με φορτιστή χαμηλής ισχύος. Η φόρτιση της μπαταρίας ενδέχεται να μη γίνεται με αξιόπιστο τρόπο.</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
@@ -296,6 +298,7 @@
 <translation id="4665114317261903604">Εναλλαγή λειτουργίας Μην ενοχλείτε. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Ξεκλείδωμα συσκευής με κωδικό γονέα</translation>
 <translation id="4702647871202761252">Η οθόνη απορρήτου είναι απενεργοποιημένη.</translation>
+<translation id="4705716602320768426">Υποβολή σχολίων</translation>
 <translation id="4710243778082831592">Ρυθμίσεις IME</translation>
 <translation id="4731797938093519117">Γονική πρόσβαση</translation>
 <translation id="4734965478015604180">Οριζόντια περιστροφή</translation>
@@ -376,6 +379,7 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Ενεργό</translation>
+<translation id="5920710855273935292">Έγινε σίγαση του μικροφώνου</translation>
 <translation id="5947494881799873997">Επαναφορά</translation>
 <translation id="595202126637698455">Η παρακολούθηση απόδοσης έχει ενεργοποιηθεί</translation>
 <translation id="5957083217255311415">Τα δεδομένα κινητής τηλεφωνίας είναι απενεργοποιημένα.</translation>

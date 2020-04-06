@@ -3056,7 +3056,7 @@
 <translation id="5117930984404104619">Басқа кеңейтімдердің, соның ішінде ашылған URL мекенжайларының әрекетін бақылау</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Қатты дискіңіз толған. Басқа орынға сақтаңыз немесе қатты дискіні босатыңыз.</translation>
-<translation id="5122384452788334261">Құрылғыда бос орын аз қалды. Plugin VM пайдалану үшін кемінде <ph name="RECOMMENDED_SPACE" /> бос орын қажет. Орынды босату үшін құрылғы жадынан файлдарды жойыңыз.</translation>
+<translation id="5122384452788334261">Құрылғыда бос орын аз қалды. Plugin VM пайдалану үшін кемінде <ph name="RECOMMENDED_SPACE" /> бос орын қажет. Орын босату үшін құрылғы жадынан файлдарды жойыңыз.</translation>
 <translation id="5123433949759960244">Баскетбол</translation>
 <translation id="5125751979347152379">Жарамсыз URL.</translation>
 <translation id="5126611267288187364">Өзгерістерді көру</translation>
@@ -3385,7 +3385,7 @@
 <translation id="5558125320634132440">Бұл сайт бөгелді, себебі құрамында ересектерге арналған мазмұн болуы мүмкін.</translation>
 <translation id="5558129378926964177">Үлкей&amp;ту</translation>
 <translation id="55601339223879446">Дисплейдегі жұмыс үстелінің жиектерін реттеу</translation>
-<translation id="5561162485081632007">Орын алған қауіпті әрекеттерді анықтайды және хабарлайды.</translation>
+<translation id="5561162485081632007">Орын алған қауіпті іс-шараларды анықтайды және хабарлайды.</translation>
 <translation id="5562781907504170924">Бұл қойынды Bluetooth құрылғысына жалғанған.</translation>
 <translation id="556321030400250233">жергілікті немесе ортақ файл</translation>
 <translation id="5563234215388768762">Google-дан іздеңіз не URL мекенжайын теріңіз</translation>
@@ -4938,7 +4938,7 @@
 <translation id="7690294790491645610">Жаңа құпия сөзді қайталаңыз</translation>
 <translation id="7690378713476594306">Тізімнен таңдау</translation>
 <translation id="7690853182226561458">&amp;Қалта қосу…</translation>
-<translation id="7691073721729883399">Kiosk қолданбаның негізгі беттерін шифрлау функциясын қосу мүмкін емес.</translation>
+<translation id="7691073721729883399">Kiosk қолданбасының негізгі беттерін шифрлау функциясын қосу мүмкін болмады.</translation>
 <translation id="7691077781194517083">Қауіпсіздік кілтін бастапқы күйіне қайтару мүмкін емес. Қате: <ph name="ERROR_CODE" />.</translation>
 <translation id="7696063401938172191">"<ph name="PHONE_NAME" />" телефонында:</translation>
 <translation id="7698408911093959127">{COUNT,plural, =1{Бетбелгілер тізімінде 1 элемент бар}other{Бетбелгілер тізімінде # элемент бар}}</translation>
@@ -5296,7 +5296,7 @@
 <translation id="8118488170956489476"><ph name="BEGIN_LINK" />Браузеріңізді<ph name="END_LINK" /> ұйым басқарады</translation>
 <translation id="8118860139461251237">Жүктеулеріңізді басқару</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" /> және тағы басқа</translation>
-<translation id="8120715633374652536">Құрылғыда бос орын аз қалды. Plugin VM пайдалану үшін кемінде <ph name="MINIMUM_SPACE" /> бос орын қажет, сондай-ақ ол <ph name="RECOMMENDED_SPACE" /> үстінде болғаны жөн. Орынды босату үшін құрылғы жадынан файлдарды жойыңыз.</translation>
+<translation id="8120715633374652536">Құрылғыда бос орын аз қалды. Plugin VM пайдалану үшін кемінде <ph name="MINIMUM_SPACE" /> бос орын қажет, сондай-ақ ол <ph name="RECOMMENDED_SPACE" /> артық болғаны жөн. Орын босату үшін құрылғы жадынан файлдарды жойыңыз.</translation>
 <translation id="8123590694679414600">Деректер <ph name="TIME" /> күні сақталған синхрондау құпия фразаңызбен шифрланған.
           Google Pay қызметіндегі төлеу әдістері мен мекенжайлар құпия фразамен шифрланбайды.</translation>
 <translation id="81238879832906896">Сары және ақ гүл</translation>

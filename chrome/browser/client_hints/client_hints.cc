@@ -88,7 +88,7 @@ blink::UserAgentMetadata ClientHints::GetUserAgentMetadata() {
 
 void ClientHints::PersistClientHints(
     const url::Origin& primary_origin,
-    const std::vector<blink::mojom::WebClientHintsType>& client_hints,
+    const std::vector<network::mojom::WebClientHintsType>& client_hints,
     base::TimeDelta expiration_duration) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -102,11 +102,11 @@ void ClientHints::PersistClientHints(
   DCHECK(!client_hints.empty());
   DCHECK_LE(
       client_hints.size(),
-      static_cast<size_t>(blink::mojom::WebClientHintsType::kMaxValue) + 1);
+      static_cast<size_t>(network::mojom::WebClientHintsType::kMaxValue) + 1);
 
   if (client_hints.empty() ||
       client_hints.size() >
-          (static_cast<size_t>(blink::mojom::WebClientHintsType::kMaxValue) +
+          (static_cast<size_t>(network::mojom::WebClientHintsType::kMaxValue) +
            1)) {
     // Return early if the list does not have the right number of values.
     // Persisting wrong number of values to the disk may cause errors when

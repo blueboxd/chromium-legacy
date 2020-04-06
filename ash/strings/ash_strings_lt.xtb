@@ -105,6 +105,7 @@
 <translation id="2268813581635650749">Atjungti visus</translation>
 <translation id="2277103315734023688">Prasukti pirmyn</translation>
 <translation id="2292698582925480719">Ekrano mastelis</translation>
+<translation id="2295777434187870477">Mikrofonas įjungtas; perjungiant įvestis bus nutildyta.</translation>
 <translation id="2298170939937364391">Viso ekrano didinimas įgalintas. Dar kartą paspauskite „Ctrl“ + paieškos klavišą + M, kad išjungtumėte režimą.</translation>
 <translation id="2302092602801625023">Ši paskyra tvarkoma naudojant „Family Link“</translation>
 <translation id="2303600792989757991">Perjungti lango apžvalgą</translation>
@@ -138,6 +139,7 @@
 <translation id="2658778018866295321">Spustelėti ir vilkti</translation>
 <translation id="2700493154570097719">Klaviatūros nustatymas</translation>
 <translation id="2704781753052663061">Prisijungti prie kitų „Wi-Fi“ tinklų</translation>
+<translation id="2705001408393684014">Perjungti mikrofoną. <ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">Nakties šviesa</translation>
 <translation id="2727977024730340865">Prijungtas mažos galios įkroviklis. Akumuliatoriaus įkrovimas gali būti nepatikimas.</translation>
 <translation id="2792498699870441125">„Alt“ + paieškos klavišas</translation>
@@ -296,6 +298,7 @@
 <translation id="4665114317261903604">Perjungti netrukdymo režimą. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Atrakinkite įrenginį naudodami tėvų kodą</translation>
 <translation id="4702647871202761252">Privatumo ekranas išjungtas</translation>
+<translation id="4705716602320768426">Pateikti atsiliepimų</translation>
 <translation id="4710243778082831592">IMRP nustatymai</translation>
 <translation id="4731797938093519117">Tėvų prieiga</translation>
 <translation id="4734965478015604180">Horizontaliai</translation>
@@ -376,6 +379,7 @@
 <translation id="5901316534475909376">„Shift“ + „Esc“</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Įjungta</translation>
+<translation id="5920710855273935292">Mikrofonas nutildytas.</translation>
 <translation id="5947494881799873997">Grąžinti</translation>
 <translation id="595202126637698455">Įgalintas našumo stebėjimas</translation>
 <translation id="5957083217255311415">Mobiliojo ryšio duomenys išjungti.</translation>

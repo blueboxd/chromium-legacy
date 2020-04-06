@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css/style_recalc.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_document_state.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/display_lock/render_subtree_activation_event.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -91,7 +92,7 @@ void RecordActivationReason(Document* document,
 
 DisplayLockContext::DisplayLockContext(Element* element)
     : element_(element), document_(&element_->GetDocument()) {
-  document_->AddDisplayLockContext(this);
+  document_->GetDisplayLockDocumentState().AddDisplayLockContext(this);
   DetermineIfSubtreeHasFocus();
   DetermineIfSubtreeHasSelection();
 }
@@ -177,18 +178,21 @@ void DisplayLockContext::UpdateDocumentBookkeeping(
 
   if (was_locked != is_locked) {
     if (is_locked)
-      document_->AddLockedDisplayLock();
+      document_->GetDisplayLockDocumentState().AddLockedDisplayLock();
     else
-      document_->RemoveLockedDisplayLock();
+      document_->GetDisplayLockDocumentState().RemoveLockedDisplayLock();
   }
 
   bool was_locked_and_blocking = was_locked && all_activation_was_blocked;
   bool is_locked_and_blocking = is_locked && all_activation_is_blocked;
   if (was_locked_and_blocking != is_locked_and_blocking) {
-    if (is_locked_and_blocking)
-      document_->IncrementDisplayLockBlockingAllActivation();
-    else
-      document_->DecrementDisplayLockBlockingAllActivation();
+    if (is_locked_and_blocking) {
+      document_->GetDisplayLockDocumentState()
+          .IncrementDisplayLockBlockingAllActivation();
+    } else {
+      document_->GetDisplayLockDocumentState()
+          .DecrementDisplayLockBlockingAllActivation();
+    }
   }
 }
 
@@ -209,9 +213,11 @@ void DisplayLockContext::UpdateActivationObservationIfNeeded() {
   is_observed_ = should_observe;
 
   if (should_observe) {
-    document_->RegisterDisplayLockActivationObservation(element_);
+    document_->GetDisplayLockDocumentState()
+        .RegisterDisplayLockActivationObservation(element_);
   } else {
-    document_->UnregisterDisplayLockActivationObservation(element_);
+    document_->GetDisplayLockDocumentState()
+        .UnregisterDisplayLockActivationObservation(element_);
     // If we're not listening to viewport intersections, then we can assume
     // we're not intersecting:
     // 1. We might not be connected, in which case we're not intersecting.
@@ -297,7 +303,8 @@ void DisplayLockContext::Lock() {
 bool DisplayLockContext::ShouldStyle(DisplayLockLifecycleTarget target) const {
   return !is_locked_ || target == DisplayLockLifecycleTarget::kSelf ||
          update_forced_ ||
-         (document_->ActivatableDisplayLocksForced() &&
+         (document_->GetDisplayLockDocumentState()
+              .ActivatableDisplayLocksForced() &&
           IsActivatable(DisplayLockActivationReason::kAny));
 }
 
@@ -320,7 +327,8 @@ void DisplayLockContext::DidStyle(DisplayLockLifecycleTarget target) {
 bool DisplayLockContext::ShouldLayout(DisplayLockLifecycleTarget target) const {
   return !is_locked_ || target == DisplayLockLifecycleTarget::kSelf ||
          update_forced_ ||
-         (document_->ActivatableDisplayLocksForced() &&
+         (document_->GetDisplayLockDocumentState()
+              .ActivatableDisplayLocksForced() &&
           IsActivatable(DisplayLockActivationReason::kAny));
 }
 
@@ -720,12 +728,14 @@ void DisplayLockContext::DidMoveToNewDocument(Document& old_document) {
   DCHECK(element_);
   document_ = &element_->GetDocument();
 
-  old_document.RemoveDisplayLockContext(this);
-  document_->AddDisplayLockContext(this);
+  old_document.GetDisplayLockDocumentState().RemoveDisplayLockContext(this);
+  document_->GetDisplayLockDocumentState().AddDisplayLockContext(this);
 
   if (is_observed_) {
-    old_document.UnregisterDisplayLockActivationObservation(element_);
-    document_->RegisterDisplayLockActivationObservation(element_);
+    old_document.GetDisplayLockDocumentState()
+        .UnregisterDisplayLockActivationObservation(element_);
+    document_->GetDisplayLockDocumentState()
+        .RegisterDisplayLockActivationObservation(element_);
   }
 
   // Since we're observing the lifecycle updates, ensure that we listen to the
@@ -741,11 +751,13 @@ void DisplayLockContext::DidMoveToNewDocument(Document& old_document) {
   }
 
   if (IsLocked()) {
-    old_document.RemoveLockedDisplayLock();
-    document_->AddLockedDisplayLock();
+    old_document.GetDisplayLockDocumentState().RemoveLockedDisplayLock();
+    document_->GetDisplayLockDocumentState().AddLockedDisplayLock();
     if (!IsActivatable(DisplayLockActivationReason::kAny)) {
-      old_document.DecrementDisplayLockBlockingAllActivation();
-      document_->IncrementDisplayLockBlockingAllActivation();
+      old_document.GetDisplayLockDocumentState()
+          .DecrementDisplayLockBlockingAllActivation();
+      document_->GetDisplayLockDocumentState()
+          .IncrementDisplayLockBlockingAllActivation();
     }
   }
 

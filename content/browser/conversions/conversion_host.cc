@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "content/browser/conversions/conversion_manager.h"
+#include "content/browser/conversions/conversion_manager_impl.h"
 #include "content/browser/conversions/conversion_policy.h"
 #include "content/browser/conversions/storable_conversion.h"
 #include "content/browser/storage_partition_impl.h"
@@ -19,8 +20,43 @@
 
 namespace content {
 
-ConversionHost::ConversionHost(WebContents* contents)
-    : web_contents_(contents), receiver_(contents, this) {}
+namespace {
+
+// Provides access to the manager owned by the default storage partition.
+class ConversionManagerProviderImpl : public ConversionManager::Provider {
+ public:
+  ConversionManagerProviderImpl() = default;
+  ConversionManagerProviderImpl(const ConversionManagerProviderImpl& other) =
+      delete;
+  ConversionManagerProviderImpl& operator=(
+      const ConversionManagerProviderImpl& other) = delete;
+  ~ConversionManagerProviderImpl() override = default;
+
+  // ConversionManagerProvider:
+  ConversionManager* GetManager(WebContents* web_contents) const override {
+    return static_cast<StoragePartitionImpl*>(
+               BrowserContext::GetDefaultStoragePartition(
+                   web_contents->GetBrowserContext()))
+        ->GetConversionManager();
+  }
+};
+
+}  // namespace
+
+// static
+std::unique_ptr<ConversionHost> ConversionHost::CreateForTesting(
+    WebContents* web_contents,
+    std::unique_ptr<ConversionManager::Provider> conversion_manager_provider) {
+  auto host = std::make_unique<ConversionHost>(web_contents);
+  host->conversion_manager_provider_ = std::move(conversion_manager_provider);
+  return host;
+}
+
+ConversionHost::ConversionHost(WebContents* web_contents)
+    : conversion_manager_provider_(
+          std::make_unique<ConversionManagerProviderImpl>()),
+      web_contents_(web_contents),
+      receiver_(web_contents, this) {}
 
 ConversionHost::~ConversionHost() = default;
 
@@ -28,10 +64,6 @@ ConversionHost::~ConversionHost() = default;
 // page-load to a reasonable number.
 void ConversionHost::RegisterConversion(
     blink::mojom::ConversionPtr conversion) {
-  // If there is no conversion manager available, ignore any conversion
-  // registrations.
-  if (!GetManager())
-    return;
   content::RenderFrameHost* render_frame_host =
       receiver_.GetCurrentTargetFrame();
 
@@ -41,6 +73,13 @@ void ConversionHost::RegisterConversion(
         "blink.mojom.ConversionHost can only be used by the main frame.");
     return;
   }
+
+  // If there is no conversion manager available, ignore any conversion
+  // registrations.
+  ConversionManager* conversion_manager =
+      conversion_manager_provider_->GetManager(web_contents_);
+  if (!conversion_manager)
+    return;
 
   // Only allow conversion registration on secure pages with a secure conversion
   // redirects.
@@ -54,24 +93,17 @@ void ConversionHost::RegisterConversion(
   }
 
   StorableConversion storable_conversion(
-      GetManager()->GetConversionPolicy().GetSanitizedConversionData(
+      conversion_manager->GetConversionPolicy().GetSanitizedConversionData(
           conversion->conversion_data),
       render_frame_host->GetLastCommittedOrigin(),
       conversion->reporting_origin);
 
-  GetManager()->HandleConversion(storable_conversion);
+  conversion_manager->HandleConversion(storable_conversion);
 }
 
 void ConversionHost::SetCurrentTargetFrameForTesting(
     RenderFrameHost* render_frame_host) {
   receiver_.SetCurrentTargetFrameForTesting(render_frame_host);
-}
-
-ConversionManager* ConversionHost::GetManager() {
-  return static_cast<StoragePartitionImpl*>(
-             BrowserContext::GetDefaultStoragePartition(
-                 web_contents_->GetBrowserContext()))
-      ->GetConversionManager();
 }
 
 }  // namespace content

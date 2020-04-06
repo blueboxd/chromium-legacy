@@ -4,22 +4,21 @@
 
 #include "third_party/blink/renderer/core/feature_policy/layout_animations_policy.h"
 
-#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/blink/public/common/feature_policy/document_policy_features.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 namespace {
 String GetViolationMessage(const CSSProperty& property) {
   return String::Format(
-      "Feature policy violation: CSS property '%s' violates feature policy "
+      "Document policy violation: CSS property '%s' violates document policy "
       "'%s' which is disabled in this document",
       property.GetPropertyNameString().Utf8().c_str(),
-      GetNameForFeature(mojom::blink::FeaturePolicyFeature::kLayoutAnimations)
-          .Utf8()
-          .c_str());
+      GetDocumentPolicyFeatureInfoMap()
+          .at(mojom::blink::DocumentPolicyFeature::kLayoutAnimations)
+          .feature_name.c_str());
 }
 }  // namespace
 
@@ -41,7 +40,7 @@ void LayoutAnimationsPolicy::ReportViolation(
     const ExecutionContext& context) {
   DCHECK(AffectedCSSProperties().Contains(&animated_property));
   context.IsFeatureEnabled(
-      mojom::blink::FeaturePolicyFeature::kLayoutAnimations,
+      mojom::blink::DocumentPolicyFeature::kLayoutAnimations,
       ReportOptions::kReportOnFailure, GetViolationMessage(animated_property));
 }
 

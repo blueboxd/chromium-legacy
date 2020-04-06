@@ -115,7 +115,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   void UpdateCacheAfterNodeIsAttached(Node*) override;
   void DidInsertChildrenOfNode(Node*) override;
 
-  bool HandleAttributeChanged(const QualifiedName& attr_name,
+  void HandleAttributeChanged(const QualifiedName& attr_name,
                               Element*) override;
   void HandleValidationMessageVisibilityChanged(
       const Element* form_control) override;

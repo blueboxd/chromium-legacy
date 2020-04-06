@@ -9,15 +9,29 @@
 
 namespace content {
 
+namespace {
+bool g_initialized = false;
+}  // namespace
+
 // static
 GpuDataManager* GpuDataManager::GetInstance() {
   return GpuDataManagerImpl::GetInstance();
 }
 
 // static
+bool GpuDataManager::Initialized() {
+  return GpuDataManagerImpl::Initialized();
+}
+
+// static
 GpuDataManagerImpl* GpuDataManagerImpl::GetInstance() {
   static base::NoDestructor<GpuDataManagerImpl> instance;
   return instance.get();
+}
+
+// static
+bool GpuDataManagerImpl::Initialized() {
+  return g_initialized;
 }
 
 void GpuDataManagerImpl::BlacklistWebGLForTesting() {
@@ -290,7 +304,9 @@ void GpuDataManagerImpl::OnDisplayRemoved(const display::Display& old_display) {
 }
 
 GpuDataManagerImpl::GpuDataManagerImpl()
-    : private_(std::make_unique<GpuDataManagerImplPrivate>(this)) {}
+    : private_(std::make_unique<GpuDataManagerImplPrivate>(this)) {
+  g_initialized = true;
+}
 
 GpuDataManagerImpl::~GpuDataManagerImpl() = default;
 

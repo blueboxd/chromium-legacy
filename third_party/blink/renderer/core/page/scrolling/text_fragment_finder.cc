@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_document_state.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
@@ -182,7 +183,8 @@ void TextFragmentFinder::FindMatch(Document& document) {
   PositionInFlatTree search_start =
       PositionInFlatTree::FirstPositionInNode(document);
 
-  auto forced_lock_scope = document.GetScopedForceActivatableLocks();
+  auto forced_lock_scope =
+      document.GetDisplayLockDocumentState().GetScopedForceActivatableLocks();
   document.UpdateStyleAndLayout(DocumentUpdateReason::kFindInPage);
 
   EphemeralRangeInFlatTree match =

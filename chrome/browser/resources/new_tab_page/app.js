@@ -163,7 +163,7 @@ class AppElement extends PolymerElement {
     if (!this.theme_ || !this.theme_.backgroundImageUrl) {
       return '';
     }
-    return `image?${this.theme_.backgroundImageUrl.url}`;
+    return `background_image?${this.theme_.backgroundImageUrl.url}`;
   }
 
   /**

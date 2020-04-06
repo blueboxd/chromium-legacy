@@ -105,6 +105,7 @@
 <translation id="2268813581635650749">Sign out all</translation>
 <translation id="2277103315734023688">Seek forwards</translation>
 <translation id="2292698582925480719">Display scale</translation>
+<translation id="2295777434187870477">Mic is on, toggling will mute input.</translation>
 <translation id="2298170939937364391">Full-screen Magnifier enabled. Press Ctrl+Search+M again to toggle it off.</translation>
 <translation id="2302092602801625023">This account is managed by Family Link</translation>
 <translation id="2303600792989757991">Toggle window overview</translation>
@@ -138,6 +139,7 @@
 <translation id="2658778018866295321">Click and drag</translation>
 <translation id="2700493154570097719">Set your keyboard</translation>
 <translation id="2704781753052663061">Join other Wi-Fi networks</translation>
+<translation id="2705001408393684014">Toggle mic. <ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">Night Light</translation>
 <translation id="2727977024730340865">Plugged in to a low-power charger. Battery charging may not be reliable.</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
@@ -296,6 +298,7 @@
 <translation id="4665114317261903604">Toggle Do Not Disturb. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Unlock device with parent code</translation>
 <translation id="4702647871202761252">Privacy screen is off</translation>
+<translation id="4705716602320768426">File feedback</translation>
 <translation id="4710243778082831592">IME settings</translation>
 <translation id="4731797938093519117">Parent access</translation>
 <translation id="4734965478015604180">Horizontal</translation>
@@ -376,6 +379,7 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">On</translation>
+<translation id="5920710855273935292">Mic is muted.</translation>
 <translation id="5947494881799873997">Revert</translation>
 <translation id="595202126637698455">Performance tracing enabled</translation>
 <translation id="5957083217255311415">Mobile data is turned off.</translation>

@@ -168,6 +168,7 @@
 <translation id="3112556859945124369">Marca com a…</translation>
 <translation id="3153862085237805241">Desa la targeta</translation>
 <translation id="3157684681743766797">Marca-ho tot com a…</translation>
+<translation id="3161291298470460782">Amb aquesta acció es tancarà la sessió, es desactivarà la sincronització i s'esborraran totes les dades de Chrome d'aquest dispositiu. Les dades sincronitzades es conservaran al teu Compte de Google.</translation>
 <translation id="3175081911749765310">Serveis web</translation>
 <translation id="3178650076442119961">Actiu avui</translation>
 <translation id="3207960819495026254">S'ha afegit a les adreces d'interès.</translation>
@@ -200,6 +201,7 @@
 <translation id="3494788280727468875">Confirma que vols esborrar les dades de navegació</translation>
 <translation id="35083190962747987">Obre ${url}</translation>
 <translation id="3519193562722059437">Obriu una pestanya per navegar pel web.</translation>
+<translation id="3523473570015918798">En tancar la sessió, les adreces d'interès, l'historial, les contrasenyes i altres dades de Chrome es deixaran de sincronitzar amb el teu Compte de Google</translation>
 <translation id="3527085408025491307">Carpeta</translation>
 <translation id="3529024052484145543">No és segur</translation>
 <translation id="3533202363250687977">Tanca totes les pestanyes d'incògnit</translation>
@@ -333,6 +335,7 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="54401264925851789">Informació de seguretat de la pàgina</translation>
 <translation id="5443952882982198570">Targetes de crèdit</translation>
 <translation id="5457907402803865181">S'ha produït un error en sincronitzar les contrasenyes.</translation>
+<translation id="5508435575041083207">Tanca la sessió i esborra les dades d'aquest dispositiu</translation>
 <translation id="5525269841082836315">Crea una frase de contrasenya</translation>
 <translation id="5548760955356983418">Handoff us permet començar a navegar per un lloc web en aquest dispositiu i després continuar fàcilment al dispositiu Mac. El lloc web obert actualment apareixerà al Dock de Mac.
 
@@ -506,6 +509,9 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="766891008101699113">Per navegar pel web de manera privada, obre una pestanya nova.</translation>
 <translation id="7671141431838911305">INSTAL·LA</translation>
 <translation id="7765158879357617694">Mou</translation>
+<translation id="7771470029643830783">En tancar la sessió, les adreces d'interès, l'historial, les contrasenyes i altres dades de Chrome es deixaran de sincronitzar amb el teu Compte de Google
+
+Com que <ph name="HOSTED_DOMAIN" /> gestiona el teu compte, les dades de Chrome se suprimiran d'aquest dispositiu en tancar la sessió. Les dades sincronitzades es conservaran al teu Compte de Google.</translation>
 <translation id="7772032839648071052">Confirmeu la frase de contrasenya</translation>
 <translation id="7781011649027948662">Vols traduir la pàgina?</translation>
 <translation id="7781829728241885113">Ahir</translation>
@@ -555,6 +561,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="8490978609246021741">Desa els canvis</translation>
 <translation id="8503813439785031346">Nom d'usuari</translation>
 <translation id="850600235656508448">Obre en mode d'incògnit</translation>
+<translation id="8510057420705599706">Amb aquesta acció es tancarà la sessió i es desactivarà la sincronització, però les adreces d'interès, l'historial, les contrasenyes i altres dades de Chrome es conservaran en aquest dispositiu.</translation>
 <translation id="8517375800490286174">Llicències de programari lliure</translation>
 <translation id="8524799873541103884">Pestanyes <ph name="INCOGNITO" />: de <ph name="FIRST_VISIBLE_TAB" /> a <ph name="LAST_VISIBLE_TAB" /> d'un total de <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">Novetat</translation>
@@ -597,6 +604,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="9094033019050270033">Actualitza la contrasenya</translation>
 <translation id="9100610230175265781">S'ha d'introduir una frase de contrasenya </translation>
 <translation id="9148126808321036104">Torna a iniciar la sessió</translation>
+<translation id="9152539721251340337">Crea un codi QR</translation>
 <translation id="9157836665414082580">Suprimeix quadres de diàleg</translation>
 <translation id="9188680907066685419">Tanqueu la sessió del compte gestionat</translation>
 <translation id="9203116392574189331">Handoff</translation>

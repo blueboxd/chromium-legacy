@@ -359,10 +359,6 @@ public class CustomTabActivityTabController
         RecordHistogram.recordEnumeratedHistogram("CustomTabs.WebContentsStateOnLaunch",
                 WebContentsState.PRERENDERED_WEBCONTENTS, WebContentsState.NUM_ENTRIES);
         TabAssociatedApp.from(tab).setAppId(mConnection.getClientPackageNameForSession(mSession));
-        if (mIntentDataProvider.shouldEnableEmbeddedMediaExperience()) {
-            // Configures web preferences for viewing downloaded media.
-            if (tab.getWebContents() != null) tab.getWebContents().notifyRendererPreferenceUpdate();
-        }
         initializeTab(tab);
         return tab;
     }

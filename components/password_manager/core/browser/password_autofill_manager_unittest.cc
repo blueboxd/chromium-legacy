@@ -134,10 +134,16 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
         .WillByDefault(Return(!opt_in));
   }
 
+  void SetNeedsReSigninForAccountStorage(bool needs_signin) {
+    ON_CALL(*feature_manager_.get(), ShouldShowAccountStorageReSignin)
+        .WillByDefault(Return(needs_signin));
+  }
+
   MOCK_METHOD0(GeneratePassword, void());
   MOCK_METHOD2(TriggerReauthForAccount,
                void(const CoreAccountId&,
                     base::OnceCallback<void(ReauthSucceeded)>));
+  MOCK_METHOD0(TriggerSignIn, void());
   MOCK_METHOD0(GetFaviconService, favicon::FaviconService*());
   MOCK_METHOD1(NavigateToManagePasswordsPage, void(ManagePasswordsReferrer));
 
@@ -203,7 +209,8 @@ RespondWithTestIcon(Unused, FaviconImageCallback callback, Unused) {
 
 std::vector<autofill::Suggestion> CreateTestSuggestions(
     bool has_opt_in_and_fill,
-    bool has_opt_in_and_generate) {
+    bool has_opt_in_and_generate,
+    bool has_re_signin) {
   std::vector<Suggestion> suggestions;
   suggestions.push_back(
       Suggestion(/*label=*/"User1", /*value=*/"PW1", /*icon=*/"",
@@ -224,6 +231,12 @@ std::vector<autofill::Suggestion> CreateTestSuggestions(
         /*label=*/"Unlock passwords and generate", /*value=*/"", /*icon=*/"",
         /*fronend_id=*/
         autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE));
+  }
+  if (has_re_signin) {
+    suggestions.push_back(Suggestion(
+        /*label=*/"Sign in to access passwords", /*value=*/"", /*icon=*/"",
+        /*fronend_id=*/
+        autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_RE_SIGNIN));
   }
   return suggestions;
 }
@@ -262,8 +275,8 @@ class PasswordAutofillManagerTest : public testing::Test {
 
   void InitializePasswordAutofillManager(TestPasswordManagerClient* client,
                                          MockAutofillClient* autofill_client) {
-    password_autofill_manager_.reset(new PasswordAutofillManager(
-        client->mock_driver(), autofill_client, client));
+    password_autofill_manager_ = std::make_unique<PasswordAutofillManager>(
+        client->mock_driver(), autofill_client, client);
     favicon::MockFaviconService favicon_service;
     EXPECT_CALL(*client, GetFaviconService())
         .WillOnce(Return(&favicon_service));
@@ -483,6 +496,49 @@ TEST_F(PasswordAutofillManagerTest, ShowOptInAndFillButton) {
       autofill::SHOW_ALL | autofill::IS_PASSWORD_FIELD, gfx::RectF());
 }
 
+// Test that a popup without entries doesn't show "Manage all Passwords".
+TEST_F(PasswordAutofillManagerTest, SuppressManageAllWithoutPasswords) {
+  TestPasswordManagerClient client;
+  NiceMock<MockAutofillClient> autofill_client;
+  password_autofill_manager_ = std::make_unique<PasswordAutofillManager>(
+      client.mock_driver(), &autofill_client, &client);
+  client.SetAccountStorageOptIn(false);
+
+  // Show the popup and verify the suggestions.
+  EXPECT_CALL(
+      autofill_client,
+      ShowAutofillPopup(
+          _, _,
+          SuggestionVectorIdsAre(ElementsAreArray(
+              {autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN})),
+          /*autoselect_first_suggestion=*/false, PopupType::kPasswords, _));
+  password_autofill_manager_->OnShowPasswordSuggestions(
+      base::i18n::RIGHT_TO_LEFT, base::string16(),
+      autofill::SHOW_ALL | autofill::IS_PASSWORD_FIELD, gfx::RectF());
+}
+
+// Test that the popup is updated once account-stored suggestions are unlocked.
+TEST_F(PasswordAutofillManagerTest, ShowResigninButton) {
+  TestPasswordManagerClient client;
+  NiceMock<MockAutofillClient> autofill_client;
+  InitializePasswordAutofillManager(&client, &autofill_client);
+  client.SetNeedsReSigninForAccountStorage(true);
+
+  // Show the popup and verify the suggestions.
+  EXPECT_CALL(
+      autofill_client,
+      ShowAutofillPopup(
+          _, _,
+          SuggestionVectorIdsAre(ElementsAreArray(RemoveShowAllBeforeLollipop(
+              {autofill::POPUP_ITEM_ID_PASSWORD_ENTRY,
+               autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY,
+               autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_RE_SIGNIN}))),
+          /*autoselect_first_suggestion=*/false, PopupType::kPasswords, _));
+  password_autofill_manager_->OnShowPasswordSuggestions(
+      base::i18n::RIGHT_TO_LEFT, base::string16(),
+      autofill::SHOW_ALL | autofill::IS_PASSWORD_FIELD, gfx::RectF());
+}
+
 // Test that the popup is updated once "opt in and fill" is clicked.
 TEST_F(PasswordAutofillManagerTest,
        ClickOnOptInAndFillPutsPopupInWaitingState) {
@@ -510,8 +566,9 @@ TEST_F(PasswordAutofillManagerTest,
   EXPECT_CALL(autofill_client, PinPopupView);
   EXPECT_CALL(client, TriggerReauthForAccount(kAliceId, _));
   EXPECT_CALL(autofill_client, GetPopupSuggestions())
-      .WillOnce(Return(CreateTestSuggestions(
-          /*has_opt_in_and_fill=*/true, /*has_opt_in_and_generate*/ false)));
+      .WillOnce(Return(CreateTestSuggestions(/*has_opt_in_and_fill=*/true,
+                                             /*has_opt_in_and_generate*/ false,
+                                             /*has_re_signin=*/false)));
   password_autofill_manager_->DidAcceptSuggestion(
       test_username_, autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN,
       1);
@@ -547,13 +604,29 @@ TEST_F(PasswordAutofillManagerTest,
   EXPECT_CALL(autofill_client, PinPopupView);
   EXPECT_CALL(client, TriggerReauthForAccount(kAliceId, _));
   EXPECT_CALL(autofill_client, GetPopupSuggestions())
-      .WillOnce(Return(CreateTestSuggestions(
-          /*has_opt_in_and_fill=*/false, /*has_opt_in_and_generate*/ true)));
+      .WillOnce(Return(CreateTestSuggestions(/*has_opt_in_and_fill=*/false,
+                                             /*has_opt_in_and_generate*/ true,
+                                             /*has_re_signin=*/false)));
   password_autofill_manager_->DidAcceptSuggestion(
       test_username_,
       autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE, 1);
   ASSERT_GE(suggestions.size(), 2u);
   EXPECT_TRUE(suggestions.back().is_loading);
+}
+
+// Test that the popup is updated once "opt in and fill" is clicked.
+TEST_F(PasswordAutofillManagerTest, ClickOnReSiginTriggersSigninAndHides) {
+  TestPasswordManagerClient client;
+  NiceMock<MockAutofillClient> autofill_client;
+  InitializePasswordAutofillManager(&client, &autofill_client);
+  client.SetNeedsReSigninForAccountStorage(false);
+  testing::Mock::VerifyAndClearExpectations(&autofill_client);
+
+  EXPECT_CALL(client, TriggerSignIn);
+  EXPECT_CALL(autofill_client, HideAutofillPopup);
+  password_autofill_manager_->DidAcceptSuggestion(
+      test_username_,
+      autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_RE_SIGNIN, 1);
 }
 
 // Test that the popup is updated once "opt in and fill" is clicked.
@@ -573,8 +646,9 @@ TEST_F(PasswordAutofillManagerTest, FailedOptInAndFillUpdatesPopup) {
   // Accepting a suggestion should trigger a call to update the popup.
   // First the popup enters the waiting state.
   EXPECT_CALL(autofill_client, GetPopupSuggestions)
-      .WillOnce(Return(CreateTestSuggestions(
-          /*has_opt_in_and_fill=*/true, /*has_opt_in_and_generate*/ false)));
+      .WillOnce(Return(CreateTestSuggestions(/*has_opt_in_and_fill=*/true,
+                                             /*has_opt_in_and_generate*/ false,
+                                             /*has_re_signin=*/false)));
   EXPECT_CALL(autofill_client, UpdatePopup);
 
   // As soon as the waiting state is pending, the next update resets the popup.
@@ -582,7 +656,8 @@ TEST_F(PasswordAutofillManagerTest, FailedOptInAndFillUpdatesPopup) {
     testing::Mock::VerifyAndClear(&autofill_client);
     EXPECT_CALL(autofill_client, GetPopupSuggestions)
         .WillOnce(Return(CreateTestSuggestions(
-            /*has_opt_in_and_fill=*/true, /*has_opt_in_and_generate*/ false)));
+            /*has_opt_in_and_fill=*/true, /*has_opt_in_and_generate*/ false,
+            /*has_re_signin=*/false)));
     EXPECT_CALL(client, TriggerReauthForAccount(kAliceId, _))
         .WillOnce([](const auto& unused, auto reauth_callback) {
           std::move(reauth_callback).Run(ReauthSucceeded(false));
@@ -622,16 +697,18 @@ TEST_F(PasswordAutofillManagerTest, FailedOptInAndGenerateUpdatesPopup) {
   // Accepting a suggestion should trigger a call to update the popup.
   // First the popup enters the waiting state.
   EXPECT_CALL(autofill_client, GetPopupSuggestions)
-      .WillOnce(Return(CreateTestSuggestions(
-          /*has_opt_in_and_fill=*/false, /*has_opt_in_and_generate*/ true)));
+      .WillOnce(Return(CreateTestSuggestions(/*has_opt_in_and_fill=*/false,
+                                             /*has_opt_in_and_generate*/ true,
+                                             /*has_re_signin=*/false)));
   EXPECT_CALL(autofill_client, UpdatePopup);
 
   // As soon as the waiting state is pending, the next update resets the popup.
   EXPECT_CALL(autofill_client, PinPopupView).WillOnce([&] {
     testing::Mock::VerifyAndClear(&autofill_client);
     EXPECT_CALL(autofill_client, GetPopupSuggestions)
-        .WillOnce(Return(CreateTestSuggestions(
-            /*has_opt_in_and_fill=*/false, /*has_opt_in_and_generate*/ true)));
+        .WillOnce(Return(CreateTestSuggestions(/*has_opt_in_and_fill=*/false,
+                                               /*has_opt_in_and_generate*/ true,
+                                               /*has_re_signin=*/false)));
     EXPECT_CALL(client, TriggerReauthForAccount(kAliceId, _))
         .WillOnce([](const auto& unused, auto reauth_callback) {
           std::move(reauth_callback).Run(ReauthSucceeded(false));
@@ -668,8 +745,9 @@ TEST_F(PasswordAutofillManagerTest, SuccessfullOptInAndFillTriggersOptIn) {
 
   // Accepting a suggestion should trigger a call to update the popup.
   EXPECT_CALL(autofill_client, GetPopupSuggestions)
-      .WillOnce(Return(CreateTestSuggestions(
-          /*has_opt_in_and_fill=*/true, /*has_opt_in_and_generate*/ false)));
+      .WillOnce(Return(CreateTestSuggestions(/*has_opt_in_and_fill=*/true,
+                                             /*has_opt_in_and_generate*/ false,
+                                             /*has_re_signin=*/false)));
   EXPECT_CALL(autofill_client, UpdatePopup);
   EXPECT_CALL(autofill_client, PinPopupView);
 
@@ -699,8 +777,9 @@ TEST_F(PasswordAutofillManagerTest,
 
   // Accepting a suggestion should trigger a call to update the popup.
   EXPECT_CALL(autofill_client, GetPopupSuggestions)
-      .WillOnce(Return(CreateTestSuggestions(
-          /*has_opt_in_and_fill=*/false, /*has_opt_in_and_generate*/ true)));
+      .WillOnce(Return(CreateTestSuggestions(/*has_opt_in_and_fill=*/false,
+                                             /*has_opt_in_and_generate*/ true,
+                                             /*has_re_signin=*/false)));
   EXPECT_CALL(autofill_client, UpdatePopup);
   EXPECT_CALL(autofill_client, PinPopupView);
 
@@ -736,7 +815,8 @@ TEST_F(PasswordAutofillManagerTest,
   EXPECT_CALL(autofill_client, GetPopupSuggestions())
       .Times(2)
       .WillRepeatedly(Return(CreateTestSuggestions(
-          /*has_opt_in_and_fill=*/false, /*has_opt_in_and_generate*/ false)));
+          /*has_opt_in_and_fill=*/false, /*has_opt_in_and_generate*/ false,
+          /*has_re_signin=*/false)));
   EXPECT_CALL(
       autofill_client,
       UpdatePopup(
@@ -1152,8 +1232,8 @@ TEST_F(PasswordAutofillManagerTest,
        MaybeShowPasswordSuggestionsWithGenerationNoCredentials) {
   TestPasswordManagerClient client;
   NiceMock<MockAutofillClient> autofill_client;
-  password_autofill_manager_.reset(new PasswordAutofillManager(
-      client.mock_driver(), &autofill_client, &client));
+  password_autofill_manager_ = std::make_unique<PasswordAutofillManager>(
+      client.mock_driver(), &autofill_client, &client);
 
   EXPECT_CALL(autofill_client, ShowAutofillPopup).Times(0);
   gfx::RectF element_bounds;

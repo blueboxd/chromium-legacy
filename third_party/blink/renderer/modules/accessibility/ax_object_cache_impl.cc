@@ -116,27 +116,6 @@ Node* GetClosestNodeForLayoutObject(LayoutObject* layout_object) {
   return node ? node : GetClosestNodeForLayoutObject(layout_object->Parent());
 }
 
-bool IsAttributeImportantForAccessibility(const QualifiedName& attribute_name,
-                                          const Element& element) {
-  // Generally important attributes.
-  if (attribute_name == html_names::kRoleAttr ||
-      attribute_name == html_names::kTypeAttr ||
-      attribute_name == html_names::kSizeAttr ||
-      attribute_name == html_names::kAltAttr ||
-      attribute_name == html_names::kTitleAttr ||
-      attribute_name == html_names::kIdAttr ||
-      attribute_name == html_names::kTabindexAttr ||
-      attribute_name == html_names::kDisabledAttr)
-    return true;
-
-  // <label for>.
-  if (attribute_name == html_names::kForAttr && IsA<HTMLLabelElement>(element))
-    return true;
-
-  // Any ARIA attribute.
-  return attribute_name.LocalName().StartsWith("aria-");
-}
-
 }  // namespace
 
 // static
@@ -1467,18 +1446,11 @@ void AXObjectCacheImpl::HandleRoleChangeIfNotEditableWithCleanLayout(
   }
 }
 
-bool AXObjectCacheImpl::HandleAttributeChanged(const QualifiedName& attr_name,
+void AXObjectCacheImpl::HandleAttributeChanged(const QualifiedName& attr_name,
                                                Element* element) {
-  if (!element)
-    return false;
-
+  DCHECK(element);
   DeferTreeUpdate(&AXObjectCacheImpl::HandleAttributeChangedWithCleanLayout,
                   attr_name, element);
-
-  if (!IsAttributeImportantForAccessibility(attr_name, *element))
-    return false;
-
-  return true;
 }
 
 void AXObjectCacheImpl::HandleAttributeChangedWithCleanLayout(

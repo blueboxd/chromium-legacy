@@ -6,6 +6,10 @@ import("//build/config/chromecast_build.gni")
 import("//chromecast/chromecast.gni")
 import("//media/media_options.gni")
 
+declare_args() {
+  cast_static_videodecoderformixer_lib_target = ""
+}
+
 cast_source_set("av_sync_video") {
   sources = [
     "av_sync_video.cc",
@@ -49,9 +53,15 @@ cast_source_set("libcast_media_1.0_avsync") {
     "//media",
   ]
 
+  if (cast_static_videodecoderformixer_lib_target != "") {
+    deps += [ "$cast_static_videodecoderformixer_lib_target" ]
+  }
+
   if (use_alsa) {
     deps += [ "//chromecast/media/cma/backend/alsa:volume_control" ]
-    libs = [ "videodecoderformixer" ]
+    if (cast_static_videodecoderformixer_lib_target == "") {
+      libs = [ "videodecoderformixer" ]
+    }
   }
 
   if (is_fuchsia) {

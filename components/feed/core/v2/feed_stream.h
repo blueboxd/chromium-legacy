@@ -12,6 +12,7 @@
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
+#include "base/version.h"
 #include "components/feed/core/common/enums.h"
 #include "components/feed/core/common/user_classifier.h"
 #include "components/feed/core/proto/v2/wire/response.pb.h"
@@ -82,7 +83,7 @@ class FeedStream : public FeedStreamApi,
              FeedStore* feed_store,
              const base::Clock* clock,
              const base::TickClock* tick_clock,
-             scoped_refptr<base::SequencedTaskRunner> background_task_runner);
+             const ChromeInfo& chrome_info);
   ~FeedStream() override;
 
   FeedStream(const FeedStream&) = delete;
@@ -158,6 +159,7 @@ class FeedStream : public FeedStreamApi,
   StreamModel* GetModel() { return model_.get(); }
 
   const base::Clock* GetClock() { return clock_; }
+  const ChromeInfo& GetChromeInfo() const { return chrome_info_; }
 
   WireResponseTranslator* GetWireResponseTranslator() const {
     return wire_response_translator_;
@@ -196,7 +198,7 @@ class FeedStream : public FeedStreamApi,
   const base::TickClock* tick_clock_;
   WireResponseTranslator* wire_response_translator_;
 
-  scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
+  ChromeInfo chrome_info_;
 
   offline_pages::TaskQueue task_queue_;
   // Whether the model is being loaded. Used to prevent multiple simultaneous

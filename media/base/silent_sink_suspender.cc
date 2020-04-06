@@ -170,4 +170,4 @@ void SilentSinkSuspender::TransitionSinks(bool use_fake_sink) {
   }
 }
 
-}  // namespace content
+}  // namespace media

@@ -113,6 +113,9 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
 
       // Search box.
       {"searchBoxHint", IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT_MD},
+
+      // Logo/doodle.
+      {"shareDoodle", IDS_NTP_DOODLE_SHARE_LABEL},
   };
   AddLocalizedStringsBulk(source, kStrings);
 

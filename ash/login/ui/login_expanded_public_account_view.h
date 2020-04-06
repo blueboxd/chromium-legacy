@@ -19,6 +19,7 @@
 namespace ash {
 
 class ArrowButtonView;
+struct LocaleItem;
 class LoginUserView;
 class RightPaneView;
 class PublicAccountWarningDialog;
@@ -34,6 +35,7 @@ class ASH_EXPORT LoginExpandedPublicAccountView : public NonAccessibleView {
     explicit TestApi(LoginExpandedPublicAccountView* view);
     ~TestApi();
 
+    LoginUserView* user_view();
     views::View* advanced_view_button();
     ArrowButtonView* submit_button();
     views::View* advanced_view();
@@ -48,6 +50,12 @@ class ASH_EXPORT LoginExpandedPublicAccountView : public NonAccessibleView {
     views::ImageView* monitoring_warning_icon();
     views::Label* monitoring_warning_label();
     void ResetUserForTest();
+    bool SelectLanguage(const std::string& language_code);
+    bool SelectKeyboard(const std::string& ime_id);
+    std::vector<LocaleItem> GetLocales();
+
+    void OnAdvancedButtonTap();
+    void OnSubmitButtonTap();
 
    private:
     LoginExpandedPublicAccountView* const view_;

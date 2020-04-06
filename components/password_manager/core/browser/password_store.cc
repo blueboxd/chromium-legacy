@@ -716,6 +716,20 @@ void PasswordStore::InvokeAndNotifyAboutCompromisedPasswordsChange(
   }
 }
 
+void PasswordStore::NotifyUnsyncedCredentialsWillBeDeleted(
+    const std::vector<autofill::PasswordForm>& unsynced_credentials) {
+  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(IsAccountStore());
+  // |deletion_notifier_| only gets set for desktop.
+  if (deletion_notifier_) {
+    main_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &PasswordStore::UnsyncedCredentialsDeletionNotifier::Notify,
+            deletion_notifier_->GetWeakPtr(), unsynced_credentials));
+  }
+}
+
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 void PasswordStore::CheckReuseImpl(std::unique_ptr<CheckReuseRequest> request,
                                    const base::string16& input,

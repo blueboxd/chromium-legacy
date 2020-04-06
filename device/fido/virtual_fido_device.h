@@ -59,7 +59,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     bool is_resident = false;
     // is_u2f is true if the credential was created via a U2F interface.
     bool is_u2f = false;
-    base::Optional<device::CredProtect> protection;
+    device::CredProtect protection = device::CredProtect::kUVOptional;
 
     // user is only valid if |is_resident| is true.
     base::Optional<device::PublicKeyCredentialUserEntity> user;

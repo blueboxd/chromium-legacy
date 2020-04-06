@@ -57,7 +57,6 @@
 #include "media/mojo/mojom/interface_factory.mojom-forward.h"
 #include "media/mojo/mojom/media_metrics_provider.mojom.h"
 #include "media/mojo/mojom/remoting.mojom.h"
-#include "media/mojo/mojom/soda_service.mojom.h"
 #include "media/mojo/mojom/video_decode_perf_history.mojom.h"
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
@@ -118,6 +117,7 @@
 #if !defined(OS_ANDROID)
 #include "content/browser/installedapp/installed_app_provider_impl.h"
 #include "content/public/common/content_switches.h"
+#include "media/mojo/mojom/soda_service.mojom.h"
 #include "third_party/blink/public/mojom/hid/hid.mojom.h"
 #include "third_party/blink/public/mojom/serial/serial.mojom.h"
 #endif
@@ -664,8 +664,10 @@ void PopulateBinderMapWithContext(
       &EmptyBinderForFrame<payments::mojom::PaymentRequest>));
   map->Add<blink::mojom::AnchorElementMetricsHost>(base::BindRepeating(
       &EmptyBinderForFrame<blink::mojom::AnchorElementMetricsHost>));
+#if !defined(OS_ANDROID)
   map->Add<media::mojom::SodaContext>(
       base::BindRepeating(&EmptyBinderForFrame<media::mojom::SodaContext>));
+#endif
 #if BUILDFLAG(ENABLE_UNHANDLED_TAP)
   map->Add<blink::mojom::UnhandledTapNotifier>(base::BindRepeating(
       &EmptyBinderForFrame<blink::mojom::UnhandledTapNotifier>));

@@ -74,10 +74,9 @@ class DrmThread : public base::Thread,
   void Start(base::OnceClosure receiver_completer,
              std::unique_ptr<DrmDeviceGenerator> device_generator);
 
-  // Runs |task| once a DrmDevice is registered and |window| was created via
-  // CreateWindow(). |done| will be signaled if it's not null.
-  void RunTaskAfterWindowReady(gfx::AcceleratedWidget window,
-                               base::OnceClosure task,
+  // Runs |task| once a DrmDevice is registered. |done|
+  // will be signaled if it's not null.
+  void RunTaskAfterDeviceReady(base::OnceClosure task,
                                base::WaitableEvent* done);
 
   // Must be called on the DRM thread. All methods for use from the GPU thread.
@@ -218,9 +217,8 @@ class DrmThread : public base::Thread,
   // The AcceleratedWidget from the last call to CreateWindow.
   gfx::AcceleratedWidget last_created_window_ = gfx::kNullAcceleratedWidget;
 
-  // The tasks that are blocked on a DrmDevice and a certain AcceleratedWidget
-  // becoming available.
-  base::flat_map<gfx::AcceleratedWidget, std::vector<TaskInfo>> pending_tasks_;
+  // The tasks that are blocked on a DrmDevice becoming available.
+  std::vector<TaskInfo> pending_tasks_;
 
   // Holds the DrmDeviceGenerator that DrmDeviceManager will use. Will be passed
   // on to DrmDeviceManager after the thread starts.

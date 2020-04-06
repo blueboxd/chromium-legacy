@@ -220,7 +220,9 @@ std::unique_ptr<net::test_server::HttpResponse> CountResponse(
 }
 
 - (void)triggerRestore {
-#if defined(CHROME_EARL_GREY_1)
+// TODO(crbug.com/1067821):|AppLaunchManager| relaunching with
+// |ForceRelaunchByCleanShutdown| policy won't work in EG1 or on real device.
+#if defined(CHROME_EARL_GREY_1) || !TARGET_IPHONE_SIMULATOR
   [ChromeEarlGrey triggerRestoreViaTabGridRemoveAllUndo];
 #elif defined(CHROME_EARL_GREY_2)
   [ChromeEarlGrey saveSessionImmediately];

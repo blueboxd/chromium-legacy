@@ -865,7 +865,10 @@ NativeFileSystemManagerImpl::CreateFileSystemURLFromPath(
 
   base::FilePath root_path =
       isolated_context->CreateVirtualRootPath(result.file_system.id());
-  base::FilePath isolated_path = root_path.AppendASCII(result.base_name);
+  // FromUTF8Unsafe in the following line is safe since result.base_name was the
+  // result of calling AsUTF8Unsafe on a base::FilePath in the first place.
+  base::FilePath isolated_path =
+      root_path.Append(base::FilePath::FromUTF8Unsafe(result.base_name));
 
   result.url = context()->CreateCrackedFileSystemURL(
       origin, storage::kFileSystemTypeIsolated, isolated_path);

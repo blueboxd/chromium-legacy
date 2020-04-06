@@ -16,7 +16,6 @@
 #include "chrome/browser/component_updater/optimization_hints_component_installer.h"
 #include "chrome/browser/component_updater/origin_trials_component_installer.h"
 #include "chrome/browser/component_updater/safety_tips_component_installer.h"
-#include "chrome/browser/component_updater/soda_component_installer.h"
 #include "chrome/browser/component_updater/ssl_error_assistant_component_installer.h"
 #include "chrome/browser/component_updater/sth_set_component_remover.h"
 #include "chrome/browser/component_updater/subresource_filter_component_installer.h"
@@ -46,6 +45,7 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/component_updater/intervention_policy_database_component_installer.h"
+#include "chrome/browser/component_updater/soda_component_installer.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #endif
 
@@ -180,9 +180,12 @@ void RegisterComponentsForUpdate(bool is_off_the_record_profile,
   component_updater::RegisterGamesComponent(cus, profile_prefs);
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_ANDROID)
 
+#if !defined(OS_ANDROID)
   if (profile_prefs->GetBoolean(prefs::kLiveCaptionEnabled))
     component_updater::RegisterSODAComponent(cus, profile_prefs,
                                              base::OnceClosure());
+#endif
+
 #if defined(OS_CHROMEOS)
   RegisterSmartDimComponent(cus);
 #endif  // !defined(OS_CHROMEOS)

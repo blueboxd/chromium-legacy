@@ -8,8 +8,7 @@
 #include <vector>
 
 #include "base/observer_list_types.h"
-#include "base/util/type_safety/id_type.h"
-#include "components/feed/core/proto/v2/wire/content_id.pb.h"
+#include "components/feed/core/v2/public/types.h"
 
 namespace feedui {
 class StreamUpdate;
@@ -19,12 +18,6 @@ class DataOperation;
 }
 
 namespace feed {
-using ContentId = feedwire::ContentId;
-// Uniquely identifies a revision of a |feedstore::Content|. If Content changes,
-// it is assigned a new revision number.
-using ContentRevision = util::IdTypeU32<class ContentRevisionClass>;
-// A unique ID for an ephemeral change.
-using EphemeralChangeId = util::IdTypeU32<class EphemeralChangeIdClass>;
 
 // This is the public access point for interacting with the Feed stream
 // contents.

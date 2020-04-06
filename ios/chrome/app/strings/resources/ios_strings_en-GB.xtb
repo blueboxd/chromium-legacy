@@ -168,6 +168,7 @@
 <translation id="3112556859945124369">Mark…</translation>
 <translation id="3153862085237805241">Save Card</translation>
 <translation id="3157684681743766797">Mark All…</translation>
+<translation id="3161291298470460782">This will sign you out, turn off sync and clear all Chrome data from this device. Your synced data will remain in your Google Account.</translation>
 <translation id="3175081911749765310">Web Services</translation>
 <translation id="3178650076442119961">Active today</translation>
 <translation id="3207960819495026254">Bookmarked</translation>
@@ -200,6 +201,7 @@
 <translation id="3494788280727468875">Confirm Clear Browsing Data</translation>
 <translation id="35083190962747987">Open ${url}</translation>
 <translation id="3519193562722059437">Open a tab to browse the web.</translation>
+<translation id="3523473570015918798">By signing out, your bookmarks, history, passwords and other Chrome data will no longer be synced to your Google Account.</translation>
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3529024052484145543">Not secure</translation>
 <translation id="3533202363250687977">Close all incognito tabs</translation>
@@ -333,6 +335,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="54401264925851789">Page Security Info</translation>
 <translation id="5443952882982198570">Credit cards</translation>
 <translation id="5457907402803865181">Error syncing passwords.</translation>
+<translation id="5508435575041083207">Sign out and clear data from this device</translation>
 <translation id="5525269841082836315">Create a Pass phrase</translation>
 <translation id="5548760955356983418">Handoff lets you start browsing a website on this device and then easily continue on your Mac. The current open website will appear in the Dock of your Mac.
 
@@ -506,6 +509,9 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="766891008101699113">To browse the web privately, add a new tab.</translation>
 <translation id="7671141431838911305">INSTALL</translation>
 <translation id="7765158879357617694">Move</translation>
+<translation id="7771470029643830783">By signing out, your bookmarks, history, passwords and other Chrome data will no longer be synced to your Google Account.
+
+Because your account is managed by <ph name="HOSTED_DOMAIN" />, your Chrome data will be deleted from this device when signing out. Your synced data will remain in your Google Account.</translation>
 <translation id="7772032839648071052">Confirm passphrase</translation>
 <translation id="7781011649027948662">Translate page?</translation>
 <translation id="7781829728241885113">Yesterday</translation>
@@ -555,6 +561,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="8490978609246021741">Save changes</translation>
 <translation id="8503813439785031346">Username</translation>
 <translation id="850600235656508448">Open in Incognito</translation>
+<translation id="8510057420705599706">This will sign you out and turn off sync, but your bookmarks, history, passwords and other Chrome data will remain on this device.</translation>
 <translation id="8517375800490286174">Open-Source Licences</translation>
 <translation id="8524799873541103884"><ph name="INCOGNITO" /> Tabs <ph name="FIRST_VISIBLE_TAB" /> through <ph name="LAST_VISIBLE_TAB" /> of <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">New</translation>
@@ -597,6 +604,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="9094033019050270033">Update password</translation>
 <translation id="9100610230175265781">Passphrase required</translation>
 <translation id="9148126808321036104">Sign in again</translation>
+<translation id="9152539721251340337">Create a QR code</translation>
 <translation id="9157836665414082580">Suppress Dialogues</translation>
 <translation id="9188680907066685419">Sign out of managed account</translation>
 <translation id="9203116392574189331">Handoff</translation>

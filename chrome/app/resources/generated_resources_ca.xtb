@@ -826,6 +826,7 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="2119349053129246860">Obre a <ph name="APP" /></translation>
 <translation id="2120297377148151361">Activitat i interaccions</translation>
 <translation id="2120639962942052471">S'ha bloquejat <ph name="PERMISSION" /></translation>
+<translation id="2121055421682309734">{COUNT,plural, =0{Les galetes estan bloquejades}=1{Les galetes estan bloquejades, 1 excepció}other{Les galetes estan bloquejades, {COUNT} excepcions}}</translation>
 <translation id="2121825465123208577">Canvia la mida</translation>
 <translation id="2122305276694332719">La connexió automàtica a una xarxa amagada permet que altres usuaris puguin veure el teu dispositiu i algunes opcions de configuració de la xarxa. Per tant, no és recomanable.</translation>
 <translation id="2123766928840368256">Tria un altre fitxer</translation>
@@ -3056,7 +3057,7 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="5117930984404104619">Control del comportament d'altres extensions, inclosos els URL visitats</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">El vostre disc dur és ple. Deseu-ho en una altra ubicació o allibereu espai del disc dur.</translation>
-<translation id="5122384452788334261">Queda poc espai d'emmagatzematge al dispositiu. Per fer servir Plugin VM, es recomana tenir com a mínim <ph name="RECOMMENDED_SPACE" /> d'espai lliure. Per alliberar espai, suprimeix fitxers de l'emmagatzematge del dispositiu.</translation>
+<translation id="5122384452788334261">Queda poc espai d'emmagatzematge al dispositiu. Per fer servir Plugin VM, es recomana tenir almenys <ph name="RECOMMENDED_SPACE" /> d'espai lliure. Per alliberar espai, suprimeix fitxers de l'emmagatzematge del dispositiu.</translation>
 <translation id="5123433949759960244">Pilota de bàsquet</translation>
 <translation id="5125751979347152379">URL no vàlid.</translation>
 <translation id="5126611267288187364">Mostra els canvis</translation>
@@ -5299,7 +5300,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8118488170956489476">La teva organització <ph name="BEGIN_LINK" />gestiona el navegador<ph name="END_LINK" /></translation>
 <translation id="8118860139461251237">Gestionar les baixades</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" /> i més</translation>
-<translation id="8120715633374652536">Queda poc espai d'emmagatzematge al dispositiu. Cal tenir almenys <ph name="MINIMUM_SPACE" /> d'espai lliure per fer servir Plugin VM, tot i que es recomana tenir-ne, com a mínim, <ph name="RECOMMENDED_SPACE" />. Per alliberar espai, suprimeix fitxers de l'emmagatzematge del dispositiu.</translation>
+<translation id="8120715633374652536">Queda poc espai d'emmagatzematge al dispositiu. Cal tenir almenys <ph name="MINIMUM_SPACE" /> d'espai lliure per fer servir Plugin VM, tot i que es recomana tenir-ne més de: <ph name="RECOMMENDED_SPACE" />. Per alliberar espai, suprimeix fitxers de l'emmagatzematge del dispositiu.</translation>
 <translation id="8123590694679414600">Les dades es van encriptar el dia <ph name="TIME" /> amb la teva frase de contrasenya de sincronització. No inclouen les formes de pagament ni les adreces de Google Pay.</translation>
 <translation id="81238879832906896">Flor groga i blanca</translation>
 <translation id="8124313775439841391">ONC gestionat</translation>

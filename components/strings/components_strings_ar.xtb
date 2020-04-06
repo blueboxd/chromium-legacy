@@ -1603,7 +1603,7 @@
 <translation id="777702478322588152">المديرية</translation>
 <translation id="7791196057686275387">حزمة</translation>
 <translation id="7791543448312431591">إضافة</translation>
-<translation id="7798389633136518089">تم التجاهل بسبب إعداد السياسة من خلال مصدر سحابة إلكترونية.</translation>
+<translation id="7798389633136518089">تم التجاهل لعدم إعداد السياسة من خلال أحد مصادر السحابة الإلكترونية.</translation>
 <translation id="7800304661137206267">تم ترميز الاتصال باستخدام <ph name="CIPHER" />، مع <ph name="MAC" /> لمصادقة الرسالة و<ph name="KX" /> كآلية التبادل الرئيسية.</translation>
 <translation id="7802523362929240268">موقع الويب مشروع</translation>
 <translation id="780301667611848630">لا، شكرًا</translation>
@@ -1739,7 +1739,7 @@
 <translation id="8371889962595521444">شهادات الجذر المُخصَّصة</translation>
 <translation id="8380941800586852976">ضارة</translation>
 <translation id="8381674639488873545">قد يتم تحصيل هذه الرسوم لمرة واحدة أو بشكل متكرِّر، وقد تكون غير واضحة. <ph name="BEGIN_LINK" />عرض على أي حال<ph name="END_LINK" /></translation>
-<translation id="8405166164747488837">‏إنّ موقع <ph name="ENROLLMENT_DOMAIN" /> فعَّل Chrome Enterprise Connectorsعلى المتصفّح الخاص بك. لدى هذه الموصلات إذن بالوصول إلى بعض بياناتك.</translation>
+<translation id="8405166164747488837">‏فعَّل <ph name="ENROLLMENT_DOMAIN" /> Chrome Enterprise Connectors على متصفّحك. لدى هذه الموصلات إذن بالوصول إلى بعض بياناتك.</translation>
 <translation id="8412145213513410671">الأعطال (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">يجب إدخال عبارة المرور نفسها مرتين.</translation>
 <translation id="8416694386774425977">تهيئة الشبكة غير صالحة ويتعذّر استيرادها.

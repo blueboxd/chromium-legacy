@@ -11,12 +11,6 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 
-#if defined(USE_X11)
-// Must be included before khronos headers or they will pollute the
-// global scope with X11 macros.
-#include "ui/gfx/x/x11.h"
-#endif
-
 #include "third_party/khronos/EGL/egl.h"
 #include "third_party/khronos/EGL/eglext.h"
 #include "ui/gl/egl_util.h"

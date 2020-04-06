@@ -1142,6 +1142,7 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 <translation id="2592162121850992309">Se questa norma è impostata su true o non è impostata, verrà attivata l'accelerazione hardware a meno che una determinata funzione della GPU non sia stata inserita nella lista nera.
 
       Se la norma è impostata su false, l'accelerazione hardware verrà disattivata.</translation>
+<translation id="2593762551209145088">Navigazione sicura non è mai attiva.</translation>
 <translation id="2596260130957832043">Consente di stabilire se attivare o meno l'autenticazione NTLMv2.
 
           Tutte le versioni recenti dei server Samba e Windows supportano l'autenticazione NTLMv2, che deve essere disattivata solo per garantire la compatibilità con le versioni precedenti, in quanto riduce la sicurezza dell'autenticazione.
@@ -1213,6 +1214,7 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 
       Visita il sito https://developers.google.com/safe-browsing per avere ulteriori informazioni sulla funzione Navigazione sicura.</translation>
 <translation id="2706708761587205154">Consenti la stampa solo con PIN</translation>
+<translation id="2707873794476722903">Navigazione sicura è attiva in modalità standard.</translation>
 <translation id="2710534340210290498">Se la norma viene impostata su false, gli utenti non potranno bloccare lo schermo (sarà possibile solo la disconnessione dalla sessione utente). Se l'impostazione viene impostata su true o non viene configurata, gli utenti autenticati mediante password potranno bloccare lo schermo.</translation>
 <translation id="2731627323327011390">Disattiva l'utilizzo dei certificati <ph name="PRODUCT_OS_NAME" /> per le app ARC</translation>
 <translation id="2742843273354638707">Consente di nascondere l'app Chrome Web Store e il link nel piè di pagina nella pagina Nuova scheda e in Avvio applicazioni di <ph name="PRODUCT_OS_NAME" />.
@@ -1552,9 +1554,9 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
       Tuttavia, queste notifiche verranno mostrate solo se le informazioni sulla scadenza della password vengono inviate al dispositivo dal Provider di identità SAML durante il flusso di accesso SAML.
 
       Se questo criterio viene impostato, l'utente non può modificarlo o ignorarlo.</translation>
-<translation id="3312835062252480209">Consente di impostare un elenco di pattern URL che specifica i siti non autorizzati a utilizzare la generazione di chiavi. Se un pattern URL è indicato in "KeygenAllowedForUrls", il criterio ha la precedenza su queste eccezioni.
+<translation id="3312835062252480209">Consente di impostare un elenco di pattern URL che specificano i siti non autorizzati a utilizzare la generazione di chiavi. Se un pattern URL è indicato in "KeygenAllowedForUrls", il criterio ha la precedenza su queste eccezioni.
 
-          Se questo criterio non viene impostato, per tutti i siti viene usato il valore predefinito globale del criterio "DefaultKeygenSetting" se impostato) o della configurazione personale dell'utente (se non impostato).
+          Se questo criterio non viene impostato, per tutti i siti viene usato il valore predefinito globale del criterio "DefaultKeygenSetting" (se impostato) o della configurazione personale dell'utente (se non impostato).
 
           Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="3327195598110816609">Non ritardare alcuna consegna</translation>
@@ -1794,7 +1796,7 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 
           Se questo criterio non viene impostato, per tutti i siti viene usato il valore predefinito globale del criterio "DefaultWebUsbGuardSetting" (se impostato) o della configurazione personale dell'utente (se non impostato).
 
-          I pattern URL di questo criterio non devono essere in conflitto con quelli configurati tramite WebUsbAskForUrls. Non viene specificato quale dei due criteri debba avere precedenza se un URL presenta corrispondenze con entrambe.
+          I pattern URL di questo criterio non devono essere in conflitto con quelli configurati tramite WebUsbAskForUrls. Non viene specificato quale dei due criteri debba avere precedenza se un URL presenta corrispondenze con entrambi.
 
           Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="3701121231485832347">Consente di gestire le impostazioni specifiche dei dispositivi <ph name="PRODUCT_OS_NAME" /> gestiti da <ph name="MS_AD_NAME" />.</translation>
@@ -2303,6 +2305,19 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="437791893267799639">Norma non impostata. Non consentire migrazione dei dati e ARC</translation>
 <translation id="4389073105055031853">Consenti agli utenti di gestire tutti i certificati</translation>
 <translation id="4389091865841123886">Configura l'attestazione da remoto con meccanismo TPM.</translation>
+<translation id="4401496838830169080">Consente di controllare se la funzionalità Navigazione sicura di <ph name="PRODUCT_NAME" /> è attiva e la relativa modalità.
+
+      Se questo criterio viene impostato su "NoProtection" (valore 0), la Navigazione sicura non è mai attiva.
+
+      Se questo criterio viene impostato su "StandardProtection" (valore 1, predefinito), la Navigazione sicura è sempre attiva in modalità standard.
+
+      Se questo criterio viene impostato su "EnhancedProtection" (valore 2), la Navigazione sicura è sempre attiva in modalità avanzata e fornisce maggior sicurezza, ma non richiede la condivisione di ulteriori dati di navigazione con Google.
+
+      Se imposti questo criterio come obbligatorio, gli utenti non potranno modificare o ignorare l'impostazione Navigazione sicura in <ph name="PRODUCT_NAME" />.
+
+      Se questo criterio non viene impostato, la Navigazione sicura sarà attiva in modalità di protezione standard, ma gli utenti potranno modificare questa impostazione.
+
+      Visita il sito https://developers.google.com/safe-browsing per ulteriori informazioni sulla funzionalità Navigazione sicura.</translation>
 <translation id="4408428864159735559">Elenco di condivisioni di file di rete preconfigurate.</translation>
 <translation id="4410236409016356088">Attiva la limitazione della larghezza di banda della rete</translation>
 <translation id="441217499641439905">Disattiva Google Drive su reti cellulari nell'app File di <ph name="PRODUCT_OS_NAME" /></translation>
@@ -2668,7 +2683,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se la norma è impostata su 0, la modifica della password dell'account del computer è disattivata.
 
       Tieni presente che le password potrebbero durare più a lungo rispetto ai giorni specificati se il client è offline per un periodo più lungo di tempo.</translation>
-<translation id="5101600510268095939">Consente di impostare un elenco di pattern URL che specifica i siti non autorizzati a mostrare contenuti misti (ossia contenuti HTTP su siti HTTPS) bloccabili (ossia attivi) e per i quali i contenuti misti bloccabili facoltativi (ossia passivi) verranno aggiornati.
+<translation id="5101600510268095939">Consente di impostare un elenco di pattern URL che specificano i siti non autorizzati a visualizzare contenuti misti (ossia contenuti HTTP su siti HTTPS) bloccabili (ossia attivi) e per i quali i contenuti misti bloccabili facoltativi (ossia passivi) verranno aggiornati.
 
           Se questo criterio non viene impostato, i contenuti misti bloccabili verranno bloccati e quelli bloccabili facoltativi verranno aggiornati, ma gli utenti potranno configurare eccezioni per consentire i contenuti misti per siti specifici.
 
@@ -2869,13 +2884,13 @@ Se la norma non viene impostata, <ph name="PRODUCT_NAME" /> caricherà tutti gli
 
           Se questa norma viene impostata su False, gli utenti non potranno trasmettere contenuti al proprio dispositivo. Se questa norma viene impostata su True, gli utenti potranno trasmettere contenuti. Se questa norma non viene impostata, gli utenti non potranno trasmettere contenuti a dispositivi Chrome OS registrati, ma potranno trasmetterli a dispositivi non registrati.</translation>
 <translation id="5323200200131319468">Attiva la funzione di lettura vocale nella schermata di accesso</translation>
-<translation id="532668836479219203">Questo criterio consente di stabilire il comportamento di accesso del browser. Ti consente di specificare se l'utente può accedere a <ph name="PRODUCT_NAME" /> con il proprio account e usare i servizi correlati all'account come Sincronizzazione Chrome.
+<translation id="532668836479219203">Questo criterio consente di stabilire il comportamento di accesso del browser. Consente di specificare se l'utente può accedere a <ph name="PRODUCT_NAME" /> con il proprio account e usare i servizi correlati all'account come Sincronizzazione Chrome.
 
       Se il criterio viene impostato su "Disattiva accesso al browser", l'utente non potrà accedere al browser e usare i servizi basati sull'account. In questo caso, le funzionalità a livello di browser come la Sincronizzazione Chrome non potranno essere usate e non saranno disponibili. Se il criterio viene impostato su "Disattivato" dopo che l'utente ha eseguito l'accesso, l'utente verrà scollegato alla successiva esecuzione di Chrome, ma i dati locali del profilo, come preferiti, password ecc., verranno mantenuti. L'utente potrà comunque accedere e usare i servizi web di Google come Gmail.
 
       Se il criterio viene impostato su "Attiva accesso al browser", l'utente potrà accedere al browser e verrà collegato automaticamente al browser se accederà a servizi web di Google come Gmail. Se viene eseguito l'accesso al browser, i dati dell'account dell'utente vengono memorizzati dal browser, ma la funzione Sincronizzazione Chrome non viene attivata per impostazione predefinita; per poter utilizzare questa funzione, l'utente deve attivarla separatamente. Se attivi questo criterio, l'utente non potrà disattivare l'impostazione che consente l'accesso al browser. Per gestire la disponibilità della funzione Sincronizzazione Chrome, usa il criterio "SyncDisabled".
 
-      Se il criterio viene impostato su "Forza accesso al browser", all'utente verrà mostrata una finestra di dialogo di selezione dell'account, da cui dovrà scegliere un account a cui accedere per usare il browser. Questa misura garantisce l'applicazione, nell'ambito degli account gestiti, dei criteri associati all'account. La funzione Sincronizzazione Chrome viene attivata per impostazione predefinita per l'account, ad eccezione del caso in cui la sincronizzazione sia stata disattivata dall'amministratore di dominio o tramite il criterio "SyncDisabled". Il valore predefinito del criterio BrowserGuestModeEnabled sarà falso. Tieni presente che i profili esistenti a cui non viene eseguito l'accesso saranno bloccati e inaccessibili dopo l'attivazione di questo criterio. Per ulteriori informazioni, leggi il seguente articolo del Centro assistenza: https://support.google.com/chrome/a/answer/7572556. Questa opzione non supporta Linux e, se utilizzata in tale ambiente, imposterà "Attiva accesso al browser".
+      Se il criterio viene impostato su "Forza accesso al browser", all'utente verrà mostrata una finestra di dialogo di selezione dell'account, da cui dovrà scegliere un account a cui accedere per usare il browser. Questa misura garantisce l'applicazione, nell'ambito degli account gestiti, dei criteri associati all'account. La funzione Sincronizzazione Chrome viene attivata per impostazione predefinita per l'account, ad eccezione del caso in cui la sincronizzazione sia stata disattivata dall'amministratore di dominio o tramite il criterio "SyncDisabled". Il valore predefinito del criterio BrowserGuestModeEnabled sarà falso. Tieni presente che i profili esistenti a cui non viene eseguito l'accesso saranno bloccati e inaccessibili dopo l'attivazione di questo criterio. Per ulteriori informazioni, leggi il seguente articolo del Centro assistenza: https://support.google.com/chrome/a/answer/7572556. Questa opzione non supporta Linux e Android e, se utilizzata in tali ambienti, imposterà "Attiva accesso al browser".
 
       Se questo criterio non è impostato, l'utente potrà decidere se attivare o meno l'opzione di accesso al browser e di usarla in base alle necessità.</translation>
 <translation id="532848608876725157">Attiva DNS over HTTPS con fallback non sicuro</translation>
@@ -3276,13 +3291,13 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 
       Gli URL (ad esempio https://example.com/some/path) corrisponderanno soltanto ad appID U2F. I domini (come example.com) corrisponderanno soltanto a ID RP webauthn. Di conseguenza, per includere entrambe le API U2F e webauthn per un determinato sito, devono essere elencati sia il dominio sia l'URL appID.</translation>
 <translation id="5836064773277134605">Limita l'intervallo di porte UDP utilizzate dall'host di accesso remoto</translation>
-<translation id="5844300486330234296">Controlla la whitelist dei pattern URL su cui è sempre attivata la riproduzione automatica.
+<translation id="5844300486330234296">Consente di controllare la whitelist dei pattern URL su cui è sempre attivata la riproduzione automatica.
 
       Se la riproduzione automatica è attivata, i video possono essere riprodotti automaticamente (ovvero senza il consenso dell'utente) in <ph name="PRODUCT_NAME" />.
 
       Se il criterio AutoplayAllowed è impostato su vero, questo criterio non avrà effetto.
 
-      Se il criterio AutoplayAllowed è impostato su falso, i pattern URL configurati in questo criterio potranno ancora essere riprodotti.
+      Se il criterio AutoplayAllowed è impostato su falso, i pattern URL configurati in questo criterio potranno comunque essere riprodotti.
 
       Tieni presente che, se <ph name="PRODUCT_NAME" /> è in esecuzione e il criterio cambia, sarà applicato solo alle nuove schede aperte. Pertanto alcune schede potrebbero continuare a osservare il comportamento precedente.
 
@@ -3408,6 +3423,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="6111936128861357925">Attiva il gioco del dinosauro</translation>
 <translation id="6114416803310251055">obsoleto</translation>
 <translation id="6133088669883929098">Consenti a tutti i siti di utilizzare la generazione di chiavi</translation>
+<translation id="6135398260575578389">Navigazione sicura è attiva in modalità avanzata. Questa modalità fornisce maggior sicurezza, ma non richiede la condivisione di ulteriori dati di navigazione con Google.</translation>
 <translation id="6136537398661737682">Questo criterio consente di controllare lo stato iniziale dei Servizi di geolocalizzazione di Google.
 
       Se questo criterio non viene configurato o viene impostato su <ph name="GLS_DISABLED" />, i Servizi di geolocalizzazione di Google sono inizialmente disattivati.
@@ -4385,6 +4401,23 @@ Se questa norma non viene impostata, verranno utilizzate le dimensioni predefini
 <translation id="7687943045976362719">Se questa norma viene impostata, i tipi di contenuto specificati vengono gestiti da <ph name="PRODUCT_FRAME_NAME" />.
 
           Se la norma non viene impostata, verrà utilizzato per tutti i siti il renderer predefinito. (È possibile utilizzare la norma <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> per configurare il renderer predefinito).</translation>
+<translation id="7691028179743802462">Questo criterio è obsoleto in M83, utilizza invece SafeBrowsingProtectionLevel.
+
+      Consente di attivare la funzionalità Navigazione sicura di <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificare questa impostazione.
+
+      Se attivi questa impostazione, la Navigazione sicura è sempre attiva.
+
+      Se la disattivi, la Navigazione sicura non è mai attiva.
+
+      Se attivi questa impostazione o la disattivi, gli utenti non potranno modificare o ignorare l'impostazione "Attiva protezione contro phishing e malware" in <ph name="PRODUCT_NAME" />.
+
+      Se questo criterio non viene impostato, l'impostazione verrà attivata ma gli utenti non potranno modificarla.
+
+      Visita il sito https://developers.google.com/safe-browsing per ulteriori informazioni sulla funzionalità Navigazione sicura.
+
+      Questo criterio è disponibile esclusivamente per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" /> così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi.
+
+      Se il criterio SafeBrowsingProtectionLevel è impostato, il valore del criterio SafeBrowsingEnabled verrà ignorato.</translation>
 <translation id="7694245791806617022">Consente di controllare se la funzionalità "Ricorda password" è attiva nella finestra di dialogo dell'autenticazione Kerberos. Le password sono memorizzate criptate su disco, accessibili solo al demone del sistema Kerberos durante una sessione utente.
 
           Se il criterio è attivato o non configurato, gli utenti possono decidere se le password Kerberos vengono ricordate, in modo da non dovere essere inserite nuovamente. Le richieste di Kerberos vengono recuperate automaticamente, a meno che non sia necessaria un'ulteriore autenticazione (autenticazione a due fattori).
@@ -4750,9 +4783,9 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 <translation id="8331479227794770304">Attiva tasti permanenti</translation>
 <translation id="8339420913453596618">Autenticazione a due fattori disattivata</translation>
 <translation id="8344454543174932833">Importa Preferiti dal browser predefinito alla prima esecuzione</translation>
-<translation id="8351446723835838047">Consente di impostare un elenco di pattern URL che specifica i siti autorizzati a utilizzare la generazione di chiavi. Se un pattern URL è indicato in "KeygenBlockedForUrls", quest'ultimo ha la precedenza su queste eccezioni.
+<translation id="8351446723835838047">Consente di impostare un elenco di pattern URL che specificano i siti autorizzati a utilizzare la generazione di chiavi. Se un pattern URL è indicato in "KeygenBlockedForUrls", ha la precedenza su queste eccezioni.
 
-          Se questo criterio non viene impostato, per tutti i siti viene usato il valore predefinito globale del criterio "DefaultKeygenSetting" se impostato) o della configurazione personale dell'utente (se non impostato).
+          Se questo criterio non viene impostato, per tutti i siti viene usato il valore predefinito globale del criterio "DefaultKeygenSetting" (se impostato) o della configurazione personale dell'utente (se non impostato).
 
           Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="8357681633047935212">Limita la durata di una sessione utente</translation>
@@ -4958,10 +4991,11 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
 
           Se questo criterio non viene impostato, per tutti i siti viene usato il valore predefinito globale del criterio "DefaultWebUsbGuardSetting" (se impostato) o della configurazione personale dell'utente (se non impostato).
 
-          I pattern URL di questo criterio non devono essere in conflitto con quelli configurati tramite il criterio WebUsbBlockedForUrls. Non viene specificato quale dei due criteri debba avere precedenza se un URL presenta corrispondenze con entrambe.
+          I pattern URL di questo criterio non devono essere in conflitto con quelli configurati tramite il criterio WebUsbBlockedForUrls. Non viene specificato quale dei due criteri debba avere precedenza se un URL presenta corrispondenze con entrambi.
 
           Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="8661297125441579970">Non consentire migrazione dei dati e ARC.</translation>
+<translation id="8665314828727504286">Livello di protezione Navigazione sicura</translation>
 <translation id="8672321184841719703">Scegli versione target dell'aggiornamento automatico</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
 <translation id="8685024486845674965">L'avviso di protezione tramite password viene attivato se vengono riutilizzate password</translation>

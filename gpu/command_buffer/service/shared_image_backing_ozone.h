@@ -27,6 +27,7 @@
 #include "ui/gfx/native_pixmap.h"
 
 namespace gpu {
+class VaapiDependencies;
 
 // Implementation of SharedImageBacking that uses a NativePixmap created via
 // an Ozone surface factory. The memory associated with the pixmap can be
@@ -66,6 +67,10 @@ class SharedImageBackingOzone final : public ClearTrackingSharedImageBacking {
   std::unique_ptr<SharedImageRepresentationOverlay> ProduceOverlay(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker) override;
+  std::unique_ptr<SharedImageRepresentationVaapi> ProduceVASurface(
+      SharedImageManager* manager,
+      MemoryTypeTracker* tracker,
+      VaapiDependenciesFactory* dep_factory) override;
 
  private:
   SharedImageBackingOzone(
@@ -78,6 +83,7 @@ class SharedImageBackingOzone final : public ClearTrackingSharedImageBacking {
       scoped_refptr<gfx::NativePixmap> pixmap,
       scoped_refptr<base::RefCountedData<DawnProcTable>> dawn_procs);
 
+  std::unique_ptr<VaapiDependencies> vaapi_deps_;
   scoped_refptr<gfx::NativePixmap> pixmap_;
   scoped_refptr<base::RefCountedData<DawnProcTable>> dawn_procs_;
 

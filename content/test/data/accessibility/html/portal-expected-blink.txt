@@ -5,6 +5,7 @@ rootWebArea focusable
 ++++++++inlineTextBox name='Before portal'
 ++++portal focusable name='portal'
 ++++++rootWebArea name='Text in iframe'
+++++++++genericContainer ignored
 ++++paragraph
 ++++++staticText name='After portal'
 ++++++++inlineTextBox name='After portal'

@@ -786,30 +786,71 @@ bool PasswordSyncBridge::SupportsGetStorageKey() const {
 
 void PasswordSyncBridge::ApplyStopSyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> delete_metadata_change_list) {
-  if (delete_metadata_change_list) {
+  if (!delete_metadata_change_list) {
+    return;
+  }
+  if (!password_store_sync_->IsAccountStore()) {
     password_store_sync_->GetMetadataStore()->DeleteAllSyncMetadata();
+    return;
+  }
+  // For the account store, the data should be deleted too. So do the following:
+  // 1. Collect the credentials that will be deleted.
+  // 2. Collect which credentials out of those to be deleted are unsynced.
+  // 3. Delete the metadata and the data.
+  // 4. Notify the store about deleted credentials, to notify store observers.
+  // 5. Notify the store about deleted unsynced credentials, to take care of
+  //    notifying the UI and offering the user to save those credentials in the
+  //    profile store.
+  base::AutoReset<bool> processing_changes(&is_processing_remote_sync_changes_,
+                                           true);
 
-    // If this is the account store, also delete the actual data.
-    if (password_store_sync_->IsAccountStore()) {
-      base::AutoReset<bool> processing_changes(
-          &is_processing_remote_sync_changes_, true);
-
-      PasswordStoreChangeList password_store_changes;
-      PrimaryKeyToFormMap logins;
-      FormRetrievalResult result = password_store_sync_->ReadAllLogins(&logins);
-      if (result == FormRetrievalResult::kSuccess) {
-        for (const auto& primary_key_and_form : logins) {
-          password_store_changes.emplace_back(PasswordStoreChange::REMOVE,
-                                              *primary_key_and_form.second,
-                                              primary_key_and_form.first);
-        }
+  PasswordStoreChangeList password_store_changes;
+  std::vector<autofill::PasswordForm> unsynced_logins_being_deleted;
+  PrimaryKeyToFormMap logins;
+  FormRetrievalResult result = password_store_sync_->ReadAllLogins(&logins);
+  if (result == FormRetrievalResult::kSuccess) {
+    std::set<int> unsynced_passwords_storage_keys =
+        GetUnsyncedPasswordsStorageKeys();
+    for (const auto& primary_key_and_form : logins) {
+      int primary_key = primary_key_and_form.first;
+      const autofill::PasswordForm& form = *primary_key_and_form.second;
+      password_store_changes.emplace_back(PasswordStoreChange::REMOVE, form,
+                                          primary_key);
+      if (unsynced_passwords_storage_keys.count(primary_key) != 0) {
+        unsynced_logins_being_deleted.push_back(form);
       }
-      password_store_sync_->DeleteAndRecreateDatabaseFile();
-      password_store_sync_->NotifyLoginsChanged(password_store_changes);
-
-      sync_enabled_or_disabled_cb_.Run();
     }
   }
+  password_store_sync_->GetMetadataStore()->DeleteAllSyncMetadata();
+  password_store_sync_->DeleteAndRecreateDatabaseFile();
+  password_store_sync_->NotifyLoginsChanged(password_store_changes);
+
+  if (!unsynced_logins_being_deleted.empty()) {
+    password_store_sync_->NotifyUnsyncedCredentialsWillBeDeleted(
+        unsynced_logins_being_deleted);
+  }
+
+  sync_enabled_or_disabled_cb_.Run();
+}
+
+std::set<int> PasswordSyncBridge::GetUnsyncedPasswordsStorageKeys() {
+  std::set<int> storage_keys;
+  DCHECK(password_store_sync_);
+  PasswordStoreSync::MetadataStore* metadata_store =
+      password_store_sync_->GetMetadataStore();
+  // The metadata store could be null if the login database initialization
+  // fails.
+  if (!metadata_store) {
+    return storage_keys;
+  }
+  std::unique_ptr<syncer::MetadataBatch> batch =
+      metadata_store->GetAllSyncMetadata();
+  for (const auto& metadata_entry : batch->GetAllMetadata()) {
+    if (change_processor()->IsEntityUnsynced(metadata_entry.first)) {
+      storage_keys.insert(ParsePrimaryKey(metadata_entry.first));
+    }
+  }
+  return storage_keys;
 }
 
 // static

@@ -71,6 +71,9 @@ class PasswordSyncBridge : public syncer::ModelTypeSyncBridge {
   // MergeSyncData().
   base::Optional<syncer::ModelError> CleanupPasswordStore();
 
+  // Retrieves the storage keys of all unsynced passwords in the store.
+  std::set<int> GetUnsyncedPasswordsStorageKeys();
+
   // Password store responsible for persistence.
   PasswordStoreSync* const password_store_sync_;
 

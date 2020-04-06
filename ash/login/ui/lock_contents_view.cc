@@ -394,7 +394,7 @@ LockContentsView::TestApi::users() const {
   return view_->users_;
 }
 
-LoginBigUserView* LockContentsView::TestApi::FindUser(
+LoginBigUserView* LockContentsView::TestApi::FindBigUser(
     const AccountId& account_id) {
   LoginBigUserView* big_view =
       view_->TryToFindBigUser(account_id, false /*require_auth_active*/);
@@ -410,8 +410,18 @@ LoginBigUserView* LockContentsView::TestApi::FindUser(
   return view_->TryToFindBigUser(account_id, false /*require_auth_active*/);
 }
 
+LoginUserView* LockContentsView::TestApi::FindUserView(
+    const AccountId& account_id) {
+  if (view_->expanded_view_ && view_->expanded_view_->GetVisible()) {
+    LoginExpandedPublicAccountView::TestApi expanded_test(
+        view_->expanded_view_);
+    return expanded_test.user_view();
+  }
+  return view_->TryToFindUserView(account_id);
+}
+
 bool LockContentsView::TestApi::RemoveUser(const AccountId& account_id) {
-  LoginBigUserView* big_view = FindUser(account_id);
+  LoginBigUserView* big_view = FindBigUser(account_id);
   if (!big_view)
     return false;
   if (!big_view->GetCurrentUser().can_remove)
@@ -1127,6 +1137,7 @@ void LockContentsView::OnPublicSessionDisplayNameChanged(
   LoginUserInfo user_info = user_view->current_user();
   user_info.basic_user_info.display_name = display_name;
   user_view->UpdateForUser(user_info, false /*animate*/);
+  MaybeUpdateExpandedView(account_id, user_info);
 }
 
 void LockContentsView::OnPublicSessionLocalesChanged(
@@ -1143,23 +1154,13 @@ void LockContentsView::OnPublicSessionLocalesChanged(
   user_info.public_account_info->default_locale = default_locale;
   user_info.public_account_info->show_advanced_view = show_advanced_view;
   user_view->UpdateForUser(user_info, false /*animate*/);
+  MaybeUpdateExpandedView(account_id, user_info);
 }
 
 void LockContentsView::OnPublicSessionKeyboardLayoutsChanged(
     const AccountId& account_id,
     const std::string& locale,
     const std::vector<InputMethodItem>& keyboard_layouts) {
-  // Update expanded view because keyboard layouts is user interactive content.
-  // I.e. user selects a language locale and the corresponding keyboard layouts
-  // will be changed.
-  if (expanded_view_->GetVisible() &&
-      expanded_view_->current_user().basic_user_info.account_id == account_id) {
-    LoginUserInfo user_info = expanded_view_->current_user();
-    user_info.public_account_info->default_locale = locale;
-    user_info.public_account_info->keyboard_layouts = keyboard_layouts;
-    expanded_view_->UpdateForUser(user_info);
-  }
-
   LoginUserView* user_view = TryToFindUserView(account_id);
   if (!user_view || !IsPublicAccountUser(user_view->current_user())) {
     LOG(ERROR) << "Unable to find public account user.";
@@ -1167,14 +1168,15 @@ void LockContentsView::OnPublicSessionKeyboardLayoutsChanged(
   }
 
   LoginUserInfo user_info = user_view->current_user();
+  user_info.public_account_info->keyboard_layouts = keyboard_layouts;
   // Skip updating keyboard layouts if |locale| is not the default locale
   // of the user. I.e. user changed the default locale in the expanded view,
   // and it should be handled by expanded view.
-  if (user_info.public_account_info->default_locale != locale)
-    return;
-
-  user_info.public_account_info->keyboard_layouts = keyboard_layouts;
-  user_view->UpdateForUser(user_info, false /*animate*/);
+  if (user_info.public_account_info->default_locale == locale) {
+    user_view->UpdateForUser(user_info, false /*animate*/);
+  }
+  user_info.public_account_info->default_locale = locale;
+  MaybeUpdateExpandedView(account_id, user_info);
 }
 
 void LockContentsView::OnPublicSessionShowFullManagementDisclosureChanged(
@@ -1235,6 +1237,14 @@ void LockContentsView::OnOobeDialogStateChanged(OobeDialogState state) {
 
   if (!oobe_dialog_visible_ && primary_big_view_)
     primary_big_view_->RequestFocus();
+}
+
+void LockContentsView::MaybeUpdateExpandedView(const AccountId& account_id,
+                                               const LoginUserInfo& user_info) {
+  if (expanded_view_ && expanded_view_->GetVisible() &&
+      expanded_view_->current_user().basic_user_info.account_id == account_id) {
+    expanded_view_->UpdateForUser(user_info);
+  }
 }
 
 void LockContentsView::OnFocusLeavingSystemTray(bool reverse) {

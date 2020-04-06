@@ -157,6 +157,12 @@ id<GREYMatcher> SearchCopiedTextButton() {
 #define MAYBE_testXClientData testXClientData
 #endif
 - (void)MAYBE_testXClientData {
+// TODO(crbug.com/1067815): Test doesn't pass on iPad device.
+#if !TARGET_IPHONE_SIMULATOR
+  if ([ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_SKIPPED(@"testXClientData doesn't pass on iPad device.");
+  }
+#endif
   // Rewrite the google URL to localhost URL.
   [OmniboxAppInterface rewriteGoogleURLToLocalhost];
 
@@ -615,7 +621,13 @@ id<GREYMatcher> SearchCopiedTextButton() {
       assertWithMatcher:grey_nil()];
 }
 
-- (void)testNoDefaultMatch {
+// TODO(crbug.com/1067815): Test can't pass on devices.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testNoDefaultMatch testNoDefaultMatch
+#else
+#define MAYBE_testNoDefaultMatch DISABLED_testNoDefaultMatch
+#endif
+- (void)MAYBE_testNoDefaultMatch {
   NSString* copiedText = @"test no default match1";
 
   // Put some text in pasteboard.

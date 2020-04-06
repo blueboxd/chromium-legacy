@@ -61,7 +61,9 @@ class MostVisitedListCoordinator implements TileGroup.Observer, TileGroup.TileSe
         if (mRenderer != null) return;
         assert mTileGroup == null;
 
-        Profile profile = Profile.getLastUsedProfile();
+        boolean isIncognito = mActivity.getTabModelSelector().isIncognitoSelected();
+        Profile profile = isIncognito ? Profile.getLastUsedProfile().getOffTheRecordProfile()
+                                      : Profile.getLastUsedProfile();
         SuggestionsSource suggestionsSource =
                 SuggestionsDependencyFactory.getInstance().createSuggestionSource(profile);
         SuggestionsEventReporter eventReporter =

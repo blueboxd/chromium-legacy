@@ -32,7 +32,6 @@ geolocation
 gyroscope
 hid
 idle-detection
-layout-animations
 lazyload
 loading-frame-default-eager
 magnetometer

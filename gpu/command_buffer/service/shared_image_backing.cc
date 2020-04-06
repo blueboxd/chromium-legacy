@@ -78,6 +78,13 @@ SharedImageBacking::ProduceOverlay(SharedImageManager* manager,
   return nullptr;
 }
 
+std::unique_ptr<SharedImageRepresentationVaapi>
+SharedImageBacking::ProduceVASurface(SharedImageManager* manager,
+                                     MemoryTypeTracker* tracker,
+                                     VaapiDependenciesFactory* dep_factory) {
+  return nullptr;
+}
+
 void SharedImageBacking::AddRef(SharedImageRepresentation* representation) {
   AutoLock auto_lock(this);
 

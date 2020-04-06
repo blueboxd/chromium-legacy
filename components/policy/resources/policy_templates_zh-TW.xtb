@@ -134,6 +134,11 @@
           如果不設定這項政策，系統會在初次顯示登入畫面時停用互動朗讀功能。使用者隨時可以啟用或停用互動朗讀功能，且所有使用者的登入畫面將一律維持相同的狀態。
 
           注意：如果指定 <ph name="DEVICE_LOGIN_SCREEN_SPOKEN_FEEDBACK_ENABLED_POLICY_NAME" />，這項政策會遭到覆寫。</translation>
+<translation id="1128717055763152639">你可以設定網址模式清單，指定哪些網站能夠顯示可封鎖 (亦即使用中) 混合內容 (亦即 HTTPS 網站上的 HTTP 內容)，並指定要停用哪些選擇性可封鎖混合內容的升級功能。
+
+         如果不設定這項政策，可封鎖的混合內容將遭到封鎖，且系統會升級選擇性可封鎖混合內容。使用者可以設定例外網站，允許特定網站顯示可封鎖的混合內容。
+
+          如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="1128903365609589950">設定 <ph name="PRODUCT_NAME" /> 在磁碟中儲存快取檔案時所使用的目錄。
 
       如果設定這項政策，無論使用者是否指定「--disk-cache-dir」標記，<ph name="PRODUCT_NAME" /> 都會使用您所提供的目錄。請勿將這項政策設為磁碟區的根目錄或用於其他用途的目錄 (因為 <ph name="PRODUCT_NAME" /> 會管理相關內容)，以免遺失資料或發生其他未預期的錯誤。
@@ -256,6 +261,11 @@
       如果停用這項政策，Google 助理將無法存取畫面內容。
       如果不設定這項政策，使用者可自行決定是否要允許 Google 助理存取畫面內容</translation>
 <translation id="1376119291123231789">啟用進階充電模式</translation>
+<translation id="1376298389964661475">你可以設定網址模式清單，指定可顯示通知的網站。
+
+          如果不設定這項政策，系統會根據「DefaultNotificationsSetting」政策 (如有設定) 或使用者的個人設定，將全域預設值套用至所有網站。
+
+          如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="1377134027840513298">請注意，這項政策已遭淘汰，並將在 <ph name="PRODUCT_OS_NAME" />第 82 版中移除。請改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
 
           這項政策會針對內容更具體的 <ph name="IDLE_ACTION_AC_POLICY_NAME" /> 和 <ph name="IDLE_ACTION_BATTERY_POLICY_NAME" /> 政策提供備用值。如果設定這項政策，但未設定內容更具體的相關政策，系統就會使用這項政策的值。
@@ -315,6 +325,11 @@
 <translation id="1474273443907024088">停用 TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1486021504508098388">回報背光資訊</translation>
+<translation id="1497640071678474358">你可以設定網址模式清單，指定不可開啟彈出式視窗的網站。
+
+          如果不設定這項政策，系統會根據「DefaultPopupsSetting」政策 (如有設定) 或使用者的個人設定，將全域預設值套用至所有網站。
+
+          如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="1502843533062797703">啟用禁止第三方軟體置入可執行程式碼的政策</translation>
 <translation id="1507382822467487898">
           設定當裝置插入座架時，要使用的 MAC (媒體存取控制) 位址。
@@ -471,7 +486,19 @@
 
       你需將政策設為可供 <ph name="PRODUCT_OS_NAME" /> 下載《服務條款》的網址。《服務條款》需為純文字內容，以 MIME 類型 text/plain 提供。不允許任何標記。</translation>
 <translation id="1750315445671978749">封鎖所有下載作業</translation>
+<translation id="1757544636315644531">你可以設定網址模式清單，指定可顯示圖片的網站。
+
+          如果不設定這項政策，系統會根據「DefaultImagesSetting」政策 (如有設定) 或使用者的個人設定，將全域預設值套用至所有網站。
+
+          請注意，先前我們誤在 Android 裝置上啟用這項政策，但這項功能從未針對 Android 裝置提供完整支援。
+
+          如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="1767673020408652620">在零狀態搜尋框中啟用應用程式推薦</translation>
+<translation id="1777842213242723063">你可以設定網址模式清單，指定不可執行 <ph name="FLASH_PLUGIN_NAME" /> 外掛程式的網站。
+
+         如果不設定這項政策，系統會根據「DefaultPluginsSetting」政策 (如有設定) 或使用者的個人設定，將全域預設值套用至所有網站。
+
+          如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="1781356041596378058">這項政策也可以控制 Android 開發人員選項的存取權。如果將這項政策設為 true，使用者將無法存取開發人員選項。如果將這項政策設為 false 或不予設定，使用者只要在 Android 設定應用程式中輕觸版本號碼 7 次，即可存取開發人員選項。</translation>
 <translation id="1793346220873697538">預設為停用 PIN 碼列印模式</translation>
 <translation id="1797233582739332495">顯示週期性提示，要求使用者重新啟動瀏覽器</translation>
@@ -878,6 +905,13 @@
       如果將這項政策設為 True，當系統顯示外部通訊協定的確認訊息時，使用者可以選擇「一律開啟」通訊協定，這樣系統日後將不再顯示確認提示。
 
       如果不設定這項政策或設為 False，系統將不會顯示「一律開啟」核取方塊，並會在每次叫用外部通訊協定時向使用者顯示提示。</translation>
+<translation id="2406820201690307634">你可以設定網址模式清單，指定不可顯示圖片的網站。
+
+          如果不設定這項政策，系統會根據「DefaultImagesSetting」政策 (如有設定) 或使用者的個人設定，將全域預設值套用至所有網站。
+
+          請注意，先前我們誤在 Android 裝置上啟用這項政策，但這項功能從未針對 Android 裝置提供完整支援。
+
+          如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="2411817661175306360">密碼保護警告已關閉</translation>
 <translation id="2411919772666155530">封鎖這些網站的通知</translation>
 <translation id="2413022450179356125">啟用/停用隱私保護畫面功能。
@@ -1002,6 +1036,11 @@
       如果未設定這項政策，或是將這項政策設為「不要針對成人內容篩選網站」，網站將不會經過篩選。
 
       如果將這項政策設為「針對成人內容篩選頂層網站」，被判定為含有色情內容的網站就會遭到篩除。</translation>
+<translation id="2484356232170636726">你可以設定網址模式清單，指定可執行 JavaScript 的網站。
+
+          如果不設定這項政策，系統會根據「DefaultJavaScriptSetting」政策 (如有設定) 或使用者的個人設定，將全域預設值套用至所有網站。
+
+          如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="2486371469462493753">不強制要求列出的網址符合憑證透明化規定。
 
       這項政策可讓指定的網址中的主機名稱不依憑證透明化規定公開憑證。原本不受信任的憑證 (因未依規定對外公開) 將因此可繼續使用，但系統會因此而不容易偵測到這些主機誤用憑證的情形。
@@ -1346,6 +1385,15 @@
 <translation id="2959898425599642200">Proxy 略過規則</translation>
 <translation id="2960128438010718932">分階段套用更新的時程</translation>
 <translation id="2960691910306063964">針對遠端存取主機啟用或停用無 PIN 碼驗證機制</translation>
+<translation id="2969797921412053304">這項政策會設定哪些網址可在登入畫面的 SAML 流程中，取得使用裝置身分遠端認證機制的存取權。
+
+      具體來說，如果網址符合這項政策提供的其中一種模式，系統會允許該網址接收 HTTP 標頭 (其中包含對遠端認證機制驗證問題的回覆)，以認證裝置身分及裝置狀態。
+
+      如果不設定這項政策或將其設為空白，系統將不允許任何網址在登入畫面使用遠端認證機制。
+
+      網址必須採用 HTTPS 架構，例如「https://example.com」。
+
+      如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="2987155890997901449">啟用 ARC</translation>
 <translation id="2987227569419001736">控制 Web Bluetooth API 使用權限</translation>
 <translation id="3016255526521614822">將「<ph name="PRODUCT_OS_NAME" />」螢幕鎖定畫面允許的筆記應用程式加入許可清單</translation>
@@ -1515,6 +1563,11 @@
       但是，只有當 SAML 識別資訊提供者在 SAML 登入流程中將密碼到期資訊傳送至裝置時，系統才會顯示這些通知。
 
       設定這項政策後，使用者即無法變更或覆寫。</translation>
+<translation id="3312835062252480209">你可以設定網址模式清單，指定不可使用金鑰產生功能的網站。如果網址模式也列在「KeygenAllowedForUrls」中，這項政策會覆寫這類例外狀況。
+
+          如果不設定這項政策，系統會根據「DefaultKeygenSetting」政策 (如有設定) 或使用者的個人設定，將全域預設值套用至所有網站。
+
+          如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="3327195598110816609">不要延遲提供檔案</translation>
 <translation id="332771718998993005">確定公開為「<ph name="PRODUCT_NAME" />」目的地的名稱。
 
@@ -1739,6 +1792,18 @@
 <translation id="3660510274595679517">
         如果將這項政策設定為 True，系統會強制你註冊雲端管理服務。如果註冊失敗，系統會封鎖 Chrome 啟動程序。如果不設定這項政策或設為 False，你可以選擇是否要註冊雲端管理服務。即使註冊失敗，系統也不會封鎖 Chrome 啟動程序。在桌面註冊機器範圍雲端政策時會使用這項政策，你可以透過 Windows 的登錄檔或 GPO、Mac 的 plist 以及 Linux 的 JSON 政策檔設定這項政策。</translation>
 <translation id="3660562134618097814">登入時移轉 SAML IdP Cookie</translation>
+<translation id="3684866411224031107">你可以設定網址模式清單，指定可執行 <ph name="FLASH_PLUGIN_NAME" /> 外掛程式的網站。
+
+          如果不設定這項政策，系統會根據「DefaultPluginsSetting」政策 (如有設定) 或使用者的個人設定，將全域預設值套用至所有網站。
+
+          如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
+<translation id="3688225008199664446">你可以設定網址模式清單，指定不可要求使用者授予 USB 裝置存取權的網站。
+
+          如果不設定這項政策，系統會根據「DefaultWebUsbGuardSetting」政策 (如有設定) 或使用者的個人設定，將全域預設值套用至所有網站。
+
+          這項政策中的網址模式不可與 WebUsbAskForUrls 的設定發生相衝突。如果網址同時符合這兩項政策，系統將無法判斷應優先採用哪項政策。
+
+          如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="3701121231485832347">控管 <ph name="MS_AD_NAME" /> 管理的 <ph name="PRODUCT_OS_NAME" /> 裝置專屬設定。</translation>
 <translation id="3702518095257671450">遠端認證</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (單行欄位已淘汰，日後將遭到移除。請開始使用下方的多行文字方塊。)</translation>
@@ -2012,11 +2077,11 @@
 <translation id="402759845255257575">不允許任何網站執行 JavaScript</translation>
 <translation id="4027608872760987929">啟用預設搜尋引擎</translation>
 <translation id="4039085364173654945">控制是否允許網頁上的第三方附屬內容彈出「HTTP 基本驗證」對話方塊。為了防止網路釣魚，這項功能通常會停用。如果未設定這項政策，系統會停用這項功能，並且不允許第三方附屬內容彈出「HTTP 基本驗證」對話方塊。</translation>
-<translation id="4044054366426171256">這會設定必要的主機網域名稱並套用到遠端存取主機，同時防止使用者變更這些名稱。
+<translation id="4044054366426171256">這會設定遠端存取主機必須使用的主機網域名稱，同時防止使用者變更這些名稱。
 
-          如果啟用這項設定並設為一個以上的網域，主機只能透過在任一指定名稱的網域所註冊的帳戶進行共用。
+          如果啟用這項設定並設為一個以上的網域，則須透過以任一指定網域名稱註冊的帳戶才能共用主機。
 
-          如果停用這項設定、不設定或設為空白清單，則主機可透過任何帳戶進行共用。
+          如果停用這項設定、不設定或設為空白清單，則可透過任何帳戶共用主機。
 
           這項設定會覆寫 RemoteAccessHostDomain 設定 (如有設定的話)。
 
@@ -2353,6 +2418,13 @@
       如果設為「強制」，使用者只能以無痕模式開啟網頁。請注意，「強制」選項不適用於 Chrome Android 版。</translation>
 <translation id="4600786265870346112">啟用大型游標</translation>
 <translation id="4604931264910482931">設定內建訊息傳遞黑名單</translation>
+<translation id="4614701085541180174">你可以設定網址模式清單，指定在 SAML 流程代管架構的登入畫面中，系統要為哪些網站自動選取用戶端憑證 (如果網站要求憑證的話)。實際應用範例：設定要提供給 SAML IdP 的裝置通用憑證。
+
+      這個值必須是字串化的 JSON 字典陣列。每個字典的格式都必須為 <ph name="DEVICE_LOGIN_SCREEN_AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />，其中 <ph name="URL_PATTERN_PLACEHOLDER" /> 是內容設定模式。<ph name="FILTER_PLACEHOLDER" /> 會限制瀏覽器可自動選取的用戶端憑證。無論是否設定篩選器，瀏覽器都只會選取符合伺服器憑證要求的憑證。如果 <ph name="FILTER_PLACEHOLDER" /> 的格式為 <ph name="JSON_DICTIONARY_EXAMPLE" />，瀏覽器只會選取由 CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> 憑證所核發的用戶端憑證。如果 <ph name="FILTER_PLACEHOLDER" /> 是空白的字典 {}，則瀏覽器在選取用戶端憑證時不會受到額外限制。
+
+      如果不設定這項政策，系統不會為任何網站自動選取憑證。
+
+      如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="4617338332148204752">在 <ph name="PRODUCT_FRAME_NAME" /> 內略過中繼標記檢查</translation>
 <translation id="4625915093043961294">設定擴充功能安裝許可清單</translation>
 <translation id="4632343302005518762">允許 <ph name="PRODUCT_FRAME_NAME" /> 處理下列內容類型</translation>
@@ -2475,6 +2547,11 @@
       如果將這項政策設為 False 或不予設定，系統將不會回報作業系統的更新資訊。如果設為 True，則系統會回報作業系統的更新資訊。</translation>
 <translation id="4858735034935305895">允許全螢幕模式</translation>
 <translation id="4861767323695239729">設定可在使用者工作階段中使用的輸入法</translation>
+<translation id="4869603341164509842">系統會將這份清單中的模式與要求網址的安全性來源進行比對。如果找到相符項目，系統會授權網址存取影片擷取裝置，並且不會提示使用者。
+
+      如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。
+
+      注意：在第 45 版以下版本中，這項政策僅支援 Kiosk 模式。</translation>
 <translation id="487460824085252184">自動遷移，不要求使用者同意。</translation>
 <translation id="4874982543810021567">在這些網站上封鎖 WebUSB</translation>
 <translation id="4876805738539874299">已啟用 SSL 最高版本</translation>
@@ -2597,6 +2674,11 @@
       如果將這項政策設為 0，就會停用本機帳戶密碼變更功能。
 
       請注意，如果用戶端有很長一段時間處於離線狀態，則即使已過了指定的天數，密碼也可能不會變更。</translation>
+<translation id="5101600510268095939">你可以設定網址模式清單，指定哪些網站不能顯示可封鎖 (亦即使用中) 混合內容 (亦即 HTTPS 網站上的 HTTP 內容)，並指定要升級哪些選擇性可封鎖 (亦即非使用中) 混合內容。
+
+         如果不設定這項政策，可封鎖的混合內容將遭到封鎖，且系統會升級選擇性可封鎖混合內容。但使用者可以設定例外網站，允許特定網站顯示可封鎖的混合內容。
+
+          如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="510196893779239086">這項政策可控管是否要在最後一個 Chrome 分頁改以其他瀏覽器開啟後，完全關閉 Chrome。
 
       如果將這項政策設為 True 或不設定這項政策，當 Chrome 分頁改以其他瀏覽器開啟後，Chrome 中仍會有至少一個分頁保持開啟。
@@ -2793,6 +2875,15 @@
 
           如果這項政策設為 False，使用者就無法將內容投放至自己的裝置。如果這項政策設為 True，則使用者可投放內容。如果未設定這項政策，使用者就無法將內容投放至已註冊的 Chrome 作業系統裝置，但可投放至未註冊的裝置。</translation>
 <translation id="5323200200131319468">在登入畫面上啟用互動朗讀功能</translation>
+<translation id="532668836479219203">這項政策可控管瀏覽器的登入行為，讓你指定使用者是否能用個人帳戶登入 <ph name="PRODUCT_NAME" />，並使用帳戶相關服務 (例如 Chrome 同步功能)。
+
+      如果將這項政策設為「禁止登入瀏覽器」，使用者將無法登入瀏覽器，也無法使用帳戶相關服務。在這種情況下，使用者無法使用瀏覽器層級的功能 (例如 Chrome 同步功能)。如果這項政策在使用者登入瀏覽器後才設為「停用」，則這些已登入的使用者會在下次執行 Chrome 時被登出，但系統仍會保留他們的本機設定檔資料 (例如書籤、密碼等)。使用者仍然可以登入並使用 Gmail 等 Google 網路服務。
+
+      如果將這項政策設為「允許登入瀏覽器」，則使用者可以登入瀏覽器，並會在登入 Gmail 等 Google 網路服務後自動登入瀏覽器。在登入瀏覽器的狀態下，瀏覽器會保留使用者的帳戶資訊。不過，Chrome 同步功能不會因此預設為開啟，使用者必須另外選擇啟用這項功能。啟用這項政策後，使用者將無法關閉允許登入瀏覽器的設定。如要控管是否要提供 Chrome 同步功能，請使用「SyncDisabled」政策。
+
+      如果將這項政策設為「強制登入瀏覽器」，使用者會看到選取帳戶的對話方塊，而且必須選擇帳並登入戶才能使用瀏覽器。這樣可以確保系統在與該帳戶關聯的所有受管理帳戶中套用並強制執行相關政策。根據預設，這項設定會開啟帳戶的 Chrome 同步功能 (除非網域管理員已停用同步功能，或是另外設定了「SyncDisabled」政策)。BrowserGuestModeEnabled 的預設值將設為 False。請注意，啟用這項政策後，未經簽署的現有設定檔會遭到鎖定，無法再使用。詳情請參閱說明中心文章：https://support.google.com/chrome/a/answer/7572556。這個選項不支援 Linux 和 Android，如果你採用這個選項，系統將改為使用「允許登入瀏覽器」。
+
+      如果不設定這項政策，使用者可以決定是否要啟用瀏覽器登入選項，並視需要自行選用。</translation>
 <translation id="532848608876725157">啟用 DNS-over-HTTPS，而且可以改用不安全查詢</translation>
 <translation id="5329007337159326804">警告：自 <ph name="PRODUCT_NAME" /> 版本 75 (2019 年 6 月左右推出) 起，我們將全面移除 TLS 最高版本政策。
 
@@ -3187,6 +3278,17 @@
 
       網址 (例如 https://example.com/some/path) 只會比對為 U2F appID，網域 (例如 example.com) 則只會比對為 WebAuthn RP ID。因此，如要同時涵蓋指定網站的 U2F API 和 WebAuthn API，必須一併列出 appID 網址和網域。</translation>
 <translation id="5836064773277134605">限制遠端存取主機所使用的 UDP 通訊埠範圍</translation>
+<translation id="5844300486330234296">這項政策可控管要一律啟用自動播放功能的網址模式許可清單。
+
+      如果自動播放功能設定為啟用，則 <ph name="PRODUCT_NAME" /> 中的影片和音訊內容可自動播放，無須經過使用者同意。
+
+      如果將 AutoplayAllowed 政策設為 True，這項政策不會有任何作用。
+
+      如果將 AutoplayAllowed 政策設為 False，這項政策中設定的任何網址模式仍可自動播放內容。
+
+      請注意，如果你在 <ph name="PRODUCT_NAME" /> 執行期間變更這項政策，則只有新開啟的分頁會套用變更。因此，有些分頁可能仍會沿用先前的設定。
+
+      如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="5855010364142818361">這項政策可控管從 Internet Explorer 切換至 Chrome 時使用的指令列參數。
 
       如果 Internet Explorer 未安裝「舊版瀏覽器支援」增益集，這項政策將不會生效。
@@ -3431,6 +3533,17 @@
       這項政策設為 False 時，系統會禁止使用者忽略任何警告網頁。</translation>
 <translation id="6319198883324703402">設定第一次通知使用者重新啟動的時間</translation>
 <translation id="6342187235303612558">禁止使用者上傳或下載目前不支援 DLP 或惡意軟體掃描的檔案。</translation>
+<translation id="6348718801326095108">如果 Cookie 由符合這些網址模式的網頁所設定，則這些 Cookie 僅限在目前的工作階段中有效。也就是說，系統會在瀏覽器關閉時刪除這些 Cookie。
+
+          如果網址不符合此處指定的模式，系統會根據「DefaultCookiesSetting」政策 (如有設定) 或使用者的個人設定，對網址套用全域預設值。如果不設定這項政策，系統也會為所有網址採用這種做法。
+
+          請注意，如果 <ph name="PRODUCT_NAME" /> 是以「背景模式」運作，當你關閉最後一個瀏覽器視窗時，工作階段可能不會結束，而會持續運作到瀏覽器關閉為止。請參閱「BackgroundModeEnabled」政策，進一步瞭解如何設定這項行為。
+
+          另請查看「CookiesAllowedForUrls」和「CookiesBlockedForUrls」政策。請注意，這三項政策的網址模式不可發生衝突，否則系統將無法判斷應優先採用哪項政策。
+
+          如果將「RestoreOnStartup」政策設為還原先前工作階段的網址，則系統不會遵循這項政策，並會為這些網站永久儲存 Cookie。
+
+          如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="6352543686437322588">要在延遲時間過後自動登入的裝置本機帳戶。
 
       如果設定這項政策，系統會在使用者於登入畫面停止互動後的一段時間過後，自動登入指定工作階段。你必須已設定裝置本機帳戶 (請參閱 |DeviceLocalAccounts|)。
@@ -3455,6 +3568,13 @@
       如果這項政策設為 False，則不會回報這些使用者。</translation>
 <translation id="638668187106406971">檢查上傳內容是否違反機密資料保護規則</translation>
 <translation id="6394350458541421998">我們已於 <ph name="PRODUCT_OS_NAME" />版本 29 中移除這項政策。請改用 PresentationScreenDimDelayScale 政策。</translation>
+<translation id="6394657112569857636">你可以設定網址模式清單，指定不可設定 Cookie 的網站。
+
+          如果不設定這項政策，系統會根據「DefaultCookiesSetting」政策 (如有設定) 或使用者的個人設定，將全域預設值套用至所有網站。
+
+          另請參閱「CookiesAllowedForUrls」和「CookiesSessionOnlyForUrls」政策。請注意，這三項政策的網址模式不可發生衝突，否則系統將無法判斷應優先採用哪項政策。
+
+          如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="6399242659768117666">這項政策可控管系統是否要回報擴充功能和外掛程式資訊。
 
       如果不設定這項政策或設為 True，系統會收集擴充功能和外掛程式資料。
@@ -3554,6 +3674,13 @@
 <translation id="6544897973797372144">如果你將這項政策設為「True」，且並未指定 ChromeOsReleaseChannel 政策，則註冊網域的使用者將可變更裝置的發布頻道。如果你將這項政策設為「False」，則系統會將裝置鎖定為先前設定的任何頻道。
 
       ChromeOsReleaseChannel 政策會覆寫使用者選取的頻道，但如果政策設定的頻道比裝置原本安裝的頻道更穩定，則系統只會在更穩定的頻道發布比裝置上安裝的頻道更高的版本時，才會切換至該版本。</translation>
+<translation id="6548795012081567926">你可以設定網址模式清單，指定可設定 Cookie 的網站。
+
+          如果不設定這項政策，系統會根據「DefaultCookiesSetting」政策 (如有設定) 或使用者的個人設定，將全域預設值套用至所有網站。
+
+          另請參閱「CookiesBlockedForUrls」和「CookiesSessionOnlyForUrls」政策。請注意，這三項政策的網址模式不可發生衝突，否則系統將無法判斷應優先採用哪項政策。
+
+          如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="6553143066970470539">螢幕亮度百分比</translation>
 <translation id="6559057113164934677">不允許任何網站使用攝影機和麥克風</translation>
 <translation id="6561396069801924653">在系統匣選單中顯示無障礙選項</translation>
@@ -3651,6 +3778,11 @@
       如果停用這項政策 (設為 false)，<ph name="PRODUCT_NAME" /> 就不會以顯示完整分頁內容的方式向使用者提供產品資訊。
 
       這項設定將決定歡迎頁面顯示與否，歡迎頁面可協助使用者登入 <ph name="PRODUCT_NAME" />，並將其設為預設瀏覽器，或是讓使用者瞭解產品功能。</translation>
+<translation id="6764421313777250384">你可以設定網址模式清單，指定不可顯示通知的網站。
+
+          如果不設定這項政策，系統會根據「DefaultNotificationsSetting」政策 (如有設定) 或使用者的個人設定，將全域預設值套用至所有網站。
+
+          如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="6766216162565713893">允許網站要求使用者授權存取附近的藍牙裝置</translation>
 <translation id="6770454900105963262">回報運作中資訊站工作階段相關資訊</translation>
 <translation id="6786747875388722282">擴充功能</translation>
@@ -4085,6 +4217,11 @@
 <translation id="7485730741952775732">如果設定這項政策，遠端存取主機會使用這個網址，驗證遠端存取用戶端提供的驗證憑證，據此決定是否要接受連線。這項政策必須搭配 RemoteAccessHostTokenUrl 使用。
 
           這項功能目前在伺服器端設為停用。</translation>
+<translation id="7490270439948288519">你可以設定網址模式清單，指定可開啟彈出式視窗的網站。
+
+          如果不設定這項政策，系統會根據「DefaultPopupsSetting」政策 (如有設定) 或使用者的個人設定，將全域預設值套用至所有網站。
+
+          如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="749556411189861380">回報註冊裝置的作業系統和韌體版本。
 
       如果這項政策未設定或設為 True，註冊的裝置會定期回報作業系統和韌體版本。如果設為 False，則不會回報版本資訊。</translation>
@@ -4099,7 +4236,7 @@
           如果未設定這項政策或設為啟用，Google Chrome 將接受透過 Signed HTTP Exchange 提供的網路內容。
 
           如果將這項政策設為停用，系統將無法載入 Signed HTTP Exchange。</translation>
-<translation id="7506758875409719208">這會設定必要的用戶端網域名稱並套用到遠端存取主機，同時防止使用者變更這些名稱。
+<translation id="7506758875409719208">這會設定遠端存取用戶端必須使用的用戶端網域名稱，同時防止使用者變更這些名稱。
 
           如果啟用這項設定並設為一個以上的網域，只有任一指定網域中的用戶端才能連線到主機。
 
@@ -4123,6 +4260,11 @@
           這項政策僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體，或是已註冊裝置管理服務的 Windows 10 專業版或企業版執行個體。</translation>
 <translation id="7511361072385293666">如果這項政策設為 True 或未設定，可在 <ph name="PRODUCT_NAME" /> 中使用 QUIC 通訊協定。
       如果這項政策設為 False，則不可使用 QUIC 通訊協定。</translation>
+<translation id="7515572751689937649">你可以設定網址模式清單，指定不可執行 JavaScript 的網站。
+
+          如果不設定這項政策，系統會根據「DefaultJavaScriptSetting」政策 (如有設定) 或使用者的個人設定，將全域預設值套用至所有網站。
+
+          如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="7517845714620372896">指定螢幕亮度百分比。
           如果這項政策設定了數值，螢幕初始亮度將調整為該政策值，但使用者之後可進行變更。自動調整亮度功能在這種情況下會停用。
           如果這項政策未設定數值，則使用者螢幕控制選項和自動調整亮度功能不會受到影響。
@@ -4589,6 +4731,11 @@
 <translation id="8331479227794770304">啟用相黏鍵</translation>
 <translation id="8339420913453596618">已停用雙重驗證</translation>
 <translation id="8344454543174932833">第一次執行時從預設瀏覽器匯入書籤</translation>
+<translation id="8351446723835838047">你可以設定網址模式清單，指定可使用金鑰產生功能的網站。如果網址模式符合「KeygenBlockedForUrls」的設定，這項政策會覆寫這類例外狀況。
+
+          如果不設定這項政策，系統會根據「DefaultKeygenSetting」政策 (如有設定) 或使用者的個人設定，將全域預設值套用至所有網站。
+
+          如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="8357681633047935212">限制使用者工作階段的時間長度</translation>
 <translation id="8359734107661430198">從 2008 年 9 月 2 日開始啟用 ExampleDeprecatedFeature API</translation>
 <translation id="8367209241899435947">在 Windows 裝置上啟用 Chrome 清理功能</translation>
@@ -4796,6 +4943,13 @@
 
           如果未設定這項政策，<ph name="PRODUCT_NAME" /> 會嘗試偵測伺服器是否位於內部網路，然後回應伺服器傳來的 IWA 要求。如果伺服器位於網際網路，<ph name="PRODUCT_NAME" /> 就會忽略伺服器傳來的 IWA 要求。</translation>
 <translation id="8656110680728938054">啟用隨選朗讀功能</translation>
+<translation id="8659729040032759711">你可以設定網址模式清單，指定可要求使用者授予 USB 裝置存取權的網站。
+
+          如果不設定這項政策，系統會根據「DefaultWebUsbGuardSetting」政策 (如有設定) 或使用者的個人設定，將全域預設值套用至所有網站。
+
+          這項政策中的網址模式不可與 WebUsbBlockedForUrls 的設定發生衝突。如果網址同時符合這兩項政策，系統將無法判斷應優先採用哪項政策。
+
+          如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="8661297125441579970">不允許資料遷移功能和 ARC。</translation>
 <translation id="8672321184841719703">指定目標的自動更新版本</translation>
 <translation id="867410340948518937">U2F (通用雙重驗證)</translation>
@@ -4932,6 +5086,11 @@
 
           如果不設定這項政策，系統會在初次顯示登入畫面時停用自動點擊功能，但使用者隨時可以啟用。</translation>
 <translation id="8876188741456358123">覆寫預設的雙面列印模式。如果設定的模式不適用，系統會忽略這項政策。</translation>
+<translation id="8878850056189891727">系統會將這份清單中的模式與要求網址的安全性來源進行比對。如果找到相符項目，系統會授權網址存取音訊擷取裝置，並且不會提示使用者。
+
+      如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。
+
+      注意：在第 45 版以下版本中，這項政策僅支援 Kiosk 模式。</translation>
 <translation id="8882006618241293596">禁止在這些網站上執行 <ph name="FLASH_PLUGIN_NAME" /> 外掛程式</translation>
 <translation id="8906768759089290519">啟用訪客模式</translation>
 <translation id="8908294717014659003">讓你設定網站是否允許網站存取媒體擷取裝置。根據預設，系統允許網站存取媒體擷取裝置，你也可設為每當網站要存取媒體擷取裝置時詢問使用者。

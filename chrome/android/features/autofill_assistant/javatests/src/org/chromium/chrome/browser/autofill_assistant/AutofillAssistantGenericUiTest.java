@@ -303,7 +303,7 @@ public class AutofillAssistantGenericUiTest {
                          .build());
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
                 (SupportedScriptProto) SupportedScriptProto.newBuilder()
-                        .setPath("form_target_website.html")
+                        .setPath("autofill_assistant_target_website.html")
                         .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
                                 ChipProto.newBuilder().setText("Autostart")))
                         .build(),
@@ -427,7 +427,7 @@ public class AutofillAssistantGenericUiTest {
                          .build());
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
                 (SupportedScriptProto) SupportedScriptProto.newBuilder()
-                        .setPath("form_target_website.html")
+                        .setPath("autofill_assistant_target_website.html")
                         .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
                                 ChipProto.newBuilder().setText("Autostart")))
                         .build(),
@@ -580,7 +580,7 @@ public class AutofillAssistantGenericUiTest {
                          .build());
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
                 (SupportedScriptProto) SupportedScriptProto.newBuilder()
-                        .setPath("form_target_website.html")
+                        .setPath("autofill_assistant_target_website.html")
                         .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
                                 ChipProto.newBuilder().setText("Autostart")))
                         .build(),
@@ -685,7 +685,7 @@ public class AutofillAssistantGenericUiTest {
                          .build());
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
                 (SupportedScriptProto) SupportedScriptProto.newBuilder()
-                        .setPath("form_target_website.html")
+                        .setPath("autofill_assistant_target_website.html")
                         .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
                                 ChipProto.newBuilder().setText("Autostart")))
                         .build(),
@@ -785,7 +785,7 @@ public class AutofillAssistantGenericUiTest {
                          .build());
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
                 (SupportedScriptProto) SupportedScriptProto.newBuilder()
-                        .setPath("form_target_website.html")
+                        .setPath("autofill_assistant_target_website.html")
                         .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
                                 ChipProto.newBuilder().setText("Autostart")))
                         .build(),
@@ -945,7 +945,7 @@ public class AutofillAssistantGenericUiTest {
                          .build());
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
                 (SupportedScriptProto) SupportedScriptProto.newBuilder()
-                        .setPath("form_target_website.html")
+                        .setPath("autofill_assistant_target_website.html")
                         .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
                                 ChipProto.newBuilder().setText("Autostart")))
                         .build(),
@@ -1027,7 +1027,7 @@ public class AutofillAssistantGenericUiTest {
                          .build());
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
                 (SupportedScriptProto) SupportedScriptProto.newBuilder()
-                        .setPath("form_target_website.html")
+                        .setPath("autofill_assistant_target_website.html")
                         .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
                                 ChipProto.newBuilder().setText("Autostart")))
                         .build(),
@@ -1169,7 +1169,7 @@ public class AutofillAssistantGenericUiTest {
                          .build());
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
                 (SupportedScriptProto) SupportedScriptProto.newBuilder()
-                        .setPath("form_target_website.html")
+                        .setPath("autofill_assistant_target_website.html")
                         .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
                                 ChipProto.newBuilder().setText("Autostart")))
                         .build(),
@@ -1263,7 +1263,7 @@ public class AutofillAssistantGenericUiTest {
                          .build());
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
                 (SupportedScriptProto) SupportedScriptProto.newBuilder()
-                        .setPath("form_target_website.html")
+                        .setPath("autofill_assistant_target_website.html")
                         .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
                                 ChipProto.newBuilder().setText("Autostart")))
                         .build(),
@@ -1358,7 +1358,7 @@ public class AutofillAssistantGenericUiTest {
                          .build());
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
                 (SupportedScriptProto) SupportedScriptProto.newBuilder()
-                        .setPath("form_target_website.html")
+                        .setPath("autofill_assistant_target_website.html")
                         .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
                                 ChipProto.newBuilder().setText("Autostart")))
                         .build(),
@@ -1459,7 +1459,7 @@ public class AutofillAssistantGenericUiTest {
                          .build());
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
                 (SupportedScriptProto) SupportedScriptProto.newBuilder()
-                        .setPath("form_target_website.html")
+                        .setPath("autofill_assistant_target_website.html")
                         .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
                                 ChipProto.newBuilder().setText("Autostart")))
                         .build(),
@@ -1549,7 +1549,7 @@ public class AutofillAssistantGenericUiTest {
                          .build());
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
                 (SupportedScriptProto) SupportedScriptProto.newBuilder()
-                        .setPath("form_target_website.html")
+                        .setPath("autofill_assistant_target_website.html")
                         .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
                                 ChipProto.newBuilder().setText("Autostart")))
                         .build(),
@@ -1636,7 +1636,7 @@ public class AutofillAssistantGenericUiTest {
                          .build());
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
                 (SupportedScriptProto) SupportedScriptProto.newBuilder()
-                        .setPath("form_target_website.html")
+                        .setPath("autofill_assistant_target_website.html")
                         .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
                                 ChipProto.newBuilder().setText("Autostart")))
                         .build(),
@@ -1727,7 +1727,7 @@ public class AutofillAssistantGenericUiTest {
                          .build());
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
                 (SupportedScriptProto) SupportedScriptProto.newBuilder()
-                        .setPath("form_target_website.html")
+                        .setPath("autofill_assistant_target_website.html")
                         .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
                                 ChipProto.newBuilder().setText("Autostart")))
                         .build(),
@@ -1838,7 +1838,7 @@ public class AutofillAssistantGenericUiTest {
                          .build());
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
                 (SupportedScriptProto) SupportedScriptProto.newBuilder()
-                        .setPath("form_target_website.html")
+                        .setPath("autofill_assistant_target_website.html")
                         .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
                                 ChipProto.newBuilder().setText("Autostart")))
                         .build(),
@@ -1980,7 +1980,7 @@ public class AutofillAssistantGenericUiTest {
                          .build());
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
                 (SupportedScriptProto) SupportedScriptProto.newBuilder()
-                        .setPath("form_target_website.html")
+                        .setPath("autofill_assistant_target_website.html")
                         .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
                                 ChipProto.newBuilder().setText("Autostart")))
                         .build(),

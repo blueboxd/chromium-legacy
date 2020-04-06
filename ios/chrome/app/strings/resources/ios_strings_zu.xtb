@@ -168,6 +168,7 @@
 <translation id="3112556859945124369">Maka...</translation>
 <translation id="3153862085237805241">Londoloza ikhadi</translation>
 <translation id="3157684681743766797">Maka konke...</translation>
+<translation id="3161291298470460782">Lokhu kuzokukhipha ngemvume, kuvale ukuvumelanisa, futhi kusule yonke idatha ye-Chrome kule divayisi. Idatha yakho evunyelanisiwe izohlala ku-Akhawunti yakho ye-Google.</translation>
 <translation id="3175081911749765310">Amasevisi wewebhu</translation>
 <translation id="3178650076442119961">Isebenza namhlanje</translation>
 <translation id="3207960819495026254">Kubekwe uphawu lokubekisa</translation>
@@ -200,6 +201,7 @@
 <translation id="3494788280727468875">Qinisekisa ukusula idatha yokuphequlula</translation>
 <translation id="35083190962747987">Vula ${url}</translation>
 <translation id="3519193562722059437">Vula ithebhu ukuze uphequlule iwebhu.</translation>
+<translation id="3523473570015918798">Ngokuphuma ngemvume, amabhukhimakhi akho, umlando, amaphasiwedi, nenye idatha ye-Chrome ngeke isavunyelaniswa ku-Akhawunti yakho ye-Google.</translation>
 <translation id="3527085408025491307">Ifolda</translation>
 <translation id="3529024052484145543">Akuphephile</translation>
 <translation id="3533202363250687977">Vala wonke amathebhu e-incognito</translation>
@@ -333,6 +335,7 @@ Ukuze ushintshe lesi silungiselelo, <ph name="BEGIN_LINK" />setha kabusha ukuvum
 <translation id="54401264925851789">Ulwazi lekhasi lokuvikela</translation>
 <translation id="5443952882982198570">Amakhadi wesikweletu</translation>
 <translation id="5457907402803865181">Iphutha lokuvumelanisa amaphasiwedi.</translation>
+<translation id="5508435575041083207">Phuma Ngemvume futhi Usule Idatha kusukela kule Divayisi</translation>
 <translation id="5525269841082836315">Dala umushwana wokungena</translation>
 <translation id="5548760955356983418">I-Handoff ikuvumela ukuthi uqale ukuphequlula iwebhusayithi kule divayisi bese uqhubeke kalula ku-Mac yakho. Iwebhusayithi evulekile yamanje izobonakala kudokhu ye-Mac yakho.
 
@@ -506,6 +509,9 @@ Idatha yakho ibethelwe ngomushwana wokungena wakho ngo-<ph name="TIME" />. Yifak
 <translation id="766891008101699113">Ukuze uphequlule iwebhu ngobumfihlo, engeza ithebhu entsha.</translation>
 <translation id="7671141431838911305">FAKA</translation>
 <translation id="7765158879357617694">Hambisa</translation>
+<translation id="7771470029643830783">Ngokuphuma ngemvume, amabhukhimakhi akho, umlando, amaphasiwedi, nenye idatha ye-Chrome ngeke isavunyelaniswa ku-Akhawunti yakho ye-Google.
+
+Ngoba i-akhawunti yakho iphethwe yi-<ph name="HOSTED_DOMAIN" />, idatha yakho ye-Chrome izosuswa kule divayisi uma uphuma ngemvume. Idatha yakho evunyelanisiwe izohlala ku-Akhawunti yakho ye-Google.</translation>
 <translation id="7772032839648071052">Qinisekisa umushwana wokungena</translation>
 <translation id="7781011649027948662">Humusha ikhasi?</translation>
 <translation id="7781829728241885113">Izolo</translation>
@@ -555,6 +561,7 @@ Idatha yakho ibethelwe ngomushwana wokungena wakho ngo-<ph name="TIME" />. Yifak
 <translation id="8490978609246021741">Londoloza izinguquko</translation>
 <translation id="8503813439785031346">Igama lomsebenzisi</translation>
 <translation id="850600235656508448">Vula ku-incognito</translation>
+<translation id="8510057420705599706">Lokhu kuzokukhipha ngemvume futhi kuvale ukuvumelanisa, kodwa amabhukhimakhi akho, umlando, amaphasiwedi nenye idatha ye-Chrome kuzohlala kuledivayisi.</translation>
 <translation id="8517375800490286174">Amalayisense womthombo ovulekile</translation>
 <translation id="8524799873541103884"><ph name="INCOGNITO" /> Amathebhu <ph name="FIRST_VISIBLE_TAB" /> nge-<ph name="LAST_VISIBLE_TAB" /> kwangu-<ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">Okusha</translation>
@@ -597,6 +604,7 @@ Idatha yakho ibethelwe ngomushwana wokungena wakho ngo-<ph name="TIME" />. Yifak
 <translation id="9094033019050270033">Buyekeza iphasiwedi</translation>
 <translation id="9100610230175265781">Kudingeka umushwana wokungena</translation>
 <translation id="9148126808321036104">Phinda ungene ngemvume</translation>
+<translation id="9152539721251340337">Dala Ikhodi ye-QR</translation>
 <translation id="9157836665414082580">Cindezela amabhokisi</translation>
 <translation id="9188680907066685419">Phuma ngemvume ku-akhawunti ephethwe</translation>
 <translation id="9203116392574189331">I-Handoff</translation>

@@ -30,6 +30,11 @@ export class BrowserProxy {
     window.location.href = href;
   }
 
+  /** @param {string} url */
+  open(url) {
+    window.open(url, '_blank');
+  }
+
   /**
    * @param {function()} callback
    * @param {number} duration

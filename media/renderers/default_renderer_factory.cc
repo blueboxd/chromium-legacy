@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "build/build_config.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_factory.h"
@@ -19,6 +20,17 @@
 
 namespace media {
 
+#if defined(OS_ANDROID)
+DefaultRendererFactory::DefaultRendererFactory(
+    MediaLog* media_log,
+    DecoderFactory* decoder_factory,
+    const GetGpuFactoriesCB& get_gpu_factories_cb)
+    : media_log_(media_log),
+      decoder_factory_(decoder_factory),
+      get_gpu_factories_cb_(get_gpu_factories_cb) {
+  DCHECK(decoder_factory_);
+}
+#else
 DefaultRendererFactory::DefaultRendererFactory(
     MediaLog* media_log,
     DecoderFactory* decoder_factory,
@@ -30,6 +42,7 @@ DefaultRendererFactory::DefaultRendererFactory(
       speech_recognition_client_(std::move(speech_recognition_client)) {
   DCHECK(decoder_factory_);
 }
+#endif
 
 DefaultRendererFactory::~DefaultRendererFactory() = default;
 
@@ -115,10 +128,12 @@ std::unique_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
 
 void DefaultRendererFactory::TranscribeAudio(
     scoped_refptr<media::AudioBuffer> buffer) {
+#if !defined(OS_ANDROID)
   if (speech_recognition_client_ &&
       speech_recognition_client_->IsSpeechRecognitionAvailable()) {
     speech_recognition_client_->AddAudio(std::move(buffer));
   }
+#endif
 }
 
 }  // namespace media

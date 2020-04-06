@@ -168,6 +168,7 @@
 <translation id="3112556859945124369">Означи…</translation>
 <translation id="3153862085237805241">Зачувај ја картичката</translation>
 <translation id="3157684681743766797">Означи ги сите…</translation>
+<translation id="3161291298470460782">Со ова ќе се одјавите, ќе се исклучи синхронизацијата и сите податоци од Chrome ќе се избришат од уредов. Синхронизираните податоци ќе останат во вашата сметка на Google.</translation>
 <translation id="3175081911749765310">Веб-услуги</translation>
 <translation id="3178650076442119961">Активен денес</translation>
 <translation id="3207960819495026254">Обележано</translation>
@@ -200,6 +201,7 @@
 <translation id="3494788280727468875">Одобри го чистењето на податоците од прелистување</translation>
 <translation id="35083190962747987">Отвори ${url}</translation>
 <translation id="3519193562722059437">Отворете картичка за да прелистувате на интернет.</translation>
+<translation id="3523473570015918798">Ако се одјавите, обележувачите, историјата, лозинките и другите податоци од Chrome веќе нема да се синхронизираат со вашата сметка на Google.</translation>
 <translation id="3527085408025491307">Папка</translation>
 <translation id="3529024052484145543">Небезбедно</translation>
 <translation id="3533202363250687977">Затвори ги сите инкогнито картички</translation>
@@ -333,6 +335,7 @@
 <translation id="54401264925851789">Безбедносни информации за страницата</translation>
 <translation id="5443952882982198570">Кредитни картички</translation>
 <translation id="5457907402803865181">Грешка при синхронизирање на лозинките.</translation>
+<translation id="5508435575041083207">Одјави се и избриши ги податоците од уредов</translation>
 <translation id="5525269841082836315">Создај пристапна фраза</translation>
 <translation id="5548760955356983418">Handoff ви овозможува да започнете со прелистување на веб-локација на уредот и потоа лесно да продолжите на Mac. Моментално отворената веб-локација ќе се појави во Dock на Mac.
 
@@ -506,6 +509,9 @@ Handoff мора да биде овозможен и во Општиот дел 
 <translation id="766891008101699113">За приватно прелистување на интернет, додајте нова картичка.</translation>
 <translation id="7671141431838911305">ИНСТАЛИРАЈ</translation>
 <translation id="7765158879357617694">Премести</translation>
+<translation id="7771470029643830783">Ако се одјавите, обележувачите, историјата, лозинките и другите податоци од Chrome веќе нема да се синхронизираат со вашата сметка на Google.
+
+Бидејќи со сметката управува <ph name="HOSTED_DOMAIN" />, вашите податоци од Chrome ќе се избришат од уредов кога ќе се одјавите. Синхронизираните податоци ќе останат во вашата сметка на Google.</translation>
 <translation id="7772032839648071052">Потврди лозинка</translation>
 <translation id="7781011649027948662">Да се преведе страницата?</translation>
 <translation id="7781829728241885113">Вчера</translation>
@@ -555,6 +561,7 @@ Handoff мора да биде овозможен и во Општиот дел 
 <translation id="8490978609246021741">Зачувај ги промените</translation>
 <translation id="8503813439785031346">Корисничко име</translation>
 <translation id="850600235656508448">Отвори во инкогнито</translation>
+<translation id="8510057420705599706">Со ова ќе се одјавите и ќе се исклучи синхронизацијата, но обележувачите, историјата, лозинките и другите податоци од Chrome ќе останат на уредов.</translation>
 <translation id="8517375800490286174">Лиценци со отворен код</translation>
 <translation id="8524799873541103884"><ph name="INCOGNITO" /> Картички <ph name="FIRST_VISIBLE_TAB" /> до <ph name="LAST_VISIBLE_TAB" /> од <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">Ново</translation>
@@ -597,6 +604,7 @@ Handoff мора да биде овозможен и во Општиот дел 
 <translation id="9094033019050270033">Ажурирај ја лозинката</translation>
 <translation id="9100610230175265781">Потребна е лозинка-фраза</translation>
 <translation id="9148126808321036104">Најави се повторно</translation>
+<translation id="9152539721251340337">Создај QR-код</translation>
 <translation id="9157836665414082580">Отстрани дијалози</translation>
 <translation id="9188680907066685419">Одјавете се од управувана сметка</translation>
 <translation id="9203116392574189331">Handoff</translation>

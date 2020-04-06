@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_document_state.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/attr.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
@@ -1355,7 +1356,8 @@ void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
   // display locks somewhere in the document, we iterate up the ancestor chain
   // to check if we're in one such subtree.
   if (RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled() &&
-      GetDocument().LockedDisplayLockCount() > 0) {
+      GetDocument().GetDisplayLockDocumentState().LockedDisplayLockCount() >
+          0) {
     for (auto* ancestor_copy = ancestor; ancestor_copy;
          ancestor_copy = ancestor_copy->GetStyleRecalcParent()) {
       auto* ancestor_copy_element = DynamicTo<Element>(ancestor_copy);

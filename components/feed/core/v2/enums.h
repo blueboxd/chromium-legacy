@@ -11,7 +11,7 @@
 
 namespace feed {
 
-enum NetworkRequestType : int {
+enum class NetworkRequestType : int {
   kFeedQuery = 0,
   kUploadActions = 1,
 };

@@ -179,29 +179,32 @@ std::string PackKeyAsExplicitPassphrase(const KeyParams& key_params,
 // Builds NigoriSpecifics with following fields:
 // 1. encryption_keybag contains all keys derived from |keybag_keys_params|
 // and encrypted with a key derived from |keybag_decryptor_params|.
-// keystore_decryptor_token is always saved in encryption_keybag, even if it
-// is not derived from any params in |keybag_keys_params|.
 // 2. keystore_decryptor_token contains the key derived from
 // |keybag_decryptor_params| and encrypted with a key derived from
 // |keystore_key_params|.
 // 3. passphrase_type is KEYSTORE_PASSHPRASE.
 // 4. Other fields are default.
+// |keybag_keys_params| must be non-empty.
 sync_pb::NigoriSpecifics BuildKeystoreNigoriSpecifics(
     const std::vector<KeyParams>& keybag_keys_params,
     const KeyParams& keystore_decryptor_params,
     const KeyParams& keystore_key_params) {
+  DCHECK(!keybag_keys_params.empty());
+
   sync_pb::NigoriSpecifics specifics;
 
   std::unique_ptr<CryptographerImpl> cryptographer =
       CryptographerImpl::FromSingleKeyForTesting(
           keystore_decryptor_params.password,
           keystore_decryptor_params.derivation_params);
+
+  NigoriKeyBag encryption_keybag = NigoriKeyBag::CreateEmpty();
   for (const KeyParams& key_params : keybag_keys_params) {
-    cryptographer->EmplaceKey(key_params.password,
-                              key_params.derivation_params);
+    encryption_keybag.AddKey(Nigori::CreateByDerivation(
+        key_params.derivation_params, key_params.password));
   }
 
-  EXPECT_TRUE(cryptographer->Encrypt(cryptographer->ToProto().key_bag(),
+  EXPECT_TRUE(cryptographer->Encrypt(encryption_keybag.ToProto(),
                                      specifics.mutable_encryption_keybag()));
 
   std::string serialized_keystore_decryptor =
@@ -912,6 +915,29 @@ TEST_F(NigoriSyncBridgeImplTest,
 
   EXPECT_THAT(bridge()->ApplySyncChanges(std::move(entity_data)),
               Ne(base::nullopt));
+}
+
+// Tests that bridge reports error when receiving corrupted NigoriSpecifics
+// if decryption happens in SetKeystoreKeys().
+TEST_F(NigoriSyncBridgeImplTest, ShouldFailOnInvalidKeystoreDecryption) {
+  const KeyParams kKeystoreKeyParams = KeystoreKeyParams(kRawKeystoreKey);
+
+  // Don't populate |kKeystoreKeyParams| in |keybag_keys_params|, so encryption
+  // keybag isn't valid. Put fake key params in |keybage_keys_params|, because
+  // they must be non-empty.
+  EntityData entity_data;
+  *entity_data.specifics.mutable_nigori() = BuildKeystoreNigoriSpecifics(
+      /*keybag_keys_params=*/{Pbkdf2KeyParams("fake_key")},
+      /*keystore_decryptor_params=*/kKeystoreKeyParams,
+      /*keystore_key_params=*/kKeystoreKeyParams);
+
+  // Call SetKeystoreKeys() after MergeSyncData() to trigger decryption upon
+  // receiving keystore keys.
+  ASSERT_THAT(bridge()->MergeSyncData(std::move(entity_data)),
+              Eq(base::nullopt));
+
+  EXPECT_CALL(*processor(), ReportError(_));
+  EXPECT_FALSE(bridge()->SetKeystoreKeys({kRawKeystoreKey}));
 }
 
 TEST_F(NigoriSyncBridgeImplTest, ShouldClearDataWhenSyncDisabled) {

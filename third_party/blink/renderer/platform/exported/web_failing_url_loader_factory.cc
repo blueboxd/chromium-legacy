@@ -46,7 +46,7 @@ class FailingLoader final : public WebURLLoader {
       int64_t& encoded_data_length,
       int64_t& encoded_body_length,
       WebBlobInfo& downloaded_blob) override {
-    error = ResourceError::Failure(KURL(request->url));
+    error = WebURLError(ResourceError::Failure(KURL(request->url)));
   }
   void LoadAsynchronously(
       std::unique_ptr<network::ResourceRequest> request,
@@ -67,7 +67,7 @@ class FailingLoader final : public WebURLLoader {
 
  private:
   void Fail(const KURL& url, WebURLLoaderClient* client) {
-    client->DidFail(ResourceError::Failure(url), 0, 0, 0);
+    client->DidFail(WebURLError(ResourceError::Failure(url)), 0, 0, 0);
   }
 
   const std::unique_ptr<scheduler::WebResourceLoadingTaskRunnerHandle>

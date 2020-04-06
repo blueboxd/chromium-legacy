@@ -185,6 +185,9 @@ public class NewTabPageTest {
         mFakebox = mNtp.getView().findViewById(R.id.search_box);
         mTileGridLayout = mNtp.getView().findViewById(R.id.tile_grid_layout);
         Assert.assertEquals(mSiteSuggestions.size(), mTileGridLayout.getChildCount());
+
+        // TODO(crbug.com/1068294): Remove the following line if this general issue is fixed.
+        mRenderTestRule.setPixelDiffThreshold(10);
     }
 
     @After

@@ -327,15 +327,17 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
                     .get())));
   }
 
-  // Forward both full-sync and transport-only modes to the same delegate,
-  // since behavior for USER_CONSENTS does not differ (they are always
-  // persisted).
-  controllers.push_back(std::make_unique<ModelTypeController>(
-      syncer::USER_CONSENTS,
-      /*delegate_for_full_sync_mode=*/
-      CreateForwardingControllerDelegate(syncer::USER_CONSENTS),
-      /*delegate_for_transport_mode=*/
-      CreateForwardingControllerDelegate(syncer::USER_CONSENTS)));
+  if (!disabled_types.Has(syncer::USER_CONSENTS)) {
+    // Forward both full-sync and transport-only modes to the same delegate,
+    // since behavior for USER_CONSENTS does not differ (they are always
+    // persisted).
+    controllers.push_back(std::make_unique<ModelTypeController>(
+        syncer::USER_CONSENTS,
+        /*delegate_for_full_sync_mode=*/
+        CreateForwardingControllerDelegate(syncer::USER_CONSENTS),
+        /*delegate_for_transport_mode=*/
+        CreateForwardingControllerDelegate(syncer::USER_CONSENTS)));
+  }
 
   return controllers;
 }

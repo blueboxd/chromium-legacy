@@ -128,6 +128,7 @@
 <translation id="6096348254544841612">Приспособете го и контролирајте го Chromium. Достапно е ажурирање.</translation>
 <translation id="6120345080069858279">Chromium ќе ја зачува лозинкава во вашата сметка на Google. Не мора да ја запомните.</translation>
 <translation id="6129621093834146363">Датотеката <ph name="FILE_NAME" /> е опасна, па затоа Chromium ја блокираше.</translation>
+<translation id="6134968993075716475">„Безбедното прелистување“ е исклучено. Chromium препорачува да го вклучите.</translation>
 <translation id="6212496753309875659">Овој компјутер веќе има најнова верзија на Chromium. Доколку софтверот не работи, деинсталирајте го Chromium и обидете се повторно.</translation>
 <translation id="6219195342503754812">{0,plural, =0{Chromium ќе се рестартира сега}=1{Chromium ќе се рестартира по 1 секунда}one{Chromium ќе се рестартира по # секунда}other{Chromium ќе се рестартира по # секунди}}</translation>
 <translation id="6248213926982192922">Постави го Chromium за стандарден прелистувач</translation>

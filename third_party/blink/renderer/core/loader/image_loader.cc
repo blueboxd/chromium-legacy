@@ -381,7 +381,7 @@ static void ConfigureRequest(
 
   auto* html_image_element = DynamicTo<HTMLImageElement>(element);
   if (client_hints_preferences.ShouldSend(
-          mojom::WebClientHintsType::kResourceWidth) &&
+          network::mojom::WebClientHintsType::kResourceWidth) &&
       html_image_element)
     params.SetResourceWidth(html_image_element->GetResourceWidth());
 }

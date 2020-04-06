@@ -23,6 +23,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/branding_buildflags.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_database_helper.h"
@@ -634,8 +635,18 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
       std::vector<const char*>{"b", "d"}, {false, true});
 }
 
+// Disable the test as it's flaky on Win7 dbg.
+// crbug.com/1068185
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_RendererDebugURL_NoLeakedThrottlePtrs \
+  DISABLED_RendererDebugURL_NoLeakedThrottlePtrs
+#else
+#define MAYBE_RendererDebugURL_NoLeakedThrottlePtrs \
+  RendererDebugURL_NoLeakedThrottlePtrs
+#endif
+
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
-                       RendererDebugURL_NoLeakedThrottlePtrs) {
+                       MAYBE_RendererDebugURL_NoLeakedThrottlePtrs) {
   // Allow crashes caused by the navigation to kChromeUICrashURL below.
   content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes(
       browser()->tab_strip_model()->GetActiveWebContents());

@@ -1784,10 +1784,10 @@
     Help improve security on the web for everyone
   </message>
   <message name="IDS_SETTINGS_SAFEBROWSING_NONE" desc="Label for safe browsing no protection mode">
-    No protection
+    No protection (not recommended)
   </message>
   <message name="IDS_SETTINGS_SAFEBROWSING_NONE_DESC" desc="Description for safe browsing no protection mode">
-    Does not protect you against dangerous websites, downloads, and extensions (not recommended). You’ll still get Safe Browsing protection, where available, in other Google services, like Gmail and Search.
+    Does not protect you against dangerous websites, downloads, and extensions. You’ll still get Safe Browsing protection, where available, in other Google services, like Gmail and Search.
   </message>
   <message name="IDS_SETTINGS_ENABLE_DO_NOT_TRACK" desc="The label of the checkbox to enable/disable sending the 'Do Not track' header">
     Send a "Do Not Track" request with your browsing traffic

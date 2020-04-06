@@ -42,9 +42,11 @@ class CastContentWindowAndroid : public CastContentWindow {
   // Called through JNI.
   void OnActivityStopped(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& jcaller);
-  bool ConsumeGesture(JNIEnv* env,
-                      const base::android::JavaParamRef<jobject>& jcaller,
-                      int gesture_type);
+  void ConsumeGesture(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller,
+      int gesture_type,
+      const base::android::JavaParamRef<jobject>& handled_callback);
   void OnVisibilityChange(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& jcaller,
                           int visibility_type);

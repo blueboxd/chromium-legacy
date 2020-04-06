@@ -94,13 +94,23 @@ public class FeedListContentManager implements ListContentManager {
     }
 
     /**
+     * Returns the content at the specified position.
+     *
+     * @param index The index at which to get the content.
+     * @return The content.
+     */
+    public FeedContent getContent(int index) {
+        return mFeedContentList.get(index);
+    }
+
+    /**
      * Adds a list of the contents, starting at the specified position.
      *
      * @param index The index at which to insert the first content from the specified collection.
      * @param contents The collection containing contents to be added.
      */
     public void addContents(int index, List<FeedContent> contents) {
-        assert index >= 0 && index < mFeedContentList.size();
+        assert index >= 0 && index <= mFeedContentList.size();
         mFeedContentList.addAll(index, contents);
         for (ListContentManagerObserver observer : mObservers) {
             observer.onItemRangeInserted(index, contents.size());
@@ -115,10 +125,10 @@ public class FeedListContentManager implements ListContentManager {
      */
     public void removeContents(int index, int count) {
         assert index >= 0 && index < mFeedContentList.size();
-        assert index + count < mFeedContentList.size();
+        assert index + count <= mFeedContentList.size();
         mFeedContentList.subList(index, index + count).clear();
         for (ListContentManagerObserver observer : mObservers) {
-            observer.onItemRangeInserted(index, count);
+            observer.onItemRangeRemoved(index, count);
         }
     }
 
@@ -130,7 +140,7 @@ public class FeedListContentManager implements ListContentManager {
      */
     public void updateContents(int index, List<FeedContent> contents) {
         assert index >= 0 && index < mFeedContentList.size();
-        assert index + contents.size() < mFeedContentList.size();
+        assert index + contents.size() <= mFeedContentList.size();
         int pos = index;
         for (FeedContent content : contents) {
             mFeedContentList.set(pos++, content);
@@ -146,7 +156,7 @@ public class FeedListContentManager implements ListContentManager {
      * @param curIndex The index of the content to be moved.
      * @param newIndex The new index where the content is being moved to.
      */
-    public void moveContents(int curIndex, int newIndex) {
+    public void moveContent(int curIndex, int newIndex) {
         assert curIndex >= 0 && curIndex < mFeedContentList.size();
         assert newIndex >= 0 && newIndex < mFeedContentList.size();
         int lowIndex;

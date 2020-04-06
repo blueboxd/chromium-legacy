@@ -184,6 +184,8 @@ struct ASH_PUBLIC_EXPORT LocaleItem {
   LocaleItem& operator=(const LocaleItem& other);
   LocaleItem& operator=(LocaleItem&& other);
 
+  bool operator==(const LocaleItem& other) const;
+
   // Language code of the locale.
   std::string language_code;
 

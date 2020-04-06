@@ -255,9 +255,9 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
             WebappActivity webappActivity = (WebappActivity) mActivity;
 
             // Create an Intent that will be fired toward the WebappLauncherActivity, which in turn
-            // will fire an Intent to launch the correct WebappActivity or WebApkActivity. On L+
-            // this could probably be changed to call AppTask.moveToFront(), but for backwards
-            // compatibility we relaunch it the hard way.
+            // will fire an Intent to launch the correct WebappActivity. On L+ this could probably
+            // be changed to call AppTask.moveToFront(), but for backwards compatibility we relaunch
+            // it the hard way.
             String startUrl = webappActivity.getWebappInfo().url();
 
             WebappInfo webappInfo = webappActivity.getWebappInfo();

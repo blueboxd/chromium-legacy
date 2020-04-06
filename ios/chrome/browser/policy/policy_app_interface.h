@@ -14,11 +14,9 @@
 // namespace.
 + (NSString*)valueForPlatformPolicy:(NSString*)policyKey;
 
-// Sets the |SearchSuggestEnabled| policy to the given value.
-// TODO(crbug.com/1024115): This should be replaced with a more generic API that
-// can set arbitrarily complex policy data. This suggest-specific API only
-// exists to allow us to write an example policy EG2 test.
-+ (void)setSuggestPolicyEnabled:(BOOL)enabled;
+// Sets the value of the policy with the |policyKey| key to the given value. The
+// value must be serialized to JSON.
++ (void)setPolicyValue:(NSString*)jsonValue forKey:(NSString*)policyKey;
 
 @end
 

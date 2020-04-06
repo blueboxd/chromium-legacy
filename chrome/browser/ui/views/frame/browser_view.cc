@@ -794,6 +794,7 @@ void BrowserView::Show() {
 
   MaybeShowInvertBubbleView(this);
 
+#if !defined(OS_ANDROID)
   // If the kLiveCaption feature is enabled, create and show a caption bubble.
   // This is temporary while the feature is in early development. Soon, a
   // CaptionController will be introduced which will conditionally create and
@@ -801,6 +802,7 @@ void BrowserView::Show() {
   // enabled.
   if (base::FeatureList::IsEnabled(media::kLiveCaption))
     captions::CaptionBubble::CreateAndShow(contents_web_view_);
+#endif
 }
 
 void BrowserView::ShowInactive() {

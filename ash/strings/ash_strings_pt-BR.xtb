@@ -105,6 +105,7 @@
 <translation id="2268813581635650749">Desconectar todos</translation>
 <translation id="2277103315734023688">Avançar</translation>
 <translation id="2292698582925480719">Escala de exibição</translation>
+<translation id="2295777434187870477">O microfone está ativado. Alterná-lo silenciará a entrada.</translation>
 <translation id="2298170939937364391">Lupa de tela cheia ativada. Pressione Ctrl+Pesquisa+M novamente para desativá-la.</translation>
 <translation id="2302092602801625023">Esta conta é gerenciada pelo Family Link</translation>
 <translation id="2303600792989757991">Visão geral da janela de alternância</translation>
@@ -138,6 +139,7 @@
 <translation id="2658778018866295321">Clicar e arrastar</translation>
 <translation id="2700493154570097719">Configurar teclado</translation>
 <translation id="2704781753052663061">Conectar-se a outras redes Wi-Fi</translation>
+<translation id="2705001408393684014">Alternar microfone. <ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">Modo noturno</translation>
 <translation id="2727977024730340865">Conectado a um carregador de baixa potência. O carregamento da bateria pode não ser confiável.</translation>
 <translation id="2792498699870441125">Alt + Pesquisar</translation>
@@ -296,6 +298,7 @@
 <translation id="4665114317261903604">Alternar "Não perturbe". <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Desbloquear dispositivo usando o código de pai/mãe</translation>
 <translation id="4702647871202761252">A tela de privacidade está desativada</translation>
+<translation id="4705716602320768426">Feedback do arquivo</translation>
 <translation id="4710243778082831592">Configurações do IME</translation>
 <translation id="4731797938093519117">Acesso de pai/mãe</translation>
 <translation id="4734965478015604180">Horizontal</translation>
@@ -376,6 +379,7 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Ativado</translation>
+<translation id="5920710855273935292">O microfone está desativado.</translation>
 <translation id="5947494881799873997">Reverter</translation>
 <translation id="595202126637698455">Rastreamento de desempenho ativado</translation>
 <translation id="5957083217255311415">Os dados móveis estão desativados.</translation>

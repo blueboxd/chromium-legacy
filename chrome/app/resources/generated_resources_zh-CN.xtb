@@ -799,7 +799,7 @@
 <translation id="2082187087049518845">为标签页建组</translation>
 <translation id="2087822576218954668">打印：<ph name="PRINT_NAME" /></translation>
 <translation id="2088690981887365033">VPN 网络</translation>
-<translation id="208928984520943006">要转到主屏幕时，可以从屏幕底部向上滑动。</translation>
+<translation id="208928984520943006">从屏幕底部向上滑动即可随时回到主屏幕。</translation>
 <translation id="2089566709556890888">使用 Google Chrome 进行安全浏览</translation>
 <translation id="2089795179672254991">当网站想查看复制到剪贴板的文字和图片时询问您（推荐）</translation>
 <translation id="2090165459409185032">要恢复您的帐号信息，请访问 google.com/accounts/recovery</translation>
@@ -1806,7 +1806,7 @@
 <translation id="3424969259347320884">请说明此标签页崩溃时您在做什么</translation>
 <translation id="3427092606871434483">允许（默认）</translation>
 <translation id="3428419049384081277">您已登录！</translation>
-<translation id="3428747202529429621">登录后，可保护您在 Chrome 中免受安全威胁的侵害，并可提高您在其他 Google 应用中的安全性</translation>
+<translation id="3428747202529429621">保护您在 Chrome 中免受安全威胁，登录状态下还可让您更安全地使用其他 Google 应用</translation>
 <translation id="3429275422858276529">为此网页添加书签，以便日后查找</translation>
 <translation id="3432227430032737297">移除显示的所有 Cookie</translation>
 <translation id="3432757130254800023">向本地网络上的显示屏发送音频和视频</translation>
@@ -1866,7 +1866,7 @@
 <translation id="3492788708641132712">无法同步。请尝试重新登录。</translation>
 <translation id="3493486281776271508">需要互联网连接</translation>
 <translation id="3493881266323043047">有效期</translation>
-<translation id="3494155060718700400">不保护您免受危险网站、下载内容和扩展程序的侵害（不推荐）。您仍能在 Gmail 和 Google 搜索等其他 Google 服务中获得安全浏览保护（若有）。</translation>
+<translation id="3494155060718700400">不保护您免受危险网站、下载内容和扩展程序的侵害（不推荐）。在 Gmail 和 Google 搜索等其他 Google 服务中，若安全浏览保护可用，您仍将获得该保护。</translation>
 <translation id="3494769164076977169">当网站下载第一个文件后要自动下载更多文件时询问您（推荐）</translation>
 <translation id="3495660573538963482">Google 助理设置</translation>
 <translation id="3496213124478423963">缩小</translation>
@@ -6136,7 +6136,7 @@
 <translation id="957960681186851048">此网站试图自动下载多个文件</translation>
 <translation id="9580706199804957">无法连接到 Google 服务</translation>
 <translation id="960719561871045870">运营商代码</translation>
-<translation id="96080156868846968">正被扫描</translation>
+<translation id="96080156868846968">正在扫描</translation>
 <translation id="960987915827980018">约剩 1 小时</translation>
 <translation id="962802172452141067">书签文件夹树</translation>
 <translation id="964057662886721376">某些扩展程序可能会拖慢 Chrome 的运行速度 - 尤其是您原本没打算安装的那些扩展程序。</translation>

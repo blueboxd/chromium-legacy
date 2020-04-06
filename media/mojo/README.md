@@ -62,10 +62,8 @@ specify which remote media components you want to enable. For example, with the
 following gn arguments, the media pipeline will enable `MojoRenderer` and
 `MojoCdm`:
 ```
-enable_mojo_media = true
 mojo_media_services = ["renderer", "cdm"]
 ```
-Note that you must set `enable_mojo_media` first.
 
 ### Media Mojo Interface Factory
 

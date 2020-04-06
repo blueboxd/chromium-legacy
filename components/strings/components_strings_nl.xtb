@@ -863,7 +863,7 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="4731967714531604179">Prc2 (envelop)</translation>
 <translation id="4733082559415072992"><ph name="URL" /> wil de locatie van je apparaat gebruiken</translation>
 <translation id="4736825316280949806">Chromium opnieuw starten</translation>
-<translation id="4737121147659370456">Je beheerder heeft Chrome Enterprise-connectors voor je browser ingeschakeld. Deze connectors hebben toegang tot sommige van je gegevens</translation>
+<translation id="4737121147659370456">Je beheerder heeft Chrome Enterprise-connectors voor je browser ingeschakeld. Deze connectors hebben toegang tot sommige van je gegevens.</translation>
 <translation id="473775607612524610">Updaten</translation>
 <translation id="4738601419177586157">Zoeksuggestie: <ph name="TEXT" /></translation>
 <translation id="4742407542027196863">Wachtwoorden beheren…</translation>
@@ -1722,7 +1722,7 @@ Aanvullende informatie:
 <translation id="8371889962595521444">Custom rootcertificaten</translation>
 <translation id="8380941800586852976">Gevaarlijk</translation>
 <translation id="8381674639488873545">Deze kosten kunnen eenmalig of terugkerend zijn en zijn mogelijk niet duidelijk aangegeven. <ph name="BEGIN_LINK" />Toch weergeven<ph name="END_LINK" /></translation>
-<translation id="8405166164747488837"><ph name="ENROLLMENT_DOMAIN" /> heeft Chrome Enterprise-connectors voor je browser ingesteld. Deze connectors hebben toegang tot sommige van je gegevens</translation>
+<translation id="8405166164747488837"><ph name="ENROLLMENT_DOMAIN" /> heeft Chrome Enterprise-connectors voor je browser ingesteld. Deze connectors hebben toegang tot sommige van je gegevens.</translation>
 <translation id="8412145213513410671">Crashes (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Je moet twee keer dezelfde wachtwoordzin opgeven.</translation>
 <translation id="8416694386774425977">De netwerkconfiguratie is ongeldig en kan niet worden geïmporteerd.

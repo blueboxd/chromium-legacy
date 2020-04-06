@@ -105,6 +105,7 @@
 <translation id="2268813581635650749">Odjavi sve</translation>
 <translation id="2277103315734023688">Premotaj unapred</translation>
 <translation id="2292698582925480719">Razmera prikaza</translation>
+<translation id="2295777434187870477">Mikrofon je uključen. Možete da ga isključite pomeranjem prekidača.</translation>
 <translation id="2298170939937364391">Lupa za ceo ekran je omogućena. Ponovo pritisnite Ctrl + taster za pretragu + M da biste je isključili.</translation>
 <translation id="2302092602801625023">Ovim nalogom upravlja Family Link</translation>
 <translation id="2303600792989757991">Uključi/isključi pregled prozora</translation>
@@ -138,6 +139,7 @@
 <translation id="2658778018866295321">Kliknite i prevucite</translation>
 <translation id="2700493154570097719">Podesite tastaturu</translation>
 <translation id="2704781753052663061">Pridruži se drugim Wi-Fi mrežama</translation>
+<translation id="2705001408393684014">Uključite/isključite mikrofon. <ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">Noćno svetlo</translation>
 <translation id="2727977024730340865">Uređaj je uključen u punjač male snage. Punjenje baterije možda neće biti pouzdano.</translation>
 <translation id="2792498699870441125">Alt + taster za pretragu</translation>
@@ -296,6 +298,7 @@
 <translation id="4665114317261903604">Uključite/isključite režim Ne uznemiravaj. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Otključajte uređaj pomoću koda roditelja</translation>
 <translation id="4702647871202761252">Ekran za privatnost je isključen</translation>
+<translation id="4705716602320768426">Pošaljite povratne informacije</translation>
 <translation id="4710243778082831592">Podešavanja IME-a</translation>
 <translation id="4731797938093519117">Roditeljski pristup</translation>
 <translation id="4734965478015604180">Horizontalno</translation>
@@ -376,6 +379,7 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Uključeno</translation>
+<translation id="5920710855273935292">Mikrofon je isključen.</translation>
 <translation id="5947494881799873997">Vrati</translation>
 <translation id="595202126637698455">Praćenje učinka je omogućeno</translation>
 <translation id="5957083217255311415">Mobilni podaci su isključeni.</translation>

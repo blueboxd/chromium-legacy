@@ -13,6 +13,7 @@
 #include "components/feed/core/v2/feed_network.h"
 #include "components/feed/core/v2/tasks/load_stream_from_store_task.h"
 #include "components/offline_pages/task/task.h"
+#include "components/version_info/channel.h"
 
 namespace feed {
 class FeedStream;

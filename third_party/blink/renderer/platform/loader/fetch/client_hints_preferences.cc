@@ -15,15 +15,18 @@
 namespace blink {
 
 ClientHintsPreferences::ClientHintsPreferences() {
-  DCHECK_EQ(static_cast<size_t>(mojom::WebClientHintsType::kMaxValue) + 1,
-            kClientHintsMappingsCount);
+  DCHECK_EQ(
+      static_cast<size_t>(network::mojom::WebClientHintsType::kMaxValue) + 1,
+      kClientHintsMappingsCount);
 }
 
 void ClientHintsPreferences::UpdateFrom(
     const ClientHintsPreferences& preferences) {
   for (size_t i = 0;
-       i < static_cast<int>(mojom::WebClientHintsType::kMaxValue) + 1; ++i) {
-    mojom::WebClientHintsType type = static_cast<mojom::WebClientHintsType>(i);
+       i < static_cast<int>(network::mojom::WebClientHintsType::kMaxValue) + 1;
+       ++i) {
+    network::mojom::WebClientHintsType type =
+        static_cast<network::mojom::WebClientHintsType>(i);
     enabled_hints_.SetIsEnabled(type, preferences.ShouldSend(type));
   }
 }
@@ -47,7 +50,7 @@ void ClientHintsPreferences::UpdateFromAcceptClientHintsHeader(
     return;
 
   // Note: .Ascii() would convert tab to ?, which is undesirable.
-  base::Optional<std::vector<blink::mojom::WebClientHintsType>> parsed_ch =
+  base::Optional<std::vector<network::mojom::WebClientHintsType>> parsed_ch =
       ParseAcceptCH(header_value.Latin1(),
                     RuntimeEnabledFeatures::LangClientHintHeaderEnabled(),
                     RuntimeEnabledFeatures::UserAgentClientHintEnabled());
@@ -55,14 +58,16 @@ void ClientHintsPreferences::UpdateFromAcceptClientHintsHeader(
     return;
 
   // Note: this keeps previously enabled hints.
-  for (blink::mojom::WebClientHintsType newly_enabled : parsed_ch.value())
+  for (network::mojom::WebClientHintsType newly_enabled : parsed_ch.value())
     enabled_hints_.SetIsEnabled(newly_enabled, true);
 
   if (context) {
     for (size_t i = 0;
-         i < static_cast<int>(mojom::WebClientHintsType::kMaxValue) + 1; ++i) {
-      mojom::WebClientHintsType type =
-          static_cast<mojom::WebClientHintsType>(i);
+         i <
+         static_cast<int>(network::mojom::WebClientHintsType::kMaxValue) + 1;
+         ++i) {
+      network::mojom::WebClientHintsType type =
+          static_cast<network::mojom::WebClientHintsType>(i);
       if (enabled_hints_.IsEnabled(type))
         context->CountClientHints(type);
     }

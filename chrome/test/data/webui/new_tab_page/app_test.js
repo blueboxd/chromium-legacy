@@ -129,7 +129,8 @@ suite('NewTabPageAppTest', () => {
     assertNotStyle(app.$.backgroundImage, 'display', 'none');
     assertNotStyle(app.$.backgroundGradient, 'display', 'none');
     assertNotStyle(app.$.backgroundImageAttribution, 'text-shadow', 'none');
-    assertEquals(app.$.backgroundImage.path, 'image?https://img.png');
+    assertEquals(
+        app.$.backgroundImage.path, 'background_image?https://img.png');
     assertFalse(app.$.logo.doodleAllowed);
   });
 

@@ -89,15 +89,10 @@ crbug.com/735483 conformance2/rendering/texture-switch-performance.html [ Skip ]
 # TODO(crbug.com/979444): once this is passing on the passthrough
 # command decoder on Android, simplify this expectation to just not
 # declare any OS.
-# TODO(crbug.com/1026468): simplify "win" condition
-# if [ win intel opengl passthrough ] [ Failure ] suppression is lifted.
 crbug.com/979444 [ chromeos ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 crbug.com/979444 [ linux ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 crbug.com/979444 [ mac no-asan ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
-crbug.com/979444 [ win nvidia ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
-crbug.com/979444 [ win amd ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
-crbug.com/979444 [ win intel d3d11 ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
-crbug.com/979444 [ win intel opengl no-passthrough ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+crbug.com/979444 [ win ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 crbug.com/979444 [ android no-angle ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 
 # Nvidia bugs fixed in latest driver
@@ -152,22 +147,6 @@ crbug.com/907195 [ opengl win passthrough intel intel_lt_25.20.100.6444 ] confor
 
 # TODO(crbug.com/1000354): Remove when angle workaround is applied to win opengles
 crbug.com/1000354 [ win opengles ] conformance2/extensions/ext-texture-norm16.html [ Skip ]
-
-# Flaky failure in IDirect3D9Ex::CreateDeviceEx
-# during DXVAVideoDecodeAccelerator::Initialize on 26.20.100.7323 driver
-# When it fails, it's all 3 retires, thus "Failure" expectation
-crbug.com/1026468 [ win intel opengl passthrough ] conformance/extensions/oes-texture-float-with-video.html [ Failure ]
-crbug.com/1026468 [ win intel opengl passthrough ] conformance/extensions/oes-texture-half-float-with-video.html [ Failure ]
-crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/image_bitmap_from_video/* [ Failure ]
-crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/misc/tex-video-using-tex-unit-non-zero.html [ Failure ]
-crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/misc/texture-corner-case-videos.html [ Failure ]
-crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/misc/texture-upload-size.html [ Failure ]
-crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/video/* [ Failure ]
-crbug.com/1026468 [ win intel opengl passthrough ] conformance2/textures/image_bitmap_from_video/* [ Failure ]
-crbug.com/1026468 [ win intel opengl passthrough ] conformance2/textures/misc/npot-video-sizing.html [ Failure ]
-crbug.com/1026468 [ win intel opengl passthrough ] conformance2/textures/misc/tex-image-with-bad-args-from-dom-elements.html [ Failure ]
-crbug.com/1026468 [ win intel opengl passthrough ] conformance2/textures/video/* [ Failure ]
-crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/misc/texture-npot-video.html [ Failure ]
 
 # Windows only.
 crbug.com/736926 [ win ] conformance2/textures/svg_image/tex-2d-rgb565-rgb-unsigned_short_5_6_5.html [ RetryOnFailure ]

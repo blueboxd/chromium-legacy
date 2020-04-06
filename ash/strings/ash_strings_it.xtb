@@ -105,6 +105,7 @@
 <translation id="2268813581635650749">Disconnetti tutti</translation>
 <translation id="2277103315734023688">Vai avanti</translation>
 <translation id="2292698582925480719">Scala di visualizzazione</translation>
+<translation id="2295777434187870477">L'audio del microfono è attivo: la disattivazione impedirà l'ingresso audio.</translation>
 <translation id="2298170939937364391">Ingrandimento a schermo intero attivato. Premi di nuovo CTRL + tasto per la ricerca + M per disattivarlo.</translation>
 <translation id="2302092602801625023">Questo account è gestito da Family Link</translation>
 <translation id="2303600792989757991">Attiva/disattiva panoramica finestra</translation>
@@ -138,6 +139,7 @@
 <translation id="2658778018866295321">Fai clic e trascina</translation>
 <translation id="2700493154570097719">Imposta la tastiera</translation>
 <translation id="2704781753052663061">Visualizza altre reti Wi-Fi</translation>
+<translation id="2705001408393684014">Attiva/disattiva il microfono. <ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">Luminosità notturna</translation>
 <translation id="2727977024730340865">Collegato a un caricabatterie a basso consumo. La carica della batteria potrebbe non essere affidabile.</translation>
 <translation id="2792498699870441125">Alt+tasto per la ricerca</translation>
@@ -297,6 +299,7 @@
 <translation id="4665114317261903604">Attiva/disattiva Non disturbare. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Sblocca con codice genitore</translation>
 <translation id="4702647871202761252">Schermata sulla privacy non attiva</translation>
+<translation id="4705716602320768426">Invia feedback</translation>
 <translation id="4710243778082831592">Impostazioni IME</translation>
 <translation id="4731797938093519117">Accesso genitore</translation>
 <translation id="4734965478015604180">Orizzontale</translation>
@@ -377,6 +380,7 @@
 <translation id="5901316534475909376">MAIUSC+ESC</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">On</translation>
+<translation id="5920710855273935292">L'audio del microfono è disattivato.</translation>
 <translation id="5947494881799873997">Ripristina</translation>
 <translation id="595202126637698455">Rilevamento del rendimento attivo</translation>
 <translation id="5957083217255311415">I dati mobili non sono attivi.</translation>

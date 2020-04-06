@@ -599,6 +599,20 @@ void ChromePasswordManagerClient::TriggerReauthForAccount(
 #endif  // defined(OS_ANDROID)
 }
 
+void ChromePasswordManagerClient::TriggerSignIn() {
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  Browser* browser = chrome::FindBrowserWithProfile(profile_);
+  if (!browser)
+    return;
+  if (SigninViewController* signin_controller =
+          browser->signin_view_controller()) {
+    signin_controller->ShowDiceAddAccountTab(
+        signin_metrics::AccessPoint::ACCESS_POINT_AUTOFILL_DROPDOWN,
+        std::string());
+  }
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+}
+
 bool ChromePasswordManagerClient::IsIsolationForPasswordSitesEnabled() const {
   // TODO(crbug.com/862989): Move the following function (and the feature) to
   // the password component. Then remove IsIsolationForPasswordsSitesEnabled()

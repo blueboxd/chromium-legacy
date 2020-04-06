@@ -62,7 +62,8 @@ void CalculatePopupYAndHeight(int popup_preferred_height,
   popup_bounds->set_height(popup_preferred_height);
   popup_bounds->set_y(top_growth_end);
 
-  if (bottom_available >= top_available) {
+  if (bottom_available >= popup_preferred_height ||
+      bottom_available >= top_available) {
     popup_bounds->AdjustToFit(
         gfx::Rect(popup_bounds->x(), element_bounds.bottom(),
                   popup_bounds->width(), bottom_available));

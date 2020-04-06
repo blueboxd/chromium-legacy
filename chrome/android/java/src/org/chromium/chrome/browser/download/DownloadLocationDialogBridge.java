@@ -166,7 +166,9 @@ public class DownloadLocationDialogBridge implements ModalDialogProperties.Contr
                 if (totalBytes > 0) {
                     StringBuilder stringBuilder = new StringBuilder(title);
                     stringBuilder.append(" ");
-                    stringBuilder.append(DownloadUtils.getStringForBytes(mContext, totalBytes));
+                    stringBuilder.append(
+                            org.chromium.components.browser_ui.util.DownloadUtils.getStringForBytes(
+                                    mContext, totalBytes));
                     title = stringBuilder.toString();
                 }
                 return title;

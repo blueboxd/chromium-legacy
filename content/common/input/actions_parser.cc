@@ -17,7 +17,7 @@ namespace content {
 namespace {
 
 SyntheticPointerActionParams::PointerActionType ToSyntheticPointerActionType(
-    std::string action_type) {
+    const std::string& action_type) {
   if (action_type == "pointerDown")
     return SyntheticPointerActionParams::PointerActionType::PRESS;
   if (action_type == "pointerMove")
@@ -32,15 +32,14 @@ SyntheticPointerActionParams::PointerActionType ToSyntheticPointerActionType(
 }
 
 SyntheticGestureParams::GestureSourceType ToSyntheticGestureSourceType(
-    std::string pointer_type) {
+    const std::string& pointer_type) {
   if (pointer_type == "touch")
     return SyntheticGestureParams::TOUCH_INPUT;
   else if (pointer_type == "mouse")
     return SyntheticGestureParams::MOUSE_INPUT;
   else if (pointer_type == "pen")
     return SyntheticGestureParams::PEN_INPUT;
-  else
-    return SyntheticGestureParams::DEFAULT_INPUT;
+  return SyntheticGestureParams::DEFAULT_INPUT;
 }
 
 SyntheticPointerActionParams::Button ToSyntheticMouseButton(int button) {
@@ -58,7 +57,7 @@ SyntheticPointerActionParams::Button ToSyntheticMouseButton(int button) {
   return SyntheticPointerActionParams::Button();
 }
 
-int ToKeyModifiers(std::string key) {
+int ToKeyModifiers(const std::string& key) {
   if (key == "Alt")
     return blink::WebInputEvent::kAltKey;
   if (key == "Control")

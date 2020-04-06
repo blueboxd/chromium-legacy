@@ -13,7 +13,6 @@ per-file .git-blame-ignore-revs=thakis@chromium.org
 per-file .gn=file://build/OWNERS
 per-file .vpython*=dpranke@chromium.org
 per-file .vpython*=iannucci@chromium.org
-per-file .vpython*=jbudorick@chromium.org
 per-file .yapfignore=*
 per-file AUTHORS=*
 per-file BUILD.gn=file://build/OWNERS

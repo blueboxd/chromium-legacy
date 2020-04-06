@@ -130,4 +130,8 @@ ProtocolVersion FidoAuthenticator::SupportedProtocol() const {
   return ProtocolVersion::kUnknown;
 }
 
+bool FidoAuthenticator::SupportsCredProtectExtension() const {
+  return Options() && Options()->supports_cred_protect;
+}
+
 }  // namespace device

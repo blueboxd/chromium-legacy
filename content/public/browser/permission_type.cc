@@ -82,21 +82,10 @@ base::Optional<PermissionType> PermissionDescriptorToPermissionType(
       return PermissionType::IDLE_DETECTION;
     case PermissionName::PERIODIC_BACKGROUND_SYNC:
       return PermissionType::PERIODIC_BACKGROUND_SYNC;
-    case PermissionName::WAKE_LOCK:
-      if (descriptor->extension && descriptor->extension->is_wake_lock()) {
-        switch (descriptor->extension->get_wake_lock()->type) {
-          case blink::mojom::WakeLockType::kScreen:
-            return PermissionType::WAKE_LOCK_SCREEN;
-            break;
-          case blink::mojom::WakeLockType::kSystem:
-            return PermissionType::WAKE_LOCK_SYSTEM;
-            break;
-          default:
-            NOTREACHED();
-            return base::nullopt;
-        }
-      }
-      break;
+    case PermissionName::SCREEN_WAKE_LOCK:
+      return PermissionType::WAKE_LOCK_SCREEN;
+    case PermissionName::SYSTEM_WAKE_LOCK:
+      return PermissionType::WAKE_LOCK_SYSTEM;
     case PermissionName::NFC:
       return PermissionType::NFC;
     case PermissionName::STORAGE_ACCESS:

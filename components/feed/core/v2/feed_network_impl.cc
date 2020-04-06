@@ -15,6 +15,7 @@
 #include "components/feed/core/proto/v2/wire/feed_query.pb.h"
 #include "components/feed/core/proto/v2/wire/request.pb.h"
 #include "components/feed/core/proto/v2/wire/response.pb.h"
+#include "components/feed/core/v2/metrics_reporter.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -61,9 +62,11 @@ struct FeedNetworkImpl::RawResponse {
 };
 
 namespace {
-template <typename RESULT>
+template <typename RESULT, NetworkRequestType REQUEST_TYPE>
 void ParseAndForwardResponse(base::OnceCallback<void(RESULT)> result_callback,
                              RawResponse raw_response) {
+  MetricsReporter::NetworkRequestComplete(REQUEST_TYPE,
+                                          raw_response.status_code);
   RESULT result;
   result.status_code = raw_response.status_code;
   if (result.status_code == 200) {
@@ -323,9 +326,6 @@ class FeedNetworkImpl::NetworkFetch {
     // RemoteSuggestionsFetcherImpl.
     UMA_HISTOGRAM_TIMES("NewTabPage.Snippets.FetchTime", loader_only_duration);
 
-    base::UmaHistogramSparse(
-        "ContentSuggestions.Feed.Network.RequestStatusCode", status_code);
-
     // The below is true even if there is a protocol error, so this will
     // record response size as long as the request completed.
     if (status_code >= 200) {
@@ -403,7 +403,8 @@ void FeedNetworkImpl::SendQueryRequest(
   AddMothershipPayloadQueryParams(/*is_post=*/false, binary_proto,
                                   delegate_->GetLanguageTag(), &url);
   Send(url, "GET", /*request_body=*/std::string(),
-       base::BindOnce(&ParseAndForwardResponse<QueryRequestResult>,
+       base::BindOnce(&ParseAndForwardResponse<QueryRequestResult,
+                                               NetworkRequestType::kFeedQuery>,
                       std::move(callback)));
 }
 
@@ -420,8 +421,10 @@ void FeedNetworkImpl::SendActionRequest(
                                   delegate_->GetLanguageTag(), &url);
 
   Send(url, "POST", std::move(binary_proto),
-       base::BindOnce(&ParseAndForwardResponse<ActionRequestResult>,
-                      std::move(callback)));
+       base::BindOnce(
+           &ParseAndForwardResponse<ActionRequestResult,
+                                    NetworkRequestType::kUploadActions>,
+           std::move(callback)));
 }
 
 void FeedNetworkImpl::CancelRequests() {

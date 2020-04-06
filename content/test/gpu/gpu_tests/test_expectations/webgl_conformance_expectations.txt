@@ -110,15 +110,10 @@ crbug.com/953120 [ passthrough ] conformance/programs/program-test.html [ Failur
 # TODO(crbug.com/979444): once this is passing on the passthrough
 # command decoder on Android, simplify this expectation to just not
 # declare any OS.
-# TODO(crbug.com/1026468): simplify "win" condition
-# if [ win intel opengl passthrough ] [ Failure ] suppression is lifted.
 crbug.com/979444 [ chromeos ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 crbug.com/979444 [ linux ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 crbug.com/979444 [ mac no-passthrough no-asan ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
-crbug.com/979444 [ win nvidia ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
-crbug.com/979444 [ win amd ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
-crbug.com/979444 [ win intel d3d11 ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
-crbug.com/979444 [ win intel opengl no-passthrough ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+crbug.com/979444 [ win ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 crbug.com/979444 [ android ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 
 # Win / AMD / Passthrough command decoder / D3D11
@@ -159,18 +154,6 @@ crbug.com/angleproject/2722 [ win intel vulkan passthrough intel_lt_26.20.100.73
 # WEBGL_video_texture implementation.
 crbug.com/907195 [ win intel opengl passthrough intel_lt_25.20.100.6444 ] conformance/ogles/GL/biuDepthRange/biuDepthRange_001_to_002.html [ Skip ]
 crbug.com/907195 [ win intel opengl passthrough intel_lt_25.20.100.6444 ] conformance/uniforms/no-over-optimization-on-uniform-array-09.html [ Skip ]
-
-# Flaky failure in IDirect3D9Ex::CreateDeviceEx
-# during DXVAVideoDecodeAccelerator::Initialize on 26.20.100.7323 driver
-# When it fails, it's all 3 retires, thus "Failure" expectation
-crbug.com/1026468 [ win intel opengl passthrough ] conformance/extensions/oes-texture-float-with-video.html [ Failure ]
-crbug.com/1026468 [ win intel opengl passthrough ] conformance/extensions/oes-texture-half-float-with-video.html [ Failure ]
-crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/image_bitmap_from_video/* [ Failure ]
-crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/misc/tex-video-using-tex-unit-non-zero.html [ Failure ]
-crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/misc/texture-corner-case-videos.html [ Failure ]
-crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/misc/texture-upload-size.html [ Failure ]
-crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/video/* [ Failure ]
-crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/misc/texture-npot-video.html [ Failure ]
 
 # TODO(kbr): re-enable suppression for same test below once fixed.
 crbug.com/angleproject/2103 [ win ] conformance/glsl/bugs/sampler-struct-function-arg.html [ Skip ]

@@ -58,8 +58,9 @@ static_assert(base::size(kClientHintsNameMapping) ==
 
 static_assert(
     base::size(kClientHintsNameMapping) ==
-        (static_cast<int>(mojom::WebClientHintsType::kMaxValue) + 1),
-    "Client Hint name table size must match mojom::WebClientHintsType range");
+        (static_cast<int>(network::mojom::WebClientHintsType::kMaxValue) + 1),
+    "Client Hint name table size must match network::mojom::WebClientHintsType "
+    "range");
 
 const char* const kWebEffectiveConnectionTypeMapping[] = {
     "4g" /* Unknown */, "4g" /* Offline */, "slow-2g" /* Slow 2G */,
@@ -77,15 +78,18 @@ struct ClientHintNameCompator {
   }
 };
 
-using DecodeMap = base::
-    flat_map<std::string, mojom::WebClientHintsType, ClientHintNameCompator>;
+using DecodeMap = base::flat_map<std::string,
+                                 network::mojom::WebClientHintsType,
+                                 ClientHintNameCompator>;
 
 DecodeMap MakeDecodeMap() {
   DecodeMap result;
   for (size_t i = 0;
-       i < static_cast<int>(mojom::WebClientHintsType::kMaxValue) + 1; ++i) {
-    result.insert(std::make_pair(kClientHintsNameMapping[i],
-                                 static_cast<mojom::WebClientHintsType>(i)));
+       i < static_cast<int>(network::mojom::WebClientHintsType::kMaxValue) + 1;
+       ++i) {
+    result.insert(
+        std::make_pair(kClientHintsNameMapping[i],
+                       static_cast<network::mojom::WebClientHintsType>(i)));
   }
   return result;
 }
@@ -111,7 +115,7 @@ std::string SerializeLangClientHint(const std::string& raw_language_list) {
   return result;
 }
 
-base::Optional<std::vector<blink::mojom::WebClientHintsType>> ParseAcceptCH(
+base::Optional<std::vector<network::mojom::WebClientHintsType>> ParseAcceptCH(
     const std::string& header,
     bool permit_lang_hints,
     bool permit_ua_hints) {
@@ -132,7 +136,7 @@ base::Optional<std::vector<blink::mojom::WebClientHintsType>> ParseAcceptCH(
       return base::nullopt;
   }
 
-  std::vector<blink::mojom::WebClientHintsType> result;
+  std::vector<network::mojom::WebClientHintsType> result;
 
   // Now convert those to actual hint enums.
   const DecodeMap& decode_map = GetDecodeMap();
@@ -141,20 +145,20 @@ base::Optional<std::vector<blink::mojom::WebClientHintsType>> ParseAcceptCH(
 
     auto iter = decode_map.find(token_value);
     if (iter != decode_map.end()) {
-      mojom::WebClientHintsType hint = iter->second;
+      network::mojom::WebClientHintsType hint = iter->second;
 
       // Some hints are supported only conditionally.
       switch (hint) {
-        case mojom::WebClientHintsType::kLang:
+        case network::mojom::WebClientHintsType::kLang:
           if (permit_lang_hints)
             result.push_back(hint);
           break;
-        case mojom::WebClientHintsType::kUA:
-        case mojom::WebClientHintsType::kUAArch:
-        case mojom::WebClientHintsType::kUAPlatform:
-        case mojom::WebClientHintsType::kUAModel:
-        case mojom::WebClientHintsType::kUAMobile:
-        case mojom::WebClientHintsType::kUAFullVersion:
+        case network::mojom::WebClientHintsType::kUA:
+        case network::mojom::WebClientHintsType::kUAArch:
+        case network::mojom::WebClientHintsType::kUAPlatform:
+        case network::mojom::WebClientHintsType::kUAModel:
+        case network::mojom::WebClientHintsType::kUAMobile:
+        case network::mojom::WebClientHintsType::kUAFullVersion:
           if (permit_ua_hints)
             result.push_back(hint);
           break;

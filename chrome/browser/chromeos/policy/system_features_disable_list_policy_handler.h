@@ -17,9 +17,9 @@ namespace policy {
 
 // A system feature that can be disabled by SystemFeaturesDisableList policy.
 enum SystemFeature {
-  CAMERA = 0,  // The camera chrome app on Chrome OS.
-  SETTINGS,    // The settings feature on Chrome OS. It includes also Chrome
-               // settings.
+  CAMERA = 0,        // The camera chrome app on Chrome OS.
+  BROWSER_SETTINGS,  // Browser settings.
+  OS_SETTINGS,       // The settings feature on Chrome OS.
 
   LAST_SYSTEM_FEATURE
 };

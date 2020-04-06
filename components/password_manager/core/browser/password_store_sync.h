@@ -149,6 +149,12 @@ class PasswordStoreSync {
   // Notifies observers that password store data may have been changed.
   virtual void NotifyLoginsChanged(const PasswordStoreChangeList& changes) = 0;
 
+  // Notifies the UI that some unsynced credentials will be deleted on sign-out
+  // in order to offer the user the option of saving them in the profile store.
+  // Should only be called for the account store.
+  virtual void NotifyUnsyncedCredentialsWillBeDeleted(
+      const std::vector<autofill::PasswordForm>& unsynced_credentials) = 0;
+
   // The methods below adds transaction support to the password store that's
   // required by sync to guarantee atomic writes of data and sync metadata.
   // TODO(crbug.com/902349): The introduction of the three functions below

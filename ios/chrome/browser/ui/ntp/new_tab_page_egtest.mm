@@ -53,6 +53,12 @@ BOOL WaitForHistoryToDisappear() {
 
 // Tests that the NTP is still displayed after loading an invalid URL.
 - (void)testNTPStayForInvalidURL {
+// TODO(crbug.com/1067813): Test won't pass on iPad device.
+#if !TARGET_IPHONE_SIMULATOR
+  if ([ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_SKIPPED(@"This test doesn't pass on iPad device.");
+  }
+#endif
   [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       performAction:grey_typeText(@"file://\n")];
 

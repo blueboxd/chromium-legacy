@@ -12,6 +12,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.UserManager;
 
+import androidx.browser.customtabs.CustomTabsIntent;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -35,14 +37,12 @@ import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.searchwidget.SearchActivity;
-import org.chromium.chrome.browser.webapps.WebApkActivity;
+import org.chromium.chrome.browser.webapps.WebappActivity;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
 import org.chromium.webapk.lib.client.WebApkValidator;
 import org.chromium.webapk.lib.common.WebApkConstants;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 import org.chromium.webapk.test.WebApkTestHelper;
-
-import androidx.browser.customtabs.CustomTabsIntent;
 
 /** JUnit tests for first run triggering code. */
 @RunWith(BaseRobolectricTestRunner.class)
@@ -178,7 +178,7 @@ public final class FirstRunIntegrationUnitTest {
     /**
      * Tests that when the first run experience is shown by a WebAPK that the WebAPK is launched
      * when the user finishes the first run experience. In the case where the WebAPK (as opposed
-     * to WebApkActivity) displays the splash screen this is necessary for correct behaviour when
+     * to WebappActivity) displays the splash screen this is necessary for correct behaviour when
      * the user taps the app icon and the WebAPK is still running.
      */
     @Test
@@ -237,7 +237,7 @@ public final class FirstRunIntegrationUnitTest {
         Robolectric.buildActivity(WebappLauncherActivity.class, intent).create();
 
         Intent launchedIntent = mShadowApplication.getNextStartedActivity();
-        Assert.assertTrue(checkIntentComponentClass(launchedIntent, WebApkActivity.class));
+        Assert.assertTrue(checkIntentComponentClass(launchedIntent, WebappActivity.class));
         buildActivityWithClassNameFromIntent(launchedIntent);
 
         // No FRE should have been launched.

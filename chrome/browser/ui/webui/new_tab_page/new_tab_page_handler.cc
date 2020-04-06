@@ -418,27 +418,46 @@ void NewTabPageHandler::OnLogoAvailable(
     return;
   }
   auto doodle = new_tab_page::mojom::Doodle::New();
-  switch (logo->metadata.type) {
-    case search_provider_logos::LogoType::SIMPLE:
-    case search_provider_logos::LogoType::ANIMATED: {
-      if (!logo->encoded_image) {
-        std::move(callback).Run(nullptr);
-        return;
-      }
-      std::string base64;
-      base::Base64Encode(logo->encoded_image->data(), &base64);
-      auto data_url =
-          base::StringPrintf("data:%s;base64,%s",
-                             logo->metadata.mime_type.c_str(), base64.c_str());
-      doodle->content = new_tab_page::mojom::DoodleContent::NewImage(data_url);
-    } break;
-    case search_provider_logos::LogoType::INTERACTIVE:
-      doodle->content = new_tab_page::mojom::DoodleContent::NewUrl(
-          logo->metadata.full_page_url);
-      break;
-    default:
+  if (logo->metadata.type == search_provider_logos::LogoType::SIMPLE ||
+      logo->metadata.type == search_provider_logos::LogoType::ANIMATED) {
+    if (!logo->encoded_image) {
       std::move(callback).Run(nullptr);
       return;
+    }
+    SkColor doodle_share_button_background_color;
+    if (logo->metadata.share_button_bg.size() != 7 ||
+        logo->metadata.share_button_bg[0] != '#' ||
+        !base::HexStringToUInt(logo->metadata.share_button_bg.substr(1),
+                               &doodle_share_button_background_color)) {
+      std::move(callback).Run(nullptr);
+      return;
+    }
+    auto image_doodle_content = new_tab_page::mojom::ImageDoodleContent::New();
+    std::string base64;
+    base::Base64Encode(logo->encoded_image->data(), &base64);
+    image_doodle_content->image_url = GURL(base::StringPrintf(
+        "data:%s;base64,%s", logo->metadata.mime_type.c_str(), base64.c_str()));
+    image_doodle_content->on_click_url = logo->metadata.on_click_url;
+    if (logo->metadata.type == search_provider_logos::LogoType::ANIMATED) {
+      image_doodle_content->animation_url = logo->metadata.animated_url;
+    }
+    image_doodle_content->share_button =
+        new_tab_page::mojom::DoodleShareButton::New();
+    image_doodle_content->share_button->x = logo->metadata.share_button_x;
+    image_doodle_content->share_button->y = logo->metadata.share_button_y;
+    image_doodle_content->share_button->icon_url = GURL(base::StringPrintf(
+        "data:image/png;base64,%s", logo->metadata.share_button_icon.c_str()));
+    image_doodle_content->share_button->background_color =
+        SkColorSetA(doodle_share_button_background_color, 255);
+    doodle->content = new_tab_page::mojom::DoodleContent::NewImageDoodle(
+        std::move(image_doodle_content));
+  } else if (logo->metadata.type ==
+             search_provider_logos::LogoType::INTERACTIVE) {
+    doodle->content = new_tab_page::mojom::DoodleContent::NewUrl(
+        logo->metadata.full_page_url);
+  } else {
+    std::move(callback).Run(nullptr);
+    return;
   }
   std::move(callback).Run(std::move(doodle));
 }

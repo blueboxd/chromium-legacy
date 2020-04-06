@@ -19,6 +19,10 @@ def _get_work_dir(*args, **kwargs):
 _get_work_dir.count = 0
 
 
+def _component_property_path(paths, dist_config):
+    return '$W/App Product.plist'
+
+
 def _productbuild_distribution_path(p, d, c):
     return '$W/App Product.dist'
 
@@ -29,6 +33,17 @@ def _create_pkgbuild_scripts(p, d):
 
 def _read_plist(p):
     return {'LSMinimumSystemVersion': '10.19.7'}
+
+
+def _write_plist(d, p):
+    _write_plist.contents = d
+
+
+_write_plist.contents = ''
+
+
+def _last_written_plist():
+    return _write_plist.contents
 
 
 def _read_file(p):
@@ -294,6 +309,27 @@ brand code is 'MOO'
 framework dir is 'App Product.app/Contents/Frameworks/Product Framework.framework'"""
         )
 
+    @mock.patch('signing.pipeline.plistlib.writePlist', _write_plist)
+    def test_component_property_path(self, **kwargs):
+        manager = mock.Mock()
+        for attr in kwargs:
+            manager.attach_mock(kwargs[attr], attr)
+
+        dist = model.Distribution()
+        dist_config = dist.to_config(test_config.TestConfig())
+        paths = self.paths.replace_work('$W')
+
+        self.assertEqual('$W/App Product.plist',
+                         pipeline._component_property_path(paths, dist_config))
+
+        self.assertEqual(_last_written_plist(), [{
+            'BundleOverwriteAction': 'upgrade',
+            'BundleIsVersionChecked': True,
+            'BundleHasStrictIdentifier': True,
+            'RootRelativeBundlePath': 'App Product.app',
+            'BundleIsRelocatable': False
+        }])
+
     @mock.patch('signing.commands.plistlib.readPlist', _read_plist)
     def test_productbuild_distribution_path(self, **kwargs):
         manager = mock.Mock()
@@ -358,6 +394,8 @@ framework dir is 'App Product.app/Contents/Frameworks/Product Framework.framewor
         self.assertEqual('AppProduct-99.0.9999.99',
                          kwargs['sign_part'].mock_calls[0][1][2].identifier)
 
+    @mock.patch('signing.pipeline._component_property_path',
+                _component_property_path)
     @mock.patch('signing.pipeline._productbuild_distribution_path',
                 _productbuild_distribution_path)
     @mock.patch('signing.pipeline._create_pkgbuild_scripts',
@@ -386,15 +424,21 @@ framework dir is 'App Product.app/Contents/Frameworks/Product Framework.framewor
         pkgbuild_args = run_commands[0][1][0]
         productbuild_args = run_commands[1][1][0]
 
+        self.assertEqual('$W/payload',
+                         _get_adjacent_item(pkgbuild_args, '--root'))
+        self.assertEqual('$W/App Product.plist',
+                         _get_adjacent_item(pkgbuild_args, '--component-plist'))
         self.assertEqual('test.signing.bundle_id',
                          _get_adjacent_item(pkgbuild_args, '--identifier'))
         self.assertEqual('99.0.9999.99',
                          _get_adjacent_item(pkgbuild_args, '--version'))
-        self.assertEqual('$W/App Product.app',
-                         _get_adjacent_item(pkgbuild_args, '--component'))
         self.assertEqual('$W/scripts',
                          _get_adjacent_item(pkgbuild_args, '--scripts'))
 
+        self.assertEqual('test.signing.bundle_id',
+                         _get_adjacent_item(productbuild_args, '--identifier'))
+        self.assertEqual('99.0.9999.99',
+                         _get_adjacent_item(productbuild_args, '--version'))
         self.assertEqual(
             '$W/App Product.dist',
             _get_adjacent_item(productbuild_args, '--distribution'))
@@ -439,6 +483,8 @@ framework dir is 'App Product.app/Contents/Frameworks/Product Framework.framewor
         self.assertEqual('AppProduct-99.0.9999.99-MOO',
                          kwargs['sign_part'].mock_calls[0][1][2].identifier)
 
+    @mock.patch('signing.pipeline._component_property_path',
+                _component_property_path)
     @mock.patch('signing.pipeline._productbuild_distribution_path',
                 _productbuild_distribution_path)
     @mock.patch('signing.pipeline._create_pkgbuild_scripts',
@@ -471,15 +517,21 @@ framework dir is 'App Product.app/Contents/Frameworks/Product Framework.framewor
         pkgbuild_args = run_commands[0][1][0]
         productbuild_args = run_commands[1][1][0]
 
+        self.assertEqual('$W/payload',
+                         _get_adjacent_item(pkgbuild_args, '--root'))
+        self.assertEqual('$W/App Product.plist',
+                         _get_adjacent_item(pkgbuild_args, '--component-plist'))
         self.assertEqual('test.signing.bundle_id',
                          _get_adjacent_item(pkgbuild_args, '--identifier'))
         self.assertEqual('99.0.9999.99',
                          _get_adjacent_item(pkgbuild_args, '--version'))
-        self.assertEqual('$W/App Product.app',
-                         _get_adjacent_item(pkgbuild_args, '--component'))
         self.assertEqual('$W/scripts',
                          _get_adjacent_item(pkgbuild_args, '--scripts'))
 
+        self.assertEqual('test.signing.bundle_id',
+                         _get_adjacent_item(productbuild_args, '--identifier'))
+        self.assertEqual('99.0.9999.99',
+                         _get_adjacent_item(productbuild_args, '--version'))
         self.assertEqual(
             '$W/App Product.dist',
             _get_adjacent_item(productbuild_args, '--distribution'))

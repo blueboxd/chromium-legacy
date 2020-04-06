@@ -593,7 +593,7 @@
   {
     "name": "cookies-without-same-site-must-be-secure",
     "owners": [ "chlily", "morlovich" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 88
   },
   {
     "name": "corner-shortcuts",
@@ -3500,7 +3500,7 @@
   {
     "name": "same-site-by-default-cookies",
     "owners": [ "chlily", "morlovich" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 88
   },
   {
     "name": "scalable-app-list",

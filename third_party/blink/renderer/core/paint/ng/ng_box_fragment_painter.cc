@@ -831,16 +831,11 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
     RecordScrollHitTestData(paint_info, *background_client);
 }
 
-// TODO(kojii): This logic is kept in sync with BoxPainter. Not much efforts to
-// eliminate LayoutObject dependency were done yet.
 void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
     const PaintInfo& paint_info,
     const PhysicalRect& paint_rect,
     const DisplayItemClient& background_client) {
-  const LayoutObject& layout_object = *box_fragment_.GetLayoutObject();
-  const LayoutBox& layout_box = ToLayoutBox(layout_object);
-
-  const ComputedStyle& style = box_fragment_.Style();
+  const LayoutBox& layout_box = ToLayoutBox(*box_fragment_.GetLayoutObject());
 
   base::Optional<DisplayItemCacheSkipper> cache_skipper;
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
@@ -858,6 +853,21 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
 
   DrawingRecorder recorder(paint_info.context, background_client,
                            DisplayItem::kBoxDecorationBackground);
+
+  PaintBoxDecorationBackgroundWithRectImpl(paint_info, paint_rect,
+                                           box_decoration_data);
+}
+// TODO(kojii): This logic is kept in sync with BoxPainter. Not much efforts to
+// eliminate LayoutObject dependency were done yet.
+void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRectImpl(
+    const PaintInfo& paint_info,
+    const PhysicalRect& paint_rect,
+    const BoxDecorationData& box_decoration_data) {
+  const LayoutObject& layout_object = *box_fragment_.GetLayoutObject();
+  const LayoutBox& layout_box = ToLayoutBox(layout_object);
+
+  const ComputedStyle& style = box_fragment_.Style();
+
   GraphicsContextStateSaver state_saver(paint_info.context, false);
 
   const NGBorderEdges& border_edges = BorderEdges();

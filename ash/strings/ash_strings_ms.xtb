@@ -105,6 +105,7 @@
 <translation id="2268813581635650749">Log keluar semua</translation>
 <translation id="2277103315734023688">Cari Ke Hadapan</translation>
 <translation id="2292698582925480719">Skala paparan</translation>
+<translation id="2295777434187870477">Mikrofon dihidupkan, tindakan menogol akan meredamkan input.</translation>
 <translation id="2298170939937364391">Penggadang Skrin Penuh didayakan. Tekan Ctrl+Cari+M semula untuk mematikannya.</translation>
 <translation id="2302092602801625023">Akaun ini diurus oleh Family Link</translation>
 <translation id="2303600792989757991">Togol gambaran keseluruhan tetingkap</translation>
@@ -138,6 +139,7 @@
 <translation id="2658778018866295321">Klik dan seret</translation>
 <translation id="2700493154570097719">Tetapkan papan kekunci anda</translation>
 <translation id="2704781753052663061">Sertai rangkaian Wi-Fi yang lain</translation>
+<translation id="2705001408393684014">Togol Mikrofon. <ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">Cahaya Malam</translation>
 <translation id="2727977024730340865">Dipalamkan pada pengecas berkuasa rendah. Pengecasan bateri mungkin tidak boleh diharapkan.</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
@@ -297,6 +299,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4665114317261903604">Togol Jangan ganggu. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Buka kunci peranti menggunakan kod ibu bapa</translation>
 <translation id="4702647871202761252">Skrin privasi dimatikan</translation>
+<translation id="4705716602320768426">Failkan maklum balas</translation>
 <translation id="4710243778082831592">Tetapan IME</translation>
 <translation id="4731797938093519117">Akses ibu bapa</translation>
 <translation id="4734965478015604180">Mendatar</translation>
@@ -377,6 +380,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Hidupkan</translation>
+<translation id="5920710855273935292">Mikrofon diredamkan.</translation>
 <translation id="5947494881799873997">Berbalik</translation>
 <translation id="595202126637698455">Penjejakan prestasi didayakan</translation>
 <translation id="5957083217255311415">Data mudah alih dimatikan.</translation>

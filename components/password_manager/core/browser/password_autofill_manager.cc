@@ -194,6 +194,22 @@ void MaybeAppendManualFallback(syncer::SyncService* sync_service,
       !password_manager_util::IsSyncingWithNormalEncryption(sync_service))
     return;
 #endif
+  bool has_no_fillable_suggestions = std::none_of(
+      suggestions->begin(), suggestions->end(),
+      [](const autofill::Suggestion& suggestion) {
+        return suggestion.frontend_id ==
+                   autofill::POPUP_ITEM_ID_USERNAME_ENTRY ||
+               suggestion.frontend_id ==
+                   autofill::POPUP_ITEM_ID_PASSWORD_ENTRY ||
+               suggestion.frontend_id ==
+                   autofill::POPUP_ITEM_ID_ACCOUNT_STORAGE_USERNAME_ENTRY ||
+               suggestion.frontend_id ==
+                   autofill::POPUP_ITEM_ID_ACCOUNT_STORAGE_PASSWORD_ENTRY ||
+               suggestion.frontend_id ==
+                   autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY;
+      });
+  if (has_no_fillable_suggestions)
+    return;
   autofill::Suggestion suggestion(
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_MANAGE_PASSWORDS));
   suggestion.frontend_id = autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY;
@@ -234,6 +250,16 @@ autofill::Suggestion CreateEntryToOptInToAccountStorageThenGenerate() {
   return suggestion;
 }
 
+// Entry for sigining in again which unlocks the password account storage.
+autofill::Suggestion CreateEntryToReSignin() {
+  autofill::Suggestion suggestion(
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_RE_SIGNIN_ACCOUNT_STORE));
+  suggestion.frontend_id =
+      autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_RE_SIGNIN;
+  suggestion.icon = CreateStoreIcon(/*uses_account_store=*/true);
+  return suggestion;
+}
+
 bool ContainsOtherThanManagePasswords(
     const std::vector<autofill::Suggestion> suggestions) {
   return std::any_of(suggestions.begin(), suggestions.end(),
@@ -258,6 +284,8 @@ std::vector<autofill::Suggestion> SetUnlockLoadingState(
     IsLoading is_loading) {
   DCHECK(
       unlock_item == autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN ||
+      unlock_item ==
+          autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_RE_SIGNIN ||
       unlock_item ==
           autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE);
   std::vector<autofill::Suggestion> new_suggestions;
@@ -303,6 +331,8 @@ void PasswordAutofillManager::DidSelectSuggestion(const base::string16& value,
   if (identifier == autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY ||
       identifier == autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY ||
       identifier == autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN ||
+      identifier ==
+          autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_RE_SIGNIN ||
       identifier ==
           autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE)
     return;
@@ -360,6 +390,9 @@ void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
       password_client_->GetMetricsRecorder()->RecordPageLevelUserAction(
           UserAction::kShowAllPasswordsWhileSomeAreSuggested);
     }
+  } else if (identifier ==
+             autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_RE_SIGNIN) {
+    password_client_->TriggerSignIn();
   } else if (
       identifier == autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN ||
       identifier ==
@@ -507,8 +540,12 @@ std::vector<autofill::Suggestion> PasswordAutofillManager::BuildSuggestions(
   bool show_account_storage_optin =
       password_client_ && password_client_->GetPasswordFeatureManager()
                               ->ShouldShowAccountStorageOptIn();
+  bool show_account_storage_resignin =
+      password_client_ && password_client_->GetPasswordFeatureManager()
+                              ->ShouldShowAccountStorageReSignin();
 
-  if (!fill_data_ && !show_account_storage_optin) {
+  if (!fill_data_ && !show_account_storage_optin &&
+      !show_account_storage_resignin) {
     // Probably the credential was deleted in the mean time.
     return suggestions;
   }
@@ -534,6 +571,10 @@ std::vector<autofill::Suggestion> PasswordAutofillManager::BuildSuggestions(
   // suggest.
   if (show_account_storage_optin)
     suggestions.push_back(CreateEntryToOptInToAccountStorageThenFill());
+
+  // Add button to sign-in which unlocks the previously used account store.
+  if (show_account_storage_resignin)
+    suggestions.push_back(CreateEntryToReSignin());
 
   return suggestions;
 }

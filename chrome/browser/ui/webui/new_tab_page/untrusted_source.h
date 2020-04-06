@@ -21,6 +21,17 @@ class Profile;
 // from outside the chromium codebase. The chrome-untrusted://new-tab-page/*
 // sources can only be embedded in the chrome://new-tab-page by using an
 // <iframe>.
+//
+// Offers the following helpers to embed content into chrome://new-tab-page in a
+// generalized way:
+//   * chrome-untrusted://new-tab-page/image?<url>: Behaves like an img element
+//       with src set to <url>.
+//   * chrome-untrusted://new-tab-page/background_image?<url>: Behaves like an
+//       element that has <url> set as the background image, such that the image
+//       will cover the entire element.
+//   * chrome-untrusted://new-tab-page/iframe?<url>: Behaves like an iframe with
+//       src set to <url>.
+//   Each of those helpers only accept HTTPS URLs.
 class UntrustedSource : public content::URLDataSource,
                         public OneGoogleBarServiceObserver,
                         public PromoServiceObserver {

@@ -65,6 +65,8 @@ void PasswordManagerClient::TriggerReauthForAccount(
   std::move(reauth_callback).Run(ReauthSucceeded(false));
 }
 
+void PasswordManagerClient::TriggerSignIn() {}
+
 SyncState PasswordManagerClient::GetPasswordSyncState() const {
   return NOT_SYNCING;
 }

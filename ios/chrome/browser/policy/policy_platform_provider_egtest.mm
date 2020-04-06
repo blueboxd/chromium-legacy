@@ -9,6 +9,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/strings/sys_string_conversions.h"
 #import "components/policy/core/common/policy_loader_ios_constants.h"
+#include "components/policy/policy_constants.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #import "ios/chrome/browser/policy/policy_app_interface.h"
 #include "ios/chrome/browser/pref_names.h"
@@ -83,14 +84,14 @@ AppLaunchConfiguration GenerateAppLaunchConfiguration(std::string policy_data) {
 // Tests the values of policies that were explicitly set.
 - (void)testPolicyExplicitlySet {
   std::unique_ptr<base::Value> searchValue =
-      GetPlatformPolicy("DefaultSearchProviderName");
+      GetPlatformPolicy(policy::key::kDefaultSearchProviderName);
   GREYAssertTrue(searchValue && searchValue->is_string(),
                  @"searchValue was not of type string");
   GREYAssertEqual(searchValue->GetString(), "Test",
                   @"searchValue had an unexpected value");
 
   std::unique_ptr<base::Value> suggestValue =
-      GetPlatformPolicy("SearchSuggestEnabled");
+      GetPlatformPolicy(policy::key::kSearchSuggestEnabled);
   GREYAssertTrue(suggestValue && suggestValue->is_bool(),
                  @"suggestValue was not of type bool");
   GREYAssertFalse(suggestValue->GetBool(),
@@ -101,7 +102,7 @@ AppLaunchConfiguration GenerateAppLaunchConfiguration(std::string policy_data) {
 // set.
 - (void)testPolicyNotSet {
   std::unique_ptr<base::Value> blocklistValue =
-      GetPlatformPolicy("URLBlacklist");
+      GetPlatformPolicy(policy::key::kURLBlacklist);
   GREYAssertTrue(blocklistValue && blocklistValue->is_none(),
                  @"blocklistValue was unexpectedly present");
 }
@@ -147,7 +148,7 @@ AppLaunchConfiguration GenerateAppLaunchConfiguration(std::string policy_data) {
 // set.
 - (void)testLoadPolicyKeyNotSet {
   std::unique_ptr<base::Value> searchValue =
-      GetPlatformPolicy("DefaultSearchProviderName");
+      GetPlatformPolicy(policy::key::kDefaultSearchProviderName);
   GREYAssertTrue(searchValue && searchValue->is_none(),
                  @"searchValue was unexpectedly present");
 }

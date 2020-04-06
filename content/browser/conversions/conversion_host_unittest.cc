@@ -7,10 +7,12 @@
 #include <memory>
 
 #include "base/test/scoped_feature_list.h"
+#include "content/browser/conversions/conversion_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/test/fake_mojo_message_dispatch_context.h"
+#include "content/test/navigation_simulator_impl.h"
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_web_contents.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
@@ -20,17 +22,57 @@
 
 namespace content {
 
+class TestConversionManager : public ConversionManager {
+ public:
+  TestConversionManager() = default;
+  ~TestConversionManager() override = default;
+
+  void HandleConversion(const StorableConversion& impression) override {
+    num_conversions_++;
+  }
+
+  const ConversionPolicy& GetConversionPolicy() const override {
+    return policy;
+  }
+
+  size_t num_impressions() const { return num_impressions_; }
+
+  void Reset() {
+    num_impressions_ = 0u;
+    num_conversions_ = 0u;
+  }
+
+ private:
+  ConversionPolicy policy;
+  size_t num_impressions_ = 0u;
+  size_t num_conversions_ = 0u;
+};
+
+class TestManagerProvider : public ConversionManager::Provider {
+ public:
+  explicit TestManagerProvider(ConversionManager* manager)
+      : manager_(manager) {}
+  ~TestManagerProvider() override = default;
+
+  ConversionManager* GetManager(WebContents* web_contents) const override {
+    return manager_;
+  }
+
+ private:
+  ConversionManager* manager_ = nullptr;
+};
+
 class ConversionHostTest : public RenderViewHostTestHarness {
  public:
-  ConversionHostTest() {
-    feature_list_.InitAndEnableFeature(features::kConversionMeasurement);
-  }
+  ConversionHostTest() = default;
 
   void SetUp() override {
     RenderViewHostTestHarness::SetUp();
     static_cast<WebContentsImpl*>(web_contents())
         ->RemoveReceiverSetForTesting(blink::mojom::ConversionHost::Name_);
-    conversion_host_ = std::make_unique<ConversionHost>(web_contents());
+
+    conversion_host_ = ConversionHost::CreateForTesting(
+        web_contents(), std::make_unique<TestManagerProvider>(&test_manager_));
     contents()->GetMainFrame()->InitializeRenderFrameIfNeeded();
   }
 
@@ -40,8 +82,10 @@ class ConversionHostTest : public RenderViewHostTestHarness {
 
   ConversionHost* conversion_host() { return conversion_host_.get(); }
 
+ protected:
+  TestConversionManager test_manager_;
+
  private:
-  base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<ConversionHost> conversion_host_;
 };
 

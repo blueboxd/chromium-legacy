@@ -22,8 +22,6 @@
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_processor_impl.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/soda/soda_service.h"
-#include "chrome/browser/soda/soda_service_factory.h"
 #include "chrome/browser/ssl/insecure_sensitive_input_driver_factory.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/webui/bluetooth_internals/bluetooth_internals.mojom.h"
@@ -58,7 +56,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/buildflags/buildflags.h"
-#include "media/mojo/mojom/soda_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
 #include "third_party/blink/public/mojom/insecure_input/insecure_input_service.mojom.h"
@@ -103,10 +100,13 @@
 #else
 #include "chrome/browser/badging/badge_manager.h"
 #include "chrome/browser/payments/payment_request_factory.h"
+#include "chrome/browser/soda/soda_service.h"
+#include "chrome/browser/soda/soda_service_factory.h"
 #include "chrome/browser/ui/webui/downloads/downloads.mojom.h"
 #include "chrome/browser/ui/webui/downloads/downloads_ui.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_ui.h"
+#include "media/mojo/mojom/soda_service.mojom.h"
 #endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
@@ -345,6 +345,7 @@ void BindNetworkHintsHandler(
   predictors::NetworkHintsHandlerImpl::Create(frame_host, std::move(receiver));
 }
 
+#if !defined(OS_ANDROID)
 void BindSodaContextHandler(
     content::RenderFrameHost* frame_host,
     mojo::PendingReceiver<media::mojom::SodaContext> receiver) {
@@ -354,6 +355,8 @@ void BindSodaContextHandler(
   if (profile_prefs->GetBoolean(prefs::kLiveCaptionEnabled))
     SodaServiceFactory::GetForProfile(profile)->Create(std::move(receiver));
 }
+#endif
+
 void PopulateChromeFrameBinders(
     service_manager::BinderMapWithContext<content::RenderFrameHost*>* map) {
   map->Add<image_annotation::mojom::Annotator>(
@@ -432,8 +435,10 @@ void PopulateChromeFrameBinders(
   map->Add<network_hints::mojom::NetworkHintsHandler>(
       base::BindRepeating(&BindNetworkHintsHandler));
 
+#if !defined(OS_ANDROID)
   map->Add<media::mojom::SodaContext>(
       base::BindRepeating(&BindSodaContextHandler));
+#endif
 }
 
 void PopulateChromeWebUIFrameBinders(

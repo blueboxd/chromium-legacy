@@ -8,6 +8,7 @@
 
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_output_stream_sink.h"
@@ -65,9 +66,15 @@ std::unique_ptr<Renderer> TestMojoMediaClient::CreateRenderer(
   }
 
   if (!renderer_factory_) {
+#if defined(OS_ANDROID)
+    renderer_factory_ = std::make_unique<DefaultRendererFactory>(
+        media_log, decoder_factory_.get(),
+        DefaultRendererFactory::GetGpuFactoriesCB());
+#else
     renderer_factory_ = std::make_unique<DefaultRendererFactory>(
         media_log, decoder_factory_.get(),
         DefaultRendererFactory::GetGpuFactoriesCB(), nullptr);
+#endif
   }
 
   // We cannot share AudioOutputStreamSink or NullVideoSink among different

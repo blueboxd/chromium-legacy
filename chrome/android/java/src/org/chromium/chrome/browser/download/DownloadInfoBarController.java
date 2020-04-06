@@ -617,8 +617,9 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
                             R.plurals.download_infobar_downloading_files, inProgressDownloadCount,
                             inProgressDownloadCount);
                 } else {
-                    String bytesString = DownloadUtils.getStringForBytes(
-                            getContext(), totalDownloadingSizeBytes);
+                    String bytesString =
+                            org.chromium.components.browser_ui.util.DownloadUtils.getStringForBytes(
+                                    getContext(), totalDownloadingSizeBytes);
                     info.message = inProgressDownloadCount == 1
                             ? getContext().getString(
                                       R.string.downloading_file_with_bytes, bytesString)

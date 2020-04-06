@@ -684,28 +684,29 @@ void NetworkQualityEstimator::RecordMetricsOnMainFrameRequest() const {
   if (estimated_quality_at_last_main_frame_.http_rtt() !=
       nqe::internal::InvalidRTT()) {
     // Add the 50th percentile value.
-    UMA_HISTOGRAM_TIMES("NQE.MainFrame.RTT.Percentile50",
-                        estimated_quality_at_last_main_frame_.http_rtt());
+    LOCAL_HISTOGRAM_TIMES("NQE.MainFrame.RTT.Percentile50",
+                          estimated_quality_at_last_main_frame_.http_rtt());
   }
 
   if (estimated_quality_at_last_main_frame_.transport_rtt() !=
       nqe::internal::InvalidRTT()) {
     // Add the 50th percentile value.
-    UMA_HISTOGRAM_TIMES("NQE.MainFrame.TransportRTT.Percentile50",
-                        estimated_quality_at_last_main_frame_.transport_rtt());
+    LOCAL_HISTOGRAM_TIMES(
+        "NQE.MainFrame.TransportRTT.Percentile50",
+        estimated_quality_at_last_main_frame_.transport_rtt());
   }
 
   if (estimated_quality_at_last_main_frame_.downstream_throughput_kbps() !=
       nqe::internal::INVALID_RTT_THROUGHPUT) {
     // Add the 50th percentile value.
-    UMA_HISTOGRAM_COUNTS_1M(
+    LOCAL_HISTOGRAM_COUNTS_1000000(
         "NQE.MainFrame.Kbps.Percentile50",
         estimated_quality_at_last_main_frame_.downstream_throughput_kbps());
   }
 
-  UMA_HISTOGRAM_ENUMERATION("NQE.MainFrame.EffectiveConnectionType",
-                            effective_connection_type_at_last_main_frame_,
-                            EFFECTIVE_CONNECTION_TYPE_LAST);
+  LOCAL_HISTOGRAM_ENUMERATION("NQE.MainFrame.EffectiveConnectionType",
+                              effective_connection_type_at_last_main_frame_,
+                              EFFECTIVE_CONNECTION_TYPE_LAST);
 }
 
 bool NetworkQualityEstimator::ShouldComputeNetworkQueueingDelay() const {

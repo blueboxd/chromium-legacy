@@ -49,7 +49,7 @@ declare_args() {
 
 # Configures media options for cast.  See media/media_options.gni
 cast_mojo_media_services = []
-cast_mojo_media_host = "none"
+cast_mojo_media_host = ""
 
 if (enable_cast_renderer) {
   # In this path, mojo media services are hosted in two processes:

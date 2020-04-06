@@ -337,28 +337,41 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
   const auto& rows = layout_grid->RowPositions();
   const auto& columns = layout_grid->ColumnPositions();
 
-  PathBuilder cell_builder;
   auto row_gap =
       layout_grid->GridGap(kForRows) + layout_grid->GridItemOffset(kForRows);
   auto column_gap = layout_grid->GridGap(kForColumns) +
                     layout_grid->GridItemOffset(kForColumns);
 
+  PathBuilder row_builder;
+  LayoutUnit row_left = columns.front();
+  LayoutUnit row_width = columns.back() - columns.front();
   for (size_t i = 1; i < rows.size(); ++i) {
-    for (size_t j = 1; j < columns.size(); ++j) {
-      PhysicalOffset position(columns.at(j - 1), rows.at(i - 1));
-      PhysicalSize size(columns.at(j) - columns.at(j - 1),
-                        rows.at(i) - rows.at(i - 1));
-      if (i != rows.size() - 1)
-        size.height -= row_gap;
-      if (j != columns.size() - 1)
-        size.width -= column_gap;
-      PhysicalRect cell(position, size);
-      FloatQuad cell_quad = layout_grid->LocalRectToAbsoluteQuad(cell);
-      FrameQuadToViewport(containing_view, cell_quad);
-      cell_builder.AppendPath(QuadToPath(cell_quad), scale);
-    }
+    PhysicalOffset position(row_left, rows.at(i - 1));
+    PhysicalSize size(row_width, rows.at(i) - rows.at(i - 1));
+    if (i != rows.size() - 1)
+      size.height -= row_gap;
+    PhysicalRect row(position, size);
+    FloatQuad row_quad = layout_grid->LocalRectToAbsoluteQuad(row);
+    FrameQuadToViewport(containing_view, row_quad);
+    row_builder.AppendPath(QuadToPath(row_quad), scale);
   }
-  grid_info->setValue("cells", cell_builder.Release());
+  grid_info->setValue("rows", row_builder.Release());
+
+  PathBuilder column_builder;
+  LayoutUnit column_top = rows.front();
+  LayoutUnit column_height = rows.back() - rows.front();
+  for (size_t i = 1; i < columns.size(); ++i) {
+    PhysicalOffset position(columns.at(i - 1), column_top);
+    PhysicalSize size(columns.at(i) - columns.at(i - 1), column_height);
+    if (i != columns.size() - 1)
+      size.width -= column_gap;
+    PhysicalRect column(position, size);
+    FloatQuad column_quad = layout_grid->LocalRectToAbsoluteQuad(column);
+    FrameQuadToViewport(containing_view, column_quad);
+    column_builder.AppendPath(QuadToPath(column_quad), scale);
+  }
+  grid_info->setValue("columns", column_builder.Release());
+
   grid_info->setString("color", color.Serialized());
   grid_info->setBoolean("isPrimaryGrid", isPrimary);
   return grid_info;

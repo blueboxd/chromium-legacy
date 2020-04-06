@@ -105,6 +105,7 @@
 <translation id="2268813581635650749">Դուրս գալ բոլորից</translation>
 <translation id="2277103315734023688">Առաջ գնալ</translation>
 <translation id="2292698582925480719">Էկրանի մասշտաբ</translation>
+<translation id="2295777434187870477">Խոսափողը միացված է։ Անջատելու համար սեղմեք այս կոճակը։</translation>
 <translation id="2298170939937364391">Լիաէկրան խոշորացույցը միացավ: Այն անջատելու համար նորից սեղմեք Ctrl+Search+M:</translation>
 <translation id="2302092602801625023">Այս հաշիվը կառավարվում է Family Link-ի կողմից</translation>
 <translation id="2303600792989757991">Փոխարկել պատուհանի համատեսքը</translation>
@@ -138,6 +139,7 @@
 <translation id="2658778018866295321">Սեղմել և քաշել</translation>
 <translation id="2700493154570097719">Ընտրեք ստեղնաշարը</translation>
 <translation id="2704781753052663061">Միացեք այլ Wi-Fi ցանցերի</translation>
+<translation id="2705001408393684014">Միացնել/անջատել խոսափողը։ <ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">Գիշերային ռեժիմ</translation>
 <translation id="2727977024730340865">Միացված է թույլ լիցքավորիչի: Մարտկոցի լիցքավորումը կարող է հուսալի չլինել:</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
@@ -296,6 +298,7 @@
 <translation id="4665114317261903604">Միացնել/անջատել «Չանհանգստացնել» ռեժիմը։ <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Մուտքագրեք ծնողի մուտքի կոդը</translation>
 <translation id="4702647871202761252">Գաղտնիության էկրանն անջատված է</translation>
+<translation id="4705716602320768426">Հաղորդել վրիպակի մասին</translation>
 <translation id="4710243778082831592">IME կարգավորումներ</translation>
 <translation id="4731797938093519117">Ծնողի մուտք</translation>
 <translation id="4734965478015604180">Հորիզոնական</translation>
@@ -376,6 +379,7 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Միացնել</translation>
+<translation id="5920710855273935292">Խոսափողի ձայնն անջատված է։</translation>
 <translation id="5947494881799873997">Հետադարձել</translation>
 <translation id="595202126637698455">Կատարողականության հետագծումը միացված է</translation>
 <translation id="5957083217255311415">Բջջային ինտերնետն անջատված է:</translation>

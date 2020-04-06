@@ -60,7 +60,9 @@ IN_PROC_BROWSER_TEST_F(TotalInputDelayIntegrationTest, NoInputEvent) {
       PageLoad::kInteractiveTiming_TotalAdjustedInputDelayName, int64_t(0), 0);
 }
 
-IN_PROC_BROWSER_TEST_F(TotalInputDelayIntegrationTest, MultipleInputEvents) {
+// Disable the test due to flaky crbug.com/1067320
+IN_PROC_BROWSER_TEST_F(TotalInputDelayIntegrationTest,
+                       DISABLED_MultipleInputEvents) {
   LoadHTML(R"HTML(
     <p>Sample website</p>
   )HTML");

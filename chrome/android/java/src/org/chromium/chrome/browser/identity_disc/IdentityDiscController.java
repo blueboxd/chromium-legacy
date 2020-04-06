@@ -23,7 +23,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
-import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.sync.settings.SyncAndServicesSettings;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ButtonData;
@@ -34,6 +33,8 @@ import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.IdentityManager;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -44,8 +45,7 @@ import java.util.Collections;
  * (user sign-in state, whether NTP is shown)
  */
 public class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Observer,
-                                               SigninManager.SignInStateObserver,
-                                               ButtonDataProvider {
+                                               IdentityManager.Observer, ButtonDataProvider {
     // Visual state of Identity Disc.
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({IdentityDiscState.NONE, IdentityDiscState.SMALL, IdentityDiscState.LARGE})
@@ -66,8 +66,8 @@ public class IdentityDiscController implements NativeInitObserver, ProfileDataCa
     private ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
     private ObservableSupplier<Boolean> mBottomToolbarVisibilitySupplier;
 
-    // We observe SigninManager to receive sign-in state change notifications.
-    private SigninManager mSigninManager;
+    // We observe IdentityManager to receive primary account state change notifications.
+    private IdentityManager mIdentityManager;
 
     // ProfileDataCache facilitates retrieving profile picture. Separate objects are maintained
     // for different visual states to cache profile pictures of different size.
@@ -125,8 +125,8 @@ public class IdentityDiscController implements NativeInitObserver, ProfileDataCa
         mActivityLifecycleDispatcher = null;
         mNativeIsInitialized = true;
 
-        mSigninManager = IdentityServicesProvider.get().getSigninManager();
-        mSigninManager.addSignInStateObserver(this);
+        mIdentityManager = IdentityServicesProvider.get().getIdentityManager();
+        mIdentityManager.addObserver(this);
     }
 
     @Override
@@ -167,18 +167,18 @@ public class IdentityDiscController implements NativeInitObserver, ProfileDataCa
             return;
         }
 
-        String accountName = ChromeSigninController.get().getSignedInAccountName();
-        boolean canShowIdentityDisc = accountName != null;
+        String email = CoreAccountInfo.getEmailFrom(mIdentityManager.getPrimaryAccountInfo());
+        boolean canShowIdentityDisc = email != null;
         boolean menuBottomOnBottom =
                 bottomToolbarVisible && BottomToolbarVariationManager.isMenuButtonOnBottom();
 
         mState = !canShowIdentityDisc
                 ? IdentityDiscState.NONE
                 : menuBottomOnBottom ? IdentityDiscState.LARGE : IdentityDiscState.SMALL;
-        ensureProfileDataCache(accountName, mState);
+        ensureProfileDataCache(email, mState);
 
         if (mState != IdentityDiscState.NONE) {
-            mButtonData.drawable = getProfileImage(accountName);
+            mButtonData.drawable = getProfileImage(email);
             mButtonData.canShow = true;
         } else {
             mButtonData.canShow = false;
@@ -245,15 +245,15 @@ public class IdentityDiscController implements NativeInitObserver, ProfileDataCa
         }
     }
 
-    // SigninManager.SignInStateObserver implementation.
+    // IdentityManager.Observer implementation.
     @Override
-    public void onSignedIn() {
+    public void onPrimaryAccountSet(CoreAccountInfo account) {
         resetIdentityDiscCache();
         notifyObservers(true);
     }
 
     @Override
-    public void onSignedOut() {
+    public void onPrimaryAccountCleared(CoreAccountInfo account) {
         notifyObservers(false);
     }
 
@@ -273,9 +273,10 @@ public class IdentityDiscController implements NativeInitObserver, ProfileDataCa
                 mProfileDataCache[i] = null;
             }
         }
-        if (mSigninManager != null) {
-            mSigninManager.removeSignInStateObserver(this);
-            mSigninManager = null;
+
+        if (mIdentityManager != null) {
+            mIdentityManager.removeObserver(this);
+            mIdentityManager = null;
         }
     }
 

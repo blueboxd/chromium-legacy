@@ -826,6 +826,7 @@
 <translation id="2119349053129246860">Άνοιγμα σε <ph name="APP" /></translation>
 <translation id="2120297377148151361">Δραστηριότητα και αλληλεπιδράσεις</translation>
 <translation id="2120639962942052471">Απέκλεισε την άδεια <ph name="PERMISSION" /></translation>
+<translation id="2121055421682309734">{COUNT,plural, =0{Αποκλείστηκαν τα cookie.}=1{Αποκλείστηκαν τα cookie, με 1 εξαίρεση}other{Αποκλείστηκαν τα cookie, με {COUNT} εξαιρέσεις}}</translation>
 <translation id="2121825465123208577">Προσαρμογή μεγέθους</translation>
 <translation id="2122305276694332719">Η αυτόματη σύνδεση σε ένα κρυφό δίκτυο επιτρέπει σε άλλα άτομα να βλέπουν τη συσκευή σας και ορισμένες ρυθμίσεις δικτύου σας και δεν συνιστάται.</translation>
 <translation id="2123766928840368256">Επιλέξτε διαφορετικό αρχείο</translation>

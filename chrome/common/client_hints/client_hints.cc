@@ -53,9 +53,9 @@ void GetAllowedClientHintsFromSource(
     DCHECK(list_value->is_list());
     for (const auto& client_hint : list_value->GetList()) {
       DCHECK(client_hint.is_int());
-      blink::mojom::WebClientHintsType client_hint_mojo =
-          static_cast<blink::mojom::WebClientHintsType>(client_hint.GetInt());
-      if (blink::mojom::IsKnownEnumValue(client_hint_mojo))
+      network::mojom::WebClientHintsType client_hint_mojo =
+          static_cast<network::mojom::WebClientHintsType>(client_hint.GetInt());
+      if (network::mojom::IsKnownEnumValue(client_hint_mojo))
         client_hints->SetIsEnabled(client_hint_mojo, true);
     }
     // Match found for |url| and client hints have been set.

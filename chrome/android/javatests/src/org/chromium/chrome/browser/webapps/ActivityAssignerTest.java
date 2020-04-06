@@ -165,17 +165,6 @@ public class ActivityAssignerTest {
         checkState(assigner, ActivityAssigner.ActivityAssignerNamespace.WEBAPP_NAMESPACE);
     }
 
-    @Test
-    @UiThreadTest
-    @SmallTest
-    @Feature({"WebApk"})
-    public void testInstance() {
-        Assert.assertNotSame(ActivityAssigner.instance(
-                                     ActivityAssigner.ActivityAssignerNamespace.WEBAPP_NAMESPACE),
-                ActivityAssigner.instance(
-                        ActivityAssigner.ActivityAssignerNamespace.WEBAPK_NAMESPACE));
-    }
-
     /** Saves state indicating that a number of WebappActivities have already been saved out. */
     private void createPreferences(int numSavedEntries, int activityTypeIndex) {
         mPreferences[activityTypeIndex].clear();

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.sync;
 
 import android.app.Dialog;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.filters.LargeTest;
 import android.support.test.filters.SmallTest;
 import android.widget.Button;
 import android.widget.EditText;
@@ -400,6 +401,39 @@ public class ManageSyncSettingsTest {
         setText(confirmPassphrase, "foo");
         clickButton(okButton);
         Assert.assertFalse(pcdf.isResumed());
+    }
+
+    /**
+     * Test the trusted vault key retrieval flow, which involves launching an intent and finally
+     * calling TrustedVaultClient.notifyKeysChanged().
+     */
+    @Test
+    @LargeTest
+    @Feature({"Sync"})
+    public void testTrustedVaultKeyRetrieval() {
+        final byte[] trustedVaultKey = new byte[] {1, 2, 3, 4};
+
+        // Keys won't be populated by FakeTrustedVaultClientBackend unless corresponding key
+        // retrieval activity is about to be completed.
+        SyncTestRule.FakeTrustedVaultClientBackend.get().setKeys(
+                Collections.singletonList(trustedVaultKey));
+
+        mSyncTestRule.getFakeServerHelper().setTrustedVaultNigori(trustedVaultKey);
+        mSyncTestRule.setUpTestAccountAndSignIn();
+
+        // Initially FakeTrustedVaultClientBackend doesn't provide any keys, so PSS should remain
+        // in TrustedVaultKeyRequired state.
+        SyncTestUtil.waitForTrustedVaultKeyRequired(true);
+
+        final ManageSyncSettings fragment = startManageSyncPreferences();
+        // Mimic the user tapping on Encryption. This should start DummyKeyRetrievalActivity and
+        // notify native client that keys were changed. Right before DummyKeyRetrievalActivity
+        // completion FakeTrustedVaultClientBackend will start populate keys.
+        Preference encryption = fragment.findPreference(ManageSyncSettings.PREF_ENCRYPTION);
+        clickPreference(encryption);
+
+        // Native client should fetch new keys and get out of TrustedVaultKeyRequired state.
+        SyncTestUtil.waitForTrustedVaultKeyRequired(false);
     }
 
     private ManageSyncSettings startManageSyncPreferences() {

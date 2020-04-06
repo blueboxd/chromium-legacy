@@ -12775,7 +12775,7 @@ TEST_F(WebFrameTest, FallbackForNonexistentProvisionalNavigation) {
   // page.
   EXPECT_EQ(WebNavigationControl::NoLoadInProgress,
             To<WebLocalFrameImpl>(child)->MaybeRenderFallbackContent(
-                ResourceError::Failure(request.Url())));
+                WebURLError(ResourceError::Failure(request.Url()))));
 }
 
 TEST_F(WebFrameTest, AltTextOnAboutBlankPage) {

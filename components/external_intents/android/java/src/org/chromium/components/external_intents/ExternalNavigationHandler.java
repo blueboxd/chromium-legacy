@@ -732,9 +732,9 @@ public class ExternalNavigationHandler {
 
     /**
      * Returns whether the activity belongs to a WebAPK and the URL is within the scope of the
-     * WebAPK. The WebAPK's main activity is a bouncer that redirects to WebApkActivity in Chrome.
-     * In order to avoid bouncing indefinitely, we should not override the navigation if we are
-     * currently showing the WebAPK (params#nativeClientPackageName()) that we will redirect to.
+     * WebAPK. The WebAPK's main activity is a bouncer that redirects to the WebAPK Activity in
+     * Chrome. In order to avoid bouncing indefinitely, we should not override the navigation if we
+     * are currently showing the WebAPK (params#nativeClientPackageName()) that we will redirect to.
      */
     private boolean isAlreadyInTargetWebApk(
             List<ResolveInfo> resolveInfos, ExternalNavigationParams params) {

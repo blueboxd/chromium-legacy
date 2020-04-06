@@ -826,6 +826,7 @@ Poți gestiona setările contului dacă instalezi aplicația Family Link pe disp
 <translation id="2119349053129246860">Deschide în <ph name="APP" /></translation>
 <translation id="2120297377148151361">Activitate și interacțiuni</translation>
 <translation id="2120639962942052471"><ph name="PERMISSION" /> a fost blocată</translation>
+<translation id="2121055421682309734">{COUNT,plural, =0{Cookie-urile sunt blocate}=1{Cookie-urile sunt blocate, cu o excepție}few{Cookie-urile sunt blocate, cu {COUNT} excepții}other{Cookie-urile sunt blocate, cu {COUNT} de excepții}}</translation>
 <translation id="2121825465123208577">Redimensionează</translation>
 <translation id="2122305276694332719">Conectarea automată la o rețea ascunsă permite altora să îți vadă dispozitivul și unele setări pentru rețea, așadar nu este recomandată.</translation>
 <translation id="2123766928840368256">Alege alt fișier</translation>
@@ -1871,7 +1872,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3492788708641132712">Sincronizarea nu funcționează. Încearcă să te conectezi din nou.</translation>
 <translation id="3493486281776271508">Este necesară o conexiune la internet</translation>
 <translation id="3493881266323043047">Validitate</translation>
-<translation id="3494155060718700400">Nu te protejează împotriva site-urilor, descărcărilor și extensiilor periculoase (nu este recomandat). Te vei bucura în continuare de protecția oferită de Navigarea sigură, dacă este disponibilă, în alte servicii Google, cum ar fi Gmail și Căutarea Google.</translation>
+<translation id="3494155060718700400">Nu te protejează împotriva site-urilor, descărcărilor și extensiilor periculoase (nu este recomandat). Te vei bucura în continuare de protecția oferită de Navigarea sigură, dacă este disponibilă, în alte servicii Google, cum ar fi Gmail și Căutarea.</translation>
 <translation id="3494769164076977169">Notifică-mă dacă un site încearcă să descarce automat fișiere după primul fișier (recomandat)</translation>
 <translation id="3495660573538963482">Setări Asistent Google</translation>
 <translation id="3496213124478423963">Micșorează</translation>

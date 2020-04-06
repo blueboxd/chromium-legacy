@@ -6,12 +6,13 @@
 #define CONTENT_BROWSER_CONVERSIONS_CONVERSION_HOST_H_
 
 #include "base/gtest_prod_util.h"
+#include "content/browser/conversions/conversion_manager.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/web_contents_receiver_set.h"
 #include "third_party/blink/public/mojom/conversions/conversions.mojom.h"
 
 namespace content {
 
-class ConversionManager;
 class RenderFrameHost;
 class WebContents;
 
@@ -20,6 +21,10 @@ class WebContents;
 // bound to lifetime of the WebContents.
 class CONTENT_EXPORT ConversionHost : public blink::mojom::ConversionHost {
  public:
+  static std::unique_ptr<ConversionHost> CreateForTesting(
+      WebContents* web_contents,
+      std::unique_ptr<ConversionManager::Provider> conversion_manager_provider);
+
   explicit ConversionHost(WebContents* web_contents);
   ConversionHost(const ConversionHost& other) = delete;
   ConversionHost& operator=(const ConversionHost& other) = delete;
@@ -39,8 +44,9 @@ class CONTENT_EXPORT ConversionHost : public blink::mojom::ConversionHost {
   // Sets the target frame on |receiver_|.
   void SetCurrentTargetFrameForTesting(RenderFrameHost* render_frame_host);
 
-  // Gets the manager for this web contents. Can be null.
-  ConversionManager* GetManager();
+  // Gives access to a ConversionManager implementation to forward impressions
+  // and conversion registrations to.
+  std::unique_ptr<ConversionManager::Provider> conversion_manager_provider_;
 
   WebContents* web_contents_;
 

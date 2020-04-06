@@ -2148,7 +2148,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
           이 설정이 사용 중지되거나, 설정되지 않거나, 빈 목록으로 설정되면 어떤 계정을 사용하든 호스트를 공유할 수 있습니다.
 
-          RemoteAccessHostDomain이 있는 경우 이 설정이 우선 적용됩니다.
+          RemoteAccessHostDomain이 있더라도 이 설정이 우선 적용됩니다.
 
           RemoteAccessHostClientDomainList도 참조하세요.</translation>
 <translation id="4056910949759281379">SPDY 프로토콜 사용 중지</translation>
@@ -3900,7 +3900,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="6734521799274931721">Chrome OS의 네트워크 파일 공유 가능 여부를 제어합니다.</translation>
 <translation id="6735701345096330595">언어 맞춤법 검사 강제 사용</translation>
 <translation id="6757613329154374267">백업 및 복원 사용 설정됨</translation>
-<translation id="6758659208493449452">이 정책은 고급 보호 프로그램에 등록한 사용자에게 추가 보호를 제공할지 결정합니다. 추가 기능 중 일부를 사용하려면 Google과 데이터를 공유해야 합니다. 예를 들어, 고급 보호 사용자가 멀웨어 검사를 위해 다운로드한 파일을 Google에 전송할 수 있습니다. 정책을 True로 설정하거나 설정하지 않으면 등록된 사용자에게 추가 보호가 제공됩니다. False로 설정하면 고급 보호 사용자에게 표준 소비자 기능만 제공됩니다.</translation>
+<translation id="6758659208493449452">이 정책은 고급 보호 프로그램에 등록한 사용자에게 추가 보호를 제공할지 결정합니다. 추가 기능 중 일부를 사용하려면 Google과 데이터를 공유해야 합니다. 예를 들어, 고급 보호 사용자가 멀웨어 검사를 위해 다운로드 항목을 Google에 전송할 수 있습니다. 정책을 True로 설정하거나 설정하지 않으면 등록된 사용자에게 추가 보호가 제공됩니다. False로 설정하면 고급 보호 사용자에게 표준 소비자 기능만 제공됩니다.</translation>
 <translation id="6762235610019366960"><ph name="PRODUCT_NAME" />에서의 전체 탭 프로모션 및/또는 교육용 콘텐츠 표시를 제어할 수 있습니다.
 
       구성되지 않거나 사용 설정(True로 설정)되면 <ph name="PRODUCT_NAME" />에서 전체 탭 콘텐츠를 표시하여 사용자에게 제품 정보를 제공할 수 있습니다.
@@ -4388,7 +4388,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
           이 설정이 사용 중지되거나, 설정되지 않거나, 빈 목록으로 설정되면 연결 유형에 관한 기본 정책이 적용됩니다. 원격 지원의 경우 이 정책은 어떤 도메인의 클라이언트든 호스트에 연결할 수 있도록 허용합니다. 단, 상시 원격 액세스의 경우 호스트 소유자만이 연결할 수 있습니다.
 
-          RemoteAccessHostClientDomain이 있는 경우 이 설정이 우선 적용됩니다.
+          RemoteAccessHostClientDomain이 있더라도 이 설정이 우선 적용됩니다.
 
           RemoteAccessHostDomainList도 참조하세요.</translation>
 <translation id="7509496865303347769"><ph name="PRODUCT_NAME" />의 기본 홈페이지 URL을 설정하며 사용자가 변경하지 못하게 차단합니다.

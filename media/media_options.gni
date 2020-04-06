@@ -158,16 +158,6 @@ enable_library_cdms =
     (is_linux && !is_chromecast) || is_mac || is_win || is_fuchsia
 
 declare_args() {
-  # Experiment to enable mojo media services (e.g. "renderer", "cdm", see
-  # |mojo_media_services|). When enabled, selected mojo paths will be enabled in
-  # the media pipeline and corresponding services will hosted in the selected
-  # remote process (e.g. "utility" process, see |mojo_media_host|).
-  # This is explicitly disabled for Fuchsia.
-  enable_mojo_media =
-      !is_fuchsia &&
-      (is_android || is_chromeos || is_mac || is_win || enable_library_cdms ||
-       (is_desktop_linux && use_vaapi) || is_chromecast)
-
   # When enabled, this feature allows developers to use a runtime flag to
   # choose the implementation of the renderer that is used. On a build which
   # enables the mojo renderer, if --disable-mojo-renderer is passed at start-up,
@@ -196,60 +186,48 @@ declare_args() {
   enable_cdm_proxy = false
 }
 
-# This feature can only be enabled when using Mojo media. Furthermore, the
-# "renderer" service must be enabled, which is asserted in
-# //media/mojo/services/BUILD.gn
-assert(
-    !enable_runtime_media_renderer_selection || enable_mojo_media,
-    "Runtime media renderer selection only applies when mojo media is enabled.")
-
 assert(!enable_cdm_host_verification || is_mac || is_win,
        "CDM host verification is only supported on Mac and Windows.")
 
 assert(enable_library_cdms || !enable_cdm_proxy,
        "CDM Proxy should only be enabled when library CDM is enabled.")
 
+# Default |mojo_media_services| and |mojo_media_host| on various platforms. See
+# comments below for valid values. Can be overridden by gn build arguments from
+# the --args command line flag.
 _default_mojo_media_services = []
-_default_mojo_media_host = "none"
+_default_mojo_media_host = ""
 
-# Default mojo_media_services and mojo_media_host on various platforms.
-# Can be overridden by gn build arguments from the --args command line flag
-# for local testing.
-if (enable_mojo_media) {
-  if (is_chromecast) {
-    _default_mojo_media_services = cast_mojo_media_services
-    _default_mojo_media_host = cast_mojo_media_host
-  } else if (is_android) {
-    _default_mojo_media_services = [
-      "cdm",
-      "audio_decoder",
-      "video_decoder",
-    ]
-    _default_mojo_media_host = "gpu"
-  } else if (is_chromeos || is_mac || is_win ||
-             (is_desktop_linux && use_vaapi)) {
-    _default_mojo_media_services = [ "video_decoder" ]
-    _default_mojo_media_host = "gpu"
-  }
-
-  if (enable_library_cdms) {
-    _default_mojo_media_services += [ "cdm" ]
-
-    # Having a CDM running means it could require a CdmProxy running in the GPU
-    # process.
-    assert(
-        _default_mojo_media_host == "none" || _default_mojo_media_host == "gpu",
-        "For now, mojo_media_host should not overwrite it with a different " +
-            "value if it has been set.")
-    _default_mojo_media_host = "gpu"
-  }
+if (is_chromecast) {
+  _default_mojo_media_services = cast_mojo_media_services
+  _default_mojo_media_host = cast_mojo_media_host
+} else if (is_android) {
+  _default_mojo_media_services = [
+    "cdm",
+    "audio_decoder",
+    "video_decoder",
+  ]
+  _default_mojo_media_host = "gpu"
+} else if (is_chromeos || is_mac || is_win || (is_desktop_linux && use_vaapi)) {
+  _default_mojo_media_services = [ "video_decoder" ]
+  _default_mojo_media_host = "gpu"
 }
 
-# Use another declare_args() to pick up possible overrides of enable_mojo_media
-# from --args command line flags. See "gn help declare_args".
+# On Fuchsia, this is only enabled to build libclearkeycdm.so, the mojo CDM
+# service is not used.
+if (enable_library_cdms && !is_fuchsia) {
+  _default_mojo_media_services += [ "cdm" ]
+
+  # Having a CDM running means it could require a CdmProxy running in the GPU
+  # process.
+  assert(_default_mojo_media_host == "" || _default_mojo_media_host == "gpu",
+         "For now, mojo_media_host should not overwrite it with a different " +
+             "value if it has been set.")
+  _default_mojo_media_host = "gpu"
+}
+
 declare_args() {
   # A list of mojo media services that should be used in the media pipeline.
-  # Must not be empty if |enable_mojo_media| is true.
   # Valid entries in the list are:
   # - "renderer": Use mojo-based media Renderer service.
   # - "cdm": Use mojo-based Content Decryption Module.
@@ -266,10 +244,10 @@ declare_args() {
   # |mojo_media_services| still run in the MediaService in the process specified
   # by "mojo_media_host".
   # Valid options are:
-  # - "none": Do not use mojo media service.
   # - "browser": Use mojo media service hosted in the browser process.
   # - "gpu": Use mojo media service hosted in the gpu process.
   # - "utility": Use mojo media service hosted in the utility process.
+  # - "": Do not use mojo media service.
   mojo_media_host = _default_mojo_media_host
 }
 

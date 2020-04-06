@@ -15,7 +15,12 @@ namespace blink {
 class ComputedStyle;
 class SimpleFontData;
 
-enum class ResolvedUnderlinePosition { kRoman, kUnder, kOver };
+enum class ResolvedUnderlinePosition {
+  kNearAlphabeticBaselineAuto,
+  kNearAlphabeticBaselineFromFont,
+  kUnder,
+  kOver
+};
 
 // Holds text decoration painting values to be computed once and subsequently
 // use multiple times to handle decoration paint order correctly. See also

@@ -251,11 +251,13 @@ class FeedStreamTest : public testing::Test, public FeedStream::Delegate {
     feed::prefs::RegisterFeedSharedProfilePrefs(profile_prefs_.registry());
     feed::RegisterProfilePrefs(profile_prefs_.registry());
     CHECK_EQ(kTestTimeEpoch, task_environment_.GetMockClock()->Now());
+    ChromeInfo chrome_info;
+    chrome_info.channel = version_info::Channel::STABLE;
+    chrome_info.version = base::Version({99, 1, 9911, 2});
     stream_ = std::make_unique<FeedStream>(
         &refresh_scheduler_, &event_observer_, this, &profile_prefs_, &network_,
         store_.get(), task_environment_.GetMockClock(),
-        task_environment_.GetMockTickClock(),
-        task_environment_.GetMainThreadTaskRunner());
+        task_environment_.GetMockTickClock(), chrome_info);
 
     // Set the user classifier.
     auto user_classifier = std::make_unique<TestUserClassifier>(

@@ -179,11 +179,6 @@
       depends_on: ["IdleDetection"],
     },
     {
-      name: "LayoutAnimations",
-      feature_policy_name: "layout-animations",
-      depends_on: ["ExperimentalProductivityFeatures"],
-    },
-    {
       name: "LazyLoad",
       feature_policy_name: "lazyload",
       depends_on: ["ExperimentalProductivityFeatures"],

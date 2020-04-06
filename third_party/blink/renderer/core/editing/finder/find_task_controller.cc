@@ -6,6 +6,7 @@
 
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_idle_request_options.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_document_state.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/dom/scripted_idle_task_controller.h"
@@ -83,9 +84,9 @@ class FindTaskController::IdleFindTask
     Document* document = controller_->GetLocalFrame()->GetDocument();
     if (!document || document_ != document)
       return;
-    Document::ScopedForceActivatableDisplayLocks
-        forced_activatable_display_locks(
-            document->GetScopedForceActivatableLocks());
+    auto forced_activatable_display_locks =
+        document->GetDisplayLockDocumentState()
+            .GetScopedForceActivatableLocks();
     PositionInFlatTree search_start =
         PositionInFlatTree::FirstPositionInNode(*document);
     PositionInFlatTree search_end;

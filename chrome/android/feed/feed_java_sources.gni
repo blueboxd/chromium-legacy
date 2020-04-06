@@ -638,6 +638,7 @@ if (enable_feed_in_chrome) {
     "junit/src/org/chromium/chrome/browser/feed/FutureTaskConsumerTest.java",
     "junit/src/org/chromium/chrome/browser/feed/NtpStreamLifecycleManagerTest.java",
     "junit/src/org/chromium/chrome/browser/feed/action/FeedActionHandlerTest.java",
+    "junit/src/org/chromium/chrome/browser/feed/v2/FeedListContentManagerTest.java",
   ]
 
   feed_test_java_sources = [

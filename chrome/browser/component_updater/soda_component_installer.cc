@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
 #include "components/component_updater/component_updater_service.h"
@@ -119,8 +120,10 @@ std::vector<std::string> SODAComponentInstallerPolicy::GetMimeTypes() const {
 
 void UpdateSODAInstallDirPref(PrefService* prefs,
                               const base::FilePath& install_dir) {
+#if !defined(OS_ANDROID)
   prefs->SetFilePath(prefs::kSODAPath,
                      install_dir.Append(soda::kSodaBinaryRelativePath));
+#endif
 }
 
 void RegisterSODAComponent(ComponentUpdateService* cus,

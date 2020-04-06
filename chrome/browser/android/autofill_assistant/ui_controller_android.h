@@ -73,7 +73,12 @@ class UiControllerAndroid : public ControllerObserver {
   void Detach();
 
   // Returns true if the UI is attached to a delegate.
-  bool IsAttached() { return ui_delegate_; }
+  bool IsAttached() { return ui_delegate_ != nullptr; }
+
+  // Returns whether the UI is currently attached to the given delegate or not.
+  bool IsAttachedTo(UiDelegate* ui_delegate) {
+    return ui_delegate_ == ui_delegate;
+  }
 
   // Have the UI react as if a close or cancel button was pressed.
   //

@@ -92,17 +92,15 @@ void DrmThread::Start(base::OnceClosure receiver_completer,
     LOG(FATAL) << "Failed to create DRM thread";
 }
 
-void DrmThread::RunTaskAfterWindowReady(gfx::AcceleratedWidget window,
-                                        base::OnceClosure task,
+void DrmThread::RunTaskAfterDeviceReady(base::OnceClosure task,
                                         base::WaitableEvent* done) {
-  if (!device_manager_->GetDrmDevices().empty() &&
-      window <= last_created_window_) {
+  if (!device_manager_->GetDrmDevices().empty()) {
     std::move(task).Run();
     if (done)
       done->Signal();
     return;
   }
-  pending_tasks_[window].emplace_back(std::move(task), done);
+  pending_tasks_.emplace_back(std::move(task), done);
 }
 
 void DrmThread::Init() {
@@ -411,17 +409,13 @@ void DrmThread::AddDrmDeviceReceiver(
 void DrmThread::ProcessPendingTasks() {
   DCHECK(!device_manager_->GetDrmDevices().empty());
 
-  auto it = pending_tasks_.begin();
-  for (; it != pending_tasks_.end() && it->first <= last_created_window_;
-       ++it) {
-    for (auto& task_info : it->second) {
-      std::move(task_info.task).Run();
-      if (task_info.done)
-        task_info.done->Signal();
-    }
+  for (auto& task_info : pending_tasks_) {
+    std::move(task_info.task).Run();
+    if (task_info.done)
+      task_info.done->Signal();
   }
 
-  pending_tasks_.erase(pending_tasks_.begin(), it);
+  pending_tasks_.clear();
 }
 
 }  // namespace ui

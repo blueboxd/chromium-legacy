@@ -39,8 +39,10 @@ SystemFeature SystemFeaturesDisableListPolicyHandler::ConvertToEnum(
     const std::string& system_feature) {
   if (system_feature == "camera")
     return SystemFeature::CAMERA;
-  if (system_feature == "settings")
-    return SystemFeature::SETTINGS;
+  if (system_feature == "os_settings")
+    return SystemFeature::OS_SETTINGS;
+  if (system_feature == "browser_settings")
+    return SystemFeature::BROWSER_SETTINGS;
 
   NOTREACHED() << "Unsupported system feature: " << system_feature;
   return LAST_SYSTEM_FEATURE;

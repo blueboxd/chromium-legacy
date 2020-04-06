@@ -244,7 +244,7 @@ public final class DownloadNotificationFactory {
                 if (downloadUpdate.getTotalBytes() > 0 && !downloadUpdate.getIsOffTheRecord()) {
                     contentText = context.getResources().getString(
                             R.string.download_notification_completed_with_size,
-                            DownloadUtils.getStringForBytes(
+                            org.chromium.components.browser_ui.util.DownloadUtils.getStringForBytes(
                                     context, downloadUpdate.getTotalBytes()));
                 } else {
                     contentText = context.getResources().getString(

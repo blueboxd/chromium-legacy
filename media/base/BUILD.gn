@@ -269,7 +269,6 @@ jumbo_source_set("base") {
     "simple_watch_timer.h",
     "sinc_resampler.cc",
     "sinc_resampler.h",
-    "speech_recognition_client.h",
     "status.cc",
     "status.h",
     "status_codes.cc",
@@ -423,6 +422,10 @@ jumbo_source_set("base") {
     sources += [ "demuxer_memory_limit_android.cc" ]
   } else {
     sources += [ "demuxer_memory_limit_default.cc" ]
+  }
+
+  if (!is_android) {
+    sources += [ "speech_recognition_client.h" ]
   }
 
   if (enable_media_drm_storage) {

@@ -25,6 +25,7 @@ import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.components.browser_ui.util.DownloadUtils;
 import org.chromium.weblayer_private.interfaces.APICallException;
 import org.chromium.weblayer_private.interfaces.DownloadError;
 import org.chromium.weblayer_private.interfaces.DownloadState;
@@ -384,12 +385,6 @@ public final class DownloadImpl extends IDownload.Stub {
             mBuilder.setContentTitle((new File(location)).getName());
         }
 
-        if (getTotalBytes() > 0) {
-            int progressCurrent = (int) (getReceivedBytes() * 100 / getTotalBytes());
-
-            mBuilder.setProgress(100, progressCurrent, false);
-        }
-
         @DownloadState
         int state = getState();
         if (state == DownloadState.CANCELLED) {
@@ -415,15 +410,20 @@ public final class DownloadImpl extends IDownload.Stub {
             PendingIntent openPendingIntent =
                     PendingIntent.getBroadcast(context, mNotificationId, openIntent, 0);
 
-            mBuilder.setProgress(100, 100, false)
+            String contextText =
+                    resources.getString(R.string.download_notification_completed_with_size,
+                            DownloadUtils.getStringForBytes(context, getTotalBytes()));
+            mBuilder.setContentText(contextText)
                     .setOngoing(false)
                     .setSmallIcon(android.R.drawable.stat_sys_download_done)
                     .setContentIntent(openPendingIntent)
-                    .setAutoCancel(true);
+                    .setAutoCancel(true)
+                    .setProgress(0, 0, false);
         } else if (state == DownloadState.FAILED) {
             mBuilder.setContentText(resources.getString(R.string.download_notification_failed))
                     .setOngoing(false)
-                    .setSmallIcon(android.R.drawable.stat_sys_download_done);
+                    .setSmallIcon(android.R.drawable.stat_sys_download_done)
+                    .setProgress(0, 0, false);
         } else if (state == DownloadState.IN_PROGRESS) {
             Intent pauseIntent = createIntent();
             pauseIntent.setAction(PAUSE_INTENT);
@@ -431,10 +431,29 @@ public final class DownloadImpl extends IDownload.Stub {
             pauseIntent.putExtra(EXTRA_NOTIFICATION_PROFILE, mProfileName);
             PendingIntent pausePendingIntent =
                     PendingIntent.getBroadcast(context, mNotificationId, pauseIntent, 0);
-            mBuilder.addAction(0 /* no icon */,
+
+            long bytes = getReceivedBytes();
+            long totalBytes = getTotalBytes();
+            boolean indeterminate = totalBytes == -1;
+            int progressCurrent = -1;
+            if (!indeterminate) progressCurrent = (int) (bytes * 100 / totalBytes);
+
+            String contentText;
+            String bytesString = DownloadUtils.getStringForBytes(context, bytes);
+            if (indeterminate) {
+                contentText =
+                        resources.getString(R.string.download_ui_indeterminate_bytes, bytesString);
+            } else {
+                String totalString = DownloadUtils.getStringForBytes(context, totalBytes);
+                contentText = resources.getString(
+                        R.string.download_ui_determinate_bytes, bytesString, totalString);
+            }
+            mBuilder.setContentText(contentText)
+                    .addAction(0 /* no icon */,
                             resources.getString(R.string.download_notification_pause_button),
                             pausePendingIntent)
-                    .setSmallIcon(android.R.drawable.stat_sys_download);
+                    .setSmallIcon(android.R.drawable.stat_sys_download)
+                    .setProgress(100, progressCurrent, indeterminate);
         } else if (state == DownloadState.PAUSED) {
             Intent resumeIntent = createIntent();
             resumeIntent.setAction(RESUME_INTENT);
@@ -442,10 +461,12 @@ public final class DownloadImpl extends IDownload.Stub {
             resumeIntent.putExtra(EXTRA_NOTIFICATION_PROFILE, mProfileName);
             PendingIntent resumePendingIntent =
                     PendingIntent.getBroadcast(context, mNotificationId, resumeIntent, 0);
-            mBuilder.addAction(0 /* no icon */,
+            mBuilder.setContentText(resources.getString(R.string.download_notification_paused))
+                    .addAction(0 /* no icon */,
                             resources.getString(R.string.download_notification_resume_button),
                             resumePendingIntent)
-                    .setSmallIcon(android.R.drawable.ic_media_pause);
+                    .setSmallIcon(android.R.drawable.ic_media_pause)
+                    .setProgress(0, 0, false);
         }
 
         if (state == DownloadState.IN_PROGRESS || state == DownloadState.PAUSED) {

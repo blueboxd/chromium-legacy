@@ -139,7 +139,9 @@ class Range;
 
 namespace media {
 class MediaPermission;
+#if !defined(OS_ANDROID)
 class SpeechRecognitionClient;
+#endif
 }
 
 namespace service_manager {
@@ -641,8 +643,10 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebString& sink_id) override;
   std::unique_ptr<blink::WebContentSettingsClient>
   CreateWorkerContentSettingsClient() override;
+#if !defined(OS_ANDROID)
   std::unique_ptr<media::SpeechRecognitionClient>
   CreateSpeechRecognitionClient();
+#endif
   scoped_refptr<blink::WebWorkerFetchContext> CreateWorkerFetchContext()
       override;
   scoped_refptr<blink::WebWorkerFetchContext>

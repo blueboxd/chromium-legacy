@@ -2247,17 +2247,6 @@ are declared in tools/grit/grit_rule.gni.
         </message>
       </if>
 
-      <!-- Dialog that asks whether user wants to participate in Safe Browsing Extended Reporting -->
-      <message name="IDS_FEEDBACK_SERVICE_DIALOG_EXPLANATION_SCOUT" desc="Explanation of the dialog asking whether the user wants to upload some system information and page content for Safe Browsing analysis">
-        You can help improve Safe Browsing by sending some system information and page content to Google.
-      </message>
-      <message name="IDS_FEEDBACK_SERVICE_DIALOG_OK_BUTTON_LABEL" desc="Button that elects to upload suspected malicious files for analysis">
-        Yes, I want to help
-      </message>
-      <message name="IDS_FEEDBACK_SERVICE_DIALOG_CANCEL_BUTTON_LABEL" desc="Button that elects not to upload suspected malicious files for analysis (default button)">
-        No, thanks
-      </message>
-
       <!-- Ambient badge -->
       <if expr="is_android">
         <message name="IDS_AMBIENT_BADGE_INSTALL" desc="String for the ambient badge promoting an app installation">
@@ -6053,9 +6042,6 @@ the Bookmarks menu.">
         </message>
         <message name="IDS_FEEDBACK_ATTACH_FILE_LABEL" desc="Text for the label for the attached filename">
           Attach file
-        </message>
-        <message name="IDS_FEEDBACK_READING_FILE" desc="Text to display if reading a file when the user clicks the send report button">
-          Reading file..
         </message>
         <message name="IDS_FEEDBACK_ATTACH_FILE_TO_BIG" desc="Text to display if the file being attached is too big">
           Selected file is too big (max size: 3mb).

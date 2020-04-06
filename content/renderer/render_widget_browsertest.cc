@@ -248,11 +248,23 @@ TEST_F(RenderWidgetTest, CompositorIdHitTestAPIWithImplicitRootScroller) {
 
 TEST_F(RenderWidgetTest, FrameSinkIdHitTestAPI) {
   LoadHTML(
-      "<body style='padding: 0px; margin: 0px'>"
-      "<div style='background: green; padding: 100px; margin: 0px;'>"
-      "<iframe style='width: 200px; height: 100px;'"
-      "srcdoc='<body style=\"margin: 0px; height: 100px; width: 200px;\">"
-      "</body>'></iframe><div></body>");
+      R"HTML(
+      <style>
+      html, body {
+        margin :0px;
+        padding: 0px;
+      }
+      </style>
+
+      <div style='background: green; padding: 100px; margin: 0px;'>
+        <iframe style='width: 200px; height: 100px;'
+          srcdoc='<body style="margin : 0px; height : 100px; width : 200px;">
+          </body>'>
+        </iframe>
+      </div>
+
+      )HTML");
+
   gfx::PointF point;
   viz::FrameSinkId main_frame_sink_id =
       widget()->GetFrameSinkIdAtPoint(gfx::PointF(10, 10), &point);

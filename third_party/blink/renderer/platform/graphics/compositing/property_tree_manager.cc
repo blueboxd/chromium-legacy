@@ -1049,20 +1049,11 @@ void PropertyTreeManager::BuildEffectNodesRecursively(
   BuildEffectNodesRecursively(*next_effect.Parent());
   DCHECK_EQ(&next_effect.Parent()->Unalias(), current_.effect);
 
-  bool has_multiple_groups = false;
-  if (GetEffectTree().Node(next_effect.CcNodeId(new_sequence_number_))) {
-    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-      // TODO(crbug.com/1064341): We have to allow one blink effect node to
-      // apply to multiple groups in block fragments (multicol, etc.) due to
-      // the current FragmentClip implementation. This can only be fixed by
-      // LayoutNG block fragments. For now we'll create multiple cc effect
-      // nodes in the case.
-      has_multiple_groups = true;
-    } else {
-      NOTREACHED() << "Malformed paint artifact. Paint chunks under the same"
-                      " effect should be contiguous.";
-    }
-  }
+#if DCHECK_IS_ON()
+  DCHECK(!GetEffectTree().Node(next_effect.CcNodeId(new_sequence_number_)))
+      << "Malformed paint artifact. Paint chunks under the same effect should "
+         "be contiguous.";
+#endif
 
   auto backdrop_effect_state = kNoBackdropEffect;
   int output_clip_id = 0;
@@ -1089,16 +1080,14 @@ void PropertyTreeManager::BuildEffectNodesRecursively(
   int effect_node_id =
       GetEffectTree().Insert(cc::EffectNode(), current_.effect_id);
   auto& effect_node = *GetEffectTree().Node(effect_node_id);
-
-  if (!has_multiple_groups)
-    next_effect.SetCcNodeId(new_sequence_number_, effect_node_id);
+  next_effect.SetCcNodeId(new_sequence_number_, effect_node_id);
 
   PopulateCcEffectNode(effect_node, next_effect, output_clip_id,
                        backdrop_effect_state);
 
   CompositorElementId compositor_element_id =
       next_effect.GetCompositorElementId();
-  if (compositor_element_id && !has_multiple_groups) {
+  if (compositor_element_id) {
     DCHECK(!property_trees_.element_id_to_effect_node_index.contains(
         compositor_element_id));
     property_trees_.element_id_to_effect_node_index[compositor_element_id] =

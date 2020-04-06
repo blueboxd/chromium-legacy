@@ -524,7 +524,7 @@ void ExtensionManagement::Refresh() {
           AccessById(extension_misc::kCameraAppId)->installation_mode =
               INSTALLATION_BLOCKED;
           break;
-        case policy::SystemFeature::SETTINGS:
+        case policy::SystemFeature::OS_SETTINGS:
           AccessById(chromeos::default_web_apps::kOsSettingsAppId)
               ->installation_mode = INSTALLATION_BLOCKED;
           break;

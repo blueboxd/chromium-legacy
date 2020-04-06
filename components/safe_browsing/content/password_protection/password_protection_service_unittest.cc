@@ -1115,7 +1115,8 @@ TEST_P(PasswordProtectionServiceTest,
   InitializeAndStartPasswordEntryRequest(
       PasswordType::SAVED_PASSWORD,
       {{kSavedDomain, ASCIIToUTF16("username")},
-       {kSavedDomain2, ASCIIToUTF16("username")}},
+       {kSavedDomain2, ASCIIToUTF16("username")},
+       {"http://localhost:8080", ASCIIToUTF16("username")}},
       false /* match whitelist */, 100000 /* timeout in ms*/,
       web_contents.get());
   password_protection_service_->WaitForResponse();
@@ -1128,9 +1129,10 @@ TEST_P(PasswordProtectionServiceTest,
 
   if (password_protection_service_->IsExtendedReporting() &&
       !password_protection_service_->IsIncognito()) {
-    ASSERT_EQ(2, reuse_event.domains_matching_password_size());
-    EXPECT_EQ("saved_domain.com", reuse_event.domains_matching_password(0));
-    EXPECT_EQ("saved_domain2.com", reuse_event.domains_matching_password(1));
+    ASSERT_EQ(3, reuse_event.domains_matching_password_size());
+    EXPECT_EQ("localhost:8080", reuse_event.domains_matching_password(0));
+    EXPECT_EQ("saved_domain.com", reuse_event.domains_matching_password(1));
+    EXPECT_EQ("saved_domain2.com", reuse_event.domains_matching_password(2));
   } else {
     EXPECT_EQ(0, reuse_event.domains_matching_password_size());
   }

@@ -8,6 +8,8 @@ blink_core_sources("display_lock") {
   sources = [
     "display_lock_context.cc",
     "display_lock_context.h",
+    "display_lock_document_state.cc",
+    "display_lock_document_state.h",
     "display_lock_utilities.cc",
     "display_lock_utilities.h",
     "render_subtree_activation_event.cc",

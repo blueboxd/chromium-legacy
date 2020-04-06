@@ -24,8 +24,8 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.webapps.WebApkActivity;
 import org.chromium.chrome.browser.webapps.WebApkActivityLifecycleUmaTracker;
+import org.chromium.chrome.browser.webapps.WebappActivity;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -61,8 +61,8 @@ public class StartupLoadingMetricsTest {
     public ChromeTabbedActivityTestRule mTabbedActivityTestRule =
             new ChromeTabbedActivityTestRule();
     @Rule
-    public ChromeActivityTestRule<WebApkActivity> mWebApkActivityTestRule =
-            new ChromeActivityTestRule<>(WebApkActivity.class);
+    public ChromeActivityTestRule<WebappActivity> mWebApkActivityTestRule =
+            new ChromeActivityTestRule<>(WebappActivity.class);
 
     private String mTestPage;
     private String mTestPage2;
@@ -118,13 +118,13 @@ public class StartupLoadingMetricsTest {
 
     private void startWebApkActivity(final String startUrl) {
         Intent intent =
-                new Intent(InstrumentationRegistry.getTargetContext(), WebApkActivity.class);
+                new Intent(InstrumentationRegistry.getTargetContext(), WebappActivity.class);
         intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, "org.chromium.webapk.test");
         intent.putExtra(ShortcutHelper.EXTRA_URL, startUrl);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-        WebApkActivity webApkActivity =
-                (WebApkActivity) InstrumentationRegistry.getInstrumentation().startActivitySync(
+        WebappActivity webApkActivity =
+                (WebappActivity) InstrumentationRegistry.getInstrumentation().startActivitySync(
                         intent);
         mWebApkActivityTestRule.setActivity(webApkActivity);
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();

@@ -94,14 +94,14 @@ public class WebappLauncherActivity extends Activity {
 
     /**
      * Generates parameters for the WebAPK first run experience for the given intent. Returns null
-     * if the intent does not launch either a WebappLauncherActivity or a WebApkActivity. This
+     * if the intent does not launch either a WebappLauncherActivity or a WebAPK Activity. This
      * method is slow. It makes several PackageManager calls.
      */
     public static @Nullable WebApkInfo maybeSlowlyGenerateWebApkInfoFromIntent(Intent fromIntent) {
-        // Check for intents targeted at WebApkActivity, WebApkActivity0-9,
+        // Check for intents targeted at WebappActivity, WebappActivity0-9,
         // SameTaskWebApkActivity and WebappLauncherActivity.
         String targetActivityClassName = fromIntent.getComponent().getClassName();
-        if (!targetActivityClassName.startsWith(WebApkActivity.class.getName())
+        if (!targetActivityClassName.startsWith(WebappActivity.class.getName())
                 && !targetActivityClassName.equals(SameTaskWebApkActivity.class.getName())
                 && !targetActivityClassName.equals(WebappLauncherActivity.class.getName())) {
             return null;
@@ -268,13 +268,10 @@ public class WebappLauncherActivity extends Activity {
         if (info.isSplashProvidedByWebApk()) {
             return SameTaskWebApkActivity.class.getName();
         }
-        String activityName = info.isForWebApk() ? WebApkActivity.class.getName()
-                                                 : WebappActivity.class.getName();
+        String activityName = WebappActivity.class.getName();
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             // Specifically assign the app to a particular WebappActivity instance.
-            int namespace = info.isForWebApk()
-                    ? ActivityAssigner.ActivityAssignerNamespace.WEBAPK_NAMESPACE
-                    : ActivityAssigner.ActivityAssignerNamespace.WEBAPP_NAMESPACE;
+            int namespace = ActivityAssigner.ActivityAssignerNamespace.WEBAPP_NAMESPACE;
             int activityIndex = ActivityAssigner.instance(namespace).assign(info.id());
             activityName += String.valueOf(activityIndex);
         }

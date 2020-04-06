@@ -107,6 +107,7 @@ class DisplayColorManager;
 class DisplayConfigurationController;
 class DisplayConfigurationObserver;
 class DisplayErrorObserver;
+class DisplayHighlightController;
 class DisplayPrefs;
 class DisplayShutdownObserver;
 class DisplaySpeakerController;
@@ -347,6 +348,10 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
   DisplayErrorObserver* display_error_observer() {
     return display_error_observer_.get();
+  }
+
+  DisplayHighlightController* display_highlight_controller() {
+    return display_highlight_controller_.get();
   }
 
   DockedMagnifierControllerImpl* docked_magnifier_controller();
@@ -644,6 +649,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<DetachableBaseHandler> detachable_base_handler_;
   std::unique_ptr<DetachableBaseNotificationController>
       detachable_base_notification_controller_;
+  std::unique_ptr<DisplayHighlightController> display_highlight_controller_;
   std::unique_ptr<DisplaySpeakerController> display_speaker_controller_;
   std::unique_ptr<DragDropController> drag_drop_controller_;
   std::unique_ptr<FocusCycler> focus_cycler_;

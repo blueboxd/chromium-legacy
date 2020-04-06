@@ -612,7 +612,7 @@ test("test_opus_padding") {
 # Compilation fails on windows due to wstring/string mistmatch.
 # This is not worth looking at it since the benchmark is tailored for android.
 # It is ok to run it on linux though, for experimentation purpose.
-if (!is_win) {
+if (is_android || is_linux) {
   test("opus_tests") {
     sources = [ "tests/opus_benchmark.cc" ]
 

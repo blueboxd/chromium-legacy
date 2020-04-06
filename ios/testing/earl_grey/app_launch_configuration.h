@@ -23,9 +23,13 @@ typedef NS_ENUM(NSInteger, RelaunchPolicy) {
   // Forces a relaunch. Kills the app directly. Keeps app state the same as
   // before relaunch.
   ForceRelaunchByKilling,
+// TODO(crbug.com/1067821): This relaunch policy will cause failures in real
+// devices.
+#if TARGET_IPHONE_SIMULATOR
   // Forces a relaunch. Backgrounds and then kills the app. Keeps app state same
   // as before relaunch.
   ForceRelaunchByCleanShutdown,
+#endif
 };
 
 // Configuration for launching the app in EGTests.

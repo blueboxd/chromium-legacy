@@ -14,10 +14,10 @@ import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Context;
 import android.content.Intent;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -50,6 +50,10 @@ public class SettingsActivityTest {
         return (SettingsActivity) activity;
     }
 
+    @Rule
+    public SettingsActivityTestRule<MainSettings> mSettingsActivityTestRule =
+            new SettingsActivityTestRule<>(MainSettings.class);
+
     @Test
     @SmallTest
     @Policies.Add({ @Policies.Item(key = "PasswordManagerEnabled", string = "false") })
@@ -65,8 +69,7 @@ public class SettingsActivityTest {
             }
         });
 
-        SettingsActivityTest.startSettingsActivity(
-                InstrumentationRegistry.getInstrumentation(), MainSettings.class.getName());
+        mSettingsActivityTestRule.startSettingsActivity();
 
         onView(withText(R.string.password_settings_title)).perform(click());
         onView(withText(R.string.password_settings_save_passwords)).check(matches(isDisplayed()));

@@ -3565,11 +3565,11 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
       Wenn für die Richtlinie "false" festgelegt wird, können Nutzer nicht mehr durch diese Seiten klicken.</translation>
 <translation id="6319198883324703402">Zeitpunkt der ersten Nutzerbenachrichtigung zum Neustart festlegen</translation>
 <translation id="6342187235303612558">Nutzer am Hoch- oder Herunterladen von Dateien hindern, bei denen der Schutz vor Datenverlust oder der Malware-Scan nicht unterstützt wird.</translation>
-<translation id="6348718801326095108">Cookies, die von Seiten gesetzt werden, die diesen URL-Mustern entsprechen, sind auf die aktuelle Sitzung beschränkt. Sie werden also gelöscht, wenn der Browser beendet wird.
+<translation id="6348718801326095108">Cookies, die von Seiten gesetzt werden, die diesen URL-Mustern entsprechen, sind auf die aktuelle Sitzung beschränkt. Sie werden also gelöscht, wenn der Browser geschlossen wird.
 
           Für URLs, die diesen URL-Mustern nicht entsprechen, wird der globale Standardwert verwendet, entweder aus der Richtlinie "DefaultCookiesSetting", sofern diese konfiguriert ist, oder aus der persönlichen Konfiguration des Nutzers. Ist diese Richtlinie nicht konfiguriert, ist das für alle URLs der Fall.
 
-          Wird <ph name="PRODUCT_NAME" /> im Hintergrund ausgeführt, wird die Sitzung unter Umständen nicht beendet, wenn das letzte Browserfenster geschlossen wird. Sie bleibt aktiv, bis der Browser beendet wird. Weitere Informationen zu entsprechenden Konfigurationen finden Sie in der Richtlinie "BackgroundModeEnabled".
+          Wird <ph name="PRODUCT_NAME" /> im Hintergrund ausgeführt, wird die Sitzung unter Umständen nicht beendet, wenn das letzte Browserfenster geschlossen wird. Sie bleibt aktiv, bis der Browser geschlossen wird. Weitere Informationen zu entsprechenden Konfigurationen finden Sie in der Richtlinie "BackgroundModeEnabled".
 
           Sehen Sie sich auch die Richtlinien "CookiesAllowedForUrls" und "CookiesBlockedForUrls" an. Es darf keine widersprüchlichen URL-Muster zwischen diesen drei Richtlinien geben. Es ist nicht festgelegt, welche Richtlinie Vorrang hat.
 
@@ -3712,7 +3712,7 @@ Wenn diese Richtlinie nicht konfiguriert ist, können die Nutzer selbst wählen,
 
           Ist diese Richtlinie nicht konfiguriert, wird für alle Websites der globale Standardwert verwendet, entweder aus der Richtlinie "DefaultCookiesSetting", sofern diese konfiguriert ist, oder aus der persönlichen Konfiguration des Nutzers.
 
-          Sehen Sie sich auch die Richtlinien "CookiesBlockedForUrls" und "CookiesSessionOnlyForUrls". Es darf keine widersprüchlichen URL-Muster zwischen diesen drei Richtlinien geben. Es ist nicht festgelegt, welche Richtlinie Vorrang hat.
+          Sehen Sie sich auch die Richtlinien "CookiesBlockedForUrls" und "CookiesSessionOnlyForUrls" an. Es darf keine widersprüchlichen URL-Muster zwischen diesen drei Richtlinien geben. Es ist nicht festgelegt, welche Richtlinie Vorrang hat.
 
           Genaue Informationen zu gültigen URL-Mustern finden Sie unter https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="6553143066970470539">Displayhelligkeit in %</translation>

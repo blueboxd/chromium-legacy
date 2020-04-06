@@ -103,19 +103,19 @@ public class DownloadUtilsTest {
     public void testFormatBytesReceived() {
         final Context context = InstrumentationRegistry.getTargetContext();
         Assert.assertEquals("Downloaded 0.0 KB",
-                DownloadUtils.getStringForBytes(
+                org.chromium.components.browser_ui.util.DownloadUtils.getStringForBytes(
                         context, DownloadUtils.BYTES_DOWNLOADED_STRINGS, 0));
         Assert.assertEquals("Downloaded 0.5 KB",
-                DownloadUtils.getStringForBytes(
+                org.chromium.components.browser_ui.util.DownloadUtils.getStringForBytes(
                         context, DownloadUtils.BYTES_DOWNLOADED_STRINGS, 512));
         Assert.assertEquals("Downloaded 1.0 KB",
-                DownloadUtils.getStringForBytes(
+                org.chromium.components.browser_ui.util.DownloadUtils.getStringForBytes(
                         context, DownloadUtils.BYTES_DOWNLOADED_STRINGS, 1024));
         Assert.assertEquals("Downloaded 1.0 MB",
-                DownloadUtils.getStringForBytes(
+                org.chromium.components.browser_ui.util.DownloadUtils.getStringForBytes(
                         context, DownloadUtils.BYTES_DOWNLOADED_STRINGS, 1024 * 1024));
         Assert.assertEquals("Downloaded 1.0 GB",
-                DownloadUtils.getStringForBytes(
+                org.chromium.components.browser_ui.util.DownloadUtils.getStringForBytes(
                         context, DownloadUtils.BYTES_DOWNLOADED_STRINGS, 1024 * 1024 * 1024));
     }
 

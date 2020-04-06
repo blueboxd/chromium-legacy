@@ -8,8 +8,9 @@
 #include <string>
 
 #include "base/time/time.h"
-
+#include "components/feed/core/proto/v2/wire/client_info.pb.h"
 #include "components/feed/core/proto/v2/wire/content_id.pb.h"
+#include "components/feed/core/v2/types.h"
 
 namespace feedstore {
 class StreamData;
@@ -18,6 +19,8 @@ class StreamData;
 // Helper functions/classes for dealing with feed proto messages.
 
 namespace feed {
+using ContentId = feedwire::ContentId;
+struct ChromeInfo;
 
 std::string ContentIdString(const feedwire::ContentId&);
 bool Equal(const feedwire::ContentId& a, const feedwire::ContentId& b);
@@ -31,6 +34,8 @@ class ContentIdCompareFunctor {
     return CompareContentId(a, b);
   }
 };
+
+feedwire::ClientInfo CreateClientInfo(const ChromeInfo& chrome_info);
 
 }  // namespace feed
 

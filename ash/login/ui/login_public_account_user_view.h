@@ -29,6 +29,8 @@ class ASH_EXPORT LoginPublicAccountUserView : public NonAccessibleView,
 
     views::View* arrow_button() const;
 
+    void OnArrowTap() const;
+
    private:
     LoginPublicAccountUserView* const view_;
   };

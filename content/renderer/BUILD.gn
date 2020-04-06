@@ -191,6 +191,8 @@ target(link_target_type, "renderer") {
     "media/inspector_media_event_handler.h",
     "media/media_factory.cc",
     "media/media_factory.h",
+    "media/media_interface_factory.cc",
+    "media/media_interface_factory.h",
     "media/media_permission_dispatcher.cc",
     "media/media_permission_dispatcher.h",
     "media/power_status_helper_impl.cc",
@@ -657,13 +659,6 @@ target(link_target_type, "renderer") {
 
   if (enable_basic_printing) {
     deps += [ "//printing" ]
-  }
-
-  if (enable_mojo_media) {
-    sources += [
-      "media/media_interface_factory.cc",
-      "media/media_interface_factory.h",
-    ]
   }
 
   if (is_linux || is_android) {

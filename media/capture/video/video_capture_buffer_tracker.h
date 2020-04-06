@@ -62,6 +62,6 @@ class CAPTURE_EXPORT VideoCaptureBufferTracker {
   int frame_feedback_id_;
 };
 
-}  // namespace content
+}  // namespace media
 
 #endif  // MEDIA_CAPTURE_VIDEO_VIDEO_CAPTURE_BUFFER_TRACKER_H_

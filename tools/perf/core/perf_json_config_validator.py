@@ -13,23 +13,13 @@ _VALID_SWARMING_DIMENSIONS = {
     'gpu', 'device_ids', 'os', 'pool', 'perf_tests', 'perf_tests_with_args',
     'device_os', 'device_type', 'device_os_flavor', 'id',
     'synthetic_product_name'}
-# TODO(crbug.com/812428): Remove the template versions once the pools
-# get merged back in.
 _DEFAULT_VALID_PERF_POOLS = {
-    'chrome.tests.perf',
-    'chrome.tests.perf-webview',
+    'chrome.tests.perf', 'chrome.tests.perf-webview',
     'chrome.tests.perf-weblayer',
-    'chrome.tests.perf-fyi',
-    'chrome.tests.perf-webview-fyi',
-    'chrome.tests.perf.template',
-    'chrome.tests.perf-webview.template',
-    'chrome.tests.perf-weblayer.template',
-    'chrome.tests.perf-fyi.template',
-    'chrome.tests.perf-webview-fyi.template',
-}
+    'chrome.tests.perf-fyi', 'chrome.tests.perf-webview-fyi'}
 _VALID_PERF_POOLS = {
-    'android-builder-perf': {'chrome.tests', 'chrome.tests.template'},
-    'android_arm64-builder-perf': {'chrome.tests', 'chrome.tests.template'},
+    'android-builder-perf': {'chrome.tests'},
+    'android_arm64-builder-perf': {'chrome.tests'},
     'chromeos-kevin-perf-fyi': {'luci.chrome.cros-dut'},
 }
 

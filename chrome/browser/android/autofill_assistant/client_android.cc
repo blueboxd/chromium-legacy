@@ -97,8 +97,7 @@ ClientAndroid::ClientAndroid(content::WebContents* web_contents)
     : web_contents_(web_contents),
       java_object_(Java_AutofillAssistantClient_create(
           AttachCurrentThread(),
-          reinterpret_cast<intptr_t>(this))) {
-}
+          reinterpret_cast<intptr_t>(this))) {}
 
 ClientAndroid::~ClientAndroid() {
   if (controller_ != nullptr && started_) {
@@ -419,10 +418,11 @@ void ClientAndroid::AttachUI(
     }
   }
 
-  if (!ui_controller_android_->IsAttached()) {
+  if (!ui_controller_android_->IsAttached() ||
+      (controller_ != nullptr &&
+       !ui_controller_android_->IsAttachedTo(controller_.get()))) {
     if (!controller_)
       CreateController(nullptr);
-
     ui_controller_android_->Attach(web_contents_, this, controller_.get());
   }
 

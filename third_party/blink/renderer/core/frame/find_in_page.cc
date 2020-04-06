@@ -37,6 +37,7 @@
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_plugin_document.h"
 #include "third_party/blink/public/web/web_widget_client.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_document_state.h"
 #include "third_party/blink/renderer/core/editing/finder/text_finder.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -176,8 +177,10 @@ bool FindInPage::FindInternal(int identifier,
   // Unlikely, but just in case we try to find-in-page on a detached frame.
   DCHECK(frame_->GetFrame()->GetPage());
 
-  auto forced_activatable_locks =
-      frame_->GetFrame()->GetDocument()->GetScopedForceActivatableLocks();
+  auto forced_activatable_locks = frame_->GetFrame()
+                                      ->GetDocument()
+                                      ->GetDisplayLockDocumentState()
+                                      .GetScopedForceActivatableLocks();
 
   // Up-to-date, clean tree is required for finding text in page, since it
   // relies on TextIterator to look over the text.

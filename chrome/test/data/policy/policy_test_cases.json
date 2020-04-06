@@ -3676,7 +3676,7 @@
     "policy_pref_mapping_test": [
       {
         "policies": {
-          "SystemFeaturesDisableList": ["settings"]
+          "SystemFeaturesDisableList": ["os_settings"]
         },
         "prefs": { "policy.system_features_disable_list": { "local_state": true } }
       }
@@ -5615,6 +5615,20 @@
         }
       }
     }
+  },
+
+  "CrostiniArcAdbSideloadingAllowed": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "CrostiniArcAdbSideloadingAllowed": 0 },
+        "prefs": { "crostini.arc_adb_sideloading.user_pref": {} }
+      },
+      {
+        "policies": { "CrostiniArcAdbSideloadingAllowed": 1 },
+        "prefs": { "crostini.arc_adb_sideloading.user_pref": {} }
+      }
+    ]
   },
 
   "DeviceSamlLoginAuthenticationType": {},

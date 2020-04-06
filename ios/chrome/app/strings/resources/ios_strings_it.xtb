@@ -168,6 +168,7 @@
 <translation id="3112556859945124369">Segna come…</translation>
 <translation id="3153862085237805241">Salva carta</translation>
 <translation id="3157684681743766797">Segna tutti come...</translation>
+<translation id="3161291298470460782">In questo modo il tuo account verrà disconnesso, la sincronizzazione verrà disattivata e tutti i dati di Chrome verranno eliminati da questo dispositivo. I tuoi dati sincronizzati rimarranno nel tuo Account Google.</translation>
 <translation id="3175081911749765310">Servizi web</translation>
 <translation id="3178650076442119961">Attivo oggi</translation>
 <translation id="3207960819495026254">Aggiunto ai preferiti</translation>
@@ -200,6 +201,7 @@
 <translation id="3494788280727468875">Conferma cancellazione dati di navigazione</translation>
 <translation id="35083190962747987">Apri ${url}</translation>
 <translation id="3519193562722059437">Apri una scheda per navigare sul Web.</translation>
+<translation id="3523473570015918798">Se ti disconnetti, i preferiti, la cronologia, le password e altri dati di Chrome non verranno più sincronizzati con il tuo Account Google.</translation>
 <translation id="3527085408025491307">Cartella</translation>
 <translation id="3529024052484145543">Non sicuro</translation>
 <translation id="3533202363250687977">Chiudi tutte le schede in incognito*</translation>
@@ -333,6 +335,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="54401264925851789">Info sicurezza pagina</translation>
 <translation id="5443952882982198570">Carte di credito</translation>
 <translation id="5457907402803865181">Errore durante la sincronizzazione delle password.</translation>
+<translation id="5508435575041083207">Esci e cancella i dati da questo dispositivo</translation>
 <translation id="5525269841082836315">Crea passphrase</translation>
 <translation id="5548760955356983418">Handoff ti consente di iniziare a consultare un sito web su questo dispositivo per poi continuare facilmente sul Mac. Il sito web attualmente aperto verrà visualizzato nel Dock sul Mac.
 
@@ -506,6 +509,9 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="766891008101699113">Per navigare sul Web in privato, aggiungi una nuova scheda.</translation>
 <translation id="7671141431838911305">INSTALLA</translation>
 <translation id="7765158879357617694">Sposta</translation>
+<translation id="7771470029643830783">Se ti disconnetti, i preferiti, la cronologia, le password e altri dati di Chrome non verranno più sincronizzati con il tuo Account Google.
+
+Poiché il tuo account è gestito da <ph name="HOSTED_DOMAIN" />, i tuoi dati di Chrome verranno eliminati da questo dispositivo quando ti disconnetterai. I tuoi dati sincronizzati rimarranno nel tuo Account Google.</translation>
 <translation id="7772032839648071052">Conferma passphrase</translation>
 <translation id="7781011649027948662">Tradurre la pagina?</translation>
 <translation id="7781829728241885113">Ieri</translation>
@@ -555,6 +561,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="8490978609246021741">Salva modifiche</translation>
 <translation id="8503813439785031346">Nome utente</translation>
 <translation id="850600235656508448">Apri in modalità di navigazione in incognito</translation>
+<translation id="8510057420705599706">In questo modo il tuo account verrà disconnesso e la sincronizzazione verrà disattivata, ma i preferiti, la cronologia, le password e altri dati di Chrome rimarranno salvati nel dispositivo.</translation>
 <translation id="8517375800490286174">Licenze open source</translation>
 <translation id="8524799873541103884">Schede <ph name="INCOGNITO" /> dalla <ph name="FIRST_VISIBLE_TAB" /> alla <ph name="LAST_VISIBLE_TAB" /> di <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">Novità</translation>
@@ -597,6 +604,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="9094033019050270033">Aggiorna password</translation>
 <translation id="9100610230175265781">Passphrase obbligatoria</translation>
 <translation id="9148126808321036104">Esegui di nuovo l'accesso</translation>
+<translation id="9152539721251340337">Crea un codice QR</translation>
 <translation id="9157836665414082580">Elimina finestre di dialogo</translation>
 <translation id="9188680907066685419">Esci dall'account gestito</translation>
 <translation id="9203116392574189331">Handoff</translation>

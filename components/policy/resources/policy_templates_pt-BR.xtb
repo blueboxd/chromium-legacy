@@ -1162,6 +1162,7 @@ Se esta política não for definida, a tela de privacidade ficará desativada in
 <translation id="2592162121850992309">Se esta política for definida como verdadeira ou não for definida, a aceleração de hardware será ativada, a menos que um determinado recurso de GPU seja incluído na lista de proibições.
 
       Se a política for definida como falsa, a aceleração de hardware será desativada.</translation>
+<translation id="2593762551209145088">O "Navegação segura" nunca está ativado.</translation>
 <translation id="2596260130957832043">Controla se a política NTLMv2 está ativada.
 
           Todas as versões recentes dos servidores Samba e Windows são compatíveis com NTLMv2. Esta política só deve ser desativada para compatibilidade com versões anteriores e reduz a segurança da autenticação.
@@ -1231,6 +1232,7 @@ Se esta política não for definida, a tela de privacidade ficará desativada in
 
       Consulte https://developers.google.com/safe-browsing para ver mais informações sobre o recurso "Navegação segura".</translation>
 <translation id="2706708761587205154">Permitir impressão apenas com PIN</translation>
+<translation id="2707873794476722903">O "Navegação segura" está ativo no modo padrão.</translation>
 <translation id="2710534340210290498">Se esta política for definida como falsa, os usuários não conseguirão bloquear a tela, apenas sair da sessão do usuário. Se esta política for definida como verdadeira ou não for definida, os usuários que tiverem feito a autenticação com uma senha poderão bloquear a tela.</translation>
 <translation id="2731627323327011390">Desativar o uso de certificados do <ph name="PRODUCT_OS_NAME" /> para apps Arc</translation>
 <translation id="2742843273354638707">Oculta o link do aplicativo e do rodapé da Chrome Web Store na página "Nova guia" e no iniciador de aplicativos do <ph name="PRODUCT_OS_NAME" />.
@@ -2321,6 +2323,19 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
 <translation id="437791893267799639">Política não definida. Bloquear migração de dados e ARC</translation>
 <translation id="4389073105055031853">Permitir que os usuários gerenciem todos os certificados</translation>
 <translation id="4389091865841123886">Configurar a declaração remota com mecanismo TPM</translation>
+<translation id="4401496838830169080">Permite que você controle se o recurso "Navegação segura" do <ph name="PRODUCT_NAME" /> está ativado e em que modo ele opera.
+
+      Se esta política for definida como "NoProtection" (valor 0), o "Navegação segura" nunca estará ativo.
+
+      Se a política for definida como "StandardProtection" (valor 1, que é o padrão), o "Navegação segura" sempre estará ativo no modo padrão.
+
+      Se a política for definida como "EnhancedProtection" (valor 2), o "Navegação segura" sempre estará ativo no modo avançado, que oferece maior segurança, mas requer o compartilhamento de mais informações de navegação com o Google.
+
+      Se você definir esta política como obrigatória, os usuários não poderão mudar ou substituir a configuração "Navegação segura" no <ph name="PRODUCT_NAME" />.
+
+      Se esta política não for definida, o "Navegação segura" operará no modo "Proteção padrão", mas os usuários poderão mudar a configuração.
+
+      Consulte https://developers.google.com/safe-browsing (em inglês) para ver mais informações sobre o "Navegação segura".</translation>
 <translation id="4408428864159735559">Lista de compartilhamentos de arquivos de rede pré-configurados.</translation>
 <translation id="4410236409016356088">Ativar o acelerador de largura de banda da rede</translation>
 <translation id="441217499641439905">Desativar o Google Drive em conexões celulares no app Arquivos do <ph name="PRODUCT_OS_NAME" /></translation>
@@ -3416,6 +3431,7 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 <translation id="6111936128861357925">Permitir jogo easter egg de dinossauro</translation>
 <translation id="6114416803310251055">obsoleto</translation>
 <translation id="6133088669883929098">Permitir que todos os sites usem a geração de chaves</translation>
+<translation id="6135398260575578389">O "Navegação segura" está ativo no modo avançado. Esse modo oferece maior segurança, mas requer o compartilhamento de mais informações de navegação com o Google.</translation>
 <translation id="6136537398661737682">Esta política controla o estado inicial dos Serviços de localização do Google.
 
       Quando esta política não estiver configurada ou estiver definida como <ph name="GLS_DISABLED" />, os Serviços de localização do Google estarão inicialmente desativados.
@@ -4393,6 +4409,23 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
 <translation id="7687943045976362719">Se esta política for definida, os tipos de conteúdo especificados serão processados pelo <ph name="PRODUCT_FRAME_NAME" />.
 
 Se esta política não for definida, o renderizador padrão será usado para todos os sites. A política <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> pode ser usada para configurar o renderizador padrão.</translation>
+<translation id="7691028179743802462">Essa política está obsoleta na versão M83, use a SafeBrowsingProtectionLevel.
+
+      Ativa o recurso "Navegação segura" do <ph name="PRODUCT_NAME" /> e impede que os usuários mudem essa configuração.
+
+      Se você ativar a configuração, o "Navegação segura" ficará sempre ativado.
+
+      Se você desativá-la, o "Navegação segura" nunca ficará ativado.
+
+      Se você ativar ou desativar essa configuração, os usuários não poderão mudar ou substituir a configuração "Ativar proteção contra phishing e malware" no <ph name="PRODUCT_NAME" />.
+
+      Se esta política não for definida, a configuração será ativada, mas os usuários não poderão mudá-la.
+
+      Consulte https://developers.google.com/safe-browsing (em inglês) para ver mais informações sobre o "Navegação segura".
+
+      Esta política está disponível apenas em instâncias do Windows associadas a um domínio do <ph name="MS_AD_NAME" /> ou instâncias do Windows 10 Pro ou Enterprise inscritas no gerenciamento de dispositivos.
+
+      Se a política SafeBrowsingProtectionLevel for definida, o valor da política SafeBrowsingEnabled será ignorado.</translation>
 <translation id="7694245791806617022">Controla se o recurso "Lembrar senha" está ativado na caixa de diálogo de autenticação do Kerberos. As senhas são armazenadas de maneira criptografada no disco e só podem ser acessadas pelo daemon do sistema Kerberos e durante uma sessão do usuário.
 
           Se esta política for ativada ou não estiver definida, o usuário poderá decidir se as senhas do Kerberos serão memorizadas, para que ele não precise digitá-las novamente. Os tíquetes do Kerberos serão buscados automaticamente, a não ser que uma autenticação adicional seja necessária (autenticação de dois fatores).
@@ -4983,6 +5016,7 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 
           Para informações detalhadas sobre padrões de URL válidos, consulte https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns (em inglês).</translation>
 <translation id="8661297125441579970">Bloquear migração de dados e ARC.</translation>
+<translation id="8665314828727504286">Nível de proteção do "Navegação segura"</translation>
 <translation id="8672321184841719703">Versão de atualização automática de destino</translation>
 <translation id="867410340948518937">Segundo fator universal (U2F, na sigla em inglês)</translation>
 <translation id="8685024486845674965">O aviso de proteção de senha é acionado pela reutilização da senha</translation>

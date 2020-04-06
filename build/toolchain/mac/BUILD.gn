@@ -421,27 +421,16 @@ template("mac_toolchain") {
 
     tool("copy_bundle_data") {
       # copy_command use hardlink if possible but this does not work with
-      # directories. If source is a directory, instead use "pax" to create
-      # the same tree structure using hardlinks to individual files (this
-      # preserve symbolic links too) as recommended in the replies to the
-      # question at http://serverfault.com/q/209888/43689 ("cp -al" isn't
-      # available on macOS).
+      # directories. Also when running EG2 tests from Xcode, Xcode tries to
+      # copy some files into the application bundle which fails if source
+      # and destination are hardlinked together.
       #
-      # According to the man page for pax, the commands to use to clone
-      # olddir to newdir using pax are the following:
-      #
-      #   $ mkdir newdir
-      #   $ cd olddir
-      #   $ pax -rwl . ../newdir
-      #
-      # The _copydir command does exactly that but use an absolute path
-      # constructed using shell variable $OLDPWD (automatically set when
-      # cd is used) as computing the relative path is a bit complex and
-      # using pwd would requires a sub-shell to be created.
-      _copydir = "mkdir -p {{output}} && cd {{source}} && " +
-                 "pax -rwl . \"\$OLDPWD\"/{{output}}"
-      command = "rm -rf {{output}} && if [[ -d {{source}} ]]; then " +
-                _copydir + "; else " + copy_command + "; fi"
+      # Instead use clonefile to copy the files which is as efficient as
+      # hardlink but ensure the file have distinct metadata (thus avoid the
+      # error with ditto, see https://crbug.com/1042182).
+      command =
+          "rm -rf {{output}} && cp -fRc {{source}} {{output}} 2>/dev/null " +
+          "|| (rm -rf {{output}} && cp -fR {{source}} {{output}})"
 
       description = "COPY_BUNDLE_DATA {{source}} {{output}}"
       pool = ":bundle_pool($default_toolchain)"

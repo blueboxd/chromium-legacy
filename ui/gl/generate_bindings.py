@@ -540,7 +540,8 @@ GL_FUNCTIONS = [
 { 'return_type': 'void',
   'known_as': 'glDrawArraysInstancedBaseInstanceANGLE',
   #TODO(shrekshao): workaround when native support not available for cmd decoder
-  'versions' : [{ 'name': 'glDrawArraysInstancedBaseInstance' },
+  'versions' : [{ 'name': 'glDrawArraysInstancedBaseInstance',
+                 'extensions': ['GL_ARB_base_instance'] },
                 { 'name': 'glDrawArraysInstancedBaseInstanceEXT' },
                 { 'name': 'glDrawArraysInstancedBaseInstanceANGLE',
                  'extensions': ['GL_ANGLE_base_vertex_base_instance'] }],
@@ -569,7 +570,8 @@ GL_FUNCTIONS = [
 { 'return_type': 'void',
   'known_as': 'glDrawElementsInstancedBaseVertexBaseInstanceANGLE',
   #TODO(shrekshao): workaround when native support not available for cmd decoder
-  'versions' : [{ 'name': 'glDrawElementsInstancedBaseVertexBaseInstance' },
+  'versions' : [{ 'name': 'glDrawElementsInstancedBaseVertexBaseInstance',
+                 'extensions': ['GL_ARB_base_instance'] },
                 { 'name': 'glDrawElementsInstancedBaseVertexBaseInstanceEXT' },
                 { 'name': 'glDrawElementsInstancedBaseVertexBaseInstanceANGLE',
                  'extensions': ['GL_ANGLE_base_vertex_base_instance'] }],

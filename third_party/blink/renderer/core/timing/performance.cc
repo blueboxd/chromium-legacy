@@ -739,7 +739,7 @@ PerformanceMark* Performance::mark(ScriptState* script_state,
       (mark_options->hasStartTime() || mark_options->hasDetail())) {
     UseCounter::Count(GetExecutionContext(), WebFeature::kUserTimingL3);
   }
-  PerformanceMark* performance_mark = GetUserTiming().CreatePerformanceMark(
+  PerformanceMark* performance_mark = PerformanceMark::Create(
       script_state, mark_name, mark_options, exception_state);
   if (performance_mark) {
     GetUserTiming().AddMarkToPerformanceTimeline(*performance_mark);

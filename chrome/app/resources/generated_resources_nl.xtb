@@ -826,6 +826,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="2119349053129246860">Openen in <ph name="APP" /></translation>
 <translation id="2120297377148151361">Activiteit en interacties</translation>
 <translation id="2120639962942052471"><ph name="PERMISSION" /> geblokkeerd</translation>
+<translation id="2121055421682309734">{COUNT,plural, =0{Cookies worden geblokkeerd}=1{Cookies worden geblokkeerd, 1 uitzondering}other{Cookies worden geblokkeerd, {COUNT} uitzonderingen}}</translation>
 <translation id="2121825465123208577">Formaat aanpassen</translation>
 <translation id="2122305276694332719">Als er automatisch verbinding wordt gemaakt met een verborgen netwerk, kunnen anderen je apparaat en bepaalde netwerkinstellingen zien. Dit wordt niet aanbevolen.</translation>
 <translation id="2123766928840368256">Een ander bestand kiezen</translation>

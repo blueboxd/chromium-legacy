@@ -490,15 +490,16 @@ void ContentSettingsAgentImpl::PersistClientHints(
   // merged or overridden. Also, determine if the merger should happen on the
   // browser side or the renderer. If the value needs to be overridden,
   // this method should not return early if |update_count| is 0.
-  std::vector<::blink::mojom::WebClientHintsType> client_hints;
+  std::vector<::network::mojom::WebClientHintsType> client_hints;
   static constexpr size_t kWebClientHintsCount =
-      static_cast<size_t>(blink::mojom::WebClientHintsType::kMaxValue) + 1;
+      static_cast<size_t>(network::mojom::WebClientHintsType::kMaxValue) + 1;
   client_hints.reserve(kWebClientHintsCount);
 
   for (size_t i = 0; i < kWebClientHintsCount; ++i) {
     if (enabled_client_hints.IsEnabled(
-            static_cast<blink::mojom::WebClientHintsType>(i))) {
-      client_hints.push_back(static_cast<blink::mojom::WebClientHintsType>(i));
+            static_cast<network::mojom::WebClientHintsType>(i))) {
+      client_hints.push_back(
+          static_cast<network::mojom::WebClientHintsType>(i));
     }
   }
   size_t update_count = client_hints.size();

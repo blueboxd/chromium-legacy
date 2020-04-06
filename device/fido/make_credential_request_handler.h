@@ -60,12 +60,31 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
       base::Optional<AuthenticatorMakeCredentialResponse>,
       const FidoAuthenticator*)>;
 
+  // Options contains higher-level request parameters that aren't part of the
+  // makeCredential request itself, or that need to be combined with knowledge
+  // of the specific authenticator, thus don't live in
+  // |CtapMakeCredentialRequest|.
+  struct COMPONENT_EXPORT(DEVICE_FIDO) Options {
+    Options();
+    ~Options();
+    Options(const Options&);
+
+    bool allow_skipping_pin_touch = false;
+    base::Optional<AndroidClientDataExtensionInput> android_client_data_ext;
+
+    // cred_protect_request extends |CredProtect| to include information that
+    // applies at request-routing time. The second element is true if the
+    // indicated protection level must be provided by the target authenticator
+    // for the MakeCredential request to be sent.
+    base::Optional<std::pair<CredProtectRequest, bool>> cred_protect_request;
+  };
+
   MakeCredentialRequestHandler(
       FidoDiscoveryFactory* fido_discovery_factory,
       const base::flat_set<FidoTransportProtocol>& supported_transports,
       CtapMakeCredentialRequest request_parameter,
       AuthenticatorSelectionCriteria authenticator_criteria,
-      bool allow_skipping_pin_touch,
+      const Options& options,
       CompletionCallback completion_callback);
   ~MakeCredentialRequestHandler() override;
 
@@ -110,15 +129,16 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
                      base::Optional<pin::TokenResponse> response);
   void DispatchRequestWithToken(pin::TokenResponse token);
 
+  void SpecializeRequestForAuthenticator(
+      CtapMakeCredentialRequest* request,
+      const FidoAuthenticator* authenticator);
+
   CompletionCallback completion_callback_;
   State state_ = State::kWaitingForTouch;
   CtapMakeCredentialRequest request_;
   AuthenticatorSelectionCriteria authenticator_selection_criteria_;
-  base::Optional<AndroidClientDataExtensionInput> android_client_data_ext_;
+  const Options options_;
 
-  // If true, the request handler may skip the first touch to select a device
-  // that will require a PIN.
-  bool allow_skipping_pin_touch_;
   // authenticator_ points to the authenticator that will be used for this
   // operation. It's only set after the user touches an authenticator to select
   // it, after which point that authenticator will be used exclusively through

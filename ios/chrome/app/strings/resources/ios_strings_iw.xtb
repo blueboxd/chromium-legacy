@@ -168,6 +168,7 @@
 <translation id="3112556859945124369">סמן…</translation>
 <translation id="3153862085237805241">שמור כרטיס</translation>
 <translation id="3157684681743766797">סמן הכול…</translation>
+<translation id="3161291298470460782">‏הפעולה הזו תוציא אותך מהחשבון, תשבית את הסנכרון ותנקה את כל נתוני Chrome מהמכשיר הזה. הנתונים המסונכרנים יישארו בחשבון Google שלך.</translation>
 <translation id="3175081911749765310">שירותי אינטרנט</translation>
 <translation id="3178650076442119961">פעילות אחרונה: היום</translation>
 <translation id="3207960819495026254">מסומן בסימניה</translation>
@@ -200,6 +201,7 @@
 <translation id="3494788280727468875">אישור הניקוי של נתוני הגלישה</translation>
 <translation id="35083190962747987">‏פתיחה של ${url}</translation>
 <translation id="3519193562722059437">פתח כרטיסייה כדי לגלוש באינטרנט.</translation>
+<translation id="3523473570015918798">‏יציאה תפסיק את הסנכרון של הסימניות, ההיסטוריה, הסיסמאות ונתונים אחרים ב-Chrome עם חשבון Google.</translation>
 <translation id="3527085408025491307">תיקיה</translation>
 <translation id="3529024052484145543">לא מאובטח</translation>
 <translation id="3533202363250687977">סגירה של כל כרטיסיות הגלישה בסתר</translation>
@@ -333,6 +335,7 @@
 <translation id="54401264925851789">פרטי אבטחת דף</translation>
 <translation id="5443952882982198570">כרטיסי אשראי</translation>
 <translation id="5457907402803865181">אירעה שגיאה בסנכרון הסיסמאות.</translation>
+<translation id="5508435575041083207">יציאה וניקוי נתונים מהמכשיר הזה</translation>
 <translation id="5525269841082836315">צור סיסמה</translation>
 <translation id="5548760955356983418">‏Handoff מאפשר לך להתחיל לגלוש באתר מסוים במכשיר הזה ולאחר מכן להמשיך בקלות ב-Mac. האתר הפתוח הנוכחי יופיע ב-Dock של ה-Mac שלך.
 
@@ -506,6 +509,9 @@
 <translation id="766891008101699113">כדי לגלוש באינטרנט בפרטיות צריך להוסיף כרטיסייה חדשה.</translation>
 <translation id="7671141431838911305">התקנה</translation>
 <translation id="7765158879357617694">העברה</translation>
+<translation id="7771470029643830783">‏יציאה תפסיק את הסנכרון של הסימניות, ההיסטוריה, הסיסמאות ונתונים אחרים ב-Chrome עם חשבון Google.
+
+החשבון שלך מנוהל על-ידי <ph name="HOSTED_DOMAIN" />, ולכן הנתונים מ-Chrome יימחקו מהמכשיר הזה בעת היציאה מהחשבון. הנתונים המסונכרנים יישארו בחשבון Google שלך.</translation>
 <translation id="7772032839648071052">אשר משפט-סיסמה</translation>
 <translation id="7781011649027948662">לתרגם את הדף?</translation>
 <translation id="7781829728241885113">אתמול</translation>
@@ -555,6 +561,7 @@
 <translation id="8490978609246021741">שמירת השינויים</translation>
 <translation id="8503813439785031346">שם משתמש</translation>
 <translation id="850600235656508448">פתיחה במצב גלישה בסתר</translation>
+<translation id="8510057420705599706">‏הפעולה הזו תוציא אותך מהחשבון ותשבית את הסנכרון, אבל הסימניות, ההיסטוריה, הסיסמאות ונתונים אחרים ב-Chrome יישארו במכשיר הזה.</translation>
 <translation id="8517375800490286174">רישיונות קוד פתוח</translation>
 <translation id="8524799873541103884">כרטיסיות <ph name="INCOGNITO" /> ‏<ph name="FIRST_VISIBLE_TAB" /> עד <ph name="LAST_VISIBLE_TAB" /> מתוך <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">חדש</translation>
@@ -597,6 +604,7 @@
 <translation id="9094033019050270033">עדכן סיסמה</translation>
 <translation id="9100610230175265781">יש להזין ביטוי סיסמה</translation>
 <translation id="9148126808321036104">היכנס שוב</translation>
+<translation id="9152539721251340337">‏יצירת קוד QR</translation>
 <translation id="9157836665414082580">הסתר תיבות דו-שיח</translation>
 <translation id="9188680907066685419">צא מהחשבון המנוהל</translation>
 <translation id="9203116392574189331">Handoff</translation>

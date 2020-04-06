@@ -82,7 +82,8 @@ FeedService::FeedService(
     signin::IdentityManager* identity_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner,
-    const std::string& api_key)
+    const std::string& api_key,
+    const ChromeInfo& chrome_info)
     : delegate_(std::move(delegate)),
       refresh_task_scheduler_(std::move(refresh_task_scheduler)) {
   stream_delegate_ = std::make_unique<StreamDelegateImpl>(local_state);
@@ -97,7 +98,7 @@ FeedService::FeedService(
       nullptr,  // TODO(harringtond): Implement EventObserver.
       stream_delegate_.get(), profile_prefs, feed_network_.get(), store_.get(),
       base::DefaultClock::GetInstance(), base::DefaultTickClock::GetInstance(),
-      background_task_runner);
+      chrome_info);
 
   stream_delegate_->Initialize(static_cast<FeedStream*>(stream_.get()));
 

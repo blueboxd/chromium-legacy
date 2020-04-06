@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -71,9 +72,12 @@ class UnsyncedCredentialsDeletionNotifierImpl
 
   // Finds the last active tab and notifies their ManagePasswordsUIController.
   void Notify(const std::vector<autofill::PasswordForm>& credentials) override;
+  base::WeakPtr<UnsyncedCredentialsDeletionNotifier> GetWeakPtr() override;
 
  private:
   Profile* const profile_;
+  base::WeakPtrFactory<UnsyncedCredentialsDeletionNotifier> weak_ptr_factory_{
+      this};
 };
 
 UnsyncedCredentialsDeletionNotifierImpl::
@@ -94,6 +98,11 @@ void UnsyncedCredentialsDeletionNotifierImpl::Notify(
   if (!ui_controller)
     return;
   ui_controller->NotifyUnsyncedCredentialsWillBeDeleted(credentials);
+}
+
+base::WeakPtr<PasswordStore::UnsyncedCredentialsDeletionNotifier>
+UnsyncedCredentialsDeletionNotifierImpl::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 }  // namespace

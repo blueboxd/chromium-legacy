@@ -178,6 +178,11 @@ enum NonContainerWindowId {
   // The window that shows the Virtual Desks bar at the top of overview. There's
   // only one such window on each display when overview mode is active.
   kShellWindowId_DesksBarWindow,
+
+  // The window that shows a blue highlight on the edges of a selected display.
+  // Only one window exists whenever the display settings page is open with
+  // multiple displays connected.
+  kShellWindowId_DisplayIdentificationHighlightWindow,
 };
 
 // A list of system modal container IDs. The order of the list is important that

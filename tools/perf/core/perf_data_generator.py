@@ -96,115 +96,115 @@ class TEST_TYPES(object):
 LIGHTWEIGHT_TESTERS = ['linux-perf-fyi']
 
 FYI_BUILDERS = {
-    'android-nexus5x-perf-fyi': {
-        'tests': [{
-            'isolate':
-            'performance_test_suite',
-            'extra_args': [
-                '--output-format=histograms',
-                '--experimental-tbmv3-metrics',
-            ],
-        }],
-        'platform':
-        'android-chrome',
-        'dimension': {
-            'pool': 'chrome.tests.perf-fyi.template',
-            'os': 'Android',
-            'device_type': 'bullhead',
-            'device_os': 'MMB29Q',
-            'device_os_flavor': 'google',
-        },
-    },
-    'android-pixel2-perf-fyi': {
-        'tests': [{
-            'isolate': 'performance_test_suite',
-        }],
-        'platform': 'android-chrome',
-        'browser': 'bin/monochrome_64_32_bundle',
-        'dimension': {
-            'pool': 'chrome.tests.perf-fyi.template',
-            'os': 'Android',
-            'device_type': 'walleye',
-            'device_os': 'O',
-            'device_os_flavor': 'google',
-        },
-    },
-    'android-pixel2-perf-aab-fyi': {
-        'tests': [{
-            'isolate': 'performance_test_suite',
-            'extra_args': [
-                '--run-ref-build',
-            ],
-        }],
-        'platform':
-        'android-chrome-bundle',
-        'dimension': {
-            'pool': 'chrome.tests.perf-fyi.template',
-            'os': 'Android',
-            'device_type': 'walleye',
-            'device_os': 'O',
-            'device_os_flavor': 'google',
-        },
-    },
-    'linux-perf-fyi': {
-        'tests': [{
-            'isolate':
-            'performance_test_suite',
-            'extra_args': [
-                '--output-format=histograms',
-                '--experimental-tbmv3-metrics',
-            ],
-        }],
-        'platform':
-        'linux',
-        'dimension': {
-            'gpu': '10de',
-            'id': 'build186-b7',
-            'os': 'Ubuntu-14.04',
-            'pool': 'chrome.tests.perf-fyi.template',
-        },
-    },
-    'win-10_laptop_low_end-perf_HP-Candidate': {
-        'tests': [
-            {
-                'isolate': 'performance_test_suite',
-            },
+  'android-nexus5x-perf-fyi': {
+    'tests': [
+      {
+        'isolate': 'performance_test_suite',
+        'extra_args': [
+          '--output-format=histograms',
+          '--experimental-tbmv3-metrics',
         ],
-        'platform': 'win',
-        'target_bits': 64,
-        'dimension': {
-            'pool': 'chrome.tests.perf-fyi.template',
-            'id': 'build370-a7',
-            # TODO(crbug.com/971204): Explicitly set the gpu to None to make
-            # chromium_swarming recipe_module ignore this dimension.
-            'gpu': None,
-            'os': 'Windows-10',
-        },
+      }
+    ],
+    'platform': 'android-chrome',
+    'dimension': {
+      'pool': 'chrome.tests.perf-fyi',
+      'os': 'Android',
+      'device_type': 'bullhead',
+      'device_os': 'MMB29Q',
+      'device_os_flavor': 'google',
     },
-    'chromeos-kevin-perf-fyi': {
-        'tests': [
-            {
-                'isolate':
-                'performance_test_suite',
-                'extra_args': [
-                    # The magic hostname that resolves to a CrOS device in the test lab
-                    '--remote=variable_chromeos_device_hostname',
-                ],
-            },
+  },
+  'android-pixel2-perf-fyi': {
+    'tests': [
+      {
+        'isolate': 'performance_test_suite',
+      }
+    ],
+    'platform': 'android-chrome',
+    'browser': 'bin/monochrome_64_32_bundle',
+    'dimension': {
+      'pool': 'chrome.tests.perf-fyi',
+      'os': 'Android',
+      'device_type': 'walleye',
+      'device_os': 'O',
+      'device_os_flavor': 'google',
+    },
+  },
+  'android-pixel2-perf-aab-fyi': {
+    'tests': [
+      {
+        'isolate': 'performance_test_suite',
+        'extra_args': [
+           '--run-ref-build',
         ],
-        'platform':
-        'chromeos',
-        'target_bits':
-        32,
-        'dimension': {
-            'pool': 'luci.chrome.cros-dut',
-            # TODO(crbug.com/971204): Explicitly set the gpu to None to make
-            # chromium_swarming recipe_module ignore this dimension.
-            'gpu': None,
-            'os': 'ChromeOS',
-            'device_type': 'kevin',
-        },
+      }
+    ],
+    'platform': 'android-chrome-bundle',
+    'dimension': {
+      'pool': 'chrome.tests.perf-fyi',
+      'os': 'Android',
+      'device_type': 'walleye',
+      'device_os': 'O',
+      'device_os_flavor': 'google',
     },
+  },
+  'linux-perf-fyi': {
+    'tests': [
+      {
+        'isolate': 'performance_test_suite',
+        'extra_args': [
+            '--output-format=histograms',
+            '--experimental-tbmv3-metrics',
+        ],
+      }
+    ],
+    'platform': 'linux',
+    'dimension': {
+      'gpu': '10de',
+      'id': 'build186-b7',
+      'os': 'Ubuntu-14.04',
+      'pool': 'chrome.tests.perf-fyi',
+    },
+  },
+  'win-10_laptop_low_end-perf_HP-Candidate': {
+    'tests': [
+      {
+        'isolate': 'performance_test_suite',
+      },
+    ],
+    'platform': 'win',
+    'target_bits': 64,
+    'dimension': {
+      'pool': 'chrome.tests.perf-fyi',
+      'id': 'build370-a7',
+      # TODO(crbug.com/971204): Explicitly set the gpu to None to make
+      # chromium_swarming recipe_module ignore this dimension.
+      'gpu': None,
+      'os': 'Windows-10',
+    },
+  },
+  'chromeos-kevin-perf-fyi': {
+    'tests': [
+      {
+        'isolate': 'performance_test_suite',
+        'extra_args': [
+            # The magic hostname that resolves to a CrOS device in the test lab
+            '--remote=variable_chromeos_device_hostname',
+        ],
+      },
+    ],
+    'platform': 'chromeos',
+    'target_bits': 32,
+    'dimension': {
+      'pool': 'luci.chrome.cros-dut',
+      # TODO(crbug.com/971204): Explicitly set the gpu to None to make
+      # chromium_swarming recipe_module ignore this dimension.
+      'gpu': None,
+      'os': 'ChromeOS',
+      'device_type': 'kevin',
+    },
+  },
 }
 
 # These configurations are taken from chromium_perf.py in
@@ -223,377 +223,370 @@ FYI_BUILDERS = {
 # bisecting Chrome builds with their web tests. For questions or to report
 # issues, please contact johnchen@chromium.org.
 BUILDERS = {
-    'android-builder-perf': {
-        'additional_compile_targets':
-        ['microdump_stackwalk', 'angle_perftests', 'chrome_apk'],
-        'tests': [
-            {
-                'name': 'resource_sizes_chrome_apk',
-                'isolate': 'resource_sizes_chrome_apk',
-                'type': TEST_TYPES.GENERIC,
-            },
-            {
-                'name': 'resource_sizes_chrome_public_apk',
-                'isolate': 'resource_sizes_chrome_public_apk',
-                'type': TEST_TYPES.GENERIC,
-            },
-            {
-                'name': 'resource_sizes_monochrome_minimal_apks',
-                'isolate': 'resource_sizes_monochrome_minimal_apks',
-                'type': TEST_TYPES.GENERIC,
-            },
-            {
-                'name': 'resource_sizes_monochrome_public_minimal_apks',
-                'isolate': 'resource_sizes_monochrome_public_minimal_apks',
-                'type': TEST_TYPES.GENERIC,
-            },
-            {
-                'name': 'resource_sizes_chrome_modern_minimal_apks',
-                'isolate': 'resource_sizes_chrome_modern_minimal_apks',
-                'type': TEST_TYPES.GENERIC,
-            },
-            {
-                'name': 'resource_sizes_chrome_modern_public_minimal_apks',
-                'isolate': 'resource_sizes_chrome_modern_public_minimal_apks',
-                'type': TEST_TYPES.GENERIC,
-            },
-            {
-                'name': 'resource_sizes_trichrome_google',
-                'isolate': 'resource_sizes_trichrome_google',
-                'type': TEST_TYPES.GENERIC,
-            },
-            {
-                'name': 'resource_sizes_system_webview_apk',
-                'isolate': 'resource_sizes_system_webview_apk',
-                'type': TEST_TYPES.GENERIC,
-            },
-            {
-                'name': 'resource_sizes_system_webview_google_apk',
-                'isolate': 'resource_sizes_system_webview_google_apk',
-                'type': TEST_TYPES.GENERIC,
-            },
+  'android-builder-perf': {
+    'additional_compile_targets': [
+      'microdump_stackwalk', 'angle_perftests', 'chrome_apk'
+    ],
+    'tests': [
+      {
+        'name': 'resource_sizes_chrome_apk',
+        'isolate': 'resource_sizes_chrome_apk',
+        'type': TEST_TYPES.GENERIC,
+      },
+      {
+        'name': 'resource_sizes_chrome_public_apk',
+        'isolate': 'resource_sizes_chrome_public_apk',
+        'type': TEST_TYPES.GENERIC,
+      },
+      {
+        'name': 'resource_sizes_monochrome_minimal_apks',
+        'isolate': 'resource_sizes_monochrome_minimal_apks',
+        'type': TEST_TYPES.GENERIC,
+      },
+      {
+        'name': 'resource_sizes_monochrome_public_minimal_apks',
+        'isolate': 'resource_sizes_monochrome_public_minimal_apks',
+        'type': TEST_TYPES.GENERIC,
+      },
+      {
+        'name': 'resource_sizes_chrome_modern_minimal_apks',
+        'isolate': 'resource_sizes_chrome_modern_minimal_apks',
+        'type': TEST_TYPES.GENERIC,
+      },
+      {
+        'name': 'resource_sizes_chrome_modern_public_minimal_apks',
+        'isolate': 'resource_sizes_chrome_modern_public_minimal_apks',
+        'type': TEST_TYPES.GENERIC,
+      },
+      {
+        'name': 'resource_sizes_trichrome_google',
+        'isolate': 'resource_sizes_trichrome_google',
+        'type': TEST_TYPES.GENERIC,
+      },
+      {
+        'name': 'resource_sizes_system_webview_apk',
+        'isolate': 'resource_sizes_system_webview_apk',
+        'type': TEST_TYPES.GENERIC,
+      },
+      {
+        'name': 'resource_sizes_system_webview_google_apk',
+        'isolate': 'resource_sizes_system_webview_google_apk',
+        'type': TEST_TYPES.GENERIC,
+      },
+    ],
+    'dimension': {
+      'os': 'Ubuntu-16.04',
+      'pool': 'chrome.tests',
+    },
+    'perf_trigger': False,
+  },
+  'android_arm64-builder-perf': {
+    'additional_compile_targets': [
+      'microdump_stackwalk', 'angle_perftests', 'chrome_apk'
+    ],
+    'tests': [
+      {
+        'name': 'resource_sizes_chrome_public_apk',
+        'isolate': 'resource_sizes_chrome_public_apk',
+        'type': TEST_TYPES.GENERIC,
+      },
+      {
+        'name': 'resource_sizes_monochrome_minimal_apks',
+        'isolate': 'resource_sizes_monochrome_minimal_apks',
+        'type': TEST_TYPES.GENERIC,
+      },
+      {
+        'name': 'resource_sizes_monochrome_public_minimal_apks',
+        'isolate': 'resource_sizes_monochrome_public_minimal_apks',
+        'type': TEST_TYPES.GENERIC,
+      },
+      {
+        'name': 'resource_sizes_chrome_modern_minimal_apks',
+        'isolate': 'resource_sizes_chrome_modern_minimal_apks',
+        'type': TEST_TYPES.GENERIC,
+      },
+      {
+        'name': 'resource_sizes_chrome_modern_public_minimal_apks',
+        'isolate': 'resource_sizes_chrome_modern_public_minimal_apks',
+        'type': TEST_TYPES.GENERIC,
+      },
+      {
+        'name': 'resource_sizes_trichrome_google',
+        'isolate': 'resource_sizes_trichrome_google',
+        'type': TEST_TYPES.GENERIC,
+      },
+      {
+        'name': 'resource_sizes_system_webview_apk',
+        'isolate': 'resource_sizes_system_webview_apk',
+        'type': TEST_TYPES.GENERIC,
+      },
+      {
+        'name': 'resource_sizes_system_webview_google_apk',
+        'isolate': 'resource_sizes_system_webview_google_apk',
+        'type': TEST_TYPES.GENERIC,
+      },
+    ],
+    'dimension': {
+      'os': 'Ubuntu-16.04',
+      'pool': 'chrome.tests',
+    },
+    'perf_trigger': False,
+  },
+  'linux-builder-perf': {
+    'additional_compile_targets': ['chromedriver'],
+  },
+  'mac-builder-perf': {
+    'additional_compile_targets': ['chromedriver'],
+  },
+  'win32-builder-perf': {
+    'additional_compile_targets': ['chromedriver'],
+  },
+  'win64-builder-perf': {
+    'additional_compile_targets': ['chromedriver'],
+  },
+
+  'android-go-perf': {
+    'tests': [
+      {
+        'name': 'performance_test_suite',
+        'isolate': 'performance_test_suite',
+      }
+    ],
+    'platform': 'android-chrome',
+    'dimension': {
+      'device_os': 'OMB1.180119.001',
+      'device_type': 'gobo',
+      'device_os_flavor': 'google',
+      'pool': 'chrome.tests.perf',
+      'os': 'Android',
+    },
+  },
+  'android-go_webview-perf': {
+    'tests': [
+      {
+        'isolate': 'performance_webview_test_suite',
+      }
+    ],
+    'platform': 'android-webview-google',
+    'dimension': {
+      'pool': 'chrome.tests.perf-webview',
+      'os': 'Android',
+      'device_type': 'gobo',
+      'device_os': 'OMB1.180119.001',
+      'device_os_flavor': 'google',
+    },
+  },
+  'Android Nexus5 Perf': {
+    'tests': [
+      {
+        'isolate': 'performance_test_suite',
+        'extra_args': [
+            '--assert-gpu-compositing',
         ],
-        'dimension': {
-            'os': 'Ubuntu-16.04',
-            'pool': 'chrome.tests.template',
-        },
-        'perf_trigger':
-        False,
+      },
+    ],
+    'platform': 'android',
+    'dimension': {
+      'pool': 'chrome.tests.perf',
+      'os': 'Android',
+      'device_type': 'hammerhead',
+      'device_os': 'M4B30Z',
+      'device_os_flavor': 'google',
     },
-    'android_arm64-builder-perf': {
-        'additional_compile_targets':
-        ['microdump_stackwalk', 'angle_perftests', 'chrome_apk'],
-        'tests': [
-            {
-                'name': 'resource_sizes_chrome_public_apk',
-                'isolate': 'resource_sizes_chrome_public_apk',
-                'type': TEST_TYPES.GENERIC,
-            },
-            {
-                'name': 'resource_sizes_monochrome_minimal_apks',
-                'isolate': 'resource_sizes_monochrome_minimal_apks',
-                'type': TEST_TYPES.GENERIC,
-            },
-            {
-                'name': 'resource_sizes_monochrome_public_minimal_apks',
-                'isolate': 'resource_sizes_monochrome_public_minimal_apks',
-                'type': TEST_TYPES.GENERIC,
-            },
-            {
-                'name': 'resource_sizes_chrome_modern_minimal_apks',
-                'isolate': 'resource_sizes_chrome_modern_minimal_apks',
-                'type': TEST_TYPES.GENERIC,
-            },
-            {
-                'name': 'resource_sizes_chrome_modern_public_minimal_apks',
-                'isolate': 'resource_sizes_chrome_modern_public_minimal_apks',
-                'type': TEST_TYPES.GENERIC,
-            },
-            {
-                'name': 'resource_sizes_trichrome_google',
-                'isolate': 'resource_sizes_trichrome_google',
-                'type': TEST_TYPES.GENERIC,
-            },
-            {
-                'name': 'resource_sizes_system_webview_apk',
-                'isolate': 'resource_sizes_system_webview_apk',
-                'type': TEST_TYPES.GENERIC,
-            },
-            {
-                'name': 'resource_sizes_system_webview_google_apk',
-                'isolate': 'resource_sizes_system_webview_google_apk',
-                'type': TEST_TYPES.GENERIC,
-            },
+  },
+  'Android Nexus5X WebView Perf': {
+    'tests': [
+      {
+        'isolate': 'performance_webview_test_suite',
+        'extra_args': [
+            '--assert-gpu-compositing',
         ],
-        'dimension': {
-            'os': 'Ubuntu-16.04',
-            'pool': 'chrome.tests.template',
-        },
-        'perf_trigger':
-        False,
+      }
+    ],
+    'platform': 'android-webview',
+    'dimension': {
+      'pool': 'chrome.tests.perf-webview',
+      'os': 'Android',
+      'device_type': 'bullhead',
+      'device_os': 'MOB30K',
+      'device_os_flavor': 'aosp',
     },
-    'linux-builder-perf': {
-        'additional_compile_targets': ['chromedriver'],
+  },
+  'android-pixel2_webview-perf': {
+    'tests': [
+      {
+        'isolate': 'performance_webview_test_suite',
+      }
+    ],
+    'platform': 'android-webview-google',
+    'dimension': {
+      'pool': 'chrome.tests.perf-webview',
+      'os': 'Android',
+      'device_type': 'walleye',
+      'device_os': 'OPM1.171019.021',
+      'device_os_flavor': 'google',
     },
-    'mac-builder-perf': {
-        'additional_compile_targets': ['chromedriver'],
+  },
+  'android-pixel2_weblayer-perf': {
+    'tests': [
+      {
+        'isolate': 'performance_weblayer_test_suite',
+      }
+    ],
+    'platform': 'android-weblayer',
+    'dimension': {
+      'pool': 'chrome.tests.perf-weblayer',
+      'os': 'Android',
+      'device_type': 'walleye',
+      'device_os': 'OPM1.171019.021',
+      'device_os_flavor': 'google',
     },
-    'win32-builder-perf': {
-        'additional_compile_targets': ['chromedriver'],
+  },
+  'android-pixel2-perf': {
+    'tests': [
+      {
+        'isolate': 'performance_test_suite',
+      }
+    ],
+    'platform': 'android-chrome',
+    'dimension': {
+      'pool': 'chrome.tests.perf',
+      'os': 'Android',
+      'device_type': 'walleye',
+      'device_os': 'OPM1.171019.021',
+      'device_os_flavor': 'google',
     },
-    'win64-builder-perf': {
-        'additional_compile_targets': ['chromedriver'],
-    },
-    'android-go-perf': {
-        'tests': [{
-            'name': 'performance_test_suite',
-            'isolate': 'performance_test_suite',
-        }],
-        'platform':
-        'android-chrome',
-        'dimension': {
-            'device_os': 'OMB1.180119.001',
-            'device_type': 'gobo',
-            'device_os_flavor': 'google',
-            'pool': 'chrome.tests.perf.template',
-            'os': 'Android',
-        },
-    },
-    'android-go_webview-perf': {
-        'tests': [{
-            'isolate': 'performance_webview_test_suite',
-        }],
-        'platform': 'android-webview-google',
-        'dimension': {
-            'pool': 'chrome.tests.perf-webview.template',
-            'os': 'Android',
-            'device_type': 'gobo',
-            'device_os': 'OMB1.180119.001',
-            'device_os_flavor': 'google',
-        },
-    },
-    'Android Nexus5 Perf': {
-        'tests': [
-            {
-                'isolate': 'performance_test_suite',
-                'extra_args': [
-                    '--assert-gpu-compositing',
-                ],
-            },
+  },
+  'win-10_laptop_low_end-perf': {
+    'tests': [
+      {
+        'isolate': 'performance_test_suite',
+        'extra_args': [
+            '--assert-gpu-compositing',
         ],
-        'platform':
-        'android',
-        'dimension': {
-            'pool': 'chrome.tests.perf.template',
-            'os': 'Android',
-            'device_type': 'hammerhead',
-            'device_os': 'M4B30Z',
-            'device_os_flavor': 'google',
-        },
+      },
+    ],
+    'platform': 'win',
+    'target_bits': 64,
+    'dimension': {
+      'pool': 'chrome.tests.perf',
+      # Explicitly set GPU driver version and Windows OS version such
+      # that we can be informed if this
+      # version ever changes or becomes inconsistent. It is important
+      # that bots are homogeneous. See crbug.com/988045 for history.
+      'os': 'Windows-10-18363.476',
+      'gpu': '8086:1616-20.19.15.5070',
+      # TODO(crbug.com/998161): Add synthetic product name for these.
+      # They don't have this dimension yet as I am writing this CL since
+      # they are since in pool 'unassigned'.
     },
-    'Android Nexus5X WebView Perf': {
-        'tests': [{
-            'isolate': 'performance_webview_test_suite',
-            'extra_args': [
-                '--assert-gpu-compositing',
-            ],
-        }],
-        'platform':
-        'android-webview',
-        'dimension': {
-            'pool': 'chrome.tests.perf-webview.template',
-            'os': 'Android',
-            'device_type': 'bullhead',
-            'device_os': 'MOB30K',
-            'device_os_flavor': 'aosp',
-        },
-    },
-    'android-pixel2_webview-perf': {
-        'tests': [{
-            'isolate': 'performance_webview_test_suite',
-        }],
-        'platform': 'android-webview-google',
-        'dimension': {
-            'pool': 'chrome.tests.perf-webview.template',
-            'os': 'Android',
-            'device_type': 'walleye',
-            'device_os': 'OPM1.171019.021',
-            'device_os_flavor': 'google',
-        },
-    },
-    'android-pixel2_weblayer-perf': {
-        'tests': [{
-            'isolate': 'performance_weblayer_test_suite',
-        }],
-        'platform': 'android-weblayer',
-        'dimension': {
-            'pool': 'chrome.tests.perf-weblayer.template',
-            'os': 'Android',
-            'device_type': 'walleye',
-            'device_os': 'OPM1.171019.021',
-            'device_os_flavor': 'google',
-        },
-    },
-    'android-pixel2-perf': {
-        'tests': [{
-            'isolate': 'performance_test_suite',
-        }],
-        'platform': 'android-chrome',
-        'dimension': {
-            'pool': 'chrome.tests.perf.template',
-            'os': 'Android',
-            'device_type': 'walleye',
-            'device_os': 'OPM1.171019.021',
-            'device_os_flavor': 'google',
-        },
-    },
-    'win-10_laptop_low_end-perf': {
-        'tests': [
-            {
-                'isolate': 'performance_test_suite',
-                'extra_args': [
-                    '--assert-gpu-compositing',
-                ],
-            },
+  },
+  'win-10-perf': {
+    'tests': [
+      {
+        'isolate': 'performance_test_suite',
+        'extra_args': [
+            '--assert-gpu-compositing',
         ],
-        'platform':
-        'win',
-        'target_bits':
-        64,
-        'dimension': {
-            'pool': 'chrome.tests.perf.template',
-            # Explicitly set GPU driver version and Windows OS version such
-            # that we can be informed if this
-            # version ever changes or becomes inconsistent. It is important
-            # that bots are homogeneous. See crbug.com/988045 for history.
-            'os': 'Windows-10-18363.476',
-            'gpu': '8086:1616-20.19.15.5070',
-            # TODO(crbug.com/998161): Add synthetic product name for these.
-            # They don't have this dimension yet as I am writing this CL since
-            # they are since in pool 'unassigned'.
-        },
+      },
+    ],
+    'platform': 'win',
+    'target_bits': 64,
+    'dimension': {
+      'pool': 'chrome.tests.perf',
+      # Explicitly set GPU driver version and Windows OS version such
+      # that we can be informed if this
+      # version ever changes or becomes inconsistent. It is important
+      # that bots are homogeneous. See crbug.com/988045 for history.
+      'os': 'Windows-10-16299.309',
+      'gpu': '8086:5912-23.20.16.4877',
+      'synthetic_product_name': 'OptiPlex 7050 (Dell Inc.)'
     },
-    'win-10-perf': {
-        'tests': [
-            {
-                'isolate': 'performance_test_suite',
-                'extra_args': [
-                    '--assert-gpu-compositing',
-                ],
-            },
+  },
+  'Win 7 Perf': {
+    'tests': [
+      {
+        'isolate': 'performance_test_suite',
+      },
+    ],
+    'platform': 'win',
+    'target_bits': 32,
+    'dimension': {
+        'gpu': '102b:0532-6.1.7600.16385',
+        'os': 'Windows-2008ServerR2-SP1',
+        'pool': 'chrome.tests.perf',
+        'synthetic_product_name': 'PowerEdge R210 II (Dell Inc.)',
+    },
+  },
+  'Win 7 Nvidia GPU Perf': {
+    'tests': [
+      {
+        'isolate': 'performance_test_suite',
+        'extra_args': [
+            '--assert-gpu-compositing',
         ],
-        'platform':
-        'win',
-        'target_bits':
-        64,
-        'dimension': {
-            'pool': 'chrome.tests.perf.template',
-            # Explicitly set GPU driver version and Windows OS version such
-            # that we can be informed if this
-            # version ever changes or becomes inconsistent. It is important
-            # that bots are homogeneous. See crbug.com/988045 for history.
-            'os': 'Windows-10-16299.309',
-            'gpu': '8086:5912-23.20.16.4877',
-            'synthetic_product_name': 'OptiPlex 7050 (Dell Inc.)'
-        },
+      },
+    ],
+    'platform': 'win',
+    'target_bits': 64,
+    'dimension': {
+        'gpu': '10de:1cb3-23.21.13.8792',
+        'os': 'Windows-2008ServerR2-SP1',
+        'pool': 'chrome.tests.perf',
+        'synthetic_product_name': 'PowerEdge R220 [01] (Dell Inc.)'
     },
-    'Win 7 Perf': {
-        'tests': [
-            {
-                'isolate': 'performance_test_suite',
-            },
+  },
+  'mac-10_12_laptop_low_end-perf': {
+    'tests': [
+      {
+        'isolate': 'performance_test_suite',
+        'extra_args': [
+            '--assert-gpu-compositing',
         ],
-        'platform': 'win',
-        'target_bits': 32,
-        'dimension': {
-            'gpu': '102b:0532-6.1.7600.16385',
-            'os': 'Windows-2008ServerR2-SP1',
-            'pool': 'chrome.tests.perf.template',
-            'synthetic_product_name': 'PowerEdge R210 II (Dell Inc.)',
-        },
+      },
+    ],
+    'platform': 'mac',
+    'dimension': {
+      'gpu': '8086:1626',
+      'os': 'Mac-10.12.6',
+      'pool': 'chrome.tests.perf',
+      'synthetic_product_name': 'MacBookAir7,2_x86-64-i5-5350U_Intel Broadwell HD Graphics 6000_8192_APPLE SSD SM0128G'
     },
-    'Win 7 Nvidia GPU Perf': {
-        'tests': [
-            {
-                'isolate': 'performance_test_suite',
-                'extra_args': [
-                    '--assert-gpu-compositing',
-                ],
-            },
+  },
+  'linux-perf': {
+    'tests': [
+      {
+        'isolate': 'performance_test_suite',
+        'extra_args': [
+            '--assert-gpu-compositing',
         ],
-        'platform':
-        'win',
-        'target_bits':
-        64,
-        'dimension': {
-            'gpu': '10de:1cb3-23.21.13.8792',
-            'os': 'Windows-2008ServerR2-SP1',
-            'pool': 'chrome.tests.perf.template',
-            'synthetic_product_name': 'PowerEdge R220 [01] (Dell Inc.)'
-        },
+      },
+    ],
+    'platform': 'linux',
+    'dimension': {
+      'gpu': '10de:1cb3-384.90',
+      'os': 'Ubuntu-14.04',
+      'pool': 'chrome.tests.perf',
+      'synthetic_product_name': 'PowerEdge R230 (Dell Inc.)'
     },
-    'mac-10_12_laptop_low_end-perf': {
-        'tests': [
-            {
-                'isolate': 'performance_test_suite',
-                'extra_args': [
-                    '--assert-gpu-compositing',
-                ],
-            },
+  },
+  'mac-10_13_laptop_high_end-perf': {
+    'tests': [
+      {
+        'isolate': 'performance_test_suite',
+        'extra_args': [
+          '--assert-gpu-compositing',
         ],
-        'platform':
-        'mac',
-        'dimension': {
-            'gpu':
-            '8086:1626',
-            'os':
-            'Mac-10.12.6',
-            'pool':
-            'chrome.tests.perf.template',
-            'synthetic_product_name':
-            'MacBookAir7,2_x86-64-i5-5350U_Intel Broadwell HD Graphics 6000_8192_APPLE SSD SM0128G'
-        },
+      },
+    ],
+    'platform': 'mac',
+    'dimension': {
+        'gpu': '1002:6821-4.0.20-3.2.8',
+        'os': 'Mac-10.13.3',
+        'pool': 'chrome.tests.perf',
+        'synthetic_product_name': 'MacBookPro11,5_x86-64-i7-4870HQ_AMD Radeon R8 M370X 4.0.20 [3.2.8]_Intel Haswell Iris Pro Graphics 5200 4.0.20 [3.2.8]_16384_APPLE SSD SM0512G',
     },
-    'linux-perf': {
-        'tests': [
-            {
-                'isolate': 'performance_test_suite',
-                'extra_args': [
-                    '--assert-gpu-compositing',
-                ],
-            },
-        ],
-        'platform':
-        'linux',
-        'dimension': {
-            'gpu': '10de:1cb3-384.90',
-            'os': 'Ubuntu-14.04',
-            'pool': 'chrome.tests.perf.template',
-            'synthetic_product_name': 'PowerEdge R230 (Dell Inc.)'
-        },
-    },
-    'mac-10_13_laptop_high_end-perf': {
-        'tests': [
-            {
-                'isolate': 'performance_test_suite',
-                'extra_args': [
-                    '--assert-gpu-compositing',
-                ],
-            },
-        ],
-        'platform':
-        'mac',
-        'dimension': {
-            'gpu':
-            '1002:6821-4.0.20-3.2.8',
-            'os':
-            'Mac-10.13.3',
-            'pool':
-            'chrome.tests.perf.template',
-            'synthetic_product_name':
-            'MacBookPro11,5_x86-64-i7-4870HQ_AMD Radeon R8 M370X 4.0.20 [3.2.8]_Intel Haswell Iris Pro Graphics 5200 4.0.20 [3.2.8]_16384_APPLE SSD SM0512G',
-        },
-    },
+  },
 }
 
 # pylint: enable=line-too-long

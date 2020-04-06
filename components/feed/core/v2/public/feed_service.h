@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
 #include "components/feed/core/v2/public/feed_stream_api.h"
+#include "components/feed/core/v2/public/types.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/leveldb_proto/public/proto_database.h"
 #include "components/web_resource/eula_accepted_notifier.h"
@@ -57,7 +58,8 @@ class FeedService : public KeyedService {
       signin::IdentityManager* identity_manager,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
-      const std::string& api_key);
+      const std::string& api_key,
+      const ChromeInfo& chrome_info);
   ~FeedService() override;
   FeedService(const FeedService&) = delete;
   FeedService& operator=(const FeedService&) = delete;

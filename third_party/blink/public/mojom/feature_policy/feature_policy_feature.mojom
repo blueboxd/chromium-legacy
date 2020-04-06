@@ -62,11 +62,8 @@ enum FeaturePolicyFeature {
   // TODO(ekaramad): kLazyLoad is deprecated; remove.
   // Used to enforce lazyloading for a frame and any nested <iframe> or image.
   kLazyLoad = 29,
-  // Restricts the usage of layout-causing animations in a document.
-  kLayoutAnimations = 30,
   // Controls access to Screen Wake Lock
   kScreenWakeLock = 31,
-
   // These are the defined sandbox features implemented as policy-controlled
   // features.
   kTopNavigation = 33,

@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
@@ -100,6 +101,8 @@ class CastContentWindow {
     // Notify window destruction.
     virtual void OnWindowDestroyed() {}
 
+    using GestureHandledCallback = base::OnceCallback<void(bool)>;
+
     // Check to see if the gesture can be handled by the delegate. This is
     // called prior to ConsumeGesture().
     virtual bool CanHandleGesture(GestureType gesture_type) = 0;
@@ -113,9 +116,10 @@ class CastContentWindow {
     virtual void CancelGesture(GestureType gesture_type,
                                const gfx::Point& touch_location) {}
 
-    // Consume and handle a completed UI gesture. Returns whether the gesture
-    // was handled or not.
-    virtual bool ConsumeGesture(GestureType gesture_type) = 0;
+    // Consume and handle a completed UI gesture. Invokes the callback with a
+    // boolean indicating whether the gesture was handled or not.
+    virtual void ConsumeGesture(GestureType gesture_type,
+                                GestureHandledCallback handled_callback) = 0;
 
     // Notify visibility change for this window.
     virtual void OnVisibilityChange(VisibilityType visibility_type) {}

@@ -291,8 +291,10 @@
 
     <!-- Omnibox suggestions -->
     <dimen name="omnibox_suggestion_comfortable_height">60dp</dimen>
+    <dimen name="omnibox_suggestion_semicompact_height">56dp</dimen>
     <dimen name="omnibox_suggestion_compact_height">52dp</dimen>
     <dimen name="omnibox_suggestion_comfortable_padding">10dp</dimen>
+    <dimen name="omnibox_suggestion_semicompact_padding">8dp</dimen>
     <dimen name="omnibox_suggestion_compact_padding">6dp</dimen>
     <dimen name="omnibox_suggestion_list_padding_bottom">8dp</dimen>
     <dimen name="omnibox_suggestion_first_line_text_size">16sp</dimen>

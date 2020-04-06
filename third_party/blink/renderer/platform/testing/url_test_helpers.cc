@@ -88,7 +88,7 @@ void RegisterMockedErrorURLLoad(const WebURL& full_url) {
 
   ResourceError error = ResourceError::Failure(full_url);
   Platform::Current()->GetURLLoaderMockFactory()->RegisterErrorURL(
-      full_url, response, error);
+      full_url, response, WebURLError(error));
 }
 
 void RegisterMockedURLLoadWithCustomResponse(const WebURL& full_url,

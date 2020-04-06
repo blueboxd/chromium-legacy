@@ -522,7 +522,6 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/permissions/permissions.idl",
           "//third_party/blink/renderer/modules/permissions/push_permission_descriptor.idl",
           "//third_party/blink/renderer/modules/permissions/testing/internals_permission.idl",
-          "//third_party/blink/renderer/modules/permissions/wake_lock_permission_descriptor.idl",
           "//third_party/blink/renderer/modules/permissions/worker_navigator_permissions.idl",
           "//third_party/blink/renderer/modules/picture_in_picture/document_picture_in_picture.idl",
           "//third_party/blink/renderer/modules/picture_in_picture/enter_picture_in_picture_event.idl",

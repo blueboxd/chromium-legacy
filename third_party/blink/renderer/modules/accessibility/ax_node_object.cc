@@ -189,6 +189,15 @@ AXObjectInclusion AXNodeObject::ShouldIncludeBasedOnSemantics(
     return kIgnoreObject;
   }
 
+  // Objects inside a portal should be ignored. Portals don't directly expose
+  // their contents as the contents are not focusable (portals do not currently
+  // support input events). Portals do use their contents to compute a default
+  // accessible name.
+  if (GetDocument() && GetDocument()->GetPage() &&
+      GetDocument()->GetPage()->InsidePortal()) {
+    return kIgnoreObject;
+  }
+
   if (IsTableLikeRole() || IsTableRowLikeRole() || IsTableCellLikeRole())
     return kIncludeObject;
 
@@ -2971,12 +2980,6 @@ bool AXNodeObject::CanHaveChildren() const {
 
   if (GetNode() && IsA<HTMLMapElement>(GetNode()))
     return false;  // Does not have a role, so check here
-
-  // The AXTree of a portal should only have one node: the root document node.
-  if (GetNode() && GetNode()->IsDocumentNode() &&
-      GetNode()->GetDocument().GetPage() &&
-      GetNode()->GetDocument().GetPage()->InsidePortal())
-    return false;
 
   switch (native_role_) {
     case ax::mojom::Role::kCheckBox:

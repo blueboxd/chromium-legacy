@@ -5,15 +5,21 @@
 package org.chromium.chrome.browser.sync;
 
 import android.accounts.Account;
+import android.app.Activity;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 
+import androidx.annotation.Nullable;
 import androidx.preference.TwoStatePreference;
 
 import org.junit.Assert;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
+import org.chromium.base.Promise;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
@@ -27,6 +33,7 @@ import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
+import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.signin.metrics.SignoutReason;
 import org.chromium.components.sync.AndroidSyncSettings;
@@ -41,6 +48,7 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -77,6 +85,71 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
+        }
+    }
+
+    /**
+     * Simple activity that mimics a trusted vault key retrieval flow that succeeds immediately.
+     */
+    public static class DummyKeyRetrievalActivity extends Activity {
+        @Override
+        protected void onCreate(@Nullable Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setResult(RESULT_OK);
+            FakeTrustedVaultClientBackend.get().startPopulateKeys();
+            finish();
+        }
+    };
+
+    /**
+     * A fake implementation of TrustedVaultClient.Backend. Allows to specify keys to be fetched.
+     * Keys aren't populated through fetchKeys() unless startPopulateKeys() is called.
+     * startPopulateKeys() is called by DummyKeyRetrievalActivity before its completion to mimic
+     * real TrustedVaultClient.Backend implementation.
+     */
+    public static class FakeTrustedVaultClientBackend implements TrustedVaultClient.Backend {
+        private static FakeTrustedVaultClientBackend sInstance;
+        private boolean mPopulateKeys;
+        private @Nullable List<byte[]> mKeys;
+
+        public FakeTrustedVaultClientBackend() {
+            mPopulateKeys = false;
+        }
+
+        public static FakeTrustedVaultClientBackend get() {
+            if (sInstance == null) {
+                sInstance = new FakeTrustedVaultClientBackend();
+            }
+            return sInstance;
+        }
+
+        @Override
+        public Promise<List<byte[]>> fetchKeys(CoreAccountInfo accountInfo) {
+            if (mKeys == null || !mPopulateKeys) {
+                return Promise.rejected();
+            }
+            return Promise.fulfilled(mKeys);
+        }
+
+        @Override
+        public Promise<PendingIntent> createKeyRetrievalIntent(CoreAccountInfo accountInfo) {
+            Context context = InstrumentationRegistry.getContext();
+            Intent intent = new Intent(context, DummyKeyRetrievalActivity.class);
+            return Promise.fulfilled(
+                    PendingIntent.getActivity(context, 0 /* requestCode */, intent, 0 /* flags */));
+        }
+
+        @Override
+        public Promise<Boolean> markKeysAsStale(CoreAccountInfo accountInfo) {
+            return Promise.rejected();
+        }
+
+        public void setKeys(List<byte[]> keys) {
+            mKeys = Collections.unmodifiableList(keys);
+        }
+
+        public void startPopulateKeys() {
+            mPopulateKeys = true;
         }
     }
 
@@ -247,6 +320,9 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
             @Override
             public void evaluate() throws Throwable {
                 setUpMockAndroidSyncSettings();
+
+                TrustedVaultClient.setInstanceForTesting(
+                        new TrustedVaultClient(FakeTrustedVaultClientBackend.get()));
 
                 startMainActivityForSyncTest();
                 mContext = InstrumentationRegistry.getTargetContext();

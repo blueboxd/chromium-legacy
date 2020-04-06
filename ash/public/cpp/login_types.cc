@@ -37,6 +37,11 @@ LocaleItem::~LocaleItem() = default;
 LocaleItem& LocaleItem::operator=(const LocaleItem& other) = default;
 LocaleItem& LocaleItem::operator=(LocaleItem&& other) = default;
 
+bool LocaleItem::operator==(const LocaleItem& other) const {
+  return language_code == other.language_code && title == other.title &&
+         group_name == other.group_name;
+}
+
 PublicAccountInfo::PublicAccountInfo() = default;
 PublicAccountInfo::PublicAccountInfo(const PublicAccountInfo& other) = default;
 PublicAccountInfo::PublicAccountInfo(PublicAccountInfo&& other) = default;

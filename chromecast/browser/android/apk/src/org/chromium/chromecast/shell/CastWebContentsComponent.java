@@ -33,11 +33,18 @@ public class CastWebContentsComponent {
     public interface OnComponentClosedHandler { void onComponentClosed(); }
 
     /**
+     * Callback interface invoked to indicate whether a gesture has been handled.
+     */
+    public interface GestureHandledCallback {
+        void invoke(boolean handled);
+    }
+
+    /**
      * Callback interface for when UI events occur.
      */
     public interface SurfaceEventHandler {
         void onVisibilityChange(int visibilityType);
-        boolean consumeGesture(int gestureType);
+        void consumeGesture(int gestureType, GestureHandledCallback handledGestureCallback);
     }
 
     /**
@@ -226,15 +233,17 @@ public class CastWebContentsComponent {
                                 + "; gesture=" + gestureType);
             }
             if (mSurfaceEventHandler != null) {
-                if (mSurfaceEventHandler.consumeGesture(gestureType)) {
-                    if (DEBUG) Log.d(TAG, "send gesture consumed instance=" + mSessionId);
-                    sendIntentSync(CastWebContentsIntentUtils.gestureConsumed(
-                            mSessionId, gestureType, true));
-                } else {
-                    if (DEBUG) Log.d(TAG, "send gesture NOT consumed instance=" + mSessionId);
-                    sendIntentSync(CastWebContentsIntentUtils.gestureConsumed(
-                            mSessionId, gestureType, false));
-                }
+                mSurfaceEventHandler.consumeGesture(gestureType, (handled) -> {
+                    if (handled) {
+                        if (DEBUG) Log.d(TAG, "send gesture consumed instance=" + mSessionId);
+                        sendIntentSync(CastWebContentsIntentUtils.gestureConsumed(
+                                mSessionId, gestureType, true));
+                    } else {
+                        if (DEBUG) Log.d(TAG, "send gesture NOT consumed instance=" + mSessionId);
+                        sendIntentSync(CastWebContentsIntentUtils.gestureConsumed(
+                                mSessionId, gestureType, false));
+                    }
+                });
             } else {
                 sendIntentSync(
                         CastWebContentsIntentUtils.gestureConsumed(mSessionId, gestureType, false));

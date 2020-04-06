@@ -17,6 +17,7 @@ import org.junit.Assert;
 import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.CalledByNativeJavaTest;
+import org.chromium.base.annotations.DisabledCalledByNativeJavaTest;
 import org.chromium.chrome.browser.UnitTestUtils;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -788,7 +789,7 @@ public class InstalledAppProviderTest {
 
     /** Android app has a "site" field missing certain parts of the URI (scheme, host, port). */
     // Disabled test: https://crbug.com/1052429
-    //@CalledByNativeJavaTest
+    @DisabledCalledByNativeJavaTest
     public void testAssetStatementSiteMissingParts() throws Exception {
         RelatedApplication manifestRelatedApps[] = new RelatedApplication[] {
                 createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, null)};

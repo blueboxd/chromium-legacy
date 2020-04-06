@@ -65,7 +65,7 @@ class ProtoDatabaseProvider;
 namespace content {
 
 class BackgroundFetchContext;
-class ConversionManager;
+class ConversionManagerImpl;
 class CookieStoreContext;
 class BlobRegistryWrapper;
 class PrefetchURLLoaderService;
@@ -196,7 +196,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   CookieStoreContext* GetCookieStoreContext();
   NativeFileSystemManagerImpl* GetNativeFileSystemManager();
   QuotaContext* GetQuotaContext();
-  ConversionManager* GetConversionManager();
+  ConversionManagerImpl* GetConversionManager();
   NativeIOContext* GetNativeIOContext();
 
   // blink::mojom::DomStorage interface.
@@ -495,7 +495,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   std::unique_ptr<leveldb_proto::ProtoDatabaseProvider>
       proto_database_provider_;
   scoped_refptr<ContentIndexContextImpl> content_index_context_;
-  std::unique_ptr<ConversionManager> conversion_manager_;
+  std::unique_ptr<ConversionManagerImpl> conversion_manager_;
   std::unique_ptr<NativeIOContext> native_io_context_;
 
   // ReceiverSet for DomStorage, using the

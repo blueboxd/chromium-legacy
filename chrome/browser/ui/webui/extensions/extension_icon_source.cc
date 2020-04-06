@@ -80,12 +80,17 @@ GURL ExtensionIconSource::GetIconURL(const Extension* extension,
                                      int icon_size,
                                      ExtensionIconSet::MatchType match,
                                      bool grayscale) {
-  GURL icon_url(base::StringPrintf("%s%s/%d/%d%s",
-                                   chrome::kChromeUIExtensionIconURL,
-                                   extension->id().c_str(),
-                                   icon_size,
-                                   match,
-                                   grayscale ? "?grayscale=true" : ""));
+  return GetIconURL(extension->id(), icon_size, match, grayscale);
+}
+
+// static
+GURL ExtensionIconSource::GetIconURL(const std::string& extension_id,
+                                     int icon_size,
+                                     ExtensionIconSet::MatchType match,
+                                     bool grayscale) {
+  GURL icon_url(base::StringPrintf(
+      "%s%s/%d/%d%s", chrome::kChromeUIExtensionIconURL, extension_id.c_str(),
+      icon_size, match, grayscale ? "?grayscale=true" : ""));
   CHECK(icon_url.is_valid());
   return icon_url;
 }

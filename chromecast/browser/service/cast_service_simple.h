@@ -39,7 +39,8 @@ class CastServiceSimple : public CastService, public CastWebView::Delegate {
   // CastContentWindow::Delegate implementation:
   void OnWindowDestroyed() override;
   bool CanHandleGesture(GestureType gesture_type) override;
-  bool ConsumeGesture(GestureType gesture_type) override;
+  void ConsumeGesture(GestureType gesture_type,
+                      GestureHandledCallback handled_callback) override;
   void OnVisibilityChange(VisibilityType visibility_type) override;
   std::string GetId() override;
 

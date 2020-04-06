@@ -1797,9 +1797,6 @@ crbug.com/891427 fast/overflow/transformed-frame-scrollIntoView.html [ Crash ]
 crbug.com/891427 animations/responsive/viewport-unit-transform-responsive.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 animations/responsive/viewport-unit-translate-responsive.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 virtual/android/rootscroller/rootscroller-during-fullscreen.html [ Pass Failure Timeout Crash ]
-# Next 2 here: https://ci.chromium.org/buildbot/tryserver.blink/win7-blink-rel/1183
-crbug.com/891427 fast/canvas/canvas-drawImage-live-video.html [ Pass Failure Timeout Crash ]
-crbug.com/816914 virtual/gpu/fast/canvas/canvas-drawImage-live-video.html [ Pass Failure Timeout Crash ]
 # Next 1 here: https://ci.chromium.org/buildbot/tryserver.blink/win7-blink-rel/1180
 # Next 2 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-blink-rel/1541
 crbug.com/891427 virtual/android/rootscroller/gesture-scroll-document-not-root-scroller.html [ Pass Failure Timeout Crash ]

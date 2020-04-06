@@ -4665,6 +4665,17 @@ static const char* ProtectionPolicyDescription(
   }
 }
 
+static const char* CredProtectDescription(device::CredProtect cred_protect) {
+  switch (cred_protect) {
+    case device::CredProtect::kUVOptional:
+      return "UV optional";
+    case device::CredProtect::kUVOrCredIDRequired:
+      return "UV or cred ID required";
+    case device::CredProtect::kUVRequired:
+      return "UV required";
+  }
+}
+
 TEST_F(ResidentKeyAuthenticatorImplTest, CredProtectRegistration) {
   mojo::Remote<blink::mojom::Authenticator> authenticator =
       ConnectToAuthenticator();
@@ -4767,7 +4778,7 @@ TEST_F(ResidentKeyAuthenticatorImplTest, CredProtectRegistration) {
         EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
         ASSERT_EQ(
             1u, virtual_device_factory_->mutable_state()->registrations.size());
-        const base::Optional<device::CredProtect> result =
+        const device::CredProtect result =
             virtual_device_factory_->mutable_state()
                 ->registrations.begin()
                 ->second.protection;
@@ -4777,15 +4788,13 @@ TEST_F(ResidentKeyAuthenticatorImplTest, CredProtectRegistration) {
             NOTREACHED();
             break;
           case NONE:
-            EXPECT_FALSE(result);
+            EXPECT_EQ(device::CredProtect::kUVOptional, result);
             break;
           case UV_OR_CRED:
-            ASSERT_TRUE(result);
-            EXPECT_EQ(device::CredProtect::kUVOrCredIDRequired, *result);
+            EXPECT_EQ(device::CredProtect::kUVOrCredIDRequired, result);
             break;
           case UV_REQ:
-            ASSERT_TRUE(result);
-            EXPECT_EQ(device::CredProtect::kUVRequired, *result);
+            EXPECT_EQ(device::CredProtect::kUVRequired, result);
             break;
         }
         break;
@@ -4817,7 +4826,7 @@ TEST_F(ResidentKeyAuthenticatorImplTest, AuthenticatorSetsCredProtect) {
       blink::mojom::ProtectionPolicy::UV_REQUIRED,
   };
   constexpr device::CredProtect kDeviceLevels[] = {
-      device::CredProtect::kUVOrCredIDRequired,  // dummy entry.
+      device::CredProtect::kUVOptional,
       device::CredProtect::kUVOrCredIDRequired,
       device::CredProtect::kUVRequired,
   };
@@ -4860,6 +4869,95 @@ TEST_F(ResidentKeyAuthenticatorImplTest, AuthenticatorSetsCredProtect) {
                   callback_receiver.status());
       }
     }
+  }
+}
+
+TEST_F(ResidentKeyAuthenticatorImplTest, AuthenticatorDefaultCredProtect) {
+  // Some authenticators may have a default credProtect level that isn't
+  // kUVOptional. This has complex interactions that are tested here.
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+
+  constexpr struct {
+    blink::mojom::ProtectionPolicy requested_level;
+    device::CredProtect authenticator_default;
+    device::CredProtect result;
+  } kExpectations[] = {
+      // Standard case: normal authenticator and nothing specified. Chrome sets
+      // a default of kUVOrCredIDRequired for discoverable credentials.
+      {
+          blink::mojom::ProtectionPolicy::UNSPECIFIED,
+          device::CredProtect::kUVOptional,
+          device::CredProtect::kUVOrCredIDRequired,
+      },
+      // Chrome's default of |kUVOrCredIDRequired| should not prevent a site
+      // from requesting |kUVRequired| from a normal authenticator.
+      {
+          blink::mojom::ProtectionPolicy::UV_REQUIRED,
+          device::CredProtect::kUVOptional,
+          device::CredProtect::kUVRequired,
+      },
+      // Authenticator has a non-standard default, which should work fine.
+      {
+          blink::mojom::ProtectionPolicy::UNSPECIFIED,
+          device::CredProtect::kUVOrCredIDRequired,
+          device::CredProtect::kUVOrCredIDRequired,
+      },
+      // Authenticators can have a default of kUVRequired, but Chrome has a
+      // default of kUVOrCredIDRequired for discoverable credentials. We should
+      // not get a lesser protection level because of that.
+      {
+          blink::mojom::ProtectionPolicy::UNSPECIFIED,
+          device::CredProtect::kUVRequired,
+          device::CredProtect::kUVRequired,
+      },
+      // Site should be able to explicitly set credProtect kUVOptional despite
+      // an authenticator default.
+      {
+          blink::mojom::ProtectionPolicy::NONE,
+          device::CredProtect::kUVOrCredIDRequired,
+          device::CredProtect::kUVOptional,
+      },
+  };
+
+  device::VirtualCtap2Device::Config config;
+  config.pin_support = true;
+  config.resident_key_support = true;
+  config.cred_protect_support = true;
+
+  for (const auto& test : kExpectations) {
+    config.default_cred_protect = test.authenticator_default;
+    virtual_device_factory_->SetCtap2Config(config);
+    virtual_device_factory_->mutable_state()->registrations.clear();
+
+    SCOPED_TRACE(::testing::Message()
+                 << "result=" << CredProtectDescription(test.result));
+    SCOPED_TRACE(::testing::Message()
+                 << "default="
+                 << CredProtectDescription(test.authenticator_default));
+    SCOPED_TRACE(::testing::Message()
+                 << "request="
+                 << ProtectionPolicyDescription(test.requested_level));
+
+    PublicKeyCredentialCreationOptionsPtr options = make_credential_options();
+    options->authenticator_selection->SetRequireResidentKeyForTesting(true);
+    options->protection_policy = test.requested_level;
+    options->authenticator_selection->SetUserVerificationRequirementForTesting(
+        device::UserVerificationRequirement::kRequired);
+
+    TestMakeCredentialCallback callback_receiver;
+    authenticator->MakeCredential(std::move(options),
+                                  callback_receiver.callback());
+    callback_receiver.WaitForCallback();
+
+    EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+    ASSERT_EQ(1u,
+              virtual_device_factory_->mutable_state()->registrations.size());
+    const device::CredProtect result = virtual_device_factory_->mutable_state()
+                                           ->registrations.begin()
+                                           ->second.protection;
+
+    EXPECT_EQ(result, test.result) << CredProtectDescription(result);
   }
 }
 

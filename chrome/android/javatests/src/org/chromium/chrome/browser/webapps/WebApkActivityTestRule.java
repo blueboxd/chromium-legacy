@@ -76,7 +76,7 @@ public class WebApkActivityTestRule extends ChromeActivityTestRule<WebappActivit
 
     private Intent createIntent(WebApkInfo webApkInfo) {
         Intent intent =
-                new Intent(InstrumentationRegistry.getTargetContext(), WebApkActivity0.class);
+                new Intent(InstrumentationRegistry.getTargetContext(), WebappActivity0.class);
         intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, webApkInfo.webApkPackageName());
         intent.putExtra(ShortcutHelper.EXTRA_ID, webApkInfo.id());
         intent.putExtra(ShortcutHelper.EXTRA_URL, webApkInfo.url());

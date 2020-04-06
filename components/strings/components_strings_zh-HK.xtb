@@ -169,7 +169,7 @@
 <translation id="1644574205037202324">記錄</translation>
 <translation id="1645368109819982629">不支援的通訊協定</translation>
 <translation id="1652415888492971589">JIS B8</translation>
-<translation id="1656024727720460136">Chrome 已簡化此頁面，讓您更輕易閱讀。Chrome 已透過安全連線擷取原始網頁。</translation>
+<translation id="1656024727720460136">Chrome 已簡化此頁面，方便您閱讀。Chrome 已透過安全連線擷取原始網頁。</translation>
 <translation id="1656489000284462475">取貨</translation>
 <translation id="1662550410081243962">儲存和填入付款方法</translation>
 <translation id="1663943134801823270">信用卡和地址選項均來自 Chrome。您可在「<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />」中管理這些選項。</translation>
@@ -866,7 +866,7 @@
 <translation id="4731967714531604179">Prc2 (信封)</translation>
 <translation id="4733082559415072992"><ph name="URL" /> 要求使用裝置的位置資料</translation>
 <translation id="4736825316280949806">重新啟動 Chromium</translation>
-<translation id="4737121147659370456">管理員已在您的瀏覽器上啟用「Chrome Enterprise 連接器」。這些連接器可存取您的部分資料。</translation>
+<translation id="4737121147659370456">管理員已在您的瀏覽器上啟用 Chrome Enterprise Connectors。這些連接器可存取您的部分資料。</translation>
 <translation id="473775607612524610">更新</translation>
 <translation id="4738601419177586157">「<ph name="TEXT" />」搜尋建議</translation>
 <translation id="4742407542027196863">管理密碼…</translation>
@@ -1202,7 +1202,7 @@
 <translation id="610911394827799129">您的 Google 帳戶在 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 上可能有其他形式的瀏覽記錄</translation>
 <translation id="6116338172782435947">查看複製到剪貼簿的文字和圖片</translation>
 <translation id="6120179357481664955">要記住您的 UPI ID 嗎？</translation>
-<translation id="6124432979022149706">Chrome Enterprise 連接器</translation>
+<translation id="6124432979022149706">Chrome Enterprise Connectors</translation>
 <translation id="6135641591018127088">使用 Google 帳戶產生安全性強的密碼</translation>
 <translation id="6146055958333702838">檢查連接線，或重新啟動路由器、數據機或其他使用中的
     網絡裝置。</translation>
@@ -1295,7 +1295,7 @@
 <translation id="6521745193039995384">未啟用</translation>
 <translation id="6529602333819889595">重做刪除(&amp;R)</translation>
 <translation id="6534179046333460208">實體網絡建議</translation>
-<translation id="6543609420755597723">與管理員分享「Chrome Enterprise 連接器」所標記的安全性事件相關資料。這些資料可能包括您瀏覽的網址、檔案名稱或元數據，以及用於登入裝置和 Chrome 的使用者名稱。</translation>
+<translation id="6543609420755597723">與管理員分享 Chrome Enterprise Connectors 所標記的安全性事件相關資料。這些資料可能包括您瀏覽的網址、檔案名稱或元數據，以及用於登入裝置和 Chrome 的使用者名稱。</translation>
 <translation id="6545864417968258051">藍牙掃瞄</translation>
 <translation id="6547208576736763147">雙孔 (左側)</translation>
 <translation id="6554795675067793129">您的帳戶由 <ph name="ENROLLMENT_DOMAIN" /> 管理。</translation>
@@ -1361,7 +1361,7 @@
 <translation id="6874604403660855544">重做新增(&amp;R)</translation>
 <translation id="6884662655240309489">粗幼：1</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
-<translation id="6888584790432772780">Chrome 已簡化此頁面，讓您更輕易閱讀。Chrome 已透過不安全連線擷取原始網頁。</translation>
+<translation id="6888584790432772780">Chrome 已簡化此頁面，方便您閱讀。Chrome 已透過不安全連線擷取原始網頁。</translation>
 <translation id="6891596781022320156">系統不支援這項政策的層級。</translation>
 <translation id="6895330447102777224">您的信用卡已完成驗證</translation>
 <translation id="6897140037006041989">使用者代理程式</translation>
@@ -1726,7 +1726,7 @@
 <translation id="8371889962595521444">自訂根憑證</translation>
 <translation id="8380941800586852976">不安全</translation>
 <translation id="8381674639488873545">這些費用可能是一次性或會重複收取，而收費時亦可能難以察覺。<ph name="BEGIN_LINK" />仍要顯示<ph name="END_LINK" /></translation>
-<translation id="8405166164747488837"><ph name="ENROLLMENT_DOMAIN" /> 已在您的瀏覽器上啟用「Chrome Enterprise 連接器」。這些連接器可存取您的部分資料。</translation>
+<translation id="8405166164747488837"><ph name="ENROLLMENT_DOMAIN" /> 已在您的瀏覽器上啟用 Chrome Enterprise Connectors。這些連接器可存取您的部分資料。</translation>
 <translation id="8412145213513410671">當機次數 (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">您必須輸入兩次相同的複雜密碼。</translation>
 <translation id="8416694386774425977">網絡設定無效，無法匯入。

@@ -34,7 +34,6 @@ mojom("mojom") {
     "provision_fetcher.mojom",
     "renderer.mojom",
     "renderer_extensions.mojom",
-    "soda_service.mojom",
     "video_decode_perf_history.mojom",
     "video_decode_stats_recorder.mojom",
     "video_decoder.mojom",
@@ -49,6 +48,8 @@ mojom("mojom") {
 
   if (is_android) {
     sources += [ "android_overlay.mojom" ]
+  } else {
+    sources += [ "soda_service.mojom" ]
   }
 
   if (is_chromecast) {

@@ -101,7 +101,7 @@ class ChromeClient;
 class Comment;
 class CompositorAnimationTimeline;
 class ComputedAccessibleNode;
-class DisplayLockContext;
+class DisplayLockDocumentState;
 class ElementIntersectionObserverData;
 class WindowAgent;
 class WindowAgentFactory;
@@ -156,9 +156,7 @@ class HTMLScriptElementOrSVGScriptElement;
 class HitTestRequest;
 class HttpRefreshScheduler;
 class IdleRequestOptions;
-class IntersectionObserver;
 class IntersectionObserverController;
-class IntersectionObserverEntry;
 class LayoutView;
 class LazyLoadImageObserver;
 class LiveNodeListBase;
@@ -1628,45 +1626,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void ProcessJavaScriptUrl(const KURL&, network::mojom::CSPDisposition);
 
-  // Functions to keep count of display locks in this document.
-  void IncrementDisplayLockBlockingAllActivation();
-  void DecrementDisplayLockBlockingAllActivation();
-  int DisplayLockBlockingAllActivationCount() const;
-
-  void AddLockedDisplayLock();
-  void RemoveLockedDisplayLock();
-  int LockedDisplayLockCount() const;
-
-  void AddDisplayLockContext(DisplayLockContext*);
-  void RemoveDisplayLockContext(DisplayLockContext*);
-  int DisplayLockCount() const;
-  void NotifySelectionRemovedFromDisplayLocks();
-
-  // Manage the element's observation for display lock activation.
-  void RegisterDisplayLockActivationObservation(Element*);
-  void UnregisterDisplayLockActivationObservation(Element*);
-
-  class ScopedForceActivatableDisplayLocks {
-    STACK_ALLOCATED();
-
-   public:
-    ScopedForceActivatableDisplayLocks(ScopedForceActivatableDisplayLocks&&);
-    ~ScopedForceActivatableDisplayLocks();
-
-    ScopedForceActivatableDisplayLocks& operator=(
-        ScopedForceActivatableDisplayLocks&&);
-
-   private:
-    friend Document;
-    ScopedForceActivatableDisplayLocks(Document*);
-
-    Document* document_;
-  };
-
-  ScopedForceActivatableDisplayLocks GetScopedForceActivatableLocks();
-  bool ActivatableDisplayLocksForced() const {
-    return activatable_display_locks_forced_ > 0;
-  }
+  DisplayLockDocumentState& GetDisplayLockDocumentState() const;
 
   // Deferred compositor commits are disallowed by default, and are only allowed
   // for same-origin navigations to an html document fetched with http.
@@ -1938,11 +1898,6 @@ class CORE_EXPORT Document : public ContainerNode,
   void NotifyFocusedElementChanged(Element* old_focused_element,
                                    Element* new_focused_element);
   void DisplayNoneChangedForFrame();
-
-  IntersectionObserver& EnsureDisplayLockActivationObserver();
-
-  void ProcessDisplayLockActivationObservation(
-      const HeapVector<Member<IntersectionObserverEntry>>&);
 
   void ExecuteFormSubmission(HTMLFormElement* form_element);
 
@@ -2263,15 +2218,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // The number of LayoutObject::UpdateLayout() calls for LayoutNG.
   uint32_t layout_calls_counter_ng_ = 0;
 
-  // Number of display locks in this document that block all activation.
-  int display_lock_blocking_all_activation_count_ = 0;
-  // Number of locked display locks in the document.
-  int locked_display_lock_count_ = 0;
-  // All of this document's display lock contexts.
-  HeapHashSet<WeakMember<DisplayLockContext>> display_lock_contexts_;
-  // If non-zero, then the activatable locks have been globally forced.
-  int activatable_display_locks_forced_ = 0;
-
   bool deferred_compositor_commit_is_allowed_ = false;
 
   // True when the document was created (in DomImplementation) for specific MIME
@@ -2347,7 +2293,7 @@ class CORE_EXPORT Document : public ContainerNode,
   HeapObserverList<SynchronousMutationObserver>
       synchronous_mutation_observer_list_;
 
-  Member<IntersectionObserver> display_lock_activation_observer_;
+  Member<DisplayLockDocumentState> display_lock_document_state_;
 
   bool in_forced_colors_mode_;
 

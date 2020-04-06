@@ -3776,12 +3776,14 @@ RenderFrameImpl::CreateWorkerContentSettingsClient() {
       this);
 }
 
+#if !defined(OS_ANDROID)
 std::unique_ptr<media::SpeechRecognitionClient>
 RenderFrameImpl::CreateSpeechRecognitionClient() {
   if (!frame_ || !frame_->View())
     return nullptr;
   return GetContentClient()->renderer()->CreateSpeechRecognitionClient(this);
 }
+#endif
 
 scoped_refptr<blink::WebWorkerFetchContext>
 RenderFrameImpl::CreateWorkerFetchContext() {

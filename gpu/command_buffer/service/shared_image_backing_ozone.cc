@@ -8,6 +8,7 @@
 #include <vulkan/vulkan.h>
 
 #include <memory>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -171,6 +172,24 @@ SharedImageBackingOzone::ProduceOverlay(SharedImageManager* manager,
                                         MemoryTypeTracker* tracker) {
   NOTIMPLEMENTED_LOG_ONCE();
   return nullptr;
+}
+
+std::unique_ptr<SharedImageRepresentationVaapi>
+SharedImageBackingOzone::ProduceVASurface(
+    SharedImageManager* manager,
+    MemoryTypeTracker* tracker,
+    VaapiDependenciesFactory* dep_factory) {
+  DCHECK(pixmap_);
+  if (!vaapi_deps_)
+    vaapi_deps_ = dep_factory->CreateVaapiDependencies(pixmap_);
+
+  if (!vaapi_deps_) {
+    LOG(ERROR) << "SharedImageBackingOzone::ProduceVASurface failed to create "
+                  "VaapiDependencies";
+    return nullptr;
+  }
+  return std::make_unique<SharedImageRepresentationVaapi>(
+      manager, this, tracker, vaapi_deps_.get());
 }
 
 SharedImageBackingOzone::SharedImageBackingOzone(

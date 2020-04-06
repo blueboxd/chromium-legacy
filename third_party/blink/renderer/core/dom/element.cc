@@ -63,6 +63,7 @@
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_document_state.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/display_lock/render_subtree_activation_event.h"
 #include "third_party/blink/renderer/core/dom/attr.h"
@@ -4392,8 +4393,10 @@ bool Element::IsAutofocusable() const {
 
 bool Element::ActivateDisplayLockIfNeeded(DisplayLockActivationReason reason) {
   if (!RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled() ||
-      GetDocument().LockedDisplayLockCount() ==
-          GetDocument().DisplayLockBlockingAllActivationCount())
+      GetDocument().GetDisplayLockDocumentState().LockedDisplayLockCount() ==
+          GetDocument()
+              .GetDisplayLockDocumentState()
+              .DisplayLockBlockingAllActivationCount())
     return false;
   const_cast<Element*>(this)->UpdateDistributionForFlatTreeTraversal();
 
@@ -4431,7 +4434,7 @@ bool Element::DisplayLockPreventsActivation(
   if (!RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled())
     return false;
 
-  if (GetDocument().LockedDisplayLockCount() == 0)
+  if (GetDocument().GetDisplayLockDocumentState().LockedDisplayLockCount() == 0)
     return false;
 
   const_cast<Element*>(this)->UpdateDistributionForFlatTreeTraversal();

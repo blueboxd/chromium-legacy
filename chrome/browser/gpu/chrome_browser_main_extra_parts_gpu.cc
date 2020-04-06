@@ -23,9 +23,17 @@ ChromeBrowserMainExtraPartsGpu::~ChromeBrowserMainExtraPartsGpu() {
     content::GpuDataManager::GetInstance()->RemoveObserver(this);
 }
 
-void ChromeBrowserMainExtraPartsGpu::PostEarlyInitialization() {
+void ChromeBrowserMainExtraPartsGpu::PreCreateThreads() {
+  // This should be the first time to get an instance of GpuDataManager.
+  // This is where it's initialized.
+  // 1) Need to initialize in-process GpuDataManager before creating threads.
+  // It's unsafe to append the gpu command line switches to the global
+  // CommandLine::ForCurrentProcess object after threads are created.
+  // 2) Must be after other parts' PreCreateThreads to pick up chrome://flags.
+  DCHECK(!content::GpuDataManager::Initialized());
+  content::GpuDataManager* manager = content::GpuDataManager::GetInstance();
   if (features::IsUsingSkiaRenderer())
-    content::GpuDataManager::GetInstance()->AddObserver(this);
+    manager->AddObserver(this);
 }
 
 void ChromeBrowserMainExtraPartsGpu::OnGpuInfoUpdate() {
@@ -33,7 +41,7 @@ void ChromeBrowserMainExtraPartsGpu::OnGpuInfoUpdate() {
   const auto* backend_name = GetSkiaBackendName();
   if (backend_name) {
     ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
-        kTrialName, GetSkiaBackendName());
+        kTrialName, backend_name);
   }
 }
 

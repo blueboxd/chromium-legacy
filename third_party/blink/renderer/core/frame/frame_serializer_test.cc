@@ -100,7 +100,7 @@ class FrameSerializerTest : public testing::Test,
     response.SetHttpStatusCode(status_code);
 
     platform_->GetURLLoaderMockFactory()->RegisterErrorURL(
-        KURL(base_url_, file), response, error);
+        KURL(base_url_, file), response, WebURLError(error));
   }
 
   void RegisterRewriteURL(const char* from_url, const char* to_url) {

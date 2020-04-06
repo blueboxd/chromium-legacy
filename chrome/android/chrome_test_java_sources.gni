@@ -432,6 +432,7 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/services/GoogleServicesManagerIntegrationTest.java",
   "javatests/src/org/chromium/chrome/browser/settings/MainSettingsFragmentTest.java",
   "javatests/src/org/chromium/chrome/browser/settings/SettingsActivityTest.java",
+  "javatests/src/org/chromium/chrome/browser/settings/SettingsActivityTestRule.java",
   "javatests/src/org/chromium/chrome/browser/settings/language/LanguageSettingsTest.java",
   "javatests/src/org/chromium/chrome/browser/shape_detection/ShapeDetectionTest.java",
   "javatests/src/org/chromium/chrome/browser/share/LensUtilsTest.java",

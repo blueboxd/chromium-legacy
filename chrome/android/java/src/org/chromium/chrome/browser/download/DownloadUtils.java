@@ -58,7 +58,6 @@ import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
-import org.chromium.components.browser_ui.util.ConversionUtils;
 import org.chromium.components.download.DownloadState;
 import org.chromium.components.download.ResumeMode;
 import org.chromium.components.embedder_support.util.UrlConstants;
@@ -103,9 +102,6 @@ public class DownloadUtils {
     private static final int[] BYTES_AVAILABLE_STRINGS = {
             R.string.download_manager_ui_space_free_kb, R.string.download_manager_ui_space_free_mb,
             R.string.download_manager_ui_space_free_gb};
-
-    private static final int[] BYTES_STRINGS = {
-            R.string.download_ui_kb, R.string.download_ui_mb, R.string.download_ui_gb};
 
     private static final String TAG = "download";
 
@@ -554,12 +550,16 @@ public class DownloadUtils {
                         ? context.getResources().getString(R.string.download_started)
                         : getPercentageString(progress.getPercentage());
             case OfflineItemProgressUnit.BYTES:
-                String bytes = getStringForBytes(context, progress.value);
+                String bytes =
+                        org.chromium.components.browser_ui.util.DownloadUtils.getStringForBytes(
+                                context, progress.value);
                 if (progress.isIndeterminate()) {
                     return context.getResources().getString(
                             R.string.download_ui_indeterminate_bytes, bytes);
                 } else {
-                    String total = getStringForBytes(context, progress.max);
+                    String total =
+                            org.chromium.components.browser_ui.util.DownloadUtils.getStringForBytes(
+                                    context, progress.max);
                     return context.getResources().getString(
                             R.string.download_ui_determinate_bytes, bytes, total);
                 }
@@ -698,44 +698,6 @@ public class DownloadUtils {
     }
 
     /**
-     * Determine what String to show for a given download in download home.
-     * @param item Download to check the status of.
-     * @return String representing the current download status.
-     */
-    public static String getStatusString(DownloadItem item) {
-        Context context = ContextUtils.getApplicationContext();
-        DownloadInfo info = item.getDownloadInfo();
-        Progress progress = info.getProgress();
-
-        int state = info.state();
-        if (state == DownloadState.COMPLETE) {
-            return context.getString(R.string.download_notification_completed);
-        }
-
-        if (isDownloadPending(item)) {
-            // All pending, non-offline page downloads are by default waiting for network.
-            // The other pending reason (i.e. waiting for another download to complete) applies
-            // only to offline page requests because offline pages download one at a time.
-            return getPendingStatusString(PendingState.PENDING_NETWORK);
-        } else if (isDownloadPaused(item)) {
-            return context.getString(R.string.download_notification_paused);
-        }
-
-        if (info.getBytesReceived() == 0
-                || (!item.isIndeterminate() && info.getTimeRemainingInMillis() < 0)) {
-            // We lack enough information about the download to display a useful string.
-            return context.getString(R.string.download_started);
-        } else if (item.isIndeterminate()) {
-            // Count up the bytes.
-            long bytes = info.getBytesReceived();
-            return DownloadUtils.getStringForDownloadedBytes(context, bytes);
-        } else {
-            // Count down the time or number of files.
-            return getTimeOrFilesLeftString(context, progress, info.getTimeRemainingInMillis());
-        }
-    }
-
-    /**
      * Determine the status string for a failed download.
      *
      * @param failState Reason download failed.
@@ -836,7 +798,8 @@ public class DownloadUtils {
      * @return A formatted string to be displayed.
      */
     public static String getStringForDownloadedBytes(Context context, long bytes) {
-        return getStringForBytes(context, BYTES_DOWNLOADED_STRINGS, bytes);
+        return org.chromium.components.browser_ui.util.DownloadUtils.getStringForBytes(
+                context, BYTES_DOWNLOADED_STRINGS, bytes);
     }
 
     /**
@@ -848,43 +811,8 @@ public class DownloadUtils {
      * @return          The formatted string to be displayed.
      */
     public static String getStringForAvailableBytes(Context context, long bytes) {
-        return getStringForBytes(context, BYTES_AVAILABLE_STRINGS, bytes);
-    }
-
-    /**
-     * Format the number of bytes into KB, MB, or GB and return the corresponding generated string.
-     * @param context Context to use.
-     * @param bytes   Number of bytes needed to display.
-     * @return        The formatted string to be displayed.
-     */
-    public static String getStringForBytes(Context context, long bytes) {
-        return getStringForBytes(context, BYTES_STRINGS, bytes);
-    }
-
-    /**
-     * Format the number of bytes into KB, or MB, or GB and return the corresponding string
-     * resource.
-     * @param context Context to use.
-     * @param stringSet The string resources for displaying bytes in KB, MB and GB.
-     * @param bytes Number of bytes.
-     * @return A formatted string to be displayed.
-     */
-    public static String getStringForBytes(Context context, int[] stringSet, long bytes) {
-        int resourceId;
-        float bytesInCorrectUnits;
-
-        if (ConversionUtils.bytesToMegabytes(bytes) < 1) {
-            resourceId = stringSet[0];
-            bytesInCorrectUnits = bytes / (float) ConversionUtils.BYTES_PER_KILOBYTE;
-        } else if (ConversionUtils.bytesToGigabytes(bytes) < 1) {
-            resourceId = stringSet[1];
-            bytesInCorrectUnits = bytes / (float) ConversionUtils.BYTES_PER_MEGABYTE;
-        } else {
-            resourceId = stringSet[2];
-            bytesInCorrectUnits = bytes / (float) ConversionUtils.BYTES_PER_GIGABYTE;
-        }
-
-        return context.getResources().getString(resourceId, bytesInCorrectUnits);
+        return org.chromium.components.browser_ui.util.DownloadUtils.getStringForBytes(
+                context, BYTES_AVAILABLE_STRINGS, bytes);
     }
 
     /**

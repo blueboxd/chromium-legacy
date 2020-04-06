@@ -8,8 +8,8 @@
 #include <memory>
 #include <vector>
 #include "components/feed/core/proto/v2/store.pb.h"
-#include "components/feed/core/v2/public/feed_stream_api.h"
 #include "components/feed/core/v2/stream_model/feature_tree.h"
+#include "components/feed/core/v2/types.h"
 
 namespace feed {
 namespace stream_model {

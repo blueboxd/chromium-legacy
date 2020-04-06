@@ -826,6 +826,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2119349053129246860">Åbn i <ph name="APP" /></translation>
 <translation id="2120297377148151361">Aktivitet og interaktioner</translation>
 <translation id="2120639962942052471">Blokerede <ph name="PERMISSION" /></translation>
+<translation id="2121055421682309734">{COUNT,plural, =0{Cookies er blokeret}=1{Cookies er blokeret, 1 undtagelse}one{Cookies er blokeret, {COUNT} undtagelse}other{Cookies er blokeret, {COUNT} undtagelser}}</translation>
 <translation id="2121825465123208577">Tilpas størrelse</translation>
 <translation id="2122305276694332719">Vi anbefaler, at du ikke tillader automatisk forbindelse til skjulte netværk, da det gør det muligt for andre at se din enhed og visse netværksindstillinger.</translation>
 <translation id="2123766928840368256">Vælg en anden fil</translation>
@@ -2072,7 +2073,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
 <translation id="3739254215541673094">Vil du åbne <ph name="APPLICATION" />?</translation>
 <translation id="3742055079367172538">Screenshottet blev gemt</translation>
-<translation id="3742666961763734085">Der kunne ikke findes nogen organisationsenhed med det pågældende navn. Prøv igen.</translation>
+<translation id="3742666961763734085">Der blev ikke fundet nogen organisationsenhed med det pågældende navn. Prøv igen.</translation>
 <translation id="3744111561329211289">Synkronisering i baggrunden</translation>
 <translation id="3746127522257263495">Der kan ikke tilføjes G Suite for Education-konti i Android-apps.</translation>
 <translation id="3747039297326604768">Plugin VM kunne ikke åbnes</translation>
@@ -4942,7 +4943,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7690294790491645610">Bekræft den nye adgangskode</translation>
 <translation id="7690378713476594306">Vælg på listen</translation>
 <translation id="7690853182226561458">Tilføj &amp;mappe...</translation>
-<translation id="7691073721729883399">Cryptohome til terminalappen kunne ikke isættes.</translation>
+<translation id="7691073721729883399">Cryptohome til terminalappen kunne ikke installeres.</translation>
 <translation id="7691077781194517083">Denne sikkerhedsnøgle kan ikke nulstilles. Fejl <ph name="ERROR_CODE" />.</translation>
 <translation id="7696063401938172191">På din "<ph name="PHONE_NAME" />":</translation>
 <translation id="7698408911093959127">{COUNT,plural, =1{1 element på listen over bogmærker}one{# element på listen over bogmærker}other{# elementer på listen over bogmærker}}</translation>

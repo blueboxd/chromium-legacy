@@ -99,6 +99,7 @@
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/css/style_sheet_list.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_document_state.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/attr.h"
 #include "third_party/blink/renderer/core/dom/beforeunload_event_listener.h"
@@ -763,6 +764,8 @@ Document::Document(const DocumentInit& initializer,
       isolated_world_csp_map_(
           MakeGarbageCollected<
               HeapHashMap<int, Member<ContentSecurityPolicy>>>()),
+      display_lock_document_state_(
+          MakeGarbageCollected<DisplayLockDocumentState>(this)),
       permission_service_(GetExecutionContext()),
       font_preload_manager_(*this) {
   security_initializer.ApplyPendingDataToDocument(*this);
@@ -2718,7 +2721,8 @@ bool Document::NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(
     bool ignore_adjacent_style) const {
   if (!node.CanParticipateInFlatTree())
     return false;
-  if (locked_display_lock_count_ == 0 && !NeedsLayoutTreeUpdate())
+  if (GetDisplayLockDocumentState().LockedDisplayLockCount() == 0 &&
+      !NeedsLayoutTreeUpdate())
     return false;
   if (!node.isConnected())
     return false;
@@ -8212,7 +8216,6 @@ void Document::Trace(Visitor* visitor) {
   visitor->Trace(policy_);
   visitor->Trace(slot_assignment_engine_);
   visitor->Trace(viewport_data_);
-  visitor->Trace(display_lock_contexts_);
   visitor->Trace(navigation_initiator_);
   visitor->Trace(lazy_load_image_observer_);
   visitor->Trace(isolated_world_csp_map_);
@@ -8222,7 +8225,7 @@ void Document::Trace(Visitor* visitor) {
   visitor->Trace(cookie_jar_);
   visitor->Trace(synchronous_mutation_observer_list_);
   visitor->Trace(element_explicitly_set_attr_elements_map_);
-  visitor->Trace(display_lock_activation_observer_);
+  visitor->Trace(display_lock_document_state_);
   visitor->Trace(form_to_pending_submission_);
   visitor->Trace(permission_service_);
   visitor->Trace(font_preload_manager_);
@@ -8447,134 +8450,6 @@ void Document::IncrementNumberOfCanvases() {
   num_canvases_++;
 }
 
-void Document::IncrementDisplayLockBlockingAllActivation() {
-  ++display_lock_blocking_all_activation_count_;
-}
-
-void Document::DecrementDisplayLockBlockingAllActivation() {
-  DCHECK_GT(display_lock_blocking_all_activation_count_, 0);
-  --display_lock_blocking_all_activation_count_;
-}
-
-int Document::DisplayLockBlockingAllActivationCount() const {
-  return display_lock_blocking_all_activation_count_;
-}
-
-void Document::AddLockedDisplayLock() {
-  ++locked_display_lock_count_;
-  TRACE_COUNTER_ID1(TRACE_DISABLED_BY_DEFAULT("blink.debug.display_lock"),
-                    "LockedDisplayLockCount", TRACE_ID_LOCAL(this),
-                    locked_display_lock_count_);
-}
-
-void Document::RemoveLockedDisplayLock() {
-  DCHECK_GT(locked_display_lock_count_, 0);
-  --locked_display_lock_count_;
-  TRACE_COUNTER_ID1(TRACE_DISABLED_BY_DEFAULT("blink.debug.display_lock"),
-                    "LockedDisplayLockCount", TRACE_ID_LOCAL(this),
-                    locked_display_lock_count_);
-}
-
-int Document::LockedDisplayLockCount() const {
-  return locked_display_lock_count_;
-}
-
-void Document::AddDisplayLockContext(DisplayLockContext* context) {
-  display_lock_contexts_.insert(context);
-}
-
-void Document::RemoveDisplayLockContext(DisplayLockContext* context) {
-  display_lock_contexts_.erase(context);
-}
-
-int Document::DisplayLockCount() const {
-  return display_lock_contexts_.size();
-}
-
-void Document::NotifySelectionRemovedFromDisplayLocks() {
-  for (auto context : display_lock_contexts_)
-    context->NotifySubtreeLostSelection();
-}
-
-Document::ScopedForceActivatableDisplayLocks
-Document::GetScopedForceActivatableLocks() {
-  return ScopedForceActivatableDisplayLocks(this);
-}
-
-Document::ScopedForceActivatableDisplayLocks::
-    ScopedForceActivatableDisplayLocks(Document* document)
-    : document_(document) {
-  if (++document_->activatable_display_locks_forced_ == 1) {
-    for (auto context : document_->display_lock_contexts_)
-      context->DidForceActivatableDisplayLocks();
-  }
-}
-
-Document::ScopedForceActivatableDisplayLocks::
-    ScopedForceActivatableDisplayLocks(
-        ScopedForceActivatableDisplayLocks&& other)
-    : document_(other.document_) {
-  other.document_ = nullptr;
-}
-
-Document::ScopedForceActivatableDisplayLocks&
-Document::ScopedForceActivatableDisplayLocks::operator=(
-    ScopedForceActivatableDisplayLocks&& other) {
-  document_ = other.document_;
-  other.document_ = nullptr;
-  return *this;
-}
-
-Document::ScopedForceActivatableDisplayLocks::
-    ~ScopedForceActivatableDisplayLocks() {
-  if (!document_)
-    return;
-  DCHECK(document_->activatable_display_locks_forced_);
-  --document_->activatable_display_locks_forced_;
-}
-
-void Document::RegisterDisplayLockActivationObservation(Element* element) {
-  EnsureDisplayLockActivationObserver().observe(element);
-}
-
-void Document::UnregisterDisplayLockActivationObservation(Element* element) {
-  EnsureDisplayLockActivationObserver().unobserve(element);
-}
-
-IntersectionObserver& Document::EnsureDisplayLockActivationObserver() {
-  if (!display_lock_activation_observer_) {
-    // Use kPostTaskToDeliver method, since a commit can dirty layout, and we
-    // want to avoid dirtying layout during post-lifecycle steps.
-    // Note that we use 50% margin (on the viewport) so that we get the
-    // observation before the element enters the viewport.
-    display_lock_activation_observer_ = IntersectionObserver::Create(
-        {Length::Percent(50.f)}, {std::numeric_limits<float>::min()}, this,
-        WTF::BindRepeating(&Document::ProcessDisplayLockActivationObservation,
-                           WrapWeakPersistent(this)),
-        IntersectionObserver::kDeliverDuringPostLifecycleSteps);
-  }
-  return *display_lock_activation_observer_;
-}
-
-void Document::ProcessDisplayLockActivationObservation(
-    const HeapVector<Member<IntersectionObserverEntry>>& entries) {
-  DCHECK(View());
-  for (auto& entry : entries) {
-    auto* context = entry->target()->GetDisplayLockContext();
-    DCHECK(context);
-    if (entry->isIntersecting()) {
-      View()->EnqueueStartOfLifecycleTask(
-          WTF::Bind(&DisplayLockContext::NotifyIsIntersectingViewport,
-                    WrapWeakPersistent(context)));
-    } else {
-      View()->EnqueueStartOfLifecycleTask(
-          WTF::Bind(&DisplayLockContext::NotifyIsNotIntersectingViewport,
-                    WrapWeakPersistent(context)));
-    }
-  }
-  View()->ScheduleAnimation();
-}
-
 void Document::ExecuteJavaScriptUrls() {
   DCHECK(frame_);
   Vector<PendingJavascriptUrl> urls_to_execute;
@@ -8602,6 +8477,10 @@ void Document::ProcessJavaScriptUrl(
         *GetTaskRunner(TaskType::kNetworking), FROM_HERE,
         WTF::Bind(&Document::ExecuteJavaScriptUrls, WrapWeakPersistent(this)));
   }
+}
+
+DisplayLockDocumentState& Document::GetDisplayLockDocumentState() const {
+  return *display_lock_document_state_;
 }
 
 void Document::CancelPendingJavaScriptUrls() {

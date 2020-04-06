@@ -680,7 +680,7 @@ void WebPluginContainerImpl::DidFinishLoading() {
 }
 
 void WebPluginContainerImpl::DidFailLoading(const ResourceError& error) {
-  web_plugin_->DidFailLoading(error);
+  web_plugin_->DidFailLoading(WebURLError(error));
 }
 
 cc::Layer* WebPluginContainerImpl::CcLayer() const {

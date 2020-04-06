@@ -8,7 +8,10 @@ assert(is_android)
 
 android_resources("android_media_resources") {
   custom_package = "org.chromium.third_party.android.media"
-  resource_dirs = [ "java/res" ]
+  sources = [
+    "java/res/layout/media_controller.xml",
+    "java/res/values/colors.xml",
+  ]
   deps = [
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:androidx_mediarouter_mediarouter_java",

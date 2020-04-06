@@ -134,6 +134,14 @@ class FakeServerHelperAndroid {
       const base::android::JavaParamRef<jstring>& id,
       const base::android::JavaParamRef<jstring>& client_tag_hash);
 
+  // Sets trusted vault nigori with keys derived from |trusted_vault_key| on
+  // the server.
+  void SetTrustedVaultNigori(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jlong fake_server,
+      const base::android::JavaParamRef<jbyteArray>& trusted_vault_key);
+
   // Simulates a dashboard stop and clear.
   void ClearServerData(JNIEnv* env,
                        const base::android::JavaParamRef<jobject>& obj,

@@ -43,7 +43,9 @@ class SharedImageRepresentationGLTexturePassthrough;
 class SharedImageRepresentationSkia;
 class SharedImageRepresentationDawn;
 class SharedImageRepresentationOverlay;
+class SharedImageRepresentationVaapi;
 class MemoryTypeTracker;
+class VaapiDependenciesFactory;
 
 // Represents the actual storage (GL texture, VkImage, GMB) for a SharedImage.
 // Should not be accessed direclty, instead is accessed through a
@@ -139,6 +141,10 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   virtual std::unique_ptr<SharedImageRepresentationOverlay> ProduceOverlay(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker);
+  virtual std::unique_ptr<SharedImageRepresentationVaapi> ProduceVASurface(
+      SharedImageManager* manager,
+      MemoryTypeTracker* tracker,
+      VaapiDependenciesFactory* dep_factory);
 
   // Used by subclasses during destruction.
   bool have_context() const EXCLUSIVE_LOCKS_REQUIRED(lock_);

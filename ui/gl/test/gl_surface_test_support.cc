@@ -32,6 +32,9 @@ namespace {
 void InitializeOneOffHelper(bool init_extensions) {
   DCHECK_EQ(kGLImplementationNone, GetGLImplementation());
 
+  // TODO(https://crbug.com/1036285): delete this once USE_X11 is removed. If
+  // Ozone/X11 is used, XThreads are initialized with the
+  // OzonePlatform::InitializeForGPU call.
 #if defined(USE_X11)
   XInitThreads();
 #endif

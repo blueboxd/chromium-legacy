@@ -1,8 +1,10 @@
-load('//lib/builders.star', 'builder_name', 'cpu', 'goma', 'os')
+load('//lib/builders.star', 'builder_name', 'cpu', 'defaults', 'goma', 'os')
 load('//lib/ci.star', 'ci')
 # Load this using relative path so that the load statement doesn't
 # need to be changed when making a new milestone
 load('../vars.star', 'vars')
+
+defaults.pool.set('luci.chromium.ci')
 
 luci.bucket(
     name = vars.ci_bucket,

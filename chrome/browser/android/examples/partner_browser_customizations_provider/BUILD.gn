@@ -5,7 +5,10 @@
 import("//build/config/android/rules.gni")
 
 android_resources("partner_browser_customizations_example_apk_resources") {
-  resource_dirs = [ "res" ]
+  sources = [
+    "res/values/bookmarks_icons.xml",
+    "res/values/strings.xml",
+  ]
   android_manifest = "AndroidManifest.xml"
   custom_package = "org.chromium.example.partnercustomizations"
 }

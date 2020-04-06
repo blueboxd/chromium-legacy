@@ -28,7 +28,6 @@ import org.chromium.base.task.test.CustomShadowAsyncTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.components.signin.AccountManagerDelegateException;
 import org.chromium.components.signin.AccountManagerFacade;
-import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.ChildAccountStatus;
 import org.chromium.components.signin.ProfileDataSource;
@@ -63,10 +62,8 @@ public class AccountManagerFacadeRobolectricTest {
         mDelegate = new FakeAccountManagerDelegate(
                 FakeAccountManagerDelegate.ENABLE_PROFILE_DATA_SOURCE);
         Assert.assertFalse(mDelegate.isRegisterObserversCalled());
-        // TODO(https://crbug.com/1067633): Remove AccountManagerFacadeProvider in this test
-        AccountManagerFacadeProvider.setInstanceForTests(new AccountManagerFacade(mDelegate));
+        mFacade = new AccountManagerFacade(mDelegate);
         Assert.assertTrue(mDelegate.isRegisterObserversCalled());
-        mFacade = AccountManagerFacadeProvider.getInstance();
     }
 
     private void setAccountRestrictionPatterns(String... patterns) {
@@ -249,7 +246,7 @@ public class AccountManagerFacadeRobolectricTest {
                                        .featureSet(new HashSet<>(Arrays.asList(features)))
                                        .build();
         mDelegate.addAccountHolderExplicitly(holder);
-        Assert.assertFalse(AccountManagerFacadeProvider.getInstance().isUpdatePending().get());
+        Assert.assertFalse(mFacade.isUpdatePending().get());
         return account;
     }
 
@@ -260,7 +257,7 @@ public class AccountManagerFacadeRobolectricTest {
     private void assertChildAccountStatus(
             Account account, @ChildAccountStatus.Status Integer status) {
         final AtomicInteger callCount = new AtomicInteger();
-        AccountManagerFacadeProvider.getInstance().checkChildAccountStatus(account, result -> {
+        mFacade.checkChildAccountStatus(account, result -> {
             callCount.incrementAndGet();
             Assert.assertEquals(result, status);
         });

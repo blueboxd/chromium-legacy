@@ -105,6 +105,7 @@
 <translation id="2268813581635650749">Tanca la sessió de tots els usuaris</translation>
 <translation id="2277103315734023688">Avança</translation>
 <translation id="2292698582925480719">Escala de visualització</translation>
+<translation id="2295777434187870477">El micròfon està activat. En commutar-lo, se silenciarà l'entrada.</translation>
 <translation id="2298170939937364391">La lupa de pantalla completa està activada. Torna a prémer Ctrl+Cerca+M per desactivar-la.</translation>
 <translation id="2302092602801625023">Family Link gestiona aquest compte</translation>
 <translation id="2303600792989757991">Commuta la visió general de la finestra</translation>
@@ -138,6 +139,7 @@
 <translation id="2658778018866295321">Fes clic i arrossega</translation>
 <translation id="2700493154570097719">Defineix el teu teclat</translation>
 <translation id="2704781753052663061">Uneix-te a altres xarxes Wi-Fi</translation>
+<translation id="2705001408393684014">Commuta el micròfon. <ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">Llum nocturna</translation>
 <translation id="2727977024730340865">S'ha connectat a un carregador de baix consum. És possible que la càrrega de la bateria no sigui fiable.</translation>
 <translation id="2792498699870441125">Alt+Cerca</translation>
@@ -296,6 +298,7 @@
 <translation id="4665114317261903604">Activa o desactiva el mode No molestis. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Desbloqueja el dispositiu amb el codi parental</translation>
 <translation id="4702647871202761252">La pantalla de privadesa està desactivada</translation>
+<translation id="4705716602320768426">Envia suggeriments</translation>
 <translation id="4710243778082831592">Configuració d'IME</translation>
 <translation id="4731797938093519117">Accés parental</translation>
 <translation id="4734965478015604180">Horitzontal</translation>
@@ -376,6 +379,7 @@
 <translation id="5901316534475909376">Maj + Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Activat</translation>
+<translation id="5920710855273935292">El micròfon està silenciat.</translation>
 <translation id="5947494881799873997">Reverteix</translation>
 <translation id="595202126637698455">Traça del rendiment activada</translation>
 <translation id="5957083217255311415">Les dades mòbils estan desactivades.</translation>

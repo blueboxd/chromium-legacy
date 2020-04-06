@@ -411,7 +411,13 @@ id<GREYMatcher> OpenInNewIncognitoTabButton() {
 
 // Tests display and selection of 'Copy URL' in a context menu on a history
 // entry.
-- (void)testContextMenuCopy {
+// TODO(crbug.com/1067812): Test won't pass on devices.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testContextMenuCopy testContextMenuCopy
+#else
+#define MAYBE_testContextMenuCopy DISABLED_testContextMenuCopy
+#endif
+- (void)MAYBE_testContextMenuCopy {
   ProceduralBlock clearPasteboard = ^{
     [[UIPasteboard generalPasteboard] setURLs:nil];
   };

@@ -168,6 +168,7 @@
 <translation id="3112556859945124369">Belgilash…</translation>
 <translation id="3153862085237805241">Bildirgini saqlash</translation>
 <translation id="3157684681743766797">Hammasini belgilash…</translation>
+<translation id="3161291298470460782">Bu hisobingizdan chiqarib, sinxronizatsiyani faolsizlantiradi va bu qurilmadagi barcha Chrome maʼlumotlaringizni tozalab tashlaydi. Google hisobingizga sinxronlangan maʼlumotlaringiz joyida qoladi.</translation>
 <translation id="3175081911749765310">Veb-xizmatlar</translation>
 <translation id="3178650076442119961">Bugun onlayn edi</translation>
 <translation id="3207960819495026254">Xatcho‘plarga qo‘shildi</translation>
@@ -200,6 +201,7 @@
 <translation id="3494788280727468875">Brauzer tarixini tozalashni tasdiqlash</translation>
 <translation id="35083190962747987">${url} sahifasini ochish</translation>
 <translation id="3519193562722059437">Veb-sahifalarni ko‘rish uchun yangi tab oching.</translation>
+<translation id="3523473570015918798">Hisobingizdan chiqsangiz, bukmarklar, tarix, parollar va boshqa Chrome maʼlumotlaringiz bilan Google hisobingiz sinxronizatsiyasi uziladi.</translation>
 <translation id="3527085408025491307">Jild</translation>
 <translation id="3529024052484145543">Xavfsiz emas</translation>
 <translation id="3533202363250687977">Inkognito sahifalarni yopish</translation>
@@ -333,6 +335,7 @@ Bu sozlamani almashtirish uchun <ph name="BEGIN_LINK" />sinxronizatsiyani tiklan
 <translation id="54401264925851789">Sahifa xavfsizligi haqida ma’lumot</translation>
 <translation id="5443952882982198570">Bank kartalari</translation>
 <translation id="5457907402803865181">Parollar sinxronlanmadi</translation>
+<translation id="5508435575041083207">Hisobdan chiqish va bu qurilmadagi maʼlumotlarni tozalash</translation>
 <translation id="5525269841082836315">Kodli ibora yaratish</translation>
 <translation id="5548760955356983418">Handoff funksiyasi veb-saytni bir qurilmada ochib, boshqasida davom etish imkoniyatini beradi. Ochilgan sayt Mac kompyuteringizning Dock panelida paydo bo‘ladi.
 
@@ -506,6 +509,9 @@ Ma’lumotlaringiz <ph name="TIME" /> sanasida kodli ibora bilan shifrlangan. Si
 <translation id="766891008101699113">Internetni pinhona kezish uchun yangi varaq oching.</translation>
 <translation id="7671141431838911305">O‘RNATISH</translation>
 <translation id="7765158879357617694">Ko‘chirib o‘tkazish</translation>
+<translation id="7771470029643830783">Hisobingizdan chiqsangiz, bukmarklar, tarix, parollar va boshqa Chrome maʼlumotlaringiz bilan Google hisobingiz sinxronizatsiyasi uziladi.
+
+Hisobingiz <ph name="HOSTED_DOMAIN" /> domenida boshqariladi, undan chiqsangiz, bu qurilmadagi Chrome maʼlumotlaringiz tozalanadi. Google hisobingizga sinxronlangan maʼlumotlaringiz joyida qoladi.</translation>
 <translation id="7772032839648071052">Kodli iborani tasdiqlang</translation>
 <translation id="7781011649027948662">Sahifa tarjima qilinsinmi?</translation>
 <translation id="7781829728241885113">Kecha</translation>
@@ -555,6 +561,7 @@ Ma’lumotlaringiz <ph name="TIME" /> sanasida kodli ibora bilan shifrlangan. Si
 <translation id="8490978609246021741">Oʻzgarishlarni saqlash</translation>
 <translation id="8503813439785031346">Foydalanuvchi nomi</translation>
 <translation id="850600235656508448">Inkognito rejimida ochish</translation>
+<translation id="8510057420705599706">Bu hisobingizdan chiqarib, sinxronizatsiyani faolsizlantiradi, lekin bu qurilmadagi bukmarklar, tarix, parollar va boshqa Chrome maʼlumotlaringiz saqlanib qoladi.</translation>
 <translation id="8517375800490286174">Ochiq kodli DT litsenziyalari</translation>
 <translation id="8524799873541103884"><ph name="INCOGNITO" /> tablar soni <ph name="FIRST_VISIBLE_TAB" /> va <ph name="LAST_VISIBLE_TAB" /> orasida, jami <ph name="NUMBER_OF_OPEN_TABS" /> ta</translation>
 <translation id="8529767659511976195">Yangi</translation>
@@ -597,6 +604,7 @@ Ma’lumotlaringiz <ph name="TIME" /> sanasida kodli ibora bilan shifrlangan. Si
 <translation id="9094033019050270033">Parolni yangilash</translation>
 <translation id="9100610230175265781">Kodli ibora zarur</translation>
 <translation id="9148126808321036104">Qaytadan kiring</translation>
+<translation id="9152539721251340337">QR kod yaratish</translation>
 <translation id="9157836665414082580">Muloqot oynalarini bloklash</translation>
 <translation id="9188680907066685419">Boshqariladigan hisobdan chiqish</translation>
 <translation id="9203116392574189331">Handoff</translation>

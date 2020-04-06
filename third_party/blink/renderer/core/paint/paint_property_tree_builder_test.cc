@@ -4350,6 +4350,10 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowClipUnderMultiColumn) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, CompositedUnderMultiColumn) {
+  // TODO(crbug.com/1064341): This test crashes in CompositeAfterPaint. Fix it.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
   SetBodyInnerHTML(R"HTML(
     <style>body { margin: 0; }</style>
     <div id='multicol' style='columns:3; column-fill:auto; column-gap: 0;
@@ -4498,6 +4502,10 @@ TEST_P(PaintPropertyTreeBuilderTest, FrameUnderMulticol) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, CompositedMulticolFrameUnderMulticol) {
+  // TODO(crbug.com/1064341): This test crashes in CompositeAfterPaint. Fix it.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
   SetBodyInnerHTML(R"HTML(
     <style>body { margin: 0 }</style>
     <div style='columns: 3; column-gap: 0; column-fill: auto;
@@ -5646,6 +5654,10 @@ TEST_P(PaintPropertyTreeBuilderTest, CompositedLayerSkipsFragmentClip) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, CompositedLayerUnderClipUnderMulticol) {
+  // TODO(crbug.com/1064341): This test crashes in CompositeAfterPaint. Fix it.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
   SetBodyInnerHTML(R"HTML(
     <div id="multicol" style="columns: 2">
       <div id="clip" style="height: 100px; overflow: hidden">

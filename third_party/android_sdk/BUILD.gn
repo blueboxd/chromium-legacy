@@ -30,7 +30,7 @@ if (enable_java_templates) {
     _resources_target = "${target_name}__resources"
     android_resources(_resources_target) {
       testonly = true
-      resource_dirs = []
+      sources = []
       android_manifest = _manifest_output_path
       android_manifest_dep = ":$_manifest_target"
     }

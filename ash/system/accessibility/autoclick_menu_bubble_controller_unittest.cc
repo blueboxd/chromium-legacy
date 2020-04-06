@@ -6,11 +6,14 @@
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/autoclick/autoclick_controller.h"
+#include "ash/public/cpp/locale_update_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/accessibility/autoclick_scroll_bubble_controller.h"
 #include "ash/test/ash_test_base.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/i18n/rtl.h"
 
 namespace ash {
 
@@ -218,22 +221,23 @@ TEST_F(AutoclickMenuBubbleControllerTest, CanChangePosition) {
 }
 
 TEST_F(AutoclickMenuBubbleControllerTest, DefaultChangesWithTextDirection) {
-  AccessibilityControllerImpl* controller =
-      Shell::Get()->accessibility_controller();
   gfx::Rect window_bounds = Shell::GetPrimaryRootWindow()->bounds();
 
   // RTL should position the menu on the bottom left.
-  base::i18n::SetRTLForTesting(true);
-  // Force a layout.
-  controller->UpdateAutoclickMenuBoundsIfNeeded();
+  base::i18n::SetICUDefaultLocale("he");
+  // Trigger the LocaleChangeObserver, which should cause a layout of the menu.
+  ash::LocaleUpdateController::Get()->OnLocaleChanged(
+      "en", "en", "he", base::DoNothing::Once<ash::LocaleNotificationResult>());
+  EXPECT_TRUE(base::i18n::IsRTL());
   EXPECT_LT(
       GetMenuViewBounds().ManhattanDistanceToPoint(window_bounds.bottom_left()),
       kMenuViewBoundsBuffer);
 
   // LTR should position the menu on the bottom right.
-  base::i18n::SetRTLForTesting(false);
-  // Force a layout.
-  controller->UpdateAutoclickMenuBoundsIfNeeded();
+  base::i18n::SetICUDefaultLocale("en");
+  ash::LocaleUpdateController::Get()->OnLocaleChanged(
+      "he", "he", "en", base::DoNothing::Once<ash::LocaleNotificationResult>());
+  EXPECT_FALSE(base::i18n::IsRTL());
   EXPECT_LT(GetMenuViewBounds().ManhattanDistanceToPoint(
                 window_bounds.bottom_right()),
             kMenuViewBoundsBuffer);

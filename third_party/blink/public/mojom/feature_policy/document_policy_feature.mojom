@@ -23,6 +23,8 @@ enum DocumentPolicyFeature {
   // Controls the layout size of intrinsically sized images and videos. When
   // disabled, default size (300 x 150) is used to prevent relayout.
   kUnsizedMedia = 7,
+  // Restricts the usage of layout-causing animations in a document.
+  kLayoutAnimations = 8,
   // Don't change assigned numbers of any item, and don't reuse removed slots.
   // Add new features at the end of the enum.
 };

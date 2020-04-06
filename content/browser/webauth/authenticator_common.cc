@@ -562,12 +562,14 @@ void AuthenticatorCommon::StartMakeCredentialRequest(
     }
   }
 
+  make_credential_options_->allow_skipping_pin_touch = allow_skipping_pin_touch;
+
   request_ = std::make_unique<device::MakeCredentialRequestHandler>(
       discovery_factory_,
       GetAvailableTransports(render_frame_host_, request_delegate_.get(),
                              caller_origin_),
       *ctap_make_credential_request_, *authenticator_selection_criteria_,
-      allow_skipping_pin_touch,
+      *make_credential_options_,
       base::BindOnce(&AuthenticatorCommon::OnRegisterResponse,
                      weak_factory_.GetWeakPtr()));
 
@@ -797,12 +799,31 @@ void AuthenticatorCommon::MakeCredential(
     return;
   }
 
-  if (options->protection_policy ==
-          blink::mojom::ProtectionPolicy::UNSPECIFIED &&
-      resident_key) {
-    // If not specified, UV_OR_CRED_ID_REQUIRED is made the default.
-    options->protection_policy =
-        blink::mojom::ProtectionPolicy::UV_OR_CRED_ID_REQUIRED;
+  base::Optional<device::CredProtectRequest> cred_protect_request;
+  switch (options->protection_policy) {
+    case blink::mojom::ProtectionPolicy::UNSPECIFIED:
+      if (resident_key) {
+        // If not specified, kUVOrCredIDRequired is made the default unless the
+        // authenticator defaults to something better.
+        cred_protect_request =
+            device::CredProtectRequest::kUVOrCredIDRequiredOrBetter;
+      }
+      break;
+    case blink::mojom::ProtectionPolicy::NONE:
+      cred_protect_request = device::CredProtectRequest::kUVOptional;
+      break;
+    case blink::mojom::ProtectionPolicy::UV_OR_CRED_ID_REQUIRED:
+      cred_protect_request = device::CredProtectRequest::kUVOrCredIDRequired;
+      break;
+    case blink::mojom::ProtectionPolicy::UV_REQUIRED:
+      cred_protect_request = device::CredProtectRequest::kUVRequired;
+      break;
+  }
+
+  make_credential_options_.emplace();
+  if (cred_protect_request) {
+    make_credential_options_->cred_protect_request.emplace(
+        *cred_protect_request, options->enforce_protection_policy);
   }
 
   DCHECK(make_credential_response_callback_.is_null());
@@ -855,7 +876,7 @@ void AuthenticatorCommon::MakeCredential(
     // NOTE: Because Android has no way of building a clientDataJSON for
     // cross-origin requests, we don't create the extension for those. This
     // problem will go away once we add clientDataHash inputs to Android.
-    ctap_make_credential_request_->android_client_data_ext.emplace(
+    make_credential_options_->android_client_data_ext.emplace(
         client_data::kCreateType, caller_origin_, options->challenge);
   }
 
@@ -870,21 +891,6 @@ void AuthenticatorCommon::MakeCredential(
   ctap_make_credential_request_->attestation_preference = attestation;
   attestation_requested_ =
       attestation != ::device::AttestationConveyancePreference::kNone;
-
-  switch (options->protection_policy) {
-    case blink::mojom::ProtectionPolicy::UNSPECIFIED:
-    case blink::mojom::ProtectionPolicy::NONE:
-      break;
-    case blink::mojom::ProtectionPolicy::UV_OR_CRED_ID_REQUIRED:
-      ctap_make_credential_request_->cred_protect =
-          std::make_pair(device::CredProtect::kUVOrCredIDRequired,
-                         options->enforce_protection_policy);
-      break;
-    case blink::mojom::ProtectionPolicy::UV_REQUIRED:
-      ctap_make_credential_request_->cred_protect = std::make_pair(
-          device::CredProtect::kUVRequired, options->enforce_protection_policy);
-      break;
-  }
 
   StartMakeCredentialRequest(/*allow_skipping_pin_touch=*/true);
 }
@@ -1491,6 +1497,8 @@ void AuthenticatorCommon::Cleanup() {
     discovery_factory_->ResetRequestState();
     discovery_factory_ = nullptr;
   }
+  ctap_make_credential_request_.reset();
+  make_credential_options_.reset();
   request_delegate_.reset();
   make_credential_response_callback_.Reset();
   get_assertion_response_callback_.Reset();

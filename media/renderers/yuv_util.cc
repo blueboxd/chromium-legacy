@@ -31,10 +31,8 @@ YUVTexturesInfo GetYUVTexturesInfo(
 
   gpu::raster::RasterInterface* ri = raster_context_provider->RasterInterface();
   DCHECK(ri);
-  // TODO(bsalomon): Use GL_RGB8 once Skia supports it.
-  // skbug.com/7533
   GrGLenum skia_texture_format =
-      video_frame->format() == PIXEL_FORMAT_NV12 ? GL_RGBA8 : GL_R8_EXT;
+      video_frame->format() == PIXEL_FORMAT_NV12 ? GL_RGB8 : GL_R8_EXT;
   for (size_t i = 0; i < video_frame->NumTextures(); ++i) {
     // Get the texture from the mailbox and wrap it in a GrTexture.
     const gpu::MailboxHolder& mailbox_holder = video_frame->mailbox_holder(i);

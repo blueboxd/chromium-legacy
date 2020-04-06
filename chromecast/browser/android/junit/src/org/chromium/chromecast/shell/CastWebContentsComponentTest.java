@@ -220,14 +220,13 @@ public class CastWebContentsComponentTest {
     public void testOnGestureCallback() {
         CastWebContentsComponent.SurfaceEventHandler callback =
                 Mockito.mock(CastWebContentsComponent.SurfaceEventHandler.class);
-
         CastWebContentsComponent component =
                 new CastWebContentsComponent(SESSION_ID, null, callback, false, false, false, true);
         component.start(mStartParams);
         CastWebContentsComponent.onGesture(SESSION_ID, 1);
         component.stop(mActivity);
 
-        verify(callback).consumeGesture(1);
+        verify(callback).consumeGesture(eq(1), any());
     }
 
     @Test

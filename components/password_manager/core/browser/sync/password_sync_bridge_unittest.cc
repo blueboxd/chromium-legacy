@@ -211,6 +211,9 @@ class MockPasswordStoreSync : public PasswordStoreSync {
   MOCK_METHOD1(RemoveLoginSync,
                PasswordStoreChangeList(const autofill::PasswordForm&));
   MOCK_METHOD1(NotifyLoginsChanged, void(const PasswordStoreChangeList&));
+  MOCK_METHOD1(
+      NotifyUnsyncedCredentialsWillBeDeleted,
+      void(const std::vector<autofill::PasswordForm>& unsynced_credentials));
   MOCK_METHOD0(BeginTransaction, bool());
   MOCK_METHOD0(CommitTransaction, bool());
   MOCK_METHOD0(RollbackTransaction, void());
@@ -892,6 +895,77 @@ TEST_F(PasswordSyncBridgeTest, ShouldNotNotifyOnSyncDisableIfProfileStore) {
   // this should *not* trigger the callback.
   EXPECT_CALL(*mock_sync_enabled_or_disabled_cb(), Run()).Times(0);
 
+  bridge()->ApplyStopSyncChanges(bridge()->CreateMetadataChangeList());
+}
+
+TEST_F(PasswordSyncBridgeTest, ShouldNotifyUnsyncedCredentialsIfAccountStore) {
+  ON_CALL(*mock_password_store_sync(), IsAccountStore())
+      .WillByDefault(Return(true));
+
+  const int kPrimaryKeyUnsyncedEntry = 1000;
+  const int kPrimaryKeySyncedEntry = 1001;
+  const std::string kPrimaryKeyUnsyncedEntryStr = "1000";
+  const std::string kPrimaryKeySyncedEntryStr = "1001";
+  ON_CALL(mock_processor(), IsEntityUnsynced(kPrimaryKeyUnsyncedEntryStr))
+      .WillByDefault(Return(true));
+  ON_CALL(mock_processor(), IsEntityUnsynced(kPrimaryKeySyncedEntryStr))
+      .WillByDefault(Return(false));
+  ON_CALL(*mock_sync_metadata_store_sync(), GetAllSyncMetadata())
+      .WillByDefault([&]() {
+        auto batch = std::make_unique<syncer::MetadataBatch>();
+        batch->AddMetadata(kPrimaryKeyUnsyncedEntryStr,
+                           std::make_unique<sync_pb::EntityMetadata>());
+        batch->AddMetadata(kPrimaryKeySyncedEntryStr,
+                           std::make_unique<sync_pb::EntityMetadata>());
+        return batch;
+      });
+
+  autofill::PasswordForm unsynced_entry = MakePasswordForm(kSignonRealm1);
+  autofill::PasswordForm synced_entry = MakePasswordForm(kSignonRealm2);
+  fake_db()->AddLoginForPrimaryKey(kPrimaryKeyUnsyncedEntry, unsynced_entry);
+  fake_db()->AddLoginForPrimaryKey(kPrimaryKeySyncedEntry, synced_entry);
+
+  EXPECT_CALL(*mock_password_store_sync(),
+              NotifyUnsyncedCredentialsWillBeDeleted(
+                  UnorderedElementsAre(unsynced_entry)));
+
+  // The content of the metadata change list does not matter in this case.
+  bridge()->ApplyStopSyncChanges(bridge()->CreateMetadataChangeList());
+}
+
+TEST_F(PasswordSyncBridgeTest,
+       ShouldNotNotifyUnsyncedCredentialsIfProfileStore) {
+  ON_CALL(*mock_password_store_sync(), IsAccountStore())
+      .WillByDefault(Return(false));
+
+  const int kPrimaryKeyUnsyncedEntry = 1000;
+  const int kPrimaryKeySyncedEntry = 1001;
+  const std::string kPrimaryKeyUnsyncedEntryStr = "1000";
+  const std::string kPrimaryKeySyncedEntryStr = "1001";
+  ON_CALL(mock_processor(), IsEntityUnsynced(kPrimaryKeyUnsyncedEntryStr))
+      .WillByDefault(Return(true));
+  ON_CALL(mock_processor(), IsEntityUnsynced(kPrimaryKeySyncedEntryStr))
+      .WillByDefault(Return(false));
+  ON_CALL(*mock_sync_metadata_store_sync(), GetAllSyncMetadata())
+      .WillByDefault([&]() {
+        auto batch = std::make_unique<syncer::MetadataBatch>();
+        batch->AddMetadata(kPrimaryKeyUnsyncedEntryStr,
+                           std::make_unique<sync_pb::EntityMetadata>());
+        batch->AddMetadata(kPrimaryKeySyncedEntryStr,
+                           std::make_unique<sync_pb::EntityMetadata>());
+        return batch;
+      });
+
+  fake_db()->AddLoginForPrimaryKey(kPrimaryKeyUnsyncedEntry,
+                                   MakePasswordForm(kSignonRealm1));
+  fake_db()->AddLoginForPrimaryKey(kPrimaryKeySyncedEntry,
+                                   MakePasswordForm(kSignonRealm2));
+
+  EXPECT_CALL(*mock_password_store_sync(),
+              NotifyUnsyncedCredentialsWillBeDeleted)
+      .Times(0);
+
+  // The content of the metadata change list does not matter in this case.
   bridge()->ApplyStopSyncChanges(bridge()->CreateMetadataChangeList());
 }
 

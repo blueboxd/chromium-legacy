@@ -62,6 +62,10 @@ class ExtensionIconSource : public content::URLDataSource,
                          int icon_size,
                          ExtensionIconSet::MatchType match,
                          bool grayscale);
+  static GURL GetIconURL(const std::string& extension_id,
+                         int icon_size,
+                         ExtensionIconSet::MatchType match,
+                         bool grayscale);
 
   // A public utility function for accessing the bitmap of the image specified
   // by |resource_id|.

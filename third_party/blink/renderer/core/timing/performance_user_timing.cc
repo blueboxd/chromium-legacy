@@ -60,15 +60,6 @@ static void ClearPeformanceEntries(PerformanceEntryMap& performance_entry_map,
     performance_entry_map.erase(name);
 }
 
-PerformanceMark* UserTiming::CreatePerformanceMark(
-    ScriptState* script_state,
-    const AtomicString& mark_name,
-    PerformanceMarkOptions* mark_options,
-    ExceptionState& exception_state) {
-  return PerformanceMark::Create(script_state, mark_name, mark_options,
-                                 exception_state);
-}
-
 void UserTiming::AddMarkToPerformanceTimeline(PerformanceMark& mark) {
   if (performance_->timing()) {
     TRACE_EVENT_COPY_MARK1("blink.user_timing", mark.name().Utf8().c_str(),

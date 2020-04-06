@@ -108,6 +108,8 @@ class FeedNetworkTest : public testing::Test {
 
   TestingPrefServiceSimple& profile_prefs() { return profile_prefs_; }
 
+  base::HistogramTester& histogram() { return histogram_; }
+
   void Respond(const GURL& url,
                const std::string& response_string,
                net::HttpStatusCode code = net::HTTP_OK,
@@ -167,6 +169,7 @@ class FeedNetworkTest : public testing::Test {
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
   base::SimpleTestTickClock test_tick_clock_;
   TestingPrefServiceSimple profile_prefs_;
+  base::HistogramTester histogram_;
 };
 
 TEST_F(FeedNetworkTest, SendQueryRequestEmpty) {
@@ -195,6 +198,8 @@ TEST_F(FeedNetworkTest, SendQueryRequestSendsValidRequest) {
   EXPECT_TRUE(
       resource_request.headers.GetHeader("Authorization", &authorization));
   EXPECT_EQ(authorization, "Bearer access_token");
+  histogram().ExpectBucketCount(
+      "ContentSuggestions.Feed.Network.ResponseStatus.FeedQuery", 200, 1);
 }
 
 TEST_F(FeedNetworkTest, SendQueryRequestInvalidResponse) {
@@ -229,6 +234,9 @@ TEST_F(FeedNetworkTest, SendQueryRequestIgnoresBodyForNon200Response) {
   const QueryRequestResult& result = *receiver.GetResult();
   EXPECT_EQ(net::HTTP_FORBIDDEN, result.status_code);
   EXPECT_FALSE(result.response_body);
+  histogram().ExpectBucketCount(
+      "ContentSuggestions.Feed.Network.ResponseStatus.FeedQuery",
+      net::HTTP_FORBIDDEN, 1);
 }
 
 TEST_F(FeedNetworkTest, CancelRequest) {
@@ -280,14 +288,15 @@ TEST_F(FeedNetworkTest, ParallelRequests) {
   EXPECT_TRUE(receiver2.GetResult());
 }
 
-TEST_F(FeedNetworkTest, ShouldReportRequestStatusCode) {
+TEST_F(FeedNetworkTest, ShouldReportResponseStatusCode) {
   CallbackReceiver<QueryRequestResult> receiver;
   base::HistogramTester histogram_tester;
   feed_network()->SendQueryRequest(GetTestFeedRequest(), receiver.Bind());
   RespondToQueryRequest(GetTestFeedResponse(), net::HTTP_FORBIDDEN);
+
   EXPECT_THAT(
       histogram_tester.GetAllSamples(
-          "ContentSuggestions.Feed.Network.RequestStatusCode"),
+          "ContentSuggestions.Feed.Network.ResponseStatus.FeedQuery"),
       ElementsAre(base::Bucket(/*min=*/net::HTTP_FORBIDDEN, /*count=*/1)));
 }
 
@@ -373,6 +382,8 @@ TEST_F(FeedNetworkTest, SendActionRequest) {
   const ActionRequestResult& result = *receiver.GetResult();
   EXPECT_EQ(net::HTTP_OK, result.status_code);
   EXPECT_TRUE(result.response_body);
+  histogram().ExpectBucketCount(
+      "ContentSuggestions.Feed.Network.ResponseStatus.UploadActions", 200, 1);
 }
 
 TEST_F(FeedNetworkTest, SendActionRequestSendsValidRequest) {

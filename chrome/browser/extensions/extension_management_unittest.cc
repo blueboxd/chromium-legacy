@@ -907,7 +907,7 @@ TEST_F(ExtensionManagementServiceTest, IsInstallationExplicitlyBlocked) {
 TEST_F(ExtensionManagementServiceTest, SystemFeaturesDisableList) {
   base::Value system_features_list = base::Value(base::Value::Type::LIST);
   system_features_list.Append(policy::SystemFeature::CAMERA);
-  system_features_list.Append(policy::SystemFeature::SETTINGS);
+  system_features_list.Append(policy::SystemFeature::OS_SETTINGS);
   SetPrefLocalState(policy::policy_prefs::kSystemFeaturesDisableList,
                     std::move(system_features_list));
   EXPECT_EQ(ExtensionManagement::INSTALLATION_BLOCKED,

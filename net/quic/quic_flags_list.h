@@ -127,12 +127,6 @@ QUIC_FLAG(
     FLAGS_quic_reloadable_flag_quic_bbr_no_bytes_acked_in_startup_recovery,
     false)
 
-// If true, enables the BBS4 and BBS5 connection options, which reduce BBR's
-// pacing rate in STARTUP as more losses occur as a fraction of CWND.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_bbr_startup_rate_reduction,
-          false)
-
 // If true and using Leto for QUIC shared-key calculations, GFE will react to a
 // failure to contact Leto by sending a REJ containing a fallback ServerConfig,
 // allowing the client to continue the handshake.
@@ -281,11 +275,6 @@ QUIC_FLAG(bool, FLAGS_quic_enable_http3_grease_randomness, true)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bundle_retransmittable_with_pto_ack,
           true)
-// If true, use QuicClock::Now() as the source of packet receive time instead of
-// WallNow().
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_use_quic_time_for_received_timestamp2,
-          true)
 
 // If true, enable QUIC version h3-25.
 QUIC_FLAG(bool,
@@ -353,7 +342,7 @@ QUIC_FLAG(
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_bbr2_add_ack_height_to_queueing_threshold,
-    false)
+    true)
 
 // If true, send PING when PTO skips packet number and there is no data to send.
 QUIC_FLAG(
@@ -374,7 +363,7 @@ QUIC_FLAG(bool,
 // called with locally initiated stream ID.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_create_incoming_stream_bug,
-          false)
+          true)
 
 // If true, quic::BandwidthSampler will start in application limited phase.
 QUIC_FLAG(bool,
@@ -385,7 +374,7 @@ QUIC_FLAG(bool,
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_ignore_one_write_error_after_mtu_probe,
-    false)
+    true)
 
 // If true, send H3 SETTINGs when 1-RTT write key is available (rather then both
 // keys are available).

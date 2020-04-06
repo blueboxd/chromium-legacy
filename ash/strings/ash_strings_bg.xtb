@@ -105,6 +105,7 @@
 <translation id="2268813581635650749">Изход за всички</translation>
 <translation id="2277103315734023688">Придвижване напред</translation>
 <translation id="2292698582925480719">Мащаб на показване</translation>
+<translation id="2295777434187870477">Микрофонът е включен. Превключването ще го заглуши.</translation>
 <translation id="2298170939937364391">Лупата за увеличаване на целия екран е активирана. За да я изключите, натиснете отново Ctrl + клавиша „Търсене“ + M.</translation>
 <translation id="2302092602801625023">Този профил се управлява от Family Link</translation>
 <translation id="2303600792989757991">Превключване на общия преглед на прозорците</translation>
@@ -138,6 +139,7 @@
 <translation id="2658778018866295321">Кликване и преместване с плъзгане</translation>
 <translation id="2700493154570097719">Задайте клавиатура</translation>
 <translation id="2704781753052663061">Присъединяване към други Wi-Fi мрежи</translation>
+<translation id="2705001408393684014">Превключване на микрофона. <ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">Нощно осветление</translation>
 <translation id="2727977024730340865">Използва се зарядно устройство с малка мощност. Зареждането на батерията може да не е надеждно.</translation>
 <translation id="2792498699870441125">Alt + търсене</translation>
@@ -296,6 +298,7 @@
 <translation id="4665114317261903604">Превключване на режима „Не безпокойте“. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Отключване на устройството с код на родител</translation>
 <translation id="4702647871202761252">Екранът за поверителност е изключен</translation>
+<translation id="4705716602320768426">Изпращане на отзиви</translation>
 <translation id="4710243778082831592">Настройки за редактора за метод на въвеждане</translation>
 <translation id="4731797938093519117">Достъп на родител</translation>
 <translation id="4734965478015604180">Хоризонтална ориентация</translation>
@@ -376,6 +379,7 @@
 <translation id="5901316534475909376">Shift + Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Включено</translation>
+<translation id="5920710855273935292">Микрофонът е заглушен.</translation>
 <translation id="5947494881799873997">Възстановяване</translation>
 <translation id="595202126637698455">Проследяването на ефективността е активирано</translation>
 <translation id="5957083217255311415">Мобилните данни са изключени.</translation>

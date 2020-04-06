@@ -1279,9 +1279,11 @@ ChromeContentBrowserClient::CreateBrowserMainParts(
 
   main_parts->AddParts(new ChromeBrowserMainExtraPartsMemory);
 
-  main_parts->AddParts(new ChromeBrowserMainExtraPartsGpu);
-
   chrome::AddMetricsExtraParts(main_parts.get());
+
+  // Always add ChromeBrowserMainExtraPartsGpu last to make sure
+  // GpuDataManager initialization could pick up about:flags settings.
+  main_parts->AddParts(new ChromeBrowserMainExtraPartsGpu);
 
   return main_parts;
 }

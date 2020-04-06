@@ -245,7 +245,10 @@ URLs in the URL bar (to limit
 but users are otherwise free to invoke script against pages using either the URL
 bar or the DevTools console.
 
-Similarly, users may create bookmarks pointed at JavaScript URLs that will run
+<a name="TOC-Does-executing-JavaScript-from-a-bookmark-mean-there-s-an-XSS-vulnerability-"></a>
+## Does executing JavaScript from a bookmark mean there's an XSS vulnerability?
+
+No. Chromium allows users to create bookmarks to JavaScript URLs that will run
 on the currently-loaded page when the user clicks the bookmark; these are called
 [bookmarklets](https://en.wikipedia.org/wiki/Bookmarklet).
 

@@ -1932,7 +1932,7 @@
 <translation id="3578594933904494462">正在分享這個分頁的內容。</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; 想與您的群組 (<ph name="GROUP_NAME" />) 共用打印機 &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;。如果您接受，所有群組成員即可使用這部打印機列印。</translation>
 <translation id="357889014807611375">按用量收費的 Wi-Fi</translation>
-<translation id="3582057310199111521">已在欺詐網站上輸入，並發生資料外洩事件</translation>
+<translation id="3582057310199111521">曾在欺詐網站上輸入，並於資料外洩事件中發現</translation>
 <translation id="3584169441612580296">讀取及變更您電腦中的相片、音樂及其他媒體</translation>
 <translation id="3586806079541226322">無法開啟此檔案</translation>
 <translation id="3586931643579894722">隱藏詳情</translation>
@@ -3057,7 +3057,7 @@
 <translation id="5117930984404104619">監控其他擴充功能的行為 (包括瀏覽過的網址)</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">您的硬碟已滿。請儲存至其他位置或在硬碟上騰出更多空間。</translation>
-<translation id="5122384452788334261">裝置的儲存空間即將用完。使用 Plugin VM 至少需要 <ph name="RECOMMENDED_SPACE" /> 的可用空間。如要釋出空間，請刪除裝置儲存空間內的檔案。</translation>
+<translation id="5122384452788334261">裝置的儲存空間即將用完。Plugin VM 需要至少 <ph name="RECOMMENDED_SPACE" /> 的可用空間。如要釋出空間，請刪除裝置儲存空間內的檔案。</translation>
 <translation id="5123433949759960244">籃球</translation>
 <translation id="5125751979347152379">網址無效。</translation>
 <translation id="5126611267288187364">查看變更</translation>
@@ -5298,7 +5298,7 @@
 <translation id="8118488170956489476">您的<ph name="BEGIN_LINK" />瀏覽器由您的組織管理<ph name="END_LINK" /></translation>
 <translation id="8118860139461251237">管理下載內容</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />、<ph name="RECENT_PERMISSIONS_CHANGE_1" />、<ph name="RECENT_PERMISSIONS_CHANGE_2" />等權限</translation>
-<translation id="8120715633374652536">裝置的儲存空間即將用完。使用 Plugin VM 至少需要 <ph name="MINIMUM_SPACE" /> 的可用空間，並建議保留 <ph name="RECOMMENDED_SPACE" /> 的可用空間。如要釋出空間，請刪除裝置儲存空間內的檔案。</translation>
+<translation id="8120715633374652536">裝置的儲存空間即將用完。Plugin VM 需要至少 <ph name="MINIMUM_SPACE" /> 的可用空間，因此建議保留 <ph name="RECOMMENDED_SPACE" /> 以上的可用空間。如要釋出空間，請刪除裝置儲存空間內的檔案。</translation>
 <translation id="8123590694679414600">系統已於 <ph name="TIME" />使用您的同步密碼短語加密資料。Google Pay 的付款方法和地址不會包括在內。</translation>
 <translation id="81238879832906896">黃色和白色的花</translation>
 <translation id="8124313775439841391">管理 ONC</translation>

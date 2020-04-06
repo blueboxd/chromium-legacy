@@ -70,7 +70,7 @@ std::string SiteForCookies::ToDebugString() const {
 }
 
 bool SiteForCookies::IsFirstParty(const GURL& url) const {
-  if (scheme_.empty() || !url.is_valid())
+  if (IsNull() || !url.is_valid())
     return false;
 
   std::string other_registrable_domain = RegistrableDomainOrHost(url.host());
@@ -82,8 +82,8 @@ bool SiteForCookies::IsFirstParty(const GURL& url) const {
 }
 
 bool SiteForCookies::IsEquivalent(const SiteForCookies& other) const {
-  if (scheme_.empty())
-    return other.scheme_.empty();
+  if (IsNull())
+    return other.IsNull();
 
   if (registrable_domain_.empty())
     return other.registrable_domain_.empty() && (scheme_ == other.scheme_);
@@ -92,7 +92,7 @@ bool SiteForCookies::IsEquivalent(const SiteForCookies& other) const {
 }
 
 GURL SiteForCookies::RepresentativeUrl() const {
-  if (scheme_.empty())
+  if (IsNull())
     return GURL();
   GURL result(base::StrCat({scheme_, "://", registrable_domain_, "/"}));
   DCHECK(result.is_valid());

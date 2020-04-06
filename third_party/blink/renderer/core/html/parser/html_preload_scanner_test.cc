@@ -110,17 +110,18 @@ class HTMLMockHTMLResourcePreloader : public ResourcePreloader {
       EXPECT_EQ(url, preload_request_->ResourceURL());
       EXPECT_EQ(base_url, preload_request_->BaseURL().GetString());
       EXPECT_EQ(width, preload_request_->ResourceWidth());
-      EXPECT_EQ(preferences.ShouldSend(mojom::WebClientHintsType::kDpr),
+      EXPECT_EQ(
+          preferences.ShouldSend(network::mojom::WebClientHintsType::kDpr),
+          preload_request_->Preferences().ShouldSend(
+              network::mojom::WebClientHintsType::kDpr));
+      EXPECT_EQ(preferences.ShouldSend(
+                    network::mojom::WebClientHintsType::kResourceWidth),
                 preload_request_->Preferences().ShouldSend(
-                    mojom::WebClientHintsType::kDpr));
-      EXPECT_EQ(
-          preferences.ShouldSend(mojom::WebClientHintsType::kResourceWidth),
-          preload_request_->Preferences().ShouldSend(
-              mojom::WebClientHintsType::kResourceWidth));
-      EXPECT_EQ(
-          preferences.ShouldSend(mojom::WebClientHintsType::kViewportWidth),
-          preload_request_->Preferences().ShouldSend(
-              mojom::WebClientHintsType::kViewportWidth));
+                    network::mojom::WebClientHintsType::kResourceWidth));
+      EXPECT_EQ(preferences.ShouldSend(
+                    network::mojom::WebClientHintsType::kViewportWidth),
+                preload_request_->Preferences().ShouldSend(
+                    network::mojom::WebClientHintsType::kViewportWidth));
     }
   }
 
@@ -614,14 +615,16 @@ TEST_F(HTMLPreloadScannerTest, testMetaAcceptCH) {
   ClientHintsPreferences resource_width;
   ClientHintsPreferences all;
   ClientHintsPreferences viewport_width;
-  dpr.SetShouldSendForTesting(mojom::WebClientHintsType::kDpr);
-  all.SetShouldSendForTesting(mojom::WebClientHintsType::kDpr);
+  dpr.SetShouldSendForTesting(network::mojom::WebClientHintsType::kDpr);
+  all.SetShouldSendForTesting(network::mojom::WebClientHintsType::kDpr);
   resource_width.SetShouldSendForTesting(
-      mojom::WebClientHintsType::kResourceWidth);
-  all.SetShouldSendForTesting(mojom::WebClientHintsType::kResourceWidth);
+      network::mojom::WebClientHintsType::kResourceWidth);
+  all.SetShouldSendForTesting(
+      network::mojom::WebClientHintsType::kResourceWidth);
   viewport_width.SetShouldSendForTesting(
-      mojom::WebClientHintsType::kViewportWidth);
-  all.SetShouldSendForTesting(mojom::WebClientHintsType::kViewportWidth);
+      network::mojom::WebClientHintsType::kViewportWidth);
+  all.SetShouldSendForTesting(
+      network::mojom::WebClientHintsType::kViewportWidth);
   PreloadScannerTestCase test_cases[] = {
       {"http://example.test",
        "<meta http-equiv='accept-ch' content='bla'><img srcset='bla.gif 320w, "
@@ -680,9 +683,11 @@ TEST_F(HTMLPreloadScannerTest, testMetaAcceptCH) {
 
 TEST_F(HTMLPreloadScannerTest, testMetaAcceptCHInsecureDocument) {
   ClientHintsPreferences all;
-  all.SetShouldSendForTesting(mojom::WebClientHintsType::kDpr);
-  all.SetShouldSendForTesting(mojom::WebClientHintsType::kResourceWidth);
-  all.SetShouldSendForTesting(mojom::WebClientHintsType::kViewportWidth);
+  all.SetShouldSendForTesting(network::mojom::WebClientHintsType::kDpr);
+  all.SetShouldSendForTesting(
+      network::mojom::WebClientHintsType::kResourceWidth);
+  all.SetShouldSendForTesting(
+      network::mojom::WebClientHintsType::kViewportWidth);
 
   const PreloadScannerTestCase expect_no_client_hint = {
       "http://example.test",

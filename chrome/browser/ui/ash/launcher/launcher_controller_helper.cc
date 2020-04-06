@@ -50,20 +50,8 @@ const extensions::Extension* GetExtensionForTab(Profile* profile,
   if (!extension_service || !extension_service->extensions_enabled())
     return nullptr;
 
-  // Note: It is possible to come here after a tab got removed form the browser
-  // before it gets destroyed, in which case there is no browser.
-  Browser* browser = chrome::FindBrowserWithWebContents(tab);
-
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(profile);
-
-  // Use the Browser's app name to determine the extension for app windows and
-  // use the tab's url for app tabs.
-  if (browser && browser->deprecated_is_app()) {
-    return registry->GetExtensionById(
-        web_app::GetAppIdFromApplicationName(browser->app_name()),
-        extensions::ExtensionRegistry::EVERYTHING);
-  }
 
   const GURL url = tab->GetURL();
   const extensions::ExtensionSet& extensions = registry->enabled_extensions();
@@ -105,6 +93,14 @@ base::Optional<std::string> GetAppIdForTab(Profile* profile,
         return app_id;
     }
   }
+
+  // Note: It is possible to come here after a tab got removed form the browser
+  // before it gets destroyed, in which case there is no browser.
+  Browser* browser = chrome::FindBrowserWithWebContents(tab);
+
+  // Use the Browser's app name.
+  if (browser && browser->deprecated_is_app())
+    return web_app::GetAppIdFromApplicationName(browser->app_name());
 
   const extensions::Extension* extension = GetExtensionForTab(profile, tab);
   if (extension &&

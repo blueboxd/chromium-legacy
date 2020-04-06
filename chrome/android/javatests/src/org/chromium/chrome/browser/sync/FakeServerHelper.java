@@ -369,6 +369,21 @@ public class FakeServerHelper {
     }
 
     /**
+     * Sets trusted vault nigori with keys derived from trustedVaultKey on the server.
+     */
+    public void setTrustedVaultNigori(byte[] trustedVaultKey) {
+        checkFakeServerInitialized("useFakeServer must be called before access");
+        TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Void>() {
+            @Override
+            public Void call() {
+                nativeSetTrustedVaultNigori(
+                        mNativeFakeServerHelperAndroid, sNativeFakeServer, trustedVaultKey);
+                return null;
+            }
+        });
+    }
+
+    /**
      * Clear the server data (perform dashboard stop and clear).
      */
     public void clearServerData() {
@@ -415,6 +430,8 @@ public class FakeServerHelper {
             long nativeFakeServerHelperAndroid, long nativeFakeServer);
     private native void nativeDeleteEntity(long nativeFakeServerHelperAndroid,
             long nativeFakeServer, String id, String clientDefinedUniqueTag);
+    private native void nativeSetTrustedVaultNigori(
+            long nativeFakeServerHelperAndroid, long nativeFakeServer, byte[] trustedVaultKey);
     private native void nativeClearServerData(
             long nativeFakeServerHelperAndroid, long nativeFakeServer);
 }

@@ -756,4 +756,4 @@ void MediaFoundationVideoEncodeAccelerator::ReleaseEncoderResources() {
   output_sample_.Reset();
 }
 
-}  // namespace content
+}  // namespace media

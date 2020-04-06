@@ -7,7 +7,7 @@
 'use strict';
 
 promise_test(async t => {
-  await internals.setPermission({name: 'wake-lock', type: 'screen'}, 'granted',
+  await internals.setPermission({name: 'screen-wake-lock'}, 'granted',
                                 location.origin, location.origin);
 
   window.testRunner.setPageVisibility('hidden');
@@ -23,7 +23,7 @@ promise_test(async t => {
 // NotAllowedError as well as it resolving to a WakeLockSentinel that would fire
 // a "release" event upon page vsibility change.
 promise_test(async t => {
-  await internals.setPermission({name: 'wake-lock', type: 'screen'}, 'granted',
+  await internals.setPermission({name: 'screen-wake-lock'}, 'granted',
                                 location.origin, location.origin);
 
   window.testRunner.setPageVisibility('visible');
@@ -35,7 +35,7 @@ promise_test(async t => {
 }, "navigator.wakeLock.request('screen') aborts when the page is hidden");
 
 promise_test(async t => {
-  await internals.setPermission({name: 'wake-lock', type: 'screen'}, 'granted',
+  await internals.setPermission({name: 'screen-wake-lock'}, 'granted',
                                 location.origin, location.origin);
 
   window.testRunner.setPageVisibility('visible');

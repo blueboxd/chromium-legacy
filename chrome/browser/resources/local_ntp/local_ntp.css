@@ -225,7 +225,8 @@ body.hide-fakebox #fakebox {
   width: 24px;
 }
 
-[dir=rtl] :-webkit-any(#realbox-icon, .match-icon) {
+[dir=rtl] #realbox-icon,
+[dir=rtl] .match-icon {
   left: auto;
   right: 16px;
 }

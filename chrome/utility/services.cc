@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
-#include "chrome/services/soda/soda_service_impl.h"
 #include "components/paint_preview/buildflags/buildflags.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/services/patch/file_patcher_impl.h"
@@ -20,7 +19,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/utility/utility_thread.h"
 #include "extensions/buildflags/buildflags.h"
-#include "media/mojo/mojom/soda_service.mojom.h"
 #include "mojo/public/cpp/bindings/service_factory.h"
 #include "printing/buildflags/buildflags.h"
 
@@ -38,8 +36,10 @@
 #include "chrome/services/qrcode_generator/qrcode_generator_service_impl.h"  // nogncheck
 #include "chrome/services/sharing/public/mojom/sharing.mojom.h"
 #include "chrome/services/sharing/sharing_impl.h"
+#include "chrome/services/soda/soda_service_impl.h"
 #include "chrome/utility/importer/profile_import_impl.h"
 #include "components/mirroring/service/mirroring_service.h"
+#include "media/mojo/mojom/soda_service.mojom.h"
 #include "services/proxy_resolver/proxy_resolver_factory_impl.h"  // nogncheck
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 #endif  // !defined(OS_ANDROID)
@@ -97,10 +97,6 @@ auto RunUnzipper(mojo::PendingReceiver<unzip::mojom::Unzipper> receiver) {
   return std::make_unique<unzip::UnzipperImpl>(std::move(receiver));
 }
 
-auto RunSodaService(mojo::PendingReceiver<media::mojom::SodaService> receiver) {
-  return std::make_unique<soda::SodaServiceImpl>(std::move(receiver));
-}
-
 #if defined(OS_WIN)
 auto RunQuarantineService(
     mojo::PendingReceiver<quarantine::mojom::Quarantine> receiver) {
@@ -141,6 +137,10 @@ auto RunMirroringService(
 
 auto RunSharing(mojo::PendingReceiver<sharing::mojom::Sharing> receiver) {
   return std::make_unique<sharing::SharingImpl>(std::move(receiver));
+}
+
+auto RunSodaService(mojo::PendingReceiver<media::mojom::SodaService> receiver) {
+  return std::make_unique<soda::SodaServiceImpl>(std::move(receiver));
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -235,7 +235,6 @@ mojo::ServiceFactory* GetMainThreadServiceFactory() {
   // clang-format off
   static base::NoDestructor<mojo::ServiceFactory> factory {
     RunFilePatcher,
-    RunSodaService,
     RunUnzipper,
 
 #if !defined(OS_ANDROID)
@@ -243,6 +242,7 @@ mojo::ServiceFactory* GetMainThreadServiceFactory() {
     RunQRCodeGeneratorService,
     RunMirroringService,
     RunSharing,
+    RunSodaService,
 #endif
 
 #if defined(OS_WIN)

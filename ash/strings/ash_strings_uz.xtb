@@ -105,6 +105,7 @@
 <translation id="2268813581635650749">Hammani tizimdan chiqarish</translation>
 <translation id="2277103315734023688">Oldinga o‘tkazish</translation>
 <translation id="2292698582925480719">Ekran ko‘lami</translation>
+<translation id="2295777434187870477">Yoniq, ustiga bosish orqali ovoz qilish mumkin.</translation>
 <translation id="2298170939937364391">Butun ekran rejimidagi lupa yoniq. Uni olib tashlash uchun Ctrl+Qidiruv+M tugmalarini bosing.</translation>
 <translation id="2302092602801625023">Ushbu hisob Family Link orqali boshqariladi</translation>
 <translation id="2303600792989757991">Ko‘rish rejimiga almashtirish</translation>
@@ -138,6 +139,7 @@
 <translation id="2658778018866295321">Bosib torting</translation>
 <translation id="2700493154570097719">Klaviaturani tanlash</translation>
 <translation id="2704781753052663061">Boshqa Wi-Fi tarmoqlarga ulanish</translation>
+<translation id="2705001408393684014">Mikrofon: <ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">Tungi rejim</translation>
 <translation id="2727977024730340865">Kam quvvatli zaryadlash vositasi ulanildi. Quvvatlantirishda muammolar bo‘lishi mumkin.</translation>
 <translation id="2792498699870441125">Alt + Search</translation>
@@ -296,6 +298,7 @@
 <translation id="4665114317261903604">“Bezovta qilinmasin” tugmasi. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Ota-ona kodi bilan qurilmani qulfdan chiqarish</translation>
 <translation id="4702647871202761252">Maxfiylik ekrani yoniq emas</translation>
+<translation id="4705716602320768426">Fikr-mulohaza yuborish</translation>
 <translation id="4710243778082831592">IME sozlamalari</translation>
 <translation id="4731797938093519117">Ota-ona kirishi</translation>
 <translation id="4734965478015604180">Gorizontal</translation>
@@ -376,6 +379,7 @@
 <translation id="5901316534475909376">Shift + Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Yoniq</translation>
+<translation id="5920710855273935292">Ovozsiz.</translation>
 <translation id="5947494881799873997">Bekor qilish</translation>
 <translation id="595202126637698455">Unumdorlik kuzatuvi yoniq</translation>
 <translation id="5957083217255311415">Mobil internet yoqilmagan.</translation>

@@ -1,0 +1,67 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "content/browser/conversions/conversion_manager_impl.h"
+
+#include <memory>
+
+#include "base/bind.h"
+#include "base/task_runner_util.h"
+#include "base/time/default_clock.h"
+#include "content/browser/conversions/conversion_storage_delegate_impl.h"
+#include "content/browser/conversions/conversion_storage_sql.h"
+
+namespace content {
+
+ConversionManagerImpl::ConversionManagerImpl(
+    const base::FilePath& user_data_directory,
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    : storage_task_runner_(std::move(task_runner)),
+      clock_(base::DefaultClock::GetInstance()),
+      storage_(new ConversionStorageSql(
+                   user_data_directory,
+                   std::make_unique<ConversionStorageDelegateImpl>(),
+                   clock_),
+               base::OnTaskRunnerDeleter(storage_task_runner_)),
+      conversion_policy_(std::make_unique<ConversionPolicy>()),
+      weak_factory_(this) {
+  // Unretained is safe because any task to delete |storage_| will be posted
+  // after this one.
+  base::PostTaskAndReplyWithResult(
+      storage_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&ConversionStorage::Initialize,
+                     base::Unretained(storage_.get())),
+      base::BindOnce(&ConversionManagerImpl::OnInitCompleted,
+                     weak_factory_.GetWeakPtr()));
+}
+
+ConversionManagerImpl::~ConversionManagerImpl() = default;
+
+void ConversionManagerImpl::HandleConversion(
+    const StorableConversion& conversion) {
+  if (!storage_)
+    return;
+
+  // TODO(https://crbug.com/1043345): Add UMA for the number of conversions we
+  // are logging to storage, and the number of new reports logged to storage.
+  // Unretained is safe because any task to delete |storage_| will be posted
+  // after this one.
+  storage_task_runner_.get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          base::IgnoreResult(
+              &ConversionStorage::MaybeCreateAndStoreConversionReports),
+          base::Unretained(storage_.get()), conversion));
+}
+
+const ConversionPolicy& ConversionManagerImpl::GetConversionPolicy() const {
+  return *conversion_policy_;
+}
+
+void ConversionManagerImpl::OnInitCompleted(bool success) {
+  if (!success)
+    storage_.reset();
+}
+
+}  // namespace content

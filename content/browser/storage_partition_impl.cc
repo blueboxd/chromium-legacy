@@ -44,7 +44,7 @@
 #include "content/browser/browsing_data/storage_partition_code_cache_data_remover.h"
 #include "content/browser/code_cache/generated_code_cache.h"
 #include "content/browser/code_cache/generated_code_cache_context.h"
-#include "content/browser/conversions/conversion_manager.h"
+#include "content/browser/conversions/conversion_manager_impl.h"
 #include "content/browser/cookie_store/cookie_store_context.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/devtools/devtools_url_loader_interceptor.h"
@@ -1546,7 +1546,7 @@ void StoragePartitionImpl::Initialize() {
   // The Conversion Measurement API is not available in Incognito mode.
   if (!is_in_memory_ &&
       base::FeatureList::IsEnabled(features::kConversionMeasurement)) {
-    conversion_manager_ = std::make_unique<ConversionManager>(
+    conversion_manager_ = std::make_unique<ConversionManagerImpl>(
         path, base::ThreadPool::CreateSequencedTaskRunner(
                   {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
   }
@@ -1830,7 +1830,7 @@ StoragePartitionImpl::GetNativeFileSystemManager() {
   return native_file_system_manager_.get();
 }
 
-ConversionManager* StoragePartitionImpl::GetConversionManager() {
+ConversionManagerImpl* StoragePartitionImpl::GetConversionManager() {
   DCHECK(initialized_);
   return conversion_manager_.get();
 }

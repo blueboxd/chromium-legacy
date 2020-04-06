@@ -281,7 +281,7 @@ public class WebLayer {
                         "org.chromium.weblayer_private.WebLayerFactoryImpl");
                 // NOTE: the 20 comes from the previous scheme of incrementing versioning. It must
                 // remain at 20 for Chrome version 79.
-                // TODO(https://crbug.com/1031830): change 20 to -1 when tip of tree is at 83.
+                // TODO(https://crbug.com/1031830): change 20 to -1 when 83 goes to stable.
                 mFactory = IWebLayerFactory.Stub.asInterface(
                         (IBinder) factoryClass
                                 .getMethod("create", String.class, int.class, int.class)

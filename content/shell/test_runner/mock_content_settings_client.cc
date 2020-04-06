@@ -76,11 +76,11 @@ namespace {
 void ConvertWebEnabledClientHintsToWebClientHintsTypeVector(
     const blink::WebEnabledClientHints& enabled_client_hints,
     const int max_length,
-    std::vector<blink::mojom::WebClientHintsType>* client_hints) {
+    std::vector<network::mojom::WebClientHintsType>* client_hints) {
   DCHECK(client_hints);
   for (int type = 0; type < max_length; ++type) {
-    blink::mojom::WebClientHintsType client_hints_type =
-        static_cast<blink::mojom::WebClientHintsType>(type);
+    network::mojom::WebClientHintsType client_hints_type =
+        static_cast<network::mojom::WebClientHintsType>(type);
     if (enabled_client_hints.IsEnabled(client_hints_type)) {
       client_hints->push_back(client_hints_type);
     }
@@ -93,8 +93,8 @@ void PersistClientHintsInEmbedder(
     const blink::WebURL& url,
     const mojo::Remote<client_hints::mojom::ClientHints>& remote) {
   const int max_length =
-      static_cast<int>(blink::mojom::WebClientHintsType::kMaxValue) + 1;
-  std::vector<blink::mojom::WebClientHintsType> client_hints(max_length);
+      static_cast<int>(network::mojom::WebClientHintsType::kMaxValue) + 1;
+  std::vector<network::mojom::WebClientHintsType> client_hints(max_length);
   const url::Origin origin = url::Origin::Create(url);
 
   ConvertWebEnabledClientHintsToWebClientHintsTypeVector(

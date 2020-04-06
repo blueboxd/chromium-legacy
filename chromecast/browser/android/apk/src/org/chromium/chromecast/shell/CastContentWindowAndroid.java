@@ -133,21 +133,24 @@ public class CastContentWindowAndroid implements CastWebContentsComponent.OnComp
     }
 
     @Override
-    public boolean consumeGesture(int gestureType) {
+    public void consumeGesture(int gestureType,
+            CastWebContentsComponent.GestureHandledCallback handledGestureCallback) {
         if (DEBUG) Log.d(TAG, "consumeGesture type=" + gestureType);
         if (mNativeCastContentWindowAndroid != 0) {
-            return CastContentWindowAndroidJni.get().consumeGesture(
-                    mNativeCastContentWindowAndroid, CastContentWindowAndroid.this, gestureType);
+            CastContentWindowAndroidJni.get().consumeGesture(mNativeCastContentWindowAndroid,
+                    CastContentWindowAndroid.this, gestureType, handledGestureCallback);
+            return;
         }
-        return false;
+        handledGestureCallback.invoke(false);
     }
 
     @NativeMethods
     interface Natives {
         void onActivityStopped(
                 long nativeCastContentWindowAndroid, CastContentWindowAndroid caller);
-        boolean consumeGesture(long nativeCastContentWindowAndroid, CastContentWindowAndroid caller,
-                int gestureType);
+        void consumeGesture(long nativeCastContentWindowAndroid, CastContentWindowAndroid caller,
+                int gestureType,
+                CastWebContentsComponent.GestureHandledCallback handledGestureCallback);
         void onVisibilityChange(long nativeCastContentWindowAndroid,
                 CastContentWindowAndroid caller, int visibilityType);
         String getId(long nativeCastContentWindowAndroid, CastContentWindowAndroid caller);

@@ -4,6 +4,11 @@
 
 #include "ios/testing/earl_grey/earl_grey_test.h"
 
+#include <memory>
+
+#include "base/json/json_string_value_serializer.h"
+#include "base/strings/sys_string_conversions.h"
+#include "components/policy/policy_constants.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #import "ios/chrome/browser/policy/policy_app_interface.h"
@@ -16,6 +21,51 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+
+// Returns a JSON-encoded string representing the given |base::Value|. If
+// |value| is nullptr, returns a string representing a |base::Value| of type
+// NONE.
+NSString* SerializeValue(const base::Value value) {
+  std::string serialized_value;
+  JSONStringValueSerializer serializer(&serialized_value);
+  serializer.Serialize(std::move(value));
+  return base::SysUTF8ToNSString(serialized_value);
+}
+
+// Sets the value of the policy with the |policy_key| key to the given value.
+// The value must be serialized as a JSON string.
+// Prefer using the other type-specific helpers instead of this generic helper
+// if possible.
+void SetPolicy(NSString* json_value, const std::string& policy_key) {
+  [PolicyAppInterface setPolicyValue:json_value
+                              forKey:base::SysUTF8ToNSString(policy_key)];
+}
+
+// Sets the value of the policy with the |policy_key| key to the given value.
+// The value must be wrapped in a |base::Value|.
+// Prefer using the other type-specific helpers instead of this generic helper
+// if possible.
+void SetPolicy(base::Value value, const std::string& policy_key) {
+  SetPolicy(SerializeValue(std::move(value)), policy_key);
+}
+
+// Sets the value of the policy with the |policy_key| key to the given boolean
+// value.
+void SetPolicy(bool enabled, const std::string& policy_key) {
+  SetPolicy(base::Value(enabled), policy_key);
+}
+
+// TODO(crbug.com/1065522): Add helpers as needed for:
+//    - INTEGER
+//    - STRING
+//    - LIST (and subtypes, e.g. int list, string list, etc)
+//    - DICTIONARY (and subtypes, e.g. int list, string list, etc)
+//    - Deleting a policy value
+//    - Setting multiple policies at once
+
+}  // namespace
 
 // Test case to verify that enterprise policies are set and respected.
 @interface PolicyTestCase : ChromeTestCase
@@ -54,12 +104,12 @@
                  @"Unexpected default value");
 
   // Force the preference off via policy.
-  [PolicyAppInterface setSuggestPolicyEnabled:NO];
+  SetPolicy(false, policy::key::kSearchSuggestEnabled);
   GREYAssertFalse([ChromeEarlGrey userBooleanPref:prefs::kSearchSuggestEnabled],
                   @"Search suggest preference was unexpectedly true");
 
   // Force the preference on via policy.
-  [PolicyAppInterface setSuggestPolicyEnabled:YES];
+  SetPolicy(true, policy::key::kSearchSuggestEnabled);
   GREYAssertTrue([ChromeEarlGrey userBooleanPref:prefs::kSearchSuggestEnabled],
                  @"Search suggest preference was unexpectedly false");
 }

@@ -82,6 +82,11 @@ const char kCrostiniMicSharing[] = "crostini.mic_sharing";
 const char kCrostiniMicSharingAtLastLaunch[] =
     "crostini.mic_sharing_at_last_launch";
 
+// An integer preference indicating the allowance policy for ADB sideloading,
+// with 0 meaning disallowed and 1 meaning allowed
+const char kCrostiniArcAdbSideloadingUserPref[] =
+    "crostini.arc_adb_sideloading.user_pref";
+
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kCrostiniEnabled, false);
   registry->RegisterBooleanPref(kCrostiniMicSharing, false);
@@ -123,6 +128,10 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(
       kCrostiniTerminalSettings, base::DictionaryValue(),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+
+  // TODO(https://crbug.com/1067577, janagrill): Replace hardcoded 0 with a
+  // constant
+  registry->RegisterIntegerPref(kCrostiniArcAdbSideloadingUserPref, 0);
 }
 
 }  // namespace prefs

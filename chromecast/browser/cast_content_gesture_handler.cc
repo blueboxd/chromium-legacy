@@ -96,7 +96,7 @@ void CastContentGestureHandler::HandleSideSwipe(
         delegate_->CancelGesture(GestureType::GO_BACK, touch_location);
         return;
       }
-      delegate_->ConsumeGesture(gesture_type);
+      delegate_->ConsumeGesture(gesture_type, base::DoNothing());
       DVLOG(1) << "gesture complete, elapsed time: "
                << current_swipe_time_.Elapsed().InMilliseconds() << "ms";
       break;
@@ -108,7 +108,7 @@ void CastContentGestureHandler::HandleTapDownGesture(
   if (!delegate_ || !delegate_->CanHandleGesture(GestureType::TAP_DOWN)) {
     return;
   }
-  delegate_->ConsumeGesture(GestureType::TAP_DOWN);
+  delegate_->ConsumeGesture(GestureType::TAP_DOWN, base::DoNothing());
 }
 
 void CastContentGestureHandler::HandleTapGesture(
@@ -116,7 +116,7 @@ void CastContentGestureHandler::HandleTapGesture(
   if (!delegate_ || !delegate_->CanHandleGesture(GestureType::TAP)) {
     return;
   }
-  delegate_->ConsumeGesture(GestureType::TAP);
+  delegate_->ConsumeGesture(GestureType::TAP, base::DoNothing());
 }
 
 }  // namespace chromecast

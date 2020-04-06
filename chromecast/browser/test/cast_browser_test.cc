@@ -94,8 +94,9 @@ bool CastBrowserTest::CanHandleGesture(GestureType gesture_type) {
   return false;
 }
 
-bool CastBrowserTest::ConsumeGesture(GestureType gesture_type) {
-  return false;
+void CastBrowserTest::ConsumeGesture(GestureType gesture_type,
+                                     GestureHandledCallback handled_callback) {
+  std::move(handled_callback).Run(false);
 }
 
 std::string CastBrowserTest::GetId() {

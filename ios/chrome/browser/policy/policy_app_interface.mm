@@ -24,9 +24,10 @@
 
 namespace {
 
-// Returns a JSON-encoded string representing the given |pref|. If |pref| is
-// nullptr, returns a string representing a base::Value of type NONE.
-NSString* SerializedValue(const base::Value* value) {
+// Returns a JSON-encoded string representing the given |base::Value|. If
+// |value| is nullptr, returns a string representing a |base::Value| of type
+// NONE.
+NSString* SerializeValue(const base::Value* value) {
   base::Value none_value(base::Value::Type::NONE);
 
   if (!value) {
@@ -40,6 +41,19 @@ NSString* SerializedValue(const base::Value* value) {
   return base::SysUTF8ToNSString(serialized_value);
 }
 
+// Takes a JSON-encoded string representing a |base::Value|, and deserializes
+// into a |base::Value| pointer. If nullptr is given, returns a pointer to a
+// |base::Value| of type NONE.
+std::unique_ptr<base::Value> DeserializeValue(NSString* json_value) {
+  if (!json_value) {
+    return std::make_unique<base::Value>(base::Value::Type::NONE);
+  }
+
+  JSONStringValueDeserializer deserializer(
+      base::SysNSStringToUTF8((json_value)));
+  return deserializer.Deserialize(/*error_code=*/nullptr,
+                                  /*error_message=*/nullptr);
+}
 }
 
 @implementation PolicyAppInterface
@@ -50,26 +64,27 @@ NSString* SerializedValue(const base::Value* value) {
   BrowserPolicyConnectorIOS* connector =
       GetApplicationContext()->GetBrowserPolicyConnector();
   if (!connector) {
-    return SerializedValue(nullptr);
+    return SerializeValue(nullptr);
   }
 
   const policy::ConfigurationPolicyProvider* platformProvider =
       connector->GetPlatformProvider();
   if (!platformProvider) {
-    return SerializedValue(nullptr);
+    return SerializeValue(nullptr);
   }
 
   const policy::PolicyBundle& policyBundle = platformProvider->policies();
   const policy::PolicyMap& policyMap = policyBundle.Get(
       policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, ""));
-  return SerializedValue(policyMap.GetValue(key));
+  return SerializeValue(policyMap.GetValue(key));
 }
 
-+ (void)setSuggestPolicyEnabled:(BOOL)enabled {
++ (void)setPolicyValue:(NSString*)jsonValue forKey:(NSString*)policyKey {
+  std::unique_ptr<base::Value> value = DeserializeValue(jsonValue);
   policy::PolicyMap values;
-  values.Set(policy::key::kSearchSuggestEnabled, policy::POLICY_LEVEL_MANDATORY,
+  values.Set(base::SysNSStringToUTF8(policyKey), policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_PLATFORM,
-             std::make_unique<base::Value>(enabled), nullptr);
+             std::move(value), /*external_data_fetcher=*/nullptr);
   GetTestPlatformPolicyProvider()->UpdateChromePolicy(values);
 }
 

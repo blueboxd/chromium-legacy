@@ -25,7 +25,7 @@ class CONTENT_EXPORT ActionsParser {
   explicit ActionsParser(base::Value value);
   ~ActionsParser();
   bool ParsePointerActionSequence();
-  std::string error_message() { return error_message_; }
+  const std::string& error_message() const { return error_message_; }
   const SyntheticPointerActionListParams& gesture_params() const {
     return gesture_params_;
   }

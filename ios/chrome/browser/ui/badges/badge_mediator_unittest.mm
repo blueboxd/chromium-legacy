@@ -247,6 +247,19 @@ TEST_P(BadgeMediatorTest,
   EXPECT_FALSE(badge_consumer_.displayedBadge);
 }
 
+// Test that the BadgeMediator does not inform its consumer of a new infobar it
+// has already been disconnected.
+TEST_P(BadgeMediatorTest, BadgeMediatorTestDoNotAddInfobarIfWebStateListGone) {
+  InsertActivatedWebState(/*index=*/0);
+  ASSERT_FALSE(badge_consumer_.displayedBadge);
+  [badge_mediator_ disconnect];
+  std::unique_ptr<InfoBarIOS> added_infobar = FakeInfobarIOS::Create(
+      kSecondInfobarType, /*has_badge=*/true, kSecondInfobarMessageText);
+  InfoBarManagerImpl::FromWebState(web_state_list_.GetActiveWebState())
+      ->AddInfoBar(std::move(added_infobar));
+  EXPECT_FALSE(badge_consumer_.displayedBadge);
+}
+
 // Test that the BadgeMediator updates the badge when it is accepted.
 TEST_P(BadgeMediatorTest, BadgeMediatorTestAcceptedBadge) {
   InsertActivatedWebState(/*index=*/0);

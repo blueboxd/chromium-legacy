@@ -11,9 +11,9 @@
 #include "components/feed/core/proto/v2/store.pb.h"
 #include "components/feed/core/v2/feed_store.h"
 #include "components/feed/core/v2/proto_util.h"
-#include "components/feed/core/v2/public/feed_stream_api.h"
 #include "components/feed/core/v2/scheduling.h"
 #include "components/feed/core/v2/stream_model_update_request.h"
+#include "components/feed/core/v2/types.h"
 
 namespace feed {
 

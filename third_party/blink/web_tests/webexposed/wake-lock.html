@@ -7,7 +7,7 @@
 'use strict';
 
 promise_test(async t => {
-  await internals.setPermission({name: 'wake-lock', type: 'screen'}, 'granted',
+  await internals.setPermission({name: 'screen-wake-lock'}, 'granted',
                                 location.origin, location.origin);
 
   const lock = await navigator.wakeLock.request('screen');
@@ -15,7 +15,7 @@ promise_test(async t => {
 }, "Screen wake locks available.");
 
 promise_test(async t => {
-  await internals.setPermission({name: 'wake-lock', type: 'system'}, 'granted',
+  await internals.setPermission({name: 'system-wake-lock'}, 'granted',
                                 location.origin, location.origin);
 
   const lock = await navigator.wakeLock.request('system');

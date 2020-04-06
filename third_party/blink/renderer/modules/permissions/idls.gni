@@ -12,7 +12,6 @@ modules_dictionary_idl_files = [
   "midi_permission_descriptor.idl",
   "permission_descriptor.idl",
   "push_permission_descriptor.idl",
-  "wake_lock_permission_descriptor.idl",
 ]
 
 modules_dependency_idl_files = [

@@ -72,9 +72,16 @@ bool LaunchArgumentsAreEqual(NSArray<NSString*>* args1,
 - (void)ensureAppLaunchedWithArgs:(NSArray<NSString*>*)arguments
                    relaunchPolicy:(RelaunchPolicy)relaunchPolicy {
 #if defined(CHROME_EARL_GREY_2)
+// TODO(crbug.com/1067821): ForceRelaunchByCleanShutdown doesn't compile on
+// real devices.
+#if TARGET_IPHONE_SIMULATOR
   BOOL forceRestart = (relaunchPolicy == ForceRelaunchByKilling) ||
                       (relaunchPolicy == ForceRelaunchByCleanShutdown);
   BOOL gracefullyKill = (relaunchPolicy == ForceRelaunchByCleanShutdown);
+#else
+  BOOL forceRestart = (relaunchPolicy == ForceRelaunchByKilling);
+  BOOL gracefullyKill = NO;
+#endif  // TARGET_IPHONE_SIMULATOR
   BOOL runResets = (relaunchPolicy == NoForceRelaunchAndResetState);
 
   // If app has crashed, |self.runningApplication| will be at
@@ -116,7 +123,7 @@ bool LaunchArgumentsAreEqual(NSArray<NSString*>* args1,
   }
   self.runningApplication = application;
   self.currentLaunchArgs = arguments;
-#endif
+#endif  // defined(CHROME_EARL_GREY_2)
 }
 
 - (void)ensureAppLaunchedWithConfiguration:

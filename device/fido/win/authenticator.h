@@ -41,10 +41,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) WinWebAuthnApiAuthenticator
   WinWebAuthnApiAuthenticator(HWND current_window, WinWebAuthnApi* win_api_);
   ~WinWebAuthnApiAuthenticator() override;
 
-  // SupportsCredProtectExtension returns whether the native API supports the
-  // credProtect CTAP extension.
-  bool SupportsCredProtectExtension() const;
-
   // ShowsPrivacyNotice returns true if the Windows native UI will show a
   // privacy notice dialog before a MakeCredential request that might create
   // a resident key or that requests attestation.
@@ -64,6 +60,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) WinWebAuthnApiAuthenticator
   bool IsInPairingMode() const override;
   bool IsPaired() const override;
   bool RequiresBlePairingPin() const override;
+  // SupportsCredProtectExtension returns whether the native API supports the
+  // credProtect CTAP extension.
+  bool SupportsCredProtectExtension() const override;
   const base::Optional<AuthenticatorSupportedOptions>& Options() const override;
   base::Optional<FidoTransportProtocol> AuthenticatorTransport() const override;
   bool IsWinNativeApiAuthenticator() const override;

@@ -113,6 +113,7 @@ class PasswordStore : protected PasswordStoreSync,
     // Should be called from the UI thread.
     virtual void Notify(const std::vector<autofill::PasswordForm>&) = 0;
     virtual ~UnsyncedCredentialsDeletionNotifier() = default;
+    virtual base::WeakPtr<UnsyncedCredentialsDeletionNotifier> GetWeakPtr() = 0;
   };
 
   // Represents a subset of autofill::PasswordForm needed for credential
@@ -550,6 +551,9 @@ class PasswordStore : protected PasswordStoreSync,
   // has been performed. Notifies observers that password store data may have
   // been changed.
   void NotifyLoginsChanged(const PasswordStoreChangeList& changes) override;
+
+  void NotifyUnsyncedCredentialsWillBeDeleted(
+      const std::vector<autofill::PasswordForm>& unsynced_credentials) override;
 
   // Invokes callback and notifies observers if there was a change to the list
   // of compromised passwords.

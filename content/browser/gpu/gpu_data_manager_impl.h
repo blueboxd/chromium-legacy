@@ -48,6 +48,9 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager,
   // Getter for the singleton. This will return NULL on failure.
   static GpuDataManagerImpl* GetInstance();
 
+  // This returns true after the first call of GetInstance().
+  static bool Initialized();
+
   // GpuDataManager implementation.
   void BlacklistWebGLForTesting() override;
   gpu::GPUInfo GetGPUInfo() override;

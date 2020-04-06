@@ -105,6 +105,7 @@
 <translation id="2268813581635650749">Phuma ngemvume kuwo wonke</translation>
 <translation id="2277103315734023688">Funela phambili</translation>
 <translation id="2292698582925480719">Isikala sokubonisa</translation>
+<translation id="2295777434187870477">I-mic ivuliwe, ukuguqula kuzothulisa okokufaka.</translation>
 <translation id="2298170939937364391">Isikhulisis sesikrini esigcwele sinikwe amandla. Cindzela u-Ctrl+Search+M futhi ukuze uyivale.</translation>
 <translation id="2302092602801625023">Le akhawunti iphethwe i-Family Link</translation>
 <translation id="2303600792989757991">Shintsha ukuhlola kuqala iwindi</translation>
@@ -138,6 +139,7 @@
 <translation id="2658778018866295321">Chofoza uphinde uhudule</translation>
 <translation id="2700493154570097719">Setha ikhibhodi yakho</translation>
 <translation id="2704781753052663061">Joyina amanye amanethiwekhi we-Wi-Fi</translation>
+<translation id="2705001408393684014">Guqula i-Mic. <ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">Ukukhanya kwasebusuku</translation>
 <translation id="2727977024730340865">Ixhunye kushaja yamandla aphansi. Ukushaja ibhethri kungenzeka kungathembeki.</translation>
 <translation id="2792498699870441125">I-Alt+Search</translation>
@@ -296,6 +298,7 @@
 <translation id="4665114317261903604">Shintsha okuthi ungaphazamisi. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Vula idivayisi ngekhodi yomzali</translation>
 <translation id="4702647871202761252">Isikrini sobumfihlo sivaliwe</translation>
+<translation id="4705716602320768426">Impendulo yefayela</translation>
 <translation id="4710243778082831592">Izilungiselelo ze-IME</translation>
 <translation id="4731797938093519117">Ukufinyelela komzali</translation>
 <translation id="4734965478015604180">Okuvundlile</translation>
@@ -376,6 +379,7 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Vuliwe</translation>
+<translation id="5920710855273935292">I-mic ithulisiwe.</translation>
 <translation id="5947494881799873997">Buyela</translation>
 <translation id="595202126637698455">Ukulandelela ukusebenza kunikwe amandla</translation>
 <translation id="5957083217255311415">Idatha yeselula ivaliwe.</translation>

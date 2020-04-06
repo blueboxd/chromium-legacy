@@ -168,6 +168,7 @@
 <translation id="3112556859945124369">Megjelölés…</translation>
 <translation id="3153862085237805241">Kártya mentése</translation>
 <translation id="3157684681743766797">Az összes megjelölése…</translation>
+<translation id="3161291298470460782">Ezzel kijelentkezik, kikapcsol a szinkronizálás, és minden Chrome-adat törlődik erről az eszközről. Szinkronizált adatai továbbra is megmaradnak Google-fiókjában.</translation>
 <translation id="3175081911749765310">Webszolgáltató</translation>
 <translation id="3178650076442119961">Ma volt aktív</translation>
 <translation id="3207960819495026254">Könyvjelző rögzítve</translation>
@@ -200,6 +201,7 @@
 <translation id="3494788280727468875">Böngészési adatok törlésének megerősítése</translation>
 <translation id="35083190962747987">${url} megnyitása</translation>
 <translation id="3519193562722059437">Nyisson meg egy lapot a böngészéshez.</translation>
+<translation id="3523473570015918798">A kijelentkezés után könyvjelzői, előzményei, jelszavai és más Chrome-adatai többé nem szinkronizálódnak a Google-fiókjával.</translation>
 <translation id="3527085408025491307">Mappa</translation>
 <translation id="3529024052484145543">Nem biztonságos</translation>
 <translation id="3533202363250687977">Összes inkognitólap bezárása</translation>
@@ -333,6 +335,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="54401264925851789">Oldal biztonsági információi</translation>
 <translation id="5443952882982198570">Hitelkártyák</translation>
 <translation id="5457907402803865181">Hiba a jelszavak szinkronizálása során.</translation>
+<translation id="5508435575041083207">Kijelentkezés és adatok törlése erről az eszközről</translation>
 <translation id="5525269841082836315">Jelszó létrehozása</translation>
 <translation id="5548760955356983418">Az Átadás segítségével ha ezen az eszközön kezd böngészni egy webhelyet, könnyedén folytathatja azt Mac típusú számítógépén. A jelenleg megnyitott webhely a Mac dokkján jelenik meg.
 
@@ -506,6 +509,9 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="766891008101699113">Ha privát módon szeretne böngészni az interneten, adjon hozzá egy új lapot.</translation>
 <translation id="7671141431838911305">TELEPÍTÉS</translation>
 <translation id="7765158879357617694">Áthelyezés</translation>
+<translation id="7771470029643830783">A kijelentkezés után könyvjelzői, előzményei, jelszavai és más Chrome-adatai többé nem szinkronizálódnak a Google-fiókjával.
+
+Mivel fiókját a(z) <ph name="HOSTED_DOMAIN" /> kezeli, Chrome-adatai törölve lesznek erről az eszközről, amikor kijelentkezik. Szinkronizált adatai továbbra is megmaradnak Google-fiókjában.</translation>
 <translation id="7772032839648071052">Összetett jelszó megerősítése</translation>
 <translation id="7781011649027948662">Lefordítja az oldalt?</translation>
 <translation id="7781829728241885113">Tegnap</translation>
@@ -555,6 +561,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="8490978609246021741">Módosítások mentése</translation>
 <translation id="8503813439785031346">Felhasználónév</translation>
 <translation id="850600235656508448">Megnyitás inkognitómódban</translation>
+<translation id="8510057420705599706">Ezzel kijelentkezik, és kikapcsol a szinkronizálás, de könyvjelzői, előzményei, jelszavai és egyéb Chrome-adatai továbbra is megmaradnak ezen az eszközön.</translation>
 <translation id="8517375800490286174">Nyílt forráskódú licencek</translation>
 <translation id="8524799873541103884">Lapok <ph name="INCOGNITO" /> módban: <ph name="FIRST_VISIBLE_TAB" />–<ph name="LAST_VISIBLE_TAB" />/<ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">Új</translation>
@@ -597,6 +604,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="9094033019050270033">Jelszó frissítése</translation>
 <translation id="9100610230175265781">Összetett jelszó szükséges</translation>
 <translation id="9148126808321036104">Jelentkezzen be újra</translation>
+<translation id="9152539721251340337">QR-kód létrehozása</translation>
 <translation id="9157836665414082580">Párbeszédablakok elrejtése</translation>
 <translation id="9188680907066685419">Kijelentkezés felügyelt fiókból</translation>
 <translation id="9203116392574189331">Átadás</translation>

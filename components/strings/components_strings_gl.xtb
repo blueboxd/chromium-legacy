@@ -873,7 +873,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="4731967714531604179">Prc2 (sobre)</translation>
 <translation id="4733082559415072992">O URL <ph name="URL" /> quere utilizar a localización do teu dispositivo</translation>
 <translation id="4736825316280949806">Reinicia Chromium</translation>
-<translation id="4737121147659370456">O teu administrador activou os conectores de Chrome Enterprise no navegador. Estes conectores teñen acceso a algúns dos teus datos.</translation>
+<translation id="4737121147659370456">O teu administrador che activou os conectores de Chrome Enterprise no navegador. Estes conectores teñen acceso a algúns dos teus datos.</translation>
 <translation id="473775607612524610">Actualizar</translation>
 <translation id="4738601419177586157">Suxestión de busca de "<ph name="TEXT" />"</translation>
 <translation id="4742407542027196863">Xestionar contrasinais…</translation>
@@ -1597,7 +1597,7 @@ Detalles adicionais:
 <translation id="777702478322588152">Prefectura</translation>
 <translation id="7791196057686275387">Bala</translation>
 <translation id="7791543448312431591">Engadir</translation>
-<translation id="7798389633136518089">Ignorouse porque a política non está establecida por unha fonte da nube.</translation>
+<translation id="7798389633136518089">Ignorouse porque a política non se estableceu desde a nube.</translation>
 <translation id="7800304661137206267">A conexión cifrouse mediante <ph name="CIPHER" /> con <ph name="MAC" /> para a autenticación da mensaxe e con <ph name="KX" /> como mecanismo de intercambio de claves.</translation>
 <translation id="7802523362929240268">O sitio é lexítimo</translation>
 <translation id="780301667611848630">Non, grazas</translation>

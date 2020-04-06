@@ -47,6 +47,8 @@ class GpuDataManager {
   // Getter for the singleton.
   CONTENT_EXPORT static GpuDataManager* GetInstance();
 
+  CONTENT_EXPORT static bool Initialized();
+
   // This is only called by extensions testing.
   virtual void BlacklistWebGLForTesting() = 0;
 

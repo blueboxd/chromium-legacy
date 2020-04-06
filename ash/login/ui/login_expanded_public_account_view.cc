@@ -492,7 +492,12 @@ class RightPaneView : public NonAccessibleView,
       selected_language_item_.value = user.public_account_info->default_locale;
 
     PopulateLanguageItems(user.public_account_info->available_locales);
-    PopulateKeyboardItems(user.public_account_info->keyboard_layouts);
+
+    if (user.public_account_info->default_locale ==
+        selected_language_item_.value) {
+      PopulateKeyboardItems(user.public_account_info->keyboard_layouts);
+    }
+
     language_selection_->SetText(
         base::UTF8ToUTF16(selected_language_item_.title));
     keyboard_selection_->SetText(
@@ -654,6 +659,10 @@ LoginExpandedPublicAccountView::TestApi::TestApi(
 
 LoginExpandedPublicAccountView::TestApi::~TestApi() = default;
 
+LoginUserView* LoginExpandedPublicAccountView::TestApi::user_view() {
+  return view_->user_view_;
+}
+
 views::View* LoginExpandedPublicAccountView::TestApi::advanced_view_button() {
   return view_->right_pane_->advanced_view_button_;
 }
@@ -716,6 +725,53 @@ LoginExpandedPublicAccountView::TestApi::monitoring_warning_label() {
 
 void LoginExpandedPublicAccountView::TestApi::ResetUserForTest() {
   view_->right_pane_->monitoring_warning_view_->enterprise_domain_.reset();
+}
+
+bool LoginExpandedPublicAccountView::TestApi::SelectLanguage(
+    const std::string& language_code) {
+  for (LoginMenuView::Item item : view_->right_pane_->language_items_) {
+    if (item.value == language_code) {
+      view_->right_pane_->OnLanguageSelected(item);
+      return true;
+    }
+  }
+  return false;
+}
+
+bool LoginExpandedPublicAccountView::TestApi::SelectKeyboard(
+    const std::string& ime_id) {
+  for (LoginMenuView::Item item : view_->right_pane_->keyboard_items_) {
+    if (item.value == ime_id) {
+      view_->right_pane_->OnKeyboardSelected(item);
+      return true;
+    }
+  }
+  return false;
+}
+
+std::vector<LocaleItem> LoginExpandedPublicAccountView::TestApi::GetLocales() {
+  std::vector<LocaleItem> locales;
+  for (LoginMenuView::Item item : view_->right_pane_->language_items_) {
+    LocaleItem locale;
+    locale.title = item.title;
+    locale.language_code = item.value;
+    locales.push_back(locale);
+  }
+  return locales;
+}
+
+void LoginExpandedPublicAccountView::TestApi::OnAdvancedButtonTap() {
+  view_->right_pane_->ButtonPressed(
+      views::Button::AsButton(advanced_view_button()),
+      ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::PointF(), gfx::PointF(),
+                     base::TimeTicks(), 0, 0));
+}
+
+void LoginExpandedPublicAccountView::TestApi::OnSubmitButtonTap() {
+  view_->right_pane_->ButtonPressed(
+      views::Button::AsButton(submit_button()),
+      ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::PointF(), gfx::PointF(),
+                     base::TimeTicks(), 0, 0));
 }
 
 LoginExpandedPublicAccountView::LoginExpandedPublicAccountView(

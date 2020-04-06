@@ -9,7 +9,6 @@
 #include <string>
 #include <utility>
 
-#include "base/base64.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
@@ -19,6 +18,7 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
+#include "components/autofill/core/common/gaia_id_hash.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
@@ -39,8 +39,8 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
-#include "crypto/sha2.h"
 
+using autofill::GaiaIdHash;
 using autofill::PasswordForm;
 
 namespace password_manager_util {
@@ -90,12 +90,6 @@ bool IsUserEligibleForAccountStorage(const syncer::SyncService* sync_service) {
          !sync_service->IsSyncFeatureEnabled();
 }
 
-std::string GetAccountHash(const std::string& gaia_id) {
-  std::string account_hash;
-  base::Base64Encode(crypto::SHA256HashString(gaia_id), &account_hash);
-  return account_hash;
-}
-
 PasswordForm::Store PasswordStoreFromInt(int value) {
   switch (value) {
     case static_cast<int>(PasswordForm::Store::kProfileStore):
@@ -113,13 +107,11 @@ const char kAccountStorageDefaultStoreKey[] = "default_store";
 class AccountStorageSettingsReader {
  public:
   AccountStorageSettingsReader(const PrefService* prefs,
-                               const std::string& gaia_id) {
-    DCHECK(!gaia_id.empty());
-
+                               const GaiaIdHash& gaia_id_hash) {
     const base::DictionaryValue* global_pref = prefs->GetDictionary(
         password_manager::prefs::kAccountStoragePerAccountSettings);
     if (global_pref)
-      account_settings_ = global_pref->FindDictKey(GetAccountHash(gaia_id));
+      account_settings_ = global_pref->FindDictKey(gaia_id_hash.ToBase64());
   }
 
   bool IsOptedIn() {
@@ -150,11 +142,10 @@ class AccountStorageSettingsReader {
 class ScopedAccountStorageSettingsUpdate {
  public:
   ScopedAccountStorageSettingsUpdate(PrefService* prefs,
-                                     const std::string& gaia_id)
+                                     const GaiaIdHash& gaia_id_hash)
       : update_(prefs,
                 password_manager::prefs::kAccountStoragePerAccountSettings) {
-    DCHECK(!gaia_id.empty());
-    const std::string account_hash = GetAccountHash(gaia_id);
+    const std::string account_hash = gaia_id_hash.ToBase64();
     account_settings_ = update_->FindDictKey(account_hash);
     if (!account_settings_) {
       account_settings_ =
@@ -466,7 +457,9 @@ bool IsOptedInForAccountStorage(const PrefService* pref_service,
   if (gaia_id.empty())
     return false;
 
-  return AccountStorageSettingsReader(pref_service, gaia_id).IsOptedIn();
+  return AccountStorageSettingsReader(pref_service,
+                                      GaiaIdHash::FromGaiaId(gaia_id))
+      .IsOptedIn();
 }
 
 bool ShouldShowAccountStorageReSignin(const PrefService* pref_service,
@@ -520,7 +513,9 @@ void SetAccountStorageOptIn(PrefService* pref_service,
     // rare, but is ultimately harmless - just do nothing here.
     return;
   }
-  ScopedAccountStorageSettingsUpdate(pref_service, gaia_id).SetOptedIn(opt_in);
+  ScopedAccountStorageSettingsUpdate(pref_service,
+                                     GaiaIdHash::FromGaiaId(gaia_id))
+      .SetOptedIn(opt_in);
 }
 
 bool ShouldShowPasswordStorePicker(const PrefService* pref_service,
@@ -543,7 +538,9 @@ PasswordForm::Store GetDefaultPasswordStore(
     return PasswordForm::Store::kProfileStore;
 
   PasswordForm::Store default_store =
-      AccountStorageSettingsReader(pref_service, gaia_id).GetDefaultStore();
+      AccountStorageSettingsReader(pref_service,
+                                   GaiaIdHash::FromGaiaId(gaia_id))
+          .GetDefaultStore();
   // If none of the early-outs above triggered, then we *can* save to the
   // account store in principle (though the user might not have opted in to that
   // yet). In this case, default to the account store.
@@ -566,7 +563,8 @@ void SetDefaultPasswordStore(PrefService* pref_service,
     // but is ultimately harmless - just do nothing here.
     return;
   }
-  ScopedAccountStorageSettingsUpdate(pref_service, gaia_id)
+  ScopedAccountStorageSettingsUpdate(pref_service,
+                                     GaiaIdHash::FromGaiaId(gaia_id))
       .SetDefaultStore(default_store);
 }
 

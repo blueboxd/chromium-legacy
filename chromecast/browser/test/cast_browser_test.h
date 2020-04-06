@@ -51,7 +51,8 @@ class CastBrowserTest : public content::BrowserTestBase,
   void OnWindowDestroyed() override;
   void OnVisibilityChange(VisibilityType visibility_type) override;
   bool CanHandleGesture(GestureType gesture_type) override;
-  bool ConsumeGesture(GestureType gesture_type) override;
+  void ConsumeGesture(GestureType gesture_type,
+                      GestureHandledCallback handled_callback) override;
   std::string GetId() override;
 
   std::unique_ptr<CastWebViewFactory> web_view_factory_;

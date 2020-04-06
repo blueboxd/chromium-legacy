@@ -37,6 +37,7 @@ public class AutofillAssistantTestService
     /** The most recently received list of processed actions. */
     private @Nullable List<ProcessedActionProto> mProcessedActions;
     private int mNextActionsCounter;
+    private int mCurrentScriptIndex;
 
     /** Default constructor which disables animations. */
     AutofillAssistantTestService(List<AutofillAssistantTestScript> scripts) {
@@ -82,9 +83,11 @@ public class AutofillAssistantTestService
     /** @see AutofillAssistantService#getScriptsForUrl(String) */
     @Override
     public SupportsScriptResponseProto getScriptsForUrl(String url) {
+        // Return scripts one after the other. Note: Returning more than one script at once leads
+        // to a dropout with RENDER_PROCESS_GONE.
         SupportsScriptResponseProto.Builder builder = SupportsScriptResponseProto.newBuilder();
-        for (AutofillAssistantTestScript script : mScripts) {
-            builder.addScripts(script.getSupportedScript());
+        if (mCurrentScriptIndex < mScripts.size()) {
+            builder.addScripts(mScripts.get(mCurrentScriptIndex++).getSupportedScript());
         }
         builder.setClientSettings(mClientSettings);
         return builder.build();

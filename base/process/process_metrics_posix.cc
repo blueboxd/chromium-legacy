@@ -102,7 +102,16 @@ void IncreaseFdLimitTo(unsigned int max_descriptors) {
 #endif  // !defined(OS_FUCHSIA)
 
 size_t GetPageSize() {
-  return getpagesize();
+  static const size_t pagesize = []() -> size_t {
+  // For more information see getpagesize(2). Portable applications should use
+  // sysconf(_SC_PAGESIZE) rather than getpagesize() if it's available.
+#if defined(_SC_PAGESIZE)
+    return sysconf(_SC_PAGESIZE);
+#else
+    return getpagesize();
+#endif
+  }();
+  return pagesize;
 }
 
 size_t ProcessMetrics::GetMallocUsage() {

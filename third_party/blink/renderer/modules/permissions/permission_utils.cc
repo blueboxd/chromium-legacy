@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_midi_permission_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_permission_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_push_permission_descriptor.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_wake_lock_permission_descriptor.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -77,17 +76,6 @@ PermissionDescriptorPtr CreateClipboardPermissionDescriptor(
       allow_without_gesture, allow_without_sanitization);
   descriptor->extension = mojom::blink::PermissionDescriptorExtension::New();
   descriptor->extension->set_clipboard(std::move(clipboard_extension));
-  return descriptor;
-}
-
-PermissionDescriptorPtr CreateWakeLockPermissionDescriptor(
-    mojom::blink::WakeLockType type) {
-  auto descriptor =
-      CreatePermissionDescriptor(mojom::blink::PermissionName::WAKE_LOCK);
-  auto wake_lock_extension =
-      mojom::blink::WakeLockPermissionDescriptor::New(type);
-  descriptor->extension = mojom::blink::PermissionDescriptorExtension::New();
-  descriptor->extension->set_wake_lock(std::move(wake_lock_extension));
   return descriptor;
 }
 
@@ -183,28 +171,21 @@ PermissionDescriptorPtr ParsePermissionDescriptor(
     return CreatePermissionDescriptor(PermissionName::IDLE_DETECTION);
   if (name == "periodic-background-sync")
     return CreatePermissionDescriptor(PermissionName::PERIODIC_BACKGROUND_SYNC);
-  if (name == "wake-lock") {
-    if (!RuntimeEnabledFeatures::WakeLockEnabled(
+  if (name == "screen-wake-lock") {
+    if (!RuntimeEnabledFeatures::ScreenWakeLockEnabled(
             ExecutionContext::From(script_state))) {
-      exception_state.ThrowTypeError("Wake Lock is not enabled.");
+      exception_state.ThrowTypeError("Screen Wake Lock is not enabled.");
       return nullptr;
     }
-    WakeLockPermissionDescriptor* wake_lock_permission =
-        NativeValueTraits<WakeLockPermissionDescriptor>::NativeValue(
-            script_state->GetIsolate(), raw_descriptor.V8Value(),
-            exception_state);
-    if (exception_state.HadException())
+    return CreatePermissionDescriptor(PermissionName::SCREEN_WAKE_LOCK);
+  }
+  if (name == "system-wake-lock") {
+    if (!RuntimeEnabledFeatures::SystemWakeLockEnabled(
+            ExecutionContext::From(script_state))) {
+      exception_state.ThrowTypeError("System Wake Lock is not enabled.");
       return nullptr;
-    const String& type = wake_lock_permission->type();
-    if (type == "screen") {
-      return CreateWakeLockPermissionDescriptor(
-          mojom::blink::WakeLockType::kScreen);
-    } else if (type == "system") {
-      return CreateWakeLockPermissionDescriptor(
-          mojom::blink::WakeLockType::kSystem);
-    } else {
-      NOTREACHED();
     }
+    return CreatePermissionDescriptor(PermissionName::SYSTEM_WAKE_LOCK);
   }
   if (name == "nfc") {
     if (!RuntimeEnabledFeatures::WebNFCEnabled(

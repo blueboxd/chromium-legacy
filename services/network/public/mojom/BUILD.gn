@@ -319,6 +319,7 @@ mojom("mojom") {
     "url_loader.mojom",
     "url_loader_factory.mojom",
     "url_response_head.mojom",
+    "web_client_hints_types.mojom",
   ]
 
   public_deps = [

@@ -243,6 +243,9 @@ class PasswordManagerClient {
       const CoreAccountId& account_id,
       base::OnceCallback<void(ReauthSucceeded)> reauth_callback);
 
+  // Redirects the user to a sign-in in a new tab.
+  virtual void TriggerSignIn();
+
   // Gets prefs associated with this embedder.
   virtual PrefService* GetPrefs() const = 0;
 

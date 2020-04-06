@@ -9,12 +9,16 @@
       }
 
       body {
-        background-image: url($i18nRaw{url});
-        background-position: center;
-        background-size: cover;
         margin: 0
+      }
+
+      img {
+        max-height: 100%;
+        max-width: 100%;
       }
     </style>
   </head>
-  <body></body>
+  <body>
+    <img src="$i18nRaw{url}"></img>
+  </body>
 </html>

@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/optional.h"
+#include "services/network/public/mojom/web_client_hints_types.mojom-shared.h"
 #include "third_party/blink/public/common/common_export.h"
-#include "third_party/blink/public/mojom/web_client_hints/web_client_hints_types.mojom-shared.h"
 
 namespace blink {
 
@@ -45,7 +45,7 @@ SerializeLangClientHint(const std::string& raw_language_list);
 //
 // Language hints will only be in the result if |permit_lang_hints| is true;
 // UA-related ones if |permit_ua_hints| is.
-base::Optional<std::vector<blink::mojom::WebClientHintsType>>
+base::Optional<std::vector<network::mojom::WebClientHintsType>>
     BLINK_COMMON_EXPORT ParseAcceptCH(const std::string& header,
                                       bool permit_lang_hints,
                                       bool permit_ua_hints);

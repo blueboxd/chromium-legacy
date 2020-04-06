@@ -39,7 +39,7 @@ constexpr SkColor kSuggestionLabelColor =
 class UI_CHROMEOS_EXPORT SuggestionView : public views::View {
  public:
   SuggestionView();
-  ~SuggestionView() override {}
+  ~SuggestionView() override;
 
   void SetText(const base::string16& text);
 
@@ -56,11 +56,11 @@ class UI_CHROMEOS_EXPORT SuggestionView : public views::View {
   // child views will be deleted when |this| is deleted.
 
   // The suggestion label renders suggestions.
-  views::Label* suggestion_label_;
+  views::Label* suggestion_label_ = nullptr;
   // The annotation label renders annotations.
-  views::Label* annotation_label_;
+  views::Label* annotation_label_ = nullptr;
 
-  int suggestion_width_;
+  int suggestion_width_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionView);
 };

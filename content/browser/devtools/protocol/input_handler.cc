@@ -615,9 +615,6 @@ void InputHandler::DispatchKeyEvent(
 void InputHandler::InsertText(const std::string& text,
                               std::unique_ptr<InsertTextCallback> callback) {
   base::string16 text16 = base::UTF8ToUTF16(text);
-  base::OnceClosure closure =
-      base::BindOnce(&InsertTextCallback::sendSuccess, std::move(callback));
-
   if (!host_ || !host_->GetRenderWidgetHost()) {
     callback->sendFailure(Response::InternalError());
     return;
@@ -630,6 +627,9 @@ void InputHandler::InsertText(const std::string& text,
     if (target_host)
       widget_host = target_host;
   }
+
+  base::OnceClosure closure =
+      base::BindOnce(&InsertTextCallback::sendSuccess, std::move(callback));
 
   widget_host->Focus();
   widget_host->GetWidgetInputHandler()->ImeCommitText(

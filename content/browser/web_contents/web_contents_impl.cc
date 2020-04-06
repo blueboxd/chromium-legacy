@@ -5493,8 +5493,7 @@ void WebContentsImpl::RenderFrameCreated(RenderFrameHost* render_frame_host) {
 void WebContentsImpl::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
   if (IsBeingDestroyed() && !render_frame_host->GetParent() &&
       first_navigation_completed_ &&
-      !static_cast<RenderFrameHostImpl*>(render_frame_host)
-           ->is_in_back_forward_cache()) {
+      !render_frame_host->IsInBackForwardCache()) {
     // Main frame has been deleted because WebContents is being destroyed.
     // Note that we aren't recording this here when the main frame is in the
     // back-forward cache because that means we've actually already navigated

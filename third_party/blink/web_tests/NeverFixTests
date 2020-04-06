@@ -411,9 +411,13 @@ external/wpt/encrypted-media/clearkey-update-non-ascii-input.https.html [ Skip ]
 external/wpt/media-source/mediasource-invalid-codec.html [ Skip ]
 
 # The hyphen character renders slightly differently from U+002D HYPHEN-MINUS.
+[ Mac10.10 ] external/wpt/css/css-text/hyphens/hyphens-auto-inline-010.html [ Skip ]
 [ Mac10.10 ] external/wpt/css/css-text/hyphens/hyphens-manual-011.html [ Skip ]
 [ Mac10.10 ] external/wpt/css/css-text/hyphens/hyphens-manual-012.html [ Skip ]
 [ Mac10.10 ] external/wpt/css/css-text/hyphens/hyphens-manual-013.html [ Skip ]
+[ Mac10.10 ] external/wpt/css/css-text/hyphens/hyphens-manual-inline-011.html [ Skip ]
+[ Mac10.10 ] external/wpt/css/css-text/hyphens/hyphens-manual-inline-012.html [ Skip ]
+[ Mac10.10 ] external/wpt/css/css-text/hyphens/hyphens-none-013.html [ Skip ]
 
 # CSS Text features that are not planned to implement.
 external/wpt/css/css-text/parsing/word-boundary-detection-computed.html [ Skip ]

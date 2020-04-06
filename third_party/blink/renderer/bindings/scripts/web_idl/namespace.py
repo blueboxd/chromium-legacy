@@ -135,6 +135,16 @@ class Namespace(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
         return ()
 
     @property
+    def named_constructors(self):
+        """Returns named constructors."""
+        return ()
+
+    @property
+    def named_constructor_groups(self):
+        """Returns groups of overloaded named constructors."""
+        return ()
+
+    @property
     def operations(self):
         """Returns operations."""
         return self._operations

@@ -11,6 +11,7 @@ from blinkbuild.name_style_converter import NameStyleConverter
 from .callback_function import CallbackFunction
 from .callback_interface import CallbackInterface
 from .composition_parts import Identifier
+from .constructor import Constructor
 from .constructor import ConstructorGroup
 from .database import Database
 from .database import DatabaseBody
@@ -100,6 +101,10 @@ class IdlCompiler(object):
 
         # Process inheritances.
         self._process_interface_inheritances()
+
+        # Temporary mitigation of misuse of [HTMLConstructor]
+        # This should be removed once the IDL definitions get fixed.
+        self._supplement_missing_html_constructor_operation()
 
         self._copy_named_constructor_extattrs()
 
@@ -243,9 +248,10 @@ class IdlCompiler(object):
                       default_value=True)
 
         old_irs = self._ir_map.irs_of_kinds(
-            IRMap.IR.Kind.DICTIONARY, IRMap.IR.Kind.INTERFACE,
-            IRMap.IR.Kind.INTERFACE_MIXIN, IRMap.IR.Kind.NAMESPACE,
-            IRMap.IR.Kind.PARTIAL_DICTIONARY, IRMap.IR.Kind.PARTIAL_INTERFACE,
+            IRMap.IR.Kind.CALLBACK_INTERFACE, IRMap.IR.Kind.DICTIONARY,
+            IRMap.IR.Kind.INTERFACE, IRMap.IR.Kind.INTERFACE_MIXIN,
+            IRMap.IR.Kind.NAMESPACE, IRMap.IR.Kind.PARTIAL_DICTIONARY,
+            IRMap.IR.Kind.PARTIAL_INTERFACE,
             IRMap.IR.Kind.PARTIAL_INTERFACE_MIXIN,
             IRMap.IR.Kind.PARTIAL_NAMESPACE)
 
@@ -407,6 +413,35 @@ class IdlCompiler(object):
                     if is_own_member(operation)
                 ])
 
+    def _supplement_missing_html_constructor_operation(self):
+        # Temporary mitigation of misuse of [HTMLConstructor]
+        # https://html.spec.whatwg.org/C/#htmlconstructor
+        # [HTMLConstructor] must be applied to only the single constructor
+        # operation, but it's now applied to interfaces without a constructor
+        # operation declaration.
+        old_irs = self._ir_map.irs_of_kind(IRMap.IR.Kind.INTERFACE)
+
+        self._ir_map.move_to_new_phase()
+
+        for old_ir in old_irs:
+            new_ir = self._maybe_make_copy(old_ir)
+            self._ir_map.add(new_ir)
+
+            if not (not new_ir.constructors
+                    and "HTMLConstructor" in new_ir.extended_attributes):
+                continue
+
+            html_constructor = Constructor.IR(
+                identifier=None,
+                arguments=[],
+                return_type=self._idl_type_factory.reference_type(
+                    new_ir.identifier),
+                extended_attributes=ExtendedAttributesMutable(
+                    [ExtendedAttribute(key="HTMLConstructor")]),
+                component=new_ir.components[0],
+                debug_info=new_ir.debug_info)
+            new_ir.constructors.append(html_constructor)
+
     def _copy_named_constructor_extattrs(self):
         old_irs = self._ir_map.irs_of_kind(IRMap.IR.Kind.INTERFACE)
 
@@ -489,7 +524,8 @@ class IdlCompiler(object):
                         ExtendedAttribute(key='Affects', values='Nothing'))
 
     def _calculate_group_exposure(self):
-        old_irs = self._ir_map.irs_of_kinds(IRMap.IR.Kind.INTERFACE,
+        old_irs = self._ir_map.irs_of_kinds(IRMap.IR.Kind.CALLBACK_INTERFACE,
+                                            IRMap.IR.Kind.INTERFACE,
                                             IRMap.IR.Kind.NAMESPACE)
 
         self._ir_map.move_to_new_phase()
@@ -548,6 +584,8 @@ class IdlCompiler(object):
                     group.exposure.set_only_in_secure_contexts(flag_names)
 
     def _fill_exposed_constructs(self):
+        old_callback_interfaces = self._ir_map.irs_of_kind(
+            IRMap.IR.Kind.CALLBACK_INTERFACE)
         old_interfaces = self._ir_map.irs_of_kind(IRMap.IR.Kind.INTERFACE)
         old_namespaces = self._ir_map.irs_of_kind(IRMap.IR.Kind.NAMESPACE)
 
@@ -578,7 +616,8 @@ class IdlCompiler(object):
 
         exposed_map = {}  # global name: [construct's identifier...]
         legacy_window_aliases = []
-        for ir in itertools.chain(old_interfaces, old_namespaces):
+        for ir in itertools.chain(old_callback_interfaces, old_interfaces,
+                                  old_namespaces):
             for pair in ir.exposure.global_names_and_features:
                 exposed_map.setdefault(pair.global_name,
                                        []).append(ir.identifier)

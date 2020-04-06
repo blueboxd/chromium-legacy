@@ -9,13 +9,14 @@
 
 #include "base/macros.h"
 #include "base/sequence_checker.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/modules/clipboard/clipboard_item.h"
 #include "third_party/blink/renderer/modules/clipboard/clipboard_writer.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 
 namespace blink {
 
@@ -79,7 +80,9 @@ class ClipboardPromise final : public GarbageCollected<ClipboardPromise>,
 
   Member<ClipboardWriter> clipboard_writer_;
   // Checks for Read and Write permission.
-  mojo::Remote<mojom::blink::PermissionService> permission_service_;
+  HeapMojoRemote<mojom::blink::PermissionService,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      permission_service_;
 
   // Only for use in writeText().
   String plain_text_;

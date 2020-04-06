@@ -86,6 +86,14 @@ PageLoadMetricsObserver::ObservePolicy PageLoadMetricsObserver::OnShown() {
 }
 
 PageLoadMetricsObserver::ObservePolicy
+PageLoadMetricsObserver::OnEnterBackForwardCache(
+    const mojom::PageLoadTiming& timing) {
+  // Invoke OnComplete to ensure that recorded data is dumped.
+  OnComplete(timing);
+  return STOP_OBSERVING;
+}
+
+PageLoadMetricsObserver::ObservePolicy
 PageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
     const mojom::PageLoadTiming& timing) {
   return CONTINUE_OBSERVING;

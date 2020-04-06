@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom-blink.h"
 #include "third_party/blink/public/mojom/installedapp/related_application.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-blink-forward.h"
@@ -20,6 +19,7 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -31,7 +31,7 @@ using AppInstalledCallbacks =
 class MODULES_EXPORT InstalledAppController final
     : public GarbageCollected<InstalledAppController>,
       public Supplement<LocalFrame>,
-      public ExecutionContextLifecycleObserver {
+      public ExecutionContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(InstalledAppController);
 
  public:
@@ -60,15 +60,12 @@ class MODULES_EXPORT InstalledAppController final
       const KURL& url,
       mojom::blink::ManifestPtr manifest);
 
-  // Inherited from ExecutionContextLifecycleObserver.
-  void ContextDestroyed() override;
-
   // Callback from the InstalledAppProvider mojo service.
   void OnFilterInstalledApps(std::unique_ptr<AppInstalledCallbacks>,
                              Vector<mojom::blink::RelatedApplicationPtr>);
 
   // Handle to the InstalledApp mojo service.
-  mojo::Remote<mojom::blink::InstalledAppProvider> provider_;
+  HeapMojoRemote<mojom::blink::InstalledAppProvider> provider_;
 
   DISALLOW_COPY_AND_ASSIGN(InstalledAppController);
 };

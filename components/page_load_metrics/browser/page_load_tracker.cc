@@ -815,4 +815,12 @@ bool PageLoadTracker::IsFirstNavigationInWebContents() const {
   return is_first_navigation_in_web_contents_;
 }
 
+void PageLoadTracker::OnEnterBackForwardCache() {
+  // TODO(hajimehoshi): Call PageShown from OnRestoreFromBackForwardCache.
+  if (visibility_tracker_.currently_in_foreground())
+    PageHidden();
+  INVOKE_AND_PRUNE_OBSERVERS(observers_, OnEnterBackForwardCache,
+                             metrics_update_dispatcher_.timing());
+}
+
 }  // namespace page_load_metrics

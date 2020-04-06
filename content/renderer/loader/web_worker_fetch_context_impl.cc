@@ -574,10 +574,6 @@ void WebWorkerFetchContextImpl::set_top_frame_origin(
   top_frame_origin_ = top_frame_origin;
 }
 
-void WebWorkerFetchContextImpl::set_origin_url(const GURL& origin_url) {
-  origin_url_ = origin_url;
-}
-
 void WebWorkerFetchContextImpl::set_client_id(const std::string& client_id) {
   client_id_ = client_id;
 }

@@ -47,6 +47,8 @@ class DriveQuickAccessProvider : public SearchProvider,
       base::OnceCallback<void()> on_done,
       const std::vector<drive::QuickAccessItem>& drive_results);
 
+  void StartSearchController();
+
   Profile* const profile_;
   drive::DriveIntegrationService* const drive_service_;
   SearchController* const search_controller_;

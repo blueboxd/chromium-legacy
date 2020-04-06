@@ -3810,8 +3810,6 @@ RenderFrameImpl::CreateWorkerFetchContext() {
       frame_->GetDocument().SiteForCookies());
   worker_fetch_context->set_top_frame_origin(
       frame_->GetDocument().TopFrameOrigin());
-  worker_fetch_context->set_origin_url(
-      GURL(frame_->GetDocument().Url()).GetOrigin());
 
   for (auto& observer : observers_)
     observer.WillCreateWorkerFetchContext(worker_fetch_context.get());
@@ -3840,8 +3838,6 @@ RenderFrameImpl::CreateWorkerFetchContextForPlzDedicatedWorker(
       frame_->GetDocument().SiteForCookies());
   worker_fetch_context->set_top_frame_origin(
       frame_->GetDocument().TopFrameOrigin());
-  worker_fetch_context->set_origin_url(
-      GURL(frame_->GetDocument().Url()).GetOrigin());
 
   for (auto& observer : observers_)
     observer.WillCreateWorkerFetchContext(worker_fetch_context.get());

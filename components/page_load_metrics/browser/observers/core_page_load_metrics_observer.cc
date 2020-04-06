@@ -268,6 +268,9 @@ const char kHistogramInputToFirstContentfulPaint[] =
 const char kBackgroundHistogramInputToFirstContentfulPaint[] =
     "PageLoad.Experimental.PaintTiming.InputToFirstContentfulPaint.Background";
 
+const char kHistogramBackForwardCacheEvent[] =
+    "PageLoad.BackForwardCache.Event";
+
 }  // namespace internal
 
 CorePageLoadMetricsObserver::CorePageLoadMetricsObserver()
@@ -906,4 +909,14 @@ void CorePageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
     content::NavigationHandle* navigation_handle) {
   largest_contentful_paint_handler_.OnDidFinishSubFrameNavigation(
       navigation_handle, GetDelegate());
+}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+CorePageLoadMetricsObserver::OnEnterBackForwardCache(
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  // TODO(hajimehoshi): Record UMA when restoring from the back-forward cache.
+  UMA_HISTOGRAM_ENUMERATION(
+      internal::kHistogramBackForwardCacheEvent,
+      internal::PageLoadBackForwardCacheEvent::kEnterBackForwardCache);
+  return PageLoadMetricsObserver::OnEnterBackForwardCache(timing);
 }

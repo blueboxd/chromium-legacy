@@ -120,6 +120,7 @@ constexpr std::pair<arc::mojom::ChromePage, const char*> kOSSettingsMapping[] =
      {ChromePage::PLUGINVMDETAILS, chrome::kPluginVmDetailsSubPage},
      {ChromePage::PLUGINVMSHAREDPATHS, chrome::kPluginVmSharedPathsSubPage},
      {ChromePage::OSACCESSIBILITY, chrome::kOsAccessibilitySubPage},
+     {ChromePage::OSPEOPLE, chrome::kOsPeopleSubPage},
      {ChromePage::OSPRINTING, chrome::kOsPrintingSubPage},
      {ChromePage::OSPRIVACY, chrome::kOsPrivacySubPage},
      {ChromePage::OSRESET, chrome::kOsResetSubPage},

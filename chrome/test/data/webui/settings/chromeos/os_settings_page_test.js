@@ -66,7 +66,7 @@ suite('OSSettingsPage', function() {
 
   test('Basic sections', function() {
     const sectionNames = [
-      'internet', 'bluetooth', 'multidevice', 'people', 'device',
+      'internet', 'bluetooth', 'multidevice', 'osPeople', 'device',
       'personalization', 'osSearch', 'apps'
     ];
 
@@ -104,7 +104,7 @@ suite('OSSettingsPage', function() {
     Polymer.dom.flush();
     await test_util.flushTasks();
 
-    const hiddenSections = ['multidevice', 'people', 'personalization'];
+    const hiddenSections = ['multidevice', 'osPeople', 'personalization'];
     for (const name of hiddenSections) {
       const section = settingsPage.shadowRoot.querySelector(
           `settings-section[section=${name}]`);

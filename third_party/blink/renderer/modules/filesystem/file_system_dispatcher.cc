@@ -73,7 +73,10 @@ class FileSystemDispatcher::ReadDirectoryListener
 };
 
 FileSystemDispatcher::FileSystemDispatcher(ExecutionContext& context)
-    : Supplement<ExecutionContext>(context), next_operation_id_(1) {}
+    : Supplement<ExecutionContext>(context),
+      file_system_manager_(&context),
+      next_operation_id_(1),
+      op_listeners_(&context) {}
 
 // static
 const char FileSystemDispatcher::kSupplementName[] = "FileSystemDispatcher";
@@ -93,7 +96,7 @@ FileSystemDispatcher& FileSystemDispatcher::From(ExecutionContext* context) {
 FileSystemDispatcher::~FileSystemDispatcher() = default;
 
 mojom::blink::FileSystemManager& FileSystemDispatcher::GetFileSystemManager() {
-  if (!file_system_manager_) {
+  if (!file_system_manager_.is_bound()) {
     // See https://bit.ly/2S0zRAS for task types
     mojo::PendingReceiver<mojom::blink::FileSystemManager> receiver =
         file_system_manager_.BindNewPipeAndPassReceiver(
@@ -103,7 +106,7 @@ mojom::blink::FileSystemManager& FileSystemDispatcher::GetFileSystemManager() {
     GetSupplementable()->GetBrowserInterfaceBroker().GetInterface(
         std::move(receiver));
   }
-  DCHECK(file_system_manager_);
+  DCHECK(file_system_manager_.is_bound());
   return *file_system_manager_.get();
 }
 
@@ -441,6 +444,12 @@ void FileSystemDispatcher::CreateSnapshotFileSync(
   DidCreateSnapshotFile(std::move(callbacks), std::move(file_info),
                         std::move(platform_path), error_code,
                         std::move(listener));
+}
+
+void FileSystemDispatcher::Trace(Visitor* visitor) {
+  visitor->Trace(file_system_manager_);
+  visitor->Trace(op_listeners_);
+  Supplement<ExecutionContext>::Trace(visitor);
 }
 
 void FileSystemDispatcher::DidOpenFileSystem(

@@ -303,7 +303,7 @@ suite('OsSyncControlsNavigationTest', function() {
     settings.Router.getInstance().navigateTo(settings.routes.OS_SYNC);
     await browserProxy.methodCalled('didNavigateToOsSyncPage');
 
-    settings.Router.getInstance().navigateTo(settings.routes.PEOPLE);
+    settings.Router.getInstance().navigateTo(settings.routes.OS_PEOPLE);
     await browserProxy.methodCalled('didNavigateAwayFromOsSyncPage');
   });
 });

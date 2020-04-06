@@ -104,7 +104,7 @@ js_library("sync_page") {
     ":sync_browser_proxy",
     ":sync_encryption_options",
     "..:page_visibility",
-    "..:router",
+    "..:route",
     "../settings_page:settings_animated_pages",
     "//ui/webui/resources/cr_elements/cr_expand_button:cr_expand_button",
     "//ui/webui/resources/cr_elements/cr_input:cr_input",
@@ -142,7 +142,7 @@ js_library("sync_account_control") {
   deps = [
     ":profile_info_browser_proxy",
     ":sync_browser_proxy",
-    "..:router",
+    "..:route",
     "../prefs:prefs_behavior",
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
     "//ui/webui/resources/js:icon",

@@ -97,6 +97,7 @@ extern const char kHistogramInputToFirstPaint[];
 extern const char kBackgroundHistogramInputToFirstPaint[];
 extern const char kHistogramInputToFirstContentfulPaint[];
 extern const char kBackgroundHistogramInputToFirstContentfulPaint[];
+extern const char kHistogramBackForwardCacheEvent[];
 
 enum FirstMeaningfulPaintStatus {
   FIRST_MEANINGFUL_PAINT_RECORDED,
@@ -105,6 +106,14 @@ enum FirstMeaningfulPaintStatus {
   FIRST_MEANINGFUL_PAINT_USER_INTERACTION_BEFORE_FMP,
   FIRST_MEANINGFUL_PAINT_DID_NOT_REACH_FIRST_CONTENTFUL_PAINT,
   FIRST_MEANINGFUL_PAINT_LAST_ENTRY
+};
+
+// Please keep in sync with PageLoadBackForwardCacheEvent in
+// tools/metrics/histograms/enums.xml. These values should not be renumbered.
+enum class PageLoadBackForwardCacheEvent {
+  kEnterBackForwardCache = 0,
+  kRestoreFromBackForwardCache = 1,
+  kMaxValue = kRestoreFromBackForwardCache,
 };
 
 }  // namespace internal
@@ -163,6 +172,8 @@ class CorePageLoadMetricsObserver
       const page_load_metrics::mojom::CpuTiming& timing) override;
   void OnDidFinishSubFrameNavigation(
       content::NavigationHandle* navigation_handle) override;
+  ObservePolicy OnEnterBackForwardCache(
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
 
  private:
   void RecordTimingHistograms(

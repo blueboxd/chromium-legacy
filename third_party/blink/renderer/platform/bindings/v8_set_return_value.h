@@ -32,6 +32,9 @@ struct V8ReturnValue {
   enum NonNullable { kNonNullable };
   enum Nullable { kNullable };
 
+  // FrozenArray or not (the integrity level = frozen or not)
+  enum Frozen { kFrozen };
+
   // Main world or not
   enum MainWorld { kMainWorld };
 
@@ -41,12 +44,22 @@ struct V8ReturnValue {
 
 // V8 handle types
 template <typename CallbackInfo, typename S>
-void V8SetReturnValue(const CallbackInfo& info, const v8::Global<S> value) {
+void V8SetReturnValue(const CallbackInfo& info, const v8::Local<S> value) {
   info.GetReturnValue().Set(value);
 }
 
 template <typename CallbackInfo, typename S>
-void V8SetReturnValue(const CallbackInfo& info, const v8::Local<S> value) {
+void V8SetReturnValue(const CallbackInfo& info,
+                      const v8::Local<S> value,
+                      V8ReturnValue::Frozen) {
+  if (value->IsObject()) {
+    bool result =
+        value.template As<v8::Object>()
+            ->SetIntegrityLevel(info.GetIsolate()->GetCurrentContext(),
+                                v8::IntegrityLevel::kFrozen)
+            .ToChecked();
+    CHECK(result);
+  }
   info.GetReturnValue().Set(value);
 }
 

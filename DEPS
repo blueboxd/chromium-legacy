@@ -175,7 +175,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '0ba30328d0eaadb4ea6ed93d340a7a588c282be2',
+  'skia_revision': '74ac68ad26bc18ea47f0a4be8e6ab2ac9c4c6d62',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -238,7 +238,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '56f8fb61b9d5db9fc96313d1675e7c28920b6e8c',
+  'catapult_revision': '8684dfae246f2dbc440a5a776a314dd60ec387ad',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -867,13 +867,8 @@ deps = {
 
   # For Linux and Chromium OS.
   'src/third_party/cros_system_api': {
-      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + '06db03ca54cf979f9fd0624aa1dd38abc8c6803b',
+      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + '2e5dab7c2630fe3be32711bdd0b42aca5015b517',
       'condition': 'checkout_linux',
-  },
-
-  'src/third_party/custom_tabs_client/src': {
-      'url': Var('chromium_git') + '/custom-tabs-client.git' + '@' + 'a633542d9854151eb4f0bfd1d93da88f5934a11a',
-      'condition': 'checkout_android',
   },
 
   'src/third_party/depot_tools':
@@ -1533,7 +1528,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@6761627323280f88b539998f14d8882eec070d4b',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@2a34dd3052e215e4907ebbe6ee3d1814bbef3bc2',
     'condition': 'checkout_src_internal',
   },
 

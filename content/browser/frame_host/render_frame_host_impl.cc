@@ -3857,18 +3857,18 @@ void RenderFrameHostImpl::EvictFromBackForwardCacheWithReasons(
   if (is_evicted_from_back_forward_cache_)
     return;
 
-  bool in_back_forward_cache = is_in_back_forward_cache();
+  bool in_back_forward_cache = IsInBackForwardCache();
 
   RenderFrameHostImpl* top_document = this;
   while (top_document->parent_) {
     top_document = top_document->parent_;
-    DCHECK_EQ(top_document->is_in_back_forward_cache(), in_back_forward_cache);
+    DCHECK_EQ(top_document->IsInBackForwardCache(), in_back_forward_cache);
   }
 
   // TODO(hajimehoshi): Record the 'race condition' by JavaScript execution when
-  // |is_in_back_forward_cache()| is false.
+  // |in_back_forward_cache| is false.
   BackForwardCacheMetrics* metrics = top_document->GetBackForwardCacheMetrics();
-  if (is_in_back_forward_cache() && metrics)
+  if (in_back_forward_cache && metrics)
     metrics->MarkNotRestoredWithReason(can_store);
 
   if (!in_back_forward_cache) {
@@ -8452,6 +8452,10 @@ RenderFrameHostImpl::GetWebAuthRequestSecurityChecker() {
         base::MakeRefCounted<WebAuthRequestSecurityChecker>(this);
 
   return webauth_request_security_checker_;
+}
+
+bool RenderFrameHostImpl::IsInBackForwardCache() {
+  return is_in_back_forward_cache_;
 }
 
 }  // namespace content

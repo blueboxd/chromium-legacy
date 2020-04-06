@@ -320,7 +320,17 @@ TEST_F(IDBRequestTest, EventsAfterEarlyDeathStopWithQueuedResult) {
   EnsureIDBCallbacksDontThrow(request, scope.GetExceptionState());
 }
 
-TEST_F(IDBRequestTest, EventsAfterEarlyDeathStopWithTwoQueuedResults) {
+// This test is flaky on Marshmallow 64 bit Tester because the test is
+// crashing. See <http://crbug.com/1068057>.
+#if defined(OS_ANDROID)
+#define MAYBE_EventsAfterEarlyDeathStopWithTwoQueuedResults \
+  DISABLED_EventsAfterEarlyDeathStopWithTwoQueuedResults
+#else
+#define MAYBE_EventsAfterEarlyDeathStopWithTwoQueuedResults \
+  EventsAfterEarlyDeathStopWithTwoQueuedResults
+#endif
+
+TEST_F(IDBRequestTest, MAYBE_EventsAfterEarlyDeathStopWithTwoQueuedResults) {
   V8TestingScope scope;
   const int64_t kTransactionId = 1234;
   auto database_backend = std::make_unique<MockWebIDBDatabase>();
@@ -357,7 +367,17 @@ TEST_F(IDBRequestTest, EventsAfterEarlyDeathStopWithTwoQueuedResults) {
   EnsureIDBCallbacksDontThrow(request2, scope.GetExceptionState());
 }
 
-TEST_F(IDBRequestTest, AbortErrorAfterAbort) {
+// This test is flaky on Marshmallow 64 bit Tester because the test is
+// crashing. See <http://crbug.com/1068057>.
+#if defined(OS_ANDROID)
+#define MAYBE_AbortErrorAfterAbort \
+  DISABLED_AbortErrorAfterAbort
+#else
+#define MAYBE_AbortErrorAfterAbort \
+  AbortErrorAfterAbort
+#endif
+
+TEST_F(IDBRequestTest, MAYBE_AbortErrorAfterAbort) {
   V8TestingScope scope;
   IDBTransaction* transaction = nullptr;
   IDBRequest* request =

@@ -105,6 +105,7 @@ ClipboardPromise::ClipboardPromise(ExecutionContext* context,
       script_state_(script_state),
       script_promise_resolver_(
           MakeGarbageCollected<ScriptPromiseResolver>(script_state)),
+      permission_service_(context),
       clipboard_representation_index_(0) {}
 
 ClipboardPromise::~ClipboardPromise() = default;
@@ -318,9 +319,10 @@ PermissionService* ClipboardPromise::GetPermissionService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ExecutionContext* context = GetExecutionContext();
   DCHECK(context);
-  if (!permission_service_) {
+  if (!permission_service_.is_bound()) {
     ConnectToPermissionService(
-        context, permission_service_.BindNewPipeAndPassReceiver());
+        context,
+        permission_service_.BindNewPipeAndPassReceiver(GetTaskRunner()));
   }
   return permission_service_.get();
 }
@@ -400,6 +402,7 @@ void ClipboardPromise::Trace(Visitor* visitor) {
   visitor->Trace(script_state_);
   visitor->Trace(script_promise_resolver_);
   visitor->Trace(clipboard_writer_);
+  visitor->Trace(permission_service_);
   visitor->Trace(clipboard_item_data_);
   ExecutionContextClient::Trace(visitor);
 }

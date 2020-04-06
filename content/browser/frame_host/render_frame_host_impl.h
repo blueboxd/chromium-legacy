@@ -361,6 +361,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   blink::mojom::AuthenticatorStatus PerformMakeCredentialWebAuthSecurityChecks(
       const std::string& relying_party_id) override;
   void SetIsXrOverlaySetup() override;
+  bool IsInBackForwardCache() override;
 
   // Determines if a clipboard paste using |data| of type |data_type| is allowed
   // in this renderer frame.  The implementation delegates to
@@ -1003,8 +1004,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Start a timer that will evict this RenderFrameHost from the
   // BackForwardCache after time to live.
   void StartBackForwardCacheEvictionTimer();
-
-  bool is_in_back_forward_cache() const { return is_in_back_forward_cache_; }
 
   bool IsBackForwardCacheDisabled() const;
 

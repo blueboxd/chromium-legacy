@@ -72,6 +72,10 @@ class TestMetricsWebContentsObserverEmbedder
     return completed_filtered_urls_;
   }
 
+  int count_on_enter_back_forward_cache() const {
+    return count_on_enter_back_forward_cache_;
+  }
+
  private:
   std::vector<mojom::PageLoadTimingPtr> updated_timings_;
   std::vector<mojom::PageLoadTimingPtr> updated_subframe_timings_;
@@ -84,6 +88,7 @@ class TestMetricsWebContentsObserverEmbedder
   std::vector<mojom::PageLoadFeatures> observed_features_;
   base::Optional<bool> is_first_navigation_in_web_contents_;
   bool is_ntp_ = false;
+  int count_on_enter_back_forward_cache_ = 0;
 };
 
 }  // namespace page_load_metrics

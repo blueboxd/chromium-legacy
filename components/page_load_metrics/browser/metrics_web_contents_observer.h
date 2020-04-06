@@ -247,7 +247,7 @@ class MetricsWebContentsObserver
 
   // This map tracks all of the navigations ongoing that are not committed
   // yet. Once a navigation is committed, it moves from the map to
-  // committed_load_. Note that a PageLoadTrackers NavigationHandle is only
+  // |committed_load_|. Note that a PageLoadTrackers NavigationHandle is only
   // valid until commit time, when we remove it from the map.
   std::map<content::NavigationHandle*, std::unique_ptr<PageLoadTracker>>
       provisional_loads_;

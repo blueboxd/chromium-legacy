@@ -162,9 +162,6 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   void set_site_for_cookies(const net::SiteForCookies& site_for_cookies);
   void set_top_frame_origin(const blink::WebSecurityOrigin& top_frame_origin);
 
-  // Sets whether the worker context is a secure context.
-  // https://w3c.github.io/webappsec-secure-contexts/
-  void set_origin_url(const GURL& origin_url);
   void set_client_id(const std::string& client_id);
 
   // PlzWorker with off-the-main-thread worker script fetch:
@@ -334,7 +331,6 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   scoped_refptr<FrameRequestBlocker> frame_request_blocker_;
   net::SiteForCookies site_for_cookies_;
   base::Optional<url::Origin> top_frame_origin_;
-  GURL origin_url_;
 
   blink::mojom::RendererPreferences renderer_preferences_;
 

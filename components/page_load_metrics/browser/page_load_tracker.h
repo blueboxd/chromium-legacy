@@ -355,6 +355,8 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   // occurred.
   void BroadcastEventToObservers(const void* const event_key);
 
+  void OnEnterBackForwardCache();
+
  private:
   // This function converts a TimeTicks value taken in the browser process
   // to navigation_start_ if:

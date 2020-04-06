@@ -123,7 +123,8 @@ void DeprecatedStorageQuota::EnqueueStorageErrorCallback(
                            WrapPersistent(DOMError::Create(exception_code))));
 }
 
-DeprecatedStorageQuota::DeprecatedStorageQuota(Type type) : type_(type) {}
+DeprecatedStorageQuota::DeprecatedStorageQuota(Type type)
+    : type_(type), quota_host_(nullptr) {}
 
 void DeprecatedStorageQuota::queryUsageAndQuota(
     ScriptState* script_state,
@@ -203,9 +204,14 @@ void DeprecatedStorageQuota::requestQuota(
               0, 0));
 }
 
+void DeprecatedStorageQuota::Trace(Visitor* visitor) {
+  visitor->Trace(quota_host_);
+  ScriptWrappable::Trace(visitor);
+}
+
 mojom::blink::QuotaManagerHost* DeprecatedStorageQuota::GetQuotaHost(
     ExecutionContext* execution_context) {
-  if (!quota_host_) {
+  if (!quota_host_.is_bound()) {
     ConnectToQuotaManagerHost(
         execution_context,
         quota_host_.BindNewPipeAndPassReceiver(execution_context->GetTaskRunner(

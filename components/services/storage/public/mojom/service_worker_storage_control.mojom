@@ -30,6 +30,15 @@ enum ServiceWorkerStorageOriginState {
   kDelete,
 };
 
+// An interface that reads a service worker script (resource) to storage.
+interface ServiceWorkerResourceReader {
+  // Reads the response head of the resource associated with this reader.
+  ReadResponseHead() =>
+      (int32 status, network.mojom.URLResponseHead response_head);
+  // TODO(crbug.com/1055677): Add ways to read the content and the metadata of
+  // the script.
+};
+
 // An interface that writes a service worker script (resource) to storage.
 interface ServiceWorkerResourceWriter {
   // Writes the response head to storage.
@@ -74,6 +83,9 @@ interface ServiceWorkerStorageControl {
   // is disabled.
   GetNewResourceId() => (int64 resource_id);
 
+  // Creates a resource reader for the given |resource_id|.
+  CreateResourceReader(int64 resource_id,
+                       pending_receiver<ServiceWorkerResourceReader> reader);
   // Creates a resource writer for the given |resource_id|.
   CreateResourceWriter(int64 resource_id,
                        pending_receiver<ServiceWorkerResourceWriter> writer);

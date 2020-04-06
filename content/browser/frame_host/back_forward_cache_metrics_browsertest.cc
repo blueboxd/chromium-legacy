@@ -904,7 +904,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheEnabledMetricsBrowserTest,
   // 2) Navigate to url2.
   EXPECT_TRUE(NavigateToURL(shell(), url2));
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
 
   // 3) Go back to url1 and check if the metrics are recorded. Make sure the
   // page is restored from cache.

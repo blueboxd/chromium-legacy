@@ -26,7 +26,8 @@ class TestPageLoadMetricsObserver : public PageLoadMetricsObserver {
       std::vector<GURL>* observed_committed_urls,
       std::vector<GURL>* observed_aborted_urls,
       std::vector<mojom::PageLoadFeatures>* observed_features,
-      base::Optional<bool>* is_first_navigation_in_web_contents)
+      base::Optional<bool>* is_first_navigation_in_web_contents,
+      int* count_on_enter_back_forward_cache)
       : updated_timings_(updated_timings),
         updated_subframe_timings_(updated_subframe_timings),
         complete_timings_(complete_timings),
@@ -36,7 +37,8 @@ class TestPageLoadMetricsObserver : public PageLoadMetricsObserver {
         observed_committed_urls_(observed_committed_urls),
         observed_aborted_urls_(observed_aborted_urls),
         is_first_navigation_in_web_contents_(
-            is_first_navigation_in_web_contents) {}
+            is_first_navigation_in_web_contents),
+        count_on_enter_back_forward_cache_(count_on_enter_back_forward_cache) {}
 
   ObservePolicy OnStart(content::NavigationHandle* navigation_handle,
                         const GURL& currently_committed_url,
@@ -87,6 +89,12 @@ class TestPageLoadMetricsObserver : public PageLoadMetricsObserver {
     observed_aborted_urls_->push_back(navigation_handle->GetURL());
   }
 
+  ObservePolicy OnEnterBackForwardCache(
+      const mojom::PageLoadTiming& timing) override {
+    (*count_on_enter_back_forward_cache_)++;
+    return PageLoadMetricsObserver::OnEnterBackForwardCache(timing);
+  }
+
  private:
   std::vector<mojom::PageLoadTimingPtr>* const updated_timings_;
   std::vector<mojom::PageLoadTimingPtr>* const updated_subframe_timings_;
@@ -97,6 +105,7 @@ class TestPageLoadMetricsObserver : public PageLoadMetricsObserver {
   std::vector<GURL>* const observed_committed_urls_;
   std::vector<GURL>* const observed_aborted_urls_;
   base::Optional<bool>* is_first_navigation_in_web_contents_;
+  int* const count_on_enter_back_forward_cache_;
 };
 
 // Test PageLoadMetricsObserver that stops observing page loads with certain
@@ -148,7 +157,8 @@ void TestMetricsWebContentsObserverEmbedder::RegisterObservers(
       &updated_timings_, &updated_subframe_timings_, &complete_timings_,
       &updated_cpu_timings_, &loaded_resources_, &observed_committed_urls_,
       &observed_aborted_urls_, &observed_features_,
-      &is_first_navigation_in_web_contents_));
+      &is_first_navigation_in_web_contents_,
+      &count_on_enter_back_forward_cache_));
   tracker->AddObserver(std::make_unique<FilteringPageLoadMetricsObserver>(
       &completed_filtered_urls_));
 }

@@ -66,12 +66,10 @@ SuggestionWindowView::SuggestionWindowView(gfx::NativeView parent,
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
-
-  suggestion_view_ = new SuggestionView();
-  AddChildView(suggestion_view_);
+  suggestion_view_ = AddChildView(std::make_unique<SuggestionView>());
 }
 
-SuggestionWindowView::~SuggestionWindowView() {}
+SuggestionWindowView::~SuggestionWindowView() = default;
 
 views::Widget* SuggestionWindowView::InitWidget() {
   views::Widget* widget = BubbleDialogDelegateView::CreateBubble(this);

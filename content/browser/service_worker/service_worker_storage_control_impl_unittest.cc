@@ -13,6 +13,8 @@
 #include "content/public/test/test_utils.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_util.h"
+#include "net/test/cert_test_util.h"
+#include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/service_worker/navigation_preload_state.mojom.h"
 
@@ -23,6 +25,20 @@ using FindRegistrationResult =
     storage::mojom::ServiceWorkerFindRegistrationResultPtr;
 
 namespace {
+
+int ReadResponseHead(storage::mojom::ServiceWorkerResourceReader* reader,
+                     network::mojom::URLResponseHeadPtr& out_response_head) {
+  int return_value;
+  base::RunLoop loop;
+  reader->ReadResponseHead(base::BindLambdaForTesting(
+      [&](int result, network::mojom::URLResponseHeadPtr response_head) {
+        return_value = result;
+        out_response_head = std::move(response_head);
+        loop.Quit();
+      }));
+  loop.Run();
+  return return_value;
+}
 
 int WriteResponseHead(storage::mojom::ServiceWorkerResourceWriter* writer,
                       network::mojom::URLResponseHeadPtr response_head) {
@@ -163,10 +179,18 @@ class ServiceWorkerStorageControlImplTest : public testing::Test {
     return return_value;
   }
 
+  mojo::Remote<storage::mojom::ServiceWorkerResourceReader>
+  CreateResourceReader(int64_t resource_id) {
+    mojo::Remote<storage::mojom::ServiceWorkerResourceReader> reader;
+    storage()->CreateResourceReader(resource_id,
+                                    reader.BindNewPipeAndPassReceiver());
+    return reader;
+  }
+
   mojo::Remote<storage::mojom::ServiceWorkerResourceWriter>
-  CreateNewResourceWriter() {
+  CreateResourceWriter(int64_t resource_id) {
     mojo::Remote<storage::mojom::ServiceWorkerResourceWriter> writer;
-    storage()->CreateResourceWriter(GetNewResourceId(),
+    storage()->CreateResourceWriter(resource_id,
                                     writer.BindNewPipeAndPassReceiver());
     return writer;
   }
@@ -277,12 +301,20 @@ TEST_F(ServiceWorkerStorageControlImplTest, StoreAndDeleteRegistration) {
   }
 }
 
-// Tests that writing a service worker script succeeds.
-TEST_F(ServiceWorkerStorageControlImplTest, WriteResource) {
+// Tests that writing/reading a service worker script succeed.
+TEST_F(ServiceWorkerStorageControlImplTest, WriteAndReadResource) {
   LazyInitializeForTest();
 
+  // Create a SSLInfo to write/read.
+  net::SSLInfo ssl_info = net::SSLInfo();
+  ssl_info.cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
+  ASSERT_TRUE(ssl_info.is_valid());
+
+  int64_t resource_id = GetNewResourceId();
+
   mojo::Remote<storage::mojom::ServiceWorkerResourceWriter> writer =
-      CreateNewResourceWriter();
+      CreateResourceWriter(resource_id);
 
   // Write a response head.
   {
@@ -292,23 +324,40 @@ TEST_F(ServiceWorkerStorageControlImplTest, WriteResource) {
             "HTTP/1.1 200 OK\n"
             "Content-Type: application/javascript\n"));
     response_head->headers->GetMimeType(&response_head->mime_type);
+    response_head->ssl_info = ssl_info;
 
     int result = WriteResponseHead(writer.get(), std::move(response_head));
     ASSERT_GT(result, 0);
   }
 
+  const std::string kData("/* script body */");
+  int data_size = kData.size();
+
   // Write content.
   {
-    const std::string kData("/* script body */");
     mojo_base::BigBuffer data(base::as_bytes(base::make_span(kData)));
-    int data_size = data.size();
 
     int result = WriteResponseData(writer.get(), std::move(data));
     ASSERT_EQ(data_size, result);
   }
 
-  // TODO(crbug.com/1055677): Read the resource and check the response head and
-  // content.
+  mojo::Remote<storage::mojom::ServiceWorkerResourceReader> reader =
+      CreateResourceReader(resource_id);
+
+  // Read the response head.
+  {
+    network::mojom::URLResponseHeadPtr response_head;
+    int result = ReadResponseHead(reader.get(), response_head);
+    ASSERT_GT(result, 0);
+
+    EXPECT_EQ(response_head->mime_type, "application/javascript");
+    EXPECT_EQ(response_head->content_length, data_size);
+    EXPECT_TRUE(response_head->ssl_info->is_valid());
+    EXPECT_EQ(response_head->ssl_info->cert->serial_number(),
+              ssl_info.cert->serial_number());
+  }
+
+  // TODO(crbug.com/1055677): Read and check the content of the resource.
 }
 
 }  // namespace content

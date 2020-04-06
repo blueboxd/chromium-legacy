@@ -193,6 +193,9 @@ class MetricsWebContentsObserverTest
   int CountUpdatedSubFrameTimingReported() {
     return updated_subframe_timings().size();
   }
+  int CountOnBackForwardCacheEntered() const {
+    return embedder_interface_->count_on_enter_back_forward_cache();
+  }
 
   const std::vector<GURL>& observed_committed_urls_from_on_start() const {
     return embedder_interface_->observed_committed_urls_from_on_start();
@@ -1465,7 +1468,7 @@ class MetricsWebContentsObserverBackForwardCacheTest
         {});
   }
 
-  ~MetricsWebContentsObserverBackForwardCacheTest() override {}
+  ~MetricsWebContentsObserverBackForwardCacheTest() override = default;
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -1499,6 +1502,74 @@ TEST_F(MetricsWebContentsObserverBackForwardCacheTest,
   // For now back-forward cached navigations are not tracked and the events
   // after the history navigation are not tracked.
   EXPECT_THAT(features, testing::ElementsAre(web_features1));
+}
+
+// Checks OnEnterBackForwardCache is called appropriately with back-forward
+// cache enabled.
+TEST_F(MetricsWebContentsObserverBackForwardCacheTest, EnterBackForwardCache) {
+  // Go to the URL1.
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(
+      web_contents(), GURL(kDefaultTestUrl));
+  ASSERT_EQ(main_rfh()->GetLastCommittedURL().spec(), GURL(kDefaultTestUrl));
+
+  ASSERT_EQ(0, CountCompleteTimingReported());
+  EXPECT_EQ(0, CountOnBackForwardCacheEntered());
+
+  // Go to the URL2.
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(
+      web_contents(), GURL(kDefaultTestUrl2));
+  ASSERT_EQ(main_rfh()->GetLastCommittedURL().spec(), GURL(kDefaultTestUrl2));
+
+  ASSERT_EQ(1, CountCompleteTimingReported());
+  EXPECT_EQ(1, CountOnBackForwardCacheEntered());
+
+  // Go back.
+  content::NavigationSimulator::GoBack(web_contents());
+  EXPECT_EQ(2, CountOnBackForwardCacheEntered());
+
+  // With the default implementation of PageLoadMetricsObserver,
+  // OnEnteringBackForwardCache invokes OnComplete and returns STOP_OBSERVING.
+  ASSERT_EQ(2, CountCompleteTimingReported());
+}
+
+class MetricsWebContentsObserverBackForwardCacheDisabledTest
+    : public MetricsWebContentsObserverTest {
+ public:
+  MetricsWebContentsObserverBackForwardCacheDisabledTest() {
+    feature_list_.InitWithFeaturesAndParameters({},
+                                                {features::kBackForwardCache});
+  }
+
+  ~MetricsWebContentsObserverBackForwardCacheDisabledTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Checks OnEnterBackForwardCache is NOT called without back-forward cache
+// enabled.
+TEST_F(MetricsWebContentsObserverBackForwardCacheDisabledTest,
+       EnterBackForwardCacheNotCalled) {
+  // Go to the URL1.
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(
+      web_contents(), GURL(kDefaultTestUrl));
+  ASSERT_EQ(main_rfh()->GetLastCommittedURL().spec(), GURL(kDefaultTestUrl));
+
+  ASSERT_EQ(0, CountCompleteTimingReported());
+
+  // Go to the URL2.
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(
+      web_contents(), GURL(kDefaultTestUrl2));
+  ASSERT_EQ(main_rfh()->GetLastCommittedURL().spec(), GURL(kDefaultTestUrl2));
+
+  ASSERT_EQ(1, CountCompleteTimingReported());
+  EXPECT_EQ(0, CountOnBackForwardCacheEntered());
+
+  // Go back.
+  content::NavigationSimulator::GoBack(web_contents());
+  EXPECT_EQ(0, CountOnBackForwardCacheEntered());
+
+  ASSERT_EQ(2, CountCompleteTimingReported());
 }
 
 }  // namespace page_load_metrics

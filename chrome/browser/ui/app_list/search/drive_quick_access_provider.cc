@@ -111,16 +111,23 @@ DriveQuickAccessProvider::DriveQuickAccessProvider(
     drive_service_->AddObserver(this);
 }
 
-DriveQuickAccessProvider::~DriveQuickAccessProvider() = default;
+DriveQuickAccessProvider::~DriveQuickAccessProvider() {
+  if (drive_service_)
+    drive_service_->RemoveObserver(this);
+}
 
 void DriveQuickAccessProvider::OnFileSystemMounted() {
   // Warm up the result cache by fetching results from the Drive QuickAccess API
   // as soon as DriveFS is mounted. This ensures the first use of the launcher
   // displays Drive results. This is called on login, and when resuming from
   // sleep.
-  GetQuickAccessItems(base::BindOnce(&SearchController::Start,
-                                     base::Unretained(search_controller_),
-                                     base::string16()));
+  GetQuickAccessItems(
+      base::BindOnce(&DriveQuickAccessProvider::StartSearchController,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void DriveQuickAccessProvider::StartSearchController() {
+  search_controller_->Start(base::string16());
 }
 
 void DriveQuickAccessProvider::Start(const base::string16& query) {

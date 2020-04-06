@@ -429,10 +429,12 @@ const char kNativePrintingSettingsSubPage[] = "cupsPrinters";
 const char kNetworkDetailSubPage[] = "networkDetail";
 const char kNetworksSubPage[] = "networks";
 const char kOsAccessibilitySubPage[] = "osAccessibility";
+const char kOsPeopleSubPage[] = "osPeople";
 const char kOsPrintingSubPage[] = "osPrinting";
 const char kOsPrivacySubPage[] = "osPrivacy";
 const char kOsResetSubPage[] = "osReset";
 const char kOsSearchSubPage[] = "osSearch";
+const char kOsSignOutSubPage[] = "osSignOut";
 const char kPluginVmDetailsSubPage[] = "pluginVm/details";
 const char kPluginVmSharedPathsSubPage[] = "pluginVm/sharedPaths";
 const char kPointerOverlaySubPage[] = "pointer-overlay";
@@ -490,10 +492,12 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       kOsLanguagesSubPage,
       kOsLanguagesDetailsSubPage,
       kOsLanguagesInputMethodsSubPage,
+      kOsPeopleSubPage,
       kOsPrintingSubPage,
       kOsPrivacySubPage,
       kOsResetSubPage,
       kOsSearchSubPage,
+      kOsSignOutSubPage,
       kPointerOverlaySubPage,
       kPowerSubPage,
       kSmartLockSettingsSubPage,

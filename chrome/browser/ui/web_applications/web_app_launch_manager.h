@@ -7,11 +7,12 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/apps/launch_service/launch_manager.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 
 class Browser;
 enum class WindowOpenDisposition;
 class GURL;
+class Profile;
 
 namespace apps {
 struct AppLaunchParams;
@@ -32,14 +33,13 @@ class WebAppProvider;
 
 // Handles launch requests for Desktop PWAs and bookmark apps.
 // Web applications have type AppType::kWeb in the app registry.
-class WebAppLaunchManager : public apps::LaunchManager {
+class WebAppLaunchManager {
  public:
   explicit WebAppLaunchManager(Profile* profile);
-  ~WebAppLaunchManager() override;
+  ~WebAppLaunchManager();
 
   // apps::LaunchManager:
-  content::WebContents* OpenApplication(
-      const apps::AppLaunchParams& params) override;
+  content::WebContents* OpenApplication(const apps::AppLaunchParams& params);
 
   void LaunchApplication(
       const std::string& app_id,
@@ -56,6 +56,7 @@ class WebAppLaunchManager : public apps::LaunchManager {
                               apps::mojom::LaunchContainer container)>
           callback);
 
+  Profile* const profile_;
   WebAppProvider* const provider_;
 
   base::WeakPtrFactory<WebAppLaunchManager> weak_ptr_factory_{this};

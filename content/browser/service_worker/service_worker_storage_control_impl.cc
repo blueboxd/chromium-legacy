@@ -4,7 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_storage_control_impl.h"
 
-#include "content/browser/service_worker/service_worker_resource_writer_impl.h"
+#include "content/browser/service_worker/service_worker_resource_ops.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
@@ -109,6 +109,15 @@ void ServiceWorkerStorageControlImpl::DeleteRegistration(
 void ServiceWorkerStorageControlImpl::GetNewResourceId(
     GetNewResourceIdCallback callback) {
   storage_->GetNewResourceId(std::move(callback));
+}
+
+void ServiceWorkerStorageControlImpl::CreateResourceReader(
+    int64_t resource_id,
+    mojo::PendingReceiver<storage::mojom::ServiceWorkerResourceReader> reader) {
+  DCHECK_NE(resource_id, blink::mojom::kInvalidServiceWorkerResourceId);
+  mojo::MakeSelfOwnedReceiver(std::make_unique<ServiceWorkerResourceReaderImpl>(
+                                  storage_->CreateResponseReader(resource_id)),
+                              std::move(reader));
 }
 
 void ServiceWorkerStorageControlImpl::CreateResourceWriter(

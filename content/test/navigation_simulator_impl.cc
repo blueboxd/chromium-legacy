@@ -1392,7 +1392,7 @@ void NavigationSimulatorImpl::
   // The previous RenderFrameHost entered the back-forward cache and hasn't been
   // requested to unload. The browser process do not expect
   // FrameHostMsg_Unload_ACK.
-  if (previous_rfh->is_in_back_forward_cache())
+  if (previous_rfh->IsInBackForwardCache())
     return;
   previous_rfh->OnMessageReceived(
       FrameHostMsg_Unload_ACK(previous_rfh->GetRoutingID()));

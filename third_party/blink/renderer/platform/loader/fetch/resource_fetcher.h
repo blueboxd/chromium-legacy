@@ -31,7 +31,6 @@
 #include <utility>
 
 #include "base/single_thread_task_runner.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker_mode.mojom-blink-forward.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -39,6 +38,8 @@
 #include "third_party/blink/renderer/platform/loader/fetch/preload_key.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_scheduler.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -420,7 +421,9 @@ class PLATFORM_EXPORT ResourceFetcher
 
   uint32_t inflight_keepalive_bytes_ = 0;
 
-  mojo::Remote<mojom::blink::BlobRegistry> blob_registry_remote_;
+  HeapMojoRemote<mojom::blink::BlobRegistry,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      blob_registry_remote_;
 
   // This is not in the bit field below because we want to use AutoReset.
   bool is_in_request_resource_ = false;

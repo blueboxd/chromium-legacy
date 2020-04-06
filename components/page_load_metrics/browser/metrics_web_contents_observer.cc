@@ -212,10 +212,11 @@ void MetricsWebContentsObserver::WillStartNavigationRequestImpl(
   const GURL& currently_committed_url =
       committed_load_ ? committed_load_->url() : opener_url;
 
-  // Passing raw pointers to observers_ and embedder_interface_ is safe because
-  // the MetricsWebContentsObserver owns them both list and they are torn down
-  // after the PageLoadTracker. The PageLoadTracker does not hold on to
-  // committed_load_ or navigation_handle beyond the scope of the constructor.
+  // Passing raw pointers to |observers_| and |embedder_interface_| is safe
+  // because the MetricsWebContentsObserver owns them both list and they are
+  // torn down after the PageLoadTracker. The PageLoadTracker does not hold on
+  // to |committed_load_| or |navigation_handle| beyond the scope of the
+  // constructor.
   auto insertion_result = provisional_loads_.insert(std::make_pair(
       navigation_handle,
       std::make_unique<PageLoadTracker>(
@@ -526,6 +527,11 @@ void MetricsWebContentsObserver::FinalizeCurrentlyCommittedLoad(
     if (is_non_user_initiated_client_redirect) {
       committed_load_->NotifyClientRedirectTo(newly_committed_navigation);
     }
+
+    content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
+        newly_committed_navigation->GetPreviousRenderFrameHostId());
+    if (rfh && rfh->IsInBackForwardCache())
+      committed_load_->OnEnterBackForwardCache();
   }
 }
 
@@ -771,6 +777,9 @@ bool MetricsWebContentsObserver::ShouldTrackMainFrameNavigation(
   if (embedder_interface_->IsNewTabPageUrl(navigation_handle->GetURL()))
     return false;
 
+  if (navigation_handle->IsServedFromBackForwardCache())
+    return false;
+
   if (navigation_handle->HasCommitted()) {
     // Ignore Chrome error pages (e.g. No Internet connection).
     if (navigation_handle->IsErrorPage())
@@ -782,10 +791,6 @@ bool MetricsWebContentsObserver::ShouldTrackMainFrameNavigation(
         (http_status_code < 200 || http_status_code >= 400))
       return false;
   }
-
-  // TODO(crbug.com/1014174): Ignore back-forward cached navigations for now.
-  if (navigation_handle->IsServedFromBackForwardCache())
-    return false;
 
   return true;
 }

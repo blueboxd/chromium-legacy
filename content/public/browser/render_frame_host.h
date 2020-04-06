@@ -534,6 +534,14 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // recent orientation change.
   virtual void SetIsXrOverlaySetup() = 0;
 
+  // Returns true if this RenderFrameHost is currently stored in the
+  // back-forward cache.
+  //
+  // TODO(hajimehoshi): Introduce an enum value for lifecycle states and replace
+  // IsInBackForwardCache with the enum values and a new function like
+  // DidChangeLifecycleState.
+  virtual bool IsInBackForwardCache() = 0;
+
  private:
   // This interface should only be implemented inside content.
   friend class RenderFrameHostImpl;

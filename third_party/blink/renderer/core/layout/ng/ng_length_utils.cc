@@ -804,7 +804,6 @@ NGBoxStrut ComputeIntrinsicPadding(const NGConstraintSpace& constraint_space,
                                    const ComputedStyle& style,
                                    const NGBoxStrut& scrollbar) {
   DCHECK(constraint_space.IsTableCell());
-  DCHECK(!scrollbar.block_start);
 
   // During the "layout" table phase, adjust the given intrinsic-padding to
   // accommodate the scrollbar.

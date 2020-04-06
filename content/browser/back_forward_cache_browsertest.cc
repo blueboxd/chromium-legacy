@@ -61,6 +61,7 @@
 #include "net/test/test_data_directory.h"
 #include "services/device/public/cpp/test/fake_sensor_and_provider.h"
 #include "services/device/public/cpp/test/scoped_geolocation_overrider.h"
+#include "services/device/public/mojom/vibration_manager.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
 
@@ -444,7 +445,7 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest,
 
 // Match RenderFrameHostImpl* that are in the BackForwardCache.
 MATCHER(InBackForwardCache, "") {
-  return arg->is_in_back_forward_cache();
+  return arg->IsInBackForwardCache();
 }
 
 // Match RenderFrameDeleteObserver* which observed deletion of the RenderFrame.
@@ -569,11 +570,11 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Basic) {
   RenderFrameHostImpl* rfh_b = current_frame_host();
   RenderFrameDeletedObserver delete_observer_rfh_b(rfh_b);
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
   EXPECT_EQ(rfh_a->GetVisibilityState(), PageVisibilityState::kHidden);
   EXPECT_EQ(origin_a, rfh_a->GetLastCommittedOrigin());
   EXPECT_EQ(origin_b, rfh_b->GetLastCommittedOrigin());
-  EXPECT_FALSE(rfh_b->is_in_back_forward_cache());
+  EXPECT_FALSE(rfh_b->IsInBackForwardCache());
   EXPECT_EQ(rfh_b->GetVisibilityState(), PageVisibilityState::kVisible);
 
   // 3) Go back to A.
@@ -584,9 +585,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Basic) {
   EXPECT_EQ(origin_a, rfh_a->GetLastCommittedOrigin());
   EXPECT_EQ(origin_b, rfh_b->GetLastCommittedOrigin());
   EXPECT_EQ(rfh_a, current_frame_host());
-  EXPECT_FALSE(rfh_a->is_in_back_forward_cache());
+  EXPECT_FALSE(rfh_a->IsInBackForwardCache());
   EXPECT_EQ(rfh_a->GetVisibilityState(), PageVisibilityState::kVisible);
-  EXPECT_TRUE(rfh_b->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_b->IsInBackForwardCache());
   EXPECT_EQ(rfh_b->GetVisibilityState(), PageVisibilityState::kHidden);
 
   ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kRestored,
@@ -610,8 +611,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, BasicDocumentInitiated) {
   RenderFrameHostImpl* rfh_b = current_frame_host();
   RenderFrameDeletedObserver delete_observer_rfh_b(rfh_b);
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
-  EXPECT_FALSE(rfh_b->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+  EXPECT_FALSE(rfh_b->IsInBackForwardCache());
 
   // The two pages are using different BrowsingInstances.
   EXPECT_FALSE(rfh_a->GetSiteInstance()->IsRelatedSiteInstance(
@@ -623,8 +624,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, BasicDocumentInitiated) {
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
   EXPECT_FALSE(delete_observer_rfh_b.deleted());
   EXPECT_EQ(rfh_a, current_frame_host());
-  EXPECT_FALSE(rfh_a->is_in_back_forward_cache());
-  EXPECT_TRUE(rfh_b->is_in_back_forward_cache());
+  EXPECT_FALSE(rfh_a->IsInBackForwardCache());
+  EXPECT_TRUE(rfh_b->IsInBackForwardCache());
 
   ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kRestored,
                 FROM_HERE);
@@ -646,16 +647,16 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
   RenderFrameHostImpl* rfh_b = current_frame_host();
   RenderFrameDeletedObserver delete_observer_rfh_b(rfh_b);
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
-  EXPECT_FALSE(rfh_b->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+  EXPECT_FALSE(rfh_b->IsInBackForwardCache());
 
   // 3) Go back to A.
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
   EXPECT_EQ(rfh_a, current_frame_host());
-  EXPECT_FALSE(rfh_a->is_in_back_forward_cache());
-  EXPECT_TRUE(rfh_b->is_in_back_forward_cache());
+  EXPECT_FALSE(rfh_a->IsInBackForwardCache());
+  EXPECT_TRUE(rfh_b->IsInBackForwardCache());
 
   ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kRestored,
                 FROM_HERE);
@@ -665,8 +666,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
   EXPECT_EQ(rfh_b, current_frame_host());
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
-  EXPECT_FALSE(rfh_b->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+  EXPECT_FALSE(rfh_b->IsInBackForwardCache());
 
   ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kRestored,
                 FROM_HERE);
@@ -676,8 +677,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
   EXPECT_EQ(rfh_a, current_frame_host());
-  EXPECT_FALSE(rfh_a->is_in_back_forward_cache());
-  EXPECT_TRUE(rfh_b->is_in_back_forward_cache());
+  EXPECT_FALSE(rfh_a->IsInBackForwardCache());
+  EXPECT_TRUE(rfh_b->IsInBackForwardCache());
 
   ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kRestored,
                 FROM_HERE);
@@ -687,8 +688,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
   EXPECT_EQ(rfh_b, current_frame_host());
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
-  EXPECT_FALSE(rfh_b->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+  EXPECT_FALSE(rfh_b->IsInBackForwardCache());
 
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
   EXPECT_FALSE(delete_observer_rfh_b.deleted());
@@ -716,7 +717,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // The BrowsingInstance shouldn't have changed.
   EXPECT_EQ(browsing_instance_id,
             rfh_a2->GetSiteInstance()->GetBrowsingInstanceId());
-  EXPECT_FALSE(rfh_a1->is_in_back_forward_cache());
+  EXPECT_FALSE(rfh_a1->IsInBackForwardCache());
   // The main frame should have been reused for the navigation.
   EXPECT_EQ(rfh_a1, rfh_a2);
 }
@@ -771,7 +772,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WindowOpen) {
   EXPECT_TRUE(ExecJs(rfh_a_new, JsReplace("location = $1;", url_b.spec())));
   EXPECT_TRUE(WaitForLoadStop(web_contents()));
   EXPECT_FALSE(delete_observer_rfh_a_new.deleted());
-  EXPECT_TRUE(rfh_a_new->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a_new->IsInBackForwardCache());
 
   // 6) Go back to A. The current document can finally enter the
   // BackForwardCache, because it is alone in its BrowsingInstance and has never
@@ -781,7 +782,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WindowOpen) {
   EXPECT_TRUE(ExecJs(rfh_b_new, "history.back();"));
   EXPECT_TRUE(WaitForLoadStop(web_contents()));
   EXPECT_FALSE(delete_observer_rfh_b_new.deleted());
-  EXPECT_TRUE(rfh_b_new->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_b_new->IsInBackForwardCache());
 }
 
 // Navigate from A(B) to C and go back.
@@ -804,9 +805,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, BasicIframe) {
   RenderFrameDeletedObserver delete_observer_rfh_c(rfh_c);
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
   EXPECT_FALSE(delete_observer_rfh_b.deleted());
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
-  EXPECT_TRUE(rfh_b->is_in_back_forward_cache());
-  EXPECT_FALSE(rfh_c->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+  EXPECT_TRUE(rfh_b->IsInBackForwardCache());
+  EXPECT_FALSE(rfh_c->IsInBackForwardCache());
 
   // 3) Go back to A(B).
   web_contents()->GetController().GoBack();
@@ -815,9 +816,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, BasicIframe) {
   EXPECT_FALSE(delete_observer_rfh_b.deleted());
   EXPECT_FALSE(delete_observer_rfh_c.deleted());
   EXPECT_EQ(rfh_a, current_frame_host());
-  EXPECT_FALSE(rfh_a->is_in_back_forward_cache());
-  EXPECT_FALSE(rfh_b->is_in_back_forward_cache());
-  EXPECT_TRUE(rfh_c->is_in_back_forward_cache());
+  EXPECT_FALSE(rfh_a->IsInBackForwardCache());
+  EXPECT_FALSE(rfh_b->IsInBackForwardCache());
+  EXPECT_TRUE(rfh_c->IsInBackForwardCache());
 
   ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kRestored,
                 FROM_HERE);
@@ -1204,7 +1205,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   // Page A should be in the cache.
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
 
   // 3. Navigate from an uncacheable to a cached page page (B->A).
   web_contents()->GetController().GoBack();
@@ -1225,7 +1226,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   // Page A should be in the cache.
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
 
   // 5. Navigate from a cacheable page to a cached page (C->A).
   web_contents()->GetController().GoBack();
@@ -1234,7 +1235,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   // Page C should be in the cache.
   EXPECT_FALSE(delete_observer_rfh_c.deleted());
-  EXPECT_TRUE(rfh_c->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_c->IsInBackForwardCache());
 
   ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kRestored,
                 FROM_HERE);
@@ -1298,7 +1299,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   // Page A should be in the cache.
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
 
   // Verify proxies are stored as well.
   auto* cached_entry = cache.GetEntry(rfh_a->nav_entry_id());
@@ -1327,7 +1328,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   // Page A should be in the cache.
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
 
   // Verify proxies are stored as well.
   cached_entry = cache.GetEntry(rfh_a->nav_entry_id());
@@ -1344,7 +1345,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   // Page C should be in the cache.
   EXPECT_FALSE(delete_observer_rfh_c.deleted());
-  EXPECT_TRUE(rfh_c->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_c->IsInBackForwardCache());
 
   // Verify proxies are stored as well.
   cached_entry = cache.GetEntry(rfh_c->nav_entry_id());
@@ -1527,8 +1528,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   RenderFrameHostImpl* rfh_b = current_frame_host();
   RenderFrameDeletedObserver delete_observer_rfh_b(rfh_b);
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
-  EXPECT_FALSE(rfh_b->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+  EXPECT_FALSE(rfh_b->IsInBackForwardCache());
 
   // 4) Go back to A and check the title again.
   web_contents()->GetController().GoBack();
@@ -1536,7 +1537,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
   EXPECT_FALSE(delete_observer_rfh_b.deleted());
   EXPECT_EQ(rfh_a, current_frame_host());
-  EXPECT_TRUE(rfh_b->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_b->IsInBackForwardCache());
   {
     base::string16 title_when_loaded = base::UTF8ToUTF16("loaded!");
     TitleWatcher title_watcher(web_contents(), title_when_loaded);
@@ -1923,7 +1924,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
 
   // 5) Go back to the page with WakeLock.
   web_contents()->GetController().GoBack();
@@ -2068,8 +2069,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
   EXPECT_FALSE(delete_observer_rfh_b.deleted());
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
-  EXPECT_FALSE(rfh_b->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+  EXPECT_FALSE(rfh_b->IsInBackForwardCache());
 
   // 3) Execute JavaScript on A.
   EvictByJavaScript(rfh_a);
@@ -2111,9 +2112,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
   EXPECT_FALSE(delete_observer_rfh_b.deleted());
   EXPECT_FALSE(delete_observer_rfh_c.deleted());
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
-  EXPECT_TRUE(rfh_b->is_in_back_forward_cache());
-  EXPECT_FALSE(rfh_c->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+  EXPECT_TRUE(rfh_b->IsInBackForwardCache());
+  EXPECT_FALSE(rfh_c->IsInBackForwardCache());
 
   // 3) Execute JavaScript on B.
   //
@@ -2156,8 +2157,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
   EXPECT_FALSE(delete_observer_rfh_b.deleted());
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
-  EXPECT_FALSE(rfh_b->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+  EXPECT_FALSE(rfh_b->IsInBackForwardCache());
 
   // 4) Execute JavaScript on A in the new world.
   EXPECT_FALSE(ExecJs(rfh_a, "console.log('hi');",
@@ -2216,8 +2217,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
   EXPECT_FALSE(delete_observer_rfh_b.deleted());
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
-  EXPECT_FALSE(rfh_b->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+  EXPECT_FALSE(rfh_b->IsInBackForwardCache());
 
   // 3) Execute JavaScript on A when restoring A.
   // Execute JavaScript after committing but before swapping happens on the
@@ -2254,8 +2255,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // A is not destroyed. A is reloaded instead.
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
   EXPECT_FALSE(delete_observer_rfh_b.deleted());
-  EXPECT_FALSE(rfh_a->is_in_back_forward_cache());
-  EXPECT_TRUE(rfh_b->is_in_back_forward_cache());
+  EXPECT_FALSE(rfh_a->IsInBackForwardCache());
+  EXPECT_TRUE(rfh_b->IsInBackForwardCache());
   EXPECT_NE("initial document", EvalJs(rfh_a, "window.foo"));
 
   ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kRestored,
@@ -2289,8 +2290,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Events) {
 
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
   EXPECT_FALSE(delete_observer_rfh_b.deleted());
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
-  EXPECT_FALSE(rfh_b->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+  EXPECT_FALSE(rfh_b->IsInBackForwardCache());
   // TODO(yuzus): Post message to the frozen page, and make sure that the
   // messages arrive after the page visibility events, not before them.
 
@@ -2333,9 +2334,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, EventsForSubframes) {
   RenderFrameDeletedObserver delete_observer_rfh_c(rfh_c);
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
   EXPECT_FALSE(delete_observer_rfh_b.deleted());
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
-  EXPECT_TRUE(rfh_b->is_in_back_forward_cache());
-  EXPECT_FALSE(rfh_c->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+  EXPECT_TRUE(rfh_b->IsInBackForwardCache());
+  EXPECT_FALSE(rfh_c->IsInBackForwardCache());
   // TODO(yuzus): Post message to the frozen page, and make sure that the
   // messages arrive after the page visibility events, not before them.
 
@@ -2346,9 +2347,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, EventsForSubframes) {
   EXPECT_FALSE(delete_observer_rfh_b.deleted());
   EXPECT_FALSE(delete_observer_rfh_c.deleted());
   EXPECT_EQ(rfh_a, current_frame_host());
-  EXPECT_FALSE(rfh_a->is_in_back_forward_cache());
-  EXPECT_FALSE(rfh_b->is_in_back_forward_cache());
-  EXPECT_TRUE(rfh_c->is_in_back_forward_cache());
+  EXPECT_FALSE(rfh_a->IsInBackForwardCache());
+  EXPECT_FALSE(rfh_b->IsInBackForwardCache());
+  EXPECT_TRUE(rfh_c->IsInBackForwardCache());
   // visibilitychange events are added twice per each because it is fired for
   // both window and document.
   MatchEventList(
@@ -2388,8 +2389,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
   EXPECT_FALSE(delete_observer_rfh_b.deleted());
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
-  EXPECT_FALSE(rfh_b->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+  EXPECT_FALSE(rfh_b->IsInBackForwardCache());
   // TODO(yuzus): Post message to the frozen page, and make sure that the
   // messages arrive after the page visibility events, not before them.
 
@@ -2424,7 +2425,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
   RenderFrameHostImpl* rfh_b = current_frame_host();
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
 
   // Cancel all navigation attempts.
   content::TestNavigationThrottleInserter throttle_inserter(
@@ -2461,7 +2462,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
   RenderFrameHostImpl* rfh_b = current_frame_host();
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
 
   // Cancel all navigation attempts.
   content::TestNavigationThrottleInserter throttle_inserter(
@@ -2522,7 +2523,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   RenderFrameHostImpl* rfh_b = current_frame_host();
   RenderFrameDeletedObserver delete_observer_rfh_b(rfh_b);
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
   EXPECT_NE(rfh_a, rfh_b);
 
   // 3) Start navigation to page A, and cause the document to be evicted during
@@ -2570,7 +2571,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   RenderFrameHostImpl* rfh_b2 = current_frame_host();
   RenderFrameDeletedObserver delete_observer_rfh_b2(rfh_b2);
   EXPECT_FALSE(delete_observer_rfh_a1.deleted());
-  EXPECT_TRUE(rfh_a1->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a1->IsInBackForwardCache());
   EXPECT_NE(rfh_a1, rfh_b2);
 
   // 3) Start navigation to page A, and flush the cache during the navigation.
@@ -2589,7 +2590,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // rfh_a should have been deleted, and page A navigated to normally.
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   delete_observer_rfh_a1.WaitUntilDeleted();
-  EXPECT_TRUE(rfh_b2->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_b2->IsInBackForwardCache());
   RenderFrameHostImpl* rfh_a3 = current_frame_host();
   EXPECT_EQ(rfh_a3->GetLastCommittedURL(), url_a);
 }
@@ -2612,7 +2613,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   RenderFrameHostImpl* rfh_b = current_frame_host();
   RenderFrameDeletedObserver delete_observer_rfh_b(rfh_b);
 
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
 
   // 3) Crash A's renderer process while it is in the cache.
@@ -2824,7 +2825,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, CacheHTTPDocumentOnly) {
 
     if (test_case.expectation == STORED) {
       EXPECT_FALSE(delete_observer.deleted());
-      EXPECT_TRUE(rfh->is_in_back_forward_cache());
+      EXPECT_TRUE(rfh->IsInBackForwardCache());
       continue;
     }
 
@@ -2834,7 +2835,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, CacheHTTPDocumentOnly) {
     if (test_case.url == blank_url &&
         !SiteIsolationPolicy::UseDedicatedProcessesForAllSites()) {
       EXPECT_FALSE(delete_observer.deleted());
-      EXPECT_FALSE(rfh->is_in_back_forward_cache());
+      EXPECT_FALSE(rfh->IsInBackForwardCache());
       EXPECT_EQ(rfh, current_frame_host());
       continue;
     }
@@ -2928,6 +2929,118 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                            FROM_HERE);
 }
 
+class BackForwardCacheBrowserTestWithVibration
+    : public BackForwardCacheBrowserTest,
+      public device::mojom::VibrationManager {
+ public:
+  BackForwardCacheBrowserTestWithVibration() {
+    OverrideVibrationManagerBinderForTesting(base::BindRepeating(
+        &BackForwardCacheBrowserTestWithVibration::BindVibrationManager,
+        base::Unretained(this)));
+  }
+
+  ~BackForwardCacheBrowserTestWithVibration() override {
+    OverrideVibrationManagerBinderForTesting(base::NullCallback());
+  }
+
+  void BindVibrationManager(
+      mojo::PendingReceiver<device::mojom::VibrationManager> receiver) {
+    receiver_.Bind(std::move(receiver));
+  }
+
+  bool TriggerVibrate(RenderFrameHostImpl* rfh,
+                      int duration,
+                      base::OnceClosure vibrate_done) {
+    vibrate_done_ = std::move(vibrate_done);
+    bool result;
+    std::string script = "domAutomationController.send(navigator.vibrate(" +
+                         base::NumberToString(duration) + "))";
+    EXPECT_TRUE(ExecuteScriptAndExtractBool(rfh, script, &result));
+    return result;
+  }
+
+  bool TriggerShortVibrationSequence(RenderFrameHostImpl* rfh,
+                                     base::OnceClosure vibrate_done) {
+    vibrate_done_ = std::move(vibrate_done);
+    bool result;
+    std::string script =
+        "domAutomationController.send(navigator.vibrate([10] * 1000))";
+    EXPECT_TRUE(ExecuteScriptAndExtractBool(rfh, script, &result));
+    return result;
+  }
+
+  bool IsCancelled() { return cancelled_; }
+
+ private:
+  // device::mojom::VibrationManager:
+  void Vibrate(int64_t milliseconds, VibrateCallback callback) override {
+    cancelled_ = false;
+    std::move(callback).Run();
+    std::move(vibrate_done_).Run();
+  }
+
+  void Cancel(CancelCallback callback) override {
+    cancelled_ = true;
+    std::move(callback).Run();
+  }
+
+  bool cancelled_ = false;
+  base::OnceClosure vibrate_done_;
+  mojo::Receiver<device::mojom::VibrationManager> receiver_{this};
+};
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithVibration,
+                       VibrationStopsAfterEnteringCache) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // 1) Navigate to a page with a long vibration.
+  GURL url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  base::RunLoop run_loop;
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  ASSERT_TRUE(TriggerVibrate(rfh_a, 10000, run_loop.QuitClosure()));
+  EXPECT_FALSE(IsCancelled());
+
+  // 2) Navigate away and expect the vibration to be canceled.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("b.com", "/title1.html")));
+  EXPECT_NE(current_frame_host(), rfh_a);
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+  EXPECT_TRUE(IsCancelled());
+
+  // 3) Go back to A.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kRestored,
+                FROM_HERE);
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithVibration,
+                       ShortVibrationSequenceStopsAfterEnteringCache) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // 1) Navigate to a page with a long vibration.
+  GURL url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  base::RunLoop run_loop;
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  ASSERT_TRUE(TriggerShortVibrationSequence(rfh_a, run_loop.QuitClosure()));
+  EXPECT_FALSE(IsCancelled());
+
+  // 2) Navigate away and expect the vibration to be canceled.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("b.com", "/title1.html")));
+  EXPECT_NE(current_frame_host(), rfh_a);
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+  EXPECT_TRUE(IsCancelled());
+
+  // 3) Go back to A.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kRestored,
+                FROM_HERE);
+}
+
 class BackForwardCacheBrowserTestWithServiceWorkerEnabled
     : public BackForwardCacheBrowserTest,
       public testing::WithParamInterface<bool> {
@@ -2970,7 +3083,7 @@ IN_PROC_BROWSER_TEST_P(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
       NavigateToURL(shell(), https_server()->GetURL("b.com", "/title1.html")));
 
   EXPECT_FALSE(deleted.deleted());
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
 
   // 3) Go back to A. The navigation should be served from the cache.
   web_contents()->GetController().GoBack();
@@ -3001,7 +3114,7 @@ IN_PROC_BROWSER_TEST_P(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
   EXPECT_TRUE(
       NavigateToURL(tab_x, https_server()->GetURL("b.com", "/title1.html")));
   EXPECT_FALSE(deleted.deleted());
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
   // 4) Navigate to A in tab Y.
   EXPECT_TRUE(NavigateToURL(
       tab_y,
@@ -3067,7 +3180,7 @@ IN_PROC_BROWSER_TEST_P(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
   EXPECT_TRUE(NavigateToURL(tab_to_be_bfcached,
                             https_server.GetURL("b.com", "/title1.html")));
   EXPECT_FALSE(deleted_observer_rfh.deleted());
-  EXPECT_TRUE(rfh->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh->IsInBackForwardCache());
 
   // 5) Trigger client.postMessage via |tab_to_execute_service_worker|. Cache in
   // |tab_to_be_bfcached| will be evicted.
@@ -3112,7 +3225,7 @@ IN_PROC_BROWSER_TEST_P(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
   EXPECT_TRUE(NavigateToURL(tab_to_be_bfcached,
                             https_server.GetURL("b.com", "/title1.html")));
   EXPECT_FALSE(deleted.deleted());
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
 
   // 3) Navigate to A in |tab_to_execute_service_worker|.
   EXPECT_TRUE(NavigateToURL(
@@ -3172,7 +3285,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, CachePagesWithBeacon) {
 
   // Page A should be in the cache.
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
 }
 
 // Regression test for https://crbug.com/993337.
@@ -3212,13 +3325,13 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   // 3) Navigate to B3.
   EXPECT_TRUE(NavigateToURL(shell(), url_b3));
-  EXPECT_TRUE(rfh_a2->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a2->IsInBackForwardCache());
   RenderFrameHostImpl* rfh_b3 = current_frame_host();
 
   // 4) Do a history navigation back to A1.
   web_contents()->GetController().GoToIndex(0);
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  EXPECT_TRUE(rfh_b3->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_b3->IsInBackForwardCache());
 
   // Note that the frame for A1 gets created before A2 is deleted from the
   // cache, so there will be a brief period where two the main frames (A1 and
@@ -3257,7 +3370,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   // 3) Navigate to D3.
   EXPECT_TRUE(NavigateToURL(shell(), url_d3));
-  EXPECT_TRUE(rfh_a2->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a2->IsInBackForwardCache());
   RenderFrameHostImpl* rfh_d3 = current_frame_host();
 
   // 4) Do a history navigation back to A1(B).
@@ -3265,7 +3378,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
   // D3 takes A2(B(C))'s place in the cache.
-  EXPECT_TRUE(rfh_d3->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_d3->IsInBackForwardCache());
   delete_rfh_a2.WaitUntilDeleted();
 }
 
@@ -3286,7 +3399,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   // 3) Navigate to B3.
   EXPECT_TRUE(NavigateToURL(shell(), url_b3));
-  EXPECT_TRUE(rfh_a2->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a2->IsInBackForwardCache());
   RenderFrameHostImpl* rfh_b3 = current_frame_host();
   // Make B3 ineligible for caching, so that navigating doesn't evict A2
   // due to the cache size limit.
@@ -3346,13 +3459,13 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // 2) Navigate to B2.
   EXPECT_TRUE(NavigateToURL(shell(), url_b2));
   RenderFrameHostImpl* rfh_b2 = current_frame_host();
-  EXPECT_TRUE(rfh_a1->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a1->IsInBackForwardCache());
 
   // 3) Navigate to A3.
   EXPECT_TRUE(NavigateToURL(shell(), url_a3));
   RenderFrameHostImpl* rfh_a3 = current_frame_host();
-  EXPECT_TRUE(rfh_a1->is_in_back_forward_cache());
-  EXPECT_TRUE(rfh_b2->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a1->IsInBackForwardCache());
+  EXPECT_TRUE(rfh_b2->IsInBackForwardCache());
   // A1 and A3 shouldn't be treated as the same site instance.
   EXPECT_NE(rfh_a1->GetSiteInstance(), rfh_a3->GetSiteInstance());
 
@@ -3360,17 +3473,17 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // Make sure we can store A1 and A3 in the cache at the same time.
   EXPECT_TRUE(NavigateToURL(shell(), url_b4));
   RenderFrameHostImpl* rfh_b4 = current_frame_host();
-  EXPECT_TRUE(rfh_a1->is_in_back_forward_cache());
-  EXPECT_TRUE(rfh_b2->is_in_back_forward_cache());
-  EXPECT_TRUE(rfh_a3->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a1->IsInBackForwardCache());
+  EXPECT_TRUE(rfh_b2->IsInBackForwardCache());
+  EXPECT_TRUE(rfh_a3->IsInBackForwardCache());
 
   // 5) Go back to A3.
   // Make sure we can restore A3, while A1 remains in the cache.
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  EXPECT_TRUE(rfh_a1->is_in_back_forward_cache());
-  EXPECT_TRUE(rfh_b2->is_in_back_forward_cache());
-  EXPECT_TRUE(rfh_b4->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a1->IsInBackForwardCache());
+  EXPECT_TRUE(rfh_b2->IsInBackForwardCache());
+  EXPECT_TRUE(rfh_b4->IsInBackForwardCache());
   EXPECT_EQ(rfh_a3, current_frame_host());
   // B2 and B4 shouldn't be treated as the same site instance.
   EXPECT_NE(rfh_b2->GetSiteInstance(), rfh_b4->GetSiteInstance());
@@ -3379,9 +3492,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // Make sure we can restore A1, while coming from A3.
   web_contents()->GetController().GoToIndex(0);
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  EXPECT_TRUE(rfh_b2->is_in_back_forward_cache());
-  EXPECT_TRUE(rfh_b4->is_in_back_forward_cache());
-  EXPECT_TRUE(rfh_a3->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_b2->IsInBackForwardCache());
+  EXPECT_TRUE(rfh_b4->IsInBackForwardCache());
+  EXPECT_TRUE(rfh_a3->IsInBackForwardCache());
   EXPECT_EQ(rfh_a1, current_frame_host());
 }
 
@@ -3427,7 +3540,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBackForwardCacheBrowserTest,
   // The page has no inflight geolocation request when we navigated away,
   // so it should have been cached.
   EXPECT_FALSE(deleted.deleted());
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
 }
 
 // Test that a page which has an inflight geolocation query can be bfcached,
@@ -3478,7 +3591,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBackForwardCacheBrowserTest,
   // The page has no inflight geolocation request when we navigated away,
   // so it should have been cached.
   EXPECT_FALSE(deleted.deleted());
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
 
   // Resume resolving Geoposition queries.
   geo_override_.Resume();
@@ -3495,7 +3608,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBackForwardCacheBrowserTest,
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   EXPECT_EQ(rfh_a, current_frame_host());
-  EXPECT_FALSE(rfh_a->is_in_back_forward_cache());
+  EXPECT_FALSE(rfh_a->IsInBackForwardCache());
 
   // Wait for an update after the user navigates back to A.
   EXPECT_EQ("resolved", EvalJs(rfh_a, R"(
@@ -3561,7 +3674,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, TimedEviction) {
 
   // 4) Confirm A is still in BackForwardCache.
   ASSERT_FALSE(delete_observer_rfh_a.deleted());
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
 
   // 5) Fast forward to when eviction is due.
   task_runner->FastForwardBy(delta);
@@ -3680,7 +3793,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   // 2) Navigate to B.
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
   EXPECT_FALSE(rfh_a->is_evicted_from_back_forward_cache());
 
   BackForwardCache::DisableForRenderFrameHost(rfh_a, kDisabledReasonForTest);
@@ -3801,7 +3914,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithDomainControlEnabled,
   // 3) Check if rfh_a is stored in back-forward cache, since it matches to
   // the list of allowed urls, it should be stored.
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
 
   // 4) Now go back to the last stored page, which in our case should be A.
   web_contents()->GetController().GoBack();
@@ -3811,7 +3924,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithDomainControlEnabled,
   // 5) Check if rfh_b is stored in back-forward cache, since it matches to
   // the list of allowed urls, it should be stored.
   EXPECT_FALSE(delete_observer_rfh_b.deleted());
-  EXPECT_TRUE(rfh_b->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_b->IsInBackForwardCache());
 }
 
 // We don't want to allow websites which doesn't match "allowed_websites" of
@@ -4052,7 +4165,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Encoding) {
   EXPECT_EQ(web_contents()->GetEncoding(), "windows-1250");
 
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
   EXPECT_EQ(web_contents()->GetEncoding(), "UTF-8");
 
   web_contents()->GetController().GoBack();
@@ -4212,7 +4325,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, MAYBE_NavigationStart) {
   // 2) Navigate to B. A should be in the back forward cache.
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
 
   // 3) Navigate back and expect everything to be restored.
   NavigationHandleObserver observer(web_contents(), url_a);
@@ -4301,7 +4414,7 @@ IN_PROC_BROWSER_TEST_F(
   // 2) Navigate to B.
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
   ASSERT_FALSE(delete_observer_rfh_a.deleted());
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
   WaitForFirstVisuallyNonEmptyPaint(shell()->web_contents());
 
   // 3) Navigate to back to A.
@@ -4329,7 +4442,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
   WaitForFirstVisuallyNonEmptyPaint(web_contents());
   ASSERT_FALSE(delete_observer_rfh_a.deleted());
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
   EXPECT_EQ(web_contents()->GetThemeColor(), base::nullopt);
 
   ThemeColorObserver observer(web_contents());
@@ -4396,7 +4509,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, AudioSuspendAndResume) {
 
   // 2) Navigate to B.
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
 
   // 3) Navigate back to A.
   web_contents()->GetController().GoBack();
@@ -4476,7 +4589,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, VideoSuspendAndResume) {
 
   // 2) Navigate to B.
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
 
   // 3) Navigate back to A.
   web_contents()->GetController().GoBack();
@@ -4899,7 +5012,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestForHighMemoryDevices,
 
   // 3) A should be stored in back-forward cache because the physical memory is
   // greater than the memory threshold.
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -5014,7 +5127,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // 2) Navigate to an error page and expect the old page to be stored in
   // bfcache.
   EXPECT_FALSE(NavigateToURL(shell(), error_url));
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
 
   // 3) Navigate back and expect the page to be restored from bfcache.
   web_contents()->GetController().GoBack();
@@ -5098,7 +5211,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   EXPECT_EQ(rfh_a, current_frame_host());
-  EXPECT_FALSE(rfh_a->is_in_back_forward_cache());
+  EXPECT_FALSE(rfh_a->IsInBackForwardCache());
 
   // The page should still be requesting dialogs in a loop. Wait for one to be
   // requested.
@@ -5166,7 +5279,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
   EXPECT_EQ(rfh_a, current_frame_host());
-  EXPECT_FALSE(rfh_a->is_in_back_forward_cache());
+  EXPECT_FALSE(rfh_a->IsInBackForwardCache());
 
   // Try show another dialog. It should work.
   ExecuteScriptAsync(rfh_a, R"(window.alert("alert");)");
@@ -5330,13 +5443,13 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
   ASSERT_TRUE(NavigateToURL(shell(), url_b));
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
 
   // Navigate back to A. Ensure that connection state has been updated
   // accordingly.
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  EXPECT_FALSE(rfh_a->is_in_back_forward_cache());
+  EXPECT_FALSE(rfh_a->IsInBackForwardCache());
   EXPECT_EQ(presentation_connection_id, EvalJs(rfh_a, "connection.id"));
   EXPECT_EQ("closed", EvalJs(rfh_a, "connection.state"));
   EXPECT_TRUE(EvalJs(rfh_a, "connectionClosed").ExtractBool());
@@ -5395,7 +5508,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, FrameServiceBase) {
 
   // - Page A should be in the cache.
   ASSERT_FALSE(delete_observer_rfh_a.deleted());
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
   EXPECT_FALSE(echo_deleted);
 
   // 3) Go back.
@@ -5592,8 +5705,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, CheckIsCurrent) {
 
   // 2) Navigate to C.
   EXPECT_TRUE(NavigateToURL(shell(), url_c));
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
-  EXPECT_TRUE(rfh_b->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+  EXPECT_TRUE(rfh_b->IsInBackForwardCache());
 
   EXPECT_FALSE(rfh_a->IsCurrent());
   EXPECT_FALSE(rfh_b->IsCurrent());

@@ -39,7 +39,9 @@ def v8_bridge_class_name(idl_definition):
     """
     Returns the name of V8-from/to-Blink bridge class.
     """
-    assert isinstance(idl_definition, (web_idl.Namespace, web_idl.Interface))
+    assert isinstance(
+        idl_definition,
+        (web_idl.CallbackInterface, web_idl.Interface, web_idl.Namespace))
 
     assert idl_definition.identifier[0].isupper()
     # Do not apply |name_style.class_| due to the same reason as

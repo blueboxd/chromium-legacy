@@ -280,6 +280,8 @@ void TestAllOSSettingPages(const GURL& base_url) {
                      base_url.Resolve(chrome::kManageAccessibilitySubPage));
   TestOpenChromePage(ChromePage::NETWORKSTYPEVPN,
                      base_url.Resolve(chrome::kVPNSettingsSubPage));
+  TestOpenChromePage(ChromePage::OSPEOPLE,
+                     base_url.Resolve(chrome::kOsPeopleSubPage));
   TestOpenChromePage(ChromePage::OSPRINTING,
                      base_url.Resolve(chrome::kOsPrintingSubPage));
   TestOpenChromePage(ChromePage::POINTEROVERLAY,

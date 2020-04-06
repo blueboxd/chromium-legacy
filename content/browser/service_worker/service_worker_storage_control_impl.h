@@ -53,6 +53,10 @@ class CONTENT_EXPORT ServiceWorkerStorageControlImpl
                           const GURL& origin,
                           DeleteRegistrationCallback callback) override;
   void GetNewResourceId(GetNewResourceIdCallback callback) override;
+  void CreateResourceReader(
+      int64_t resource_id,
+      mojo::PendingReceiver<storage::mojom::ServiceWorkerResourceReader> reader)
+      override;
   void CreateResourceWriter(
       int64_t resource_id,
       mojo::PendingReceiver<storage::mojom::ServiceWorkerResourceWriter> writer)

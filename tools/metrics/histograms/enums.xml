@@ -49755,6 +49755,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="10" label="Frozen to hidden and backgrounded"/>
 </enum>
 
+<enum name="PageLoadBackForwardCacheEvent">
+  <int value="0" label="Enter back-forward cache"/>
+  <int value="1" label="Restore from back-forward cache"/>
+</enum>
+
 <enum name="PageLoadedSnapshotResult">
   <int value="0" label="Snapshot not attempted, page load failed">
     Snapshot was not attempted because the page load failed and would result in

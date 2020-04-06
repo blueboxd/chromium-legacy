@@ -13,6 +13,8 @@ class RenderFrameHost;
 
 // Returns true if |render_frame_host| is currently stored in the
 // BackForwardCache.
+//
+// TODO(hajimehoshi): This function is no longer needed. Remove this.
 bool IsInBackForwardCache(RenderFrameHost* render_frame_host)
     WARN_UNUSED_RESULT;
 

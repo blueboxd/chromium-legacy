@@ -2819,3 +2819,60 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, FirstInputDelayFromClick) {
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstInputTimestamp,
                                      1);
 }
+
+class PageLoadMetricsBrowserTestWithBackForwardCache
+    : public PageLoadMetricsBrowserTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    PageLoadMetricsBrowserTest::SetUpCommandLine(command_line);
+    feature_list.InitAndEnableFeatureWithParameters(
+        features::kBackForwardCache,
+        // Set a very long TTL before expiration (longer than the test timeout)
+        // so tests that are expecting deletion don't pass when they shouldn't.
+        //
+        // TODO(hajimehoshi): This value is used in various places. Define a
+        // constant and use it.
+        //
+        // Some features like the outstanding network requests are expected to
+        // appear in almost any output. Filter them out to make the tests
+        // simpler.
+        {{"TimeToLiveInBackForwardCacheInSeconds", "3600"},
+         {"ignore_outstanding_network_request_for_testing", "true"}});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list;
+};
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTestWithBackForwardCache,
+                       BackForwardCacheEvent) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto url1 = embedded_test_server()->GetURL("a.com", "/title1.html");
+  auto url2 = embedded_test_server()->GetURL("b.com", "/title1.html");
+
+  // Go to URL1.
+  ui_test_utils::NavigateToURL(browser(), url1);
+
+  histogram_tester_.ExpectBucketCount(
+      internal::kHistogramBackForwardCacheEvent,
+      internal::PageLoadBackForwardCacheEvent::kEnterBackForwardCache, 0);
+
+  // Go to URL2. The previous page (URL1) is put into the back-forward cache.
+  ui_test_utils::NavigateToURL(browser(), url2);
+
+  histogram_tester_.ExpectBucketCount(
+      internal::kHistogramBackForwardCacheEvent,
+      internal::PageLoadBackForwardCacheEvent::kEnterBackForwardCache, 1);
+
+  // Go back to URL1. The previous page (URL2) is put into the back-forward
+  // cache.
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  web_contents->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(web_contents));
+
+  histogram_tester_.ExpectBucketCount(
+      internal::kHistogramBackForwardCacheEvent,
+      internal::PageLoadBackForwardCacheEvent::kEnterBackForwardCache, 2);
+}

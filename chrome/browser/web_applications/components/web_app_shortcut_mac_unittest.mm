@@ -219,8 +219,10 @@ TEST_F(WebAppShortcutCreatorTest, FileHandlers) {
   }
   EXPECT_TRUE(base::DeleteFileRecursively(shim_path_));
 
-  // Register 2 mime types. We should now have kCFBundleTypeMIMETypesKey but
-  // not kCFBundleTypeExtensionsKey.
+  // Register 2 mime types (and 2 invalid extensions). We should now have
+  // kCFBundleTypeMIMETypesKey but not kCFBundleTypeExtensionsKey.
+  info_->file_handler_extensions.insert("byobb");
+  info_->file_handler_extensions.insert(".");
   info_->file_handler_mime_types.insert("foo/bar");
   info_->file_handler_mime_types.insert("moo/cow");
   EXPECT_TRUE(shortcut_creator.CreateShortcuts(SHORTCUT_CREATION_AUTOMATED,
@@ -249,10 +251,10 @@ TEST_F(WebAppShortcutCreatorTest, FileHandlers) {
   }
   EXPECT_TRUE(base::DeleteFileRecursively(shim_path_));
 
-  // Register 3 extensions with the 2 mime types.
-  info_->file_handler_extensions.insert("cow");
-  info_->file_handler_extensions.insert("pig");
-  info_->file_handler_extensions.insert("bbq");
+  // Register 3 valid extensions (and 2 invalid ones) with the 2 mime types.
+  info_->file_handler_extensions.insert(".cow");
+  info_->file_handler_extensions.insert(".pig");
+  info_->file_handler_extensions.insert(".bbq");
   EXPECT_TRUE(shortcut_creator.CreateShortcuts(SHORTCUT_CREATION_AUTOMATED,
                                                ShortcutLocations()));
   {

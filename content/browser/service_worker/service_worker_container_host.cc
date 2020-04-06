@@ -1108,7 +1108,7 @@ void ServiceWorkerContainerHost::EvictFromBackForwardCache(
              BackForwardCacheMetrics::NotRestoredReason reason) {
             auto* rfh = RenderFrameHostImpl::FromID(process_id, frame_id);
             // |rfh| could be evicted before this function is called.
-            if (!rfh || !rfh->is_in_back_forward_cache())
+            if (!rfh || !rfh->IsInBackForwardCache())
               return;
             rfh->EvictFromBackForwardCacheWithReason(reason);
           },

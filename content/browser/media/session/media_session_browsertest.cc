@@ -468,6 +468,6 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTestWithBackForwardCache,
 
   // The page should be cached in the back forward cache.
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
 }
 }  // namespace content

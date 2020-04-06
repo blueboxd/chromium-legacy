@@ -546,6 +546,7 @@ ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
           &ResourceFetcher::ResourceTimingReportTimerFired),
       frame_scheduler_(init.frame_scheduler ? init.frame_scheduler->GetWeakPtr()
                                             : nullptr),
+      blob_registry_remote_(nullptr),
       auto_load_images_(true),
       images_enabled_(true),
       allow_stale_resources_(false),
@@ -2113,7 +2114,7 @@ void ResourceFetcher::RevalidateStaleResource(Resource* stale_resource) {
 }
 
 mojom::blink::BlobRegistry* ResourceFetcher::GetBlobRegistry() {
-  if (!blob_registry_remote_) {
+  if (!blob_registry_remote_.is_bound()) {
     Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
         blob_registry_remote_.BindNewPipeAndPassReceiver(task_runner_));
   }
@@ -2141,6 +2142,7 @@ void ResourceFetcher::Trace(Visitor* visitor) {
   visitor->Trace(preloads_);
   visitor->Trace(matched_preloads_);
   visitor->Trace(resource_timing_info_map_);
+  visitor->Trace(blob_registry_remote_);
 }
 
 // static

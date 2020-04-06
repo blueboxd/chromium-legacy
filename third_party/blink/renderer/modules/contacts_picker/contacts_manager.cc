@@ -100,18 +100,20 @@ constexpr char kIcon[] = "icon";
 
 }  // namespace
 
-ContactsManager::ContactsManager() = default;
+ContactsManager::ContactsManager() : contacts_manager_(nullptr) {}
 
 ContactsManager::~ContactsManager() = default;
 
-mojo::Remote<mojom::blink::ContactsManager>&
-ContactsManager::GetContactsManager(ScriptState* script_state) {
-  if (!contacts_manager_) {
+mojom::blink::ContactsManager* ContactsManager::GetContactsManager(
+    ScriptState* script_state) {
+  if (!contacts_manager_.is_bound()) {
     ExecutionContext::From(script_state)
         ->GetBrowserInterfaceBroker()
-        .GetInterface(contacts_manager_.BindNewPipeAndPassReceiver());
+        .GetInterface(contacts_manager_.BindNewPipeAndPassReceiver(
+            ExecutionContext::From(script_state)
+                ->GetTaskRunner(TaskType::kMiscPlatformAPI)));
   }
-  return contacts_manager_;
+  return contacts_manager_.get();
 }
 
 const Vector<String>& ContactsManager::GetProperties(
@@ -229,6 +231,11 @@ void ContactsManager::OnContactsSelected(
 ScriptPromise ContactsManager::getProperties(ScriptState* script_state) {
   return ScriptPromise::Cast(script_state,
                              ToV8(GetProperties(script_state), script_state));
+}
+
+void ContactsManager::Trace(Visitor* visitor) {
+  visitor->Trace(contacts_manager_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

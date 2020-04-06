@@ -240,7 +240,7 @@ TEST_F('OSSettingsUIBrowserTest', 'AllJsTests', () => {
       assertEquals(
           urlParams.toString(),
           settings.Router.getInstance().getQueryParameters().toString());
-      settingsMenu.$.people.click();
+      settingsMenu.$.osPeople.click();
       assertEquals(
           '', settings.Router.getInstance().getQueryParameters().toString());
     });

@@ -130,7 +130,7 @@ blink::mojom::ServiceWorkerClientInfoPtr GetWindowClientInfoOnUI(
     return nullptr;
 
   // Treat items in backforward cache as not existing.
-  if (render_frame_host->is_in_back_forward_cache())
+  if (render_frame_host->IsInBackForwardCache())
     return nullptr;
 
   // TODO(mlamouri,michaeln): it is possible to end up collecting information

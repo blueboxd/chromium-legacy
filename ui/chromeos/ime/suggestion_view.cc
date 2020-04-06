@@ -19,10 +19,9 @@ namespace {
 
 // Creates the suggestion label, and returns it (never returns nullptr).
 // The label text is not set in this function.
-views::Label* CreateSuggestionLabel() {
-  // Create the suggestion label. The label will be added to |this| as a
-  // child view, hence it's deleted when |this| is deleted.
-  views::Label* suggestion_label = new views::Label;
+std::unique_ptr<views::Label> CreateSuggestionLabel() {
+  std::unique_ptr<views::Label> suggestion_label =
+      std::make_unique<views::Label>();
 
   suggestion_label->SetFontList(kSuggestionFont);
   suggestion_label->SetEnabledColor(kSuggestionLabelColor);
@@ -34,8 +33,9 @@ views::Label* CreateSuggestionLabel() {
 }
 
 // Creates the "tab" annotation label, and return it (never returns nullptr).
-views::Label* CreateAnnotationLabel() {
-  views::Label* annotation_label = new views::Label;
+std::unique_ptr<views::Label> CreateAnnotationLabel() {
+  std::unique_ptr<views::Label> annotation_label =
+      std::make_unique<views::Label>();
   annotation_label->SetFontList(kAnnotationFont);
   annotation_label->SetEnabledColor(kSuggestionLabelColor);
   annotation_label->SetHorizontalAlignment(gfx::ALIGN_CENTER);
@@ -54,16 +54,12 @@ views::Label* CreateAnnotationLabel() {
 
 }  // namespace
 
-SuggestionView::SuggestionView()
-    : suggestion_label_(nullptr),
-      annotation_label_(nullptr),
-      suggestion_width_(0) {
-  suggestion_label_ = CreateSuggestionLabel();
-  annotation_label_ = CreateAnnotationLabel();
-
-  AddChildView(suggestion_label_);
-  AddChildView(annotation_label_);
+SuggestionView::SuggestionView() {
+  suggestion_label_ = AddChildView(CreateSuggestionLabel());
+  annotation_label_ = AddChildView(CreateAnnotationLabel());
 }
+
+SuggestionView::~SuggestionView() = default;
 
 void SuggestionView::SetText(const base::string16& text) {
   suggestion_label_->SetText(text);

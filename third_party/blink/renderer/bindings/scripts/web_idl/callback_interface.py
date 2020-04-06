@@ -6,22 +6,23 @@ from .code_generator_info import CodeGeneratorInfo
 from .composition_parts import WithCodeGeneratorInfo
 from .composition_parts import WithComponent
 from .composition_parts import WithDebugInfo
+from .composition_parts import WithExposure
 from .composition_parts import WithExtendedAttributes
 from .constant import Constant
-from .operation import Operation
-from .operation import OperationGroup
-
 from .ir_map import IRMap
 from .make_copy import make_copy
+from .operation import Operation
+from .operation import OperationGroup
 from .user_defined_type import UserDefinedType
 
 
 class CallbackInterface(UserDefinedType, WithExtendedAttributes,
-                        WithCodeGeneratorInfo, WithComponent, WithDebugInfo):
+                        WithCodeGeneratorInfo, WithExposure, WithComponent,
+                        WithDebugInfo):
     """https://heycam.github.io/webidl/#idl-interfaces"""
 
     class IR(IRMap.IR, WithExtendedAttributes, WithCodeGeneratorInfo,
-             WithComponent, WithDebugInfo):
+             WithExposure, WithComponent, WithDebugInfo):
         def __init__(self,
                      identifier,
                      constants=None,
@@ -47,6 +48,7 @@ class CallbackInterface(UserDefinedType, WithExtendedAttributes,
                 kind=IRMap.IR.Kind.CALLBACK_INTERFACE)
             WithExtendedAttributes.__init__(self, extended_attributes)
             WithCodeGeneratorInfo.__init__(self)
+            WithExposure.__init__(self)
             WithComponent.__init__(self, component)
             WithDebugInfo.__init__(self, debug_info)
 
@@ -59,6 +61,12 @@ class CallbackInterface(UserDefinedType, WithExtendedAttributes,
             self.operations = operations
             self.operation_groups = []
 
+        def iter_all_members(self):
+            for constant in self.constants:
+                yield constant
+            for operation in self.operations:
+                yield operation
+
     def __init__(self, ir):
         assert isinstance(ir, CallbackInterface.IR)
 
@@ -66,6 +74,7 @@ class CallbackInterface(UserDefinedType, WithExtendedAttributes,
         UserDefinedType.__init__(self, ir.identifier)
         WithExtendedAttributes.__init__(self, ir, readonly=True)
         WithCodeGeneratorInfo.__init__(self, ir, readonly=True)
+        WithExposure.__init__(self, ir, readonly=True)
         WithComponent.__init__(self, ir, readonly=True)
         WithDebugInfo.__init__(self, ir)
         self._constants = tuple([
@@ -84,9 +93,34 @@ class CallbackInterface(UserDefinedType, WithExtendedAttributes,
         ])
 
     @property
+    def attributes(self):
+        """Returns attributes."""
+        return ()
+
+    @property
     def constants(self):
         """Returns constants."""
         return self._constants
+
+    @property
+    def constructors(self):
+        """Returns constructors."""
+        return ()
+
+    @property
+    def constructor_groups(self):
+        """Returns groups of constructors."""
+        return ()
+
+    @property
+    def named_constructors(self):
+        """Returns named constructors."""
+        return ()
+
+    @property
+    def named_constructor_groups(self):
+        """Returns groups of overloaded named constructors."""
+        return ()
 
     @property
     def operations(self):

@@ -5,13 +5,13 @@
 /*
  * Chrome OS semantic colors.
  *
- * All colors used in Chrome OS WebUIs and System Web Apps should be
- * semantically represented here.
+ * Colors that are used across all Chrome OS WebUIS and System Web Apps should
+ * be semantically represented here.
  */
 {
   colors: {
     /*
-     * Recommended colors.
+     * Core colors.
      */
     cros_default_text_color: {
       light: "$google_grey_900",
@@ -27,11 +27,19 @@
       dark: "$google_grey_900",
     },
 
-    cros_default_button_color: {
+    cros_default_icon_color_primary: {
+      light: "$google_grey_700",
+      dark: "$google_grey_200",
+    },
+
+    cros_default_icon_color_prominent: {
       light: "$google_blue_600",
       dark: "$google_blue_300",
     },
 
+    /*
+     * Component colors.
+     */
     cros_default_toolbar_bg_color: "#ffffff",
     cros_default_toolbar_search_bg_color: "$google_grey_100",
 
@@ -39,13 +47,13 @@
     cros_menu_button_bg_color_hover: "$google_grey_100",
     cros_menu_button_outline_color_focused: "$google_blue_600",
 
-    cros_toggle_color: "$cros_default_button_color",
+    cros_toggle_color: "$cros_default_icon_color_prominent",
     cros_toggle_bg_color_inactive: "$google_grey_400",
     cros_toggle_button_color_inactive: "#ffffff",
     cros_toggle_ripple_color: "rgba($cros_toggle_color_rgb, .2)",
     cros_toggle_ripple_color_inactive: "rgba($google_grey_600_rgb, .15)",
 
-    cros_radio_button_color: "$cros_default_button_color",
+    cros_radio_button_color: "$cros_default_icon_color_prominent",
     cros_radio_button_ripple_color: "rgba($cros_radio_button_color_rgb, .2)",
     cros_radio_button_color_unchecked: "$google_grey_700",
     cros_radio_button_ripple_color_unchecked: "rgba($google_grey_600_rgb, .15)",
@@ -54,9 +62,9 @@
 
     cros_link_color: "$google_blue_700",
 
-
     /* button-primary */
-    cros_default_button_background_color_primary: "$cros_default_button_color",
+    cros_default_button_background_color_primary:
+        "$cros_default_icon_color_prominent",
     cros_default_button_label_color_primary: {
       light: "$google_grey_200",
       dark: "$google_grey_900",
@@ -77,14 +85,15 @@
     },
 
     /* button-secondary */
-    cros_default_button_label_color_secondary: "$cros_default_button_color",
+    cros_default_button_label_color_secondary:
+        "$cros_default_icon_color_prominent",
     cros_default_button_stroke_color_secondary: {
       light: "$google_grey_300",
       dark: "$google_grey_700",
     },
     /* button-secondary:hover */
     cros_default_button_background_color_secondary_hover:
-        "rgba($cros_default_button_color_rgb, 0.04)",
+        "rgba($cros_default_icon_color_prominent_rgb, 0.04)",
     /* button-secondary[disabled] */
     cros_default_button_label_color_secondary_disabled: {
       light: "$google_grey_600",
@@ -95,6 +104,39 @@
       dark: "$google_grey_800",
     },
 
+    /* textfield */
+    default_textfield_background_color: {
+      light: "$google_grey_100",
+      dark: "rgba(0, 0, 0, 0.3)",
+    },
+    default_texfield_label_color: {
+      light: "$google_grey_700",
+      dark: "rgba(255, 255, 255, 0.6)",
+    },
+    default_texfield_input_color: {
+      light: "$google_grey_900",
+      dark: "rgba(255, 255, 255, 0.87)",
+    },
+    /* textfield:focus */
+    default_texfield_label_color_focus: "$cros_default_icon_color_prominent",
+    /* textfield[error] */
+    default_texfield_label_color_error: {
+      light: "$google_red_600",
+      dark: "$google_red_300",
+    },
+    /* textfield[disabled] */
+    default_textfield_background_color_disabled: {
+      light: "rgba($google_grey_100_rgb, 0.38)",
+      dark: "rgba(0, 0, 0, 0.11)",
+    },
+    default_texfield_label_color_disabled: {
+      light: "rgba($google_grey_700_rgb, 0.38)",
+      dark: "rgba(0, 0, 0, 0.23)",
+    },
+    default_texfield_input_color_disabled: {
+      light: "rgba($google_grey_900_rgb, 0.38)",
+      dark: "rgba(255, 255, 255, 0.33)",
+    },
 
     /*
      * One_offs.

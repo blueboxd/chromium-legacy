@@ -211,6 +211,19 @@ bool IsImageValidForIcon(const gfx::Image& image) {
   return false;
 }
 
+// Remove the leading . from the entries of |extensions|. Any items that do not
+// have a leading . are removed.
+std::set<std::string> GetFileHandlerExtensionsWithoutDot(
+    const std::set<std::string>& file_extensions) {
+  std::set<std::string> result;
+  for (const auto& file_extension : file_extensions) {
+    if (file_extension.length() <= 1 || file_extension[0] != '.')
+      continue;
+    result.insert(file_extension.substr(1));
+  }
+  return result;
+}
+
 bool AppShimCreationDisabledForTest() {
   // Disable app shims in tests because shims created in ~/Applications will not
   // be cleaned up.
@@ -1024,17 +1037,19 @@ bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {
             forKey:app_mode::kNSHighResolutionCapableKey];
 
   // 3. Fill in file handlers.
-  if (!info_->file_handler_extensions.empty() ||
+  const auto file_handler_extensions =
+      GetFileHandlerExtensionsWithoutDot(info_->file_handler_extensions);
+  if (!file_handler_extensions.empty() ||
       !info_->file_handler_mime_types.empty()) {
     base::scoped_nsobject<NSMutableArray> doc_types_value(
         [[NSMutableArray alloc] init]);
     base::scoped_nsobject<NSMutableDictionary> doc_types_dict(
         [[NSMutableDictionary alloc] init]);
-    if (!info_->file_handler_extensions.empty()) {
+    if (!file_handler_extensions.empty()) {
       base::scoped_nsobject<NSMutableArray> extensions(
           [[NSMutableArray alloc] init]);
-      for (const auto& extension : info_->file_handler_extensions)
-        [extensions addObject:base::SysUTF8ToNSString(extension)];
+      for (const auto& file_extension : file_handler_extensions)
+        [extensions addObject:base::SysUTF8ToNSString(file_extension)];
       [doc_types_dict setObject:extensions
                          forKey:app_mode::kCFBundleTypeExtensionsKey];
     }

@@ -50,6 +50,8 @@ public class DecoderService extends Service {
 
     @Override
     public void onCreate() {
+        Log.i(TAG, "Decoder service process started");
+
         // DecoderService does not require flags, but LibraryLoader.ensureInitialized() checks for
         // --enable-low-end-device-mode. Rather than forwarding the flags from the browser process,
         // just assume no flags.
@@ -69,10 +71,13 @@ public class DecoderService extends Service {
         mNativeLibraryAndSandboxInitialized = true;
 
         super.onCreate();
+
+        Log.i(TAG, "Decoder service process initialized");
     }
 
     @Override
     public IBinder onBind(Intent intent) {
+        Log.i(TAG, "Decoder process binding");
         return mBinder;
     }
 

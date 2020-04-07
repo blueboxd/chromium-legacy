@@ -30,6 +30,9 @@ struct UpdateManifestResult {
   // too aggressive.
   base::Optional<std::string> info;
 
+  // Indicates the outcome of the update check.
+  std::string status;
+
   // Attributes for the full update.
   GURL crx_url;
   std::string package_hash;

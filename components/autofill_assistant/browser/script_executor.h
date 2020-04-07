@@ -32,7 +32,7 @@ class UserModel;
 
 // Class to execute an assistant script.
 class ScriptExecutor : public ActionDelegate,
-                       public ScriptExecutorDelegate::Listener {
+                       public ScriptExecutorDelegate::NavigationListener {
  public:
   // Listens to events on ScriptExecutor.
   // TODO(b/806868): Make global_payload a part of callback instead of the
@@ -237,7 +237,7 @@ class ScriptExecutor : public ActionDelegate,
   // Helper for WaitForElementVisible that keeps track of the state required to
   // run interrupts while waiting for a specific element.
   class WaitForDomOperation : public ScriptExecutor::Listener,
-                              ScriptExecutorDelegate::Listener {
+                              ScriptExecutorDelegate::NavigationListener {
    public:
     // Let the caller know about either the result of looking for the element or
     // of an abnormal result from an interrupt.
@@ -267,7 +267,7 @@ class ScriptExecutor : public ActionDelegate,
     void Pause();
     void Continue();
 
-    // Implements ScriptExecutorDelegate::Listener
+    // Implements ScriptExecutorDelegate::NavigationListener
     void OnNavigationStateChanged() override;
 
     // Implements ScriptExecutor::Listener

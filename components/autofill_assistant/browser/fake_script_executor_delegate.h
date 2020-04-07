@@ -66,8 +66,8 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   bool HasNavigationError() override;
   bool IsNavigatingToNewDocument() override;
   void RequireUI() override;
-  void AddListener(Listener* listener) override;
-  void RemoveListener(Listener* listener) override;
+  void AddListener(NavigationListener* listener) override;
+  void RemoveListener(NavigationListener* listener) override;
   void SetExpandSheetForPromptAction(bool expand) override;
   void SetGenericUi(
       std::unique_ptr<GenericUserInterfaceProto> generic_ui,
@@ -136,7 +136,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   std::unique_ptr<UserData> payment_request_info_;
   bool navigating_to_new_document_ = false;
   bool navigation_error_ = false;
-  std::set<ScriptExecutorDelegate::Listener*> listeners_;
+  std::set<ScriptExecutorDelegate::NavigationListener*> listeners_;
   ViewportMode viewport_mode_ = ViewportMode::NO_RESIZE;
   ConfigureBottomSheetProto::PeekMode peek_mode_ =
       ConfigureBottomSheetProto::HANDLE;

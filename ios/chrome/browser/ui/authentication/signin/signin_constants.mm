@@ -9,3 +9,18 @@
 #endif
 
 NSString* const kUserSigninAttemptedNotification = @"kUserSigninAttempted";
+
+@implementation SigninCompletionInfo
+
+- (instancetype)initWithIdentity:(ChromeIdentity*)identity
+          signinCompletionAction:
+              (SigninCompletionAction)signinCompletionAction {
+  self = [super init];
+  if (self) {
+    _identity = identity;
+    _signinCompletionAction = signinCompletionAction;
+  }
+  return self;
+}
+
+@end

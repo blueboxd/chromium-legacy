@@ -22,23 +22,29 @@ class WebComponent;
 // sys::Runner that instantiates components hosting standard web content.
 class WebContentRunner : public fuchsia::sys::Runner {
  public:
-  using CreateContextCallback = base::OnceCallback<fuchsia::web::ContextPtr()>;
+  using GetContextParamsCallback =
+      base::RepeatingCallback<fuchsia::web::CreateContextParams()>;
 
-  // |create_params|: Parameters to use for the Runner's web.Context.
+  // Creates a Runner for web-based components, and publishes it to the
+  // specified OutgoingDirectory.
+  // |get_context_params_callback|: Returns parameters for the Runner's
+  //     web.Context.
   // |outgoing_directory|: The directory that the Runner's services will be
-  //                       published to.
-  WebContentRunner(fuchsia::web::CreateContextParams create_params,
+  //     published to.
+  WebContentRunner(GetContextParamsCallback get_context_params_callback,
                    sys::OutgoingDirectory* outgoing_directory);
 
-  // Alternative constructor for unpublished Runners.
-  explicit WebContentRunner(fuchsia::web::ContextPtr context, bool is_headless);
+  // Creates a Runner which launches components using the specified |context|.
+  // The caller may publish the Runner, or call StartComponent() manually to
+  // create new components with it.
+  explicit WebContentRunner(fuchsia::web::ContextPtr context);
 
   ~WebContentRunner() override;
 
   // TODO(crbug.com/1046615): Make this static when the injected ContextProvider
   // goes away.
   fuchsia::web::ContextPtr CreateWebContext(
-      fuchsia::web::CreateContextParams create_params);
+      fuchsia::web::CreateContextParams context_params);
 
   // Gets a pointer to this runner's Context, creating one if needed.
   fuchsia::web::Context* GetContext();
@@ -46,9 +52,6 @@ class WebContentRunner : public fuchsia::sys::Runner {
   // Used by WebComponent instances to signal that the ComponentController
   // channel was dropped, and therefore the component should be destroyed.
   virtual void DestroyComponent(WebComponent* component);
-
-  // Set if Cast applications are to be run without graphical rendering.
-  bool is_headless() const { return is_headless_; }
 
   // fuchsia::sys::Runner implementation.
   void StartComponent(fuchsia::sys::Package package,
@@ -68,16 +71,19 @@ class WebContentRunner : public fuchsia::sys::Runner {
   void SetContextProviderForTest(
       fuchsia::web::ContextProviderPtr context_provider);
 
+  // Disconnects the Context used by this Runner.
+  void DisconnectContextForTest();
+
  protected:
   base::RepeatingCallback<void(WebComponent*)>
   web_component_created_callback_for_test() const {
     return web_component_created_callback_for_test_;
   }
 
-  fuchsia::web::CreateContextParams create_params_;
-
  private:
   fuchsia::web::ContextProvider* GetContextProvider();
+
+  const GetContextParamsCallback get_context_params_callback_;
 
   // If set, invoked whenever a WebComponent is created.
   base::RepeatingCallback<void(WebComponent*)>
@@ -87,7 +93,6 @@ class WebContentRunner : public fuchsia::sys::Runner {
   fuchsia::web::ContextPtr context_;
   std::set<std::unique_ptr<WebComponent>, base::UniquePtrComparator>
       components_;
-  const bool is_headless_;
 
   // Publishes this Runner into the service directory specified at construction.
   // This is not set for child runner instances.

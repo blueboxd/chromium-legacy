@@ -116,12 +116,12 @@ import org.chromium.chrome.browser.search_engines.SearchEngineChoiceNotification
 import org.chromium.chrome.browser.suggestions.SuggestionsEventReporterBridge;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
 import org.chromium.chrome.browser.survey.ChromeSurveyController;
+import org.chromium.chrome.browser.tab.RedirectHandlerTabHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAssociatedApp;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabLaunchType;
-import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabbed_mode.TabbedAppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.tabbed_mode.TabbedRootUiCoordinator;
@@ -1330,7 +1330,7 @@ public class ChromeTabbedActivity
                     // can be handled by other applications (e.g. www.youtube.com links).
                     Tab currentTab = getActivityTab();
                     if (currentTab != null) {
-                        TabRedirectHandler.from(currentTab).updateIntent(intent);
+                        RedirectHandlerTabHelper.updateIntentInTab(currentTab, intent);
                         currentTab.loadUrl(ChromeTabbedActivity.createLoadUrlParamsForIntent(
                                 url, referer, hasUserGesture, mIntentHandlingTimeMs, intent));
                     } else {

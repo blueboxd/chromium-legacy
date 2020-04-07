@@ -3616,7 +3616,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, WebUiReloadAfterCrash) {
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                        CheckIsCurrentBeforeAndAfterUnload) {
   IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
-  std::string onunload_script = "window.onunload = function(){}";
+  std::string onunload_script = "window.onunload = function(){ while(1);}";
   GURL url_ab(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   GURL url_c(embedded_test_server()->GetURL("c.com", "/title1.html"));
@@ -3628,11 +3628,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   RenderFrameDeletedObserver delete_rfh_b(rfh_b);
   EXPECT_EQ(RenderFrameHostImpl::UnloadState::NotRun, rfh_b->unload_state_);
 
-  // 2) Set an arbitrarily long timeout to ensure the subframe unload timer
-  // doesn't fire before we call OnDetach(). Act as if there was a slow unload
-  // handler on rfh_b. The non navigating frames are waiting for
-  // FrameHostMsg_Detach.
-  rfh_b->SetSubframeUnloadTimeoutForTesting(base::TimeDelta::FromSeconds(30));
+  // 2) Disable the unload timer to ensure that the unload timer doesn't fire
+  // before we call OnDetach(). Act as if there was a slow unload handler on
+  // rfh_b. The non navigating frames are waiting for FrameHostMsg_Detach.
+  rfh_b->DisableUnloadTimerForTesting();
   auto detach_filter = base::MakeRefCounted<DropMessageFilter>(
       FrameMsgStart, FrameHostMsg_Detach::ID);
   rfh_b->GetProcess()->AddFilter(detach_filter.get());

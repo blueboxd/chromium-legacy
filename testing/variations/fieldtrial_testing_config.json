@@ -4883,6 +4883,21 @@
             ]
         }
     ],
+    "SafeBrowsingAvailableOnIOS": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SafeBrowsingAvailableOnIOS"
+                    ]
+                }
+            ]
+        }
+    ],
     "SafeBrowsingCommittedInterstitials": [
         {
             "platforms": [

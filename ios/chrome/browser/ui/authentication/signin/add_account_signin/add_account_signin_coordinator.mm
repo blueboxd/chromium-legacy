@@ -185,7 +185,9 @@ using signin_metrics::PromoAction;
                               identity:(ChromeIdentity*)identity {
   DCHECK(!self.alertCoordinator);
   DCHECK(!self.userSigninCoordinator);
-  [self runCompletionCallbackWithSigninResult:signinResult identity:identity];
+  [self runCompletionCallbackWithSigninResult:signinResult
+                                     identity:identity
+                   showAdvancedSettingsSignin:NO];
 }
 
 // Presents the user consent screen with |identity| pre-selected.
@@ -200,12 +202,14 @@ using signin_metrics::PromoAction;
                                       promoAction:self.promoAction];
 
   __weak AddAccountSigninCoordinator* weakSelf = self;
-  self.userSigninCoordinator.signinCompletion = ^(
-      SigninCoordinatorResult signinResult, ChromeIdentity* identity) {
-    [weakSelf.userSigninCoordinator stop];
-    weakSelf.userSigninCoordinator = nil;
-    [weakSelf addAccountDoneWithSigninResult:signinResult identity:identity];
-  };
+  self.userSigninCoordinator.signinCompletion =
+      ^(SigninCoordinatorResult signinResult,
+        SigninCompletionInfo* signinCompletionInfo) {
+        [weakSelf.userSigninCoordinator stop];
+        weakSelf.userSigninCoordinator = nil;
+        [weakSelf addAccountDoneWithSigninResult:signinResult
+                                        identity:signinCompletionInfo.identity];
+      };
   [self.userSigninCoordinator start];
 }
 

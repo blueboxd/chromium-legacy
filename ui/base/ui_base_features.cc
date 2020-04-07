@@ -25,6 +25,15 @@ const base::Feature kColorProviderRedirection = {
 // https://crbug.com/895886.
 const base::Feature kSettingsShowsPerKeyboardSettings = {
     "InputMethodIntegratedSettings", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Experimental shortcut handling and mapping to address i18n issues.
+// https://crbug.com/1067269
+const base::Feature kNewShortcutMapping = {"NewShortcutMapping",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsNewShortcutMappingEnabled() {
+  return base::FeatureList::IsEnabled(kNewShortcutMapping);
+}
 #endif  // defined(OS_CHROMEOS)
 
 // Update of the virtual keyboard settings UI as described in

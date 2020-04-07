@@ -711,6 +711,15 @@ WebAXObject WebAXObject::HitTest(const gfx::Point& point) const {
   IntPoint contents_point =
       private_->DocumentFrameView()->SoonToBeRemovedUnscaledViewportToContents(
           IntPoint(point));
+
+  Document* document = private_->GetDocument();
+  if (!document || !document->View())
+    return WebAXObject();
+  if (!document->View()->UpdateAllLifecyclePhasesExceptPaint(
+          DocumentUpdateReason::kAccessibility)) {
+    return WebAXObject();
+  }
+
   AXObject* hit = private_->AccessibilityHitTest(contents_point);
 
   if (hit)

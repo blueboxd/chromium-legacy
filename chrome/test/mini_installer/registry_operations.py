@@ -168,25 +168,33 @@ def CleanRegistryEntry(expectation_name, expectation, variable_expander):
       'property for key %s must not be \'required\'' % key)
   root_key, sub_key = key.split('\\', 1)
 
+  registry_view = _winreg.KEY_WOW64_32KEY
+  if 'wow_key' in expectation:
+    registry_view = _RegistryViewConstant(expectation['wow_key'])
+  elif variable_expander.Expand('$MINI_INSTALLER_BITNESS') == '64':
+    registry_view = _winreg.KEY_WOW64_64KEY
+
   try:
     # Query the Windows registry for the registry key. It will throw a
     # WindowsError if the key doesn't exist.
-    registry_view = _winreg.KEY_WOW64_32KEY
-    if 'wow_key' in expectation:
-      registry_view = _RegistryViewConstant(expectation['wow_key'])
-    elif variable_expander.Expand('$MINI_INSTALLER_BITNESS') == '64':
-      registry_view = _winreg.KEY_WOW64_64KEY
-
     key_handle = _winreg.OpenKey(
         _RootKeyConstant(root_key), sub_key, 0,
-        (win32con.DELETE | _winreg.KEY_ENUMERATE_SUB_KEYS
-         | _winreg.KEY_QUERY_VALUE | _winreg.KEY_SET_VALUE | registry_view))
+        (_winreg.KEY_SET_VALUE | registry_view))
   except WindowsError:
     # There is nothing to clean if the key doesn't exist.
     return
 
   if expectation['exists'] == 'forbidden':
-    win32api.RegDeleteTree(key_handle, None)
+    # RegDeleteTree must be called with a handle on some parent of the key to be
+    # deleted in order for it to remove the key itself and not only its values
+    # and subkeys. Open the root of the hive with the proper permissions, then
+    # delete the key by name.
+    key_handle = None
+    root_handle = _winreg.OpenKey(
+        _RootKeyConstant(root_key), None, 0,
+        (win32con.DELETE | _winreg.KEY_ENUMERATE_SUB_KEYS
+         | _winreg.KEY_QUERY_VALUE | _winreg.KEY_SET_VALUE | registry_view))
+    win32api.RegDeleteTree(root_handle, sub_key)
     logging.info('CleanRegistryEntry deleted key %s' % key)
     return
 

@@ -39689,6 +39689,7 @@ from previous Chrome versions.
   <int value="439525862" label="GlobalMediaControlsForCast:disabled"/>
   <int value="444754854" label="LegacyTLSWarnings:disabled"/>
   <int value="446316019" label="enable-threaded-compositing"/>
+  <int value="448463569" label="NewShortcutMapping:disabled"/>
   <int value="451196246" label="disable-impl-side-painting"/>
   <int value="452139294" label="VrShellExperimentalRendering:enabled"/>
   <int value="452955571" label="EnableFilesystemInIncognito:disabled"/>
@@ -41032,6 +41033,7 @@ from previous Chrome versions.
       label="RemoveUsageOfDeprecatedGaiaSigninEndpoint:enabled"/>
   <int value="2034198538" label="TabHoverCards:enabled"/>
   <int value="2037756154" label="enable-impl-side-painting"/>
+  <int value="2038036881" label="NewShortcutMapping:enabled"/>
   <int value="2039276757" label="EnableOverviewRoundedCorners:enabled"/>
   <int value="2040316611" label="IPH_ReopenTab:enabled"/>
   <int value="2041570184" label="UsePreferredIntervalForVideo:enabled"/>
@@ -59852,7 +59854,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="3" label="Startup URLs"/>
 </enum>
 
-<enum name="SettingsSafetyCheckElementInteractions">
+<enum name="SettingsSafetyCheckInteractions">
   <int value="0" label="Safety check started"/>
   <int value="1" label="Safety check, relaunch after updates"/>
   <int value="2" label="Safety check, manage passwords"/>
@@ -66194,6 +66196,17 @@ Full version information for the fingerprint enum values:
   <int value="6" label="RTX"/>
   <int value="7" label="OTA"/>
   <int value="8" label="IMY"/>
+</enum>
+
+<enum name="UpdateCheckStatus">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Ok"/>
+  <int value="2" label="No update"/>
+  <int value="3" label="Error internal"/>
+  <int value="4" label="Error Hash"/>
+  <int value="5" label="Error OS not supported"/>
+  <int value="6" label="Error HW not supported"/>
+  <int value="7" label="Error unsupported protocol"/>
 </enum>
 
 <enum name="UpdateClientErrors">

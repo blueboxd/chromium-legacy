@@ -108,7 +108,7 @@ public class TabListFaviconProvider {
      */
     public void getFaviconForUrlAsync(
             String url, boolean isIncognito, Callback<Drawable> faviconCallback) {
-        if (NativePageFactory.isNativePageUrl(url, isIncognito)) {
+        if (mFaviconHelper == null || NativePageFactory.isNativePageUrl(url, isIncognito)) {
             faviconCallback.onResult(getRoundedChromeDrawable(isIncognito));
         } else {
             mFaviconHelper.getLocalFaviconImageForURL(

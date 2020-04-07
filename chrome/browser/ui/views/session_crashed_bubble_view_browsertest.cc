@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "build/build_config.h"
 #include "build/buildflag.h"
 #include "chrome/browser/ui/bubble_anchor_util.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "ui/base/buildflags.h"
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
 
 class SessionCrashedBubbleViewTest : public DialogBrowserTest {
@@ -29,11 +31,27 @@ class SessionCrashedBubbleViewTest : public DialogBrowserTest {
                         ->toolbar_button_provider()
                         ->GetAppMenuButton();
     }
-    SessionCrashedBubbleView* crash_bubble =
+    crash_bubble_ =
         new SessionCrashedBubbleView(anchor_view, anchor_rect, browser(),
                                      name == "SessionCrashedBubbleOfferUma");
-    views::BubbleDialogDelegateView::CreateBubble(crash_bubble)->Show();
+    views::BubbleDialogDelegateView::CreateBubble(crash_bubble_)->Show();
   }
+
+  void SimulateKeyPress(ui::KeyboardCode key, ui::EventFlags flags) {
+    BrowserView* browser_view =
+        BrowserView::GetBrowserViewForBrowser(browser());
+
+    ui::KeyEvent press_event(ui::ET_KEY_PRESSED, key, flags);
+    if (browser_view->GetFocusManager()->OnKeyEvent(press_event))
+      browser_view->OnKeyEvent(&press_event);
+
+    ui::KeyEvent release_event(ui::ET_KEY_RELEASED, key, flags);
+    if (browser_view->GetFocusManager()->OnKeyEvent(release_event))
+      browser_view->OnKeyEvent(&release_event);
+  }
+
+ protected:
+  SessionCrashedBubbleView* crash_bubble_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SessionCrashedBubbleViewTest);
@@ -48,3 +66,40 @@ IN_PROC_BROWSER_TEST_F(SessionCrashedBubbleViewTest,
                        InvokeUi_SessionCrashedBubbleOfferUma) {
   ShowAndVerifyUi();
 }
+
+#if defined(OS_LINUX)
+// Regression test for https://crbug.com/1042010, it should be possible to focus
+// the bubble with the "focus dialog" hotkey combination (Alt+Shift+A).
+IN_PROC_BROWSER_TEST_F(SessionCrashedBubbleViewTest,
+                       CanFocusBubbleWithFocusDialogHotkey) {
+  ShowUi("SessionCrashedBubble");
+
+  views::FocusManager* focus_manager = crash_bubble_->GetFocusManager();
+  views::View* bubble_focused_view = crash_bubble_->GetInitiallyFocusedView();
+
+  focus_manager->ClearFocus();
+  EXPECT_FALSE(bubble_focused_view->HasFocus());
+
+  SimulateKeyPress(ui::VKEY_A, static_cast<ui::EventFlags>(ui::EF_ALT_DOWN |
+                                                           ui::EF_SHIFT_DOWN));
+  EXPECT_TRUE(bubble_focused_view->HasFocus());
+}
+
+// Regression test for https://crbug.com/1042010, it should be possible to focus
+// the bubble with the "rotate pane focus" (F6) hotkey.
+IN_PROC_BROWSER_TEST_F(SessionCrashedBubbleViewTest,
+                       CanFocusBubbleWithRotatePaneFocusHotkey) {
+  ShowUi("SessionCrashedBubble");
+  views::FocusManager* focus_manager = crash_bubble_->GetFocusManager();
+  views::View* bubble_focused_view = crash_bubble_->GetInitiallyFocusedView();
+
+  focus_manager->ClearFocus();
+  EXPECT_FALSE(bubble_focused_view->HasFocus());
+
+  SimulateKeyPress(ui::VKEY_F6, ui::EF_NONE);
+  // Rotate pane focus is expected to keep the bubble focused until the user
+  // deals with it, so a second call should have no effect.
+  SimulateKeyPress(ui::VKEY_F6, ui::EF_NONE);
+  EXPECT_TRUE(bubble_focused_view->HasFocus());
+}
+#endif

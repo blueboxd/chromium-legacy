@@ -52,8 +52,7 @@ class OffTheRecordChromeBrowserStateImpl : public ChromeBrowserState {
   base::FilePath otr_state_path_;
   ChromeBrowserState* original_chrome_browser_state_;  // weak
 
-  // Weak pointer owned by |original_chrome_browser_state_|.
-  sync_preferences::PrefServiceSyncable* prefs_;
+  std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs_;
 
   std::unique_ptr<OffTheRecordChromeBrowserStateIOData::Handle> io_data_;
   std::unique_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;

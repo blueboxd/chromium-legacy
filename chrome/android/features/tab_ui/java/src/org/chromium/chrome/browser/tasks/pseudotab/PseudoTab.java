@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tasks.pseudotab;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
@@ -192,6 +193,16 @@ public class PseudoTab {
     public @Nullable Tab getTab() {
         if (mTab != null) return mTab.get();
         return null;
+    }
+
+    /**
+     * Clear the internal static storage as if the app is restarted.
+     * This should/can be called when emulating restarting in instrumented tests, or between
+     * Robolectric tests.
+     */
+    @VisibleForTesting
+    public static void clearForTesting() {
+        sAllTabs.clear();
     }
 
     /**

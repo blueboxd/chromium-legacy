@@ -82,6 +82,8 @@ constexpr char kFailureSessionStats[] =
 #endif  // defined(OS_CHROMEOS)
 constexpr char kPossibleNonMisconfigurationFailures[] =
     "Extensions.ForceInstalledSessionsWithNonMisconfigurationFailureOccured";
+constexpr char kManifestUpdateCheckStatus[] =
+    "Extensions.ForceInstalledFailureUpdateCheckStatus";
 }  // namespace
 
 namespace extensions {
@@ -262,6 +264,30 @@ TEST_F(ForcedExtensionsInstallationTrackerTest,
   histogram_tester_.ExpectBucketCount(
       kSandboxUnpackFailureReason, SandboxedUnpackerFailureReason::UNZIP_FAILED,
       1);
+}
+
+// Reporting SandboxedUnpackerFailureReason when the force installed extension
+// fails to install with error CRX_INSTALL_ERROR_SANDBOXED_UNPACKER_FAILURE.
+TEST_F(ForcedExtensionsInstallationTrackerTest,
+       ExtensionsUpdateCheckStatusReporting) {
+  SetupForceList();
+  installation_reporter_->ReportManifestUpdateCheckStatus(kExtensionId1, "ok");
+  installation_reporter_->ReportFailure(
+      kExtensionId1, InstallationReporter::FailureReason::CRX_FETCH_URL_EMPTY);
+  installation_reporter_->ReportManifestUpdateCheckStatus(kExtensionId2,
+                                                          "noupdate");
+  installation_reporter_->ReportFailure(
+      kExtensionId2, InstallationReporter::FailureReason::CRX_FETCH_URL_EMPTY);
+  // InstallationTracker shuts down timer because all extension are either
+  // loaded or failed.
+  EXPECT_FALSE(fake_timer_->IsRunning());
+  histogram_tester_.ExpectTotalCount(kManifestUpdateCheckStatus, 2);
+  histogram_tester_.ExpectBucketCount(
+      kManifestUpdateCheckStatus, InstallationReporter::UpdateCheckStatus::kOk,
+      1);
+  histogram_tester_.ExpectBucketCount(
+      kManifestUpdateCheckStatus,
+      InstallationReporter::UpdateCheckStatus::kNoUpdate, 1);
 }
 
 TEST_F(ForcedExtensionsInstallationTrackerTest, ExtensionsStuck) {

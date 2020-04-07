@@ -4,9 +4,6 @@
 
 #include "third_party/blink/renderer/core/fetch/fetch_response_data.h"
 
-#include "services/network/public/cpp/content_security_policy/content_security_policy.h"
-#include "services/network/public/cpp/features.h"
-#include "services/network/public/mojom/content_security_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_response.mojom-blink.h"
 #include "third_party/blink/renderer/core/fetch/fetch_header_list.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
@@ -15,75 +12,12 @@
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_utils.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
+#include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
-#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
-#include "url/gurl.h"
 
 using Type = network::mojom::FetchResponseType;
 using ResponseSource = network::mojom::FetchResponseSource;
-
-// TODO(lfg): Stop converting from/to blink type. Instead use mojo to
-// automagically convert this.
-namespace network {
-namespace mojom {
-
-blink::CSPSourcePtr ConvertToBlink(CSPSourcePtr source) {
-  return blink::CSPSource::New(
-      String::FromUTF8(source->scheme), String::FromUTF8(source->host),
-      source->port, String::FromUTF8(source->path), source->is_host_wildcard,
-      source->is_port_wildcard);
-}
-
-blink::CSPSourceListPtr ConvertToBlink(CSPSourceListPtr source_list) {
-  WTF::Vector<blink::CSPSourcePtr> sources;
-  for (auto& it : source_list->sources)
-    sources.push_back(ConvertToBlink(std::move(it)));
-
-  return blink::CSPSourceList::New(std::move(sources), source_list->allow_self,
-                                   source_list->allow_star,
-                                   source_list->allow_response_redirects);
-}
-
-blink::CSPDirectiveName ConvertToBlink(CSPDirectiveName name) {
-  return static_cast<blink::CSPDirectiveName>(name);
-}
-
-blink::ContentSecurityPolicyHeaderPtr ConvertToBlink(
-    ContentSecurityPolicyHeaderPtr header) {
-  return blink::ContentSecurityPolicyHeader::New(
-      String::FromUTF8(header->header_value), header->type, header->source);
-}
-
-blink::ContentSecurityPolicyPtr ConvertToBlink(
-    ContentSecurityPolicyPtr policy_in) {
-  auto policy = blink::ContentSecurityPolicy::New();
-
-  policy->header = ConvertToBlink(std::move(policy_in->header));
-  policy->use_reporting_api = policy_in->use_reporting_api;
-
-  for (auto& directive : policy_in->directives) {
-    policy->directives.insert(ConvertToBlink(directive.first),
-                              ConvertToBlink(std::move(directive.second)));
-  }
-
-  for (auto& endpoint : policy_in->report_endpoints)
-    policy->report_endpoints.push_back(String::FromUTF8(endpoint));
-
-  return policy;
-}
-
-WTF::Vector<blink::ContentSecurityPolicyPtr> ConvertToBlink(
-    std::vector<ContentSecurityPolicyPtr> policies) {
-  WTF::Vector<blink::ContentSecurityPolicyPtr> blink_policies;
-  for (auto& policy : policies)
-    blink_policies.push_back(ConvertToBlink(std::move(policy)));
-
-  return blink_policies;
-}
-
-}  // namespace mojom
-}  // namespace network
 
 namespace blink {
 
@@ -331,30 +265,8 @@ mojom::blink::FetchAPIResponsePtr FetchResponseData::PopulateFetchAPIResponse(
   response->loaded_with_credentials = loaded_with_credentials_;
   for (const auto& header : HeaderList()->List())
     response->headers.insert(header.first, header.second);
-
-  // Check if there's a Content-Security-Policy header and parse it if
-  // necessary.
-  // TODO(lfg). What about report only header?
-  if (base::FeatureList::IsEnabled(
-          network::features::kOutOfBlinkFrameAncestors)) {
-    String content_security_policy_header;
-    std::vector<network::mojom::ContentSecurityPolicyPtr> policies;
-    if (HeaderList()->Get("content-security-policy",
-                          content_security_policy_header)) {
-      network::AddContentSecurityPolicyFromHeaders(
-          StringUTF8Adaptor(content_security_policy_header).AsStringPiece(),
-          network::mojom::ContentSecurityPolicyType::kEnforce, request_url,
-          &policies);
-    }
-    if (HeaderList()->Get("content-security-policy-report-only",
-                          content_security_policy_header)) {
-      network::AddContentSecurityPolicyFromHeaders(
-          StringUTF8Adaptor(content_security_policy_header).AsStringPiece(),
-          network::mojom::ContentSecurityPolicyType::kReport, request_url,
-          &policies);
-    }
-    response->content_security_policy = ConvertToBlink(std::move(policies));
-  }
+  response->content_security_policy = ParseContentSecurityPolicy(
+      HeaderList()->GetAsRawString(status_, status_message_), request_url);
   return response;
 }
 

@@ -24,6 +24,7 @@ import static org.chromium.base.test.util.CallbackHelper.WAIT_TIMEOUT_SECONDS;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_POLLING_INTERVAL;
 
+import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.os.Build;
@@ -56,10 +57,12 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.OverviewModeBehaviorWatcher;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -577,6 +580,12 @@ public class TabUiTestHelper {
             return new GeneralSwipeAction(Swipe.FAST, GeneralLocation.CENTER_RIGHT,
                     GeneralLocation.CENTER_LEFT, Press.FINGER);
         }
+    }
+
+    /** Finishes the given activity and do tab_ui-specific cleanup. */
+    public static void finishActivity(final Activity activity) throws Exception {
+        ApplicationTestUtils.finishActivity(activity);
+        PseudoTab.clearForTesting();
     }
 
     /**

@@ -37,6 +37,7 @@ class CORE_EXPORT FetchHeaderList final
   size_t size() const;
   void Remove(const String&);
   bool Get(const String&, String&) const;
+  String GetAsRawString(int status_code, String status_message) const;
   bool Has(const String&) const;
   void ClearList();
 

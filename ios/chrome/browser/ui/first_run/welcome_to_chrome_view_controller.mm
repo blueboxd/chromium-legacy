@@ -20,6 +20,7 @@
 #include "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_coordinator.h"
+#include "ios/chrome/browser/ui/commands/application_commands.h"
 #include "ios/chrome/browser/ui/fancy_ui/primary_action_button.h"
 #import "ios/chrome/browser/ui/first_run/first_run_chrome_signin_view_controller.h"
 #import "ios/chrome/browser/ui/first_run/first_run_constants.h"
@@ -201,10 +202,12 @@ const BOOL kDefaultStatsCheckboxValue = YES;
              object:self.coordinator];
     __weak WelcomeToChromeViewController* weakSelf = self;
     self.coordinator.signinCompletion =
-        ^(SigninCoordinatorResult signinResult, ChromeIdentity* identity) {
+        ^(SigninCoordinatorResult signinResult,
+          SigninCompletionInfo* signinCompletionInfo) {
           [weakSelf.coordinator stop];
           weakSelf.coordinator = nil;
-          [weakSelf finishFirstRunWithSigninResult:signinResult];
+          [weakSelf finishFirstRunWithSigninResult:signinResult
+                              signinCompletionInfo:signinCompletionInfo];
         };
 
     [self.coordinator start];
@@ -227,7 +230,9 @@ const BOOL kDefaultStatsCheckboxValue = YES;
 }
 
 // Completes the first run operation depending on the |signinResult| state.
-- (void)finishFirstRunWithSigninResult:(SigninCoordinatorResult)signinResult {
+- (void)finishFirstRunWithSigninResult:(SigninCoordinatorResult)signinResult
+                  signinCompletionInfo:
+                      (SigninCompletionInfo*)signinCompletionInfo {
   switch (signinResult) {
     case SigninCoordinatorResultSuccess: {
       // User is considered done with First Run only after successful sign-in.
@@ -251,10 +256,20 @@ const BOOL kDefaultStatsCheckboxValue = YES;
       NOTREACHED();
     }
   }
+  UIViewController* presentingViewController =
+      self.navigationController.presentingViewController;
+  BOOL needsAvancedSettingsSignin =
+      signinCompletionInfo.signinCompletionAction ==
+      SigninCompletionActionShowAdvancedSettingsSignin;
   [self.navigationController.presentingViewController
       dismissViewControllerAnimated:YES
                          completion:^{
                            FirstRunDismissed();
+                           if (needsAvancedSettingsSignin) {
+                             [self.dispatcher
+                                 showAdvancedSigninSettingsFromViewController:
+                                     presentingViewController];
+                           }
                          }];
 }
 

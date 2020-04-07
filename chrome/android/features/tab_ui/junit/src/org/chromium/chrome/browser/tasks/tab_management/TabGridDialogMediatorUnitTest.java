@@ -433,6 +433,7 @@ public class TabGridDialogMediatorUnitTest {
         // Mock that the animation source view is not null.
         mModel.set(TabGridPanelProperties.ANIMATION_SOURCE_VIEW, mView);
 
+        doReturn(true).when(mTabGroupModelFilter).isTabModelRestored();
         mTabModelObserverCaptor.getValue().didAddTab(
                 newTab, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
 

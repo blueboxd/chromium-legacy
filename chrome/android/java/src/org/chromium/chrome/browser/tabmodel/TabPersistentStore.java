@@ -141,7 +141,8 @@ public class TabPersistentStore extends TabPersister {
         public final List<Integer> ids;
         public final List<String> urls;
 
-        TabModelMetadata(int selectedIndex) {
+        @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
+        public TabModelMetadata(int selectedIndex) {
             index = selectedIndex;
             ids = new ArrayList<>();
             urls = new ArrayList<>();
@@ -862,8 +863,6 @@ public class TabPersistentStore extends TabPersister {
     public static byte[] serializeMetadata(TabModelMetadata standardInfo,
             TabModelMetadata incognitoInfo, @Nullable List<TabRestoreDetails> tabsBeingRestored)
             throws IOException {
-        ThreadUtils.assertOnUiThread();
-
         int standardCount = standardInfo.ids.size();
         int incognitoCount = incognitoInfo.ids.size();
 

@@ -18,7 +18,6 @@
 #include "third_party/blink/renderer/platform/network/http_header_set.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
-
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {

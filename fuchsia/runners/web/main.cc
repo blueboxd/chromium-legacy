@@ -15,17 +15,9 @@
 #include "fuchsia/runners/buildflags.h"
 #include "fuchsia/runners/common/web_content_runner.h"
 
-int main(int argc, char** argv) {
-  base::SingleThreadTaskExecutor io_task_executor(base::MessagePumpType::IO);
-  base::RunLoop run_loop;
+namespace {
 
-  base::CommandLine::Init(argc, argv);
-  CHECK(cr_fuchsia::InitLoggingFromCommandLine(
-      *base::CommandLine::ForCurrentProcess()))
-      << "Failed to initialize logging.";
-
-  cr_fuchsia::RegisterFuchsiaDirScheme();
-
+fuchsia::web::CreateContextParams GetContextParams() {
   fuchsia::web::CreateContextParams create_context_params;
   create_context_params.set_features(
       fuchsia::web::ContextFeatureFlags::NETWORK |
@@ -46,9 +38,27 @@ int main(int argc, char** argv) {
   create_context_params.set_remote_debugging_port(
       BUILDFLAG(WEB_RUNNER_REMOTE_DEBUGGING_PORT));
 #endif
+  return create_context_params;
+}
+
+}  // namespace
+
+int main(int argc, char** argv) {
+  base::SingleThreadTaskExecutor io_task_executor(base::MessagePumpType::IO);
+  base::RunLoop run_loop;
+
+  base::CommandLine::Init(argc, argv);
+  CHECK(cr_fuchsia::InitLoggingFromCommandLine(
+      *base::CommandLine::ForCurrentProcess()))
+      << "Failed to initialize logging.";
+
+  cr_fuchsia::RegisterFuchsiaDirScheme();
+
+  WebContentRunner::GetContextParamsCallback get_context_params_callback =
+      base::BindRepeating(&GetContextParams);
 
   WebContentRunner runner(
-      std::move(create_context_params),
+      std::move(get_context_params_callback),
       base::fuchsia::ComponentContextForCurrentProcess()->outgoing().get());
 
   base::fuchsia::ComponentContextForCurrentProcess()

@@ -71,7 +71,9 @@ bool SkiaOutputDeviceVulkan::Reshape(const gfx::Size& size,
     return false;
 
   auto generation = vulkan_surface_->swap_chain_generation();
-  vulkan_surface_->Reshape(size, transform);
+  if (!vulkan_surface_->Reshape(size, transform))
+    return false;
+
   auto sk_color_space = color_space.ToSkColorSpace();
   if (vulkan_surface_->swap_chain_generation() != generation ||
       !SkColorSpace::Equals(sk_color_space.get(), sk_color_space_.get())) {

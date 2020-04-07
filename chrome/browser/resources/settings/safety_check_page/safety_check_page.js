@@ -202,6 +202,11 @@ Polymer({
    * @private
    */
   runSafetyCheck_: function() {
+    // Log click both in action and histogram.
+    this.metricsBrowserProxy_.recordSafetyCheckInteractionHistogram(
+        settings.SafetyCheckInteractions.SAFETY_CHECK_START);
+    this.metricsBrowserProxy_.recordAction('Settings.SafetyCheck.Start');
+
     // Update UI.
     this.parentDisplayString_ = this.i18n('safetyCheckRunning');
     this.parentStatus_ = ParentStatus.CHECKING;
@@ -429,9 +434,10 @@ Polymer({
   /** @private */
   onSafetyCheckUpdatesButtonClick_: function() {
     // Log click both in action and histogram.
-    this.metricsBrowserProxy_.recordSafetyCheckPageHistogram(
-        settings.SafetyCheckElementInteractions.SAFETY_CHECK_UPDATES_RELAUNCH);
-    this.metricsBrowserProxy_.recordAction('SafetyCheck.Updates.Relaunch');
+    this.metricsBrowserProxy_.recordSafetyCheckInteractionHistogram(
+        settings.SafetyCheckInteractions.SAFETY_CHECK_UPDATES_RELAUNCH);
+    this.metricsBrowserProxy_.recordAction(
+        'Settings.SafetyCheck.RelaunchAfterUpdates');
 
     this.lifetimeBrowserProxy_.relaunch();
   },
@@ -557,9 +563,10 @@ Polymer({
   /** @private */
   onPasswordsButtonClick_: function() {
     // Log click both in action and histogram.
-    this.metricsBrowserProxy_.recordSafetyCheckPageHistogram(
-        settings.SafetyCheckElementInteractions.SAFETY_CHECK_PASSWORDS_MANAGE);
-    this.metricsBrowserProxy_.recordAction('SafetyCheck.Passwords.Manage');
+    this.metricsBrowserProxy_.recordSafetyCheckInteractionHistogram(
+        settings.SafetyCheckInteractions.SAFETY_CHECK_PASSWORDS_MANAGE);
+    this.metricsBrowserProxy_.recordAction(
+        'Settings.SafetyCheck.ManagePasswords');
 
     settings.Router.getInstance().navigateTo(settings.routes.CHECK_PASSWORDS);
     PasswordManagerImpl.getInstance().recordPasswordCheckReferrer(
@@ -652,10 +659,10 @@ Polymer({
   /** @private */
   onSafeBrowsingButtonClick_: function() {
     // Log click both in action and histogram.
-    this.metricsBrowserProxy_.recordSafetyCheckPageHistogram(
-        settings.SafetyCheckElementInteractions
-            .SAFETY_CHECK_SAFE_BROWSING_MANAGE);
-    this.metricsBrowserProxy_.recordAction('SafetyCheck.SafeBrowsing.Manage');
+    this.metricsBrowserProxy_.recordSafetyCheckInteractionHistogram(
+        settings.SafetyCheckInteractions.SAFETY_CHECK_SAFE_BROWSING_MANAGE);
+    this.metricsBrowserProxy_.recordAction(
+        'Settings.SafetyCheck.ManageSafeBrowsing');
 
     settings.Router.getInstance().navigateTo(settings.routes.SECURITY);
   },
@@ -689,9 +696,10 @@ Polymer({
   /** @private */
   onSafetyCheckExtensionsButtonClick_: function() {
     // Log click both in action and histogram.
-    this.metricsBrowserProxy_.recordSafetyCheckPageHistogram(
-        settings.SafetyCheckElementInteractions.SAFETY_CHECK_EXTENSIONS_REVIEW);
-    this.metricsBrowserProxy_.recordAction('SafetyCheck.Extensions.Review');
+    this.metricsBrowserProxy_.recordSafetyCheckInteractionHistogram(
+        settings.SafetyCheckInteractions.SAFETY_CHECK_EXTENSIONS_REVIEW);
+    this.metricsBrowserProxy_.recordAction(
+        'Settings.SafetyCheck.ReviewExtensions');
 
     settings.OpenWindowProxyImpl.getInstance().openURL('chrome://extensions');
   },

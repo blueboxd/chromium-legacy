@@ -282,6 +282,7 @@ def RunCleanCommand(force_clean, clean_state, variable_expander):
                  ('$CHROME_LONG_NAME_DEV', '--system-level'),
                  ('$CHROME_LONG_NAME_SXS', '')])
 
+  # Attempt to run each installed product's uninstaller.
   interactive_option = '--interactive' if not force_clean else ''
   for product_name, product_switch in data:
     command = ('python uninstall_chrome.py '
@@ -294,8 +295,11 @@ def RunCleanCommand(force_clean, clean_state, variable_expander):
       message = traceback.format_exception(*sys.exc_info())
       message.insert(0, 'Error cleaning up an old install with:\n')
       logging.info(''.join(message))
-    if force_clean:
-      property_walker.Clean(clean_state, variable_expander)
+
+  # Once everything is uninstalled, make a pass to delete any stray tidbits on
+  # the machine.
+  if force_clean:
+    property_walker.Clean(clean_state, variable_expander)
 
 
 def MergePropertyDictionaries(current_property, new_property):

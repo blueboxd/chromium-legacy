@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ServiceTabLauncher;
 import org.chromium.chrome.browser.init.StartupTabPreloader;
 import org.chromium.chrome.browser.ntp.NewTabPage;
+import org.chromium.chrome.browser.tab.RedirectHandlerTabHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAssociatedApp;
 import org.chromium.chrome.browser.tab.TabBuilder;
@@ -25,7 +26,6 @@ import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabParentIntent;
-import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tab_activity_glue.ReparentingDelegateFactory;
 import org.chromium.chrome.browser.tab_activity_glue.ReparentingTask;
@@ -214,7 +214,7 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
                     TraceEvent.end("ChromeTabCreator.loadUrl");
                 }
             }
-            TabRedirectHandler.from(tab).updateIntent(intent);
+            RedirectHandlerTabHelper.updateIntentInTab(tab, intent);
             if (intent != null && intent.hasExtra(ServiceTabLauncher.LAUNCH_REQUEST_ID_EXTRA)) {
                 ServiceTabLauncher.onWebContentsForRequestAvailable(
                         intent.getIntExtra(ServiceTabLauncher.LAUNCH_REQUEST_ID_EXTRA, 0),

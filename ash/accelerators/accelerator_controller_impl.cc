@@ -96,6 +96,7 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_manager.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/chromeos/events/keyboard_layout_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_sequence.h"
@@ -292,16 +293,20 @@ void HandleCycleForwardMRU(const ui::Accelerator& accelerator) {
 void HandleActivateDesk(const ui::Accelerator& accelerator) {
   auto* desks_controller = DesksController::Get();
   const bool success = desks_controller->ActivateAdjacentDesk(
-      /*going_left=*/accelerator.key_code() == ui::VKEY_OEM_4,
+      /*going_left=*/
+      (accelerator.key_code() == ui::VKEY_OEM_4 ||
+       accelerator.key_code() == ui::VKEY_LEFT),
       DesksSwitchSource::kDeskSwitchShortcut);
   if (!success)
     return;
 
   switch (accelerator.key_code()) {
     case ui::VKEY_OEM_4:
+    case ui::VKEY_LEFT:
       base::RecordAction(base::UserMetricsAction("Accel_Desks_ActivateLeft"));
       break;
     case ui::VKEY_OEM_6:
+    case ui::VKEY_RIGHT:
       base::RecordAction(base::UserMetricsAction("Accel_Desks_ActivateRight"));
       break;
 
@@ -329,19 +334,16 @@ void HandleMoveActiveItem(const ui::Accelerator& accelerator) {
     return;
 
   Desk* target_desk = nullptr;
-  switch (accelerator.key_code()) {
-    case ui::VKEY_OEM_4:
-      target_desk = desks_controller->GetPreviousDesk();
-      base::RecordAction(base::UserMetricsAction("Accel_Desks_MoveWindowLeft"));
-      break;
-    case ui::VKEY_OEM_6:
-      target_desk = desks_controller->GetNextDesk();
-      base::RecordAction(
-          base::UserMetricsAction("Accel_Desks_MoveWindowRight"));
-      break;
-
-    default:
-      NOTREACHED();
+  bool going_left = accelerator.key_code() == ui::VKEY_OEM_4 ||
+                    accelerator.key_code() == ui::VKEY_LEFT;
+  if (going_left) {
+    target_desk = desks_controller->GetPreviousDesk();
+    base::RecordAction(base::UserMetricsAction("Accel_Desks_MoveWindowLeft"));
+  } else {
+    DCHECK(accelerator.key_code() == ui::VKEY_OEM_6 ||
+           accelerator.key_code() == ui::VKEY_RIGHT);
+    target_desk = desks_controller->GetNextDesk();
+    base::RecordAction(base::UserMetricsAction("Accel_Desks_MoveWindowRight"));
   }
 
   if (!target_desk)
@@ -350,7 +352,7 @@ void HandleMoveActiveItem(const ui::Accelerator& accelerator) {
   if (!in_overview) {
     desks_animations::PerformWindowMoveToDeskAnimation(
         window_to_move,
-        /*going_left=*/accelerator.key_code() == ui::VKEY_OEM_4);
+        /*going_left=*/going_left);
   }
 
   if (!desks_controller->MoveWindowFromActiveDeskTo(
@@ -1745,6 +1747,11 @@ void AcceleratorControllerImpl::Init() {
     actions_keeping_menu_open_.insert(kActionsKeepingMenuOpen[i]);
 
   RegisterAccelerators(kAcceleratorData, kAcceleratorDataLength);
+
+  if (::features::IsNewShortcutMappingEnabled()) {
+    RegisterAccelerators(kNewAdditionalAcceleratorData,
+                         kNewAdditionalAcceleratorDataLength);
+  }
 
   RegisterDeprecatedAccelerators();
 

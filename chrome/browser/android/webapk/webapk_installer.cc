@@ -538,6 +538,11 @@ void WebApkInstaller::InstallAsync(const ShortcutInfo& shortcut_info,
   finish_callback_ = std::move(finish_callback);
   task_type_ = INSTALL;
 
+  if (!server_url_.is_valid()) {
+    OnResult(WebApkInstallResult::FAILURE);
+    return;
+  }
+
   CheckFreeSpace();
 }
 
@@ -573,6 +578,11 @@ void WebApkInstaller::UpdateAsync(const base::FilePath& update_request_path,
                                   FinishCallback finish_callback) {
   finish_callback_ = std::move(finish_callback);
   task_type_ = UPDATE;
+
+  if (!server_url_.is_valid()) {
+    OnResult(WebApkInstallResult::FAILURE);
+    return;
+  }
 
   base::PostTaskAndReplyWithResult(
       GetBackgroundTaskRunner().get(), FROM_HERE,
@@ -692,6 +702,8 @@ void WebApkInstaller::OnGotIconMurmur2Hashes(
 
 void WebApkInstaller::SendRequest(
     std::unique_ptr<std::string> serialized_proto) {
+  DCHECK(server_url_.is_valid());
+
   timer_.Start(
       FROM_HERE, base::TimeDelta::FromMilliseconds(webapk_server_timeout_ms_),
       base::Bind(&WebApkInstaller::OnResult, weak_ptr_factory_.GetWeakPtr(),

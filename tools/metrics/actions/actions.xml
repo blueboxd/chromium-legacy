@@ -18691,49 +18691,6 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="SafetyCheck.Extensions.Review">
-  <owner>rainhard@chromium.org</owner>
-  <owner>andzaytsev@google.com</owner>
-  <owner>msramek@chromium.org</owner>
-  <description>
-    User clicks the review extensions button in safety check.
-  </description>
-</action>
-
-<action name="SafetyCheck.Passwords.Manage">
-  <owner>rainhard@chromium.org</owner>
-  <owner>andzaytsev@google.com</owner>
-  <owner>msramek@chromium.org</owner>
-  <description>
-    User clicks the manage passwords button in safety check.
-  </description>
-</action>
-
-<action name="SafetyCheck.SafeBrowsing.Manage">
-  <owner>rainhard@chromium.org</owner>
-  <owner>andzaytsev@google.com</owner>
-  <owner>msramek@chromium.org</owner>
-  <description>
-    User clicks the manage safe browsing button in safety check.
-  </description>
-</action>
-
-<action name="SafetyCheck.Started">
-  <owner>rainhard@chromium.org</owner>
-  <owner>andzaytsev@google.com</owner>
-  <owner>msramek@chromium.org</owner>
-  <description>User started a browser safety check in settings.</description>
-</action>
-
-<action name="SafetyCheck.Updates.Relaunch">
-  <owner>rainhard@chromium.org</owner>
-  <owner>andzaytsev@google.com</owner>
-  <owner>msramek@chromium.org</owner>
-  <description>
-    User clicks the relaunch browser button in safety check after an update.
-  </description>
-</action>
-
 <action name="Save">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -19271,6 +19228,49 @@ should be able to be added at any place in this file.
     launches homepage settings either from the main settings screen or the
     homepage button long-press menu. Recorded for Android only.
   </description>
+</action>
+
+<action name="Settings.SafetyCheck.ManagePasswords">
+  <owner>rainhard@chromium.org</owner>
+  <owner>andzaytsev@google.com</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>
+    User clicks the manage passwords button in safety check.
+  </description>
+</action>
+
+<action name="Settings.SafetyCheck.ManageSafeBrowsing">
+  <owner>rainhard@chromium.org</owner>
+  <owner>andzaytsev@google.com</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>
+    User clicks the manage safe browsing button in safety check.
+  </description>
+</action>
+
+<action name="Settings.SafetyCheck.RelaunchAfterUpdates">
+  <owner>rainhard@chromium.org</owner>
+  <owner>andzaytsev@google.com</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>
+    User clicks the relaunch browser button in safety check after an update.
+  </description>
+</action>
+
+<action name="Settings.SafetyCheck.ReviewExtensions">
+  <owner>rainhard@chromium.org</owner>
+  <owner>andzaytsev@google.com</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>
+    User clicks the review extensions button in safety check.
+  </description>
+</action>
+
+<action name="Settings.SafetyCheck.Start">
+  <owner>rainhard@chromium.org</owner>
+  <owner>andzaytsev@google.com</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>User started a browser safety check in settings.</description>
 </action>
 
 <action name="Settings.Searching">

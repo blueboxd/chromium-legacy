@@ -223,6 +223,50 @@ const AcceleratorData kAcceleratorData[] = {
 
 const size_t kAcceleratorDataLength = base::size(kAcceleratorData);
 
+const AcceleratorData kNewAdditionalAcceleratorData[] = {
+    // Desk activation:
+    {true, ui::VKEY_LEFT, ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN,
+     DESKS_ACTIVATE_DESK},
+    {true, ui::VKEY_RIGHT, ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN,
+     DESKS_ACTIVATE_DESK},
+
+    // Moving windows to desks:
+    {true, ui::VKEY_LEFT, ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN,
+     DESKS_MOVE_ACTIVE_ITEM},
+    {true, ui::VKEY_RIGHT, ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN,
+     DESKS_MOVE_ACTIVE_ITEM},
+
+    // Snap
+    {true, ui::VKEY_OEM_COMMA,
+     ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
+     WINDOW_CYCLE_SNAP_LEFT},
+    {true, ui::VKEY_OEM_PERIOD,
+     ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
+     WINDOW_CYCLE_SNAP_RIGHT},
+
+    // Zoom
+    {true, ui::VKEY_UP,
+     ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
+     SCALE_UI_UP},
+    {true, ui::VKEY_DOWN,
+     ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
+     SCALE_UI_DOWN},
+    {true, ui::VKEY_BACK,
+     ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
+     SCALE_UI_RESET},
+
+    // Shortcut Viewer
+    {true, ui::VKEY_OEM_2, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
+     SHOW_SHORTCUT_VIEWER},
+
+    // Minimize / Maximize
+    {true, ui::VKEY_OEM_MINUS, ui::EF_COMMAND_DOWN, WINDOW_MINIMIZE},
+    {true, ui::VKEY_OEM_PLUS, ui::EF_COMMAND_DOWN, TOGGLE_MAXIMIZED},
+};
+
+const size_t kNewAdditionalAcceleratorDataLength =
+    base::size(kNewAdditionalAcceleratorData);
+
 // static
 AcceleratorController* AcceleratorController::Get() {
   return g_instance;

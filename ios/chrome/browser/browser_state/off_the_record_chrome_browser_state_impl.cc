@@ -14,6 +14,7 @@
 #include "components/user_prefs/user_prefs.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/net/ios_chrome_url_request_context_getter.h"
+#include "ios/chrome/browser/prefs/ios_chrome_pref_service_factory.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
 
@@ -24,8 +25,9 @@ OffTheRecordChromeBrowserStateImpl::OffTheRecordChromeBrowserStateImpl(
     : ChromeBrowserState(std::move(io_task_runner)),
       otr_state_path_(otr_path),
       original_chrome_browser_state_(original_chrome_browser_state),
-      prefs_(static_cast<sync_preferences::PrefServiceSyncable*>(
-          original_chrome_browser_state->GetOffTheRecordPrefs())) {
+      prefs_(CreateIncognitoBrowserStatePrefs(
+          static_cast<sync_preferences::PrefServiceSyncable*>(
+              original_chrome_browser_state->GetPrefs()))) {
   user_prefs::UserPrefs::Set(this, GetPrefs());
   io_data_.reset(new OffTheRecordChromeBrowserStateIOData::Handle(this));
   BrowserStateDependencyManager::GetInstance()->CreateBrowserStateServices(
@@ -70,7 +72,7 @@ OffTheRecordChromeBrowserStateImpl::GetPolicyConnector() {
 }
 
 PrefService* OffTheRecordChromeBrowserStateImpl::GetPrefs() {
-  return prefs_;
+  return prefs_.get();
 }
 
 PrefService* OffTheRecordChromeBrowserStateImpl::GetOffTheRecordPrefs() {

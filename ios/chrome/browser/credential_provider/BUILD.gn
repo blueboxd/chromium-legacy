@@ -11,10 +11,10 @@ source_set("credential_provider") {
   sources = [
     "archivable_credential+password_form.h",
     "archivable_credential+password_form.mm",
-    "credential_provider_service.cc",
     "credential_provider_service.h",
-    "credential_provider_service_factory.cc",
+    "credential_provider_service.mm",
     "credential_provider_service_factory.h",
+    "credential_provider_service_factory.mm",
     "credential_provider_support.cc",
     "credential_provider_support.h",
   ]
@@ -46,7 +46,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "archivable_credential+password_form_unittest.mm",
-    "credential_provider_service_unittest.cc",
+    "credential_provider_service_unittest.mm",
   ]
   deps = [
     ":credential_provider",

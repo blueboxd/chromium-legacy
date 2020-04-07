@@ -54,6 +54,6 @@ void FakeApplicationConfigManager::GetConfig(std::string id,
     return;
   }
 
-  callback(std::move(std::move(id_to_config_[id])));
+  callback(std::move(id_to_config_[id]));
   id_to_config_.erase(id);
 }

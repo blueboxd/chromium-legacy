@@ -35,7 +35,8 @@ const char kV8StateKey[] = "v8";
 const char kSessionId[] = "sessionId";
 
 bool ShouldInterruptForMethod(const String& method) {
-  return method != "Runtime.evaluate" && method != "Runtime.callFunctionOn" &&
+  return method != "Debugger.evaluateOnCallFrame" &&
+         method != "Runtime.evaluate" && method != "Runtime.callFunctionOn" &&
          method != "Runtime.runScript";
 }
 

@@ -3860,8 +3860,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, MetricsNotRecorded) {
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
   // 3) Navigate to B#2 (same document navigation).
-  EXPECT_TRUE(ExecJs(shell(), JsReplace("location = $1", url_b2.spec())));
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_TRUE(NavigateToURLFromRenderer(shell(), url_b2));
 
   // 4) Go back to B.
   web_contents()->GetController().GoBack();

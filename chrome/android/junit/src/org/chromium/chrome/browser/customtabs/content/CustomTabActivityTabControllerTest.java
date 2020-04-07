@@ -26,7 +26,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.embedder_support.util.ShadowUrlUtilities;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
@@ -36,11 +38,14 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
  */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {ShadowUrlUtilities.class})
+@Features.DisableFeatures({ChromeFeatureList.CCT_EXTERNAL_LINK_HANDLING})
 public class CustomTabActivityTabControllerTest {
-
     @Rule
     public final CustomTabActivityContentTestEnvironment env =
             new CustomTabActivityContentTestEnvironment();
+
+    @Rule
+    public Features.JUnitProcessor processor = new Features.JUnitProcessor();
 
     private CustomTabActivityTabController mTabController;
 

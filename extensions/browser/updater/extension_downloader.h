@@ -294,6 +294,9 @@ class ExtensionDownloader {
   // Handles the result of a crx fetch.
   void OnExtensionLoadComplete(base::FilePath crx_path);
 
+  void NotifyExtensionManifestUpdateCheckStatus(
+      std::vector<UpdateManifestResult> results);
+
   // Invokes OnExtensionDownloadStageChanged() on the |delegate_| for each
   // extension in the set, with |stage| as the current stage. Make a copy of
   // arguments because there is no guarantee that callback won't indirectly

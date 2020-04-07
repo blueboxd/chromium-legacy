@@ -23,25 +23,21 @@
 #include "url/gurl.h"
 
 WebContentRunner::WebContentRunner(
-    fuchsia::web::CreateContextParams create_params,
+    GetContextParamsCallback get_context_params_callback,
     sys::OutgoingDirectory* outgoing_directory)
-    : create_params_(std::move(create_params)),
-      is_headless_((create_params_.features() &
-                    fuchsia::web::ContextFeatureFlags::HEADLESS) ==
-                   fuchsia::web::ContextFeatureFlags::HEADLESS) {
+    : get_context_params_callback_(std::move(get_context_params_callback)) {
   service_binding_.emplace(outgoing_directory, this);
 }
 
-WebContentRunner::WebContentRunner(fuchsia::web::ContextPtr context,
-                                   bool is_headless)
-    : context_(std::move(context)), is_headless_(is_headless) {}
+WebContentRunner::WebContentRunner(fuchsia::web::ContextPtr context)
+    : context_(std::move(context)) {}
 
 WebContentRunner::~WebContentRunner() = default;
 
 fuchsia::web::ContextPtr WebContentRunner::CreateWebContext(
-    fuchsia::web::CreateContextParams create_params) {
+    fuchsia::web::CreateContextParams context_params) {
   fuchsia::web::ContextPtr web_context;
-  GetContextProvider()->Create(std::move(create_params),
+  GetContextProvider()->Create(std::move(context_params),
                                web_context.NewRequest());
   web_context.set_error_handler([](zx_status_t status) {
     // If the browser instance died, then exit everything and do not attempt to
@@ -54,8 +50,7 @@ fuchsia::web::ContextPtr WebContentRunner::CreateWebContext(
 
 fuchsia::web::Context* WebContentRunner::GetContext() {
   if (!context_)
-    context_ = CreateWebContext(std::move(create_params_));
-
+    context_ = CreateWebContext(get_context_params_callback_.Run());
   return context_.get();
 }
 
@@ -104,6 +99,10 @@ void WebContentRunner::SetContextProviderForTest(
     fuchsia::web::ContextProviderPtr context_provider) {
   DCHECK(context_provider);
   context_provider_ = std::move(context_provider);
+}
+
+void WebContentRunner::DisconnectContextForTest() {
+  context_.Unbind();
 }
 
 fuchsia::web::ContextProvider* WebContentRunner::GetContextProvider() {

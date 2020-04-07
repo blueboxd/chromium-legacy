@@ -222,16 +222,25 @@ class CastRunnerIntegrationTest : public testing::Test {
     EnsureFuchsiaDirSchemeInitialized();
 
     // Create the CastRunner, published into |outgoing_directory_|.
-    fuchsia::web::CreateContextParams create_context_params;
-    create_context_params.set_features(feature_flags);
-    create_context_params.set_service_directory(base::fuchsia::OpenDirectory(
-        base::FilePath(base::fuchsia::kServiceDirectoryPath)));
-    CHECK(create_context_params.service_directory());
+    WebContentRunner::GetContextParamsCallback get_context_params =
+        base::BindLambdaForTesting([feature_flags]() {
+          fuchsia::web::CreateContextParams create_context_params;
+          create_context_params.set_features(feature_flags);
+          create_context_params.set_service_directory(
+              base::fuchsia::OpenDirectory(
+                  base::FilePath(base::fuchsia::kServiceDirectoryPath)));
+          CHECK(create_context_params.service_directory());
 
-    const uint16_t kRemoteDebuggingAnyPort = 0;
-    create_context_params.set_remote_debugging_port(kRemoteDebuggingAnyPort);
+          const uint16_t kRemoteDebuggingAnyPort = 0;
+          create_context_params.set_remote_debugging_port(
+              kRemoteDebuggingAnyPort);
+          return create_context_params;
+        });
     cast_runner_ = std::make_unique<CastRunner>(
-        std::move(create_context_params), &outgoing_directory_);
+        std::move(get_context_params),
+        (feature_flags & fuchsia::web::ContextFeatureFlags::HEADLESS) ==
+            fuchsia::web::ContextFeatureFlags::HEADLESS,
+        &outgoing_directory_);
 
     cast_runner_->SetContextProviderForTest(cr_fuchsia::ConnectContextProvider(
         context_provider_controller_.NewRequest()));
@@ -257,7 +266,7 @@ class CastRunnerIntegrationTest : public testing::Test {
       base::StringPiece component_url) {
     auto component_state = std::make_unique<FakeComponentState>(
         component_url, &app_config_manager_, &api_bindings_,
-        &url_request_rewrite_rules_provider_);
+        url_request_rewrite_rules_provider_.get());
     component_state_ = component_state.get();
 
     if (init_component_state_callback_)
@@ -291,6 +300,8 @@ class CastRunnerIntegrationTest : public testing::Test {
   }
 
   void CreateComponentContext(const base::StringPiece& component_url) {
+    url_request_rewrite_rules_provider_ =
+        std::make_unique<FakeUrlRequestRewriteRulesProvider>();
     component_context_ = std::make_unique<cr_fuchsia::FakeComponentContext>(
         base::BindRepeating(&CastRunnerIntegrationTest::OnComponentConnect,
                             base::Unretained(this)),
@@ -336,7 +347,7 @@ class CastRunnerIntegrationTest : public testing::Test {
   }
 
   void WaitComponentCreated() {
-    EXPECT_FALSE(cast_component_);
+    ASSERT_FALSE(cast_component_);
 
     base::RunLoop run_loop;
     cr_fuchsia::ResultReceiver<WebComponent*> component_receiver(
@@ -359,13 +370,39 @@ class CastRunnerIntegrationTest : public testing::Test {
     listener.RunUntilUrlAndTitleEquals(url, title);
   }
 
+  void WaitForComponentDestroyed() {
+    ASSERT_TRUE(cast_component_);
+    ASSERT_TRUE(component_state_);
+
+    base::RunLoop state_loop;
+    component_state_->set_on_delete(state_loop.QuitClosure());
+
+    if (component_controller_) {
+      base::RunLoop controller_loop;
+      component_controller_.set_error_handler(
+          [&controller_loop](zx_status_t status) {
+            EXPECT_EQ(status, ZX_ERR_PEER_CLOSED);
+            controller_loop.Quit();
+          });
+      controller_loop.Run();
+    }
+
+    state_loop.Run();
+
+    component_context_ = nullptr;
+    component_services_client_ = nullptr;
+    component_state_ = nullptr;
+    cast_component_ = nullptr;
+  }
+
   base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
   net::EmbeddedTestServer test_server_;
 
   FakeApplicationConfigManager app_config_manager_;
   TestApiBindings api_bindings_;
-  FakeUrlRequestRewriteRulesProvider url_request_rewrite_rules_provider_;
+  std::unique_ptr<FakeUrlRequestRewriteRulesProvider>
+      url_request_rewrite_rules_provider_;
 
   // Incoming service directory, ComponentContext and per-component state.
   sys::OutgoingDirectory component_services_;
@@ -414,10 +451,41 @@ TEST_F(CastRunnerIntegrationTest, BasicRequest) {
 
   // Verify that the component is torn down when |component_controller| is
   // unbound.
-  base::RunLoop run_loop;
-  component_state_->set_on_delete(run_loop.QuitClosure());
   component_controller_.Unbind();
-  run_loop.Run();
+  WaitForComponentDestroyed();
+}
+
+// Verify that the Runner can continue to be used even after its Context has
+// crashed. Regression test for https://crbug.com/1066826).
+// TODO(https://crbug.com/1066833): Make this a WebRunner test.
+TEST_F(CastRunnerIntegrationTest, CanRecreateContext) {
+  // Execute two iterations of launching the component and verifying that it
+  // reaches the expected URL.
+  for (int i = 0; i < 2; ++i) {
+    const GURL app_url = test_server_.GetURL(kBlankAppUrl);
+    app_config_manager_.AddApp(kTestAppId, app_url);
+
+    CreateComponentContextAndStartComponent();
+
+    fuchsia::web::NavigationControllerPtr nav_controller;
+    cast_component_->frame()->GetNavigationController(
+        nav_controller.NewRequest());
+
+    base::RunLoop run_loop;
+    cr_fuchsia::ResultReceiver<fuchsia::web::NavigationState> nav_entry(
+        run_loop.QuitClosure());
+    nav_controller->GetVisibleEntry(
+        cr_fuchsia::CallbackToFitFunction(nav_entry.GetReceiveCallback()));
+    run_loop.Run();
+
+    ASSERT_TRUE(nav_entry->has_url());
+    EXPECT_EQ(nav_entry->url(), app_url.spec());
+
+    // Fake teardown of the Context, forcing the next StartComponent to create
+    // a new one.
+    cast_runner_->DisconnectContextForTest();
+    WaitForComponentDestroyed();
+  }
 }
 
 TEST_F(CastRunnerIntegrationTest, ApiBindings) {
@@ -562,10 +630,8 @@ TEST_F(CastRunnerIntegrationTest, IsolatedContext) {
 
   // Verify that the component is torn down when |component_controller| is
   // unbound.
-  base::RunLoop run_loop;
-  component_state_->set_on_delete(run_loop.QuitClosure());
   component_controller_.Unbind();
-  run_loop.Run();
+  WaitForComponentDestroyed();
 
   EXPECT_EQ(cast_runner_->GetChildCastRunnerCountForTest(), 0u);
 }
@@ -787,10 +853,8 @@ TEST_F(HeadlessCastRunnerIntegrationTest, IsolatedAndHeadless) {
 
   // Verify that the component is torn down when |component_controller| is
   // unbound.
-  base::RunLoop run_loop;
-  component_state_->set_on_delete(run_loop.QuitClosure());
   component_controller_.Unbind();
-  run_loop.Run();
+  WaitForComponentDestroyed();
 
   EXPECT_EQ(cast_runner_->GetChildCastRunnerCountForTest(), 0u);
 }

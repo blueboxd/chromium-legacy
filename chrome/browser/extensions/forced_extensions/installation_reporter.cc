@@ -88,6 +88,33 @@ void InstallationReporter::ReportDownloadingCacheStatus(
   }
 }
 
+void InstallationReporter::ReportManifestUpdateCheckStatus(
+    const ExtensionId& id,
+    const std::string& status) {
+  InstallationData& data = installation_data_map_[id];
+  // Map the current status to UpdateCheckStatus enum.
+  if (status == "ok")
+    data.update_check_status = UpdateCheckStatus::kOk;
+  else if (status == "noupdate")
+    data.update_check_status = UpdateCheckStatus::kNoUpdate;
+  else if (status == "error-internal")
+    data.update_check_status = UpdateCheckStatus::kErrorInternal;
+  else if (status == "error-hash")
+    data.update_check_status = UpdateCheckStatus::kErrorHash;
+  else if (status == "error-osnotsupported")
+    data.update_check_status = UpdateCheckStatus::kErrorOsNotSupported;
+  else if (status == "error-hwnotsupported")
+    data.update_check_status = UpdateCheckStatus::kErrorHardwareNotSupported;
+  else if (status == "error-unsupportedprotocol")
+    data.update_check_status = UpdateCheckStatus::kErrorUnsupportedProtocol;
+  else
+    data.update_check_status = UpdateCheckStatus::kUnknown;
+
+  for (auto& observer : observers_) {
+    observer.OnExtensionDataChangedForTesting(id, browser_context_, data);
+  }
+}
+
 void InstallationReporter::ReportFetchError(
     const ExtensionId& id,
     FailureReason reason,

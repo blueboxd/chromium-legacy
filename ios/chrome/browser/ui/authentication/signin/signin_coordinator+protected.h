@@ -15,9 +15,12 @@
 // Runs the sign-in completion callback.
 // |signinResult| is the state of sign-in at add account flow completion.
 // |identity| is the identity of the added account.
+// |showAdvancedSettingsSignin| is YES if the user wants to open the
+// advanced settings signin.
 - (void)runCompletionCallbackWithSigninResult:
             (SigninCoordinatorResult)signinResult
                                      identity:(ChromeIdentity*)identity
+                   showAdvancedSettingsSignin:(BOOL)showAdvancedSettingsSignin
     NS_REQUIRES_SUPER;
 
 @end

@@ -1763,10 +1763,9 @@ AXObject* AXLayoutObject::AccessibilityHitTest(const IntPoint& point) const {
       !layout_object_->IsBox())
     return nullptr;
 
-  auto* frame_view = DocumentFrameView();
-  if (!frame_view || !frame_view->UpdateAllLifecyclePhasesExceptPaint(
-                         DocumentUpdateReason::kAccessibility))
-    return nullptr;
+  // Must be called with lifecycle >= compositing clean.
+  DCHECK_GE(GetDocument()->Lifecycle().GetState(),
+            DocumentLifecycle::kCompositingClean);
 
   PaintLayer* layer = ToLayoutBox(layout_object_)->Layer();
 

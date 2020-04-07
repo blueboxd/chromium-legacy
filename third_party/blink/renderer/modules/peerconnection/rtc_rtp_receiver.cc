@@ -54,9 +54,9 @@ RTCRtpReceiver::RTCRtpReceiver(RTCPeerConnection* pc,
   DCHECK(pc_);
   DCHECK(receiver_);
   DCHECK(track_);
-  if (force_encoded_audio_insertable_streams_)
+  if (force_encoded_audio_insertable_streams_ && track_->kind() == "audio")
     RegisterEncodedAudioStreamCallback();
-  if (force_encoded_video_insertable_streams_)
+  if (force_encoded_video_insertable_streams_ && track_->kind() == "video")
     RegisterEncodedVideoStreamCallback();
 }
 
@@ -362,6 +362,7 @@ void RTCRtpReceiver::RegisterEncodedAudioStreamCallback() {
   DCHECK(!platform_receiver()
               ->GetEncodedAudioStreamTransformer()
               ->HasTransformerCallback());
+  DCHECK_EQ(track_->kind(), "audio");
   platform_receiver()
       ->GetEncodedAudioStreamTransformer()
       ->SetTransformerCallback(
@@ -370,9 +371,7 @@ void RTCRtpReceiver::RegisterEncodedAudioStreamCallback() {
 }
 
 void RTCRtpReceiver::UnregisterEncodedAudioStreamCallback() {
-  DCHECK(!platform_receiver()
-              ->GetEncodedAudioStreamTransformer()
-              ->HasTransformerCallback());
+  DCHECK_EQ(track_->kind(), "audio");
   platform_receiver()
       ->GetEncodedAudioStreamTransformer()
       ->ResetTransformerCallback();
@@ -432,6 +431,7 @@ void RTCRtpReceiver::RegisterEncodedVideoStreamCallback() {
   DCHECK(!platform_receiver()
               ->GetEncodedVideoStreamTransformer()
               ->HasTransformerCallback());
+  DCHECK_EQ(track_->kind(), "video");
   platform_receiver()
       ->GetEncodedVideoStreamTransformer()
       ->SetTransformerCallback(
@@ -440,9 +440,7 @@ void RTCRtpReceiver::RegisterEncodedVideoStreamCallback() {
 }
 
 void RTCRtpReceiver::UnregisterEncodedVideoStreamCallback() {
-  DCHECK(!platform_receiver()
-              ->GetEncodedVideoStreamTransformer()
-              ->HasTransformerCallback());
+  DCHECK_EQ(track_->kind(), "video");
   platform_receiver()
       ->GetEncodedVideoStreamTransformer()
       ->ResetTransformerCallback();

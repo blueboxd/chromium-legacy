@@ -416,6 +416,20 @@ cr.define('settings', function() {
     },
 
     /**
+     * Updates both required block third party cookie preferences.
+     * @param {!Event} event
+     * @private
+     */
+    onBlockThirdPartyCookiesToggleChange_(event) {
+      const target = /** @type {!SettingsToggleButtonElement} */ (event.target);
+      this.setPrefValue('profile.block_third_party_cookies', target.checked);
+      this.setPrefValue(
+          'profile.cookie_controls_mode',
+          target.checked ? settings.CookieControlsMode.ENABLED :
+                           settings.CookieControlsMode.DISABLED);
+    },
+
+    /**
      * Records changes made to the "can a website check if you have saved
      * payment methods" setting for logging, the logic of actually changing the
      * setting is taken care of by the webUI pref.

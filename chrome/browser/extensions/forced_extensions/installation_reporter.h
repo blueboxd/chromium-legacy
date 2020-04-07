@@ -172,6 +172,40 @@ class InstallationReporter : public KeyedService {
     // Always update it to the max value.
     kMaxValue = CRX_FETCH_URL_INVALID,
   };
+  // Status for the update check returned by server while fetching manifest.
+  // Enum used for UMA. Do NOT reorder or remove entries. Don't forget to update
+  // enums.xml (name: UpdateCheckStatus) when adding new entries.
+  enum class UpdateCheckStatus {
+    // Technically it may happen that update server return some unknown value or
+    // no value.
+    kUnknown = 0,
+
+    // An update is available and should be applied.
+    kOk = 1,
+
+    // No update is available for this application at this time.
+    kNoUpdate = 2,
+
+    // Server encountered an unknown internal error.
+    kErrorInternal = 3,
+
+    // The server attempted to serve an update, but could not provide a valid
+    // hash for the download.
+    kErrorHash = 4,
+
+    // The application is running on an incompatible operating system.
+    kErrorOsNotSupported = 5,
+
+    // The application is running on an incompatible hardware.
+    kErrorHardwareNotSupported = 6,
+
+    // This application is incompatible with this version of the protocol.
+    kErrorUnsupportedProtocol = 7,
+
+    // Magic constant used by the histogram macros.
+    // Always update it to the max value.
+    kMaxValue = kErrorUnsupportedProtocol,
+  };
 
   // Contains information about extension installation: failure reason, if any
   // reported, specific details in case of CRX install error, current
@@ -202,6 +236,9 @@ class InstallationReporter : public KeyedService {
     // Type of extension, assigned when CRX installation error detail is
     // DISALLOWED_BY_POLICY.
     base::Optional<Manifest::Type> extension_type;
+    // Type of update check status received from server when manifest was
+    // fetched.
+    base::Optional<UpdateCheckStatus> update_check_status;
   };
 
   class Observer : public base::CheckedObserver {
@@ -238,8 +275,10 @@ class InstallationReporter : public KeyedService {
   void ReportDownloadingCacheStatus(
       const ExtensionId& id,
       ExtensionDownloaderDelegate::CacheStatus cache_status);
-  // Assigns the extension type. See InstallationData::extension_type for more
-  // details.
+  void ReportManifestUpdateCheckStatus(const ExtensionId& id,
+                                       const std::string& status);
+  // Assigns the extension type. See InstallationData::extension_type for
+  // more details.
   void ReportExtensionTypeForPolicyDisallowedExtension(
       const ExtensionId& id,
       Manifest::Type extension_type);

@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/icu/source/common/unicode/ucnv.h"
@@ -22,6 +23,10 @@ class UConvScoper {
   explicit UConvScoper(const char* charset_name) {
     UErrorCode err = U_ZERO_ERROR;
     converter_ = ucnv_open(charset_name, &err);
+    if (!converter_) {
+      LOG(ERROR) << "Failed to open charset " << charset_name << ": "
+                 << u_errorName(err);
+    }
   }
 
   ~UConvScoper() {

@@ -375,6 +375,6 @@ public abstract class AppHooks {
      * Returns the URL to the WebAPK creation/update server.
      */
     public String getWebApkServerUrl() {
-        return "https://webapk.googleapis.com/v1/webApks/?alt=proto&key=AIzaSyAoI6v-F31-3t9NunLYEiKcPIqgTJIUZBw";
+        return "";
     }
 }

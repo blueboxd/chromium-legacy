@@ -85,7 +85,6 @@ class ChromeBrowserStateImpl : public ChromeBrowserState {
   // others store pointers to |prefs_| and shall be destructed first.
   scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry_;
   std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs_;
-  std::unique_ptr<sync_preferences::PrefServiceSyncable> otr_prefs_;
   std::unique_ptr<ChromeBrowserStateImplIOData::Handle> io_data_;
 
   std::unique_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;

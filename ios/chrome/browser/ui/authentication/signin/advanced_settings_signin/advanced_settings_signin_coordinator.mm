@@ -181,7 +181,9 @@ using l10n_util::GetNSString;
   AuthenticationService* authService =
       AuthenticationServiceFactory::GetForBrowserState(self.browserState);
   ChromeIdentity* identity = authService->GetAuthenticatedIdentity();
-  [self runCompletionCallbackWithSigninResult:signinResult identity:identity];
+  [self runCompletionCallbackWithSigninResult:signinResult
+                                     identity:identity
+                   showAdvancedSettingsSignin:NO];
 }
 
 - (void)showCancelConfirmationAlert {

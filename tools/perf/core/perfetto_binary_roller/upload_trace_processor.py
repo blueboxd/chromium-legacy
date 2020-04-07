@@ -5,7 +5,7 @@
 
 import argparse
 import os
-import subprocess
+import re
 import sys
 
 # Add tools/perf to sys.path.
@@ -20,11 +20,15 @@ from core.tbmv3 import trace_processor
 
 
 def _PerfettoRevision():
-  perfetto_dir = os.path.join(path_util.GetChromiumSrcDir(), 'third_party',
-                              'perfetto')
-  revision = subprocess.check_output(
-      ['git', '-C', perfetto_dir, 'rev-parse', 'HEAD'])
-  return revision.strip()
+  deps_line_re = re.compile(
+      r".*'/platform/external/perfetto.git' \+ '@' \+ '([a-f0-9]+)'")
+  deps_file = os.path.join(path_util.GetChromiumSrcDir(), 'DEPS')
+  with open(deps_file) as deps:
+    for line in deps:
+      match = deps_line_re.match(line)
+      if match:
+        return match.group(1)
+  raise RuntimeError("Couldn't parse perfetto revision from DEPS")
 
 
 def main(args):

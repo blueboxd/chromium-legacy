@@ -133,6 +133,11 @@ public class TabGridDialogMediator {
             @Override
             public void didAddTab(
                     Tab tab, @TabLaunchType int type, @TabCreationState int creationState) {
+                if (!mTabModelSelector.getTabModelFilterProvider()
+                                .getCurrentTabModelFilter()
+                                .isTabModelRestored()) {
+                    return;
+                }
                 hideDialog(false);
             }
 

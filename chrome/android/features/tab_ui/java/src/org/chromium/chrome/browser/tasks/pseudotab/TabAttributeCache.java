@@ -150,7 +150,8 @@ public class TabAttributeCache {
      * @param id The ID of the {@link PseudoTab}.
      * @param title The title
      */
-    static void setTitleForTesting(int id, String title) {
+    @VisibleForTesting
+    public static void setTitleForTesting(int id, String title) {
         cacheTitle(id, title);
     }
 
@@ -202,7 +203,8 @@ public class TabAttributeCache {
      * @param id The ID of the {@link PseudoTab}.
      * @param rootId The root ID
      */
-    static void setRootIdForTesting(int id, int rootId) {
+    @VisibleForTesting
+    public static void setRootIdForTesting(int id, int rootId) {
         cacheRootId(id, rootId);
     }
 
@@ -318,8 +320,11 @@ public class TabAttributeCache {
      */
     public void destroy() {
         mTabModelSelectorTabObserver.destroy();
-        mTabModelSelector.getTabModelFilterProvider().getTabModelFilter(false).removeObserver(
-                mTabModelObserver);
+        TabModelFilter tabModelFilter =
+                mTabModelSelector.getTabModelFilterProvider().getTabModelFilter(false);
+        if (tabModelFilter != null) {
+            tabModelFilter.removeObserver(mTabModelObserver);
+        }
         mTabModelSelector.removeObserver(mTabModelSelectorObserver);
     }
 }

@@ -2105,6 +2105,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"instant-tethering", flag_descriptions::kTetherName,
      flag_descriptions::kTetherDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kInstantTethering)},
+    {
+        "new-shortcut-mapping",
+        flag_descriptions::kEnableNewShortcutMappingName,
+        flag_descriptions::kEnableNewShortcutMappingDescription,
+        kOsCrOS,
+        FEATURE_VALUE_TYPE(features::kNewShortcutMapping),
+    },
     {"shelf-hide-buttons-in-tablet",
      flag_descriptions::kHideShelfControlsInTabletModeName,
      flag_descriptions::kHideShelfControlsInTabletModeDescription, kOsCrOS,

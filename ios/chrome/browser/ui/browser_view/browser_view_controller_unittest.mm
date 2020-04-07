@@ -159,11 +159,10 @@ class BrowserViewControllerTest : public BlockCleanupTest {
             chrome_browser_state_.get());
     template_url_service->Load();
 
-    bvc_ = [[BrowserViewController alloc]
-                       initWithBrowser:browser_.get()
-                     dependencyFactory:factory
-        browserContainerViewController:[[BrowserContainerViewController alloc]
-                                           init]];
+    container_ = [[BrowserContainerViewController alloc] init];
+    bvc_ = [[BrowserViewController alloc] initWithBrowser:browser_.get()
+                                        dependencyFactory:factory
+                           browserContainerViewController:container_];
 
     // Force the view to load.
     UIWindow* window = [[UIWindow alloc] initWithFrame:CGRectZero];
@@ -201,26 +200,15 @@ class BrowserViewControllerTest : public BlockCleanupTest {
   PKAddPassesViewController* passKitViewController_;
   OCMockObject* dependencyFactory_;
   CommandDispatcher* command_dispatcher_;
+  BrowserContainerViewController* container_;
   BrowserViewController* bvc_;
   UIWindow* window_;
 };
 
 TEST_F(BrowserViewControllerTest, TestWebStateSelected) {
   [bvc_ webStateSelected:ActiveWebState() notifyToolbar:YES];
-  EXPECT_EQ([ActiveWebState()->GetView() superview], [bvc_ contentArea]);
+  EXPECT_EQ(ActiveWebState()->GetView().superview, container_.view);
   EXPECT_TRUE(ActiveWebState()->IsVisible());
-}
-
-// TODO(altse): Needs a testing |Profile| that implements AutocompleteClassifier
-//             before enabling again.
-TEST_F(BrowserViewControllerTest, DISABLED_TestShieldWasTapped) {
-  [HandlerForProtocol(browser_->GetCommandDispatcher(), OmniboxCommands)
-      focusOmnibox];
-  EXPECT_TRUE([[bvc_ typingShield] superview] != nil);
-  EXPECT_FALSE([[bvc_ typingShield] isHidden]);
-  [bvc_ shieldWasTapped:nil];
-  EXPECT_TRUE([[bvc_ typingShield] superview] == nil);
-  EXPECT_TRUE([[bvc_ typingShield] isHidden]);
 }
 
 // Verifies that editing the omnimbox while the page is loading will stop the

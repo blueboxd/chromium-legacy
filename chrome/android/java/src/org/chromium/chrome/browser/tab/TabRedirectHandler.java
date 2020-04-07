@@ -11,16 +11,9 @@ import android.os.SystemClock;
 import android.provider.Browser;
 import android.text.TextUtils;
 
-import androidx.annotation.Nullable;
-
 import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.PackageManagerUtils;
-import org.chromium.base.UserData;
-import org.chromium.base.UserDataHost;
-import org.chromium.chrome.browser.LaunchIntentDispatcher;
-import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.external_intents.RedirectHandler;
 import org.chromium.ui.base.PageTransition;
 
@@ -30,8 +23,7 @@ import java.util.List;
 /**
  * This class contains the logic to determine effective navigation/redirect.
  */
-public class TabRedirectHandler extends EmptyTabObserver implements UserData, RedirectHandler {
-    private static final Class<TabRedirectHandler> USER_DATA_KEY = TabRedirectHandler.class;
+public class TabRedirectHandler implements RedirectHandler {
     /**
      * An invalid entry index.
      */
@@ -58,58 +50,11 @@ public class TabRedirectHandler extends EmptyTabObserver implements UserData, Re
 
     private boolean mShouldNotOverrideUrlLoadingOnCurrentRedirectChain;
 
-    /**
-     * Returns {@link TabRedirectHandler} that hangs on to a given {@link Tab}.
-     * If not present, creates a new instance and associate it with the {@link UserDataHost}
-     * that the {@link Tab} manages.
-     * @param tab Tab instance that the TabRedirectHandler hangs on to.
-     * @return TabRedirectHandler for a given Tab.
-     */
-    public static TabRedirectHandler from(Tab tab) {
-        UserDataHost host = tab.getUserDataHost();
-        TabRedirectHandler handler = host.getUserData(USER_DATA_KEY);
-        if (handler == null) {
-            handler = new TabRedirectHandler();
-            host.setUserData(USER_DATA_KEY, handler);
-            tab.addObserver(handler);
-        }
-        return handler;
-    }
-
-    /**
-     * @return {@link TabRedirectHandler} hanging to the given {@link Tab},
-     *     or {@code null} if there is no instance available.
-     */
-    @Nullable
-    public static TabRedirectHandler get(Tab tab) {
-        return tab.getUserDataHost().getUserData(USER_DATA_KEY);
-    }
-
-    /**
-     * Replace {@link TabRedirectHandler} instance for the Tab with the new one.
-     * @return Old {@link TabRedirectHandler} associated with the Tab. Could be {@code null}.
-     */
-    public static TabRedirectHandler swapFor(Tab tab, @Nullable TabRedirectHandler newHandler) {
-        UserDataHost host = tab.getUserDataHost();
-        TabRedirectHandler oldHandler = host.getUserData(USER_DATA_KEY);
-        if (newHandler != null) {
-            host.setUserData(USER_DATA_KEY, newHandler);
-        } else {
-            host.removeUserData(USER_DATA_KEY);
-        }
-        return oldHandler;
-    }
-
     public static TabRedirectHandler create() {
         return new TabRedirectHandler();
     }
 
     protected TabRedirectHandler() {}
-
-    @Override
-    public void onHidden(Tab tab, @TabHidingType int type) {
-        clear();
-    }
 
     /**
      * Updates |mIntentHistory| and |mLastIntentUpdatedTime|. If |intent| comes from chrome and
@@ -119,23 +64,21 @@ public class TabRedirectHandler extends EmptyTabObserver implements UserData, Re
      * Otherwise, |mIntentHistory| and |mPreviousResolvers| are cleared, and then |intent| is put
      * into |mIntentHistory|.
      */
-    public void updateIntent(Intent intent) {
+    public void updateIntent(Intent intent, boolean isCustomTabIntent, boolean sendToExternalApps,
+            boolean isCCTExternalLinkHandlingEnabled) {
         clear();
 
         if (intent == null || !Intent.ACTION_VIEW.equals(intent.getAction())) {
             return;
         }
 
-        mIsCustomTabIntent = LaunchIntentDispatcher.isCustomTabIntent(intent);
+        mIsCustomTabIntent = isCustomTabIntent;
         boolean checkIsToChrome = true;
         // All custom tabs VIEW intents are by design explicit intents, so the presence of package
         // name doesn't imply they have to be handled by Chrome explicitly. Check if external apps
         // should be checked for handling the initial redirect chain.
         if (mIsCustomTabIntent) {
-            boolean sendToExternalApps = IntentUtils.safeGetBooleanExtra(intent,
-                    CustomTabIntentDataProvider.EXTRA_SEND_TO_EXTERNAL_DEFAULT_HANDLER, false);
-            checkIsToChrome = !(sendToExternalApps
-                    && ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_EXTERNAL_LINK_HANDLING));
+            checkIsToChrome = !(sendToExternalApps && isCCTExternalLinkHandlingEnabled);
         }
 
         if (checkIsToChrome) mIsInitialIntentHeadingToChrome = isIntentToChrome(intent);

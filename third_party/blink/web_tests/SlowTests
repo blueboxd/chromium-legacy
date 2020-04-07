@@ -610,3 +610,11 @@ crbug.com/853360 [ Mac ] http/tests/misc/slow-loading-image-in-pattern.html [ Sl
 crbug.com/937546 [ Win7 ] http/tests/security/xss-DENIED-cross-origin-stack-overflow.html [ Slow ]
 
 crbug.com/1066517 http/tests/websocket/workers/worker-reload.html [ Slow ]
+
+# Sometimes exceeds timeout on Mac10.10
+crbug.com/24182 [ Mac10.10 ] virtual/threaded/external/wpt/css/css-scroll-snap/snap-after-initial-layout/writing-mode-vertical-rl.html [ Slow ]
+crbug.com/24182 [ Mac10.10 ] virtual/threaded/external/wpt/css/css-animations/parsing/animation-shorthand.html [ Slow ]
+crbug.com/24182 [ Mac10.10 ] virtual/threaded/external/wpt/css/css-scroll-snap/snap-to-visible-areas-both.html [ Slow ]
+crbug.com/24182 [ Mac10.10 ] virtual/threaded/external/wpt/css/css-animations/KeyframeEffect-getKeyframes.tentative.html [ Slow ]
+crbug.com/24182 [ Mac10.10 ] virtual/threaded/external/wpt/css/css-scroll-snap/snap-after-initial-layout/writing-mode-horizontal-tb.html [ Slow ]
+crbug.com/24182 [ Mac10.10 ] virtual/threaded/external/wpt/css/css-animations/CSSAnimation-canceling.tentative.html [ Slow ]

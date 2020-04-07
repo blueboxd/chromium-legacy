@@ -10,6 +10,10 @@
 #include "ios/chrome/browser/credential_provider/credential_provider_service.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 // static
 CredentialProviderService* CredentialProviderServiceFactory::GetForBrowserState(
     ChromeBrowserState* browser_state) {

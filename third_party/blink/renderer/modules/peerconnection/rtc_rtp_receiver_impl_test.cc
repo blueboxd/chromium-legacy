@@ -178,7 +178,8 @@ TEST_F(RTCRtpReceiverImplTest, CreateReceiverWithInsertableStreams) {
                              /*force_encoded_audio_insertable_streams=*/true,
                              /*force_encoded_video_insertable_streams=*/true);
   EXPECT_TRUE(receiver_->GetEncodedAudioStreamTransformer());
-  EXPECT_TRUE(receiver_->GetEncodedVideoStreamTransformer());
+  // There should be no video transformer in audio receivers.
+  EXPECT_FALSE(receiver_->GetEncodedVideoStreamTransformer());
 }
 
 }  // namespace blink

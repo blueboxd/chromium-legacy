@@ -161,11 +161,11 @@ void FakeScriptExecutorDelegate::RequireUI() {
   require_ui_ = true;
 }
 
-void FakeScriptExecutorDelegate::AddListener(Listener* listener) {
+void FakeScriptExecutorDelegate::AddListener(NavigationListener* listener) {
   listeners_.insert(listener);
 }
 
-void FakeScriptExecutorDelegate::RemoveListener(Listener* listener) {
+void FakeScriptExecutorDelegate::RemoveListener(NavigationListener* listener) {
   listeners_.erase(listener);
 }
 

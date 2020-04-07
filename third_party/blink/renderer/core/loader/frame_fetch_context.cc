@@ -763,6 +763,9 @@ void FrameFetchContext::PopulateResourceRequest(
     // (i.e. "CSP: active, active") on asynchronous "stale-while-revalidate"
     // revalidation requests and if this is unexpected behavior.
     request.AddHttpHeaderField("CSP", "active");
+
+  if (!GetResourceFetcherProperties().IsDetached())
+    probe::SetDevToolsIds(Probe(), request);
 }
 
 void FrameFetchContext::SetFirstPartyCookie(ResourceRequest& request) {

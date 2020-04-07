@@ -20,7 +20,7 @@ export {ExtensionControlBrowserProxyImpl} from './extension_control_browser_prox
 export {getSearchManager, SearchRequest, setSearchManagerForTesting} from './search_settings.m.js';
 export {HatsBrowserProxyImpl} from './hats_browser_proxy.m.js';
 export {LifetimeBrowserProxyImpl} from './lifetime_browser_proxy.m.js';
-export {MetricsBrowserProxyImpl, PrivacyElementInteractions, SafetyCheckElementInteractions} from './metrics_browser_proxy.m.js';
+export {MetricsBrowserProxyImpl, PrivacyElementInteractions, SafetyCheckInteractions} from './metrics_browser_proxy.m.js';
 export {OnStartupBrowserProxy, OnStartupBrowserProxyImpl} from './on_startup_page/on_startup_browser_proxy.m.js';
 export {EDIT_STARTUP_URL_EVENT} from './on_startup_page/startup_url_entry.m.js';
 export {StartupUrlsPageBrowserProxy, StartupUrlsPageBrowserProxyImpl} from './on_startup_page/startup_urls_page_browser_proxy.m.js';

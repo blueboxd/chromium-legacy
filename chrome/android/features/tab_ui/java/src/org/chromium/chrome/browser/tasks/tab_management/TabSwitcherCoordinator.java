@@ -27,10 +27,10 @@ import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.share.ShareDelegate;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
 import org.chromium.chrome.browser.tasks.pseudotab.TabAttributeCache;
 import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestionsOrchestrator;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
@@ -41,7 +41,6 @@ import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -112,11 +111,10 @@ public class TabSwitcherCoordinator
         mMultiThumbnailCardProvider =
                 new MultiThumbnailCardProvider(context, tabContentManager, tabModelSelector);
 
-        TabListMediator.TitleProvider titleProvider = tab -> {
-            int numRelatedTabs = tabModelSelector.getTabModelFilterProvider()
-                                         .getCurrentTabModelFilter()
-                                         .getRelatedTabList(tab.getId())
-                                         .size();
+        PseudoTab.TitleProvider titleProvider = tab -> {
+            int numRelatedTabs =
+                    PseudoTab.getRelatedTabs(tab, tabModelSelector.getTabModelFilterProvider())
+                            .size();
             if (numRelatedTabs == 1) return tab.getTitle();
             return context.getResources().getQuantityString(
                     R.plurals.bottom_tab_grid_title_placeholder, numRelatedTabs, numRelatedTabs);
@@ -158,8 +156,9 @@ public class TabSwitcherCoordinator
             }
         }
 
-        if (TabUiFeatureUtilities.ENABLE_SEARCH_CHIP.getValue()
-                && mode != TabListCoordinator.TabListMode.CAROUSEL) {
+        if (CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START)
+                || TabUiFeatureUtilities.ENABLE_SEARCH_CHIP.getValue()
+                        && mode != TabListCoordinator.TabListMode.CAROUSEL) {
             mTabAttributeCache = new TabAttributeCache(mTabModelSelector);
         }
 
@@ -334,14 +333,12 @@ public class TabSwitcherCoordinator
     // ResetHandler implementation.
     @Override
     public boolean resetWithTabList(@Nullable TabList tabList, boolean quickMode, boolean mruMode) {
-        List<Tab> tabs = null;
-        if (tabList != null) {
-            tabs = new ArrayList<>();
-            for (int i = 0; i < tabList.getCount(); i++) {
-                tabs.add(tabList.getTabAt(i));
-            }
-        }
+        return resetWithTabs(PseudoTab.getListOfPseudoTab(tabList), quickMode, mruMode);
+    }
 
+    @Override
+    public boolean resetWithTabs(
+            @Nullable List<PseudoTab> tabs, boolean quickMode, boolean mruMode) {
         mMediator.registerFirstMeaningfulPaintRecorder();
         boolean showQuickly = mTabListCoordinator.resetWithListOfTabs(tabs, quickMode, mruMode);
         if (showQuickly) {

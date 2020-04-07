@@ -102,6 +102,10 @@ void CastComponent::StartComponent() {
   }
 }
 
+CastRunner* CastComponent::runner() const {
+  return static_cast<CastRunner*>(WebComponent::runner());
+}
+
 void CastComponent::DestroyComponent(int termination_exit_code,
                                      fuchsia::sys::TerminationReason reason) {
   DCHECK(!constructor_active_);

@@ -62,9 +62,6 @@ const char* const kSettingsSyncURL = "internal://settings-sync";
 // Constraint for the maximum height of the header view (also used to hide the
 // the header view if needed).
 @property(nonatomic, strong) NSLayoutConstraint* headerViewMaxHeightConstraint;
-// Constraint for the proportiortional size of the header view.
-@property(nonatomic, strong)
-    NSLayoutConstraint* headerViewProportionalHeightConstraint;
 // Settings link controller.
 @property(nonatomic, strong) LabelLinkController* settingsLinkController;
 // Label related to customize sync text.
@@ -253,12 +250,10 @@ const char* const kSettingsSyncURL = "internal://settings-sync";
   AddSameCenterXConstraint(self.view, headerImageView);
   // |headerView| fills 20% of |view|, capped at
   // |kAuthenticationHeaderImageHeight|.
-  self.headerViewProportionalHeightConstraint = [headerImageView.heightAnchor
-      constraintEqualToAnchor:self.view.heightAnchor
-                   multiplier:0.2];
-  self.headerViewProportionalHeightConstraint.priority =
-      UILayoutPriorityDefaultHigh;
-  self.headerViewProportionalHeightConstraint.active = YES;
+  [headerImageView.heightAnchor
+      constraintLessThanOrEqualToAnchor:self.view.heightAnchor
+                             multiplier:0.2]
+      .active = YES;
   self.headerViewMaxHeightConstraint = [headerImageView.heightAnchor
       constraintLessThanOrEqualToConstant:kAuthenticationHeaderImageHeight];
   self.headerViewMaxHeightConstraint.active = YES;

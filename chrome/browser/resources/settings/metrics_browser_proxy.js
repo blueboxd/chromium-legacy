@@ -39,12 +39,12 @@ cr.define('settings', function() {
    * These values are persisted to logs. Entries should not be renumbered and
    * numeric values should never be reused.
    *
-   * Must be kept in sync with the SafetyCheckElementInteractions enum in
+   * Must be kept in sync with the SafetyCheckInteractions enum in
    * histograms/enums.xml
    * @enum {number}
    */
-  /* #export */ const SafetyCheckElementInteractions = {
-    SAFETY_CHECK_STARTED: 0,
+  /* #export */ const SafetyCheckInteractions = {
+    SAFETY_CHECK_START: 0,
     SAFETY_CHECK_UPDATES_RELAUNCH: 1,
     SAFETY_CHECK_PASSWORDS_MANAGE: 2,
     SAFETY_CHECK_SAFE_BROWSING_MANAGE: 3,
@@ -64,10 +64,10 @@ cr.define('settings', function() {
 
     /**
      * Helper function that calls recordHistogram for the
-     * SettingsPage.SafetyCheckElementInteractions histogram
-     * @param {!settings.SafetyCheckElementInteractions} interaction
+     * Settings.SafetyCheck.Interactions histogram
+     * @param {!settings.SafetyCheckInteractions} interaction
      */
-    recordSafetyCheckPageHistogram(interaction) {}
+    recordSafetyCheckInteractionHistogram(interaction) {}
 
     /**
      * Helper function that calls recordHistogram for the
@@ -87,10 +87,10 @@ cr.define('settings', function() {
     }
 
     /** @override*/
-    recordSafetyCheckPageHistogram(interaction) {
+    recordSafetyCheckInteractionHistogram(interaction) {
       chrome.send('metricsHandler:recordInHistogram', [
-        'SettingsPage.SafetyCheckElementInteractions', interaction,
-        settings.SafetyCheckElementInteractions.COUNT
+        'Settings.SafetyCheck.Interactions', interaction,
+        settings.SafetyCheckInteractions.COUNT
       ]);
     }
 
@@ -110,6 +110,6 @@ cr.define('settings', function() {
     MetricsBrowserProxy,
     MetricsBrowserProxyImpl,
     PrivacyElementInteractions,
-    SafetyCheckElementInteractions,
+    SafetyCheckInteractions,
   };
 });

@@ -42,8 +42,6 @@ class UI_BASE_EXPORT Accelerator {
   // for example:
   //     Accelerator(ui::VKEY_Z, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)
   // would correspond to the shortcut "ctrl + shift + z".
-  //
-  // NOTE: this constructor strips out non key related flags.
   Accelerator(KeyboardCode key_code,
               int modifiers,
               KeyState key_state = KeyState::PRESSED,

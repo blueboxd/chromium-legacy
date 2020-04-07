@@ -23,6 +23,7 @@
   self = [super initWithFrame:CGRectZero];
   if (self) {
     self.userInteractionEnabled = NO;
+    [self updateColors];
   }
   return self;
 }
@@ -31,8 +32,7 @@
   return base::mac::ObjCCastStrict<CAGradientLayer>(self.layer);
 }
 
-- (void)traitCollectionDidChange:
-    (nullable UITraitCollection*)previousTraitCollection {
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
   if (@available(iOS 13, *)) {
     if ([self.traitCollection
@@ -54,7 +54,7 @@
 
   self.gradientLayer.colors = @[
     (id)[UIColor.cr_systemBackgroundColor colorWithAlphaComponent:0].CGColor,
-    (id)UIColor.cr_systemBackgroundColor.CGColor
+    (id)UIColor.cr_systemBackgroundColor.CGColor,
   ];
   [CATransaction commit];
 }

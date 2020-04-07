@@ -24,6 +24,7 @@
 #include "device/udev_linux/scoped_udev.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/chromeos/events/modifier_key.h"
 #include "ui/chromeos/events/pref_names.h"
 #include "ui/events/devices/device_data_manager.h"
@@ -199,12 +200,18 @@ struct KeyboardRemapping {
   EventRewriterChromeOS::MutableKeyState result;
 };
 
+// If |strict| is true, the flags must match exactly the same. In other words,
+// the event will be rewritten only if the exactly specified modifier is
+// pressed.  If false, it can match even if other modifiers are pressed.
 bool MatchKeyboardRemapping(
     const EventRewriterChromeOS::MutableKeyState& suspect,
-    const KeyboardRemapping::Condition& test) {
+    const KeyboardRemapping::Condition& test,
+    bool strict = false) {
+  bool flag_matched = strict ? suspect.flags == test.flags
+                             : ((suspect.flags & test.flags) == test.flags);
   return ((test.key_code == ui::VKEY_UNKNOWN) ||
           (test.key_code == suspect.key_code)) &&
-         ((suspect.flags & test.flags) == test.flags);
+         flag_matched;
 }
 
 void ApplyRemapping(const EventRewriterChromeOS::MutableKeyState& changes,
@@ -221,14 +228,16 @@ void ApplyRemapping(const EventRewriterChromeOS::MutableKeyState& changes,
 // Given a set of KeyboardRemapping structs, finds a matching struct
 // if possible, and updates the remapped event values. Returns true if a
 // remapping was found and remapped values were updated.
+// See MatchKeyboardRemapping() for |strict|.
 bool RewriteWithKeyboardRemappings(
     const KeyboardRemapping* mappings,
     size_t num_mappings,
     const EventRewriterChromeOS::MutableKeyState& input_state,
-    EventRewriterChromeOS::MutableKeyState* remapped_state) {
+    EventRewriterChromeOS::MutableKeyState* remapped_state,
+    bool strict = false) {
   for (size_t i = 0; i < num_mappings; ++i) {
     const KeyboardRemapping& map = mappings[i];
-    if (MatchKeyboardRemapping(input_state, map.condition)) {
+    if (MatchKeyboardRemapping(input_state, map.condition, strict)) {
       remapped_state->flags = (input_state.flags & ~map.condition.flags);
       ApplyRemapping(map.result, remapped_state);
       return true;
@@ -1113,6 +1122,28 @@ void EventRewriterChromeOS::RewriteExtendedKeys(const ui::KeyEvent& key_event,
   }
 
   if (incoming.flags & ui::EF_COMMAND_DOWN) {
+    bool strict = ::features::IsNewShortcutMappingEnabled();
+    bool skip_search_key_remapping =
+        delegate_ && delegate_->IsSearchKeyAcceleratorReserved();
+    if (strict) {
+      // These two keys are used to select to Home/End.
+      static const KeyboardRemapping kNewSearchRemappings[] = {
+          {// Search+Shift+Left -> as is
+           {ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN, ui::VKEY_LEFT},
+           {ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN, ui::DomCode::ARROW_LEFT,
+            ui::DomKey::ARROW_LEFT, ui::VKEY_LEFT}},
+          {// Search+Shift+Right -> as is
+           {ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN, ui::VKEY_RIGHT},
+           {ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN, ui::DomCode::ARROW_RIGHT,
+            ui::DomKey::ARROW_RIGHT, ui::VKEY_RIGHT}},
+      };
+      if (!skip_search_key_remapping &&
+          RewriteWithKeyboardRemappings(kNewSearchRemappings,
+                                        base::size(kNewSearchRemappings),
+                                        incoming, state, /*strict=*/true)) {
+        return;
+      }
+    }
     static const KeyboardRemapping kSearchRemappings[] = {
         {// Search+BackSpace -> Delete
          {ui::EF_COMMAND_DOWN, ui::VKEY_BACK},
@@ -1135,12 +1166,10 @@ void EventRewriterChromeOS::RewriteExtendedKeys(const ui::KeyEvent& key_event,
          {ui::EF_COMMAND_DOWN, ui::VKEY_OEM_PERIOD},
          {ui::EF_NONE, ui::DomCode::INSERT, ui::DomKey::INSERT,
           ui::VKEY_INSERT}}};
-    bool skip_search_key_remapping =
-        delegate_ && delegate_->IsSearchKeyAcceleratorReserved();
     if (!skip_search_key_remapping &&
         RewriteWithKeyboardRemappings(kSearchRemappings,
                                       base::size(kSearchRemappings), incoming,
-                                      state)) {
+                                      state, strict)) {
       return;
     }
   }
@@ -1326,42 +1355,63 @@ void EventRewriterChromeOS::RewriteFunctionKeys(const ui::KeyEvent& key_event,
   }
 
   if (state->flags & ui::EF_COMMAND_DOWN) {
-    // Remap Search+<number> to F<number>.
-    // We check the DOM3 |code| here instead of the VKEY, as these keys may
-    // have different |KeyboardCode|s when modifiers are pressed, such as shift.
-    static const struct {
+    const bool strict = ::features::IsNewShortcutMappingEnabled();
+    struct SearchToFunctionMap {
       ui::DomCode input_dom_code;
       MutableKeyState result;
-    } kNumberKeysToFkeys[] = {
-        {ui::DomCode::DIGIT1,
-         {ui::EF_NONE, ui::DomCode::F1, ui::DomKey::F1, ui::VKEY_F1}},
-        {ui::DomCode::DIGIT2,
-         {ui::EF_NONE, ui::DomCode::F2, ui::DomKey::F2, ui::VKEY_F2}},
-        {ui::DomCode::DIGIT3,
-         {ui::EF_NONE, ui::DomCode::F3, ui::DomKey::F3, ui::VKEY_F3}},
-        {ui::DomCode::DIGIT4,
-         {ui::EF_NONE, ui::DomCode::F4, ui::DomKey::F4, ui::VKEY_F4}},
-        {ui::DomCode::DIGIT5,
-         {ui::EF_NONE, ui::DomCode::F5, ui::DomKey::F5, ui::VKEY_F5}},
-        {ui::DomCode::DIGIT6,
-         {ui::EF_NONE, ui::DomCode::F6, ui::DomKey::F6, ui::VKEY_F6}},
-        {ui::DomCode::DIGIT7,
-         {ui::EF_NONE, ui::DomCode::F7, ui::DomKey::F7, ui::VKEY_F7}},
-        {ui::DomCode::DIGIT8,
-         {ui::EF_NONE, ui::DomCode::F8, ui::DomKey::F8, ui::VKEY_F8}},
-        {ui::DomCode::DIGIT9,
-         {ui::EF_NONE, ui::DomCode::F9, ui::DomKey::F9, ui::VKEY_F9}},
-        {ui::DomCode::DIGIT0,
-         {ui::EF_NONE, ui::DomCode::F10, ui::DomKey::F10, ui::VKEY_F10}},
-        {ui::DomCode::MINUS,
-         {ui::EF_NONE, ui::DomCode::F11, ui::DomKey::F11, ui::VKEY_F11}},
-        {ui::DomCode::EQUAL,
-         {ui::EF_NONE, ui::DomCode::F12, ui::DomKey::F12, ui::VKEY_F12}}};
-    for (const auto& map : kNumberKeysToFkeys) {
-      if (state->code == map.input_dom_code) {
-        state->flags &= ~ui::EF_COMMAND_DOWN;
-        ApplyRemapping(map.result, state);
-        return;
+    };
+
+    // We check the DOM3 |code| here instead of the VKEY, as these keys may
+    // have different |KeyboardCode|s when modifiers are pressed, such as
+    // shift.
+    if (strict) {
+      // Remap Search + 1/2 to F11/12.
+      static const SearchToFunctionMap kNumberKeysToFkeys[] = {
+          {ui::DomCode::DIGIT1,
+           {ui::EF_NONE, ui::DomCode::F11, ui::DomKey::F12, ui::VKEY_F11}},
+          {ui::DomCode::DIGIT2,
+           {ui::EF_NONE, ui::DomCode::F12, ui::DomKey::F12, ui::VKEY_F12}},
+      };
+      for (const auto& map : kNumberKeysToFkeys) {
+        if (state->code == map.input_dom_code) {
+          state->flags &= ~ui::EF_COMMAND_DOWN;
+          ApplyRemapping(map.result, state);
+          return;
+        }
+      }
+    } else {
+      // Remap Search + top row to F1~F12.
+      static const SearchToFunctionMap kNumberKeysToFkeys[] = {
+          {ui::DomCode::DIGIT1,
+           {ui::EF_NONE, ui::DomCode::F1, ui::DomKey::F1, ui::VKEY_F1}},
+          {ui::DomCode::DIGIT2,
+           {ui::EF_NONE, ui::DomCode::F2, ui::DomKey::F2, ui::VKEY_F2}},
+          {ui::DomCode::DIGIT3,
+           {ui::EF_NONE, ui::DomCode::F3, ui::DomKey::F3, ui::VKEY_F3}},
+          {ui::DomCode::DIGIT4,
+           {ui::EF_NONE, ui::DomCode::F4, ui::DomKey::F4, ui::VKEY_F4}},
+          {ui::DomCode::DIGIT5,
+           {ui::EF_NONE, ui::DomCode::F5, ui::DomKey::F5, ui::VKEY_F5}},
+          {ui::DomCode::DIGIT6,
+           {ui::EF_NONE, ui::DomCode::F6, ui::DomKey::F6, ui::VKEY_F6}},
+          {ui::DomCode::DIGIT7,
+           {ui::EF_NONE, ui::DomCode::F7, ui::DomKey::F7, ui::VKEY_F7}},
+          {ui::DomCode::DIGIT8,
+           {ui::EF_NONE, ui::DomCode::F8, ui::DomKey::F8, ui::VKEY_F8}},
+          {ui::DomCode::DIGIT9,
+           {ui::EF_NONE, ui::DomCode::F9, ui::DomKey::F9, ui::VKEY_F9}},
+          {ui::DomCode::DIGIT0,
+           {ui::EF_NONE, ui::DomCode::F10, ui::DomKey::F10, ui::VKEY_F10}},
+          {ui::DomCode::MINUS,
+           {ui::EF_NONE, ui::DomCode::F11, ui::DomKey::F11, ui::VKEY_F11}},
+          {ui::DomCode::EQUAL,
+           {ui::EF_NONE, ui::DomCode::F12, ui::DomKey::F12, ui::VKEY_F12}}};
+      for (const auto& map : kNumberKeysToFkeys) {
+        if (state->code == map.input_dom_code) {
+          state->flags &= ~ui::EF_COMMAND_DOWN;
+          ApplyRemapping(map.result, state);
+          return;
+        }
       }
     }
   }

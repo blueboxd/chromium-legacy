@@ -3376,6 +3376,10 @@ const char kEnableNeuralStylusPalmRejectionDescription[] =
     "Experimental: Enable Neural Palm detection. Not compatible with all "
     "devices.";
 
+const char kEnableNewShortcutMappingName[] = "Enable New Shortcut Mapping";
+const char kEnableNewShortcutMappingDescription[] =
+    "Enables experimental new shortcut mapping";
+
 const char kEnablePalmOnMaxTouchMajorName[] =
     "Enable Palm when Touch is Maximum";
 const char kEnablePalmOnMaxTouchMajorDescription[] =

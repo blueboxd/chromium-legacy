@@ -57,13 +57,12 @@ IdleDetector* IdleDetector::Create(ScriptState* script_state,
 }
 
 IdleDetector::IdleDetector(ExecutionContext* context, base::TimeDelta threshold)
-    : ExecutionContextClient(context), threshold_(threshold), receiver_(this) {}
+    : ExecutionContextClient(context),
+      threshold_(threshold),
+      receiver_(this, context),
+      service_(context) {}
 
 IdleDetector::~IdleDetector() = default;
-
-void IdleDetector::Dispose() {
-  StopMonitoring();
-}
 
 const AtomicString& IdleDetector::InterfaceName() const {
   return event_target_names::kIdleDetector;
@@ -98,7 +97,7 @@ ScriptPromise IdleDetector::start(ScriptState* script_state,
 }
 
 void IdleDetector::stop() {
-  StopMonitoring();
+  receiver_.reset();
 }
 
 void IdleDetector::StartMonitoring() {
@@ -110,7 +109,7 @@ void IdleDetector::StartMonitoring() {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
 
-  if (!service_) {
+  if (!service_.is_bound()) {
     GetExecutionContext()->GetBrowserInterfaceBroker().GetInterface(
         service_.BindNewPipeAndPassReceiver(task_runner));
   }
@@ -122,10 +121,6 @@ void IdleDetector::StartMonitoring() {
   service_->AddMonitor(
       threshold_, std::move(idle_monitor_remote),
       WTF::Bind(&IdleDetector::OnAddMonitor, WrapWeakPersistent(this)));
-}
-
-void IdleDetector::StopMonitoring() {
-  receiver_.reset();
 }
 
 void IdleDetector::OnAddMonitor(mojom::blink::IdleStatePtr state) {
@@ -151,6 +146,8 @@ void IdleDetector::Update(mojom::blink::IdleStatePtr state) {
 
 void IdleDetector::Trace(Visitor* visitor) {
   visitor->Trace(state_);
+  visitor->Trace(receiver_);
+  visitor->Trace(service_);
   EventTargetWithInlineData::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
   ActiveScriptWrappable::Trace(visitor);

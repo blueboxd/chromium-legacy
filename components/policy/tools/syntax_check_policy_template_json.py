@@ -69,6 +69,11 @@ LEGACY_EMBEDDED_JSON_WHITELIST = [
     # complex schemas using stringified JSON - instead, store them as dicts.
 ]
 
+# List of policies where not all properties are required to be presented in the
+# example value. This could be useful e.g. in case of mutually exclusive fields.
+# See crbug.com/1068257 for the details.
+OPTIONAL_PROPERTIES_POLICIES_WHITELIST = []
+
 # 100 MiB upper limit on the total device policy external data max size limits
 # due to the security reasons.
 # You can increase this limit if you're introducing new external data type
@@ -625,9 +630,11 @@ class PolicyTemplateChecker(object):
       # admins.
       schema = policy.get('schema')
       example = policy.get('example_value')
+      enforce_use_entire_schema = policy.get(
+          'name') not in OPTIONAL_PROPERTIES_POLICIES_WHITELIST
       if not self.has_schema_error:
-        if not self.schema_validator.ValidateValue(
-            schema, example, enforce_use_entire_schema=True):
+        if not self.schema_validator.ValidateValue(schema, example,
+                                                   enforce_use_entire_schema):
           self._Error(('Example for policy %s does not comply to the policy\'s '
                        'schema or does not use all properties at least once.') %
                       policy.get('name'))

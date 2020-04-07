@@ -92,6 +92,12 @@ COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsOzoneDrmMojo();
 #if defined(OS_CHROMEOS)
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kHandwritingGesture;
+
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kNewShortcutMapping;
+
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+bool IsNewShortcutMappingEnabled();
 #endif
 
 COMPONENT_EXPORT(UI_BASE_FEATURES)

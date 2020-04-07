@@ -285,7 +285,7 @@ public class SigninManager
      */
     public boolean isSignInAllowed() {
         return !mFirstRunCheckIsPending && mSignInState == null && mSigninAllowedByPolicy
-                && ChromeSigninController.get().getSignedInUser() == null && isSigninSupported();
+                && mIdentityManager.getPrimaryAccountInfo() == null && isSigninSupported();
     }
 
     /**

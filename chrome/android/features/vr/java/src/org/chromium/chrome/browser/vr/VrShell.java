@@ -42,6 +42,7 @@ import org.chromium.chrome.browser.compositor.CompositorView;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
+import org.chromium.chrome.browser.tab.RedirectHandlerTabHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAssociatedApp;
 import org.chromium.chrome.browser.tab.TabBrowserControlsConstraintsHelper;
@@ -510,14 +511,15 @@ public class VrShell extends GvrLayout
     private void initializeTabForVR() {
         if (mTab == null) return;
         // Make sure we are not redirecting to another app, i.e. out of VR mode.
-        mNonVrTabRedirectHandler = TabRedirectHandler.swapFor(mTab, mTabRedirectHandler);
+        mNonVrTabRedirectHandler =
+                RedirectHandlerTabHelper.swapHandlerFor(mTab, mTabRedirectHandler);
         assert mTab.getWindowAndroid() == mContentVrWindowAndroid;
         configWebContentsImeForVr(mTab.getWebContents());
     }
 
     private void restoreTabFromVR() {
         if (mTab == null) return;
-        TabRedirectHandler.swapFor(mTab, mNonVrTabRedirectHandler);
+        RedirectHandlerTabHelper.swapHandlerFor(mTab, mNonVrTabRedirectHandler);
         mNonVrTabRedirectHandler = null;
         restoreWebContentsImeFromVr(mTab.getWebContents());
     }

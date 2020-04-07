@@ -54,7 +54,6 @@ import org.chromium.chrome.features.start_surface.StartSurfaceLayout;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.Features;
@@ -139,7 +138,7 @@ public class TabGridIphTest {
         onView(withId(R.id.tab_grid_message_item)).check(matches(isDisplayed()));
 
         // Restart chrome to verify that IPH message card is still there.
-        ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
+        TabUiTestHelper.finishActivity(mActivityTestRule.getActivity());
         mActivityTestRule.startMainActivityFromLauncher();
         cta = mActivityTestRule.getActivity();
         enterTabSwitcher(cta);
@@ -153,7 +152,7 @@ public class TabGridIphTest {
         onView(withId(R.id.tab_grid_message_item)).check(doesNotExist());
 
         // Restart chrome to verify that IPH message card no longer shows.
-        ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
+        TabUiTestHelper.finishActivity(mActivityTestRule.getActivity());
         mActivityTestRule.startMainActivityFromLauncher();
         cta = mActivityTestRule.getActivity();
         enterTabSwitcher(cta);

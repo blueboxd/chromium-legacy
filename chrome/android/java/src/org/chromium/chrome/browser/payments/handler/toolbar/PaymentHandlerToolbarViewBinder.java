@@ -20,7 +20,7 @@ import org.chromium.ui.modelutil.PropertyModel;
             PropertyModel model, PaymentHandlerToolbarView view, PropertyKey propertyKey) {
         if (PaymentHandlerToolbarProperties.URL == propertyKey) {
             String origin = UrlFormatter.formatUrlForSecurityDisplay(
-                    model.get(PaymentHandlerToolbarProperties.URL).toString(),
+                    model.get(PaymentHandlerToolbarProperties.URL),
                     SchemeDisplay.OMIT_HTTP_AND_HTTPS);
             view.mOriginView.setText(origin);
         } else if (PaymentHandlerToolbarProperties.TITLE == propertyKey) {

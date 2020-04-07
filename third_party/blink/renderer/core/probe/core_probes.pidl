@@ -177,4 +177,5 @@ interface CoreProbes {
   void PlayerEventsAdded(LocalFrame* frame, String player_id, const Vector<InspectorPlayerEvent>& events);
   void PlayerPropertiesChanged(LocalFrame* frame, String player_id, const Vector<InspectorPlayerProperty>& properties);
   void PlayersCreated(LocalFrame* frame, const Vector<WebString>& players);
+  void SetDevToolsIds(CoreProbeSink*, ResourceRequest& request);
 }

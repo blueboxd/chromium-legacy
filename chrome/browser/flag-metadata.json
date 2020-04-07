@@ -2859,6 +2859,11 @@
     "expiry_milestone": 86
   },
   {
+    "name": "new-shortcut-mapping",
+    "owners": [ "oshima", "afakhry" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "new-signin-architecture",
     "owners": ["chrome-ios-signin@google.com", "fernandex"],
     "expiry_milestone": 86

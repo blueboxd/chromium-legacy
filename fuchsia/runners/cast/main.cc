@@ -8,6 +8,7 @@
 #include "base/fuchsia/default_context.h"
 #include "base/fuchsia/file_utils.h"
 #include "base/message_loop/message_pump_type.h"
+#include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
@@ -33,19 +34,7 @@ bool IsHeadless() {
   return false;
 }
 
-}  // namespace
-
-int main(int argc, char** argv) {
-  base::SingleThreadTaskExecutor io_task_executor(base::MessagePumpType::IO);
-  base::RunLoop run_loop;
-
-  base::CommandLine::Init(argc, argv);
-  CHECK(cr_fuchsia::InitLoggingFromCommandLine(
-      *base::CommandLine::ForCurrentProcess()))
-      << "Failed to initialize logging.";
-
-  cr_fuchsia::RegisterFuchsiaDirScheme();
-
+fuchsia::web::CreateContextParams CreateMainContextParams() {
   fuchsia::web::ContextFeatureFlags features =
       fuchsia::web::ContextFeatureFlags::NETWORK |
       fuchsia::web::ContextFeatureFlags::AUDIO |
@@ -82,8 +71,27 @@ int main(int argc, char** argv) {
   create_context_params.set_unsafely_treat_insecure_origins_as_secure(
       {"allow-running-insecure-content"});
 
+  return create_context_params;
+}
+
+}  // namespace
+
+int main(int argc, char** argv) {
+  base::SingleThreadTaskExecutor io_task_executor(base::MessagePumpType::IO);
+  base::RunLoop run_loop;
+
+  base::CommandLine::Init(argc, argv);
+  CHECK(cr_fuchsia::InitLoggingFromCommandLine(
+      *base::CommandLine::ForCurrentProcess()))
+      << "Failed to initialize logging.";
+
+  cr_fuchsia::RegisterFuchsiaDirScheme();
+
+  WebContentRunner::GetContextParamsCallback get_context_params_callback =
+      base::BindRepeating(&CreateMainContextParams);
+
   CastRunner runner(
-      std::move(create_context_params),
+      std::move(get_context_params_callback), IsHeadless(),
       base::fuchsia::ComponentContextForCurrentProcess()->outgoing().get());
 
   base::fuchsia::ComponentContextForCurrentProcess()

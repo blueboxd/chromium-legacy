@@ -526,7 +526,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
                                                       browser:browser];
       __weak SceneController* weakSelf = self;
       self.signinCoordinator.signinCompletion =
-          ^(SigninCoordinatorResult signinResult, ChromeIdentity* identity) {
+          ^(SigninCoordinatorResult signinResult, SigninCompletionInfo*) {
             [weakSelf.signinCoordinator stop];
             weakSelf.signinCoordinator = nil;
           };

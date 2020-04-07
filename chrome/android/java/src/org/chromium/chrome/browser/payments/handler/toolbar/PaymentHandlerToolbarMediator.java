@@ -9,11 +9,9 @@ import android.view.View;
 
 import androidx.annotation.DrawableRes;
 
-import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.page_info.PageInfoController;
-import org.chromium.chrome.browser.payments.handler.toolbar.PaymentHandlerToolbarCoordinator.PaymentHandlerToolbarObserver;
 import org.chromium.chrome.browser.ssl.ChromeSecurityStateModelDelegate;
 import org.chromium.components.omnibox.SecurityStatusIcon;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
@@ -22,9 +20,6 @@ import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.modelutil.PropertyModel;
-import org.chromium.url.URI;
-
-import java.net.URISyntaxException;
 
 /**
  * PaymentHandlerToolbar mediator, which is responsible for receiving events from the view and
@@ -43,7 +38,6 @@ import java.net.URISyntaxException;
     /* package */ static final float MINIMUM_LOAD_PROGRESS = 0.05f;
 
     private final PropertyModel mModel;
-    private PaymentHandlerToolbarObserver mObserver;
     /** The handler to delay hiding the progress bar. */
     private Handler mHideProgressBarHandler;
     /** Postfixed with "Ref" to distinguish from mWebContent in WebContentsObserver. */
@@ -68,11 +62,6 @@ import java.net.URISyntaxException;
         mChromeActivity = chromeActivity;
     }
 
-    /** Set an observer for this class. */
-    /* package */ void setObserver(PaymentHandlerToolbarObserver observer) {
-        mObserver = observer;
-    }
-
     // WebContentsObserver:
     @Override
     public void didFinishLoad(long frameId, String validatedUrl, boolean isMainFrame) {
@@ -94,14 +83,7 @@ import java.net.URISyntaxException;
     @Override
     public void didFinishNavigation(NavigationHandle navigation) {
         if (!navigation.hasCommitted() || !navigation.isInMainFrame()) return;
-        String url = mWebContentsRef.getVisibleUrl().getSpec();
-        try {
-            mModel.set(PaymentHandlerToolbarProperties.URL, new URI(url));
-        } catch (URISyntaxException e) {
-            Log.e(TAG, "Failed to instantiate a URI with the url \"%s\".", url);
-            assert mObserver != null;
-            mObserver.onToolbarError();
-        }
+        mModel.set(PaymentHandlerToolbarProperties.URL, mWebContentsRef.getVisibleUrl());
         mModel.set(PaymentHandlerToolbarProperties.PROGRESS_VISIBLE, false);
     }
 

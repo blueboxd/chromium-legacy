@@ -6,8 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_IDLE_IDLE_DETECTOR_H_
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -18,6 +16,8 @@
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/idle/idle_state.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -30,7 +30,6 @@ class IdleDetector final : public EventTargetWithInlineData,
                            public mojom::blink::IdleMonitor {
   USING_GARBAGE_COLLECTED_MIXIN(IdleDetector);
   DEFINE_WRAPPERTYPEINFO();
-  USING_PRE_FINALIZER(IdleDetector, Dispose);
 
  public:
   static IdleDetector* Create(ScriptState*,
@@ -41,8 +40,6 @@ class IdleDetector final : public EventTargetWithInlineData,
   IdleDetector(ExecutionContext*, base::TimeDelta threshold);
 
   ~IdleDetector() override;
-
-  void Dispose();
 
   // EventTarget implementation.
   const AtomicString& InterfaceName() const override;
@@ -72,12 +69,16 @@ class IdleDetector final : public EventTargetWithInlineData,
 
   // Holds a pipe which the service uses to notify this object
   // when the idle state has changed.
-  mojo::Receiver<mojom::blink::IdleMonitor> receiver_;
+  HeapMojoReceiver<mojom::blink::IdleMonitor,
+                   IdleDetector,
+                   HeapMojoWrapperMode::kWithoutContextObserver>
+      receiver_;
 
   void StartMonitoring();
-  void StopMonitoring();
 
-  mojo::Remote<mojom::blink::IdleManager> service_;
+  HeapMojoRemote<mojom::blink::IdleManager,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      service_;
 
   DISALLOW_COPY_AND_ASSIGN(IdleDetector);
 };

@@ -5,9 +5,13 @@
 #include "ui/base/accelerators/accelerator_manager.h"
 
 #include "base/stl_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/accelerators/test_accelerator_target.h"
+#include "ui/base/ui_base_features.h"
+#include "ui/events/event.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace ui {
@@ -161,6 +165,43 @@ TEST_F(AcceleratorManagerTest, Process) {
     manager_.UnregisterAll(&target);
   }
 }
+
+#if defined(OS_CHROMEOS)
+TEST_F(AcceleratorManagerTest, NewMapping) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kNewShortcutMapping);
+
+  // Test new mapping with a ASCII punctuation shortcut that doesn't involve
+  // shift.
+  TestAcceleratorTarget target;
+  {
+    // ']' + ctrl
+    const Accelerator accelerator(VKEY_OEM_6, EF_CONTROL_DOWN);
+    manager_.Register({accelerator}, AcceleratorManager::kNormalPriority,
+                      &target);
+    KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_1, ui::DomCode::NONE,
+                   ui::EF_CONTROL_DOWN, ui::DomKey::Constant<']'>::Character,
+                   base::TimeTicks());
+    const Accelerator trigger(event);
+    EXPECT_TRUE(manager_.IsRegistered(trigger));
+    EXPECT_TRUE(manager_.Process(trigger));
+  }
+
+  // Test new mapping with a ASCII punctuation shortcut that involves shift.
+  {
+    // ']' + ctrl + shift, which produces '}' on US layout.
+    const Accelerator accelerator(VKEY_OEM_6, EF_CONTROL_DOWN | EF_SHIFT_DOWN);
+    manager_.Register({accelerator}, AcceleratorManager::kNormalPriority,
+                      &target);
+    KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_1, ui::DomCode::NONE,
+                   ui::EF_CONTROL_DOWN, ui::DomKey::Constant<'}'>::Character,
+                   base::TimeTicks());
+    const Accelerator trigger(event);
+    EXPECT_TRUE(manager_.IsRegistered(trigger));
+    EXPECT_TRUE(manager_.Process(trigger));
+  }
+}
+#endif
 
 }  // namespace
 }  // namespace test

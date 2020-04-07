@@ -196,18 +196,21 @@ class RTCRtpSenderImpl::RTCRtpSenderInternal
         state_(std::move(state)) {
     DCHECK(track_map_);
     DCHECK(state_.is_initialized());
-    if (force_encoded_audio_insertable_streams) {
+    if (force_encoded_audio_insertable_streams &&
+        webrtc_sender_->media_type() == cricket::MEDIA_TYPE_AUDIO) {
       encoded_audio_transformer_ =
           std::make_unique<RTCEncodedAudioStreamTransformer>(main_task_runner_);
       webrtc_sender_->SetEncoderToPacketizerFrameTransformer(
           encoded_audio_transformer_->Delegate());
     }
-    if (force_encoded_video_insertable_streams) {
+    if (force_encoded_video_insertable_streams &&
+        webrtc_sender_->media_type() == cricket::MEDIA_TYPE_VIDEO) {
       encoded_video_transformer_ =
           std::make_unique<RTCEncodedVideoStreamTransformer>(main_task_runner_);
       webrtc_sender_->SetEncoderToPacketizerFrameTransformer(
           encoded_video_transformer_->Delegate());
     }
+    DCHECK(!encoded_audio_transformer_ || !encoded_video_transformer_);
   }
 
   const RtpSenderState& state() const {

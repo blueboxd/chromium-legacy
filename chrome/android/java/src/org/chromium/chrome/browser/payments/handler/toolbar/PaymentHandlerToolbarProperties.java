@@ -9,11 +9,11 @@ import org.chromium.ui.modelutil.PropertyModel.WritableBooleanPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableFloatPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableIntPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
-import org.chromium.url.URI;
+import org.chromium.url.GURL;
 
 /** PaymentHandlerToolbar UI properties, which fully describe the state of the UI. */
 /* package */ class PaymentHandlerToolbarProperties {
-    /* package */ static final WritableObjectPropertyKey<URI> URL =
+    /* package */ static final WritableObjectPropertyKey<GURL> URL =
             new WritableObjectPropertyKey<>();
 
     /* package */ static final WritableObjectPropertyKey<String> TITLE =

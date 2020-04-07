@@ -108,7 +108,8 @@ class CORE_EXPORT Keyframe : public GarbageCollected<Keyframe> {
   //
   // Subclasses should override this to add the (property, value) pairs they
   // store, and call into the base version to add the basic Keyframe properties.
-  virtual void AddKeyframePropertiesToV8Object(V8ObjectBuilder&) const;
+  virtual void AddKeyframePropertiesToV8Object(V8ObjectBuilder&,
+                                               Element*) const;
 
   virtual bool IsStringKeyframe() const { return false; }
   virtual bool IsTransitionKeyframe() const { return false; }

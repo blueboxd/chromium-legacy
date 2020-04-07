@@ -246,11 +246,12 @@ std::ostream& operator<<(std::ostream& out, const NavigationState& state) {
 
 // A Listener that keeps track of the reported state of the delegate captured
 // from OnNavigationStateChanged.
-class NavigationStateChangeListener : public ScriptExecutorDelegate::Listener {
+class NavigationStateChangeListener
+    : public ScriptExecutorDelegate::NavigationListener {
  public:
   explicit NavigationStateChangeListener(ScriptExecutorDelegate* delegate)
       : delegate_(delegate) {}
-  ~NavigationStateChangeListener() = default;
+  ~NavigationStateChangeListener() override;
   void OnNavigationStateChanged() override;
 
   std::vector<NavigationState> events;
@@ -258,6 +259,8 @@ class NavigationStateChangeListener : public ScriptExecutorDelegate::Listener {
  private:
   ScriptExecutorDelegate* const delegate_;
 };
+
+NavigationStateChangeListener::~NavigationStateChangeListener() {}
 
 void NavigationStateChangeListener::OnNavigationStateChanged() {
   NavigationState state;

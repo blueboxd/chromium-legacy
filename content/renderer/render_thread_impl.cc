@@ -1236,7 +1236,7 @@ RenderThreadImpl::SharedMainThreadContextProvider() {
   bool support_raster_interface = true;
   bool support_oop_rasterization =
       base::FeatureList::IsEnabled(features::kCanvasOopRasterization);
-  bool support_gles2_interface = !support_oop_rasterization;
+  bool support_gles2_interface = false;
   bool support_grcontext = !support_oop_rasterization;
   // Enable automatic flushes to improve canvas throughput.
   // See https://crbug.com/880901

@@ -330,7 +330,7 @@ const base::Feature kSmartDimModelV3{"SmartDimModelV3",
 // For example, the user could choose to sync OS settings but not browser
 // settings.
 const base::Feature kSplitSettingsSync{"SplitSettingsSync",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Introduces a new OOBE dialog for the OS sync feature. Uses the same browser
 // sync consent dialog as Windows/Mac/Linux. Allows the user to fully opt-out of

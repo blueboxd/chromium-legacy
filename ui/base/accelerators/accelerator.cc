@@ -26,9 +26,54 @@
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "ui/base/ui_base_features.h"
+#endif
+
 namespace ui {
 
 namespace {
+
+#if defined(OS_CHROMEOS)
+template <DomKey::Base T>
+using DomKeyConst = typename ui::DomKey::Constant<T>;
+
+// ChromeOS has several shortcuts that uses ASCII punctuation key as a main key
+// to triger them (e.g. ctrl+shift+alt+/). However, many of these keys have
+// different VKEY on different keyboard layouts, (some require shift or altgr
+// to type in), so using these keys combined with shift may not work well on
+// non-US layouts.  Instead of using VKEY, the new mapping uses DomKey as a key
+// to trigger and maps to VKEY+modifier that would have generated the same key
+// on US-keyboard.  See crbug.com/1067269 for more details.
+struct {
+  KeyboardCode vkey;
+  const DomKey::Base dom_key;
+  const DomKey::Base shifted_dom_key;
+} kAccelConversionMap[] = {
+    {VKEY_1, DomKeyConst<'1'>::Character, DomKeyConst<'!'>::Character},
+    {VKEY_2, DomKeyConst<'2'>::Character, DomKeyConst<'@'>::Character},
+    {VKEY_3, DomKeyConst<'3'>::Character, DomKeyConst<'#'>::Character},
+    {VKEY_4, DomKeyConst<'4'>::Character, DomKeyConst<'$'>::Character},
+    {VKEY_5, DomKeyConst<'5'>::Character, DomKeyConst<'%'>::Character},
+    {VKEY_6, DomKeyConst<'6'>::Character, DomKeyConst<'&'>::Character},
+    {VKEY_7, DomKeyConst<'7'>::Character, DomKeyConst<'^'>::Character},
+    {VKEY_8, DomKeyConst<'8'>::Character, DomKeyConst<'*'>::Character},
+    {VKEY_9, DomKeyConst<'9'>::Character, DomKeyConst<'('>::Character},
+    {VKEY_0, DomKeyConst<'0'>::Character, DomKeyConst<')'>::Character},
+    {VKEY_OEM_MINUS, DomKeyConst<'-'>::Character, DomKeyConst<'_'>::Character},
+    {VKEY_OEM_PLUS, DomKeyConst<'='>::Character, DomKeyConst<'+'>::Character},
+    {VKEY_OEM_4, DomKeyConst<'['>::Character, DomKeyConst<'{'>::Character},
+    {VKEY_OEM_6, DomKeyConst<']'>::Character, DomKeyConst<'}'>::Character},
+    {VKEY_OEM_5, DomKeyConst<'\\'>::Character, DomKeyConst<'|'>::Character},
+    {VKEY_OEM_1, DomKeyConst<';'>::Character, DomKeyConst<':'>::Character},
+    {VKEY_OEM_7, DomKeyConst<'\''>::Character, DomKeyConst<'\"'>::Character},
+    {VKEY_OEM_3, DomKeyConst<'`'>::Character, DomKeyConst<'~'>::Character},
+    {VKEY_OEM_COMMA, DomKeyConst<','>::Character, DomKeyConst<'<'>::Character},
+    {VKEY_OEM_PERIOD, DomKeyConst<'.'>::Character, DomKeyConst<'>'>::Character},
+    {VKEY_OEM_2, DomKeyConst<'/'>::Character, DomKeyConst<'?'>::Character},
+};
+
+#endif
 
 const int kModifierMask = EF_SHIFT_DOWN | EF_CONTROL_DOWN | EF_ALT_DOWN |
                           EF_COMMAND_DOWN | EF_ALTGR_DOWN;
@@ -66,7 +111,28 @@ Accelerator::Accelerator(const KeyEvent& key_event)
       modifiers_(key_event.flags() & kInterestingFlagsMask),
       time_stamp_(key_event.time_stamp()),
       interrupted_by_mouse_event_(false),
-      source_device_id_(key_event.source_device_id()) {}
+      source_device_id_(key_event.source_device_id()) {
+#if defined(OS_CHROMEOS)
+  if (features::IsNewShortcutMappingEnabled()) {
+    DomKey dom_key = key_event.GetDomKey();
+    if (!dom_key.IsCharacter())
+      return;
+    for (auto entry : kAccelConversionMap) {
+      // ALTGR is always canceled because it's not required on US Keyboard.
+      if (entry.dom_key == dom_key) {
+        // No shift punctuation key on US keyboard.
+        key_code_ = entry.vkey;
+        modifiers_ &= ~(ui::EF_SHIFT_DOWN | ui::EF_ALTGR_DOWN);
+      }
+      if (entry.shifted_dom_key == dom_key) {
+        // Punctuation key with shift on US keyboard.
+        key_code_ = entry.vkey;
+        modifiers_ = (modifiers_ | ui::EF_SHIFT_DOWN) & ~ui::EF_ALTGR_DOWN;
+      }
+    }
+  }
+#endif
+}
 
 Accelerator::Accelerator(const Accelerator& accelerator) {
   key_code_ = accelerator.key_code_;

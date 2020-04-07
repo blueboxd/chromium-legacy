@@ -8,7 +8,6 @@
 #import <MessageUI/MessageUI.h>
 
 #include "base/base64.h"
-#include "base/ios/ios_util.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -17,7 +16,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/feature_engagement/public/event_constants.h"
 #include "components/feature_engagement/public/tracker.h"
-#import "components/language/ios/browser/ios_language_detection_tab_helper.h"
 #include "components/omnibox/browser/location_bar_model_impl.h"
 #include "components/reading_list/core/reading_list_model.h"
 #include "components/search_engines/template_url_service.h"
@@ -79,8 +77,8 @@
 #import "ios/chrome/browser/ui/browser_view/key_commands_provider.h"
 #import "ios/chrome/browser/ui/bubble/bubble_presenter.h"
 #import "ios/chrome/browser/ui/bubble/bubble_presenter_delegate.h"
-#import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/help_commands.h"
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/ui/commands/send_tab_to_self_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
@@ -90,12 +88,10 @@
 #import "ios/chrome/browser/ui/dialogs/dialog_features.h"
 #import "ios/chrome/browser/ui/dialogs/dialog_presenter.h"
 #import "ios/chrome/browser/ui/dialogs/java_script_dialog_presenter_impl.h"
-#import "ios/chrome/browser/ui/dialogs/overlay_java_script_dialog_presenter.h"
 #import "ios/chrome/browser/ui/download/download_manager_coordinator.h"
 #import "ios/chrome/browser/ui/elements/activity_overlay_coordinator.h"
 #import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
@@ -112,7 +108,6 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_coordinator.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_presenter.h"
-#import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_coordinator.h"
 #import "ios/chrome/browser/ui/presenters/vertical_animation_container.h"
 #import "ios/chrome/browser/ui/sad_tab/sad_tab_coordinator.h"
@@ -126,7 +121,6 @@
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_presentation.h"
 #import "ios/chrome/browser/ui/tabs/switch_to_tab_animation_view.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_legacy_coordinator.h"
-#import "ios/chrome/browser/ui/toolbar/accessory/toolbar_accessory_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/accessory/toolbar_accessory_presenter.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_view_controller.h"
@@ -140,7 +134,6 @@
 #import "ios/chrome/browser/ui/toolbar/toolbar_coordinator_adaptor.h"
 #import "ios/chrome/browser/ui/toolbar_container/toolbar_container_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar_container/toolbar_container_features.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/keyboard_observer_helper.h"
 #import "ios/chrome/browser/ui/util/multi_window_support.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
@@ -185,10 +178,8 @@
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #import "ios/web/public/deprecated/crw_web_controller_util.h"
 #include "ios/web/public/navigation/navigation_item.h"
-#include "ios/web/public/thread/web_thread.h"
 #import "ios/web/public/ui/context_menu_params.h"
 #import "ios/web/public/ui/crw_web_view_proxy.h"
-#include "ios/web/public/web_client.h"
 #import "ios/web/public/web_state_delegate_bridge.h"
 #import "ios/web/public/web_state_observer_bridge.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -482,6 +473,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Browser container view controller.
 @property(nonatomic, strong)
     BrowserContainerViewController* browserContainerViewController;
+// Invisible button used to dismiss the keyboard.
+@property(nonatomic, strong) UIButton* typingShield;
 // Command dispatcher.
 @property(nonatomic, weak) CommandDispatcher* commandDispatcher;
 // The browser's side swipe controller.  Lazily instantiated on the first call.
@@ -550,6 +543,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 // Command handler for omnibox commands
 @property(nonatomic, weak) id<OmniboxCommands> omniboxHandler;
+
+// The FullscreenController.
+@property(nonatomic, assign) FullscreenController* fullscreenController;
 
 // Primary toolbar.
 @property(nonatomic, strong)
@@ -789,18 +785,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (id<ApplicationCommands,
       BrowserCommands,
-      BrowsingDataCommands,
       FindInPageCommands,
       PasswordBreachCommands,
-      PopupMenuCommands,
-      FakeboxFocuser,
-      SnackbarCommands,
       ToolbarCommands>)dispatcher {
   return static_cast<
-      id<ApplicationCommands, BrowserCommands, BrowsingDataCommands,
-         FindInPageCommands, PasswordBreachCommands, PopupMenuCommands,
-         FakeboxFocuser, SnackbarCommands, ToolbarCommands>>(
-      self.commandDispatcher);
+      id<ApplicationCommands, BrowserCommands, FindInPageCommands,
+         PasswordBreachCommands, ToolbarCommands>>(self.commandDispatcher);
 }
 
 - (UIView*)contentArea {

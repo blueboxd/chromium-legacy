@@ -139,6 +139,21 @@ TEST_F(SigninHeaderHelperTest, TestMirrorRequestNoAccountIdChromeOS) {
                            "consistency_enabled_by_default=false");
 }
 #else  // !defined(OS_CHROMEOS)
+#if defined(OS_ANDROID)
+// Tests that Mirror request is returned on Android for Public Sessions (no
+// account id), when the Mobile Identity Consistency feature is enabled.
+TEST_F(SigninHeaderHelperTest, TestMirrorRequestNoAccountIdAndroid) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(kMobileIdentityConsistency);
+
+  account_consistency_ = AccountConsistencyMethod::kMirror;
+  CheckMirrorHeaderRequest(GURL("https://docs.google.com"), "",
+                           "eligible_for_consistency=true");
+  CheckMirrorCookieRequest(GURL("https://docs.google.com"), "",
+                           "eligible_for_consistency=true");
+}
+#endif  // defined(OS_ANDROID)
+
 // Tests that no Mirror request is returned when the user is not signed in (no
 // account id), for non Chrome OS platforms.
 TEST_F(SigninHeaderHelperTest, TestNoMirrorRequestNoAccountId) {
@@ -531,15 +546,23 @@ TEST_F(SigninHeaderHelperTest, TestBuildManageAccountsParams) {
   const char kContinueURL[] = "https://www.example.com/continue";
   const char kEmail[] = "foo@example.com";
 
-  ManageAccountsParams params = BuildManageAccountsParams(
-      base::StringPrintf("action=ADDSESSION,email=%s,is_saml=true,is_same_tab="
-                         "true,continue_url=%s",
-                         kEmail, kContinueURL));
+  std::string header = base::StringPrintf(
+      "action=ADDSESSION,email=%s,is_saml=true,"
+      "is_same_tab=true,continue_url=%s",
+      kEmail, kContinueURL);
+#if defined(OS_ANDROID)
+  header += ",show_consistency_promo=true";
+#endif
+
+  ManageAccountsParams params = BuildManageAccountsParams(header);
   EXPECT_EQ(GAIA_SERVICE_TYPE_ADDSESSION, params.service_type);
   EXPECT_EQ(kEmail, params.email);
   EXPECT_EQ(true, params.is_saml);
   EXPECT_EQ(true, params.is_same_tab);
   EXPECT_EQ(GURL(kContinueURL), params.continue_url);
+#if defined(OS_ANDROID)
+  EXPECT_EQ(true, params.show_consistency_promo);
+#endif
 }
 
 }  // namespace signin

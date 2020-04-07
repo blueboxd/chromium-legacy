@@ -73,7 +73,7 @@ settings_namespace_rewrites = [
   "settings.routes|routes",
   "settings.SafeBrowsingBrowserProxy|SafeBrowsingBrowserProxy",
   "settings.SafeBrowsingRadioManagedState|SafeBrowsingRadioManagedState",
-  "settings.SafetyCheckElementInteractions|SafetyCheckElementInteractions",
+  "settings.SafetyCheckInteractions|SafetyCheckInteractions",
   "settings.SearchEnginesBrowserProxy|SearchEnginesBrowserProxy",
   "settings.SearchRequest|SearchRequest",
   "settings.SearchResult|SearchResult",

@@ -65,7 +65,8 @@ bool ParseSingleAppTag(const base::Value& app_element,
   const base::Value* updatecheck =
       data_decoder::GetXmlElementChildWithTag(app_element, updatecheck_name);
 
-  if (GetXmlElementAttribute(*updatecheck, "status") == "noupdate") {
+  result->status = GetXmlElementAttribute(*updatecheck, "status");
+  if (result->status == "noupdate") {
     result->info = GetXmlElementAttribute(*updatecheck, "info");
     return true;
   }

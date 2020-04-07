@@ -315,16 +315,12 @@ void Controller::ClearGenericUi() {
   }
 }
 
-void Controller::AddListener(ScriptExecutorDelegate::Listener* listener) {
-  auto found = std::find(listeners_.begin(), listeners_.end(), listener);
-  if (found == listeners_.end())
-    listeners_.emplace_back(listener);
+void Controller::AddListener(NavigationListener* listener) {
+  navigation_listeners_.AddObserver(listener);
 }
 
-void Controller::RemoveListener(ScriptExecutorDelegate::Listener* listener) {
-  auto found = std::find(listeners_.begin(), listeners_.end(), listener);
-  if (found != listeners_.end())
-    listeners_.erase(found);
+void Controller::RemoveListener(NavigationListener* listener) {
+  navigation_listeners_.RemoveObserver(listener);
 }
 
 void Controller::SetExpandSheetForPromptAction(bool expand) {
@@ -575,9 +571,8 @@ const ClientSettings& Controller::GetClientSettings() const {
 }
 
 void Controller::ReportNavigationStateChanged() {
-  // Listeners are called in the same order they were added.
-  for (auto* listener : listeners_) {
-    listener->OnNavigationStateChanged();
+  for (auto& listener : navigation_listeners_) {
+    listener.OnNavigationStateChanged();
   }
 }
 

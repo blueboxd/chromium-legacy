@@ -985,6 +985,8 @@ void ClientControlledShellSurface::InitializeWindowState(
   accelerator_target_ =
       std::make_unique<ClientControlledAcceleratorTarget>(this);
 
+  // These shortcuts are same as ones used in chrome.
+  // TODO: investigate if we need to reassign.
   for (const auto& entry : kAccelerators) {
     focus_manager->RegisterAccelerator(
         ui::Accelerator(entry.keycode, entry.modifiers),

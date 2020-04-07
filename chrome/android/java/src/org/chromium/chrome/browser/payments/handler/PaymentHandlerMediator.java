@@ -180,11 +180,4 @@ import org.chromium.ui.modelutil.PropertyModel;
         ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindow(mWebContentsRef);
         mHandler.post(mHider);
     }
-
-    @Override
-    public void onToolbarError() {
-        // TODO(maxlg): send an error message to users.
-        ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindow(mWebContentsRef);
-        mHandler.post(mHider);
-    }
 }

@@ -265,7 +265,7 @@ void RealtimeAudioDestinationHandler::StartPlatformDestination() {
     platform_destination_->StartWithWorkletTaskRunner(
         audio_worklet->GetMessagingProxy()
             ->GetBackingWorkerThread()
-            ->GetTaskRunner(TaskType::kInternalMedia));
+            ->GetTaskRunner(TaskType::kInternalMediaRealTime));
   } else {
     platform_destination_->Start();
   }

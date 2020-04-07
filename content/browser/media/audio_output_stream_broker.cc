@@ -111,15 +111,6 @@ AudioOutputStreamBroker::~AudioOutputStreamBroker() {
   TRACE_EVENT_NESTABLE_ASYNC_END1("audio", "AudioOutputStreamBroker", this,
                                   "disconnect reason",
                                   static_cast<uint32_t>(reason));
-
-  UMA_HISTOGRAM_ENUMERATION("Media.Audio.Render.StreamBrokerDisconnectReason2",
-                            reason);
-
-  if (AwaitingCreated()) {
-    UMA_HISTOGRAM_TIMES(
-        "Media.Audio.Render.StreamBrokerDocumentDestroyedAwaitingCreatedTime",
-        base::TimeTicks::Now() - stream_creation_start_time_);
-  }
 }
 
 void AudioOutputStreamBroker::CreateStream(
@@ -161,8 +152,6 @@ void AudioOutputStreamBroker::StreamCreated(
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   TRACE_EVENT_NESTABLE_ASYNC_END1("audio", "CreateStream", this, "success",
                                   !!data_pipe);
-  UMA_HISTOGRAM_TIMES("Media.Audio.Render.StreamBrokerStreamCreationTime",
-                      base::TimeTicks::Now() - stream_creation_start_time_);
   stream_creation_start_time_ = base::TimeTicks();
 
   if (!data_pipe) {

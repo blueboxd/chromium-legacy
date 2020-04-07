@@ -185,10 +185,8 @@ void ClientAndroid::TransferUITo(
   // From this point on, the UIController, in ui_ptr, is either transferred or
   // deleted.
 
-  GetPasswordManagerClient()
-      ->GetPasswordManager()
-      ->set_autofill_assistance_mode(
-          password_manager::AutofillAssistantMode::kNotRunning);
+  GetPasswordManagerClient()->GetPasswordManager()->SetAutofillAssistantMode(
+      password_manager::AutofillAssistantMode::kNotRunning);
 
   if (!jother_web_contents)
     return;
@@ -424,12 +422,10 @@ void ClientAndroid::AttachUI(
     if (!controller_)
       CreateController(nullptr);
     ui_controller_android_->Attach(web_contents_, this, controller_.get());
-  }
 
-  GetPasswordManagerClient()
-      ->GetPasswordManager()
-      ->set_autofill_assistance_mode(
-          password_manager::AutofillAssistantMode::kManuallyCuratedScript);
+    GetPasswordManagerClient()->GetPasswordManager()->SetAutofillAssistantMode(
+        password_manager::AutofillAssistantMode::kRunning);
+  }
 }
 
 void ClientAndroid::DestroyUI() {
@@ -514,10 +510,8 @@ void ClientAndroid::Shutdown(Metrics::DropOutReason reason) {
   if (!controller_)
     return;
 
-  GetPasswordManagerClient()
-      ->GetPasswordManager()
-      ->set_autofill_assistance_mode(
-          password_manager::AutofillAssistantMode::kNotRunning);
+  GetPasswordManagerClient()->GetPasswordManager()->SetAutofillAssistantMode(
+      password_manager::AutofillAssistantMode::kNotRunning);
 
   if (ui_controller_android_ && ui_controller_android_->IsAttached())
     DestroyUI();

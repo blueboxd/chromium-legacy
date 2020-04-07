@@ -28,6 +28,10 @@
 
 class PrefRegistrySimple;
 
+namespace base {
+class TimeDelta;
+}
+
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
@@ -47,16 +51,21 @@ class PasswordFormManager;
 class PasswordManagerMetricsRecorder;
 struct PossibleUsernameData;
 
+// Propmpt are disabled while Autofill Assistant is running. In case there is
+// bug in Autofill Assistant logic and Autofill Assistant fails to reset
+// AutofillAssistantMode, after this timeout the timer will re-enable prompts.
+const int kDisablePromptsTimeoutInSeconds = 120;
+
 // Define the modes of collaboration between Password Manager and Autofill
 // Assistant (who handles form submissions, whether to show prompts or not).
 enum class AutofillAssistantMode {
   // Autofill Assistant is not running. Password Manager operates in the regular
   // mode - it handles submissions and shows prompts.
   kNotRunning = 0,
-  // Autofill Assistant runs a manually curated script. The password manager
+  // Autofill Assistant is running. The password manager
   // is basically off - it does not handle submissions and therefore does not
   // show prompts. The script does all the work instead.
-  kManuallyCuratedScript
+  kRunning
 };
 
 // Per-tab password manager. Handles creation and management of UI elements,
@@ -179,6 +188,10 @@ class PasswordManager : public FormSubmissionObserver {
     leak_delegate_.set_leak_factory(std::move(factory));
   }
 
+  void SetDisablePromptsTimeoutToZero() {
+    disable_prompts_timeout_in_seconds_ = 0;
+  }
+
 #endif  // defined(UNIT_TEST)
 
   // Reports the success from the renderer's PasswordAutofillAgent to fill
@@ -191,10 +204,7 @@ class PasswordManager : public FormSubmissionObserver {
   // Notifies that Credential Management API function store() is called.
   void NotifyStorePasswordCalled();
 
-  void set_autofill_assistance_mode(
-      AutofillAssistantMode autofill_assistant_mode) {
-    autofill_assistant_mode_ = autofill_assistant_mode;
-  }
+  void SetAutofillAssistantMode(AutofillAssistantMode mode);
 
 #if defined(OS_IOS)
   // TODO(https://crbug.com/866444): Use these methods instead olds ones when
@@ -320,6 +330,12 @@ class PasswordManager : public FormSubmissionObserver {
   void ShowManualFallbackForSavingImpl(PasswordFormManager* form_manager,
                                        const autofill::FormData& form_data);
 
+  // Returns the timeout for the disabling Password Manager's prompts.
+  base::TimeDelta GetTimeoutForDisablingPrompts();
+
+  // Resets |autofill_assistant_mode_| to the default.
+  void ResetAutofillAssistantMode();
+
   // PasswordFormManager transition schemes:
   // 1. HTML submission with navigation afterwads.
   // form "seen"
@@ -375,6 +391,14 @@ class PasswordManager : public FormSubmissionObserver {
   // submissions and shows prompts.
   AutofillAssistantMode autofill_assistant_mode_ =
       AutofillAssistantMode::kNotRunning;
+
+  // Timeout in seconds for disabling Password Manager's prompts.
+  int disable_prompts_timeout_in_seconds_ = kDisablePromptsTimeoutInSeconds;
+
+  // When Autofill Assistant is running, it disables the password manager's
+  // prompts. This timer re-enables the prompts in case Autofill Assistant
+  // didn't do that due to an unexpected failure.
+  base::OneShotTimer disable_prompts_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManager);
 };

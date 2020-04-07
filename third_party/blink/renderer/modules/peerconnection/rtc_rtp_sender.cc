@@ -392,12 +392,14 @@ RTCRtpSender::RTCRtpSender(RTCPeerConnection* pc,
       track_(track),
       streams_(std::move(streams)),
       force_encoded_audio_insertable_streams_(
-          force_encoded_audio_insertable_streams),
+          force_encoded_audio_insertable_streams && kind_ == "audio"),
       force_encoded_video_insertable_streams_(
-          force_encoded_video_insertable_streams) {
+          force_encoded_video_insertable_streams && kind_ == "video") {
   DCHECK(pc_);
   DCHECK(sender_);
   DCHECK(!track || kind_ == track->kind());
+  DCHECK(!force_encoded_audio_insertable_streams_ ||
+         !force_encoded_video_insertable_streams_);
   if (force_encoded_audio_insertable_streams_)
     RegisterEncodedAudioStreamCallback();
   if (force_encoded_video_insertable_streams_)
@@ -757,6 +759,7 @@ void RTCRtpSender::RegisterEncodedAudioStreamCallback() {
   DCHECK(!web_sender()
               ->GetEncodedAudioStreamTransformer()
               ->HasTransformerCallback());
+  DCHECK_EQ(kind_, "audio");
   web_sender()->GetEncodedAudioStreamTransformer()->SetTransformerCallback(
       WTF::BindRepeating(&RTCRtpSender::OnAudioFrameFromEncoder,
                          WrapWeakPersistent(this)));
@@ -818,6 +821,7 @@ void RTCRtpSender::RegisterEncodedVideoStreamCallback() {
   DCHECK(!web_sender()
               ->GetEncodedVideoStreamTransformer()
               ->HasTransformerCallback());
+  DCHECK_EQ(kind_, "video");
   web_sender()->GetEncodedVideoStreamTransformer()->SetTransformerCallback(
       WTF::BindRepeating(&RTCRtpSender::OnVideoFrameFromEncoder,
                          WrapWeakPersistent(this)));

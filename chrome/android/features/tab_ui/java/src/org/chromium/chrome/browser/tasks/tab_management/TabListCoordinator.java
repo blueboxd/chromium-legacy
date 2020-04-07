@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupUtils;
 import org.chromium.chrome.browser.tasks.tab_management.TabProperties.UiType;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
@@ -105,7 +106,7 @@ public class TabListCoordinator implements Destroyable {
      */
     TabListCoordinator(@TabListMode int mode, Context context, TabModelSelector tabModelSelector,
             @Nullable TabListMediator.ThumbnailProvider thumbnailProvider,
-            @Nullable TabListMediator.TitleProvider titleProvider, boolean actionOnRelatedTabs,
+            @Nullable PseudoTab.TitleProvider titleProvider, boolean actionOnRelatedTabs,
             @Nullable TabListMediator
                     .GridCardOnClickListenerProvider gridCardOnClickListenerProvider,
             @Nullable TabListMediator.TabGridDialogHandler dialogHandler, @UiType int itemType,
@@ -343,7 +344,8 @@ public class TabListCoordinator implements Destroyable {
     /**
      * @see TabListMediator#resetWithListOfTabs(List, boolean, boolean)
      */
-    boolean resetWithListOfTabs(@Nullable List<Tab> tabs, boolean quickMode, boolean mruMode) {
+    boolean resetWithListOfTabs(
+            @Nullable List<PseudoTab> tabs, boolean quickMode, boolean mruMode) {
         if (mMode == TabListMode.STRIP && tabs != null && tabs.size() > 1) {
             TabGroupUtils.maybeShowIPH(
                     FeatureConstants.TAB_GROUPS_TAP_TO_SEE_ANOTHER_TAB_FEATURE, mRecyclerView);
@@ -352,7 +354,7 @@ public class TabListCoordinator implements Destroyable {
     }
 
     boolean resetWithListOfTabs(@Nullable List<Tab> tabs) {
-        return resetWithListOfTabs(tabs, false, false);
+        return resetWithListOfTabs(PseudoTab.getListOfPseudoTab(tabs), false, false);
     }
 
     int indexOfTab(int tabId) {

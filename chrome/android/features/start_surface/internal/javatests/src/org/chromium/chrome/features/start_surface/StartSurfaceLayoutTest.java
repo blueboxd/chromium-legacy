@@ -96,7 +96,6 @@ import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
@@ -462,7 +461,7 @@ public class StartSurfaceLayoutTest {
             // Although we're destroying the activity, the Application will still live on since its
             // in the same process as this test.
             TestThreadUtils.runOnUiThreadBlocking(() -> cta.getTabModelSelector().closeAllTabs());
-            ApplicationTestUtils.finishActivity(cta);
+            TabUiTestHelper.finishActivity(cta);
             mActivityTestRule.startMainActivityOnBlankPage();
             assertEquals(1, mActivityTestRule.tabsCount(false));
         }
@@ -572,7 +571,7 @@ public class StartSurfaceLayoutTest {
         // Restart Chrome.
         // Although we're destroying the activity, the Application will still live on since its in
         // the same process as this test.
-        ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
+        TabUiTestHelper.finishActivity(mActivityTestRule.getActivity());
         mActivityTestRule.startMainActivityOnBlankPage();
         assertEquals(3, mActivityTestRule.tabsCount(false));
 
@@ -1065,7 +1064,7 @@ public class StartSurfaceLayoutTest {
         enterTabSwitcher(mActivityTestRule.getActivity());
         onView(withId(R.id.tab_list_view))
                 .check(ThumbnailAspectRatioAssertion.havingAspectRatio(2.0));
-        ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
+        TabUiTestHelper.finishActivity(mActivityTestRule.getActivity());
     }
 
     @Test
@@ -1117,7 +1116,7 @@ public class StartSurfaceLayoutTest {
             TabUiTestHelper.checkThumbnailsExist(currentTabModel.getTabAt(i));
         }
 
-        ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
+        TabUiTestHelper.finishActivity(mActivityTestRule.getActivity());
         mActivityTestRule.startMainActivityFromLauncher();
 
         enterTabSwitcher(mActivityTestRule.getActivity());

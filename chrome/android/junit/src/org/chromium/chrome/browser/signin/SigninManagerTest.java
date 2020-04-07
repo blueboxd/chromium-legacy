@@ -26,6 +26,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.stubbing.Answer;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
@@ -242,10 +243,13 @@ public class SigninManagerTest {
         doReturn(account)
                 .when(mIdentityManager)
                 .findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(any());
-        // TODO(https://crbug.com/1054780): Mock getPrimaryAccountInfo instead.
-        doReturn(false).when(mIdentityManager).hasPrimaryAccount();
-        doReturn(true).when(mIdentityMutator).setPrimaryAccount(any());
-        doReturn(account).when(mIdentityManager).getPrimaryAccountInfo();
+        doReturn(null).when(mIdentityManager).getPrimaryAccountInfo();
+        Answer<Boolean> setPrimaryAccountAnswer = invocation -> {
+            // From now on getPrimaryAccountInfo should return account.
+            doReturn(account).when(mIdentityManager).getPrimaryAccountInfo();
+            return true;
+        };
+        doAnswer(setPrimaryAccountAnswer).when(mIdentityMutator).setPrimaryAccount(account.getId());
         doNothing().when(mIdentityMutator).reloadAllAccountsFromSystemWithPrimaryAccount(any());
 
         mSigninManager.onFirstRunCheckDone(); // Allow sign-in.

@@ -17,12 +17,12 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
@@ -42,7 +42,7 @@ public class TabGroupUtils {
     private static final String TAB_GROUP_TITLES_FILE_NAME = "tab_group_titles";
 
     public static void maybeShowIPH(@FeatureConstants String featureName, View view) {
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUPS_ANDROID)) return;
+        if (!TabUiFeatureUtilities.isTabGroupsAndroidEnabled()) return;
 
         @StringRes
         int textId;
@@ -69,6 +69,7 @@ public class TabGroupUtils {
 
         final Tracker tracker =
                 TrackerFactory.getTrackerForProfile(Profile.getLastUsedRegularProfile());
+        if (!tracker.isInitialized()) return;
         if (!tracker.shouldTriggerHelpUI(featureName)) return;
 
         ViewRectProvider rectProvider = new ViewRectProvider(view);

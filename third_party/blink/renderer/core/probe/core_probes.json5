@@ -163,6 +163,7 @@
         "WillSendRequest",
         "WillSendNavigationRequest",
         "WillSendWebSocketHandshakeRequest",
+        "SetDevToolsIds",
       ]
     },
     InspectorPageAgent: {

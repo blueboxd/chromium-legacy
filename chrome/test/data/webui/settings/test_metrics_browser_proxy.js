@@ -9,7 +9,7 @@
   constructor() {
     super([
       'recordAction',
-      'recordSafetyCheckPageHistogram',
+      'recordSafetyCheckInteractionHistogram',
       'recordSettingsPageHistogram',
     ]);
   }
@@ -20,8 +20,8 @@
   }
 
   /** @override */
-  recordSafetyCheckPageHistogram(interaction) {
-    this.methodCalled('recordSafetyCheckPageHistogram', interaction);
+  recordSafetyCheckInteractionHistogram(interaction) {
+    this.methodCalled('recordSafetyCheckInteractionHistogram', interaction);
   }
 
   /** @override */

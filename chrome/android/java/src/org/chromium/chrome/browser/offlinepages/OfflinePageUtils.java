@@ -639,7 +639,7 @@ public class OfflinePageUtils {
      */
     public static void getLoadUrlParamsForOpeningOfflineVersion(final String url, long offlineId,
             final @LaunchLocation int location, Callback<LoadUrlParams> callback) {
-        // TODO(https://crbug.com/1041781): Use the current profile (i.e., regular profile or
+        // TODO(https://crbug.com/1067314): Use the current profile (i.e., regular profile or
         // incognito profile) instead of always using regular profile. It is wrong and need to be
         // fixed.
         OfflinePageBridge offlinePageBridge =
@@ -662,7 +662,7 @@ public class OfflinePageUtils {
      */
     public static void getLoadUrlParamsForOpeningMhtmlFileOrContent(
             final String intentUrl, Callback<LoadUrlParams> callback) {
-        // TODO(https://crbug.com/1041781): Use the current profile (i.e., regular profile or
+        // TODO(https://crbug.com/1067314): Use the current profile (i.e., regular profile or
         // incognito profile) instead of always using regular profile. It is wrong and need to be
         // fixed.
         OfflinePageBridge offlinePageBridge =

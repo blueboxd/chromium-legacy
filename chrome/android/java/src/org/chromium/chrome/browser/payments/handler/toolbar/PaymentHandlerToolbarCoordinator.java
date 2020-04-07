@@ -14,7 +14,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
-import org.chromium.url.URI;
+import org.chromium.url.GURL;
 
 /**
  * PaymentHandlerToolbar coordinator, which owns the component overall, i.e., creates other objects
@@ -32,9 +32,6 @@ public class PaymentHandlerToolbarCoordinator {
      * Observer for the error of the payment handler toolbar.
      */
     public interface PaymentHandlerToolbarObserver {
-        /** Called when the UI gets an error. */
-        void onToolbarError();
-
         /** Called when the close button is clicked. */
         void onToolbarCloseButtonClicked();
     }
@@ -48,7 +45,7 @@ public class PaymentHandlerToolbarCoordinator {
      * @param observer The observer of this toolbar.
      */
     public PaymentHandlerToolbarCoordinator(
-            ChromeActivity context, WebContents webContents, URI url) {
+            ChromeActivity context, WebContents webContents, GURL url) {
         mWebContents = webContents;
         PropertyModel model = new PropertyModel.Builder(PaymentHandlerToolbarProperties.ALL_KEYS)
                                       .with(PaymentHandlerToolbarProperties.PROGRESS_VISIBLE, true)
@@ -69,7 +66,6 @@ public class PaymentHandlerToolbarCoordinator {
 
     /** Set an observer for PaymentHandlerToolbar. */
     public void setObserver(PaymentHandlerToolbarObserver observer) {
-        mMediator.setObserver(observer);
         mToolbarView.setObserver(observer);
     }
 

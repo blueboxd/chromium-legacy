@@ -36,6 +36,9 @@
 #include "net/http/http_content_disposition.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
+#include "services/network/public/cpp/content_security_policy/content_security_policy.h"
+#include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/content_security_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/network/header_field_tokenizer.h"
@@ -49,6 +52,69 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
+
+// We would like finding a way to convert from/to blink type automatically.
+// The following attempt has been withdrawn:
+// https://chromium-review.googlesource.com/c/chromium/src/+/2126933/7
+namespace network {
+namespace mojom {
+
+blink::CSPSourcePtr ConvertToBlink(CSPSourcePtr source) {
+  return blink::CSPSource::New(
+      String::FromUTF8(source->scheme), String::FromUTF8(source->host),
+      source->port, String::FromUTF8(source->path), source->is_host_wildcard,
+      source->is_port_wildcard);
+}
+
+blink::CSPSourceListPtr ConvertToBlink(CSPSourceListPtr source_list) {
+  WTF::Vector<blink::CSPSourcePtr> sources;
+  for (auto& it : source_list->sources)
+    sources.push_back(ConvertToBlink(std::move(it)));
+
+  return blink::CSPSourceList::New(std::move(sources), source_list->allow_self,
+                                   source_list->allow_star,
+                                   source_list->allow_response_redirects);
+}
+
+blink::CSPDirectiveName ConvertToBlink(CSPDirectiveName name) {
+  return static_cast<blink::CSPDirectiveName>(name);
+}
+
+blink::ContentSecurityPolicyHeaderPtr ConvertToBlink(
+    ContentSecurityPolicyHeaderPtr header) {
+  return blink::ContentSecurityPolicyHeader::New(
+      String::FromUTF8(header->header_value), header->type, header->source);
+}
+
+blink::ContentSecurityPolicyPtr ConvertToBlink(
+    ContentSecurityPolicyPtr policy_in) {
+  auto policy = blink::ContentSecurityPolicy::New();
+
+  policy->header = ConvertToBlink(std::move(policy_in->header));
+  policy->use_reporting_api = policy_in->use_reporting_api;
+
+  for (auto& directive : policy_in->directives) {
+    policy->directives.insert(ConvertToBlink(directive.first),
+                              ConvertToBlink(std::move(directive.second)));
+  }
+
+  for (auto& endpoint : policy_in->report_endpoints)
+    policy->report_endpoints.push_back(String::FromUTF8(endpoint));
+
+  return policy;
+}
+
+WTF::Vector<blink::ContentSecurityPolicyPtr> ConvertToBlink(
+    std::vector<ContentSecurityPolicyPtr> policies) {
+  WTF::Vector<blink::ContentSecurityPolicyPtr> blink_policies;
+  for (auto& policy : policies)
+    blink_policies.push_back(ConvertToBlink(std::move(policy)));
+
+  return blink_policies;
+}
+
+}  // namespace mojom
+}  // namespace network
 
 namespace blink {
 
@@ -598,6 +664,23 @@ std::unique_ptr<ServerTimingHeaderVector> ParseServerTimingHeader(
     }
   }
   return headers;
+}
+
+// This function is simply calling network::AddContentSecurityPolicyFromHeaders
+// and convert from/to blink types. It is used for navigation requests served by
+// a ServiceWorker. It is tested by FetchResponseDataTest.ContentSecurityPolicy.
+WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr>
+ParseContentSecurityPolicy(const String& raw_headers, const KURL& url) {
+  if (!base::FeatureList::IsEnabled(
+          network::features::kOutOfBlinkFrameAncestors)) {
+    return {};
+  }
+
+  auto headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(raw_headers.Latin1()));
+  std::vector<network::mojom::ContentSecurityPolicyPtr> policies;
+  network::AddContentSecurityPolicyFromHeaders(*headers, url, &policies);
+  return network::mojom::ConvertToBlink(std::move(policies));
 }
 
 }  // namespace blink

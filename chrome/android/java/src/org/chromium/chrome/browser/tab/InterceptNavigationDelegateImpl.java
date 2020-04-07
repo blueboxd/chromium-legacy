@@ -151,7 +151,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
 
         TabRedirectHandler tabRedirectHandler = null;
         if (navigationParams.isMainFrame) {
-            tabRedirectHandler = TabRedirectHandler.from(mTab);
+            tabRedirectHandler = RedirectHandlerTabHelper.getOrCreateHandlerFor(mTab);
         } else if (navigationParams.isExternalProtocol) {
             // Only external protocol navigations are intercepted for iframe navigations.  Since
             // we do not see all previous navigations for the iframe, we can not build a complete
@@ -248,7 +248,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
             NavigationController navigationController =
                     webContents.getNavigationController();
             int indexBeforeRedirection =
-                    TabRedirectHandler.from(mTab)
+                    RedirectHandlerTabHelper.getOrCreateHandlerFor(mTab)
                             .getLastCommittedEntryIndexBeforeStartingNavigation();
             int lastCommittedEntryIndex = getLastCommittedEntryIndex();
             for (int i = lastCommittedEntryIndex - 1; i > indexBeforeRedirection; --i) {
@@ -278,8 +278,8 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
         // navigation is invalid, it means that this navigation is the first one since this tab was
         // created.
         // In such case, we would like to close this tab.
-        if (TabRedirectHandler.from(mTab).isOnNavigation()) {
-            return TabRedirectHandler.from(mTab)
+        if (RedirectHandlerTabHelper.getOrCreateHandlerFor(mTab).isOnNavigation()) {
+            return RedirectHandlerTabHelper.getOrCreateHandlerFor(mTab)
                            .getLastCommittedEntryIndexBeforeStartingNavigation()
                     == TabRedirectHandler.INVALID_ENTRY_INDEX;
         }
@@ -313,9 +313,9 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
                     TabModelSelector.from(mTab).closeTab(mTab);
                 }
             });
-        } else if (TabRedirectHandler.from(mTab).isOnNavigation()) {
+        } else if (RedirectHandlerTabHelper.getOrCreateHandlerFor(mTab).isOnNavigation()) {
             int lastCommittedEntryIndexBeforeNavigation =
-                    TabRedirectHandler.from(mTab)
+                    RedirectHandlerTabHelper.getOrCreateHandlerFor(mTab)
                             .getLastCommittedEntryIndexBeforeStartingNavigation();
             if (getLastCommittedEntryIndex() > lastCommittedEntryIndexBeforeNavigation) {
                 // http://crbug/426679 : we want to go back to the last committed entry index which

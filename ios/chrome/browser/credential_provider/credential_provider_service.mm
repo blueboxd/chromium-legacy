@@ -9,6 +9,10 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 CredentialProviderService::CredentialProviderService(
     scoped_refptr<password_manager::PasswordStore> password_store)
     : password_store_(password_store) {}

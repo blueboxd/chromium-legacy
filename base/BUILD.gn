@@ -2493,6 +2493,7 @@ test("base_unittests") {
     "callback_list_unittest.cc",
     "callback_unittest.cc",
     "cancelable_callback_unittest.cc",
+    "check_unittest.cc",
     "command_line_unittest.cc",
     "component_export_unittest.cc",
     "containers/adapters_unittest.cc",

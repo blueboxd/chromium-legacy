@@ -5,13 +5,17 @@
 #include "ios/chrome/browser/credential_provider/credential_provider_service.h"
 
 #include "components/password_manager/core/browser/test_password_store.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
 using password_manager::TestPasswordStore;
 
-class CredentialProviderServiceTest : public testing::Test {
+class CredentialProviderServiceTest : public PlatformTest {
  public:
   CredentialProviderServiceTest() {}
 

@@ -32,6 +32,10 @@ const char kIsSameTabAttrName[] = "is_same_tab";
 const char kIsSamlAttrName[] = "is_saml";
 const char kProfileModeAttrName[] = "mode";
 const char kServiceTypeAttrName[] = "action";
+#if defined(OS_ANDROID)
+const char kEligibleForConsistency[] = "eligible_for_consistency";
+const char kShowConsistencyPromo[] = "show_consistency_promo";
+#endif
 
 // Determines the service type that has been passed from Gaia in the header.
 GAIAServiceType GetGAIAServiceTypeFromHeader(const std::string& header_value) {
@@ -90,6 +94,10 @@ ManageAccountsParams ChromeConnectedHeaderHelper::BuildManageAccountsParams(
       params.continue_url = value;
     } else if (key_name == kIsSameTabAttrName) {
       params.is_same_tab = value == "true";
+#if defined(OS_ANDROID)
+    } else if (key_name == kShowConsistencyPromo) {
+      params.show_consistency_promo = value == "true";
+#endif
     } else {
       DLOG(WARNING) << "Unexpected Gaia header attribute '" << key_name << "'.";
     }
@@ -177,8 +185,14 @@ std::string ChromeConnectedHeaderHelper::BuildRequestHeader(
 // filtered upstream and we want to enforce account consistency in Public
 // Sessions and Active Directory logins.
 #if !defined(OS_CHROMEOS)
-  if (gaia_id.empty())
+  if (gaia_id.empty()) {
+#if defined(OS_ANDROID)
+    if (base::FeatureList::IsEnabled(kMobileIdentityConsistency)) {
+      return base::StringPrintf("%s=%s", kEligibleForConsistency, "true");
+    }
+#endif  // defined(OS_ANDROID)
     return std::string();
+  }
 #endif  // !defined(OS_CHROMEOS)
 
   std::vector<std::string> parts;

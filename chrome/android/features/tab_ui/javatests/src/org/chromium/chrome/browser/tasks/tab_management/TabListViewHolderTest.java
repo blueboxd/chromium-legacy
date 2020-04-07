@@ -79,7 +79,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
                     callback.onResult(bitmap);
                     mThumbnailFetchedCount.incrementAndGet();
                 }
-            }, null, false, false);
+            }, Tab.INVALID_TAB_ID, false, false);
     private AtomicInteger mThumbnailFetchedCount = new AtomicInteger();
 
     private TabListMediator.TabActionListener mMockCloseListener =
@@ -463,6 +463,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     public void testClickToClose() {
         ImageView actionButton = mTabGridView.findViewById(R.id.action_button);
         ImageButton button = mTabStripView.findViewById(R.id.tab_strip_item_button);
+
         Assert.assertFalse(mCloseClicked.get());
         actionButton.performClick();
         Assert.assertTrue(mCloseClicked.get());
@@ -478,6 +479,10 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
         // When TAB_ID in PropertyModel is updated, binder should close tab with updated tab ID.
         Assert.assertEquals(TAB2_ID, secondClosed);
         Assert.assertNotEquals(firstCloseId, secondClosed);
+
+        mGridModel.set(TabProperties.TAB_CLOSED_LISTENER, null);
+        actionButton.performClick();
+        Assert.assertFalse(mCloseClicked.get());
 
         mStripModel.set(TabProperties.IS_SELECTED, true);
         button.performClick();

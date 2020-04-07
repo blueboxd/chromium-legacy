@@ -361,7 +361,10 @@ public class AutoFetchNotifier {
     }
 
     private static void cancelInProgress() {
-        AutoFetchNotifierJni.get().cancelInProgress(Profile.getLastUsedProfile());
+        // TODO(https://crbug.com/1067314): Use the current profile (i.e., regular profile or
+        // incognito profile) instead of always using regular profile. It is wrong and need to be
+        // fixed.
+        AutoFetchNotifierJni.get().cancelInProgress(Profile.getLastUsedRegularProfile());
     }
 
     @NativeMethods

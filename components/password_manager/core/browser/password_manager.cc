@@ -16,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
+#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_type.h"
@@ -828,8 +829,12 @@ void PasswordManager::OnPasswordFormsRendered(
 }
 
 void PasswordManager::OnLoginSuccessful() {
-  if (autofill_assistant_mode_ == AutofillAssistantMode::kManuallyCuratedScript)
+  if (autofill_assistant_mode_ == AutofillAssistantMode::kRunning) {
+    // Autofillassistan performs one login. Only one prompt should
+    // be suppressed.
+    SetAutofillAssistantMode(AutofillAssistantMode::kNotRunning);
     return;
+  }
 
   std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
   if (password_manager_util::IsLoggingActive(client_)) {
@@ -1154,6 +1159,34 @@ void PasswordManager::ShowManualFallbackForSavingImpl(
   } else {
     HideManualFallbackForSaving();
   }
+}
+
+void PasswordManager::SetAutofillAssistantMode(AutofillAssistantMode mode) {
+  autofill_assistant_mode_ = mode;
+
+  if (autofill_assistant_mode_ == AutofillAssistantMode::kRunning) {
+    DCHECK(!disable_prompts_timer_.IsRunning())
+        << "Autofill Assistant tried to disable prompts twice in a row.";
+    disable_prompts_timer_.Start(FROM_HERE, GetTimeoutForDisablingPrompts(),
+                                 this,
+                                 &PasswordManager::ResetAutofillAssistantMode);
+  } else {
+    disable_prompts_timer_.Stop();
+  }
+}
+
+void PasswordManager::ResetAutofillAssistantMode() {
+  // The timeout is 0 only in the dedicated test. Otherwise, the call can happen
+  // only due to a bug.
+  DCHECK(disable_prompts_timeout_in_seconds_ == 0)
+      << "Autofill assistant failed to re-enable Password Manager's "
+         "prompts before timing out.";
+
+  autofill_assistant_mode_ = AutofillAssistantMode::kNotRunning;
+}
+
+base::TimeDelta PasswordManager::GetTimeoutForDisablingPrompts() {
+  return base::TimeDelta::FromSeconds(disable_prompts_timeout_in_seconds_);
 }
 
 }  // namespace password_manager

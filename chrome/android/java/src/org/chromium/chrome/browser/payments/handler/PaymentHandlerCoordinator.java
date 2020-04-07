@@ -27,7 +27,7 @@ import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
-import org.chromium.url.URI;
+import org.chromium.url.GURL;
 
 /**
  * PaymentHandler coordinator, which owns the component overall, i.e., creates other objects in the
@@ -74,7 +74,7 @@ public class PaymentHandlerCoordinator {
      * @param uiObserver The {@link PaymentHandlerUiObserver} that observes this Payment Handler UI.
      * @return Whether the payment-handler UI was shown. Can be false if the UI was suppressed.
      */
-    public boolean show(ChromeActivity activity, URI url, boolean isIncognito,
+    public boolean show(ChromeActivity activity, GURL url, boolean isIncognito,
             PaymentHandlerWebContentsObserver webContentsObserver,
             PaymentHandlerUiObserver uiObserver) {
         assert mHider == null : "Already showing payment-handler UI";
@@ -85,7 +85,7 @@ public class PaymentHandlerCoordinator {
                 ViewAndroidDelegate.createBasicDelegate(webContentView), webContentView,
                 activity.getWindowAndroid(), WebContents.createDefaultInternalsHolder());
         webContentsObserver.onWebContentsInitialized(mWebContents);
-        mWebContents.getNavigationController().loadUrl(new LoadUrlParams(url.toString()));
+        mWebContents.getNavigationController().loadUrl(new LoadUrlParams(url.getSpec()));
 
         mToolbarCoordinator = new PaymentHandlerToolbarCoordinator(activity, mWebContents, url);
 

@@ -178,8 +178,9 @@ bool StringKeyframe::HasCssProperty() const {
 }
 
 void StringKeyframe::AddKeyframePropertiesToV8Object(
-    V8ObjectBuilder& object_builder) const {
-  Keyframe::AddKeyframePropertiesToV8Object(object_builder);
+    V8ObjectBuilder& object_builder,
+    Element* element) const {
+  Keyframe::AddKeyframePropertiesToV8Object(object_builder, element);
   for (const auto& entry : input_properties_) {
     const PropertyHandle& property_handle = entry.key;
     const CSSValue* property_value = entry.value;

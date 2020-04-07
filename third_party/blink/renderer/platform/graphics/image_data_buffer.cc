@@ -54,6 +54,13 @@ ImageDataBuffer::ImageDataBuffer(scoped_refptr<StaticBitmapImage> image) {
   retained_image_ = image->PaintImageForCurrentFrame().GetSkImage();
   if (!retained_image_)
     return;
+#if defined(MEMORY_SANITIZER)
+  // Test if retained_image has an initialized pixmap.
+  SkPixmap pixmap;
+  if (retained_image_->peekPixels(&pixmap))
+    MSAN_CHECK_MEM_IS_INITIALIZED(pixmap.addr(), pixmap.computeByteSize());
+#endif
+
   if (retained_image_->isTextureBacked() ||
       retained_image_->isLazyGenerated() ||
       retained_image_->alphaType() != kUnpremul_SkAlphaType) {

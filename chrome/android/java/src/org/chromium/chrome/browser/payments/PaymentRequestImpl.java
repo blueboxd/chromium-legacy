@@ -93,8 +93,8 @@ import org.chromium.payments.mojom.PaymentResponse;
 import org.chromium.payments.mojom.PaymentShippingOption;
 import org.chromium.payments.mojom.PaymentShippingType;
 import org.chromium.payments.mojom.PaymentValidationErrors;
+import org.chromium.url.GURL;
 import org.chromium.url.Origin;
-import org.chromium.url.URI;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1356,7 +1356,7 @@ public class PaymentRequestImpl
      * @return Whether the opening is successful.
      */
     public static boolean openPaymentHandlerWindow(
-            URI url, PaymentHandlerWebContentsObserver paymentHandlerWebContentsObserver) {
+            GURL url, PaymentHandlerWebContentsObserver paymentHandlerWebContentsObserver) {
         return sShowingPaymentRequest != null
                 && sShowingPaymentRequest.openPaymentHandlerWindowInternal(
                         url, paymentHandlerWebContentsObserver);
@@ -1370,10 +1370,10 @@ public class PaymentRequestImpl
      * @return Whether the opening is successful.
      */
     private boolean openPaymentHandlerWindowInternal(
-            URI url, PaymentHandlerWebContentsObserver paymentHandlerWebContentsObserver) {
+            GURL url, PaymentHandlerWebContentsObserver paymentHandlerWebContentsObserver) {
         assert mInvokedPaymentApp != null;
         assert mInvokedPaymentApp instanceof ServiceWorkerPaymentApp;
-        assert org.chromium.components.embedder_support.util.Origin.create(url.toString())
+        assert org.chromium.components.embedder_support.util.Origin.create(url.getSpec())
                 .equals(org.chromium.components.embedder_support.util.Origin.create(
                         ((ServiceWorkerPaymentApp) mInvokedPaymentApp).getScope().toString()));
 

@@ -880,6 +880,19 @@ void InspectorNetworkAgent::WillSendNavigationRequest(
                                    InspectorPageAgent::kDocumentResource);
 }
 
+// This method was pulled out of PrepareRequest(), because we want to be able
+// to create DevTools issues before the PrepareRequest() call. We need these
+// IDs to be set, to properly create a DevTools issue.
+void InspectorNetworkAgent::SetDevToolsIds(ResourceRequest& request) {
+  request.SetDevToolsToken(devtools_token_);
+
+  // The loader parameter is for generating a browser generated ID for a browser
+  // initiated request. We pass it null here because we are reporting a renderer
+  // generated ID for a renderer initiated request.
+  request.SetDevToolsId(IdentifiersFactory::RequestId(/* loader */ nullptr,
+                                                      request.InspectorId()));
+}
+
 void InspectorNetworkAgent::PrepareRequest(
     DocumentLoader* loader,
     ResourceRequest& request,
@@ -893,7 +906,7 @@ void InspectorNetworkAgent::PrepareRequest(
     for (const WTF::String& key : extra_request_headers_.Keys()) {
       const WTF::String& value = extra_request_headers_.Get(key);
       AtomicString header_name = AtomicString(key);
-      // When overriding referer, also override referrer policy
+      // When overriding referrer, also override referrer policy
       // for this request to assure the request will be allowed.
       // TODO: Should we store the referrer header somewhere other than
       // |extra_request_headers_|?
@@ -908,8 +921,6 @@ void InspectorNetworkAgent::PrepareRequest(
 
   request.SetReportRawHeaders(true);
 
-  request.SetDevToolsToken(devtools_token_);
-
   if (cache_disabled_.Get()) {
     if (LoadsFromCacheOnly(request) &&
         request.GetRequestContext() != mojom::RequestContextType::INTERNAL) {
@@ -921,12 +932,6 @@ void InspectorNetworkAgent::PrepareRequest(
   }
   if (bypass_service_worker_.Get())
     request.SetSkipServiceWorker(true);
-
-  // The loader parameter is for generating a browser generated ID for a browser
-  // initiated request. We pass it null here because we are reporting a renderer
-  // generated ID for a renderer initiated request.
-  request.SetDevToolsId(IdentifiersFactory::RequestId(/* loader */ nullptr,
-                                                      request.InspectorId()));
 }
 
 void InspectorNetworkAgent::WillSendRequest(

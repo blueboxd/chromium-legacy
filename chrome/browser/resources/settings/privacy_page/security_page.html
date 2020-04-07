@@ -60,9 +60,18 @@
         padding-bottom: 12px;
       }
 
+      settings-passwords-leak-detection-toggle,
+      settings-toggle-button:not([disabled]) {
+        pointer-events: all;
+      }
+
       #safeBrowsingReportingToggle {
         padding-inline-end: 0;
         padding-inline-start: 0;
+      }
+
+      #safeBrowsingEnhanced .bullet-line:last-of-type {
+        padding-bottom: 12px;
       }
     </style>
     <picture>
@@ -139,6 +148,8 @@
                   $i18n{safeBrowsingStandardBulTwo}
               </div>
             </div>
+          </div>
+          <div slot="noSelectionCollapse">
             <settings-toggle-button id="safeBrowsingReportingToggle"
                 pref="{{prefs.safebrowsing.scout_reporting_enabled}}"
                 class="first"

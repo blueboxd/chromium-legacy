@@ -71,7 +71,7 @@
 
     __weak SigninInteractionCoordinator* weakSelf = self;
     self.coordinator.signinCompletion =
-        ^(SigninCoordinatorResult signinResult, ChromeIdentity* identity) {
+        ^(SigninCoordinatorResult signinResult, SigninCompletionInfo*) {
           if (completion) {
             completion(signinResult == SigninCoordinatorResultSuccess);
           }
@@ -110,7 +110,7 @@
 
     __weak SigninInteractionCoordinator* weakSelf = self;
     self.coordinator.signinCompletion =
-        ^(SigninCoordinatorResult signinResult, ChromeIdentity* identity) {
+        ^(SigninCoordinatorResult signinResult, SigninCompletionInfo*) {
           if (completion) {
             completion(signinResult == SigninCoordinatorResultSuccess);
           }
@@ -145,7 +145,7 @@
 
   __weak SigninInteractionCoordinator* weakSelf = self;
   self.coordinator.signinCompletion =
-      ^(SigninCoordinatorResult signinResult, ChromeIdentity* identity) {
+      ^(SigninCoordinatorResult signinResult, SigninCompletionInfo*) {
         if (completion) {
           completion(signinResult == SigninCoordinatorResultSuccess);
         }
@@ -309,7 +309,7 @@
                                                       browser:self.browser];
   __weak SigninInteractionCoordinator* weakSelf = self;
   self.coordinator.signinCompletion =
-      ^(SigninCoordinatorResult signinResult, ChromeIdentity* identity) {
+      ^(SigninCoordinatorResult signinResult, SigninCompletionInfo*) {
         [weakSelf advancedSigninDoneWithSigninResult:signinResult];
       };
   [self.coordinator start];

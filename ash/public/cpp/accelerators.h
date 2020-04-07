@@ -155,6 +155,10 @@ ASH_PUBLIC_EXPORT constexpr int kDebugModifier =
 ASH_PUBLIC_EXPORT extern const AcceleratorData kAcceleratorData[];
 ASH_PUBLIC_EXPORT extern const size_t kAcceleratorDataLength;
 
+// Experimental new additional accelerators. crbug.com/1067269
+ASH_PUBLIC_EXPORT extern const AcceleratorData kNewAdditionalAcceleratorData[];
+ASH_PUBLIC_EXPORT extern const size_t kNewAdditionalAcceleratorDataLength;
+
 // The public-facing interface for accelerator handling, which is Ash's duty to
 // implement.
 class ASH_PUBLIC_EXPORT AcceleratorController {

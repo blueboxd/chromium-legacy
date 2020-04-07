@@ -71,6 +71,8 @@ class CastComponent : public WebComponent,
 
   cr_fuchsia::AgentManager* agent_manager() { return agent_manager_.get(); }
 
+  CastRunner* runner() const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(HeadlessCastRunnerIntegrationTest, Headless);
 

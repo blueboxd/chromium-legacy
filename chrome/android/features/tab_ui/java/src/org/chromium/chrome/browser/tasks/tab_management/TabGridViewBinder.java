@@ -151,15 +151,23 @@ class TabGridViewBinder {
     private static void bindClosableTabProperties(
             PropertyModel model, ViewLookupCachingFrameLayout view, PropertyKey propertyKey) {
         if (TabProperties.TAB_CLOSED_LISTENER == propertyKey) {
-            view.fastFindViewById(R.id.action_button).setOnClickListener(v -> {
-                int tabId = model.get(TabProperties.TAB_ID);
-                model.get(TabProperties.TAB_CLOSED_LISTENER).run(tabId);
-            });
+            if (model.get(TabProperties.TAB_CLOSED_LISTENER) == null) {
+                view.fastFindViewById(R.id.action_button).setOnClickListener(null);
+            } else {
+                view.fastFindViewById(R.id.action_button).setOnClickListener(v -> {
+                    int tabId = model.get(TabProperties.TAB_ID);
+                    model.get(TabProperties.TAB_CLOSED_LISTENER).run(tabId);
+                });
+            }
         } else if (TabProperties.TAB_SELECTED_LISTENER == propertyKey) {
-            view.setOnClickListener(v -> {
-                int tabId = model.get(TabProperties.TAB_ID);
-                model.get(TabProperties.TAB_SELECTED_LISTENER).run(tabId);
-            });
+            if (model.get(TabProperties.TAB_SELECTED_LISTENER) == null) {
+                view.setOnClickListener(null);
+            } else {
+                view.setOnClickListener(v -> {
+                    int tabId = model.get(TabProperties.TAB_ID);
+                    model.get(TabProperties.TAB_SELECTED_LISTENER).run(tabId);
+                });
+            }
         } else if (TabProperties.CREATE_GROUP_LISTENER == propertyKey) {
             TabListMediator.TabActionListener listener =
                     model.get(TabProperties.CREATE_GROUP_LISTENER);

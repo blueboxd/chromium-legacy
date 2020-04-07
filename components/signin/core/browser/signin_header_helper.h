@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "build/build_config.h"
 #include "components/prefs/pref_member.h"
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/signin_buildflags.h"
@@ -75,6 +76,10 @@ struct ManageAccountsParams {
   std::string continue_url;
   // Whether the continue URL should be loaded in the same tab.
   bool is_same_tab;
+#if defined(OS_ANDROID)
+  // Whether to show consistency promo.
+  bool show_consistency_promo;
+#endif
 
   ManageAccountsParams();
   ManageAccountsParams(const ManageAccountsParams& other);

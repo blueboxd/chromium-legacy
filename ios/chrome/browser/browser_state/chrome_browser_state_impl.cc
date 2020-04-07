@@ -200,11 +200,10 @@ void ChromeBrowserStateImpl::SetOffTheRecordChromeBrowserState(
 }
 
 PrefService* ChromeBrowserStateImpl::GetOffTheRecordPrefs() {
-  DCHECK(prefs_);
-  if (!otr_prefs_) {
-    otr_prefs_ = CreateIncognitoBrowserStatePrefs(prefs_.get());
+  if (otr_state_) {
+    return otr_state_->GetPrefs();
   }
-  return otr_prefs_.get();
+  return nullptr;
 }
 
 ChromeBrowserStateIOData* ChromeBrowserStateImpl::GetIOData() {

@@ -129,7 +129,7 @@ class CORE_EXPORT NGFragmentItem : public RefCounted<NGFragmentItem>,
   wtf_size_t DeltaToNextForSameLayoutObject() const {
     return delta_to_next_for_same_layout_object_;
   }
-  void SetDeltaToNextForSameLayoutObject(wtf_size_t delta);
+  void SetDeltaToNextForSameLayoutObject(wtf_size_t delta) const;
 
   const PhysicalRect& RectInContainerBlock() const { return rect_; }
   const PhysicalOffset& OffsetInContainerBlock() const { return rect_.offset; }
@@ -359,7 +359,7 @@ class CORE_EXPORT NGFragmentItem : public RefCounted<NGFragmentItem>,
   std::unique_ptr<NGInkOverflow> ink_overflow_;
 
   // Item index delta to the next item for the same |LayoutObject|.
-  wtf_size_t delta_to_next_for_same_layout_object_ = 0;
+  mutable wtf_size_t delta_to_next_for_same_layout_object_ = 0;
 
   // Note: We should not add |bidi_level_| because it is used only for layout.
   unsigned type_ : 2;           // ItemType

@@ -232,9 +232,11 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
 
   __weak UserSigninCoordinator* weakSelf = self;
   self.addAccountSigninCoordinator.signinCompletion =
-      ^(SigninCoordinatorResult signinResult, ChromeIdentity* identity) {
+      ^(SigninCoordinatorResult signinResult,
+        SigninCompletionInfo* signinCompletionInfo) {
         if (signinResult == SigninCoordinatorResultSuccess) {
-          weakSelf.unifiedConsentCoordinator.selectedIdentity = identity;
+          weakSelf.unifiedConsentCoordinator.selectedIdentity =
+              signinCompletionInfo.identity;
           weakSelf.addedAccount = YES;
         }
         [weakSelf.addAccountSigninCoordinator stop];
@@ -342,8 +344,12 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
   self.unifiedConsentCoordinator = nil;
   self.mediator = nil;
   self.viewController = nil;
-  if (!settingsWasTapped) {
-    [self runCompletionCallbackWithSigninResult:signinResult identity:identity];
+  if (!settingsWasTapped || self.signinIntent == UserSigninIntentFirstRun) {
+    // For first run intent, the UserSigninCoordinator owner is reponsible to
+    // open the advanced settings sign-in.
+    [self runCompletionCallbackWithSigninResult:signinResult
+                                       identity:identity
+                     showAdvancedSettingsSignin:settingsWasTapped];
     return;
   }
   self.advancedSettingsSigninCoordinator = [SigninCoordinator
@@ -353,11 +359,11 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
   __weak UserSigninCoordinator* weakSelf = self;
   self.advancedSettingsSigninCoordinator.signinCompletion = ^(
       SigninCoordinatorResult advancedSigninResult,
-      ChromeIdentity* advancedSigninIdentity) {
+      SigninCompletionInfo* signinCompletionInfo) {
     [weakSelf
         advancedSettingsSigninCoordinatorFinishedWithResult:advancedSigninResult
-                                                   identity:
-                                                       advancedSigninIdentity];
+                                                   identity:signinCompletionInfo
+                                                                .identity];
   };
   [self.advancedSettingsSigninCoordinator start];
 }
@@ -395,7 +401,8 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
             runCompletionCallbackWithSigninResult:
                 SigninCoordinatorResultInterrupted
                                          identity:self.unifiedConsentCoordinator
-                                                      .selectedIdentity];
+                                                      .selectedIdentity
+                       showAdvancedSettingsSignin:NO];
         return;
       }
 
@@ -432,7 +439,8 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
     [weakSelf
         runCompletionCallbackWithSigninResult:SigninCoordinatorResultInterrupted
                                      identity:self.unifiedConsentCoordinator
-                                                  .selectedIdentity];
+                                                  .selectedIdentity
+                   showAdvancedSettingsSignin:NO];
     if (completion) {
       completion();
     }
@@ -497,7 +505,9 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
   DCHECK(self.advancedSettingsSigninCoordinator);
   [self.advancedSettingsSigninCoordinator stop];
   self.advancedSettingsSigninCoordinator = nil;
-  [self runCompletionCallbackWithSigninResult:signinResult identity:identity];
+  [self runCompletionCallbackWithSigninResult:signinResult
+                                     identity:identity
+                   showAdvancedSettingsSignin:NO];
 }
 
 @end

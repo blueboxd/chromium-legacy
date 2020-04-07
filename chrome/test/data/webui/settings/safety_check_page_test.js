@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {HatsBrowserProxyImpl, LifetimeBrowserProxyImpl, MetricsBrowserProxyImpl, OpenWindowProxyImpl, PasswordManagerImpl, PasswordManagerProxy, Router, routes, SafetyCheckBrowserProxy, SafetyCheckBrowserProxyImpl, SafetyCheckCallbackConstants, SafetyCheckElementInteractions, SafetyCheckExtensionsStatus, SafetyCheckPasswordsStatus, SafetyCheckSafeBrowsingStatus, SafetyCheckUpdatesStatus} from 'chrome://settings/settings.js';
+// #import {HatsBrowserProxyImpl, LifetimeBrowserProxyImpl, MetricsBrowserProxyImpl, OpenWindowProxyImpl, PasswordManagerImpl, PasswordManagerProxy, Router, routes, SafetyCheckBrowserProxy, SafetyCheckBrowserProxyImpl, SafetyCheckCallbackConstants, SafetyCheckInteractions, SafetyCheckExtensionsStatus, SafetyCheckPasswordsStatus, SafetyCheckSafeBrowsingStatus, SafetyCheckUpdatesStatus} from 'chrome://settings/settings.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
 // #import {TestHatsBrowserProxy} from 'chrome://test/settings/test_hats_browser_proxy.m.js';
@@ -88,10 +88,11 @@ suite('SafetyCheckUiTests', function() {
     page.$$('#safetyCheckExtensionsButton').click();
     // Ensure UMA is logged.
     assertEquals(
-        settings.SafetyCheckElementInteractions.SAFETY_CHECK_EXTENSIONS_REVIEW,
-        await metricsBrowserProxy.whenCalled('recordSafetyCheckPageHistogram'));
+        settings.SafetyCheckInteractions.SAFETY_CHECK_EXTENSIONS_REVIEW,
+        await metricsBrowserProxy.whenCalled(
+            'recordSafetyCheckInteractionHistogram'));
     assertEquals(
-        'SafetyCheck.Extensions.Review',
+        'Settings.SafetyCheck.ReviewExtensions',
         await metricsBrowserProxy.whenCalled('recordAction'));
     // Ensure the browser proxy call is done.
     assertEquals(
@@ -108,6 +109,14 @@ suite('SafetyCheckUiTests', function() {
 
     // User starts check.
     page.$$('#safetyCheckParentButton').click();
+    // Ensure UMA is logged.
+    assertEquals(
+        settings.SafetyCheckInteractions.SAFETY_CHECK_START,
+        await metricsBrowserProxy.whenCalled(
+            'recordSafetyCheckInteractionHistogram'));
+    assertEquals(
+        'Settings.SafetyCheck.Start',
+        await metricsBrowserProxy.whenCalled('recordAction'));
     // Ensure the browser proxy call is done.
     await safetyCheckBrowserProxy.whenCalled('runSafetyCheck');
 
@@ -178,10 +187,11 @@ suite('SafetyCheckUiTests', function() {
     page.$$('#safetyCheckUpdatesButton').click();
     // Ensure UMA is logged.
     assertEquals(
-        settings.SafetyCheckElementInteractions.SAFETY_CHECK_UPDATES_RELAUNCH,
-        await metricsBrowserProxy.whenCalled('recordSafetyCheckPageHistogram'));
+        settings.SafetyCheckInteractions.SAFETY_CHECK_UPDATES_RELAUNCH,
+        await metricsBrowserProxy.whenCalled(
+            'recordSafetyCheckInteractionHistogram'));
     assertEquals(
-        'SafetyCheck.Updates.Relaunch',
+        'Settings.SafetyCheck.RelaunchAfterUpdates',
         await metricsBrowserProxy.whenCalled('recordAction'));
     // Ensure the browser proxy call is done.
     return lifetimeBrowserProxy.whenCalled('relaunch');
@@ -237,10 +247,11 @@ suite('SafetyCheckUiTests', function() {
     page.$$('#safetyCheckPasswordsButton').click();
     // Ensure UMA is logged.
     assertEquals(
-        settings.SafetyCheckElementInteractions.SAFETY_CHECK_PASSWORDS_MANAGE,
-        await metricsBrowserProxy.whenCalled('recordSafetyCheckPageHistogram'));
+        settings.SafetyCheckInteractions.SAFETY_CHECK_PASSWORDS_MANAGE,
+        await metricsBrowserProxy.whenCalled(
+            'recordSafetyCheckInteractionHistogram'));
     assertEquals(
-        'SafetyCheck.Passwords.Manage',
+        'Settings.SafetyCheck.ManagePasswords',
         await metricsBrowserProxy.whenCalled('recordAction'));
     // Ensure the correct Settings page is shown.
     assertEquals(
@@ -281,11 +292,11 @@ suite('SafetyCheckUiTests', function() {
     page.$$('#safetyCheckSafeBrowsingButton').click();
     // Ensure UMA is logged.
     assertEquals(
-        settings.SafetyCheckElementInteractions
-            .SAFETY_CHECK_SAFE_BROWSING_MANAGE,
-        await metricsBrowserProxy.whenCalled('recordSafetyCheckPageHistogram'));
+        settings.SafetyCheckInteractions.SAFETY_CHECK_SAFE_BROWSING_MANAGE,
+        await metricsBrowserProxy.whenCalled(
+            'recordSafetyCheckInteractionHistogram'));
     assertEquals(
-        'SafetyCheck.SafeBrowsing.Manage',
+        'Settings.SafetyCheck.ManageSafeBrowsing',
         await metricsBrowserProxy.whenCalled('recordAction'));
     // Ensure the correct Settings page is shown.
     assertEquals(

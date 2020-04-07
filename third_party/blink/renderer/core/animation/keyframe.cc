@@ -30,8 +30,8 @@ Interpolation* Keyframe::PropertySpecificKeyframe::CreateInterpolation(
       const_cast<PropertySpecificKeyframe*>(&end));
 }
 
-void Keyframe::AddKeyframePropertiesToV8Object(
-    V8ObjectBuilder& object_builder) const {
+void Keyframe::AddKeyframePropertiesToV8Object(V8ObjectBuilder& object_builder,
+                                               Element* element) const {
   if (offset_) {
     object_builder.Add("offset", offset_.value());
   } else {

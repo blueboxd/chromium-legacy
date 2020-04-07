@@ -41,15 +41,22 @@ public class PrefetchConfiguration {
      * user setting to be true. If the current browser Profile is null this method returns false.
      */
     public static boolean isPrefetchingEnabled() {
+        // TODO(https://crbug.com/1067314): Use the current profile (i.e., regular profile or
+        // incognito profile) instead of always using regular profile. It is wrong and need to be
+        // fixed.
         return PrefetchConfigurationJni.get().isPrefetchingEnabled(
-                ProfileKey.getLastUsedProfileKey());
+                ProfileKey.getLastUsedRegularProfileKey());
     }
 
     /**
      * Return the value of offline_pages.enabled_by_server pref.
      */
     public static boolean isPrefetchingEnabledByServer() {
-        return PrefetchConfigurationJni.get().isEnabledByServer(ProfileKey.getLastUsedProfileKey());
+        // TODO(https://crbug.com/1067314): Use the current profile (i.e., regular profile or
+        // incognito profile) instead of always using regular profile. It is wrong and need to be
+        // fixed.
+        return PrefetchConfigurationJni.get().isEnabledByServer(
+                ProfileKey.getLastUsedRegularProfileKey());
     }
 
     /**
@@ -58,16 +65,22 @@ public class PrefetchConfiguration {
      * since the last check.
      */
     public static boolean isForbiddenCheckDue() {
+        // TODO(https://crbug.com/1067314): Use the current profile (i.e., regular profile or
+        // incognito profile) instead of always using regular profile. It is wrong and need to be
+        // fixed.
         return PrefetchConfigurationJni.get().isForbiddenCheckDue(
-                ProfileKey.getLastUsedProfileKey());
+                ProfileKey.getLastUsedRegularProfileKey());
     }
 
     /**
      * Returns true if the GeneratePageBundle-forbidden check has never run and is due to run.
      */
     public static boolean isEnabledByServerUnknown() {
+        // TODO(https://crbug.com/1067314): Use the current profile (i.e., regular profile or
+        // incognito profile) instead of always using regular profile. It is wrong and need to be
+        // fixed.
         return PrefetchConfigurationJni.get().isEnabledByServerUnknown(
-                ProfileKey.getLastUsedProfileKey());
+                ProfileKey.getLastUsedRegularProfileKey());
     }
 
     /**
@@ -75,8 +88,11 @@ public class PrefetchConfiguration {
      * enabled or disabled. If the current browser Profile is null the setting will not be changed.
      */
     public static void setPrefetchingEnabledInSettings(boolean enabled) {
+        // TODO(https://crbug.com/1067314): Use the current profile (i.e., regular profile or
+        // incognito profile) instead of always using regular profile. It is wrong and need to be
+        // fixed.
         PrefetchConfigurationJni.get().setPrefetchingEnabledInSettings(
-                ProfileKey.getLastUsedProfileKey(), enabled);
+                ProfileKey.getLastUsedRegularProfileKey(), enabled);
     }
 
     /**
@@ -84,8 +100,11 @@ public class PrefetchConfiguration {
      * enabled or disabled.
      */
     public static boolean isPrefetchingEnabledInSettings() {
+        // TODO(https://crbug.com/1067314): Use the current profile (i.e., regular profile or
+        // incognito profile) instead of always using regular profile. It is wrong and need to be
+        // fixed.
         return PrefetchConfigurationJni.get().isPrefetchingEnabledInSettings(
-                ProfileKey.getLastUsedProfileKey());
+                ProfileKey.getLastUsedRegularProfileKey());
     }
 
     @NativeMethods

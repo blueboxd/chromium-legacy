@@ -4,14 +4,24 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
+import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.withClassName;
+import static android.support.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
+import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
+
+import static org.hamcrest.Matchers.is;
 
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewAssertionTrue;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
 
 import android.support.test.InstrumentationRegistry;
+import android.support.test.espresso.Espresso;
+import android.support.test.espresso.matcher.ViewMatchers.Visibility;
 import android.support.test.filters.MediumTest;
 
 import org.junit.After;
@@ -28,6 +38,7 @@ import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto.PresentationProto;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -79,6 +90,42 @@ public class AutofillAssistantChromeTabIntegrationTest {
     @After
     public void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
+    }
+
+    @Test
+    @MediumTest
+    public void newTabButtonHidesAndRecoversAutofillAssistant() throws Exception {
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setPrompt(PromptProto.newBuilder()
+                                            .setMessage("Prompt")
+                                            .setDisableForceExpandSheet(true)
+                                            .addChoices(PromptProto.Choice.newBuilder()))
+                         .build());
+
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath(TEST_PAGE_A)
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Done")))
+                        .build(),
+                list);
+
+        setupScripts(script);
+        startAutofillAssistantOnTab(TEST_PAGE_A);
+
+        waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
+        onView(withClassName(is(ScrimView.class.getName())))
+                .check(matches(withEffectiveVisibility(Visibility.VISIBLE)));
+
+        onView(withId(org.chromium.chrome.R.id.tab_switcher_button)).perform(click());
+        waitUntilViewAssertionTrue(withText("Prompt"), doesNotExist(), 3000L);
+        onView(withClassName(is(ScrimView.class.getName()))).check(doesNotExist());
+
+        Espresso.pressBack();
+        waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
+        onView(withClassName(is(ScrimView.class.getName())))
+                .check(matches(withEffectiveVisibility(Visibility.VISIBLE)));
     }
 
     @Test

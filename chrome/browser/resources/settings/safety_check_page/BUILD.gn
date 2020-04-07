@@ -90,7 +90,7 @@ polymer_modulizer("safety_check_page") {
                    "chrome/browser/resources/settings/autofill_page/password_manager_proxy.html|PasswordManagerImpl,PasswordManagerProxy",
                    "chrome/browser/resources/settings/lifetime_browser_proxy.html|LifetimeBrowserProxy,LifetimeBrowserProxyImpl",
                    "chrome/browser/resources/settings/hats_browser_proxy.html|HatsBrowserProxyImpl",
-                   "chrome/browser/resources/settings/metrics_browser_proxy.html|SafetyCheckElementInteractions,MetricsBrowserProxy,MetricsBrowserProxyImpl",
+                   "chrome/browser/resources/settings/metrics_browser_proxy.html|SafetyCheckInteractions,MetricsBrowserProxy,MetricsBrowserProxyImpl",
                    "chrome/browser/resources/settings/open_window_proxy.html|OpenWindowProxyImpl",
                    "chrome/browser/resources/settings/safety_check_page/safety_check_browser_proxy.html|SafetyCheckBrowserProxy,SafetyCheckBrowserProxyImpl,SafetyCheckExtensionsStatus,SafetyCheckPasswordsStatus,SafetyCheckUpdatesStatus,SafetyCheckSafeBrowsingStatus,SafetyCheckCallbackConstants",
                    "ui/webui/resources/html/assert.html|assertNotReached",

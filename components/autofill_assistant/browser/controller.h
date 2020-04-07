@@ -142,8 +142,8 @@ class Controller : public ScriptExecutorDelegate,
   // states where showing the UI is optional, such as RUNNING, in tracking mode.
   void RequireUI() override;
 
-  void AddListener(ScriptExecutorDelegate::Listener* listener) override;
-  void RemoveListener(ScriptExecutorDelegate::Listener* listener) override;
+  void AddListener(NavigationListener* listener) override;
+  void RemoveListener(NavigationListener* listener) override;
 
   void SetExpandSheetForPromptAction(bool expand) override;
 
@@ -406,7 +406,7 @@ class Controller : public ScriptExecutorDelegate,
 
   // Value for ScriptExecutorDelegate::HasNavigationError()
   bool navigation_error_ = false;
-  std::vector<ScriptExecutorDelegate::Listener*> listeners_;
+  base::ObserverList<NavigationListener> navigation_listeners_;
 
   // Tracks scripts and script execution. It's kept at the end, as it tend to
   // depend on everything the controller support, through script and script

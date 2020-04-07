@@ -81,7 +81,8 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
 
   bool HasCssProperty() const;
 
-  void AddKeyframePropertiesToV8Object(V8ObjectBuilder&) const override;
+  void AddKeyframePropertiesToV8Object(V8ObjectBuilder&,
+                                       Element*) const override;
 
   void Trace(Visitor*) override;
 

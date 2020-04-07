@@ -1905,11 +1905,7 @@ String AXObjectCacheImpl::ComputedNameForNode(Node* node) {
 }
 
 void AXObjectCacheImpl::OnTouchAccessibilityHover(const IntPoint& location) {
-  // TODO(aleventhal) This triggers a DCHECK when running
-  // content_browsertests --gtest_filter=TouchAccessibility*.TouchExploration*
-  // DocumentLifecycle::DisallowTransitionScope
-  //   disallow(document_->Lifecycle());
-
+  DocumentLifecycle::DisallowTransitionScope disallow(document_->Lifecycle());
   AXObject* hit = Root()->AccessibilityHitTest(location);
   if (hit) {
     // Ignore events on a frame or plug-in, because the touch events

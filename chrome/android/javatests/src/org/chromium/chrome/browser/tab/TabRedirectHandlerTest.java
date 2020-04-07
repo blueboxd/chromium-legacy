@@ -68,7 +68,7 @@ public class TabRedirectHandlerTest {
     @Feature({"IntentHandling"})
     public void testRealIntentRedirect() {
         TabRedirectHandler handler = TabRedirectHandler.create();
-        handler.updateIntent(sYtIntent);
+        handler.updateIntent(sYtIntent, false, false, false);
         Assert.assertFalse(handler.isOnNavigation());
 
         handler.updateNewUrlLoading(TRANS_TYPE_OF_LINK_FROM_INTENT, false, false, 0, 0);
@@ -88,7 +88,7 @@ public class TabRedirectHandlerTest {
     @Feature({"IntentHandling"})
     public void testEffectiveIntentRedirect_linkNavigation() {
         TabRedirectHandler handler = TabRedirectHandler.create();
-        handler.updateIntent(sYtIntent);
+        handler.updateIntent(sYtIntent, false, false, false);
         Assert.assertFalse(handler.isOnNavigation());
 
         handler.updateNewUrlLoading(TRANS_TYPE_OF_LINK_FROM_INTENT, false, false, 0, 0);
@@ -108,7 +108,7 @@ public class TabRedirectHandlerTest {
     @Feature({"IntentHandling"})
     public void testEffectiveIntentRedirect_formSubmit() {
         TabRedirectHandler handler = TabRedirectHandler.create();
-        handler.updateIntent(sYtIntent);
+        handler.updateIntent(sYtIntent, false, false, false);
         Assert.assertFalse(handler.isOnNavigation());
 
         handler.updateNewUrlLoading(TRANS_TYPE_OF_LINK_FROM_INTENT, false, false, 0, 0);
@@ -128,7 +128,7 @@ public class TabRedirectHandlerTest {
     @Feature({"IntentHandling"})
     public void testNoIntent() {
         TabRedirectHandler handler = TabRedirectHandler.create();
-        handler.updateIntent(null);
+        handler.updateIntent(null, false, false, false);
         Assert.assertFalse(handler.isOnNavigation());
 
         handler.updateNewUrlLoading(TRANS_TYPE_OF_LINK_FROM_INTENT, false, false, 0, 0);
@@ -148,7 +148,7 @@ public class TabRedirectHandlerTest {
     @Feature({"IntentHandling"})
     public void testClear() {
         TabRedirectHandler handler = TabRedirectHandler.create();
-        handler.updateIntent(sYtIntent);
+        handler.updateIntent(sYtIntent, false, false, false);
         Assert.assertFalse(handler.isOnNavigation());
 
         handler.updateNewUrlLoading(TRANS_TYPE_OF_LINK_FROM_INTENT, false, false, 0, 0);
@@ -173,7 +173,7 @@ public class TabRedirectHandlerTest {
     @Feature({"IntentHandling"})
     public void testNonLinkFromIntent() {
         TabRedirectHandler handler = TabRedirectHandler.create();
-        handler.updateIntent(sYtIntent);
+        handler.updateIntent(sYtIntent, false, false, false);
         Assert.assertFalse(handler.isOnNavigation());
 
         handler.updateNewUrlLoading(PageTransition.TYPED, false, false, 0, 0);
@@ -193,7 +193,7 @@ public class TabRedirectHandlerTest {
     @Feature({"IntentHandling"})
     public void testUserInteraction() {
         TabRedirectHandler handler = TabRedirectHandler.create();
-        handler.updateIntent(sYtIntent);
+        handler.updateIntent(sYtIntent, false, false, false);
         Assert.assertFalse(handler.isOnNavigation());
 
         handler.updateNewUrlLoading(TRANS_TYPE_OF_LINK_FROM_INTENT, false, false, 0, 0);
@@ -224,7 +224,7 @@ public class TabRedirectHandlerTest {
         TabRedirectHandler handler = TabRedirectHandler.create();
         Intent fooIntent = new Intent(sFooIntent);
         fooIntent.putExtra(Browser.EXTRA_APPLICATION_ID, TEST_PACKAGE_NAME);
-        handler.updateIntent(fooIntent);
+        handler.updateIntent(fooIntent, false, false, false);
         Assert.assertFalse(handler.isOnNavigation());
         Assert.assertTrue(handler.shouldStayInApp(false));
         Assert.assertFalse(handler.shouldStayInApp(true));
@@ -254,7 +254,7 @@ public class TabRedirectHandlerTest {
     @Feature({"IntentHandling"})
     public void testNavigationFromUserTyping() {
         TabRedirectHandler handler = TabRedirectHandler.create();
-        handler.updateIntent(sYtIntent);
+        handler.updateIntent(sYtIntent, false, false, false);
         Assert.assertFalse(handler.isOnNavigation());
         Assert.assertFalse(handler.isNavigationFromUserTyping());
 
@@ -282,7 +282,7 @@ public class TabRedirectHandlerTest {
         TabRedirectHandler handler = TabRedirectHandler.create();
         Intent fooIntent = new Intent(sFooIntent);
         fooIntent.setPackage(TEST_PACKAGE_NAME);
-        handler.updateIntent(fooIntent);
+        handler.updateIntent(fooIntent, false, false, false);
         Assert.assertFalse(handler.isOnNavigation());
         Assert.assertTrue(handler.shouldStayInApp(false));
         Assert.assertFalse(handler.shouldStayInApp(true));
@@ -315,7 +315,7 @@ public class TabRedirectHandlerTest {
         // 1. 3XX redirection should not override URL loading.
         /////////////////////////////////////////////////////
         TabRedirectHandler handler = TabRedirectHandler.create();
-        handler.updateIntent(sYtIntent);
+        handler.updateIntent(sYtIntent, false, false, false);
         Assert.assertFalse(handler.shouldNotOverrideUrlLoading());
 
         handler.updateNewUrlLoading(PageTransition.LINK, false, true, 0, 0);
@@ -329,7 +329,7 @@ public class TabRedirectHandlerTest {
         // 2. Effective redirection should not override URL loading.
         /////////////////////////////////////////////////////
         handler = TabRedirectHandler.create();
-        handler.updateIntent(sYtIntent);
+        handler.updateIntent(sYtIntent, false, false, false);
         Assert.assertFalse(handler.shouldNotOverrideUrlLoading());
 
         handler.updateNewUrlLoading(PageTransition.LINK, false, true, 0, 0);
@@ -356,7 +356,7 @@ public class TabRedirectHandlerTest {
     @RetryOnFailure
     public void testNavigationFromLinkWithoutUserGesture() {
         TabRedirectHandler handler = TabRedirectHandler.create();
-        handler.updateIntent(sYtIntent);
+        handler.updateIntent(sYtIntent, false, false, false);
         Assert.assertFalse(handler.isOnNavigation());
         Assert.assertFalse(handler.shouldStayInApp(false));
         Assert.assertFalse(handler.shouldStayInApp(true));
@@ -389,7 +389,7 @@ public class TabRedirectHandlerTest {
     @RetryOnFailure
     public void testNavigationFromReload() {
         TabRedirectHandler handler = TabRedirectHandler.create();
-        handler.updateIntent(sYtIntent);
+        handler.updateIntent(sYtIntent, false, false, false);
         Assert.assertFalse(handler.isOnNavigation());
         Assert.assertFalse(handler.shouldStayInApp(false));
         Assert.assertFalse(handler.shouldStayInApp(true));
@@ -422,7 +422,7 @@ public class TabRedirectHandlerTest {
     @RetryOnFailure
     public void testNavigationWithForwardBack() {
         TabRedirectHandler handler = TabRedirectHandler.create();
-        handler.updateIntent(sYtIntent);
+        handler.updateIntent(sYtIntent, false, false, false);
         Assert.assertFalse(handler.isOnNavigation());
         Assert.assertFalse(handler.shouldStayInApp(false));
         Assert.assertFalse(handler.shouldStayInApp(true));
@@ -475,7 +475,7 @@ public class TabRedirectHandlerTest {
     @Feature({"IntentHandling"})
     public void testClientRedirectWithoutUserGesture() {
         TabRedirectHandler handler = TabRedirectHandler.create();
-        handler.updateIntent(sFooIntent);
+        handler.updateIntent(sFooIntent, false, false, false);
         Assert.assertFalse(handler.isOnNavigation());
 
         handler.updateNewUrlLoading(PageTransition.CLIENT_REDIRECT, false, false, 0, 0);

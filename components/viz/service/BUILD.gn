@@ -414,7 +414,6 @@ viz_source_set("gpu_service_dependencies") {
 
     deps += [
       "//third_party/dawn:libdawn_native",
-      "//third_party/dawn:libdawn_native_sources",
       "//third_party/dawn/src/dawn:libdawn",
     ]
   }

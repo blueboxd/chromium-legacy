@@ -31,7 +31,6 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -81,7 +80,7 @@ public class ReturnToChromeTest {
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS + "/100000"})
     public void testTabSwitcherModeNotTriggeredWithinThreshold() throws Exception {
         TabUiTestHelper.prepareTabsWithThumbnail(mActivityTestRule, 2, 0, mUrl);
-        ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
+        TabUiTestHelper.finishActivity(mActivityTestRule.getActivity());
 
         mActivityTestRule.startMainActivityFromLauncher();
 
@@ -102,7 +101,7 @@ public class ReturnToChromeTest {
     @FlakyTest(message = "crbug.com/1040895")
     public void testTabSwitcherModeTriggeredBeyondThreshold() throws Exception {
         TabUiTestHelper.prepareTabsWithThumbnail(mActivityTestRule, 2, 0, mUrl);
-        ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
+        TabUiTestHelper.finishActivity(mActivityTestRule.getActivity());
 
         assertEquals(0,
                 RecordHistogram.getHistogramTotalCountForTesting(
@@ -156,7 +155,7 @@ public class ReturnToChromeTest {
         testTabSwitcherModeTriggeredBeyondThreshold();
 
         // Redo to trigger warm startup UMA.
-        ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
+        TabUiTestHelper.finishActivity(mActivityTestRule.getActivity());
         mActivityTestRule.startMainActivityFromLauncher();
 
         if (!mActivityTestRule.getActivity().isTablet()) {
@@ -216,7 +215,7 @@ public class ReturnToChromeTest {
     public void testTabSwitcherModeTriggeredBeyondThreshold_NoTabs() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mActivityTestRule.getActivity().getTabModelSelector().closeAllTabs());
-        ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
+        TabUiTestHelper.finishActivity(mActivityTestRule.getActivity());
 
         assertEquals(0,
                 RecordHistogram.getHistogramTotalCountForTesting(
@@ -275,7 +274,7 @@ public class ReturnToChromeTest {
         TabUiTestHelper.verifyAllTabsHaveThumbnail(
                 mActivityTestRule.getActivity().getCurrentTabModel());
 
-        ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
+        TabUiTestHelper.finishActivity(mActivityTestRule.getActivity());
 
         mActivityTestRule.startMainActivityFromLauncher();
 

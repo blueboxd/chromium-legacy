@@ -30,7 +30,6 @@
 namespace feed {
 
 // Tracks UI changes in |StreamModel| and forwards them to |SurfaceInterface|s.
-// TODO(harringtond): implement spinner slice.
 class FeedStream::SurfaceUpdater : public StreamModel::Observer {
  public:
   using ContentRevision = ContentRevision;
@@ -92,6 +91,14 @@ class FeedStream::SurfaceUpdater : public StreamModel::Observer {
     }
   }
 
+  void LoadStreamStarted() {
+    if (model_)
+      return;
+    for (SurfaceInterface& surface : *surfaces_) {
+      SendLoadingSpinnerUpdate(&surface);
+    }
+  }
+
   void LoadStreamFailed(LoadStreamStatus load_stream_status) {
     auto zero_state_type = feedui::ZeroStateSlice::NO_CARDS_AVAILABLE;
     switch (load_stream_status) {
@@ -128,6 +135,14 @@ class FeedStream::SurfaceUpdater : public StreamModel::Observer {
     }
 
     return result;
+  }
+
+  static void SendLoadingSpinnerUpdate(SurfaceInterface* surface) {
+    feedui::StreamUpdate update;
+    feedui::Slice* slice = update.add_updated_slices()->mutable_slice();
+    slice->mutable_loading_spinner_slice()->set_is_at_top(true);
+    slice->set_slice_id("loading-spinner");
+    surface->StreamUpdate(update);
   }
 
   static void SendZeroStateUpdate(feedui::ZeroStateSlice::Type zero_state_type,
@@ -246,6 +261,7 @@ void FeedStream::TriggerStreamLoad() {
   }
 
   model_loading_in_progress_ = true;
+  surface_updater_->LoadStreamStarted();
   task_queue_.AddTask(std::make_unique<LoadStreamTask>(
       this, base::BindOnce(&FeedStream::LoadStreamTaskComplete,
                            base::Unretained(this))));

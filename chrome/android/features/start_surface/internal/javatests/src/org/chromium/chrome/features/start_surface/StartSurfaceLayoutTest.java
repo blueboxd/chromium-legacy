@@ -34,6 +34,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.g
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.rotateDeviceToOrientation;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabModelTabCount;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabSwitcherCardCount;
+import static org.chromium.chrome.test.util.browser.RecyclerViewTestUtils.waitForStableRecyclerView;
 import static org.chromium.components.embedder_support.util.UrlConstants.NTP_URL;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_POLLING_INTERVAL;
@@ -892,29 +893,29 @@ public class StartSurfaceLayoutTest {
 
         // New tab tile should be showing.
         enterGTSWithThumbnailChecking();
-        onView(withId(R.id.new_tab_tile)).check(matches(isDisplayed()));
         onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(3));
+        onView(withId(R.id.new_tab_tile)).check(matches(isDisplayed()));
         verifyTabModelTabCount(cta, 2, 0);
 
         // Clicking new tab tile in normal mode should create a normal tab.
         onView(withId(R.id.new_tab_tile)).perform(click());
         CriteriaHelper.pollUiThread(() -> !cta.getOverviewModeBehavior().overviewVisible());
         enterGTSWithThumbnailChecking();
-        onView(withId(R.id.new_tab_tile)).check(matches(isDisplayed()));
         onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(4));
+        onView(withId(R.id.new_tab_tile)).check(matches(isDisplayed()));
         verifyTabModelTabCount(cta, 3, 0);
 
         // New tab tile should be showing in incognito mode.
         switchTabModel(true);
-        onView(withId(R.id.new_tab_tile)).check(matches(isDisplayed()));
         onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(1));
+        onView(withId(R.id.new_tab_tile)).check(matches(isDisplayed()));
 
         // Clicking new tab tile in incognito mode should create an incognito tab.
         onView(withId(R.id.new_tab_tile)).perform(click());
         CriteriaHelper.pollUiThread(() -> !cta.getOverviewModeBehavior().overviewVisible());
         enterGTSWithThumbnailChecking();
-        onView(withId(R.id.new_tab_tile)).check(matches(isDisplayed()));
         onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(2));
+        onView(withId(R.id.new_tab_tile)).check(matches(isDisplayed()));
         verifyTabModelTabCount(cta, 3, 1);
 
         // Close all normal tabs and incognito tabs, the new tab tile should still show in both
@@ -1582,6 +1583,11 @@ public class StartSurfaceLayoutTest {
 
         CriteriaHelper.pollUiThread(Criteria.equals(isIncognito,
                 () -> mActivityTestRule.getActivity().getTabModelSelector().isIncognitoSelected()));
+
+        // Wait for tab list recyclerView to finish animation after tab model switch.
+        RecyclerView recyclerView =
+                mActivityTestRule.getActivity().findViewById(R.id.tab_list_view);
+        waitForStableRecyclerView(recyclerView);
     }
 
     /**

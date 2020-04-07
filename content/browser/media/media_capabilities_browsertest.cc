@@ -34,7 +34,13 @@ const char* kPropSupported = kSupported;
 const char* kPropSupported = kUnsupported;
 #endif  // USE_PROPRIETARY_CODECS
 
-enum StreamType { kAudio, kVideo, kAudioWithSpatialRendering };
+enum StreamType {
+  kAudio,
+  kVideo,
+  kAudioWithSpatialRendering,
+  kVideoWithHdrMetadata,
+  kVideoWithoutHdrMetadata
+};
 
 enum ConfigType { kFile, kMediaSource };
 
@@ -48,9 +54,9 @@ class MediaCapabilitiesTest : public ContentBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
-                                    "MediaCapabilities");
-    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
                                     "MediaCapabilitiesSpatialAudio");
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                    "MediaCapabilitiesDynamicRange");
   }
 
   std::string CanDecodeAudio(const std::string& config_type,
@@ -71,16 +77,58 @@ class MediaCapabilitiesTest : public ContentBrowserTest {
                      StreamType::kAudioWithSpatialRendering, spatial_rendering);
   }
 
+  std::string CanDecodeVideoWithHdrMetadata(
+      const std::string& config_type,
+      const std::string& content_type,
+      const std::string& color_gamut,
+      const std::string& transfer_function,
+      const std::string& hdr_metadata_type = "") {
+    StreamType stream_type = StreamType::kVideoWithHdrMetadata;
+    if (hdr_metadata_type == "")
+      stream_type = StreamType::kVideoWithoutHdrMetadata;
+
+    return CanDecode(config_type, content_type, stream_type,
+                     /* spatialRendering */ false, hdr_metadata_type,
+                     color_gamut, transfer_function);
+  }
+
   std::string CanDecode(const std::string& config_type,
                         const std::string& content_type,
                         StreamType stream_type,
-                        const bool& spatial_rendering = false) {
+                        const bool& spatial_rendering = false,
+                        const std::string& hdr_metadata_type = "",
+                        const std::string& color_gamut = "",
+                        const std::string& transfer_function = "") {
     std::string command;
     if (stream_type == StreamType::kAudio) {
       command.append("testAudioConfig(");
     } else if (stream_type == StreamType::kAudioWithSpatialRendering) {
       command.append("testAudioConfigWithSpatialRendering(");
       command.append(spatial_rendering ? "true, " : "false, ");
+    } else if (stream_type == StreamType::kVideoWithHdrMetadata) {
+      command.append("testVideoConfigWithHdrMetadata(");
+      DCHECK(!hdr_metadata_type.empty());
+      DCHECK(!color_gamut.empty());
+      DCHECK(!transfer_function.empty());
+      command.append("\"");
+      command.append(hdr_metadata_type);
+      command.append("\", ");
+      command.append("\"");
+      command.append(color_gamut);
+      command.append("\", ");
+      command.append("\"");
+      command.append(transfer_function);
+      command.append("\", ");
+    } else if (stream_type == StreamType::kVideoWithoutHdrMetadata) {
+      command.append("testVideoConfigWithoutHdrMetadata(");
+      DCHECK(!color_gamut.empty());
+      DCHECK(!transfer_function.empty());
+      command.append("\"");
+      command.append(color_gamut);
+      command.append("\", ");
+      command.append("\"");
+      command.append(transfer_function);
+      command.append("\", ");
     } else {
       command.append("testVideoConfig(");
     }
@@ -314,6 +362,66 @@ IN_PROC_BROWSER_TEST_P(MediaCapabilitiesTestWithConfigType,
   EXPECT_EQ(kUnsupported, CanDecodeAudioWithSpatialRendering(
                               config_type, "'audio/mp4; codecs=\"mp4a.A6\"'",
                               /*spatial_rendering*/ true));
+}
+
+// Cover basic HDR support.
+IN_PROC_BROWSER_TEST_P(MediaCapabilitiesTestWithConfigType,
+                       VideoTypesWithDynamicRange) {
+  base::FilePath file_path = media::GetTestDataFilePath(kDecodeTestFile);
+
+  const std::string& config_type = GetTypeString();
+
+  EXPECT_TRUE(
+      NavigateToURL(shell(), content::GetFileUrlWithQuery(file_path, "")));
+
+  // All color gamuts and transfer functions should be supported.
+  EXPECT_EQ(kSupported, CanDecodeVideoWithHdrMetadata(
+                            config_type, "'video/webm; codecs=\"vp8\"'",
+                            /* colorGamut */ "srgb",
+                            /* transferFunction */ "srgb"));
+  EXPECT_EQ(kSupported, CanDecodeVideoWithHdrMetadata(
+                            config_type, "'video/webm; codecs=\"vp8\"'",
+                            /* colorGamut */ "p3",
+                            /* transferFunction */ "pq"));
+  EXPECT_EQ(kSupported, CanDecodeVideoWithHdrMetadata(
+                            config_type, "'video/webm; codecs=\"vp8\"'",
+                            /* colorGamut */ "rec2020",
+                            /* transferFunction */ "hlg"));
+
+  // No HdrMetadataType is currently supported.
+  EXPECT_EQ(kUnsupported, CanDecodeVideoWithHdrMetadata(
+                              config_type, "'video/webm; codecs=\"vp8\"'",
+                              /* colorGamut */ "srgb",
+                              /* transferFunction */ "srgb",
+                              /* hdrMetadataType */ "smpteSt2086"));
+  EXPECT_EQ(kUnsupported, CanDecodeVideoWithHdrMetadata(
+                              config_type, "'video/webm; codecs=\"vp8\"'",
+                              /* colorGamut */ "srgb",
+                              /* transferFunction */ "srgb",
+                              /* hdrMetadataType */ "smpteSt2094-10"));
+  EXPECT_EQ(kUnsupported, CanDecodeVideoWithHdrMetadata(
+                              config_type, "'video/webm; codecs=\"vp8\"'",
+                              /* colorGamut */ "srgb",
+                              /* transferFunction */ "srgb",
+                              /* hdrMetadataType */ "smpteSt2094-40"));
+
+  // Make sure results are expected with some USE_PROPRIETARY_CODECS
+  EXPECT_EQ(kPropSupported,
+            CanDecodeVideoWithHdrMetadata(config_type,
+                                          "'video/mp4; codecs=\"avc1.42E01E\"'",
+                                          /* colorGamut */ "p3",
+                                          /* transferFunction */ "pq"));
+  EXPECT_EQ(kPropSupported,
+            CanDecodeVideoWithHdrMetadata(config_type,
+                                          "'video/mp4; codecs=\"avc1.42101E\"'",
+                                          /* colorGamut */ "srgb",
+                                          /* transferFunction */ "srgb"));
+  EXPECT_EQ(kUnsupported,
+            CanDecodeVideoWithHdrMetadata(config_type,
+                                          "'video/mp4; codecs=\"avc1.42701E\"'",
+                                          /* colorGamut */ "srgb",
+                                          /* transferFunction */ "srgb",
+                                          /* hdrMetadataType */ "smpteSt2086"));
 }
 
 INSTANTIATE_TEST_SUITE_P(File,

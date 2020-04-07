@@ -41,6 +41,7 @@ message Slice {
   oneof SliceData {
     XSurfaceSlice xsurface_slice = 1;
     ZeroStateSlice zero_state_slice = 3;
+    LoadingSpinnerSlice loading_spinner_slice = 4;
   }
   string slice_id = 2;
 }
@@ -57,6 +58,13 @@ message ZeroStateSlice {
   Type type = 1;
 }
 
+// An indicator that the feed is loading.
+message LoadingSpinnerSlice {
+  // True if the spinner is at the top of the feed. Otherwise, it is at the
+  // bottom.
+  bool is_at_top = 1;
+}
+
 message XSurfaceSlice {
   bytes xsurface_frame = 1;
 }
@@ -65,46 +73,4 @@ message XSurfaceSlice {
 message SharedState {
   string id = 1;
   bytes xsurface_shared_state = 2;
-}
-
-// An event on the UI.
-message UiEvent {
-  enum Type {
-    UNKNOWN = 0;
-    CARD_TAPPED = 1;
-    CARD_VIEWED = 2;
-    CARD_SWIPED = 3;
-    MORE_BUTTON_VIEWED = 4;
-    MORE_BUTTON_CLICKED = 5;
-    SPINNER_STARTED = 6;
-    SPINNER_FINISHED = 7;
-    SPINNER_DESTROYED_WITHOUT_COMPLETING = 8;
-    PIET_FRAME_RENDERING_EVENT = 9;
-    SCROLL_STREAM = 10;
-  }
-  enum SpinnerType {
-    UNKNOWN_SPINNER_TYPE = 0;
-    // Spinner shown on initial load of the Feed.
-    INITIAL_LOAD = 1;
-    // Spinner shown when Feed is refreshed.
-    ZERO_STATE_REFRESH = 2;
-    // Spinner shown when more button is clicked.
-    MORE_BUTTON = 3;
-    // Spinner shown when a synthetic token is consumed.
-    SYNTHETIC_TOKEN = 4;
-    // Spinner shown when a spinner is shown for loading the infinite feed.
-    INFINITE_FEED = 5;
-  }
-  // For CARD_* type events.
-  string chunk_id = 1;
-  // For MORE_BUTTON_* type events.
-  int32 more_button_position = 2;
-  // For SPINNER_* type events.
-  SpinnerType spinner_type = 3;
-  // For SPINNER_FINISHED and SPINNER_DESTROYED_WITHOUT_COMPLETING.
-  int32 spinner_time_shown = 4;
-  // For PIET_FRAME_RENDERING_EVENT.
-  repeated int32 piet_error_codes = 5;
-  // For SCROLL_STREAM.
-  int32 scroll_distance = 6;
 }

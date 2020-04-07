@@ -640,6 +640,9 @@ This avoids degenerate cases:
   to be fair to multiple same-priority requests and/or ability to request lower
   priority work to yield when high priority work comes in.
 
+See [`base/task/job_perftest.cc`](https://cs.chromium.org/chromium/src/base/task/job_perftest.cc)
+for a complete example.
+
 ```cpp
 // A canonical implementation of |worker_task|.
 void WorkerTask(base::JobDelegate* job_delegate) {

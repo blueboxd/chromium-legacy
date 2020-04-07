@@ -1,0 +1,41 @@
+<style>
+  .list-item {
+    align-items: center;
+    display: flex;
+    min-height: var(--settings-row-min-height);
+    padding: 0;
+  }
+
+  .long-text {
+    overflow: hidden;
+    padding-left: 20px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .short-text {
+    padding-left: 10px;
+    width: 90px;
+  }
+
+  #jobTitle {
+    width: 250px;
+  }
+
+  #printerName {
+    width: 150px;
+  }
+</style>
+<div class="list-item"
+    aria-labeledby="jobTitle printerName creationTime completionStatus">
+  <div id="jobTitle" class="long-text" aria-hidden="true">[[jobTitle_]]</div>
+  <div id="printerName" class="long-text" aria-hidden="true">
+    [[printerName_]]
+  </div>
+  <div id="creationTime" class="short-text" aria-hidden="true">
+    [[creationTime_]]
+  </div>
+  <div id="completionStatus" class="short-text" aria-hidden="true">
+    [[completionStatus_]]
+  </div>
+</div>

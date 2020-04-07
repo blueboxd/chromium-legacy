@@ -132,7 +132,7 @@ bool IsFeatureValidForMode(device::mojom::XRSessionFeature feature,
                            device::mojom::blink::XRSessionMode mode,
                            XRSessionInit* session_init,
                            ExecutionContext* execution_context,
-                           mojom::ConsoleMessageLevel error_level) {
+                           mojom::blink::ConsoleMessageLevel error_level) {
   switch (feature) {
     case device::mojom::XRSessionFeature::REF_SPACE_VIEWER:
     case device::mojom::XRSessionFeature::REF_SPACE_LOCAL:
@@ -149,7 +149,7 @@ bool IsFeatureValidForMode(device::mojom::XRSessionFeature feature,
       if (!session_init->hasDomOverlay()) {
         execution_context->AddConsoleMessage(MakeGarbageCollected<
                                              ConsoleMessage>(
-            mojom::ConsoleMessageSource::kJavaScript, error_level,
+            mojom::blink::ConsoleMessageSource::kJavaScript, error_level,
             "Must specify a valid domOverlay.root element in XRSessionInit"));
         return false;
       }
@@ -195,6 +195,32 @@ const char* CheckImmersiveSessionRequestAllowed(LocalFrame* frame,
   // Consent occurs in the Browser process.
 
   return nullptr;
+}
+
+// Helper method to convert the mojom error code into text for displaying in the
+// console. The console message will have the format of:
+// "Could not create a session because: <this value>"
+const char* GetConsoleMessage(device::mojom::RequestSessionError error) {
+  switch (error) {
+    case device::mojom::RequestSessionError::EXISTING_IMMERSIVE_SESSION:
+      return "There is already an existing immersive session";
+    case device::mojom::RequestSessionError::INVALID_CLIENT:
+      return "An error occurred while querying for runtime support";
+    case device::mojom::RequestSessionError::USER_DENIED_CONSENT:
+      return "The user denied some part of the requested configuration";
+    case device::mojom::RequestSessionError::NO_RUNTIME_FOUND:
+      return "No runtimes supported the requested configuration";
+    case device::mojom::RequestSessionError::UNKNOWN_RUNTIME_ERROR:
+      return "Something went wrong initializing the session in the runtime";
+    case device::mojom::RequestSessionError::RUNTIME_INSTALL_FAILURE:
+      return "The runtime for this configuration could not be installed";
+    case device::mojom::RequestSessionError::RUNTIMES_CHANGED:
+      return "The supported runtimes changed while initializing the session";
+    case device::mojom::RequestSessionError::FULLSCREEN_ERROR:
+      return "An error occurred while initializing fullscreen support";
+    case device::mojom::RequestSessionError::UNKNOWN_FAILURE:
+      return "An unknown error occurred";
+  }
 }
 
 }  // namespace
@@ -551,7 +577,7 @@ void XRSystem::OverlayFullscreenEventManager::Invoke(
     // Failed, reject the session
     xr_->OnRequestSessionReturned(
         query_, device::mojom::blink::RequestSessionResult::NewFailureReason(
-                    device::mojom::RequestSessionError::INVALID_CLIENT));
+                    device::mojom::RequestSessionError::FULLSCREEN_ERROR));
   }
 }
 
@@ -941,6 +967,7 @@ void XRSystem::RequestInlineSession(LocalFrame* frame,
 
   // Reject session if any of the required features were invalid.
   if (query->InvalidRequiredFeatures()) {
+    DVLOG(2) << __func__ << ": rejecting session - invalid required features";
     query->RejectWithDOMException(DOMExceptionCode::kNotSupportedError,
                                   kSessionNotSupported, exception_state);
     return;
@@ -960,6 +987,7 @@ void XRSystem::RequestInlineSession(LocalFrame* frame,
   // If we didn't already create a sensorless session, we can't create a session
   // without hardware, so just reject now.
   if (!service_) {
+    DVLOG(2) << __func__ << ": rejecting session - no service";
     query->RejectWithDOMException(DOMExceptionCode::kNotSupportedError,
                                   kSessionNotSupported, exception_state);
     return;
@@ -979,7 +1007,7 @@ XRSystem::RequestedXRSessionFeatureSet XRSystem::ParseRequestedFeatures(
     const HeapVector<ScriptValue>& features,
     const device::mojom::blink::XRSessionMode& session_mode,
     XRSessionInit* session_init,
-    mojom::ConsoleMessageLevel error_level) {
+    mojom::blink::ConsoleMessageLevel error_level) {
   RequestedXRSessionFeatureSet result;
 
   // Iterate over all requested features, even if intermediate
@@ -992,7 +1020,7 @@ XRSystem::RequestedXRSessionFeatureSet XRSystem::ParseRequestedFeatures(
       if (!feature_enum) {
         GetExecutionContext()->AddConsoleMessage(
             MakeGarbageCollected<ConsoleMessage>(
-                mojom::ConsoleMessageSource::kJavaScript, error_level,
+                mojom::blink::ConsoleMessageSource::kJavaScript, error_level,
                 "Unrecognized feature requested: " + feature_string));
         result.invalid_features = true;
       } else if (!IsFeatureValidForMode(feature_enum.value(), session_mode,
@@ -1000,14 +1028,14 @@ XRSystem::RequestedXRSessionFeatureSet XRSystem::ParseRequestedFeatures(
                                         error_level)) {
         GetExecutionContext()->AddConsoleMessage(
             MakeGarbageCollected<ConsoleMessage>(
-                mojom::ConsoleMessageSource::kJavaScript, error_level,
+                mojom::blink::ConsoleMessageSource::kJavaScript, error_level,
                 "Feature '" + feature_string + "' is not supported for mode: " +
                     SessionModeToString(session_mode)));
         result.invalid_features = true;
       } else if (!HasRequiredFeaturePolicy(doc, feature_enum.value())) {
         GetExecutionContext()->AddConsoleMessage(
             MakeGarbageCollected<ConsoleMessage>(
-                mojom::ConsoleMessageSource::kJavaScript, error_level,
+                mojom::blink::ConsoleMessageSource::kJavaScript, error_level,
                 "Feature '" + feature_string +
                     "' is not permitted by feature policy"));
         result.invalid_features = true;
@@ -1017,7 +1045,7 @@ XRSystem::RequestedXRSessionFeatureSet XRSystem::ParseRequestedFeatures(
     } else {
       GetExecutionContext()->AddConsoleMessage(
           MakeGarbageCollected<ConsoleMessage>(
-              mojom::ConsoleMessageSource::kJavaScript, error_level,
+              mojom::blink::ConsoleMessageSource::kJavaScript, error_level,
               "Unrecognized feature value"));
       result.invalid_features = true;
     }
@@ -1068,7 +1096,7 @@ ScriptPromise XRSystem::requestSession(ScriptState* script_state,
   if (session_init && session_init->hasRequiredFeatures()) {
     required_features = ParseRequestedFeatures(
         doc, session_init->requiredFeatures(), session_mode, session_init,
-        mojom::ConsoleMessageLevel::kError);
+        mojom::blink::ConsoleMessageLevel::kError);
   }
 
   // Parse optional feature strings
@@ -1076,7 +1104,7 @@ ScriptPromise XRSystem::requestSession(ScriptState* script_state,
   if (session_init && session_init->hasOptionalFeatures()) {
     optional_features = ParseRequestedFeatures(
         doc, session_init->optionalFeatures(), session_mode, session_init,
-        mojom::ConsoleMessageLevel::kWarning);
+        mojom::blink::ConsoleMessageLevel::kWarning);
   }
 
   // Certain session modes imply default features.
@@ -1178,26 +1206,29 @@ void XRSystem::OnRequestSessionReturned(
     DCHECK(has_outstanding_immersive_request_);
     has_outstanding_immersive_request_ = false;
   }
+
   // Clean up the fullscreen event manager which may have been added for
   // DOM overlay setup. We're done with it, and it contains a reference
   // to the query and the DOM overlay element.
   fullscreen_event_manager_ = nullptr;
 
-  // TODO(https://crbug.com/872316) Improve the error messaging to indicate why
-  // a request failed.
   if (!result->is_success()) {
     // |service_| does not support the requested mode. Attempt to create a
     // sensorless session.
     if (query->GetSensorRequirement() != SensorRequirement::kRequired) {
+      DVLOG(2) << __func__ << ": session creation failed - creating sensorless";
       XRSession* session = CreateSensorlessInlineSession();
       query->Resolve(session);
       return;
     }
 
-    // TODO(http://crbug.com/961960): Report appropriate exception when the user
-    // denies XR session request on consent dialog
-    // TODO(https://crbug.com/872316): Improve the error messaging to indicate
-    // the reason for a request failure.
+    String error_message =
+        String::Format("Could not create a session because: %s",
+                       GetConsoleMessage(result->get_failure_reason()));
+    GetExecutionContext()->AddConsoleMessage(
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::blink::ConsoleMessageSource::kJavaScript,
+            mojom::blink::ConsoleMessageLevel::kError, error_message));
     query->RejectWithDOMException(DOMExceptionCode::kNotSupportedError,
                                   kSessionNotSupported, nullptr);
     return;
@@ -1378,8 +1409,6 @@ void XRSystem::Dispose(DisposeType dispose_type) {
   HeapHashSet<Member<PendingRequestSessionQuery>> request_queries =
       outstanding_request_queries_;
   for (const auto& query : request_queries) {
-    // TODO(https://crbug.com/962991): The spec should specify
-    // what is returned here.
     OnRequestSessionReturned(
         query, device::mojom::blink::RequestSessionResult::NewFailureReason(
                    device::mojom::RequestSessionError::INVALID_CLIENT));

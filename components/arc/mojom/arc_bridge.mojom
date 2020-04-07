@@ -229,10 +229,3 @@ interface ArcBridgeHost {
   // Notifies Chrome that the WallpaperInstance interface is ready.
   [MinVersion=18] OnWallpaperInstanceReady@124(WallpaperInstance instance_ptr);
 };
-
-interface ArcBridgeInstance {
-  // Establishes full-duplex communication with the host.
-  // |host_ptr| is the MessagePipe endpoint that is bound to the
-  // ArcBridgeHostPtr binding.
-  Init@0(ArcBridgeHost host_ptr);
-};

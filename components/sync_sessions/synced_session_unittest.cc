@@ -215,7 +215,7 @@ TEST(SyncedSessionTest, SetSessionTabFromSyncData) {
   tab.current_navigation_index = 1000;
   tab.pinned = false;
   tab.extension_app_id = "fake";
-  tab.user_agent_override = "fake";
+  tab.user_agent_override.ua_string_override = "fake";
   tab.timestamp = base::Time::FromInternalValue(100);
   tab.navigations.resize(100);
   tab.session_storage_persistent_id = "fake";
@@ -227,7 +227,7 @@ TEST(SyncedSessionTest, SetSessionTabFromSyncData) {
   EXPECT_EQ(3, tab.current_navigation_index);
   EXPECT_TRUE(tab.pinned);
   EXPECT_EQ("app_id", tab.extension_app_id);
-  EXPECT_TRUE(tab.user_agent_override.empty());
+  EXPECT_TRUE(tab.user_agent_override.ua_string_override.empty());
   EXPECT_EQ(5u, tab.timestamp.ToInternalValue());
   ASSERT_EQ(5u, tab.navigations.size());
   for (int i = 0; i < 5; ++i) {
@@ -250,7 +250,7 @@ TEST(SyncedSessionTest, SessionTabToSyncData) {
   tab.current_navigation_index = 3;
   tab.pinned = true;
   tab.extension_app_id = "app_id";
-  tab.user_agent_override = "fake";
+  tab.user_agent_override.ua_string_override = "fake";
   tab.timestamp = base::Time::FromInternalValue(100);
   for (int i = 0; i < 5; ++i) {
     sessions::SerializedNavigationEntry entry =

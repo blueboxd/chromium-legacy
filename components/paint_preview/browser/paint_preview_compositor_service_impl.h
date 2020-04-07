@@ -16,23 +16,32 @@
 
 namespace paint_preview {
 
+using CompositorCollectionPtr =
+    std::unique_ptr<mojo::Remote<mojom::PaintPreviewCompositorCollection>,
+                    base::OnTaskRunnerDeleter>;
+
+// The implementation of the PaintPreviewCompositorService class.
+// The public interface should be invoked only on the |default_task_runner_|
+// which is the the runner returned by base::SequencedTaskRunnerHandle::Get()
+// when this is constructed.
 class PaintPreviewCompositorServiceImpl : public PaintPreviewCompositorService {
  public:
   explicit PaintPreviewCompositorServiceImpl(
-      mojo::Remote<mojom::PaintPreviewCompositorCollection> remote,
+      mojo::PendingRemote<mojom::PaintPreviewCompositorCollection>
+          pending_remote,
+      scoped_refptr<base::SequencedTaskRunner> compositor_task_runner_,
       base::OnceClosure disconnect_closure);
   ~PaintPreviewCompositorServiceImpl() override;
 
   // PaintPreviewCompositorService Implementation.
   std::unique_ptr<PaintPreviewCompositorClient> CreateCompositor(
       base::OnceClosure connected_closure) override;
+
   bool HasActiveClients() const override;
 
   // Marks the compositor associated with |token| as deleted in the
   // |active_clients_| set.
   void MarkCompositorAsDeleted(const base::UnguessableToken& token);
-
-  bool IsServiceBoundAndConnected() const;
 
   // Test method to validate internal state.
   const base::flat_set<base::UnguessableToken>& ActiveClientsForTesting() const;
@@ -47,8 +56,17 @@ class PaintPreviewCompositorServiceImpl : public PaintPreviewCompositorService {
 
   void DisconnectHandler();
 
-  mojo::Remote<mojom::PaintPreviewCompositorCollection> compositor_service_;
   base::flat_set<base::UnguessableToken> active_clients_;
+
+  scoped_refptr<base::SequencedTaskRunner> default_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> compositor_task_runner_;
+
+  // Bound to |compositor_task_runner_| all methods for the remote owned by this
+  // must be called on |compositor_task_runner_| this is deleted on the same
+  // task runner so that using it with base::Unretained is safe.
+  CompositorCollectionPtr compositor_service_;
+
+  // Called on |default_task_runner_|.
   base::OnceClosure user_disconnect_closure_;
 
   base::WeakPtrFactory<PaintPreviewCompositorServiceImpl> weak_ptr_factory_{

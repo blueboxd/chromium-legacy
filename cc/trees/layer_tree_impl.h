@@ -128,6 +128,7 @@ class CC_EXPORT LayerTreeImpl {
   ImageDecodeCache* image_decode_cache() const;
   ImageAnimationController* image_animation_controller() const;
   FrameRateCounter* frame_rate_counter() const;
+  base::Optional<int> current_universal_throughput();
   MemoryHistory* memory_history() const;
   DebugRectHistory* debug_rect_history() const;
   bool IsActiveTree() const;

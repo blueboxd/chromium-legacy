@@ -1020,6 +1020,25 @@ bool KeyboardUIController::SetAreaToRemainOnScreen(
   return true;
 }
 
+bool KeyboardUIController::SetKeyboardWindowBoundsInScreen(
+    const gfx::Rect& bounds_in_screen) {
+  const display::Display& current_display =
+      display_util_.GetNearestDisplayToWindow(GetRootWindow());
+
+  gfx::Rect display_bounds = current_display.bounds();
+  if (bounds_in_screen.width() > display_bounds.width() ||
+      bounds_in_screen.height() > display_bounds.height()) {
+    return false;
+  }
+
+  gfx::Rect constrained_bounds_in_screen =
+      AdjustSetBoundsRequest(current_display.bounds(), bounds_in_screen);
+
+  GetKeyboardWindow()->SetBoundsInScreen(constrained_bounds_in_screen,
+                                         current_display);
+  return true;
+}
+
 gfx::Rect KeyboardUIController::AdjustSetBoundsRequest(
     const gfx::Rect& display_bounds,
     const gfx::Rect& requested_bounds_in_screen) const {

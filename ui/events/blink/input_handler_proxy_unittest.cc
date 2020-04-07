@@ -49,9 +49,15 @@ using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
 using blink::WebTouchEvent;
 using blink::WebTouchPoint;
+using cc::InputHandler;
+using cc::ScrollBeginThreadState;
+using cc::TouchAction;
 using testing::_;
 using testing::DoAll;
 using testing::Field;
+using testing::Mock;
+using testing::Return;
+using testing::SetArgPointee;
 
 namespace ui {
 namespace test {
@@ -494,12 +500,15 @@ class InputHandlerProxyEventQueueTest : public testing::Test {
                                           float delta_y_or_scale = 0,
                                           int x = 0,
                                           int y = 0) {
+    InjectInputEvent(CreateGestureScrollPinch(
+        type, source_device, input_handler_proxy_.tick_clock_->NowTicks(),
+        delta_y_or_scale, x, y));
+  }
+
+  void InjectInputEvent(WebScopedInputEvent event) {
     LatencyInfo latency;
     input_handler_proxy_.HandleInputEventWithLatencyInfo(
-        CreateGestureScrollPinch(type, source_device,
-                                 input_handler_proxy_.tick_clock_->NowTicks(),
-                                 delta_y_or_scale, x, y),
-        latency,
+        std::move(event), latency,
         base::BindOnce(
             &InputHandlerProxyEventQueueTest::DidHandleInputEventAndOverscroll,
             weak_ptr_factory_.GetWeakPtr()));
@@ -557,6 +566,10 @@ class InputHandlerProxyEventQueueTest : public testing::Test {
   GestureScrollEventPredictionAvailable() {
     return input_handler_proxy_.scroll_predictor_->predictor_
         ->GeneratePrediction(WebInputEvent::GetStaticTimeStampForTests());
+  }
+
+  base::TimeTicks NowTimestampForEvents() {
+    return input_handler_proxy_.tick_clock_->NowTicks();
   }
 
  protected:
@@ -1320,6 +1333,103 @@ TEST_P(InputHandlerProxyTest, HitTestTouchEventNonNullTouchAction) {
   EXPECT_TRUE(is_touching_scrolling_layer);
   EXPECT_EQ(white_listed_touch_action, cc::TouchAction::kPanUp);
   VERIFY_AND_RESET_MOCKS();
+}
+
+// Tests that the whitelisted touch action is correctly set when a touch is
+// made non blocking due to an ongoing fling. https://crbug.com/1048098.
+TEST_F(InputHandlerProxyEventQueueTest, AckTouchActionNonBlockingForFling) {
+  // Simulate starting a compositor scroll and then flinging. This is setup for
+  // the real checks below.
+  {
+    float delta = 10;
+
+    // ScrollBegin
+    {
+      EXPECT_CALL(mock_input_handler_, ScrollBegin(_, _))
+          .WillOnce(Return(kImplThreadScrollState));
+      EXPECT_CALL(
+          mock_input_handler_,
+          RecordScrollBegin(_, ScrollBeginThreadState::kScrollingOnCompositor))
+          .Times(1);
+
+      HandleGestureEvent(WebInputEvent::kGestureScrollBegin, delta);
+      Mock::VerifyAndClearExpectations(&mock_input_handler_);
+    }
+
+    // ScrollUpdate
+    {
+      EXPECT_CALL(mock_input_handler_, SetNeedsAnimateInput()).Times(1);
+      EXPECT_CALL(mock_input_handler_, ScrollingShouldSwitchtoMainThread())
+          .WillOnce(Return(false));
+      EXPECT_CALL(mock_input_handler_, ScrollUpdate(_, _)).Times(1);
+
+      HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, delta);
+      DeliverInputForBeginFrame();
+      Mock::VerifyAndClearExpectations(&mock_input_handler_);
+    }
+
+    // Start a fling - ScrollUpdate with momentum
+    {
+      cc::InputHandlerScrollResult scroll_result_did_scroll;
+      scroll_result_did_scroll.did_scroll = true;
+      EXPECT_CALL(mock_input_handler_, ScrollUpdate(_, _))
+          .WillOnce(Return(scroll_result_did_scroll));
+      EXPECT_CALL(mock_input_handler_, SetNeedsAnimateInput()).Times(1);
+      EXPECT_CALL(mock_input_handler_, ScrollingShouldSwitchtoMainThread())
+          .WillOnce(Return(false));
+      EXPECT_CALL(mock_input_handler_,
+                  GetSnapFlingInfoAndSetAnimatingSnapTarget(_, _, _))
+          .WillOnce(Return(false));
+
+      auto gsu_fling = CreateGestureScrollPinch(
+          WebInputEvent::kGestureScrollUpdate, WebGestureDevice::kTouchscreen,
+          NowTimestampForEvents(), delta, /*x=*/0, /*y=*/0);
+      static_cast<blink::WebGestureEvent*>(gsu_fling.get())
+          ->data.scroll_update.inertial_phase =
+          WebGestureEvent::InertialPhaseState::kMomentum;
+      InjectInputEvent(std::move(gsu_fling));
+      DeliverInputForBeginFrame();
+    }
+  }
+
+  // We're now in an active gesture fling. Simulate the user touching down on
+  // the screen. If this touch hits a blocking region (e.g. touch-action or a
+  // non-passive touchstart listener), we won't actually treat it as blocking;
+  // because of the ongoing fling it will be treated as non blocking. However,
+  // we also have to ensure that the whitelisted_touch_action reported is also
+  // kAuto so that the browser knows that it shouldn't wait for an ACK with an
+  // allowed touch-action before dispatching more scrolls.
+  {
+    // Simulate hitting a blocking region on the scrolling layer, as if there
+    // was a non-passive touchstart handler.
+    EXPECT_CALL(mock_input_handler_,
+                EventListenerTypeForTouchStartOrMoveAt(_, _))
+        .WillOnce(DoAll(SetArgPointee<1>(TouchAction::kNone),
+                        Return(InputHandler::TouchStartOrMoveEventListenerType::
+                                   HANDLER_ON_SCROLLING_LAYER)));
+
+    std::unique_ptr<WebTouchEvent> touch_start =
+        std::make_unique<WebTouchEvent>(
+            WebInputEvent::kTouchStart, WebInputEvent::kNoModifiers,
+            WebInputEvent::GetStaticTimeStampForTests());
+    touch_start->touches_length = 1;
+    touch_start->touch_start_or_first_touch_move = true;
+    touch_start->touches[0] =
+        CreateWebTouchPoint(WebTouchPoint::kStatePressed, 10, 10);
+
+    // This is the call this test is checking: we expect that the client will
+    // report the touch as non-blocking and also that the whitelisted touch
+    // action matches the non blocking expectatithe whitelisted touch action
+    // matches the non blocking expectation (i.e. all touches are allowed).
+    EXPECT_CALL(
+        mock_client_,
+        SetWhiteListedTouchAction(
+            TouchAction::kAuto, touch_start->unique_touch_event_id,
+            InputHandlerProxy::DID_NOT_HANDLE_NON_BLOCKING_DUE_TO_FLING))
+        .WillOnce(Return());
+
+    InjectInputEvent(std::move(touch_start));
+  }
 }
 
 TEST_P(InputHandlerProxyTest, HitTestTouchEventNullTouchAction) {

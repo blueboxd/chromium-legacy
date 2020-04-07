@@ -64,6 +64,11 @@ const char kAllowSyncXHRInPageDismissalDescription[] =
     "Allows synchronous XHR requests during page dismissal when the page is "
     "being navigated away or closed by the user.";
 
+const char kEnableClipboardProviderImageSuggestionsName[] =
+    "Omnibox clipboard image search suggestions";
+const char kEnableClipboardProviderImageSuggestionsDescription[] =
+    "Enables image search suggestions in the Omnibox.";
+
 const char kEnableFtpName[] = "Enable support for FTP URLs";
 const char kEnableFtpDescription[] =
     "When enabled, the browser will handle navigations to ftp:// URLs by "
@@ -3099,6 +3104,11 @@ const char kBluetoothAggressiveAppearanceFilterName[] =
 const char kBluetoothAggressiveAppearanceFilterDescription[] =
     "Enables a more aggressive Bluetooth filter in the UI to hide devices that "
     "likely cannot be connected to.";
+
+const char kBluetoothFixA2dpPacketSizeName[] = "Bluetooth fix A2DP packet size";
+const char kBluetoothFixA2dpPacketSizeDescription[] =
+    "Fixes Bluetooth A2DP packet size to a smaller default value to improve "
+    "audio quality and may fix audio stutter.";
 
 const char kBluetoothKernelSuspendNotifierName[] =
     "Bluetooth kernel suspend notifier handler";

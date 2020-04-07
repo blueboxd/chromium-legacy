@@ -17,6 +17,8 @@ jumbo_component("cpp") {
   output_name = "network_cpp"
 
   sources = [
+    "client_hints.cc",
+    "client_hints.h",
     "constants.cc",
     "constants.h",
     "content_security_policy/content_security_policy.cc",
@@ -229,6 +231,7 @@ source_set("tests") {
   testonly = true
 
   sources = [
+    "client_hints_unittest.cc",
     "content_security_policy/content_security_policy_unittest.cc",
     "content_security_policy/csp_context_unittest.cc",
     "content_security_policy/csp_source_list_unittest.cc",

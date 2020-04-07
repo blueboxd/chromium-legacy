@@ -18,8 +18,12 @@ def run_command(args, input):
       args,
       input=input,
       stdout=subprocess.PIPE,
-      stderr=subprocess.PIPE,
-      check=True)
+      stderr=subprocess.PIPE
+  )
+
+  if proc.returncode != 0:
+    raise RuntimeError(proc.stderr.decode('utf-8'))
+
   return proc.stdout
 
 

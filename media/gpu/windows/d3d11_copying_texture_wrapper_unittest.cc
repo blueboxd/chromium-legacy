@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string.h>
+
 #include <utility>
 
 #include "base/bind_helpers.h"
 #include "media/gpu/windows/d3d11_copying_texture_wrapper.h"
 #include "media/gpu/windows/d3d11_texture_wrapper.h"
 #include "media/gpu/windows/d3d11_video_processor_proxy.h"
+#include "media/gpu/windows/display_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -49,6 +52,16 @@ class MockVideoProcessorProxy : public VideoProcessorProxy {
     last_output_color_space_ = color_space;
   }
 
+  void SetStreamHDRMetadata(
+      const DXGI_HDR_METADATA_HDR10& stream_metadata) override {
+    last_stream_metadata_ = stream_metadata;
+  }
+
+  void SetDisplayHDRMetadata(
+      const DXGI_HDR_METADATA_HDR10& display_metadata) override {
+    last_display_metadata_ = display_metadata;
+  }
+
   HRESULT VideoProcessorBlt(ID3D11VideoProcessorOutputView* output_view,
                             UINT output_frameno,
                             UINT stream_count,
@@ -61,9 +74,11 @@ class MockVideoProcessorProxy : public VideoProcessorProxy {
   MOCK_METHOD0(MockCreateVideoProcessorInputView, HRESULT());
   MOCK_METHOD0(MockVideoProcessorBlt, HRESULT());
 
-  // Most recent arguments to SetStream/OutputColorSpace().
+  // Most recent arguments to SetStream/OutputColorSpace()/etc.
   base::Optional<gfx::ColorSpace> last_stream_color_space_;
   base::Optional<gfx::ColorSpace> last_output_color_space_;
+  base::Optional<DXGI_HDR_METADATA_HDR10> last_stream_metadata_;
+  base::Optional<DXGI_HDR_METADATA_HDR10> last_display_metadata_;
 };
 
 class MockTexture2DWrapper : public Texture2DWrapper {
@@ -87,6 +102,9 @@ class MockTexture2DWrapper : public Texture2DWrapper {
 
   MOCK_METHOD0(MockInit, bool());
   MOCK_METHOD0(MockProcessTexture, bool());
+  MOCK_METHOD1(SetStreamHDRMetadata, void(const HDRMetadata& stream_metadata));
+  MOCK_METHOD1(SetDisplayHDRMetadata,
+               void(const DXGI_HDR_METADATA_HDR10& dxgi_display_metadata));
 };
 
 CommandBufferHelperPtr UselessHelper() {
@@ -203,6 +221,46 @@ TEST_P(D3D11CopyingTexture2DWrapperTest,
   }
 
   // TODO: verify that these aren't sent multiple times, unless they change.
+}
+
+TEST_P(D3D11CopyingTexture2DWrapperTest, HDRMetadataIsSentToVideoProcessor) {
+  HDRMetadata metadata;
+  metadata.mastering_metadata.primary_r =
+      MasteringMetadata::Chromaticity(0.1, 0.2);
+  metadata.mastering_metadata.primary_g =
+      MasteringMetadata::Chromaticity(0.3, 0.4);
+  metadata.mastering_metadata.primary_b =
+      MasteringMetadata::Chromaticity(0.5, 0.6);
+  metadata.mastering_metadata.white_point =
+      MasteringMetadata::Chromaticity(0.7, 0.8);
+  metadata.mastering_metadata.luminance_max = 0.9;
+  metadata.mastering_metadata.luminance_min = 0.05;
+  metadata.max_content_light_level = 1000;
+  metadata.max_frame_average_light_level = 10000;
+
+  auto processor = ExpectProcessorProxy();
+  MockVideoProcessorProxy* processor_raw = processor.get();
+  auto wrapper = std::make_unique<CopyingTexture2DWrapper>(
+      gfx::Size(100, 200), ExpectTextureWrapper(), std::move(processor),
+      nullptr, gfx::ColorSpace::CreateSCRGBLinear());
+
+  const DXGI_HDR_METADATA_HDR10 dxgi_metadata =
+      DisplayHelper::HdrMetadataToDXGI(metadata);
+
+  wrapper->SetStreamHDRMetadata(metadata);
+  EXPECT_TRUE(processor_raw->last_stream_metadata_);
+  EXPECT_FALSE(processor_raw->last_display_metadata_);
+  EXPECT_EQ(memcmp(&dxgi_metadata, &(*processor_raw->last_stream_metadata_),
+                   sizeof(dxgi_metadata)),
+            0);
+  processor_raw->last_stream_metadata_.reset();
+
+  wrapper->SetDisplayHDRMetadata(dxgi_metadata);
+  EXPECT_FALSE(processor_raw->last_stream_metadata_);
+  EXPECT_TRUE(processor_raw->last_display_metadata_);
+  EXPECT_EQ(memcmp(&dxgi_metadata, &(*processor_raw->last_display_metadata_),
+                   sizeof(dxgi_metadata)),
+            0);
 }
 
 }  // namespace media

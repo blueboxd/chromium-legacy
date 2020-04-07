@@ -164,7 +164,7 @@ void BrowserPersister::OnActiveTabChanged(Tab* tab) {
 void BrowserPersister::SetTabUserAgentOverride(
     const SessionID& window_id,
     const SessionID& tab_id,
-    const std::string& user_agent_override) {
+    const sessions::SerializedUserAgentOverride& user_agent_override) {
   if (rebuild_on_next_save_)
     return;
 

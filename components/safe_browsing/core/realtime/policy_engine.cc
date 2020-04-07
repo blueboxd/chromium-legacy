@@ -11,6 +11,9 @@
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/common/safebrowsing_constants.h"
 #include "components/safe_browsing/core/features.h"
+#include "components/signin/public/identity_manager/account_info.h"
+#include "components/signin/public/identity_manager/consent_level.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/base/user_selectable_type.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_utils.h"
@@ -68,6 +71,15 @@ bool RealTimePolicyEngine::IsUserEpOptedIn(PrefService* pref_service) {
 }
 
 // static
+bool RealTimePolicyEngine::IsPrimaryAccountSignedIn(
+    signin::IdentityManager* identity_manager) {
+  CoreAccountInfo primary_account_info =
+      identity_manager->GetPrimaryAccountInfo(
+          signin::ConsentLevel::kNotRequired);
+  return !primary_account_info.account_id.empty();
+}
+
+// static
 bool RealTimePolicyEngine::CanPerformFullURLLookup(PrefService* pref_service,
                                                    bool is_off_the_record) {
   if (is_off_the_record)
@@ -83,13 +95,16 @@ bool RealTimePolicyEngine::CanPerformFullURLLookup(PrefService* pref_service,
 bool RealTimePolicyEngine::CanPerformFullURLLookupWithToken(
     PrefService* pref_service,
     bool is_off_the_record,
-    syncer::SyncService* sync_service) {
+    syncer::SyncService* sync_service,
+    signin::IdentityManager* identity_manager) {
   if (!CanPerformFullURLLookup(pref_service, is_off_the_record)) {
     return false;
   }
 
-  if (IsUrlLookupEnabledForEp() && IsUserEpOptedIn(pref_service))
+  if (IsUrlLookupEnabledForEp() && IsUserEpOptedIn(pref_service) &&
+      IsPrimaryAccountSignedIn(identity_manager)) {
     return true;
+  }
 
   if (!base::FeatureList::IsEnabled(kRealTimeUrlLookupEnabledWithToken)) {
     return false;

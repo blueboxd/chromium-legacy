@@ -68,12 +68,14 @@ import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.CompositeTouchDelegate;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.common.ResourceRequestBody;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.util.ColorUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -908,6 +910,12 @@ public class LocationBarLayout extends FrameLayout
      */
     @Override
     public void loadUrl(String url, @PageTransition int transition, long inputStart) {
+        loadUrlWithPostData(url, transition, inputStart, null, null);
+    }
+
+    @Override
+    public void loadUrlWithPostData(String url, @PageTransition int transition, long inputStart,
+            @Nullable String postDataType, @Nullable byte[] postData) {
         Tab currentTab = getCurrentTab();
 
         // The code of the rest of this class ensures that this can't be called until the native
@@ -935,6 +943,24 @@ public class LocationBarLayout extends FrameLayout
             loadUrlParams.setTransitionType(transition | PageTransition.FROM_ADDRESS_BAR);
             if (inputStart != 0) {
                 loadUrlParams.setInputStartTimestamp(inputStart);
+            }
+
+            if (!TextUtils.isEmpty(postDataType)) {
+                StringBuilder headers = new StringBuilder();
+                String prevHeader = loadUrlParams.getVerbatimHeaders();
+                if (prevHeader != null && !prevHeader.isEmpty()) {
+                    headers.append(prevHeader);
+                    headers.append("\r\n");
+                }
+                loadUrlParams.setExtraHeaders(new HashMap<String, String>() {
+                    { put("Content-Type", postDataType); }
+                });
+                headers.append(loadUrlParams.getExtraHttpRequestHeadersString());
+                loadUrlParams.setVerbatimHeaders(headers.toString());
+            }
+
+            if (postData != null && postData.length != 0) {
+                loadUrlParams.setPostData(ResourceRequestBody.createFromBytes(postData));
             }
 
             currentTab.loadUrl(loadUrlParams);

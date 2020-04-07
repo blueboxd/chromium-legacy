@@ -6,12 +6,13 @@
 
 // Polymer BrowserTest fixture.
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
-GEN('#include "services/network/public/cpp/features.h"');
 
 GEN('#include "build/branding_buildflags.h"');
+GEN('#include "chrome/browser/ui/ui_features.h"');
 GEN('#include "chrome/common/chrome_features.h"');
 GEN('#include "components/autofill/core/common/autofill_features.h"');
 GEN('#include "components/password_manager/core/common/password_manager_features.h"');
+GEN('#include "services/network/public/cpp/features.h"');
 
 /** Test fixture for shared Polymer 3 elements. */
 // eslint-disable-next-line no-var
@@ -31,7 +32,13 @@ var CrSettingsV3BrowserTest = class extends PolymerTest {
 
   /** @override */
   get featureList() {
-    return {enabled: ['network::features::kOutOfBlinkCors'], disabled: []};
+    return {
+      enabled: [
+        'network::features::kOutOfBlinkCors',
+        'features::kSettingsPolymer3',
+      ],
+      disabled: [],
+    };
   }
 };
 

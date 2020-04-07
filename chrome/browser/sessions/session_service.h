@@ -208,7 +208,8 @@ class SessionService : public sessions::CommandStorageManagerDelegate,
   // sessions::SessionTabHelperDelegate:
   void SetTabUserAgentOverride(const SessionID& window_id,
                                const SessionID& tab_id,
-                               const std::string& user_agent_override) override;
+                               const sessions::SerializedUserAgentOverride&
+                                   user_agent_override) override;
   void SetSelectedNavigationIndex(const SessionID& window_id,
                                   const SessionID& tab_id,
                                   int index) override;

@@ -1,8 +1,8 @@
 This is a testharness.js-based test.
 PASS document.adoptedStyleSheets should initially have length 0.
-FAIL new CSSStyleSheet produces empty CSSStyleSheet assert_equals: expected (object) null but got (string) ""
-FAIL title cannot be set in the CSSStyleSheet constructor assert_equals: expected (object) null but got (string) "something"
-FAIL CSSStyleSheet.replace produces Promise<CSSStyleSheet> assert_equals: expected (object) null but got (string) ""
+FAIL new CSSStyleSheet produces empty CSSStyleSheet assert_equals: The title attribute must return the title or null if title is the empty string expected (object) null but got (string) ""
+FAIL title can be set in the CSSStyleSheet constructor assert_equals: title and alternate are not supported by the constructor. https://github.com/WICG/construct-stylesheets/issues/105 expected (object) null but got (string) "something"
+FAIL CSSStyleSheet.replace produces Promise<CSSStyleSheet> assert_equals: The title attribute must return the title or null if title is the empty string expected (object) null but got (string) ""
 PASS Constructed style sheets can be applied on document
 PASS Constructed style sheets can be applied on shadow root
 PASS Re-attaching shadow host with adopted stylesheets work
@@ -16,13 +16,14 @@ PASS Adding non-constructed stylesheet to AdoptedStyleSheets is not allowed when
 PASS Adding non-constructed stylesheet to AdoptedStyleSheets is not allowed when the owner document of the stylesheet and the AdoptedStyleSheets are in different document trees
 PASS CSSStyleSheet.replaceSync replaces stylesheet text synchronously
 PASS CSSStyleSheet.replaceSync correctly updates the style of its adopters synchronously
-FAIL Adopted sheets are ordered after non-adopted sheets in the shadow root assert_equals: expected "rgb(255, 255, 255)" but got "rgb(255, 0, 0)"
-FAIL Adopted sheets are ordered after non-adopted sheets in the document assert_equals: expected "rgb(255, 255, 255)" but got "rgb(255, 0, 0)"
-PASS CSSStyleSheet.replaceSync throws exception when there is import rule inside
+FAIL Adopted sheets are ordered after non-adopted sheets in the shadow root assert_equals: with the adopted sheet disabled, the non-adopted style should take effect expected "rgb(255, 255, 255)" but got "rgb(255, 0, 0)"
+FAIL Adopted sheets are ordered after non-adopted sheets in the document assert_equals: with the adopted sheet disabled, the non-adopted style should take effect expected "rgb(255, 255, 255)" but got "rgb(255, 0, 0)"
 PASS Inserting an @import rule through insertRule on a constructed stylesheet throws an exception
 PASS CSSStyleSheet.replaceSync should not trigger any loads from @import rules
-PASS CSSStyleSheet.replace allows import rule inside
-FAIL CSSStyleSheet.replace returns rejected promise on failed imports assert_equals: expected "NetworkError" but got "NotAllowedError"
+PASS CSSStyleSheet.replace allows, but ignores, import rule inside
+PASS CSSStyleSheet.replace ignores @import rule but still loads other rules
+PASS CSSStyleSheet.replaceSync allows, but ignores, import rule inside
+PASS CSSStyleSheet.replace does not reject on failed imports
 PASS Cloning a shadow host will not clone shadow root, and also adoptedStyleSheets
 PASS Importing a shadow host will not copy shadow root, and also adoptedStyleSheets
 PASS Adopting a shadow host will empty adoptedStyleSheets if adopting to a different document

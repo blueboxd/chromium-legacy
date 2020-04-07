@@ -66,6 +66,7 @@ class GamepadSharedMemoryReader
   bool ever_interacted_with_ = false;
 
   HeapMojoReceiver<device::mojom::blink::GamepadObserver,
+                   GamepadSharedMemoryReader,
                    HeapMojoWrapperMode::kWithoutContextObserver>
       receiver_;
   mojo::Remote<device::mojom::blink::GamepadMonitor> gamepad_monitor_remote_;

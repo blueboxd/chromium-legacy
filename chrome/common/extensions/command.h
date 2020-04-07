@@ -19,12 +19,6 @@ namespace extensions {
 
 class Command {
  public:
-  enum class Type {
-    kBrowserAction,
-    kPageAction,
-    kNamed,
-  };
-
   Command();
   Command(const std::string& command_name,
           const base::string16& description,
@@ -61,7 +55,6 @@ class Command {
   const ui::Accelerator& accelerator() const { return accelerator_; }
   const base::string16& description() const { return description_; }
   bool global() const { return global_; }
-  Type type() const { return type_; }
 
   // Setter:
   void set_accelerator(const ui::Accelerator& accelerator) {
@@ -76,7 +69,6 @@ class Command {
   ui::Accelerator accelerator_;
   base::string16 description_;
   bool global_;
-  Type type_;
 };
 
 // A mapping of command name (std::string) to a command object.

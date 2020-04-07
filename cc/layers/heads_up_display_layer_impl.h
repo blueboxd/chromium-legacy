@@ -164,6 +164,11 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
   int layout_shift_rects_fade_step_ = 0;
   std::vector<DebugRect> paint_rects_;
   std::vector<DebugRect> layout_shift_debug_rects_;
+  base::Optional<int> current_throughput;
+  // The worst and best throughput we have seen so far, they either both have no
+  // value, or both have value.
+  base::Optional<int> min_throughput;
+  base::Optional<int> max_throughput;
 
   base::TimeTicks time_of_last_graph_update_;
 };

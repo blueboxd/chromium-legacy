@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
@@ -531,6 +532,95 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
       GetExtensionsMenuItemViews().front()->pin_button_for_testing()->state());
 
   DismissUi();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
+                       PinnedExtensionShowsCorrectContextMenuPinOption) {
+  LoadTestExtension("extensions/simple_with_popup");
+
+  ClickExtensionsMenuButton();
+  ExtensionsToolbarContainer* const extensions_container =
+      GetExtensionsToolbarContainer();
+
+  // Pin extension from menu.
+  ASSERT_TRUE(VerifyUi());
+  ASSERT_EQ(1u, GetExtensionsMenuItemViews().size());
+  ui::MouseEvent click_pressed_event(ui::ET_MOUSE_PRESSED, gfx::Point(),
+                                     gfx::Point(), base::TimeTicks(),
+                                     ui::EF_LEFT_MOUSE_BUTTON, 0);
+  ui::MouseEvent click_released_event(ui::ET_MOUSE_RELEASED, gfx::Point(),
+                                      gfx::Point(), base::TimeTicks(),
+                                      ui::EF_LEFT_MOUSE_BUTTON, 0);
+  GetExtensionsMenuItemViews()
+      .front()
+      ->pin_button_for_testing()
+      ->OnMousePressed(click_pressed_event);
+  GetExtensionsMenuItemViews()
+      .front()
+      ->pin_button_for_testing()
+      ->OnMouseReleased(click_released_event);
+
+  // Wait for any pending animations to finish so that correct pinned
+  // extensions and dialogs are actually showing.
+  views::test::WaitForAnimatingLayoutManager(GetExtensionsToolbarContainer());
+
+  // Verify extension is pinned but not stored as the popped out action.
+  auto visible_icons = GetVisibleToolbarActionViews();
+  visible_icons = GetVisibleToolbarActionViews();
+  ASSERT_EQ(1u, visible_icons.size());
+  EXPECT_EQ(nullptr, extensions_container->GetPoppedOutAction());
+
+  // Trigger the pinned extension.
+  ToolbarActionView* pinned_extension =
+      extensions_container->GetViewForId(extensions()[0]->id());
+  pinned_extension->OnMouseEvent(&click_pressed_event);
+  pinned_extension->OnMouseEvent(&click_released_event);
+
+  // Wait for any pending animations to finish so that correct pinned
+  // extensions and dialogs are actually showing.
+  views::test::WaitForAnimatingLayoutManager(GetExtensionsToolbarContainer());
+
+  EXPECT_NE(nullptr, extensions_container->GetPoppedOutAction());
+
+  // Verify the context menu option is to unpin the extension.
+  ui::SimpleMenuModel* context_menu = static_cast<ui::SimpleMenuModel*>(
+      extensions_container->GetActionForId(extensions()[0]->id())
+          ->GetContextMenu());
+  int visibility_index = context_menu->GetIndexOfCommandId(
+      extensions::ExtensionContextMenuModel::TOGGLE_VISIBILITY);
+  ASSERT_GE(visibility_index, 0);
+  base::string16 visibility_label = context_menu->GetLabelAt(visibility_index);
+  EXPECT_EQ(base::UTF16ToUTF8(visibility_label), "Unpin");
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
+                       UnpinnedExtensionShowsCorrectContextMenuPinOption) {
+  LoadTestExtension("extensions/simple_with_popup");
+
+  ClickExtensionsMenuButton();
+  ExtensionsToolbarContainer* const extensions_container =
+      GetExtensionsToolbarContainer();
+
+  TriggerSingleExtensionButton();
+
+  // Wait for any pending animations to finish so that correct pinned
+  // extensions and dialogs are actually showing.
+  views::test::WaitForAnimatingLayoutManager(GetExtensionsToolbarContainer());
+
+  // Verify extension is visible and tbere is a popped out action.
+  auto visible_icons = GetVisibleToolbarActionViews();
+  ASSERT_EQ(1u, visible_icons.size());
+  EXPECT_NE(nullptr, extensions_container->GetPoppedOutAction());
+
+  // Verify the context menu option is to unpin the extension.
+  ui::SimpleMenuModel* context_menu = static_cast<ui::SimpleMenuModel*>(
+      extensions_container->GetActionForId(extensions()[0]->id())
+          ->GetContextMenu());
+  int visibility_index = context_menu->GetIndexOfCommandId(
+      extensions::ExtensionContextMenuModel::TOGGLE_VISIBILITY);
+  ASSERT_GE(visibility_index, 0);
+  base::string16 visibility_label = context_menu->GetLabelAt(visibility_index);
+  EXPECT_EQ(base::UTF16ToUTF8(visibility_label), "Pin");
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,

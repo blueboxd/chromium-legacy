@@ -50,6 +50,8 @@ extern const base::Feature kWebUITabStrip;
 
 extern const base::Feature kWebUITabStripDemoOptions;
 
+extern const base::Feature kSettingsPolymer3;
+
 extern const base::Feature kSyncSetupFriendlySettings;
 
 #if defined(OS_CHROMEOS)

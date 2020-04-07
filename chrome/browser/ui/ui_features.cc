@@ -90,6 +90,11 @@ const base::Feature kWebUITabStrip{"WebUITabStrip",
 const base::Feature kWebUITabStripDemoOptions{
     "WebUITabStripDemoOptions", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Makes chrome://settings serve the Polymer 3 version of that page.
+// https://crbug.com/1026426.
+const base::Feature kSettingsPolymer3{"SettingsPolymer3",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables friendly settings for the |chrome://settings/syncSetup| page.
 // https://crbug.com/1035421.
 const base::Feature kSyncSetupFriendlySettings{

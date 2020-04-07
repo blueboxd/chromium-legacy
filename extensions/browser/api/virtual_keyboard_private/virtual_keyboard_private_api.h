@@ -221,6 +221,19 @@ class VirtualKeyboardPrivateSetAreaToRemainOnScreenFunction
   ResponseAction Run() override;
 };
 
+class VirtualKeyboardPrivateSetWindowBoundsInScreenFunction
+    : public VirtualKeyboardPrivateFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("virtualKeyboardPrivate.setWindowBoundsInScreen",
+                             VIRTUALKEYBOARDPRIVATE_SETWINDOWBOUNDSINSCREEN)
+
+ protected:
+  ~VirtualKeyboardPrivateSetWindowBoundsInScreenFunction() override;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+};
+
 class VirtualKeyboardDelegate;
 
 class VirtualKeyboardAPI : public BrowserContextKeyedAPI {

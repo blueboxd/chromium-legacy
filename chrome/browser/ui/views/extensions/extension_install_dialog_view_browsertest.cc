@@ -39,6 +39,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/scroll_view.h"
+#include "ui/views/test/widget_test.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -46,6 +47,16 @@ using extensions::PermissionIDSet;
 using extensions::PermissionMessage;
 using extensions::PermissionMessages;
 using extensions::PermissionSet;
+
+namespace {
+
+void CloseAndWait(views::Widget* widget) {
+  views::test::WidgetDestroyedWaiter waiter(widget);
+  widget->Close();
+  waiter.Wait();
+}
+
+}  // namespace
 
 class ExtensionInstallDialogViewTestBase
     : public extensions::ExtensionBrowserTest {
@@ -176,15 +187,6 @@ class ExtensionInstallDialogViewTest
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstallDialogViewTest);
 };
 
-// Verifies that the delegate is notified when the user selects to accept or
-// cancel the install.
-//
-// Crashes flakily on Mac.  See http://crbug.com/851167
-#if defined(OS_MACOSX)
-#define MAYBE_NotifyDelegate DISABLED_NotifyDelegate
-#else
-#define MAYBE_NotifyDelegate NotifyDelegate
-#endif
 IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewTest, NotifyDelegate) {
   {
     // User presses install.
@@ -205,7 +207,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewTest, NotifyDelegate) {
     // cancel.
     ExtensionInstallPromptTestHelper helper;
     views::DialogDelegateView* delegate_view = CreateAndShowPrompt(&helper);
-    delegate_view->GetWidget()->Close();
+    CloseAndWait(delegate_view->GetWidget());
     // TODO(devlin): Should this be ABORTED?
     EXPECT_EQ(ExtensionInstallPrompt::Result::USER_CANCELED, helper.result());
   }
@@ -232,7 +234,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewTest, InstallButtonDelay) {
 
   // Ensure default button (cancel) has focus.
   EXPECT_TRUE(delegate_view->GetInitiallyFocusedView()->HasFocus());
-  delegate_view->Close();
+  CloseAndWait(delegate_view->GetWidget());
 }
 
 class ExtensionInstallDialogViewInteractiveBrowserTest
@@ -483,8 +485,7 @@ void ExtensionInstallDialogRatingsSectionTest::TestRatingsSectionA11y(
     EXPECT_EQ(ax::mojom::Role::kIgnored, node_data.role);
   }
 
-  modal_dialog->Close();
-  base::RunLoop().RunUntilIdle();
+  CloseAndWait(modal_dialog);
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogRatingsSectionTest,
@@ -535,5 +536,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogWithWithholdPermissionsUI,
   EXPECT_TRUE(extra_view);
   EXPECT_EQ("Checkbox", std::string(extra_view->GetClassName()));
 
-  delegate_view->Close();
+  CloseAndWait(delegate_view->GetWidget());
 }

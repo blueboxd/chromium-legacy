@@ -299,10 +299,11 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
                        location_bar_view_->profile()));
     }
   } else {
+    base::Optional<int> previous_row_group_id = base::nullopt;
     for (size_t i = 0; i < result_size; ++i) {
       // Create child views lazily.  Since especially the first result view may
       // be expensive to create due to loading font data, this saves time and
-      // memory during browser startup.
+      // memory during browser startup. https://crbug.com/1021323
       if (children().size() == i) {
         AddChildView(std::make_unique<OmniboxRowView>(
             std::make_unique<OmniboxResultView>(this, i)));
@@ -312,8 +313,19 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
           static_cast<OmniboxRowView*>(children()[i]);
       row_view->SetVisible(true);
 
-      OmniboxResultView* const result_view = row_view->result_view();
+      // Show the header if it's distinct from the previous match's header.
       const AutocompleteMatch& match = GetMatchAtIndex(i);
+      if (match.suggestion_group_id.has_value() &&
+          match.suggestion_group_id != previous_row_group_id) {
+        row_view->ShowHeader(match.suggestion_group_id,
+                             model_->result().GetHeaderForGroupId(
+                                 match.suggestion_group_id.value()));
+      } else {
+        row_view->HideHeader();
+      }
+      previous_row_group_id = match.suggestion_group_id;
+
+      OmniboxResultView* const result_view = row_view->result_view();
       result_view->SetMatch(match);
 
       const SkBitmap* bitmap = model_->RichSuggestionBitmapAt(i);

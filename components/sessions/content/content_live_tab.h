@@ -41,7 +41,7 @@ class SESSIONS_EXPORT ContentLiveTab
   int GetEntryCount() override;
   std::unique_ptr<PlatformSpecificTabData> GetPlatformSpecificTabData()
       override;
-  const std::string& GetUserAgentOverride() override;
+  SerializedUserAgentOverride GetUserAgentOverride() override;
 
   content::WebContents* web_contents() { return web_contents_; }
   const content::WebContents* web_contents() const { return web_contents_; }

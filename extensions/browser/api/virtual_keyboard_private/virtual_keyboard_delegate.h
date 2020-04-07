@@ -101,6 +101,9 @@ class VirtualKeyboardDelegate {
   // whenever the user moves the keyboard around their screen.
   virtual bool SetAreaToRemainOnScreen(const gfx::Rect& bounds) = 0;
 
+  // Sets the bounds of the keyboard window in screen coordinates.
+  virtual bool SetWindowBoundsInScreen(const gfx::Rect& bounds_in_screen) = 0;
+
   // Restricts the virtual keyboard IME features.
   // Returns the values which were updated.
   virtual api::virtual_keyboard::FeatureRestrictions RestrictFeatures(

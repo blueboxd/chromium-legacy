@@ -128,8 +128,8 @@ class NET_EXPORT ReportingCache {
   // Adds a new client to the cache for |origin|, or updates the existing one
   // to match the new header. All values are assumed to be valid as they have
   // passed through the ReportingHeaderParser.
-  // TODO(chlily): Take NetworkIsolationKey.
   virtual void OnParsedHeader(
+      const NetworkIsolationKey& network_isolation_key,
       const url::Origin& origin,
       std::vector<ReportingEndpointGroup> parsed_header) = 0;
 

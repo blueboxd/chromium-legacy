@@ -113,7 +113,7 @@ sessions::LiveTab* LiveTabContextBrowserAgent::AddRestoredTab(
     bool pin,
     bool from_last_session,
     const sessions::PlatformSpecificTabData* tab_platform_data,
-    const std::string& user_agent_override) {
+    const sessions::SerializedUserAgentOverride& user_agent_override) {
   // TODO(crbug.com/661636): Handle tab-switch animation somehow...
   web_state_list_->InsertWebState(
       tab_index,
@@ -131,7 +131,7 @@ sessions::LiveTab* LiveTabContextBrowserAgent::ReplaceRestoredTab(
     bool from_last_session,
     const std::string& extension_app_id,
     const sessions::PlatformSpecificTabData* tab_platform_data,
-    const std::string& user_agent_override) {
+    const sessions::SerializedUserAgentOverride& user_agent_override) {
   web_state_list_->ReplaceWebStateAt(
       web_state_list_->active_index(),
       session_util::CreateWebStateWithNavigationEntries(

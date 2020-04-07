@@ -106,6 +106,10 @@ class CONTENT_EXPORT PrefetchURLLoaderService final
   CreateURLLoaderThrottles(const network::ResourceRequest& request,
                            int frame_tree_node_id);
 
+  const std::unique_ptr<BindContext>& current_bind_context() const {
+    return loader_factory_receivers_.current_context();
+  }
+
   scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter_;
   BrowserContext* browser_context_ = nullptr;
 

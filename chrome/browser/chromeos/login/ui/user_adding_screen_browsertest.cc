@@ -287,7 +287,13 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, PRE_ScreenVisibility) {
   StartupUtils::MarkOobeCompleted();
 }
 
-IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, ScreenVisibility) {
+// crbug.com/1067461: Flakes on ASAN and MSAN
+#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
+#define MAYBE_ScreenVisibility DISABLED_ScreenVisibility
+#else
+#define MAYBE_ScreenVisibility ScreenVisibility
+#endif
+IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, MAYBE_ScreenVisibility) {
   LoginUser(test_users_[0]);
 
   UserAddingScreen::Get()->Start();

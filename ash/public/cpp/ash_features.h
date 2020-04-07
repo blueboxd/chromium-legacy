@@ -213,7 +213,7 @@ ASH_PUBLIC_EXPORT bool IsCornerShortcutsEnabled();
 
 ASH_PUBLIC_EXPORT bool IsSystemTrayMicGainSettingEnabled();
 
-ASH_PUBLIC_EXPORT bool IsDisplayIdentificationlEnabled();
+ASH_PUBLIC_EXPORT bool IsDisplayIdentificationEnabled();
 
 // These two functions are supposed to be temporary functions to set or get
 // whether "WebUITabStrip" feature is enabled from Chrome.

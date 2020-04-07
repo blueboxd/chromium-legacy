@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
 
 #include "base/macros.h"
+#include "services/network/public/cpp/client_hints.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
@@ -51,9 +52,9 @@ void ClientHintsPreferences::UpdateFromAcceptClientHintsHeader(
 
   // Note: .Ascii() would convert tab to ?, which is undesirable.
   base::Optional<std::vector<network::mojom::WebClientHintsType>> parsed_ch =
-      ParseAcceptCH(header_value.Latin1(),
-                    RuntimeEnabledFeatures::LangClientHintHeaderEnabled(),
-                    RuntimeEnabledFeatures::UserAgentClientHintEnabled());
+      FilterAcceptCH(network::ParseAcceptCH(header_value.Latin1()),
+                     RuntimeEnabledFeatures::LangClientHintHeaderEnabled(),
+                     RuntimeEnabledFeatures::UserAgentClientHintEnabled());
   if (!parsed_ch.has_value())
     return;
 

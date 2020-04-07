@@ -80,6 +80,7 @@ class ArImageTransport {
 
   bool UseSharedBuffer() { return shared_buffer_draw_; }
   void SetFrameAvailableCallback(XrFrameCallback on_frame_available);
+  void ServerWaitForGpuFence(std::unique_ptr<gfx::GpuFence> gpu_fence);
 
  private:
   std::unique_ptr<vr::WebXrSharedBuffer> CreateBuffer();

@@ -31,7 +31,7 @@ class V8MediaSessionActionHandler;
 class MODULES_EXPORT MediaSession final
     : public ScriptWrappable,
       public ExecutionContextClient,
-      blink::mojom::blink::MediaSessionClient {
+      public blink::mojom::blink::MediaSessionClient {
   USING_GARBAGE_COLLECTED_MIXIN(MediaSession);
   DEFINE_WRAPPERTYPEINFO();
 
@@ -87,6 +87,7 @@ class MODULES_EXPORT MediaSession final
   HeapHashMap<String, Member<V8MediaSessionActionHandler>> action_handlers_;
   mojo::Remote<mojom::blink::MediaSessionService> service_;
   HeapMojoReceiver<blink::mojom::blink::MediaSessionClient,
+                   MediaSession,
                    HeapMojoWrapperMode::kWithoutContextObserver>
       client_receiver_;
 };

@@ -991,6 +991,10 @@
       status:"experimental",
     },
     {
+      name: "MediaCapabilitiesDynamicRange",
+      status: "test",
+    },
+    {
       name: "MediaCapabilitiesEncodingInfo",
       status: "experimental",
     },

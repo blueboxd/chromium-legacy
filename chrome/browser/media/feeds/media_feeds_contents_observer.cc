@@ -35,6 +35,13 @@ void MediaFeedsContentsObserver::DidFinishLoad(
   if (render_frame_host->GetParent() || !GetService())
     return;
 
+  // We should only discover Media Feeds on secure origins.
+  if (!validated_url.SchemeIsCryptographic()) {
+    if (test_closure_)
+      std::move(test_closure_).Run();
+    return;
+  }
+
   render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
       &render_frame_);
 
@@ -61,6 +68,7 @@ void MediaFeedsContentsObserver::DidFindMediaFeed(
       return;
     }
 
+    CHECK(url->SchemeIsCryptographic());
     service->DiscoverMediaFeed(*url);
   }
 

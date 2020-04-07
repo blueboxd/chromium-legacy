@@ -6,9 +6,142 @@
 import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 import 'chrome://print-management/print_management.js';
 
+import {setMetadataProviderForTesting} from 'chrome://print-management/mojo_interface_provider.js';
+
+const CompletionStatus = {
+  FAILED: 0,
+  CANCELED: 1,
+  PRINTED: 2,
+};
+
+/**
+ * Converts a JS string to mojo_base::mojom::String16 object.
+ * @param {string} str
+ * @return {!object}
+ */
+function strToMojoString16(str) {
+  let arr = [];
+  for (var i = 0; i < str.length; i++) {
+    arr[i] = str.charCodeAt(i);
+  }
+  return {data: arr};
+}
+
+/**
+ * Converts a JS time (milliseconds since UNIX epoch) to mojom::time
+ * (microseconds since WINDOWS epoch).
+ * @param {Date} jsDate
+ * @return {number}
+ */
+function convertToMojoTime(jsDate) {
+  const windowsEpoch = new Date(Date.UTC(1601, 0, 1, 0, 0, 0));
+  const jsEpoch = new Date(Date.UTC(1970, 0, 1, 0, 0, 0));
+  return ((jsEpoch - windowsEpoch) * 1000) + (jsDate.getTime() * 1000);
+}
+
+/**
+ * @param{string} id
+ * @param{string} title
+ * @param{number} completionStatus
+ * @param{Date}   jsDate
+ * @param{string} printerName
+ * @return {!Object}
+ */
+function createJobEntry(id, title, completionStatus, jsDate, printerName) {
+  let jobEntry = {};
+  jobEntry.id = id;
+  jobEntry.title = strToMojoString16(title);
+  jobEntry.completionStatus = completionStatus;
+  jobEntry.creationTime = {internalValue: convertToMojoTime(jsDate)};
+  jobEntry.printerName = strToMojoString16(printerName);
+  jobEntry.printerUri = {url: '192.168.1.1'};
+  jobEntry.numberOfPages = 1;
+
+  return jobEntry;
+}
+
+class FakePrintingMetadataProvider {
+  constructor() {
+    /** @private {!Map<string, !PromiseResolver>} */
+    this.resolverMap_ = new Map();
+
+    /** @type {!Array<chromeos.printing.printingManager.mojom.PrintJobInfo>} */
+    this.printJobs_ = [];
+
+    this.resetForTest();
+  }
+
+  resetForTest() {
+    this.printJobs_ = [];
+    this.resolverMap_.set('getPrintJobs', new PromiseResolver());
+  }
+
+  /**
+   * @param {string} methodName
+   * @return {!PromiseResolver}
+   * @private
+   */
+  getResolver_(methodName) {
+    let method = this.resolverMap_.get(methodName);
+    assert(!!method, `Method '${methodName}' not found.`);
+    return method;
+  }
+
+  /**
+   * @param {string} methodName
+   * @protected
+   */
+  methodCalled(methodName) {
+    this.getResolver_(methodName).resolve();
+  }
+
+  /**
+   * @param {string} methodName
+   * @return {!Promise}
+   */
+  whenCalled(methodName) {
+    return this.getResolver_(methodName).promise.then(() => {
+      // Support sequential calls to whenCalled by replacing the promise.
+      this.resolverMap_.set(methodName, new PromiseResolver());
+    });
+  }
+
+  /**
+   * @param {chromeos.printing.printingManager.mojom.PrintJobInfo} job
+   */
+  addPrintJob(job) {
+    this.printJobs_ = this.printJobs_.concat(job);
+  }
+
+  // printingMetadataProvider methods
+
+  /**
+   * @return {!Promise<{printJobs:
+   *     !Array<chromeos.printing.printingManager.mojom.PrintJobInfo>}>}
+   */
+  getPrintJobs() {
+    return new Promise(resolve => {
+      this.methodCalled('getPrintJobs');
+      resolve({printJobs: this.printJobs_ || []});
+    });
+  }
+}
+
 suite('PrintManagementTest', () => {
   /** @type {?PrintManagementElement} */
   let page = null;
+
+  /**
+   * @type {
+   *    ?chromeos.printing.printingManager.mojom.PrintingMetadataProviderRemote
+   *  }
+   */
+  let mojoApi_;
+
+  suiteSetup(() => {
+    mojoApi_ = new FakePrintingMetadataProvider();
+    setMetadataProviderForTesting(mojoApi_);
+  });
 
   setup(function() {
     PolymerTest.clearBody();
@@ -25,5 +158,80 @@ suite('PrintManagementTest', () => {
     // TODO(jimmyxgong): Remove this stub test once the app has more
     // capabilities to test.
     assertEquals('Print Management', page.$$('#header').textContent);
+  });
+});
+
+suite('PrintJobEntryTest', () => {
+  /** @type {?HTMLElement} */
+  let jobEntryTestElement = null;
+
+  /**
+   * @type {
+   *    ?chromeos.printing.printingManager.mojom.PrintingMetadataProviderRemote
+   *  }
+   */
+  let mojoApi_;
+
+  suiteSetup(() => {
+    mojoApi_ = new FakePrintingMetadataProvider();
+    setMetadataProviderForTesting(mojoApi_);
+  });
+
+  setup(() => {
+    jobEntryTestElement = document.createElement('print-job-entry');
+    assertTrue(!!jobEntryTestElement);
+    document.body.appendChild(jobEntryTestElement);
+  });
+
+  teardown(() => {
+    jobEntryTestElement.remove();
+    jobEntryTestElement = null;
+  });
+
+  /**
+   * @param {!HTMLElement} element
+   * @param {number} newStatus
+   * @param {string} expectedStatus
+   */
+  function updateAndVerifyCompletionStatus(element, newStatus, expectedStatus) {
+    element.set('jobEntry.completionStatus', newStatus);
+    assertEquals(
+        expectedStatus, element.$$('#completionStatus').textContent.trim());
+  }
+
+  test('initializeJobEntry', () => {
+    const expectedTitle = 'title';
+    const expectedStatus = CompletionStatus.PRINTED;
+    const expectedPrinterName = 'printer name';
+    const expectedCreationTime = new Date();
+
+    jobEntryTestElement.jobEntry = createJobEntry(
+        /*id=*/ '1', expectedTitle, expectedStatus, expectedCreationTime,
+        expectedPrinterName);
+
+    // Assert the title, printer name, creation time, and status are displayed
+    // correctly.
+    assertEquals(
+        expectedTitle, jobEntryTestElement.$$('#jobTitle').textContent.trim());
+    assertEquals(
+        expectedPrinterName,
+        jobEntryTestElement.$$('#printerName').textContent.trim());
+    assertEquals(
+        'Printed',
+        jobEntryTestElement.$$('#completionStatus').textContent.trim());
+
+    // Change date and assert it shows the correct date (Jan 31, 2020);
+    jobEntryTestElement.set('jobEntry.creationTime', {
+      internalValue: convertToMojoTime(new Date(Date.UTC(2020, 1, 1, 0, 0, 0)))
+    });
+    assertEquals(
+        'Jan 31, 2020',
+        jobEntryTestElement.$$('#creationTime').textContent.trim());
+
+    // Change the completion status and verify it shows the correct status.
+    updateAndVerifyCompletionStatus(
+        jobEntryTestElement, CompletionStatus.FAILED, 'Failed');
+    updateAndVerifyCompletionStatus(
+        jobEntryTestElement, CompletionStatus.CANCELED, 'Canceled');
   });
 });

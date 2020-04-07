@@ -75,8 +75,9 @@ SESSIONS_EXPORT std::unique_ptr<SessionCommand>
 CreateSetTabExtensionAppIDCommand(const SessionID& tab_id,
                                   const std::string& extension_id);
 SESSIONS_EXPORT std::unique_ptr<SessionCommand>
-CreateSetTabUserAgentOverrideCommand(const SessionID& tab_id,
-                                     const std::string& user_agent_override);
+CreateSetTabUserAgentOverrideCommand(
+    const SessionID& tab_id,
+    const SerializedUserAgentOverride& user_agent_override);
 SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateSetWindowAppNameCommand(
     const SessionID& window_id,
     const std::string& app_name);

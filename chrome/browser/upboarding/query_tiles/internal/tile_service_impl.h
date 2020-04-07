@@ -5,15 +5,17 @@
 #ifndef CHROME_BROWSER_UPBOARDING_QUERY_TILES_INTERNAL_TILE_SERVICE_IMPL_H_
 #define CHROME_BROWSER_UPBOARDING_QUERY_TILES_INTERNAL_TILE_SERVICE_IMPL_H_
 
+#include <memory>
+
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/upboarding/query_tiles/internal/image_loader.h"
 #include "chrome/browser/upboarding/query_tiles/tile_service.h"
-#include "components/image_fetcher/core/image_fetcher.h"
 
 namespace upboarding {
 
 class TileServiceImpl : public TileService {
  public:
-  explicit TileServiceImpl(image_fetcher::ImageFetcher* image_fetcher);
+  explicit TileServiceImpl(std::unique_ptr<ImageLoader> image_loader);
   ~TileServiceImpl() override;
 
   // Disallow copy/assign.
@@ -25,6 +27,9 @@ class TileServiceImpl : public TileService {
   void GetQueryTiles(GetTilesCallback callback) override;
   void GetVisuals(const std::string& tile_id,
                   VisualsCallback callback) override;
+
+  // Used to load tile images.
+  std::unique_ptr<ImageLoader> image_loader_;
 
   base::WeakPtrFactory<TileServiceImpl> weak_ptr_factory_{this};
 };

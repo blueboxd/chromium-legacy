@@ -79,6 +79,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/network/public/cpp/features.h"
+#include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/color_palette.h"
@@ -1488,9 +1489,13 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, PersistAndRestoreUserAgentOverride) {
   // Create a tab with an overridden user agent.
   ui_test_utils::NavigateToURL(browser(), url1_);
   ASSERT_EQ(0, browser()->tab_strip_model()->active_index());
-  // TODO(https://crbug.com/1061917): cover UA client hints override.
+  blink::UserAgentOverride ua_override;
+  ua_override.ua_string_override = "override";
+  ua_override.ua_metadata_override.emplace();
+  ua_override.ua_metadata_override->brand = "Overrider";
+  ua_override.ua_metadata_override->major_version = "0";
   browser()->tab_strip_model()->GetWebContentsAt(0)->SetUserAgentOverride(
-      blink::UserAgentOverride::UserAgentOnly("override"), false);
+      ua_override, false);
 
   // Create a tab without an overridden user agent.
   ui_test_utils::NavigateToURLWithDisposition(
@@ -1505,14 +1510,18 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, PersistAndRestoreUserAgentOverride) {
   ASSERT_EQ(1, new_browser->tab_strip_model()->active_index());
 
   // Confirm that the user agent overrides are properly set.
-  EXPECT_EQ("override", new_browser->tab_strip_model()
-                            ->GetWebContentsAt(0)
-                            ->GetUserAgentOverride()
-                            .ua_string_override);
-  EXPECT_EQ("", new_browser->tab_strip_model()
-                    ->GetWebContentsAt(1)
-                    ->GetUserAgentOverride()
-                    .ua_string_override);
+  blink::UserAgentOverride over0 = new_browser->tab_strip_model()
+                                       ->GetWebContentsAt(0)
+                                       ->GetUserAgentOverride();
+  EXPECT_EQ("override", over0.ua_string_override);
+  ASSERT_TRUE(over0.ua_metadata_override.has_value());
+  EXPECT_TRUE(over0.ua_metadata_override == ua_override.ua_metadata_override);
+
+  blink::UserAgentOverride over1 = new_browser->tab_strip_model()
+                                       ->GetWebContentsAt(1)
+                                       ->GetUserAgentOverride();
+  EXPECT_EQ(std::string(), over1.ua_string_override);
+  EXPECT_FALSE(over1.ua_metadata_override.has_value());
 }
 
 // Regression test for crbug.com/125958. When restoring a pinned selected tab in

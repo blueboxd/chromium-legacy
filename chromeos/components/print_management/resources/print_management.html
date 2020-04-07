@@ -1,1 +1,16 @@
+<style>
+  #entryList {
+    padding-inline-start: 10%;
+    padding-inline-end: 10%;
+  }
+</style>
+
 <div id="header"></div>
+
+<iron-list id="entryList" items="[[printJobs_]]" role="grid">
+  <template>
+    <div role="row" tabindex$="[[tabIndex]]">
+      <print-job-entry job-entry="[[item]]"></print-job-entry>
+    </div>
+  </template>
+</iron-list>

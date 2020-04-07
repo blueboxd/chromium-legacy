@@ -255,7 +255,7 @@ bool IsSystemTrayMicGainSettingEnabled() {
   return base::FeatureList::IsEnabled(kSystemTrayMicGainSetting);
 }
 
-bool IsDisplayIdentificationlEnabled() {
+bool IsDisplayIdentificationEnabled() {
   return base::FeatureList::IsEnabled(kDisplayIdentification);
 }
 

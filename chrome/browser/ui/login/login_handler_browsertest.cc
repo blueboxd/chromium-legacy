@@ -1995,6 +1995,41 @@ IN_PROC_BROWSER_TEST_P(LoginPromptBrowserTest,
   EXPECT_EQ(expected_title, auth_supplied_title_watcher.WaitAndGetTitle());
 }
 
+// Tests that the repost dialog is not shown when credentials are entered for a
+// POST navigation. Regression test for https://crbug.com/1062317.
+IN_PROC_BROWSER_TEST_P(LoginPromptBrowserTest, NoRepostDialogAfterCredentials) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  NavigationController* controller = &contents->GetController();
+  LoginPromptBrowserTestObserver observer;
+  observer.Register(content::Source<NavigationController>(controller));
+  WindowedAuthNeededObserver auth_needed_waiter(controller);
+
+  // Navigate to a blank page and inject a form to trigger a POST navigation
+  // that requests credentials.
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/login/form.html"));
+  ASSERT_TRUE(
+      content::ExecJs(contents, "document.getElementById('submit').click()"));
+
+  auth_needed_waiter.Wait();
+  ASSERT_EQ(1u, observer.handlers().size());
+
+  // Enter credentials and test that the page loads. If the repost dialog is
+  // shown, the test will hang while waiting for input.
+  WindowedAuthSuppliedObserver auth_supplied_waiter(controller);
+  LoginHandler* handler = *observer.handlers().begin();
+  SetAuthFor(handler);
+  auth_supplied_waiter.Wait();
+
+  base::string16 expected_title = ExpectedTitleFromAuth(
+      base::ASCIIToUTF16("basicuser"), base::ASCIIToUTF16("secret"));
+  content::TitleWatcher auth_supplied_title_watcher(contents, expected_title);
+  EXPECT_EQ(expected_title, auth_supplied_title_watcher.WaitAndGetTitle());
+}
+
 // Tests that when HTTP Auth committed interstitials are enabled, showing a
 // login prompt in a new window opened from window.open() does not
 // crash. Regression test for https://crbug.com/1005096.

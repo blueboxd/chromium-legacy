@@ -79,7 +79,7 @@ std::unique_ptr<SessionCommand> CreateSetTabExtensionAppIDCommand(
 std::unique_ptr<SessionCommand> CreateSetTabUserAgentOverrideCommand(
     SessionCommand::id_type command_id,
     SessionID tab_id,
-    const std::string& user_agent_override) {
+    const SerializedUserAgentOverride& user_agent_override) {
   // Use pickle to handle marshalling.
   base::Pickle pickle;
   pickle.WriteInt(tab_id.id());
@@ -87,12 +87,24 @@ std::unique_ptr<SessionCommand> CreateSetTabUserAgentOverrideCommand(
   // Enforce a max for the user agent length.  They should never be anywhere
   // near this size.
   static const SessionCommand::size_type max_user_agent_size =
-      std::numeric_limits<SessionCommand::size_type>::max() - 1024;
+      (std::numeric_limits<SessionCommand::size_type>::max() - 1024) / 2;
 
   int bytes_written = 0;
 
   WriteStringToPickle(pickle, &bytes_written, max_user_agent_size,
-      user_agent_override);
+                      user_agent_override.ua_string_override);
+
+  bool have_usable_ua_metadata_override =
+      user_agent_override.opaque_ua_metadata_override.has_value() &&
+      user_agent_override.opaque_ua_metadata_override->size() <
+          max_user_agent_size;
+  pickle.WriteBool(have_usable_ua_metadata_override);
+  if (have_usable_ua_metadata_override) {
+    bytes_written = 0;
+    WriteStringToPickle(
+        pickle, &bytes_written, max_user_agent_size,
+        user_agent_override.opaque_ua_metadata_override.value());
+  }
 
   return std::unique_ptr<SessionCommand>(
       new SessionCommand(command_id, pickle));
@@ -152,6 +164,37 @@ bool RestoreSetTabUserAgentOverrideCommand(const SessionCommand& command,
   base::PickleIterator iterator(*pickle);
   return ReadSessionIdFromPickle(&iterator, tab_id) &&
          iterator.ReadString(user_agent_override);
+}
+
+bool RestoreSetTabUserAgentOverrideCommand2(
+    const SessionCommand& command,
+    SessionID* tab_id,
+    std::string* user_agent_override,
+    base::Optional<std::string>* opaque_ua_metadata_override) {
+  std::unique_ptr<base::Pickle> pickle(command.PayloadAsPickle());
+  if (!pickle)
+    return false;
+
+  base::PickleIterator iterator(*pickle);
+  if (!ReadSessionIdFromPickle(&iterator, tab_id))
+    return false;
+  if (!iterator.ReadString(user_agent_override))
+    return false;
+  // See if there is UA metadata override.
+  bool has_ua_metadata_override;
+  if (!iterator.ReadBool(&has_ua_metadata_override))
+    return false;
+  if (!has_ua_metadata_override) {
+    *opaque_ua_metadata_override = base::nullopt;
+    return true;
+  }
+
+  std::string ua_metadata_override_value;
+  if (!iterator.ReadString(&ua_metadata_override_value))
+    return false;
+
+  *opaque_ua_metadata_override = std::move(ua_metadata_override_value);
+  return true;
 }
 
 bool RestoreSetWindowAppNameCommand(const SessionCommand& command,

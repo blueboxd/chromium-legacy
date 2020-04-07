@@ -155,7 +155,9 @@ class AutocompleteResult {
   // Get a list of comparators used for deduping for the matches in this result.
   std::vector<MatchDedupComparator> GetMatchDedupComparators() const;
 
-  base::string16 GetHeaderForGroupId(int suggestion_group_id);
+  // Gets the header string associated with |suggestion_group_id|. Returns an
+  // empty string if no header is found.
+  base::string16 GetHeaderForGroupId(int suggestion_group_id) const;
 
   // Logs metrics for when |new_result| replaces |old_result| asynchronously.
   // |old_result| a list of the comparators for the old matches.

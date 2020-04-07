@@ -21,8 +21,6 @@ class FeedStream;
 // Loads the stream model from storage or network.
 // If successful, this directly forces a model load in |FeedStream()|
 // before completing the task.
-// TODO(harringtond): If we read data from the network, it needs to be
-// persisted.
 class LoadStreamTask : public offline_pages::Task {
  public:
   struct Result {

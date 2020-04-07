@@ -14,15 +14,6 @@ using testing::UnorderedElementsAre;
 
 namespace blink {
 
-namespace mojom {
-
-void PrintTo(const network::mojom::WebClientHintsType& value,
-             std::ostream* os) {
-  *os << ::testing::PrintToString(static_cast<int>(value));
-}
-
-}  // namespace mojom
-
 TEST(ClientHintsTest, SerializeLangClientHint) {
   std::string header = SerializeLangClientHint("");
   EXPECT_TRUE(header.empty());
@@ -38,79 +29,18 @@ TEST(ClientHintsTest, SerializeLangClientHint) {
             header);
 }
 
-TEST(ClientHintsTest, ParseAcceptCH) {
+TEST(ClientHintsTest, FilterAcceptCH) {
+  EXPECT_FALSE(FilterAcceptCH(base::nullopt, true, true).has_value());
+
   base::Optional<std::vector<network::mojom::WebClientHintsType>> result;
 
-  // Empty is OK.
-  result = ParseAcceptCH(" ",
-                         /* permit_lang_hints = */ true,
-                         /* permit_ua_hints = */ true);
-  ASSERT_TRUE(result.has_value());
-  EXPECT_TRUE(result.value().empty());
-
-  // Normal case.
-  result = ParseAcceptCH("device-memory,  rtt, lang ",
-                         /* permit_lang_hints = */ true,
-                         /* permit_ua_hints = */ true);
-  ASSERT_TRUE(result.has_value());
-  EXPECT_THAT(
-      result.value(),
-      UnorderedElementsAre(network::mojom::WebClientHintsType::kDeviceMemory,
-                           network::mojom::WebClientHintsType::kRtt,
-                           network::mojom::WebClientHintsType::kLang));
-
-  // Must be a list of tokens, not other things.
-  result = ParseAcceptCH("\"device-memory\", \"rtt\", \"lang\"",
-                         /* permit_lang_hints = */ true,
-                         /* permit_ua_hints = */ true);
-  EXPECT_FALSE(result.has_value());
-
-  // Parameters to the tokens are ignored, as encourageed by structured headers
-  // spec.
-  result = ParseAcceptCH("device-memory;resolution=GIB, rtt, lang",
-                         /* permit_lang_hints = */ true,
-                         /* permit_ua_hints = */ true);
-  ASSERT_TRUE(result.has_value());
-  EXPECT_THAT(
-      result.value(),
-      UnorderedElementsAre(network::mojom::WebClientHintsType::kDeviceMemory,
-                           network::mojom::WebClientHintsType::kRtt,
-                           network::mojom::WebClientHintsType::kLang));
-
-  // Unknown tokens are fine, since this meant to be extensible.
-  result = ParseAcceptCH("device-memory,  rtt, lang , nosuchtokenwhywhywhy",
-                         /* permit_lang_hints = */ true,
-                         /* permit_ua_hints = */ true);
-  ASSERT_TRUE(result.has_value());
-  EXPECT_THAT(
-      result.value(),
-      UnorderedElementsAre(network::mojom::WebClientHintsType::kDeviceMemory,
-                           network::mojom::WebClientHintsType::kRtt,
-                           network::mojom::WebClientHintsType::kLang));
-}
-
-TEST(ClientHintsTest, ParseAcceptCHCaseInsensitive) {
-  base::Optional<std::vector<network::mojom::WebClientHintsType>> result;
-
-  // Matching is case-insensitive.
-  result = ParseAcceptCH("Device-meMory,  Rtt, lanG ",
-                         /* permit_lang_hints = */ true,
-                         /* permit_ua_hints = */ true);
-  ASSERT_TRUE(result.has_value());
-  EXPECT_THAT(
-      result.value(),
-      UnorderedElementsAre(network::mojom::WebClientHintsType::kDeviceMemory,
-                           network::mojom::WebClientHintsType::kRtt,
-                           network::mojom::WebClientHintsType::kLang));
-}
-
-// Checks to make sure that language-controlled things are filtered.
-TEST(ClientHintsTest, ParseAcceptCHFlag) {
-  base::Optional<std::vector<network::mojom::WebClientHintsType>> result;
-
-  result = ParseAcceptCH("device-memory,  rtt, lang, ua",
-                         /* permit_lang_hints = */ false,
-                         /* permit_ua_hints = */ true);
+  result =
+      FilterAcceptCH(std::vector<network::mojom::WebClientHintsType>(
+                         {network::mojom::WebClientHintsType::kDeviceMemory,
+                          network::mojom::WebClientHintsType::kRtt,
+                          network::mojom::WebClientHintsType::kUA}),
+                     /* permit_lang_hints = */ false,
+                     /* permit_ua_hints = */ true);
   ASSERT_TRUE(result.has_value());
   EXPECT_THAT(
       result.value(),
@@ -118,18 +48,27 @@ TEST(ClientHintsTest, ParseAcceptCHFlag) {
                            network::mojom::WebClientHintsType::kRtt,
                            network::mojom::WebClientHintsType::kUA));
 
-  result = ParseAcceptCH("rtt, lang, ua, arch, platform, model, mobile",
-                         /* permit_lang_hints = */ true,
-                         /* permit_ua_hints = */ false);
+  std::vector<network::mojom::WebClientHintsType> in{
+      network::mojom::WebClientHintsType::kRtt,
+      network::mojom::WebClientHintsType::kLang,
+      network::mojom::WebClientHintsType::kUA,
+      network::mojom::WebClientHintsType::kUAArch,
+      network::mojom::WebClientHintsType::kUAPlatform,
+      network::mojom::WebClientHintsType::kUAModel,
+      network::mojom::WebClientHintsType::kUAMobile,
+      network::mojom::WebClientHintsType::kUAFullVersion};
+
+  result = FilterAcceptCH(in,
+                          /* permit_lang_hints = */ true,
+                          /* permit_ua_hints = */ false);
   ASSERT_TRUE(result.has_value());
   EXPECT_THAT(result.value(),
               UnorderedElementsAre(network::mojom::WebClientHintsType::kRtt,
                                    network::mojom::WebClientHintsType::kLang));
 
-  result =
-      ParseAcceptCH("rtt, lang, ua, ua-arch, ua-platform, ua-model, ua-mobile",
-                    /* permit_lang_hints = */ true,
-                    /* permit_ua_hints = */ true);
+  result = FilterAcceptCH(in,
+                          /* permit_lang_hints = */ true,
+                          /* permit_ua_hints = */ true);
   ASSERT_TRUE(result.has_value());
   EXPECT_THAT(
       result.value(),
@@ -139,11 +78,12 @@ TEST(ClientHintsTest, ParseAcceptCHFlag) {
                            network::mojom::WebClientHintsType::kUAArch,
                            network::mojom::WebClientHintsType::kUAPlatform,
                            network::mojom::WebClientHintsType::kUAModel,
-                           network::mojom::WebClientHintsType::kUAMobile));
+                           network::mojom::WebClientHintsType::kUAMobile,
+                           network::mojom::WebClientHintsType::kUAFullVersion));
 
-  result = ParseAcceptCH("rtt, lang, ua, arch, platform, model, mobile",
-                         /* permit_lang_hints = */ false,
-                         /* permit_ua_hints = */ false);
+  result = FilterAcceptCH(in,
+                          /* permit_lang_hints = */ false,
+                          /* permit_ua_hints = */ false);
   ASSERT_TRUE(result.has_value());
   EXPECT_THAT(result.value(),
               UnorderedElementsAre(network::mojom::WebClientHintsType::kRtt));

@@ -24,6 +24,7 @@ class Location;
 
 namespace sessions {
 class SerializedNavigationEntry;
+struct SerializedUserAgentOverride;
 struct SessionTab;
 struct SessionWindow;
 }
@@ -45,9 +46,10 @@ class SessionServiceTestHelper {
                             const SessionID& tab_id,
                             const std::string& extension_app_id);
 
-  void SetTabUserAgentOverride(const SessionID& window_id,
-                               const SessionID& tab_id,
-                               const std::string& user_agent_override);
+  void SetTabUserAgentOverride(
+      const SessionID& window_id,
+      const SessionID& tab_id,
+      const sessions::SerializedUserAgentOverride& user_agent_override);
 
   void SetForceBrowserNotAliveWithNoWindows(
       bool force_browser_not_alive_with_no_windows);

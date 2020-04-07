@@ -294,9 +294,6 @@ extern const char kCupsPrintPPDLearnMoreURL[];
 // The URL for the "Learn more" link the the Easy Unlock settings.
 extern const char kEasyUnlockLearnMoreUrl[];
 
-// The path to the offline Chrome OS EULA.
-extern const char kEULAPathFormat[];
-
 // The URL for EOL notification
 extern const char kEolNotificationURL[];
 

@@ -253,7 +253,7 @@ bool ChromeVirtualKeyboardDelegate::ShowLanguageSettings() {
 
   base::RecordAction(base::UserMetricsAction("OpenLanguageOptionsDialog"));
   chrome::ShowSettingsSubPageForProfile(ProfileManager::GetActiveUserProfile(),
-                                        chrome::kLanguagesSubPage);
+                                        chrome::kOsLanguagesDetailsSubPage);
   return true;
 }
 
@@ -298,6 +298,15 @@ bool ChromeVirtualKeyboardDelegate::SetAreaToRemainOnScreen(
     return false;
 
   return keyboard_client->SetAreaToRemainOnScreen(bounds);
+}
+
+bool ChromeVirtualKeyboardDelegate::SetWindowBoundsInScreen(
+    const gfx::Rect& bounds_in_screen) {
+  auto* keyboard_client = ChromeKeyboardControllerClient::Get();
+  if (!keyboard_client->is_keyboard_enabled())
+    return false;
+
+  return keyboard_client->SetWindowBoundsInScreen(bounds_in_screen);
 }
 
 bool ChromeVirtualKeyboardDelegate::SetDraggableArea(

@@ -17,6 +17,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sessions/core/live_tab_context.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
+#include "components/sessions/core/serialized_user_agent_override.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/session_types.h"
 #include "components/sessions/core/sessions_export.h"
@@ -119,7 +120,7 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
     std::unique_ptr<PlatformSpecificTabData> platform_data;
 
     // The user agent override used for the tab's navigations (if applicable).
-    std::string user_agent_override;
+    SerializedUserAgentOverride user_agent_override;
 
     // The group the tab belonged to, if any.
     base::Optional<tab_groups::TabGroupId> group;

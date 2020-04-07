@@ -228,6 +228,11 @@ void ChromeKeyboardControllerClient::SetDraggableArea(const gfx::Rect& bounds) {
   keyboard_controller_->SetDraggableArea(bounds);
 }
 
+bool ChromeKeyboardControllerClient::SetWindowBoundsInScreen(
+    const gfx::Rect& bounds_in_screen) {
+  return keyboard_controller_->SetWindowBoundsInScreen(bounds_in_screen);
+}
+
 bool ChromeKeyboardControllerClient::IsKeyboardOverscrollEnabled() {
   DCHECK(cached_keyboard_config_);
   if (cached_keyboard_config_->overscroll_behavior !=

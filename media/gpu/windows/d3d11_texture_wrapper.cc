@@ -127,6 +127,12 @@ bool DefaultTexture2DWrapper::Init(GetCommandBufferHelperCB get_helper_cb) {
                               textures_per_picture);
 }
 
+void DefaultTexture2DWrapper::SetStreamHDRMetadata(
+    const HDRMetadata& stream_metadata) {}
+
+void DefaultTexture2DWrapper::SetDisplayHDRMetadata(
+    const DXGI_HDR_METADATA_HDR10& dxgi_display_metadata) {}
+
 DefaultTexture2DWrapper::GpuResources::GpuResources() {}
 
 DefaultTexture2DWrapper::GpuResources::~GpuResources() {

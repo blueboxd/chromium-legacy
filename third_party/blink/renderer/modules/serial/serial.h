@@ -75,6 +75,7 @@ class Serial final : public EventTargetWithInlineData,
                  HeapMojoWrapperMode::kWithoutContextObserver>
       service_;
   HeapMojoReceiver<mojom::blink::SerialServiceClient,
+                   Serial,
                    HeapMojoWrapperMode::kWithoutContextObserver>
       receiver_;
   HeapHashSet<Member<ScriptPromiseResolver>> get_ports_promises_;

@@ -8,6 +8,7 @@
 #include "components/sessions/content/content_serialized_navigation_builder.h"
 #include "components/sessions/content/session_tab_helper_delegate.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
+#include "components/sessions/core/serialized_user_agent_override.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/buildflags/buildflags.h"
@@ -66,11 +67,14 @@ SessionID SessionTabHelper::IdForWindowContainingTab(
 
 void SessionTabHelper::UserAgentOverrideSet(
     const blink::UserAgentOverride& ua_override) {
-  // TODO(https://crbug.com/1061917): handle |ua_override.ua_metadata_override|.
   SessionTabHelperDelegate* delegate = GetDelegate();
   if (delegate) {
+    sessions::SerializedUserAgentOverride serialized_override;
+    serialized_override.ua_string_override = ua_override.ua_string_override;
+    serialized_override.opaque_ua_metadata_override =
+        blink::UserAgentMetadata::Marshal(ua_override.ua_metadata_override);
     delegate->SetTabUserAgentOverride(window_id(), session_id(),
-                                      ua_override.ua_string_override);
+                                      serialized_override);
   }
 }
 

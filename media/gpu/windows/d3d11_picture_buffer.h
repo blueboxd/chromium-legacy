@@ -84,6 +84,8 @@ class MEDIA_GPU_EXPORT D3D11PictureBuffer
     return output_view_;
   }
 
+  Texture2DWrapper* texture_wrapper() const { return texture_wrapper_.get(); }
+
   // Shouldn't be here, but simpler for now.
   base::TimeDelta timestamp_;
 

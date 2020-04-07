@@ -74,6 +74,7 @@ class CORE_EXPORT ColorChooserUIController
  private:
   mojo::Remote<mojom::blink::ColorChooserFactory> color_chooser_factory_;
   HeapMojoReceiver<mojom::blink::ColorChooserClient,
+                   ColorChooserUIController,
                    HeapMojoWrapperMode::kWithoutContextObserver>
       receiver_;
 };

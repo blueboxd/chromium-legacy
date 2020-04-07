@@ -81,12 +81,15 @@ bool AndroidSmsAppInstallingStatusObserver::
 
 void AndroidSmsAppInstallingStatusObserver::UpdatePwaInstallationState() {
   if (!DoesFeatureStateAllowInstallation()) {
+    PA_LOG(INFO)
+        << "Feature state does not allow installation, tearing down App.";
     // The feature is disabled, ensure that the integration cookie is removed.
     android_sms_app_helper_delegate_->TearDownAndroidSmsApp();
     return;
   }
 
   if (android_sms_app_helper_delegate_->HasAppBeenManuallyUninstalledByUser()) {
+    PA_LOG(INFO) << "App was manually uninstalled by user, tearing down App.";
     feature_state_manager_->SetFeatureEnabledState(mojom::Feature::kMessages,
                                                    false);
 

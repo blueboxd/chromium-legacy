@@ -39,16 +39,9 @@ static const int kMaxTokenSize = 4;
 static const int kMaxTokenSize = 3;
 #endif  // OS_CHROMEOS
 
-Command::Type GetCommandType(const std::string& command_name) {
-  if (command_name == values::kPageActionCommandEvent)
-    return Command::Type::kPageAction;
-  if (command_name == values::kBrowserActionCommandEvent)
-    return Command::Type::kBrowserAction;
-  return Command::Type::kNamed;
-}
-
 bool IsNamedCommand(const std::string& command_name) {
-  return GetCommandType(command_name) == Command::Type::kNamed;
+  return command_name != values::kPageActionCommandEvent &&
+         command_name != values::kBrowserActionCommandEvent;
 }
 
 bool DoesRequireModifier(const std::string& accelerator) {
@@ -273,19 +266,16 @@ std::string NormalizeShortcutSuggestion(const std::string& suggestion,
 
 }  // namespace
 
-Command::Command() : global_(false), type_(Type::kNamed) {}
+Command::Command() : global_(false) {}
 
 Command::Command(const std::string& command_name,
                  const base::string16& description,
                  const std::string& accelerator,
                  bool global)
-    : command_name_(command_name),
-      description_(description),
-      global_(global),
-      type_(GetCommandType(command_name)) {
+    : command_name_(command_name), description_(description), global_(global) {
   base::string16 error;
   accelerator_ = ParseImpl(accelerator, CommandPlatform(), 0,
-                           type_ == Type::kNamed, &error);
+                           IsNamedCommand(command_name), &error);
 }
 
 Command::Command(const Command& other) = default;
@@ -533,7 +523,6 @@ bool Command::Parse(const base::DictionaryValue* command,
       command_name_ = command_name;
       description_ = description;
       global_ = global;
-      type_ = GetCommandType(command_name);
     }
   }
   return true;

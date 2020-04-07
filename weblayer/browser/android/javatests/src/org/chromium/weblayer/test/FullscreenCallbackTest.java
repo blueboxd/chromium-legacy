@@ -12,10 +12,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.weblayer.FullscreenCallback;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
 /**
@@ -28,49 +25,14 @@ public class FullscreenCallbackTest {
             new InstrumentationActivityTestRule();
 
     private InstrumentationActivity mActivity;
-    private Delegate mDelegate;
-
-    private static class Delegate extends FullscreenCallback {
-        public int mEnterFullscreenCount;
-        public int mExitFullscreenCount;
-        public Runnable mExitFullscreenRunnable;
-
-        @Override
-        public void onEnterFullscreen(Runnable exitFullscreenRunner) {
-            mEnterFullscreenCount++;
-            mExitFullscreenRunnable = exitFullscreenRunner;
-        }
-
-        @Override
-        public void onExitFullscreen() {
-            mExitFullscreenCount++;
-        }
-
-        public void waitForFullscreen() {
-            CriteriaHelper.pollUiThread(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    return mEnterFullscreenCount == 1;
-                }
-            });
-        }
-
-        public void waitForExitFullscreen() {
-            CriteriaHelper.pollUiThread(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    return mExitFullscreenCount == 1;
-                }
-            });
-        }
-    }
+    private TestFullscreenCallback mDelegate;
 
     @Before
     public void setUp() {
         String url = mActivityTestRule.getTestDataURL("fullscreen.html");
         mActivity = mActivityTestRule.launchShellWithUrl(url);
         Assert.assertNotNull(mActivity);
-        mDelegate = new Delegate();
+        mDelegate = new TestFullscreenCallback();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mActivity.getTab().setFullscreenCallback(mDelegate); });
 

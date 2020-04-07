@@ -27,6 +27,10 @@
 #include "components/version_info/channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace cryptohome {
+class Identification;
+}  // namespace cryptohome
+
 namespace arc {
 namespace {
 
@@ -74,7 +78,8 @@ class FakeArcClientAdapter : public ArcClientAdapter {
                        base::Unretained(this)));
   }
 
-  void SetUserInfo(const std::string& hash,
+  void SetUserInfo(const cryptohome::Identification& cryptohome_id,
+                   const std::string& hash,
                    const std::string& serial_number) override {}
 
   // Notifies ArcSessionImpl of the ARC instance stop event.

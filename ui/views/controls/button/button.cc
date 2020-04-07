@@ -269,9 +269,13 @@ void Button::SetFocusPainter(std::unique_ptr<Painter> focus_painter) {
 }
 
 void Button::SetHighlighted(bool bubble_visible) {
-  AnimateInkDrop(bubble_visible ? views::InkDropState::ACTIVATED
-                                : views::InkDropState::DEACTIVATED,
-                 nullptr);
+  const views::InkDropState next_state = bubble_visible
+                                             ? views::InkDropState::ACTIVATED
+                                             : views::InkDropState::DEACTIVATED;
+  // Avoid redundantly updating the inkdrop state.
+  if (next_state == GetInkDrop()->GetTargetInkDropState())
+    return;
+  AnimateInkDrop(next_state, nullptr);
   for (ButtonObserver& observer : button_observers_)
     observer.OnHighlightChanged(this, bubble_visible);
 }

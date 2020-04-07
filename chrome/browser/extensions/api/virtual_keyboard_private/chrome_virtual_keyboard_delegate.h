@@ -53,6 +53,7 @@ class ChromeVirtualKeyboardDelegate : public VirtualKeyboardDelegate {
   bool SetOccludedBounds(const std::vector<gfx::Rect>& bounds) override;
   bool SetHitTestBounds(const std::vector<gfx::Rect>& bounds) override;
   bool SetAreaToRemainOnScreen(const gfx::Rect& bounds) override;
+  bool SetWindowBoundsInScreen(const gfx::Rect& bounds_in_screen) override;
 
   api::virtual_keyboard::FeatureRestrictions RestrictFeatures(
       const api::virtual_keyboard::RestrictFeatures::Params& params) override;

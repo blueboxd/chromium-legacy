@@ -28,10 +28,9 @@ TabRestoreService::Tab::~Tab() = default;
 
 size_t TabRestoreService::Tab::EstimateMemoryUsage() const {
   using base::trace_event::EstimateMemoryUsage;
-  return
-      EstimateMemoryUsage(navigations) +
-      EstimateMemoryUsage(extension_app_id) +
-      EstimateMemoryUsage(user_agent_override);
+  return EstimateMemoryUsage(navigations) +
+         EstimateMemoryUsage(extension_app_id) +
+         user_agent_override.EstimateMemoryUsage();
 }
 
 TabRestoreService::Window::Window() : Entry(WINDOW) {}

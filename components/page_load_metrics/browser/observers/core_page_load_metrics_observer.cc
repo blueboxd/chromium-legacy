@@ -271,6 +271,14 @@ const char kBackgroundHistogramInputToFirstContentfulPaint[] =
 const char kHistogramBackForwardCacheEvent[] =
     "PageLoad.BackForwardCache.Event";
 
+const char kHistogramFontPreloadFirstPaint[] =
+    "PageLoad.Clients.FontPreload.PaintTiming.NavigationToFirstPaint";
+const char kHistogramFontPreloadFirstContentfulPaint[] =
+    "PageLoad.Clients.FontPreload.PaintTiming.NavigationToFirstContentfulPaint";
+const char kHistogramFontPreloadLargestContentfulPaint[] =
+    "PageLoad.Clients.FontPreload.PaintTiming."
+    "NavigationToLargestContentfulPaint";
+
 }  // namespace internal
 
 CorePageLoadMetricsObserver::CorePageLoadMetricsObserver()
@@ -344,6 +352,13 @@ void CorePageLoadMetricsObserver::OnFirstPaintInPage(
           timing.paint_timing->first_paint, GetDelegate())) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstPaint,
                         timing.paint_timing->first_paint.value());
+
+    // Note: This depends on PageLoadMetrics internally processing loading
+    // behavior before timing metrics if they come in the same IPC update.
+    if (font_preload_started_before_rendering_observed_) {
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramFontPreloadFirstPaint,
+                          timing.paint_timing->first_paint.value());
+    }
     if (timing.input_to_navigation_start) {
       PAGE_LOAD_HISTOGRAM(internal::kHistogramInputToFirstPaint,
                           timing.input_to_navigation_start.value() +
@@ -388,6 +403,13 @@ void CorePageLoadMetricsObserver::OnFirstContentfulPaintInPage(
     PAGE_LOAD_HISTOGRAM(internal::kHistogramParseStartToFirstContentfulPaint,
                         timing.paint_timing->first_contentful_paint.value() -
                             timing.parse_timing->parse_start.value());
+
+    // Note: This depends on PageLoadMetrics internally processing loading
+    // behavior before timing metrics if they come in the same IPC update.
+    if (font_preload_started_before_rendering_observed_) {
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramFontPreloadFirstContentfulPaint,
+                          timing.paint_timing->first_contentful_paint.value());
+    }
 
     // Emit a trace event to highlight a long navigation to first contentful
     // paint.
@@ -755,6 +777,13 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
     UMA_HISTOGRAM_ENUMERATION(
         internal::kHistogramLargestContentfulPaintContentType,
         all_frames_largest_contentful_paint.Type());
+
+    // Note: This depends on PageLoadMetrics internally processing loading
+    // behavior before timing metrics if they come in the same IPC update.
+    if (font_preload_started_before_rendering_observed_) {
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramFontPreloadLargestContentfulPaint,
+                          all_frames_largest_contentful_paint.Time().value());
+    }
   }
 
   if (main_frame_timing.paint_timing->first_paint &&
@@ -919,4 +948,13 @@ CorePageLoadMetricsObserver::OnEnterBackForwardCache(
       internal::kHistogramBackForwardCacheEvent,
       internal::PageLoadBackForwardCacheEvent::kEnterBackForwardCache);
   return PageLoadMetricsObserver::OnEnterBackForwardCache(timing);
+}
+
+void CorePageLoadMetricsObserver::OnLoadingBehaviorObserved(
+    content::RenderFrameHost* rfh,
+    int behavior_flag) {
+  if (behavior_flag & blink::LoadingBehaviorFlag::
+                          kLoadingBehaviorFontPreloadStartedBeforeRendering) {
+    font_preload_started_before_rendering_observed_ = true;
+  }
 }

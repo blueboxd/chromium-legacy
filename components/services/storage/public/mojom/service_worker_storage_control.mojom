@@ -9,6 +9,12 @@ import "mojo/public/mojom/base/big_buffer.mojom";
 import "services/network/public/mojom/url_response_head.mojom";
 import "url/mojom/url.mojom";
 
+// This struct represents a serialized service worker registration.
+struct SerializedServiceWorkerRegistration {
+  ServiceWorkerRegistrationData registration_data;
+  array<ServiceWorkerResourceRecord> resources;
+};
+
 // Conveys a result of finding a registration. If a registration is found,
 // |status| will be kOk. |registration| and |resources| are null and empty
 // if there is no matching registration.
@@ -67,6 +73,11 @@ interface ServiceWorkerStorageControl {
   FindRegistrationForId(int64 registration_id, url.mojom.Url origin) =>
       (ServiceWorkerFindRegistrationResult result);
 
+  // Returns all stored registrations for a given origin.
+  GetRegistrationsForOrigin(url.mojom.Url origin) =>
+      (ServiceWorkerDatabaseStatus status,
+       array<SerializedServiceWorkerRegistration> registrations);
+
   // Stores |registration_data| and |resources| on persistent storage.
   StoreRegistration(ServiceWorkerRegistrationData registration,
                     array<ServiceWorkerResourceRecord> resources) =>
@@ -78,6 +89,10 @@ interface ServiceWorkerStorageControl {
       (ServiceWorkerDatabaseStatus status,
        ServiceWorkerStorageOriginState origin_state);
 
+  // Returns a new registration id which is guaranteed to be unique in the
+  // storage. Returns blink::mojom::kInvalidServiceWorkerRegistrationId if the
+  // storage is disabled.
+  GetNewRegistrationId() => (int64 registration_id);
   // Returns a new resource id which is guaranteed to be unique in the storage.
   // Returns blink::mojom::kInvalidServiceWorkerResourceId if the storage
   // is disabled.

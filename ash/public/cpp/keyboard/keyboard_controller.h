@@ -100,6 +100,9 @@ class ASH_PUBLIC_EXPORT KeyboardController {
   // Sets the region of the keyboard window that can be used as a drag handle.
   virtual void SetDraggableArea(const gfx::Rect& bounds) = 0;
 
+  // Sets the bounds of the keyboard window in screen coordinates.
+  virtual bool SetWindowBoundsInScreen(const gfx::Rect& bounds) = 0;
+
   // Adds/removes a KeyboardControllerObserver.
   virtual void AddObserver(KeyboardControllerObserver* observer) = 0;
   virtual void RemoveObserver(KeyboardControllerObserver* observer) = 0;

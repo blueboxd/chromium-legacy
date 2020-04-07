@@ -234,6 +234,8 @@ class ToolbarActionsBar : public ExtensionsContainer,
   ToolbarActionViewController* GetPoppedOutAction() const override;
   bool IsActionVisibleOnToolbar(
       const ToolbarActionViewController* action) const override;
+  extensions::ExtensionContextMenuModel::ButtonVisibility GetActionVisibility(
+      const ToolbarActionViewController* action) const override;
   void UndoPopOut() override;
   void SetPopupOwner(ToolbarActionViewController* popup_owner) override;
   void HideActivePopup() override;

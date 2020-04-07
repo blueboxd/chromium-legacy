@@ -65,8 +65,14 @@ ContentLiveTab::GetPlatformSpecificTabData() {
       web_contents());
 }
 
-const std::string& ContentLiveTab::GetUserAgentOverride() {
-  return web_contents()->GetUserAgentOverride().ua_string_override;
+SerializedUserAgentOverride ContentLiveTab::GetUserAgentOverride() {
+  const blink::UserAgentOverride& ua_override =
+      web_contents()->GetUserAgentOverride();
+  SerializedUserAgentOverride serialized_ua_override;
+  serialized_ua_override.ua_string_override = ua_override.ua_string_override;
+  serialized_ua_override.opaque_ua_metadata_override =
+      blink::UserAgentMetadata::Marshal(ua_override.ua_metadata_override);
+  return serialized_ua_override;
 }
 
 }  // namespace sessions

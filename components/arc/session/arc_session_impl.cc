@@ -277,11 +277,16 @@ mojo::ScopedMessagePipeHandle ArcSessionDelegateImpl::ConnectMojoInternal(
   std::vector<base::ScopedFD> fds;
   fds.emplace_back(channel.TakeRemoteEndpoint().TakePlatformHandle().TakeFD());
 
+  // Version of protocol chrome is using.
+  uint8_t protocol_version = 0;
+
   // We need to send the length of the message as a single byte, so make sure it
   // fits.
   DCHECK_LT(token.size(), 256u);
   uint8_t message_length = static_cast<uint8_t>(token.size());
-  struct iovec iov[] = {{&message_length, sizeof(message_length)},
+
+  struct iovec iov[] = {{&protocol_version, sizeof(protocol_version)},
+                        {&message_length, sizeof(message_length)},
                         {const_cast<char*>(token.c_str()), token.size()}};
   ssize_t result = mojo::SendmsgWithHandles(connection_fd.get(), iov,
                                             sizeof(iov) / sizeof(iov[0]), fds);
@@ -303,8 +308,8 @@ void ArcSessionDelegateImpl::OnMojoConnected(
   }
 
   std::move(callback).Run(std::make_unique<ArcBridgeHostImpl>(
-      arc_bridge_service_, mojo::PendingRemote<mojom::ArcBridgeInstance>(
-                               std::move(server_pipe), 0u)));
+      arc_bridge_service_,
+      mojo::PendingReceiver<mojom::ArcBridgeHost>(std::move(server_pipe))));
 }
 
 }  // namespace
@@ -721,10 +726,12 @@ void ArcSessionImpl::OnShutdown() {
   OnStopped(ArcStopReason::SHUTDOWN);
 }
 
-void ArcSessionImpl::SetUserInfo(const std::string& hash,
-                                 const std::string& serial_number) {
+void ArcSessionImpl::SetUserInfo(
+    const cryptohome::Identification& cryptohome_id,
+    const std::string& hash,
+    const std::string& serial_number) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  client_->SetUserInfo(hash, serial_number);
+  client_->SetUserInfo(cryptohome_id, hash, serial_number);
 }
 
 void ArcSessionImpl::OnConfigurationSet(bool success,

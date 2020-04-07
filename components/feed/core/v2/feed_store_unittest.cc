@@ -132,6 +132,7 @@ TEST_F(FeedStoreTest, SaveFullStream) {
     content_id {
       content_domain: "root"
     }
+    consistency_token: "token-1"
     shared_state_id {
       content_domain: "render_data"
     }

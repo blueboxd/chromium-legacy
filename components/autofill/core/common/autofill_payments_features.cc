@@ -46,7 +46,7 @@ const base::Feature kAutofillCreditCardUploadFeedback{
 // has not turned on sync.
 const base::Feature kAutofillEnableLocalCardMigrationForNonSyncUser{
     "AutofillEnableLocalCardMigrationForNonSyncUser",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled, Autofill data related icons will be shown in the status
 // chip in toolbar along with the avatar toolbar button.

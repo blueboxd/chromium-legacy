@@ -33,12 +33,24 @@ void BindDiscardableSharedMemoryManagerOnIOThread(
 
 mojo::Remote<mojom::PaintPreviewCompositorCollection>
 CreateCompositorCollection() {
-  auto collection = content::ServiceProcessHost::Launch<
-      mojom::PaintPreviewCompositorCollection>(
+  mojo::Remote<mojom::PaintPreviewCompositorCollection> collection;
+  CreateCompositorCollectionPending(collection.BindNewPipeAndPassReceiver());
+  BindDiscardableSharedMemoryManager(&collection);
+  return collection;
+}
+
+void CreateCompositorCollectionPending(
+    mojo::PendingReceiver<mojom::PaintPreviewCompositorCollection> collection) {
+  content::ServiceProcessHost::Launch<mojom::PaintPreviewCompositorCollection>(
+      std::move(collection),
       content::ServiceProcessHost::Options()
           .WithDisplayName(IDS_PAINT_PREVIEW_COMPOSITOR_SERVICE_DISPLAY_NAME)
           .WithSandboxType(service_manager::SandboxType::kPrintCompositor)
           .Pass());
+}
+
+void BindDiscardableSharedMemoryManager(
+    mojo::Remote<mojom::PaintPreviewCompositorCollection>* collection) {
   mojo::PendingRemote<discardable_memory::mojom::DiscardableSharedMemoryManager>
       discardable_memory_manager;
 
@@ -48,9 +60,8 @@ CreateCompositorCollection() {
       base::BindOnce(
           &BindDiscardableSharedMemoryManagerOnIOThread,
           discardable_memory_manager.InitWithNewPipeAndPassReceiver()));
-  collection->SetDiscardableSharedMemoryManager(
+  collection->get()->SetDiscardableSharedMemoryManager(
       std::move(discardable_memory_manager));
-  return collection;
 }
 
 }  // namespace paint_preview

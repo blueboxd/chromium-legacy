@@ -94,6 +94,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CiceroneClient : public DBusClient {
     virtual void OnUpgradeContainerProgress(
         const vm_tools::cicerone::UpgradeContainerProgressSignal& signal) = 0;
 
+    // This is signaled from Cicerone while LXD is starting via StartLxd.
+    virtual void OnStartLxdProgress(
+        const vm_tools::cicerone::StartLxdProgressSignal& signal) = 0;
+
    protected:
     virtual ~Observer() = default;
   };
@@ -153,6 +157,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CiceroneClient : public DBusClient {
 
   // This should be true prior to calling UpgradeContainer.
   virtual bool IsUpgradeContainerProgressSignalConnected() = 0;
+
+  // This should be true prior to calling StartLxd.
+  virtual bool IsStartLxdProgressSignalConnected() = 0;
 
   // Launches an application inside a running Container.
   // |callback| is called after the method call finishes.
@@ -282,6 +289,12 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CiceroneClient : public DBusClient {
       const vm_tools::cicerone::CancelUpgradeContainerRequest& request,
       DBusMethodCallback<vm_tools::cicerone::CancelUpgradeContainerResponse>
           callback) = 0;
+
+  // Starts LXD.
+  // |callback| is called when the method completes.
+  virtual void StartLxd(
+      const vm_tools::cicerone::StartLxdRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::StartLxdResponse> callback) = 0;
 
   // Registers |callback| to run when the Cicerone service becomes available.
   // If the service is already available, or if connecting to the name-owner-

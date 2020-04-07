@@ -45,6 +45,9 @@ class CONTENT_EXPORT ServiceWorkerStorageControlImpl
   void FindRegistrationForId(int64_t registration_id,
                              const GURL& origin,
                              FindRegistrationForIdCallback callback) override;
+  void GetRegistrationsForOrigin(
+      const GURL& origin,
+      GetRegistrationsForOriginCallback callback) override;
   void StoreRegistration(
       storage::mojom::ServiceWorkerRegistrationDataPtr registration,
       std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> resources,
@@ -52,6 +55,7 @@ class CONTENT_EXPORT ServiceWorkerStorageControlImpl
   void DeleteRegistration(int64_t registration_id,
                           const GURL& origin,
                           DeleteRegistrationCallback callback) override;
+  void GetNewRegistrationId(GetNewRegistrationIdCallback callback) override;
   void GetNewResourceId(GetNewResourceIdCallback callback) override;
   void CreateResourceReader(
       int64_t resource_id,

@@ -30,7 +30,10 @@ class LoadStreamFromStoreTask : public offline_pages::Task {
     Result(Result&&);
     Result& operator=(Result&&);
     LoadStreamStatus status = LoadStreamStatus::kNoStatus;
+    // Only provided if successful.
     std::unique_ptr<StreamModelUpdateRequest> update_request;
+    // On failure, this data may be provided.
+    std::string consistency_token;
   };
 
   LoadStreamFromStoreTask(FeedStore* store,
@@ -61,7 +64,9 @@ class LoadStreamFromStoreTask : public offline_pages::Task {
   bool ignore_staleness_ = false;
   base::OnceCallback<void(Result)> result_callback_;
 
+  // Data to be stuffed into the Result when the task is complete.
   std::unique_ptr<StreamModelUpdateRequest> update_request_;
+  std::string consistency_token_;
 
   base::WeakPtrFactory<LoadStreamFromStoreTask> weak_ptr_factory_{this};
 };

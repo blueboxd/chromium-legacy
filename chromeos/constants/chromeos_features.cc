@@ -57,6 +57,11 @@ extern const base::Feature kAvatarToolbarButton{
 const base::Feature kBluetoothAggressiveAppearanceFilter{
     "BluetoothAggressiveAppearanceFilter", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables or disables the usage of fixed Bluetooth A2DP packet size to improve
+// audio performance in noisy environment.
+const base::Feature kBluetoothFixA2dpPacketSize{
+    "BluetoothFixA2dpPacketSize", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables more filtering out of phones from the Bluetooth UI.
 const base::Feature kBluetoothPhoneFilter{"BluetoothPhoneFilter",
                                           base::FEATURE_ENABLED_BY_DEFAULT};

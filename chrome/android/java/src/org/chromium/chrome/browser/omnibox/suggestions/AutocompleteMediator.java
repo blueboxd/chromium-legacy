@@ -1166,6 +1166,12 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
 
             transition = PageTransition.LINK;
         }
+
+        if (suggestion.getType() == OmniboxSuggestionType.CLIPBOARD_IMAGE) {
+            mDelegate.loadUrlWithPostData(url, transition, inputStart,
+                    suggestion.getPostContentType(), suggestion.getPostData());
+            return;
+        }
         mDelegate.loadUrl(url, transition, inputStart);
     }
 

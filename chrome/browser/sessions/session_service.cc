@@ -489,7 +489,7 @@ void SessionService::RebuildCommandsIfRequired() {
 void SessionService::SetTabUserAgentOverride(
     const SessionID& window_id,
     const SessionID& tab_id,
-    const std::string& user_agent_override) {
+    const sessions::SerializedUserAgentOverride& user_agent_override) {
   if (!ShouldTrackChangesToWindow(window_id))
     return;
 
@@ -699,13 +699,17 @@ void SessionService::BuildCommandsForTab(
         sessions::CreateSetTabExtensionAppIDCommand(session_id, app_id));
   }
 
-  // TODO(https://crbug.com/1061917: handle ua_metadata_override as well.
-  const std::string& ua_override =
-      tab->GetUserAgentOverride().ua_string_override;
-  if (!ua_override.empty()) {
+  const blink::UserAgentOverride& ua_override = tab->GetUserAgentOverride();
+
+  if (!ua_override.ua_string_override.empty()) {
+    sessions::SerializedUserAgentOverride serialized_ua_override;
+    serialized_ua_override.ua_string_override = ua_override.ua_string_override;
+    serialized_ua_override.opaque_ua_metadata_override =
+        blink::UserAgentMetadata::Marshal(ua_override.ua_metadata_override);
+
     command_storage_manager_->AppendRebuildCommand(
         sessions::CreateSetTabUserAgentOverrideCommand(session_id,
-                                                       ua_override));
+                                                       serialized_ua_override));
   }
 
   for (int i = min_index; i < max_index; ++i) {

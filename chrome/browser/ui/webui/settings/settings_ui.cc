@@ -161,18 +161,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUISettingsHost);
 
-  // TODO(dpapad): Replace the following calls with
-  // SetupBundledWebUIDataSource() when Settings is migrated to Polymer3.
-  // Currently only used for testing the Polymer 3 version of
-  // certificate-manager.
-#if BUILDFLAG(OPTIMIZE_WEBUI)
-  html_source->EnableReplaceI18nInJS();
-  html_source->OverrideContentSecurityPolicyScriptSrc(
-      "script-src chrome://resources chrome://test 'self';");
-  html_source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);
-  html_source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER);
-#endif
-
   AddSettingsPageUIHandler(std::make_unique<AppearanceHandler>(web_ui));
 
 #if defined(USE_NSS_CERTS)
@@ -319,12 +307,22 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(std::make_unique<MetricsHandler>());
 
 #if BUILDFLAG(OPTIMIZE_WEBUI)
-  html_source->AddResourcePath("crisper.js", IDR_SETTINGS_CRISPER_JS);
-  html_source->AddResourcePath("lazy_load.crisper.js",
-                               IDR_SETTINGS_LAZY_LOAD_CRISPER_JS);
-  html_source->AddResourcePath("lazy_load.html",
-                               IDR_SETTINGS_LAZY_LOAD_VULCANIZED_HTML);
-  html_source->SetDefaultResource(IDR_SETTINGS_VULCANIZED_HTML);
+  if (base::FeatureList::IsEnabled(features::kSettingsPolymer3)) {
+    webui::SetupBundledWebUIDataSource(html_source, "settings.js",
+                                       IDR_SETTINGS_SETTINGS_ROLLUP_JS,
+                                       IDR_SETTINGS_SETTINGS_V3_HTML);
+    html_source->AddResourcePath("shared.rollup.js",
+                                 IDR_SETTINGS_SHARED_ROLLUP_JS);
+    html_source->AddResourcePath("lazy_load.js",
+                                 IDR_SETTINGS_LAZY_LOAD_ROLLUP_JS);
+  } else {
+    html_source->AddResourcePath("crisper.js", IDR_SETTINGS_CRISPER_JS);
+    html_source->AddResourcePath("lazy_load.crisper.js",
+                                 IDR_SETTINGS_LAZY_LOAD_CRISPER_JS);
+    html_source->AddResourcePath("lazy_load.html",
+                                 IDR_SETTINGS_LAZY_LOAD_VULCANIZED_HTML);
+    html_source->SetDefaultResource(IDR_SETTINGS_VULCANIZED_HTML);
+  }
 
   // Register SVG images that are purposefully not inlined in the HTML bundle
   // above.
@@ -356,18 +354,13 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       "images/password_check_positive_dark.svg",
       IDR_SETTINGS_IMAGES_PASSWORD_CHECK_POSITIVE_DARK_SVG);
 
-  // Only used in Polymer 3, see https://crbug.com/1026426.
-  html_source->AddResourcePath("settings.js", IDR_SETTINGS_SETTINGS_ROLLUP_JS);
-  html_source->AddResourcePath("shared.rollup.js",
-                               IDR_SETTINGS_SHARED_ROLLUP_JS);
-  html_source->AddResourcePath("lazy_load.js",
-                               IDR_SETTINGS_LAZY_LOAD_ROLLUP_JS);
-  html_source->AddResourcePath("settings_v3.html",
-                               IDR_SETTINGS_SETTINGS_V3_HTML);
 #else
   webui::SetupWebUIDataSource(
       html_source, base::make_span(kSettingsResources, kSettingsResourcesSize),
-      kGeneratedPath, IDR_SETTINGS_SETTINGS_HTML);
+      kGeneratedPath,
+      base::FeatureList::IsEnabled(features::kSettingsPolymer3)
+          ? IDR_SETTINGS_SETTINGS_V3_HTML
+          : IDR_SETTINGS_SETTINGS_HTML);
 #endif
 
   AddBrowserLocalizedStrings(html_source, profile, web_ui->GetWebContents());

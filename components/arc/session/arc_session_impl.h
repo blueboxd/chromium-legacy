@@ -25,6 +25,10 @@ namespace ash {
 class DefaultScaleFactorRetriever;
 }
 
+namespace cryptohome {
+class Identification;
+}
+
 namespace arc {
 
 namespace mojom {
@@ -194,7 +198,8 @@ class ArcSessionImpl
   void Stop() override;
   bool IsStopRequested() override;
   void OnShutdown() override;
-  void SetUserInfo(const std::string& hash,
+  void SetUserInfo(const cryptohome::Identification& cryptohome_id,
+                   const std::string& hash,
                    const std::string& serial_number) override;
 
   // chromeos::SchedulerConfigurationManagerBase::Observer overrides:

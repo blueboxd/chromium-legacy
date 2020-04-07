@@ -2043,6 +2043,10 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      FEATURE_VALUE_TYPE(
          chromeos::features::kBluetoothAggressiveAppearanceFilter)},
+    {"bluetooth-fix-a2dp-packet-size",
+     flag_descriptions::kBluetoothFixA2dpPacketSizeName,
+     flag_descriptions::kBluetoothFixA2dpPacketSizeDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kBluetoothFixA2dpPacketSize)},
     {"bluetooth-kernel-suspend-notifier",
      flag_descriptions::kBluetoothKernelSuspendNotifierName,
      flag_descriptions::kBluetoothKernelSuspendNotifierDescription, kOsCrOS,
@@ -4910,6 +4914,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"context-menu-copy-image", flag_descriptions::kContextMenuCopyImageName,
      flag_descriptions::kContextMenuCopyImageDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kContextMenuCopyImage)},
+    {"enable-clipboard-provider-image-suggestions",
+     flag_descriptions::kEnableClipboardProviderImageSuggestionsName,
+     flag_descriptions::kEnableClipboardProviderImageSuggestionsDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(omnibox::kEnableClipboardProviderImageSuggestions)},
 #endif  // defined(OS_ANDROID)
 
     {"impulse-scroll-animations",

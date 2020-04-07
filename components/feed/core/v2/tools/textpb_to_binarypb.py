@@ -19,6 +19,8 @@ import glob
 import os
 import protoc_util
 import subprocess
+import base64
+import urllib.parse
 
 from absl import app
 from absl import flags
@@ -26,9 +28,16 @@ from absl import flags
 DEFAULT_MESSAGE = 'feedwire.Response'
 
 FLAGS = flags.FLAGS
-FLAGS = flags.FLAGS
 flags.DEFINE_string('chromium_path', '', 'The path of your chromium depot.')
-flags.DEFINE_string('output_file', '', 'The target output binary file path.')
+flags.DEFINE_string(
+    'output_file',
+    '',
+    'The target output file path. If not set, writes to stdout.')
+flags.DEFINE_string(
+    'output_format',
+    'bin',
+    'When encoding text to binary, this may be set to base64 to encode output '
+    + 'suitable for URLs.')
 flags.DEFINE_string('source_file', '',
                     'The source proto file, in textpb format, path.')
 flags.DEFINE_string('message',
@@ -46,8 +55,16 @@ def text_to_binary():
   encoded = protoc_util.encode_proto(value_text_proto, FLAGS.message,
                                      FLAGS.chromium_path,
                                      COMPONENT_FEED_PROTO_PATH)
-  with open(FLAGS.output_file, mode='wb') as file:
-    file.write(encoded)
+
+  if FLAGS.output_format == 'base64':
+    encoded = urllib.parse.quote(
+        base64.urlsafe_b64encode(encoded).decode('utf-8'))
+
+  if FLAGS.output_file:
+    with open(FLAGS.output_file, mode='wb') as file:
+      file.write(encoded)
+  else:
+    print(encoded)
 
 def binary_to_text():
   with open(FLAGS.source_file, mode='rb') as file:
@@ -57,18 +74,19 @@ def binary_to_text():
                                      FLAGS.chromium_path,
                                      COMPONENT_FEED_PROTO_PATH)
 
-  with open(FLAGS.output_file, mode='w') as file:
-    file.write(encoded)
+  if FLAGS.output_file:
+    with open(FLAGS.output_file, mode='w') as file:
+      file.write(encoded)
+  else:
+    print(encoded)
 
 def main(argv):
   if len(argv) > 1:
-    raise app.UsageError('Too many command-line arguments.')
+    raise app.UsageError('Too many arguments. Unknown: ' + ' '.join(argv[1:]))
   if not FLAGS.chromium_path:
     raise app.UsageError('chromium_path flag must be set.')
   if not FLAGS.source_file:
     raise app.UsageError('source_file flag must be set.')
-  if not FLAGS.output_file:
-    raise app.UsageError('output_file flag must be set.')
   if FLAGS.direction != 'forward' and FLAGS.direction != 'reverse':
     raise app.UsageError('direction must be forward or reverse')
 

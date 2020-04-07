@@ -1754,7 +1754,7 @@ constexpr char kQueryWorkerScript[] =
          });
        });)";
 
-constexpr char kTabsOnUpdatedScript[] =
+constexpr char kTabsOnUpdatedSplitScript[] =
     R"(var inIncognitoContext = chrome.extension.inIncognitoContext;
        var incognitoStr =
            inIncognitoContext ? 'incognito' : 'regular';
@@ -1768,6 +1768,27 @@ constexpr char kTabsOnUpdatedScript[] =
 
        chrome.test.sendMessage('Script started ' + incognitoStr, function() {
            chrome.test.sendMessage(JSON.stringify(urls));
+       });)";
+
+constexpr char kTabsOnUpdatedSpanningScript[] =
+    R"(var inIncognitoContext = chrome.extension.inIncognitoContext;
+       var incognitoStr =
+           inIncognitoContext ? 'incognito' : 'regular';
+       var urls = [];
+       var expectedCount = 0;
+
+       chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
+         if (changeInfo.status === 'complete') {
+           urls.push(tab.url);
+           if (urls.length == expectedCount) {
+             chrome.test.sendMessage(JSON.stringify(urls));
+           }
+         }
+       });
+
+       chrome.test.sendMessage('Script started ' + incognitoStr,
+                               function(expected) {
+           expectedCount = expected;
        });)";
 
 }  // anonymous namespace
@@ -1855,7 +1876,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, TabsOnUpdatedSplit) {
 
   TestExtensionDir test_dir;
   test_dir.WriteManifest(base::StringPrintf(kIncognitoManifest, "split"));
-  test_dir.WriteFile(FILE_PATH_LITERAL("worker.js"), kTabsOnUpdatedScript);
+  test_dir.WriteFile(FILE_PATH_LITERAL("worker.js"), kTabsOnUpdatedSplitScript);
 
   const Extension* extension = LoadExtensionIncognito(test_dir.UnpackedPath());
   ASSERT_TRUE(extension);
@@ -1886,9 +1907,13 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, TabsOnUpdatedSplit) {
   }
 }
 
-// Disabled due to flakiness: https://crbug.com/1003244.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
-                       DISABLED_TabsOnUpdatedSpanning) {
+                       TabsOnUpdatedSpanning) {
+  // The spanning test differs from the Split test because it lets the
+  // renderer send the URLs once the expected number of onUpdated
+  // events have completed. This solves flakiness in the previous
+  // implementation, where the browser pulled the URLs from the
+  // renderer.
   ExtensionTestMessageListener ready_listener("Script started regular", true);
 
   // Open an incognito window.
@@ -1898,7 +1923,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
 
   TestExtensionDir test_dir;
   test_dir.WriteManifest(base::StringPrintf(kIncognitoManifest, "spanning"));
-  test_dir.WriteFile(FILE_PATH_LITERAL("worker.js"), kTabsOnUpdatedScript);
+  test_dir.WriteFile(FILE_PATH_LITERAL("worker.js"),
+                     kTabsOnUpdatedSpanningScript);
 
   const Extension* extension = LoadExtensionIncognito(test_dir.UnpackedPath());
   ASSERT_TRUE(extension);
@@ -1906,14 +1932,16 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
   // Wait for the extension's service worker to be ready.
   ASSERT_TRUE(ready_listener.WaitUntilSatisfied());
 
+  // Let the JavaScript side know the number of expected URLs.
+  ready_listener.Reply(2);
+
+  // This listener will catch the URLs coming back.
+  ExtensionTestMessageListener tabs_listener(false);
+
   // Load a new tab in both browsers.
   ui_test_utils::NavigateToURL(browser(), GURL("chrome:version"));
   ui_test_utils::NavigateToURL(browser_incognito, GURL("chrome:about"));
 
-  ExtensionTestMessageListener tabs_listener(false);
-  // The extension waits for the reply to the "ready" sendMessage call
-  // and replies with the URLs of the tabs.
-  ready_listener.Reply("");
   EXPECT_TRUE(tabs_listener.WaitUntilSatisfied());
   EXPECT_EQ(R"(["chrome://version/","chrome://about/"])",
             tabs_listener.message());

@@ -273,6 +273,10 @@ if (is_chromeos_device) {
 
       # crbug.com/1056163
       "hwsec.LoginGuest",
+
+      # crbug.com/1059426
+      "ui.ChromeCrashNotLoggedInDirect.breakpad",
+      "ui.ChromeCrashLoggedInDirect.breakpad",
     ]
   }
 

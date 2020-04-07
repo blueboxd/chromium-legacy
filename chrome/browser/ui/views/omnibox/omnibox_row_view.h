@@ -22,15 +22,24 @@ class OmniboxRowView : public views::View {
  public:
   explicit OmniboxRowView(std::unique_ptr<OmniboxResultView> result_view);
 
-  // Sets the header that appears above this row. |suggestion_group_id| can be
-  // base::nullopt, and that will hide the header.
-  void SetHeader(base::Optional<int> suggestion_group_id,
-                 const base::string16& header_text);
+  // Sets the header that appears above this row. Also shows the header.
+  void ShowHeader(base::Optional<int> suggestion_group_id,
+                  const base::string16& header_text);
+
+  // Hides the header.
+  void HideHeader();
 
   // The result view associated with this row.
   OmniboxResultView* result_view() const { return result_view_; }
 
  private:
+  class HeaderView;
+
+  // Non-owning pointer to the header view for this row. This is initially
+  // nullptr, and lazily created when a header is first set for this row.
+  // Lazily creating these speeds up browser startup: https://crbug.com/1021323
+  HeaderView* header_view_ = nullptr;
+
   // Non-owning pointer to the result view for this row. This is never nullptr.
   OmniboxResultView* result_view_;
 };

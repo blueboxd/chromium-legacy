@@ -1120,8 +1120,17 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchStart(
 
   bool is_in_inertial_scrolling_on_impl =
       in_inertial_scrolling_ && handling_gesture_on_impl_thread_;
-  if (is_in_inertial_scrolling_on_impl && is_touching_scrolling_layer)
+  if (is_in_inertial_scrolling_on_impl && is_touching_scrolling_layer) {
+    // If the touchstart occurs during a fling, it will be ACK'd immediately
+    // and it and its following touch moves will be dispatched as non-blocking.
+    // Due to tap suppression on the browser side, this will reset the
+    // browser-side touch action (see comment in
+    // TouchActionFilter::FilterGestureEvent for GestureScrollBegin). Ensure we
+    // send back a white_listed_touch_action that matches this non-blocking
+    // behavior rather than treating it as if it'll block.
+    white_listed_touch_action = cc::TouchAction::kAuto;
     result = DID_NOT_HANDLE_NON_BLOCKING_DUE_TO_FLING;
+  }
 
   client_->SetWhiteListedTouchAction(white_listed_touch_action,
                                      touch_event.unique_touch_event_id, result);

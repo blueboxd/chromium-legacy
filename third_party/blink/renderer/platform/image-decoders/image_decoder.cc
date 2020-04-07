@@ -202,8 +202,8 @@ ImageDecoder::CompressionFormat ImageDecoder::GetCompressionFormat(
     return kUndefinedFormat;
 
   // Attempt to sniff whether a WebP image is using a lossy or lossless
-  // compression algorithm. Note: Will return kUndefinedFormat in the case of an
-  // animated WebP image.
+  // compression algorithm. Note: Will return kWebPAnimationFormat in the case
+  // of an animated WebP image.
   size_t available_data = image_data ? image_data->size() : 0;
   if (EqualIgnoringASCIICase(mime_type, "image/webp") && available_data >= 16) {
     // Attempt to sniff only 8 bytes (the second half of the first 16). This

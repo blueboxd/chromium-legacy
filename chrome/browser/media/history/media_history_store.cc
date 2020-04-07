@@ -899,6 +899,8 @@ void MediaHistoryStore::GetURLsInTableForTest(
 }
 
 void MediaHistoryStore::DiscoverMediaFeed(const GURL& url) {
+  CHECK(url.SchemeIsCryptographic());
+
   db_->db_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&MediaHistoryStoreInternal::DiscoverMediaFeed, db_, url));

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/upboarding/query_tiles/tile_service_factory_helper.h"
 
+#include "chrome/browser/upboarding/query_tiles/internal/cached_image_loader.h"
 #include "chrome/browser/upboarding/query_tiles/internal/tile_service_impl.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -11,7 +12,8 @@ namespace upboarding {
 
 std::unique_ptr<TileService> CreateTileService(
     image_fetcher::ImageFetcher* image_fetcher) {
-  return std::make_unique<TileServiceImpl>(image_fetcher);
+  auto image_loader = std::make_unique<CachedImageLoader>(image_fetcher);
+  return std::make_unique<TileServiceImpl>(std::move(image_loader));
 }
 
 }  // namespace upboarding

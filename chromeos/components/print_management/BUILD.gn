@@ -18,7 +18,9 @@ static_library("print_management") {
     "//chromeos/components/print_management/mojom",
     "//chromeos/constants",
     "//chromeos/resources:print_management_resources",
+    "//chromeos/strings/",
     "//content/public/browser",
+    "//ui/base",
     "//ui/resources",
     "//ui/webui",
   ]

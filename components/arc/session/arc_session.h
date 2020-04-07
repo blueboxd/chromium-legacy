@@ -21,6 +21,10 @@ namespace chromeos {
 class SchedulerConfigurationManagerBase;
 }
 
+namespace cryptohome {
+class Identification;
+}
+
 namespace version_info {
 enum class Channel;
 }
@@ -82,9 +86,10 @@ class ArcSession {
   // when it has already been called before.
   virtual void OnShutdown() = 0;
 
-  // Sets a hash string of the profile user ID and an ARC serial number for the
+  // Sets a hash string of the profile user IDs and an ARC serial number for the
   // user.
-  virtual void SetUserInfo(const std::string& hash,
+  virtual void SetUserInfo(const cryptohome::Identification& cryptohome_id,
+                           const std::string& hash,
                            const std::string& serial_number) = 0;
 
   void AddObserver(Observer* observer);

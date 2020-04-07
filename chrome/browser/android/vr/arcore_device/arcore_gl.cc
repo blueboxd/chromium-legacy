@@ -667,6 +667,8 @@ void ArCoreGl::OnWebXrTokenSignaled(int16_t frame_index,
   TRACE_EVENT1("gpu", __func__, "frame", frame_index);
   DVLOG(3) << __func__ << ": frame=" << frame_index;
 
+  ar_image_transport_->ServerWaitForGpuFence(std::move(gpu_fence));
+
   DCHECK(webxr_->HaveProcessingFrame());
   DCHECK(ar_image_transport_->UseSharedBuffer());
   webxr_->GetProcessingFrame()->time_copied = base::TimeTicks::Now();

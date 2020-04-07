@@ -240,4 +240,58 @@ TEST(SupportedTypesTest, XHE_AACSupportedOnAndroidOnly) {
 #endif
 }
 
+TEST(SupportedTypesTest, IsSupportedVideoTypeWithHdrMetadataBasics) {
+  // Default to common 709.
+  media::VideoColorSpace color_space = media::VideoColorSpace::REC709();
+
+  // Some codecs do not have a notion of level.
+  const int kUnspecifiedLevel = 0;
+
+  // Expect support for baseline configuration of known codecs.
+  EXPECT_TRUE(IsSupportedVideoType({media::kCodecVP8, media::VP8PROFILE_ANY,
+                                    kUnspecifiedLevel, color_space}));
+  EXPECT_TRUE(
+      IsSupportedVideoType({media::kCodecVP9, media::VP9PROFILE_PROFILE0,
+                            kUnspecifiedLevel, color_space}));
+  EXPECT_TRUE(IsSupportedVideoType({media::kCodecTheora,
+                                    media::VIDEO_CODEC_PROFILE_UNKNOWN,
+                                    kUnspecifiedLevel, color_space}));
+
+  // All combinations of combinations of color gamuts and transfer functions
+  // should be supported.
+  color_space.primaries = media::VideoColorSpace::PrimaryID::SMPTEST431_2;
+  color_space.transfer = media::VideoColorSpace::TransferID::SMPTEST2084;
+  EXPECT_TRUE(IsSupportedVideoType({media::kCodecVP8, media::VP8PROFILE_ANY,
+                                    kUnspecifiedLevel, color_space}));
+  EXPECT_TRUE(
+      IsSupportedVideoType({media::kCodecVP9, media::VP9PROFILE_PROFILE0,
+                            kUnspecifiedLevel, color_space}));
+  EXPECT_TRUE(IsSupportedVideoType({media::kCodecTheora,
+                                    media::VIDEO_CODEC_PROFILE_UNKNOWN,
+                                    kUnspecifiedLevel, color_space}));
+
+  color_space.primaries = media::VideoColorSpace::PrimaryID::BT2020;
+  color_space.transfer = media::VideoColorSpace::TransferID::ARIB_STD_B67;
+  EXPECT_TRUE(IsSupportedVideoType({media::kCodecVP8, media::VP8PROFILE_ANY,
+                                    kUnspecifiedLevel, color_space}));
+  EXPECT_TRUE(
+      IsSupportedVideoType({media::kCodecVP9, media::VP9PROFILE_PROFILE0,
+                            kUnspecifiedLevel, color_space}));
+  EXPECT_TRUE(IsSupportedVideoType({media::kCodecTheora,
+                                    media::VIDEO_CODEC_PROFILE_UNKNOWN,
+                                    kUnspecifiedLevel, color_space}));
+
+  // No HDR metadata types are supported.
+  EXPECT_FALSE(IsSupportedVideoType({media::kCodecVP8, media::VP8PROFILE_ANY,
+                                     kUnspecifiedLevel, color_space,
+                                     media::HdrMetadataType::kSmpteSt2086}));
+
+  EXPECT_FALSE(IsSupportedVideoType({media::kCodecVP8, media::VP8PROFILE_ANY,
+                                     kUnspecifiedLevel, color_space,
+                                     media::HdrMetadataType::kSmpteSt2094_10}));
+
+  EXPECT_FALSE(IsSupportedVideoType({media::kCodecVP8, media::VP8PROFILE_ANY,
+                                     kUnspecifiedLevel, color_space,
+                                     media::HdrMetadataType::kSmpteSt2094_40}));
+}
 }  // namespace media

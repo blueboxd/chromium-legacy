@@ -34,6 +34,7 @@ android_library("weblayer_java_tests") {
     "src/org/chromium/weblayer/test/TabCallbackTest.java",
     "src/org/chromium/weblayer/test/TabListCallbackTest.java",
     "src/org/chromium/weblayer/test/TabTest.java",
+    "src/org/chromium/weblayer/test/TestFullscreenCallback.java",
     "src/org/chromium/weblayer/test/TopControlsTest.java",
     "src/org/chromium/weblayer/test/WebLayerJUnit4ClassRunner.java",
     "src/org/chromium/weblayer/test/WebLayerLoadingTest.java",

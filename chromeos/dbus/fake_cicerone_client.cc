@@ -44,6 +44,9 @@ FakeCiceroneClient::FakeCiceroneClient() {
 
   cancel_upgrade_container_response_.set_status(
       vm_tools::cicerone::CancelUpgradeContainerResponse::CANCELLED);
+
+  start_lxd_response_.set_status(
+      vm_tools::cicerone::StartLxdResponse::ALREADY_RUNNING);
 }
 
 FakeCiceroneClient::~FakeCiceroneClient() = default;
@@ -106,6 +109,10 @@ bool FakeCiceroneClient::IsApplyAnsiblePlaybookProgressSignalConnected() {
 
 bool FakeCiceroneClient::IsUpgradeContainerProgressSignalConnected() {
   return is_upgrade_container_progress_signal_connected_;
+}
+
+bool FakeCiceroneClient::IsStartLxdProgressSignalConnected() {
+  return is_start_lxd_progress_signal_connected_;
 }
 
 // Currently no tests need to change the output of this method. If you want to
@@ -328,6 +335,13 @@ void FakeCiceroneClient::CancelUpgradeContainer(
       base::BindOnce(std::move(callback), cancel_upgrade_container_response_));
 }
 
+void FakeCiceroneClient::StartLxd(
+    const vm_tools::cicerone::StartLxdRequest& request,
+    DBusMethodCallback<vm_tools::cicerone::StartLxdResponse> callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), start_lxd_response_));
+}
+
 void FakeCiceroneClient::NotifyLxdContainerCreated(
     const vm_tools::cicerone::LxdContainerCreatedSignal& proto) {
   for (auto& observer : observer_list_) {
@@ -402,6 +416,13 @@ void FakeCiceroneClient::NotifyUpgradeContainerProgress(
     const vm_tools::cicerone::UpgradeContainerProgressSignal& signal) {
   for (auto& observer : observer_list_) {
     observer.OnUpgradeContainerProgress(signal);
+  }
+}
+
+void FakeCiceroneClient::NotifyStartLxdProgress(
+    const vm_tools::cicerone::StartLxdProgressSignal& signal) {
+  for (auto& observer : observer_list_) {
+    observer.OnStartLxdProgress(signal);
   }
 }
 

@@ -296,7 +296,7 @@ void SetSessionTabFromSyncData(const sync_pb::SessionTab& sync_data,
   tab->current_navigation_index = sync_data.current_navigation_index();
   tab->pinned = sync_data.pinned();
   tab->extension_app_id = sync_data.extension_app_id();
-  tab->user_agent_override.clear();
+  tab->user_agent_override = sessions::SerializedUserAgentOverride();
   tab->timestamp = timestamp;
   tab->navigations.clear();
   for (int i = 0; i < sync_data.navigation_size(); ++i) {

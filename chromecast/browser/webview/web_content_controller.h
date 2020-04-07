@@ -97,7 +97,6 @@ class WebContentController
   void HandleCanGoForward(int64_t id);
   void HandleClearCache();
   void HandleGetTitle(int64_t id);
-  void HandleUpdateSettings(const webview::UpdateSettingsRequest& request);
   void HandleSetAutoMediaPlaybackPolicy(
       const webview::SetAutoMediaPlaybackPolicyRequest& request);
   void HandleResize(const gfx::Size& size);

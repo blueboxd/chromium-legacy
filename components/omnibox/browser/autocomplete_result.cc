@@ -728,7 +728,7 @@ AutocompleteResult::GetMatchDedupComparators() const {
 }
 
 base::string16 AutocompleteResult::GetHeaderForGroupId(
-    int suggestion_group_id) {
+    int suggestion_group_id) const {
   const auto& it = headers_map_.find(suggestion_group_id);
   if (it != headers_map_.end())
     return it->second;

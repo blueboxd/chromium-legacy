@@ -17,7 +17,7 @@
           android:layout_width="match_parent"
           android:layout_height="wrap_content" />
 
-      <org.chromium.components.browser_ui.widget.text.ChromeTextInputLayout
+      <com.google.android.material.textfield.TextInputLayout
           android:id="@+id/username_label"
           android:layout_width="match_parent"
           android:layout_height="wrap_content" >
@@ -29,9 +29,9 @@
               android:inputType="textNoSuggestions"
               android:imeOptions="flagNoExtractUi"
               android:importantForAutofill="no" />
-      </org.chromium.components.browser_ui.widget.text.ChromeTextInputLayout>
+      </com.google.android.material.textfield.TextInputLayout>
 
-      <org.chromium.components.browser_ui.widget.text.ChromeTextInputLayout
+      <com.google.android.material.textfield.TextInputLayout
           android:id="@+id/password_label"
           android:layout_width="match_parent"
           android:layout_height="wrap_content" >
@@ -43,7 +43,7 @@
               android:inputType="textPassword"
               android:imeOptions="flagNoExtractUi"
               android:importantForAutofill="no" />
-      </org.chromium.components.browser_ui.widget.text.ChromeTextInputLayout>
+      </com.google.android.material.textfield.TextInputLayout>
 
     </LinearLayout>
 

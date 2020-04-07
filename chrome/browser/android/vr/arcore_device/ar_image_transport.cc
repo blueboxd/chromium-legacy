@@ -67,12 +67,9 @@ void ArImageTransport::Initialize(vr::WebXrPresentationState* webxr,
 
   glGenFramebuffersEXT(1, &camera_fbo_);
 
-  // TODO(https://crbug.com/1067795): frames are arriving out of order when
-  // using shared buffers.
-  //
-  // This should equal base::AndroidHardwareBufferCompat::IsSupportAvailable(),
-  // but force use of the Mailbox-to-Surface copy path until the bug is fixed.
-  shared_buffer_draw_ = false;
+  // When available (Android O and up), use AHardwareBuffer-based shared
+  // images for frame transport.
+  shared_buffer_draw_ = base::AndroidHardwareBufferCompat::IsSupportAvailable();
 
   if (shared_buffer_draw_) {
     DVLOG(2) << __func__ << ": UseSharedBuffer()=true";
@@ -237,6 +234,13 @@ void ArImageTransport::CopyCameraImageToFramebuffer(
     const gfx::Transform& uv_transform) {
   glDisable(GL_BLEND);
   CopyTextureToFramebuffer(camera_texture_id_arcore_, frame_size, uv_transform);
+}
+
+void ArImageTransport::ServerWaitForGpuFence(
+    std::unique_ptr<gfx::GpuFence> gpu_fence) {
+  std::unique_ptr<gl::GLFence> local_fence =
+      gl::GLFence::CreateFromGpuFence(*gpu_fence);
+  local_fence->ServerWait();
 }
 
 void ArImageTransport::CopyDrawnImageToFramebuffer(

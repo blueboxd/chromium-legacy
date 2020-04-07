@@ -65,6 +65,8 @@ class WebviewController : public CastWebContents::Delegate,
   content::WebContents* GetWebContents() override;
 
  private:
+  void HandleUpdateSettings(const webview::UpdateSettingsRequest& request);
+
   webview::AsyncPageEvent_State current_state();
 
   // CastWebContents::Delegate
@@ -78,6 +80,7 @@ class WebviewController : public CastWebContents::Delegate,
   // content::WebContentsObserver
   void DidFirstVisuallyNonEmptyPaint() override;
 
+  const bool enabled_for_dev_;
   std::unique_ptr<content::WebContents> contents_;
   std::unique_ptr<CastWebContents> cast_web_contents_;
   bool stopped_ = false;

@@ -20,6 +20,7 @@ class WebContents;
 
 namespace sessions {
 class SerializedNavigationEntry;
+struct SerializedUserAgentOverride;
 }
 
 namespace chrome {
@@ -51,7 +52,7 @@ content::WebContents* AddRestoredTab(
     bool from_last_session,
     base::TimeTicks last_active_time,
     content::SessionStorageNamespace* storage_namespace,
-    const std::string& user_agent_override,
+    const sessions::SerializedUserAgentOverride& user_agent_override,
     bool from_session_restore);
 
 // Replaces the state of the currently selected tab with the session
@@ -64,7 +65,7 @@ content::WebContents* ReplaceRestoredTab(
     bool from_last_session,
     const std::string& extension_app_id,
     content::SessionStorageNamespace* session_storage_namespace,
-    const std::string& user_agent_override,
+    const sessions::SerializedUserAgentOverride& user_agent_override,
     bool from_session_restore);
 
 }  // namespace chrome

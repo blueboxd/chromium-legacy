@@ -97,6 +97,8 @@ source_set("shared") {
     "core/serialized_navigation_driver.h",
     "core/serialized_navigation_entry.cc",
     "core/serialized_navigation_entry.h",
+    "core/serialized_user_agent_override.cc",
+    "core/serialized_user_agent_override.h",
     "core/session_command.cc",
     "core/session_command.h",
     "core/session_constants.cc",

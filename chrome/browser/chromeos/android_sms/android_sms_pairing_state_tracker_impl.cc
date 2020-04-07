@@ -69,6 +69,7 @@ void AndroidSmsPairingStateTrackerImpl::OnCookiesRetrieved(
     }
   }
 
+  PA_LOG(INFO) << "No Pairing cookie found";
   was_paired_on_last_update_ = false;
   if (was_previously_paired != was_paired_on_last_update_)
     NotifyPairingStateChanged();
@@ -88,6 +89,8 @@ void AndroidSmsPairingStateTrackerImpl::OnCookieChange(
 void AndroidSmsPairingStateTrackerImpl::OnInstalledAppUrlChanged() {
   // If the app URL changed, stop any ongoing cookie monitoring and attempt to
   // add a new change listener.
+  PA_LOG(INFO) << "Installed app url changed to " << GetPairingUrl()
+               << ". Updating cookie listeners.";
   cookie_listener_receiver_.reset();
   AddCookieChangeListener();
 }

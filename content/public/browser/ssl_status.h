@@ -70,10 +70,6 @@ struct CONTENT_EXPORT SSLStatus {
   bool initialized;
   scoped_refptr<net::X509Certificate> certificate;
   net::CertStatus cert_status;
-  // The hashes of the SubjectPublicKeyInfos from each certificate in
-  // |certificate|. This field is not necessarily populated, e.g. for responses
-  // served from disk cache.
-  net::HashValueVector public_key_hashes;
   uint16_t key_exchange_group;
   uint16_t peer_signature_algorithm;
   int connection_status;

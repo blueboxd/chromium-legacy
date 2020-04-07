@@ -44,6 +44,7 @@ class COMPONENT_EXPORT(DBUS_AUDIO) FakeCrasAudioClient
   void SetHotwordModel(uint64_t node_id,
                        const std::string& hotword_model,
                        VoidDBusMethodCallback callback) override;
+  void SetFixA2dpPacketSize(bool enabled) override;
   void SetNextHandsfreeProfile(bool enabled) override;
   void AddActiveInputNode(uint64_t node_id) override;
   void RemoveActiveInputNode(uint64_t node_id) override;

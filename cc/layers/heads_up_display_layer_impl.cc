@@ -553,6 +553,15 @@ void HeadsUpDisplayLayerImpl::UpdateHudContents() {
       FrameRateCounter* fps_counter = layer_tree_impl()->frame_rate_counter();
       fps_graph_.value = fps_counter->GetAverageFPS();
       fps_counter->GetMinAndMaxFPS(&fps_graph_.min, &fps_graph_.max);
+      current_throughput = layer_tree_impl()->current_universal_throughput();
+      if (current_throughput.has_value()) {
+        if (!max_throughput.has_value() ||
+            current_throughput.value() > max_throughput.value())
+          max_throughput = current_throughput;
+        if (!min_throughput.has_value() ||
+            current_throughput.value() < min_throughput.value())
+          min_throughput = current_throughput;
+      }
     }
 
     if (debug_state.ShowMemoryStats()) {
@@ -682,7 +691,8 @@ SkRect HeadsUpDisplayLayerImpl::DrawFPSDisplay(
   const int kHistogramWidth = 37;
 
   int width = kGraphWidth + kHistogramWidth + 4 * kPadding;
-  int height = kTitleFontHeight + kFontHeight + kGraphHeight + 6 * kPadding + 2;
+  int height =
+      2 * kTitleFontHeight + 2 * kFontHeight + kGraphHeight + 10 * kPadding + 2;
   int left = 0;
   SkRect area = SkRect::MakeXYWH(left, top, width, height);
 
@@ -702,6 +712,7 @@ SkRect HeadsUpDisplayLayerImpl::DrawFPSDisplay(
       SkRect::MakeXYWH(graph_bounds.right() + kGap, graph_bounds.top(),
                        kHistogramWidth, kGraphHeight);
 
+  // Draw the fps meter.
   const std::string title("Frame Rate");
   const std::string value_text =
       base::StringPrintf("%5.1f fps", fps_graph_.value);
@@ -722,7 +733,32 @@ SkRect HeadsUpDisplayLayerImpl::DrawFPSDisplay(
 
   DrawGraphLines(canvas, &flags, graph_bounds, fps_graph_);
 
-  // Collect graph and histogram data.
+  // Draw the throughput meter.
+  int current_top = histogram_bounds.bottom() + kPadding;
+  const std::string throughput_title("Throughput");
+  const std::string throughput_value_text =
+      current_throughput.has_value()
+          ? base::StringPrintf("%d %%", current_throughput.value())
+          : base::StringPrintf("n/a");
+
+  VLOG(1) << throughput_value_text;
+
+  flags.setColor(DebugColors::HUDTitleColor());
+  DrawText(canvas, flags, throughput_title, TextAlign::kLeft, kTitleFontHeight,
+           title_bounds.left(), title_bounds.bottom() + current_top);
+
+  flags.setColor(DebugColors::FPSDisplayTextAndGraphColor());
+  DrawText(canvas, flags, throughput_value_text, TextAlign::kLeft, kFontHeight,
+           text_bounds.left(), text_bounds.bottom() + current_top);
+  if (min_throughput.has_value()) {
+    const std::string throughput_min_max_text = base::StringPrintf(
+        "%d-%d", min_throughput.value(), max_throughput.value());
+    DrawText(canvas, flags, throughput_min_max_text, TextAlign::kRight,
+             kFontHeight, text_bounds.right(),
+             text_bounds.bottom() + current_top);
+  }
+
+  // Collect fps graph and histogram data.
   SkPath path;
 
   const int kHistogramSize = 20;

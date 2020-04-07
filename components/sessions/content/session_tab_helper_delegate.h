@@ -14,6 +14,7 @@ class SessionID;
 namespace sessions {
 
 class SerializedNavigationEntry;
+struct SerializedUserAgentOverride;
 
 // Defines the interface used by SessionTabHelper to record changes to
 // navigation entries so that they can restored at a later date.
@@ -23,7 +24,7 @@ class SESSIONS_EXPORT SessionTabHelperDelegate {
   virtual void SetTabUserAgentOverride(
       const SessionID& window_id,
       const SessionID& tab_id,
-      const std::string& user_agent_override) = 0;
+      const SerializedUserAgentOverride& user_agent_override) = 0;
 
   // Sets the index of the selected entry in the navigation controller for the
   // specified tab.

@@ -394,6 +394,11 @@
     "expiry_milestone": 85
   },
   {
+    "name": "bluetooth-fix-a2dp-packet-size",
+    "owners": [ "michaelfsun", "chromeos-bluetooth@google.com" ],
+    "expiry_milestone": 86
+  },
+  {
     "name": "bluetooth-kernel-suspend-notifier",
     "owners": [ "abhishekpandit", "chromeos-bluetooth@google.com" ],
     "expiry_milestone": 84
@@ -1196,8 +1201,8 @@
   },
   {
     "name": "enable-clipboard-provider-image-suggestions",
-    "owners": [ "rkgibson" ],
-    "expiry_milestone": 86
+    "owners": [ "rkgibson", "gangwu", "chrome-omnibox-team@google.com"],
+    "expiry_milestone": 90
   },
   {
     "name": "enable-clipboard-provider-text-suggestions",

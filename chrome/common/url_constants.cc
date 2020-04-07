@@ -343,8 +343,6 @@ const char kCupsPrintPPDLearnMoreURL[] =
 const char kEasyUnlockLearnMoreUrl[] =
     "https://support.google.com/chromebook/?p=smart_lock";
 
-const char kEULAPathFormat[] = "/usr/share/chromeos-assets/eula/%s/eula.html";
-
 const char kArcTermsPathFormat[] = "arc_tos/%s/terms.html";
 
 const char kArcPrivacyPolicyPathFormat[] = "arc_tos/%s/privacy_policy.pdf";

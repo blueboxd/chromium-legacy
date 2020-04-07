@@ -6,8 +6,10 @@
 
 #include "build/build_config.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/renderer/core/css/font_face.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/resource/font_resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_finish_observer.h"
 
@@ -83,15 +85,18 @@ bool FontPreloadManager::HasPendingRenderBlockingFonts() const {
 }
 
 void FontPreloadManager::FontPreloadingStarted(FontResource* font_resource) {
-  if (!base::FeatureList::IsEnabled(features::kFontPreloadingDelaysRendering))
-    return;
-
   // The font is either already in the memory cache, or has errored out. In
   // either case, we don't any further processing.
   if (font_resource->IsLoaded())
     return;
 
   if (state_ == State::kUnblocked)
+    return;
+
+  document_->Loader()->DidObserveLoadingBehavior(
+      kLoadingBehaviorFontPreloadStartedBeforeRendering);
+
+  if (!base::FeatureList::IsEnabled(features::kFontPreloadingDelaysRendering))
     return;
 
   FontPreloadFinishObserver* observer =
@@ -105,13 +110,16 @@ void FontPreloadManager::FontPreloadingStarted(FontResource* font_resource) {
 }
 
 void FontPreloadManager::ImperativeFontLoadingStarted(FontFace* font_face) {
-  if (!base::FeatureList::IsEnabled(features::kFontPreloadingDelaysRendering))
-    return;
-
   if (font_face->LoadStatus() != FontFace::kLoading)
     return;
 
   if (state_ == State::kUnblocked)
+    return;
+
+  document_->Loader()->DidObserveLoadingBehavior(
+      kLoadingBehaviorFontPreloadStartedBeforeRendering);
+
+  if (!base::FeatureList::IsEnabled(features::kFontPreloadingDelaysRendering))
     return;
 
   ImperativeFontLoadFinishedCallback* callback =
@@ -170,8 +178,6 @@ void FontPreloadManager::RenderBlockingFontLoadingFinished() {
 }
 
 void FontPreloadManager::WillBeginRendering() {
-  if (!base::FeatureList::IsEnabled(features::kFontPreloadingDelaysRendering))
-    return;
   if (state_ == State::kUnblocked)
     return;
 

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "chrome/browser/extensions/extension_context_menu_model.h"
 
 class ToolbarActionViewController;
 class ToolbarActionsBarBubbleDelegate;
@@ -35,6 +36,10 @@ class ExtensionsContainer {
   // Returns true if the given |action| is visible on the toolbar.
   virtual bool IsActionVisibleOnToolbar(
       const ToolbarActionViewController* action) const = 0;
+
+  // Returns the action's toolbar button visibility.
+  virtual extensions::ExtensionContextMenuModel::ButtonVisibility
+  GetActionVisibility(const ToolbarActionViewController* action) const = 0;
 
   // Undoes the current "pop out"; i.e., moves the popped out action back into
   // overflow.

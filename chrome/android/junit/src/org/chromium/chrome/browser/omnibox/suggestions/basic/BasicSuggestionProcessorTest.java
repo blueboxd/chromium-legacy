@@ -137,7 +137,7 @@ public class BasicSuggestionProcessorTest {
                 /* descriptionClassifications */ new ArrayList<>(),
                 /* suggestionAnswer */ null, /* fillIntoEdit */ null, url,
                 /* imageUrl */ "", /* imageDominantColor */ "", isBookmark,
-                /* isDeletable */ false);
+                /* isDeletable */ false, /* postContentType */ null, /* postData */ null);
         mModel = mProcessor.createModelForSuggestion(mSuggestion);
         mProcessor.populateModel(mSuggestion, mModel, 0);
     }

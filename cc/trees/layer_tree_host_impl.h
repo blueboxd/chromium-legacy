@@ -18,6 +18,7 @@
 #include "base/containers/flat_set.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/shared_memory_mapping.h"
+#include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "cc/base/synced_property.h"
@@ -637,6 +638,9 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   std::unique_ptr<ScrollAndScaleSet> ProcessScrollDeltas();
   FrameRateCounter* fps_counter() { return fps_counter_.get(); }
+  base::Optional<int> current_universal_throughput() {
+    return frame_trackers_.current_universal_throughput();
+  }
   MemoryHistory* memory_history() { return memory_history_.get(); }
   DebugRectHistory* debug_rect_history() { return debug_rect_history_.get(); }
   viz::ClientResourceProvider* resource_provider() {

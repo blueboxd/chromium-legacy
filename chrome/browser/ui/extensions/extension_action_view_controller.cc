@@ -198,18 +198,10 @@ ui::MenuModel* ExtensionActionViewController::GetContextMenu() {
   if (!ExtensionIsValid())
     return nullptr;
 
-  extensions::ExtensionContextMenuModel::ButtonVisibility visibility =
-      extensions::ExtensionContextMenuModel::VISIBLE;
-
-  // The extension visibility always refers to the corresponding action on the
-  // main bar.
   ToolbarActionViewController* const action =
       extensions_container_->GetActionForId(GetId());
-  if (extensions_container_->GetPoppedOutAction() == action) {
-    visibility = extensions::ExtensionContextMenuModel::TRANSITIVELY_VISIBLE;
-  } else if (!extensions_container_->IsActionVisibleOnToolbar(action)) {
-    visibility = extensions::ExtensionContextMenuModel::OVERFLOWED;
-  }
+  extensions::ExtensionContextMenuModel::ButtonVisibility visibility =
+      extensions_container_->GetActionVisibility(action);
 
   // Reconstruct the menu every time because the menu's contents are dynamic.
   context_menu_model_ = std::make_unique<extensions::ExtensionContextMenuModel>(

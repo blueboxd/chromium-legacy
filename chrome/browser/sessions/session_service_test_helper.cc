@@ -43,7 +43,7 @@ void SessionServiceTestHelper::SetTabExtensionAppID(
 void SessionServiceTestHelper::SetTabUserAgentOverride(
     const SessionID& window_id,
     const SessionID& tab_id,
-    const std::string& user_agent_override) {
+    const sessions::SerializedUserAgentOverride& user_agent_override) {
   service()->SetTabUserAgentOverride(window_id, tab_id, user_agent_override);
 }
 

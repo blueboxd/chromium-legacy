@@ -46,12 +46,28 @@ class MockContext final : public GarbageCollected<MockContext>,
 };
 
 template <HeapMojoWrapperMode Mode>
+class HeapMojoReceiverGCBaseTest;
+
+template <HeapMojoWrapperMode Mode>
 class ReceiverOwner : public GarbageCollected<ReceiverOwner<Mode>>,
                       public sample::blink::Service {
- public:
-  explicit ReceiverOwner(MockContext* context) : receiver_(this, context) {}
+  USING_PRE_FINALIZER(ReceiverOwner, Dispose);
 
-  HeapMojoReceiver<sample::blink::Service, Mode>& receiver() {
+ public:
+  explicit ReceiverOwner(MockContext* context,
+                         HeapMojoReceiverGCBaseTest<Mode>* test = nullptr)
+      : receiver_(this, context), test_(test) {
+    if (test_)
+      test_->set_is_owner_alive(true);
+  }
+
+  void Dispose() {
+    if (test_)
+      test_->set_is_owner_alive(false);
+    ;
+  }
+
+  HeapMojoReceiver<sample::blink::Service, ReceiverOwner, Mode>& receiver() {
     return receiver_;
   }
 
@@ -65,7 +81,8 @@ class ReceiverOwner : public GarbageCollected<ReceiverOwner<Mode>>,
                  sample::blink::Service::FrobinateCallback callback) override {}
   void GetPort(mojo::PendingReceiver<sample::blink::Port> port) override {}
 
-  HeapMojoReceiver<sample::blink::Service, Mode> receiver_;
+  HeapMojoReceiver<sample::blink::Service, ReceiverOwner, Mode> receiver_;
+  HeapMojoReceiverGCBaseTest<Mode>* test_;
 };
 
 template <HeapMojoWrapperMode Mode>
@@ -74,13 +91,14 @@ class HeapMojoReceiverGCBaseTest : public TestSupportingGC {
   base::RunLoop& run_loop() { return run_loop_; }
   bool& disconnected() { return disconnected_; }
 
+  void set_is_owner_alive(bool alive) { is_owner_alive_ = alive; }
   void ClearOwner() { owner_ = nullptr; }
 
  protected:
   void SetUp() override {
-    CHECK(!disconnected_);
+    disconnected_ = false;
     context_ = MakeGarbageCollected<MockContext>();
-    owner_ = MakeGarbageCollected<ReceiverOwner<Mode>>(context_);
+    owner_ = MakeGarbageCollected<ReceiverOwner<Mode>>(context_, this);
     scoped_refptr<base::NullTaskRunner> null_task_runner =
         base::MakeRefCounted<base::NullTaskRunner>();
     remote_ = mojo::Remote<sample::blink::Service>(
@@ -92,10 +110,14 @@ class HeapMojoReceiverGCBaseTest : public TestSupportingGC {
         },
         WTF::Unretained(this)));
   }
-  void TearDown() override { CHECK(disconnected_); }
+  void TearDown() {
+    owner_ = nullptr;
+    PreciselyCollectGarbage();
+  }
 
   Persistent<MockContext> context_;
   Persistent<ReceiverOwner<Mode>> owner_;
+  bool is_owner_alive_ = false;
   base::RunLoop run_loop_;
   mojo::Remote<sample::blink::Service> remote_;
   bool disconnected_ = false;
@@ -142,6 +164,18 @@ TEST_F(HeapMojoReceiverGCWithContextObserverTest, ResetsOnGC) {
   run_loop().Run();
   EXPECT_TRUE(disconnected());
   CompleteSweepingIfNeeded();
+}
+
+// Check that the owner
+TEST_F(HeapMojoReceiverGCWithContextObserverTest, NoResetOnConservativeGC) {
+  auto* wrapper = owner_->receiver().wrapper_.Get();
+  EXPECT_TRUE(owner_->receiver().is_bound());
+  ClearOwner();
+  EXPECT_TRUE(is_owner_alive_);
+  // The stack scanning should find |wrapper| and keep the Wrapper alive.
+  ConservativelyCollectGarbage();
+  EXPECT_TRUE(wrapper->receiver().is_bound());
+  EXPECT_TRUE(is_owner_alive_);
 }
 
 // Make HeapMojoReceiver without context observer garbage collected and check

@@ -22611,6 +22611,7 @@ Called by update_extension_histograms.py.-->
   <int value="1462" label="PASSWORDSPRIVATE_OPTINFORACCOUNTSTORAGE"/>
   <int value="1463" label="CRYPTOTOKENPRIVATE_RECORDREGISTERREQUEST"/>
   <int value="1464" label="CRYPTOTOKENPRIVATE_RECORDSIGNREQUEST"/>
+  <int value="1465" label="VIRTUALKEYBOARDPRIVATE_SETWINDOWBOUNDSINSCREEN"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -38422,6 +38423,8 @@ from previous Chrome versions.
       label="OmniboxAlternateMatchDescriptionSeparator:enabled"/>
   <int value="-1062119671" label="enable-password-force-saving"/>
   <int value="-1060395248" label="PasswordSearchMobile:enabled"/>
+  <int value="-1056860259"
+      label="OmniboxEnableClipboardProviderImageSuggestions:enabled"/>
   <int value="-1056310158" label="disable-memory-pressure-chromeos"/>
   <int value="-1055845287" label="SensorContentSetting:enabled"/>
   <int value="-1052782474" label="enable-cloud-devices"/>
@@ -38601,6 +38604,7 @@ from previous Chrome versions.
   <int value="-864234985" label="UseDdljsonApi:enabled"/>
   <int value="-864232986" label="StartSurfaceAndroid:disabled"/>
   <int value="-864205629" label="enable-offline-load-stale-cache"/>
+  <int value="-863581676" label="BluetoothFixA2dpPacketSize:disabled"/>
   <int value="-861678473" label="disable-offer-upload-credit-cards"/>
   <int value="-861343291" label="ChromeHome:disabled"/>
   <int value="-860578793" label="TabGridLayoutAndroid:disabled"/>
@@ -38749,6 +38753,7 @@ from previous Chrome versions.
   <int value="-695687521" label="double-buffer-compositing"/>
   <int value="-694622753" label="VizHitTest:disabled"/>
   <int value="-694187898" label="MashOopViz:disabled"/>
+  <int value="-687302378" label="BluetoothFixA2dpPacketSize:enabled"/>
   <int value="-684900739" label="disable-merge-key-char-events"/>
   <int value="-684503292"
       label="OmniboxTabSwitchSuggestionsDedicatedRow:enabled"/>
@@ -39118,6 +39123,8 @@ from previous Chrome versions.
   <int value="-222296540" label="VirtualKeyboardBorderedKey:disabled"/>
   <int value="-220599034" label="UsePdfCompositorServiceForPrint:enabled"/>
   <int value="-216219963" label="ash-shelf-color-scheme"/>
+  <int value="-215580565"
+      label="OmniboxEnableClipboardProviderImageSuggestions:disabled"/>
   <int value="-215534141" label="NativeWindowNavButtons:enabled"/>
   <int value="-213518852" label="protect-sync-credential:enabled"/>
   <int value="-213214894" label="enable-chromevox-arc-support"/>

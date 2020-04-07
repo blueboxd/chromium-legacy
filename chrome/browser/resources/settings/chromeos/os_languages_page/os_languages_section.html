@@ -23,7 +23,7 @@
     </settings-languages>
 
     <!-- Top-level settings section. -->
-    <settings-animated-pages id="pages" section="languages"
+    <settings-animated-pages id="pages" section="osLanguages"
         focus-config="[[focusConfig_]]">
       <div route-path="default">
         <cr-link-row
@@ -37,7 +37,7 @@
       </div>
 
       <!-- "Language and input" sub-page. -->
-      <template is="dom-if" route-path="/languages/details">
+      <template is="dom-if" route-path="/osLanguages/details">
         <settings-subpage
             associated-control="[[$$('#languagesSubpageTrigger')]]"
             page-title="$i18n{osLanguagesPageTitle}">
@@ -51,7 +51,7 @@
       </template>
 
       <!-- "Manage input methods" sub-sub-page. -->
-      <template is="dom-if" route-path="/languages/inputMethods">
+      <template is="dom-if" route-path="/osLanguages/inputMethods">
         <!-- TODO(crbug.com/950007): Associate control with the sub-subpage
              trigger button from os-settings-language-page's shadow dom. -->
         <settings-subpage

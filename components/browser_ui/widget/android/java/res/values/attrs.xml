@@ -10,12 +10,6 @@
         <attr name="maxHeight" format="dimension" />
     </declare-styleable>
 
-    <declare-styleable name="ChromeTextInputLayout">
-        <attr name="errorTextAppearance" format="reference" />
-        <attr name="hint" format="reference|string" />
-        <attr name="hintTextAppearance" format="reference" />
-    </declare-styleable>
-
     <declare-styleable name="DualControlLayout">
         <attr name="stackedMargin" format="reference|dimension"/>
         <attr name="primaryButtonText" format="reference|string"/>

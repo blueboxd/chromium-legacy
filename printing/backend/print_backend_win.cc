@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_hglobal.h"
 #include "printing/backend/print_backend_consts.h"
@@ -222,6 +223,8 @@ std::string PrintBackendWin::GetDefaultPrinterName() {
   DWORD size = MAX_PATH;
   TCHAR default_printer_name[MAX_PATH];
   std::string ret;
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   if (::GetDefaultPrinter(default_printer_name, &size))
     ret = base::WideToUTF8(default_printer_name);
   return ret;

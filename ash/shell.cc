@@ -1190,7 +1190,7 @@ void Shell::Init(
         std::make_unique<MediaNotificationControllerImpl>();
   }
 
-  if (features::IsDisplayIdentificationlEnabled()) {
+  if (features::IsDisplayIdentificationEnabled()) {
     display_highlight_controller_ =
         std::make_unique<DisplayHighlightController>();
   }

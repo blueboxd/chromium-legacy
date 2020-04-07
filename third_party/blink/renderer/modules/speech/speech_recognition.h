@@ -137,7 +137,9 @@ class MODULES_EXPORT SpeechRecognition final
   bool started_;
   bool stopping_;
   HeapVector<Member<SpeechRecognitionResult>> final_results_;
-  HeapMojoReceiver<mojom::blink::SpeechRecognitionSessionClient> receiver_;
+  HeapMojoReceiver<mojom::blink::SpeechRecognitionSessionClient,
+                   SpeechRecognition>
+      receiver_;
   HeapMojoRemote<mojom::blink::SpeechRecognitionSession> session_;
 };
 

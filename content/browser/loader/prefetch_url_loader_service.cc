@@ -16,6 +16,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
+#include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/load_flags.h"
@@ -122,7 +123,7 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
 
   DCHECK_EQ(static_cast<int>(blink::mojom::ResourceType::kPrefetch),
             resource_request.resource_type);
-  auto& current_context = *loader_factory_receivers_.current_context();
+  BindContext& current_context = *current_bind_context();
 
   if (!current_context.render_frame_host) {
     mojo::Remote<network::mojom::URLLoaderClient>(std::move(client))
@@ -224,16 +225,33 @@ PrefetchURLLoaderService::~PrefetchURLLoaderService() = default;
 // renderer, so that it can be cached correctly.
 bool PrefetchURLLoaderService::IsValidCrossOriginPrefetch(
     const network::ResourceRequest& resource_request) {
+  // All fetches need to have an associated request_initiator.
+  if (!resource_request.request_initiator) {
+    mojo::ReportBadMessage("Prefetch/IsValidCrossOrigin: no request_initiator");
+    return false;
+  }
+
   // The request is expected to be cross-origin. Same-origin prefetches do not
   // need a special NetworkIsolationKey, and therefore must not be marked for
   // restricted use.
   url::Origin destination_origin = url::Origin::Create(resource_request.url);
-  // TODO(domfarolino): We want to check that the request's initiator is
-  // equivalent to the frame's last committed origin. If they are not equal, we
-  // must cancel the request.
-  if (!resource_request.request_initiator ||
-      resource_request.request_initiator->IsSameOriginWith(
+  DCHECK(resource_request.request_initiator.has_value());  // Checked above.
+  if (resource_request.request_initiator->IsSameOriginWith(
           destination_origin)) {
+    mojo::ReportBadMessage("Prefetch/IsValidCrossOrigin: same-origin");
+    return false;
+  }
+
+  // The request initiator has to match the request_initiator_site_lock - it has
+  // to be the same origin as the last committed origin in the frame.
+  const BindContext& current_context = *current_bind_context();
+  // Presence of |render_frame_host| is guaranteed by the caller - the caller
+  // calls earlier EnsureCrossOriginFactory which has the same DCHECK.
+  DCHECK(current_context.render_frame_host);
+  if (resource_request.request_initiator.value() !=
+      current_context.render_frame_host->GetLastCommittedOrigin()) {
+    mojo::ReportBadMessage(
+        "Prefetch/IsValidCrossOrigin: frame origin mismatch");
     return false;
   }
 
@@ -241,6 +259,7 @@ bool PrefetchURLLoaderService::IsValidCrossOriginPrefetch(
   // mode must be |kError|.
   if (base::FeatureList::IsEnabled(blink::features::kPrefetchPrivacyChanges) &&
       resource_request.redirect_mode != network::mojom::RedirectMode::kError) {
+    mojo::ReportBadMessage("Prefetch/IsValidCrossOrigin: wrong redirect mode");
     return false;
   }
 
@@ -248,12 +267,17 @@ bool PrefetchURLLoaderService::IsValidCrossOriginPrefetch(
   // the prefetch cache. This is because it is possible that another origin
   // prefetched the same resource, which should only be reused for top-level
   // navigations.
-  if (resource_request.load_flags & net::LOAD_CAN_USE_RESTRICTED_PREFETCH)
+  if (resource_request.load_flags & net::LOAD_CAN_USE_RESTRICTED_PREFETCH) {
+    mojo::ReportBadMessage(
+        "Prefetch/IsValidCrossOrigin: can use restricted prefetch");
     return false;
+  }
 
   // The request must not already have its |trusted_params| initialized.
-  if (resource_request.trusted_params)
+  if (resource_request.trusted_params) {
+    mojo::ReportBadMessage("Prefetch/IsValidCrossOrigin: trusted params");
     return false;
+  }
 
   return true;
 }
@@ -261,7 +285,7 @@ bool PrefetchURLLoaderService::IsValidCrossOriginPrefetch(
 void PrefetchURLLoaderService::EnsureCrossOriginFactory() {
   DCHECK(base::FeatureList::IsEnabled(
       network::features::kPrefetchMainResourceNetworkIsolationKey));
-  auto& current_context = *loader_factory_receivers_.current_context();
+  BindContext& current_context = *current_bind_context();
   // If the factory has already been created, don't re-create it.
   if (current_context.cross_origin_factory)
     return;

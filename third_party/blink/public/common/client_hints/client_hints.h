@@ -14,11 +14,9 @@
 
 namespace blink {
 
-// Mapping from WebClientHintsType to the hint's name in header values (e.g.
-// kLang => "lang"), and to the hint's outgoing header (e.g. kLang =>
-// "sec-ch-lang"). The ordering matches the ordering of enums in
-// third_party/blink/public/platform/web_client_hints_type.h.
-BLINK_COMMON_EXPORT extern const char* const kClientHintsNameMapping[];
+// Mapping from WebClientHintsType to the hint's to the hint's outgoing header
+// (e.g. kLang => "sec-ch-lang"). The ordering matches the ordering of enums in
+// services/network/public/mojom/web_client_hints_types.mojom
 BLINK_COMMON_EXPORT extern const char* const kClientHintsHeaderMapping[];
 BLINK_COMMON_EXPORT extern const size_t kClientHintsMappingsCount;
 
@@ -39,16 +37,15 @@ BLINK_COMMON_EXPORT extern const size_t kWebEffectiveConnectionTypeMappingCount;
 std::string BLINK_COMMON_EXPORT
 SerializeLangClientHint(const std::string& raw_language_list);
 
-// Tries to parse an Accept-CH header. Returns base::nullopt if parsing
-// failed and the header should be ignored; otherwise returns a (possibly
-// empty) list of hints to accept.
-//
-// Language hints will only be in the result if |permit_lang_hints| is true;
+// Filters a parsed accept-CH list to exclude clients hints support for which
+// is currently conditional on experiments:
+// Language hints will only be kept if |permit_lang_hints| is true;
 // UA-related ones if |permit_ua_hints| is.
-base::Optional<std::vector<network::mojom::WebClientHintsType>>
-    BLINK_COMMON_EXPORT ParseAcceptCH(const std::string& header,
-                                      bool permit_lang_hints,
-                                      bool permit_ua_hints);
+BLINK_COMMON_EXPORT
+base::Optional<std::vector<network::mojom::WebClientHintsType>> FilterAcceptCH(
+    base::Optional<std::vector<network::mojom::WebClientHintsType>> in,
+    bool permit_lang_hints,
+    bool permit_ua_hints);
 
 }  // namespace blink
 

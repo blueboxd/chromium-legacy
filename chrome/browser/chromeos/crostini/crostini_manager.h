@@ -542,6 +542,8 @@ class CrostiniManager : public KeyedService,
   void OnUpgradeContainerProgress(
       const vm_tools::cicerone::UpgradeContainerProgressSignal& signal)
       override;
+  void OnStartLxdProgress(
+      const vm_tools::cicerone::StartLxdProgressSignal& signal) override;
 
   // chromeos::PowerManagerClient::Observer overrides:
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;

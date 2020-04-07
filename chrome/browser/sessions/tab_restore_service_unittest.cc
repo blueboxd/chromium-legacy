@@ -45,6 +45,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 
 typedef sessions::TabRestoreService::Entry Entry;
 typedef sessions::TabRestoreService::Tab Tab;
@@ -76,12 +77,19 @@ class TabRestoreServiceImplTest : public ChromeRenderViewHostTestHarness {
       : url1_("http://1"),
         url2_("http://2"),
         url3_("http://3"),
-        user_agent_override_(
+        user_agent_override_(blink::UserAgentOverride::UserAgentOnly(
             "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.19"
-            " (KHTML, like Gecko) Chrome/18.0.1025.45 Safari/535.19"),
+            " (KHTML, like Gecko) Chrome/18.0.1025.45 Safari/535.19")),
         time_factory_(NULL),
         window_id_(SessionID::FromSerializedValue(1)),
-        tab_id_(SessionID::FromSerializedValue(2)) {}
+        tab_id_(SessionID::FromSerializedValue(2)) {
+    user_agent_override_.ua_metadata_override.emplace();
+    user_agent_override_.ua_metadata_override->brand = "Chrome";
+    user_agent_override_.ua_metadata_override->full_version = "18.0.1025.45";
+    user_agent_override_.ua_metadata_override->major_version = "18";
+    user_agent_override_.ua_metadata_override->platform = "Linux";
+    user_agent_override_.ua_metadata_override->architecture = "x86_64";
+  }
 
   ~TabRestoreServiceImplTest() override {}
 
@@ -190,7 +198,7 @@ class TabRestoreServiceImplTest : public ChromeRenderViewHostTestHarness {
   GURL url1_;
   GURL url2_;
   GURL url3_;
-  std::string user_agent_override_;
+  blink::UserAgentOverride user_agent_override_;
   std::unique_ptr<sessions::LiveTab> live_tab_;
   std::unique_ptr<sessions::TabRestoreServiceImpl> service_;
   TabRestoreTimeFactory* time_factory_;
@@ -217,7 +225,10 @@ TEST_F(TabRestoreServiceImplTest, Basic) {
   EXPECT_TRUE(url1_ == tab->navigations[0].virtual_url());
   EXPECT_TRUE(url2_ == tab->navigations[1].virtual_url());
   EXPECT_TRUE(url3_ == tab->navigations[2].virtual_url());
-  EXPECT_EQ("", tab->user_agent_override);
+  EXPECT_EQ("", tab->user_agent_override.ua_string_override);
+  EXPECT_TRUE(!blink::UserAgentMetadata::Demarshal(
+                   tab->user_agent_override.opaque_ua_metadata_override)
+                   .has_value());
   EXPECT_EQ(2, tab->current_navigation_index);
   EXPECT_EQ(
       time_factory_->TimeNow().ToDeltaSinceWindowsEpoch().InMicroseconds(),
@@ -226,9 +237,7 @@ TEST_F(TabRestoreServiceImplTest, Basic) {
   NavigateToIndex(1);
 
   // And check again, but set the user agent override this time.
-  // TODO(https://crbug.com/1061917): cover UA client hints override.
-  web_contents()->SetUserAgentOverride(
-      blink::UserAgentOverride::UserAgentOnly(user_agent_override_), false);
+  web_contents()->SetUserAgentOverride(user_agent_override_, false);
   service_->CreateHistoricalTab(live_tab(), -1);
 
   // There should be two entries now.
@@ -243,7 +252,12 @@ TEST_F(TabRestoreServiceImplTest, Basic) {
   EXPECT_EQ(url1_, tab->navigations[0].virtual_url());
   EXPECT_EQ(url2_, tab->navigations[1].virtual_url());
   EXPECT_EQ(url3_, tab->navigations[2].virtual_url());
-  EXPECT_EQ(user_agent_override_, tab->user_agent_override);
+  EXPECT_EQ(user_agent_override_.ua_string_override,
+            tab->user_agent_override.ua_string_override);
+  base::Optional<blink::UserAgentMetadata> client_hints_override =
+      blink::UserAgentMetadata::Demarshal(
+          tab->user_agent_override.opaque_ua_metadata_override);
+  EXPECT_EQ(user_agent_override_.ua_metadata_override, client_hints_override);
   EXPECT_EQ(1, tab->current_navigation_index);
   EXPECT_EQ(
       time_factory_->TimeNow().ToDeltaSinceWindowsEpoch().InMicroseconds(),

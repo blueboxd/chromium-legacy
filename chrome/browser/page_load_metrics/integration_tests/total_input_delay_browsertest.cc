@@ -39,7 +39,7 @@ class TotalInputDelayIntegrationTest : public MetricIntegrationTest {
         TestUkmRecorder::GetEntryMetric(kv->second.get(), metric_name);
     EXPECT_NE(metric_value, nullptr);
     double delta = *metric_value - expected_value;
-    EXPECT_LE(delta * delta, 0.25 * num_input_events * num_input_events);
+    EXPECT_LE(delta * delta, num_input_events * num_input_events);
   }
 };
 
@@ -60,9 +60,7 @@ IN_PROC_BROWSER_TEST_F(TotalInputDelayIntegrationTest, NoInputEvent) {
       PageLoad::kInteractiveTiming_TotalAdjustedInputDelayName, int64_t(0), 0);
 }
 
-// Disable the test due to flaky crbug.com/1067320
-IN_PROC_BROWSER_TEST_F(TotalInputDelayIntegrationTest,
-                       DISABLED_MultipleInputEvents) {
+IN_PROC_BROWSER_TEST_F(TotalInputDelayIntegrationTest, MultipleInputEvents) {
   LoadHTML(R"HTML(
     <p>Sample website</p>
   )HTML");

@@ -69,17 +69,12 @@ namespace arc {
 
 ArcBridgeHostImpl::ArcBridgeHostImpl(
     ArcBridgeService* arc_bridge_service,
-    mojo::PendingRemote<mojom::ArcBridgeInstance> instance)
+    mojo::PendingReceiver<mojom::ArcBridgeHost> pending_receiver)
     : arc_bridge_service_(arc_bridge_service),
-      receiver_(this),
-      instance_(std::move(instance)) {
+      receiver_(this, std::move(pending_receiver)) {
   DCHECK(arc_bridge_service_);
-  DCHECK(instance_.is_bound());
-  instance_.set_disconnect_handler(
+  receiver_.set_disconnect_handler(
       base::BindOnce(&ArcBridgeHostImpl::OnClosed, base::Unretained(this)));
-  mojom::ArcBridgeHostPtr host_proxy;
-  receiver_.Bind(mojo::MakeRequest(&host_proxy));
-  instance_->Init(std::move(host_proxy));
 }
 
 ArcBridgeHostImpl::~ArcBridgeHostImpl() {
@@ -364,9 +359,7 @@ void ArcBridgeHostImpl::OnClosed() {
 
   // Close all mojo channels.
   mojo_channels_.clear();
-  instance_.reset();
-  if (receiver_.is_bound())
-    receiver_.reset();
+  receiver_.reset();
 
   arc_bridge_service_->ObserveAfterArcBridgeClosed();
 }

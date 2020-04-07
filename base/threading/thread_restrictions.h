@@ -147,6 +147,7 @@ class CategorizedWorkerPool;
 class DesktopCaptureDevice;
 class InProcessUtilityThread;
 class NestedMessagePumpAndroid;
+class PepperPrintSettingsManagerImpl;
 class RenderProcessHostImpl;
 class RenderWidgetHostViewMac;
 class RTCVideoDecoder;
@@ -365,6 +366,7 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend class android_webview::ScopedAllowInitGLBindings;
   friend class chromeos::MojoUtils;  // http://crbug.com/1055467
   friend class content::BrowserProcessSubThread;
+  friend class content::PepperPrintSettingsManagerImpl;
   friend class content::RenderProcessHostImpl;
   friend class content::RenderWidgetHostViewMac;  // http://crbug.com/121917
   friend class content::WebContentsViewMac;

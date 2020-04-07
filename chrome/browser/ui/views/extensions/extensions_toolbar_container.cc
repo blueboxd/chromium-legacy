@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
 
 #include "base/numerics/ranges.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/settings_api_bubble_helpers.h"
@@ -240,6 +241,11 @@ void ExtensionsToolbarContainer::OnContextMenuShown(
   // Only update the extension's toolbar visibility if the context menu is being
   // shown from an extension visible in the toolbar.
   if (!ExtensionsMenuView::IsShowing()) {
+#if defined(OS_MACOSX)
+    // TODO(crbug/1065584): Remove hiding active popup here once this bug is
+    // fixed.
+    HideActivePopup();
+#endif
     extension_with_open_context_menu_id_ = extension->GetId();
     UpdateIconVisibility(extension_with_open_context_menu_id_.value());
   }
@@ -262,6 +268,21 @@ bool ExtensionsToolbarContainer::IsActionVisibleOnToolbar(
   const std::string& extension_id = action->GetId();
   return ShouldForceVisibility(extension_id) ||
          model_->IsActionPinned(extension_id);
+}
+
+extensions::ExtensionContextMenuModel::ButtonVisibility
+ExtensionsToolbarContainer::GetActionVisibility(
+    const ToolbarActionViewController* action) const {
+  extensions::ExtensionContextMenuModel::ButtonVisibility visibility =
+      extensions::ExtensionContextMenuModel::VISIBLE;
+
+  if (ShouldForceVisibility(action->GetId()) &&
+      !model_->IsActionPinned(action->GetId())) {
+    visibility = extensions::ExtensionContextMenuModel::TRANSITIVELY_VISIBLE;
+  } else if (!IsActionVisibleOnToolbar(action)) {
+    visibility = extensions::ExtensionContextMenuModel::OVERFLOWED;
+  }
+  return visibility;
 }
 
 void ExtensionsToolbarContainer::UndoPopOut() {

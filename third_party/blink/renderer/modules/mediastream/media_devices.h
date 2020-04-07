@@ -121,7 +121,7 @@ class MODULES_EXPORT MediaDevices final
   TaskHandle dispatch_scheduled_events_task_handle_;
   HeapVector<Member<Event>> scheduled_events_;
   mojo::Remote<mojom::blink::MediaDevicesDispatcherHost> dispatcher_host_;
-  HeapMojoReceiver<mojom::blink::MediaDevicesListener> receiver_;
+  HeapMojoReceiver<mojom::blink::MediaDevicesListener, MediaDevices> receiver_;
   HeapHashSet<Member<ScriptPromiseResolver>> requests_;
 
   EnumerateDevicesTestCallback enumerate_devices_test_callback_;

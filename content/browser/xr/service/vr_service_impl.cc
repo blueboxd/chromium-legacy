@@ -507,7 +507,7 @@ void VRServiceImpl::EnsureRuntimeInstalled(SessionRequestData request,
   if (!runtime || runtime->GetId() != request.runtime_id) {
     std::move(request.callback)
         .Run(device::mojom::RequestSessionResult::NewFailureReason(
-            device::mojom::RequestSessionError::UNKNOWN_RUNTIME_ERROR));
+            device::mojom::RequestSessionError::RUNTIMES_CHANGED));
     return;
   }
 

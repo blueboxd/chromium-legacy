@@ -533,8 +533,16 @@ void FrameSequenceTrackerCollection::NotifyFramePresented(
         accumulated_metrics_.erase(key);
       }
 
-      if (metrics->HasEnoughDataForReporting())
+      if (metrics->HasEnoughDataForReporting()) {
+        if (tracker->type() == FrameSequenceTrackerType::kUniversal) {
+          uint32_t frames_expected = metrics->impl_throughput().frames_expected;
+          uint32_t frames_produced =
+              metrics->aggregated_throughput().frames_produced;
+          current_universal_throughput_ = std::floor(
+              100 * frames_produced / static_cast<float>(frames_expected));
+        }
         metrics->ReportMetrics();
+      }
       if (metrics->HasDataLeftForReporting())
         accumulated_metrics_[key] = std::move(metrics);
     }

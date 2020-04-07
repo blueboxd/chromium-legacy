@@ -92,6 +92,11 @@ bool ShellVirtualKeyboardDelegate::SetAreaToRemainOnScreen(
   return false;
 }
 
+bool ShellVirtualKeyboardDelegate::SetWindowBoundsInScreen(
+    const gfx::Rect& bounds_in_screen) {
+  return false;
+}
+
 api::virtual_keyboard::FeatureRestrictions
 ShellVirtualKeyboardDelegate::RestrictFeatures(
     const api::virtual_keyboard::RestrictFeatures::Params& params) {

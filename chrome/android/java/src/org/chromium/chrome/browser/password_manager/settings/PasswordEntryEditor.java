@@ -19,8 +19,9 @@ import android.widget.ImageButton;
 
 import androidx.fragment.app.Fragment;
 
+import com.google.android.material.textfield.TextInputLayout;
+
 import org.chromium.chrome.R;
-import org.chromium.components.browser_ui.widget.text.ChromeTextInputLayout;
 import org.chromium.ui.widget.Toast;
 
 /**
@@ -32,7 +33,7 @@ public class PasswordEntryEditor extends Fragment {
     private EditText mUsernameText;
     private EditText mPasswordText;
     private ImageButton mViewPasswordButton;
-    private ChromeTextInputLayout mPasswordLabel;
+    private TextInputLayout mPasswordLabel;
     private boolean mViewButtonPressed;
     static final String VIEW_BUTTON_PRESSED = "viewButtonPressed";
     public static final String CREDENTIAL_URL = "credentialUrl";
@@ -53,7 +54,7 @@ public class PasswordEntryEditor extends Fragment {
         mSiteText = (EditText) view.findViewById(R.id.site_edit);
         mUsernameText = (EditText) view.findViewById(R.id.username_edit);
         mPasswordText = (EditText) view.findViewById(R.id.password_edit);
-        mPasswordLabel = (ChromeTextInputLayout) view.findViewById(R.id.password_label);
+        mPasswordLabel = (TextInputLayout) view.findViewById(R.id.password_label);
         mViewPasswordButton = view.findViewById(R.id.password_entry_editor_view_password);
         mSiteText.setText(getArguments().getString(CREDENTIAL_URL));
         mUsernameText.setText(getArguments().getString(CREDENTIAL_NAME));

@@ -253,62 +253,6 @@ def _Precompile(args, _):
   template_expander.PrecompileTemplates(generator_modules, args.output_dir)
   return 0
 
-def GetSourcesList(target_prefix, sources_list, gen_dir):
-  deps_list_path = target_prefix + ".deps_sources_list"
-  f_deps_list = open(deps_list_path, 'r')
-  for deps_sources_path in f_deps_list:
-    target_name_with_dir = deps_sources_path.split(".sources_list")[0]
-    if (target_name_with_dir == target_prefix):
-      # add files from the target itself
-      deps_sources_path = deps_sources_path.rstrip('\n')
-      f_sources = open(deps_sources_path, 'r')
-      for source_file in f_sources:
-        full_source_path = os.path.dirname(target_name_with_dir.split(gen_dir \
-        + "/", 1)[1]) + "/" + source_file
-        sources_list.add(full_source_path.rstrip('\n'))
-    else:
-      # recurse into target's dependencies to get their lists of files
-      sources_list = GetSourcesList(target_name_with_dir, sources_list, gen_dir)
-  return sources_list
-
-def _VerifyImportDeps(args, __):
-  fileutil.EnsureDirectoryExists(args.output_dir)
-
-  if args.filelist:
-    with open(args.filelist) as f:
-      args.filename.extend(f.read().split())
-
-  for filename in args.filename:
-    rel_path = RelativePath(filename, args.depth, args.output_dir)
-    module_path = _GetModulePath(rel_path, args.output_dir)
-    with open(module_path, 'rb') as f:
-      module = Module.Load(f)
-      mojom_imports = set(imp.path for imp in module.imports)
-
-    sources = set()
-
-    target_prefix = args.deps_file.split(".deps_sources_list")[0]
-    sources = GetSourcesList(target_prefix, sources, args.output_dir)
-
-    if (not sources.issuperset(mojom_imports)):
-      target_name = target_prefix.rsplit("/", 1)[1]
-      target_prefix_without_gen_dir = target_prefix.split(
-          args.output_dir + "/", 1)[1]
-      full_target_name = "//" + target_prefix_without_gen_dir.rsplit(
-        "/", 1)[0] + ":" + target_name
-
-      print(">>> File \"%s\"" % filename)
-      print(">>> from target \"%s\"" % full_target_name)
-      print(">>> is missing dependencies for the following imports:\n%s" % list(
-          mojom_imports.difference(sources)))
-      sys.exit(1)
-
-    source_filename, _ = os.path.splitext(rel_path.relative_path())
-    output_file = source_filename + '.v'
-    output_file_path = os.path.join(args.output_dir, output_file)
-    WriteFile("", output_file_path)
-
-  return 0
 
 def main():
   parser = argparse.ArgumentParser(
@@ -425,20 +369,6 @@ def main():
   precompile_parser = subparsers.add_parser("precompile",
       description="Precompile templates for the mojom bindings generator.")
   precompile_parser.set_defaults(func=_Precompile)
-
-  verify_parser = subparsers.add_parser("verify", description="Checks "
-      "the set of imports against the set of dependencies.")
-  verify_parser.add_argument("filename", nargs="*",
-      help="mojom input file")
-  verify_parser.add_argument("--filelist", help="mojom input file list")
-  verify_parser.add_argument("-f", "--file", dest="deps_file",
-      help="file containing paths to the sources files for "
-      "dependencies")
-  verify_parser.add_argument(
-      "-d", "--depth", dest="depth",
-      help="depth from source root")
-
-  verify_parser.set_defaults(func=_VerifyImportDeps)
 
   args, remaining_args = parser.parse_known_args()
   return args.func(args, remaining_args)

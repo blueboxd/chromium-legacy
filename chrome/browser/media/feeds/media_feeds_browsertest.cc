@@ -36,6 +36,7 @@ const char kMediaFeedsTestHTML[] =
 struct TestData {
   std::string head_html;
   bool discovered;
+  bool https = true;
 };
 
 }  // namespace
@@ -43,7 +44,8 @@ struct TestData {
 class MediaFeedsBrowserTest : public InProcessBrowserTest,
                               public ::testing::WithParamInterface<TestData> {
  public:
-  MediaFeedsBrowserTest() = default;
+  MediaFeedsBrowserTest()
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
   ~MediaFeedsBrowserTest() override = default;
 
   void SetUp() override {
@@ -55,9 +57,15 @@ class MediaFeedsBrowserTest : public InProcessBrowserTest,
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
 
+    // The HTTPS server serves the test page using HTTPS.
+    https_server_.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
+    https_server_.RegisterRequestHandler(base::BindRepeating(
+        &MediaFeedsBrowserTest::HandleRequest, base::Unretained(this)));
+    ASSERT_TRUE(https_server_.Start());
+
+    // The embedded test server will serve the test page using HTTP.
     embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
         &MediaFeedsBrowserTest::HandleRequest, base::Unretained(this)));
-
     ASSERT_TRUE(embedded_test_server()->Start());
 
     InProcessBrowserTest::SetUpOnMainThread();
@@ -87,6 +95,10 @@ class MediaFeedsBrowserTest : public InProcessBrowserTest,
         browser()->profile());
   }
 
+  net::EmbeddedTestServer* GetServer() {
+    return GetParam().https ? &https_server_ : embedded_test_server();
+  }
+
  private:
   std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
       const net::test_server::HttpRequest& request) {
@@ -99,6 +111,8 @@ class MediaFeedsBrowserTest : public InProcessBrowserTest,
     return response;
   }
 
+  net::EmbeddedTestServer https_server_;
+
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
@@ -108,6 +122,8 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         TestData{"<link rel=feed type=\"application/ld+json\" href=\"/test\"/>",
                  true},
+        TestData{"<link rel=feed type=\"application/ld+json\" href=\"/test\"/>",
+                 false, false},
         TestData{"", false},
         TestData{"<link rel=feed type=\"application/ld+json\" "
                  "href=\"/test\"/><link rel=feed "
@@ -130,7 +146,7 @@ IN_PROC_BROWSER_TEST_P(MediaFeedsBrowserTest, Discover) {
       static_cast<MediaFeedsContentsObserver*>(
           MediaFeedsContentsObserver::FromWebContents(GetWebContents()));
 
-  GURL test_url(embedded_test_server()->GetURL(kMediaFeedsTestURL));
+  GURL test_url(GetServer()->GetURL(kMediaFeedsTestURL));
 
   // The contents observer will call this closure when it has checked for a
   // media feed.
@@ -150,7 +166,7 @@ IN_PROC_BROWSER_TEST_P(MediaFeedsBrowserTest, Discover) {
   std::set<GURL> expected_urls;
 
   if (GetParam().discovered)
-    expected_urls.insert(embedded_test_server()->GetURL("/test"));
+    expected_urls.insert(GetServer()->GetURL("/test"));
 
   EXPECT_EQ(expected_urls, GetDiscoveredFeedURLs());
 }

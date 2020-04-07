@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+GEN('#include "chrome/browser/ui/ui_features.h"');
 GEN('#include "services/network/public/cpp/features.h"');
 
 /**
@@ -27,7 +28,15 @@ SettingsIdleLoadV3BrowserTest.prototype = {
   isAsync: true,
 
   /** @override */
-  featureList: {enabled: ['network::features::kOutOfBlinkCors']},
+  get featureList() {
+    return {
+      enabled: [
+        'network::features::kOutOfBlinkCors',
+        'features::kSettingsPolymer3',
+      ],
+      disabled: [],
+    };
+  },
 };
 
 TEST_F('SettingsIdleLoadV3BrowserTest', 'All', function() {

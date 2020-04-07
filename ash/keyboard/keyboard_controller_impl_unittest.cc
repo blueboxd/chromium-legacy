@@ -19,6 +19,7 @@
 #include "ash/test/ash_test_helper.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "base/bind.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/bind_test_util.h"
@@ -61,7 +62,8 @@ class TestContainerBehavior : public keyboard::ContainerBehavior {
   gfx::Rect AdjustSetBoundsRequest(
       const gfx::Rect& display_bounds,
       const gfx::Rect& requested_bounds_in_screen_coords) override {
-    return gfx::Rect();
+    return adjusted_bounds_in_screen_ ? *adjusted_bounds_in_screen_
+                                      : requested_bounds_in_screen_coords;
   }
 
   void SetCanonicalBounds(aura::Window* container,
@@ -110,11 +112,16 @@ class TestContainerBehavior : public keyboard::ContainerBehavior {
     return area_to_remain_on_screen_;
   }
 
+  void set_adjusted_bounds_in_screen(const gfx::Rect& rect) {
+    adjusted_bounds_in_screen_ = rect;
+  }
+
  private:
   keyboard::ContainerType type_ = keyboard::ContainerType::kFullWidth;
   gfx::Rect occluded_bounds_;
   gfx::Rect draggable_area_;
   gfx::Rect area_to_remain_on_screen_;
+  base::Optional<gfx::Rect> adjusted_bounds_in_screen_;
 };
 
 class KeyboardControllerImplTest : public AshTestBase {
@@ -361,6 +368,40 @@ TEST_F(KeyboardControllerImplTest, SetAreaToRemainOnScreen) {
   gfx::Rect bounds(10, 20, 30, 40);
   keyboard_ui_controller()->SetAreaToRemainOnScreen(bounds);
   EXPECT_EQ(bounds, behavior->area_to_remain_on_screen());
+}
+
+TEST_F(KeyboardControllerImplTest, SetWindowBoundsInScreen) {
+  // Enable the keyboard.
+  keyboard_controller()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
+
+  // Override the container behavior.
+  auto scoped_behavior = std::make_unique<TestContainerBehavior>();
+  keyboard_ui_controller()->set_container_behavior_for_test(
+      std::move(scoped_behavior));
+
+  gfx::Rect bounds(1, 1, 300, 400);
+  keyboard_controller()->SetWindowBoundsInScreen(bounds);
+  EXPECT_EQ(bounds,
+            keyboard_ui_controller()->GetKeyboardWindow()->GetBoundsInScreen());
+}
+
+TEST_F(KeyboardControllerImplTest,
+       SetWindowBoundsInScreenShouldRespectAdjustedBounds) {
+  gfx::Rect adjusted_bounds_in_screen(10, 10, 30, 40);
+
+  // Enable the keyboard.
+  keyboard_controller()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
+
+  // Override the container behavior.
+  auto scoped_behavior = std::make_unique<TestContainerBehavior>();
+  scoped_behavior->set_adjusted_bounds_in_screen(adjusted_bounds_in_screen);
+  keyboard_ui_controller()->set_container_behavior_for_test(
+      std::move(scoped_behavior));
+
+  gfx::Rect requested_bounds(1, 1, 300, 400);
+  keyboard_controller()->SetWindowBoundsInScreen(requested_bounds);
+  EXPECT_EQ(adjusted_bounds_in_screen,
+            keyboard_ui_controller()->GetKeyboardWindow()->GetBoundsInScreen());
 }
 
 TEST_F(KeyboardControllerImplTest, ChangingSessionRebuildsKeyboard) {

@@ -69,11 +69,18 @@ void LoadStreamTask::LoadFromStoreComplete(
   // TODO(harringtond): Add throttling.
   // TODO(harringtond): Request parameters here are all placeholder values.
   feedwire::Request request;
-  *request.mutable_feed_request()->mutable_client_info() =
+  request.set_request_version(feedwire::Request::FEED_QUERY);
+
+  feedwire::FeedRequest& feed_request = *request.mutable_feed_request();
+  *feed_request.mutable_client_info() =
       CreateClientInfo(stream_->GetChromeInfo());
 
-  request.mutable_feed_request()->mutable_feed_query()->set_reason(
+  feed_request.mutable_feed_query()->set_reason(
       feedwire::FeedQuery::MANUAL_REFRESH);
+  if (!result.consistency_token.empty()) {
+    feed_request.mutable_consistency_token()->set_token(
+        result.consistency_token);
+  }
 
   fetch_start_time_ = base::TimeTicks::Now();
   stream_->GetNetwork()->SendQueryRequest(

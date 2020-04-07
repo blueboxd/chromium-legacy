@@ -402,7 +402,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   // The permission service, enabling us to check for event listener
   // permission.
   HeapMojoRemote<mojom::blink::PermissionService> permission_service_;
-  HeapMojoReceiver<mojom::blink::PermissionObserver>
+  HeapMojoReceiver<mojom::blink::PermissionObserver, AXObjectCacheImpl>
       permission_observer_receiver_;
 
   // The main document, plus any page popups.

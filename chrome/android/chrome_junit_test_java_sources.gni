@@ -160,6 +160,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/omnibox/geo/VisibleNetworksTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/geo/VisibleNetworksTrackerTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediatorUnitTest.java",
+  "junit/src/org/chromium/chrome/browser/omnibox/suggestions/OmniboxSuggestionUnitTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/suggestions/answer/AnswerSuggestionProcessorUnitTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/suggestions/base/BaseSuggestionProcessorTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/suggestions/base/BaseSuggestionViewBinderUnitTest.java",

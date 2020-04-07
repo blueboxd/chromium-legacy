@@ -192,7 +192,8 @@ void LoginTabHelper::HandleCredentials(
 }
 
 void LoginTabHelper::Reload() {
-  web_contents()->GetController().Reload(content::ReloadType::NORMAL, true);
+  web_contents()->GetController().Reload(content::ReloadType::NORMAL,
+                                         false /* check_for_repost */);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(LoginTabHelper)

@@ -23,6 +23,11 @@ struct BLINK_COMMON_EXPORT UserAgentMetadata {
   std::string architecture;
   std::string model;
   bool mobile = false;
+
+  static base::Optional<UserAgentMetadata> Demarshal(
+      const base::Optional<std::string>& encoded);
+  static base::Optional<std::string> Marshal(
+      const base::Optional<UserAgentMetadata>& ua_metadata);
 };
 
 // Used when customizing the sent User-Agent and Sec-CH-UA-* for

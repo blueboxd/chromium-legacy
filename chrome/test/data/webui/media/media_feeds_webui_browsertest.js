@@ -6,7 +6,7 @@
  * @fileoverview Test suite for the Media Feeds WebUI.
  */
 
-const EXAMPLE_URL_1 = 'http://example.com/feed.json';
+const EXAMPLE_URL_1 = 'https://example.com/feed.json';
 
 GEN('#include "base/run_loop.h"');
 GEN('#include "chrome/browser/media/history/media_history_keyed_service.h"');

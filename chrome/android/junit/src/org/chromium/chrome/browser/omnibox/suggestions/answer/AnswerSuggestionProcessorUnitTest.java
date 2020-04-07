@@ -145,7 +145,8 @@ public class AnswerSuggestionProcessorUnitTest {
                 /* descriptionClassifications */ null,
                 /* suggestionAnswer */ null, /* fillIntoEdit */ "", /* url */ "",
                 /* imageUrl */ "", /* imageDominantColor */ "",
-                /* isStarred */ false, /* isDeletable */ false);
+                /* isStarred */ false, /* isDeletable */ false, /* postContentType */ null,
+                /* postData */ null);
         PropertyModel model = mProcessor.createModelForSuggestion(suggestion);
         return new SuggestionTestHelper(suggestion, null, model, userQuery);
     }
@@ -163,7 +164,8 @@ public class AnswerSuggestionProcessorUnitTest {
                 /* description */ null, /* descriptionClassifications */ null, answer,
                 /* fillIntoEdit */ "", /* url */ "", /* imageUrl */ "",
                 /* imageDominantColor */ "",
-                /* isStarred */ false, /* isDeletable */ false);
+                /* isStarred */ false, /* isDeletable */ false, /* postContentType */ null,
+                /* postData */ null);
         PropertyModel model = mProcessor.createModelForSuggestion(suggestion);
         return new SuggestionTestHelper(suggestion, answer, model, null);
     }

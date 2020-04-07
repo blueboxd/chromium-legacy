@@ -34,6 +34,10 @@ class ProfileImpl : public Profile {
   // |context| must not be null.
   static base::FilePath GetCachePath(content::BrowserContext* context);
 
+  static std::unique_ptr<ProfileImpl> DestroyAndDeleteDataFromDisk(
+      std::unique_ptr<ProfileImpl> profile,
+      base::OnceClosure done_callback);
+
   explicit ProfileImpl(const std::string& name);
   ~ProfileImpl() override;
 
@@ -53,7 +57,6 @@ class ProfileImpl : public Profile {
   DownloadDelegate* download_delegate() { return download_delegate_; }
 
   // Profile implementation:
-  bool DeleteDataFromDisk(base::OnceClosure done_callback) override;
   void ClearBrowsingData(const std::vector<BrowsingDataType>& data_types,
                          base::Time from_time,
                          base::Time to_time,
@@ -67,7 +70,8 @@ class ProfileImpl : public Profile {
               const base::android::JavaParamRef<jstring>& path,
               const base::android::JavaParamRef<jobject>& java_profile);
 
-  jboolean DeleteDataFromDisk(
+  jint GetNumBrowserImpl(JNIEnv* env);
+  void DestroyAndDeleteDataFromDisk(
       JNIEnv* env,
       const base::android::JavaRef<jobject>& j_completion_callback);
   void ClearBrowsingData(
@@ -94,6 +98,10 @@ class ProfileImpl : public Profile {
  private:
   class DataClearer;
 
+  static void NukeDataAfterRemovingData(std::unique_ptr<ProfileImpl> profile,
+                                        base::OnceClosure done_callback);
+  static void DoNukeData(std::unique_ptr<ProfileImpl> profile,
+                         base::OnceClosure done_callback);
   void ClearRendererCache();
 
   // Callback when the system locale has been updated.

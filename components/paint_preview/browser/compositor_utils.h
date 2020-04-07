@@ -17,6 +17,28 @@ namespace paint_preview {
 mojo::Remote<mojom::PaintPreviewCompositorCollection>
 CreateCompositorCollection();
 
+// Same as the above method, but the initialization is performed for a remote
+// or pending remote owned by the caller. NOTE: the caller must explicitly
+// initialize the discardable memory manager.
+//
+// EXAMPLE USAGE: (pending remote)
+//
+// mojo::PendingRemote<mojom::PaintPreviewCompositorCollection> pending_remote;
+// CreateCompositorCollectionPending(
+//     pending_remote.InitWithNewPipeAndPassReceiver()));
+//
+// mojo::Remote<mojom::PaintPreviewCompositorCollection>
+//     remote(pending_remote);
+// BindDiscardableSharedMemoryManager(&remote);
+void CreateCompositorCollectionPending(
+    mojo::PendingReceiver<mojom::PaintPreviewCompositorCollection>
+        pending_receiver);
+
+// Binds a discardable memory manager for |collection|.
+// NOTE: this requires the remote to be bound.
+void BindDiscardableSharedMemoryManager(
+    mojo::Remote<mojom::PaintPreviewCompositorCollection>* collection);
+
 }  // namespace paint_preview
 
 #endif  // COMPONENTS_PAINT_PREVIEW_BROWSER_COMPOSITOR_UTILS_H_

@@ -11,6 +11,7 @@ R8 is a proguard-like optimizer that also has the ability to dex.
 
 Local Modifications:
 * Refer to commit descriptions within "patches" directory.
+* Added "playground" directory for quick "how does this optimize" tests.
 
 Update Instructions:
 # Download R8:

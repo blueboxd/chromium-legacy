@@ -396,8 +396,15 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
         for test_name in launch_command.egtests_app.get_all_tests()
     ])
 
-    aborted_tests = list(all_tests_to_run - set(self.logs['failed tests']) -
-                         set(self.logs['passed tests']))
+    aborted_tests = []
+    # TODO(crbug.com/1048758): For device targets, the list of test names parsed
+    # from otool output is incorrect. For multitasking or any flaky test suite,
+    # the list contains more tests than what actually runs.
+    if (self.__class__.__name__ != 'DeviceXcodeTestRunner' and
+        'ios_chrome_multitasking_eg' not in self.app_path and
+        '_flaky_eg' not in self.app_path):
+      aborted_tests = list(all_tests_to_run - set(self.logs['failed tests']) -
+                           set(self.logs['passed tests']))
     aborted_tests.sort()
     self.logs['aborted tests'] = aborted_tests
 

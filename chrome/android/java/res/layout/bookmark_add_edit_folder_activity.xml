@@ -28,7 +28,7 @@
                 android:layout_marginEnd="12dp"
                 android:layout_marginStart="12dp"
                 android:layout_marginTop="24dp"
-                app:hint="@string/title"
+                android:hint="@string/title"
                 app:emptyErrorMessage="@string/bookmark_missing_title">
 
                 <com.google.android.material.textfield.TextInputEditText

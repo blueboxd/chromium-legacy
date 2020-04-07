@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
+#include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/command.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_registry.h"
@@ -245,7 +246,7 @@ class CommandService : public BrowserContextKeyedAPI,
                                  QueryType query_type,
                                  Command* command,
                                  bool* active,
-                                 Command::Type type) const;
+                                 ActionInfo::Type type) const;
 
   // A weak pointer to the profile we are associated with. Not owned by us.
   Profile* profile_;

@@ -72,6 +72,9 @@ extern const char kAllowSignedHTTPExchangeCertsWithoutExtensionDescription[];
 extern const char kAllowSyncXHRInPageDismissalName[];
 extern const char kAllowSyncXHRInPageDismissalDescription[];
 
+extern const char kEnableClipboardProviderImageSuggestionsName[];
+extern const char kEnableClipboardProviderImageSuggestionsDescription[];
+
 extern const char kEnableFtpName[];
 extern const char kEnableFtpDescription[];
 
@@ -1786,6 +1789,9 @@ extern const char kAshSwipingFromLeftEdgeToGoBackDescription[];
 
 extern const char kBluetoothAggressiveAppearanceFilterName[];
 extern const char kBluetoothAggressiveAppearanceFilterDescription[];
+
+extern const char kBluetoothFixA2dpPacketSizeName[];
+extern const char kBluetoothFixA2dpPacketSizeDescription[];
 
 extern const char kBluetoothKernelSuspendNotifierName[];
 extern const char kBluetoothKernelSuspendNotifierDescription[];

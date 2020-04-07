@@ -17,12 +17,21 @@
 
 namespace paint_preview {
 
+using CompositorPtr =
+    std::unique_ptr<mojo::Remote<mojom::PaintPreviewCompositor>,
+                    base::OnTaskRunnerDeleter>;
+
+// The implementation of the PaintPreviewCompositorClient class.
+// The public interface should be invoked only on the |default_task_runner_|
+// which is the the runner returned by base::SequencedTaskRunnerHandle::Get()
+// when this is constructed.
 class PaintPreviewCompositorClientImpl : public PaintPreviewCompositorClient {
  public:
   using OnCompositorCreatedCallback =
       base::OnceCallback<void(const base::UnguessableToken&)>;
 
   explicit PaintPreviewCompositorClientImpl(
+      scoped_refptr<base::SequencedTaskRunner> compositor_task_runner,
       base::WeakPtr<PaintPreviewCompositorServiceImpl> service);
   ~PaintPreviewCompositorClientImpl() override;
 
@@ -43,7 +52,7 @@ class PaintPreviewCompositorClientImpl : public PaintPreviewCompositorClient {
   mojo::PendingReceiver<mojom::PaintPreviewCompositor>
   BindNewPipeAndPassReceiver();
 
-  bool IsBoundAndConnected() const;
+  void IsBoundAndConnected(base::OnceCallback<void(bool)> callback);
 
   OnCompositorCreatedCallback BuildCompositorCreatedCallback(
       base::OnceClosure user_closure,
@@ -63,9 +72,12 @@ class PaintPreviewCompositorClientImpl : public PaintPreviewCompositorClient {
 
   void DisconnectHandler();
 
-  base::Optional<base::UnguessableToken> token_;
+  scoped_refptr<base::SequencedTaskRunner> compositor_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> default_task_runner_;
   base::WeakPtr<PaintPreviewCompositorServiceImpl> service_;
-  mojo::Remote<mojom::PaintPreviewCompositor> compositor_;
+  CompositorPtr compositor_;
+
+  base::Optional<base::UnguessableToken> token_;
   base::OnceClosure user_disconnect_closure_;
 
   base::WeakPtrFactory<PaintPreviewCompositorClientImpl> weak_ptr_factory_{

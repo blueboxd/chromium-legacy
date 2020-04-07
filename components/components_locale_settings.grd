@@ -246,14 +246,7 @@
   <release seq="1" allow_pseudo="false">
     <includes>
       <!-- The HTML for the about:terms page -->
-      <if expr="chromeos and _google_chrome">
-        <include name="IDS_TERMS_HTML" file="resources/terms/chromeos/terms_en.html" type="BINDATA" />
-      </if>
-      <if expr="chromeos and not _google_chrome">
-        <include name="IDS_TERMS_HTML" file="resources/terms/terms_chromium.html" type="BINDATA" />
-      </if>
-
-      <if expr="not chromeos and not is_android and not is_ios and _google_chrome">
+      <if expr="not is_android and not is_ios and _google_chrome">
         <if expr="'am' == lang">    <include name="IDS_TERMS_HTML" file="resources/terms/terms_am.html" type="BINDATA" /></if>
         <if expr="'ar' == lang">    <include name="IDS_TERMS_HTML" file="resources/terms/terms_ar.html" type="BINDATA" /></if>
         <if expr="'bg' == lang">    <include name="IDS_TERMS_HTML" file="resources/terms/terms_bg.html" type="BINDATA" /></if>
@@ -308,7 +301,7 @@
         <if expr="'zh-TW' == lang"> <include name="IDS_TERMS_HTML" file="resources/terms/terms_zh-TW.html" type="BINDATA" /></if>
       </if>
 
-      <if expr="not chromeos and not is_android and not is_ios and not _google_chrome">
+      <if expr="not is_android and not is_ios and not _google_chrome">
         <include name="IDS_TERMS_HTML" file="resources/terms/terms_chromium.html" type="BINDATA" />
       </if>
     </includes>

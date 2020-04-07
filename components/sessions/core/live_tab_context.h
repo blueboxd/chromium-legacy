@@ -71,7 +71,7 @@ class SESSIONS_EXPORT LiveTabContext {
       bool pin,
       bool from_last_session,
       const PlatformSpecificTabData* tab_platform_data,
-      const std::string& user_agent_override) = 0;
+      const sessions::SerializedUserAgentOverride& user_agent_override) = 0;
 
   // Note: |tab_platform_data| may be null (e.g., if |from_last_session| is
   // true, as this data is not persisted, or if the platform does not provide
@@ -83,7 +83,7 @@ class SESSIONS_EXPORT LiveTabContext {
       bool from_last_session,
       const std::string& extension_app_id,
       const PlatformSpecificTabData* tab_platform_data,
-      const std::string& user_agent_override) = 0;
+      const sessions::SerializedUserAgentOverride& user_agent_override) = 0;
   virtual void CloseTab() = 0;
 
  protected:

@@ -68,7 +68,7 @@ class MODULES_EXPORT PresentationReceiver final
   Member<ConnectionListProperty> connection_list_property_;
   Member<PresentationConnectionList> connection_list_;
 
-  HeapMojoReceiver<mojom::blink::PresentationReceiver>
+  HeapMojoReceiver<mojom::blink::PresentationReceiver, PresentationReceiver>
       presentation_receiver_receiver_;
   HeapMojoRemote<mojom::blink::PresentationService>
       presentation_service_remote_;

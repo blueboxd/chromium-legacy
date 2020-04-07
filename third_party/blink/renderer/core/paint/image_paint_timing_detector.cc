@@ -142,11 +142,11 @@ void ImagePaintTimingDetector::OnPaintFinished() {
         .UpdateLargestContentfulPaintCandidate();
   }
 
-  if (!records_manager_.HasUnregisteredRecordsInQueued(
+  if (!records_manager_.HasUnregisteredRecordsInQueue(
           last_registered_frame_index_))
     return;
 
-  last_registered_frame_index_ = records_manager_.LastQueuedFrameIndex();
+  last_registered_frame_index_ = frame_index_ - 1;
   RegisterNotifySwapTime();
 }
 

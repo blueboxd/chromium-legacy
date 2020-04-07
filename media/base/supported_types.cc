@@ -31,6 +31,22 @@
 
 namespace media {
 
+namespace {
+
+bool IsSupportedHdrMetadata(const HdrMetadataType& hdr_metadata_type) {
+  switch (hdr_metadata_type) {
+    case HdrMetadataType::kNone:
+      return true;
+
+    case HdrMetadataType::kSmpteSt2086:
+    case HdrMetadataType::kSmpteSt2094_10:
+    case HdrMetadataType::kSmpteSt2094_40:
+      return false;
+  }
+}
+
+}  // namespace
+
 bool IsSupportedAudioType(const AudioType& type) {
   MediaClient* media_client = GetMediaClient();
   if (media_client)
@@ -257,6 +273,9 @@ bool IsVideoCodecProprietary(VideoCodec codec) {
 // TODO(chcunningham): Add platform specific logic for Android (move from
 // MimeUtilIntenral).
 bool IsDefaultSupportedVideoType(const VideoType& type) {
+  if (!IsSupportedHdrMetadata(type.hdr_metadata_type))
+    return false;
+
 #if !BUILDFLAG(USE_PROPRIETARY_CODECS)
   if (IsVideoCodecProprietary(type.codec))
     return false;

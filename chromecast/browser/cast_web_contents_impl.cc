@@ -454,6 +454,24 @@ void CastWebContentsImpl::RemoveObserver(CastWebContents::Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+void CastWebContentsImpl::SetEnabledForRemoteDebugging(bool enabled) {
+  DCHECK(remote_debugging_server_);
+
+  if (enabled && !enabled_for_dev_) {
+    LOG(INFO) << "Enabling dev console for CastWebContentsImpl";
+    remote_debugging_server_->EnableWebContentsForDebugging(web_contents_);
+  } else if (!enabled && enabled_for_dev_) {
+    LOG(INFO) << "Disabling dev console for CastWebContentsImpl";
+    remote_debugging_server_->DisableWebContentsForDebugging(web_contents_);
+  }
+  enabled_for_dev_ = enabled;
+
+  // Propagate setting change to inner contents.
+  for (auto& inner : inner_contents_) {
+    inner->SetEnabledForRemoteDebugging(enabled);
+  }
+}
+
 service_manager::BinderRegistry* CastWebContentsImpl::binder_registry() {
   return &binder_registry_;
 }

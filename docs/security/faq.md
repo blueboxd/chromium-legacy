@@ -158,15 +158,15 @@ in web sites. The XSS Auditor was [removed in Chrome 78](https://groups.google.c
 People sometimes report that they can compromise Chrome by installing a
 malicious DLL in a place where Chrome will load it, by hooking APIs (e.g. [Issue
 130284](https://crbug.com/130284)), or by otherwise altering the configuration
-of the PC.
+of the device.
 
 We consider these attacks outside Chrome's threat model, because there is no way
 for Chrome (or any application) to defend against a malicious user who has
-managed to log into your computer as you, or who can run software with the
+managed to log into your device as you, or who can run software with the
 privileges of your operating system user account. Such an attacker can modify
 executables and DLLs, change environment variables like `PATH`, change
 configuration files, read any data your user account owns, email it to
-themselves, and so on. Such an attacker has total control over your computer,
+themselves, and so on. Such an attacker has total control over your device,
 and nothing Chrome can do would provide a serious guarantee of defense. This
 problem is not special to Chrome ­— all applications must trust the
 physically-local user.

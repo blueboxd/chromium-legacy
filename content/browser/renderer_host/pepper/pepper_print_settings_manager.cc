@@ -5,12 +5,17 @@
 #include "content/browser/renderer_host/pepper/pepper_print_settings_manager.h"
 
 #include "base/task/post_task.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "ppapi/c/pp_errors.h"
 #include "printing/buildflags/buildflags.h"
+
+#if defined(OS_WIN)
+#include "base/threading/thread_restrictions.h"
+#endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "printing/printing_context.h"  // nogncheck
@@ -59,10 +64,22 @@ class PrintingContextDelegate : public printing::PrintingContext::Delegate {
   }
 };
 
-PepperPrintSettingsManager::Result ComputeDefaultPrintSettings() {
+#endif
+
+}  // namespace
+
+PepperPrintSettingsManager::Result
+PepperPrintSettingsManagerImpl::ComputeDefaultPrintSettings() {
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   // This function should run on the UI thread because |PrintingContext| methods
   // call into platform APIs.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+#if defined(OS_WIN)
+  // Blocking is needed here because Windows printer drivers are oftentimes
+  // not thread-safe and have to be accessed on the UI thread.
+  base::ScopedAllowBlocking allow_blocking;
+#endif
 
   PrintingContextDelegate delegate;
   std::unique_ptr<printing::PrintingContext> context(
@@ -101,15 +118,11 @@ PepperPrintSettingsManager::Result ComputeDefaultPrintSettings() {
   // so just make it the default.
   settings.format = PP_PRINTOUTPUTFORMAT_PDF;
   return PepperPrintSettingsManager::Result(settings, PP_OK);
-}
 #else
-PepperPrintSettingsManager::Result ComputeDefaultPrintSettings() {
   return PepperPrintSettingsManager::Result(PP_PrintSettings_Dev(),
                                             PP_ERROR_NOTSUPPORTED);
-}
 #endif
-
-}  // namespace
+}
 
 void PepperPrintSettingsManagerImpl::GetDefaultPrintSettings(
     PepperPrintSettingsManager::Callback callback) {

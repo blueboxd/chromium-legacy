@@ -103,6 +103,7 @@ class TestReportingCache : public ReportingCache {
     return false;
   }
   void OnParsedHeader(
+      const NetworkIsolationKey& network_isolation_key,
       const url::Origin& origin,
       std::vector<ReportingEndpointGroup> parsed_header) override {
     NOTREACHED();

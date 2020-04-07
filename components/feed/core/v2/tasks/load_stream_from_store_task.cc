@@ -47,6 +47,11 @@ void LoadStreamFromStoreTask::LoadStreamDone(
     Complete(LoadStreamStatus::kFailedWithStoreError);
     return;
   }
+
+  if (!result.stream_data.consistency_token().empty()) {
+    consistency_token_ = result.stream_data.consistency_token();
+  }
+
   if (result.stream_structures.empty()) {
     Complete(LoadStreamStatus::kNoStreamDataInStore);
     return;
@@ -119,6 +124,8 @@ void LoadStreamFromStoreTask::Complete(LoadStreamStatus status) {
   task_result.status = status;
   if (status == LoadStreamStatus::kLoadedFromStore) {
     task_result.update_request = std::move(update_request_);
+  } else {
+    task_result.consistency_token = consistency_token_;
   }
   std::move(result_callback_).Run(std::move(task_result));
   TaskComplete();

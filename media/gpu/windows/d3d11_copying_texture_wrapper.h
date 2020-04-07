@@ -39,6 +39,10 @@ class MEDIA_GPU_EXPORT CopyingTexture2DWrapper : public Texture2DWrapper {
 
   bool Init(GetCommandBufferHelperCB get_helper_cb) override;
 
+  void SetStreamHDRMetadata(const HDRMetadata& stream_metadata) override;
+  void SetDisplayHDRMetadata(
+      const DXGI_HDR_METADATA_HDR10& dxgi_display_metadata) override;
+
  private:
   gfx::Size size_;
   std::unique_ptr<VideoProcessorProxy> video_processor_;

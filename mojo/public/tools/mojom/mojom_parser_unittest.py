@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import json
 import os
 import os.path
 import shutil
@@ -50,12 +51,16 @@ class MojomParserTest(unittest.TestCase):
     with open(self.GetModulePath(mojom_path), 'rb') as f:
       return module.Module.Load(f)
 
-  def ParseMojoms(self, mojoms):
+  def ParseMojoms(self, mojoms, metadata=None):
     """Parse all input mojoms relative the temp dir."""
     out_dir = self.GetPath('out')
-    mojom_parser.ParseMojoms(
-        map(lambda mojom: os.path.join(self._temp_dir, mojom), mojoms),
-        [self._temp_dir, out_dir], out_dir, [])
+    args = [
+        '--input-root', self._temp_dir, '--input-root', out_dir,
+        '--output-root', out_dir, '--mojoms'
+    ] + list(map(lambda mojom: os.path.join(self._temp_dir, mojom), mojoms))
+    if metadata:
+      args.extend(['--check-imports', self.GetPath(metadata)])
+    mojom_parser.Run(args)
 
   def testBasicParse(self):
     """Basic test to verify that we can parse a mojom file and get a module."""
@@ -155,3 +160,64 @@ class MojomParserTest(unittest.TestCase):
     # b.mojom here.
     with self.assertRaisesRegexp(ValueError, "does not exist"):
       self.ParseMojoms([b])
+
+  def testCheckImportsBasic(self):
+    """Verify that the parser can handle --check-imports with a valid set of
+    inputs, including support for transitive dependency resolution."""
+    a = 'a.mojom'
+    a_metadata = 'out/a.build_metadata'
+    b = 'b.mojom'
+    b_metadata = 'out/b.build_metadata'
+    c = 'c.mojom'
+    c_metadata = 'out/c.build_metadata'
+    self.WriteFile(a_metadata,
+                   '{"sources": ["%s"], "deps": []}\n' % self.GetPath(a))
+    self.WriteFile(
+        b_metadata,
+        '{"sources": ["%s"], "deps": ["%s"]}\n' % (self.GetPath(b),
+                                                   self.GetPath(a_metadata)))
+    self.WriteFile(
+        c_metadata,
+        '{"sources": ["%s"], "deps": ["%s"]}\n' % (self.GetPath(c),
+                                                   self.GetPath(b_metadata)))
+    self.WriteFile(a, """\
+        module a;
+        struct Bar {};""")
+    self.WriteFile(
+        b, """\
+        module b;
+        import "a.mojom";
+        struct Foo { a.Bar bar; };""")
+    self.WriteFile(
+        c, """\
+        module c;
+        import "a.mojom";
+        import "b.mojom";
+        struct Baz { b.Foo foo; };""")
+    self.ParseMojoms([a], metadata=a_metadata)
+    self.ParseMojoms([b], metadata=b_metadata)
+    self.ParseMojoms([c], metadata=c_metadata)
+
+  def testCheckImportsMissing(self):
+    """Verify that the parser rejects valid input mojoms when imports don't
+    agree with build metadata given via --check-imports."""
+    a = 'a.mojom'
+    a_metadata = 'out/a.build_metadata'
+    b = 'b.mojom'
+    b_metadata = 'out/b.build_metadata'
+    self.WriteFile(a_metadata,
+                   '{"sources": ["%s"], "deps": []}\n' % self.GetPath(a))
+    self.WriteFile(b_metadata,
+                   '{"sources": ["%s"], "deps": []}\n' % self.GetPath(b))
+    self.WriteFile(a, """\
+        module a;
+        struct Bar {};""")
+    self.WriteFile(
+        b, """\
+        module b;
+        import "a.mojom";
+        struct Foo { a.Bar bar; };""")
+
+    self.ParseMojoms([a], metadata=a_metadata)
+    with self.assertRaisesRegexp(ValueError, "not allowed by build"):
+      self.ParseMojoms([b], metadata=b_metadata)

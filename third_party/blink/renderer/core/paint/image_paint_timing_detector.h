@@ -122,7 +122,7 @@ class CORE_EXPORT ImageRecordsManager {
 
   // Compare the last frame index in queue with the last frame index that has
   // registered for assigning paint time.
-  inline bool HasUnregisteredRecordsInQueued(
+  inline bool HasUnregisteredRecordsInQueue(
       unsigned last_registered_frame_index) {
     while (!images_queued_for_paint_time_.IsEmpty() &&
            !images_queued_for_paint_time_.back()) {
@@ -130,7 +130,6 @@ class CORE_EXPORT ImageRecordsManager {
     }
     if (images_queued_for_paint_time_.IsEmpty())
       return false;
-    DCHECK(last_registered_frame_index <= LastQueuedFrameIndex());
     return last_registered_frame_index < LastQueuedFrameIndex();
   }
   void AssignPaintTimeToRegisteredQueuedRecords(

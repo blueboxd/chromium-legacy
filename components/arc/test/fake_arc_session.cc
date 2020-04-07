@@ -40,8 +40,10 @@ void FakeArcSession::OnShutdown() {
   StopWithReason(ArcStopReason::SHUTDOWN);
 }
 
-void FakeArcSession::SetUserInfo(const std::string& hash,
-                                 const std::string& serial_number) {}
+void FakeArcSession::SetUserInfo(
+    const cryptohome::Identification& cryptohome_id,
+    const std::string& hash,
+    const std::string& serial_number) {}
 
 void FakeArcSession::StopWithReason(ArcStopReason reason) {
   bool was_mojo_connected = running_;

@@ -192,6 +192,7 @@ void FakeCrasAudioClient::SetHotwordModel(uint64_t node_id,
                                           const std::string& hotword_model,
                                           VoidDBusMethodCallback callback) {}
 
+void FakeCrasAudioClient::SetFixA2dpPacketSize(bool enabled) {}
 void FakeCrasAudioClient::SetNextHandsfreeProfile(bool enabled) {}
 
 void FakeCrasAudioClient::AddActiveInputNode(uint64_t node_id) {

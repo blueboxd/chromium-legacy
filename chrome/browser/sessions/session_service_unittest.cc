@@ -47,6 +47,7 @@
 #include "content/public/common/page_state.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 using content::NavigationEntry;
@@ -817,6 +818,12 @@ TEST_F(SessionServiceTest, PersistUserAgentOverrides) {
   std::string user_agent_override = "Mozilla/5.0 (X11; Linux x86_64) "
       "AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.45 "
       "Safari/535.19";
+  blink::UserAgentMetadata client_hints_override;
+  client_hints_override.brand = "Chrome";
+  client_hints_override.full_version = "18.0.1025.45";
+  client_hints_override.major_version = "18";
+  client_hints_override.platform = "Linux";
+  client_hints_override.architecture = "x86_64";
 
   SerializedNavigationEntry nav1 =
       ContentTestHelper::CreateNavigation("http://google.com", "abc");
@@ -824,7 +831,11 @@ TEST_F(SessionServiceTest, PersistUserAgentOverrides) {
 
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
   UpdateNavigation(window_id, tab_id, nav1, true);
-  helper_.SetTabUserAgentOverride(window_id, tab_id, user_agent_override);
+  sessions::SerializedUserAgentOverride serialized_override;
+  serialized_override.ua_string_override = user_agent_override;
+  serialized_override.opaque_ua_metadata_override =
+      blink::UserAgentMetadata::Marshal(client_hints_override);
+  helper_.SetTabUserAgentOverride(window_id, tab_id, serialized_override);
 
   std::vector<std::unique_ptr<sessions::SessionWindow>> windows;
   ReadWindows(&windows, NULL);
@@ -833,7 +844,10 @@ TEST_F(SessionServiceTest, PersistUserAgentOverrides) {
   sessions::SessionTab* tab = windows[0]->tabs[0].get();
   helper_.AssertTabEquals(window_id, tab_id, 0, 0, 1, *tab);
   helper_.AssertNavigationEquals(nav1, tab->navigations[0]);
-  EXPECT_TRUE(user_agent_override == tab->user_agent_override);
+  EXPECT_TRUE(user_agent_override ==
+              tab->user_agent_override.ua_string_override);
+  EXPECT_TRUE(blink::UserAgentMetadata::Marshal(client_hints_override) ==
+              tab->user_agent_override.opaque_ua_metadata_override);
 }
 
 // Makes sure a tab closed by a user gesture is not restored.

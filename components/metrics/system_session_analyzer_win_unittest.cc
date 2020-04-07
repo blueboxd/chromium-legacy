@@ -36,7 +36,9 @@ TEST(SystemSessionAnalyzerTest, FetchEvents) {
 TEST(SystemSessionAnalyzerTest, ValidateEvents) {
   SystemSessionAnalyzer analyzer(1U);
   EXPECT_EQ(SystemSessionAnalyzer::CLEAN,
-            analyzer.IsSessionUnclean(base::Time::Now()));
+            analyzer.IsSessionUnclean(base::Time::Now()))
+      << "Extended error code is: "
+      << static_cast<int>(analyzer.GetExtendedFailureStatus());
 }
 
 // Stubs FetchEvents.

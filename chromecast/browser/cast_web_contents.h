@@ -391,6 +391,10 @@ class CastWebContents {
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 
+  // Enable or disable devtools remote debugging for this WebContents and any
+  // inner WebContents that are spawned from it.
+  virtual void SetEnabledForRemoteDebugging(bool enabled) = 0;
+
   // Used to expose CastWebContents's |binder_registry_| to Delegate.
   // Delegate should register its mojo interface binders via this function
   // when it is ready.

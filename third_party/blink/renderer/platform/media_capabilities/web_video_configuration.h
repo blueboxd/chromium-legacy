@@ -19,6 +19,9 @@ struct WebVideoConfiguration {
   unsigned height;
   unsigned bitrate;
   double framerate;
+  base::Optional<WebString> hdr_metadata_type;
+  base::Optional<WebString> color_gamut;
+  base::Optional<WebString> transfer_function;
 };
 
 }  // namespace blink

@@ -72,7 +72,8 @@ class PermissionStatus final : public EventTargetWithInlineData,
 
   MojoPermissionStatus status_;
   MojoPermissionDescriptor descriptor_;
-  HeapMojoReceiver<mojom::blink::PermissionObserver> receiver_;
+  HeapMojoReceiver<mojom::blink::PermissionObserver, PermissionStatus>
+      receiver_;
 };
 
 }  // namespace blink

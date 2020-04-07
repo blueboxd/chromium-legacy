@@ -22,7 +22,6 @@ namespace blink {
 
 PresentationController::PresentationController(LocalFrame& frame)
     : Supplement<LocalFrame>(frame),
-      ExecutionContextLifecycleObserver(frame.GetDocument()),
       presentation_controller_receiver_(this, frame.DomWindow()) {}
 
 PresentationController::~PresentationController() = default;
@@ -60,7 +59,6 @@ void PresentationController::Trace(Visitor* visitor) {
   visitor->Trace(connections_);
   visitor->Trace(availability_state_);
   Supplement<LocalFrame>::Trace(visitor);
-  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 void PresentationController::SetPresentation(Presentation* presentation) {
@@ -153,10 +151,10 @@ PresentationController::FindExistingConnection(
 
 mojo::Remote<mojom::blink::PresentationService>&
 PresentationController::GetPresentationService() {
-  if (!presentation_service_remote_ && GetFrame()) {
+  if (!presentation_service_remote_ && GetSupplementable()) {
     scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-        GetFrame()->GetTaskRunner(TaskType::kPresentation);
-    GetFrame()->GetBrowserInterfaceBroker().GetInterface(
+        GetSupplementable()->GetTaskRunner(TaskType::kPresentation);
+    GetSupplementable()->GetBrowserInterfaceBroker().GetInterface(
         presentation_service_remote_.BindNewPipeAndPassReceiver(task_runner));
     presentation_service_remote_->SetController(
         presentation_controller_receiver_.BindNewPipeAndPassRemote(

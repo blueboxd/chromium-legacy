@@ -136,7 +136,7 @@ bool CommandService::GetBrowserActionCommand(const std::string& extension_id,
                                              Command* command,
                                              bool* active) const {
   return GetExtensionActionCommand(extension_id, type, command, active,
-                                   Command::Type::kBrowserAction);
+                                   ActionInfo::TYPE_BROWSER);
 }
 
 bool CommandService::GetPageActionCommand(const std::string& extension_id,
@@ -144,7 +144,7 @@ bool CommandService::GetPageActionCommand(const std::string& extension_id,
                                           Command* command,
                                           bool* active) const {
   return GetExtensionActionCommand(extension_id, type, command, active,
-                                   Command::Type::kPageAction);
+                                   ActionInfo::TYPE_PAGE);
 }
 
 bool CommandService::GetNamedCommands(const std::string& extension_id,
@@ -778,7 +778,7 @@ bool CommandService::GetExtensionActionCommand(
     QueryType query_type,
     Command* command,
     bool* active,
-    Command::Type action_type) const {
+    ActionInfo::Type action_type) const {
   const ExtensionSet& extensions =
       ExtensionRegistry::Get(profile_)->enabled_extensions();
   const Extension* extension = extensions.GetByID(extension_id);
@@ -789,13 +789,14 @@ bool CommandService::GetExtensionActionCommand(
 
   const Command* requested_command = NULL;
   switch (action_type) {
-    case Command::Type::kBrowserAction:
+    case ActionInfo::TYPE_BROWSER:
       requested_command = CommandsInfo::GetBrowserActionCommand(extension);
       break;
-    case Command::Type::kPageAction:
+    case ActionInfo::TYPE_PAGE:
       requested_command = CommandsInfo::GetPageActionCommand(extension);
       break;
-    case Command::Type::kNamed:
+    case ActionInfo::TYPE_ACTION:
+      // TODO(devlin): Add support for the "action" key.
       NOTREACHED();
       return false;
   }

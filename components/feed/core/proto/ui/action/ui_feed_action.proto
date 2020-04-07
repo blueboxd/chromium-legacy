@@ -30,10 +30,11 @@ message FeedAction {
 }
 
 // Metadata needed by the host to handle the action.
-// Next Id: 19
+// Next Id: 11
 message FeedActionMetadata {
   // The type of action, used by the host to perform any custom logic needed for
   // a specific type of action.
+  // Next Id: 20
   enum Type {
     UNKNOWN = 0;
     OPEN_URL = 1;
@@ -60,6 +61,7 @@ message FeedActionMetadata {
     SEE_SUGGESTED_SITES = 16;
     SEND_FEEDBACK = 17;
     MANAGE_INTERESTS = 18;
+    REPORT_VIEW = 19;
     reserved 9, 10;  // Deprecated
   }
   optional Type type = 1;
@@ -80,8 +82,12 @@ message FeedActionMetadata {
 
     // The data needed by the Stream to render a tooltip.
     TooltipData tooltip_data = 8;
+
+    // The data needed by the Stream to report a view action.
+    ViewReportData view_report_data = 10;
   }
   // The type of element this action is bounded on.
+  // Next Id: 5
   enum ElementType {
     UNKNOWN_ELEMENT_TYPE = 0;
     CARD_LARGE_IMAGE = 1;
@@ -105,6 +111,7 @@ message OpenUrlData {
   // opening the url. Once this finishes, the client will attach to the url its
   //  latest frequency token as the value of this query param.
   optional string consistency_token_query_param_name = 2;
+
   // The content ID that was interacted with to cause a URL open.
   optional feedwire1.ContentId content_id = 3;
   // Roundtripped server data on a per-action level.
@@ -196,6 +203,21 @@ message TooltipData {
 message Insets {
   optional int32 top = 1;
   optional int32 bottom = 2;
+}
+
+// Data used by the client to report a view action on content.
+message ViewReportData {
+  enum Visibility {
+    UNKNOWN = 0;
+    SHOW = 1;
+    HIDE = 2;
+  }
+  // Whether we're showing or hiding the content.
+  optional Visibility visibility = 1;
+  // The content ID of the view that needs to be reported.
+  optional feedwire1.ContentId content_id = 2;
+  // Roundtripped server data on a per-action level.
+  optional feedwire1.ActionPayload payload = 3;
 }
 
 // FeedActionMetadata with a label to show in a context menu.

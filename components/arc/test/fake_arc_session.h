@@ -12,6 +12,10 @@
 #include "components/arc/session/arc_session.h"
 #include "components/arc/session/arc_stop_reason.h"
 
+namespace cryptohome {
+class Identification;
+}  // namespace cryptohome
+
 namespace arc {
 
 // A fake ArcSession that creates a local connection.
@@ -26,7 +30,8 @@ class FakeArcSession : public ArcSession {
   void Stop() override;
   bool IsStopRequested() override;
   void OnShutdown() override;
-  void SetUserInfo(const std::string& hash,
+  void SetUserInfo(const cryptohome::Identification& cryptohome_id,
+                   const std::string& hash,
                    const std::string& serial_number) override;
 
   // To emulate unexpected stop, such as crash.

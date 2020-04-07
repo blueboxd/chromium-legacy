@@ -9,9 +9,16 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/position.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/scheduler/common/throttling/budget_pool.h"
+#include "third_party/blink/renderer/platform/scheduler/common/throttling/budget_pool_controller.h"
+#include "third_party/blink/renderer/platform/scheduler/common/throttling/cpu_time_budget_pool.h"
+#include "third_party/blink/renderer/platform/scheduler/common/tracing_helper.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
+namespace {
+const int kInvalidFindIdentifier = -1;
+}
 
 class LocalFrame;
 class Range;
@@ -45,10 +52,11 @@ class CORE_EXPORT FindTaskController final
   // It is not necessary if the frame is invisible, for example, or if this
   // is a repeat search that already returned nothing last time the same prefix
   // was searched.
-  bool ShouldFindMatches(const String& search_text,
+  bool ShouldFindMatches(int identifier,
+                         const String& search_text,
                          const mojom::blink::FindOptions& options);
 
-  // During a run of |find_task|, we found a match.
+  // During a run of |idle_find_task|, we found a match.
   // Updates |current_match_count_| and notifies |text_finder_|.
   void DidFindMatch(int identifier, Range* result_range);
 
@@ -69,16 +77,20 @@ class CORE_EXPORT FindTaskController final
   // When invoked this will search for a given text and notify us
   // whenever a match is found or when it finishes, through FoundMatch and
   // DidFinishTask.
-  class IdleFindTask;
+  class FindTask;
 
   void Trace(Visitor* visitor);
 
   void ResetLastFindRequestCompletedWithNoMatches();
 
+  void InvokeFind(int identifier,
+                  const WebString& search_text_,
+                  mojom::blink::FindOptionsPtr options_);
+
  private:
-  void RequestIdleFindTask(int identifier,
-                           const WebString& search_text,
-                           const mojom::blink::FindOptions& options);
+  void RequestFindTask(int identifier,
+                       const WebString& search_text,
+                       const mojom::blink::FindOptions& options);
 
   enum class RequestEndState {
     // The find-in-page request got aborted before going through every text in
@@ -95,7 +107,7 @@ class CORE_EXPORT FindTaskController final
 
   Member<TextFinder> text_finder_;
 
-  Member<IdleFindTask> find_task_;
+  Member<FindTask> find_task_;
 
   // Keeps track if there is any ongoing find effort or not.
   bool finding_in_progress_;
@@ -114,6 +126,10 @@ class CORE_EXPORT FindTaskController final
   // Keeps track of whether the last find request completed its finding effort
   // without finding any matches in this frame.
   bool last_find_request_completed_with_no_matches_;
+
+  // The identifier of the current find request, we should only run FindTasks
+  // that have the same identifier as this.
+  int current_find_identifier_ = kInvalidFindIdentifier;
 
   // The start time of the current find-in-page request.
   base::TimeTicks current_request_start_time_;

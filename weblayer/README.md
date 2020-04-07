@@ -71,3 +71,25 @@ $ autoninja -C out/Default weblayer_support_instrumentation_test_apk
 $ out/Default/bin/run_weblayer_support_instrumentation_test_apk
 
 The test script will build and install all necessary APKs.
+
+## Running WPT
+
+To run WPT on android against weblayer do the following:
+
+$ export WPT_TEST= test you want to run, relative to wpt directory.
+$ autoninja -C out/Default run_weblayer_shell weblayer_shell_wpt
+$ out/Default/bin/run_weblayer_shell
+$ testing/scripts/run_android_wpt.py --webdriver-binary=out/Default/clang_x64/chromedriver --product android_weblayer --isolated-script-test-output /tmp/weblayer_out.json --include ./third_party/blink/web_tests/external/wpt/$WPT_TEST
+
+`run_android_wpt.py` does not install weblayer-shell, you need to do that
+yourself (executing run_weblayer_shell will do that).
+
+To run against clank:
+
+$ autoninja -C out/Default monochrome_public_apk
+$ out/Default/bin/monochrome_public_apk install
+$ testing/scripts/run_android_wpt.py --webdriver-binary=out/Default/clang_x64/chromedriver --product chrome_android --package-name org.chromium.chrome --isolated-script-test-output /tmp/weblayer_out.json --include ./third_party/blink/web_tests/external/wpt/$WPT_TEST
+
+Passing in `-vvvv` may be useful if you want to see loads of information about
+test execution.
+

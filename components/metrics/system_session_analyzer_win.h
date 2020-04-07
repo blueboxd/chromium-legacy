@@ -32,6 +32,31 @@ class SystemSessionAnalyzer {
     PROCESS_SESSION_FAILED = 5,
   };
 
+  // Track internal details of what went wrong.
+  enum class ExtendedStatus {
+    NO_FAILURE = 0,
+    RENDER_EVENT_FAILURE = 1,
+    ATTRIBUTE_CNT_MISMATCH = 2,
+    EXPECTED_INT16_TYPE = 3,
+    EXPECTED_FILETIME_TYPE = 4,
+    RETRIEVE_EVENTS_FAILURE = 5,
+    GET_EVENT_INFO_FAILURE = 6,
+    EVTQUERY_FAILED = 7,
+    CREATE_RENDER_CONTEXT_FAILURE = 8,
+    FETCH_EVENTS_FAILURE = 9,
+    EVENT_COUNT_MISMATCH = 10,
+    SESSION_START_MISMATCH = 11,
+    COVERAGE_START_ORDER_FAILURE = 12,
+    EVENT_ORDER_FAILURE = 13,
+    UNEXPECTED_START_EVENT_TYPE = 14,
+    UNEXPECTED_END_EVENT_TYPE = 15,
+  };
+
+  ExtendedStatus GetExtendedFailureStatus() const;
+  // Set an extended failure status code for easier diagnosing of test failures.
+  // The first extended status code is retained.
+  void SetExtendedFailureStatus(ExtendedStatus);
+
   // Minimal information about a log event.
   struct EventInfo {
     uint16_t event_id;
@@ -76,6 +101,9 @@ class SystemSessionAnalyzer {
   // as appropriate.
   bool ProcessSession(const EventInfo& end, const EventInfo& start);
 
+  bool GetEventInfo(EVT_HANDLE context,
+                    EVT_HANDLE event,
+                    SystemSessionAnalyzer::EventInfo* info);
   EvtHandle CreateRenderContext();
 
   // The maximal number of sessions to query events for.
@@ -95,6 +123,9 @@ class SystemSessionAnalyzer {
 
   // Timestamp of the oldest event.
   base::Time coverage_start_;
+
+  // Track details of what failures occurred.
+  ExtendedStatus extended_status_ = ExtendedStatus::NO_FAILURE;
 
   DISALLOW_COPY_AND_ASSIGN(SystemSessionAnalyzer);
 };

@@ -13,9 +13,6 @@
     <!-- DualControlLayout -->
     <dimen name="dual_control_margin_between_items">8dp</dimen>
 
-    <!-- ChromeTextInputLayout -->
-    <dimen name="text_input_layout_padding_start">3dp</dimen>
-
     <!-- Dialogs -->
     <dimen name="dialog_max_width">600dp</dimen>
     <dimen name="dialog_header_margin">14dp</dimen>

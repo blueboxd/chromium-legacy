@@ -10,6 +10,7 @@
 #include "components/safe_browsing/core/common/safebrowsing_constants.h"
 #include "components/safe_browsing/core/common/test_task_environment.h"
 #include "components/safe_browsing/core/features.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/sync/driver/test_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/unified_consent/pref_names.h"
@@ -43,10 +44,12 @@ class RealTimePolicyEngineTest : public PlatformTest {
                                                          is_off_the_record);
   }
 
-  bool CanPerformFullURLLookupWithToken(bool is_off_the_record,
-                                        syncer::SyncService* sync_service) {
+  bool CanPerformFullURLLookupWithToken(
+      bool is_off_the_record,
+      syncer::SyncService* sync_service,
+      signin::IdentityManager* identity_manager) {
     return RealTimePolicyEngine::CanPerformFullURLLookupWithToken(
-        &pref_service_, is_off_the_record, sync_service);
+        &pref_service_, is_off_the_record, sync_service, identity_manager);
   }
 
   std::unique_ptr<base::test::TaskEnvironment> task_environment_;
@@ -224,38 +227,58 @@ TEST_F(RealTimePolicyEngineTest,
   pref_service_.SetUserPref(
       unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
       std::make_unique<base::Value>(true));
+  std::unique_ptr<signin::IdentityTestEnvironment> identity_test_env =
+      std::make_unique<signin::IdentityTestEnvironment>();
+  signin::IdentityManager* identity_manager =
+      identity_test_env->identity_manager();
   syncer::TestSyncService sync_service;
 
   // Sync is disabled.
   sync_service.SetDisableReasons(
       {syncer::SyncService::DISABLE_REASON_USER_CHOICE});
   sync_service.SetTransportState(syncer::SyncService::TransportState::DISABLED);
-  EXPECT_FALSE(CanPerformFullURLLookupWithToken(/* is_off_the_record */ false,
-                                                &sync_service));
+  EXPECT_FALSE(CanPerformFullURLLookupWithToken(
+      /* is_off_the_record */ false, &sync_service, identity_manager));
+
+  // Sync is enabled.
+  sync_service.SetDisableReasons({});
+  sync_service.SetTransportState(syncer::SyncService::TransportState::ACTIVE);
+  EXPECT_TRUE(CanPerformFullURLLookupWithToken(
+      /* is_off_the_record */ false, &sync_service, identity_manager));
 
   // History sync is disabled.
   sync_service.GetUserSettings()->SetSelectedTypes(
       /* sync_everything */ false, {});
-  EXPECT_FALSE(CanPerformFullURLLookupWithToken(/* is_off_the_record */ false,
-                                                &sync_service));
+  EXPECT_FALSE(CanPerformFullURLLookupWithToken(
+      /* is_off_the_record */ false, &sync_service, identity_manager));
 
   // Custom passphrase is enabled.
   sync_service.GetUserSettings()->SetSelectedTypes(
       false, {syncer::UserSelectableType::kHistory});
   sync_service.SetIsUsingSecondaryPassphrase(true);
-  EXPECT_FALSE(CanPerformFullURLLookupWithToken(/* is_off_the_record */ false,
-                                                &sync_service));
+  EXPECT_FALSE(CanPerformFullURLLookupWithToken(
+      /* is_off_the_record */ false, &sync_service, identity_manager));
 }
 
 TEST_F(RealTimePolicyEngineTest,
        TestCanPerformFullURLLookupWithToken_EnhancedProtection) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(kEnhancedProtection);
+  std::unique_ptr<signin::IdentityTestEnvironment> identity_test_env =
+      std::make_unique<signin::IdentityTestEnvironment>();
+  signin::IdentityManager* identity_manager =
+      identity_test_env->identity_manager();
   syncer::TestSyncService sync_service;
-  // Only enhanced protection is on.
+
+  // Enhanced protection is on but user is not signed in.
   pref_service_.SetBoolean(prefs::kSafeBrowsingEnhanced, true);
-  EXPECT_TRUE(CanPerformFullURLLookupWithToken(/* is_off_the_record */ false,
-                                               &sync_service));
+  EXPECT_FALSE(CanPerformFullURLLookupWithToken(
+      /* is_off_the_record */ false, &sync_service, identity_manager));
+
+  // User is signed in.
+  identity_test_env->MakeUnconsentedPrimaryAccountAvailable("test@example.com");
+  EXPECT_TRUE(CanPerformFullURLLookupWithToken(
+      /* is_off_the_record */ false, &sync_service, identity_manager));
 
   // Sync and history sync is disabled but enhanced protection is enabled.
   sync_service.SetDisableReasons(
@@ -263,8 +286,8 @@ TEST_F(RealTimePolicyEngineTest,
   sync_service.SetTransportState(syncer::SyncService::TransportState::DISABLED);
   sync_service.GetUserSettings()->SetSelectedTypes(
       /* sync_everything */ false, {});
-  EXPECT_TRUE(CanPerformFullURLLookupWithToken(/*is_off_the_record=*/false,
-                                               &sync_service));
+  EXPECT_TRUE(CanPerformFullURLLookupWithToken(
+      /*is_off_the_record=*/false, &sync_service, identity_manager));
 }
 
 TEST_F(RealTimePolicyEngineTest,

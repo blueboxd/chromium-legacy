@@ -27,10 +27,11 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.components.javascript_dialogs.JavascriptAppModalDialog;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -52,8 +53,7 @@ import java.util.concurrent.TimeoutException;
 @Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class JavascriptAppModalDialogTest {
     @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     private static final String TAG = "JSAppModalDialogTest";
     private static final String EMPTY_PAGE = UrlUtils.encodeHtmlDataUri(
@@ -101,6 +101,33 @@ public class JavascriptAppModalDialogTest {
         onPageLoaded.waitForCallback(callCount);
         Assert.assertEquals(EMPTY_PAGE,
                 mActivityTestRule.getActivity().getCurrentWebContents().getLastCommittedUrl());
+    }
+
+    /**
+     * Verifies behavior when the tab that has an onBeforeUnload handler has no history stack
+     * (pressing back should still show the dialog).
+     *
+     * Regression test for https://crbug.com/1055540
+     */
+    @Test
+    @MediumTest
+    @Feature({"Browser", "Main"})
+    public void testBeforeUnloadDialogWithNoHistory() throws TimeoutException, ExecutionException {
+        ChromeTabbedActivity activity = mActivityTestRule.getActivity();
+        TabUiTestHelper.verifyTabModelTabCount(activity, 1, 0);
+        mActivityTestRule.loadUrlInNewTab(BEFORE_UNLOAD_URL);
+        TabUiTestHelper.verifyTabModelTabCount(activity, 2, 0);
+        // JavaScript onbeforeunload dialogs require a user gesture.
+        tapViewAndWait();
+        TestThreadUtils.runOnUiThreadBlocking(() -> { activity.onBackPressed(); });
+        CriteriaHelper.pollInstrumentationThread(new JavascriptAppModalDialogShownCriteria(
+                "Could not spawn or locate a modal dialog.", true));
+
+        // Click leave and verify that the tab is closed.
+        JavascriptAppModalDialog jsDialog = getCurrentDialog();
+        Assert.assertNotNull("No dialog showing.", jsDialog);
+        onView(withText(R.string.leave)).perform(click());
+        TabUiTestHelper.verifyTabModelTabCount(activity, 1, 0);
     }
 
     /**
@@ -178,7 +205,7 @@ public class JavascriptAppModalDialogTest {
         executeJavaScriptAndWaitForDialog("history.back();");
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            ChromeActivity activity = mActivityTestRule.getActivity();
+            ChromeTabbedActivity activity = mActivityTestRule.getActivity();
             activity.getCurrentTabModel().closeTab(activity.getActivityTab());
         });
 

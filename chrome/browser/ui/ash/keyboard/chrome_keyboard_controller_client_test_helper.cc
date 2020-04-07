@@ -59,6 +59,9 @@ class ChromeKeyboardControllerClientTestHelper::FakeKeyboardController
   bool SetAreaToRemainOnScreen(const gfx::Rect& bounds) override {
     return false;
   }
+  bool SetWindowBoundsInScreen(const gfx::Rect& bounds) override {
+    return false;
+  }
   void AddObserver(ash::KeyboardControllerObserver* observer) override {
     observers_.AddObserver(observer);
   }

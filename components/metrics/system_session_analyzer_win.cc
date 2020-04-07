@@ -50,9 +50,28 @@ base::Time ULLFileTimeToTime(ULONGLONG time_ulonglong) {
   return base::Time::FromFileTime(ft);
 }
 
-bool GetEventInfo(EVT_HANDLE context,
-                  EVT_HANDLE event,
-                  SystemSessionAnalyzer::EventInfo* info) {
+}  // namespace
+
+SystemSessionAnalyzer::SystemSessionAnalyzer(uint32_t max_session_cnt)
+    : max_session_cnt_(max_session_cnt), sessions_queried_(0) {}
+
+SystemSessionAnalyzer::~SystemSessionAnalyzer() {}
+
+SystemSessionAnalyzer::ExtendedStatus
+SystemSessionAnalyzer::GetExtendedFailureStatus() const {
+  return extended_status_;
+}
+
+void SystemSessionAnalyzer::SetExtendedFailureStatus(
+    ExtendedStatus new_status) {
+  if (extended_status_ == ExtendedStatus::NO_FAILURE)
+    extended_status_ = new_status;
+}
+
+bool SystemSessionAnalyzer::GetEventInfo(
+    EVT_HANDLE context,
+    EVT_HANDLE event,
+    SystemSessionAnalyzer::EventInfo* info) {
   DCHECK(context);
   DCHECK(event);
   DCHECK(info);
@@ -67,14 +86,22 @@ bool GetEventInfo(EVT_HANDLE context,
   DWORD retrieved_attribute_cnt = 0U;
   if (!::EvtRender(context, event, EvtRenderEventValues, buffer_size,
                    buffer.data(), &buffer_used, &retrieved_attribute_cnt)) {
+    SetExtendedFailureStatus(ExtendedStatus::RENDER_EVENT_FAILURE);
     DLOG(ERROR) << "Failed to render the event.";
     return false;
   }
 
   // Validate the count and types of the retrieved attributes.
-  if ((retrieved_attribute_cnt != kAttributeCnt) ||
-      (buffer[0].Type != EvtVarTypeUInt16) ||
-      (buffer[1].Type != EvtVarTypeFileTime)) {
+  if (retrieved_attribute_cnt != kAttributeCnt) {
+    SetExtendedFailureStatus(ExtendedStatus::ATTRIBUTE_CNT_MISMATCH);
+    return false;
+  }
+  if (buffer[0].Type != EvtVarTypeUInt16) {
+    SetExtendedFailureStatus(ExtendedStatus::EXPECTED_INT16_TYPE);
+    return false;
+  }
+  if (buffer[1].Type != EvtVarTypeFileTime) {
+    SetExtendedFailureStatus(ExtendedStatus::EXPECTED_FILETIME_TYPE);
     return false;
   }
 
@@ -83,13 +110,6 @@ bool GetEventInfo(EVT_HANDLE context,
 
   return true;
 }
-
-}  // namespace
-
-SystemSessionAnalyzer::SystemSessionAnalyzer(uint32_t max_session_cnt)
-    : max_session_cnt_(max_session_cnt), sessions_queried_(0) {}
-
-SystemSessionAnalyzer::~SystemSessionAnalyzer() {}
 
 SystemSessionAnalyzer::Status SystemSessionAnalyzer::IsSessionUnclean(
     base::Time timestamp) {
@@ -146,6 +166,7 @@ bool SystemSessionAnalyzer::FetchEvents(size_t requested_events,
     events[i].reset(events_raw[i]);
 
   if (!success) {
+    SetExtendedFailureStatus(ExtendedStatus::RETRIEVE_EVENTS_FAILURE);
     DLOG(ERROR) << "Failed to retrieve events.";
     return false;
   }
@@ -182,6 +203,7 @@ bool SystemSessionAnalyzer::EnsureHandlesOpened() {
         ::EvtQuery(nullptr, kChannelName, kSessionEventsQuery,
                    EvtQueryChannelPath | EvtQueryReverseDirection));
     if (!query_handle_.get()) {
+      SetExtendedFailureStatus(ExtendedStatus::EVTQUERY_FAILED);
       DLOG(ERROR) << "Event query failed.";
       return false;
     }
@@ -190,8 +212,10 @@ bool SystemSessionAnalyzer::EnsureHandlesOpened() {
   if (!render_context_.get()) {
     // Create the render context for extracting information from the events.
     render_context_ = CreateRenderContext();
-    if (!render_context_.get())
+    if (!render_context_.get()) {
+      SetExtendedFailureStatus(ExtendedStatus::CREATE_RENDER_CONTEXT_FAILURE);
       return false;
+    }
   }
 
   return true;
@@ -203,12 +227,20 @@ bool SystemSessionAnalyzer::Initialize() {
   // Fetch the first (current) session start event and the first session,
   // comprising an end and a start event for a total of 3 events.
   std::vector<EventInfo> events;
-  if (!FetchEvents(3U, &events))
+  if (!FetchEvents(3U, &events)) {
+    SetExtendedFailureStatus(ExtendedStatus::FETCH_EVENTS_FAILURE);
     return false;
+  }
 
   // Validate that the initial event is what we expect.
-  if (events.size() != 3 || events[0].event_id != kIdSessionStart)
+  if (events.size() != 3) {
+    SetExtendedFailureStatus(ExtendedStatus::EVENT_COUNT_MISMATCH);
     return false;
+  }
+  if (events[0].event_id != kIdSessionStart) {
+    SetExtendedFailureStatus(ExtendedStatus::SESSION_START_MISMATCH);
+    return false;
+  }
 
   // Initialize the coverage start to allow detecting event time inversion.
   coverage_start_ = events[0].event_time;
@@ -225,17 +257,25 @@ bool SystemSessionAnalyzer::ProcessSession(const EventInfo& end,
                                            const EventInfo& start) {
   // Validate the ordering of events (newest to oldest). The  expectation is a
   // (start / [unclean]shutdown) pair of events for each session.
-  if (coverage_start_ < end.event_time)
+  if (coverage_start_ < end.event_time) {
+    SetExtendedFailureStatus(ExtendedStatus::COVERAGE_START_ORDER_FAILURE);
     return false;
-  if (end.event_time < start.event_time)
+  }
+  if (end.event_time < start.event_time) {
+    SetExtendedFailureStatus(ExtendedStatus::EVENT_ORDER_FAILURE);
     return false;
+  }
 
   // Process a (start / shutdown) event pair, validating the types of events
   // and recording unclean sessions.
-  if (start.event_id != kIdSessionStart)
+  if (start.event_id != kIdSessionStart) {
+    SetExtendedFailureStatus(ExtendedStatus::UNEXPECTED_START_EVENT_TYPE);
     return false;  // Unexpected event type.
-  if (end.event_id != kIdSessionEnd && end.event_id != kIdSessionEndUnclean)
+  }
+  if (end.event_id != kIdSessionEnd && end.event_id != kIdSessionEndUnclean) {
+    SetExtendedFailureStatus(ExtendedStatus::UNEXPECTED_END_EVENT_TYPE);
     return false;  // Unexpected event type.
+  }
 
   if (end.event_id == kIdSessionEndUnclean) {
     unclean_sessions_.insert(

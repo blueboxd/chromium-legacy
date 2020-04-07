@@ -203,6 +203,7 @@ jumbo_source_set("common_unittests_sources") {
     "privacy_budget/identifiability_metrics_unittest.cc",
     "privacy_budget/identifiable_surface_unittest.cc",
     "test/run_all_unittests.cc",
+    "user_agent/user_agent_metadata_unittest.cc",
     "web_package/web_package_request_matcher_unittest.cc",
   ]
 

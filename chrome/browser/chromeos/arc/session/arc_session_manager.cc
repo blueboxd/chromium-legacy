@@ -516,7 +516,9 @@ void ArcSessionManager::Initialize() {
   auto* prefs = profile_->GetPrefs();
   const std::string user_id_hash(
       chromeos::ProfileHelper::GetUserIdHashFromProfile(profile_));
-  arc_session_runner_->SetUserInfo(user_id_hash,
+  const cryptohome::Identification cryptohome_id(
+      multi_user_util::GetAccountIdFromProfile(profile_));
+  arc_session_runner_->SetUserInfo(cryptohome_id, user_id_hash,
                                    GetOrCreateSerialNumber(prefs));
 
   // Create the support host at initialization. Note that, practically,
@@ -534,9 +536,7 @@ void ArcSessionManager::Initialize() {
     support_host_ = std::make_unique<ArcSupportHost>(profile_);
     support_host_->SetErrorDelegate(this);
   }
-  data_remover_ = std::make_unique<ArcDataRemover>(
-      prefs, cryptohome::Identification(
-                 multi_user_util::GetAccountIdFromProfile(profile_)));
+  data_remover_ = std::make_unique<ArcDataRemover>(prefs, cryptohome_id);
   data_remover_->set_user_id_hash_for_profile(user_id_hash);
 
   if (g_enable_check_android_management_in_tests.value_or(g_ui_enabled))

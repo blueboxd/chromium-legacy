@@ -106,9 +106,11 @@ const SessionCommand::id_type kCommandSelectedNavigationInTab = 4;
 const SessionCommand::id_type kCommandPinnedState = 5;
 const SessionCommand::id_type kCommandSetExtensionAppID = 6;
 const SessionCommand::id_type kCommandSetWindowAppName = 7;
+// Deprecated for kCommandSetTabUserAgentOverride2
 const SessionCommand::id_type kCommandSetTabUserAgentOverride = 8;
 const SessionCommand::id_type kCommandWindow = 9;
 const SessionCommand::id_type kCommandGroup = 10;
+const SessionCommand::id_type kCommandSetTabUserAgentOverride2 = 11;
 
 // Number of entries (not commands) before we clobber the file and write
 // everything.
@@ -719,9 +721,9 @@ void TabRestoreServiceImpl::PersistenceDelegate::ScheduleCommandsForTab(
         kCommandSetExtensionAppID, tab.id, tab.extension_app_id));
   }
 
-  if (!tab.user_agent_override.empty()) {
+  if (!tab.user_agent_override.ua_string_override.empty()) {
     command_storage_manager_->ScheduleCommand(
-        CreateSetTabUserAgentOverrideCommand(kCommandSetTabUserAgentOverride,
+        CreateSetTabUserAgentOverrideCommand(kCommandSetTabUserAgentOverride2,
                                              tab.id, tab.user_agent_override));
   }
 
@@ -1030,7 +1032,30 @@ void TabRestoreServiceImpl::PersistenceDelegate::CreateEntriesFromCommands(
                                                    &user_agent_override)) {
           return;
         }
-        current_tab->user_agent_override.swap(user_agent_override);
+        current_tab->user_agent_override.ua_string_override.swap(
+            user_agent_override);
+        current_tab->user_agent_override.opaque_ua_metadata_override =
+            base::nullopt;
+        break;
+      }
+
+      case kCommandSetTabUserAgentOverride2: {
+        if (!current_tab) {
+          // Should be in a tab when we get this.
+          return;
+        }
+        SessionID tab_id = SessionID::InvalidValue();
+        std::string user_agent_override;
+        base::Optional<std::string> opaque_ua_metadata_override;
+        if (!RestoreSetTabUserAgentOverrideCommand2(
+                command, &tab_id, &user_agent_override,
+                &opaque_ua_metadata_override)) {
+          return;
+        }
+        current_tab->user_agent_override.ua_string_override =
+            std::move(user_agent_override);
+        current_tab->user_agent_override.opaque_ua_metadata_override =
+            std::move(opaque_ua_metadata_override);
         break;
       }
 

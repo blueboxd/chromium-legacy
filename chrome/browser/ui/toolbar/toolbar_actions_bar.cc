@@ -494,6 +494,20 @@ bool ToolbarActionsBar::IsActionVisibleOnToolbar(
   return false;
 }
 
+extensions::ExtensionContextMenuModel::ButtonVisibility
+ToolbarActionsBar::GetActionVisibility(
+    const ToolbarActionViewController* action) const {
+  extensions::ExtensionContextMenuModel::ButtonVisibility visibility =
+      extensions::ExtensionContextMenuModel::VISIBLE;
+
+  if (GetPoppedOutAction() == action) {
+    visibility = extensions::ExtensionContextMenuModel::TRANSITIVELY_VISIBLE;
+  } else if (!IsActionVisibleOnToolbar(action)) {
+    visibility = extensions::ExtensionContextMenuModel::OVERFLOWED;
+  }
+  return visibility;
+}
+
 void ToolbarActionsBar::PopOutAction(ToolbarActionViewController* controller,
                                      bool is_sticky,
                                      const base::Closure& closure) {

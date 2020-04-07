@@ -34,21 +34,6 @@ void ScrollbarController::WillBeginImplFrame() {
   RecomputeAutoscrollStateIfNeeded();
 }
 
-gfx::Vector2dF ScrollbarController::GetThumbRelativePoint(
-    const ScrollbarLayerImplBase* scrollbar,
-    const gfx::PointF position_in_widget) {
-  bool clipped;
-  const gfx::PointF position_in_layer =
-      GetScrollbarRelativePosition(scrollbar, position_in_widget, &clipped);
-
-  if (clipped)
-    return gfx::Vector2d(0, 0);
-
-  const gfx::RectF thumb_rect(scrollbar->ComputeThumbQuadRect());
-  DCHECK(thumb_rect.Contains(position_in_layer));
-  return position_in_layer - gfx::PointF(thumb_rect.origin());
-}
-
 // Retrieves the ScrollbarLayerImplBase corresponding to the stashed ElementId.
 ScrollbarLayerImplBase* ScrollbarController::ScrollbarLayer() {
   if (!captured_scrollbar_metadata_.has_value())
@@ -111,8 +96,7 @@ InputHandlerPointerResult ScrollbarController::HandlePointerDown(
   scroll_result.scroll_units = Granularity(scrollbar_part, shift_modifier);
   if (scrollbar_part == ScrollbarPart::THUMB) {
     drag_state_ = DragState();
-    drag_state_->anchor_relative_to_thumb_ =
-        GetThumbRelativePoint(scrollbar, position_in_widget);
+    drag_state_->drag_origin = position_in_widget;
 
     // Record the current scroller offset. This will be needed to snap the
     // thumb back to its original position if the pointer moves too far away
@@ -249,69 +233,23 @@ float ScrollbarController::GetScrollDeltaForAbsoluteJump(
   return delta * GetScrollerToScrollbarRatio(scrollbar);
 }
 
-gfx::ScrollOffset ScrollbarController::GetScrollOffsetForDragPosition(
+gfx::ScrollOffset ScrollbarController::GetScrollDeltaForDragPosition(
     const ScrollbarLayerImplBase* scrollbar,
     const gfx::PointF pointer_position_in_widget) {
-  layer_tree_host_impl_->active_tree()->UpdateScrollbarGeometries();
-
-  if (SnapToDragOrigin(scrollbar, pointer_position_in_widget)) {
-    const float delta =
-        scrollbar->current_pos() - drag_state_->scroll_position_at_start_;
-    return scrollbar->orientation() == ScrollbarOrientation::VERTICAL
-               ? gfx::ScrollOffset(0, -delta)
-               : gfx::ScrollOffset(-delta, 0);
-  }
-
-  const gfx::Rect thumb_rect(scrollbar->ComputeThumbQuadRect());
-  const gfx::PointF drag_position_relative_to_layer =
-      gfx::PointF(thumb_rect.origin()) + drag_state_->anchor_relative_to_thumb_;
-
-  bool clipped = false;
-  const gfx::PointF pointer_position_in_layer = GetScrollbarRelativePosition(
-      scrollbar, pointer_position_in_widget, &clipped);
-
-  if (clipped)
-    return gfx::ScrollOffset(0, 0);
-
-  // Calculate the delta based on the previously known thumb drag point.
-  const gfx::Vector2dF pointer_delta =
-      pointer_position_in_layer - drag_position_relative_to_layer;
-
-  float scaled_scroller_to_scrollbar_ratio =
-      GetScrollerToScrollbarRatio(scrollbar);
-  float current_scroll_position = scrollbar->current_pos();
-
-  // Thumb position needs to be floored and Values between 0 and 1 are rounded
-  // to one to match main thread per pixel behavior. Corresponding main thread
-  // code in ScrollbarTheme::ThumbPosition
-  float thumb_position = std::max(0.0f, current_scroll_position) /
-                         scaled_scroller_to_scrollbar_ratio;
-  thumb_position = (thumb_position < 1.0 && thumb_position > 0.0)
-                       ? 1.0
-                       : floorf(thumb_position);
-
-  float delta_in_orientation =
+  const float pointer_delta =
       scrollbar->orientation() == ScrollbarOrientation::VERTICAL
-          ? pointer_delta.y()
-          : pointer_delta.x();
+          ? pointer_position_in_widget.y() - drag_state_->drag_origin.y()
+          : pointer_position_in_widget.x() - drag_state_->drag_origin.x();
 
-  // This is effectively equal to delta_in_orientation *
-  // scaled_scroller_to_scrollbar_ratio but is necessary due to truncated delta
-  // value. Floored thumb_position cancels out the rounding error introduced
-  // in pointer_delta due to static_cast<int> in
-  // ScrollbarLayerImplBase::ComputeThumbQuadRectWithThumbThicknessScale
-  float scroll_delta = (delta_in_orientation + thumb_position) *
-                           scaled_scroller_to_scrollbar_ratio -
-                       current_scroll_position;
-
-  gfx::ScrollOffset scaled_thumb_drag_delta;
+  const float new_offset =
+      pointer_delta * GetScrollerToScrollbarRatio(scrollbar);
+  const float scroll_delta = drag_state_->scroll_position_at_start_ +
+                             new_offset - scrollbar->current_pos();
 
   // Scroll delta floored to match main thread per pixel behavior
-  scrollbar->orientation() == ScrollbarOrientation::VERTICAL
-      ? scaled_thumb_drag_delta.set_y(floorf(scroll_delta))
-      : scaled_thumb_drag_delta.set_x(floorf(scroll_delta));
-
-  return scaled_thumb_drag_delta;
+  return scrollbar->orientation() == ScrollbarOrientation::VERTICAL
+             ? gfx::ScrollOffset(0, floorf(scroll_delta))
+             : gfx::ScrollOffset(floorf(scroll_delta), 0);
 }
 
 // Performs hit test and prepares scroll deltas that will be used by GSU.
@@ -338,6 +276,18 @@ InputHandlerPointerResult ScrollbarController::HandlePointerMove(
   if (drag_processed_for_current_frame_)
     return scroll_result;
 
+  if (SnapToDragOrigin(scrollbar, position_in_widget)) {
+    const float delta =
+        scrollbar->current_pos() - drag_state_->scroll_position_at_start_;
+    scroll_result.scroll_units = ui::ScrollGranularity::kScrollByPrecisePixel;
+    scroll_result.scroll_offset =
+        scrollbar->orientation() == ScrollbarOrientation::VERTICAL
+            ? gfx::ScrollOffset(0, -delta)
+            : gfx::ScrollOffset(-delta, 0);
+    drag_processed_for_current_frame_ = true;
+    return scroll_result;
+  }
+
   // When initiating a thumb drag, a pointerdown and a pointermove can both
   // arrive a the ScrollbarController in succession before a GSB would have
   // been dispatched. So, querying LayerTreeHostImpl::CurrentlyScrollingNode()
@@ -354,7 +304,7 @@ InputHandlerPointerResult ScrollbarController::HandlePointerMove(
 
   // If scroll_offset can't be consumed, there's no point in continuing on.
   const gfx::ScrollOffset scroll_offset(
-      GetScrollOffsetForDragPosition(scrollbar, position_in_widget));
+      GetScrollDeltaForDragPosition(scrollbar, position_in_widget));
   const gfx::Vector2dF clamped_scroll_offset(
       layer_tree_host_impl_->ComputeScrollDelta(
           *target_node, ScrollOffsetToVector2dF(scroll_offset)));

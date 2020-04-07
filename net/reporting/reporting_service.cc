@@ -93,9 +93,10 @@ class ReportingServiceImpl : public ReportingService {
     }
 
     DVLOG(1) << "Received Reporting policy for " << url.GetOrigin();
-    DoOrBacklogTask(base::BindOnce(&ReportingServiceImpl::DoProcessHeader,
-                                   base::Unretained(this), url,
-                                   std::move(header_value)));
+    // TODO(chlily): Get the proper NetworkIsolationKey from the caller.
+    DoOrBacklogTask(base::BindOnce(
+        &ReportingServiceImpl::DoProcessHeader, base::Unretained(this),
+        NetworkIsolationKey::Todo(), url, std::move(header_value)));
   }
 
   void RemoveBrowsingData(int data_type_mask,
@@ -161,11 +162,12 @@ class ReportingServiceImpl : public ReportingService {
                                  0 /* attempts */);
   }
 
-  void DoProcessHeader(const GURL& url,
+  void DoProcessHeader(const NetworkIsolationKey& network_isolation_key,
+                       const GURL& url,
                        std::unique_ptr<base::Value> header_value) {
     DCHECK(initialized_);
-    ReportingHeaderParser::ParseHeader(context_.get(), url,
-                                       std::move(header_value));
+    ReportingHeaderParser::ParseHeader(context_.get(), network_isolation_key,
+                                       url, std::move(header_value));
   }
 
   void DoRemoveBrowsingData(

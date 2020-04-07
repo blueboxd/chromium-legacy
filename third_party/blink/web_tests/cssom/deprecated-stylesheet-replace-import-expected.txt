@@ -1,5 +1,0 @@
-CONSOLE MESSAGE: line 6: Start script - there should be a deprecation message below about replace() and @import.
-CONSOLE WARNING: line 9: Support for calls to CSSStyleSheet.replace() with stylesheet text that includes @import has been deprecated, and will be removed in M84, around June 2020. See https://chromestatus.com/feature/4735925877735424 for more details.
-CONSOLE MESSAGE: line 15: Finish script
-CONSOLE MESSAGE: line 10: Replace resolved
-

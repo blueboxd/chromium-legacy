@@ -21,7 +21,10 @@ message ClientInfo {
     IOS = 2;
   }
 
-  enum AppType { CHROME = 3; }
+  enum AppType {
+    TEST_APP = 2;  // For use with AGA endpoint for testing.
+    CHROME = 3;
+  }
 
   // The type of OS that the client is running.
   optional PlatformType platform_type = 1;

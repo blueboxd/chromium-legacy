@@ -7,12 +7,16 @@
 #include <utility>
 #include <vector>
 
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_util.h"
 #include "media/base/waiting.h"
 #include "media/gpu/gpu_video_decode_accelerator_factory.h"
 #include "media/gpu/macros.h"
@@ -270,23 +274,29 @@ void TestVDAVideoDecoder::ProvidePictureBuffersWithVisibleRect(
                                          std::move(handle));
       }
       break;
-    case VideoDecodeAccelerator::Config::OutputMode::ALLOCATE:
+    case VideoDecodeAccelerator::Config::OutputMode::ALLOCATE: {
       // If using allocate mode, request a set of texture-backed video frames
       // from the renderer.
+      const gfx::Size texture_dimensions =
+          texture_target == GL_TEXTURE_EXTERNAL_OES
+              ? GetRectSizeFromOrigin(visible_rect)
+              : dimensions;
       for (uint32_t i = 0; i < requested_num_of_buffers; ++i) {
         uint32_t texture_id;
         auto video_frame = frame_renderer_->CreateVideoFrame(
-            format, dimensions, texture_target, &texture_id);
+            format, texture_dimensions, texture_target, &texture_id);
         ASSERT_TRUE(video_frame) << "Failed to create video frame";
         int32_t picture_buffer_id = GetNextPictureBufferId();
         PictureBuffer::TextureIds texture_ids(1, texture_id);
-        picture_buffers.emplace_back(picture_buffer_id, dimensions, texture_ids,
-                                     texture_ids, texture_target, format);
+        picture_buffers.emplace_back(picture_buffer_id, texture_dimensions,
+                                     texture_ids, texture_ids, texture_target,
+                                     format);
         video_frames_.emplace(picture_buffer_id, std::move(video_frame));
       }
       // The decoder requires an active GL context to allocate memory.
       decoder_->AssignPictureBuffers(picture_buffers);
       break;
+    }
     default:
       LOG(ERROR) << "Unsupported output mode "
                  << static_cast<size_t>(output_mode_);

@@ -105,7 +105,8 @@ public class EntitySuggestionProcessorUnitTest {
                         /* descriptionClassifications */ null,
                         /* suggestionAnswer */ null, /* fillIntoEdit */ "", /* url */ "",
                         /* imageUrl */ url, /* imageDominantColor */ color,
-                        /* isStarred */ false, /* isDeletable */ false);
+                        /* isStarred */ false, /* isDeletable */ false, /* postContentType */ null,
+                        /* postData */ null);
         PropertyModel model = mProcessor.createModelForSuggestion(suggestion);
         return new SuggestionTestHelper(suggestion, model);
     }

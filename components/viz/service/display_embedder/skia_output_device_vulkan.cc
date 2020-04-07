@@ -6,12 +6,10 @@
 
 #include <utility>
 
-#include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/ipc/common/gpu_surface_lookup.h"
-#include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_implementation.h"
 #include "gpu/vulkan/vulkan_surface.h"
@@ -58,23 +56,8 @@ SkiaOutputDeviceVulkan::~SkiaOutputDeviceVulkan() {
   if (!vulkan_surface_)
     return;
 
-#if defined(OS_ANDROID)
-  if (base::SysInfo::IsLowEndDevice()) {
-    // For low end device, output surface will be destroyed when chrome goes
-    // into background. And a new output surface will be created when chrome
-    // goes to foreground again. The vulkan surface cannot be created
-    // successfully, if the old vulkan surface is not destroyed. To avoid the
-    // problem, we sync the device queue, and destroy the vulkan surface
-    // synchronously.
     vkQueueWaitIdle(context_provider_->GetDeviceQueue()->GetVulkanQueue());
     vulkan_surface_->Destroy();
-    return;
-  }
-#endif
-
-  auto* fence_helper = context_provider_->GetDeviceQueue()->GetFenceHelper();
-  fence_helper->EnqueueVulkanObjectCleanupForSubmittedWork(
-      std::move(vulkan_surface_));
 }
 
 bool SkiaOutputDeviceVulkan::Reshape(const gfx::Size& size,

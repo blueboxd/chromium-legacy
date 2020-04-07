@@ -232,6 +232,10 @@ class CC_EXPORT FrameSequenceTrackerCollection {
 
   void SetUkmManager(UkmManager* manager);
 
+  base::Optional<int> current_universal_throughput() {
+    return current_universal_throughput_;
+  }
+
  private:
   friend class FrameSequenceTrackerTest;
 
@@ -261,6 +265,7 @@ class CC_EXPORT FrameSequenceTrackerCollection {
       std::pair<FrameSequenceTrackerType, FrameSequenceMetrics::ThreadType>,
       std::unique_ptr<FrameSequenceMetrics>>
       accumulated_metrics_;
+  base::Optional<int> current_universal_throughput_;
 };
 
 // Tracks a sequence of frames to determine the throughput. It tracks this by

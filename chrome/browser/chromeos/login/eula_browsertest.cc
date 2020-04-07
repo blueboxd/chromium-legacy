@@ -56,8 +56,9 @@ namespace {
 constexpr char kFakeOnlineEulaPath[] = "/intl/en-US/chrome/eula_text.html";
 constexpr char kFakeOnlineEula[] = "No obligations at all";
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-// See IDS_ABOUT_TERMS_OF_SERVICE for the complete text.
-constexpr char kOfflineEULAWarning[] = "Chrome OS Terms";
+// See IDS_TERMS_HTML for the complete text.
+constexpr char kOfflineEULAWarning[] =
+    "Google Chrome and Chrome OS Additional Terms of Service";
 #else
 // Placeholder text in terms_chromium.html.
 constexpr char kOfflineEULAWarning[] =

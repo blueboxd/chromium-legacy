@@ -20,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/win/windows_version.h"
 #include "printing/backend/print_backend.h"
 #include "printing/backend/print_backend_consts.h"
@@ -212,6 +213,8 @@ bool XPSModule::InitImpl() {
 HRESULT XPSModule::OpenProvider(const base::string16& printer_name,
                                 DWORD version,
                                 HPTPROVIDER* provider) {
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   return g_open_provider_proc(printer_name.c_str(), version, provider);
 }
 
@@ -219,6 +222,8 @@ HRESULT XPSModule::GetPrintCapabilities(HPTPROVIDER provider,
                                         IStream* print_ticket,
                                         IStream* capabilities,
                                         BSTR* error_message) {
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   return g_get_print_capabilities_proc(provider, print_ticket, capabilities,
                                        error_message);
 }
@@ -228,6 +233,8 @@ HRESULT XPSModule::ConvertDevModeToPrintTicket(HPTPROVIDER provider,
                                                PDEVMODE devmode,
                                                EPrintTicketScope scope,
                                                IStream* print_ticket) {
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   return g_convert_devmode_to_print_ticket_proc(provider, devmode_size_in_bytes,
                                                 devmode, scope, print_ticket);
 }
@@ -240,6 +247,8 @@ HRESULT XPSModule::ConvertPrintTicketToDevMode(
     ULONG* devmode_byte_count,
     PDEVMODE* devmode,
     BSTR* error_message) {
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   return g_convert_print_ticket_to_devmode_proc(
       provider, print_ticket, base_devmode_type, scope, devmode_byte_count,
       devmode, error_message);
@@ -251,15 +260,21 @@ HRESULT XPSModule::MergeAndValidatePrintTicket(HPTPROVIDER provider,
                                                EPrintTicketScope scope,
                                                IStream* result_ticket,
                                                BSTR* error_message) {
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   return g_merge_and_validate_print_ticket_proc(
       provider, base_ticket, delta_ticket, scope, result_ticket, error_message);
 }
 
 HRESULT XPSModule::ReleaseMemory(PVOID buffer) {
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   return g_release_memory_proc(buffer);
 }
 
 HRESULT XPSModule::CloseProvider(HPTPROVIDER provider) {
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   return g_close_provider_proc(provider);
 }
 
@@ -489,14 +504,21 @@ std::unique_ptr<DEVMODE, base::FreeDeleter> CreateDevModeWithColor(
 }
 
 bool PrinterHasValidPaperSize(const wchar_t* name, const wchar_t* port) {
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   return DeviceCapabilities(name, port, DC_PAPERSIZE, nullptr, nullptr) > 0;
 }
 
 std::unique_ptr<DEVMODE, base::FreeDeleter> CreateDevMode(HANDLE printer,
                                                           DEVMODE* in) {
   wchar_t* device_name_ptr = const_cast<wchar_t*>(L"");
-  LONG buffer_size = DocumentProperties(nullptr, printer, device_name_ptr,
-                                        nullptr, nullptr, 0);
+  LONG buffer_size;
+  {
+    base::ScopedBlockingCall scoped_blocking_call(
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
+    buffer_size = DocumentProperties(nullptr, printer, device_name_ptr, nullptr,
+                                     nullptr, 0);
+  }
   if (buffer_size < static_cast<int>(sizeof(DEVMODE)))
     return nullptr;
 
@@ -521,9 +543,13 @@ std::unique_ptr<DEVMODE, base::FreeDeleter> CreateDevMode(HANDLE printer,
     return nullptr;
   }
 
-  if (DocumentProperties(nullptr, printer, device_name_ptr, out.get(), in,
-                         flags) != IDOK) {
-    return nullptr;
+  {
+    base::ScopedBlockingCall scoped_blocking_call(
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
+    if (DocumentProperties(nullptr, printer, device_name_ptr, out.get(), in,
+                           flags) != IDOK) {
+      return nullptr;
+    }
   }
 
   int size = out->dmSize;
@@ -559,8 +585,14 @@ std::unique_ptr<DEVMODE, base::FreeDeleter> PromptDevMode(
   std::unique_ptr<DEVMODE, base::FreeDeleter> out(
       reinterpret_cast<DEVMODE*>(calloc(buffer_size, 1)));
   DWORD flags = (in ? (DM_IN_BUFFER) : 0) | DM_OUT_BUFFER | DM_IN_PROMPT;
-  LONG result = DocumentProperties(window, printer, printer_name_ptr, out.get(),
-                                   in, flags);
+  LONG result;
+  {
+    base::ScopedBlockingCall scoped_blocking_call(
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
+    result = DocumentProperties(window, printer, printer_name_ptr, out.get(),
+                                in, flags);
+  }
+
   if (canceled)
     *canceled = (result == IDCANCEL);
   if (result != IDOK)

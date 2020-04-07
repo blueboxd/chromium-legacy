@@ -130,6 +130,13 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
     case WebInputEvent::kGestureScrollBegin: {
       // In VR or virtual keyboard (https://crbug.com/880701),
       // GestureScrollBegin could come without GestureTapDown.
+      // TODO(bokan): This can also happen due to the fling controller
+      // filtering out the GestureTapDown due to tap suppression (i.e. tapping
+      // during a fling should stop the fling, not be sent to the page). We
+      // should not reset the touch action in this case! We currently work
+      // around this by resetting the whitelisted touch action from the
+      // compositor in this case as well but we should investigate not
+      // filtering the TapDown.
       if (!gesture_sequence_in_progress_) {
         gesture_sequence_in_progress_ = true;
         if (allowed_touch_action_.has_value()) {

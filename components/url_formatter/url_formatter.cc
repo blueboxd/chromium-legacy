@@ -408,9 +408,11 @@ bool IDNToUnicodeOneComponent(const base::char16* comp,
     return false;
 
   // Early return if the input cannot be an IDN component.
+  // Valid punycode must not end with a dash.
   static const base::char16 kIdnPrefix[] = {'x', 'n', '-', '-'};
   if (comp_len <= base::size(kIdnPrefix) ||
-      memcmp(comp, kIdnPrefix, sizeof(kIdnPrefix)) != 0) {
+      memcmp(comp, kIdnPrefix, sizeof(kIdnPrefix)) != 0 ||
+      comp[comp_len - 1] == '-') {
     out->append(comp, comp_len);
     return false;
   }

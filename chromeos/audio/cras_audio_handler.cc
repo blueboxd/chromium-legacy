@@ -982,6 +982,8 @@ void CrasAudioHandler::InitializeAudioAfterCrasServiceAvailable(
   GetSystemAecGroupId();
   GetNodes();
   GetNumberOfOutputStreams();
+  CrasAudioClient::Get()->SetFixA2dpPacketSize(base::FeatureList::IsEnabled(
+      chromeos::features::kBluetoothFixA2dpPacketSize));
   CrasAudioClient::Get()->SetNextHandsfreeProfile(base::FeatureList::IsEnabled(
       chromeos::features::kBluetoothNextHandsfreeProfile));
 }

@@ -12,6 +12,7 @@ generate usable language bindings.
 
 import argparse
 import errno
+import json
 import os
 import os.path
 import sys
@@ -137,8 +138,28 @@ def _EnsureInputLoaded(mojom_abspath, module_path, abs_paths, asts,
       asts[mojom_abspath], module_path, imports)
 
 
-def ParseMojoms(mojom_files, input_root_paths, output_root_path,
-                enabled_features):
+def _CollectAllowedImportsFromBuildMetadata(build_metadata_filename):
+  allowed_imports = set()
+  processed_deps = set()
+
+  def collect(metadata_filename):
+    processed_deps.add(metadata_filename)
+    with open(metadata_filename) as f:
+      metadata = json.load(f)
+      allowed_imports.update(map(os.path.normpath, metadata['sources']))
+      for dep_metadata in metadata['deps']:
+        if dep_metadata not in processed_deps:
+          collect(dep_metadata)
+
+  collect(build_metadata_filename)
+  return allowed_imports
+
+
+def _ParseMojoms(mojom_files,
+                 input_root_paths,
+                 output_root_path,
+                 enabled_features,
+                 allowed_imports=None):
   """Parses a set of mojom files and produces serialized module outputs.
 
   Args:
@@ -159,6 +180,9 @@ def ParseMojoms(mojom_files, input_root_paths, output_root_path,
 
     Upon completion, a mojom-module file will be saved for each input mojom.
   """
+  assert input_root_paths
+  assert output_root_path
+
   loaded_mojom_asts = {}
   loaded_modules = {}
   input_dependencies = defaultdict(set)
@@ -172,9 +196,13 @@ def ParseMojoms(mojom_files, input_root_paths, output_root_path,
       ast = parser.Parse(''.join(f.readlines()), mojom_abspath)
       conditional_features.RemoveDisabledDefinitions(ast, enabled_features)
       loaded_mojom_asts[mojom_abspath] = ast
+      invalid_imports = []
       for imp in ast.import_list:
         import_abspath = _ResolveRelativeImportPath(imp.import_filename,
                                                     input_root_paths)
+        if allowed_imports and import_abspath not in allowed_imports:
+          invalid_imports.append(imp.import_filename)
+
         abs_paths[imp.import_filename] = import_abspath
         if import_abspath in mojom_files_to_parse:
           # This import is in the input list, so we're going to translate it
@@ -192,6 +220,13 @@ def ParseMojoms(mojom_files, input_root_paths, output_root_path,
                                                       [output_root_path])
           with open(module_abspath, 'rb') as module_file:
             loaded_modules[import_abspath] = module.Module.Load(module_file)
+
+      if invalid_imports:
+        raise ValueError(
+            '\nThe file %s imports the following files not allowed by build '
+            'dependencies:\n\n%s\n' % (mojom_abspath,
+                                       '\n'.join(invalid_imports)))
+
 
   # At this point all transitive imports not listed as inputs have been loaded
   # and we have a complete dependency tree of the unprocessed inputs. Now we can
@@ -221,7 +256,7 @@ def ParseMojoms(mojom_files, input_root_paths, output_root_path,
       loaded_modules[mojom_abspath].Dump(f)
 
 
-def main():
+def Run(command_line):
   arg_parser = argparse.ArgumentParser(
       description="""
 Parses one or more mojom files and produces corresponding module outputs fully
@@ -282,8 +317,22 @@ already present in the provided output root.""")
       'tagged with an [EnableIf=FEATURE] attribute. If this flag is not '
       'provided for a given FEATURE, such tagged elements are discarded by the '
       'parser and will not be present in the compiled output.')
+  arg_parser.add_argument(
+      '--check-imports',
+      dest='build_metadata_filename',
+      action='store',
+      metavar='METADATA_FILENAME',
+      help='Instructs the parser to check imports against a set of allowed '
+      'imports. Allowed imports are based on build metadata within '
+      'METADATA_FILENAME. This is a JSON file with a `sources` key listing '
+      'paths to the set of input mojom files being processed by this parser '
+      'run, and a `deps` key listing paths to metadata files for any '
+      'dependencies of these inputs. This feature can be used to implement '
+      'build-time dependency checking for mojom imports, where each build '
+      'metadata file corresponds to a build target in the dependency graph of '
+      'a typical build system.')
 
-  args, _ = arg_parser.parse_known_args()
+  args, _ = arg_parser.parse_known_args(command_line)
   if args.mojom_file_list:
     with open(args.mojom_file_list) as f:
       args.mojom_files.extend(f.read().split())
@@ -292,11 +341,19 @@ already present in the provided output root.""")
     raise ValueError(
         'Must list at least one mojom file via --mojoms or --mojom-file-list')
 
-  ParseMojoms(
-      list(map(os.path.abspath, args.mojom_files)),
-      list(map(os.path.abspath, args.input_root_paths)),
-      os.path.abspath(args.output_root_path), args.enabled_features)
+  mojom_files = list(map(os.path.abspath, args.mojom_files))
+  input_roots = list(map(os.path.abspath, args.input_root_paths))
+  output_root = os.path.abspath(args.output_root_path)
+
+  if args.build_metadata_filename:
+    allowed_imports = _CollectAllowedImportsFromBuildMetadata(
+        args.build_metadata_filename)
+  else:
+    allowed_imports = None
+
+  _ParseMojoms(mojom_files, input_roots, output_root, args.enabled_features,
+               allowed_imports)
 
 
 if __name__ == '__main__':
-  main()
+  Run(sys.argv[1:])

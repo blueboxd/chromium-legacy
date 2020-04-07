@@ -47,7 +47,7 @@ class WebviewUserData : public base::SupportsUserData::Data {
 WebviewController::WebviewController(content::BrowserContext* browser_context,
                                      Client* client,
                                      bool enabled_for_dev)
-    : WebContentController(client) {
+    : WebContentController(client), enabled_for_dev_(enabled_for_dev) {
   content::WebContents::CreateParams create_params(browser_context, nullptr);
   contents_ = content::WebContents::Create(create_params);
   contents_->SetUserData(kWebviewResponseUserDataKey,
@@ -118,9 +118,38 @@ void WebviewController::ProcessRequest(const webview::WebviewRequest& request) {
       }
       break;
 
+    case webview::WebviewRequest::kUpdateSettings:
+      if (request.has_update_settings()) {
+        HandleUpdateSettings(request.update_settings());
+      } else {
+        client_->OnError("update_settings() not supplied");
+      }
+      break;
+
     default:
       WebContentController::ProcessRequest(request);
       break;
+  }
+}
+
+void WebviewController::HandleUpdateSettings(
+    const webview::UpdateSettingsRequest& request) {
+  content::WebContents* contents = GetWebContents();
+  content::WebPreferences prefs =
+      contents->GetRenderViewHost()->GetWebkitPreferences();
+  prefs.javascript_enabled = request.javascript_enabled();
+  contents->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
+
+  has_navigation_delegate_ = request.has_navigation_delegate();
+
+  CastWebContents::FromWebContents(contents)->SetEnabledForRemoteDebugging(
+      request.debugging_enabled() || enabled_for_dev_);
+
+  if (request.has_user_agent() &&
+      request.user_agent().type_case() == webview::UserAgent::kValue) {
+    contents->SetUserAgentOverride(
+        blink::UserAgentOverride::UserAgentOnly(request.user_agent().value()),
+        true);
   }
 }
 

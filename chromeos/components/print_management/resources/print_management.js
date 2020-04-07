@@ -2,8 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
+import 'chrome://resources/mojo/mojo/public/mojom/base/big_buffer.mojom-lite.js';
+import 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-lite.js';
+import 'chrome://resources/mojo/mojo/public/mojom/base/time.mojom-lite.js';
+import 'chrome://resources/mojo/url/mojom/url.mojom-lite.js';
+import './print_job_entry.js';
+
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {getMetadataProvider} from './mojo_interface_provider.js';
+
+/**
+ * @typedef {{
+ *   printJobs: !Array<!chromeos.printing.printingManager.mojom.PrintJobInfo>
+ * }}
+ */
+let PrintJobsList;
 
 /**
  * @fileoverview
@@ -21,6 +35,16 @@ Polymer({
    */
   mojoInterfaceProvider_: null,
 
+  properties: {
+    /**
+     * @type {!Array<!chromeos.printing.printingManager.mojom.PrintJobInfo>}
+     * @private
+     */
+    printJobs_: {
+      type: Array,
+    },
+  },
+
   /** @override */
   created() {
     this.mojoInterfaceProvider_ = getMetadataProvider();
@@ -30,5 +54,9 @@ Polymer({
   ready() {
     // TODO(jimmyxgong): Remove this once the app has more capabilities.
     this.$$('#header').textContent = 'Print Management';
+    this.mojoInterfaceProvider_.getPrintJobs()
+        .then((responseParams) => {
+          this.printJobs_ = responseParams.printJobs;
+        });
   },
 });

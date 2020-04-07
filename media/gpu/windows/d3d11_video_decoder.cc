@@ -30,6 +30,7 @@
 #include "media/gpu/windows/d3d11_video_context_wrapper.h"
 #include "media/gpu/windows/d3d11_video_decoder_impl.h"
 #include "media/gpu/windows/d3d11_video_device_format_support.h"
+#include "media/gpu/windows/display_helper.h"
 #include "media/gpu/windows/supported_profile_helpers.h"
 #include "media/media_buildflags.h"
 #include "ui/gl/direct_composition_surface_win.h"
@@ -682,6 +683,19 @@ void D3D11VideoDecoder::CreatePictureBuffers() {
     return;
   }
 
+  HDRMetadata stream_metadata;
+  if (config_.hdr_metadata())
+    stream_metadata = *config_.hdr_metadata();
+  // else leave |stream_metadata| default-initialized.  We might use it anyway.
+
+  base::Optional<DXGI_HDR_METADATA_HDR10> display_metadata;
+  if (decoder_configurator_->TextureFormat() == DXGI_FORMAT_P010) {
+    // For HDR formats, try to get the display metadata.  This may fail, which
+    // is okay.  We'll just skip sending the metadata.
+    DisplayHelper display_helper(device_);
+    display_metadata = display_helper.GetDisplayMetadata();
+  }
+
   // Drop any old pictures.
   for (auto& buffer : picture_buffers_)
     DCHECK(!buffer->in_picture_use());
@@ -703,6 +717,20 @@ void D3D11VideoDecoder::CreatePictureBuffers() {
                                    media_log_->Clone())) {
       NotifyError("Unable to allocate PictureBuffer");
       return;
+    }
+
+    // If we have display metadata, then tell the processor.  Note that the
+    // order of these calls is important, and we must set the display metadata
+    // if we set the stream metadata, else it can crash on some AMD cards.
+    if (display_metadata) {
+      if (config_.hdr_metadata() ||
+          gpu_workarounds_.use_empty_video_hdr_metadata) {
+        // It's okay if this has an empty-initialized metadata.
+        picture_buffers_[i]->texture_wrapper()->SetStreamHDRMetadata(
+            stream_metadata);
+      }
+      picture_buffers_[i]->texture_wrapper()->SetDisplayHDRMetadata(
+          *display_metadata);
     }
   }
 }

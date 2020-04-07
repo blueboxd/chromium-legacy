@@ -55,8 +55,19 @@ class OmniboxPopupModel {
   // See |Selection::state| below for details.
   enum LineState {
     NORMAL,
+
+    // KEYWORD state means actually in keyword mode, as distinct from the
+    // FOCUSED_BUTTON_KEYWORD state, which is only for button focus.
     KEYWORD,
+
+    // The single (ambiguous) button focus state is not used when button row
+    // is enabled. Instead, the specific FOCUSED_* states below apply.
     BUTTON_FOCUSED,
+
+    // Button row focus states:
+    FOCUSED_BUTTON_KEYWORD,
+    FOCUSED_BUTTON_TAB_SWITCH,
+    FOCUSED_BUTTON_PEDAL,
 
     // NO_STATE logically indicates unavailability of a state, and is
     // only used internally. NO_STATE values are not persisted in members,

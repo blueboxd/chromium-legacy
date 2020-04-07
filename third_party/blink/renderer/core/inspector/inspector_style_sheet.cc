@@ -997,7 +997,7 @@ String InspectorStyleSheet::FinalURL() {
 bool InspectorStyleSheet::SetText(const String& text,
                                   ExceptionState& exception_state) {
   InnerSetText(text, true);
-  page_style_sheet_->SetText(text, true /* allow_import_rules */, nullptr);
+  page_style_sheet_->SetText(text, CSSImportRules::kAllow);
   OnStyleSheetTextChanged();
   return true;
 }

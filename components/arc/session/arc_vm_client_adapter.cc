@@ -31,6 +31,7 @@
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -46,6 +47,7 @@
 namespace arc {
 namespace {
 
+constexpr const char kArcCreateDataJobName[] = "arc_2dcreate_2ddata";
 constexpr const char kArcVmServerProxyJobName[] = "arcvm_2dserver_2dproxy";
 constexpr const char kArcVmPerBoardFeaturesJobName[] =
     "arcvm_2dper_2dboard_2dfeatures";
@@ -305,10 +307,10 @@ class ArcVmClientAdapter : public ArcClientAdapter,
   // Initializing |is_host_on_vm_| and |is_dev_mode_| is not always very fast.
   // Try to initialize them in the constructor and in StartMiniArc respectively.
   // They usually run when the system is not busy.
-  explicit ArcVmClientAdapter() : ArcVmClientAdapter({}) {}
+  ArcVmClientAdapter() : ArcVmClientAdapter(FileSystemStatusRewriter{}) {}
 
   // For testing purposes and the internal use (by the other ctor) only.
-  ArcVmClientAdapter(const FileSystemStatusRewriter& rewriter)
+  explicit ArcVmClientAdapter(const FileSystemStatusRewriter& rewriter)
       : is_host_on_vm_(chromeos::system::StatisticsProvider::GetInstance()
                            ->IsRunningOnVm()),
         file_system_status_rewriter_for_testing_(rewriter) {
@@ -391,14 +393,19 @@ class ArcVmClientAdapter : public ArcClientAdapter,
                                 weak_factory_.GetWeakPtr()));
   }
 
-  void SetUserInfo(const std::string& hash,
+  void SetUserInfo(const cryptohome::Identification& cryptohome_id,
+                   const std::string& hash,
                    const std::string& serial_number) override {
+    DCHECK(cryptohome_id_.id().empty());
     DCHECK(user_id_hash_.empty());
     DCHECK(serial_number_.empty());
+    if (cryptohome_id.id().empty())
+      LOG(WARNING) << "cryptohome_id is empty";
     if (hash.empty())
       LOG(WARNING) << "hash is empty";
     if (serial_number.empty())
       LOG(WARNING) << "serial_number is empty";
+    cryptohome_id_ = cryptohome_id;
     user_id_hash_ = hash;
     serial_number_ = serial_number;
   }
@@ -475,6 +482,26 @@ class ArcVmClientAdapter : public ArcClientAdapter,
                                     bool result) {
     if (!result) {
       LOG(ERROR) << "Failed to start arcvm-server-proxy job";
+      std::move(callback).Run(false);
+      return;
+    }
+
+    VLOG(1) << "Starting arc-create-data";
+    const std::string account_id =
+        cryptohome::CreateAccountIdentifierFromIdentification(cryptohome_id_)
+            .account_id();
+    chromeos::UpstartClient::Get()->StartJob(
+        kArcCreateDataJobName, {"CHROMEOS_USER=" + account_id},
+        base::BindOnce(&ArcVmClientAdapter::OnArcCreateDataJobStarted,
+                       weak_factory_.GetWeakPtr(), std::move(params),
+                       std::move(callback)));
+  }
+
+  void OnArcCreateDataJobStarted(UpgradeParams params,
+                                 chromeos::VoidDBusMethodCallback callback,
+                                 bool result) {
+    if (!result) {
+      LOG(ERROR) << "Failed to start arc-create-data job";
       std::move(callback).Run(false);
       return;
     }
@@ -629,6 +656,8 @@ class ArcVmClientAdapter : public ArcClientAdapter,
   // True when the *host* is running on a VM.
   const bool is_host_on_vm_;
 
+  // A cryptohome ID of the primary profile.
+  cryptohome::Identification cryptohome_id_;
   // A hash of the primary profile user ID.
   std::string user_id_hash_;
   // A serial number for the current profile.

@@ -6,6 +6,7 @@
 
 // Polymer BrowserTest fixture.
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
+GEN('#include "chrome/browser/ui/ui_features.h"');
 GEN('#include "services/network/public/cpp/features.h"');
 
 /** Test fixture for shared Polymer 3 elements. */
@@ -318,7 +319,12 @@ var CrElementsPolicyPrefIndicatorV3Test =
 
   /** @override */
   get featureList() {
-    return {enabled: ['network::features::kOutOfBlinkCors']};
+    return {
+      enabled: [
+        'network::features::kOutOfBlinkCors',
+        'features::kSettingsPolymer3',
+      ]
+    };
   }
 };
 

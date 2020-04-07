@@ -134,7 +134,8 @@ class ArcContainerClientAdapter
     chromeos::SessionManagerClient::Get()->StopArcInstance(base::DoNothing());
   }
 
-  void SetUserInfo(const std::string& hash,
+  void SetUserInfo(const cryptohome::Identification& cryptohome_id,
+                   const std::string& hash,
                    const std::string& serial_number) override {}
 
   // chromeos::SessionManagerClient::Observer overrides:

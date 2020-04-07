@@ -67,7 +67,6 @@ android_library("java") {
     "java/src/org/chromium/components/browser_ui/widget/selectable_list/SelectionDelegate.java",
     "java/src/org/chromium/components/browser_ui/widget/text/AccessibleTextView.java",
     "java/src/org/chromium/components/browser_ui/widget/text/AlertDialogEditText.java",
-    "java/src/org/chromium/components/browser_ui/widget/text/ChromeTextInputLayout.java",
     "java/src/org/chromium/components/browser_ui/widget/text/TemplatePreservingTextView.java",
     "java/src/org/chromium/components/browser_ui/widget/text/TextViewWithCompoundDrawables.java",
     "java/src/org/chromium/components/browser_ui/widget/text/VerticallyFixedEditText.java",
@@ -200,7 +199,6 @@ android_library("javatests") {
     "java/src/org/chromium/components/browser_ui/widget/highlight/ViewHighlighterTest.java",
     "java/src/org/chromium/components/browser_ui/widget/listmenu/ListMenuRenderTest.java",
     "java/src/org/chromium/components/browser_ui/widget/scrim/ScrimTest.java",
-    "java/src/org/chromium/components/browser_ui/widget/text/ChromeTextInputLayoutRenderTest.java",
   ]
   deps = [
     ":java",
@@ -236,7 +234,6 @@ android_resources("java_test_resources") {
     "test/java/res/layout/radio_button_with_description_layout_test.xml",
     "test/java/res/layout/radio_button_with_edit_text_test.xml",
     "test/java/res/values/strings.xml",
-    "test/java/res/values/styles.xml",
   ]
   deps = [
     ":java_resources",

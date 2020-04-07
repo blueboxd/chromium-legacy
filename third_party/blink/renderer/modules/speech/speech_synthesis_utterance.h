@@ -117,7 +117,9 @@ class SpeechSynthesisUtterance final
   // EventTarget
   const AtomicString& InterfaceName() const override;
 
-  HeapMojoReceiver<mojom::blink::SpeechSynthesisClient> receiver_;
+  HeapMojoReceiver<mojom::blink::SpeechSynthesisClient,
+                   SpeechSynthesisUtterance>
+      receiver_;
   mojom::blink::SpeechSynthesisUtterancePtr mojom_utterance_;
   Member<SpeechSynthesis> synthesis_;
   Member<SpeechSynthesisVoice> voice_;

@@ -244,7 +244,7 @@ void SystemTrayClient::ShowChromeSlow() {
 
 void SystemTrayClient::ShowIMESettings() {
   base::RecordAction(base::UserMetricsAction("OpenLanguageOptionsDialog"));
-  ShowSettingsSubPageForActiveUser(chrome::kLanguagesSubPage);
+  ShowSettingsSubPageForActiveUser(chrome::kOsLanguagesDetailsSubPage);
 }
 
 void SystemTrayClient::ShowConnectedDevicesSettings() {

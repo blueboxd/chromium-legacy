@@ -2689,6 +2689,11 @@ void CrostiniManager::OnUpgradeContainerProgress(
   }
 }
 
+void CrostiniManager::OnStartLxdProgress(
+    const vm_tools::cicerone::StartLxdProgressSignal& signal) {
+  // TODO(crbug/1064512): Implement.
+}
+
 void CrostiniManager::OnUninstallPackageOwningFile(
     CrostiniResultCallback callback,
     base::Optional<vm_tools::cicerone::UninstallPackageOwningFileResponse>

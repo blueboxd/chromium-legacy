@@ -42,6 +42,8 @@ class CONTENT_EXPORT PepperPrintSettingsManagerImpl
       PepperPrintSettingsManager::Callback callback) override;
 
  private:
+  static PepperPrintSettingsManager::Result ComputeDefaultPrintSettings();
+
   DISALLOW_COPY_AND_ASSIGN(PepperPrintSettingsManagerImpl);
 };
 

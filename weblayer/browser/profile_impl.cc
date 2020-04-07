@@ -4,6 +4,7 @@
 
 #include "weblayer/browser/profile_impl.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -19,7 +20,9 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "components/prefs/pref_service.h"
 #include "components/web_cache/browser/web_cache_manager.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/device_service.h"
@@ -229,18 +232,6 @@ void ProfileImpl::DownloadsInitialized() {
 #endif
 }
 
-bool ProfileImpl::DeleteDataFromDisk(base::OnceClosure done_callback) {
-  if (num_browser_impl_ > 0)
-    return false;
-  base::ThreadPool::PostTaskAndReply(
-      FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::BindOnce(&NukeProfileFromDisk, name_, data_path_),
-      std::move(done_callback));
-  return true;
-}
-
 void ProfileImpl::ClearBrowsingData(
     const std::vector<BrowsingDataType>& data_types,
     base::Time from_time,
@@ -286,6 +277,31 @@ CookieManager* ProfileImpl::GetCookieManager() {
   return cookie_manager_.get();
 }
 
+// static
+void ProfileImpl::NukeDataAfterRemovingData(
+    std::unique_ptr<ProfileImpl> profile,
+    base::OnceClosure done_callback) {
+  // Need PostTask to avoid reentrancy for deleting |browser_context_|.
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&ProfileImpl::DoNukeData, std::move(profile),
+                                std::move(done_callback)));
+}
+
+// static
+void ProfileImpl::DoNukeData(std::unique_ptr<ProfileImpl> profile,
+                             base::OnceClosure done_callback) {
+  std::string name = profile->name_;
+  base::FilePath data_path = profile->data_path_;
+
+  profile.reset();
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::BindOnce(&NukeProfileFromDisk, name, data_path),
+      std::move(done_callback));
+}
+
 void ProfileImpl::ClearRendererCache() {
   for (content::RenderProcessHost::iterator iter =
            content::RenderProcessHost::AllHostsIterator();
@@ -311,8 +327,42 @@ void ProfileImpl::OnLocaleChanged() {
           i18n::GetAcceptLangs()));
 }
 
+// static
 std::unique_ptr<Profile> Profile::Create(const std::string& name) {
   return std::make_unique<ProfileImpl>(name);
+}
+
+// static
+std::unique_ptr<Profile> Profile::DestroyAndDeleteDataFromDisk(
+    std::unique_ptr<Profile> profile,
+    base::OnceClosure done_callback) {
+  std::unique_ptr<ProfileImpl> impl(
+      static_cast<ProfileImpl*>(profile.release()));
+  return ProfileImpl::DestroyAndDeleteDataFromDisk(std::move(impl),
+                                                   std::move(done_callback));
+}
+
+// static
+std::unique_ptr<ProfileImpl> ProfileImpl::DestroyAndDeleteDataFromDisk(
+    std::unique_ptr<ProfileImpl> profile,
+    base::OnceClosure done_callback) {
+  if (profile->num_browser_impl_ > 0)
+    return profile;
+
+  // Try to finish all writes and remove all data before nuking the profile.
+  static_cast<BrowserContextImpl*>(profile->GetBrowserContext())
+      ->pref_service()
+      ->CommitPendingWrite();
+
+  // Unretained is safe here because DataClearer is owned by
+  // BrowserContextImpl which is owned by this.
+  auto* clearer = new DataClearer(
+      profile->GetBrowserContext(),
+      base::BindOnce(&ProfileImpl::NukeDataAfterRemovingData,
+                     std::move(profile), std::move(done_callback)));
+  int remove_all_mask = 0x8fffffff;
+  clearer->ClearData(remove_all_mask, base::Time::Min(), base::Time::Max());
+  return nullptr;
 }
 
 #if defined(OS_ANDROID)
@@ -347,12 +397,21 @@ static void JNI_ProfileImpl_EnumerateAllProfileNames(
                      base::android::ScopedJavaGlobalRef<jobject>(callback)));
 }
 
-jboolean ProfileImpl::DeleteDataFromDisk(
+jint ProfileImpl::GetNumBrowserImpl(JNIEnv* env) {
+  return num_browser_impl_;
+}
+
+void ProfileImpl::DestroyAndDeleteDataFromDisk(
     JNIEnv* env,
     const base::android::JavaRef<jobject>& j_completion_callback) {
-  return DeleteDataFromDisk(base::BindOnce(
-      &base::android::RunRunnableAndroid,
-      base::android::ScopedJavaGlobalRef<jobject>(j_completion_callback)));
+  std::unique_ptr<ProfileImpl> ptr(this);
+  std::unique_ptr<ProfileImpl> result =
+      ProfileImpl::DestroyAndDeleteDataFromDisk(
+          std::move(ptr),
+          base::BindOnce(&base::android::RunRunnableAndroid,
+                         base::android::ScopedJavaGlobalRef<jobject>(
+                             j_completion_callback)));
+  CHECK(!result);
 }
 
 void ProfileImpl::ClearBrowsingData(

@@ -8,14 +8,34 @@
 #include "chromeos/components/print_management/mojom/printing_manager.mojom.h"
 #include "chromeos/components/print_management/url_constants.h"
 #include "chromeos/grit/chromeos_print_management_resources.h"
+#include "chromeos/strings/grit/chromeos_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "ui/base/webui/web_ui_util.h"
 #include "ui/resources/grit/webui_resources.h"
 
 namespace chromeos {
 namespace printing {
 namespace printing_manager {
+namespace {
+void AddPrintManagementStrings(content::WebUIDataSource* html_source) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"completionStatusFailed", IDS_PRINT_MANAGEMENT_COMPLETION_STATUS_FAILED},
+      {"completionStatusCanceled",
+       IDS_PRINT_MANAGEMENT_COMPLETION_STATUS_CANCELED},
+      {"completionStatusPrinted",
+       IDS_PRINT_MANAGEMENT_COMPLETION_STATUS_PRINTED},
+      {"completionStatusUnknownError",
+       IDS_PRINT_MANAGEMENT_COMPLETION_STATUS_UNKNOWN_ERROR},
+  };
+
+  for (const auto& str : kLocalizedStrings) {
+    html_source->AddLocalizedString(str.name, str.id);
+  }
+  html_source->UseStringsJs();
+}
+}  // namespace
 
 PrintManagementUI::PrintManagementUI(
     content::WebUI* web_ui,
@@ -37,7 +57,13 @@ PrintManagementUI::PrintManagementUI(
   html_source->AddResourcePath("pwa.html", IDR_PRINT_MANAGEMENT_PWA_HTML);
   html_source->AddResourcePath("manifest.json", IDR_PRINT_MANAGEMENT_MANIFEST);
   html_source->AddResourcePath("app_icon_192.png", IDR_PRINT_MANAGEMENT_ICON);
+  html_source->AddResourcePath("print_job_entry.html",
+                               IDR_PRINT_MANAGEMENT_PRINT_JOB_ENTRY_HTML);
+  html_source->AddResourcePath("print_job_entry.js",
+                               IDR_PRINT_MANAGEMENT_PRINT_JOB_ENTRY_JS);
   html_source->SetDefaultResource(IDR_PRINT_MANAGEMENT_INDEX_HTML);
+
+  AddPrintManagementStrings(html_source.get());
 
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                                 html_source.release());

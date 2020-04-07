@@ -660,24 +660,6 @@
             ]
         }
     ],
-    "AutofillEnableLocalCardMigrationForNonSyncUser": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillEnableLocalCardMigrationForNonSyncUser"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillFieldMetadata": [
         {
             "platforms": [

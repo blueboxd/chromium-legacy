@@ -140,7 +140,7 @@ class CookieStore final : public EventTargetWithInlineData,
   // This receiver is set up on-demand, when the cookie store has at least one
   // change event listener. If all the listeners are unregistered, the receiver
   // is torn down.
-  HeapMojoReceiver<network::mojom::blink::CookieChangeListener>
+  HeapMojoReceiver<network::mojom::blink::CookieChangeListener, CookieStore>
       change_listener_receiver_;
 
   // Default for cookie_url in CookieStoreGetOptions.

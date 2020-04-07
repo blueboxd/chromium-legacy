@@ -128,16 +128,23 @@ void OmniboxPopupModel::ComputeMatchMaxWidths(int contents_width,
 OmniboxPopupModel::LineState OmniboxPopupModel::GetNextLineState(
     LineState state,
     Direction direction) {
+  const bool button_row = OmniboxFieldTrial::IsSuggestionButtonRowEnabled();
   switch (direction) {
     case kForward:
       switch (state) {
         case NO_STATE:
           return NORMAL;
         case NORMAL:
-          return KEYWORD;
+          return button_row ? FOCUSED_BUTTON_KEYWORD : KEYWORD;
         case KEYWORD:
-          return BUTTON_FOCUSED;
+          return button_row ? FOCUSED_BUTTON_TAB_SWITCH : BUTTON_FOCUSED;
         case BUTTON_FOCUSED:
+          return NO_STATE;
+        case FOCUSED_BUTTON_KEYWORD:
+          return FOCUSED_BUTTON_TAB_SWITCH;
+        case FOCUSED_BUTTON_TAB_SWITCH:
+          return FOCUSED_BUTTON_PEDAL;
+        case FOCUSED_BUTTON_PEDAL:
           return NO_STATE;
         default:
           break;
@@ -146,13 +153,19 @@ OmniboxPopupModel::LineState OmniboxPopupModel::GetNextLineState(
     case kBackward:
       switch (state) {
         case NO_STATE:
-          return BUTTON_FOCUSED;
+          return button_row ? FOCUSED_BUTTON_PEDAL : BUTTON_FOCUSED;
         case NORMAL:
           return NO_STATE;
         case KEYWORD:
           return NORMAL;
         case BUTTON_FOCUSED:
           return KEYWORD;
+        case FOCUSED_BUTTON_KEYWORD:
+          return NORMAL;
+        case FOCUSED_BUTTON_TAB_SWITCH:
+          return FOCUSED_BUTTON_KEYWORD;
+        case FOCUSED_BUTTON_PEDAL:
+          return FOCUSED_BUTTON_TAB_SWITCH;
         default:
           break;
       }
@@ -447,17 +460,23 @@ bool OmniboxPopupModel::IsSelectionAvailable(Selection selection) const {
   }
   const auto& match = result().match_at(selection.line);
   switch (selection.state) {
-    case OmniboxPopupModel::NO_STATE:
+    case NO_STATE:
       return false;
-    case OmniboxPopupModel::NORMAL:
+    case NORMAL:
       return true;
-    case OmniboxPopupModel::KEYWORD:
+    case KEYWORD:
       return match.associated_keyword != nullptr;
-    case OmniboxPopupModel::BUTTON_FOCUSED:
+    case BUTTON_FOCUSED:
       // TODO(orinj): Here is an opportunity to clean up the presentational
       //  logic that pkasting wanted to take out of AutocompleteMatch. The view
       //  should be driven by the model, so this is really the place to decide.
       return match.ShouldShowTabMatchButton();
+    case FOCUSED_BUTTON_KEYWORD:
+      return match.associated_keyword != nullptr;
+    case FOCUSED_BUTTON_TAB_SWITCH:
+      return match.has_tab_match;
+    case FOCUSED_BUTTON_PEDAL:
+      return match.pedal != nullptr;
     default:
       break;
   }

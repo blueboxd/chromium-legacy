@@ -227,11 +227,8 @@ class ChromeOSTermsHandler
                          this),
           base::BindOnce(&ChromeOSTermsHandler::ResponseOnUIThread, this));
     } else {
-      // Load local ChromeOS terms from the file.
-      base::ThreadPool::PostTaskAndReply(
-          FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-          base::BindOnce(&ChromeOSTermsHandler::LoadEulaFileAsync, this),
-          base::BindOnce(&ChromeOSTermsHandler::ResponseOnUIThread, this));
+      NOTREACHED();
+      ResponseOnUIThread();
     }
   }
 
@@ -248,23 +245,6 @@ class ChromeOSTermsHandler
     if (net::FileURLToFilePath(GURL(customization->GetEULAPage(locale_)),
                                &oem_eula_file_path)) {
       if (!base::ReadFileToString(oem_eula_file_path, &contents_)) {
-        contents_.clear();
-      }
-    }
-  }
-
-  void LoadEulaFileAsync() {
-    base::ScopedBlockingCall scoped_blocking_call(
-        FROM_HERE, base::BlockingType::MAY_BLOCK);
-
-    std::string file_path =
-        base::StringPrintf(chrome::kEULAPathFormat, locale_.c_str());
-    if (!base::ReadFileToString(base::FilePath(file_path), &contents_)) {
-      // No EULA for given language - try en-US as default.
-      file_path = base::StringPrintf(chrome::kEULAPathFormat, "en-US");
-      if (!base::ReadFileToString(base::FilePath(file_path), &contents_)) {
-        // File with EULA not found, ResponseOnUIThread will load EULA from
-        // resources if contents_ is empty.
         contents_.clear();
       }
     }
@@ -651,11 +631,12 @@ void AboutUIHTMLSource::StartDataRequest(
 #if !defined(OS_ANDROID)
   } else if (source_name_ == chrome::kChromeUITermsHost) {
 #if defined(OS_CHROMEOS)
-    ChromeOSTermsHandler::Start(path, std::move(callback));
-    return;
-#else
-    response = l10n_util::GetStringUTF8(IDS_TERMS_HTML);
+    if (!path.empty()) {
+      ChromeOSTermsHandler::Start(path, std::move(callback));
+      return;
+    }
 #endif
+    response = l10n_util::GetStringUTF8(IDS_TERMS_HTML);
 #endif
   }
 

@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/buildflags.h"
 #include "chrome/browser/captive_portal/captive_portal_service_factory.h"
 #include "chrome/browser/client_hints/client_hints.h"
 #include "chrome/browser/complex_tasks/task_tab_helper.h"
@@ -160,6 +161,10 @@
 #include "chrome/browser/web_applications/web_app_tab_helper.h"
 #include "extensions/browser/view_type_utils.h"
 #endif
+
+#if BUILDFLAG(ENABLE_KALEIDOSCOPE)
+#include "chrome/browser/media/kaleidoscope/internal/kaleidoscope_tab_helper.h"
+#endif  // BUILDFLAG(ENABLE_KALEIDOSCOPE)
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 #include "chrome/browser/offline_pages/android/auto_fetch_page_load_watcher.h"
@@ -412,6 +417,11 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   if (SiteEngagementService::IsEnabled())
     web_app::WebAppMetrics::Get(profile);
 #endif
+
+#if BUILDFLAG(ENABLE_KALEIDOSCOPE)
+  if (base::FeatureList::IsEnabled(media::kKaleidoscope))
+    KaleidoscopeTabHelper::CreateForWebContents(web_contents);
+#endif  // BUILDFLAG(ENABLE_KALEIDOSCOPE)
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   offline_pages::OfflinePageTabHelper::CreateForWebContents(web_contents);

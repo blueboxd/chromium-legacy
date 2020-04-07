@@ -74,6 +74,15 @@ constexpr const char* kApplicationMimeTypePrefix = "application/";
 constexpr const char* kAudioMimeTypePrefix = "audio/";
 constexpr const char* kVideoMimeTypePrefix = "video/";
 constexpr const char* kCodecsMimeTypeParam = "codecs";
+constexpr const char* kSmpteSt2086HdrMetadataType = "smpteSt2086";
+constexpr const char* kSmpteSt209410HdrMetadataType = "smpteSt2094-10";
+constexpr const char* kSmpteSt209440HdrMetadataType = "smpteSt2094-40";
+constexpr const char* kSrgbColorGamut = "srgb";
+constexpr const char* kP3ColorGamut = "p3";
+constexpr const char* kRec2020ColorGamut = "rec2020";
+constexpr const char* kSrgbTransferFunction = "srgb";
+constexpr const char* kPqTransferFunction = "pq";
+constexpr const char* kHlgTransferFunction = "hlg";
 
 // Gets parameters for kMediaLearningSmoothnessExperiment field trial. Will
 // provide sane defaults when field trial not enabled. Values of -1 indicate
@@ -357,6 +366,57 @@ bool CheckMseSupport(const String& mime_type, const String& codec) {
   return true;
 }
 
+void ParseDynamicRangeConfigurations(
+    const blink::VideoConfiguration* video_config,
+    media::VideoColorSpace* color_space,
+    media::HdrMetadataType* hdr_metadata) {
+  DCHECK(color_space);
+  DCHECK(hdr_metadata);
+
+  // TODO(1066628): Follow up on MediaCapabilities spec regarding reconciling
+  // discrepancies between mime type and colorGamut/transferFunction; for now,
+  // give precedence to the latter.
+
+  const String& hdr_metadata_type = video_config->hdrMetadataType();
+  if (hdr_metadata_type == kSmpteSt2086HdrMetadataType) {
+    *hdr_metadata = media::HdrMetadataType::kSmpteSt2086;
+  } else if (hdr_metadata_type == kSmpteSt209410HdrMetadataType) {
+    *hdr_metadata = media::HdrMetadataType::kSmpteSt2094_10;
+  } else if (hdr_metadata_type == kSmpteSt209440HdrMetadataType) {
+    *hdr_metadata = media::HdrMetadataType::kSmpteSt2094_40;
+  } else if (hdr_metadata_type.IsNull()) {
+    *hdr_metadata = media::HdrMetadataType::kNone;
+  } else {
+    NOTREACHED();
+  }
+
+  const String& color_gamut = video_config->colorGamut();
+  if (color_gamut == kSrgbColorGamut) {
+    color_space->primaries = media::VideoColorSpace::PrimaryID::BT709;
+  } else if (color_gamut == kP3ColorGamut) {
+    color_space->primaries = media::VideoColorSpace::PrimaryID::SMPTEST431_2;
+  } else if (color_gamut == kRec2020ColorGamut) {
+    color_space->primaries = media::VideoColorSpace::PrimaryID::BT2020;
+  } else if (color_gamut.IsNull()) {
+    // Leave |color_space->primaries| as-is.
+  } else {
+    NOTREACHED();
+  }
+
+  const String& transfer_function = video_config->transferFunction();
+  if (transfer_function == kSrgbTransferFunction) {
+    color_space->transfer = media::VideoColorSpace::TransferID::BT709;
+  } else if (transfer_function == kPqTransferFunction) {
+    color_space->transfer = media::VideoColorSpace::TransferID::SMPTEST2084;
+  } else if (transfer_function == kHlgTransferFunction) {
+    color_space->transfer = media::VideoColorSpace::TransferID::ARIB_STD_B67;
+  } else if (transfer_function.IsNull()) {
+    // Leave |color_space->transfer| as-is.
+  } else {
+    NOTREACHED();
+  }
+}
+
 // Returns whether the audio codec associated with the audio configuration is
 // valid and non-ambiguous.
 // |console_warning| is an out param containing a message to be printed in the
@@ -456,6 +516,7 @@ bool IsVideoConfigurationSupported(
   uint8_t video_level = 0;
   media::VideoColorSpace video_color_space;
   bool is_video_codec_ambiguous = true;
+  media::HdrMetadataType hdr_metadata_type;
 
   // Must succeed as IsVideoCodecValid() should have been called before.
   bool parsed = media::ParseVideoCodecString(
@@ -463,8 +524,11 @@ bool IsVideoConfigurationSupported(
       &video_profile, &video_level, &video_color_space);
   DCHECK(parsed && !is_video_codec_ambiguous);
 
-  return media::IsSupportedVideoType(
-      {video_codec, video_profile, video_level, video_color_space});
+  ParseDynamicRangeConfigurations(video_config, &video_color_space,
+                                  &hdr_metadata_type);
+
+  return media::IsSupportedVideoType({video_codec, video_profile, video_level,
+                                      video_color_space, hdr_metadata_type});
 }
 
 void OnMediaCapabilitiesEncodingInfo(

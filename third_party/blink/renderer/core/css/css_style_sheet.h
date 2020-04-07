@@ -48,6 +48,11 @@ class ScriptPromiseResolver;
 class ScriptState;
 class StyleSheetContents;
 
+enum class CSSImportRules {
+  kAllow,
+  kIgnoreWithWarning,
+};
+
 class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -189,9 +194,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   bool SheetLoaded();
   bool LoadCompleted() const { return load_completed_; }
   void StartLoadingDynamicSheet();
-  // If `allow_import_rules` is false, an ExceptionState pointer must be
-  // provided, otherwise it can be null.
-  void SetText(const String&, bool allow_import_rules, ExceptionState*);
+  void SetText(const String&, CSSImportRules);
   void SetMedia(MediaList*);
   void SetAlternateFromConstructor(bool);
   bool CanBeActivated(const String& current_preferrable_name) const;

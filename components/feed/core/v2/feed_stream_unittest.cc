@@ -94,12 +94,41 @@ std::string ModelStateFor(FeedStore* store) {
 
 class TestSurface : public FeedStream::SurfaceInterface {
  public:
+  // Provide some helper functionality to attach/detach the surface.
+  // This way we can auto-detach in the destructor.
+  explicit TestSurface(FeedStream* stream = nullptr) {
+    if (stream)
+      Attach(stream);
+  }
+
+  ~TestSurface() override {
+    if (stream_)
+      Detach();
+  }
+
+  void Attach(FeedStream* stream) {
+    EXPECT_FALSE(stream_);
+    stream_ = stream;
+    stream_->AttachSurface(this);
+  }
+
+  void Detach() {
+    EXPECT_TRUE(stream_);
+    stream_->DetachSurface(this);
+    stream_ = nullptr;
+  }
+
   // FeedStream::SurfaceInterface.
   void StreamUpdate(const feedui::StreamUpdate& stream_update) override {
-    if (!initial_state)
+    // Some special-case treatment for the loading spinner. We don't count it
+    // toward |initial_state| or |update_count_|.
+    bool is_initial_loading_spinner = IsInitialLoadSpinnerUpdate(stream_update);
+    if (!initial_state && !is_initial_loading_spinner) {
       initial_state = stream_update;
+    }
     update = stream_update;
-    ++update_count_;
+    if (!is_initial_loading_spinner)
+      ++update_count_;
   }
 
   // Test functions.
@@ -113,6 +142,9 @@ class TestSurface : public FeedStream::SurfaceInterface {
   // Describe what is shown on the surface in a format that can be easily
   // asserted against.
   std::string Describe() {
+    if (update && IsInitialLoadSpinnerUpdate(*update))
+      return "loading";
+
     if (!initial_state)
       return "empty";
 
@@ -130,11 +162,20 @@ class TestSurface : public FeedStream::SurfaceInterface {
     }
     return ss.str();
   }
-
+  // The initial state of the stream, if it was received. This is nullopt if
+  // only the loading spinner was seen.
   base::Optional<feedui::StreamUpdate> initial_state;
+  // The last stream update received.
   base::Optional<feedui::StreamUpdate> update;
 
  private:
+  bool IsInitialLoadSpinnerUpdate(const feedui::StreamUpdate& update) {
+    return update.updated_slices().size() == 1 &&
+           update.updated_slices()[0].has_slice() &&
+           update.updated_slices()[0].slice().has_loading_spinner_slice();
+  }
+  // The stream if it was attached using the constructor.
+  FeedStream* stream_ = nullptr;
   int update_count_ = 0;
 };
 
@@ -367,8 +408,7 @@ TEST_F(FeedStreamTest, SurfaceReceivesInitialContent) {
     model->Update(MakeTypicalInitialModelState());
     stream_->LoadModelForTesting(std::move(model));
   }
-  TestSurface surface;
-  stream_->AttachSurface(&surface);
+  TestSurface surface(stream_.get());
   ASSERT_TRUE(surface.initial_state);
   const feedui::StreamUpdate& initial_state = surface.initial_state.value();
   ASSERT_EQ(2, initial_state.updated_slices().size());
@@ -388,8 +428,7 @@ TEST_F(FeedStreamTest, SurfaceReceivesInitialContent) {
 }
 
 TEST_F(FeedStreamTest, SurfaceReceivesInitialContentLoadedAfterAttach) {
-  TestSurface surface;
-  stream_->AttachSurface(&surface);
+  TestSurface surface(stream_.get());
   ASSERT_FALSE(surface.initial_state);
   {
     auto model = std::make_unique<StreamModel>();
@@ -421,8 +460,7 @@ TEST_F(FeedStreamTest, SurfaceReceivesUpdatedContent) {
     model->ExecuteOperations(MakeTypicalStreamOperations());
     stream_->LoadModelForTesting(std::move(model));
   }
-  TestSurface surface;
-  stream_->AttachSurface(&surface);
+  TestSurface surface(stream_.get());
   // Remove #1, add #2.
   stream_->ExecuteOperations({
       MakeOperation(MakeRemove(MakeClusterId(1))),
@@ -450,8 +488,7 @@ TEST_F(FeedStreamTest, SurfaceReceivesSecondUpdatedContent) {
     model->ExecuteOperations(MakeTypicalStreamOperations());
     stream_->LoadModelForTesting(std::move(model));
   }
-  TestSurface surface;
-  stream_->AttachSurface(&surface);
+  TestSurface surface(stream_.get());
   // Add #2.
   stream_->ExecuteOperations({
       MakeOperation(MakeCluster(2, MakeRootId())),
@@ -486,10 +523,9 @@ TEST_F(FeedStreamTest, DetachSurface) {
     model->ExecuteOperations(MakeTypicalStreamOperations());
     stream_->LoadModelForTesting(std::move(model));
   }
-  TestSurface surface;
-  stream_->AttachSurface(&surface);
+  TestSurface surface(stream_.get());
   EXPECT_TRUE(surface.initial_state);
-  stream_->DetachSurface(&surface);
+  surface.Detach();
   surface.Clear();
 
   // Arbitrary stream change. Surface should not see the update.
@@ -502,12 +538,12 @@ TEST_F(FeedStreamTest, DetachSurface) {
 TEST_F(FeedStreamTest, LoadFromNetwork) {
   // Store is empty, so we should fallback to a network request.
   response_translator_.InjectResponse(MakeTypicalInitialModelState());
-  TestSurface surface;
-  stream_->AttachSurface(&surface);
+  TestSurface surface(stream_.get());
   WaitForIdleTaskQueue();
 
-  EXPECT_TRUE(network_.query_request_sent);
+  ASSERT_TRUE(network_.query_request_sent);
   EXPECT_TRUE(response_translator_.InjectedResponseConsumed());
+
   EXPECT_EQ("2 slices", surface.Describe());
   // Verify the model is filled correctly.
   EXPECT_STRINGS_EQUAL(ModelStateFor(MakeTypicalInitialModelState()),
@@ -522,18 +558,20 @@ TEST_F(FeedStreamTest, LoadFromNetworkBecauseStoreIsStale) {
   // fetch new data over the network.
   user_classifier_->OverrideUserClass(UserClass::kActiveSuggestionsConsumer);
   store_->SaveFullStream(MakeTypicalInitialModelState(
-
                              kTestTimeEpoch - base::TimeDelta::FromHours(12) -
                              base::TimeDelta::FromMinutes(1)),
                          base::DoNothing());
 
   // Store is stale, so we should fallback to a network request.
   response_translator_.InjectResponse(MakeTypicalInitialModelState());
-  TestSurface surface;
-  stream_->AttachSurface(&surface);
+  TestSurface surface(stream_.get());
   WaitForIdleTaskQueue();
 
-  EXPECT_TRUE(network_.query_request_sent);
+  ASSERT_TRUE(network_.query_request_sent);
+  // The stored continutation token should be sent.
+  EXPECT_EQ(
+      "token-1",
+      network_.query_request_sent->feed_request().consistency_token().token());
   EXPECT_TRUE(response_translator_.InjectedResponseConsumed());
   ASSERT_TRUE(surface.initial_state);
 }
@@ -542,8 +580,7 @@ TEST_F(FeedStreamTest, LoadFromNetworkFailsDueToProtoTranslation) {
   // No data in the store, so we should fetch from the network.
   // The network will respond with an empty response, which should fail proto
   // translation.
-  TestSurface surface;
-  stream_->AttachSurface(&surface);
+  TestSurface surface(stream_.get());
   WaitForIdleTaskQueue();
 
   EXPECT_EQ(LoadStreamStatus::kProtoTranslationFailed,
@@ -553,8 +590,7 @@ TEST_F(FeedStreamTest, LoadFromNetworkFailsDueToProtoTranslation) {
 TEST_F(FeedStreamTest, DoNotLoadFromNetworkWhenOffline) {
   is_offline_ = true;
   response_translator_.InjectResponse(MakeTypicalInitialModelState());
-  TestSurface surface;
-  stream_->AttachSurface(&surface);
+  TestSurface surface(stream_.get());
   WaitForIdleTaskQueue();
 
   EXPECT_EQ(LoadStreamStatus::kCannotLoadFromNetworkOffline,
@@ -565,8 +601,7 @@ TEST_F(FeedStreamTest, DoNotLoadFromNetworkWhenOffline) {
 TEST_F(FeedStreamTest, DoNotLoadStreamWhenArticleListIsHidden) {
   stream_->SetArticlesListVisible(false);
   response_translator_.InjectResponse(MakeTypicalInitialModelState());
-  TestSurface surface;
-  stream_->AttachSurface(&surface);
+  TestSurface surface(stream_.get());
   WaitForIdleTaskQueue();
 
   EXPECT_EQ(LoadStreamStatus::kLoadNotAllowedArticlesListHidden,
@@ -577,8 +612,7 @@ TEST_F(FeedStreamTest, DoNotLoadStreamWhenArticleListIsHidden) {
 TEST_F(FeedStreamTest, DoNotLoadStreamWhenEulaIsNotAccepted) {
   is_eula_accepted_ = false;
   response_translator_.InjectResponse(MakeTypicalInitialModelState());
-  TestSurface surface;
-  stream_->AttachSurface(&surface);
+  TestSurface surface(stream_.get());
   WaitForIdleTaskQueue();
 
   EXPECT_EQ(LoadStreamStatus::kLoadNotAllowedEulaNotAccepted,
@@ -591,8 +625,7 @@ TEST_F(FeedStreamTest, DoNotLoadFromNetworkAfterHistoryIsDeleted) {
   task_environment_.FastForwardBy(kSuppressRefreshDuration -
                                   base::TimeDelta::FromSeconds(1));
   response_translator_.InjectResponse(MakeTypicalInitialModelState());
-  TestSurface surface;
-  stream_->AttachSurface(&surface);
+  TestSurface surface(stream_.get());
   WaitForIdleTaskQueue();
 
   EXPECT_EQ("zero-state", surface.Describe());
@@ -600,9 +633,9 @@ TEST_F(FeedStreamTest, DoNotLoadFromNetworkAfterHistoryIsDeleted) {
   EXPECT_EQ(LoadStreamStatus::kCannotLoadFromNetworkSupressedForHistoryDelete,
             event_observer_.load_stream_status);
 
-  stream_->DetachSurface(&surface);
+  surface.Detach();
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(2));
-  stream_->AttachSurface(&surface);
+  surface.Attach(stream_.get());
   WaitForIdleTaskQueue();
 
   EXPECT_EQ("2 slices 2 updates", surface.Describe());
@@ -625,8 +658,7 @@ TEST_F(FeedStreamTest, LoadStreamFromStore) {
                              kTestTimeEpoch - base::TimeDelta::FromHours(12) +
                              base::TimeDelta::FromMinutes(1)),
                          base::DoNothing());
-  TestSurface surface;
-  stream_->AttachSurface(&surface);
+  TestSurface surface(stream_.get());
   WaitForIdleTaskQueue();
 
   ASSERT_EQ("2 slices", surface.Describe());
@@ -636,38 +668,44 @@ TEST_F(FeedStreamTest, LoadStreamFromStore) {
                        stream_->GetModel()->DumpStateForTesting());
 }
 
+TEST_F(FeedStreamTest, LoadingSpinnerIsSentInitially) {
+  store_->SaveFullStream(MakeTypicalInitialModelState(), base::DoNothing());
+  TestSurface surface(stream_.get());
+
+  ASSERT_EQ("loading", surface.Describe());
+}
+
 TEST_F(FeedStreamTest, DetachSurfaceWhileLoadingModel) {
   response_translator_.InjectResponse(MakeTypicalInitialModelState());
-  TestSurface surface;
-  stream_->AttachSurface(&surface);
-  stream_->DetachSurface(&surface);
+  TestSurface surface(stream_.get());
+  surface.Detach();
   WaitForIdleTaskQueue();
 
-  EXPECT_EQ("empty", surface.Describe());
+  EXPECT_EQ("loading", surface.Describe());
   EXPECT_TRUE(network_.query_request_sent);
 }
 
 TEST_F(FeedStreamTest, AttachMultipleSurfacesLoadsModelOnce) {
   response_translator_.InjectResponse(MakeTypicalInitialModelState());
-  TestSurface surface;
-  TestSurface other_surface;
-  stream_->AttachSurface(&surface);
-  stream_->AttachSurface(&other_surface);
+  TestSurface surface(stream_.get());
+  TestSurface other_surface(stream_.get());
   WaitForIdleTaskQueue();
 
   ASSERT_EQ(1, network_.send_query_call_count);
+  ASSERT_EQ("2 slices", surface.Describe());
+  ASSERT_EQ("2 slices", other_surface.Describe());
 
-  // After load, another surface doesn't trigger any tasks.
-  TestSurface later_surface;
-  stream_->AttachSurface(&later_surface);
+  // After load, another surface doesn't trigger any tasks,
+  // and immediately has content.
+  TestSurface later_surface(stream_.get());
 
+  ASSERT_EQ("2 slices", later_surface.Describe());
   EXPECT_TRUE(IsTaskQueueIdle());
 }
 
 TEST_F(FeedStreamTest, ModelChangesAreSavedToStorage) {
   store_->SaveFullStream(MakeTypicalInitialModelState(), base::DoNothing());
-  TestSurface surface;
-  stream_->AttachSurface(&surface);
+  TestSurface surface(stream_.get());
   WaitForIdleTaskQueue();
   ASSERT_TRUE(surface.initial_state);
 
@@ -689,10 +727,10 @@ TEST_F(FeedStreamTest, ModelChangesAreSavedToStorage) {
 
   // Unload and reload the model from the store, and verify we can still apply
   // operations correctly.
-  stream_->DetachSurface(&surface);
+  surface.Detach();
   surface.Clear();
   UnloadModel();
-  stream_->AttachSurface(&surface);
+  surface.Attach(stream_.get());
   WaitForIdleTaskQueue();
   ASSERT_TRUE(surface.initial_state);
 

@@ -12,6 +12,7 @@
 
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "media/base/hdr_metadata.h"
 #include "media/base/status.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/command_buffer_helper.h"
@@ -50,6 +51,10 @@ class MEDIA_GPU_EXPORT Texture2DWrapper {
                               const gfx::ColorSpace& input_color_space,
                               MailboxHolderArray* mailbox_dest_out,
                               gfx::ColorSpace* output_color_space) = 0;
+
+  virtual void SetStreamHDRMetadata(const HDRMetadata& stream_metadata) = 0;
+  virtual void SetDisplayHDRMetadata(
+      const DXGI_HDR_METADATA_HDR10& dxgi_display_metadata) = 0;
 };
 
 // The default texture wrapper that uses GPUResources to talk to hardware
@@ -70,6 +75,10 @@ class MEDIA_GPU_EXPORT DefaultTexture2DWrapper : public Texture2DWrapper {
                       const gfx::ColorSpace& input_color_space,
                       MailboxHolderArray* mailbox_dest,
                       gfx::ColorSpace* output_color_space) override;
+
+  void SetStreamHDRMetadata(const HDRMetadata& stream_metadata) override;
+  void SetDisplayHDRMetadata(
+      const DXGI_HDR_METADATA_HDR10& dxgi_display_metadata) override;
 
  private:
   // Things that are to be accessed / freed only on the main thread.  In

@@ -116,7 +116,8 @@ public class AutocompleteMediatorUnitTest {
                     null /* displayTextClassifications */, null /* description */,
                     null /* descriptionClassifications */, null /* answer */,
                     null /* fillIntoEdit */, null /* url */, null /* imageUrl */,
-                    null /* imageDominantColor */, false /* isStarred */, false /* isDeletable */);
+                    null /* imageDominantColor */, false /* isStarred */, false /* isDeletable */,
+                    null /* postContentType */, null /* postData */);
             list.add(suggestion);
         }
 

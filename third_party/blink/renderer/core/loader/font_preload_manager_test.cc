@@ -483,4 +483,103 @@ TEST_F(FontPreloadManagerTest, OptionalFontFastImperativeLoad) {
   EXPECT_FALSE(GetTargetFont().ShouldSkipDrawing());
 }
 
+class FontPreloadBehaviorObservationTest
+    : public testing::WithParamInterface<bool>,
+      public SimTest {
+ public:
+  class LoadingBehaviorObserver
+      : public frame_test_helpers::TestWebFrameClient {
+   public:
+    void DidObserveLoadingBehavior(LoadingBehaviorFlag flag) override {
+      observed_behaviors_ =
+          static_cast<LoadingBehaviorFlag>(observed_behaviors_ | flag);
+    }
+
+    LoadingBehaviorFlag ObservedBehaviors() const {
+      return observed_behaviors_;
+    }
+
+   private:
+    LoadingBehaviorFlag observed_behaviors_ = kLoadingBehaviorNone;
+  };
+
+  void SetUp() override {
+    SimTest::SetUp();
+    original_web_local_frame_client_ = MainFrame().Client();
+    MainFrame().SetClient(&loading_behavior_observer_);
+  }
+
+  void TearDown() override {
+    MainFrame().SetClient(original_web_local_frame_client_);
+    SimTest::TearDown();
+  }
+
+  LoadingBehaviorFlag ObservedBehaviors() const {
+    return loading_behavior_observer_.ObservedBehaviors();
+  }
+
+ private:
+  WebLocalFrameClient* original_web_local_frame_client_;
+  LoadingBehaviorObserver loading_behavior_observer_;
+};
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         FontPreloadBehaviorObservationTest,
+                         testing::Bool());
+
+TEST_P(FontPreloadBehaviorObservationTest, ObserveBehaviorWithLinkPreload) {
+  // kLoadingBehaviorFontPreloadStartedBeforeRendering should be observed as
+  // long as there's font preloading, regardless of the enabled status of the
+  // feature FontPreloadingDelaysRendering.
+  base::test::ScopedFeatureList scoped_feature_list;
+  if (GetParam()) {
+    scoped_feature_list.InitAndEnableFeature(
+        features::kFontPreloadingDelaysRendering);
+  }
+
+  SimRequest main_resource("https://example.com", "text/html");
+  SimRequest font_resource("https://example.com/font.woff", "font/woff2");
+
+  LoadURL("https://example.com");
+  main_resource.Complete(R"HTML(
+    <!doctype html>
+    <link rel="preload" as="font" type="font/woff2"
+          href="https://example.com/font.woff" crossorigin>
+  )HTML");
+
+  EXPECT_TRUE(ObservedBehaviors() |
+              kLoadingBehaviorFontPreloadStartedBeforeRendering);
+
+  font_resource.Finish();
+  test::RunPendingTasks();
+}
+
+TEST_P(FontPreloadBehaviorObservationTest, ObserveBehaviorWithImperativeLoad) {
+  // kLoadingBehaviorFontPreloadStartedBeforeRendering should be observed as
+  // long as there's an imperative font load, regardless of the enabled status
+  // of the feature FontPreloadingDelaysRendering.
+  base::test::ScopedFeatureList scoped_feature_list;
+  if (GetParam()) {
+    scoped_feature_list.InitAndEnableFeature(
+        features::kFontPreloadingDelaysRendering);
+  }
+
+  SimRequest main_resource("https://example.com", "text/html");
+  SimRequest font_resource("https://example.com/font.woff", "font/woff2");
+
+  LoadURL("https://example.com");
+  main_resource.Complete(R"HTML(
+    <!doctype html>
+    <script>
+    new FontFace('custom-font', 'url(https://example.com/font.woff)').load();
+    </script>
+  )HTML");
+
+  EXPECT_TRUE(ObservedBehaviors() |
+              kLoadingBehaviorFontPreloadStartedBeforeRendering);
+
+  font_resource.Finish();
+  test::RunPendingTasks();
+}
+
 }  // namespace blink

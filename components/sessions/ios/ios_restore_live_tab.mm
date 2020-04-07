@@ -43,9 +43,9 @@ int RestoreIOSLiveTab::GetEntryCount() {
   return session_.itemStorages.count;
 }
 
-const std::string& RestoreIOSLiveTab::GetUserAgentOverride() {
-  // Dynamic user agent overrides are not supported on iOS.
-  return user_agent_override_;
+sessions::SerializedUserAgentOverride
+RestoreIOSLiveTab::GetUserAgentOverride() {
+  return sessions::SerializedUserAgentOverride();
 }
 
 }  // namespace sessions

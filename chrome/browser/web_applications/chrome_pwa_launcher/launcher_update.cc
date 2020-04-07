@@ -43,16 +43,20 @@ void DeleteHardLinkOrCopyCallback(const base::FilePath& launcher_path,
 // to or copy of |latest_version_path| at |launcher_path|. Makes a best-effort
 // attempt to delete |old_path|. Aside from the best-effort deletion, all
 // changes are rolled back if any step fails.
-bool ReplaceLauncherWithLatestVersion(const base::FilePath& launcher_path,
+void ReplaceLauncherWithLatestVersion(const base::FilePath& launcher_path,
                                       const base::FilePath& latest_version_path,
                                       const base::FilePath& old_path) {
-  if (!base::PathExists(latest_version_path))
-    return false;
+  if (!base::PathExists(latest_version_path)) {
+    // TODO(jessemckenna): emit failure metric to UMA.
+    return;
+  }
 
   // Create a temporary backup directory for use while moving in-use files.
   base::ScopedTempDir temp_dir;
-  if (!temp_dir.CreateUniqueTempDirUnderPath(launcher_path.DirName()))
-    return false;
+  if (!temp_dir.CreateUniqueTempDirUnderPath(launcher_path.DirName())) {
+    // TODO(jessemckenna): emit failure metric to UMA.
+    return;
+  }
 
   // Move |launcher_path| to |old_path|.
   std::unique_ptr<WorkItemList> change_list(WorkItem::CreateWorkItemList());
@@ -76,9 +80,8 @@ bool ReplaceLauncherWithLatestVersion(const base::FilePath& launcher_path,
 
   if (!change_list->Do()) {
     change_list->Rollback();
-    return false;
+    // TODO(jessemckenna): emit failure metric to UMA.
   }
-  return true;
 }
 
 // Deletes |old_path| and any variations on it (e.g., |old_path| (1), |old_path|
@@ -123,9 +126,7 @@ void UpdatePwaLaunchers(std::vector<base::FilePath> launcher_paths) {
 
     // Make a hardlink or copy of |latest_version_path|, and replace the current
     // launcher with it.
-    const bool did_update =
-        ReplaceLauncherWithLatestVersion(path, latest_version_path, old_path);
-    DCHECK(did_update);
+    ReplaceLauncherWithLatestVersion(path, latest_version_path, old_path);
   }
 }
 

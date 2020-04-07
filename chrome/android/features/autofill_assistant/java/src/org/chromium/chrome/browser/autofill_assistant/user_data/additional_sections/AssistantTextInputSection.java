@@ -141,7 +141,7 @@ public class AssistantTextInputSection implements AssistantAdditionalSection {
                 mDelegate.onValueChanged(
                         result.first, new AssistantValue(new String[] {result.second}));
             });
-            inputView.getInputLayout().addEditTextOnFocusChangeListener((unusedView, hasFocus) -> {
+            inputView.getEditText().setOnFocusChangeListener((unusedView, hasFocus) -> {
                 if (!hasFocus && mDelegate != null) {
                     mDelegate.onTextFocusLost();
                 }

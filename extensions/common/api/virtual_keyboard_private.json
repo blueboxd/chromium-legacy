@@ -285,6 +285,18 @@
             "$ref": "Bounds"
           }
         ]
+      },
+      {
+        "name": "setWindowBoundsInScreen",
+        "type": "function",
+        "description": "Sets the bounds of the keyboard window in screen coordinates.",
+        "parameters": [
+          {
+            "name": "bounds",
+            "description": "A rectangle defining the new bounds of the window in screen coordinates.",
+            "$ref": "Bounds"
+          }
+        ]
       }
     ],
     "events": [

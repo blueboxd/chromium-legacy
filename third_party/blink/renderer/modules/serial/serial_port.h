@@ -96,6 +96,7 @@ class SerialPort final : public ScriptWrappable,
   uint32_t buffer_size_ = 0;
   HeapMojoRemote<device::mojom::blink::SerialPort> port_;
   HeapMojoReceiver<device::mojom::blink::SerialPortClient,
+                   SerialPort,
                    HeapMojoWrapperMode::kWithoutContextObserver>
       client_receiver_;
 

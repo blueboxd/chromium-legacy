@@ -17,8 +17,7 @@
             android:id="@+id/spinner_label"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textAppearance="@style/TextAppearance.TextSmall.Secondary"
-            android:layout_marginTop="5dp"/>
+            android:textAppearance="@style/TextAppearance.TextSmall.Secondary" />
 
     <androidx.appcompat.widget.AppCompatSpinner
             android:id="@+id/spinner"

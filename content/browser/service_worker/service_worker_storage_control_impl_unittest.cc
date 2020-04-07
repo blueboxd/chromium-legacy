@@ -135,6 +135,26 @@ class ServiceWorkerStorageControlImplTest : public testing::Test {
     return return_value;
   }
 
+  void GetRegistrationsForOrigin(
+      const GURL& origin,
+      DatabaseStatus& out_status,
+      std::vector<storage::mojom::SerializedServiceWorkerRegistrationPtr>&
+          out_registrations) {
+    base::RunLoop loop;
+    storage()->GetRegistrationsForOrigin(
+        origin,
+        base::BindLambdaForTesting(
+            [&](DatabaseStatus status,
+                std::vector<
+                    storage::mojom::SerializedServiceWorkerRegistrationPtr>
+                    registrations) {
+              out_status = status;
+              out_registrations = std::move(registrations);
+              loop.Quit();
+            }));
+    loop.Run();
+  }
+
   void StoreRegistration(
       storage::mojom::ServiceWorkerRegistrationDataPtr registration,
       std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> resources,
@@ -167,6 +187,18 @@ class ServiceWorkerStorageControlImplTest : public testing::Test {
     loop.Run();
   }
 
+  int64_t GetNewRegistrationId() {
+    int64_t return_value;
+    base::RunLoop loop;
+    storage()->GetNewRegistrationId(
+        base::BindLambdaForTesting([&](int64_t registration_id) {
+          return_value = registration_id;
+          loop.Quit();
+        }));
+    loop.Run();
+    return return_value;
+  }
+
   int64_t GetNewResourceId() {
     int64_t return_value;
     base::RunLoop loop;
@@ -177,6 +209,33 @@ class ServiceWorkerStorageControlImplTest : public testing::Test {
         }));
     loop.Run();
     return return_value;
+  }
+
+  // Create a registration with a single resource and stores the registration.
+  DatabaseStatus CreateAndStoreRegistration(int64_t registration_id,
+                                            const GURL& scope,
+                                            const GURL& script_url,
+                                            int64_t script_size) {
+    std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> resources;
+    resources.push_back(storage::mojom::ServiceWorkerResourceRecord::New(
+        registration_id, script_url, script_size));
+
+    auto data = storage::mojom::ServiceWorkerRegistrationData::New();
+    data->registration_id = registration_id;
+    data->scope = scope;
+    data->script = script_url;
+    data->navigation_preload_state =
+        blink::mojom::NavigationPreloadState::New();
+
+    int64_t resources_total_size_bytes = 0;
+    for (auto& resource : resources) {
+      resources_total_size_bytes += resource->size_bytes;
+    }
+    data->resources_total_size_bytes = resources_total_size_bytes;
+
+    DatabaseStatus status;
+    StoreRegistration(std::move(data), std::move(resources), status);
+    return status;
   }
 
   mojo::Remote<storage::mojom::ServiceWorkerResourceReader>
@@ -298,6 +357,57 @@ TEST_F(ServiceWorkerStorageControlImplTest, StoreAndDeleteRegistration) {
     EXPECT_EQ(result->status, DatabaseStatus::kErrorNotFound);
     result = FindRegistrationForId(kRegistrationId, kScope.GetOrigin());
     EXPECT_EQ(result->status, DatabaseStatus::kErrorNotFound);
+  }
+}
+
+// Tests that getting registrations works.
+TEST_F(ServiceWorkerStorageControlImplTest, GetRegistrationsForOrigin) {
+  const GURL kScope1("https://www.example.com/foo/");
+  const GURL kScriptUrl1("https://www.example.com/foo/sw.js");
+  const GURL kScope2("https://www.example.com/bar/");
+  const GURL kScriptUrl2("https://www.example.com/bar/sw.js");
+  const int64_t kScriptSize = 10;
+
+  LazyInitializeForTest();
+
+  // Store two registrations which have the same origin.
+  DatabaseStatus status;
+  const int64_t registration_id1 = GetNewRegistrationId();
+  status = CreateAndStoreRegistration(registration_id1, kScope1, kScriptUrl1,
+                                      kScriptSize);
+  ASSERT_EQ(status, DatabaseStatus::kOk);
+  const int64_t registration_id2 = GetNewRegistrationId();
+  status = CreateAndStoreRegistration(registration_id2, kScope2, kScriptUrl2,
+                                      kScriptSize);
+  ASSERT_EQ(status, DatabaseStatus::kOk);
+
+  // Get registrations for the origin.
+  {
+    const GURL& origin = kScope1.GetOrigin();
+    std::vector<storage::mojom::SerializedServiceWorkerRegistrationPtr>
+        registrations;
+
+    GetRegistrationsForOrigin(origin, status, registrations);
+    ASSERT_EQ(status, DatabaseStatus::kOk);
+    EXPECT_EQ(registrations.size(), 2UL);
+
+    for (auto& registration : registrations) {
+      EXPECT_EQ(registration->registration_data->scope.GetOrigin(), origin);
+      EXPECT_EQ(registration->registration_data->resources_total_size_bytes,
+                kScriptSize);
+    }
+  }
+
+  // Getting registrations for another origin should succeed but shouldn't find
+  // anything.
+  {
+    const GURL& origin = GURL("https://www.example.test/");
+    std::vector<storage::mojom::SerializedServiceWorkerRegistrationPtr>
+        registrations;
+
+    GetRegistrationsForOrigin(origin, status, registrations);
+    ASSERT_EQ(status, DatabaseStatus::kOk);
+    EXPECT_EQ(registrations.size(), 0UL);
   }
 }
 

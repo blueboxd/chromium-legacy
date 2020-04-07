@@ -183,6 +183,12 @@ void KeyboardControllerImpl::SetDraggableArea(const gfx::Rect& bounds) {
   keyboard_ui_controller_->SetDraggableArea(bounds);
 }
 
+bool KeyboardControllerImpl::SetWindowBoundsInScreen(
+    const gfx::Rect& bounds_in_screen) {
+  return keyboard_ui_controller_->SetKeyboardWindowBoundsInScreen(
+      bounds_in_screen);
+}
+
 void KeyboardControllerImpl::AddObserver(KeyboardControllerObserver* observer) {
   observers_.AddObserver(observer);
 }

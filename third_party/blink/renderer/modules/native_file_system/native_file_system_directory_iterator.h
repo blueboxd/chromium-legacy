@@ -46,6 +46,7 @@ class NativeFileSystemDirectoryIterator final
   Member<ScriptPromiseResolver> pending_next_;
   Member<NativeFileSystemDirectoryHandle> directory_;
   HeapMojoReceiver<mojom::blink::NativeFileSystemDirectoryEntriesListener,
+                   NativeFileSystemDirectoryIterator,
                    HeapMojoWrapperMode::kWithoutContextObserver>
       receiver_;
 };

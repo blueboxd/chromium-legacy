@@ -34,6 +34,9 @@ const StateType = chrome.automation.StateType;
 /** @private {boolean} */
 CommandHandler.incognito_ = !!chrome.runtime.getManifest()['incognito'];
 
+/** @private {boolean} */
+CommandHandler.languageLoggingEnabled_ = false;
+
 /**
  * Handles toggling sticky mode when encountering editables.
  * @private {!SmartStickyMode}
@@ -1059,6 +1062,29 @@ CommandHandler.onCommand = function(command) {
           .send();
     }
       return false;
+    case 'logLanguageInformationForCurrentNode': {
+      if (!CommandHandler.languageLoggingEnabled_) {
+        return false;
+      }
+
+      const node = ChromeVoxState.instance.currentRange.start.node;
+      const outString = `
+      Language information for node
+      Name: ${node.name}
+      Detected language: ${node.detectedLanguage || 'None'}
+      Author language: ${node.language || 'None'}
+      `;
+      new Output()
+          .withString(outString)
+          .withQueueMode(QueueMode.CATEGORY_FLUSH)
+          .go();
+      const annotation = node.languageAnnotationForStringAttribute('name');
+      const logString = outString.concat(`Language spans:
+        ${JSON.stringify(annotation)}`);
+      console.error(logString);
+      LogStore.getInstance().writeTextLog(logString, LogStore.LogType.TEXT);
+    }
+      return false;
     default:
       return true;
   }
@@ -1430,6 +1456,27 @@ CommandHandler.init = function() {
       });
     }
   });
+
+  chrome.commandLinePrivate.hasSwitch(
+      'enable-experimental-accessibility-chromevox-language-switching',
+      (enabled) => {
+        if (enabled) {
+          CommandHandler.languageLoggingEnabled_ = true;
+        }
+      });
+  chrome.commandLinePrivate.hasSwitch(
+      'enable-experimental-accessibility-language-detection', (enabled) => {
+        if (enabled) {
+          CommandHandler.languageLoggingEnabled_ = true;
+        }
+      });
+  chrome.commandLinePrivate.hasSwitch(
+      'enable-experimental-accessibility-language-detection-dynamic',
+      (enabled) => {
+        if (enabled) {
+          CommandHandler.languageLoggingEnabled_ = true;
+        }
+      });
 };
 
 });  // goog.scope

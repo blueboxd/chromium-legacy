@@ -1585,6 +1585,10 @@ FrameRateCounter* LayerTreeImpl::frame_rate_counter() const {
   return host_impl_->fps_counter();
 }
 
+base::Optional<int> LayerTreeImpl::current_universal_throughput() {
+  return host_impl_->current_universal_throughput();
+}
+
 MemoryHistory* LayerTreeImpl::memory_history() const {
   return host_impl_->memory_history();
 }

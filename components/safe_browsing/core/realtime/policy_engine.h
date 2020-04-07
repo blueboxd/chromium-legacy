@@ -13,6 +13,10 @@ namespace syncer {
 class SyncService;
 }
 
+namespace signin {
+class IdentityManager;
+}
+
 namespace safe_browsing {
 
 enum class ResourceType;
@@ -51,7 +55,8 @@ class RealTimePolicyEngine {
   static bool CanPerformFullURLLookupWithToken(
       PrefService* pref_service,
       bool is_off_the_record,
-      syncer::SyncService* sync_service);
+      syncer::SyncService* sync_service,
+      signin::IdentityManager* identity_manager);
 
   friend class SafeBrowsingService;
   friend class SafeBrowsingUIHandler;
@@ -69,6 +74,10 @@ class RealTimePolicyEngine {
 
   // Whether the user has opted-in to Enhanced Protection.
   static bool IsUserEpOptedIn(PrefService* pref_service);
+
+  // Whether the primary account is signed in. Sync is not required.
+  static bool IsPrimaryAccountSignedIn(
+      signin::IdentityManager* identity_manager);
 
   friend class RealTimePolicyEngineTest;
 };  // class RealTimePolicyEngine

@@ -52,6 +52,15 @@ struct MEDIA_EXPORT HDRMetadata {
   }
 };
 
+// HDR metadata types as described in
+// https://w3c.github.io/media-capabilities/#enumdef-hdrmetadatatype
+enum class HdrMetadataType {
+  kNone,
+  kSmpteSt2086,
+  kSmpteSt2094_10,
+  kSmpteSt2094_40,
+};
+
 }  // namespace media
 
 #endif  // MEDIA_BASE_HDR_METADATA_H_

@@ -407,7 +407,7 @@ bool RealTimeUrlLookupService::CanPerformFullURLLookup() const {
 
 bool RealTimeUrlLookupService::CanPerformFullURLLookupWithToken() const {
   return RealTimePolicyEngine::CanPerformFullURLLookupWithToken(
-      pref_service_, is_off_the_record_, sync_service_);
+      pref_service_, is_off_the_record_, sync_service_, identity_manager_);
 }
 
 bool RealTimeUrlLookupService::IsUserEpOptedIn() const {

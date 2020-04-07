@@ -163,9 +163,8 @@ class CC_EXPORT ScrollbarController {
   };
 
   struct CC_EXPORT DragState {
-    // This is used to track the pointer location relative to the thumb origin
-    // when a drag has started.
-    gfx::Vector2dF anchor_relative_to_thumb_;
+    // This marks the point at which the drag initiated (relative to the widget)
+    gfx::PointF drag_origin;
 
     // This is needed for thumb snapping when the pointer moves too far away
     // from the track while scrolling.
@@ -233,15 +232,10 @@ class CC_EXPORT ScrollbarController {
   ui::ScrollGranularity Granularity(const ScrollbarPart scrollbar_part,
                                     bool shift_modifier);
 
-  // Calculates the scroll_offset based on position_in_widget and
-  // drag_anchor_relative_to_thumb_.
-  gfx::ScrollOffset GetScrollOffsetForDragPosition(
+  // Calculates the scroll_offset based on position_in_widget and drag_origin.
+  gfx::ScrollOffset GetScrollDeltaForDragPosition(
       const ScrollbarLayerImplBase* scrollbar,
       const gfx::PointF pointer_position_in_widget);
-
-  // Returns a Vector2dF for position_in_widget relative to the scrollbar thumb.
-  gfx::Vector2dF GetThumbRelativePoint(const ScrollbarLayerImplBase* scrollbar,
-                                       const gfx::PointF position_in_widget);
 
   // Returns the ratio of the scroller length to the scrollbar length. This is
   // needed to scale the scroll delta for thumb drag.

@@ -1366,6 +1366,39 @@ TEST_F(UkmPageLoadMetricsObserverTest, LayoutInstability) {
   EXPECT_THAT(tester()->histogram_tester().GetAllSamples(
                   "PageLoad.LayoutInstability.CumulativeShiftScore"),
               testing::ElementsAre(base::Bucket(25, 1)));
+
+  tester()->histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.FontPreload.LayoutInstability."
+      "CumulativeShiftScore",
+      0);
+}
+
+TEST_F(UkmPageLoadMetricsObserverTest,
+       UpdateAfterHide_RecordsLayoutInstabilityWithFontPreload) {
+  NavigateAndCommit(GURL(kTestUrl1));
+
+  page_load_metrics::mojom::FrameMetadata metadata;
+  metadata.behavior_flags |= blink::LoadingBehaviorFlag::
+      kLoadingBehaviorFontPreloadStartedBeforeRendering;
+  tester()->SimulateMetadataUpdate(metadata, web_contents()->GetMainFrame());
+
+  page_load_metrics::mojom::FrameRenderDataUpdate render_data(1.0, 1.0);
+  tester()->SimulateRenderDataUpdate(render_data);
+
+  // Simulate hiding the tab (the report should include shifts after hide).
+  web_contents()->WasHidden();
+
+  render_data.layout_shift_delta = 1.5;
+  render_data.layout_shift_delta_before_input_or_scroll = 0.0;
+  tester()->SimulateRenderDataUpdate(render_data);
+
+  // Simulate closing the tab.
+  DeleteContents();
+
+  EXPECT_THAT(tester()->histogram_tester().GetAllSamples(
+                  "PageLoad.Clients.FontPreload.LayoutInstability."
+                  "CumulativeShiftScore"),
+              testing::ElementsAre(base::Bucket(25, 1)));
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest, MHTMLNotTracked) {

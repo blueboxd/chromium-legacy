@@ -14,6 +14,10 @@
 #include "components/arc/session/arc_start_params.h"
 #include "components/arc/session/arc_upgrade_params.h"
 
+namespace cryptohome {
+class Identification;
+}  // namespace cryptohome
+
 namespace arc {
 
 // An adapter to talk to a Chrome OS daemon to manage lifetime of ARC instance.
@@ -42,9 +46,10 @@ class ArcClientAdapter {
   // is called due to the browser being shut down.
   virtual void StopArcInstance(bool on_shutdown) = 0;
 
-  // Sets a hash string of the profile user ID and an ARC serial number for the
+  // Sets a hash string of the profile user IDs and an ARC serial number for the
   // user.
-  virtual void SetUserInfo(const std::string& hash,
+  virtual void SetUserInfo(const cryptohome::Identification& cryptohome_id,
+                           const std::string& hash,
                            const std::string& serial_number) = 0;
 
   void AddObserver(Observer* observer);

@@ -106,6 +106,9 @@ void RecordDeletingClipboardSuggestionMetrics(
   } else if (match_type == AutocompleteMatchType::CLIPBOARD_TEXT) {
     UMA_HISTOGRAM_LONG_TIMES_100("Omnibox.ClipboardSuggestionRemovedAge.TEXT",
                                  clipboard_contents_age);
+  } else if (match_type == AutocompleteMatchType::CLIPBOARD_IMAGE) {
+    UMA_HISTOGRAM_LONG_TIMES_100("Omnibox.ClipboardSuggestionRemovedAge.IMAGE",
+                                 clipboard_contents_age);
   }
 }
 
@@ -431,4 +434,3 @@ void ClipboardProvider::ConstructImageMatchCallback(
     listener_->OnProviderUpdate(true);
   }
 }
-

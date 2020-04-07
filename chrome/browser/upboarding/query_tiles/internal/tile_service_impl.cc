@@ -8,7 +8,8 @@
 
 namespace upboarding {
 
-TileServiceImpl::TileServiceImpl(image_fetcher::ImageFetcher* image_fetcher) {}
+TileServiceImpl::TileServiceImpl(std::unique_ptr<ImageLoader> image_loader)
+    : image_loader_(std::move(image_loader)) {}
 
 TileServiceImpl::~TileServiceImpl() = default;
 

@@ -47,6 +47,27 @@ void DidDeleteRegistration(
   std::move(callback).Run(status, origin_state);
 }
 
+void DidGetRegistrationsForOrigin(
+    ServiceWorkerStorageControlImpl::GetRegistrationsForOriginCallback callback,
+    storage::mojom::ServiceWorkerDatabaseStatus status,
+    std::unique_ptr<ServiceWorkerStorage::RegistrationList>
+        registration_data_list,
+    std::unique_ptr<std::vector<ServiceWorkerStorage::ResourceList>>
+        resources_list) {
+  DCHECK_EQ(registration_data_list->size(), resources_list->size());
+
+  std::vector<storage::mojom::SerializedServiceWorkerRegistrationPtr>
+      registrations;
+  for (size_t i = 0; i < registration_data_list->size(); ++i) {
+    registrations.push_back(
+        storage::mojom::SerializedServiceWorkerRegistration::New(
+            std::move((*registration_data_list)[i]),
+            std::move((*resources_list)[i])));
+  }
+
+  std::move(callback).Run(status, std::move(registrations));
+}
+
 }  // namespace
 
 ServiceWorkerStorageControlImpl::ServiceWorkerStorageControlImpl(
@@ -84,6 +105,14 @@ void ServiceWorkerStorageControlImpl::FindRegistrationForId(
       base::BindOnce(&DidFindRegistration, std::move(callback)));
 }
 
+void ServiceWorkerStorageControlImpl::GetRegistrationsForOrigin(
+    const GURL& origin,
+    GetRegistrationsForOriginCallback callback) {
+  storage_->GetRegistrationsForOrigin(
+      origin,
+      base::BindOnce(&DidGetRegistrationsForOrigin, std::move(callback)));
+}
+
 void ServiceWorkerStorageControlImpl::StoreRegistration(
     storage::mojom::ServiceWorkerRegistrationDataPtr registration,
     std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> resources,
@@ -104,6 +133,11 @@ void ServiceWorkerStorageControlImpl::DeleteRegistration(
   storage_->DeleteRegistration(
       registration_id, origin,
       base::BindOnce(&DidDeleteRegistration, std::move(callback)));
+}
+
+void ServiceWorkerStorageControlImpl::GetNewRegistrationId(
+    GetNewRegistrationIdCallback callback) {
+  storage_->GetNewRegistrationId(std::move(callback));
 }
 
 void ServiceWorkerStorageControlImpl::GetNewResourceId(

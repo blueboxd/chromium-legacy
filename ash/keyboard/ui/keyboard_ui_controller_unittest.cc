@@ -747,6 +747,21 @@ TEST_F(KeyboardUIControllerTest,
       controller().SetAreaToRemainOnScreen(gfx::Rect(50, 50, 400, 600)));
 }
 
+TEST_F(KeyboardUIControllerTest,
+       SetWindowBoundsInScreenShouldRejectInvalidBounds) {
+  ShowKeyboard();
+  gfx::Rect root_bounds = root_window()->bounds();
+
+  EXPECT_FALSE(controller().SetKeyboardWindowBoundsInScreen(
+      gfx::Rect(0, 0, root_bounds.width() + 1, 100)));
+  EXPECT_TRUE(controller().SetKeyboardWindowBoundsInScreen(
+      gfx::Rect(0, 0, root_bounds.width(), 100)));
+  EXPECT_FALSE(controller().SetKeyboardWindowBoundsInScreen(
+      gfx::Rect(0, 0, 100, root_bounds.height() + 1)));
+  EXPECT_TRUE(controller().SetKeyboardWindowBoundsInScreen(
+      gfx::Rect(0, 0, 100, root_bounds.height())));
+}
+
 class MockKeyboardControllerObserver : public ash::KeyboardControllerObserver {
  public:
   MockKeyboardControllerObserver() = default;

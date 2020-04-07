@@ -124,6 +124,7 @@ class MODULES_EXPORT SpeechSynthesis final
   void InitializeMojomSynthesisIfNeeded();
 
   HeapMojoReceiver<mojom::blink::SpeechSynthesisVoiceListObserver,
+                   SpeechSynthesis,
                    HeapMojoWrapperMode::kWithoutContextObserver>
       receiver_;
   HeapMojoRemote<mojom::blink::SpeechSynthesis,

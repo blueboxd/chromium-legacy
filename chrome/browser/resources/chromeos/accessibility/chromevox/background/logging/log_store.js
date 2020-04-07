@@ -170,6 +170,7 @@ LogStore.LogType = {
   BRAILLE_RULE: 'brailleRule',
   EARCON: 'earcon',
   EVENT: 'event',
+  TEXT: 'text',
   TREE: 'tree',
 };
 

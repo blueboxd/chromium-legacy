@@ -199,6 +199,9 @@ class KEYBOARD_EXPORT KeyboardUIController
   // here are relative to the window's origin.
   bool SetAreaToRemainOnScreen(const gfx::Rect& bounds_in_window);
 
+  // Sets the bounds of the keyboard window in screen coordinates.
+  bool SetKeyboardWindowBoundsInScreen(const gfx::Rect& bounds_in_screen);
+
   ContainerType GetActiveContainerType() const {
     return container_behavior_->GetType();
   }

@@ -132,6 +132,8 @@ class COMPONENT_EXPORT(DBUS_AUDIO) CrasAudioClient {
                                const std::string& hotword_model,
                                VoidDBusMethodCallback callback) = 0;
 
+  // Enables or disables the usage of fixed A2DP packet size in CRAS.
+  virtual void SetFixA2dpPacketSize(bool enabled) = 0;
   // Enables or disables the next Handsfree profile next version in CRAS.
   virtual void SetNextHandsfreeProfile(bool enabled) = 0;
 

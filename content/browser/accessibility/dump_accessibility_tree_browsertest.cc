@@ -271,6 +271,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityListMarkers) {
   RunHtmlTest(FILE_PATH_LITERAL("list-markers.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityUl) {
+  RunHtmlTest(FILE_PATH_LITERAL("ul.html"));
+}
+
 // TODO(crbug.com/1063155): in process of refactoring all tests to enable the
 // kEnableAccessibilityExposeHTMLElement flag, without doing all at the
 // same time.
@@ -1993,9 +1997,6 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("modal-dialog-stack.html"));
 }
 
-// TODO(crbug.com/1063155) - see TODO with the same bug number above.
-#undef DumpAccessibilityTreeTest
-
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityNavigation) {
   RunHtmlTest(FILE_PATH_LITERAL("navigation.html"));
 }
@@ -2261,10 +2262,6 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityTruncateLabel) {
   RunHtmlTest(FILE_PATH_LITERAL("truncate-label.html"));
-}
-
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityUl) {
-  RunHtmlTest(FILE_PATH_LITERAL("ul.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityVar) {

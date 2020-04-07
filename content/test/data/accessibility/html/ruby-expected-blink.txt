@@ -1,8 +1,9 @@
 rootWebArea
-++genericContainer
-++++ruby
-++++++rubyAnnotation
-++++++++staticText name='ruby text'
-++++++++++inlineTextBox name='ruby text'
-++++++staticText name='ruby base'
-++++++++inlineTextBox name='ruby base'
+++genericContainer ignored
+++++genericContainer
+++++++ruby
+++++++++rubyAnnotation
+++++++++++staticText name='ruby text'
+++++++++++++inlineTextBox name='ruby text'
+++++++++staticText name='ruby base'
+++++++++++inlineTextBox name='ruby base'

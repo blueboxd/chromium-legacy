@@ -124,8 +124,6 @@ class CONTENT_EXPORT TouchActionFilter {
   // before GSE.
   bool gesture_sequence_in_progress_ = false;
 
-  bool compositor_touch_action_enabled_ = false;
-
   bool has_deferred_events_ = false;
 
   // Increment at receiving ACK for touch start and decrement at touch end.

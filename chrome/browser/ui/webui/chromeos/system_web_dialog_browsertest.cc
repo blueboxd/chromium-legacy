@@ -7,7 +7,8 @@
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
-#include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
+#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
@@ -29,9 +30,6 @@
 namespace chromeos {
 
 namespace {
-
-constexpr char kTestUser[] = "test-user@gmail.com";
-constexpr char kTestUserGaiaId[] = "1234567890";
 
 class MockSystemWebDialog : public SystemWebDialogDelegate {
  public:
@@ -55,29 +53,30 @@ class MockSystemWebDialog : public SystemWebDialogDelegate {
 
 class SystemWebDialogLoginTest : public LoginManagerTest {
  public:
-  SystemWebDialogLoginTest()
-      : LoginManagerTest(false, true /* should_initialize_webui */) {}
+  SystemWebDialogLoginTest() : LoginManagerTest() {
+    login_mixin_.AppendRegularUsers(1);
+  }
   ~SystemWebDialogLoginTest() override = default;
+
+ protected:
+  LoginManagerMixin login_mixin_{&mixin_host_};
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SystemWebDialogLoginTest);
 };
 
+using SystemWebDialogOobeTest = OobeBaseTest;
+
 // Verifies that system dialogs are modal before login (e.g. during OOBE).
-IN_PROC_BROWSER_TEST_F(SystemWebDialogLoginTest, ModalTest) {
+IN_PROC_BROWSER_TEST_F(SystemWebDialogOobeTest, ModalTest) {
   auto* dialog = new MockSystemWebDialog();
   dialog->ShowSystemDialog();
   EXPECT_TRUE(ash::ShellTestApi().IsSystemModalWindowOpen());
 }
 
-IN_PROC_BROWSER_TEST_F(SystemWebDialogLoginTest, PRE_NonModalTest) {
-  RegisterUser(AccountId::FromUserEmailGaiaId(kTestUser, kTestUserGaiaId));
-  StartupUtils::MarkOobeCompleted();
-}
-
 // Verifies that system dialogs are not modal and always-on-top after login.
 IN_PROC_BROWSER_TEST_F(SystemWebDialogLoginTest, NonModalTest) {
-  LoginUser(AccountId::FromUserEmailGaiaId(kTestUser, kTestUserGaiaId));
+  LoginUser(login_mixin_.users()[0].account_id);
   auto* dialog = new MockSystemWebDialog();
   dialog->ShowSystemDialog();
   EXPECT_FALSE(ash::ShellTestApi().IsSystemModalWindowOpen());

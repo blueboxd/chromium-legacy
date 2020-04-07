@@ -2014,10 +2014,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerScreenPriorityOOBETest,
 
 class WizardControllerScreenPriorityTest : public LoginManagerTest {
  protected:
-  WizardControllerScreenPriorityTest()
-      : LoginManagerTest(false /* should_launch_browser */,
-                         false /* should_initialize_webui */) {
-    set_force_webui_login(false);
+  WizardControllerScreenPriorityTest() {
+    login_manager_mixin_.AppendRegularUsers(1);
     feature_list_.InitAndEnableFeature(
         chromeos::features::kOobeScreensPriority);
   }
@@ -2030,9 +2028,7 @@ class WizardControllerScreenPriorityTest : public LoginManagerTest {
 
  private:
   base::test::ScopedFeatureList feature_list_;
-  std::vector<LoginManagerMixin::TestUserInfo> test_users_{
-      LoginManagerMixin::CreateRegularUsers(1)};
-  LoginManagerMixin login_manager_mixin_{&mixin_host_, test_users_};
+  LoginManagerMixin login_manager_mixin_{&mixin_host_};
 };
 
 // TODO(https://crbug.com/1064271) Replace this PRE test with adding adding a

@@ -94,6 +94,18 @@ class TestUserRegistrationMainExtra : public ChromeBrowserMainExtraParts {
   DISALLOW_COPY_AND_ASSIGN(TestUserRegistrationMainExtra);
 };
 
+void AppendUsers(LoginManagerMixin::UserList* users,
+                 const std::string& domain,
+                 int n) {
+  int num = users->size();
+  for (int i = 0; i < n; ++i, ++num) {
+    const std::string email = "test_user_" + base::NumberToString(num) + domain;
+    const std::string gaia_id = base::NumberToString(num) + "111111111";
+    users->push_back(LoginManagerMixin::TestUserInfo(
+        AccountId::FromUserEmailGaiaId(email, gaia_id)));
+  }
+}
+
 }  // namespace
 
 // static
@@ -104,22 +116,25 @@ UserContext LoginManagerMixin::CreateDefaultUserContext(
   return user_context;
 }
 
-std::vector<LoginManagerMixin::TestUserInfo>
-LoginManagerMixin::CreateRegularUsers(int n) {
-  std::vector<LoginManagerMixin::TestUserInfo> users;
-  for (int i = 0; i < n; ++i) {
-    const std::string email =
-        "test_user_" + base::NumberToString(i) + "@gmail.com";
-    const std::string gaia_id = base::NumberToString(i) + "111111111";
-    users.push_back(LoginManagerMixin::TestUserInfo(
-        AccountId::FromUserEmailGaiaId(email, gaia_id)));
-  }
-  return users;
+void LoginManagerMixin::AppendRegularUsers(int n) {
+  AppendUsers(&initial_users_, "@gmail.com", n);
 }
 
-LoginManagerMixin::LoginManagerMixin(
-    InProcessBrowserTestMixinHost* host,
-    const std::vector<TestUserInfo>& initial_users)
+void LoginManagerMixin::AppendManagedUsers(int n) {
+  AppendUsers(&initial_users_, "@example.com", n);
+}
+
+void LoginManagerMixin::AppendSupervisedUsers(int n) {
+  AppendUsers(&initial_users_, "@locally-managed.localhost", n);
+}
+
+LoginManagerMixin::LoginManagerMixin(InProcessBrowserTestMixinHost* host)
+    : InProcessBrowserTestMixin(host) {
+  g_instance_created = true;
+}
+
+LoginManagerMixin::LoginManagerMixin(InProcessBrowserTestMixinHost* host,
+                                     const UserList& initial_users)
     : InProcessBrowserTestMixin(host), initial_users_(initial_users) {
   DCHECK(!g_instance_created);
   g_instance_created = true;

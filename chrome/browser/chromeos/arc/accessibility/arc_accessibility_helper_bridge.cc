@@ -46,6 +46,28 @@ using ash::ArcNotificationSurfaceManager;
 
 namespace {
 
+constexpr char kToastEventSource[] = "android.widget.Toast$TN";
+
+bool ShouldAnnounceEvent(arc::mojom::AccessibilityEventData* event_data) {
+  if (event_data->event_type ==
+      arc::mojom::AccessibilityEventType::ANNOUNCEMENT) {
+    return true;
+  } else if (event_data->event_type ==
+             arc::mojom::AccessibilityEventType::NOTIFICATION_STATE_CHANGED) {
+    // Only announce the event from toast (event is from its inner class TN).
+    if (!event_data->string_properties)
+      return false;
+
+    auto it = event_data->string_properties->find(
+        arc::mojom::AccessibilityEventStringProperty::CLASS_NAME);
+    if (it == event_data->string_properties->end())
+      return false;
+
+    return it->second == kToastEventSource;
+  }
+  return false;
+}
+
 float DeviceScaleFactorFromWindow(aura::Window* window) {
   if (!window || !window->GetToplevelWindow())
     return 1.0;
@@ -776,24 +798,8 @@ void ArcAccessibilityHelperBridge::HandleFilterTypeFocusEvent(
 
 void ArcAccessibilityHelperBridge::HandleFilterTypeAllEvent(
     mojom::AccessibilityEventDataPtr event_data) {
-  if (event_data->event_type ==
-          arc::mojom::AccessibilityEventType::ANNOUNCEMENT ||
-      event_data->event_type ==
-          arc::mojom::AccessibilityEventType::NOTIFICATION_STATE_CHANGED) {
-    if (!event_data->event_text.has_value())
-      return;
-
-    extensions::EventRouter* event_router = GetEventRouter();
-    // OnAnnounceForAccessibility is used to force speech output.
-    std::unique_ptr<base::ListValue> event_args(
-        extensions::api::accessibility_private::OnAnnounceForAccessibility::
-            Create(*(event_data->event_text)));
-    std::unique_ptr<extensions::Event> event(new extensions::Event(
-        extensions::events::ACCESSIBILITY_PRIVATE_ON_ANNOUNCE_FOR_ACCESSIBILITY,
-        extensions::api::accessibility_private::OnAnnounceForAccessibility::
-            kEventName,
-        std::move(event_args)));
-    event_router->BroadcastEvent(std::move(event));
+  if (ShouldAnnounceEvent(event_data.get())) {
+    DispatchEventTextAnnouncement(event_data.get());
     return;
   }
 
@@ -883,6 +889,22 @@ void ArcAccessibilityHelperBridge::HandleFilterTypeAllEvent(
     DispatchFocusChange(
         tree_source->GetFromId(event_data->source_id)->GetNode(), profile_);
   }
+}
+
+void ArcAccessibilityHelperBridge::DispatchEventTextAnnouncement(
+    mojom::AccessibilityEventData* event_data) const {
+  if (!event_data->event_text.has_value())
+    return;
+
+  std::unique_ptr<base::ListValue> event_args(
+      extensions::api::accessibility_private::OnAnnounceForAccessibility::
+          Create(*(event_data->event_text)));
+  std::unique_ptr<extensions::Event> event(new extensions::Event(
+      extensions::events::ACCESSIBILITY_PRIVATE_ON_ANNOUNCE_FOR_ACCESSIBILITY,
+      extensions::api::accessibility_private::OnAnnounceForAccessibility::
+          kEventName,
+      std::move(event_args)));
+  GetEventRouter()->BroadcastEvent(std::move(event));
 }
 
 void ArcAccessibilityHelperBridge::DispatchCustomSpokenFeedbackToggled(

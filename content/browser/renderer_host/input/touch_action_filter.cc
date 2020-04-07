@@ -96,9 +96,7 @@ void ReportGestureEventFilterResults(bool is_gesture_scroll_begin,
 
 }  // namespace
 
-TouchActionFilter::TouchActionFilter()
-    : compositor_touch_action_enabled_(
-          base::FeatureList::IsEnabled(features::kCompositorTouchAction)) {
+TouchActionFilter::TouchActionFilter() {
   ResetTouchAction();
 }
 
@@ -109,7 +107,7 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
   if (gesture_event->SourceDevice() != blink::WebGestureDevice::kTouchscreen)
     return FilterGestureEventResult::kFilterGestureEventAllowed;
 
-  if (compositor_touch_action_enabled_ && has_deferred_events_) {
+  if (has_deferred_events_) {
     WebInputEvent::Type type = gesture_event->GetType();
     if (type == WebInputEvent::kGestureScrollBegin ||
         type == WebInputEvent::kGestureScrollUpdate) {
@@ -143,13 +141,7 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
           active_touch_action_ = allowed_touch_action_;
           touch_action = allowed_touch_action_.value();
         } else {
-          if (compositor_touch_action_enabled_) {
-            touch_action = white_listed_touch_action_;
-          } else {
-            gesture_sequence_.append("B");
-            SetTouchAction(cc::TouchAction::kAuto);
-            touch_action = cc::TouchAction::kAuto;
-          }
+          touch_action = white_listed_touch_action_;
         }
       }
       drop_scroll_events_ =
@@ -185,16 +177,8 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       // two-finger scrolling but a "touch-action: pan-x pinch-zoom" region
       // doesn't.
       // TODO(mustaq): Add it to spec?
-      if (!compositor_touch_action_enabled_ &&
-          !active_touch_action_.has_value()) {
-        static auto* crash_key = base::debug::AllocateCrashKeyString(
-            "scrollupdate-gestures", base::debug::CrashKeySize::Size256);
-        base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
-        gesture_sequence_.clear();
-      }
       if (IsYAxisActionDisallowed(touch_action)) {
-        if (compositor_touch_action_enabled_ &&
-            !active_touch_action_.has_value() &&
+        if (!active_touch_action_.has_value() &&
             gesture_event->data.scroll_update.delta_y != 0) {
           has_deferred_events_ = true;
           ReportGestureEventFilterResults(
@@ -205,8 +189,7 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
         gesture_event->data.scroll_update.delta_y = 0;
         gesture_event->data.scroll_update.velocity_y = 0;
       } else if (IsXAxisActionDisallowed(touch_action)) {
-        if (compositor_touch_action_enabled_ &&
-            !active_touch_action_.has_value() &&
+        if (!active_touch_action_.has_value() &&
             gesture_event->data.scroll_update.delta_x != 0) {
           has_deferred_events_ = true;
           ReportGestureEventFilterResults(
@@ -251,8 +234,7 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       gesture_sequence_.append("P");
       if (!drop_pinch_events_)
         return FilterGestureEventResult::kFilterGestureEventAllowed;
-      if (compositor_touch_action_enabled_ &&
-          !active_touch_action_.has_value()) {
+      if (!active_touch_action_.has_value()) {
         has_deferred_events_ = true;
         return FilterGestureEventResult::kFilterGestureEventDelayed;
       }
@@ -285,13 +267,6 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
     case WebInputEvent::kGestureTapUnconfirmed: {
       DCHECK_EQ(1, gesture_event->data.tap.tap_count);
       gesture_sequence_.append("C");
-      if (!compositor_touch_action_enabled_ &&
-          !active_touch_action_.has_value()) {
-        static auto* crash_key = base::debug::AllocateCrashKeyString(
-            "tapunconfirmed-gestures", base::debug::CrashKeySize::Size256);
-        base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
-        gesture_sequence_.clear();
-      }
       allow_current_double_tap_event_ =
           (touch_action & cc::TouchAction::kDoubleTapZoom) !=
           cc::TouchAction::kNone;

@@ -501,17 +501,26 @@ export class PhotoConstraintsPreferrer extends ConstraintsPreferrer {
    * @private
    */
   pairCapturePreviewResolutions_(captureResolutions, previewResolutions) {
+    const toSupportedPreviewRatio = (r) => {
+      // Special aspect ratio mapping rule, see http://b/147986763.
+      if (r.width === 848 && r.height === 480) {
+        return (new Resolution(16, 9)).aspectRatio;
+      }
+      return r.aspectRatio;
+    };
     /** @type {!Object<string, !ResolutionList>} */
     const previewRatios = previewResolutions.reduce((rs, r) => {
-      rs[r.aspectRatio] = rs[r.aspectRatio] || [];
-      rs[r.aspectRatio].push(r);
+      const ratio = toSupportedPreviewRatio(r);
+      rs[ratio] = rs[ratio] || [];
+      rs[ratio].push(r);
       return rs;
     }, {});
     /** @type {!Object<string, !ResolutionList>} */
     const captureRatios = captureResolutions.reduce((rs, r) => {
-      if (r.aspectRatio in previewRatios) {
-        rs[r.aspectRatio] = rs[r.aspectRatio] || [];
-        rs[r.aspectRatio].push(r);
+      const ratio = toSupportedPreviewRatio(r);
+      if (ratio in previewRatios) {
+        rs[ratio] = rs[ratio] || [];
+        rs[ratio].push(r);
       }
       return rs;
     }, {});

@@ -17,6 +17,9 @@
 // Called when the user is filtering results through search.
 - (void)updateResultsWithFilter:(NSString*)filter;
 
+// Called when user wants to see details for the given credential.
+- (void)showDetailsForCredential:(id<Credential>)credential;
+
 @end
 
 @protocol CredentialListConsumer <NSObject>

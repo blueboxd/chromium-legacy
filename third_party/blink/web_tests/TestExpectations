@@ -2144,6 +2144,7 @@ crbug.com/953591 [ Win ] virtual/form-controls-refresh-disabled/fast/forms/datal
 crbug.com/591099 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/text/text-lineheight-centering.html [ Failure ]
 crbug.com/770971 [ Win7 ] virtual/form-controls-refresh-disabled/fast/forms/suggested-value.html [ Pass Failure ]
 crbug.com/1035582 virtual/form-controls-refresh-disabled/fast/forms/number/number-input-event-composed.html [ Pass Failure ]
+crbug.com/1035582 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/text/input-readonly-focus-ring.html [ Skip ]
 
 # From never fix tests:
 crbug.com/123456 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/select-popup/* [ Skip ]
@@ -3150,12 +3151,10 @@ crbug.com/641245 external/wpt/css/motion/offset-path-ray-contain-005.html [ Fail
 crbug.com/1053965 external/wpt/css/css-values/ex-unit-004.html [ Failure ]
 
 crbug.com/947951 [ Win ] external/wpt/pointerevents/pointerevent_touch-action-inherit_child-auto-child-none_touch.html [ Pass Timeout ]
+crbug.com/1067277 external/wpt/css/css-content/element-replacement-on-replaced-element.tentative.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Mac10.10 ] external/wpt/fetch/origin/assorted.window.html [ Failure Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-content/element-replacement-on-replaced-element.tentative.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-content/element-replacement-on-replaced-element.tentative.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-content/element-replacement-on-replaced-element.tentative.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-overflow/text-overflow-ellipsis-002.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-overflow/text-overflow-ellipsis-002.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-overflow/text-overflow-ellipsis-002.html [ Failure ]
@@ -5656,9 +5655,6 @@ crbug.com/959002 crbug.com/959042 http/tests/devtools/elements/styles-3/style-au
 crbug.com/959002 crbug.com/959042 http/tests/devtools/elements/styles-3/styles-variables.js [ Pass Timeout ]
 crbug.com/959002 crbug.com/959042 http/tests/devtools/elements/styles-4/styles-keyframes.js [ Pass Timeout ]
 crbug.com/959002 crbug.com/959042 http/tests/devtools/elements/styles-4/undo-add-new-rule.js [ Pass Timeout ]
-
-# Sheriff 2019-05-10
-crbug.com/960623 [ Win ] http/tests/misc/resource-timing-sizes-multipart.html [ Pass Failure ]
 
 # This test might need to be removed.
 crbug.com/954349 fast/forms/autofocus-in-sandbox-with-allow-scripts.html [ Timeout ]

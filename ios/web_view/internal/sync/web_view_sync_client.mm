@@ -139,17 +139,8 @@ base::RepeatingClosure WebViewSyncClient::GetPasswordStateChangedCallback() {
 syncer::DataTypeController::TypeVector
 WebViewSyncClient::CreateDataTypeControllers(
     syncer::SyncService* sync_service) {
-  // //ios/web_view clients are supposed to record their own consents.
-  syncer::DataTypeController::TypeVector type_vector =
-      component_factory_->CreateCommonDataTypeControllers(GetDisabledTypes(),
-                                                          sync_service);
-  type_vector.erase(std::remove_if(type_vector.begin(), type_vector.end(),
-                                   [](const auto& data_type_controller) {
-                                     return data_type_controller->type() ==
-                                            syncer::USER_CONSENTS;
-                                   }),
-                    type_vector.end());
-  return type_vector;
+  return component_factory_->CreateCommonDataTypeControllers(GetDisabledTypes(),
+                                                             sync_service);
 }
 
 BookmarkUndoService* WebViewSyncClient::GetBookmarkUndoService() {
@@ -183,12 +174,7 @@ WebViewSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
 
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
 WebViewSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
-  // Even though USER_CONSENTS are disabled, the component factory will create
-  // its controller and ask for a delegate; this client later removes the
-  // controller. No other data type should ask for its delegate.
-  // TODO(crbug.com/873790): Figure out if USER_CONSENTS need to be enabled or
-  // find a better way how to disable it.
-  DCHECK_EQ(type, syncer::USER_CONSENTS);
+  NOTREACHED();
   return base::WeakPtr<syncer::ModelTypeControllerDelegate>();
 }
 

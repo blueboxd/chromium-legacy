@@ -156,18 +156,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewBrowserTest,
   GURL test_url(embedded_test_server()->GetURL("/nocache-with-etag.html"));
   NavigateToURLAndWaitForTitle(test_url, "Nocache Test Page", 1);
 
-  // Reload same URL after forcing an error from the the network layer;
-  // confirm that the error page is told the cached copy exists.
-  {
-    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
-    content::StoragePartition* partition = shell()
-                                               ->web_contents()
-                                               ->GetMainFrame()
-                                               ->GetProcess()
-                                               ->GetStoragePartition();
-    partition->GetNetworkContext()->SetFailingHttpTransactionForTesting(
-        net::ERR_FAILED);
-  }
+  // Shut down the server to force a network error.
+  ASSERT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
 
   // An error results in one completed navigation.
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 1);
@@ -175,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewBrowserTest,
   bool stale_cache_entry_present = false;
   ASSERT_TRUE(GetLatestErrorFromRendererClient(
       &error_code, &stale_cache_entry_present));
-  EXPECT_EQ(net::ERR_FAILED, error_code);
+  EXPECT_EQ(net::ERR_CONNECTION_REFUSED, error_code);
   EXPECT_TRUE(stale_cache_entry_present);
 
   // Clear the cache and repeat; confirm lack of entry in cache reported.
@@ -198,7 +188,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewBrowserTest,
   stale_cache_entry_present = true;
   ASSERT_TRUE(GetLatestErrorFromRendererClient(
       &error_code, &stale_cache_entry_present));
-  EXPECT_EQ(net::ERR_FAILED, error_code);
+  EXPECT_EQ(net::ERR_CONNECTION_REFUSED, error_code);
   EXPECT_FALSE(stale_cache_entry_present);
 }
 

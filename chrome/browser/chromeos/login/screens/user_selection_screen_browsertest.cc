@@ -17,20 +17,11 @@
 
 namespace chromeos {
 
-namespace {
-
-// No consumer user according to BrowserPolicyConnector::IsNonEnterpriseUser.
-constexpr char kManagedTestUser[] = "manager@example.com";
-constexpr char kManagedTestUserGaiaId[] = "3333333333";
-
-}  // namespace
-
 class UserSelectionScreenTest : public LoginManagerTest {
  public:
-  UserSelectionScreenTest()
-      : LoginManagerTest(false /* should_launch_browser */,
-                         false /* should_initialize_webui */) {
-    set_force_webui_login(false);
+  UserSelectionScreenTest() : LoginManagerTest() {
+    login_manager_mixin_.AppendRegularUsers(3);
+    login_manager_mixin_.AppendManagedUsers(1);
   }
   ~UserSelectionScreenTest() override = default;
 
@@ -42,23 +33,15 @@ class UserSelectionScreenTest : public LoginManagerTest {
   }
 
  protected:
-  std::vector<LoginManagerMixin::TestUserInfo> test_users_{CreateUsers()};
-  LoginManagerMixin login_manager_mixin_{&mixin_host_, test_users_};
+  LoginManagerMixin login_manager_mixin_{&mixin_host_};
 
- private:
-  static std::vector<LoginManagerMixin::TestUserInfo> CreateUsers() {
-    auto users = LoginManagerMixin::CreateRegularUsers(3);
-    users.push_back(
-        LoginManagerMixin::TestUserInfo(AccountId::FromUserEmailGaiaId(
-            kManagedTestUser, kManagedTestUserGaiaId)));
-    return users;
-  }
   DISALLOW_COPY_AND_ASSIGN(UserSelectionScreenTest);
 };
 
 // Test that a banner shows up for known-unmanaged users that need dircrypto
 // migration. Also test that no banner shows up for users that may be managed.
 IN_PROC_BROWSER_TEST_F(UserSelectionScreenTest, ShowDircryptoMigrationBanner) {
+  const auto& users = login_manager_mixin_.users();
   // No banner for the first user since default is no migration.
   EXPECT_FALSE(ash::LoginScreenTestApi::IsWarningBubbleShown());
 
@@ -68,7 +51,7 @@ IN_PROC_BROWSER_TEST_F(UserSelectionScreenTest, ShowDircryptoMigrationBanner) {
   FakeCryptohomeClient::Get()->set_needs_dircrypto_migration(true);
 
   // Focus the 2nd user pod (consumer).
-  ASSERT_TRUE(ash::LoginScreenTestApi::FocusUser(test_users_[1].account_id));
+  ASSERT_TRUE(ash::LoginScreenTestApi::FocusUser(users[1].account_id));
 
   // Wait for FakeCryptohomeClient to send back the check result.
   test::TestPredicateWaiter(base::BindRepeating([]() {
@@ -82,7 +65,7 @@ IN_PROC_BROWSER_TEST_F(UserSelectionScreenTest, ShowDircryptoMigrationBanner) {
   FakeCryptohomeClient::Get()->set_needs_dircrypto_migration(false);
   histogram_tester = std::make_unique<base::HistogramTester>();
   // Focus the 3rd user pod (consumer).
-  ASSERT_TRUE(ash::LoginScreenTestApi::FocusUser(test_users_[2].account_id));
+  ASSERT_TRUE(ash::LoginScreenTestApi::FocusUser(users[2].account_id));
 
   // Wait for FakeCryptohomeClient to send back the check result.
   test::TestPredicateWaiter(base::BindRepeating([]() {
@@ -97,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(UserSelectionScreenTest, ShowDircryptoMigrationBanner) {
   histogram_tester = std::make_unique<base::HistogramTester>();
 
   // Focus to the 4th user pod (enterprise).
-  ASSERT_TRUE(ash::LoginScreenTestApi::FocusUser(test_users_[3].account_id));
+  ASSERT_TRUE(ash::LoginScreenTestApi::FocusUser(users[3].account_id));
 
   // Wait for FakeCryptohomeClient to send back the check result.
   test::TestPredicateWaiter(base::BindRepeating([]() {

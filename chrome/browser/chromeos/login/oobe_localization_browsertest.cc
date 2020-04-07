@@ -14,10 +14,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
-#include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/screens/welcome_screen.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -185,7 +185,7 @@ struct LocalizationTestParams {
 };
 
 class OobeLocalizationTest
-    : public LoginManagerTest,
+    : public OobeBaseTest,
       public testing::WithParamInterface<const LocalizationTestParams*> {
  public:
   OobeLocalizationTest();
@@ -226,7 +226,7 @@ class OobeLocalizationTest
   DISALLOW_COPY_AND_ASSIGN(OobeLocalizationTest);
 };
 
-OobeLocalizationTest::OobeLocalizationTest() : LoginManagerTest(false, true) {
+OobeLocalizationTest::OobeLocalizationTest() : OobeBaseTest() {
   fake_statistics_provider_.SetMachineStatistic("initial_locale",
                                                 GetParam()->initial_locale);
   fake_statistics_provider_.SetMachineStatistic("keyboard_layout",

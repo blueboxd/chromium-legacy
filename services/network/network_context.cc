@@ -1445,22 +1445,6 @@ void NetworkContext::EnableStaticKeyPinningForTesting(
   std::move(callback).Run();
 }
 
-void NetworkContext::SetFailingHttpTransactionForTesting(
-    int32_t error_code,
-    SetFailingHttpTransactionForTestingCallback callback) {
-  net::HttpCache* cache(
-      url_request_context_->http_transaction_factory()->GetCache());
-  DCHECK(cache);
-  auto factory = std::make_unique<net::FailingHttpTransactionFactory>(
-      cache->GetSession(), static_cast<net::Error>(error_code));
-
-  // Throw away old version; since this is a a browser test, we don't
-  // need to restore the old state.
-  cache->SetHttpNetworkTransactionFactoryForTesting(std::move(factory));
-
-  std::move(callback).Run();
-}
-
 void NetworkContext::VerifyCertificateForTesting(
     const scoped_refptr<net::X509Certificate>& certificate,
     const std::string& hostname,

@@ -93,7 +93,8 @@ public class TabProperties {
             SELECTABLE_TAB_ACTION_BUTTON_SELECTED_BACKGROUND =
             new PropertyModel.WritableObjectPropertyKey<>();
 
-    public static final WritableObjectPropertyKey<String> URL = new WritableObjectPropertyKey<>();
+    public static final WritableObjectPropertyKey<String> URL_DOMAIN =
+            new WritableObjectPropertyKey<>();
 
     public static final PropertyModel
             .WritableObjectPropertyKey<AccessibilityDelegate> ACCESSIBILITY_DELEGATE =
@@ -114,7 +115,7 @@ public class TabProperties {
             CARD_ANIMATION_STATUS, SELECTABLE_TAB_CLICKED_LISTENER, TAB_SELECTION_DELEGATE,
             IS_INCOGNITO, SELECTED_TAB_BACKGROUND_DRAWABLE_ID, TABSTRIP_FAVICON_BACKGROUND_COLOR_ID,
             SELECTABLE_TAB_ACTION_BUTTON_BACKGROUND,
-            SELECTABLE_TAB_ACTION_BUTTON_SELECTED_BACKGROUND, URL, ACCESSIBILITY_DELEGATE,
+            SELECTABLE_TAB_ACTION_BUTTON_SELECTED_BACKGROUND, URL_DOMAIN, ACCESSIBILITY_DELEGATE,
             SEARCH_QUERY, SEARCH_LISTENER, SEARCH_CHIP_ICON_DRAWABLE_ID, CARD_TYPE};
 
     public static final PropertyKey[] ALL_KEYS_TAB_STRIP =

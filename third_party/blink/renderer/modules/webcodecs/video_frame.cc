@@ -8,9 +8,9 @@
 
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_metadata.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_video_frame_init.h"
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
-#include "third_party/blink/renderer/modules/webcodecs/video_frame_init.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/libyuv/include/libyuv.h"
 

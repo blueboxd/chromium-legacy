@@ -5896,7 +5896,6 @@ if (!is_android) {
         "../browser/ui/views/test/view_event_test_platform_part_chromeos.cc",
         "../browser/ui/views/test/view_event_test_platform_part_default.cc",
         "../browser/ui/views/toolbar/toolbar_action_view_interactive_uitest.cc",
-        "../browser/ui/views/toolbar/toolbar_button_interactive_uitest.cc",
         "../browser/ui/views/toolbar/toolbar_view_interactive_uitest.cc",
         "../browser/ui/views/translate/translate_bubble_test_utils_views.cc",
       ]

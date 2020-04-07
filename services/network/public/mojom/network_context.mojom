@@ -1301,10 +1301,6 @@ interface NetworkContext {
   EnableStaticKeyPinningForTesting() => ();
 
   [Sync]
-  // Will force the transaction to fail with the given error code.
-  SetFailingHttpTransactionForTesting(int32 rv) => ();
-
-  [Sync]
   // Verifies the given certificate using the context's CertVerifier.
   VerifyCertificateForTesting(X509Certificate certificate,
                               string hostname,

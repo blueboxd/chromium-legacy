@@ -51,14 +51,20 @@ class LoginManagerMixin : public InProcessBrowserTestMixin {
     const user_manager::User::OAuthTokenStatus token_status;
   };
 
+  using UserList = std::vector<TestUserInfo>;
+
   // Convenience method for creating default UserContext for an account ID. The
   // result can be used with Login* methods below.
   static UserContext CreateDefaultUserContext(const TestUserInfo& account_id);
 
-  static std::vector<TestUserInfo> CreateRegularUsers(int n);
+  // Should be called before any InProcessBrowserTestMixin functions.
+  void AppendRegularUsers(int n);
+  void AppendManagedUsers(int n);
+  void AppendSupervisedUsers(int n);
 
+  explicit LoginManagerMixin(InProcessBrowserTestMixinHost* host);
   LoginManagerMixin(InProcessBrowserTestMixinHost* host,
-                    const std::vector<TestUserInfo>& initial_users);
+                    const UserList& initial_users);
 
   ~LoginManagerMixin() override;
 
@@ -71,6 +77,8 @@ class LoginManagerMixin : public InProcessBrowserTestMixin {
   // launch browser as part of user session setup - use this to override that
   // behavior.
   void set_should_launch_browser(bool value) { should_launch_browser_ = value; }
+
+  const UserList& users() const { return initial_users_; }
 
   // Sets the list of default policy switches to be added to command line on the
   // login screen.
@@ -106,7 +114,7 @@ class LoginManagerMixin : public InProcessBrowserTestMixin {
   bool LoginAndWaitForActiveSession(const UserContext& user_context);
 
  private:
-  const std::vector<TestUserInfo> initial_users_;
+  UserList initial_users_;
 
   // If set, session_flags_manager_ will be set up with session restore logic
   // enabled (it will restore session state between test runs for multi-step

@@ -17,24 +17,21 @@ namespace chromeos {
 
 class UserContext;
 
-// Base class for Chrome OS out-of-box/login WebUI tests.
-// If no special configuration is done launches out-of-box WebUI.
-// To launch login UI use PRE_* test that will register user(s) and mark
-// out-of-box as completed.
-// Guarantees that WebUI has been initialized by waiting for
-// NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE notification.
+// Base class for Chrome OS Login tests. Should be used if you need to start at
+// the Chrome OS Login screen (especially with existing users). For the tests
+// that are focused more on OOBE - prefer OobeBaseTest. Use LoginManagerMixin to
+// configure users for tests.
 class LoginManagerTest : public MixinBasedInProcessBrowserTest {
  public:
-  LoginManagerTest(bool should_launch_browser,
-                   bool should_initialize_webui);
+  LoginManagerTest();
   ~LoginManagerTest() override;
 
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpOnMainThread() override;
 
-  // Registers the user with the given |user_id| on the device.
-  // This method should be called in PRE_* test.
-  // TODO(dzhioev): Add the ability to register users without a PRE_* test.
+  // Could be used to registers the user with the given |account_id| on the
+  // device. This method should be called in PRE_* test. Use only if necessary,
+  // prefer LoginManagerMixin instead.
   void RegisterUser(const AccountId& account_id);
 
   static const char kPassword[];
@@ -60,17 +57,14 @@ class LoginManagerTest : public MixinBasedInProcessBrowserTest {
   // Add user with |user_id| to session.
   void AddUser(const AccountId& user_id);
 
-  void set_force_webui_login(bool force) { force_webui_login_ = force; }
+  void set_should_launch_browser(bool launch) {
+    should_launch_browser_ = launch;
+  }
 
  private:
-  // If set, the tests will use deprecated webui login.
-  // TODO(tbarzic): Migrate all tests to work with views login implementation.
-  bool force_webui_login_ = true;
-  const bool should_launch_browser_;
-  const bool should_initialize_webui_;
+  bool should_launch_browser_ = false;
   EmbeddedTestServerSetupMixin embedded_test_server_{&mixin_host_,
                                                      embedded_test_server()};
-
   DISALLOW_COPY_AND_ASSIGN(LoginManagerTest);
 };
 

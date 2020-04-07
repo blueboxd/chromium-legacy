@@ -1460,6 +1460,22 @@ TEST_F(MetricsWebContentsObserverTest, RecordFeatureUsageNoObserver) {
 
 class MetricsWebContentsObserverBackForwardCacheTest
     : public MetricsWebContentsObserverTest {
+  class CreatedPageLoadTrackerObserver
+      : public MetricsWebContentsObserver::TestingObserver {
+   public:
+    explicit CreatedPageLoadTrackerObserver(content::WebContents* web_contents)
+        : MetricsWebContentsObserver::TestingObserver(web_contents) {}
+
+    int tracker_committed_count() const { return tracker_committed_count_; }
+
+    void OnCommit(PageLoadTracker* tracker) override {
+      tracker_committed_count_++;
+    }
+
+   private:
+    int tracker_committed_count_ = 0;
+  };
+
  public:
   MetricsWebContentsObserverBackForwardCacheTest() {
     feature_list_.InitWithFeaturesAndParameters(
@@ -1470,8 +1486,21 @@ class MetricsWebContentsObserverBackForwardCacheTest
 
   ~MetricsWebContentsObserverBackForwardCacheTest() override = default;
 
+  int tracker_committed_count() const {
+    return created_page_load_tracker_observer_->tracker_committed_count();
+  }
+
+  void SetUp() override {
+    MetricsWebContentsObserverTest::SetUp();
+    created_page_load_tracker_observer_ =
+        std::make_unique<CreatedPageLoadTrackerObserver>(web_contents());
+    observer()->AddTestingObserver(created_page_load_tracker_observer_.get());
+  }
+
  private:
   base::test::ScopedFeatureList feature_list_;
+  std::unique_ptr<CreatedPageLoadTrackerObserver>
+      created_page_load_tracker_observer_;
 };
 
 TEST_F(MetricsWebContentsObserverBackForwardCacheTest,
@@ -1514,23 +1543,35 @@ TEST_F(MetricsWebContentsObserverBackForwardCacheTest, EnterBackForwardCache) {
 
   ASSERT_EQ(0, CountCompleteTimingReported());
   EXPECT_EQ(0, CountOnBackForwardCacheEntered());
+  EXPECT_EQ(1, tracker_committed_count());
 
   // Go to the URL2.
   content::NavigationSimulator::NavigateAndCommitFromBrowser(
       web_contents(), GURL(kDefaultTestUrl2));
   ASSERT_EQ(main_rfh()->GetLastCommittedURL().spec(), GURL(kDefaultTestUrl2));
 
+  // With the default implementation of PageLoadMetricsObserver,
+  // OnEnteringBackForwardCache invokes OnComplete and returns STOP_OBSERVING.
   ASSERT_EQ(1, CountCompleteTimingReported());
   EXPECT_EQ(1, CountOnBackForwardCacheEntered());
+  EXPECT_EQ(2, tracker_committed_count());
 
   // Go back.
   content::NavigationSimulator::GoBack(web_contents());
   EXPECT_EQ(2, CountOnBackForwardCacheEntered());
 
-  // With the default implementation of PageLoadMetricsObserver,
-  // OnEnteringBackForwardCache invokes OnComplete and returns STOP_OBSERVING.
+  // Again, OnComplete is assured to be called.
   ASSERT_EQ(2, CountCompleteTimingReported());
+
+  // A new page load tracker is not created or committed. A page load tracker in
+  // the cache is used instead.
+  EXPECT_EQ(2, tracker_committed_count());
 }
+
+// TODO(hajimehoshi): Detect the document eviction so that PageLoadTracker in
+// the cache is destroyed. This would call PageLoadMetricsObserver::OnComplete.
+// This test can be implemented after a PageLoadMetricsObserver's
+// OnEnterBackForwardCache returns CONTINUE_OBSERVING.
 
 class MetricsWebContentsObserverBackForwardCacheDisabledTest
     : public MetricsWebContentsObserverTest {

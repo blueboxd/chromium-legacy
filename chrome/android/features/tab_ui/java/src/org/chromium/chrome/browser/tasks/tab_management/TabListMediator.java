@@ -392,7 +392,7 @@ class TabListMediator {
             }
 
             if (index == TabModel.INVALID_TAB_INDEX) return;
-            mModel.get(index).model.set(TabProperties.URL, getUrlForTab(tab));
+            mModel.get(index).model.set(TabProperties.URL_DOMAIN, getDomainForTab(tab));
         }
     };
 
@@ -1000,7 +1000,7 @@ class TabListMediator {
         mModel.get(index).model.set(TabProperties.TAB_SELECTED_LISTENER, tabSelectedListener);
         mModel.get(index).model.set(TabProperties.IS_SELECTED, isSelected);
         mModel.get(index).model.set(TabProperties.TITLE, getLatestTitleForTab(tab));
-        mModel.get(index).model.set(TabProperties.URL, getUrlForTab(tab));
+        mModel.get(index).model.set(TabProperties.URL_DOMAIN, getDomainForTab(tab));
 
         if (TabUiFeatureUtilities.ENABLE_SEARCH_CHIP.getValue() && mUiType == UiType.CLOSABLE) {
             mModel.get(index).model.set(TabProperties.SEARCH_QUERY, getLastSearchTerm(tab));
@@ -1182,7 +1182,7 @@ class TabListMediator {
                 new PropertyModel.Builder(TabProperties.ALL_KEYS_TAB_GRID)
                         .with(TabProperties.TAB_ID, tab.getId())
                         .with(TabProperties.TITLE, getLatestTitleForTab(tab))
-                        .with(TabProperties.URL, getUrlForTab(tab))
+                        .with(TabProperties.URL_DOMAIN, getDomainForTab(tab))
                         .with(TabProperties.FAVICON,
                                 mTabListFaviconProvider.getDefaultFaviconDrawable(
                                         tab.isIncognito()))
@@ -1275,26 +1275,27 @@ class TabListMediator {
         return iconDrawableId;
     }
 
-    private String getUrlForTab(Tab tab) {
+    private String getDomainForTab(Tab tab) {
         if (!TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled()) return "";
-        if (!mActionsOnAllRelatedTabs) return tab.getUrlString();
+        if (!mActionsOnAllRelatedTabs) return getDomain(tab);
 
         List<Tab> relatedTabs = getRelatedTabsForId(tab.getId());
-        if (relatedTabs.size() == 1) return tab.getUrlString();
 
-        StringBuilder builder = new StringBuilder();
-        // TODO(1024925): Address i18n issue for the list separator.
-        String separator = ", ";
+        List<String> domainNames = new ArrayList<>();
+
         for (int i = 0; i < relatedTabs.size(); i++) {
-            String domain =
-                    UrlUtilities.getDomainAndRegistry(relatedTabs.get(i).getUrlString(), false);
-            if (!domain.isEmpty()) {
-                builder.append(domain);
-
-                if (i < relatedTabs.size() - 1) builder.append(separator);
-            }
+            String domain = getDomain(relatedTabs.get(i));
+            domainNames.add(domain);
         }
-        return builder.toString();
+        // TODO(1024925): Address i18n issue for the list delimiter.
+        return TextUtils.join(", ", domainNames);
+    }
+
+    private String getDomain(Tab tab) {
+        String domain = UrlUtilities.getDomainAndRegistry(tab.getUrlString(), false);
+
+        if (domain.isEmpty()) return tab.getUrlString();
+        return domain;
     }
 
     @Nullable

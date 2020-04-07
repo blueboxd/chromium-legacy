@@ -8,42 +8,21 @@
 #include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
-#include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_manager_base.h"
 
 namespace chromeos {
 
-namespace {
-
-struct {
-  const char* email;
-  const char* gaia_id;
-} const kTestUsers[] = {
-    {"test-user1@gmail.com", "1111111111"},
-    {"test-user2@gmail.com", "2222222222"},
-    // Test Supervised User.
-    // The user's domain is defined in user_manager::kSupervisedUserDomain.
-    // That const isn't directly referenced here to keep this code readable by
-    // avoiding std::string concatenations.
-    {"test-superviseduser@locally-managed.localhost", "3333333333"},
-};
-
-}  // namespace
-
 class LoginUIHideSupervisedUsersTest : public LoginManagerTest {
  public:
-  LoginUIHideSupervisedUsersTest()
-      : LoginManagerTest(false, false /* should_initialize_webui */) {
-    set_force_webui_login(false);
-    for (size_t i = 0; i < base::size(kTestUsers); ++i) {
-      test_users_.emplace_back(AccountId::FromUserEmailGaiaId(
-          kTestUsers[i].email, kTestUsers[i].gaia_id));
-    }
+  LoginUIHideSupervisedUsersTest() : LoginManagerTest() {
+    login_mixin_.AppendRegularUsers(2);
+    login_mixin_.AppendSupervisedUsers(1);
   }
 
  protected:
-  std::vector<AccountId> test_users_;
+  LoginManagerMixin login_mixin_{&mixin_host_};
 };
 
 // The flag is "HideSupervisedUsers", so this test class
@@ -76,40 +55,26 @@ class LoginUIHideSupervisedUsersDisabledTest
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_F(LoginUIHideSupervisedUsersEnabledTest,
-                       PRE_SupervisedUserHidden) {
-  RegisterUser(test_users_[0]);
-  RegisterUser(test_users_[1]);
-  RegisterUser(test_users_[2]);  // The test Supervised User.
-  StartupUtils::MarkOobeCompleted();
-}
-
 // Verifies that Supervised Users are *not* displayed on the login screen when
 // the HideSupervisedUsers feature flag *is* enabled.
 IN_PROC_BROWSER_TEST_F(LoginUIHideSupervisedUsersEnabledTest,
                        SupervisedUserHidden) {
+  const auto& test_users = login_mixin_.users();
   // Only the regular users should be displayed on the login screen.
   EXPECT_EQ(2, ash::LoginScreenTestApi::GetUsersCount());
-  EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(test_users_[0]));
-  EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(test_users_[1]));
-}
-
-IN_PROC_BROWSER_TEST_F(LoginUIHideSupervisedUsersDisabledTest,
-                       PRE_SupervisedUserDisplayed) {
-  RegisterUser(test_users_[0]);
-  RegisterUser(test_users_[1]);
-  RegisterUser(test_users_[2]);  // The test Supervised User.
-  StartupUtils::MarkOobeCompleted();
+  EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(test_users[0].account_id));
+  EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(test_users[1].account_id));
 }
 
 // Verifies that Supervised Users *are* displayed on the login screen when the
 // HideSupervisedUsers feature flag is *not* enabled.
 IN_PROC_BROWSER_TEST_F(LoginUIHideSupervisedUsersDisabledTest,
                        SupervisedUserDisplayed) {
+  const auto& test_users = login_mixin_.users();
   EXPECT_EQ(3, ash::LoginScreenTestApi::GetUsersCount());
-  EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(test_users_[0]));
-  EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(test_users_[1]));
-  EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(test_users_[2]));
+  EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(test_users[0].account_id));
+  EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(test_users[1].account_id));
+  EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(test_users[2].account_id));
 }
 
 }  // namespace chromeos

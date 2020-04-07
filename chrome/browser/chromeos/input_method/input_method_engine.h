@@ -119,9 +119,14 @@ class InputMethodEngine : public ::input_method::InputMethodEngineBase {
   // Dismiss suggestion window.
   bool DismissSuggestion(int context_id, std::string* error);
 
-  // Set and show suggestion window.
+  // Sets text and show suggestion window.
+  // text - the full suggestion text.
+  // confirmed_text - the confirmed text that the user has typed so far.
+  // show_tab - whether to show "tab" in the suggestion window.
   bool SetSuggestion(int context_id,
                      const base::string16& text,
+                     const base::string16& confirmed_text,
+                     const bool show_tab,
                      std::string* error);
 
   // Commit the suggestion and hide the window.

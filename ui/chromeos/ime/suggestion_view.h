@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "ui/chromeos/ui_chromeos_export.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/styled_label.h"
 #include "ui/views/view.h"
 
 namespace ui {
@@ -32,7 +33,8 @@ constexpr int kAnnotationCornerRadius = 4;
 constexpr int kPadding = 10;
 constexpr int kAnnotationPaddingHeight = 6;
 constexpr char kTabKey[] = "tab";
-constexpr SkColor kSuggestionLabelColor =
+constexpr SkColor kConfirmedTextColor = gfx::kGoogleGrey900;
+constexpr SkColor kSuggestionColor =
     SkColorSetA(gfx::kGoogleGrey900, gfx::kGoogleGreyAlpha500);
 
 // SuggestionView renders a suggestion.
@@ -41,7 +43,9 @@ class UI_CHROMEOS_EXPORT SuggestionView : public views::View {
   SuggestionView();
   ~SuggestionView() override;
 
-  void SetText(const base::string16& text);
+  void SetView(const base::string16& text,
+               const base::string16& confirmed_text,
+               const bool show_tab);
 
  private:
   friend class SuggestionWindowViewTest;
@@ -55,8 +59,11 @@ class UI_CHROMEOS_EXPORT SuggestionView : public views::View {
   // Views created in the class will be part of tree of |this|, so these
   // child views will be deleted when |this| is deleted.
 
+  void SetSuggestionText(const base::string16& text,
+                         const base::string16& confirmed_text);
+
   // The suggestion label renders suggestions.
-  views::Label* suggestion_label_ = nullptr;
+  views::StyledLabel* suggestion_label_ = nullptr;
   // The annotation label renders annotations.
   views::Label* annotation_label_ = nullptr;
 

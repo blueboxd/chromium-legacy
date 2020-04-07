@@ -230,8 +230,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnablePaymentHandlerMinimalUI, features::kWebPaymentsMinimalUI,
      kEnableOnly},
     {wf::EnablePaymentApp, features::kServiceWorkerPaymentApps, kEnableOnly},
-    {wf::EnableCompositorTouchAction, features::kCompositorTouchAction,
-     kEnableOnly},
     {wf::EnableGenericSensorExtraClasses, features::kGenericSensorExtraClasses,
      kEnableOnly},
     {wf::EnableMediaCastOverlayButton, media::kMediaCastOverlayButton,

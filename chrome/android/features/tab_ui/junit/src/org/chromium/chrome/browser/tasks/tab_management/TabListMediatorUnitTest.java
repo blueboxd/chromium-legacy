@@ -1409,27 +1409,31 @@ public class TabListMediatorUnitTest {
     @Features.DisableFeatures({TAB_GROUPS_ANDROID})
     public void testUrlUpdated_forSingleTab_GTS_GroupNotEnabled() {
         initAndAssertAllProperties();
-        assertNotEquals(NEW_URL, mModel.get(POSITION1).model.get(TabProperties.URL));
+        assertNotEquals(NEW_DOMAIN, mModel.get(POSITION1).model.get(TabProperties.URL_DOMAIN));
 
         doReturn(NEW_URL).when(mTab1).getUrlString();
         mTabObserverCaptor.getValue().onUrlUpdated(mTab1);
 
-        // TabProperties.URL is empty string if TabGroupsAndroidContinuationEnabled is false.
-        assertEquals("", mModel.get(POSITION1).model.get(TabProperties.URL));
-        assertEquals("", mModel.get(POSITION2).model.get(TabProperties.URL));
+        // TabProperties.URL_DOMAIN is empty string if TabGroupsAndroidContinuationEnabled is false.
+        assertEquals("", mModel.get(POSITION1).model.get(TabProperties.URL_DOMAIN));
+        assertEquals("", mModel.get(POSITION2).model.get(TabProperties.URL_DOMAIN));
     }
 
     @Test
     @Features.EnableFeatures({TAB_GROUPS_CONTINUATION_ANDROID})
     public void testUrlUpdated_forSingleTab_GTS() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
-        assertNotEquals(NEW_URL, mModel.get(POSITION1).model.get(TabProperties.URL));
+        assertNotEquals(NEW_DOMAIN, mModel.get(POSITION1).model.get(TabProperties.URL_DOMAIN));
+
+        doReturn(NEW_DOMAIN)
+                .when(mUrlUtilitiesJniMock)
+                .getDomainAndRegistry(eq(NEW_URL), anyBoolean());
 
         doReturn(NEW_URL).when(mTab1).getUrlString();
         mTabObserverCaptor.getValue().onUrlUpdated(mTab1);
 
-        assertEquals(NEW_URL, mModel.get(POSITION1).model.get(TabProperties.URL));
-        assertEquals(TAB2_URL, mModel.get(POSITION2).model.get(TabProperties.URL));
+        assertEquals(NEW_DOMAIN, mModel.get(POSITION1).model.get(TabProperties.URL_DOMAIN));
+        assertEquals(TAB2_DOMAIN, mModel.get(POSITION2).model.get(TabProperties.URL_DOMAIN));
     }
 
     @Test
@@ -1443,25 +1447,25 @@ public class TabListMediatorUnitTest {
 
         mMediatorTabGroupModelFilterObserver.didMergeTabToGroup(mTab2, TAB1_ID);
         assertEquals(TAB1_DOMAIN + ", " + TAB2_DOMAIN,
-                mModel.get(POSITION1).model.get(TabProperties.URL));
+                mModel.get(POSITION1).model.get(TabProperties.URL_DOMAIN));
 
         doReturn(NEW_DOMAIN)
                 .when(mUrlUtilitiesJniMock)
                 .getDomainAndRegistry(eq(NEW_URL), anyBoolean());
 
-        // Update URL for mTab1.
+        // Update URL_DOMAIN for mTab1.
         doReturn(NEW_URL).when(mTab1).getUrlString();
         mTabObserverCaptor.getValue().onUrlUpdated(mTab1);
 
         assertEquals(NEW_DOMAIN + ", " + TAB2_DOMAIN,
-                mModel.get(POSITION1).model.get(TabProperties.URL));
+                mModel.get(POSITION1).model.get(TabProperties.URL_DOMAIN));
 
-        // Update URL for mTab2.
+        // Update URL_DOMAIN for mTab2.
         doReturn(NEW_URL).when(mTab2).getUrlString();
         mTabObserverCaptor.getValue().onUrlUpdated(mTab2);
 
-        assertEquals(
-                NEW_DOMAIN + ", " + NEW_DOMAIN, mModel.get(POSITION1).model.get(TabProperties.URL));
+        assertEquals(NEW_DOMAIN + ", " + NEW_DOMAIN,
+                mModel.get(POSITION1).model.get(TabProperties.URL_DOMAIN));
     }
 
     @Test
@@ -1474,26 +1478,26 @@ public class TabListMediatorUnitTest {
         doReturn(POSITION1).when(mTabGroupModelFilter).indexOf(mTab2);
 
         mMediatorTabGroupModelFilterObserver.didMergeTabToGroup(mTab2, TAB1_ID);
-        assertEquals(TAB1_URL, mModel.get(POSITION1).model.get(TabProperties.URL));
-        assertEquals(TAB2_URL, mModel.get(POSITION2).model.get(TabProperties.URL));
+        assertEquals(TAB1_DOMAIN, mModel.get(POSITION1).model.get(TabProperties.URL_DOMAIN));
+        assertEquals(TAB2_DOMAIN, mModel.get(POSITION2).model.get(TabProperties.URL_DOMAIN));
 
         doReturn(NEW_DOMAIN)
                 .when(mUrlUtilitiesJniMock)
                 .getDomainAndRegistry(eq(NEW_URL), anyBoolean());
 
-        // Update URL for mTab1.
+        // Update URL_DOMAIN for mTab1.
         doReturn(NEW_URL).when(mTab1).getUrlString();
         mTabObserverCaptor.getValue().onUrlUpdated(mTab1);
 
-        assertEquals(NEW_URL, mModel.get(POSITION1).model.get(TabProperties.URL));
-        assertEquals(TAB2_URL, mModel.get(POSITION2).model.get(TabProperties.URL));
+        assertEquals(NEW_DOMAIN, mModel.get(POSITION1).model.get(TabProperties.URL_DOMAIN));
+        assertEquals(TAB2_DOMAIN, mModel.get(POSITION2).model.get(TabProperties.URL_DOMAIN));
 
-        // Update URL for mTab2.
+        // Update URL_DOMAIN for mTab2.
         doReturn(NEW_URL).when(mTab2).getUrlString();
         mTabObserverCaptor.getValue().onUrlUpdated(mTab2);
 
-        assertEquals(NEW_URL, mModel.get(POSITION1).model.get(TabProperties.URL));
-        assertEquals(NEW_URL, mModel.get(POSITION2).model.get(TabProperties.URL));
+        assertEquals(NEW_DOMAIN, mModel.get(POSITION1).model.get(TabProperties.URL_DOMAIN));
+        assertEquals(NEW_DOMAIN, mModel.get(POSITION2).model.get(TabProperties.URL_DOMAIN));
     }
 
     @Test
@@ -1505,7 +1509,7 @@ public class TabListMediatorUnitTest {
 
         mMediatorTabGroupModelFilterObserver.didMergeTabToGroup(mTab2, TAB1_ID);
         assertEquals(TAB1_DOMAIN + ", " + TAB2_DOMAIN,
-                mModel.get(POSITION1).model.get(TabProperties.URL));
+                mModel.get(POSITION1).model.get(TabProperties.URL_DOMAIN));
 
         // Assume that TabGroupModelFilter is already updated.
         when(mTabGroupModelFilter.getRelatedTabList(TAB1_ID)).thenReturn(Arrays.asList(mTab1));
@@ -1515,8 +1519,8 @@ public class TabListMediatorUnitTest {
         doReturn(2).when(mTabGroupModelFilter).getCount();
 
         mMediatorTabGroupModelFilterObserver.didMoveTabOutOfGroup(mTab2, POSITION1);
-        assertEquals(TAB1_URL, mModel.get(POSITION1).model.get(TabProperties.URL));
-        assertEquals(TAB2_URL, mModel.get(POSITION2).model.get(TabProperties.URL));
+        assertEquals(TAB1_DOMAIN, mModel.get(POSITION1).model.get(TabProperties.URL_DOMAIN));
+        assertEquals(TAB2_DOMAIN, mModel.get(POSITION2).model.get(TabProperties.URL_DOMAIN));
     }
 
     @Test

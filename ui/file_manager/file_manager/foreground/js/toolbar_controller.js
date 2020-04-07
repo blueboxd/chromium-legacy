@@ -142,8 +142,12 @@ class ToolbarController {
     this.deleteButton_.addEventListener(
         'click', this.onDeleteButtonClicked_.bind(this));
 
-    this.navigationList_.addEventListener(
-        'relayout', this.onNavigationListRelayout_.bind(this));
+    // The old layout needed the cancel selection button to resize every
+    // time the splitter was moved. Not needed for files-ng.
+    if (!util.isFilesNg()) {
+      this.navigationList_.addEventListener(
+          'relayout', this.onNavigationListRelayout_.bind(this));
+    }
 
     this.directoryModel_.addEventListener(
         'directory-changed', this.updateCurrentDirectoryButtons_.bind(this));
@@ -270,10 +274,13 @@ class ToolbarController {
    * @private
    */
   onNavigationListRelayout_() {
-    // Make the width of spacer same as the width of navigation list.
-    const navWidth =
-        parseFloat(window.getComputedStyle(this.navigationList_).width);
-    this.cancelSelectionButtonWrapper_.style.width = navWidth + 'px';
+    // Not needed for files-ng, see comment above where this function is used.
+    if (!util.isFilesNg()) {
+      // Make the width of spacer same as the width of navigation list.
+      const navWidth =
+          parseFloat(window.getComputedStyle(this.navigationList_).width);
+      this.cancelSelectionButtonWrapper_.style.width = navWidth + 'px';
+    }
   }
 
   /**

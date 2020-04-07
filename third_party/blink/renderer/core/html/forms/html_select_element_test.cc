@@ -566,4 +566,13 @@ TEST_F(HTMLSelectElementTest, SelectMultipleOptionsByPopup) {
   }
 }
 
+TEST_F(HTMLSelectElementTest, IntrinsicInlineSizeOverflow) {
+  // crbug.com/1068338
+  // This test passes if UBSAN doesn't complain.
+  SetHtmlInnerHTML(
+      "<select style='word-spacing:1073741824em;'>"
+      "<option>abc def</option></select>");
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
+}
+
 }  // namespace blink

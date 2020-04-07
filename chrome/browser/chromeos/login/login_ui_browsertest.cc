@@ -48,15 +48,12 @@ IN_PROC_BROWSER_TEST_F(OobeBaseTest, OobeCatchException) {
 
 class LoginUITestBase : public LoginManagerTest {
  public:
-  LoginUITestBase()
-      : LoginManagerTest(false, false /* should_initialize_webui */) {
-    set_force_webui_login(false);
+  LoginUITestBase() : LoginManagerTest() {
+    login_manager_mixin_.AppendRegularUsers(10);
   }
 
  protected:
-  std::vector<LoginManagerMixin::TestUserInfo> test_users_{
-      LoginManagerMixin::CreateRegularUsers(10)};
-  LoginManagerMixin login_manager_mixin_{&mixin_host_, test_users_};
+  LoginManagerMixin login_manager_mixin_{&mixin_host_};
 };
 
 class LoginUIEnrolledTest : public LoginUITestBase {
@@ -81,7 +78,7 @@ class LoginUIConsumerTest : public LoginUITestBase {
   }
 
  protected:
-  LoginManagerMixin::TestUserInfo owner_{test_users_[3]};
+  LoginManagerMixin::TestUserInfo owner_{login_manager_mixin_.users()[3]};
   DeviceStateMixin device_state_{
       &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CONSUMER_OWNED};
   ScopedTestingCrosSettings scoped_testing_cros_settings_;
@@ -89,18 +86,19 @@ class LoginUIConsumerTest : public LoginUITestBase {
 
 // Verifies basic login UI properties.
 IN_PROC_BROWSER_TEST_F(LoginUIConsumerTest, LoginUIVisible) {
-  const int users_count = test_users_.size();
+  const auto& test_users = login_manager_mixin_.users();
+  const int users_count = test_users.size();
   EXPECT_EQ(users_count, ash::LoginScreenTestApi::GetUsersCount());
   EXPECT_FALSE(ash::LoginScreenTestApi::IsOobeDialogVisible());
 
   for (int i = 0; i < users_count; ++i) {
-    EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(test_users_[i].account_id));
+    EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(test_users[i].account_id));
   }
 
   for (int i = 0; i < users_count; ++i) {
     // Can't remove the owner.
-    EXPECT_EQ(ash::LoginScreenTestApi::RemoveUser(test_users_[i].account_id),
-              test_users_[i].account_id != owner_.account_id);
+    EXPECT_EQ(ash::LoginScreenTestApi::RemoveUser(test_users[i].account_id),
+              test_users[i].account_id != owner_.account_id);
   }
 
   EXPECT_EQ(1, ash::LoginScreenTestApi::GetUsersCount());
@@ -109,20 +107,21 @@ IN_PROC_BROWSER_TEST_F(LoginUIConsumerTest, LoginUIVisible) {
 }
 
 IN_PROC_BROWSER_TEST_F(LoginUIEnrolledTest, UserRemoval) {
-  const int users_count = test_users_.size();
+  const auto& test_users = login_manager_mixin_.users();
+  const int users_count = test_users.size();
   EXPECT_EQ(users_count, ash::LoginScreenTestApi::GetUsersCount());
   EXPECT_FALSE(ash::LoginScreenTestApi::IsOobeDialogVisible());
 
   // Remove the first user.
-  EXPECT_TRUE(ash::LoginScreenTestApi::RemoveUser(test_users_[0].account_id));
+  EXPECT_TRUE(ash::LoginScreenTestApi::RemoveUser(test_users[0].account_id));
   EXPECT_EQ(users_count - 1, ash::LoginScreenTestApi::GetUsersCount());
 
   // Can not remove twice.
-  EXPECT_FALSE(ash::LoginScreenTestApi::RemoveUser(test_users_[0].account_id));
+  EXPECT_FALSE(ash::LoginScreenTestApi::RemoveUser(test_users[0].account_id));
   EXPECT_EQ(users_count - 1, ash::LoginScreenTestApi::GetUsersCount());
 
   for (int i = 1; i < users_count; ++i) {
-    EXPECT_TRUE(ash::LoginScreenTestApi::RemoveUser(test_users_[i].account_id));
+    EXPECT_TRUE(ash::LoginScreenTestApi::RemoveUser(test_users[i].account_id));
     EXPECT_EQ(users_count - i - 1, ash::LoginScreenTestApi::GetUsersCount());
   }
 
@@ -131,12 +130,13 @@ IN_PROC_BROWSER_TEST_F(LoginUIEnrolledTest, UserRemoval) {
 }
 
 IN_PROC_BROWSER_TEST_F(LoginUIEnrolledTest, UserReverseRemoval) {
-  const int users_count = test_users_.size();
+  const auto& test_users = login_manager_mixin_.users();
+  const int users_count = test_users.size();
   EXPECT_EQ(users_count, ash::LoginScreenTestApi::GetUsersCount());
   EXPECT_FALSE(ash::LoginScreenTestApi::IsOobeDialogVisible());
 
   for (int i = users_count - 1; i >= 0; --i) {
-    EXPECT_TRUE(ash::LoginScreenTestApi::RemoveUser(test_users_[i].account_id));
+    EXPECT_TRUE(ash::LoginScreenTestApi::RemoveUser(test_users[i].account_id));
     EXPECT_EQ(i, ash::LoginScreenTestApi::GetUsersCount());
   }
 

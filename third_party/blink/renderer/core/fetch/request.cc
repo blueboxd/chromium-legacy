@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
 #include "third_party/blink/renderer/core/fetch/fetch_manager.h"
 #include "third_party/blink/renderer/core/fetch/form_data_bytes_consumer.h"
-#include "third_party/blink/renderer/core/fetch/trust_token.h"
 #include "third_party/blink/renderer/core/fetch/trust_token_to_mojom.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"

@@ -71,9 +71,9 @@ class TabListViewBinder {
                 int tabId = model.get(TabProperties.TAB_ID);
                 model.get(TabProperties.TAB_SELECTED_LISTENER).run(tabId);
             });
-        } else if (TabProperties.URL == propertyKey) {
-            String title = model.get(TabProperties.URL);
-            ((TextView) fastView.findViewById(R.id.description)).setText(title);
+        } else if (TabProperties.URL_DOMAIN == propertyKey) {
+            String domain = model.get(TabProperties.URL_DOMAIN);
+            ((TextView) fastView.findViewById(R.id.description)).setText(domain);
         }
     }
 

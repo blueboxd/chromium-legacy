@@ -73,9 +73,10 @@ class TestFilesDataSource : public content::URLDataSource {
     // Do some basic validation of the file extension.
     CHECK(src_file_path.Extension() == ".html" ||
           src_file_path.Extension() == ".js" ||
-          src_file_path.Extension() == ".css")
-        << "chrome://file_manager_test/ only supports .html/.js/.css extension "
-           "files";
+          src_file_path.Extension() == ".css" ||
+          src_file_path.Extension() == ".svg")
+        << "chrome://file_manager_test/ only supports .html/.js/.css/.svg "
+           "extension files";
 
     CHECK(base::PathExists(src_file_path) || base::PathExists(gen_file_path))
         << src_file_path << " or: " << gen_file_path << " input path: " << path;
@@ -88,7 +89,7 @@ class TestFilesDataSource : public content::URLDataSource {
     std::move(callback).Run(response.get());
   }
 
-  // It currently only serves HTML/JS/CSS.
+  // It currently only serves HTML/JS/CSS/SVG.
   std::string GetMimeType(const std::string& path) override {
     if (base::EndsWith(path, ".html", base::CompareCase::INSENSITIVE_ASCII)) {
       return "text/html";
@@ -98,8 +99,16 @@ class TestFilesDataSource : public content::URLDataSource {
       return "text/css";
     }
 
-    CHECK(base::EndsWith(path, ".js", base::CompareCase::INSENSITIVE_ASCII));
-    return "application/javascript";
+    if (base::EndsWith(path, ".js", base::CompareCase::INSENSITIVE_ASCII)) {
+      return "application/javascript";
+    }
+
+    if (base::EndsWith(path, ".svg", base::CompareCase::INSENSITIVE_ASCII)) {
+      return "image/svg+xml";
+    }
+
+    LOG(FATAL) << "unsupported file type: " << path;
+    return {};
   }
 
   std::string GetContentSecurityPolicyScriptSrc() override {

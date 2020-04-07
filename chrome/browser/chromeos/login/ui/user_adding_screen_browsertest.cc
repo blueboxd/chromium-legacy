@@ -11,8 +11,8 @@
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker_tester.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
-#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -47,18 +47,8 @@ constexpr char kLoginFormatJS[] = R"({
 class UserAddingScreenTest : public LoginManagerTest,
                              public UserAddingScreen::Observer {
  public:
-  UserAddingScreenTest()
-      : LoginManagerTest(false, true /* should_initialize_webui */) {
-    struct {
-      const char* email;
-      const char* gaia_id;
-    } const kTestUsers[] = {{"test-user1@gmail.com", "1111111111"},
-                            {"test-user2@gmail.com", "2222222222"},
-                            {"test-user3@gmail.com", "3333333333"}};
-    for (size_t i = 0; i < base::size(kTestUsers); ++i) {
-      test_users_.emplace_back(AccountId::FromUserEmailGaiaId(
-          kTestUsers[i].email, kTestUsers[i].gaia_id));
-    }
+  UserAddingScreenTest() : LoginManagerTest() {
+    login_mixin_.AppendRegularUsers(3);
   }
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -107,8 +97,8 @@ class UserAddingScreenTest : public LoginManagerTest,
 
   int user_adding_finished() { return user_adding_finished_; }
 
-  std::vector<AccountId> test_users_;
   std::vector<AccountId> users_in_session_order_;
+  LoginManagerMixin login_mixin_{&mixin_host_};
 
  private:
   int user_adding_started_ = 0;
@@ -120,20 +110,14 @@ class UserAddingScreenTest : public LoginManagerTest,
   DISALLOW_COPY_AND_ASSIGN(UserAddingScreenTest);
 };
 
-IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, PRE_CancelAdding) {
-  RegisterUser(test_users_[0]);
-  RegisterUser(test_users_[1]);
-  RegisterUser(test_users_[2]);
-  StartupUtils::MarkOobeCompleted();
-}
-
 IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, CancelAdding) {
-  EXPECT_EQ(3u, user_manager::UserManager::Get()->GetUsers().size());
+  const auto& users = login_mixin_.users();
+  EXPECT_EQ(users.size(), user_manager::UserManager::Get()->GetUsers().size());
   EXPECT_EQ(0u, user_manager::UserManager::Get()->GetLoggedInUsers().size());
   EXPECT_EQ(session_manager::SessionState::LOGIN_PRIMARY,
             session_manager::SessionManager::Get()->session_state());
 
-  LoginUser(test_users_[0]);
+  LoginUser(users[0].account_id);
   EXPECT_EQ(1u, user_manager::UserManager::Get()->GetLoggedInUsers().size());
   EXPECT_EQ(session_manager::SessionState::ACTIVE,
             session_manager::SessionManager::Get()->session_state());
@@ -155,15 +139,8 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, CancelAdding) {
 
   EXPECT_TRUE(LoginDisplayHost::default_host() == nullptr);
   EXPECT_EQ(1u, user_manager::UserManager::Get()->GetLoggedInUsers().size());
-  EXPECT_EQ(test_users_[0],
+  EXPECT_EQ(users[0].account_id,
             user_manager::UserManager::Get()->GetActiveUser()->GetAccountId());
-}
-
-IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, PRE_AddingSeveralUsers) {
-  RegisterUser(test_users_[0]);
-  RegisterUser(test_users_[1]);
-  RegisterUser(test_users_[2]);
-  StartupUtils::MarkOobeCompleted();
 }
 
 // TODO(crbug.com/1067461): Flakes on ASAN and MSAN
@@ -173,18 +150,19 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, PRE_AddingSeveralUsers) {
 #define MAYBE_AddingSeveralUsers AddingSeveralUsers
 #endif
 IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, MAYBE_AddingSeveralUsers) {
+  const auto& users = login_mixin_.users();
   EXPECT_EQ(session_manager::SessionState::LOGIN_PRIMARY,
             session_manager::SessionManager::Get()->session_state());
 
-  LoginUser(test_users_[0]);
-  users_in_session_order_.push_back(test_users_[0]);
+  LoginUser(users[0].account_id);
+  users_in_session_order_.push_back(users[0].account_id);
   EXPECT_EQ(session_manager::SessionState::ACTIVE,
             session_manager::SessionManager::Get()->session_state());
 
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
 
   base::HistogramTester histogram_tester;
-  const int n = test_users_.size();
+  const int n = users.size();
   for (int i = 1; i < n; ++i) {
     UserAddingScreen::Get()->Start();
     OobeScreenWaiter(OobeScreen::SCREEN_ACCOUNT_PICKER).Wait();
@@ -193,8 +171,8 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, MAYBE_AddingSeveralUsers) {
               session_manager::SessionManager::Get()->session_state());
     EXPECT_TRUE(ash::LoginScreenTestApi::IsCancelButtonShown());
 
-    UILoginUser(test_users_[n - i], kPassword);
-    users_in_session_order_.push_back(test_users_[n - i]);
+    UILoginUser(users[n - i].account_id, kPassword);
+    users_in_session_order_.push_back(users[n - i].account_id);
 
     EXPECT_EQ(i, user_adding_finished());
     EXPECT_EQ(session_manager::SessionState::ACTIVE,
@@ -239,12 +217,12 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, MAYBE_AddingSeveralUsers) {
                     MultiProfileUserController::kBehaviorUnrestricted);
   user_manager::UserList unlock_users = user_manager->GetUnlockUsers();
   ASSERT_EQ(1UL, unlock_users.size());
-  EXPECT_EQ(test_users_[0], unlock_users[0]->GetAccountId());
+  EXPECT_EQ(users[0].account_id, unlock_users[0]->GetAccountId());
 
   prefs1->SetBoolean(ash::prefs::kEnableAutoScreenLock, false);
   unlock_users = user_manager->GetUnlockUsers();
   ASSERT_EQ(1UL, unlock_users.size());
-  EXPECT_EQ(test_users_[0], unlock_users[0]->GetAccountId());
+  EXPECT_EQ(users[0].account_id, unlock_users[0]->GetAccountId());
 
   // If all users have unrestricted policy then anyone can perform unlock.
   prefs1->SetString(prefs::kMultiProfileUserBehavior,
@@ -281,12 +259,6 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, MAYBE_AddingSeveralUsers) {
     EXPECT_EQ(users_in_session_order_[i], unlock_users[i]->GetAccountId());
 }
 
-IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, PRE_ScreenVisibility) {
-  RegisterUser(test_users_[0]);
-  RegisterUser(test_users_[1]);
-  StartupUtils::MarkOobeCompleted();
-}
-
 // crbug.com/1067461: Flakes on ASAN and MSAN
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
 #define MAYBE_ScreenVisibility DISABLED_ScreenVisibility
@@ -294,7 +266,8 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, PRE_ScreenVisibility) {
 #define MAYBE_ScreenVisibility ScreenVisibility
 #endif
 IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, MAYBE_ScreenVisibility) {
-  LoginUser(test_users_[0]);
+  const auto& users = login_mixin_.users();
+  LoginUser(users[0].account_id);
 
   UserAddingScreen::Get()->Start();
   OobeScreenWaiter(OobeScreen::SCREEN_ACCOUNT_PICKER).Wait();

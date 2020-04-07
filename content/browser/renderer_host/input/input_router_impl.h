@@ -100,9 +100,6 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
   void FallbackCursorModeSetCursorVisibility(bool visible) override;
 #endif
   void SetTouchActionFromMain(cc::TouchAction touch_action) override;
-  void SetWhiteListedTouchAction(cc::TouchAction touch_action,
-                                 uint32_t unique_touch_event_id,
-                                 InputEventAckState state) override;
   void DidOverscroll(const ui::DidOverscrollParams& params) override;
   void ImeCancelComposition() override;
   void DidStartScrollingViewport() override;
@@ -264,8 +261,6 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
   InputEventStreamValidator output_stream_validator_;
 
   float device_scale_factor_;
-
-  bool compositor_touch_action_enabled_;
 
   // Last touch position relative to screen. Used to compute movementX/Y.
   base::flat_map<int, gfx::Point> global_touch_position_;

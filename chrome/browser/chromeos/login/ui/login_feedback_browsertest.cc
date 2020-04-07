@@ -10,6 +10,8 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
+#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
+#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -23,15 +25,17 @@ namespace chromeos {
 
 class LoginFeedbackTest : public LoginManagerTest {
  public:
-  LoginFeedbackTest() : LoginManagerTest(true, true) {}
+  LoginFeedbackTest() : LoginManagerTest() {
+    login_mixin_.AppendRegularUsers(2);
+  }
   ~LoginFeedbackTest() override {}
 
  private:
+  LoginManagerMixin login_mixin_{&mixin_host_};
   DISALLOW_COPY_AND_ASSIGN(LoginFeedbackTest);
 };
 
-// Test feedback UI shows up and is active.
-IN_PROC_BROWSER_TEST_F(LoginFeedbackTest, Basic) {
+void TestFeedback() {
   Profile* const profile = ProfileHelper::GetSigninProfile();
   std::unique_ptr<LoginFeedback> login_feedback(new LoginFeedback(profile));
 
@@ -49,6 +53,16 @@ IN_PROC_BROWSER_TEST_F(LoginFeedbackTest, Basic) {
 
   feedback_window->GetBaseWindow()->Close();
   run_loop.Run();
+}
+
+// Test feedback UI shows up and is active on the Login Screen
+IN_PROC_BROWSER_TEST_F(LoginFeedbackTest, Basic) {
+  TestFeedback();
+}
+
+// Test feedback UI shows up and is active in OOBE
+IN_PROC_BROWSER_TEST_F(OobeBaseTest, FeedbackBasic) {
+  TestFeedback();
 }
 
 }  // namespace chromeos

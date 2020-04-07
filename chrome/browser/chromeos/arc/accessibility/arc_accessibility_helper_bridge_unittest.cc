@@ -315,7 +315,7 @@ TEST_F(ArcAccessibilityHelperBridgeTest, TaskAndAXTreeLifecycle) {
   ASSERT_EQ(0U, key_to_tree.size());
 }
 
-TEST_F(ArcAccessibilityHelperBridgeTest, EventAnnouncement) {
+TEST_F(ArcAccessibilityHelperBridgeTest, AnnouncementEvent) {
   const char* const event_name = extensions::api::accessibility_private::
       OnAnnounceForAccessibility::kEventName;
 
@@ -336,6 +336,47 @@ TEST_F(ArcAccessibilityHelperBridgeTest, EventAnnouncement) {
       helper_bridge->last_event->event_args->GetList()[0].GetList();
   ASSERT_EQ(1U, arg.size());
   ASSERT_EQ(announce_text, arg[0].GetString());
+}
+
+TEST_F(ArcAccessibilityHelperBridgeTest, NotificationStateChangedEvent) {
+  const char* const event_name = extensions::api::accessibility_private::
+      OnAnnounceForAccessibility::kEventName;
+
+  TestArcAccessibilityHelperBridge* helper_bridge =
+      accessibility_helper_bridge();
+  const std::string toast_text = "announcement text.";
+  std::vector<std::string> text({toast_text});
+  auto event = arc::mojom::AccessibilityEventData::New();
+  event->event_type =
+      arc::mojom::AccessibilityEventType::NOTIFICATION_STATE_CHANGED;
+  event->event_text =
+      base::make_optional<std::vector<std::string>>(std::move(text));
+  event->string_properties =
+      base::flat_map<arc::mojom::AccessibilityEventStringProperty,
+                     std::string>();
+  event->string_properties.value().insert(
+      std::make_pair(arc::mojom::AccessibilityEventStringProperty::CLASS_NAME,
+                     "android.widget.Toast$TN"));
+
+  helper_bridge->OnAccessibilityEvent(event.Clone());
+
+  ASSERT_EQ(1, helper_bridge->GetEventCount(event_name));
+  ASSERT_EQ(event_name, helper_bridge->last_event->event_name);
+  base::Value::ConstListView arg =
+      helper_bridge->last_event->event_args->GetList()[0].GetList();
+  ASSERT_EQ(1U, arg.size());
+  ASSERT_EQ(toast_text, arg[0].GetString());
+
+  // Do not announce for non-toast event.
+  event->string_properties->clear();
+  event->string_properties.value().insert(
+      std::make_pair(arc::mojom::AccessibilityEventStringProperty::CLASS_NAME,
+                     "com.android.vending"));
+
+  helper_bridge->OnAccessibilityEvent(event.Clone());
+
+  // Announce event is not dispatched. The event count is not changed.
+  ASSERT_EQ(1, helper_bridge->GetEventCount(event_name));
 }
 
 TEST_F(ArcAccessibilityHelperBridgeTest, ToggleTalkBack) {
@@ -391,23 +432,6 @@ TEST_F(ArcAccessibilityHelperBridgeTest, ToggleTalkBack) {
   ASSERT_EQ(4, helper_bridge->GetEventCount(event_name));
   ASSERT_EQ(event_name, helper_bridge->last_event->event_name);
   ASSERT_FALSE(helper_bridge->last_event->event_args->GetList()[0].GetBool());
-}
-
-TEST_F(ArcAccessibilityHelperBridgeTest, Toast) {
-  TestArcAccessibilityHelperBridge* helper_bridge =
-      accessibility_helper_bridge();
-  std::vector<std::string> text({"Toast text"});
-  auto event = arc::mojom::AccessibilityEventData::New();
-  event->event_type =
-      arc::mojom::AccessibilityEventType::NOTIFICATION_STATE_CHANGED;
-  event->event_text =
-      base::make_optional<std::vector<std::string>>(std::move(text));
-
-  helper_bridge->OnAccessibilityEvent(event.Clone());
-
-  ASSERT_EQ(1, helper_bridge->GetEventCount(
-                   extensions::api::accessibility_private::
-                       OnAnnounceForAccessibility::kEventName));
 }
 
 // Accessibility event and surface creation/removal are sent in different

@@ -22,7 +22,9 @@ class COMPONENT_EXPORT(UI_BASE_IME) IMESuggestionWindowHandlerInterface {
   virtual ~IMESuggestionWindowHandlerInterface() {}
 
   // Called when showing/hiding suggestion window.
-  virtual void Show(const base::string16& text) {}
+  virtual void Show(const base::string16& text,
+                    const base::string16& confirmed_text,
+                    const bool show_tab) {}
   virtual void Hide() {}
 
   // Called to get the current suggestion text.

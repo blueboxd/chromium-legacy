@@ -280,16 +280,7 @@ void WidgetInputHandlerManager::SetWhiteListedTouchAction(
     cc::TouchAction touch_action,
     uint32_t unique_touch_event_id,
     ui::InputHandlerProxy::EventDisposition event_disposition) {
-  if (base::FeatureList::IsEnabled(features::kCompositorTouchAction)) {
-    white_listed_touch_action_ = touch_action;
-    return;
-  }
-  mojom::WidgetInputHandlerHost* host = GetWidgetInputHandlerHost();
-  if (!host)
-    return;
-  InputEventAckState ack_state = InputEventDispositionToAck(event_disposition);
-  host->SetWhiteListedTouchAction(touch_action, unique_touch_event_id,
-                                  ack_state);
+  white_listed_touch_action_ = touch_action;
 }
 
 void WidgetInputHandlerManager::ProcessTouchAction(

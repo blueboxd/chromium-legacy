@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_CONTEXT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_CONTEXT_H_
 
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/webaudio/audio_context_manager.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -14,6 +13,8 @@
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 
 namespace blink {
 
@@ -192,7 +193,9 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
   double base_latency_ = 0;
 
   // AudioContextManager for reporting audibility.
-  mojo::Remote<mojom::blink::AudioContextManager> audio_context_manager_;
+  HeapMojoRemote<mojom::blink::AudioContextManager,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      audio_context_manager_;
 
   // Keeps track if the output of this destination was audible, before the
   // current rendering quantum.  Used for recording "playback" time.

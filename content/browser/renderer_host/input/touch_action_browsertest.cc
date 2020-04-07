@@ -134,16 +134,10 @@ constexpr base::TimeDelta kLongJankTime =
 
 namespace content {
 
-class TouchActionBrowserTest : public ContentBrowserTest,
-                               public testing::WithParamInterface<bool> {
+class TouchActionBrowserTest : public ContentBrowserTest {
  public:
-  TouchActionBrowserTest() : compositor_touch_action_enabled_(GetParam()) {
-    if (compositor_touch_action_enabled_)
-      feature_list_.InitAndEnableFeature(features::kCompositorTouchAction);
-    else
-      feature_list_.InitAndDisableFeature(features::kCompositorTouchAction);
-  }
-  ~TouchActionBrowserTest() override {}
+  TouchActionBrowserTest() = default;
+  ~TouchActionBrowserTest() override = default;
 
   RenderWidgetHostImpl* GetWidgetHost() {
     return RenderWidgetHostImpl::From(
@@ -466,17 +460,12 @@ class TouchActionBrowserTest : public ContentBrowserTest,
       EXPECT_GT(scroll_left, 0);
   }
 
-  const bool compositor_touch_action_enabled_;
-
  private:
   std::unique_ptr<RenderFrameSubmissionObserver> frame_observer_;
   std::unique_ptr<base::RunLoop> run_loop_;
-  base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchActionBrowserTest);
 };
-
-INSTANTIATE_TEST_SUITE_P(All, TouchActionBrowserTest, testing::Bool());
 
 #if !defined(NDEBUG) || defined(ADDRESS_SANITIZER) ||       \
     defined(MEMORY_SANITIZER) || defined(LEAK_SANITIZER) || \
@@ -488,10 +477,10 @@ INSTANTIATE_TEST_SUITE_P(All, TouchActionBrowserTest, testing::Bool());
 //
 // Verify the test infrastructure works - we can touch-scroll the page and get a
 // touchcancel as expected.
-IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest, MAYBE_DefaultAuto) {
+IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, MAYBE_DefaultAuto) {
   LoadURL(kTouchActionDataURL);
 
-  bool wait_until_scrolled = !compositor_touch_action_enabled_;
+  bool wait_until_scrolled = false;
   DoTouchScroll(gfx::Point(50, 50), gfx::Vector2d(0, 45), wait_until_scrolled,
                 10200, gfx::Vector2d(0, 45), kNoJankTime);
 
@@ -510,10 +499,10 @@ IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest, MAYBE_DefaultAuto) {
 #else
 #define MAYBE_TouchActionNone TouchActionNone
 #endif
-IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest, MAYBE_TouchActionNone) {
+IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, MAYBE_TouchActionNone) {
   LoadURL(kTouchActionDataURL);
 
-  bool wait_until_scrolled = !compositor_touch_action_enabled_;
+  bool wait_until_scrolled = false;
   DoTouchScroll(gfx::Point(50, 150), gfx::Vector2d(0, 45), wait_until_scrolled,
                 10200, gfx::Vector2d(0, 0), kNoJankTime);
 
@@ -530,10 +519,10 @@ IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest, MAYBE_TouchActionNone) {
 #else
 #define MAYBE_PanYMainThreadJanky PanYMainThreadJanky
 #endif
-IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest, MAYBE_PanYMainThreadJanky) {
+IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, MAYBE_PanYMainThreadJanky) {
   LoadURL(kTouchActionURLWithOverlapArea);
 
-  bool wait_until_scrolled = !compositor_touch_action_enabled_;
+  bool wait_until_scrolled = false;
   DoTouchScroll(gfx::Point(25, 125), gfx::Vector2d(0, 45), wait_until_scrolled,
                 10000, gfx::Vector2d(0, 45), kShortJankTime);
 }
@@ -545,10 +534,10 @@ IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest, MAYBE_PanYMainThreadJanky) {
 #else
 #define MAYBE_PanXMainThreadJanky PanXMainThreadJanky
 #endif
-IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest, MAYBE_PanXMainThreadJanky) {
+IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, MAYBE_PanXMainThreadJanky) {
   LoadURL(kTouchActionURLWithOverlapArea);
 
-  bool wait_until_scrolled = !compositor_touch_action_enabled_;
+  bool wait_until_scrolled = false;
   DoTouchScroll(gfx::Point(125, 25), gfx::Vector2d(45, 0), wait_until_scrolled,
                 10000, gfx::Vector2d(45, 0), kShortJankTime);
 }
@@ -560,7 +549,7 @@ IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest, MAYBE_PanXMainThreadJanky) {
 #endif
 // When touch ack timeout is triggered, the panx gesture will be allowed even
 // though we touch the pany area.
-IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest, MAYBE_PanXAtYAreaWithTimeout) {
+IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, MAYBE_PanXAtYAreaWithTimeout) {
   LoadURL(kTouchActionURLWithOverlapArea);
 
   DoTouchScroll(gfx::Point(25, 125), gfx::Vector2d(45, 0), true, 10000,
@@ -575,7 +564,7 @@ IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest, MAYBE_PanXAtYAreaWithTimeout) {
 #endif
 // When touch ack timeout is triggered, the panx gesture will be allowed even
 // though we touch the pany area.
-IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest,
+IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest,
                        MAYBE_TwoFingerPanXAtYAreaWithTimeout) {
   LoadURL(kTouchActionURLWithOverlapArea);
 
@@ -589,10 +578,10 @@ IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest,
 #else
 #define MAYBE_PanXYMainThreadJanky PanXYMainThreadJanky
 #endif
-IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest, MAYBE_PanXYMainThreadJanky) {
+IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, MAYBE_PanXYMainThreadJanky) {
   LoadURL(kTouchActionURLWithOverlapArea);
 
-  bool wait_until_scrolled = !compositor_touch_action_enabled_;
+  bool wait_until_scrolled = false;
   DoTouchScroll(gfx::Point(75, 60), gfx::Vector2d(45, 45), wait_until_scrolled,
                 10000, gfx::Vector2d(45, 45), kShortJankTime);
 }
@@ -604,7 +593,7 @@ IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest, MAYBE_PanXYMainThreadJanky) {
 #else
 #define MAYBE_PanXYAtXAreaMainThreadJanky PanXYAtXAreaMainThreadJanky
 #endif
-IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest,
+IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest,
                        MAYBE_PanXYAtXAreaMainThreadJanky) {
   LoadURL(kTouchActionURLWithOverlapArea);
 
@@ -619,7 +608,7 @@ IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest,
 #else
 #define MAYBE_PanXYAtYAreaMainThreadJanky PanXYAtYAreaMainThreadJanky
 #endif
-IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest,
+IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest,
                        MAYBE_PanXYAtYAreaMainThreadJanky) {
   LoadURL(kTouchActionURLWithOverlapArea);
 
@@ -636,7 +625,7 @@ IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest,
 #define MAYBE_PanXYAtAutoYOverlapAreaMainThreadJanky \
   PanXYAtAutoYOverlapAreaMainThreadJanky
 #endif
-IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest,
+IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest,
                        MAYBE_PanXYAtAutoYOverlapAreaMainThreadJanky) {
   LoadURL(kTouchActionURLWithOverlapArea);
 
@@ -653,7 +642,7 @@ IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest,
 #define MAYBE_PanXYAtAutoXOverlapAreaMainThreadJanky \
   PanXYAtAutoXOverlapAreaMainThreadJanky
 #endif
-IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest,
+IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest,
                        MAYBE_PanXYAtAutoXOverlapAreaMainThreadJanky) {
   LoadURL(kTouchActionURLWithOverlapArea);
 
@@ -669,7 +658,7 @@ IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest,
 #endif
 // Test that two finger panning is treated as pinch zoom and is disallowed when
 // touching the pan-y area.
-IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest, MAYBE_TwoFingerPanYDisallowed) {
+IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, MAYBE_TwoFingerPanYDisallowed) {
   LoadURL(kTouchActionURLWithOverlapArea);
 
   DoTwoFingerPan();
@@ -698,7 +687,7 @@ const std::string kDoubleTapZoomDataURL = R"HTML(
 
 // Test that |touch-action: none| correctly blocks a double-tap and drag zoom
 // gesture.
-IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest, BlockDoubleTapDragZoom) {
+IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, BlockDoubleTapDragZoom) {
   LoadURL(kDoubleTapZoomDataURL.c_str());
 
   ASSERT_EQ(1, ExecuteScriptAndExtractDouble("window.visualViewport.scale"));

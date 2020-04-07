@@ -30,3 +30,17 @@ Window.prototype.HTMLImports;
  * @type {function(function())}
  */
 Window.prototype.HTMLImports.whenReady;
+
+/**
+ * True if in test: set by the background.js page.
+ *
+ * @type {boolean}
+ */
+Window.prototype.IN_TEST;
+
+/**
+ * Set true in some unit tests.
+ *
+ * @type {boolean}
+ */
+Window.prototype.UNIT_TEST;

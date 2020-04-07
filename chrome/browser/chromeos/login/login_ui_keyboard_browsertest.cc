@@ -53,9 +53,7 @@ void Append_en_US_InputMethods(std::vector<std::string>* out) {
 
 class LoginUIKeyboardTest : public chromeos::LoginManagerTest {
  public:
-  LoginUIKeyboardTest()
-      : LoginManagerTest(false, false /* should_initialize_webui */) {
-    set_force_webui_login(false);
+  LoginUIKeyboardTest() : LoginManagerTest() {
     test_users_.push_back(
         AccountId::FromUserEmailGaiaId(kTestUser1, kTestUser1GaiaId));
     test_users_.push_back(
@@ -147,10 +145,7 @@ IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTest, CheckPODScreenWithUsers) {
 
 class LoginUIKeyboardTestWithUsersAndOwner : public chromeos::LoginManagerTest {
  public:
-  LoginUIKeyboardTestWithUsersAndOwner()
-      : LoginManagerTest(false, false /* should_initialize_webui */) {
-    set_force_webui_login(false);
-  }
+  LoginUIKeyboardTestWithUsersAndOwner() = default;
   ~LoginUIKeyboardTestWithUsersAndOwner() override {}
 
   void SetUpOnMainThread() override {

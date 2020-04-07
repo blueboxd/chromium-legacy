@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/login/test/enrollment_helper_mixin.h"
 #include "chrome/browser/chromeos/login/test/enrollment_ui_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -138,11 +139,9 @@ class MockAuthPolicyClient : public FakeAuthPolicyClient {
 
 }  // namespace
 
-class EnterpriseEnrollmentTestBase : public LoginManagerTest {
+class EnterpriseEnrollmentTestBase : public OobeBaseTest {
  public:
-  explicit EnterpriseEnrollmentTestBase(bool should_initialize_webui)
-      : LoginManagerTest(true /*should_launch_browser*/,
-                         should_initialize_webui) {}
+  EnterpriseEnrollmentTestBase() = default;
 
   // Submits regular enrollment credentials.
   void SubmitEnrollmentCredentials() {
@@ -193,8 +192,7 @@ class EnterpriseEnrollmentTestBase : public LoginManagerTest {
 
 class EnterpriseEnrollmentTest : public EnterpriseEnrollmentTestBase {
  public:
-  EnterpriseEnrollmentTest()
-      : EnterpriseEnrollmentTestBase(true /* should_initialize_webui */) {}
+  EnterpriseEnrollmentTest() = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EnterpriseEnrollmentTest);

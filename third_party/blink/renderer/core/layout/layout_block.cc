@@ -111,6 +111,9 @@ LayoutBlock::LayoutBlock(ContainerNode* node)
       has_percent_height_descendants_(false),
       pagination_state_changed_(false),
       is_legacy_initiated_out_of_flow_layout_(false) {
+  if (node)
+    GetDocument().IncLayoutBlockCounter();
+
   // LayoutBlockFlow calls setChildrenInline(true).
   // By default, subclasses do not have inline children.
 }

@@ -167,10 +167,6 @@ bool WebRuntimeFeatures::IsCompositedSelectionUpdateEnabled() {
   return RuntimeEnabledFeatures::CompositedSelectionUpdateEnabled();
 }
 
-void WebRuntimeFeatures::EnableCompositorTouchAction(bool enable) {
-  RuntimeEnabledFeatures::SetCompositorTouchActionEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableCSSHexAlphaColor(bool enable) {
   RuntimeEnabledFeatures::SetCSSHexAlphaColorEnabled(enable);
 }

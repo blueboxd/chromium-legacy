@@ -64,8 +64,7 @@ class ProxyAuthDialogWaiter : public content::WindowedNotificationObserver {
 class ProxyAuthOnUserBoardScreenTest : public LoginManagerTest {
  public:
   ProxyAuthOnUserBoardScreenTest()
-      : LoginManagerTest(true /* should_launch_browser */,
-                         true /* should_initialize_webui */),
+      : LoginManagerTest(),
         proxy_server_(net::SpawnedTestServer::TYPE_BASIC_AUTH_PROXY,
                       base::FilePath()) {}
 

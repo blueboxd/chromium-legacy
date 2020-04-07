@@ -249,8 +249,6 @@ class InputHandlerProxy : public cc::InputHandlerClient,
 
   std::unique_ptr<ScrollPredictor> scroll_predictor_;
 
-  bool compositor_touch_action_enabled_;
-
   // This flag can be used to force all input to be forwarded to Blink. It's
   // used in LayoutTests to preserve existing behavior for non-threaded layout
   // tests and to allow testing both Blink and CC input handling paths.

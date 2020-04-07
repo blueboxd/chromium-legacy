@@ -7,6 +7,8 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/common/credential_provider/credential.h"
+#import "ios/chrome/credential_provider_extension/ui/credential_details_consumer.h"
+#import "ios/chrome/credential_provider_extension/ui/credential_details_view_controller.h"
 #import "ios/chrome/credential_provider_extension/ui/credential_list_consumer.h"
 #import "ios/chrome/credential_provider_extension/ui/credential_list_view_controller.h"
 
@@ -56,8 +58,11 @@ NSArray<id<Credential>>* allPasswords = @[
 ];
 }
 
-@interface SCCredentialListCoordinator () <CredentialListConsumerDelegate>
+@interface SCCredentialListCoordinator () <CredentialDetailsConsumerDelegate,
+                                           CredentialListConsumerDelegate>
 @property(nonatomic, strong) CredentialListViewController* viewController;
+@property(nonatomic, strong)
+    CredentialDetailsViewController* detailsViewController;
 @end
 
 @implementation SCCredentialListCoordinator
@@ -66,10 +71,14 @@ NSArray<id<Credential>>* allPasswords = @[
 
 - (void)start {
   self.viewController = [[CredentialListViewController alloc] init];
-  self.viewController.title = @"Autofill Chrome Password";
+  self.viewController.title = @"CPE Passwords";
   self.viewController.delegate = self;
   [self.baseViewController setHidesBarsOnSwipe:NO];
   [self.baseViewController pushViewController:self.viewController animated:YES];
+
+  self.detailsViewController = [[CredentialDetailsViewController alloc] init];
+  self.detailsViewController.title = @"CPE Password Details";
+  self.detailsViewController.delegate = self;
 
   [self.viewController presentSuggestedPasswords:suggestedPasswords
                                     allPasswords:allPasswords];
@@ -99,6 +108,19 @@ NSArray<id<Credential>>* allPasswords = @[
     }
   }
   [self.viewController presentSuggestedPasswords:suggested allPasswords:all];
+}
+
+#pragma mark - CredentialDetailsConsumerDelegate
+
+- (void)unlockPasswordForCredential:(id<Credential>)credential
+                  completionHandler:(void (^)(NSString*))completionHandler {
+  completionHandler(@"DreamOn");
+}
+
+- (void)showDetailsForCredential:(id<Credential>)credential {
+  [self.detailsViewController presentCredential:credential];
+  [self.baseViewController pushViewController:self.detailsViewController
+                                     animated:YES];
 }
 
 @end

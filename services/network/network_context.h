@@ -343,9 +343,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
           cors_extra_safelisted_request_header_names) override;
   void EnableStaticKeyPinningForTesting(
       EnableStaticKeyPinningForTestingCallback callback) override;
-  void SetFailingHttpTransactionForTesting(
-      int32_t rv,
-      SetFailingHttpTransactionForTestingCallback callback) override;
   void VerifyCertificateForTesting(
       const scoped_refptr<net::X509Certificate>& certificate,
       const std::string& hostname,

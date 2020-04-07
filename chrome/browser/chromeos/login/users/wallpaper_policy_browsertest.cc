@@ -132,8 +132,7 @@ class WallpaperPolicyTest : public LoginManagerTest,
                             public ash::WallpaperControllerObserver {
  protected:
   WallpaperPolicyTest()
-      : LoginManagerTest(true, true),
-        owner_key_util_(new ownership::MockOwnerKeyUtil()) {
+      : LoginManagerTest(), owner_key_util_(new ownership::MockOwnerKeyUtil()) {
     testUsers_.push_back(
         AccountId::FromUserEmailGaiaId(FakeGaiaMixin::kEnterpriseUser1,
                                        FakeGaiaMixin::kEnterpriseUser1GaiaId));

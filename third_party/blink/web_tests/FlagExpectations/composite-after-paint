@@ -129,3 +129,7 @@ crbug.com/1041322 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gestu
 
 compositing/gestures/gesture-tapHighlight-composited-img.html [ Pass Failure ]
 http/tests/images/image-decode-in-frame.html [ Pass Failure ]
+
+# TODO(iopopesc) these need to be rebaselined for FormControlsRefresh focus ring.
+crbug.com/1035582 virtual/scalefactor200withzoom/fast/hidpi/static/validation-bubble-appearance-hidpi.html [ Failure ]
+crbug.com/1035582 compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ Failure ]

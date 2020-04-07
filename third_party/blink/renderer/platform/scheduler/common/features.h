@@ -25,33 +25,6 @@ const base::Feature kBestEffortPriorityForFindInPage{
 
 // COMPOSITING PRIORITY EXPERIMENT CONTROLS
 
-// Enables experiment to increase priority of the compositing tasks during
-// input handling. Other features in this section do not have any effect
-// when this feature is disabled.
-const base::Feature kPrioritizeCompositingAfterInput{
-    "BlinkSchedulerPrioritizeCompositingAfterInput",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Use kHighestPriority for compositing tasks during the experiment.
-// kHighPriority is used otherwise.
-const base::Feature kHighestPriorityForCompositingAfterInput{
-    "BlinkSchedulerHighestPriorityForCompostingAfterInput",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// If enabled, MainFrameSchedulerImpl::OnRequestMainFrameForInput is used as
-// triggering signal for the experiment. If disabled, the presence of an input
-// task is used as trigger.
-const base::Feature kUseExplicitSignalForTriggeringCompositingPrioritization{
-    "BlinkSchedulerUseExplicitSignalForTriggeringCompositingPrioritization",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// If enabled, the increased priority continues until we get the appropriate
-// number of WillBeginMainFrame signals. If disabled, the priority is increased
-// for the fixed number of compositing tasks.
-const base::Feature kUseWillBeginMainFrameForCompositingPrioritization{
-    "BlinkSchedulerUseWillBeginMainFrameForCompositingPrioritization",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // If enabled, the compositor will always be set to kVeryHighPriority if it
 // is not already set to kHighestPriority.
 const base::Feature kVeryHighPriorityForCompositingAlways{

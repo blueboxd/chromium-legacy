@@ -68,6 +68,7 @@ class COMPONENT_EXPORT(LEVELDB_PROTO) SharedProtoDatabase
   friend class SharedProtoDatabaseTest;
   friend class SharedProtoDatabaseClientTest;
   friend class TestSharedProtoDatabase;
+  friend class TestSharedProtoDatabaseClient;
   FRIEND_TEST_ALL_PREFIXES(SharedProtoDatabaseTest,
                            CancelDeleteObsoleteClients);
   FRIEND_TEST_ALL_PREFIXES(SharedProtoDatabaseTest, DeleteObsoleteClients);

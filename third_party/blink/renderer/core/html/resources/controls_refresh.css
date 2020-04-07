@@ -16,6 +16,19 @@ textarea {
   border-color: -internal-light-dark-color(#767676, #C3C3C3);
 }
 
+a:-webkit-any-link:focus {
+  outline-offset: 1px;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline-offset: 0;
+}
+
+input[type="checkbox" i]:focus,
+input[type="radio" i]:focus {
+  outline-offset: 2px;
+}
+
 input,
 input[type="email" i],
 input[type="number" i],

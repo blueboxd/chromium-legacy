@@ -80,12 +80,13 @@
     </template>
     <template is="dom-if" if="[[showCrostiniDiskResize_]]">
       <div class="settings-box hr" id="crostini-disk-resize">
-        <div class="start">
+        <div class="start" aria-hidden="true">
           $i18n{crostiniDiskResizeLabel}
         </div>
         <cr-button on-click="onDiskResizeClick_"
-            aria-labelledby="diskResizeLabel" id="showDiskResizeButton">
-            $i18n{crostiniDiskResizeShowButton}
+            aria-label="$i18n{crostiniDiskResizeShowButtonAriaLabel}"
+            id="showDiskResizeButton">
+          $i18n{crostiniDiskResizeShowButton}
         </cr-button>
       </div>
       <template is="dom-if" if="[[showDiskResizeDialog_]]" restamp>

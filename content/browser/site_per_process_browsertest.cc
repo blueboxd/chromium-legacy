@@ -12914,9 +12914,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 class SitePerProcessBrowserTouchActionTest : public SitePerProcessBrowserTest {
  public:
-  SitePerProcessBrowserTouchActionTest()
-      : compositor_touch_action_enabled_(
-            base::FeatureList::IsEnabled(features::kCompositorTouchAction)) {}
+  SitePerProcessBrowserTouchActionTest() = default;
 
   bool GetTouchActionForceEnableZoom(RenderWidgetHost* rwh) {
     InputRouterImpl* input_router = static_cast<InputRouterImpl*>(
@@ -12969,15 +12967,6 @@ class SitePerProcessBrowserTouchActionTest : public SitePerProcessBrowserTest {
     // touch start arrived because the ACK is from the main thread.
     whitelisted_touch_action =
         input_router->touch_action_filter_.white_listed_touch_action_;
-    // When flag is enabled, we may not have the value for the effective touch
-    // action when ack is received.
-    if (!compositor_touch_action_enabled_) {
-      while (!effective_touch_action.has_value()) {
-        GiveItSomeTime(TestTimeouts::tiny_timeout());
-        effective_touch_action =
-            input_router->touch_action_filter_.allowed_touch_action_;
-      }
-    }
 
     // Send a touch move and touch end to complete the sequence, this also
     // avoids triggering DCHECKs when sending followup events.
@@ -13020,9 +13009,6 @@ class SitePerProcessBrowserTouchActionTest : public SitePerProcessBrowserTest {
     // thread, upon return it should have handled any touch action update.
     root_thread_observer->Wait();
   }
-
- protected:
-  const bool compositor_touch_action_enabled_;
 };
 
 #if defined(OS_ANDROID)
@@ -13146,11 +13132,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
   // TouchAction::kAuto in iframe's child.
   GetTouchActionsForChild(router, rwhv_root, rwhv_child, point_inside_child,
                           effective_touch_action, whitelisted_touch_action);
-  if (!compositor_touch_action_enabled_) {
-    EXPECT_EQ(expected_touch_action, effective_touch_action.has_value()
-                                         ? effective_touch_action.value()
-                                         : cc::TouchAction::kAuto);
-  }
   if (whitelisted_touch_action.has_value())
     EXPECT_EQ(expected_touch_action, whitelisted_touch_action.value());
 
@@ -13161,11 +13142,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
   expected_touch_action = cc::TouchAction::kAuto;
   GetTouchActionsForChild(router, rwhv_root, rwhv_child, point_inside_child,
                           effective_touch_action, whitelisted_touch_action);
-  if (compositor_touch_action_enabled_) {
-    EXPECT_EQ(expected_touch_action, effective_touch_action.has_value()
-                                         ? effective_touch_action.value()
-                                         : cc::TouchAction::kAuto);
-  }
+  EXPECT_EQ(expected_touch_action, effective_touch_action.has_value()
+                                       ? effective_touch_action.value()
+                                       : cc::TouchAction::kAuto);
   if (whitelisted_touch_action.has_value())
     EXPECT_EQ(expected_touch_action, whitelisted_touch_action.value());
 }
@@ -13232,17 +13211,6 @@ IN_PROC_BROWSER_TEST_F(
   cc::TouchAction effective_touch_action_result =
       effective_touch_action.has_value() ? effective_touch_action.value()
                                          : cc::TouchAction::kAuto;
-  // TouchAction might have not been propagated to child frames yet, loop until
-  // we get the expected touch action value.
-  if (!compositor_touch_action_enabled_) {
-    while (expected_touch_action != effective_touch_action_result) {
-      GetTouchActionsForChild(router, rwhv_root, rwhv_child, point_inside_child,
-                              effective_touch_action, whitelisted_touch_action);
-      effective_touch_action_result = effective_touch_action.has_value()
-                                          ? effective_touch_action.value()
-                                          : cc::TouchAction::kAuto;
-    }
-  }
   if (whitelisted_touch_action.has_value())
     EXPECT_EQ(expected_touch_action, whitelisted_touch_action.value());
 
@@ -13259,15 +13227,6 @@ IN_PROC_BROWSER_TEST_F(
   effective_touch_action_result = effective_touch_action.has_value()
                                       ? effective_touch_action.value()
                                       : cc::TouchAction::kAuto;
-  if (!compositor_touch_action_enabled_) {
-    while (expected_touch_action != effective_touch_action_result) {
-      GetTouchActionsForChild(router, rwhv_root, rwhv_child, point_inside_child,
-                              effective_touch_action, whitelisted_touch_action);
-      effective_touch_action_result = effective_touch_action.has_value()
-                                          ? effective_touch_action.value()
-                                          : cc::TouchAction::kAuto;
-    }
-  }
   if (whitelisted_touch_action.has_value())
     EXPECT_EQ(expected_touch_action, whitelisted_touch_action.value());
 
@@ -13283,15 +13242,6 @@ IN_PROC_BROWSER_TEST_F(
   effective_touch_action_result = effective_touch_action.has_value()
                                       ? effective_touch_action.value()
                                       : cc::TouchAction::kAuto;
-  if (!compositor_touch_action_enabled_) {
-    while (expected_touch_action != effective_touch_action_result) {
-      GetTouchActionsForChild(router, rwhv_root, rwhv_child, point_inside_child,
-                              effective_touch_action, whitelisted_touch_action);
-      effective_touch_action_result = effective_touch_action.has_value()
-                                          ? effective_touch_action.value()
-                                          : cc::TouchAction::kAuto;
-    }
-  }
   if (whitelisted_touch_action.has_value())
     EXPECT_EQ(expected_touch_action, whitelisted_touch_action.value());
 }
@@ -13347,11 +13297,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
   cc::TouchAction expected_touch_action = cc::TouchAction::kPan;
   GetTouchActionsForChild(router, rwhv_root, rwhv_child, point_inside_child,
                           effective_touch_action, whitelisted_touch_action);
-  if (!compositor_touch_action_enabled_) {
-    EXPECT_EQ(expected_touch_action, effective_touch_action.has_value()
-                                         ? effective_touch_action.value()
-                                         : cc::TouchAction::kAuto);
-  }
   if (whitelisted_touch_action.has_value())
     EXPECT_EQ(expected_touch_action, whitelisted_touch_action.value());
 
@@ -13375,11 +13320,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
                             child_thread_observer.get());
   GetTouchActionsForChild(router, rwhv_root, rwhv_child, point_inside_child,
                           effective_touch_action, whitelisted_touch_action);
-  if (!compositor_touch_action_enabled_) {
-    EXPECT_EQ(expected_touch_action, effective_touch_action.has_value()
-                                         ? effective_touch_action.value()
-                                         : cc::TouchAction::kAuto);
-  }
   if (whitelisted_touch_action.has_value())
     EXPECT_EQ(expected_touch_action, whitelisted_touch_action.value());
 }

@@ -323,8 +323,7 @@ class MainThreadSchedulerImplTest : public testing::Test {
     feature_list_.InitWithFeatures(features_to_enable, features_to_disable);
   }
 
-  MainThreadSchedulerImplTest()
-      : MainThreadSchedulerImplTest({}, {kPrioritizeCompositingAfterInput}) {}
+  MainThreadSchedulerImplTest() : MainThreadSchedulerImplTest({}, {}) {}
 
   ~MainThreadSchedulerImplTest() override = default;
 
@@ -376,7 +375,7 @@ class MainThreadSchedulerImplTest : public testing::Test {
     loading_control_task_runner_ =
         main_frame_scheduler_->FrameTaskQueueControllerForTest()
             ->GetTaskQueue(
-             main_frame_scheduler_->LoadingControlTaskQueueTraits())
+                main_frame_scheduler_->LoadingControlTaskQueueTraits())
             ->task_runner();
     timer_task_runner_ = timer_task_queue()->task_runner();
     find_in_page_task_runner_ = main_frame_scheduler_->GetTaskRunner(
@@ -386,15 +385,15 @@ class MainThreadSchedulerImplTest : public testing::Test {
   TaskQueue* loading_task_queue() {
     auto queue_traits = FrameSchedulerImpl::LoadingTaskQueueTraits();
     return main_frame_scheduler_->FrameTaskQueueControllerForTest()
-        ->GetTaskQueue(queue_traits).get();
+        ->GetTaskQueue(queue_traits)
+        .get();
   }
 
   TaskQueue* timer_task_queue() {
     auto* frame_task_queue_controller =
         main_frame_scheduler_->FrameTaskQueueControllerForTest();
     return frame_task_queue_controller
-        ->GetTaskQueue(
-            main_frame_scheduler_->ThrottleableTaskQueueTraits())
+        ->GetTaskQueue(main_frame_scheduler_->ThrottleableTaskQueueTraits())
         .get();
   }
 
@@ -645,16 +644,8 @@ class MainThreadSchedulerImplTest : public testing::Test {
     return scheduler_->main_thread_only().current_policy.rail_mode();
   }
 
-  bool BeginFrameNotExpectedSoon() {
-    return scheduler_->main_thread_only().begin_frame_not_expected_soon;
-  }
-
   bool BlockingInputExpectedSoon() {
     return scheduler_->main_thread_only().blocking_input_expected_soon;
-  }
-
-  bool HaveSeenABeginMainframe() {
-    return scheduler_->main_thread_only().have_seen_a_begin_main_frame;
   }
 
   base::TimeTicks EstimatedNextFrameBegin() {
@@ -1326,9 +1317,7 @@ TEST_F(MainThreadSchedulerImplTest, TestTouchstartPolicy_MainThread) {
 
 class DefaultUseCaseTest : public MainThreadSchedulerImplTest {
  public:
-  DefaultUseCaseTest() : MainThreadSchedulerImplTest({}, {}) {
-    initially_ensure_usecase_none_ = false;
-  }
+  DefaultUseCaseTest() { initially_ensure_usecase_none_ = false; }
 };
 
 TEST_F(DefaultUseCaseTest, InitiallyInEarlyLoadingUseCase) {
@@ -2868,7 +2857,6 @@ TEST_F(MainThreadSchedulerImplTest, TestAnimateRAILMode) {
   scheduler_->AddRAILModeObserver(&observer);
   EXPECT_CALL(observer, OnRAILModeChanged(RAILMode::kAnimation)).Times(0);
 
-  EXPECT_FALSE(BeginFrameNotExpectedSoon());
   EXPECT_EQ(UseCase::kNone, ForceUpdatePolicyAndGetCurrentUseCase());
   EXPECT_EQ(RAILMode::kAnimation, GetRAILMode());
   scheduler_->RemoveRAILModeObserver(&observer);
@@ -3399,18 +3387,7 @@ TEST_F(MainThreadSchedulerImplWithInitalVirtualTimeTest, VirtualTimeOverride) {
   EXPECT_EQ(base::Time::Now(), base::Time::FromJsTime(1000000.0));
 }
 
-class CompositingExperimentWithExplicitSignalsTest
-    : public MainThreadSchedulerImplTest {
- public:
-  CompositingExperimentWithExplicitSignalsTest()
-      : MainThreadSchedulerImplTest(
-            {kPrioritizeCompositingAfterInput,
-             kUseExplicitSignalForTriggeringCompositingPrioritization,
-             kUseWillBeginMainFrameForCompositingPrioritization},
-            {}) {}
-};
-
-TEST_F(CompositingExperimentWithExplicitSignalsTest, CompositingAfterInput) {
+TEST_F(MainThreadSchedulerImplTest, CompositingAfterInput) {
   Vector<String> run_order;
   PostTestTasks(&run_order, "P1 T1 C1");
   base::RunLoop().RunUntilIdle();
@@ -3433,25 +3410,6 @@ TEST_F(CompositingExperimentWithExplicitSignalsTest, CompositingAfterInput) {
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order, testing::ElementsAre("T3", "C4", "C5"));
   run_order.clear();
-}
-
-class CompositingExperimentWithImplicitSignalsTest
-    : public MainThreadSchedulerImplTest {
- public:
-  CompositingExperimentWithImplicitSignalsTest()
-      : MainThreadSchedulerImplTest(
-            {kPrioritizeCompositingAfterInput},
-            {kHighestPriorityForCompositingAfterInput,
-             kUseExplicitSignalForTriggeringCompositingPrioritization,
-             kUseWillBeginMainFrameForCompositingPrioritization}) {}
-};
-
-TEST_F(CompositingExperimentWithImplicitSignalsTest, CompositingAfterInput) {
-  Vector<String> run_order;
-  PostTestTasks(&run_order, "T1 C1 C2 P1 P2");
-  base::RunLoop().RunUntilIdle();
-  // One compositing task should be prioritized after input.
-  EXPECT_THAT(run_order, testing::ElementsAre("P1", "P2", "C1", "T1", "C2"));
 }
 
 TEST_F(MainThreadSchedulerImplTest, EQTWithNestedLoop) {

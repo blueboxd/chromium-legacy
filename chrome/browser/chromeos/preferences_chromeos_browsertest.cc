@@ -12,7 +12,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager_impl.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
-#include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -34,21 +34,11 @@ namespace chromeos {
 class PreferencesTest : public LoginManagerTest {
  public:
   PreferencesTest()
-      : LoginManagerTest(true, true),
-        input_settings_(nullptr),
-        keyboard_(nullptr) {
-    struct {
-      const char* email;
-      const char* gaia_id;
-    } const kTestUsers[] = {{"test-user1@gmail.com", "1111111111"},
-                            {"test-user2@gmail.com", "2222222222"}};
-    for (size_t i = 0; i < base::size(kTestUsers); ++i) {
-      test_users_.push_back(AccountId::FromUserEmailGaiaId(
-          kTestUsers[i].email, kTestUsers[i].gaia_id));
-    }
-
+      : LoginManagerTest(), input_settings_(nullptr), keyboard_(nullptr) {
+    login_mixin_.AppendRegularUsers(2);
     scoped_testing_cros_settings_.device_settings()->Set(
-        kDeviceOwner, base::Value(test_users_[0].GetUserEmail()));
+        kDeviceOwner,
+        base::Value(login_mixin_.users()[0].account_id.GetUserEmail()));
 
     feature_list_.InitAndEnableFeature(features::kAllowScrollSettings);
   }
@@ -140,7 +130,7 @@ class PreferencesTest : public LoginManagerTest {
               prefs->GetBoolean(prefs::kPrimaryMouseButtonRight));
   }
 
-  std::vector<AccountId> test_users_;
+  LoginManagerMixin login_mixin_{&mixin_host_};
   ScopedTestingCrosSettings scoped_testing_cros_settings_;
 
  private:
@@ -151,19 +141,14 @@ class PreferencesTest : public LoginManagerTest {
   DISALLOW_COPY_AND_ASSIGN(PreferencesTest);
 };
 
-IN_PROC_BROWSER_TEST_F(PreferencesTest, PRE_MultiProfiles) {
-  RegisterUser(test_users_[0]);
-  RegisterUser(test_users_[1]);
-  StartupUtils::MarkOobeCompleted();
-}
-
 IN_PROC_BROWSER_TEST_F(PreferencesTest, MultiProfiles) {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
 
+  const auto& users = login_mixin_.users();
   // Add first user and init its preferences. Check that corresponding
   // settings has been changed.
-  LoginUser(test_users_[0]);
-  const user_manager::User* user1 = user_manager->FindUser(test_users_[0]);
+  LoginUser(users[0].account_id);
+  const user_manager::User* user1 = user_manager->FindUser(users[0].account_id);
   PrefService* prefs1 =
       ProfileHelper::Get()->GetProfileByUserUnsafe(user1)->GetPrefs();
   SetPrefs(prefs1, false);
@@ -173,9 +158,9 @@ IN_PROC_BROWSER_TEST_F(PreferencesTest, MultiProfiles) {
   // Add second user and init its prefs with different values.
   UserAddingScreen::Get()->Start();
   content::RunAllPendingInMessageLoop();
-  AddUser(test_users_[1]);
+  AddUser(users[1].account_id);
   content::RunAllPendingInMessageLoop();
-  const user_manager::User* user2 = user_manager->FindUser(test_users_[1]);
+  const user_manager::User* user2 = user_manager->FindUser(users[1].account_id);
   EXPECT_TRUE(user2->is_active());
   PrefService* prefs2 =
       ProfileHelper::Get()->GetProfileByUserUnsafe(user2)->GetPrefs();
@@ -212,7 +197,7 @@ IN_PROC_BROWSER_TEST_F(PreferencesTest, MultiProfiles) {
 
   // Check that changing non-owner prefs doesn't change corresponding local
   // state prefs and vice versa.
-  EXPECT_EQ(user_manager->GetOwnerAccountId(), test_users_[0]);
+  EXPECT_EQ(user_manager->GetOwnerAccountId(), users[0].account_id);
   CheckLocalStateCorrespondsToPrefs(prefs1);
   prefs2->SetBoolean(prefs::kTapToClickEnabled,
                      !prefs1->GetBoolean(prefs::kTapToClickEnabled));
@@ -222,7 +207,7 @@ IN_PROC_BROWSER_TEST_F(PreferencesTest, MultiProfiles) {
   CheckLocalStateCorrespondsToPrefs(prefs1);
 
   // Switch user back.
-  user_manager->SwitchActiveUser(test_users_[0]);
+  user_manager->SwitchActiveUser(users[0].account_id);
   CheckSettingsCorrespondToPrefs(prefs1);
   CheckLocalStateCorrespondsToPrefs(prefs1);
 }

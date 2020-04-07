@@ -131,6 +131,7 @@ AudioContext::AudioContext(Document& document,
                            base::Optional<float> sample_rate)
     : BaseAudioContext(&document, kRealtimeContext),
       context_id_(g_context_id++),
+      audio_context_manager_(document.ToExecutionContext()),
       keep_alive_(PERSISTENT_FROM_HERE, this) {
   destination_node_ =
       RealtimeAudioDestinationNode::Create(this, latency_hint, sample_rate);
@@ -168,7 +169,6 @@ AudioContext::AudioContext(Document& document,
           destination()->GetAudioDestinationHandler());
   base_latency_ = destination_handler.GetFramesPerBuffer() /
                   static_cast<double>(sampleRate());
-
 }
 
 void AudioContext::Uninitialize() {
@@ -196,6 +196,7 @@ AudioContext::~AudioContext() {
 
 void AudioContext::Trace(Visitor* visitor) {
   visitor->Trace(close_resolver_);
+  visitor->Trace(audio_context_manager_);
   BaseAudioContext::Trace(visitor);
 }
 
@@ -606,7 +607,7 @@ void AudioContext::NotifyAudibleAudioStarted() {
   DCHECK(IsMainThread());
 
   EnsureAudioContextManagerService();
-  if (audio_context_manager_)
+  if (audio_context_manager_.is_bound())
     audio_context_manager_->AudioContextAudiblePlaybackStarted(context_id_);
 }
 
@@ -697,17 +698,18 @@ void AudioContext::NotifyAudibleAudioStopped() {
   DCHECK(IsMainThread());
 
   EnsureAudioContextManagerService();
-  if (audio_context_manager_)
+  if (audio_context_manager_.is_bound())
     audio_context_manager_->AudioContextAudiblePlaybackStopped(context_id_);
 }
 
 void AudioContext::EnsureAudioContextManagerService() {
-  if (audio_context_manager_ || !GetDocument())
+  if (audio_context_manager_.is_bound() || !GetDocument())
     return;
 
   GetDocument()->GetFrame()->GetBrowserInterfaceBroker().GetInterface(
       mojo::GenericPendingReceiver(
-          audio_context_manager_.BindNewPipeAndPassReceiver()));
+          audio_context_manager_.BindNewPipeAndPassReceiver(
+              GetDocument()->GetTaskRunner(TaskType::kInternalMedia))));
 
   audio_context_manager_.set_disconnect_handler(
       WTF::Bind(&AudioContext::OnAudioContextManagerServiceConnectionError,

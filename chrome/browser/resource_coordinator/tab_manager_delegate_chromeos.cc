@@ -347,7 +347,9 @@ void TabManagerDelegate::LowMemoryKill(
     TabManager::TabDiscardDoneCB tab_discard_done) {
   arc::ArcProcessService* arc_process_service = arc::ArcProcessService::Get();
   base::TimeTicks now = base::TimeTicks::Now();
-  if (arc_process_service) {
+  // ARCVM defers to Android's LMK to kill apps in low memory situations because
+  // memory can't be reclaimed directly to ChromeOS.
+  if (arc_process_service && !arc::IsArcVmEnabled()) {
     arc_process_service->RequestAppProcessList(base::BindOnce(
         &TabManagerDelegate::LowMemoryKillImpl, weak_ptr_factory_.GetWeakPtr(),
         now, reason, std::move(tab_discard_done)));
@@ -487,7 +489,8 @@ void TabManagerDelegate::AdjustOomPriorities() {
     return;
 
   arc::ArcProcessService* arc_process_service = arc::ArcProcessService::Get();
-  // TODO(b/135633925): Design and implement OOM handling for ARCVM.
+  // ARCVM defers to Android's LMK to manage low memory situations, so don't
+  // adjust OOM scores for VM processes.
   if (arc_process_service && !arc::IsArcVmEnabled()) {
     arc_process_service->RequestAppProcessList(
         base::BindOnce(&TabManagerDelegate::AdjustOomPrioritiesImpl,

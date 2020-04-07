@@ -119,7 +119,8 @@ bool PersonalInfoSuggester::Suggest(const base::string16& text) {
 
 void PersonalInfoSuggester::ShowSuggestion(const base::string16& text) {
   std::string error;
-  engine_->SetSuggestion(context_id_, text, &error);
+  engine_->SetSuggestion(context_id_, text, base::EmptyString16(), true,
+                         &error);
   if (!error.empty()) {
     LOG(ERROR) << "Fail to show suggestion. " << error;
   }

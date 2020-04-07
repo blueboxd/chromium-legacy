@@ -156,6 +156,8 @@ class ArcAccessibilityHelperBridge
   void HandleFilterTypeFocusEvent(mojom::AccessibilityEventDataPtr event_data);
   void HandleFilterTypeAllEvent(mojom::AccessibilityEventDataPtr event_data);
 
+  void DispatchEventTextAnnouncement(
+      mojom::AccessibilityEventData* event_data) const;
   void DispatchCustomSpokenFeedbackToggled(bool enabled) const;
 
   AXTreeSourceArc* CreateFromKey(TreeKey, aura::Window* window);

@@ -550,8 +550,7 @@ void ObjectPainterBase::PaintOutlineRects(
     float border_radius = GetFocusRingBorderRadius(style);
     paint_info.context.DrawFocusRing(
         pixel_snapped_outline_rects, style.GetOutlineStrokeWidthForFocusRing(),
-        style.OutlineOffset(), style.GetDefaultOffsetForFocusRing(),
-        border_radius, min_border_width, color);
+        style.OutlineOffset(), border_radius, min_border_width, color);
     return;
   }
 

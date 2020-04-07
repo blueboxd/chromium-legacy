@@ -61,7 +61,8 @@ class COMPONENT_EXPORT(LEVELDB_PROTO) ProtoDatabaseSelector
     kSharedDbClientMissing = 25,
     kFailureNoSharedDBProviderUniqueFailed = 26,
     kSuccessNoSharedDBProviderUniqueSucceeded = 27,
-    kMaxValue = kSuccessNoSharedDBProviderUniqueSucceeded,
+    kFailureUniqueDbMissingClearSharedFailed = 28,
+    kMaxValue = kFailureUniqueDbMissingClearSharedFailed,
   };
 
   static void RecordInitState(ProtoDatabaseInitState state);
@@ -185,6 +186,10 @@ class COMPONENT_EXPORT(LEVELDB_PROTO) ProtoDatabaseSelector
       Callbacks::InitStatusCallback callback,
       bool success);
   void OnInitDone(ProtoDatabaseInitState state);
+  void InvokeInitUniqueDbMissingSharedCleared(
+      std::unique_ptr<SharedProtoDatabaseClient> client,
+      Callbacks::InitStatusCallback,
+      bool shared_cleared);
 
   ProtoDbType db_type_;
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;

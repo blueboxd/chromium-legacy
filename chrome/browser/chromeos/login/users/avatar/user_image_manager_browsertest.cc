@@ -169,7 +169,7 @@ class UserImageManagerTest : public LoginManagerTest,
   }
 
  protected:
-  UserImageManagerTest() : LoginManagerTest(true, true) {}
+  UserImageManagerTest() = default;
 
   // LoginManagerTest overrides:
   void SetUpInProcessBrowserTestFixture() override {

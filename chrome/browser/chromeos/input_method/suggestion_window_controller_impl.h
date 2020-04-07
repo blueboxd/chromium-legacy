@@ -31,7 +31,9 @@ class SuggestionWindowControllerImpl
 
   // IMESuggestionWindowHandlerInterface implementation.
   void SetBounds(const gfx::Rect& cursor_bounds) override;
-  void Show(const base::string16& text) override;
+  void Show(const base::string16& text,
+            const base::string16& confirmed_text,
+            const bool show_tab) override;
   void Hide() override;
   base::string16 GetText() const override;
   void FocusStateChanged() override;

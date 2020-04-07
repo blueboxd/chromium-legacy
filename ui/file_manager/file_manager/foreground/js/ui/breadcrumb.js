@@ -423,10 +423,10 @@ class BreadCrumb extends HTMLElement {
     // Show drop-down below the elider button.
     const menu = this.shadowRoot.querySelector('cr-action-menu');
     const top = elider.offsetTop + elider.offsetHeight + 4;
-    menu.showAt(elider, {top: top});
+    !window.UNIT_TEST && menu.showAt(elider, {top: top});
 
     // Style drop-down and horizontal position.
-    const dialog = menu.getDialog();
+    const dialog = !window.UNIT_TEST ? menu.getDialog() : {style: {}};
     dialog.style['left'] = position + 'px';
     dialog.style['right'] = position + 'px';
     dialog.style['overflow'] = 'hidden auto';
@@ -455,7 +455,7 @@ class BreadCrumb extends HTMLElement {
 
     // Close the drop-down <dialog> if needed.
     const menu = this.shadowRoot.querySelector('cr-action-menu');
-    if (menu.getDialog().hasAttribute('open')) {
+    if (!window.UNIT_TEST && menu.getDialog().hasAttribute('open')) {
       menu.close();
     }
   }

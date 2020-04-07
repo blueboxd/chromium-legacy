@@ -211,9 +211,6 @@ class TestNetworkContext : public mojom::NetworkContext {
                     GetHSTSStateCallback callback) override {}
   void EnableStaticKeyPinningForTesting(
       EnableStaticKeyPinningForTestingCallback callback) override {}
-  void SetFailingHttpTransactionForTesting(
-      int32_t rv,
-      SetFailingHttpTransactionForTestingCallback callback) override {}
   void VerifyCertificateForTesting(
       const scoped_refptr<net::X509Certificate>& certificate,
       const std::string& hostname,

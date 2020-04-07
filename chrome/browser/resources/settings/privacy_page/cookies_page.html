@@ -164,9 +164,9 @@
     </settings-do-not-track-toggle>
     <settings-toggle-button id="networkPrediction"
         hidden="[[!pageVisibility.networkPrediction]]"
-        pref="{{prefs.net.network_prediction_options}}"
         label="$i18n{networkPredictionEnabled}"
-        sub-label="$i18n{networkPredictionEnabledDesc}"
+        sub-label="$i18n{networkPredictionEnabledDescCookiesPage}"
+        pref="{{prefs.net.network_prediction_options}}"
         numeric-unchecked-value="[[networkPredictionUncheckedValue_]]"
         on-settings-boolean-control-change="onNetworkPredictionChange_">
     </settings-toggle-button>

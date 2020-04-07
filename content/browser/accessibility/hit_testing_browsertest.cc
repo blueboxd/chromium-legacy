@@ -26,46 +26,11 @@
 
 namespace content {
 
-// First parameter of the tuple = device scale factor
-// Second parameter = whether use-zoom-for-dsf is enabled
-using AccessibilityZoomTestParam = std::tuple<double, bool>;
-
 class AccessibilityHitTestingBrowserTest
-    : public AccessibilityContentBrowserTest,
-      public ::testing::WithParamInterface<AccessibilityZoomTestParam> {
+    : public AccessibilityContentBrowserTest {
  public:
   AccessibilityHitTestingBrowserTest() = default;
   ~AccessibilityHitTestingBrowserTest() override = default;
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    double device_scale_factor;
-    bool use_zoom_for_dsf;
-    std::tie(device_scale_factor, use_zoom_for_dsf) = GetParam();
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kForceDeviceScaleFactor,
-        base::StringPrintf("%.2f", device_scale_factor));
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kEnableUseZoomForDSF, use_zoom_for_dsf ? "true" : "false");
-  }
-
-  struct TestPassToString {
-    std::string operator()(
-        const ::testing::TestParamInfo<AccessibilityZoomTestParam>& info)
-        const {
-      double device_scale_factor;
-      bool use_zoom_for_dsf;
-      std::tie(device_scale_factor, use_zoom_for_dsf) = info.param;
-      std::string name = base::StringPrintf("ZoomFactor%g_UseZoomForDSF%s",
-                                            device_scale_factor,
-                                            use_zoom_for_dsf ? "On" : "Off");
-
-      // The test harness only allows alphanumeric characters and underscores
-      // in param names.
-      std::string sanitized_name;
-      base::ReplaceChars(name, ".", "_", &sanitized_name);
-      return sanitized_name;
-    }
-  };
 
   BrowserAccessibilityManager* GetRootBrowserAccessibilityManager() {
     WebContentsImpl* web_contents =
@@ -215,7 +180,6 @@ class AccessibilityHitTestingCrossProcessBrowserTest
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     IsolateAllSitesForTesting(command_line);
-    AccessibilityHitTestingBrowserTest::SetUpCommandLine(command_line);
   }
 
   void SetUpOnMainThread() override {
@@ -225,19 +189,47 @@ class AccessibilityHitTestingCrossProcessBrowserTest
   }
 };
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    AccessibilityHitTestingBrowserTest,
-    ::testing::Combine(::testing::Values(1, 1.25), ::testing::Bool()),
-    AccessibilityHitTestingBrowserTest::TestPassToString());
+using AccessibilityZoomTestParam = std::tuple<double, bool>;
+
+class AccessibilityHitTestingZoomBrowserTest
+    : public AccessibilityHitTestingBrowserTest,
+      public ::testing::WithParamInterface<AccessibilityZoomTestParam> {
+ public:
+  AccessibilityHitTestingZoomBrowserTest() = default;
+  ~AccessibilityHitTestingZoomBrowserTest() override = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    double device_scale_factor;
+    bool use_zoom_for_dsf;
+    std::tie(device_scale_factor, use_zoom_for_dsf) = GetParam();
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kForceDeviceScaleFactor,
+        base::StringPrintf("%.2f", device_scale_factor));
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kEnableUseZoomForDSF, use_zoom_for_dsf ? "true" : "false");
+  }
+
+  struct TestPassToString {
+    std::string operator()(
+        const ::testing::TestParamInfo<AccessibilityZoomTestParam>& info)
+        const {
+      double device_scale_factor;
+      bool use_zoom_for_dsf;
+      std::tie(device_scale_factor, use_zoom_for_dsf) = info.param;
+      return base::StringPrintf("ZoomFactor%g_UseZoomForDSF%s",
+                                device_scale_factor,
+                                use_zoom_for_dsf ? "On" : "Off");
+    }
+  };
+};
 
 INSTANTIATE_TEST_SUITE_P(
     All,
-    AccessibilityHitTestingCrossProcessBrowserTest,
-    ::testing::Combine(::testing::Values(1, 1.25), ::testing::Bool()),
-    AccessibilityHitTestingBrowserTest::TestPassToString());
+    AccessibilityHitTestingZoomBrowserTest,
+    ::testing::Combine(::testing::Values(1, 2), ::testing::Bool()),
+    AccessibilityHitTestingZoomBrowserTest::TestPassToString());
 
-IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
+IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingZoomBrowserTest,
                        CachingAsyncHitTest) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -280,7 +272,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
             hit_node->GetClippedScreenBoundsRect());
 }
 
-IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest, HitTest) {
+IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingZoomBrowserTest, HitTest) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
@@ -322,7 +314,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest, HitTest) {
             hit_node->GetClippedScreenBoundsRect());
 }
 
-IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
+IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
                        HitTestOutsideDocumentBoundsReturnsRoot) {
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
@@ -348,7 +340,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
   ASSERT_EQ(ax::mojom::Role::kRootWebArea, hit_node->GetRole());
 }
 
-IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
+IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
                        HitTestingInIframes) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -405,20 +397,20 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
   ASSERT_EQ("Scrolled Button",
             hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
 
-  // (50, 478) -> div in second iframe
-  hit_node = HitTestAndWaitForResult(gfx::Point(50, 478));
+  // (50, 505) -> div in second iframe
+  hit_node = HitTestAndWaitForResult(gfx::Point(50, 505));
   ASSERT_TRUE(hit_node != nullptr);
   ASSERT_EQ(ax::mojom::Role::kGenericContainer, hit_node->GetRole());
 
-  // (50, 478) -> div in second iframe
+  // (50, 505) -> div in second iframe
   // but with a different event
-  hit_node = HitTestAndWaitForResultWithEvent(gfx::Point(50, 478),
+  hit_node = HitTestAndWaitForResultWithEvent(gfx::Point(50, 505),
                                               ax::mojom::Event::kAlert);
   ASSERT_NE(hit_node, nullptr);
   ASSERT_EQ(ax::mojom::Role::kGenericContainer, hit_node->GetRole());
 }
 
-IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingCrossProcessBrowserTest,
+IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingCrossProcessBrowserTest,
                        HitTestingInCrossProcessIframes) {
   GURL url_a(embedded_test_server()->GetURL(
       "a.com", "/accessibility/hit_testing/hit_testing_a.html"));
@@ -497,7 +489,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingCrossProcessBrowserTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingCrossProcessBrowserTest,
+IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingCrossProcessBrowserTest,
                        HitTestingInScrolledCrossProcessIframe) {
   GURL url_a(embedded_test_server()->GetURL(
       "a.com", "/accessibility/hit_testing/hit_testing_a.html"));
@@ -563,7 +555,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingCrossProcessBrowserTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
+IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
                        CachingAsyncHitTestingInIframes) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -623,16 +615,16 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
   EXPECT_EQ("Scrolled Button",
             hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
 
-  // (50, 478) -> div in second iframe
-  hit_node = CallCachingAsyncHitTest(gfx::Point(50, 478));
+  // (50, 505) -> div in second iframe
+  hit_node = CallCachingAsyncHitTest(gfx::Point(50, 505));
   ASSERT_TRUE(hit_node != nullptr);
   EXPECT_NE(ax::mojom::Role::kGenericContainer, hit_node->GetRole());
-  hit_node = CallCachingAsyncHitTest(gfx::Point(50, 478));
+  hit_node = CallCachingAsyncHitTest(gfx::Point(50, 505));
   EXPECT_EQ(ax::mojom::Role::kGenericContainer, hit_node->GetRole());
 }
 
 #if !defined(OS_ANDROID) && !defined(OS_MACOSX)
-IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
+IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
                        HitTestingWithPinchZoom) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -730,7 +722,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
             hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
 }
 
-IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
+IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
                        HitTestingWithPinchZoomAndIframes) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -794,7 +786,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
 // Chrome OS or Chromecast)
 #if defined(OS_WIN) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS) && !BUILDFLAG(IS_CHROMECAST))
-IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
+IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
                        NearestLeafInIframes) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -866,11 +858,11 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
   EXPECT_EQ("Scrolled Button",
             hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
 
-  // (50, 478) -> "Scrolled Button"
-  hit_node = CallNearestLeafNode(gfx::Point(50, 478));
+  // (50, 505) -> "Scrolled Button"
+  hit_node = CallNearestLeafNode(gfx::Point(50, 505));
   ASSERT_TRUE(hit_node != nullptr);
   EXPECT_NE(ax::mojom::Role::kButton, hit_node->GetData().role);
-  hit_node = CallNearestLeafNode(gfx::Point(50, 478));
+  hit_node = CallNearestLeafNode(gfx::Point(50, 505));
   ASSERT_TRUE(hit_node != nullptr);
   EXPECT_EQ(ax::mojom::Role::kButton, hit_node->GetData().role);
   EXPECT_EQ("Scrolled Button",

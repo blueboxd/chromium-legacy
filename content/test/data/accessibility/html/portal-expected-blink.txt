@@ -1,11 +1,13 @@
 rootWebArea focusable
 ++genericContainer ignored
-++++paragraph
-++++++staticText name='Before portal'
-++++++++inlineTextBox name='Before portal'
-++++portal focusable name='portal'
-++++++rootWebArea name='Text in iframe'
-++++++++genericContainer ignored
-++++paragraph
-++++++staticText name='After portal'
-++++++++inlineTextBox name='After portal'
+++++genericContainer ignored
+++++++paragraph
+++++++++staticText name='Before portal'
+++++++++++inlineTextBox name='Before portal'
+++++++portal focusable name='portal'
+++++++++rootWebArea name='Text in iframe'
+++++++++++genericContainer ignored
+++++++++++++genericContainer ignored
+++++++paragraph
+++++++++staticText name='After portal'
+++++++++++inlineTextBox name='After portal'

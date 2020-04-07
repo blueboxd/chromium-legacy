@@ -28,7 +28,8 @@ constexpr char kTestUserGaiaId[] = "1234567890";
 
 class BrowserLoginTest : public chromeos::LoginManagerTest {
  public:
-  BrowserLoginTest() : LoginManagerTest(true, true) {}
+  BrowserLoginTest() : LoginManagerTest() { set_should_launch_browser(true); }
+
   ~BrowserLoginTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

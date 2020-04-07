@@ -177,8 +177,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalWindowTest, MultipleCalls) {
 
 class CaptivePortalWindowCtorDtorTest : public LoginManagerTest {
  public:
-  CaptivePortalWindowCtorDtorTest()
-      : LoginManagerTest(false, true /* should_initialize_webui */) {}
+  CaptivePortalWindowCtorDtorTest() = default;
   ~CaptivePortalWindowCtorDtorTest() override {}
 
   void SetUpInProcessBrowserTestFixture() override {

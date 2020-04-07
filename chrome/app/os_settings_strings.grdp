@@ -964,6 +964,9 @@
   <message name="IDS_SETTINGS_CROSTINI_DISK_RESIZE_SHOW_BUTTON" desc="The label of the button/link the user clicks to open the disk resizing dialogue." meaning="The label of the button/link the user clicks to open the disk resizing dialogue.">
     Change
   </message>
+  <message name="IDS_SETTINGS_CROSTINI_DISK_RESIZE_SHOW_BUTTON_ARIA_LABEL" desc="The aria label for the button to show the disk resize dialog i.e. the text that screen readers will read out for the button.">
+    Change disk size
+  </message>
   <message name="IDS_SETTINGS_CROSTINI_DISK_RESIZE_LABEL" desc="The label on the row in settings for managing Crostini's disk size.">
     Disk size
   </message>

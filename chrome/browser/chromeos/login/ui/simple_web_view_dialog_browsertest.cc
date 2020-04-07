@@ -5,7 +5,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "chrome/browser/chromeos/login/login_manager_test.h"
+#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/ui/captive_portal_view.h"
 #include "chrome/browser/chromeos/login/ui/captive_portal_window_proxy.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -48,10 +48,9 @@ class InterstitialPageDelegate : public content::InterstitialPageDelegate {
 
 }  // namespace
 
-class SimpleWebViewDialogTest : public LoginManagerTest {
+class SimpleWebViewDialogTest : public OobeBaseTest {
  public:
-  SimpleWebViewDialogTest()
-      : LoginManagerTest(false, true /* should_initialize_webui */) {}
+  SimpleWebViewDialogTest() = default;
   ~SimpleWebViewDialogTest() override {}
 
   InterstitialPageDelegate* CreateDelegate(CaptivePortalWindowProxy* proxy) {

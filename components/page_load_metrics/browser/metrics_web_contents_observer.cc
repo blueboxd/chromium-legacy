@@ -17,8 +17,10 @@
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "components/page_load_metrics/browser/page_load_tracker.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_request_id.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/media_player_id.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_handle.h"
@@ -149,6 +151,14 @@ void MetricsWebContentsObserver::RenderViewHostChanged(
 void MetricsWebContentsObserver::FrameDeleted(content::RenderFrameHost* rfh) {
   if (committed_load_)
     committed_load_->FrameDeleted(rfh);
+}
+
+void MetricsWebContentsObserver::RenderFrameDeleted(
+    content::RenderFrameHost* rfh) {
+  // PageLoadTracker can be associated only with a main frame.
+  if (rfh->GetParent())
+    return;
+  back_forward_cached_pages_.erase(rfh);
 }
 
 void MetricsWebContentsObserver::MediaStartedPlaying(
@@ -443,7 +453,14 @@ void MetricsWebContentsObserver::DidFinishNavigation(
     // the currently committed navigation.
     FinalizeCurrentlyCommittedLoad(navigation_handle,
                                    navigation_handle_tracker.get());
-    committed_load_.reset();
+    // Transfers the ownership of |committed_load_|. This |committed_load_|
+    // might be reused later when restoring the page from the cache.
+    MaybeStorePageLoadTrackerForBackForwardCache(navigation_handle,
+                                                 std::move(committed_load_));
+    // If |navigation_handle| is a back-forward cache navigation, an associated
+    // PageLoadTracker is restored into |committed_load_|.
+    if (MaybeRestorePageLoadTrackerForBackForwardCache(navigation_handle))
+      return;
   }
 
   if (!navigation_handle_tracker)
@@ -502,6 +519,54 @@ void MetricsWebContentsObserver::HandleCommittedNavigationForTrackedLoad(
     observer.OnCommit(committed_load_.get());
 }
 
+void MetricsWebContentsObserver::MaybeStorePageLoadTrackerForBackForwardCache(
+    content::NavigationHandle* next_navigation_handle,
+    std::unique_ptr<PageLoadTracker> previously_committed_load) {
+  if (!previously_committed_load)
+    return;
+
+  content::RenderFrameHost* previous_frame = content::RenderFrameHost::FromID(
+      next_navigation_handle->GetPreviousRenderFrameHostId());
+
+  // The PageLoadTracker is associated with a bfcached document if:
+  bool is_back_forward_cache =
+      // 1. the frame being navigated away from was not already deleted
+      previous_frame &&
+      // 2. the previous frame is in the BFCache
+      previous_frame->IsInBackForwardCache();
+
+  if (!is_back_forward_cache)
+    return;
+
+  previously_committed_load->OnEnterBackForwardCache();
+
+  back_forward_cached_pages_.emplace(previous_frame,
+                                     std::move(previously_committed_load));
+}
+
+bool MetricsWebContentsObserver::MaybeRestorePageLoadTrackerForBackForwardCache(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsServedFromBackForwardCache())
+    return false;
+
+  auto it =
+      back_forward_cached_pages_.find(navigation_handle->GetRenderFrameHost());
+
+  // There are some cases that the PageLoadTracker does not exist. For example,
+  // if a page is put into the cache before MetricsWebContents is created,
+  // |back_forward_cached_pages_| is empty.
+  if (it == back_forward_cached_pages_.end())
+    return false;
+
+  committed_load_ = std::move(it->second);
+  back_forward_cached_pages_.erase(it);
+  // TODO(hajimehoshi): Add dedicated methods to PageLoadMetricsTracker to allow
+  // them to observe pages being restored from bfcache.
+  if (web_contents()->GetVisibility() == content::Visibility::VISIBLE)
+    committed_load_->PageShown();
+  return true;
+}
+
 void MetricsWebContentsObserver::FinalizeCurrentlyCommittedLoad(
     content::NavigationHandle* newly_committed_navigation,
     PageLoadTracker* newly_committed_navigation_tracker) {
@@ -527,11 +592,6 @@ void MetricsWebContentsObserver::FinalizeCurrentlyCommittedLoad(
     if (is_non_user_initiated_client_redirect) {
       committed_load_->NotifyClientRedirectTo(newly_committed_navigation);
     }
-
-    content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
-        newly_committed_navigation->GetPreviousRenderFrameHostId());
-    if (rfh && rfh->IsInBackForwardCache())
-      committed_load_->OnEnterBackForwardCache();
   }
 }
 
@@ -777,6 +837,8 @@ bool MetricsWebContentsObserver::ShouldTrackMainFrameNavigation(
   if (embedder_interface_->IsNewTabPageUrl(navigation_handle->GetURL()))
     return false;
 
+  // The navigation served from the back-forward cache will use the previously
+  // created tracker for the document.
   if (navigation_handle->IsServedFromBackForwardCache())
     return false;
 

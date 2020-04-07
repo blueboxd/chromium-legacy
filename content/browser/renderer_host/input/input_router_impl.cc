@@ -90,9 +90,7 @@ InputRouterImpl::InputRouterImpl(
                            this,
                            fling_scheduler_client,
                            config.gesture_config),
-      device_scale_factor_(1.f),
-      compositor_touch_action_enabled_(
-          base::FeatureList::IsEnabled(features::kCompositorTouchAction)) {
+      device_scale_factor_(1.f) {
   weak_this_ = weak_ptr_factory_.GetWeakPtr();
 
   DCHECK(client);
@@ -154,8 +152,7 @@ void InputRouterImpl::SendGestureEvent(
 
   FilterGestureEventResult result =
       touch_action_filter_.FilterGestureEvent(&gesture_event.event);
-  if (compositor_touch_action_enabled_ &&
-      result == FilterGestureEventResult::kFilterGestureEventDelayed) {
+  if (result == FilterGestureEventResult::kFilterGestureEventDelayed) {
     TRACE_EVENT_INSTANT0("input", "DeferredForTouchAction",
                          TRACE_EVENT_SCOPE_THREAD);
     gesture_event_queue_.QueueDeferredEvents(gesture_event);
@@ -296,30 +293,19 @@ void InputRouterImpl::FallbackCursorModeSetCursorVisibility(bool visible) {
 void InputRouterImpl::SetTouchActionFromMain(cc::TouchAction touch_action) {
   TRACE_EVENT1("input", "InputRouterImpl::SetTouchActionFromMain",
                "touch_action", TouchActionToString(touch_action));
-  if (compositor_touch_action_enabled_) {
-    touch_action_filter_.OnSetTouchAction(touch_action);
-    touch_event_queue_.StopTimeoutMonitor();
-    ProcessDeferredGestureEventQueue();
-  }
+  touch_action_filter_.OnSetTouchAction(touch_action);
+  touch_event_queue_.StopTimeoutMonitor();
+  ProcessDeferredGestureEventQueue();
   UpdateTouchAckTimeoutEnabled();
-}
-
-void InputRouterImpl::SetWhiteListedTouchAction(cc::TouchAction touch_action,
-                                                uint32_t unique_touch_event_id,
-                                                InputEventAckState state) {
-  DCHECK(!compositor_touch_action_enabled_);
-  OnSetWhiteListedTouchAction(touch_action);
 }
 
 void InputRouterImpl::OnSetWhiteListedTouchAction(
     cc::TouchAction touch_action) {
   touch_action_filter_.OnSetWhiteListedTouchAction(touch_action);
   client_->OnSetWhiteListedTouchAction(touch_action);
-  if (compositor_touch_action_enabled_) {
-    if (touch_action == cc::TouchAction::kAuto)
-      FlushDeferredGestureQueue();
-    UpdateTouchAckTimeoutEnabled();
-  }
+  if (touch_action == cc::TouchAction::kAuto)
+    FlushDeferredGestureQueue();
+  UpdateTouchAckTimeoutEnabled();
 }
 
 void InputRouterImpl::DidOverscroll(const ui::DidOverscrollParams& params) {
@@ -430,15 +416,6 @@ void InputRouterImpl::OnTouchEventAck(const TouchEventWithLatencyInfo& event,
     touch_action_filter_.AppendToGestureSequenceForDebugging(
         base::NumberToString(event.event.unique_touch_event_id).c_str());
     touch_action_filter_.IncreaseActiveTouches();
-    // In certain corner cases, the ack for the touch start may not come with a
-    // touch action, then we should set the touch actions to Auto.
-    if (!compositor_touch_action_enabled_ &&
-        !touch_action_filter_.allowed_touch_action().has_value()) {
-      touch_action_filter_.OnSetTouchAction(cc::TouchAction::kAuto);
-      if (compositor_touch_action_enabled_)
-        touch_event_queue_.StopTimeoutMonitor();
-      UpdateTouchAckTimeoutEnabled();
-    }
   }
   disposition_handler_->OnTouchEventAck(event, ack_source, ack_result);
 
@@ -653,16 +630,12 @@ void InputRouterImpl::TouchEventHandled(
   // send it in the input event ack to ensure it is available at the
   // time the ACK is handled.
   if (touch_action.has_value()) {
-    if (!compositor_touch_action_enabled_) {
+    if (source == InputEventAckSource::COMPOSITOR_THREAD)
+      OnSetWhiteListedTouchAction(touch_action.value());
+    else if (source == InputEventAckSource::MAIN_THREAD)
       OnSetTouchAction(touch_action.value());
-    } else {
-      if (source == InputEventAckSource::COMPOSITOR_THREAD)
-        OnSetWhiteListedTouchAction(touch_action.value());
-      else if (source == InputEventAckSource::MAIN_THREAD)
-        OnSetTouchAction(touch_action.value());
-      else
-        NOTREACHED();
-    }
+    else
+      NOTREACHED();
   }
 
   // TODO(crbug.com/953547): find a proper way to stop the timeout monitor.
@@ -741,11 +714,9 @@ void InputRouterImpl::FlushTouchEventQueue() {
 void InputRouterImpl::ForceSetTouchActionAuto() {
   touch_action_filter_.AppendToGestureSequenceForDebugging("F");
   touch_action_filter_.OnSetTouchAction(cc::TouchAction::kAuto);
-  if (compositor_touch_action_enabled_) {
-    // TODO(xidachen): Call FlushDeferredGestureQueue when this flag is enabled.
-    touch_event_queue_.StopTimeoutMonitor();
-    ProcessDeferredGestureEventQueue();
-  }
+  // TODO(xidachen): Call FlushDeferredGestureQueue when this flag is enabled.
+  touch_event_queue_.StopTimeoutMonitor();
+  ProcessDeferredGestureEventQueue();
 }
 
 void InputRouterImpl::ForceResetTouchActionForTest() {
@@ -769,8 +740,7 @@ void InputRouterImpl::OnSetTouchAction(cc::TouchAction touch_action) {
   touch_action_filter_.AppendToGestureSequenceForDebugging(
       base::NumberToString(static_cast<int>(touch_action)).c_str());
   touch_action_filter_.OnSetTouchAction(touch_action);
-  if (compositor_touch_action_enabled_)
-    touch_event_queue_.StopTimeoutMonitor();
+  touch_event_queue_.StopTimeoutMonitor();
 
   // TouchAction::kNone should disable the touch ack timeout.
   UpdateTouchAckTimeoutEnabled();

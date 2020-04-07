@@ -74,8 +74,7 @@ class UserAddingScreenWaiter : public UserAddingScreen::Observer {
 class ChromeSessionManagerTest : public LoginManagerTest {
  public:
   ChromeSessionManagerTest()
-      : LoginManagerTest(true, true),
-        fake_gaia_{&mixin_host_, embedded_test_server()} {}
+      : LoginManagerTest(), fake_gaia_{&mixin_host_, embedded_test_server()} {}
   ~ChromeSessionManagerTest() override {}
 
   // LoginManagerTest:

@@ -26,6 +26,8 @@ LayoutNGMixin<Base>::LayoutNGMixin(Element* element) : Base(element) {
       std::is_base_of<LayoutBlock, Base>::value,
       "Base class of LayoutNGMixin must be LayoutBlock or derived class.");
   DCHECK(!element || !element->ShouldForceLegacyLayout());
+  if (element)
+    Base::GetDocument().IncLayoutBlockCounterNG();
 }
 
 template <typename Base>

@@ -68,4 +68,8 @@
   // TODO(crbug.com/1045454): Implement this method.
 }
 
+- (void)showDetailsForCredential:(id<Credential>)credential {
+  // TODO(crbug.com/1052143): Implement this method.
+}
+
 @end

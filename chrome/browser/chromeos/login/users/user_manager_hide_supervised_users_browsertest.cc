@@ -38,8 +38,7 @@ struct {
 
 class UserManagerHideSupervisedUsersBrowserTest : public LoginManagerTest {
  public:
-  UserManagerHideSupervisedUsersBrowserTest()
-      : LoginManagerTest(false, false) {}
+  UserManagerHideSupervisedUsersBrowserTest() = default;
 
   ~UserManagerHideSupervisedUsersBrowserTest() override = default;
 

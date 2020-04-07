@@ -395,12 +395,6 @@ MainThreadSchedulerImpl::MainThreadOnly::MainThreadOnly(
           main_thread_scheduler_impl,
           &main_thread_scheduler_impl->tracing_controller_,
           YesNoStateToString),
-      have_seen_a_begin_main_frame(
-          false,
-          "Scheduler.HasSeenBeginMainFrame",
-          main_thread_scheduler_impl,
-          &main_thread_scheduler_impl->tracing_controller_,
-          YesNoStateToString),
       have_reported_blocking_intervention_in_current_policy(
           false,
           "Scheduler.HasReportedBlockingInterventionInCurrentPolicy",
@@ -416,12 +410,6 @@ MainThreadSchedulerImpl::MainThreadOnly::MainThreadOnly(
       has_visible_render_widget_with_touch_handler(
           false,
           "Scheduler.HasVisibleRenderWidgetWithTouchHandler",
-          main_thread_scheduler_impl,
-          &main_thread_scheduler_impl->tracing_controller_,
-          YesNoStateToString),
-      begin_frame_not_expected_soon(
-          false,
-          "Scheduler.BeginFrameNotExpectedSoon",
           main_thread_scheduler_impl,
           &main_thread_scheduler_impl->tracing_controller_,
           YesNoStateToString),
@@ -486,8 +474,12 @@ MainThreadSchedulerImpl::MainThreadOnly::MainThreadOnly(
       max_virtual_time_task_starvation_count(0),
       virtual_time_stopped(false),
       nested_runloop(false),
-      compositing_experiment(main_thread_scheduler_impl),
-      should_prioritize_compositing(false),
+      prioritize_compositing_after_input(
+          false,
+          "Scheduler.PrioritizeCompositingAfterInput",
+          main_thread_scheduler_impl,
+          &main_thread_scheduler_impl->tracing_controller_,
+          YesNoStateToString),
       compositor_priority_experiments(main_thread_scheduler_impl),
       main_thread_compositing_is_fast(false) {}
 
@@ -817,6 +809,9 @@ void MainThreadSchedulerImpl::RemoveTaskObserver(
 }
 
 void MainThreadSchedulerImpl::WillBeginFrame(const viz::BeginFrameArgs& args) {
+  // TODO(crbug/1068426): Figure out when and if |UpdatePolicy| should be called
+  //  and, if needed, remove the call to it from
+  //  |SetPrioritizeCompositingAfterInput|.
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                "MainThreadSchedulerImpl::WillBeginFrame", "args",
                args.AsValue());
@@ -827,14 +822,12 @@ void MainThreadSchedulerImpl::WillBeginFrame(const viz::BeginFrameArgs& args) {
   EndIdlePeriod();
   main_thread_only().estimated_next_frame_begin =
       args.frame_time + args.interval;
-  main_thread_only().have_seen_a_begin_main_frame = true;
-  main_thread_only().begin_frame_not_expected_soon = false;
   main_thread_only().compositor_frame_interval = args.interval;
   {
     base::AutoLock lock(any_thread_lock_);
     any_thread().begin_main_frame_on_critical_path = args.on_critical_path;
   }
-  main_thread_only().compositing_experiment.OnWillBeginMainFrame();
+  SetPrioritizeCompositingAfterInput(false);
   main_thread_only().compositor_priority_experiments.OnWillBeginMainFrame();
 }
 
@@ -858,13 +851,13 @@ void MainThreadSchedulerImpl::DidCommitFrameToCompositor() {
 }
 
 void MainThreadSchedulerImpl::BeginFrameNotExpectedSoon() {
+  // TODO(crbug/1068426): Should this call |UpdatePolicy|?
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                "MainThreadSchedulerImpl::BeginFrameNotExpectedSoon");
   helper_.CheckOnValidThread();
   if (helper_.IsShutdown())
     return;
 
-  main_thread_only().begin_frame_not_expected_soon = true;
   idle_helper_.EnableLongIdlePeriod();
   {
     base::AutoLock lock(any_thread_lock_);
@@ -1000,7 +993,7 @@ void MainThreadSchedulerImpl::SetSchedulerKeepActive(bool keep_active) {
 }
 
 void MainThreadSchedulerImpl::OnMainFrameRequestedForInput() {
-  main_thread_only().compositing_experiment.OnMainFrameRequestedForInput();
+  SetPrioritizeCompositingAfterInput(true);
 }
 
 bool MainThreadSchedulerImpl::SchedulerKeepActive() {
@@ -1498,10 +1491,9 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       NOTREACHED();
   }
 
-  if (main_thread_only().should_prioritize_compositing) {
+  if (main_thread_only().prioritize_compositing_after_input) {
     new_policy.compositor_priority() =
-        main_thread_only()
-            .compositing_experiment.GetIncreasedCompositingPriority();
+        base::sequence_manager::TaskQueue::QueuePriority::kVeryHighPriority;
   } else if (scheduling_settings_
                  .prioritize_compositing_and_loading_during_early_loading &&
              current_use_case() == UseCase::kEarlyLoading) {
@@ -1978,8 +1970,6 @@ void MainThreadSchedulerImpl::AsValueIntoLocked(
       main_thread_only().has_visible_render_widget_with_touch_handler);
   state->SetString("current_use_case",
                    UseCaseToString(main_thread_only().current_use_case));
-  state->SetBoolean("begin_frame_not_expected_soon",
-                    main_thread_only().begin_frame_not_expected_soon);
   state->SetBoolean(
       "compositor_will_send_main_frame_not_expected",
       main_thread_only().compositor_will_send_main_frame_not_expected);
@@ -1989,8 +1979,6 @@ void MainThreadSchedulerImpl::AsValueIntoLocked(
                    IdleHelper::IdlePeriodStateToString(
                        idle_helper_.SchedulerIdlePeriodState()));
   state->SetBoolean("renderer_hidden", main_thread_only().renderer_hidden);
-  state->SetBoolean("have_seen_a_begin_main_frame",
-                    main_thread_only().have_seen_a_begin_main_frame);
   state->SetBoolean("waiting_for_contentful_paint",
                     any_thread().waiting_for_contentful_paint);
   state->SetBoolean("waiting_for_meaningful_paint",
@@ -2244,7 +2232,6 @@ void MainThreadSchedulerImpl::ResetForNavigationLocked() {
   any_thread().waiting_for_meaningful_paint = true;
   any_thread().have_seen_input_since_navigation = false;
   main_thread_only().idle_time_estimator.Clear();
-  main_thread_only().have_seen_a_begin_main_frame = false;
   main_thread_only().have_reported_blocking_intervention_since_navigation =
       false;
   for (PageSchedulerImpl* page_scheduler : main_thread_only().page_schedulers) {
@@ -2483,8 +2470,6 @@ void MainThreadSchedulerImpl::OnTaskCompleted(
     task_queue_throttler()->OnTaskRunTimeReported(
         queue.get(), task_timing->start_time(), task_timing->end_time());
   }
-
-  main_thread_only().compositing_experiment.OnTaskCompleted(queue.get());
 
   // TODO(altimin): Per-page metrics should also be considered.
   main_thread_only().metrics_helper.RecordTaskMetrics(queue.get(), task,
@@ -2769,14 +2754,14 @@ MainThreadSchedulerImpl::scheduling_settings() const {
   return scheduling_settings_;
 }
 
-void MainThreadSchedulerImpl::SetShouldPrioritizeCompositing(
-    bool should_prioritize_compositing) {
-  if (main_thread_only().should_prioritize_compositing ==
-      should_prioritize_compositing) {
+void MainThreadSchedulerImpl::SetPrioritizeCompositingAfterInput(
+    bool prioritize_compositing_after_input) {
+  if (main_thread_only().prioritize_compositing_after_input ==
+      prioritize_compositing_after_input) {
     return;
   }
-  main_thread_only().should_prioritize_compositing =
-      should_prioritize_compositing;
+  main_thread_only().prioritize_compositing_after_input =
+      prioritize_compositing_after_input;
   UpdatePolicy();
 }
 

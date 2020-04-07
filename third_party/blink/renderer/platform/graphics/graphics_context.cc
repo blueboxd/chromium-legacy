@@ -322,11 +322,10 @@ void GraphicsContext::CompositeRecord(sk_sp<PaintRecord> record,
 
 namespace {
 
-int AdjustedFocusRingOffset(int offset, int default_offset, int width) {
+int AdjustedFocusRingOffset(int offset, int width) {
   if (::features::IsFormControlsRefreshEnabled()) {
-    // For FormControlsRefresh the focus ring has a default offset that
-    // depends on the element type.
-    return default_offset;
+    // For FormControlsRefresh just use the value of outline-offset.
+    return offset;
   }
 
 #if defined(OS_MACOSX)
@@ -339,19 +338,16 @@ int AdjustedFocusRingOffset(int offset, int default_offset, int width) {
 }  // namespace
 
 int GraphicsContext::FocusRingOutsetExtent(int offset,
-                                           int default_offset,
                                            int width) {
   // Unlike normal outlines (whole width is outside of the offset), focus
   // rings can be drawn with the center of the path aligned with the offset, so
   // only half of the width is outside of the offset.
   if (::features::IsFormControlsRefreshEnabled()) {
     // For FormControlsRefresh 2/3 of the width is outside of the offset.
-    return AdjustedFocusRingOffset(offset, default_offset, width) +
-           std::ceil(width / 3.f) * 2;
+    return AdjustedFocusRingOffset(offset, width) + std::ceil(width / 3.f) * 2;
   }
 
-  return AdjustedFocusRingOffset(offset, /*default_offset=*/0, width) +
-         (width + 1) / 2;
+  return AdjustedFocusRingOffset(offset, width) + (width + 1) / 2;
 }
 
 void GraphicsContext::DrawFocusRingPath(const SkPath& path,
@@ -400,8 +396,7 @@ void GraphicsContext::DrawFocusRingInternal(const Vector<IntRect>& rects,
   if (!::features::IsFormControlsRefreshEnabled()) {
     // For FormControlsRefresh the offset is already adjusted by
     // GraphicsContext::DrawFocusRing.
-    offset =
-        AdjustedFocusRingOffset(offset, /*default_offset=*/0, std::ceil(width));
+    offset = AdjustedFocusRingOffset(offset, std::ceil(width));
   }
   for (unsigned i = 0; i < rect_count; i++) {
     SkIRect r = rects[i];
@@ -427,7 +422,6 @@ void GraphicsContext::DrawFocusRingInternal(const Vector<IntRect>& rects,
 void GraphicsContext::DrawFocusRing(const Vector<IntRect>& rects,
                                     float width,
                                     int offset,
-                                    int default_offset,
                                     float border_radius,
                                     float min_border_width,
                                     const Color& color) {
@@ -436,7 +430,7 @@ void GraphicsContext::DrawFocusRing(const Vector<IntRect>& rects,
     const float first_border_width = (width / 3) * 2;
     const float second_border_width = width - first_border_width;
 
-    offset = AdjustedFocusRingOffset(offset, default_offset, std::ceil(width));
+    offset = AdjustedFocusRingOffset(offset, std::ceil(width));
     // How much space the focus ring would like to take from the actual border.
     const float inside_border_width = 1;
     if (min_border_width >= inside_border_width) {

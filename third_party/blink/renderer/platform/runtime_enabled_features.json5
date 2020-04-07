@@ -294,7 +294,7 @@
     },
     {
       name: "CaptureTimeInCsrc",
-      status: "test",
+      status: "stable",
     },
     {
       name: "ClickPointerEvent",
@@ -319,10 +319,6 @@
     {
       name: "CompositedSelectionUpdate",
       status: {"Android": "stable"},
-    },
-    {
-      name: "CompositorTouchAction",
-      status: "test",
     },
     {
       name: "ComputedAccessibilityInfo",

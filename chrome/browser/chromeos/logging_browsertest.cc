@@ -11,7 +11,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/logging.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
-#include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/logging_chrome.h"
@@ -29,8 +29,6 @@
 namespace chromeos {
 
 namespace {
-constexpr char kTestUser[] = "test-user@gmail.com";
-constexpr char kTestUserGaiaId[] = "1234567890";
 constexpr char kLogFileName[] = "chrome.log";
 constexpr char kLogMessageBrowser[] = "browser log before logging in";
 constexpr char kLogMessageBrowserRedirected[] = "browser log after logging in";
@@ -59,7 +57,8 @@ void LogToNetworkService(std::string message) {
 
 class LoggingBrowserTest : public LoginManagerTest {
  public:
-  LoggingBrowserTest() : LoginManagerTest(true, true) {
+  LoggingBrowserTest() : LoginManagerTest() {
+    login_mixin_.AppendRegularUsers(1);
     CHECK(system_temp_dir_.CreateUniqueTempDir());
     CHECK(user_temp_dir_.CreateUniqueTempDir());
     logging::ForceLogRedirectionForTesting();
@@ -87,14 +86,8 @@ class LoggingBrowserTest : public LoginManagerTest {
  protected:
   base::ScopedTempDir system_temp_dir_;
   base::ScopedTempDir user_temp_dir_;
+  LoginManagerMixin login_mixin_{&mixin_host_};
 };
-
-IN_PROC_BROWSER_TEST_F(LoggingBrowserTest, PRE_NetworkServiceLogsRedirect) {
-  RegisterUser(AccountId::FromUserEmailGaiaId(kTestUser, kTestUserGaiaId));
-  EXPECT_EQ(session_manager::SessionState::OOBE,
-            session_manager::SessionManager::Get()->session_state());
-  chromeos::StartupUtils::MarkOobeCompleted();
-}
 
 IN_PROC_BROWSER_TEST_F(LoggingBrowserTest, NetworkServiceLogsRedirect) {
   // Log some messages pre-redirect.
@@ -104,7 +97,7 @@ IN_PROC_BROWSER_TEST_F(LoggingBrowserTest, NetworkServiceLogsRedirect) {
   // Log the user in which will redirect the logs.
   EXPECT_EQ(session_manager::SessionState::LOGIN_PRIMARY,
             session_manager::SessionManager::Get()->session_state());
-  LoginUser(AccountId::FromUserEmailGaiaId(kTestUser, kTestUserGaiaId));
+  LoginUser(login_mixin_.users()[0].account_id);
   EXPECT_EQ(session_manager::SessionState::ACTIVE,
             session_manager::SessionManager::Get()->session_state());
 

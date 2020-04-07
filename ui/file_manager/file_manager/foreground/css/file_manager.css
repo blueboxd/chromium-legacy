@@ -1019,7 +1019,14 @@ html[dir='rtl'] #cloud-import-details {
 #files-selected-label {
   display: none;
   font-weight: 500;
+}
+
+body:not(.files-ng) #files-selected-label {
   margin-inline-start: 20px;
+}
+
+body.files-ng #files-selected-label {
+  margin-inline-start: 8px;
 }
 
 body.check-select #files-selected-label {
@@ -1028,7 +1035,6 @@ body.check-select #files-selected-label {
 
 #cancel-selection-button {
   --ink-color: currentColor;
-  background-color: transparent;
   border: none;
   box-shadow: none;
   color: currentColor;
@@ -1036,17 +1042,36 @@ body.check-select #files-selected-label {
   text-transform: none;
 }
 
-#cancel-selection-button:focus:not([tabindex='-1']):not(:active) {
+body:not(.files-ng) #cancel-selection-button {
+  background-color: transparent;
+}
+
+/* TODO(adanilo) document the calc() reason. */
+body.files-ng #cancel-selection-button {
+  border: 1px solid transparent;
+  margin-inline-start: calc(10px + 1px);
+  width: 36px;
+}
+
+body:not(.files-ng) #cancel-selection-button:focus:not([tabindex='-1']):not(:active) {
   background-color: rgba(153, 153, 153, 20%);
 }
 
-#cancel-selection-button > span {
+html.focus-outline-visible body.files-ng #cancel-selection-button:focus:not([tabindex='-1']):not(:active) {
+  border: 1px solid var(--google-blue-600);
+}
+
+body:not(.files-ng) #cancel-selection-button > span {
   display: inline-block;
   font-weight: 500;
   vertical-align: middle;
 }
 
-#cancel-selection-button .icon-arrow-back {
+body.files-ng #cancel-selection-button > span#cancel-selection-label {
+  display: none;
+}
+
+body:not(.files-ng) #cancel-selection-button .icon-arrow-back {
   background-image: -webkit-image-set(
       url(../images/files/ui/back.png) 1x,
       url(../images/files/ui/2x/back.png) 2x);
@@ -1058,9 +1083,22 @@ body.check-select #files-selected-label {
   width: 16px;
 }
 
+body.files-ng #cancel-selection-button .icon-arrow-back {
+  -webkit-mask-image: url(../images/files/ui/list_check.svg);
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  background-color: var(--google-blue-600);
+  flex: none;
+  height: 20px;
+  width: 20px;
+}
+
+body:not(.files-ng) #cancel-selection-button-wrapper {
+  width: 240px;  /* initial value, same as .dialog-navigation-list's width. */
+}
+
 #cancel-selection-button-wrapper {
   display: none;
-  width: 240px;  /* initial value, same as .dialog-navigation-list's width. */
 }
 
 #cancel-selection-button > iron-icon {

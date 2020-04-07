@@ -192,8 +192,6 @@ InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler,
       last_injected_gesture_was_begin_(false),
       tick_clock_(base::DefaultTickClock::GetInstance()),
       snap_fling_controller_(std::make_unique<cc::SnapFlingController>(this)),
-      compositor_touch_action_enabled_(
-          base::FeatureList::IsEnabled(features::kCompositorTouchAction)),
       force_input_to_main_thread_(force_input_to_main_thread) {
   DCHECK(client);
   input_handler_->BindToClient(this);
@@ -1048,7 +1046,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HitTestTouchEvent(
       // A non-passive touch start / move will always set the whitelisted touch
       // action to TouchAction::kNone, and in that case we do not ack the event
       // from the compositor.
-      if (compositor_touch_action_enabled_ && white_listed_touch_action &&
+      if (white_listed_touch_action &&
           *white_listed_touch_action != cc::TouchAction::kNone)
         result = DID_HANDLE_NON_BLOCKING;
       else

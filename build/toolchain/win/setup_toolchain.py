@@ -185,6 +185,16 @@ def _LowercaseDict(d):
   return {k.lower(): d[k].lower() for k in d}
 
 
+def FindFileInEnvList(env, env_name, separator, file_name, optional=False):
+  parts = env[env_name].split(separator)
+  for path in parts:
+    if os.path.exists(os.path.join(path, file_name)):
+      return os.path.realpath(path)
+  assert optional, "%s is not found in %s:\n%s\nCheck if it is installed." % (
+      file_name, env_name, '\n'.join(parts))
+  return ''
+
+
 def main():
   if len(sys.argv) != 7:
     print('Usage setup_toolchain.py '
@@ -223,34 +233,11 @@ def main():
       env = _LoadToolchainEnv(cpu, win_sdk_path, target_store)
       env['PATH'] = runtime_dirs + os.pathsep + env['PATH']
 
-      for path in env['PATH'].split(os.pathsep):
-        if os.path.exists(os.path.join(path, 'cl.exe')):
-          vc_bin_dir = os.path.realpath(path)
-          break
-      assert vc_bin_dir, "cl.exe is not found, check if it is installed."
-
-      for path in env['LIB'].split(';'):
-        if os.path.exists(os.path.join(path, 'msvcrt.lib')):
-          vc_lib_path = os.path.realpath(path)
-          break
-      assert vc_lib_path, "msvcrt.lib is not found, check if it is installed."
-
-      for path in env['LIB'].split(';'):
-        if os.path.exists(os.path.join(path, 'atls.lib')):
-          vc_lib_atlmfc_path = os.path.realpath(path)
-          break
-      if (target_store != True):
-        # Path is assumed to exist for desktop applications.
-        assert vc_lib_atlmfc_path, (
-            "Microsoft.VisualStudio.Component.VC.ATLMFC " +
-            "is not found, check if it is installed.")
-
-      for path in env['LIB'].split(';'):
-        if os.path.exists(os.path.join(path, 'User32.Lib')):
-          vc_lib_um_path = os.path.realpath(path)
-          break
-      assert vc_lib_um_path, (
-          "User32.lib is not found, check if it is installed.")
+      vc_bin_dir = FindFileInEnvList(env, 'PATH', os.pathsep, 'cl.exe')
+      vc_lib_path = FindFileInEnvList(env, 'LIB', ';', 'msvcrt.lib')
+      vc_lib_atlmfc_path = FindFileInEnvList(
+          env, 'LIB', ';', 'atls.lib', optional=True)
+      vc_lib_um_path = FindFileInEnvList(env, 'LIB', ';', 'user32.lib')
 
       # The separator for INCLUDE here must match the one used in
       # _LoadToolchainEnv() above.

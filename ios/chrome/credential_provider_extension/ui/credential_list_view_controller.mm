@@ -156,13 +156,8 @@ UIImage* GetFallbackImageWithStringAndColor(NSString* string) {
                                   reuseIdentifier:kCellIdentifier];
     cell.accessoryType = UITableViewCellAccessoryDetailButton;
   }
-  id<Credential> credential;
-  if ([self isSuggestedPasswordSection:indexPath.section]) {
-    credential = self.suggestedPasswords[indexPath.row];
-  } else {
-    credential = self.allPasswords[indexPath.row];
-  }
 
+  id<Credential> credential = [self credentialForIndexPath:indexPath];
   cell.imageView.image = GetFallbackImageWithStringAndColor(credential.user);
   cell.imageView.contentMode = UIViewContentModeScaleAspectFit;
   cell.textLabel.text = credential.user;
@@ -182,6 +177,12 @@ UIImage* GetFallbackImageWithStringAndColor(NSString* string) {
       [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
   view.contentView.backgroundColor = [UIColor colorNamed:kBackgroundColor];
   return view;
+}
+
+- (void)tableView:(UITableView*)tableView
+    accessoryButtonTappedForRowWithIndexPath:(NSIndexPath*)indexPath {
+  id<Credential> credential = [self credentialForIndexPath:indexPath];
+  [self.delegate showDetailsForCredential:credential];
 }
 
 #pragma mark - UISearchResultsUpdating
@@ -224,6 +225,14 @@ UIImage* GetFallbackImageWithStringAndColor(NSString* string) {
     return YES;
   } else {
     return NO;
+  }
+}
+
+- (id<Credential>)credentialForIndexPath:(NSIndexPath*)indexPath {
+  if ([self isSuggestedPasswordSection:indexPath.section]) {
+    return self.suggestedPasswords[indexPath.row];
+  } else {
+    return self.allPasswords[indexPath.row];
   }
 }
 

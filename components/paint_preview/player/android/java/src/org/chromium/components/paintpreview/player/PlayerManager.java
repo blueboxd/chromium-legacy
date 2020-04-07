@@ -37,11 +37,12 @@ public class PlayerManager {
     public PlayerManager(GURL url, Context context,
             NativePaintPreviewServiceProvider nativePaintPreviewServiceProvider,
             String directoryKey, @Nonnull LinkClickHandler linkClickHandler,
-            Callback<Boolean> viewReadyCallback) {
+            Callback<Boolean> viewReadyCallback, int backgroundColor) {
         mContext = context;
         mDelegate = new PlayerCompositorDelegateImpl(nativePaintPreviewServiceProvider, url,
                 directoryKey, this::onCompositorReady, linkClickHandler);
         mHostView = new FrameLayout(mContext);
+        mHostView.setBackgroundColor(backgroundColor);
         mViewReadyCallback = viewReadyCallback;
     }
 

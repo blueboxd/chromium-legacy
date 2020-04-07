@@ -54,6 +54,8 @@ class APP_LIST_EXPORT SearchResultPageView
   // AppListPage overrides:
   void OnHidden() override;
   void OnShown() override;
+  void AnimateYPosition(AppListViewState target_view_state,
+                        const TransformAnimator& animator) override;
 
   void OnAnimationStarted(AppListState from_state,
                           AppListState to_state) override;

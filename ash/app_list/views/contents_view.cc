@@ -33,6 +33,7 @@
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/view_constants_aura.h"
 #include "ui/views/view_model.h"
 #include "ui/views/widget/widget.h"
 
@@ -833,11 +834,12 @@ void ContentsView::AnimateToViewState(AppListViewState target_view_state,
 
   // Animates layer's vertical position (using transform animation).
   // |layer| - The layer to transform.
+  // |view| - Optional, the view to which the layer belongs (if the layer is a
+  // view layer).
   // |y_offset| - The initial vertical offset - the layer's vertical offset will
   //              be animated to 0.
   auto animate_transform = [](base::TimeDelta duration, float y_offset,
-                              views::View* view) {
-    ui::Layer* layer = view->layer();
+                              ui::Layer* layer, views::View* view) {
     gfx::Transform transform;
     transform.Translate(0, y_offset);
     layer->SetTransform(transform);
@@ -849,7 +851,8 @@ void ContentsView::AnimateToViewState(AppListViewState target_view_state,
     settings->SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
     // Observer will delete itself after animation completes.
-    settings->AddObserver(new AccessibilityAnimationObserver(view));
+    if (view)
+      settings->AddObserver(new AccessibilityAnimationObserver(view));
 
     layer->SetTransform(gfx::Transform());
   };
@@ -900,7 +903,7 @@ void ContentsView::AnimateToViewState(AppListViewState target_view_state,
   // For search box, animate the search_box view layer instead of the widget
   // layer to avoid conflict with pagination model transitions (which update the
   // search box widget layer transform as the transition progresses).
-  animate_transform(duration, y_offset, search_box);
+  animate_transform(duration, y_offset, search_box->layer(), search_box);
 
   // Update app list page bounds to their target values. This assumes that
   // potential in-progress pagination transition does not directly animate page
@@ -908,17 +911,23 @@ void ContentsView::AnimateToViewState(AppListViewState target_view_state,
   for (AppListPage* page : app_list_pages_) {
     page->UpdatePageBoundsForState(target_page, GetContentsBounds(),
                                    target_search_box_bounds);
-    if (page != horizontal_page_container_) {
-      animate_opacity(duration, page, closing ? 0.0f : 1.0f);
-      animate_transform(duration, y_offset, page);
-    } else {
-      GetAppsContainerView()->AnimateOpacity(
-          progress, target_view_state,
-          base::BindRepeating(animate_opacity, duration));
-      GetAppsContainerView()->AnimateYPosition(
-          target_view_state,
-          base::BindRepeating(animate_transform, duration, y_offset));
-    }
+
+    page->AnimateOpacity(progress, target_view_state,
+                         base::BindRepeating(animate_opacity, duration));
+    page->AnimateYPosition(
+        target_view_state,
+        base::BindRepeating(animate_transform, duration, y_offset));
+  }
+
+  // Assistant page and search results page may host native views (e.g. for
+  // search result answer cards, or card assistant results). These windows are
+  // descendants of the app list view window layer rather than the page layers,
+  // so they have to be animated separately from their associated page.
+  for (auto* child_window : GetWidget()->GetNativeWindow()->children()) {
+    View* host_view = child_window->GetProperty(views::kHostViewKey);
+    if (!host_view)
+      continue;
+    animate_transform(duration, y_offset, child_window->layer(), nullptr);
   }
 
   last_target_view_state_ = target_view_state;
@@ -930,7 +939,7 @@ void ContentsView::AnimateToViewState(AppListViewState target_view_state,
   animate_transform(
       duration,
       expand_arrow_view()->CalculateOffsetFromCurrentAppListProgress(progress),
-      expand_arrow_view());
+      expand_arrow_view()->layer(), expand_arrow_view());
 }
 
 void ContentsView::SetExpandArrowViewVisibility(bool show) {

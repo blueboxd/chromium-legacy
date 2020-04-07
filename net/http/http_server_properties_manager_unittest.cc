@@ -1536,7 +1536,7 @@ TEST_F(HttpServerPropertiesManagerTest, PersistAdvertisedVersionsToPref) {
       "\"server_info\":\"quic_server_info1\"}],"
       "\"servers\":["
       "{\"alternative_service\":[{"
-      "\"advertised_versions\":[43,46],\"expiration\":\"13756212000000000\","
+      "\"advertised_versions\":[46,43],\"expiration\":\"13756212000000000\","
       "\"port\":443,\"protocol_str\":\"quic\"},{\"advertised_versions\":[],"
       "\"expiration\":\"13758804000000000\",\"host\":\"www.google.com\","
       "\"port\":1234,\"protocol_str\":\"h2\"}],"
@@ -1703,7 +1703,7 @@ TEST_F(HttpServerPropertiesManagerTest,
       "\"server_id\":\"https://mail.google.com:80\","
       "\"server_info\":\"quic_server_info1\"}],"
       "\"servers\":["
-      "{\"alternative_service\":[{\"advertised_versions\":[43,46],"
+      "{\"alternative_service\":[{\"advertised_versions\":[46,43],"
       "\"expiration\":\"13756212000000000\",\"port\":443,"
       "\"protocol_str\":\"quic\"}],"
       "\"isolation\":[],"
@@ -1728,9 +1728,29 @@ TEST_F(HttpServerPropertiesManagerTest,
   http_server_props_->SetAlternativeServices(server_www, NetworkIsolationKey(),
                                              alternative_service_info_vector_3);
 
-  // No Prefs update.
-  EXPECT_EQ(0u, GetPendingMainThreadTaskCount());
+  // Change in version ordering causes prefs update.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
+  EXPECT_NE(0u, GetPendingMainThreadTaskCount());
+  FastForwardUntilNoTasksRemain();
+  EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
+
+  // Verify preferences updated with new advertised versions.
+  const char expected_json_updated2[] =
+      "{\"quic_servers\":"
+      "[{\"isolation\":[],"
+      "\"server_id\":\"https://mail.google.com:80\","
+      "\"server_info\":\"quic_server_info1\"}],"
+      "\"servers\":["
+      "{\"alternative_service\":[{\"advertised_versions\":[43,46],"
+      "\"expiration\":\"13756212000000000\",\"port\":443,"
+      "\"protocol_str\":\"quic\"}],"
+      "\"isolation\":[],"
+      "\"server\":\"https://www.google.com:80\"}],"
+      "\"supports_quic\":"
+      "{\"address\":\"127.0.0.1\",\"used_quic\":true},\"version\":5}";
+  EXPECT_TRUE(
+      base::JSONWriter::Write(*http_server_properties, &preferences_json));
+  EXPECT_EQ(expected_json_updated2, preferences_json);
 }
 
 TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {

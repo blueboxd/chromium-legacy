@@ -37,11 +37,57 @@ NavigationPredictorKeyedService::Prediction::Prediction(
 }
 
 NavigationPredictorKeyedService::Prediction::Prediction(
-    const NavigationPredictorKeyedService::Prediction& other) = default;
+    const NavigationPredictorKeyedService::Prediction& other)
+    : web_contents_(other.web_contents_),
+      prediction_source_(other.prediction_source_) {
+  // Use non-default copy constructor operator that does deep-copy.
+  if (other.source_document_url_)
+    source_document_url_ = other.source_document_url_;
+
+  if (other.external_app_packages_name_) {
+    external_app_packages_name_ = std::vector<std::string>();
+    external_app_packages_name_->reserve(
+        other.external_app_packages_name_->size());
+    for (const auto& entry : other.external_app_packages_name_.value())
+      external_app_packages_name_->push_back(entry);
+  }
+
+  sorted_predicted_urls_.reserve(other.sorted_predicted_urls_.size());
+  for (const auto& entry : other.sorted_predicted_urls_)
+    sorted_predicted_urls_.push_back(entry);
+}
 
 NavigationPredictorKeyedService::Prediction&
 NavigationPredictorKeyedService::Prediction::operator=(
-    const NavigationPredictorKeyedService::Prediction& other) = default;
+    const NavigationPredictorKeyedService::Prediction& other) {
+  // Use non-default assignment operator that does deep-copy.
+  web_contents_ = other.web_contents_;
+
+  source_document_url_.reset();
+  if (other.source_document_url_)
+    source_document_url_ = other.source_document_url_;
+
+  if (external_app_packages_name_)
+    external_app_packages_name_.reset();
+
+  if (other.external_app_packages_name_) {
+    external_app_packages_name_ = std::vector<std::string>();
+    external_app_packages_name_->reserve(
+        other.external_app_packages_name_->size());
+    for (const auto& entry : other.external_app_packages_name_.value())
+      external_app_packages_name_->push_back(entry);
+  } else {
+    external_app_packages_name_.reset();
+  }
+  prediction_source_ = other.prediction_source_;
+
+  sorted_predicted_urls_.clear();
+  sorted_predicted_urls_.reserve(other.sorted_predicted_urls_.size());
+  for (const auto& entry : other.sorted_predicted_urls_)
+    sorted_predicted_urls_.push_back(entry);
+
+  return *this;
+}
 
 NavigationPredictorKeyedService::Prediction::~Prediction() = default;
 

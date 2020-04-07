@@ -13,23 +13,6 @@ namespace ash {
 
 class FloatingMenuButton;
 
-// View for the Automatic Clicks menu bubble, which holds the Automatic Clicks
-// Menu.
-class AutoclickMenuBubbleView : public TrayBubbleView {
- public:
-  AutoclickMenuBubbleView(TrayBubbleView::InitParams init_params);
-  ~AutoclickMenuBubbleView() override;
-
-  // TrayBubbleView:
-  bool IsAnchoredToStatusArea() const override;
-
-  // views::View:
-  const char* GetClassName() const override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AutoclickMenuBubbleView);
-};
-
 // View for the Automatic Clicks Menu, which creates and manages
 // individual buttons to control Automatic Clicks settings.
 class AutoclickMenuView : public views::View, public views::ButtonListener {

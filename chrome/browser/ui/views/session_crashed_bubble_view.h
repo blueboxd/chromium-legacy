@@ -43,7 +43,6 @@ class SessionCrashedBubbleView : public SessionCrashedBubble,
   friend class SessionCrashedBubbleViewTest;
 
   SessionCrashedBubbleView(views::View* anchor_view,
-                           const gfx::Rect& anchor_rect,
                            Browser* browser,
                            bool offer_uma_optin);
   ~SessionCrashedBubbleView() override;

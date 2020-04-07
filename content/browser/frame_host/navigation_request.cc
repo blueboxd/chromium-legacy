@@ -678,7 +678,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
     FrameNavigationEntry* frame_entry,
     NavigationEntryImpl* entry,
     const scoped_refptr<network::ResourceRequestBody>& post_body,
-    std::unique_ptr<NavigationUIData> navigation_ui_data) {
+    std::unique_ptr<NavigationUIData> navigation_ui_data,
+    const base::Optional<Impression>& impression) {
   // TODO(arthursonzogni): Form submission with the "GET" method is possible.
   // This is not currently handled here.
   bool is_form_submission = !!post_body;
@@ -692,7 +693,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
       std::string() /* searchable_form_encoding */,
       GURL() /* client_side_redirect_url */,
       base::nullopt /* devtools_initiator_info */,
-      false /* attach_same_site_cookies */, nullptr /* trust_token_params */);
+      false /* attach_same_site_cookies */, nullptr /* trust_token_params */,
+      impression);
 
   // Shift-Reload forces bypassing caches and service workers.
   if (common_params->navigation_type ==
@@ -3976,6 +3978,10 @@ bool NavigationRequest::WasInitiatedByLinkClick() {
 
 const std::string& NavigationRequest::GetHrefTranslate() {
   return common_params().href_translate;
+}
+
+const base::Optional<Impression>& NavigationRequest::GetImpression() {
+  return begin_params()->impression;
 }
 
 const base::Optional<url::Origin>& NavigationRequest::GetInitiatorOrigin() {

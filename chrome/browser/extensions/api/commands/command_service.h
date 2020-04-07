@@ -40,13 +40,14 @@ class CommandService : public BrowserContextKeyedAPI,
                        public ExtensionRegistryObserver {
  public:
   // An enum specifying which extension commands to fetch. There are effectively
-  // four options: all, active, suggested, and inactive. Only the first three
-  // appear in the enum since there hasn't been a need for 'inactive' yet.
+  // four options: all, active, suggested, and inactive. Only the first two
+  // appear in the enum since there isn't currently a need for 'inactive' yet or
+  // 'suggested'.
   //
-  // 'Inactive' means no key is bound. It might be because 1) a key wasn't
+  // 'inactive' means no key is bound. It might be because 1) a key wasn't
   // specified (suggested) or 2) it was not granted (key already taken).
   //
-  // SUGGESTED covers developer-assigned keys that may or may not have been
+  // 'suggested' covers developer-assigned keys that may or may not have been
   // granted. Reasons for not granting include permission denied/key already
   // taken.
   //
@@ -57,7 +58,6 @@ class CommandService : public BrowserContextKeyedAPI,
   enum QueryType {
     ALL,
     ACTIVE,
-    SUGGESTED,
   };
 
   // An enum specifying whether the command is global in scope or not. Global
@@ -167,13 +167,6 @@ class CommandService : public BrowserContextKeyedAPI,
   Command FindCommandByName(const std::string& extension_id,
                             const std::string& command) const;
 
-  // If the extension with |extension_id| suggests the assignment of a command
-  // to |accelerator|, returns true and assigns the command to *|command|. Also
-  // assigns the type to *|command_type| if non-null.
-  bool GetSuggestedExtensionCommand(const std::string& extension_id,
-                                    const ui::Accelerator& accelerator,
-                                    Command* command) const;
-
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
@@ -231,16 +224,6 @@ class CommandService : public BrowserContextKeyedAPI,
   // |extension|-suggested value.
   bool IsCommandShortcutUserModified(const Extension* extension,
                                      const std::string& command_name);
-
-  // Returns true if the extension is changing the binding of |command_name| on
-  // install.
-  bool IsKeybindingChanging(const Extension* extension,
-                            const std::string& command_name);
-
-  // Returns |extension|'s previous suggested key for |command_name| in the
-  // preferences, or the empty string if none.
-  std::string GetSuggestedKeyPref(const Extension* extension,
-                                  const std::string& command_name);
 
   bool GetExtensionActionCommand(const std::string& extension_id,
                                  QueryType query_type,

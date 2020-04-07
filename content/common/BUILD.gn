@@ -744,6 +744,10 @@ mojom("mojo_bindings") {
     {
       types = [
         {
+          mojom = "content.mojom.Impression"
+          cpp = "::content::Impression"
+        },
+        {
           mojom = "content.mojom.MixedContentContextType"
           cpp = "::blink::WebMixedContentContextType"
         },
@@ -767,6 +771,7 @@ mojom("mojo_bindings") {
       traits_headers = [
         "//content/common/content_param_traits.h",
         "//content/common/navigation_params.h",
+        "//content/public/common/impression.h",
         "//content/public/common/navigation_policy.h",
         "//content/public/common/page_state.h",
         "//third_party/blink/public/platform/web_mixed_content_context_type.h",

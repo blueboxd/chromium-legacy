@@ -14,6 +14,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/impression.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/test/test_render_frame_host.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
@@ -167,6 +168,10 @@ class NavigationSimulatorImpl : public NavigationSimulator,
 
   void set_origin(const url::Origin& origin) { origin_ = origin; }
 
+  void set_impression(const Impression& impression) {
+    impression_ = impression;
+  }
+
   void SetIsPostWithId(int64_t post_id);
 
  private:
@@ -304,6 +309,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   base::Optional<net::SSLInfo> ssl_info_;
   base::Optional<PageState> page_state_;
   base::Optional<url::Origin> origin_;
+  base::Optional<Impression> impression_;
   int64_t post_id_ = -1;
 
   bool auto_advance_ = true;

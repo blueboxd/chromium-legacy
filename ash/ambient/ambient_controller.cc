@@ -11,6 +11,7 @@
 #include "ash/ambient/ui/ambient_container_view.h"
 #include "ash/ambient/util/ambient_util.h"
 #include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/util/animation_util.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/public/cpp/ambient/ambient_mode_state.h"
 #include "ash/public/cpp/ambient/ambient_prefs.h"
@@ -93,20 +94,17 @@ void AmbientController::OnAmbientModeEnabled(bool enabled) {
 }
 
 void AmbientController::OnLockStateChanged(bool locked) {
-  if (!locked) {
-    // We should already exit ambient mode at this time, as the ambient
-    // container needs to be closed to uncover the login port for
-    // re-authentication.
+  if (locked) {
+    // Show ambient mode when entering lock screen.
     DCHECK(!container_view_);
-    return;
+    Show();
+  } else {
+    // Destroy ambient mode after user re-login.
+    Destroy();
   }
-
-  // Show the ambient container on top of the lock screen.
-  DCHECK(!container_view_);
-  Start();
 }
 
-void AmbientController::Start() {
+void AmbientController::Show() {
   if (!CanStartAmbientMode()) {
     // TODO(wutao): Show a toast to indicate that Ambient mode is not ready.
     return;
@@ -121,14 +119,34 @@ void AmbientController::Start() {
   ambient_state_.SetAmbientModeEnabled(true);
 }
 
-void AmbientController::Stop() {
+void AmbientController::Destroy() {
   ambient_state_.SetAmbientModeEnabled(false);
 }
+
 void AmbientController::Toggle() {
   if (container_view_)
-    Stop();
+    Destroy();
   else
-    Start();
+    Show();
+}
+
+void AmbientController::OnBackgroundPhotoEvents() {
+  refresh_timer_.Stop();
+
+  // Move the |AmbientModeContainer| beneath the |LockScreenWidget| to show the
+  // lock screen contents on top before the fade-out animation.
+  auto* ambient_window = container_view_->GetWidget()->GetNativeWindow();
+  ambient_window->parent()->StackChildAtBottom(ambient_window);
+
+  // Start fading out the current background photo.
+  StartFadeOutAnimation();
+}
+
+void AmbientController::StartFadeOutAnimation() {
+  // We fade out the |PhotoView| on its own layer instead of using the general
+  // layer of the widget, otherwise it will reveal the color of the lockscreen
+  // wallpaper beneath.
+  container_view_->FadeOutPhotoView();
 }
 
 void AmbientController::CreateContainerView() {
@@ -146,9 +164,6 @@ void AmbientController::DestroyContainerView() {
 }
 
 void AmbientController::RefreshImage() {
-  if (!PhotoController::Get())
-    return;
-
   if (photo_model_.ShouldFetchImmediately()) {
     // TODO(b/140032139): Defer downloading image if it is animating.
     base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(

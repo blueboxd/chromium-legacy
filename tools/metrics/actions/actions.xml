@@ -8465,6 +8465,83 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="IOSDownloadClose">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>sdefresne@chromium.org</owner>
+  <description>
+    User closed Download Manager UI by tapping x button when download was not
+    in-progress (either not started or failed).
+  </description>
+</action>
+
+<action name="IOSDownloadConfirmClose">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>sdefresne@chromium.org</owner>
+  <description>
+    User confirmed download closure by tapping &quot;Stop&quot; on &quot;Stop
+    Download?&quot; dialog.
+  </description>
+</action>
+
+<action name="IOSDownloadConfirmReplace">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>sdefresne@chromium.org</owner>
+  <description>
+    User confirmed download replacement by tapping &quot;OK&quot; on &quot;Start
+    New Download&quot; dialog.
+  </description>
+</action>
+
+<action name="IOSDownloadDoNotClose">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>sdefresne@chromium.org</owner>
+  <description>
+    User rejected download closure by tapping &quot;Continue&quot; on &quot;Stop
+    Download?&quot; dialog.
+  </description>
+</action>
+
+<action name="IOSDownloadDoNotReplace">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>sdefresne@chromium.org</owner>
+  <description>
+    User rejected download replacement by tapping &quot;Cancel&quot; on
+    &quot;Start New Download?&quot; dialog.
+  </description>
+</action>
+
+<action name="IOSDownloadInstallGoogleDrive">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>sdefresne@chromium.org</owner>
+  <description>User tapped on Install Google Drive promo.</description>
+</action>
+
+<action name="IOSDownloadOpenIn">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>sdefresne@chromium.org</owner>
+  <description>
+    User tapped on Open In... button after in Download Manager after download
+    succeeded.
+  </description>
+</action>
+
+<action name="IOSDownloadStartDownload">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>sdefresne@chromium.org</owner>
+  <description>User started the download in Download Manager.</description>
+</action>
+
+<action name="IOSDownloadTryCloseWhenInProgress">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>sdefresne@chromium.org</owner>
+  <description>
+    User tapped x button when download was in-progress. The Download Manager did
+    not close, but presented the confirmation dialog. See
+    IOSDownloadConfirmClose and IOSDownloadDoNotClose actions for recording use
+    choice.
+  </description>
+</action>
+
 <action name="IOSGoogleServicesSettingsCloseWithSwipe">
   <owner>msarda@chromium.org</owner>
   <owner>jlebel@chromium.org</owner>

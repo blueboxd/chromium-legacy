@@ -5,6 +5,7 @@
 #include "base/unguessable_token.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/content_navigation_policy.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -169,7 +170,13 @@ IN_PROC_BROWSER_TEST_F(EmbeddingTokenBrowserTest,
                       b_url.Resolve("valid.html"));
   auto new_child_0_token = root->child_at(0)->GetEmbeddingToken();
   ASSERT_TRUE(new_child_0_token.has_value());
-  EXPECT_EQ(child_0_token, new_child_0_token);
+  // If we are creating a new frame even for same-site navigations then we would
+  // expect a different token.
+  if (CreateNewHostForSameSiteSubframe()) {
+    EXPECT_NE(child_0_token, new_child_0_token);
+  } else {
+    EXPECT_EQ(child_0_token, new_child_0_token);
+  }
 
   // TODO(ckitagawa): Somehow assert that the parent and child have matching
   // embedding tokens in parent HTMLOwnerElement and child LocalFrame.

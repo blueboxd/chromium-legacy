@@ -7,11 +7,18 @@ package org.chromium.base;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.MainDex;
+import org.chromium.base.annotations.NativeMethods;
+import org.chromium.base.library_loader.LibraryLoader;
+
 import java.util.Map;
 
 /**
  * Provides shared capabilities for feature flag support.
  */
+@JNINamespace("base::android")
+@MainDex
 public class FeatureList {
     /** Map that stores substitution feature flags for tests. */
     private static @Nullable Map<String, Boolean> sTestFeatures;
@@ -20,6 +27,31 @@ public class FeatureList {
     private static boolean sTestCanUseDefaults;
 
     private FeatureList() {}
+
+    /**
+     * @return Whether the native FeatureList has been initialized. If this method returns false,
+     *         none of the methods in this class that require native access should be called (except
+     *         in tests if test features have been set).
+     */
+    public static boolean isInitialized() {
+        return hasTestFeatures() || isNativeInitialized();
+    }
+
+    /**
+     * @return Whether the native FeatureList is initialized or not.
+     */
+    public static boolean isNativeInitialized() {
+        if (!LibraryLoader.getInstance().isInitialized()) return false;
+        // Even if the native library is loaded, the C++ FeatureList might not be initialized yet.
+        // In that case, accessing it will not immediately fail, but instead cause a crash later
+        // when it is initialized. Return whether the native FeatureList has been initialized,
+        // so the return value can be tested, or asserted for a more actionable stack trace
+        // on failure.
+        //
+        // The FeatureList is however guaranteed to be initialized by the time
+        // AsyncInitializationActivity#finishNativeInitialization is called.
+        return FeatureListJni.get().isInitialized();
+    }
 
     /**
      * This is called explicitly for instrumentation tests via Features#applyForInstrumentation().
@@ -74,5 +106,10 @@ public class FeatureList {
             }
         }
         return null;
+    }
+
+    @NativeMethods
+    interface Natives {
+        boolean isInitialized();
     }
 }

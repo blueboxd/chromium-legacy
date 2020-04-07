@@ -309,8 +309,10 @@ base::Optional<MinMaxSizes> NGBlockLayoutAlgorithm::ComputeMinMaxSizes(
               ? std::max(float_right_inline_size, margin_line_right)
               : float_right_inline_size + margin_line_right;
 
+      // The order of operations is important here. If child_sizes.max_size is
+      // saturated, adding the insets sequentially can result in an DCHECK.
       max_inline_contribution =
-          child_sizes.max_size + line_left_inset + line_right_inset;
+          child_sizes.max_size + (line_left_inset + line_right_inset);
     } else {
       // This is just a standard inflow child.
       max_inline_contribution = child_sizes.max_size + margins.InlineSum();

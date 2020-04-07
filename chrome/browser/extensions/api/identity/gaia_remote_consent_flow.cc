@@ -48,17 +48,24 @@ void GaiaRemoteConsentFlow::Start() {
 
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
   std::vector<CoreAccountId> accounts;
-  auto chrome_accounts_with_refresh_tokens =
-      identity_manager->GetAccountsWithRefreshTokens();
-  for (const auto& chrome_account : chrome_accounts_with_refresh_tokens) {
-    // An account in persistent error state would make multilogin fail. Showing
-    // only a subset of accounts seems to be a better alternative than failing
-    // with an error.
-    if (identity_manager->HasAccountWithRefreshTokenInPersistentErrorState(
-            chrome_account.account_id)) {
-      continue;
+  if (IdentityAPI::GetFactoryInstance()
+          ->Get(profile_)
+          ->AreExtensionsRestrictedToPrimaryAccount()) {
+    CoreAccountId primary_account_id = identity_manager->GetPrimaryAccountId();
+    accounts.push_back(primary_account_id);
+  } else {
+    auto chrome_accounts_with_refresh_tokens =
+        identity_manager->GetAccountsWithRefreshTokens();
+    for (const auto& chrome_account : chrome_accounts_with_refresh_tokens) {
+      // An account in persistent error state would make multilogin fail.
+      // Showing only a subset of accounts seems to be a better alternative than
+      // failing with an error.
+      if (identity_manager->HasAccountWithRefreshTokenInPersistentErrorState(
+              chrome_account.account_id)) {
+        continue;
+      }
+      accounts.push_back(chrome_account.account_id);
     }
-    accounts.push_back(chrome_account.account_id);
   }
 
   set_accounts_in_cookie_task_ =

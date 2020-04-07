@@ -7,7 +7,6 @@
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/shelf_config.h"
@@ -29,8 +28,6 @@
 #include "ash/wm/window_util.h"
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "components/session_manager/session_manager_types.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -839,33 +836,7 @@ class ShelfWidgetViewsVisibilityTest : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(ShelfWidgetViewsVisibilityTest);
 };
 
-TEST_F(ShelfWidgetViewsVisibilityTest, LoginWebUiLockViews) {
-  // Enable web UI login.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kShowWebUiLogin);
-  ASSERT_NO_FATAL_FAILURE(InitShelfVariables());
-
-  // Both shelf views are hidden when session state hasn't been initialized.
-  ExpectVisible(SessionState::UNKNOWN, kNone /*primary*/, kNone /*secondary*/);
-  // Web UI login is used, so views shelf is not visible during login.
-  ExpectVisible(SessionState::OOBE, kLoginShelf, kNone);
-  ExpectVisible(SessionState::LOGIN_PRIMARY, kLoginShelf, kNone);
-
-  SimulateUserLogin("user1@test.com");
-
-  ExpectVisible(SessionState::LOGGED_IN_NOT_ACTIVE, kNone, kNone);
-  ExpectVisible(SessionState::ACTIVE, kShelf, kShelf);
-  ExpectVisible(SessionState::LOCKED, kLoginShelf, kNone);
-  ExpectVisible(SessionState::ACTIVE, kShelf, kShelf);
-  ExpectVisible(SessionState::LOGIN_SECONDARY, kLoginShelf, kNone);
-  ExpectVisible(SessionState::ACTIVE, kShelf, kShelf);
-}
-
 TEST_F(ShelfWidgetViewsVisibilityTest, LoginViewsLockViews) {
-  // Enable views login. Views lock enabled by default.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(ash::features::kViewsLogin);
-
   ASSERT_NO_FATAL_FAILURE(InitShelfVariables());
 
   ExpectVisible(SessionState::UNKNOWN, kNone /*primary*/, kNone /*secondary*/);

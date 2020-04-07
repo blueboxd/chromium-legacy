@@ -1222,10 +1222,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   virtual void ShowContextMenu(const gfx::Point& p,
                                ui::MenuSourceType source_type);
 
-  // On some platforms, we show context menu on mouse press instead of release.
-  // This method returns true for those platforms.
-  static bool ShouldShowContextMenuOnMousePress();
-
   // Returns the location, in screen coordinates, to show the context menu at
   // when the context menu is shown from the keyboard. This implementation
   // returns the middle of the visible region of this view.

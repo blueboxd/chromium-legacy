@@ -568,45 +568,6 @@ TEST_F(ScrollbarsTest, OverlayScrollbarChangeToDisplayNoneDynamically) {
   EXPECT_TRUE(scrollable_root->HorizontalScrollbar()->FrameRect().IsEmpty());
 }
 
-// Ensure that overlay scrollbars are not created, even in overflow:scroll,
-// situations when there's no overflow. Specifically, after style-only changes.
-TEST_F(ScrollbarsTest, OverlayScrolblarNotCreatedInUnscrollableAxis) {
-  // This test is specifically checking the behavior when overlay scrollbars
-  // are enabled.
-  ENABLE_OVERLAY_SCROLLBARS(true);
-
-  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
-  SimRequest request("https://example.com/test.html", "text/html");
-  LoadURL("https://example.com/test.html");
-  request.Complete(R"HTML(
-    <!DOCTYPE html>
-    <style>
-      #target {
-        width: 100px;
-        height: 100px;
-        overflow-y: scroll;
-        opacity: 0.5;
-      }
-    </style>
-    <div id="target"></div>
-  )HTML");
-
-  Compositor().BeginFrame();
-
-  auto* target = GetDocument().getElementById("target");
-  auto* scrollable_area = target->GetLayoutBox()->GetScrollableArea();
-
-  ASSERT_FALSE(scrollable_area->VerticalScrollbar());
-  ASSERT_FALSE(scrollable_area->HorizontalScrollbar());
-
-  // Mutate the opacity so that we cause a style-only change.
-  target->setAttribute(html_names::kStyleAttr, "opacity: 0.9");
-  Compositor().BeginFrame();
-
-  ASSERT_FALSE(scrollable_area->VerticalScrollbar());
-  ASSERT_FALSE(scrollable_area->HorizontalScrollbar());
-}
-
 TEST_F(ScrollbarsTest, scrollbarIsNotHandlingTouchpadScroll) {
   WebView().MainFrameWidget()->Resize(WebSize(200, 200));
   SimRequest request("https://example.com/test.html", "text/html");

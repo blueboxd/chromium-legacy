@@ -105,6 +105,7 @@
 <translation id="2268813581635650749">모두 로그아웃</translation>
 <translation id="2277103315734023688">앞으로 탐색</translation>
 <translation id="2292698582925480719">디스플레이 배율</translation>
+<translation id="2295777434187870477">마이크가 켜져 있으며 전환하면 음소거됩니다.</translation>
 <translation id="2298170939937364391">전체 화면 돋보기가 사용 설정되었습니다. 사용 중지하려면 Ctrl+Search+M을 다시 누르세요.</translation>
 <translation id="2302092602801625023">Family Link에서 관리되는 계정입니다.</translation>
 <translation id="2303600792989757991">창 전환 개요</translation>
@@ -138,6 +139,7 @@
 <translation id="2658778018866295321">클릭하여 드래그</translation>
 <translation id="2700493154570097719">키보드 설정</translation>
 <translation id="2704781753052663061">다른 Wi-Fi 네트워크에 연결</translation>
+<translation id="2705001408393684014">마이크를 전환합니다. <ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">야간 조명</translation>
 <translation id="2727977024730340865">저출력 충전기에 연결되었습니다. 배터리 충전 상태가 불안정합니다.</translation>
 <translation id="2792498699870441125">Alt+검색 키</translation>
@@ -296,6 +298,7 @@
 <translation id="4665114317261903604">방해 금지 모드를 켜고 끕니다. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">부모 코드로 기기 잠금 해제</translation>
 <translation id="4702647871202761252">개인정보 보호 화면이 꺼져 있습니다</translation>
+<translation id="4705716602320768426">의견 보내기</translation>
 <translation id="4710243778082831592">IME 설정</translation>
 <translation id="4731797938093519117">부모 액세스</translation>
 <translation id="4734965478015604180">가로</translation>
@@ -376,6 +379,7 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" />(<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">사용</translation>
+<translation id="5920710855273935292">마이크가 음소거되어 있습니다.</translation>
 <translation id="5947494881799873997">되돌리기</translation>
 <translation id="595202126637698455">성능 추적 사용 중</translation>
 <translation id="5957083217255311415">모바일 데이터가 사용 중지되었습니다.</translation>

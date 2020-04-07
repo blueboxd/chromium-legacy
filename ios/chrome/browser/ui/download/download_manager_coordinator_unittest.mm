@@ -340,6 +340,7 @@ TEST_F(DownloadManagerCoordinatorTest, Close) {
   DownloadManagerViewController* viewController =
       base_view_controller_.childViewControllers.firstObject;
   ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
+  ASSERT_EQ(0, user_action_tester_.GetActionCount("IOSDownloadClose"));
   @autoreleasepool {
     // This call will retain coordinator, which should outlive thread bundle.
     [viewController.delegate
@@ -357,6 +358,7 @@ TEST_F(DownloadManagerCoordinatorTest, Close) {
       1);
   histogram_tester_.ExpectTotalCount("Download.IOSDownloadFileUIGoogleDrive",
                                      0);
+  EXPECT_EQ(1, user_action_tester_.GetActionCount("IOSDownloadClose"));
 }
 
 // Tests presenting Install Google Drive dialog. Coordinator presents StoreKit
@@ -377,6 +379,8 @@ TEST_F(DownloadManagerCoordinatorTest, InstallDrive) {
   // button changes it's alpha.
   ASSERT_EQ(1.0f, viewController.installDriveButton.superview.alpha);
 
+  ASSERT_EQ(
+      0, user_action_tester_.GetActionCount("IOSDownloadInstallGoogleDrive"));
   @autoreleasepool {
     // This call will retain coordinator, which should outlive thread bundle.
     [viewController.delegate
@@ -393,8 +397,10 @@ TEST_F(DownloadManagerCoordinatorTest, InstallDrive) {
     return viewController.installDriveButton.superview.alpha == 0.0f;
   }));
 
-  // Simulate Google Drive app installation and verify that expected user action
-  // has been recorded.
+  // Simulate Google Drive app installation and verify that expected histograms
+  // have been recorded.
+  EXPECT_EQ(
+      1, user_action_tester_.GetActionCount("IOSDownloadInstallGoogleDrive"));
   histogram_tester_.ExpectTotalCount("Download.IOSDownloadFileUIGoogleDrive",
                                      0);
   // SKStoreProductViewController uses UIApplication, so it's not possible to
@@ -438,6 +444,8 @@ TEST_F(DownloadManagerCoordinatorTest, OpenIn) {
         EXPECT_EQ(open_in_controller.excludedActivityTypes.count, 2.0);
       });
 
+  ASSERT_EQ(0, user_action_tester_.GetActionCount("IOSDownloadOpenIn"));
+
   // Present Open In... menu.
   @autoreleasepool {
     // These calls will retain coordinator, which should outlive thread bundle.
@@ -470,6 +478,7 @@ TEST_F(DownloadManagerCoordinatorTest, OpenIn) {
       1);
   histogram_tester_.ExpectTotalCount("Download.IOSDownloadFileUIGoogleDrive",
                                      1);
+  EXPECT_EQ(1, user_action_tester_.GetActionCount("IOSDownloadOpenIn"));
 }
 
 // Tests destroying download task for in progress download.
@@ -570,6 +579,8 @@ TEST_F(DownloadManagerCoordinatorTest, CloseInProgressDownload) {
   DownloadManagerViewController* viewController =
       base_view_controller_.childViewControllers.firstObject;
   ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
+  ASSERT_EQ(0, user_action_tester_.GetActionCount(
+                   "IOSDownloadTryCloseWhenInProgress"));
   @autoreleasepool {
     // This call will retain coordinator, which should outlive thread bundle.
     [viewController.delegate
@@ -595,6 +606,10 @@ TEST_F(DownloadManagerCoordinatorTest, CloseInProgressDownload) {
       WaitUntilConditionOrTimeout(base::test::ios::kWaitForUIElementTimeout, ^{
         return !base_view_controller_.presentedViewController;
       }));
+  EXPECT_EQ(1, user_action_tester_.GetActionCount(
+                   "IOSDownloadTryCloseWhenInProgress"));
+  EXPECT_EQ(0, user_action_tester_.GetActionCount("IOSDownloadConfirmClose"));
+  EXPECT_EQ(0, user_action_tester_.GetActionCount("IOSDownloadDoNotClose"));
 }
 
 // Tests downloadManagerTabHelper:decidePolicyForDownload:completionHandler:.
@@ -660,8 +675,9 @@ TEST_F(DownloadManagerCoordinatorTest, StartDownload) {
   EXPECT_TRUE(download_dir.IsParent(file));
 
   histogram_tester_.ExpectTotalCount("Download.IOSDownloadFileInBackground", 0);
-  ASSERT_EQ(0,
+  EXPECT_EQ(0,
             user_action_tester_.GetActionCount("MobileDownloadRetryDownload"));
+  EXPECT_EQ(1, user_action_tester_.GetActionCount("IOSDownloadStartDownload"));
 }
 
 // Tests retrying the download. Verifies that kDownloadManagerRetryDownload UMA
@@ -677,6 +693,7 @@ TEST_F(DownloadManagerCoordinatorTest, RetryingDownload) {
   DownloadManagerViewController* viewController =
       base_view_controller_.childViewControllers.firstObject;
   ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
+  ASSERT_EQ(0, user_action_tester_.GetActionCount("IOSDownloadStartDownload"));
   @autoreleasepool {
     // This call will retain coordinator, which should outlive thread bundle.
     [viewController.delegate
@@ -684,6 +701,7 @@ TEST_F(DownloadManagerCoordinatorTest, RetryingDownload) {
   }
   task.SetErrorCode(net::ERR_INTERNET_DISCONNECTED);
   task.SetDone(true);
+  ASSERT_EQ(1, user_action_tester_.GetActionCount("IOSDownloadStartDownload"));
 
   @autoreleasepool {
     // This call will retain coordinator, which should outlive thread bundle.
@@ -708,7 +726,7 @@ TEST_F(DownloadManagerCoordinatorTest, RetryingDownload) {
       static_cast<base::HistogramBase::Sample>(
           DownloadFileInBackground::FailedWithoutBackgrounding),
       1);
-  ASSERT_EQ(1,
+  EXPECT_EQ(1,
             user_action_tester_.GetActionCount("MobileDownloadRetryDownload"));
 }
 

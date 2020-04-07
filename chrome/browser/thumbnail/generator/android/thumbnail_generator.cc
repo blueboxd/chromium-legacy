@@ -106,7 +106,7 @@ void ThumbnailGenerator::RetrieveThumbnail(
   // Retrieve video thumbnail.
   if (base::StartsWith(mime_type, "video/",
                        base::CompareCase::INSENSITIVE_ASCII)) {
-    auto parser = std::make_unique<ThumbnailMediaParser>(mime_type, file_path);
+    auto parser = ThumbnailMediaParser::Create(mime_type, file_path);
     parser->Start(base::BindOnce(&ThumbnailGenerator::OnVideoThumbnailRetrieved,
                                  weak_factory_.GetWeakPtr(),
                                  std::move(java_callback), icon_size,

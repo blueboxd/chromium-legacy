@@ -21,18 +21,7 @@ PhotoModel* AmbientViewDelegateImpl::GetPhotoModel() {
 }
 
 void AmbientViewDelegateImpl::OnBackgroundPhotoEvents() {
-  // Exit ambient mode by closing the widget when user interacts with the
-  // background photo using mouse or gestures. We do this asynchronously to
-  // ensure that for a mouse moved event, the widget will be destroyed *after*
-  // its cursor has been updated in |RootView::OnMouseMoved|.
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](const base::WeakPtr<AmbientViewDelegateImpl>& weak_ptr) {
-            if (weak_ptr)
-              weak_ptr->ambient_controller_->Stop();
-          },
-          weak_factory_.GetWeakPtr()));
+  ambient_controller_->OnBackgroundPhotoEvents();
 }
 
 }  // namespace ash

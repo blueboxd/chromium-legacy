@@ -219,6 +219,14 @@ TEST(PdfMetafileCgTest, RenderPortraitRectangles) {
                  "render_portrait_rectangles_expected.0.png", kDestinationSize);
 }
 
+TEST(PdfMetafileCgTest, RenderAutorotatedPortraitRectangles) {
+  constexpr gfx::Rect kPageBounds(200, 300);
+  constexpr gfx::Size kDestinationSize(300, 200);
+  TestRenderPage("rectangles.pdf", /*page_number=*/1, kPageBounds,
+                 "render_autorotated_portrait_rectangles_expected.0.png",
+                 kDestinationSize);
+}
+
 TEST(PdfMetafileCgTest, RenderLargePortraitRectangles) {
   constexpr gfx::Rect kPageBounds(200, 300);
   constexpr gfx::Size kDestinationSize(100, 120);
@@ -241,6 +249,38 @@ TEST(PdfMetafileCgTest, RenderLandscapeRectangles) {
   TestRenderPage("landscape_rectangles.pdf", /*page_number=*/1, kPageBounds,
                  "render_landscape_rectangles_expected.0.png",
                  kDestinationSize);
+}
+
+TEST(PdfMetafileCgTest, RenderRotatedRectangles) {
+  constexpr gfx::Rect kPageBounds(800, 500);
+  constexpr gfx::Size kLandscapeDestinationSize(600, 400);
+  constexpr gfx::Size kPortraitDestinationSize(400, 600);
+
+  TestRenderPage("rotated_rectangles.pdf", /*page_number=*/1, kPageBounds,
+                 "render_rotated_rectangles_expected.0.png",
+                 kLandscapeDestinationSize);
+  TestRenderPage("rotated_rectangles.pdf", /*page_number=*/2, kPageBounds,
+                 "render_rotated_rectangles_expected.1.png",
+                 kPortraitDestinationSize);
+  TestRenderPage("rotated_rectangles.pdf", /*page_number=*/3, kPageBounds,
+                 "render_rotated_rectangles_expected.2.png",
+                 kLandscapeDestinationSize);
+  TestRenderPage("rotated_rectangles.pdf", /*page_number=*/4, kPageBounds,
+                 "render_rotated_rectangles_expected.3.png",
+                 kPortraitDestinationSize);
+
+  TestRenderPage("rotated_rectangles.pdf", /*page_number=*/1, kPageBounds,
+                 "render_autorotated_rotated_rectangles_expected.0.png",
+                 kPortraitDestinationSize);
+  TestRenderPage("rotated_rectangles.pdf", /*page_number=*/2, kPageBounds,
+                 "render_autorotated_rotated_rectangles_expected.1.png",
+                 kLandscapeDestinationSize);
+  TestRenderPage("rotated_rectangles.pdf", /*page_number=*/3, kPageBounds,
+                 "render_autorotated_rotated_rectangles_expected.2.png",
+                 kPortraitDestinationSize);
+  TestRenderPage("rotated_rectangles.pdf", /*page_number=*/4, kPageBounds,
+                 "render_autorotated_rotated_rectangles_expected.3.png",
+                 kLandscapeDestinationSize);
 }
 
 TEST(PdfMetafileCgTest, RenderLargeLandscapeRectangles) {

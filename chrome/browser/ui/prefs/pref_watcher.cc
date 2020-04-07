@@ -16,10 +16,6 @@
 #include "components/language/core/browser/pref_names.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 
-#if !defined(OS_ANDROID)
-#include "chrome/browser/component_updater/soda_component_installer.h"
-#endif
-
 namespace {
 
 // The list of prefs we want to observe.
@@ -91,13 +87,6 @@ PrefWatcher::PrefWatcher(Profile* profile) : profile_(profile) {
                                      renderer_callback);
 #endif
 
-#if !defined(OS_ANDROID)
-  profile_pref_change_registrar_.Add(
-      prefs::kLiveCaptionEnabled,
-      base::BindRepeating(&PrefWatcher::OnLiveCaptionEnabledPrefChanged,
-                          base::Unretained(this)));
-#endif
-
   PrefChangeRegistrar::NamedChangeCallback webkit_callback =
       base::BindRepeating(&PrefWatcher::OnWebPrefChanged,
                           base::Unretained(this));
@@ -146,19 +135,6 @@ void PrefWatcher::UpdateRendererPreferences() {
 void PrefWatcher::OnWebPrefChanged(const std::string& pref_name) {
   for (auto* helper : tab_helpers_)
     helper->OnWebPrefChanged(pref_name);
-}
-
-void PrefWatcher::OnLiveCaptionEnabledPrefChanged(
-    const std::string& pref_name) {
-#if !defined(OS_ANDROID)
-  PrefService* profile_prefs = profile_->GetPrefs();
-  if (profile_prefs->GetBoolean(prefs::kLiveCaptionEnabled)) {
-    component_updater::RegisterSODAComponent(
-        g_browser_process->component_updater(), profile_prefs,
-        base::BindOnce(&component_updater::SODAComponentInstallerPolicy::
-                           UpdateSODAComponentOnDemand));
-  }
-#endif
 }
 
 // static

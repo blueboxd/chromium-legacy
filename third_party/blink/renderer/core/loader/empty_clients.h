@@ -275,6 +275,7 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
       mojo::PendingRemote<mojom::blink::BlobURLToken>,
       base::TimeTicks,
       const String&,
+      const base::Optional<WebImpression>&,
       WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr>
           initiator_csp,
       network::mojom::blink::CSPSourcePtr initiator_self_source,
@@ -415,7 +416,8 @@ class CORE_EXPORT EmptyRemoteFrameClient : public RemoteFrameClient {
                 bool is_opener_navigation,
                 bool initiator_frame_has_download_sandbox_flag,
                 bool initiator_frame_is_ad,
-                mojo::PendingRemote<mojom::blink::BlobURLToken>) override {}
+                mojo::PendingRemote<mojom::blink::BlobURLToken>,
+                const base::Optional<WebImpression>&) override {}
   unsigned BackForwardLength() override { return 0; }
   void ForwardPostMessage(
       MessageEvent*,

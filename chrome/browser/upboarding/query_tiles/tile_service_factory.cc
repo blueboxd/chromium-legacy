@@ -33,7 +33,7 @@ TileServiceFactory::~TileServiceFactory() {}
 
 std::unique_ptr<KeyedService> TileServiceFactory::BuildServiceInstanceFor(
     SimpleFactoryKey* key) const {
-  // TODO(xingliu): Use network only fetcher if needed.
+  // TODO(xingliu): Add reduced mode image fetcher for prefetch.
   auto* image_fetcher =
       ImageFetcherServiceFactory::GetForKey(key)->GetImageFetcher(
           image_fetcher::ImageFetcherConfig::kDiskCacheOnly);

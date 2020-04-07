@@ -74,6 +74,13 @@
   OP(kColorId_LinkPressed),                                                    \
   OP(kColorId_OverlayScrollbarThumbBackground),                                \
   OP(kColorId_OverlayScrollbarThumbForeground),                                \
+  /* Notification view */                                                      \
+  OP(kColorId_NotificationDefaultBackground),                                  \
+  OP(kColorId_NotificationActionsRowBackground),                               \
+  OP(kColorId_NotificationInlineSettingsBackground),                           \
+  OP(kColorId_NotificationLargeImageBackground),                               \
+  OP(kColorId_NotificationPlaceholderIconColor),                               \
+  OP(kColorId_NotificationEmptyPlaceholderIconColor),                          \
   /* Slider */                                                                 \
   OP(kColorId_SliderThumbDefault),                                             \
   OP(kColorId_SliderTroughDefault),                                            \

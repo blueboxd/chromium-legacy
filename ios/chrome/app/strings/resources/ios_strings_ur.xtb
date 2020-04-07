@@ -168,6 +168,7 @@
 <translation id="3112556859945124369">نشان زد کریں…</translation>
 <translation id="3153862085237805241">کارڈ محفوظ کریں</translation>
 <translation id="3157684681743766797">سبھی کو نشان زد کریں…</translation>
+<translation id="3161291298470460782">‏یہ آپ کو سائن آؤٹ، مطابقت پذیری کو آف اور اس آلہ سے تمام Chrome ڈیٹا کو صاف کر دے گا۔ آپ کا مطابقت پذیر ڈیٹا آپ کے Google اکاؤنٹ میں رہے گا۔</translation>
 <translation id="3175081911749765310">ویب سروسز</translation>
 <translation id="3178650076442119961">آج فعال تھا</translation>
 <translation id="3207960819495026254">بُک مارک بنایا ہوا</translation>
@@ -200,6 +201,7 @@
 <translation id="3494788280727468875">براؤزنگ ڈیٹا صاف کرنے کی توثیق کریں</translation>
 <translation id="35083190962747987">‏{url}$ کھولیں</translation>
 <translation id="3519193562722059437">ویب براؤز کرنے کیلئے ایک ٹیب کھولیں۔</translation>
+<translation id="3523473570015918798">‏سائن آؤٹ کر کے، آپ کے بُک مارکس، سرگزشت، پاس ورڈز اور Chrome کے دیگر ڈیٹا کی اب آپ کے Google اکاؤنٹ کے ساتھ مطابقت پذیری نہیں کی جائے گی۔</translation>
 <translation id="3527085408025491307">فولڈر</translation>
 <translation id="3529024052484145543">محفوظ نہیں</translation>
 <translation id="3533202363250687977">سبھی پوشیدگی ٹیبز بند کریں</translation>
@@ -333,6 +335,7 @@
 <translation id="54401264925851789">صفحہ کی سیکیورٹی کی معلومات</translation>
 <translation id="5443952882982198570">کریڈٹ کارڈز</translation>
 <translation id="5457907402803865181">پاس ورڈز کی مطابقت پذیری کرنے میں خرابی۔</translation>
+<translation id="5508435575041083207">اس آلہ سے سائن آؤٹ کریں اور ڈیٹا صاف کریں</translation>
 <translation id="5525269841082836315">پاس فریز بنائیں</translation>
 <translation id="5548760955356983418">‏Handoff آپ کو اس آلہ پر کسی ویب سائٹ کی براؤزنگ شروع کرنے اور پھر آسانی سےآپ کے Mac پر جاری رکھنے دیتا ہے۔ موجودہ کھلی ویب سائٹ آپ کے Mac کے ڈاک میں ظاہر ہوگی۔
 
@@ -506,6 +509,9 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="766891008101699113">نجی طور پر ویب پر براوز کرنے کیلئے، نیا ٹیب شامل کریں۔</translation>
 <translation id="7671141431838911305">انسٹال کریں</translation>
 <translation id="7765158879357617694">منتقل کریں</translation>
+<translation id="7771470029643830783">‏سائن آؤٹ کر کے، آپ کے بُک مارکس، سرگزشت، پاس ورڈز اور Chrome کے دیگر ڈیٹا کی اب آپ کے Google اکاؤنٹ کے ساتھ مطابقت پذیری نہیں کی جائے گی۔
+
+چونکہ آپ کا اکاؤنٹ <ph name="HOSTED_DOMAIN" /> کے زیر نظم ہیں، اس لیے سائن آؤٹ کرنے پر آپ کا Chrome ڈیٹا اس آلہ سے حذف کر دیا جائے گا۔ آپ کا مطابقت پذیر ڈیٹا آپ کے Google اکاؤنٹ میں رہے گا۔</translation>
 <translation id="7772032839648071052">پاس فریز کی توثیق کریں</translation>
 <translation id="7781011649027948662">صفحہ کا ترجمہ کریں؟</translation>
 <translation id="7781829728241885113">گزشتہ کل</translation>
@@ -555,6 +561,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="8490978609246021741">تبدیلیاں محفوظ کریں</translation>
 <translation id="8503813439785031346">صارف کا نام</translation>
 <translation id="850600235656508448">پوشیدگی وضع میں کھولیں</translation>
+<translation id="8510057420705599706">‏یہ آپ کو سائن آؤٹ اور مطابقت پذیری کو آف کر دے گا لیکن آپ کے بُک مارکس، سرگزشت، پاس ورڈز اور Chrome کا دیگر ڈیٹا اس آلہ پر رہے گا۔</translation>
 <translation id="8517375800490286174">اوپن سورس لائسنسز</translation>
 <translation id="8524799873541103884"><ph name="INCOGNITO" /> ٹیبز <ph name="FIRST_VISIBLE_TAB" /> سے <ph name="LAST_VISIBLE_TAB" /> از <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">نئی</translation>
@@ -597,6 +604,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="9094033019050270033">پاس ورڈ اپ ڈیٹ کریں</translation>
 <translation id="9100610230175265781">پاس فریز درکار ہے</translation>
 <translation id="9148126808321036104">دوبارہ سائن ان کریں</translation>
+<translation id="9152539721251340337">‏QR کوڈ تخلیق کریں</translation>
 <translation id="9157836665414082580">ڈائیلاگز کو دبائیں</translation>
 <translation id="9188680907066685419">نظم کردہ اکاؤنٹ سے سائن آؤٹ کریں</translation>
 <translation id="9203116392574189331">Handoff</translation>

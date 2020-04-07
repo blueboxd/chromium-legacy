@@ -3540,9 +3540,12 @@ const ComputedStyle* LayoutObject::FirstLineStyleWithoutFallback() const {
       // it's based on first_line_block's style. We need to get the uncached
       // first line style based on this object's style and cache the result in
       // it.
-      return StyleRef().AddCachedPseudoElementStyle(
-          first_line_block->GetUncachedPseudoElementStyle(
-              PseudoElementStyleRequest(kPseudoIdFirstLine), Style()));
+      if (scoped_refptr<ComputedStyle> first_line_style =
+              first_line_block->GetUncachedPseudoElementStyle(
+                  PseudoElementStyleRequest(kPseudoIdFirstLine), Style())) {
+        return StyleRef().AddCachedPseudoElementStyle(
+            std::move(first_line_style));
+      }
     }
   } else if (!IsAnonymous() && IsLayoutInline() &&
              !GetNode()->IsFirstLetterPseudoElement()) {
@@ -3554,9 +3557,12 @@ const ComputedStyle* LayoutObject::FirstLineStyleWithoutFallback() const {
             Parent()->FirstLineStyleWithoutFallback()) {
       // A first-line style is in effect. Get uncached first line style based on
       // parent_first_line_style and cache the result in this object's style.
-      return StyleRef().AddCachedPseudoElementStyle(
-          GetUncachedPseudoElementStyle(kPseudoIdFirstLineInherited,
-                                        parent_first_line_style));
+      if (scoped_refptr<ComputedStyle> first_line_style =
+              GetUncachedPseudoElementStyle(kPseudoIdFirstLineInherited,
+                                            parent_first_line_style)) {
+        return StyleRef().AddCachedPseudoElementStyle(
+            std::move(first_line_style));
+      }
     }
   }
   return nullptr;

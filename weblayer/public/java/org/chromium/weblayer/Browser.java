@@ -5,12 +5,12 @@
 package org.chromium.weblayer;
 
 import android.os.RemoteException;
-import android.support.v4.app.Fragment;
 import android.view.View;
 import android.webkit.ValueCallback;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 
 import org.chromium.weblayer_private.interfaces.APICallException;
 import org.chromium.weblayer_private.interfaces.IBrowser;

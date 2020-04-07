@@ -9,6 +9,7 @@ import("../namespace_rewrites.gni")
 js_modulizer("modulize") {
   input_files = [
     "about_page_tests.js",
+    "advanced_page_test.js",
     "all_sites_tests.js",
     "appearance_fonts_page_test.js",
     "appearance_page_test.js",
@@ -69,6 +70,7 @@ js_modulizer("modulize") {
     "settings_animated_pages_test.js",
     "settings_main_test.js",
     "settings_menu_test.js",
+    "settings_page_test_util.js",
     "settings_slider_tests.js",
     "settings_subpage_test.js",
     "settings_textarea_tests.js",
@@ -156,6 +158,8 @@ js_modulizer("modulize") {
                          "settings.setSearchManagerForTesting|setSearchManagerForTesting",
                          "settings.TestLanguagesBrowserProxy|TestLanguagesBrowserProxy",
                          "settings.TestLifetimeBrowserProxy|TestLifetimeBrowserProxy",
+                         "settings_page_test_util.getPage|getPage",
+                         "settings_page_test_util.getSection|getSection",
                          "settings_search.createSampleSearchEngine|createSampleSearchEngine",
                          "settings_search.TestSearchEnginesBrowserProxy|TestSearchEnginesBrowserProxy",
                          "sync_test_util.getSyncAllPrefs|getSyncAllPrefs",

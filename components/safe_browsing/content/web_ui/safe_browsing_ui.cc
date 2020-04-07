@@ -255,13 +255,18 @@ void WebUIInfoSingleton::AddToDeepScanRequests(
   if (!HasListener())
     return;
 
+  // Only update the request time the first time we see a token.
   if (deep_scan_requests_.find(request.request_token()) ==
       deep_scan_requests_.end()) {
-    for (auto* webui_listener : webui_instances_)
-      webui_listener->NotifyDeepScanRequestJsListener(request);
+    deep_scan_requests_[request.request_token()].request_time =
+        base::Time::Now();
   }
 
-  deep_scan_requests_[request.request_token()] = request;
+  deep_scan_requests_[request.request_token()].request = request;
+
+  for (auto* webui_listener : webui_instances_)
+    webui_listener->NotifyDeepScanJsListener(
+        request.request_token(), deep_scan_requests_[request.request_token()]);
 }
 
 void WebUIInfoSingleton::AddToDeepScanResponses(
@@ -271,15 +276,16 @@ void WebUIInfoSingleton::AddToDeepScanResponses(
   if (!HasListener())
     return;
 
-  for (auto* webui_listener : webui_instances_)
-    webui_listener->NotifyDeepScanResponseJsListener(token, status, response);
+  deep_scan_requests_[token].response_time = base::Time::Now();
+  deep_scan_requests_[token].response_status = status;
+  deep_scan_requests_[token].response = response;
 
-  deep_scan_responses_[token] = std::make_pair(status, response);
+  for (auto* webui_listener : webui_instances_)
+    webui_listener->NotifyDeepScanJsListener(token, deep_scan_requests_[token]);
 }
 
 void WebUIInfoSingleton::ClearDeepScans() {
-  DeepScanningRequestMap().swap(deep_scan_requests_);
-  StatusAndDeepScanningResponseMap().swap(deep_scan_responses_);
+  base::flat_map<std::string, DeepScanDebugData>().swap(deep_scan_requests_);
 }
 #endif
 void WebUIInfoSingleton::RegisterWebUIInstance(SafeBrowsingUIHandler* webui) {
@@ -336,6 +342,12 @@ void WebUIInfoSingleton::MaybeClearData() {
 #endif
   }
 }
+
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+DeepScanDebugData::DeepScanDebugData() = default;
+DeepScanDebugData::DeepScanDebugData(const DeepScanDebugData&) = default;
+DeepScanDebugData::~DeepScanDebugData() = default;
+#endif
 
 namespace {
 #if BUILDFLAG(SAFE_BROWSING_DB_LOCAL)
@@ -1442,6 +1454,37 @@ std::string SerializeDeepScanningResponse(
   serializer.Serialize(response_dict);
   return response_serialized;
 }
+
+base::Value SerializeDeepScanDebugData(const std::string& token,
+                                       const DeepScanDebugData& data) {
+  base::DictionaryValue value;
+  value.SetStringKey("token", token);
+
+  if (!data.request_time.is_null()) {
+    value.SetDoubleKey("request_time", data.request_time.ToJsTime());
+  }
+
+  if (data.request.has_value()) {
+    value.SetStringKey("request",
+                       SerializeDeepScanningRequest(data.request.value()));
+  }
+
+  if (!data.response_time.is_null()) {
+    value.SetDoubleKey("response_time", data.response_time.ToJsTime());
+  }
+
+  if (!data.response_status.empty()) {
+    value.SetStringKey("response_status", data.response_status);
+  }
+
+  if (data.response.has_value()) {
+    value.SetStringKey("response",
+                       SerializeDeepScanningResponse(data.response.value()));
+  }
+
+  return std::move(value);
+}
+
 #endif
 }  // namespace
 
@@ -1821,15 +1864,12 @@ void SafeBrowsingUIHandler::GetLogMessages(const base::ListValue* args) {
 }
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
-void SafeBrowsingUIHandler::GetDeepScanRequests(const base::ListValue* args) {
+void SafeBrowsingUIHandler::GetDeepScans(const base::ListValue* args) {
   base::ListValue pings_sent;
-  for (const auto& token_and_request :
+  for (const auto& token_and_data :
        WebUIInfoSingleton::GetInstance()->deep_scan_requests()) {
-    base::ListValue ping_entry;
-    ping_entry.Append(base::Value(token_and_request.first));
-    ping_entry.Append(
-        base::Value(SerializeDeepScanningRequest(token_and_request.second)));
-    pings_sent.Append(std::move(ping_entry));
+    pings_sent.Append(SerializeDeepScanDebugData(token_and_data.first,
+                                                 token_and_data.second));
   }
 
   AllowJavascript();
@@ -1837,31 +1877,8 @@ void SafeBrowsingUIHandler::GetDeepScanRequests(const base::ListValue* args) {
   args->GetString(0, &callback_id);
   ResolveJavascriptCallback(base::Value(callback_id), pings_sent);
 }
-
-void SafeBrowsingUIHandler::GetDeepScanResponses(const base::ListValue* args) {
-  const WebUIInfoSingleton::StatusAndDeepScanningResponseMap& responses =
-      WebUIInfoSingleton::GetInstance()->deep_scan_responses();
-
-  base::ListValue responses_sent;
-  for (const auto& token_and_status_and_response : responses) {
-    const std::string& token = token_and_status_and_response.first;
-    const std::string& status = token_and_status_and_response.second.first;
-    const DeepScanningClientResponse& response =
-        token_and_status_and_response.second.second;
-
-    base::ListValue response_entry;
-    response_entry.Append(base::Value(token));
-    response_entry.Append(base::Value(status));
-    response_entry.Append(base::Value(SerializeDeepScanningResponse(response)));
-    responses_sent.Append(std::move(response_entry));
-  }
-
-  AllowJavascript();
-  std::string callback_id;
-  args->GetString(0, &callback_id);
-  ResolveJavascriptCallback(base::Value(callback_id), responses_sent);
-}
 #endif
+
 void SafeBrowsingUIHandler::NotifyClientDownloadRequestJsListener(
     ClientDownloadRequest* client_download_request) {
   AllowJavascript();
@@ -1955,27 +1972,12 @@ void SafeBrowsingUIHandler::NotifyReportingEventJsListener(
 }
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
-void SafeBrowsingUIHandler::NotifyDeepScanRequestJsListener(
-    const DeepScanningClientRequest& request) {
-  base::ListValue request_list;
-  request_list.Append(base::Value(request.request_token()));
-  request_list.Append(base::Value(SerializeDeepScanningRequest(request)));
-
-  AllowJavascript();
-  FireWebUIListener("deep-scan-request-update", request_list);
-}
-
-void SafeBrowsingUIHandler::NotifyDeepScanResponseJsListener(
+void SafeBrowsingUIHandler::NotifyDeepScanJsListener(
     const std::string& token,
-    const std::string& status,
-    const DeepScanningClientResponse& response) {
-  base::ListValue response_list;
-  response_list.Append(base::Value(token));
-  response_list.Append(base::Value(status));
-  response_list.Append(base::Value(SerializeDeepScanningResponse(response)));
-
+    const DeepScanDebugData& deep_scan_data) {
   AllowJavascript();
-  FireWebUIListener("deep-scan-response-update", response_list);
+  FireWebUIListener("deep-scan-request-update",
+                    SerializeDeepScanDebugData(token, deep_scan_data));
 }
 #endif
 
@@ -2051,13 +2053,8 @@ void SafeBrowsingUIHandler::RegisterMessages() {
                           base::Unretained(this)));
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   web_ui()->RegisterMessageCallback(
-      "getDeepScanRequests",
-      base::BindRepeating(&SafeBrowsingUIHandler::GetDeepScanRequests,
-                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "getDeepScanResponses",
-      base::BindRepeating(&SafeBrowsingUIHandler::GetDeepScanResponses,
-                          base::Unretained(this)));
+      "getDeepScans", base::BindRepeating(&SafeBrowsingUIHandler::GetDeepScans,
+                                          base::Unretained(this)));
 #endif
 }
 

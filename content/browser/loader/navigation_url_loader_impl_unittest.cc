@@ -181,7 +181,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
             GURL() /* client_side_redirect_url */,
             base::nullopt /* devtools_initiator_info */,
             false /* attach_same_site_cookie */,
-            nullptr /* trust_token_params */);
+            nullptr /* trust_token_params */, base::nullopt /* impression */);
 
     auto common_params = CreateCommonNavigationParams();
     common_params->url = url;

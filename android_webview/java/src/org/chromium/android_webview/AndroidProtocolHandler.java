@@ -209,50 +209,23 @@ public class AndroidProtocolHandler {
             String path = uri.getPath();
             // The content URL type can be queried directly.
             if (uri.getScheme().equals(CONTENT_SCHEME)) {
-                String mimeType =
-                        ContextUtils.getApplicationContext().getContentResolver().getType(uri);
-                if (mimeType == null) {
-                    AwHistogramRecorder.recordMimeType(
-                            AwHistogramRecorder.MimeType.NULL_FROM_CONTENT_PROVIDER);
-                } else {
-                    AwHistogramRecorder.recordMimeType(
-                            AwHistogramRecorder.MimeType.NONNULL_FROM_CONTENT_PROVIDER);
-                }
-                return mimeType;
+                return ContextUtils.getApplicationContext().getContentResolver().getType(uri);
                 // Asset files may have a known extension.
             } else if (uri.getScheme().equals(FILE_SCHEME)
                     && path.startsWith(AndroidProtocolHandlerJni.get().getAndroidAssetPath())) {
                 String mimeType = URLConnection.guessContentTypeFromName(path);
-                if (mimeType == null) {
-                    AwHistogramRecorder.recordMimeType(
-                            AwHistogramRecorder.MimeType.CANNOT_GUESS_FROM_ANDROID_ASSET_PATH);
-                    // Do not return yet, try guessing from the stream.
-                } else {
-                    AwHistogramRecorder.recordMimeType(
-                            AwHistogramRecorder.MimeType.GUESSED_FROM_ANDROID_ASSET_PATH);
+                if (mimeType != null) {
                     return mimeType;
                 }
             }
         } catch (Exception ex) {
             Log.e(TAG, "Unable to get mime type" + url);
-            AwHistogramRecorder.recordMimeType(
-                    AwHistogramRecorder.MimeType.CANNOT_GUESS_DUE_TO_GENERIC_EXCEPTION);
             return null;
         }
         // Fall back to sniffing the type from the stream.
         try {
-            String mimeType = URLConnection.guessContentTypeFromStream(stream);
-            if (mimeType == null) {
-                AwHistogramRecorder.recordMimeType(
-                        AwHistogramRecorder.MimeType.CANNOT_GUESS_FROM_ANDROID_ASSET_INPUT_STREAM);
-            } else {
-                AwHistogramRecorder.recordMimeType(
-                        AwHistogramRecorder.MimeType.GUESSED_FROM_ANDROID_ASSET_INPUT_STREAM);
-            }
-            return mimeType;
+            return URLConnection.guessContentTypeFromStream(stream);
         } catch (IOException e) {
-            AwHistogramRecorder.recordMimeType(
-                    AwHistogramRecorder.MimeType.CANNOT_GUESS_DUE_TO_IO_EXCEPTION);
             return null;
         }
     }

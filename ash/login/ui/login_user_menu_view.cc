@@ -8,6 +8,7 @@
 #include "ash/login/ui/views_utils.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -139,9 +140,11 @@ LoginUserMenuView::LoginUserMenuView(
           base::UTF8ToUTF16(kLegacySupervisedUserManagementDisplayURL));
     }
     base::string16 part2 = l10n_util::GetStringFUTF16(
-        IDS_ASH_LOGIN_POD_NON_OWNER_USER_REMOVE_WARNING_PART_2, email);
-
-    warning_message_ = part1 + base::ASCIIToUTF16(" ") + part2;
+        type == user_manager::UserType::USER_TYPE_CHILD
+            ? IDS_ASH_LOGIN_POD_NON_OWNER_USER_REMOVE_WARNING_PART_2_SUPERVISED_USER
+            : IDS_ASH_LOGIN_POD_NON_OWNER_USER_REMOVE_WARNING_PART_2,
+        email);
+    warning_message_ = base::StrCat({part1, base::ASCIIToUTF16(" "), part2});
 
     remove_user_confirm_data_ = new views::View();
     remove_user_confirm_data_->SetLayoutManager(
@@ -153,8 +156,10 @@ LoginUserMenuView::LoginUserMenuView(
 
     remove_user_confirm_data_->AddChildView(
         login_views_utils::CreateBubbleLabel(part1, gfx::kGoogleGrey200, this));
+
     remove_user_confirm_data_->AddChildView(
         login_views_utils::CreateBubbleLabel(part2, gfx::kGoogleGrey200, this));
+
     remove_user_button_ = new RemoveUserButton(this, this);
     remove_user_button_->SetID(kUserMenuRemoveUserButtonIdForTest);
     AddChildView(remove_user_button_);

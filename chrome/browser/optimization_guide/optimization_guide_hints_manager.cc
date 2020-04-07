@@ -256,6 +256,9 @@ OptimizationGuideHintsManager::OptimizationGuideHintsManager(
               optimization_guide::features::
                   GetOptimizationGuideServiceGetHintsURL(),
               pref_service)),
+      external_app_packages_approved_for_fetch_(
+          optimization_guide::features::
+              ExternalAppPackageNamesApprovedForFetch()),
       top_host_provider_(top_host_provider),
       clock_(base::DefaultClock::GetInstance()) {
   DCHECK(optimization_guide_service_);
@@ -723,30 +726,52 @@ bool OptimizationGuideHintsManager::IsGoogleURL(const GURL& url) const {
                                        google_util::DISALLOW_SUBDOMAIN);
 }
 
+bool OptimizationGuideHintsManager::IsAllowedToFetchForNavigationPrediction(
+    const base::Optional<NavigationPredictorKeyedService::Prediction>
+        prediction) const {
+  if (!prediction)
+    return false;
+
+  if (prediction->prediction_source() ==
+      NavigationPredictorKeyedService::PredictionSource::
+          kAnchorElementsParsedFromWebPage) {
+    const base::Optional<GURL> source_document_url =
+        prediction->source_document_url();
+    if (!source_document_url || source_document_url->is_empty())
+      return false;
+
+    // We only extract next predicted navigations from Google URLs.
+    return IsGoogleURL(*source_document_url);
+  }
+
+  if (prediction->prediction_source() ==
+      NavigationPredictorKeyedService::PredictionSource::kExternalAndroidApp) {
+    if (external_app_packages_approved_for_fetch_.empty())
+      return false;
+
+    const base::Optional<std::vector<std::string>> external_app_packages_name =
+        prediction->external_app_packages_name();
+    if (!external_app_packages_name || external_app_packages_name->empty())
+      return false;
+
+    for (const auto& package_name : *external_app_packages_name) {
+      if (external_app_packages_approved_for_fetch_.find(package_name) ==
+          external_app_packages_approved_for_fetch_.end())
+        return false;
+    }
+    // If we get here, all apps have been approved for fetching.
+    return true;
+  }
+
+  return false;
+}
+
 void OptimizationGuideHintsManager::OnPredictionUpdated(
     const base::Optional<NavigationPredictorKeyedService::Prediction>
         prediction) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (registered_optimization_types_.empty())
-    return;
-
-  if (!prediction.has_value())
-    return;
-
-  if (prediction->prediction_source() !=
-      NavigationPredictorKeyedService::PredictionSource::
-          kAnchorElementsParsedFromWebPage) {
-    return;
-  }
-
-  const base::Optional<GURL>& source_document_url =
-      prediction->source_document_url();
-  if (!source_document_url || source_document_url->is_empty())
-    return;
-
-  // We only extract next predicted navigations from Google URLs.
-  if (!IsGoogleURL(source_document_url.value()))
+  if (!IsAllowedToFetchForNavigationPrediction(prediction))
     return;
 
   // Extract the target hosts and URLs. Use a flat set to remove duplicates.
@@ -1085,6 +1110,9 @@ void OptimizationGuideHintsManager::OnEffectiveConnectionTypeChanged(
 bool OptimizationGuideHintsManager::IsAllowedToFetchNavigationHints(
     const GURL& url) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (registered_optimization_types_.empty())
+    return false;
 
   if (!IsUserPermittedToFetchFromRemoteOptimizationGuide(profile_))
     return false;

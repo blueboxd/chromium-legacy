@@ -1128,6 +1128,13 @@ void PaintLayerScrollableArea::UpdateAfterLayout() {
     UpdateScrollbarProportions();
   }
 
+  if (!scrollbars_are_frozen && HasOverlayScrollbars()) {
+    if (!ScrollSize(kHorizontalScrollbar))
+      SetHasHorizontalScrollbar(false);
+    if (!ScrollSize(kVerticalScrollbar))
+      SetHasVerticalScrollbar(false);
+  }
+
   ClampScrollOffsetAfterOverflowChange();
 
   if (!scrollbars_are_frozen) {
@@ -1296,8 +1303,9 @@ void PaintLayerScrollableArea::UpdateAfterStyleChange(
 
   bool needs_horizontal_scrollbar;
   bool needs_vertical_scrollbar;
+  // We add auto scrollbars only during layout to prevent spurious activations.
   ComputeScrollbarExistence(needs_horizontal_scrollbar,
-                            needs_vertical_scrollbar, kOverflowIndependent);
+                            needs_vertical_scrollbar, kForbidAddingAutoBars);
 
   UpdateResizerStyle(old_style);
 
@@ -1549,88 +1557,44 @@ void PaintLayerScrollableArea::ComputeScrollbarExistence(
     return;
   }
 
-  mojom::blink::ScrollbarMode h_mode = mojom::blink::ScrollbarMode::kAuto;
-  mojom::blink::ScrollbarMode v_mode = mojom::blink::ScrollbarMode::kAuto;
+  needs_horizontal_scrollbar = GetLayoutBox()->ScrollsOverflowX();
+  needs_vertical_scrollbar = GetLayoutBox()->ScrollsOverflowY();
 
-  // First, determine what behavior the scrollbars say they should have.
-  {
-    if (auto* layout_view = DynamicTo<LayoutView>(GetLayoutBox())) {
-      // LayoutView is special as there's various quirks and settings that
-      // style doesn't account for.
-      layout_view->CalculateScrollbarModes(h_mode, v_mode);
-    } else {
-      auto overflow_x = GetLayoutBox()->StyleRef().OverflowX();
-      if (overflow_x == EOverflow::kScroll) {
-        h_mode = mojom::blink::ScrollbarMode::kAlwaysOn;
-      } else if (overflow_x == EOverflow::kHidden ||
-                 overflow_x == EOverflow::kVisible) {
-        h_mode = mojom::blink::ScrollbarMode::kAlwaysOff;
-      }
-
-      auto overflow_y = GetLayoutBox()->StyleRef().OverflowY();
-      if (overflow_y == EOverflow::kScroll) {
-        v_mode = mojom::blink::ScrollbarMode::kAlwaysOn;
-      } else if (overflow_y == EOverflow::kHidden ||
-                 overflow_y == EOverflow::kVisible) {
-        v_mode = mojom::blink::ScrollbarMode::kAlwaysOff;
-      }
-    }
-
-    // Since overlay scrollbars (the fade-in/out kind, not overflow: overlay)
-    // only appear when scrolling, we don't create them if there isn't overflow
-    // to scroll. Thus, overlay scrollbars can't be "always on". i.e.
-    // |overlay:scroll| behaves like |overlay:auto|.
-    bool has_custom_scrollbar_style =
-        ScrollbarStyleSource(*GetLayoutBox())
-            .StyleRef()
-            .HasPseudoElementStyle(kPseudoIdScrollbar);
-    bool will_be_overlay = GetPageScrollbarTheme().UsesOverlayScrollbars() &&
-                           !has_custom_scrollbar_style;
-    if (will_be_overlay) {
-      if (h_mode == mojom::blink::ScrollbarMode::kAlwaysOn)
-        h_mode = mojom::blink::ScrollbarMode::kAuto;
-      if (v_mode == mojom::blink::ScrollbarMode::kAlwaysOn)
-        v_mode = mojom::blink::ScrollbarMode::kAuto;
-    }
+  // Don't add auto scrollbars if the box contents aren't visible.
+  if (GetLayoutBox()->HasAutoHorizontalScrollbar()) {
+    if (option == kForbidAddingAutoBars)
+      needs_horizontal_scrollbar &= HasHorizontalScrollbar();
+    needs_horizontal_scrollbar &=
+        GetLayoutBox()->IsRooted() && HasHorizontalOverflow() &&
+        VisibleContentRect(kIncludeScrollbars).Height();
   }
 
-  // By default, don't make any changes.
-  needs_horizontal_scrollbar = HasHorizontalScrollbar();
-  needs_vertical_scrollbar = HasVerticalScrollbar();
+  if (GetLayoutBox()->HasAutoVerticalScrollbar()) {
+    if (option == kForbidAddingAutoBars)
+      needs_vertical_scrollbar &= HasVerticalScrollbar();
+    needs_vertical_scrollbar &= GetLayoutBox()->IsRooted() &&
+                                HasVerticalOverflow() &&
+                                VisibleContentRect(kIncludeScrollbars).Width();
+  }
 
-  // If the behavior doesn't depend on overflow or any other information, we
-  // can set it now.
-  {
+  if (auto* layout_view = DynamicTo<LayoutView>(GetLayoutBox())) {
+    mojom::blink::ScrollbarMode h_mode;
+    mojom::blink::ScrollbarMode v_mode;
+    layout_view->CalculateScrollbarModes(h_mode, v_mode);
+
+    // Look for the scrollbarModes and reset the needs Horizontal & vertical
+    // Scrollbar values based on scrollbarModes, as during force style change
+    // StyleResolver::styleForDocument returns documentStyle with no overflow
+    // values, due to which we are destroying the scrollbars that were already
+    // present.
     if (h_mode == mojom::blink::ScrollbarMode::kAlwaysOn)
       needs_horizontal_scrollbar = true;
     else if (h_mode == mojom::blink::ScrollbarMode::kAlwaysOff)
       needs_horizontal_scrollbar = false;
-
     if (v_mode == mojom::blink::ScrollbarMode::kAlwaysOn)
       needs_vertical_scrollbar = true;
     else if (v_mode == mojom::blink::ScrollbarMode::kAlwaysOff)
       needs_vertical_scrollbar = false;
-  }
-
-  // If this is being performed before layout, we want to only update scrollbar
-  // existence if its based on purely style based reasons.
-  if (option == kOverflowIndependent)
-    return;
-
-  // If we have clean layout, we can make a decision on any scrollbars that
-  // depend on overflow.
-  {
-    if (h_mode == mojom::blink::ScrollbarMode::kAuto) {
-      // Don't add auto scrollbars if the box contents aren't visible.
-      needs_horizontal_scrollbar =
-          GetLayoutBox()->IsRooted() && HasHorizontalOverflow() &&
-          VisibleContentRect(kIncludeScrollbars).Height();
-    }
-    if (v_mode == mojom::blink::ScrollbarMode::kAuto) {
-      needs_vertical_scrollbar = GetLayoutBox()->IsRooted() &&
-                                 HasVerticalOverflow() &&
-                                 VisibleContentRect(kIncludeScrollbars).Width();
-    }
   }
 }
 

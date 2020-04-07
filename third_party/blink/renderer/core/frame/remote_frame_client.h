@@ -5,9 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REMOTE_FRAME_CLIENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REMOTE_FRAME_CLIENT_H_
 
+#include "base/optional.h"
 #include "cc/paint/paint_canvas.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/viewport_intersection_state.h"
+#include "third_party/blink/public/platform/web_impression.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/renderer/core/frame/frame_client.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
@@ -33,7 +35,8 @@ class RemoteFrameClient : public FrameClient {
                         bool is_opener_navigation,
                         bool initiator_frame_has_download_sandbox_flag,
                         bool initiator_frame_is_ad,
-                        mojo::PendingRemote<mojom::blink::BlobURLToken>) = 0;
+                        mojo::PendingRemote<mojom::blink::BlobURLToken>,
+                        const base::Optional<WebImpression>& impression) = 0;
   unsigned BackForwardLength() override = 0;
 
   // Forwards a postMessage for a remote frame.

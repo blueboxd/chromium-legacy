@@ -100,9 +100,6 @@ class StatusAreaWidgetFocusTest : public AshTestBase {
 
   // AshTestBase:
   void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kShowWebUiLock);
-
     AshTestBase::SetUp();
     test_observer_.reset(new SystemTrayFocusTestObserver);
     Shell::Get()->system_tray_notifier()->AddSystemTrayFocusObserver(

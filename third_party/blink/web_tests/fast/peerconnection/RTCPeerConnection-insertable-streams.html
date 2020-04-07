@@ -231,6 +231,60 @@ promise_test(async t => {
   return onmessagePromise;
 }, 'RTCRtpSender readable stream transferred to a Worker and the Worker sends an RTCEncodedVideoFrame back');
 
+async function testNormalDataFlowWithInsertableStreamsForOtherKind(t, normalKind) {
+  const flowAudio = (normalKind == 'audio');
+  const pcConfig = flowAudio
+    ? {forceEncodedVideoInsertableStreams:true}
+    : {forceEncodedAudioInsertableStreams:true};
+  const caller = new RTCPeerConnection(pcConfig);
+  t.add_cleanup(() => caller.close());
+  const callee = new RTCPeerConnection(pcConfig);
+  t.add_cleanup(() => callee.close());
+
+  const stream = await navigator.mediaDevices.getUserMedia(
+    {audio: flowAudio, video: !flowAudio});
+  const track = stream.getTracks()[0];
+  t.add_cleanup(() => track.stop());
+
+  const sender = caller.addTrack(track, stream);
+  const ontrackPromise = new Promise((resolve,reject) => {
+    callee.ontrack =  t.step_func(async e => {
+      let numGetStats = 0;
+      const intervalId = window.setInterval(async ()=> {
+        let statsReport = await callee.getStats();
+        statsReport.forEach(report => {
+          if (report.type == 'inbound-rtp' &&
+              report.kind == normalKind &&
+              report.bytesReceived > 0) {
+            clearInterval(intervalId);
+            resolve();
+            return;
+          }
+        });
+        if (++numGetStats >= 20) {
+          clearInterval(intervalId);
+          reject('No bytes received.');
+          return;
+        }
+      }, 50);
+    });
+  });
+
+
+  exchangeIceCandidates(caller, callee);
+  await doSignalingHandshake(caller, callee);
+
+  return ontrackPromise;
+}
+
+promise_test(t => {
+  return testNormalDataFlowWithInsertableStreamsForOtherKind(t, 'audio');
+}, 'Audio flows when insertable streams is enabled for video and disabled for audio.');
+
+promise_test(t => {
+  return testNormalDataFlowWithInsertableStreamsForOtherKind(t, 'video');
+}, 'Video flows when insertable streams is enabled for audio and disabled for audio.');
+
 </script>
 </body>
 </html>

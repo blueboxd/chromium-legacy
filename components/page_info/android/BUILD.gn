@@ -8,11 +8,17 @@ static_library("android") {
   sources = [
     "certificate_chain_helper.cc",
     "certificate_viewer_android.cc",
+    "connection_info_popup_android.cc",
+    "connection_info_popup_android.h",
     "cookie_controls_status.h",
+    "page_info_client.cc",
+    "page_info_client.h",
   ]
   deps = [
     "//base",
+    "//components/page_info",
     "//components/page_info/android:jni_headers",
+    "//components/security_state/core:core",
     "//components/strings:components_strings_grit",
     "//content/public/browser:browser",
     "//net:net",
@@ -42,6 +48,7 @@ android_resources("java_resources") {
     "java/res/drawable-xxxhdpi/pageinfo_bad.png",
     "java/res/drawable-xxxhdpi/pageinfo_good.png",
     "java/res/drawable-xxxhdpi/pageinfo_warning.png",
+    "java/res/layout/connection_info.xml",
     "java/res/layout/cookie_controls_view.xml",
     "java/res/layout/page_info.xml",
     "java/res/layout/page_info_permission_row.xml",
@@ -59,10 +66,12 @@ android_library("java") {
   sources = [
     "java/src/org/chromium/components/page_info/CertificateChainHelper.java",
     "java/src/org/chromium/components/page_info/CertificateViewer.java",
+    "java/src/org/chromium/components/page_info/ConnectionInfoPopup.java",
     "java/src/org/chromium/components/page_info/CookieControlsView.java",
     "java/src/org/chromium/components/page_info/PageInfoDialog.java",
     "java/src/org/chromium/components/page_info/PageInfoView.java",
     "java/src/org/chromium/components/page_info/SystemSettingsActivityRequiredListener.java",
+    "java/src/org/chromium/components/page_info/VrHandler.java",
   ]
 
   deps = [
@@ -83,5 +92,6 @@ generate_jni("jni_headers") {
   sources = [
     "java/src/org/chromium/components/page_info/CertificateChainHelper.java",
     "java/src/org/chromium/components/page_info/CertificateViewer.java",
+    "java/src/org/chromium/components/page_info/ConnectionInfoPopup.java",
   ]
 }

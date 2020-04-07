@@ -64,7 +64,7 @@ ThumbnailMediaParserBridge::ThumbnailMediaParserBridge(
     const std::string& mime_type,
     const base::FilePath& file_path,
     ThumbnailMediaParser::ParseCompleteCB parse_complete_cb)
-    : parser_(std::make_unique<ThumbnailMediaParser>(mime_type, file_path)),
+    : parser_(ThumbnailMediaParser::Create(mime_type, file_path)),
       parse_complete_cb_(std::move(parse_complete_cb)) {}
 
 ThumbnailMediaParserBridge::~ThumbnailMediaParserBridge() = default;

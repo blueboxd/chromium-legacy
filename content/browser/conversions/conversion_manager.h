@@ -33,6 +33,10 @@ class CONTENT_EXPORT ConversionManager {
   };
   virtual ~ConversionManager() = default;
 
+  // Persists the given |impression| to storage. Called when a navigation
+  // originating from an impression tag finishes.
+  virtual void HandleImpression(const StorableImpression& impression) = 0;
+
   // Process a newly registered conversion. Will create and log any new
   // conversion reports to storage.
   virtual void HandleConversion(const StorableConversion& conversion) = 0;

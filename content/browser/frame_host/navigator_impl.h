@@ -71,8 +71,8 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       bool user_gesture,
       blink::TriggeringEventInfo triggering_event_info,
       const std::string& href_translate,
-      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory)
-      override;
+      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
+      const base::Optional<Impression>& impression) override;
   void NavigateFromFrameProxy(
       RenderFrameHostImpl* render_frame_host,
       const GURL& url,
@@ -86,7 +86,8 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       scoped_refptr<network::ResourceRequestBody> post_body,
       const std::string& extra_headers,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
-      bool has_user_gesture) override;
+      bool has_user_gesture,
+      const base::Optional<Impression>& impression) override;
   void BeforeUnloadCompleted(FrameTreeNode* frame_tree_node,
                              bool proceed,
                              const base::TimeTicks& proceed_time) override;

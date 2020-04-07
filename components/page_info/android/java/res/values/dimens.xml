@@ -3,5 +3,7 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 <resources>
+    <!-- Connection info popup dimensions -->
+    <dimen name="connection_info_padding_thin">16dp</dimen>
     <dimen name="connection_info_padding_wide">24dp</dimen>
 </resources>

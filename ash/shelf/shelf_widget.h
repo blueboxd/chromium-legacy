@@ -58,9 +58,6 @@ class ASH_EXPORT ShelfWidget : public AccessibilityObserver,
   // Clean up prior to deletion.
   void Shutdown();
 
-  // Returns true if the views-based shelf is being shown.
-  static bool IsUsingViewsShelf();
-
   void OnTabletModeChanged();
 
   ShelfBackgroundType GetBackgroundType() const;

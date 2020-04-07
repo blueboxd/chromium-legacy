@@ -17,9 +17,9 @@ import android.os.Handler;
 import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.support.test.filters.SmallTest;
-import android.support.v4.app.Fragment;
 
 import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.Fragment;
 
 import org.junit.After;
 import org.junit.Assert;

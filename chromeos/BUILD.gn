@@ -56,6 +56,8 @@ component("chromeos") {
     "memory/kstaled.h",
     "memory/memory.cc",
     "memory/memory.h",
+    "memory/pagemap.cc",
+    "memory/pagemap.h",
     "memory/swap_configuration.cc",
     "memory/swap_configuration.h",
     "policy/weekly_time/time_utils.cc",
@@ -192,6 +194,7 @@ test("chromeos_unittests") {
     "//url",
   ]
   sources = [
+    "memory/pagemap_unittest.cc",
     "policy/weekly_time/time_utils_unittest.cc",
     "policy/weekly_time/weekly_time_interval_unittest.cc",
     "policy/weekly_time/weekly_time_unittest.cc",

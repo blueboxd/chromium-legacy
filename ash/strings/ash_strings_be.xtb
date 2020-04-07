@@ -105,6 +105,7 @@
 <translation id="2268813581635650749">Выйсці адусюль</translation>
 <translation id="2277103315734023688">Перайсці ўперад</translation>
 <translation id="2292698582925480719">Маштаб паказу</translation>
+<translation id="2295777434187870477">Мікрафон уключаны, выключыць яго можна з дапамогай гэтага пераключальніка.</translation>
 <translation id="2298170939937364391">Уключана поўнаэкранная лупа. Каб выключыць яе, зноў націсніце Ctrl + Пошук + M.</translation>
 <translation id="2302092602801625023">Гэты ўліковы запіс кіруецца праз Family Link</translation>
 <translation id="2303600792989757991">Уключэнне агляду вокнаў</translation>
@@ -138,6 +139,7 @@
 <translation id="2658778018866295321">Націснуць і перацягнуць</translation>
 <translation id="2700493154570097719">Наладзьце клавіятуру</translation>
 <translation id="2704781753052663061">Падключыцца да іншых сетак Wi-Fi</translation>
+<translation id="2705001408393684014">Уключыць або выключыць мікрафон. <ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">Начны рэжым</translation>
 <translation id="2727977024730340865">Падключана зарадная прылада нізкай магутнасці. Зарадка акумулятара можа быць нестабільнай.</translation>
 <translation id="2792498699870441125">Alt+Пошук</translation>
@@ -296,6 +298,7 @@
 <translation id="4665114317261903604">Уключэнне рэжыму "Не турбаваць". <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Разблакіруйце прыладу бацькоўскім кодам</translation>
 <translation id="4702647871202761252">Экран прыватнасці выключаны</translation>
+<translation id="4705716602320768426">Водгук па файле.</translation>
 <translation id="4710243778082831592">Налады IME</translation>
 <translation id="4731797938093519117">Бацькоўскі доступ</translation>
 <translation id="4734965478015604180">Гарызантальна</translation>
@@ -376,6 +379,7 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Уключана</translation>
+<translation id="5920710855273935292">Мікрафон выключаны.</translation>
 <translation id="5947494881799873997">Вярнуць</translation>
 <translation id="595202126637698455">Уключана трасіроўка прадукцыйнасці</translation>
 <translation id="5957083217255311415">Мабільная перадача даных выключана.</translation>

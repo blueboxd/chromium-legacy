@@ -12,6 +12,7 @@
 #include "ash/ambient/ui/photo_view.h"
 #include "ash/ambient/util/ambient_util.h"
 #include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/util/animation_util.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
@@ -27,6 +28,12 @@ namespace {
 // Ambient Assistant container view appearance.
 constexpr int kAmbientAssistantContainerViewPreferredHeightDip = 128;
 
+// TODO(meilinw): temporary values for dev purpose, need to be updated with the
+// final spec.
+constexpr float kBackgroundPhotoOpacity = 0.5f;
+constexpr base::TimeDelta kBackgroundPhotoFadeOutAnimationDuration =
+    base::TimeDelta::FromMilliseconds(500);
+
 aura::Window* GetContainer() {
   aura::Window* container = nullptr;
   if (ambient::util::IsShowing(LockScreen::ScreenType::kLock))
@@ -41,7 +48,7 @@ void CreateWidget(AmbientContainerView* view) {
   params.parent = GetContainer();
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   params.delegate = view;
-  params.name = view->GetClassName();
+  params.name = "AmbientModeContainer";
 
   views::Widget* widget = new views::Widget;
   widget->Init(std::move(params));
@@ -74,6 +81,16 @@ void AmbientContainerView::Layout() {
   ambient_assistant_container_view_->SetBoundsRect(
       gfx::Rect(0, 0, GetWidget()->GetRootView()->size().width(),
                 kAmbientAssistantContainerViewPreferredHeightDip));
+}
+
+void AmbientContainerView::FadeOutPhotoView() {
+  DCHECK(photo_view_);
+
+  photo_view_->layer()->GetAnimator()->StartAnimation(
+      assistant::util::CreateLayerAnimationSequence(
+          assistant::util::CreateOpacityElement(
+              kBackgroundPhotoOpacity,
+              kBackgroundPhotoFadeOutAnimationDuration)));
 }
 
 void AmbientContainerView::Init() {

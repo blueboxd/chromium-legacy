@@ -2579,8 +2579,7 @@ class ComputedStyle : public ComputedStyleBase,
     // property should be canvastext, but since we do not yet ship color-scheme
     // aware system colors, we use this method instead. This should be replaced
     // by default_value:"canvastext" in css_properties.json5.
-    return LayoutTheme::GetTheme().SystemColor(
-        CSSValueID::kCanvastext, UsedColorSchemeForInitialColors());
+    return DarkColorScheme() ? Color::kWhite : Color::kBlack;
   }
 
   Color ForcedBackplateColor() const {

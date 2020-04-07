@@ -44,8 +44,8 @@
 //  kUpdateError <------------- [update?] -> [action?] -> kUpToDate  kUpdated
 //     ^                            |           |            ^        ^
 //     |                        yes |           | yes        |        |
-//     |                            V           |            |        |
-//     |                        kCanUpdate      +--------> kRun       |
+//     |     update disabled        V           |            |        |
+//     +-<--------------------- kCanUpdate      +--------> kRun       |
 //     |                            |                                 |
 //     |                no          V                                 |
 //     |               +-<- [differential update?]                    |

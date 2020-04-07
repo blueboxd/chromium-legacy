@@ -116,6 +116,8 @@ class PathParser {
       case R_MOVE_TO:
       case LINE_TO:
       case R_LINE_TO:
+      case QUADRATIC_TO_SHORTHAND:
+      case R_QUADRATIC_TO_SHORTHAND:
         return 2;
 
       case CIRCLE:
@@ -124,6 +126,9 @@ class PathParser {
       case PATH_COLOR_ARGB:
       case CUBIC_TO_SHORTHAND:
       case CLIP:
+      case QUADRATIC_TO:
+      case R_QUADRATIC_TO:
+      case OVAL:
         return 4;
 
       case ROUND_RECT:
@@ -182,7 +187,12 @@ CommandType CommandFromString(const std::string& source) {
   RETURN_IF_IS(CUBIC_TO);
   RETURN_IF_IS(R_CUBIC_TO);
   RETURN_IF_IS(CUBIC_TO_SHORTHAND);
+  RETURN_IF_IS(QUADRATIC_TO);
+  RETURN_IF_IS(R_QUADRATIC_TO);
+  RETURN_IF_IS(QUADRATIC_TO_SHORTHAND);
+  RETURN_IF_IS(R_QUADRATIC_TO_SHORTHAND);
   RETURN_IF_IS(CIRCLE);
+  RETURN_IF_IS(OVAL);
   RETURN_IF_IS(ROUND_RECT);
   RETURN_IF_IS(CLOSE);
   RETURN_IF_IS(CANVAS_DIMENSIONS);
@@ -210,6 +220,13 @@ std::vector<PathElement> PathFromSource(const std::string& source) {
       path.push_back(PathElement(CommandFromString(piece)));
   }
   return path;
+}
+
+bool IsCommandTypeCurve(CommandType command) {
+  return command == CUBIC_TO || command == R_CUBIC_TO ||
+         command == CUBIC_TO_SHORTHAND || command == QUADRATIC_TO ||
+         command == R_QUADRATIC_TO || command == QUADRATIC_TO_SHORTHAND ||
+         command == R_QUADRATIC_TO_SHORTHAND;
 }
 
 void PaintPath(Canvas* canvas,
@@ -348,28 +365,55 @@ void PaintPath(Canvas* canvas,
         path.rCubicTo(arg(0), arg(1), arg(2), arg(3), arg(4), arg(5));
         break;
 
-      case CUBIC_TO_SHORTHAND: {
-        // Compute the first control point (|x1| and |y1|) as the reflection
-        // of the second control point on the previous command relative to
-        // the current point. If there is no previous command or if the
-        // previous command is not a cubic Bezier curve, the first control
-        // point is coincident with the current point. Refer to the SVG
-        // path specs for further details.
+      case CUBIC_TO_SHORTHAND:
+      case QUADRATIC_TO_SHORTHAND:
+      case R_QUADRATIC_TO_SHORTHAND: {
+        // Compute the first control point (|x1| and |y1|) as the reflection of
+        // the last control point on the previous command relative to the
+        // current point. If there is no previous command or if the previous
+        // command is not a Bezier curve, the first control point is coincident
+        // with the current point. Refer to the SVG path specs for further
+        // details.
+        // Note that |x1| and |y1| will correspond to the sole control point if
+        // calculating a quadratic curve.
         SkPoint last_point;
         path.getLastPt(&last_point);
         SkScalar delta_x = 0;
         SkScalar delta_y = 0;
-        if (previous_command_type == CUBIC_TO ||
-            previous_command_type == R_CUBIC_TO ||
-            previous_command_type == CUBIC_TO_SHORTHAND) {
+        if (IsCommandTypeCurve(previous_command_type)) {
           SkPoint last_control_point = path.getPoint(path.countPoints() - 2);
+          // We find what the delta was between the last curve's starting point
+          // and the control point. This difference is what we will reflect on
+          // the current point, creating our new control point.
           delta_x = last_point.fX - last_control_point.fX;
           delta_y = last_point.fY - last_control_point.fY;
         }
 
         SkScalar x1 = last_point.fX + delta_x;
         SkScalar y1 = last_point.fY + delta_y;
-        path.cubicTo(x1, y1, arg(0), arg(1), arg(2), arg(3));
+        if (command_type == CUBIC_TO_SHORTHAND)
+          path.cubicTo(x1, y1, arg(0), arg(1), arg(2), arg(3));
+        else if (command_type == QUADRATIC_TO_SHORTHAND)
+          path.quadTo(x1, y1, arg(0), arg(1));
+        else if (command_type == R_QUADRATIC_TO_SHORTHAND)
+          path.rQuadTo(x1, y1, arg(0), arg(1));
+        break;
+      }
+
+      case QUADRATIC_TO:
+        path.quadTo(arg(0), arg(1), arg(2), arg(3));
+        break;
+
+      case R_QUADRATIC_TO:
+        path.rQuadTo(arg(0), arg(1), arg(2), arg(3));
+        break;
+
+      case OVAL: {
+        SkScalar x = arg(0);
+        SkScalar y = arg(1);
+        SkScalar rx = arg(2);
+        SkScalar ry = arg(3);
+        path.addOval(SkRect::MakeLTRB(x - rx, y - ry, x + rx, y + ry));
         break;
       }
 

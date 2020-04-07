@@ -38,10 +38,6 @@ const base::Feature kIntentBlockExternalFormRedirectsNoGesture{
     "IntentBlockExternalFormRedirectsNoGesture",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-static jboolean JNI_ExternalIntentsFeatureList_IsInitialized(JNIEnv* env) {
-  return !!base::FeatureList::GetInstance();
-}
-
 static jboolean JNI_ExternalIntentsFeatureList_IsEnabled(
     JNIEnv* env,
     const base::android::JavaParamRef<jstring>& jfeature_name) {

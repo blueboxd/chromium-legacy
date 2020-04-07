@@ -621,21 +621,11 @@ class CORE_EXPORT PaintLayerScrollableArea final
   int HorizontalScrollbarStart() const;
   IntSize ScrollbarOffset(const Scrollbar&) const;
 
-  // If OverflowIndependent is specified, will only change current scrollbar
-  // existence if the new style doesn't depend on overflow which requires
-  // layout to be clean. It'd be nice if we could always determine existence at
-  // one point, after layout. Unfortunately, it seems that parts of layout are
-  // dependent on scrollbar existence in cases like |overflow:scroll|, removing
-  // the post style pass causes breaks in tests e.g. forms web_tests. Thus, we
-  // must do two scrollbar existence passes.
-  enum ComputeScrollbarExistenceOption {
-    kDependsOnOverflow,
-    kOverflowIndependent
-  };
+  enum ComputeScrollbarExistenceOption { kDefault, kForbidAddingAutoBars };
   void ComputeScrollbarExistence(
       bool& needs_horizontal_scrollbar,
       bool& needs_vertical_scrollbar,
-      ComputeScrollbarExistenceOption = kDependsOnOverflow) const;
+      ComputeScrollbarExistenceOption = kDefault) const;
 
   // If the content fits entirely in the area without auto scrollbars, returns
   // true to try to remove them. This is a heuristic and can be incorrect if the

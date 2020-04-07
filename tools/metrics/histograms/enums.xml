@@ -37813,11 +37813,13 @@ from previous Chrome versions.
       label="ImprovedCookieControlsForThirdPartyCookieBlocking:enabled"/>
   <int value="-1758468685" label="DownloadHomeV2:disabled"/>
   <int value="-1755301960" label="ClearOldBrowsingData:enabled"/>
+  <int value="-1754262889" label="RemoteCopyPersistentNotification:enabled"/>
   <int value="-1753458842" label="OfflinePagesLivePageSharing:disabled"/>
   <int value="-1751928267" label="disable-icon-ntp"/>
   <int value="-1750008152" label="UsernameFirstFlow:enabled"/>
   <int value="-1749176684" label="PauseBackgroundTabs:disabled"/>
   <int value="-1746767834" label="ssl-interstitial-v2-gray"/>
+  <int value="-1746708491" label="RemoteCopyPersistentNotification:disabled"/>
   <int value="-1746255521" label="NewOverviewUi:enabled"/>
   <int value="-1743079191" label="SyncPseudoUSSPriorityPreferences:enabled"/>
   <int value="-1742376665" label="SyncPseudoUSSPasswords:disabled"/>

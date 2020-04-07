@@ -825,6 +825,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="2119349053129246860">Abrir na aplicación <ph name="APP" /></translation>
 <translation id="2120297377148151361">Actividade e interaccións</translation>
 <translation id="2120639962942052471">Bloqueouse o permiso: <ph name="PERMISSION" /></translation>
+<translation id="2121055421682309734">{COUNT,plural, =0{Bloqueáronse as cookies}=1{Bloqueáronse as cookies (1 excepción)}other{Bloqueáronse as cookies ({COUNT} excepcións)}}</translation>
 <translation id="2121825465123208577">Cambiar tamaño</translation>
 <translation id="2122305276694332719">Ao conectarte automaticamente a unha rede oculta, outros usuarios poden ver o teu dispositivo e parte da configuración de rede. Por iso esta opción non é recomendable.</translation>
 <translation id="2123766928840368256">Escoller un ficheiro diferente</translation>
@@ -858,7 +859,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="2154484045852737596">Editar tarxeta</translation>
 <translation id="2154710561487035718">Copiar o URL</translation>
 <translation id="2155772377859296191">A resolución parece de <ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
-<translation id="2156283799932971644">Podes axudar a mellorar a Navegación segura enviando información sobre o sistema e o contido das páxinas a Google.</translation>
 <translation id="2156294658807918600">Traballador de servizos: <ph name="SCRIPT_URL" /></translation>
 <translation id="2157474325782140681">Para gozar de funcións adicionais, utiliza unha base de Dell deseñada para funcionar con este Chromebook.</translation>
 <translation id="215753907730220065">Saír do modo de pantalla completa</translation>
@@ -990,7 +990,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="2326931316514688470">Vo&amp;lver cargar aplicación</translation>
 <translation id="2327492829706409234">Activar aplicación</translation>
 <translation id="2329597144923131178">Inicia sesión para ter os marcadores, o historial, os contrasinais e o resto da túa configuración en todos os teus dispositivos.</translation>
-<translation id="2330607597130465898">Sen protección</translation>
 <translation id="2332131598580221120">Ver na tenda</translation>
 <translation id="2332192922827071008">Abrir preferencias</translation>
 <translation id="2332742915001411729">Restablecer valores predeterminados</translation>
@@ -1870,7 +1869,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="3492788708641132712">A sincronización non funciona. Proba a volver iniciar sesión.</translation>
 <translation id="3493486281776271508">É necesaria unha conexión a Internet</translation>
 <translation id="3493881266323043047">Validez</translation>
-<translation id="3494155060718700400">Non te protexe contra sitios web, descargas e extensións perigosos (non recomendado). Continuarás dispoñendo da protección da Navegación segura, sempre que estea dispoñible, noutros servizos de Google, como Gmail e a Busca.</translation>
 <translation id="3494769164076977169">Preguntar cando un sitio tente descargar ficheiros automaticamente despois do primeiro ficheiro (recomendado)</translation>
 <translation id="3495660573538963482">Configuración do Asistente de Google</translation>
 <translation id="3496213124478423963">Afastar</translation>
@@ -2921,7 +2919,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="4920887663447894854">Os sitios que se indican a continuación bloqueáronse para evitar que poidan facer un seguimento da túa localización nesta páxina:</translation>
 <translation id="49226369361073053">{0,plural, =0{Actualiza o dispositivo agora}=1{Actualiza o dispositivo en 1 segundo}other{Actualiza o dispositivo en # segundos}}</translation>
 <translation id="492299503953721473">Eliminar aplicacións de Android</translation>
-<translation id="4923279099980110923">Si, quero axudar</translation>
 <translation id="4924352752174756392">12x</translation>
 <translation id="4925320384394644410">Os teus portos aparecerán aquí</translation>
 <translation id="4925542575807923399">O administrador desta conta require que esta conta sexa a primeira na que se inicie sesión cando se cree unha sesión de inicio de sesión múltiple.</translation>
@@ -3235,7 +3232,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="5362741141255528695">Seleccionar ficheiro de clave privada.</translation>
 <translation id="5363109466694494651">Levar a cabo un Powerwash e reverter</translation>
 <translation id="5365881113273618889">O cartafol que seleccionaches contén ficheiros confidenciais. Seguro que queres conceder a <ph name="APP_NAME" /> acceso de lectura permanente a este cartafol?</translation>
-<translation id="5367091008316207019">Lendo ficheiro...</translation>
 <translation id="5368720394188453070">O teléfono está bloqueado. Desbloquéao para acceder.</translation>
 <translation id="5368779022775404937">Iniciar sesión en <ph name="REALM" /></translation>
 <translation id="5369491905435686894">Activar aceleración do rato</translation>
@@ -5960,7 +5956,6 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
 <translation id="8985264973231822211">Dispositivo activo hai <ph name="DEVICE_LAST_ACTIVATED_TIME" /> día</translation>
 <translation id="8986362086234534611">Borrar</translation>
 <translation id="8986494364107987395">Enviar estatísticas de uso e informes de erros a Google automaticamente</translation>
-<translation id="8986651757229422279">Ao realizar esta acción, borraranse todos os datos e as cookies que almacenase <ph name="ORIGIN_NAME" /> e a súa aplicación instalada.</translation>
 <translation id="8987927404178983737">Mes</translation>
 <translation id="8991520179165052608">O sitio pode usar o teu micrófono</translation>
 <translation id="899403249577094719">URL de base de certificado de Netscape</translation>

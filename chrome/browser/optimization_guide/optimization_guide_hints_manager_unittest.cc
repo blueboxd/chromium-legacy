@@ -1952,7 +1952,9 @@ class OptimizationGuideHintsManagerFetchingTest
   OptimizationGuideHintsManagerFetchingTest() {
     scoped_list_.InitAndEnableFeatureWithParameters(
         optimization_guide::features::kRemoteOptimizationGuideFetching,
-        {{"max_concurrent_page_navigation_fetches", "2"}});
+        {{"max_concurrent_page_navigation_fetches", "2"},
+         {"approved_external_app_packages",
+          "org.example.whatever,com.foo.bar"}});
   }
  private:
   base::test::ScopedFeatureList scoped_list_;
@@ -2263,9 +2265,10 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
 }
 
 // Verify that optimization hints are not fetched if the prediction for the next
-// likely navigations are provided by external Android app.
-TEST_F(OptimizationGuideHintsManagerFetchingTest,
-       HintsFetched_ExternalAndroidApp_ECT_SLOW_2G_NonHTTPOrHTTPSHostsRemoved) {
+// likely navigations are provided by external Android app that is whitelisted.
+TEST_F(
+    OptimizationGuideHintsManagerFetchingTest,
+    HintsFetched_ExternalAndroidApp_ECT_SLOW_2G_NonHTTPOrHTTPSHostsRemovedAppWhitelisted) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
   hints_manager()->RegisterOptimizationTypes(
@@ -2282,35 +2285,90 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
   sorted_predicted_urls.push_back(GURL("http://httppage.com/"));
 
   std::vector<std::string> external_app_packages_name;
-  external_app_packages_name.push_back("com.example.foo");
+  external_app_packages_name.push_back("com.foo.bar");
 
   NavigationPredictorKeyedService::Prediction prediction_external_android_app(
       nullptr, base::nullopt, external_app_packages_name,
       NavigationPredictorKeyedService::PredictionSource::kExternalAndroidApp,
       sorted_predicted_urls);
   hints_manager()->OnPredictionUpdated(prediction_external_android_app);
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 0);
-  // Ensure that we only include 2 URLs in the request.
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintsFetcher.GetHintsRequest.UrlCount", 0);
-
-  // Now fetch again with a prediction from anchor elements. This time
-  // optimization hints should be requested.
-  NavigationPredictorKeyedService::Prediction prediction_anchor_elements(
-      nullptr, GURL("https://www.google.com/"),
-      /*external_app_packages_name=*/{},
-      NavigationPredictorKeyedService::PredictionSource::
-          kAnchorElementsParsedFromWebPage,
-      sorted_predicted_urls);
-  hints_manager()->OnPredictionUpdated(prediction_anchor_elements);
-  // Ensure that we include both web hosts in the request. These would be
-  // foo.com and httppage.com.
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 2, 1);
-  // Ensure that we only include 2 URLs in the request.
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.UrlCount", 2, 1);
+}
+
+// Verify that optimization hints are not fetched if the prediction for the next
+// likely navigations are provided by external Android app that is not
+// whitelisted, even though one of the apps was whitelisted.
+TEST_F(
+    OptimizationGuideHintsManagerFetchingTest,
+    HintsFetched_ExternalAndroidApp_ECT_SLOW_2G_NonHTTPOrHTTPSHostsRemovedNotAllAppsWhitelisted) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::DEFER_ALL_SCRIPT});
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  // Set ECT estimate so fetch is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+  base::HistogramTester histogram_tester;
+  std::vector<GURL> sorted_predicted_urls;
+  sorted_predicted_urls.push_back(GURL("https://foo.com/page1.html"));
+  sorted_predicted_urls.push_back(GURL("file://non-web-bar.com/"));
+  sorted_predicted_urls.push_back(GURL("http://httppage.com/"));
+
+  std::vector<std::string> external_app_packages_name;
+  external_app_packages_name.push_back("com.foo.bar");
+  external_app_packages_name.push_back("com.example.notwhitelisted");
+
+  NavigationPredictorKeyedService::Prediction prediction_external_android_app(
+      nullptr, base::nullopt, external_app_packages_name,
+      NavigationPredictorKeyedService::PredictionSource::kExternalAndroidApp,
+      sorted_predicted_urls);
+  hints_manager()->OnPredictionUpdated(prediction_external_android_app);
+  // Nothing should be fetched.
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 0);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.UrlCount", 0);
+}
+
+// Verify that optimization hints are not fetched if the prediction for the next
+// likely navigations are provided by external Android app that is not
+// whitelisted.
+TEST_F(
+    OptimizationGuideHintsManagerFetchingTest,
+    HintsFetched_ExternalAndroidApp_ECT_SLOW_2G_NonHTTPOrHTTPSHostsRemovedAppNotWhitelisted) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::DEFER_ALL_SCRIPT});
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  // Set ECT estimate so fetch is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+  base::HistogramTester histogram_tester;
+  std::vector<GURL> sorted_predicted_urls;
+  sorted_predicted_urls.push_back(GURL("https://foo.com/page1.html"));
+  sorted_predicted_urls.push_back(GURL("file://non-web-bar.com/"));
+  sorted_predicted_urls.push_back(GURL("http://httppage.com/"));
+
+  std::vector<std::string> external_app_packages_name;
+  external_app_packages_name.push_back("com.example.notwhitelisted");
+
+  NavigationPredictorKeyedService::Prediction prediction_external_android_app(
+      nullptr, base::nullopt, external_app_packages_name,
+      NavigationPredictorKeyedService::PredictionSource::kExternalAndroidApp,
+      sorted_predicted_urls);
+  hints_manager()->OnPredictionUpdated(prediction_external_android_app);
+  // Nothing should be fetched.
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 0);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.UrlCount", 0);
 }
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest, HintsFetched_AtSRP_ECT_4G) {

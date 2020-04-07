@@ -1517,11 +1517,6 @@ void View::ShowContextMenu(const gfx::Point& p,
   context_menu_controller_->ShowContextMenuForView(this, p, source_type);
 }
 
-// static
-bool View::ShouldShowContextMenuOnMousePress() {
-  return kContextMenuOnMousePress;
-}
-
 gfx::Point View::GetKeyboardContextMenuLocation() {
   gfx::Rect vis_bounds = GetVisibleBounds();
   gfx::Point screen_point(vis_bounds.x() + vis_bounds.width() / 2,

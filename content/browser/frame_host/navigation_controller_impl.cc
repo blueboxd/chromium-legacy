@@ -2224,7 +2224,8 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
     const std::string& method,
     scoped_refptr<network::ResourceRequestBody> post_body,
     const std::string& extra_headers,
-    scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {
+    scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
+    const base::Optional<Impression>& impression) {
   if (is_renderer_initiated)
     DCHECK(initiator_origin.has_value());
 
@@ -2328,6 +2329,7 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
   /* params.input_start: skip */
   params.was_activated = mojom::WasActivatedOption::kUnknown;
   /* params.reload_type: skip */
+  params.impression = impression;
 
   std::unique_ptr<NavigationRequest> request =
       CreateNavigationRequestFromLoadParams(
@@ -3243,7 +3245,8 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
       node, std::move(common_params), std::move(commit_params),
       !params.is_renderer_initiated, extra_headers_crlf, frame_entry, entry,
       request_body,
-      params.navigation_ui_data ? params.navigation_ui_data->Clone() : nullptr);
+      params.navigation_ui_data ? params.navigation_ui_data->Clone() : nullptr,
+      params.impression);
   navigation_request->set_from_download_cross_origin_redirect(
       params.from_download_cross_origin_redirect);
   return navigation_request;
@@ -3352,7 +3355,8 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
   return NavigationRequest::CreateBrowserInitiated(
       frame_tree_node, std::move(common_params), std::move(commit_params),
       !entry->is_renderer_initiated(), entry->extra_headers(), frame_entry,
-      entry, request_body, nullptr /* navigation_ui_data */);
+      entry, request_body, nullptr /* navigation_ui_data */,
+      base::nullopt /* impression */);
 }
 
 void NavigationControllerImpl::NotifyNavigationEntryCommitted(
@@ -3436,7 +3440,8 @@ void NavigationControllerImpl::LoadPostCommitErrorPage(
           node, std::move(common_params), std::move(commit_params),
           true /* browser_initiated */, "" /* extra_headers */,
           nullptr /* frame_entry */, nullptr /* entry */,
-          nullptr /* post_body */, nullptr /* navigation_ui_data */);
+          nullptr /* post_body */, nullptr /* navigation_ui_data */,
+          base::nullopt /* impression */);
   navigation_request->set_post_commit_error_page_html(error_page_html);
   navigation_request->set_net_error(error);
   node->CreatedNavigationRequest(std::move(navigation_request));

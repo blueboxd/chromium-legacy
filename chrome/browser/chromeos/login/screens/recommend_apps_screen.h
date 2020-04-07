@@ -54,8 +54,7 @@ class RecommendAppsScreen : public BaseScreen,
   void OnParseResponseError() override;
 
   // BaseScreen:
-  bool ShouldSkipScreen() override;
-  void Skip() override;
+  bool MaybeSkip() override;
 
  private:
   // BaseScreen:

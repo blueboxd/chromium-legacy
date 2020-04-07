@@ -24,6 +24,7 @@
 #include "content/public/browser/restore_type.h"
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/common/impression.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/was_activated_option.mojom.h"
 #include "services/network/public/cpp/resource_request_body.h"
@@ -237,6 +238,10 @@ class NavigationController {
 
     // Indicates the reload type of this navigation.
     ReloadType reload_type = ReloadType::NONE;
+
+    // Impression info associated with this navigation. Should only be populated
+    // for navigations originating from a link click.
+    base::Optional<Impression> impression;
 
     explicit LoadURLParams(const GURL& url);
 

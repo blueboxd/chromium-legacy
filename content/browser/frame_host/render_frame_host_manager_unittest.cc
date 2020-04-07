@@ -416,7 +416,8 @@ class RenderFrameHostManagerTest
         NavigationRequest::CreateBrowserInitiated(
             frame_tree_node, std::move(common_params), std::move(commit_params),
             !entry->is_renderer_initiated(), entry->extra_headers(),
-            frame_entry, entry, request_body, nullptr /* navigation_ui_data */);
+            frame_entry, entry, request_body, nullptr /* navigation_ui_data */,
+            base::nullopt /* impression */);
 
     // Simulates request creation that triggers the 1st internal call to
     // GetFrameHostForNavigation.
@@ -2867,7 +2868,8 @@ TEST_P(RenderFrameHostManagerTest, NavigateFromDeadRendererToWebUI) {
       NavigationRequest::CreateBrowserInitiated(
           frame_tree_node, std::move(common_params), std::move(commit_params),
           !entry.is_renderer_initiated(), entry.extra_headers(), frame_entry,
-          &entry, nullptr /* request_body */, nullptr /* navigation_ui_data */);
+          &entry, nullptr /* request_body */, nullptr /* navigation_ui_data */,
+          base::nullopt /* impression */);
   manager->DidCreateNavigationRequest(navigation_request.get());
 
   // As the initial RenderFrame was not live, the new RenderFrameHost should be

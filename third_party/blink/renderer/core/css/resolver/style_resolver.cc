@@ -1238,10 +1238,6 @@ scoped_refptr<ComputedStyle> StyleResolver::InitialStyleForElement(
                                                        : 1);
   initial_style->SetEffectiveZoom(initial_style->Zoom());
 
-  initial_style->SetInternalVisitedColor(
-      initial_style->InitialColorForColorScheme());
-  initial_style->SetColor(initial_style->InitialColorForColorScheme());
-
   FontDescription document_font_description =
       initial_style->GetFontDescription();
   document_font_description.SetLocale(
@@ -2331,6 +2327,8 @@ void StyleResolver::ApplyCascadedColorValue(StyleResolverState& state) {
       state.Style()->SetColor(
           StyleBuilderConverter::ConvertColor(state, *color_value));
     }
+  } else if (state.GetElement() == GetDocument().documentElement()) {
+    state.Style()->SetColor(state.Style()->InitialColorForColorScheme());
   }
 
   if (const CSSValue* visited_color_value =

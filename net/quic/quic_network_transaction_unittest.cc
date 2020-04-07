@@ -159,23 +159,30 @@ std::string PrintToString(const PoolingTestParams& p) {
       "Dependency");
 }
 
-std::string GenerateQuicAltSvcHeader() {
+std::string GenerateQuicAltSvcHeader(
+    const quic::ParsedQuicVersionVector& versions) {
   std::string altsvc_header = "Alt-Svc: ";
   std::string version_string;
-  for (const auto& version : quic::AllSupportedVersions()) {
-    if (version.handshake_protocol == quic::PROTOCOL_TLS1_3) {
-      altsvc_header.append(quic::AlpnForVersion(version));
-      altsvc_header.append("=\":443\", ");
+  bool first_version = true;
+  for (const auto& version : versions) {
+    if (first_version) {
+      first_version = false;
     } else {
+      altsvc_header.append(", ");
+    }
+    altsvc_header.append(quic::AlpnForVersion(version));
+    altsvc_header.append("=\":443\"");
+    if (version.SupportsGoogleAltSvcFormat()) {
       if (!version_string.empty()) {
         version_string.append(",");
       }
       version_string.append(base::NumberToString(version.transport_version));
     }
   }
-  altsvc_header.append("quic=\":443\"; v=\"");
-  altsvc_header.append(version_string);
-  altsvc_header.append("\"\r\n");
+  if (!version_string.empty()) {
+    altsvc_header.append(", quic=\":443\"; v=\"" + version_string + "\"");
+  }
+  altsvc_header.append("\r\n");
 
   return altsvc_header;
 }
@@ -1745,7 +1752,7 @@ TEST_P(QuicNetworkTransactionTest, DoNotUseQuicForUnsupportedVersion) {
   // in the stored AlternativeService is not supported by the client. However,
   // the response from the server will advertise new Alt-Svc with supported
   // versions.
-  std::string altsvc_header = GenerateQuicAltSvcHeader();
+  std::string altsvc_header = GenerateQuicAltSvcHeader(supported_versions_);
   MockRead http_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"),
       MockRead(altsvc_header.c_str()),
@@ -1807,7 +1814,11 @@ TEST_P(QuicNetworkTransactionTest, DoNotUseQuicForUnsupportedVersion) {
   for (const auto& alt_svc_info : alt_svc_info_vector) {
     EXPECT_EQ(kProtoQUIC, alt_svc_info.alternative_service().protocol);
     for (const auto& version : alt_svc_info.advertised_versions()) {
-      alt_svc_negotiated_versions.push_back(version);
+      if (std::find(alt_svc_negotiated_versions.begin(),
+                    alt_svc_negotiated_versions.end(),
+                    version) == alt_svc_negotiated_versions.end()) {
+        alt_svc_negotiated_versions.push_back(version);
+      }
     }
   }
 
@@ -2225,9 +2236,7 @@ TEST_P(QuicNetworkTransactionTest,
   // Client and server both support more than one QUIC_VERSION.
   // Client prefers |version_|, and then common_version_2.
   // Server prefers common_version_2, and then |version_|.
-  // In non-TLS version, |version_| will be picked.
-  // In TLS version, server's preference will be honored.
-  // TODO(crbug.com/1063060): fix the behavior to be consistent.
+  // We should honor the server's preference.
   // The picked version is verified via checking the version used by the
   // TestPacketMakers and the response.
 
@@ -2259,18 +2268,11 @@ TEST_P(QuicNetworkTransactionTest,
   // |common_version_2|, |version_|.
   std::string QuicAltSvcWithVersionHeader;
   quic::ParsedQuicVersion picked_version = quic::UnsupportedQuicVersion();
-  if (version_.handshake_protocol == quic::PROTOCOL_QUIC_CRYPTO) {
-    QuicAltSvcWithVersionHeader = base::StringPrintf(
-        "Alt-Svc: quic=\":443\";v=\"%d,%d\"\r\n\r\n",
-        common_version_2.transport_version, version_.transport_version);
-    picked_version = version_;  // Use client's preference.
-  } else {
     QuicAltSvcWithVersionHeader =
         "Alt-Svc: " + quic::AlpnForVersion(common_version_2) +
         "=\":443\"; ma=3600, " + quic::AlpnForVersion(version_) +
         "=\":443\"; ma=3600\r\n\r\n";
     picked_version = common_version_2;  // Use server's preference.
-  }
 
   MockRead http_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"),
@@ -2468,7 +2470,7 @@ TEST_P(QuicNetworkTransactionTest,
     }
   }
 
-  std::string altsvc_header = GenerateQuicAltSvcHeader();
+  std::string altsvc_header = GenerateQuicAltSvcHeader(supported_versions_);
   MockRead http_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"),
       MockRead(altsvc_header.c_str()),
@@ -2530,7 +2532,11 @@ TEST_P(QuicNetworkTransactionTest,
   for (const auto& alt_svc_info : alt_svc_info_vector) {
     EXPECT_EQ(kProtoQUIC, alt_svc_info.alternative_service().protocol);
     for (const auto& version : alt_svc_info.advertised_versions()) {
-      alt_svc_negotiated_versions.push_back(version);
+      if (std::find(alt_svc_negotiated_versions.begin(),
+                    alt_svc_negotiated_versions.end(),
+                    version) == alt_svc_negotiated_versions.end()) {
+        alt_svc_negotiated_versions.push_back(version);
+      }
     }
   }
 

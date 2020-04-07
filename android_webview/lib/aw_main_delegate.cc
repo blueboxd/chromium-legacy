@@ -219,6 +219,8 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
 
     features.DisableIfNotSet(::features::kWebXrHitTest);
 
+    features.DisableIfNotSet(::features::kDynamicColorGamut);
+
     // De-jelly is never supported on WebView.
     features.EnableIfNotSet(::features::kDisableDeJelly);
 

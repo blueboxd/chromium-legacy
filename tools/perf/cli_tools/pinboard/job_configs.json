@@ -1,6 +1,6 @@
 [
   {
-    "name": "Try job for v8: enable TurboProp",
+    "name": "Try job for v8: enable TurboProp - Android Go",
     "target": "performance_test_suite",
     "configuration": "android-go-perf",
     "benchmark": "v8.browsing_mobile",
@@ -9,7 +9,25 @@
     "repository": "chromium"
   },
   {
-    "name": "Try job for v8: enable TurboProp",
+    "name": "Try job for v8: enable TurboProp - Pixel 2",
+    "target": "performance_test_suite",
+    "configuration": "android-pixel2-perf",
+    "benchmark": "v8.browsing_mobile",
+    "story_tags": "2019",
+    "patch": "https://chromium-review.googlesource.com/c/v8/v8/+/1784285",
+    "repository": "chromium"
+  },
+  {
+    "name": "Try job for v8: enable TurboProp - Linux",
+    "target": "performance_test_suite",
+    "configuration": "linux-perf",
+    "benchmark": "v8.browsing_desktop",
+    "story_tags": "2019,2018",
+    "patch": "https://chromium-review.googlesource.com/c/v8/v8/+/1784285",
+    "repository": "chromium"
+  },
+  {
+    "name": "Try job for v8: enable TurboProp - Speedometer",
     "target": "performance_test_suite",
     "configuration": "android-go-perf",
     "benchmark": "speedometer2",

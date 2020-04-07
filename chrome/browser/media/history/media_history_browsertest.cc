@@ -577,7 +577,7 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest, DISABLED_GetPlaybackSessions) {
     if (IsReadOnly()) {
       EXPECT_TRUE(sessions.empty());
     } else {
-      EXPECT_EQ(2u, sessions.size());
+      ASSERT_EQ(2u, sessions.size());
       EXPECT_EQ(GetTestAltURL(), sessions[0]->url);
       EXPECT_EQ(GetTestURL(), sessions[1]->url);
     }
@@ -629,7 +629,7 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest, DISABLED_GetPlaybackSessions) {
     if (IsReadOnly()) {
       EXPECT_TRUE(sessions.empty());
     } else {
-      EXPECT_EQ(2u, sessions.size());
+      ASSERT_EQ(2u, sessions.size());
       EXPECT_EQ(GetTestURL(), sessions[0]->url);
       EXPECT_EQ(GetTestAltURL(), sessions[1]->url);
 
@@ -704,7 +704,7 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest, DISABLED_GetPlaybackSessions) {
     if (IsReadOnly()) {
       EXPECT_TRUE(sessions.empty());
     } else {
-      EXPECT_EQ(2u, sessions.size());
+      ASSERT_EQ(2u, sessions.size());
       EXPECT_EQ(GetTestURL(), sessions[0]->url);
       EXPECT_EQ(GetTestAltURL(), sessions[1]->url);
     }
@@ -781,7 +781,7 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
   if (IsReadOnly()) {
     EXPECT_TRUE(sessions.empty());
   } else {
-    EXPECT_EQ(2u, sessions.size());
+    ASSERT_EQ(2u, sessions.size());
     EXPECT_EQ(GetTestAltURL(), sessions[0]->url);
     EXPECT_EQ(expected_alt_artwork, sessions[0]->artwork);
     EXPECT_EQ(GetTestURL(), sessions[1]->url);

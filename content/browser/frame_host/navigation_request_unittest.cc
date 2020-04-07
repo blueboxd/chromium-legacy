@@ -195,7 +195,9 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
     request_ = NavigationRequest::CreateBrowserInitiated(
         main_test_rfh()->frame_tree_node(), std::move(common_params),
         CreateCommitNavigationParams(), false /* browser-initiated */,
-        std::string(), nullptr, nullptr, nullptr, nullptr);
+        std::string() /* extra_headers */, nullptr /* frame_entry */,
+        nullptr /* entry */, nullptr /* post_body */,
+        nullptr /* navigation_ui_data */, base::nullopt /* impression */);
     request_->StartNavigation(true);
   }
 

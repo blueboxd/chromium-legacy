@@ -860,7 +860,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2154484045852737596">Edit card</translation>
 <translation id="2154710561487035718">Copy URL</translation>
 <translation id="2155772377859296191">Looks like <ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
-<translation id="2156283799932971644">You can help improve Safe Browsing by sending some system information and page content to Google.</translation>
 <translation id="2156294658807918600">Service Worker: <ph name="SCRIPT_URL" /></translation>
 <translation id="2157474325782140681">To get additional features, use a Dell docking station designed to work with this Chromebook.</translation>
 <translation id="215753907730220065">Exit Full Screen</translation>
@@ -992,7 +991,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2326931316514688470">&amp;Reload app</translation>
 <translation id="2327492829706409234">Enable app</translation>
 <translation id="2329597144923131178">Sign in to get your bookmarks, history, passwords and other settings on all your devices</translation>
-<translation id="2330607597130465898">No protection</translation>
 <translation id="2332131598580221120">View in store</translation>
 <translation id="2332192922827071008">Open preferences</translation>
 <translation id="2332742915001411729">Reset to default</translation>
@@ -1872,7 +1870,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3492788708641132712">Sync isn’t working. Try signing in again.</translation>
 <translation id="3493486281776271508">Internet connection required</translation>
 <translation id="3493881266323043047">Validity</translation>
-<translation id="3494155060718700400">Does not protect you against dangerous websites, downloads and extensions (not recommended). You’ll still get Safe Browsing protection, where available, in other Google services, like Gmail and Search.</translation>
 <translation id="3494769164076977169">Ask when a site tries to download files automatically after the first file (recommended)</translation>
 <translation id="3495660573538963482">Google Assistant settings</translation>
 <translation id="3496213124478423963">Zoom Out</translation>
@@ -2923,7 +2920,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4920887663447894854">The following sites have been blocked from tracking your location on this page:</translation>
 <translation id="49226369361073053">{0,plural, =0{Update device now}=1{Update device within 1 second}other{Update device within # seconds}}</translation>
 <translation id="492299503953721473">Remove Android apps</translation>
-<translation id="4923279099980110923">Yes, I want to help</translation>
 <translation id="4924352752174756392">12x</translation>
 <translation id="4925320384394644410">Your ports will appear here</translation>
 <translation id="4925542575807923399">The administrator for this account requires this account to be the first signed-in account in a multiple sign-in session.</translation>
@@ -3237,7 +3233,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5362741141255528695">Select private key file.</translation>
 <translation id="5363109466694494651">Powerwash and Revert</translation>
 <translation id="5365881113273618889">The folder that you selected contains sensitive files. Are you sure that you want to grant '<ph name="APP_NAME" />' permanent write access to this folder?</translation>
-<translation id="5367091008316207019">Reading file..</translation>
 <translation id="5368720394188453070">Your phone is locked. Unlock it to enter.</translation>
 <translation id="5368779022775404937">Sign in to <ph name="REALM" /></translation>
 <translation id="5369491905435686894">Enable mouse acceleration</translation>
@@ -5963,7 +5958,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8985264973231822211">Active <ph name="DEVICE_LAST_ACTIVATED_TIME" /> day ago</translation>
 <translation id="8986362086234534611">Forget</translation>
 <translation id="8986494364107987395">Automatically send usage statistics and crash reports to Google</translation>
-<translation id="8986651757229422279">This will clear all data and cookies stored by <ph name="ORIGIN_NAME" /> and its installed app.</translation>
 <translation id="8987927404178983737">Month</translation>
 <translation id="8991520179165052608">Site can use your microphone</translation>
 <translation id="899403249577094719">Netscape Certificate Base URL</translation>

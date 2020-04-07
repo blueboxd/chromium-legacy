@@ -265,9 +265,7 @@ cr.define('cr.ui.login', function() {
      * @return {boolean}
      */
     get showingViewsLogin() {
-      return loadTimeData.valueExists('showViewsLogin') &&
-          loadTimeData.getString('showViewsLogin') == 'on' &&
-          (this.displayType_ == DISPLAY_TYPE.GAIA_SIGNIN);
+      return this.displayType_ == DISPLAY_TYPE.GAIA_SIGNIN;
     },
 
     /**

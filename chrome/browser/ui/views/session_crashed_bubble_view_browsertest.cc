@@ -31,9 +31,8 @@ class SessionCrashedBubbleViewTest : public DialogBrowserTest {
                         ->toolbar_button_provider()
                         ->GetAppMenuButton();
     }
-    crash_bubble_ =
-        new SessionCrashedBubbleView(anchor_view, anchor_rect, browser(),
-                                     name == "SessionCrashedBubbleOfferUma");
+    crash_bubble_ = new SessionCrashedBubbleView(
+        anchor_view, browser(), name == "SessionCrashedBubbleOfferUma");
     views::BubbleDialogDelegateView::CreateBubble(crash_bubble_)->Show();
   }
 

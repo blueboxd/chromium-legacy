@@ -826,6 +826,7 @@
 <translation id="2119349053129246860">在「<ph name="APP" />」中開啟</translation>
 <translation id="2120297377148151361">活動與互動行為</translation>
 <translation id="2120639962942052471">已封鎖<ph name="PERMISSION" /></translation>
+<translation id="2121055421682309734">{COUNT,plural, =0{已封鎖 Cookie}=1{已封鎖 Cookie，有 1 個例外狀況}other{已封鎖 Cookie，有 {COUNT} 個例外狀況}}</translation>
 <translation id="2121825465123208577">調整大小</translation>
 <translation id="2122305276694332719">自動連線至隱藏網路會讓其他人可以查看你的裝置和部分網路設定，建議你不要啟用這項設定。</translation>
 <translation id="2123766928840368256">選擇其他檔案</translation>
@@ -859,7 +860,6 @@
 <translation id="2154484045852737596">編輯卡片資訊</translation>
 <translation id="2154710561487035718">複製網址</translation>
 <translation id="2155772377859296191">螢幕解析度：<ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
-<translation id="2156283799932971644">你可以將部分系統資訊和網頁內容傳送給 Google，協助我們改善安全瀏覽功能。</translation>
 <translation id="2156294658807918600">Service Worker：<ph name="SCRIPT_URL" /></translation>
 <translation id="2157474325782140681">如要取得其他功能，請使用這部 Chromebook 的專用座架。</translation>
 <translation id="215753907730220065">結束全螢幕</translation>
@@ -991,7 +991,6 @@
 <translation id="2326931316514688470">重新載入應用程式(&amp;R)</translation>
 <translation id="2327492829706409234">啟用應用程式</translation>
 <translation id="2329597144923131178">登入後，即可從您使用的任何裝置取得自己的書籤、歷史記錄、密碼和其他設定。</translation>
-<translation id="2330607597130465898">無防護</translation>
 <translation id="2332131598580221120">前往商店查看</translation>
 <translation id="2332192922827071008">開啟偏好設定</translation>
 <translation id="2332742915001411729">重設為預設值</translation>
@@ -1870,7 +1869,6 @@
 <translation id="3492788708641132712">同步功能無法正常運作，請嘗試重新登入。</translation>
 <translation id="3493486281776271508">需要網際網路連線</translation>
 <translation id="3493881266323043047">有效性</translation>
-<translation id="3494155060718700400">無法防範不安全的網站、下載內容和擴充功能 (不建議)。在 Gmail 和 Google 搜尋等其他 Google 服務中，你仍可獲得安全瀏覽的防護 (如適用)。</translation>
 <translation id="3494769164076977169">在網站已下載第一個檔案，並且嘗試自動下載更多檔案時先通知你 (建議使用)</translation>
 <translation id="3495660573538963482">Google 助理設定</translation>
 <translation id="3496213124478423963">縮小</translation>
@@ -2920,7 +2918,6 @@
 <translation id="4920887663447894854">下列網站已遭封鎖，無法在你瀏覽此網頁時追蹤你的位置：</translation>
 <translation id="49226369361073053">{0,plural, =0{請立即更新裝置}=1{請在 1 秒內更新裝置}other{請在 # 秒內更新裝置}}</translation>
 <translation id="492299503953721473">移除 Android 應用程式</translation>
-<translation id="4923279099980110923">是，我願意協助</translation>
 <translation id="4924352752174756392">12 倍</translation>
 <translation id="4925320384394644410">你的通訊埠會顯示在這裡</translation>
 <translation id="4925542575807923399">這個帳戶的管理員要求此帳戶必需是多重登入工作階段中第一個登入的帳戶。</translation>
@@ -3234,7 +3231,6 @@
 <translation id="5362741141255528695">選取秘密金鑰檔案。</translation>
 <translation id="5363109466694494651">執行 Powerwash 並恢復原廠設定</translation>
 <translation id="5365881113273618889">你選取的資料夾包含敏感檔案。你確定要將這個資料夾的寫入權限永久授予「<ph name="APP_NAME" />」嗎？</translation>
-<translation id="5367091008316207019">正在讀取檔案...</translation>
 <translation id="5368720394188453070">你的手機已鎖定，必須解鎖才能繼續操作。</translation>
 <translation id="5368779022775404937">登入 <ph name="REALM" /></translation>
 <translation id="5369491905435686894">啟用滑鼠加速</translation>
@@ -5959,7 +5955,6 @@
 <translation id="8985264973231822211">上次使用時間：<ph name="DEVICE_LAST_ACTIVATED_TIME" /> 天前</translation>
 <translation id="8986362086234534611">清除</translation>
 <translation id="8986494364107987395">自動傳送使用統計資料及當機報告給 Google</translation>
-<translation id="8986651757229422279">這會清除 <ph name="ORIGIN_NAME" /> 儲存的所有資料和 Cookie，以及該網站所安裝的應用程式。</translation>
 <translation id="8987927404178983737">月</translation>
 <translation id="8991520179165052608">網站可以使用你的麥克風</translation>
 <translation id="899403249577094719">Netscape 憑證基底網址</translation>

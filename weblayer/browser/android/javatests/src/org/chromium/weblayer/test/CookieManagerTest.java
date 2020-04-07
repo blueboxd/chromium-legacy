@@ -6,7 +6,8 @@ package org.chromium.weblayer.test;
 
 import android.net.Uri;
 import android.support.test.filters.SmallTest;
-import android.support.v4.app.FragmentManager;
+
+import androidx.fragment.app.FragmentManager;
 
 import org.junit.Assert;
 import org.junit.Before;

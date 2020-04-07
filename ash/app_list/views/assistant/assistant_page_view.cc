@@ -24,6 +24,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
+#include "ui/compositor_extra/shadow.h"
 #include "ui/views/background.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/fill_layout.h"
@@ -219,6 +220,23 @@ views::View* AssistantPageView::GetFirstFocusableView() {
 views::View* AssistantPageView::GetLastFocusableView() {
   return GetFocusManager()->GetNextFocusableView(
       this, GetWidget(), /*reverse=*/true, /*dont_loop=*/false);
+}
+
+void AssistantPageView::AnimateYPosition(AppListViewState target_view_state,
+                                         const TransformAnimator& animator) {
+  // Assistant page view may host native views for its content. The native view
+  // hosts use view to widget coordinate conversion to calculate the native view
+  // bounds, and thus depend on the view transform values.
+  // Make sure the view is laid out before starting the transform animation so
+  // native views are not placed according to interim, animated page transform
+  // value.
+  layer()->GetAnimator()->StopAnimatingProperty(
+      ui::LayerAnimationElement::TRANSFORM);
+  if (needs_layout())
+    Layout();
+
+  animator.Run(layer(), this);
+  animator.Run(view_shadow_->shadow()->shadow_layer(), nullptr);
 }
 
 void AssistantPageView::OnUiVisibilityChanged(

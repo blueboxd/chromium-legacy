@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//media/media_options.gni")
+
 if (is_android) {
   import("//build/config/android/config.gni")
   import("//build/config/android/rules.gni")
@@ -41,6 +43,18 @@ source_set("generator") {
       "android/thumbnail_media_parser.cc",
       "android/thumbnail_media_parser.h",
     ]
+
+    if (media_use_ffmpeg) {
+      sources += [
+        "android/thumbnail_media_parser_impl.cc",
+        "android/thumbnail_media_parser_impl.h",
+      ]
+    } else {
+      sources += [
+        "android/noop_thumbnail_media_parser.cc",
+        "android/noop_thumbnail_media_parser.h",
+      ]
+    }
 
     deps += [
       ":jni_headers",

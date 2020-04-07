@@ -74,7 +74,7 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   // |current_progress| - the current app list transition progress.
   // |animator| - callback that when run starts the opacity animation.
   using OpacityAnimator =
-      base::RepeatingCallback<void(views::View*, bool target_visibility)>;
+      base::RepeatingCallback<void(views::View* view, bool target_visibility)>;
   void AnimateOpacity(float current_progress,
                       AppListViewState target_view_state,
                       const OpacityAnimator& animator);
@@ -83,7 +83,8 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   // |animator| for each of them to run transform animation from current bounds.
   // (This assumes that animator knows the offset between current apps container
   // bounds and target apps container bounds).
-  using TransformAnimator = base::RepeatingCallback<void(views::View*)>;
+  using TransformAnimator =
+      base::RepeatingCallback<void(ui::Layer*, views::View*)>;
   void AnimateYPosition(AppListViewState target_view_state,
                         const TransformAnimator& animator);
 

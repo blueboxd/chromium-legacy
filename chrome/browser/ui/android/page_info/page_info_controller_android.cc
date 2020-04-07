@@ -10,12 +10,10 @@
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "chrome/android/chrome_jni_headers/PageInfoController_jni.h"
-#include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/ui/page_info/chrome_page_info_delegate.h"
-#include "chrome/common/chrome_features.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/page_info/android/page_info_client.h"
 #include "components/page_info/page_info.h"
 #include "components/page_info/page_info_ui.h"
 #include "components/security_state/core/security_state.h"
@@ -58,8 +56,10 @@ PageInfoControllerAndroid::PageInfoControllerAndroid(
 
   controller_jobject_.Reset(env, java_page_info_pop);
 
+  page_info::PageInfoClient* page_info_client = page_info::GetPageInfoClient();
+  DCHECK(page_info_client);
   presenter_ = std::make_unique<PageInfo>(
-      std::make_unique<ChromePageInfoDelegate>(web_contents), web_contents,
+      page_info_client->CreatePageInfoDelegate(web_contents), web_contents,
       nav_entry->GetURL());
   presenter_->InitializeUiState(this);
 }

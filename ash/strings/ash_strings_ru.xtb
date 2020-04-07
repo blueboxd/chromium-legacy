@@ -105,6 +105,7 @@
 <translation id="2268813581635650749">Выйти из всех аккаунтов</translation>
 <translation id="2277103315734023688">Перемотать вперед</translation>
 <translation id="2292698582925480719">Масштаб экрана</translation>
+<translation id="2295777434187870477">Микрофон включен. Нажмите, чтобы отключить его.</translation>
 <translation id="2298170939937364391">Полноэкранная лупа включена. Чтобы отключить ее, ещё раз нажмите Ctrl + Поиск + M.</translation>
 <translation id="2302092602801625023">Аккаунт находится под управлением Family Link</translation>
 <translation id="2303600792989757991">Переключить режим обзора</translation>
@@ -138,6 +139,7 @@
 <translation id="2658778018866295321">Перетаскивание</translation>
 <translation id="2700493154570097719">Выберите раскладку</translation>
 <translation id="2704781753052663061">Подключиться к другим сетям Wi-Fi</translation>
+<translation id="2705001408393684014">Кнопка включения и отключения микрофона. <ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">Ночной режим</translation>
 <translation id="2727977024730340865">Подключено маломощное зарядное устройство. Возможны проблемы при зарядке.</translation>
 <translation id="2792498699870441125">Alt + Search</translation>
@@ -296,6 +298,7 @@
 <translation id="4665114317261903604">Включить или отключить режим "Не беспокоить". <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Требуется родительский код доступа</translation>
 <translation id="4702647871202761252">Экран конфиденциальности отключен</translation>
+<translation id="4705716602320768426">Отправить отзыв</translation>
 <translation id="4710243778082831592">Настройки редактора методов ввода</translation>
 <translation id="4731797938093519117">Родительский доступ</translation>
 <translation id="4734965478015604180">Горизонтальная ориентация</translation>
@@ -376,6 +379,7 @@
 <translation id="5901316534475909376">Shift + Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">ВКЛ</translation>
+<translation id="5920710855273935292">Микрофон отключен.</translation>
 <translation id="5947494881799873997">Отменить</translation>
 <translation id="595202126637698455">Включено отслеживание эффективности</translation>
 <translation id="5957083217255311415">Мобильный Интернет отключен.</translation>

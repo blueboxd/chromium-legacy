@@ -163,7 +163,8 @@ void RemoteFrame::Navigate(FrameLoadRequest& frame_request,
                      frame_load_type == WebFrameLoadType::kReplaceCurrentItem,
                      is_opener_navigation,
                      initiator_frame_has_download_sandbox_flag,
-                     initiator_frame_is_ad, frame_request.GetBlobURLToken());
+                     initiator_frame_is_ad, frame_request.GetBlobURLToken(),
+                     frame_request.Impression());
 }
 
 void RemoteFrame::DetachImpl(FrameDetachType type) {

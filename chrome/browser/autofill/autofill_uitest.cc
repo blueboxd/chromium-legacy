@@ -78,6 +78,9 @@ void AutofillUiTest::SetUpOnMainThread() {
                          /* new_host = */ GetWebContents()->GetMainFrame());
   Observe(GetWebContents());
 
+  disable_animation_ = std::make_unique<ui::ScopedAnimationDurationScaleMode>(
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+
   // If the mouse happened to be over where the suggestions are shown, then
   // the preview will show up and will fail the tests. We need to give it a
   // point that's within the browser frame, or else the method hangs.

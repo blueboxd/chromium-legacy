@@ -302,6 +302,9 @@ def WriteDepfile(depfile, outfile, infiles):
     infiles, list: File names to list as dependencies in the .d file.
   '''
   content = '%s: %s' % (outfile, ' '.join(infiles))
+  dirname = os.path.dirname(depfile)
+  if not os.path.exists(dirname):
+    os.makedirs(dirname)
   open(depfile, 'w').write(content)
 
 

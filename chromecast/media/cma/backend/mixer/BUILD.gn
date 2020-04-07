@@ -72,6 +72,7 @@ cast_source_set("mixer") {
     "//chromecast/base:chromecast_switches",
     "//chromecast/base:thread_health_checker",
     "//chromecast/media/audio:audio_io_thread",
+    "//chromecast/media/audio:interleaved_channel_mixer",
     "//chromecast/media/audio:libcast_external_audio_pipeline_1.0",
     "//chromecast/media/audio:processing",
     "//chromecast/media/audio/mixer_service:common",

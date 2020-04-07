@@ -9535,7 +9535,8 @@ class RemoteNavigationClient
                 bool initiator_frame_has_download_sandbox_flag,
                 bool blocking_downloads_in_sandbox_enabled,
                 bool initiator_frame_is_ad,
-                mojo::ScopedMessagePipeHandle) override {
+                mojo::ScopedMessagePipeHandle,
+                const base::Optional<WebImpression>& impression) override {
     last_request_.CopyFrom(request);
   }
 

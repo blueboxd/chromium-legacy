@@ -76,9 +76,10 @@ BrowserPolicyConnectorIOS::CreatePolicyProviders() {
 
 std::unique_ptr<ConfigurationPolicyProvider>
 BrowserPolicyConnectorIOS::CreatePlatformProvider() {
-  std::unique_ptr<AsyncPolicyLoader> loader(
-      new PolicyLoaderIOS(base::ThreadPool::CreateSequencedTaskRunner(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT})));
+  auto loader = std::make_unique<PolicyLoaderIOS>(
+      GetSchemaRegistry(),
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
 
   return std::make_unique<AsyncPolicyProvider>(GetSchemaRegistry(),
                                                std::move(loader));

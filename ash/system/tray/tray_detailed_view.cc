@@ -473,11 +473,13 @@ void TrayDetailedView::TransitionToMainView() {
 }
 
 void TrayDetailedView::CloseBubble() {
-  // Don't close again if we're already closing.
+  // widget may be null in tests, in this case we do not need to do anything.
   views::Widget* widget = GetWidget();
-  if (widget && widget->IsClosed())
+  if (!widget)
     return;
-
+  // Don't close again if we're already closing.
+  if (widget->IsClosed())
+    return;
   delegate_->CloseBubble();
 }
 

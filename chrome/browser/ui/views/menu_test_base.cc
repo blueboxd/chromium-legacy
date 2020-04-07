@@ -38,15 +38,14 @@ int MenuTestBase::GetMenuRunnerFlags() {
 }
 
 void MenuTestBase::SetUp() {
+  ViewEventTestBase::SetUp();
+
   views::test::DisableMenuClosureAnimations();
 
-  button_ = new views::MenuButton(base::ASCIIToUTF16("Menu Test"), this);
   menu_ = new views::MenuItemView(this);
   BuildMenu(menu_);
   menu_runner_ =
       std::make_unique<views::MenuRunner>(menu_, GetMenuRunnerFlags());
-
-  ViewEventTestBase::SetUp();
 }
 
 void MenuTestBase::TearDown() {
@@ -54,14 +53,16 @@ void MenuTestBase::TearDown() {
   // with views::MenuRunner::FOR_DROP) don't take kindly to simply pulling the
   // runner out from under them.
   menu_runner_->Cancel();
-
   menu_runner_.reset();
-  menu_ = nullptr;
+
   ViewEventTestBase::TearDown();
 }
 
-views::View* MenuTestBase::CreateContentsView() {
-  return button_;
+std::unique_ptr<views::View> MenuTestBase::CreateContentsView() {
+  auto button = std::make_unique<views::MenuButton>(
+      base::ASCIIToUTF16("Menu Test"), this);
+  button_ = button.get();
+  return button;
 }
 
 void MenuTestBase::DoTestOnMessageLoop() {

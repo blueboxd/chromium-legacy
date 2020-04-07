@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/picture_layer_impl.h"
+#include "cc/paint/display_item_list.h"
 #include "cc/raster/playback_image_provider.h"
 #include "cc/raster/raster_buffer_provider.h"
 #include "cc/trees/layer_tree_host_impl.h"
@@ -158,6 +159,10 @@ void RasterizeAndRecordBenchmarkImpl::DidCompleteCommit(
                      rasterize_results_.pixels_rasterized_with_non_solid_color);
   result->SetInteger("pixels_rasterized_as_opaque",
                      rasterize_results_.pixels_rasterized_as_opaque);
+  result->SetInteger("visible_pixels_for_lcd_text",
+                     rasterize_results_.visible_pixels_for_lcd_text);
+  result->SetInteger("visible_pixels_for_non_lcd_text",
+                     rasterize_results_.visible_pixels_for_non_lcd_text);
   result->SetInteger("total_layers", rasterize_results_.total_layers);
   result->SetInteger("total_picture_layers",
                      rasterize_results_.total_picture_layers);
@@ -179,6 +184,14 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
     rasterize_results_.total_picture_layers_off_screen++;
     return;
   }
+
+  int text_pixels =
+      layer->GetRasterSource()->GetDisplayItemList()->AreaOfDrawText(
+          layer->visible_layer_rect());
+  if (layer->CanUseLCDText())
+    rasterize_results_.visible_pixels_for_lcd_text += text_pixels;
+  else
+    rasterize_results_.visible_pixels_for_non_lcd_text += text_pixels;
 
   FixedInvalidationPictureLayerTilingClient client(layer,
                                                    gfx::Rect(layer->bounds()));
@@ -230,6 +243,8 @@ RasterizeAndRecordBenchmarkImpl::RasterizeResults::RasterizeResults()
     : pixels_rasterized(0),
       pixels_rasterized_with_non_solid_color(0),
       pixels_rasterized_as_opaque(0),
+      visible_pixels_for_lcd_text(0),
+      visible_pixels_for_non_lcd_text(0),
       total_layers(0),
       total_picture_layers(0),
       total_picture_layers_with_no_content(0),

@@ -10,10 +10,7 @@
 #include <memory>
 
 #include "chromecast/media/audio/audio_provider.h"
-
-namespace media {
-class AudioBus;
-}  // namespace media
+#include "chromecast/media/audio/cast_audio_bus.h"
 
 namespace chromecast {
 namespace media {
@@ -122,7 +119,7 @@ class AudioClockSimulator : public AudioProvider {
   //     to interpolation.
   // The |first_frame_filled_| member var tracks whether or not the first frame
   // of the |scratch_buffer_| contains valid audio.
-  std::unique_ptr<::media::AudioBus> scratch_buffer_;
+  std::unique_ptr<CastAudioBus> scratch_buffer_;
 };
 
 }  // namespace media

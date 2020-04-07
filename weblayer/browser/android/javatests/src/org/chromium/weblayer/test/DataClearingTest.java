@@ -9,7 +9,8 @@ import static org.chromium.weblayer.BrowsingDataType.CACHE;
 import static org.chromium.weblayer.BrowsingDataType.COOKIES_AND_SITE_DATA;
 
 import android.support.test.filters.SmallTest;
-import android.support.v4.app.FragmentManager;
+
+import androidx.fragment.app.FragmentManager;
 
 import org.junit.Rule;
 import org.junit.Test;

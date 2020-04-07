@@ -389,6 +389,27 @@ TEST_F('CrSettingsRouteV3Test', 'MAYBE_NonExistentRoute', function() {
   runMochaSuite('NonExistentRoute');
 });
 
+// eslint-disable-next-line no-var
+var CrSettingsAdvancedPageV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/advanced_page_test.m.js';
+  }
+};
+
+// Copied from Polymer 2 test:
+// Times out on debug builders because the Settings page can take several
+// seconds to load in a Release build and several times that in a Debug build.
+// See https://crbug.com/558434.
+GEN('#if !defined(NDEBUG)');
+GEN('#define MAYBE_Load DISABLED_Load');
+GEN('#else');
+GEN('#define MAYBE_Load Load');
+GEN('#endif');
+TEST_F('CrSettingsAdvancedPageV3Test', 'MAYBE_Load', function() {
+  mocha.run();
+});
+
 [['AllSites', 'all_sites_tests.m.js'],
  ['AppearanceFontsPage', 'appearance_fonts_page_test.m.js'],
  ['AppearancePage', 'appearance_page_test.m.js'],

@@ -105,6 +105,7 @@
 <translation id="2268813581635650749">Amaitu guztien saioa</translation>
 <translation id="2277103315734023688">Aurreratu</translation>
 <translation id="2292698582925480719">Pantailaren eskala</translation>
+<translation id="2295777434187870477">Mikrofonoa aktibatuta dago. Aldatzen baduzu, audioa desaktibatuko da.</translation>
 <translation id="2298170939937364391">Gaitu da pantaila osoko lupa. Desaktibatzeko, sakatu berriro Ktrl + Bilatu + M.</translation>
 <translation id="2302092602801625023">Kontua Family Link bidez kudeatzen da</translation>
 <translation id="2303600792989757991">Aldatu leihoen ikuspegi orokorra</translation>
@@ -138,6 +139,7 @@
 <translation id="2658778018866295321">Sakatu eta arrastatu</translation>
 <translation id="2700493154570097719">Zehaztu teklatua</translation>
 <translation id="2704781753052663061">Konektatu beste wifi-sare batzuetara</translation>
+<translation id="2705001408393684014">Aktibatu/Desaktibatu mikrofonoa. <ph name="STATE_TEXT" />.</translation>
 <translation id="2718395828230677721">Gaueko argia</translation>
 <translation id="2727977024730340865">Energia gutxiko kargagailu bat entxufatu duzu. Agian bateria kargatzeko prozesua ez da fidagarria izango.</translation>
 <translation id="2792498699870441125">Alt + Bilaketa</translation>
@@ -297,6 +299,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="4665114317261903604">Gaitu/Desgaitu ez molestatzeko modua. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Desblokeatu gailua gurasoen kodearekin</translation>
 <translation id="4702647871202761252">Desaktibatuta dago pribatutasun-pantaila</translation>
+<translation id="4705716602320768426">Fitxategiari buruzko oharrak</translation>
 <translation id="4710243778082831592">IME eginbidearen ezarpenak</translation>
 <translation id="4731797938093519117">Gurasoen sarbidea</translation>
 <translation id="4734965478015604180">Horizontala</translation>
@@ -377,6 +380,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="5901316534475909376">Maius + Ihes</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Aktibatuta</translation>
+<translation id="5920710855273935292">Mikrofonoa desaktibatuta dago.</translation>
 <translation id="5947494881799873997">Leheneratu</translation>
 <translation id="595202126637698455">Errendimenduaren jarraipena egiteko aukera gaitu da</translation>
 <translation id="5957083217255311415">Desaktibatuta dago datu-konexioa.</translation>

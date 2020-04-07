@@ -31,27 +31,28 @@ bool GetCanvasClipBounds(SkCanvas* canvas, gfx::Rect* clip_bounds) {
   return true;
 }
 
-void FillTextContent(const PaintOpBuffer* buffer,
-                     std::vector<NodeId>* content) {
+template <typename Function>
+void IterateTextContent(const PaintOpBuffer* buffer, const Function& yield) {
   for (auto* op : PaintOpBuffer::Iterator(buffer)) {
     if (op->GetType() == PaintOpType::DrawTextBlob) {
-      content->push_back(static_cast<DrawTextBlobOp*>(op)->node_id);
+      yield(static_cast<DrawTextBlobOp*>(op));
     } else if (op->GetType() == PaintOpType::DrawRecord) {
-      FillTextContent(static_cast<DrawRecordOp*>(op)->record.get(), content);
+      IterateTextContent(static_cast<DrawRecordOp*>(op)->record.get(), yield);
     }
   }
 }
 
-void FillTextContentByOffsets(const PaintOpBuffer* buffer,
-                              const std::vector<size_t>& offsets,
-                              std::vector<NodeId>* content) {
+template <typename Function>
+void IterateTextContentByOffsets(const PaintOpBuffer* buffer,
+                                 const std::vector<size_t>& offsets,
+                                 const Function& yield) {
   if (!buffer)
     return;
   for (auto* op : PaintOpBuffer::OffsetIterator(buffer, &offsets)) {
     if (op->GetType() == PaintOpType::DrawTextBlob) {
-      content->push_back(static_cast<DrawTextBlobOp*>(op)->node_id);
+      yield(static_cast<DrawTextBlobOp*>(op));
     } else if (op->GetType() == PaintOpType::DrawRecord) {
-      FillTextContent(static_cast<DrawRecordOp*>(op)->record.get(), content);
+      IterateTextContent(static_cast<DrawRecordOp*>(op)->record.get(), yield);
     }
   }
 }
@@ -85,7 +86,23 @@ void DisplayItemList::CaptureContent(const gfx::Rect& rect,
                                      std::vector<NodeId>* content) const {
   std::vector<size_t> offsets;
   rtree_.Search(rect, &offsets);
-  FillTextContentByOffsets(&paint_op_buffer_, offsets, content);
+  IterateTextContentByOffsets(
+      &paint_op_buffer_, offsets,
+      [content](const DrawTextBlobOp* op) { content->push_back(op->node_id); });
+}
+
+double DisplayItemList::AreaOfDrawText(const gfx::Rect& rect) const {
+  std::vector<size_t> offsets;
+  rtree_.Search(rect, &offsets);
+  double area = 0;
+  IterateTextContentByOffsets(
+      &paint_op_buffer_, offsets, [&area](const DrawTextBlobOp* op) {
+        // This is not fully accurate, e.g. when there is transform operations,
+        // but is good for statistics purpose.
+        SkRect bounds = op->blob->bounds();
+        area += static_cast<double>(bounds.width()) * bounds.height();
+      });
+  return area;
 }
 
 void DisplayItemList::Finalize() {

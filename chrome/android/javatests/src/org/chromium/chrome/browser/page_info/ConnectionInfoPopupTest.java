@@ -15,8 +15,11 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.components.page_info.ConnectionInfoPopup;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
@@ -38,9 +41,11 @@ public class ConnectionInfoPopupTest {
     @RetryOnFailure
     public void testShow() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
-        TestThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> ConnectionInfoPopup.show(mActivityTestRule.getActivity(),
-                                mActivityTestRule.getActivity().getActivityTab().getWebContents()));
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ChromeActivity context = mActivityTestRule.getActivity();
+            WebContents webContents = context.getActivityTab().getWebContents();
+            ConnectionInfoPopup.show(context, webContents, context.getModalDialogManager(),
+                    VrModuleProvider.getDelegate());
+        });
     }
 }

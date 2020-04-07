@@ -860,7 +860,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2154484045852737596">Editar cartão</translation>
 <translation id="2154710561487035718">Copiar URL</translation>
 <translation id="2155772377859296191">Resolução: <ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
-<translation id="2156283799932971644">Você pode ajudar a melhorar o recurso "Navegação segura" enviando algumas informações do sistema e conteúdo da página para o Google.</translation>
 <translation id="2156294658807918600">Service worker: <ph name="SCRIPT_URL" /></translation>
 <translation id="2157474325782140681">Para ter outros recursos, use uma base de encaixe Dell compatível com este Chromebook.</translation>
 <translation id="215753907730220065">Sair do modo tela cheia</translation>
@@ -992,7 +991,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2326931316514688470">&amp;Recarregar aplicativo</translation>
 <translation id="2327492829706409234">Ativar aplicativo</translation>
 <translation id="2329597144923131178">Faça login para que favoritos, histórico, senhas e outras configurações fiquem disponíveis em todos os seus dispositivos.</translation>
-<translation id="2330607597130465898">Sem proteção</translation>
 <translation id="2332131598580221120">Ver na loja</translation>
 <translation id="2332192922827071008">Abrir preferências</translation>
 <translation id="2332742915001411729">Redefinir para os valores padrão</translation>
@@ -1872,7 +1870,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3492788708641132712">A sincronização não está funcionando. Tente fazer login novamente.</translation>
 <translation id="3493486281776271508">Requer uma conexão de Internet</translation>
 <translation id="3493881266323043047">Validade</translation>
-<translation id="3494155060718700400">Não protege você contra sites, downloads e extensões perigosos (não recomendado). Você ainda terá a proteção do "Navegação segura", sempre que possível, em outros Serviços do Google, como o Gmail e a Pesquisa.</translation>
 <translation id="3494769164076977169">Perguntar quando um site tenta fazer o download de arquivos automaticamente após o primeiro arquivo (recomendado)</translation>
 <translation id="3495660573538963482">Configurações do Google Assistente</translation>
 <translation id="3496213124478423963">Afastar</translation>
@@ -2923,7 +2920,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4920887663447894854">Os seguintes sites foram impedidos de rastrear o seu local nesta página:</translation>
 <translation id="49226369361073053">{0,plural, =0{Atualize o dispositivo agora}=1{Atualize o dispositivo em 1 segundo}one{Atualize o dispositivo em # segundo}other{Atualize o dispositivo em # segundos}}</translation>
 <translation id="492299503953721473">Remover apps Android</translation>
-<translation id="4923279099980110923">Sim, eu quero ajudar</translation>
 <translation id="4924352752174756392">12x</translation>
 <translation id="4925320384394644410">Suas portas aparecerão aqui</translation>
 <translation id="4925542575807923399">O administrador dessa conta exige que ela seja a primeira conta a fazer o login em uma sessão de login múltiplo.</translation>
@@ -3237,7 +3233,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="5362741141255528695">Selecionar arquivo de chave privada.</translation>
 <translation id="5363109466694494651">Realizar Powerwash e reverter</translation>
 <translation id="5365881113273618889">A pasta selecionada contém arquivos confidenciais. Tem certeza de que quer conceder acesso permanente de gravação nessa pasta ao "<ph name="APP_NAME" />"?</translation>
-<translation id="5367091008316207019">Lendo arquivo...</translation>
 <translation id="5368720394188453070">Seu smartphone está bloqueado. Desbloqueie-o para entrar.</translation>
 <translation id="5368779022775404937">Fazer login em <ph name="REALM" /></translation>
 <translation id="5369491905435686894">Ativar aceleração do mouse</translation>
@@ -5965,7 +5960,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8985264973231822211">Ativado há <ph name="DEVICE_LAST_ACTIVATED_TIME" /> dia</translation>
 <translation id="8986362086234534611">Esquecer</translation>
 <translation id="8986494364107987395">Envia estatísticas de uso e relatórios de erros ao Google automaticamente</translation>
-<translation id="8986651757229422279">Isso limpará todos os dados e cookies armazenados por <ph name="ORIGIN_NAME" /> e o app instalado.</translation>
 <translation id="8987927404178983737">Mês</translation>
 <translation id="8991520179165052608">O site pode usar seu microfone</translation>
 <translation id="899403249577094719">URL base do certificado do Netscape</translation>

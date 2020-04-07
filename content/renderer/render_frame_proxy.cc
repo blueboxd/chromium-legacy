@@ -21,10 +21,12 @@
 #include "content/common/view_messages.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/impression.h"
 #include "content/public/common/screen_info.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/child_frame_compositing_helper.h"
+#include "content/renderer/impression_conversions.h"
 #include "content/renderer/loader/web_url_request_util.h"
 #include "content/renderer/mojo/blink_interface_registry_impl.h"
 #include "content/renderer/render_frame_impl.h"
@@ -628,13 +630,15 @@ void RenderFrameProxy::ForwardPostMessage(
   Send(new FrameHostMsg_RouteMessageEvent(routing_id_, params));
 }
 
-void RenderFrameProxy::Navigate(const blink::WebURLRequest& request,
-                                bool should_replace_current_entry,
-                                bool is_opener_navigation,
-                                bool initiator_frame_has_download_sandbox_flag,
-                                bool blocking_downloads_in_sandbox_enabled,
-                                bool initiator_frame_is_ad,
-                                mojo::ScopedMessagePipeHandle blob_url_token) {
+void RenderFrameProxy::Navigate(
+    const blink::WebURLRequest& request,
+    bool should_replace_current_entry,
+    bool is_opener_navigation,
+    bool initiator_frame_has_download_sandbox_flag,
+    bool blocking_downloads_in_sandbox_enabled,
+    bool initiator_frame_is_ad,
+    mojo::ScopedMessagePipeHandle blob_url_token,
+    const base::Optional<blink::WebImpression>& impression) {
   // The request must always have a valid initiator origin.
   DCHECK(!request.RequestorOrigin().IsNull());
 
@@ -651,6 +655,9 @@ void RenderFrameProxy::Navigate(const blink::WebURLRequest& request,
   params.user_gesture = request.HasUserGesture();
   params.triggering_event_info = blink::TriggeringEventInfo::kUnknown;
   params.blob_url_token = blob_url_token.release();
+
+  if (impression)
+    params.impression = ConvertWebImpressionToImpression(*impression);
 
   // Note: For the AdFrame/Sandbox download policy here it only covers the case
   // where the navigation initiator frame is ad. The download_policy may be

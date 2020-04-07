@@ -35,6 +35,7 @@ class ConversionManagerImpl : public ConversionManager {
   ~ConversionManagerImpl() override;
 
   // ConversionManager:
+  void HandleImpression(const StorableImpression& impression) override;
   void HandleConversion(const StorableConversion& conversion) override;
   const ConversionPolicy& GetConversionPolicy() const override;
 

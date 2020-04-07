@@ -7,7 +7,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/login_screen_test_api.h"
 #include "base/base64.h"
 #include "base/bind.h"
@@ -1716,7 +1715,6 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SAMLInterstitialNext) {
 // pages is controlled by the kLoginVideoCaptureAllowedUrls pref rather than the
 // underlying user content setting.
 IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, TestLoginMediaPermission) {
-  EXPECT_TRUE(ash::features::IsViewsLoginEnabled());
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
 
   const GURL url1("https://google.com");

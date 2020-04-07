@@ -39,6 +39,15 @@
 namespace ash {
 namespace {
 
+void DoScopedAnimationSetting(
+    ui::ScopedLayerAnimationSettings* animation_setter) {
+  animation_setter->SetTransitionDuration(
+      ShelfConfig::Get()->shelf_animation_duration());
+  animation_setter->SetTweenType(gfx::Tween::EASE_OUT);
+  animation_setter->SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+}
+
 // Custom window targeter for the hotseat. Used so the hotseat only processes
 // events that land on the visible portion of the hotseat, and only while the
 // hotseat is not animating.
@@ -207,24 +216,25 @@ void HotseatWidget::DelegateView::SetTranslucentBackground(
   translucent_background_.SetVisible(true);
   SetBackgroundBlur(/*enable_blur=*/true);
 
-  // Animate the bounds change if we're changing the background, or if there's
-  // a change of width (for instance when dragging an app into, or out of,
-  // the shelf.
-  bool animate =
-      ShelfConfig::Get()->GetDefaultShelfColor() != target_color_ ||
-      background_bounds.width() != translucent_background_.bounds().width();
-  ui::ScopedLayerAnimationSettings animation_setter(
-      translucent_background_.GetAnimator());
-  animation_setter.SetTransitionDuration(
-      animate ? ShelfConfig::Get()->shelf_animation_duration()
-              : base::TimeDelta::FromMilliseconds(0));
-  animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
-  animation_setter.SetPreemptionStrategy(
-      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-
   if (ShelfConfig::Get()->GetDefaultShelfColor() != target_color_) {
+    ui::ScopedLayerAnimationSettings color_animation_setter(
+        translucent_background_.GetAnimator());
+    DoScopedAnimationSetting(&color_animation_setter);
     target_color_ = ShelfConfig::Get()->GetDefaultShelfColor();
     translucent_background_.SetColor(target_color_);
+  }
+
+  // Animate the bounds change if there's a change of width (for instance when
+  // dragging an app into, or out of, the shelf) and meanwhile scrollable
+  // shelf's bounds does not update at the same time.
+  const bool animate_bounds =
+      background_bounds.width() != translucent_background_.bounds().width() &&
+      (scrollable_shelf_view_ &&
+       !scrollable_shelf_view_->NeedUpdateToTargetBounds());
+  base::Optional<ui::ScopedLayerAnimationSettings> bounds_animation_setter;
+  if (animate_bounds) {
+    bounds_animation_setter.emplace(translucent_background_.GetAnimator());
+    DoScopedAnimationSetting(&bounds_animation_setter.value());
   }
 
   const int radius = ShelfConfig::Get()->hotseat_size() / 2;

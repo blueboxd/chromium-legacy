@@ -168,6 +168,7 @@
 <translation id="3112556859945124369">标为…</translation>
 <translation id="3153862085237805241">保存卡片</translation>
 <translation id="3157684681743766797">全部标为…</translation>
+<translation id="3161291298470460782">执行此操作会使您退出帐号、关闭同步功能并从此设备中清除所有 Chrome 数据。已同步的数据仍会保留在您的 Google 帐号中。</translation>
 <translation id="3175081911749765310">网络服务</translation>
 <translation id="3178650076442119961">今天曾有活动</translation>
 <translation id="3207960819495026254">已加书签</translation>
@@ -200,6 +201,7 @@
 <translation id="3494788280727468875">确认清除浏览数据</translation>
 <translation id="35083190962747987">打开 ${url}</translation>
 <translation id="3519193562722059437">打开一个标签页即可浏览网络。</translation>
+<translation id="3523473570015918798">退出帐号后，您的书签、历史记录、密码及其他 Chrome 数据将不再同步到您的 Google 帐号中。</translation>
 <translation id="3527085408025491307">文件夹</translation>
 <translation id="3529024052484145543">不安全</translation>
 <translation id="3533202363250687977">关闭所有无痕式标签页</translation>
@@ -333,6 +335,7 @@
 <translation id="54401264925851789">网页安全信息</translation>
 <translation id="5443952882982198570">信用卡</translation>
 <translation id="5457907402803865181">同步密码时出错。</translation>
+<translation id="5508435575041083207">退出帐号并清除此设备中的数据</translation>
 <translation id="5525269841082836315">创建密码</translation>
 <translation id="5548760955356983418">借助 Handoff 功能，您在此设备上浏览网站时，可轻松改用 Mac 继续浏览。当前打开的网站将显示在 Mac 的 Dock 中。
 
@@ -506,6 +509,9 @@
 <translation id="766891008101699113">要以私密方式浏览网页，请添加新标签页。</translation>
 <translation id="7671141431838911305">安装</translation>
 <translation id="7765158879357617694">移动</translation>
+<translation id="7771470029643830783">退出帐号后，您的书签、历史记录、密码及其他 Chrome 数据将不再同步到您的 Google 帐号中。
+
+由于您的帐号是由 <ph name="HOSTED_DOMAIN" /> 管理，因此在退出帐号后，您的 Chrome 数据将会从此设备中删除。已同步的数据仍会保留在您的 Google 帐号中。</translation>
 <translation id="7772032839648071052">确认密码</translation>
 <translation id="7781011649027948662">翻译网页？</translation>
 <translation id="7781829728241885113">昨天</translation>
@@ -555,6 +561,7 @@
 <translation id="8490978609246021741">保存更改</translation>
 <translation id="8503813439785031346">用户名</translation>
 <translation id="850600235656508448">在无痕模式下打开</translation>
+<translation id="8510057420705599706">执行此操作会使您退出帐号并关闭同步功能，但您的书签、历史记录、密码及其他 Chrome 数据仍会保留在此设备上。</translation>
 <translation id="8517375800490286174">开放源代码许可</translation>
 <translation id="8524799873541103884"><ph name="INCOGNITO" />标签页<ph name="FIRST_VISIBLE_TAB" />-<ph name="LAST_VISIBLE_TAB" />（共<ph name="NUMBER_OF_OPEN_TABS" />个）</translation>
 <translation id="8529767659511976195">新功能</translation>
@@ -597,6 +604,7 @@
 <translation id="9094033019050270033">更新密码</translation>
 <translation id="9100610230175265781">必须提供密码</translation>
 <translation id="9148126808321036104">重新登录</translation>
+<translation id="9152539721251340337">生成二维码</translation>
 <translation id="9157836665414082580">禁止显示对话框</translation>
 <translation id="9188680907066685419">退出受管理的帐号</translation>
 <translation id="9203116392574189331">Handoff</translation>

@@ -168,6 +168,7 @@
 <translation id="3112556859945124369">Marquer…</translation>
 <translation id="3153862085237805241">Enregistrer la carte</translation>
 <translation id="3157684681743766797">Tout marquer…</translation>
+<translation id="3161291298470460782">Vous serez alors déconnecté, la synchronisation sera désactivée, et toutes les données Chrome seront supprimées de cet appareil. En revanche, vos données synchronisées resteront dans votre compte Google.</translation>
 <translation id="3175081911749765310">Services Web</translation>
 <translation id="3178650076442119961">Actif aujourd'hui</translation>
 <translation id="3207960819495026254">Favori</translation>
@@ -200,6 +201,7 @@
 <translation id="3494788280727468875">Confirmer la suppression des données de navigation</translation>
 <translation id="35083190962747987">Ouvrir ${url}</translation>
 <translation id="3519193562722059437">Ouvrez un onglet pour naviguer sur le Web.</translation>
+<translation id="3523473570015918798">Si vous vous déconnectez, vos favoris, votre historique, vos mots de passe et d'autres données Chrome ne seront plus synchronisés avec votre compte Google.</translation>
 <translation id="3527085408025491307">Dossier</translation>
 <translation id="3529024052484145543">Non sécurisé</translation>
 <translation id="3533202363250687977">Fermer tous les onglets de navigation privée</translation>
@@ -333,6 +335,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="54401264925851789">Informations sur la sécurité de cette page</translation>
 <translation id="5443952882982198570">Cartes de crédit</translation>
 <translation id="5457907402803865181">Erreur lors de la synchronisation des mots de passe.</translation>
+<translation id="5508435575041083207">Se déconnecter et effacer les données de cet appareil</translation>
 <translation id="5525269841082836315">Créer une phrase secrète</translation>
 <translation id="5548760955356983418">Avec Handoff, vous pouvez commencer à consulter un site Web sur cet appareil et poursuivre votre lecture facilement sur votre Mac. Le site Web actuellement ouvert apparaît alors dans le Dock.
 
@@ -506,6 +509,9 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="766891008101699113">Pour naviguer sur le Web en toute discrétion, ajoutez un onglet.</translation>
 <translation id="7671141431838911305">INSTALLER</translation>
 <translation id="7765158879357617694">Déplacer</translation>
+<translation id="7771470029643830783">Si vous vous déconnectez, vos favoris, votre historique, vos mots de passe et d'autres données Chrome ne seront plus synchronisés avec votre compte Google.
+
+Votre compte étant géré par <ph name="HOSTED_DOMAIN" />, vos données Chrome seront supprimées de cet appareil lors de votre déconnexion. En revanche, vos données synchronisées resteront dans votre compte Google.</translation>
 <translation id="7772032839648071052">Confirmer la phrase secrète</translation>
 <translation id="7781011649027948662">Traduire la page ?</translation>
 <translation id="7781829728241885113">Hier</translation>
@@ -555,6 +561,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="8490978609246021741">Enregistrer les modifications</translation>
 <translation id="8503813439785031346">Nom d'utilisateur</translation>
 <translation id="850600235656508448">Ouvrir en mode navigation privée</translation>
+<translation id="8510057420705599706">Vous serez alors déconnecté et la synchronisation sera désactivée, mais vos favoris, votre historique, vos mots de passe et d'autres données Chrome resteront sur cet appareil.</translation>
 <translation id="8517375800490286174">Licences Open Source</translation>
 <translation id="8524799873541103884">Onglets <ph name="INCOGNITO" /> <ph name="FIRST_VISIBLE_TAB" /> à <ph name="LAST_VISIBLE_TAB" /> sur <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">Nouveau</translation>
@@ -597,6 +604,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="9094033019050270033">Modifier le mot de passe</translation>
 <translation id="9100610230175265781">Veuillez saisir la phrase secrète.</translation>
 <translation id="9148126808321036104">Nouvelle connexion</translation>
+<translation id="9152539721251340337">Créer un code QR</translation>
 <translation id="9157836665414082580">Supprimer les boîtes de dialogue</translation>
 <translation id="9188680907066685419">Se déconnecter d'un compte géré</translation>
 <translation id="9203116392574189331">Handoff</translation>

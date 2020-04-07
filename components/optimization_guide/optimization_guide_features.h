@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "base/optional.h"
 #include "base/time/time.h"
@@ -136,6 +137,10 @@ int PredictionModelFetchRandomMinDelaySecs();
 // Returns the maximum number of seconds to randomly delay before starting to
 // fetch for prediction models and host model features.
 int PredictionModelFetchRandomMaxDelaySecs();
+
+// Returns a set of external Android app packages whose predictions have been
+// approved for fetching from the remote Optimization Guide Service.
+base::flat_set<std::string> ExternalAppPackageNamesApprovedForFetch();
 
 }  // namespace features
 }  // namespace optimization_guide

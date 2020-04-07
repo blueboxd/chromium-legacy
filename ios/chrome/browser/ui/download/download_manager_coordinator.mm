@@ -271,6 +271,14 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
                           confirmTitle:IDS_OK
                            cancelTitle:IDS_CANCEL
                      completionHandler:^(BOOL confirmed) {
+                       if (confirmed) {
+                         base::RecordAction(base::UserMetricsAction(
+                             "IOSDownloadConfirmReplace"));
+                       } else {
+                         base::RecordAction(base::UserMetricsAction(
+                             "IOSDownloadDoNotReplace"));
+                       }
+
                        base::UmaHistogramBoolean("Download.IOSDownloadReplaced",
                                                  confirmed);
                        handler(confirmed ? kNewDownloadPolicyReplace
@@ -313,10 +321,12 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
     base::UmaHistogramEnumeration("Download.IOSDownloadFileResult",
                                   DownloadFileResult::NotStarted,
                                   DownloadFileResult::Count);
+    base::RecordAction(base::UserMetricsAction("IOSDownloadClose"));
     [self cancelDownload];
     return;
   }
-
+  base::RecordAction(
+      base::UserMetricsAction("IOSDownloadTryCloseWhenInProgress"));
   __weak DownloadManagerCoordinator* weakSelf = self;
   int title = IDS_IOS_DOWNLOAD_MANAGER_CANCEL_CONFIRMATION;
   [self runConfirmationDialogWithTitle:title
@@ -330,13 +340,19 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
                              DownloadFileResult::Cancelled,
                              DownloadFileResult::Count);
 
+                         base::RecordAction(base::UserMetricsAction(
+                             "IOSDownloadConfirmClose"));
                          [weakSelf cancelDownload];
+                       } else {
+                         base::RecordAction(
+                             base::UserMetricsAction("IOSDownloadDoNotClose"));
                        }
                      }];
 }
 
 - (void)installDriveForDownloadManagerViewController:
     (DownloadManagerViewController*)controller {
+  base::RecordAction(base::UserMetricsAction("IOSDownloadInstallGoogleDrive"));
   [self presentStoreKitForGoogleDriveApp];
 }
 
@@ -345,6 +361,7 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
   if (_downloadTask->GetErrorCode() != net::OK) {
     base::RecordAction(base::UserMetricsAction("MobileDownloadRetryDownload"));
   } else {
+    base::RecordAction(base::UserMetricsAction("IOSDownloadStartDownload"));
     _unopenedDownloads.Add(_downloadTask);
   }
   _mediator.StartDowloading();
@@ -352,6 +369,7 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
 
 - (void)presentOpenInForDownloadManagerViewController:
     (DownloadManagerViewController*)controller {
+  base::RecordAction(base::UserMetricsAction("IOSDownloadOpenIn"));
   base::FilePath path = _mediator.GetDownloadPath();
   NSURL* URL = [NSURL fileURLWithPath:base::SysUTF8ToNSString(path.value())];
 

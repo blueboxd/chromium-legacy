@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
@@ -34,21 +35,9 @@ namespace policy {
 
 namespace {
 
-// Creates a new PolicyLoaderIOS and verifies that it does not load any
-// policies.
-void VerifyNoPoliciesAreLoaded() {
-  PolicyBundle empty;
-  scoped_refptr<base::TestSimpleTaskRunner> taskRunner =
-      new base::TestSimpleTaskRunner();
-  PolicyLoaderIOS loader(taskRunner);
-  std::unique_ptr<PolicyBundle> bundle = loader.Load();
-  ASSERT_TRUE(bundle);
-  EXPECT_TRUE(bundle->Equals(empty));
-}
-
 class TestHarness : public PolicyProviderTestHarness {
  public:
-  TestHarness();
+  TestHarness(bool encode_complex_data_as_json);
   ~TestHarness() override;
 
   void SetUp() override;
@@ -71,6 +60,7 @@ class TestHarness : public PolicyProviderTestHarness {
       const base::DictionaryValue* policy_value) override;
 
   static PolicyProviderTestHarness* Create();
+  static PolicyProviderTestHarness* CreateWithJSONEncoding();
 
  private:
   // Merges the policies in |policy| into the current policy dictionary
@@ -78,13 +68,18 @@ class TestHarness : public PolicyProviderTestHarness {
   // exists.
   void AddPolicies(NSDictionary* policy);
 
+  // If true, the test harness will encode complex data (dicts and lists) as
+  // JSON strings.
+  bool encode_complex_data_as_json_;
+
   DISALLOW_COPY_AND_ASSIGN(TestHarness);
 };
 
-TestHarness::TestHarness()
+TestHarness::TestHarness(bool encode_complex_data_as_json)
     : PolicyProviderTestHarness(POLICY_LEVEL_MANDATORY,
                                 POLICY_SCOPE_MACHINE,
-                                POLICY_SOURCE_PLATFORM) {}
+                                POLICY_SOURCE_PLATFORM),
+      encode_complex_data_as_json_(encode_complex_data_as_json) {}
 
 TestHarness::~TestHarness() {
   // Cleanup any policies left from the test.
@@ -106,7 +101,7 @@ ConfigurationPolicyProvider* TestHarness::CreateProvider(
     SchemaRegistry* registry,
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   return new AsyncPolicyProvider(
-      registry, std::make_unique<PolicyLoaderIOS>(task_runner));
+      registry, std::make_unique<PolicyLoaderIOS>(registry, task_runner));
 }
 
 void TestHarness::InstallEmptyPolicy() {
@@ -150,14 +145,29 @@ void TestHarness::InstallDictionaryPolicy(
     const std::string& policy_name,
     const base::DictionaryValue* policy_value) {
   NSString* key = base::SysUTF8ToNSString(policy_name);
-  base::ScopedCFTypeRef<CFPropertyListRef> value(
-      ValueToProperty(*policy_value));
-  AddPolicies(@{key : (__bridge NSDictionary*)(value.get())});
+
+  if (encode_complex_data_as_json_) {
+    // Convert |policy_value| to a JSON-encoded string.
+    std::string json_string;
+    JSONStringValueSerializer serializer(&json_string);
+    ASSERT_TRUE(serializer.Serialize(*policy_value));
+
+    AddPolicies(@{key : base::SysUTF8ToNSString(json_string)});
+  } else {
+    base::ScopedCFTypeRef<CFPropertyListRef> value(
+        ValueToProperty(*policy_value));
+    AddPolicies(@{key : (__bridge NSDictionary*)(value.get())});
+  }
 }
 
 // static
 PolicyProviderTestHarness* TestHarness::Create() {
-  return new TestHarness();
+  return new TestHarness(false);
+}
+
+// static
+PolicyProviderTestHarness* TestHarness::CreateWithJSONEncoding() {
+  return new TestHarness(true);
 }
 
 void TestHarness::AddPolicies(NSDictionary* policy) {
@@ -182,14 +192,60 @@ INSTANTIATE_TEST_SUITE_P(PolicyProviderIOSChromePolicyTest,
                          ConfigurationPolicyProviderTest,
                          testing::Values(TestHarness::Create));
 
-using PolicyLoaderIOSTest = PlatformTest;
+INSTANTIATE_TEST_SUITE_P(PolicyProviderIOSChromePolicyJSONTest,
+                         ConfigurationPolicyProviderTest,
+                         testing::Values(TestHarness::CreateWithJSONEncoding));
+
+class PolicyLoaderIOSTest : public PlatformTest {
+ public:
+  void SetUp() override {
+    const std::string load_policy_key =
+        base::SysNSStringToUTF8(kPolicyLoaderIOSLoadPolicyKey);
+    const std::string test_schema = "{"
+                                    "  \"type\": \"object\","
+                                    "  \"properties\": {"
+                                    "    \"" +
+                                    load_policy_key +
+                                    "\": { \"type\": \"boolean\" },"
+                                    "    \"key1\": { \"type\": \"string\" },"
+                                    "    \"key2\": { \"type\": \"string\" },"
+                                    "  }"
+                                    "}";
+
+    std::string error;
+    Schema schema = Schema::Parse(test_schema, &error);
+    ASSERT_TRUE(schema.valid());
+
+    const PolicyNamespace ns(POLICY_DOMAIN_CHROME, "");
+    schema_registry_.RegisterComponent(ns, schema);
+
+    scoped_refptr<base::TestSimpleTaskRunner> task_runner =
+        new base::TestSimpleTaskRunner();
+    loader_ = std::make_unique<PolicyLoaderIOS>(&schema_registry_, task_runner);
+  }
+
+ protected:
+  // Verifies that |loader_| does not load any policies.
+  void VerifyNoPoliciesAreLoaded() {
+    PolicyBundle empty;
+    std::unique_ptr<PolicyBundle> bundle = loader_->Load();
+    ASSERT_TRUE(bundle);
+    EXPECT_TRUE(bundle->Equals(empty));
+  }
+
+  // The schema registry used while testing.
+  SchemaRegistry schema_registry_;
+
+  // The PolicyLoaderIOS under test.
+  std::unique_ptr<PolicyLoaderIOS> loader_;
+};
 
 // Verifies that policies are not loaded if kPolicyLoaderIOSLoadPolicyKey is not
 // present.
 TEST_F(PolicyLoaderIOSTest, NoPoliciesLoadedWithoutLoadPolicyKey) {
   NSDictionary* policy = @{
-    @"shared": @"wrong",
-    @"key1": @"value1",
+    @"key1" : @"value1",
+    @"key2" : @"value2",
   };
   [[NSUserDefaults standardUserDefaults]
       setObject:policy
@@ -203,8 +259,8 @@ TEST_F(PolicyLoaderIOSTest, NoPoliciesLoadedWithoutLoadPolicyKey) {
 TEST_F(PolicyLoaderIOSTest, NoPoliciesLoadedWhenEnableChromeKeyIsFalse) {
   NSDictionary* policy = @{
     kPolicyLoaderIOSLoadPolicyKey : @NO,
-    @"shared" : @"wrong",
     @"key1" : @"value1",
+    @"key2" : @"value2",
   };
   [[NSUserDefaults standardUserDefaults]
       setObject:policy

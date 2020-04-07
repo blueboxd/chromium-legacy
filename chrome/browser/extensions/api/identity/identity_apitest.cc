@@ -1824,10 +1824,6 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                        MultiSecondaryUserManuallyIssueToken) {
-  // This test is only relevant if extensions see all accounts.
-  if (id_api()->AreExtensionsRestrictedToPrimaryAccount())
-    return;
-
   SignIn("primary@example.com");
   CoreAccountId secondary_account_id =
       identity_test_env()
@@ -1840,11 +1836,22 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   func->set_auto_login_access_token(false);
   func->push_mint_token_result(TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS);
 
+  const char kFunctionParams[] =
+      "[{\"account\": { \"id\": \"gaia_id_for_secondary_example.com\" } }]";
+
+  if (id_api()->AreExtensionsRestrictedToPrimaryAccount()) {
+    // Fail if extensions are restricted to the primary account.
+    std::string error = utils::RunFunctionAndReturnError(
+        func.get(), kFunctionParams, browser());
+    EXPECT_EQ(std::string(errors::kUserNonPrimary), error);
+    EXPECT_FALSE(func->login_ui_shown());
+    EXPECT_FALSE(func->scope_ui_shown());
+    return;
+  }
+
   base::RunLoop run_loop;
   on_access_token_requested_ = run_loop.QuitClosure();
-  RunFunctionAsync(
-      func.get(),
-      "[{\"account\": { \"id\": \"gaia_id_for_secondary_example.com\" } }]");
+  RunFunctionAsync(func.get(), kFunctionParams);
   run_loop.Run();
 
   std::string secondary_account_access_token =
@@ -1873,7 +1880,11 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   std::string error = utils::RunFunctionAndReturnError(
       func.get(), "[{\"account\": { \"id\": \"unknown@example.com\" } }]",
       browser());
-  EXPECT_EQ(std::string(errors::kUserNotSignedIn), error);
+  std::string expected_error;
+  if (id_api()->AreExtensionsRestrictedToPrimaryAccount())
+    EXPECT_EQ(errors::kUserNonPrimary, error);
+  else
+    EXPECT_EQ(errors::kUserNotSignedIn, error);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -1946,10 +1957,6 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
 // getAuthToken() call for the same extension.
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                        MultiSecondaryInteractiveRemoteConsent) {
-  // This test is only relevant if extensions see all accounts.
-  if (id_api()->AreExtensionsRestrictedToPrimaryAccount())
-    return;
-
   CoreAccountId primary_account_id = SignIn("primary@example.com");
   AccountInfo secondary_account =
       identity_test_env()->MakeAccountAvailable("secondary@example.com");
@@ -1975,6 +1982,12 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
     // the account that has been returned in result of the remote consent.
     std::string primary_account_access_token =
         IssueLoginAccessTokenForAccount(primary_account_id);
+
+    if (id_api()->AreExtensionsRestrictedToPrimaryAccount()) {
+      EXPECT_EQ(std::string(errors::kUserNonPrimary), WaitForError(func.get()));
+      return;
+    }
+
     std::string secondary_account_access_token =
         IssueLoginAccessTokenForAccount(secondary_account.account_id);
 
@@ -2031,7 +2044,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
     // Fail if extensions are restricted to the primary account.
     std::string error = utils::RunFunctionAndReturnError(
         func.get(), kFunctionParams, browser());
-    EXPECT_EQ(std::string(errors::kUserNotSignedIn), error);
+    EXPECT_EQ(std::string(errors::kUserNonPrimary), error);
     EXPECT_FALSE(func->login_ui_shown());
     EXPECT_FALSE(func->scope_ui_shown());
   } else {

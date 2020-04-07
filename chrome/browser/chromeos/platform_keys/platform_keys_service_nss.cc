@@ -29,6 +29,7 @@
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
 #include "chrome/browser/chromeos/net/client_cert_store_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/system_token_cert_db_initializer.h"
 #include "chrome/browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_api.h"
 #include "chrome/browser/net/nss_context.h"
 #include "chrome/browser/profiles/profile.h"
@@ -36,6 +37,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/resource_context.h"
 #include "crypto/nss_key_util.h"
 #include "crypto/openssl_util.h"
 #include "crypto/scoped_nss_types.h"
@@ -107,11 +109,11 @@ class NSSOperationState {
 
 using GetCertDBCallback = base::Callback<void(net::NSSCertDatabase* cert_db)>;
 
-// Used by GetCertDatabaseOnIOThread and called back with the requested
+// Used by GetCertDatabaseOnIoThread and called back with the requested
 // NSSCertDatabase.
 // If |token_id| is not empty, sets |slot_| of |state| accordingly and calls
 // |callback| if the database was successfully retrieved.
-void DidGetCertDBOnIOThread(const std::string& token_id,
+void DidGetCertDbOnIoThread(const std::string& token_id,
                             const GetCertDBCallback& callback,
                             NSSOperationState* state,
                             net::NSSCertDatabase* cert_db) {
@@ -141,27 +143,56 @@ void DidGetCertDBOnIOThread(const std::string& token_id,
 // Retrieves the NSSCertDatabase from |context| and, if |token_id| is not empty,
 // the slot for |token_id|.
 // Must be called on the IO thread.
-void GetCertDatabaseOnIOThread(const std::string& token_id,
+void GetCertDatabaseOnIoThread(const std::string& token_id,
                                const GetCertDBCallback& callback,
                                content::ResourceContext* context,
                                NSSOperationState* state) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   net::NSSCertDatabase* cert_db = GetNSSCertDatabaseForResourceContext(
-      context, base::Bind(&DidGetCertDBOnIOThread, token_id, callback, state));
+      context, base::Bind(&DidGetCertDbOnIoThread, token_id, callback, state));
 
   if (cert_db)
-    DidGetCertDBOnIOThread(token_id, callback, state, cert_db);
+    DidGetCertDbOnIoThread(token_id, callback, state, cert_db);
+}
+
+// Called by SystemTokenCertDBInitializer on the UI thread with the system token
+// certificate database when it is initialized.
+void DidGetSystemTokenCertDbOnUiThread(const std::string& token_id,
+                                       const GetCertDBCallback& callback,
+                                       NSSOperationState* state,
+                                       net::NSSCertDatabase* cert_db) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // Sets |slot_| of |state| accordingly and calls |callback| on the IO thread
+  // if the database was successfully retrieved.
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&DidGetCertDbOnIoThread, token_id, callback,
+                                state, cert_db));
 }
 
 // Asynchronously fetches the NSSCertDatabase for |browser_context| and, if
 // |token_id| is not empty, the slot for |token_id|. Stores the slot in |state|
 // and passes the database to |callback|. Will run |callback| on the IO thread.
+// TODO(omorsi): Introduce timeout for retrieving certificate database in
+// platform keys.
 void GetCertDatabase(const std::string& token_id,
                      const GetCertDBCallback& callback,
                      BrowserContext* browser_context,
                      NSSOperationState* state) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  // There will be no public or private slots initialized if no user is logged
+  // in. In this case, an NSS certificate database that has the system slot
+  // should be used for system token operations.
+  if (ProfileHelper::IsSigninProfile(profile)) {
+    SystemTokenCertDBInitializer::Get()->GetSystemTokenCertDb(base::BindOnce(
+        &DidGetSystemTokenCertDbOnUiThread, token_id, callback, state));
+    return;
+  }
+
   base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&GetCertDatabaseOnIOThread, token_id, callback,
+                 base::BindOnce(&GetCertDatabaseOnIoThread, token_id, callback,
                                 browser_context->GetResourceContext(), state));
 }
 
@@ -947,10 +978,15 @@ void GetTokensWithDB(std::unique_ptr<GetTokensState> state,
   std::unique_ptr<std::vector<std::string>> token_ids(
       new std::vector<std::string>);
 
-  // The user's token is always available.
-  token_ids->push_back(kTokenIdUser);
+  // The user token will be unavailable in case of no logged in user in this
+  // profile.
+  if (cert_db->GetPrivateSlot())
+    token_ids->push_back(kTokenIdUser);
+
   if (cert_db->GetSystemSlot())
     token_ids->push_back(kTokenIdSystem);
+
+  DCHECK(!token_ids->empty());
 
   state->CallBack(FROM_HERE, std::move(token_ids),
                   std::string() /* no error */);

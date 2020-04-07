@@ -58,7 +58,7 @@ void RecommendAppsScreen::OnViewDestroyed(RecommendAppsScreenView* view) {
   view_ = nullptr;
 }
 
-bool RecommendAppsScreen::ShouldSkipScreen() {
+bool RecommendAppsScreen::MaybeSkip() {
   const user_manager::UserManager* user_manager =
       user_manager::UserManager::Get();
   DCHECK(user_manager->IsUserLoggedIn());
@@ -66,12 +66,11 @@ bool RecommendAppsScreen::ShouldSkipScreen() {
                                 ->GetProfilePolicyConnector()
                                 ->IsManaged();
   bool is_child_account = user_manager->IsLoggedInAsChildUser();
-  return is_managed_account || is_child_account;
-}
-
-void RecommendAppsScreen::Skip() {
-  DCHECK(ShouldSkipScreen());
-  exit_callback_.Run(Result::NOT_APPLICABLE);
+  if (is_managed_account || is_child_account) {
+    exit_callback_.Run(Result::NOT_APPLICABLE);
+    return true;
+  }
+  return false;
 }
 
 void RecommendAppsScreen::ShowImpl() {

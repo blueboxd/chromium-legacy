@@ -168,6 +168,7 @@
 <translation id="3112556859945124369">Shëno...</translation>
 <translation id="3153862085237805241">Ruaj kartën</translation>
 <translation id="3157684681743766797">Shëno të gjitha…</translation>
+<translation id="3161291298470460782">Kjo do të të nxjerrë nga llogaria, do të çaktivizojë sinkronizimin dhe do të pastrojë të gjitha të dhënat e Chrome nga kjo pajisje. Të dhënat e tua të sinkronizuara do të mbeten në "Llogarinë tënde të Google".</translation>
 <translation id="3175081911749765310">Shërbimet e uebit</translation>
 <translation id="3178650076442119961">Aktiv sot</translation>
 <translation id="3207960819495026254">Regjistruar në faqeshënues</translation>
@@ -200,6 +201,7 @@
 <translation id="3494788280727468875">Konfirmo pastrimin e të dhënave të shfletimit</translation>
 <translation id="35083190962747987">Hap ${url}</translation>
 <translation id="3519193562722059437">Hap një skedë për të shfletuar uebin.</translation>
+<translation id="3523473570015918798">Nëse del, faqeshënuesit, historiku, fjalëkalimet dhe të dhënat e tjera të Chrome nuk do të sinkronizohen më në "Llogarinë tënde të Google".</translation>
 <translation id="3527085408025491307">Dosje</translation>
 <translation id="3529024052484145543">Jo e sigurt</translation>
 <translation id="3533202363250687977">Mbylli të gjitha skedat "e fshehta"</translation>
@@ -333,6 +335,7 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="54401264925851789">Informacioni i sigurisë së faqes</translation>
 <translation id="5443952882982198570">Kartat e kreditit</translation>
 <translation id="5457907402803865181">Gabim gjatë sinkronizimit të fjalëkalimeve.</translation>
+<translation id="5508435575041083207">Dil dhe pastro të dhënat nga kjo pajisje</translation>
 <translation id="5525269841082836315">Krijo fjalëkalim</translation>
 <translation id="5548760955356983418">Handoff të lejon të fillosh të shfletosh një faqe interneti në këtë pajisje dhe pastaj me lehtësi të vazhdosh në kompjuterin tënd Mac. Faqja aktuale e hapur e internetit do të shfaqet në Dock të kompjuterit tënd Mac.
 
@@ -506,6 +509,9 @@ Të dhënat e tua janë koduar me frazën tënde të kalimit më <ph name="TIME"
 <translation id="766891008101699113">Për të shfletuar uebin në mënyrë private, shto një skedë të re.</translation>
 <translation id="7671141431838911305">INSTALO</translation>
 <translation id="7765158879357617694">Zhvendos</translation>
+<translation id="7771470029643830783">Nëse del, faqeshënuesit, historiku, fjalëkalimet dhe të dhënat e tjera të Chrome nuk do të sinkronizohen më në "Llogarinë tënde të Google".
+
+Duke qenë se llogaria jote menaxhohet nga <ph name="HOSTED_DOMAIN" />, të dhënat e tua të Chrome do të fshihen nga kjo pajisje kur të dalësh. Të dhënat e tua të sinkronizuara do të mbeten në "Llogarinë tënde të Google".</translation>
 <translation id="7772032839648071052">Konfirmo shprehjen e kalimit</translation>
 <translation id="7781011649027948662">Të përkthehet faqja?</translation>
 <translation id="7781829728241885113">Dje</translation>
@@ -555,6 +561,7 @@ Të dhënat e tua janë koduar me frazën tënde të kalimit më <ph name="TIME"
 <translation id="8490978609246021741">Ruaj ndryshimet</translation>
 <translation id="8503813439785031346">Emri i përdoruesit</translation>
 <translation id="850600235656508448">Hape në modalitetin "e fshehtë"</translation>
+<translation id="8510057420705599706">Kjo do të të nxjerrë nga llogaria dhe do ta çaktivizojë sinkronizimin, por faqeshënuesit, historiku, fjalëkalimet dhe të dhënat e tjera të Chrome do të mbeten në këtë pajisje.</translation>
 <translation id="8517375800490286174">Licencat me burim të hapur</translation>
 <translation id="8524799873541103884"><ph name="INCOGNITO" /> Skeda <ph name="FIRST_VISIBLE_TAB" /> deri <ph name="LAST_VISIBLE_TAB" /> nga <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">Risi</translation>
@@ -597,6 +604,7 @@ Të dhënat e tua janë koduar me frazën tënde të kalimit më <ph name="TIME"
 <translation id="9094033019050270033">Përditëso fjalëkalimin</translation>
 <translation id="9100610230175265781">Kërkohet shprehja e kalimit</translation>
 <translation id="9148126808321036104">Identifikohu sërish</translation>
+<translation id="9152539721251340337">Krijo një kod QR</translation>
 <translation id="9157836665414082580">Fshih dialogjet</translation>
 <translation id="9188680907066685419">Dil nga llogaria e menaxhuar</translation>
 <translation id="9203116392574189331">Handoff</translation>

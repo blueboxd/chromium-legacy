@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
@@ -35,11 +36,8 @@ class BaseScreen {
   void Hide();
 
   // Returns whether the screen should be skipped i. e. should be exited due to
-  // specific unmet conditions. Override along with Skip method.
-  virtual bool ShouldSkipScreen();
-
-  // Skips the screen. Override along with ShouldSkipScreen method.
-  virtual void Skip();
+  // specific unmet conditions. Returns true if skips the screen.
+  virtual bool MaybeSkip() WARN_UNUSED_RESULT;
 
   // Forwards user action if screen is shown.
   void HandleUserAction(const std::string& action_id);

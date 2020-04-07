@@ -2622,6 +2622,12 @@ public class PaymentRequestImpl
         return mRawTotal.amount.currency;
     }
 
+    // PaymentAppFactoryParams implementation.
+    @Override
+    public boolean requestShippingOrPayerContact() {
+        return mRequestShipping || mRequestPayerName || mRequestPayerPhone || mRequestPayerEmail;
+    }
+
     // PaymentAppFactoryDelegate implementation.
     @Override
     public PaymentAppFactoryParams getParams() {

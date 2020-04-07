@@ -11,6 +11,7 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/permissions/permission_manager.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 
 ChromePageInfoUiDelegate::ChromePageInfoUiDelegate(Profile* profile)
@@ -24,6 +25,7 @@ permissions::PermissionResult ChromePageInfoUiDelegate::GetPermissionStatus(
 }
 
 #if !defined(OS_ANDROID)
+
 bool ChromePageInfoUiDelegate::IsBlockAutoPlayEnabled() {
   return profile_->GetPrefs()->GetBoolean(prefs::kBlockAutoplayEnabled);
 }

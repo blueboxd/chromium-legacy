@@ -14,11 +14,14 @@
 
 namespace policy {
 
+class SchemaRegistry;
+
 // A policy loader that loads policy from the managed app configuration
 // introduced in iOS 7.
 class POLICY_EXPORT PolicyLoaderIOS : public AsyncPolicyLoader {
  public:
   explicit PolicyLoaderIOS(
+      SchemaRegistry* registry,
       scoped_refptr<base::SequencedTaskRunner> task_runner);
   ~PolicyLoaderIOS() override;
 
@@ -31,8 +34,18 @@ class POLICY_EXPORT PolicyLoaderIOS : public AsyncPolicyLoader {
   void UserDefaultsChanged();
 
   // Loads the Chrome policies in |dictionary| into the given |bundle|.
-  static void LoadNSDictionaryToPolicyBundle(NSDictionary* dictionary,
-                                             PolicyBundle* bundle);
+  void LoadNSDictionaryToPolicyBundle(NSDictionary* dictionary,
+                                      PolicyBundle* bundle);
+
+  // Validates the given policy data against the stored |schema_|, converting
+  // data to the expected type if necessary.  The returned value is suitable for
+  // adding to a PolicyMap.
+  std::unique_ptr<base::Value> ConvertPolicyDataIfNecessary(
+      const std::string& key,
+      const base::Value& value);
+
+  // The schema used by |ValidatePolicyData()|.
+  const Schema* policy_schema_;
 
   // Used to manage the registration for NSNotificationCenter notifications.
   __strong id notification_observer_;

@@ -46,6 +46,11 @@ class APP_LIST_EXPORT HorizontalPageContainer : public AppListPage,
   views::View* GetFirstFocusableView() override;
   views::View* GetLastFocusableView() override;
   bool ShouldShowSearchBox() const override;
+  void AnimateOpacity(float current_progress,
+                      AppListViewState target_view_state,
+                      const OpacityAnimator& animator) override;
+  void AnimateYPosition(AppListViewState target_view_state,
+                        const TransformAnimator& animator) override;
 
   AppsContainerView* apps_container_view() { return apps_container_view_; }
 

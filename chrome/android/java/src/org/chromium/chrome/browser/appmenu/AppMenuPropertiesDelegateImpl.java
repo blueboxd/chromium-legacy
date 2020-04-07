@@ -16,6 +16,7 @@ import android.view.MenuItem;
 import android.view.View;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.content.res.AppCompatResources;
@@ -83,9 +84,10 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
     private Callback<BookmarkBridge> mBookmarkBridgeSupplierCallback;
     private boolean mUpdateMenuItemVisible;
     private ShareUtils mShareUtils;
+    @VisibleForTesting
     @IntDef({MenuGroup.INVALID, MenuGroup.PAGE_MENU, MenuGroup.OVERVIEW_MODE_MENU,
             MenuGroup.START_SURFACE_MODE_MENU, MenuGroup.TABLET_EMPTY_MODE_MENU})
-    private @interface MenuGroup {
+    @interface MenuGroup {
         int INVALID = -1;
         int PAGE_MENU = 0;
         int OVERVIEW_MODE_MENU = 1;
@@ -174,8 +176,9 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
         }
     }
 
-    @Override
-    public void prepareMenu(Menu menu, AppMenuHandler handler) {
+    @VisibleForTesting
+    @MenuGroup
+    int getMenuGroup() {
         // Determine which menu to show.
         @MenuGroup
         int menuGroup = MenuGroup.INVALID;
@@ -196,127 +199,114 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
                     : MenuGroup.OVERVIEW_MODE_MENU;
         }
         assert menuGroup != MenuGroup.INVALID;
+        return menuGroup;
+    }
 
+    private void setMenuGroupVisibility(@MenuGroup int menuGroup, Menu menu) {
         menu.setGroupVisible(R.id.PAGE_MENU, menuGroup == MenuGroup.PAGE_MENU);
         menu.setGroupVisible(R.id.OVERVIEW_MODE_MENU, menuGroup == MenuGroup.OVERVIEW_MODE_MENU);
         menu.setGroupVisible(
                 R.id.START_SURFACE_MODE_MENU, menuGroup == MenuGroup.START_SURFACE_MODE_MENU);
         menu.setGroupVisible(
                 R.id.TABLET_EMPTY_MODE_MENU, menuGroup == MenuGroup.TABLET_EMPTY_MODE_MENU);
+    }
+
+    @Override
+    public void prepareMenu(Menu menu, AppMenuHandler handler) {
+        int menuGroup = getMenuGroup();
+        setMenuGroupVisibility(menuGroup, menu);
 
         boolean isIncognito = mTabModelSelector.getCurrentModel().isIncognito();
         Tab currentTab = mActivityTabProvider.get();
+
         if (menuGroup == MenuGroup.PAGE_MENU && currentTab != null) {
-            String url = currentTab.getUrlString();
-            boolean isChromeScheme = url.startsWith(UrlConstants.CHROME_URL_PREFIX)
-                    || url.startsWith(UrlConstants.CHROME_NATIVE_URL_PREFIX);
-            boolean isFileScheme = url.startsWith(UrlConstants.FILE_URL_PREFIX);
-            boolean isContentScheme = url.startsWith(UrlConstants.CONTENT_URL_PREFIX);
-            boolean shouldShowIconRow = !mIsTablet
-                    || mDecorView.getWidth()
-                            < DeviceFormFactor.getNonMultiDisplayMinimumTabletWidthPx(mContext);
+            preparePageMenu(menu, currentTab, handler, isIncognito);
+        }
+        prepareCommonMenuItems(menu, menuGroup, isIncognito);
+    }
 
-            final boolean isMenuButtonOnTop =
-                    mToolbarManager != null && !mToolbarManager.isMenuFromBottom();
-            shouldShowIconRow &= isMenuButtonOnTop;
+    private void preparePageMenu(
+            Menu menu, Tab currentTab, AppMenuHandler handler, boolean isIncognito) {
+        String url = currentTab.getUrlString();
+        boolean isChromeScheme = url.startsWith(UrlConstants.CHROME_URL_PREFIX)
+                || url.startsWith(UrlConstants.CHROME_NATIVE_URL_PREFIX);
+        boolean isFileScheme = url.startsWith(UrlConstants.FILE_URL_PREFIX);
+        boolean isContentScheme = url.startsWith(UrlConstants.CONTENT_URL_PREFIX);
 
-            // Update the icon row items (shown in narrow form factors).
-            menu.findItem(R.id.icon_row_menu_id).setVisible(shouldShowIconRow);
-            if (shouldShowIconRow) {
-                // Disable the "Forward" menu item if there is no page to go to.
-                MenuItem forwardMenuItem = menu.findItem(R.id.forward_menu_id);
-                forwardMenuItem.setEnabled(currentTab.canGoForward());
+        // Update the icon row items (shown in narrow form factors).
+        boolean shouldShowIconRow = shouldShowIconRow();
+        menu.findItem(R.id.icon_row_menu_id).setVisible(shouldShowIconRow);
+        if (shouldShowIconRow) {
+            // Disable the "Forward" menu item if there is no page to go to.
+            MenuItem forwardMenuItem = menu.findItem(R.id.forward_menu_id);
+            forwardMenuItem.setEnabled(currentTab.canGoForward());
 
-                mReloadMenuItem = menu.findItem(R.id.reload_menu_id);
-                Drawable icon =
-                        AppCompatResources.getDrawable(mContext, R.drawable.btn_reload_stop);
-                DrawableCompat.setTintList(icon,
-                        AppCompatResources.getColorStateList(
-                                mContext, R.color.default_icon_color_tint_list));
-                mReloadMenuItem.setIcon(icon);
-                loadingStateChanged(currentTab.isLoading());
+            mReloadMenuItem = menu.findItem(R.id.reload_menu_id);
+            Drawable icon = AppCompatResources.getDrawable(mContext, R.drawable.btn_reload_stop);
+            DrawableCompat.setTintList(icon,
+                    AppCompatResources.getColorStateList(
+                            mContext, R.color.default_icon_color_tint_list));
+            mReloadMenuItem.setIcon(icon);
+            loadingStateChanged(currentTab.isLoading());
 
-                MenuItem bookmarkMenuItem = menu.findItem(R.id.bookmark_this_page_id);
-                updateBookmarkMenuItem(bookmarkMenuItem, currentTab);
+            MenuItem bookmarkMenuItem = menu.findItem(R.id.bookmark_this_page_id);
+            updateBookmarkMenuItem(bookmarkMenuItem, currentTab);
 
-                MenuItem offlineMenuItem = menu.findItem(R.id.offline_page_id);
-                if (offlineMenuItem != null) {
-                    offlineMenuItem.setEnabled(DownloadUtils.isAllowedToDownloadPage(currentTab));
-                }
+            MenuItem offlineMenuItem = menu.findItem(R.id.offline_page_id);
+            if (offlineMenuItem != null) {
+                offlineMenuItem.setEnabled(shouldEnableDownloadPage(currentTab));
             }
-
-            mUpdateMenuItemVisible =
-                    UpdateMenuItemHelper.getInstance().getUiState().itemState != null;
-            menu.findItem(R.id.update_menu_id).setVisible(mUpdateMenuItemVisible);
-            if (mUpdateMenuItemVisible) {
-                mAppMenuInvalidator = () -> handler.invalidateAppMenu();
-                UpdateMenuItemHelper.getInstance().registerObserver(mAppMenuInvalidator);
-            }
-
-            boolean hasMoreThanOneTab = mTabModelSelector.getTotalTabCount() > 1;
-            menu.findItem(R.id.move_to_other_window_menu_id)
-                    .setVisible(mMultiWindowModeStateDispatcher.isOpenInOtherWindowSupported()
-                            && hasMoreThanOneTab);
-
-            // Don't allow either "chrome://" pages or interstitial pages to be shared.
-            menu.findItem(R.id.share_row_menu_id)
-                    .setVisible(mShareUtils.shouldEnableShare(currentTab));
-
-            ShareHelper.configureDirectShareMenuItem(
-                    mContext, menu.findItem(R.id.direct_share_menu_id));
-
-            boolean isChromeOrInterstitialPage =
-                    isChromeScheme || ((TabImpl) currentTab).isShowingInterstitialPage();
-
-            menu.findItem(R.id.paint_preview_show_id)
-                    .setVisible(CachedFeatureFlags.isEnabled(ChromeFeatureList.PAINT_PREVIEW_DEMO)
-                            && !isChromeOrInterstitialPage && !isIncognito);
-
-            // Disable find in page on the native NTP.
-            menu.findItem(R.id.find_in_page_id)
-                    .setVisible(!currentTab.isNativePage() && currentTab.getWebContents() != null);
-
-            // Prepare translate menu button.
-            prepareTranslateMenuItem(menu, currentTab);
-
-            // Hide 'Add to homescreen' for the following:
-            // * chrome:// pages - Android doesn't know how to direct those URLs.
-            // * incognito pages - To avoid problems where users create shortcuts in incognito
-            //                      mode and then open the webapp in regular mode.
-            // * file:// - After API 24, file: URIs are not supported in VIEW intents and thus
-            //             can not be added to the homescreen.
-            // * content:// - Accessing external content URIs requires the calling app to grant
-            //                access to the resource via FLAG_GRANT_READ_URI_PERMISSION, and that
-            //                is not persisted when adding to the homescreen.
-            // * If creating shortcuts it not supported by the current home screen.
-            boolean canShowHomeScreenMenuItem = ShortcutHelper.isAddToHomeIntentSupported()
-                    && !isChromeScheme && !isFileScheme && !isContentScheme && !isIncognito
-                    && !TextUtils.isEmpty(url);
-            prepareAddToHomescreenMenuItem(menu, currentTab, canShowHomeScreenMenuItem);
-
-            updateRequestDesktopSiteMenuItem(menu, currentTab, true /* can show */);
-
-            // Only display reader mode settings menu option if the current page is in reader mode.
-            menu.findItem(R.id.reader_mode_prefs_id)
-                    .setVisible(DomDistillerUrlUtils.isDistilledPage(currentTab.getUrlString()));
-
-            // Only display the Enter VR button if VR Shell Dev environment is enabled.
-            menu.findItem(R.id.enter_vr_id)
-                    .setVisible(CommandLine.getInstance().hasSwitch(
-                            ChromeSwitches.ENABLE_VR_SHELL_DEV));
         }
 
+        mUpdateMenuItemVisible = shouldShowUpdateMenuItem();
+        menu.findItem(R.id.update_menu_id).setVisible(mUpdateMenuItemVisible);
+        if (mUpdateMenuItemVisible) {
+            mAppMenuInvalidator = () -> handler.invalidateAppMenu();
+            UpdateMenuItemHelper.getInstance().registerObserver(mAppMenuInvalidator);
+        }
+
+        menu.findItem(R.id.move_to_other_window_menu_id).setVisible(shouldShowMoveToOtherWindow());
+
+        // Don't allow either "chrome://" pages or interstitial pages to be shared.
+        menu.findItem(R.id.share_row_menu_id).setVisible(mShareUtils.shouldEnableShare(currentTab));
+
+        ShareHelper.configureDirectShareMenuItem(
+                mContext, menu.findItem(R.id.direct_share_menu_id));
+
+        menu.findItem(R.id.paint_preview_show_id)
+                .setVisible(shouldShowPaintPreview(isChromeScheme, currentTab, isIncognito));
+
+        // Disable find in page on the native NTP.
+        menu.findItem(R.id.find_in_page_id).setVisible(shouldShowFindInPage(currentTab));
+
+        // Prepare translate menu button.
+        prepareTranslateMenuItem(menu, currentTab);
+
+        prepareAddToHomescreenMenuItem(menu, currentTab,
+                shouldShowHomeScreenMenuItem(
+                        isChromeScheme, isFileScheme, isContentScheme, isIncognito, url));
+
+        updateRequestDesktopSiteMenuItem(menu, currentTab, true /* can show */);
+
+        // Only display reader mode settings menu option if the current page is in reader mode.
+        menu.findItem(R.id.reader_mode_prefs_id).setVisible(shouldShowReaderModePrefs(currentTab));
+
+        // Only display the Enter VR button if VR Shell Dev environment is enabled.
+        menu.findItem(R.id.enter_vr_id).setVisible(shouldShowEnterVr());
+    }
+
+    private void prepareCommonMenuItems(Menu menu, @MenuGroup int menuGroup, boolean isIncognito) {
         // We have to iterate all menu items since same menu item ID may be associated with more
         // than one menu items.
         boolean isMenuGroupTabsVisible = TabUiFeatureUtilities.isTabGroupsAndroidEnabled()
                 && !DeviceClassManager.enableAccessibilityLayout();
-        boolean isMenuGroupTabsEnabled = mTabModelSelector.getTabModelFilterProvider()
-                                                 .getCurrentTabModelFilter()
-                                                 .getTabsWithNoOtherRelatedTabs()
-                                                 .size()
-                > 1;
-        boolean hasTabs = mTabModelSelector.getTotalTabCount() > 0;
-        boolean hasIncognitoTabs = mTabModelSelector.getModel(true).getCount() > 0;
+        boolean isMenuGroupTabsEnabled = isMenuGroupTabsVisible
+                && mTabModelSelector.getTabModelFilterProvider()
+                                .getCurrentTabModelFilter()
+                                .getTabsWithNoOtherRelatedTabs()
+                                .size()
+                        > 1;
+
         for (int i = 0; i < menu.size(); ++i) {
             MenuItem item = menu.getItem(i);
             int itemGroupId = item.getGroupId();
@@ -336,10 +326,12 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
                 item.setEnabled(isMenuGroupTabsEnabled);
             }
             if (item.getItemId() == R.id.close_all_tabs_menu_id) {
+                boolean hasTabs = mTabModelSelector.getTotalTabCount() > 0;
                 item.setVisible(!isIncognito);
                 item.setEnabled(hasTabs);
             }
             if (item.getItemId() == R.id.close_all_incognito_tabs_menu_id) {
+                boolean hasIncognitoTabs = mTabModelSelector.getModel(true).getCount() > 0;
                 item.setVisible(isIncognito);
                 item.setEnabled(hasIncognitoTabs);
             }
@@ -349,18 +341,113 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
         // findItem(...).setEnabled(...)" is not enough here, because of the inflated
         // main_menu.xml contains multiple items with the same id in different groups
         // e.g.: new_incognito_tab_menu_id.
-        disableEnableMenuItem(menu, R.id.new_incognito_tab_menu_id, true,
-                IncognitoUtils.isIncognitoModeEnabled(), IncognitoUtils.isIncognitoModeManaged());
+        disableEnableMenuItem(menu, R.id.new_incognito_tab_menu_id, true, isIncognitoEnabled(),
+                isIncognitoManaged());
+    }
+
+    /**
+     * @param currentTab The currentTab for which the app menu is showing.
+     * @return Whether the reader mode preferences menu item should be displayed.
+     */
+    protected boolean shouldShowReaderModePrefs(@NonNull Tab currentTab) {
+        return DomDistillerUrlUtils.isDistilledPage(currentTab.getUrlString());
+    }
+
+    /**
+     * @param currentTab The currentTab for which the app menu is showing.
+     * @return Whether the {@code currentTab} may be downloaded, indicating whether the download
+     *         page menu item should be enabled.
+     */
+    protected boolean shouldEnableDownloadPage(@NonNull Tab currentTab) {
+        return DownloadUtils.isAllowedToDownloadPage(currentTab);
+    }
+
+    /**
+     * @param currentTab The currentTab for which the app menu is showing.
+     * @return Whether bookmark page menu item should be checked, indicating that the current tab
+     *         is bookmarked.
+     */
+    protected boolean shouldCheckBookmarkStar(@NonNull Tab currentTab) {
+        return sItemBookmarkedForTesting != null ? sItemBookmarkedForTesting
+                                                 : BookmarkBridge.hasBookmarkIdForTab(currentTab);
+    }
+
+    /**
+     * @return Whether the update Chrome menu item should be displayed.
+     */
+    protected boolean shouldShowUpdateMenuItem() {
+        return UpdateMenuItemHelper.getInstance().getUiState().itemState != null;
+    }
+
+    /**
+     * @return Whether the "Move to other window" menu item should be displayed.
+     */
+    protected boolean shouldShowMoveToOtherWindow() {
+        boolean hasMoreThanOneTab = mTabModelSelector.getTotalTabCount() > 1;
+        return mMultiWindowModeStateDispatcher.isOpenInOtherWindowSupported() && hasMoreThanOneTab;
+    }
+
+    /**
+     * @param isChromeScheme Whether URL for the current tab starts with the chrome:// scheme.
+     * @param currentTab The currentTab for which the app menu is showing.
+     * @param isIncognito Whether the currentTab is incognito.
+     * @return Whether the paint preview menu item should be displayed.
+     */
+    protected boolean shouldShowPaintPreview(
+            boolean isChromeScheme, @NonNull Tab currentTab, boolean isIncognito) {
+        boolean isChromeOrInterstitialPage =
+                isChromeScheme || ((TabImpl) currentTab).isShowingInterstitialPage();
+        return CachedFeatureFlags.isEnabled(ChromeFeatureList.PAINT_PREVIEW_DEMO)
+                && !isChromeOrInterstitialPage && !isIncognito;
+    }
+
+    /**
+     * @param currentTab The currentTab for which the app menu is showing.
+     * @return Whether the find in page menu item should be displayed.
+     */
+    protected boolean shouldShowFindInPage(@NonNull Tab currentTab) {
+        return !currentTab.isNativePage() && currentTab.getWebContents() != null;
+    }
+
+    /**
+     * @return Whether the enter VR menu item should be displayed.
+     */
+    protected boolean shouldShowEnterVr() {
+        return CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_VR_SHELL_DEV);
+    }
+
+    /**
+     * @param isChromeScheme Whether URL for the current tab starts with the chrome:// scheme.
+     * @param isFileScheme Whether URL for the current tab starts with the file:// scheme.
+     * @param isContentScheme Whether URL for the current tab starts with the file:// scheme.
+     * @param isIncognito Whether the current tab is incognito.
+     * @param url The URL for the current tab.
+     * @return Whether the homescreen menu item should be displayed.
+     */
+    protected boolean shouldShowHomeScreenMenuItem(boolean isChromeScheme, boolean isFileScheme,
+            boolean isContentScheme, boolean isIncognito, String url) {
+        // Hide 'Add to homescreen' for the following:
+        // * chrome:// pages - Android doesn't know how to direct those URLs.
+        // * incognito pages - To avoid problems where users create shortcuts in incognito
+        //                      mode and then open the webapp in regular mode.
+        // * file:// - After API 24, file: URIs are not supported in VIEW intents and thus
+        //             can not be added to the homescreen.
+        // * content:// - Accessing external content URIs requires the calling app to grant
+        //                access to the resource via FLAG_GRANT_READ_URI_PERMISSION, and that
+        //                is not persisted when adding to the homescreen.
+        // * If creating shortcuts it not supported by the current home screen.
+        return ShortcutHelper.isAddToHomeIntentSupported() && !isChromeScheme && !isFileScheme
+                && !isContentScheme && !isIncognito && !TextUtils.isEmpty(url);
     }
 
     /**
      * Sets the visibility and labels of the "Add to Home screen" and "Open WebAPK" menu items.
      */
     protected void prepareAddToHomescreenMenuItem(
-            Menu menu, Tab currentTab, boolean canShowHomeScreenMenuItem) {
+            Menu menu, Tab currentTab, boolean shouldShowHomeScreenMenuItem) {
         MenuItem homescreenItem = menu.findItem(R.id.add_to_homescreen_id);
         MenuItem openWebApkItem = menu.findItem(R.id.open_webapk_id);
-        if (canShowHomeScreenMenuItem) {
+        if (shouldShowHomeScreenMenuItem) {
             Context context = ContextUtils.getApplicationContext();
             long addToHomeScreenStart = SystemClock.elapsedRealtime();
             ResolveInfo resolveInfo =
@@ -428,6 +515,17 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
         }
     }
 
+    private boolean shouldShowIconRow() {
+        boolean shouldShowIconRow = !mIsTablet
+                || mDecorView.getWidth()
+                        < DeviceFormFactor.getNonMultiDisplayMinimumTabletWidthPx(mContext);
+
+        final boolean isMenuButtonOnTop =
+                mToolbarManager != null && !mToolbarManager.isMenuFromBottom();
+        shouldShowIconRow &= isMenuButtonOnTop;
+        return shouldShowIconRow;
+    }
+
     // Set enabled to be |enable| for all MenuItems with |id| in |menu|.
     // If |managed| is true then the "Managed By Enterprise" icon is shown next to the menu.
     private void disableEnableMenuItem(
@@ -493,10 +591,7 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
             bookmarkMenuItem.setEnabled(mBookmarkBridge.isEditBookmarksEnabled());
         }
 
-        boolean isBookmarked = sItemBookmarkedForTesting != null
-                ? sItemBookmarkedForTesting
-                : BookmarkBridge.hasBookmarkIdForTab(currentTab);
-        if (isBookmarked) {
+        if (shouldCheckBookmarkStar(currentTab)) {
             bookmarkMenuItem.setIcon(R.drawable.btn_star_filled);
             bookmarkMenuItem.setChecked(true);
             bookmarkMenuItem.setTitleCondensed(mContext.getString(R.string.edit_bookmark));
@@ -523,24 +618,33 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
         String url = currentTab.getUrlString();
         boolean isChromeScheme = url.startsWith(UrlConstants.CHROME_URL_PREFIX)
                 || url.startsWith(UrlConstants.CHROME_NATIVE_URL_PREFIX);
-        // Also hide request desktop site on Reader Mode.
-        boolean isDistilledPage = DomDistillerUrlUtils.isDistilledPage(url);
 
         boolean itemVisible = canShowRequestDesktopSite
-                && (!isChromeScheme || currentTab.isNativePage()) && !isDistilledPage;
+                && (!isChromeScheme || currentTab.isNativePage())
+                && !shouldShowReaderModePrefs(currentTab);
         requestMenuRow.setVisible(itemVisible);
         if (!itemVisible) return;
 
-        boolean isRds =
+        boolean isRequestDesktopSite =
                 currentTab.getWebContents().getNavigationController().getUseDesktopUserAgent();
         // Mark the checkbox if RDS is activated on this page.
-        requestMenuCheck.setChecked(isRds);
+        requestMenuCheck.setChecked(isRequestDesktopSite);
 
         // This title doesn't seem to be displayed by Android, but it is used to set up
         // accessibility text in {@link AppMenuAdapter#setupMenuButton}.
-        requestMenuLabel.setTitleCondensed(isRds
+        requestMenuLabel.setTitleCondensed(isRequestDesktopSite
                         ? mContext.getString(R.string.menu_request_desktop_site_on)
                         : mContext.getString(R.string.menu_request_desktop_site_off));
+    }
+
+    @VisibleForTesting
+    boolean isIncognitoEnabled() {
+        return IncognitoUtils.isIncognitoModeEnabled();
+    }
+
+    @VisibleForTesting
+    boolean isIncognitoManaged() {
+        return IncognitoUtils.isIncognitoModeManaged();
     }
 
     @VisibleForTesting

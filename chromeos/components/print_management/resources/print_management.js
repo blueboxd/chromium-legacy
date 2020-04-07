@@ -55,8 +55,19 @@ Polymer({
     // TODO(jimmyxgong): Remove this once the app has more capabilities.
     this.$$('#header').textContent = 'Print Management';
     this.mojoInterfaceProvider_.getPrintJobs()
-        .then((responseParams) => {
-          this.printJobs_ = responseParams.printJobs;
-        });
+        .then(this.onPrintJobsReceived_.bind(this));
   },
+
+  /**
+   * @param {!PrintJobsList} jobs
+   * @private
+   */
+  onPrintJobsReceived_(jobs) {
+    // Sort the printers in descending order based on time the print job was
+    // created.
+    this.printJobs_ = jobs.printJobs.sort((first, second) => {
+      return Number(second.creationTime.internalValue) -
+          Number(first.creationTime.internalValue);
+    });
+  }
 });

@@ -14,6 +14,7 @@
 namespace ash {
 
 class AutoclickScrollBubbleController;
+class TrayBubbleView;
 
 // Manages the bubble which contains an AutoclickMenuView.
 class ASH_EXPORT AutoclickMenuBubbleController
@@ -70,7 +71,7 @@ class ASH_EXPORT AutoclickMenuBubbleController
   friend class AutoclickTest;
 
   // Owned by views hierarchy.
-  AutoclickMenuBubbleView* bubble_view_ = nullptr;
+  TrayBubbleView* bubble_view_ = nullptr;
   AutoclickMenuView* menu_view_ = nullptr;
   AutoclickMenuPosition position_ = kDefaultAutoclickMenuPosition;
 

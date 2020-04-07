@@ -81,25 +81,12 @@ constexpr gfx::Insets kSettingsRowPadding(8, 0, 0, 0);
 constexpr gfx::Insets kSettingsRadioButtonPadding(14, 18, 14, 18);
 constexpr gfx::Insets kSettingsButtonRowPadding(8);
 
-// Background of inline actions area.
-constexpr SkColor kActionsRowBackgroundColor = SkColorSetRGB(0xee, 0xee, 0xee);
 // Ripple ink drop opacity of action buttons.
 const float kActionButtonInkDropRippleVisibleOpacity = 0.08f;
 // Highlight (hover) ink drop opacity of action buttons.
 const float kActionButtonInkDropHighlightVisibleOpacity = 0.08f;
 // Text color of action button.
 constexpr SkColor kActionButtonTextColor = gfx::kGoogleBlue600;
-// Background color of the large image.
-constexpr SkColor kLargeImageBackgroundColor = SkColorSetRGB(0xf5, 0xf5, 0xf5);
-// Background color of the inline settings.
-constexpr SkColor kInlineSettingsBackgroundColor =
-    SkColorSetRGB(0xEE, 0xEE, 0xEE);
-
-// Text color and icon color of inline reply area when the textfield is empty.
-constexpr SkColor kTextfieldPlaceholderTextColorMD =
-    SkColorSetA(SK_ColorWHITE, 0x8A);
-constexpr SkColor kTextfieldPlaceholderIconColorMD =
-    SkColorSetA(SK_ColorWHITE, 0x60);
 
 // The icon size of inline reply input field.
 constexpr int kInputReplyButtonSize = 20;
@@ -269,9 +256,7 @@ void CompactTitleMessageView::set_message(const base::string16& message) {
 
 // LargeImageView //////////////////////////////////////////////////////////////
 
-LargeImageView::LargeImageView() {
-  SetBackground(views::CreateSolidBackground(kLargeImageBackgroundColor));
-}
+LargeImageView::LargeImageView() = default;
 
 LargeImageView::~LargeImageView() = default;
 
@@ -306,6 +291,12 @@ void LargeImageView::OnPaint(gfx::Canvas* canvas) {
 
 const char* LargeImageView::GetClassName() const {
   return "LargeImageView";
+}
+
+void LargeImageView::OnThemeChanged() {
+  View::OnThemeChanged();
+  SetBackground(views::CreateSolidBackground(GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_NotificationLargeImageBackground)));
 }
 
 // Returns expected size of the image right after resizing.
@@ -376,7 +367,6 @@ NotificationInputContainerMD::NotificationInputContainerMD(
       button_(new views::ImageButton(this)) {
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal, gfx::Insets(), 0));
-  SetBackground(views::CreateSolidBackground(kActionsRowBackgroundColor));
 
   SetInkDropMode(InkDropMode::ON);
   set_ink_drop_visible_opacity(1);
@@ -384,9 +374,6 @@ NotificationInputContainerMD::NotificationInputContainerMD(
   AddChildView(ink_drop_container_);
 
   textfield_->set_controller(this);
-  textfield_->SetTextColor(SK_ColorWHITE);
-  textfield_->SetBackgroundColor(SK_ColorTRANSPARENT);
-  textfield_->set_placeholder_text_color(kTextfieldPlaceholderTextColorMD);
   textfield_->SetBorder(views::CreateEmptyBorder(kInputTextfieldPadding));
   AddChildView(textfield_);
   layout->SetFlexForView(textfield_, 1);
@@ -440,6 +427,18 @@ SkColor NotificationInputContainerMD::GetInkDropBaseColor() const {
   return gfx::kGoogleBlue600;
 }
 
+void NotificationInputContainerMD::OnThemeChanged() {
+  InkDropHostView::OnThemeChanged();
+  auto* theme = GetNativeTheme();
+  SetBackground(views::CreateSolidBackground(theme->GetSystemColor(
+      ui::NativeTheme::kColorId_NotificationActionsRowBackground)));
+  textfield_->SetTextColor(SK_ColorWHITE);
+  textfield_->SetBackgroundColor(SK_ColorTRANSPARENT);
+  textfield_->set_placeholder_text_color(theme->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldPlaceholderColor));
+  SetButtonImage();
+}
+
 bool NotificationInputContainerMD::HandleKeyEvent(views::Textfield* sender,
                                                   const ui::KeyEvent& event) {
   if (event.type() == ui::ET_KEY_PRESSED &&
@@ -454,12 +453,7 @@ bool NotificationInputContainerMD::HandleKeyEvent(views::Textfield* sender,
 
 void NotificationInputContainerMD::OnAfterUserAction(views::Textfield* sender) {
   DCHECK_EQ(sender, textfield_);
-  button_->SetImage(
-      views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(kNotificationInlineReplyIcon, kInputReplyButtonSize,
-                            textfield_->GetText().empty()
-                                ? kTextfieldPlaceholderIconColorMD
-                                : SK_ColorWHITE));
+  SetButtonImage();
 }
 
 void NotificationInputContainerMD::ButtonPressed(views::Button* sender,
@@ -470,6 +464,18 @@ void NotificationInputContainerMD::ButtonPressed(views::Button* sender,
   }
 }
 
+void NotificationInputContainerMD::SetButtonImage() {
+  auto placeholder_icon_color_id =
+      textfield_->GetText().empty()
+          ? ui::NativeTheme::kColorId_NotificationEmptyPlaceholderIconColor
+          : ui::NativeTheme::kColorId_NotificationPlaceholderIconColor;
+  button_->SetImage(
+      views::Button::STATE_NORMAL,
+      gfx::CreateVectorIcon(
+          kNotificationInlineReplyIcon, kInputReplyButtonSize,
+          GetNativeTheme()->GetSystemColor(placeholder_icon_color_id)));
+}
+
 // InlineSettingsRadioButton ///////////////////////////////////////////////////
 
 class InlineSettingsRadioButton : public views::RadioButton {
@@ -478,8 +484,13 @@ class InlineSettingsRadioButton : public views::RadioButton {
       : views::RadioButton(label_text, 1 /* group */) {
     SetEnabledTextColors(kRegularTextColorMD);
     label()->SetFontList(GetTextFontList());
-    label()->SetBackgroundColor(kInlineSettingsBackgroundColor);
     label()->SetSubpixelRenderingEnabled(false);
+  }
+
+  void OnThemeChanged() override {
+    RadioButton::OnThemeChanged();
+    label()->SetBackgroundColor(GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_NotificationInlineSettingsBackground));
   }
 
  private:
@@ -857,7 +868,6 @@ void NotificationViewMD::CreateOrUpdateContextTitleView(
   header_row_->SetAccentColor(notification.accent_color() == SK_ColorTRANSPARENT
                                   ? kNotificationDefaultAccentColor
                                   : notification.accent_color());
-  header_row_->SetBackgroundColor(kNotificationBackgroundColor);
   header_row_->SetTimestamp(notification.timestamp());
   header_row_->SetAppNameElideBehavior(gfx::ELIDE_TAIL);
   header_row_->SetSummaryText(base::string16());
@@ -1343,9 +1353,6 @@ void NotificationViewMD::ToggleInlineSettings(const ui::Event& event) {
   settings_row_->SetVisible(inline_settings_visible);
   content_row_->SetVisible(!inline_settings_visible);
   header_row_->SetDetailViewsVisible(!inline_settings_visible);
-  header_row_->SetBackgroundColor(inline_settings_visible
-                                      ? kInlineSettingsBackgroundColor
-                                      : kNotificationBackgroundColor);
 
   // Always check "Don't block" when inline settings is shown.
   // If it's already blocked, users should not see inline settings.
@@ -1383,7 +1390,9 @@ void NotificationViewMD::UpdateCornerRadius(int top_radius, int bottom_radius) {
   MessageView::UpdateCornerRadius(top_radius, bottom_radius);
   action_buttons_row_->SetBackground(views::CreateBackgroundFromPainter(
       std::make_unique<NotificationBackgroundPainter>(
-          0, bottom_radius, kActionsRowBackgroundColor)));
+          0, bottom_radius,
+          GetNativeTheme()->GetSystemColor(
+              ui::NativeTheme::kColorId_NotificationActionsRowBackground))));
   highlight_path_generator_->set_top_radius(top_radius);
   highlight_path_generator_->set_bottom_radius(bottom_radius);
 }
@@ -1422,6 +1431,15 @@ void NotificationViewMD::OnSettingsButtonPressed(const ui::Event& event) {
     ToggleInlineSettings(event);
   else
     MessageView::OnSettingsButtonPressed(event);
+}
+
+void NotificationViewMD::OnThemeChanged() {
+  MessageView::OnThemeChanged();
+  bool inline_settings_visible = settings_row_ && !settings_row_->GetVisible();
+  header_row_->SetBackgroundColor(GetNativeTheme()->GetSystemColor(
+      inline_settings_visible
+          ? ui::NativeTheme::kColorId_NotificationInlineSettingsBackground
+          : ui::NativeTheme::kColorId_NotificationDefaultBackground));
 }
 
 void NotificationViewMD::Activate() {
@@ -1485,7 +1503,8 @@ std::unique_ptr<views::InkDropMask> NotificationViewMD::CreateInkDropMask()
 }
 
 SkColor NotificationViewMD::GetInkDropBaseColor() const {
-  return kInlineSettingsBackgroundColor;
+  return GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_NotificationInlineSettingsBackground);
 }
 
 void NotificationViewMD::InkDropAnimationStarted() {

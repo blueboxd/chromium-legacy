@@ -88,6 +88,8 @@ target(link_target_type, "renderer") {
     "history_serialization.h",
     "ime_event_guard.cc",
     "ime_event_guard.h",
+    "impression_conversions.cc",
+    "impression_conversions.h",
     "in_process_renderer_thread.cc",
     "in_process_renderer_thread.h",
     "input/frame_input_handler_impl.cc",

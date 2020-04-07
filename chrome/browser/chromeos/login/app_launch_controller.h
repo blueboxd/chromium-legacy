@@ -18,8 +18,6 @@
 #include "chrome/browser/chromeos/app_mode/startup_app_launcher.h"
 #include "chrome/browser/chromeos/login/app_launch_signin_screen.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
 class Profile;
 
@@ -35,8 +33,7 @@ class OobeUI;
 class AppLaunchController : public KioskProfileLoader::Delegate,
                             public StartupAppLauncher::Delegate,
                             public AppLaunchSigninScreen::Delegate,
-                            public AppLaunchSplashScreenView::Delegate,
-                            public content::NotificationObserver {
+                            public AppLaunchSplashScreenView::Delegate {
  public:
   typedef base::Callback<bool()> ReturnBoolCallback;
 
@@ -116,11 +113,6 @@ class AppLaunchController : public KioskProfileLoader::Delegate,
   // AppLaunchSigninScreen::Delegate overrides:
   void OnOwnerSigninSuccess() override;
 
-  // content::NotificationObserver overrides:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
   Profile* profile_ = nullptr;
   const std::string app_id_;
   const bool diagnostic_mode_;
@@ -132,8 +124,6 @@ class AppLaunchController : public KioskProfileLoader::Delegate,
   std::unique_ptr<AppLaunchSigninScreen> signin_screen_;
   std::unique_ptr<AppWindowWatcher> app_window_watcher_;
 
-  content::NotificationRegistrar registrar_;
-  bool login_screen_visible_ = false;
   bool launcher_ready_ = false;
   bool cleaned_up_ = false;
 

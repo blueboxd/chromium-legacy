@@ -20,13 +20,11 @@ namespace captions {
 //
 class CaptionBubble : public views::BubbleDialogDelegateView {
  public:
-  explicit CaptionBubble(views::View* anchor);
+  explicit CaptionBubble(views::View* anchor,
+                         base::OnceClosure destroyed_callback);
   ~CaptionBubble() override;
   CaptionBubble(const CaptionBubble&) = delete;
   CaptionBubble& operator=(const CaptionBubble&) = delete;
-
-  // Create and show the caption bubble.
-  static void CreateAndShow(views::View* anchor);
 
   // Set the text of the caption bubble. The bubble displays the last 2 lines.
   void SetText(const std::string& text);
@@ -39,6 +37,7 @@ class CaptionBubble : public views::BubbleDialogDelegateView {
 
  private:
   views::Label label_;
+  base::ScopedClosureRunner destroyed_callback_;
 };
 
 }  // namespace captions

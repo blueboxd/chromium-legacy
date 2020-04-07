@@ -87,6 +87,7 @@ crbug.com/902685 virtual/wasm-site-isolated-code-cache/http/tests/devtools/wasm-
 crbug.com/902685 virtual/split-http-cache-not-site-per-process/http/tests/devtools/isolated-code-cache/* [ Slow ]
 # Misc DevTools tests that are slow
 crbug.com/243492 inspector-protocol/injected-script-discard.js [ Slow ]
+crbug.com/678482 http/tests/devtools/debugger/fetch-breakpoints.js [ Slow ]
 
 crbug.com/510337 cssom/cssvalue-comparison.html [ Slow ]
 

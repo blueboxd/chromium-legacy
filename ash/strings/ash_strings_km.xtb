@@ -105,6 +105,7 @@
 <translation id="2268813581635650749">ចាកចេញទាំងអស់</translation>
 <translation id="2277103315734023688">សា​ទៅមុខ</translation>
 <translation id="2292698582925480719">មាត្រដ្ឋានអេក្រង់</translation>
+<translation id="2295777434187870477">បានបើកមីក្រូហ្វូន ការបិទ/បើកនឹង​បិទសំឡេងរបស់ឧបករណ៍បញ្ចូលសំឡេង។</translation>
 <translation id="2298170939937364391">បានបើក​កម្មវិធី​ពង្រីក​ពេញ​អេក្រង់។ សូមចុច Ctrl+Search+M ម្ដងទៀត​ដើម្បី​បិទ​វា​។</translation>
 <translation id="2302092602801625023">គណនីនេះ​ត្រូវបាន​គ្រប់គ្រង​ដោយ Family Link</translation>
 <translation id="2303600792989757991">បិទបើកផ្ទាំងសង្ខេប</translation>
@@ -138,6 +139,7 @@
 <translation id="2658778018866295321">ចុចហើយអូស</translation>
 <translation id="2700493154570097719">កំណត់​ក្ដារចុច​របស់អ្នក</translation>
 <translation id="2704781753052663061">ភ្ជាប់​បណ្ដាញ Wi-Fi ផ្សេងទៀត</translation>
+<translation id="2705001408393684014">បិទ/បើកមីក្រូហ្វូន។ <ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">ពន្លឺពេលយប់</translation>
 <translation id="2727977024730340865">បានដោតទៅឆ្នាំងសាកថាមពលខ្សោយ។ ការសាកថ្មប្រហែលជាមិនអាចជឿជាក់បានទេ។</translation>
 <translation id="2792498699870441125">Alt+ស្វែងរក</translation>
@@ -296,6 +298,7 @@
 <translation id="4665114317261903604">បិទ/បើក​មុខងារ​ "កុំរំខាន"។ <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">ដោះ​សោ​ឧបករណ៍​ដោយ​ប្រើ​កូដ​សម្រាប់​មាតា​បិតា</translation>
 <translation id="4702647871202761252">អេក្រង់​ឯកជនភាព​ត្រូវបានបិទ</translation>
+<translation id="4705716602320768426">ដាក់បញ្ជូនមតិកែលម្អ</translation>
 <translation id="4710243778082831592">ការកំណត់ IME</translation>
 <translation id="4731797938093519117">សិទ្ធិចូលប្រើប្រាស់​សម្រាប់មាតាបិតា</translation>
 <translation id="4734965478015604180">ផ្ដេក​</translation>
@@ -376,6 +379,7 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">បើក</translation>
+<translation id="5920710855273935292">បានបិទសំឡេងមីក្រូហ្វូន។</translation>
 <translation id="5947494881799873997">ត្រលប់ក្រោយ</translation>
 <translation id="595202126637698455">ការតាមដានប្រតិបត្តិការបានបើកដំណើរការ</translation>
 <translation id="5957083217255311415">ទិន្នន័យ​ទូរសព្ទចល័ត​ត្រូវបានបិទ។</translation>

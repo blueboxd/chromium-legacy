@@ -57,15 +57,12 @@ ASH_PUBLIC_EXPORT extern const char kEnableDimShelf[];
 ASH_PUBLIC_EXPORT extern const char kForceTabletPowerButton[];
 ASH_PUBLIC_EXPORT extern const char kHasInternalStylus[];
 ASH_PUBLIC_EXPORT extern const char kShowTaps[];
-ASH_PUBLIC_EXPORT extern const char kShowWebUiLock[];
-ASH_PUBLIC_EXPORT extern const char kShowWebUiLogin[];
 ASH_PUBLIC_EXPORT extern const char kSuppressMessageCenterPopups[];
 ASH_PUBLIC_EXPORT extern const char kTouchscreenUsableWhileScreenOff[];
 
 ASH_PUBLIC_EXPORT base::Optional<base::TimeDelta> ContextualNudgesInterval();
 ASH_PUBLIC_EXPORT bool ContextualNudgesResetShownCount();
 ASH_PUBLIC_EXPORT bool IsUsingShelfAutoDim();
-ASH_PUBLIC_EXPORT bool IsUsingViewsLock();
 
 }  // namespace switches
 }  // namespace ash

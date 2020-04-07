@@ -105,6 +105,7 @@
 <translation id="2268813581635650749">Pechar a sesión de todos os usuarios</translation>
 <translation id="2277103315734023688">Avanzar</translation>
 <translation id="2292698582925480719">Escala de visualización</translation>
+<translation id="2295777434187870477">O micrófono está activado. Utiliza o botón para silencialo.</translation>
 <translation id="2298170939937364391">Activouse a lupa de pantalla completa. Preme Ctrl+Buscar+M de novo para desactivala.</translation>
 <translation id="2302092602801625023">Esta conta está xestionada por Family Link</translation>
 <translation id="2303600792989757991">Alternar vista xeral da ventá</translation>
@@ -138,6 +139,7 @@
 <translation id="2658778018866295321">Facer clic e arrastrar</translation>
 <translation id="2700493154570097719">Definir teclado</translation>
 <translation id="2704781753052663061">Unirse a outras redes wifi</translation>
+<translation id="2705001408393684014">Activar/desactivar micrófono. <ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">Luz nocturna</translation>
 <translation id="2727977024730340865">Conectado a un cargador de baixa potencia. É posible que a carga da batería non sexa fiable.</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
@@ -297,6 +299,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="4665114317261903604">Activar/desactivar o modo Non molestar. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Desbloquea o dispositivo co código parental</translation>
 <translation id="4702647871202761252">A pantalla de privacidade está desactivada</translation>
+<translation id="4705716602320768426">Enviar comentarios</translation>
 <translation id="4710243778082831592">Configuración de IME</translation>
 <translation id="4731797938093519117">Acceso parental</translation>
 <translation id="4734965478015604180">Horizontal</translation>
@@ -377,6 +380,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="5901316534475909376">Maiúsculas+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Si</translation>
+<translation id="5920710855273935292">O micrófono está silenciado.</translation>
 <translation id="5947494881799873997">Reverter</translation>
 <translation id="595202126637698455">Seguimento do rendemento activado</translation>
 <translation id="5957083217255311415">Os datos móbiles están desactivados.</translation>

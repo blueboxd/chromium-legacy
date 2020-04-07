@@ -31,6 +31,7 @@
 #include "content/common/savable_subframe.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/frame_navigate_params.h"
+#include "content/public/common/impression.h"
 #include "content/public/common/navigation_policy.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/previews_state.h"
@@ -146,6 +147,13 @@ IPC_STRUCT_TRAITS_BEGIN(content::NavigationDownloadPolicy)
   IPC_STRUCT_TRAITS_MEMBER(observed_types)
   IPC_STRUCT_TRAITS_MEMBER(disallowed_types)
   IPC_STRUCT_TRAITS_MEMBER(blocking_downloads_in_sandbox_enabled)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::Impression)
+  IPC_STRUCT_TRAITS_MEMBER(conversion_destination)
+  IPC_STRUCT_TRAITS_MEMBER(reporting_origin)
+  IPC_STRUCT_TRAITS_MEMBER(impression_data)
+  IPC_STRUCT_TRAITS_MEMBER(expiry)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebFloatSize)
@@ -412,6 +420,7 @@ IPC_STRUCT_BEGIN(FrameHostMsg_OpenURL_Params)
   IPC_STRUCT_MEMBER(blink::TriggeringEventInfo, triggering_event_info)
   IPC_STRUCT_MEMBER(mojo::MessagePipeHandle, blob_url_token)
   IPC_STRUCT_MEMBER(std::string, href_translate)
+  IPC_STRUCT_MEMBER(base::Optional<content::Impression>, impression)
   IPC_STRUCT_MEMBER(content::NavigationDownloadPolicy, download_policy)
 IPC_STRUCT_END()
 

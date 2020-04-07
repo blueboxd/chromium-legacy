@@ -1132,4 +1132,55 @@ TEST_F(DisplayItemListTest, TotalOpCount) {
   EXPECT_EQ(8u, list->TotalOpCount());
 }
 
+TEST_F(DisplayItemListTest, AreaOfDrawText) {
+  auto list = base::MakeRefCounted<DisplayItemList>();
+  auto sub_list = base::MakeRefCounted<DisplayItemList>();
+
+  auto text_blob1 = SkTextBlob::MakeFromString("ABCD", SkFont());
+  auto text_blob1_bounds = text_blob1->bounds();
+  auto text_blob1_area = text_blob1_bounds.width() * text_blob1_bounds.height();
+  auto text_blob2 = SkTextBlob::MakeFromString("EFG", SkFont());
+  auto text_blob2_bounds = text_blob2->bounds();
+  auto text_blob2_area = text_blob2_bounds.width() * text_blob2_bounds.height();
+
+  sub_list->StartPaint();
+  sub_list->push<DrawRectOp>(SkRect::MakeWH(100, 200), PaintFlags());
+  sub_list->push<DrawTextBlobOp>(text_blob1, 0, 0, PaintFlags());
+  sub_list->EndPaintOfUnpaired(gfx::Rect());
+  auto record = sub_list->ReleaseAsRecord();
+
+  list->StartPaint();
+  list->push<SaveOp>();
+  list->push<TranslateOp>(100, 100);
+  list->push<DrawRecordOp>(record);
+  list->push<RestoreOp>();
+  list->EndPaintOfUnpaired(gfx::Rect(100, 100, 100, 200));
+
+  list->StartPaint();
+  list->push<SaveOp>();
+  list->push<TranslateOp>(100, 400);
+  list->push<DrawRecordOp>(record);
+  list->push<RestoreOp>();
+  list->EndPaintOfUnpaired(gfx::Rect(100, 400, 100, 200));
+
+  list->StartPaint();
+  list->push<DrawRectOp>(SkRect::MakeWH(100, 100), PaintFlags());
+  list->push<DrawTextBlobOp>(text_blob2, 10, 20, PaintFlags());
+  list->EndPaintOfUnpaired(gfx::Rect(0, 0, 100, 100));
+
+  list->StartPaint();
+  list->push<DrawTextBlobOp>(text_blob2, 400, 100, PaintFlags());
+  list->push<DrawRectOp>(SkRect::MakeXYWH(400, 100, 100, 100), PaintFlags());
+  list->EndPaintOfUnpaired(gfx::Rect(400, 100, 100, 100));
+
+  list->Finalize();
+  // This includes the DrawTextBlobOp in the first DrawRecordOp the the first
+  // direct DrawTextBlobOp.
+  EXPECT_EQ(static_cast<int>(text_blob1_area + text_blob2_area),
+            static_cast<int>(list->AreaOfDrawText(gfx::Rect(0, 0, 200, 200))));
+  // This includes all DrawTextBlobOps.
+  EXPECT_EQ(static_cast<int>(text_blob1_area * 2 + text_blob2_area * 2),
+            static_cast<int>(list->AreaOfDrawText(gfx::Rect(0, 0, 500, 500))));
+}
+
 }  // namespace cc

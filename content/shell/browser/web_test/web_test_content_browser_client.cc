@@ -141,10 +141,10 @@ void CreateChildProcessCrashWatcher() {
         const ChildProcessData& data,
         const ChildProcessTerminationInfo& info) override {
       // Child processes should not crash in web tests.
-      DLOG(ERROR) << "Child process crashed with\n"
-                     "   process_type: "
-                  << data.process_type << "\n"
-                  << "   name: " << data.name;
+      LOG(ERROR) << "Child process crashed with\n"
+                    "   process_type: "
+                 << data.process_type << "\n"
+                 << "   name: " << data.name;
       CHECK(false);
     }
   };

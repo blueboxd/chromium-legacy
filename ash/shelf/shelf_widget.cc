@@ -246,24 +246,6 @@ ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf_widget)
 
 ShelfWidget::DelegateView::~DelegateView() = default;
 
-// static
-bool ShelfWidget::IsUsingViewsShelf() {
-  switch (Shell::Get()->session_controller()->GetSessionState()) {
-    case session_manager::SessionState::ACTIVE:
-      return true;
-    // See https://crbug.com/798869.
-    case session_manager::SessionState::OOBE:
-    case session_manager::SessionState::LOGIN_PRIMARY:
-      return true;
-    case session_manager::SessionState::LOCKED:
-    case session_manager::SessionState::LOGIN_SECONDARY:
-      return switches::IsUsingViewsLock();
-    case session_manager::SessionState::UNKNOWN:
-    case session_manager::SessionState::LOGGED_IN_NOT_ACTIVE:
-      return features::IsViewsLoginEnabled();
-  }
-}
-
 void ShelfWidget::DelegateView::SetParentLayer(ui::Layer* layer) {
   layer->Add(opaque_background());
   ReorderLayers();
@@ -436,9 +418,6 @@ void ShelfWidget::DelegateView::OnBoundsChanged(const gfx::Rect& old_bounds) {
 }
 
 views::View* ShelfWidget::DelegateView::GetDefaultFocusableChild() {
-  if (!IsUsingViewsShelf())
-    return GetFirstFocusableChild();
-
   if (login_shelf_view_->GetVisible()) {
     return FindFirstOrLastFocusableChild(login_shelf_view_,
                                          default_last_focusable_child_);
@@ -925,24 +904,9 @@ void ShelfWidget::OnSessionStateChanged(session_manager::SessionState state) {
   // * when views based shelf is disabled
   // * in UNKNOWN state - it might be called before shelf was initialized
   // * on secondary screens in states other than ACTIVE
-  //
-  // TODO(alemate): better handle show-hide for some UI screens:
-  // https://crbug.com/935842
-  // https://crbug.com/935844
-  // https://crbug.com/935846
-  // https://crbug.com/935847
-  // https://crbug.com/935852
-  // https://crbug.com/935853
-  // https://crbug.com/935856
-  // https://crbug.com/935857
-  // https://crbug.com/935858
-  // https://crbug.com/935860
-  // https://crbug.com/935861
-  // https://crbug.com/935863
-  bool using_views_shelf = IsUsingViewsShelf();
   bool unknown_state = state == session_manager::SessionState::UNKNOWN;
   bool hide_on_secondary_screen = shelf_->ShouldHideOnSecondaryDisplay(state);
-  if (!using_views_shelf || unknown_state || hide_on_secondary_screen) {
+  if (unknown_state || hide_on_secondary_screen) {
     HideIfShown();
   } else {
     bool show_hotseat = (state == session_manager::SessionState::ACTIVE);

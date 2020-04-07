@@ -105,6 +105,7 @@
 <translation id="2268813581635650749">Déconnecter tous les utilisateurs</translation>
 <translation id="2277103315734023688">Rechercher vers l'avant</translation>
 <translation id="2292698582925480719">Échelle d'affichage</translation>
+<translation id="2295777434187870477">Le microphone est activé, si vous le désactivez, l'entrée sonore sera aussi désactivée.</translation>
 <translation id="2298170939937364391">La loupe en mode plein écran a été activée. Appuyez à nouveau sur Ctrl+Recherche+M pour la désactiver.</translation>
 <translation id="2302092602801625023">Ce compte est géré par Family Link</translation>
 <translation id="2303600792989757991">Activer ou désactiver la vue d'ensemble des fenêtres</translation>
@@ -138,6 +139,7 @@
 <translation id="2658778018866295321">Cliquez et faites glisser</translation>
 <translation id="2700493154570097719">Définir votre clavier</translation>
 <translation id="2704781753052663061">Se connecter à d'autres réseaux Wi-Fi</translation>
+<translation id="2705001408393684014">Activer ou désactiver le microphone. <ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">Éclairage nocturne</translation>
 <translation id="2727977024730340865">L'appareil est branché à un chargeur de faible puissance. Il se peut que la recharge de la batterie ne soit pas fiable.</translation>
 <translation id="2792498699870441125">Alt + Recherche</translation>
@@ -296,6 +298,7 @@
 <translation id="4665114317261903604">Basculer le mode Ne pas déranger. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Déverrouiller l'appareil avec le code parental</translation>
 <translation id="4702647871202761252">L'écran de confidentialité est désactivé</translation>
+<translation id="4705716602320768426">Classer le commentaire</translation>
 <translation id="4710243778082831592">Paramètres d'éditeur de mode d'entrée (IME)</translation>
 <translation id="4731797938093519117">Accès parental</translation>
 <translation id="4734965478015604180">Horizontal</translation>
@@ -376,6 +379,7 @@
 <translation id="5901316534475909376">Maj+Échap</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Activé</translation>
+<translation id="5920710855273935292">Le microphone est désactivé.</translation>
 <translation id="5947494881799873997">Rétablir</translation>
 <translation id="595202126637698455">Suivi des performances activé</translation>
 <translation id="5957083217255311415">Les données mobiles sont désactivées.</translation>

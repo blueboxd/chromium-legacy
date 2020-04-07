@@ -104,6 +104,9 @@ class MockNavigationHandle : public NavigationHandle {
   bool WasResponseCached() override { return was_response_cached_; }
   const net::ProxyServer& GetProxyServer() override { return proxy_server_; }
   const std::string& GetHrefTranslate() override { return href_translate_; }
+  const base::Optional<Impression>& GetImpression() override {
+    return impression_;
+  }
   const base::Optional<url::Origin>& GetInitiatorOrigin() override {
     return initiator_origin_;
   }
@@ -156,6 +159,9 @@ class MockNavigationHandle : public NavigationHandle {
   void set_proxy_server(const net::ProxyServer& proxy_server) {
     proxy_server_ = proxy_server;
   }
+  void set_impression(const Impression& impression) {
+    impression_ = impression;
+  }
   void set_initiator_origin(const url::Origin& initiator_origin) {
     initiator_origin_ = initiator_origin;
   }
@@ -186,6 +192,7 @@ class MockNavigationHandle : public NavigationHandle {
   base::Optional<url::Origin> initiator_origin_;
   ReloadType reload_type_ = content::ReloadType::NONE;
   std::string href_translate_;
+  base::Optional<Impression> impression_;
 };
 
 }  // namespace content

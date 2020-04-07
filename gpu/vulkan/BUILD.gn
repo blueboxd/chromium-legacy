@@ -166,6 +166,7 @@ if (enable_vulkan) {
         "tests/vulkan_test.cc",
         "tests/vulkan_tests_main.cc",
         "vulkan_fence_helper_unittest.cc",
+        "vulkan_image_unittest.cc",
       ]
 
       deps = [
@@ -179,6 +180,7 @@ if (enable_vulkan) {
         "//ui/events/platform",
         "//ui/gfx",
         "//ui/gfx:native_widget_types",
+        "//ui/gfx:test_support",
         "//ui/gfx/geometry",
       ]
 

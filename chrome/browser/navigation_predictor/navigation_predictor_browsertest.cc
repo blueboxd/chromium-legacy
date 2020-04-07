@@ -4,6 +4,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/sequence_checker.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -131,18 +132,25 @@ class NavigationPredictorBrowserTest
 class TestObserver : public NavigationPredictorKeyedService::Observer {
  public:
   TestObserver() {}
-  ~TestObserver() override {}
+  ~TestObserver() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  }
 
   base::Optional<NavigationPredictorKeyedService::Prediction> last_prediction()
       const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return last_prediction_;
   }
 
-  size_t count_predictions() const { return count_predictions_; }
+  size_t count_predictions() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return count_predictions_;
+  }
 
   // Waits until the count if received notifications is at least
   // |expected_notifications_count|.
   void WaitUntilNotificationsCountReached(size_t expected_notifications_count) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     // Ensure that |wait_loop_| is null implying there is no ongoing wait.
     ASSERT_FALSE(!!wait_loop_);
 
@@ -158,6 +166,7 @@ class TestObserver : public NavigationPredictorKeyedService::Observer {
   void OnPredictionUpdated(
       const base::Optional<NavigationPredictorKeyedService::Prediction>
           prediction) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     ++count_predictions_;
     last_prediction_ = prediction;
     if (wait_loop_ && count_predictions_ >= expected_notifications_count_) {
@@ -175,6 +184,8 @@ class TestObserver : public NavigationPredictorKeyedService::Observer {
   // notifications are at least |expected_notifications_count_|.
   std::unique_ptr<base::RunLoop> wait_loop_;
   base::Optional<size_t> expected_notifications_count_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };

@@ -53,7 +53,6 @@
 #import "ios/chrome/browser/ui/page_info/page_info_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/passwords/password_breach_coordinator.h"
 #import "ios/chrome/browser/ui/print/print_controller.h"
-#import "ios/chrome/browser/ui/qr_generator/qr_generator_coordinator.h"
 #import "ios/chrome/browser/ui/qr_scanner/qr_scanner_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_coordinator.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_coordinator.h"
@@ -63,7 +62,6 @@
 #import "ios/chrome/browser/ui/toolbar/accessory/toolbar_accessory_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/accessory/toolbar_accessory_presenter.h"
 #import "ios/chrome/browser/ui/translate/legacy_translate_infobar_coordinator.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web/features.h"
@@ -153,9 +151,6 @@
 // Used to display the Print UI. Nil if not visible.
 // TODO(crbug.com/910017): Convert to coordinator.
 @property(nonatomic, strong) PrintController* printController;
-
-// Coordinator for the QR generator UI.
-@property(nonatomic, strong) QRGeneratorCoordinator* qrGeneratorCoordinator;
 
 // Coordinator for the QR scanner.
 @property(nonatomic, strong) QRScannerLegacyCoordinator* qrScannerCoordinator;
@@ -273,9 +268,6 @@
   [self.readingListCoordinator stop];
   self.readingListCoordinator = nil;
 
-  [self.qrGeneratorCoordinator stop];
-  self.qrGeneratorCoordinator = nil;
-
   [self.passwordBreachCoordinator stop];
 
   [self.pageInfoCoordinator stop];
@@ -382,8 +374,6 @@
                          browser:self.browser];
   [self.qrScannerCoordinator start];
 
-  /* QRGeneratorCoordinator is created and started by a command. */
-
   /* ReadingListCoordinator is created and started by a BrowserCommand */
 
   /* RecentTabsCoordinator is created and started by a BrowserCommand */
@@ -449,9 +439,6 @@
   self.passwordBreachCoordinator = nil;
 
   self.printController = nil;
-
-  [self.qrGeneratorCoordinator stop];
-  self.qrGeneratorCoordinator = nil;
 
   [self.qrScannerCoordinator stop];
   self.qrScannerCoordinator = nil;
@@ -731,18 +718,7 @@
 #pragma mark - QRGenerationCommands
 
 - (void)generateQRCode:(GenerateQRCodeCommand*)command {
-  DCHECK(base::FeatureList::IsEnabled(kQRCodeGeneration));
-  self.qrGeneratorCoordinator = [[QRGeneratorCoordinator alloc]
-      initWithBaseViewController:self.viewController
-                         browser:self.browser
-                           title:command.title
-                             URL:command.URL];
-  [self.qrGeneratorCoordinator start];
-}
-
-- (void)hideQRCode {
-  [self.qrGeneratorCoordinator stop];
-  self.qrGeneratorCoordinator = nil;
+  // TODO(crbug.com/1064990): Implement Coordinator and starting here.
 }
 
 #pragma mark - FormInputAccessoryCoordinatorNavigator

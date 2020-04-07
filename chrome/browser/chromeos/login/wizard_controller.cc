@@ -1409,10 +1409,8 @@ void WizardController::SetCurrentScreen(BaseScreen* new_current) {
   if (current_screen_ == new_current || GetOobeUI() == nullptr)
     return;
 
-  if (new_current && new_current->ShouldSkipScreen()) {
-    new_current->Skip();
+  if (new_current && new_current->MaybeSkip())
     return;
-  }
 
   if (current_screen_) {
     current_screen_->Hide();

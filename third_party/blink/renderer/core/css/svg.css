@@ -95,6 +95,10 @@ foreignObject {
    https://drafts.csswg.org/css-color-adjust-1/#forced-colors-properties
 */
 @media forced-colors {
+  svg:root {
+    color: CanvasText;
+  }
+
   svg {
       forced-color-adjust: none;
   }

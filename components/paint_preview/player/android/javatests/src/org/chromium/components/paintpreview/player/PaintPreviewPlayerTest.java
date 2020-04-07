@@ -156,7 +156,7 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
             PaintPreviewTestService service =
                     new PaintPreviewTestService(UrlUtils.getIsolatedTestFilePath(TEST_DATA_DIR));
             mPlayerManager = new PlayerManager(new GURL(TEST_URL), getActivity(), service,
-                    TEST_DIRECTORY_KEY, mLinkClickHandler, Assert::assertTrue);
+                    TEST_DIRECTORY_KEY, mLinkClickHandler, Assert::assertTrue, 0xffffffff);
             getActivity().setContentView(mPlayerManager.getView());
         });
 

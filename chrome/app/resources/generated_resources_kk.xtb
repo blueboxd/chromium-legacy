@@ -823,6 +823,7 @@
 <translation id="2119349053129246860"><ph name="APP" /> қолданбасынан ашу</translation>
 <translation id="2120297377148151361">Белсенділік және өзара әрекеттер</translation>
 <translation id="2120639962942052471"><ph name="PERMISSION" /> бөгелді.</translation>
+<translation id="2121055421682309734">{COUNT,plural, =0{Cookie файлдары бөгелді}=1{Cookie файлдары бөгелді (1 ерекше жағдай)}other{Cookie файлдары бөгелді ({COUNT} ерекше жағдай)}}</translation>
 <translation id="2121825465123208577">Өлшемін өзгерту</translation>
 <translation id="2122305276694332719">Жасырын желіге автоматты түрде қосылсаңыз, басқалар сіздің құрылғыңызды және кейбір желілік параметрлеріңізді көре алады. Сондықтан жасырын желіге автоматты түрде қосылмағаныңыз жөн.</translation>
 <translation id="2123766928840368256">Басқа файлды таңдау</translation>
@@ -856,7 +857,6 @@
 <translation id="2154484045852737596">Карта мәліметін өңдеу</translation>
 <translation id="2154710561487035718">URL сілтемесін көшіру</translation>
 <translation id="2155772377859296191"><ph name="WIDTH" /> x <ph name="HEIGHT" /> болып көрінеді</translation>
-<translation id="2156283799932971644">Кейбір жүйе ақпаратын және бет мазмұнын Google-ға жіберу арқылы Safe Browsing қызметін жақсартуға көмектесе аласыз.</translation>
 <translation id="2156294658807918600">Service Worker: <ph name="SCRIPT_URL" /></translation>
 <translation id="2157474325782140681">Қосымша функцияларды пайдалану үшін осы Chromebook құрылғысымен жұмыс істеуге арналған қондыру станциясын пайдаланыңыз.</translation>
 <translation id="215753907730220065">Толық экраннан шығу</translation>
@@ -988,7 +988,6 @@
 <translation id="2326931316514688470">Қолданбаны &amp;қайта жүктеу</translation>
 <translation id="2327492829706409234">Қолданбаны қосу</translation>
 <translation id="2329597144923131178">Барлық құрылғыларда бетбелгілеріңізді, журналыңызды, құпия сөздеріңізді және басқа параметрлеріңізді алу үшін кіріңіз.</translation>
-<translation id="2330607597130465898">Қорғалмаған</translation>
 <translation id="2332131598580221120">Дүкенде көру</translation>
 <translation id="2332192922827071008">Жеке параметрлерді ашу</translation>
 <translation id="2332742915001411729">Әдепкі параметрлерге қайта орнату</translation>
@@ -1148,7 +1147,7 @@
 <translation id="2523184218357549926">Кірген беттердің URL мекенжайларын Google-ға жібереді</translation>
 <translation id="2526277209479171883">Орнату және жалғастыру</translation>
 <translation id="2526590354069164005">Жұмыс үстелі</translation>
-<translation id="2526619973349913024">Жаңартуды тексеру</translation>
+<translation id="2526619973349913024">Жаңа нұсқасының бар-жоғын тексеру</translation>
 <translation id="2527167509808613699">Байланыстың кез келген түрі</translation>
 <translation id="2532589005999780174">Жоғары контраст режимі</translation>
 <translation id="253434972992662860">&amp;Кідірту</translation>
@@ -1868,7 +1867,6 @@
 <translation id="3492788708641132712">Синхрондалып жатқан жоқ. Жүйеге қайта кіріп көріңіз.</translation>
 <translation id="3493486281776271508">Интернет байланысы керек.</translation>
 <translation id="3493881266323043047">Жарамдылық</translation>
-<translation id="3494155060718700400">Қауіпті веб-сайттардан, жүктелетін файлдардан және кеңейтімдерден қорғамайды (ұсынылмайды). Gmail және Search сияқты басқа Google қызметтерінде "Қауіпсіз шолу" қорғаныс функциясын пайдаланатын боласыз.</translation>
 <translation id="3494769164076977169">Сайт бірінші файлдан кейін файлдарды автоматты түрде жүктеуге әрекет еткенде сұрау (ұсынылған)</translation>
 <translation id="3495660573538963482">Google Assistant параметрлері</translation>
 <translation id="3496213124478423963">Кішірейту</translation>
@@ -2919,7 +2917,6 @@
 <translation id="4920887663447894854">Келесі сайттар мына бетте орналасқан жеріңізді бақылаудан тыйылған:</translation>
 <translation id="49226369361073053">{0,plural, =0{Құрылғыны қазір жаңарту керек}=1{Құрылғыны 1 секундта жаңарту керек}other{Құрылғыны # секундта жаңарту керек}}</translation>
 <translation id="492299503953721473">Android қолданбаларын өшіру</translation>
-<translation id="4923279099980110923">Иә, көмектескім келеді</translation>
 <translation id="4924352752174756392">12x</translation>
 <translation id="4925320384394644410">Порттар осы жерде көрсетіледі.</translation>
 <translation id="4925542575807923399">Бұл есептік жазбаның әкімшісі есептік жазбаның көп кіру сеансында алғашқы жүйеге кірген есептік жазба болуын талап етеді.</translation>
@@ -3233,7 +3230,6 @@
 <translation id="5362741141255528695">Жеке негізгі файлды таңдаңыз.</translation>
 <translation id="5363109466694494651">Powerwash және Қайтару</translation>
 <translation id="5365881113273618889">Сіз таңдаған қалтада құпия файлдар бар. "<ph name="APP_NAME" />" қолданбасына қалтадағы деректерді тұрақты жазу мүмкіндігін бергіңіз келе ме?</translation>
-<translation id="5367091008316207019">Файл оқылуда…</translation>
 <translation id="5368720394188453070">Телефоныңыз құлыптаулы. Кіру үшін оның құлпын ашыңыз.</translation>
 <translation id="5368779022775404937"><ph name="REALM" /> сайтына кіріңіз</translation>
 <translation id="5369491905435686894">Тінтуір жылдамдатқышын іске қосу</translation>
@@ -5958,7 +5954,6 @@
 <translation id="8985264973231822211"><ph name="DEVICE_LAST_ACTIVATED_TIME" /> күн бұрын қосылған.</translation>
 <translation id="8986362086234534611">Ұмыту</translation>
 <translation id="8986494364107987395">Қолданыс статистикасы мен жаңылыс туралы есептерді Google компаниясына автоматты түрде жіберу</translation>
-<translation id="8986651757229422279"><ph name="ORIGIN_NAME" /> және ол орнатқан қолданба сақтаған деректер мен cookie файлдарының барлығы өшіріледі.</translation>
 <translation id="8987927404178983737">Ай</translation>
 <translation id="8991520179165052608">Сайт микрофонды пайдалана алады</translation>
 <translation id="899403249577094719">Netscape сертификатының негізгі URL мекенжайы</translation>

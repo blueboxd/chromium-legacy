@@ -62,10 +62,14 @@ class CC_PAINT_EXPORT DisplayItemList
 
   void Raster(SkCanvas* canvas, ImageProvider* image_provider = nullptr) const;
 
-  // Captures the DrawTextBlobOp within |rect| and returns the associated
-  // NodeId in |content|.
+  // Captures |DrawTextBlobOp|s intersecting |rect| and returns the associated
+  // |NodeId|s in |content|.
   void CaptureContent(const gfx::Rect& rect,
                       std::vector<NodeId>* content) const;
+
+  // Returns the approximate total area covered by |DrawTextBlobOp|s
+  // intersecting |rect|, used for statistics purpose.
+  double AreaOfDrawText(const gfx::Rect& rect) const;
 
   void StartPaint() {
 #if DCHECK_IS_ON()

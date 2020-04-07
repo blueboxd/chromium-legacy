@@ -121,3 +121,5 @@ TEST_P(AntiVirusMetricsProviderTest, GetMetricsFullName) {
   task_environment_.RunUntilIdle();
   EXPECT_TRUE(got_results_);
 }
+
+INSTANTIATE_TEST_SUITE_P(, AntiVirusMetricsProviderTest, ::testing::Bool());

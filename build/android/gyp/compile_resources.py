@@ -26,6 +26,7 @@ import subprocess
 import sys
 import tempfile
 import textwrap
+import time
 import zipfile
 from xml.etree import ElementTree
 
@@ -535,12 +536,18 @@ def _ConvertToWebP(webp_binary, png_files, path_info, webp_cache_dir):
   cwebp_version = subprocess.check_output([webp_binary, '-version']).rstrip()
   cwebp_arguments = ['-mt', '-quiet', '-m', '6', '-q', '100', '-lossless']
 
+  sha1_time = [0]
+  cwebp_time = [0]
+  cache_hits = [0]
+
   def cal_sha1(png_path):
+    start = time.time()
     with open(png_path, 'rb') as f:
       png_content = f.read()
 
-      sha1_hex = hashlib.sha1(png_content).hexdigest()
-      return sha1_hex
+    sha1_hex = hashlib.sha1(png_content).hexdigest()
+    sha1_time[0] += time.time() - start
+    return sha1_hex
 
   def get_converted_image(png_path_dir_tuple):
     png_path, original_dir = png_path_dir_tuple
@@ -553,12 +560,15 @@ def _ConvertToWebP(webp_binary, png_files, path_info, webp_cache_dir):
     webp_path = os.path.splitext(png_path)[0]
 
     if os.path.exists(webp_cache_path):
+      cache_hits[0] += 1
       os.link(webp_cache_path, webp_path)
     else:
       # We place the generated webp image to webp_path, instead of in the
       # webp_cache_dir to avoid concurrency issues.
+      start = time.time()
       args = [webp_binary, png_path] + cwebp_arguments + ['-o', webp_path]
       subprocess.check_call(args)
+      cwebp_time[0] += time.time() - start
 
       try:
         os.link(webp_path, webp_cache_path)
@@ -572,11 +582,14 @@ def _ConvertToWebP(webp_binary, png_files, path_info, webp_cache_dir):
         os.path.relpath(png_path, original_dir),
         os.path.relpath(webp_path, original_dir))
 
-  pool.map(
-      get_converted_image,
-      [f for f in png_files if not _PNG_WEBP_EXCLUSION_PATTERN.match(f[0])])
+  png_files = [
+      f for f in png_files if not _PNG_WEBP_EXCLUSION_PATTERN.match(f[0])
+  ]
+  pool.map(get_converted_image, png_files)
   pool.close()
   pool.join()
+  logging.debug('png->webp: cache: %d/%d sha1 time: %.1fms cwebp time: %.1fms',
+                cache_hits[0], len(png_files), sha1_time[0], cwebp_time[0])
 
 
 def _JetifyArchive(dep_path, output_path):
@@ -924,6 +937,7 @@ def _PackageApk(options, build):
                          desired_manifest_package_name)
     link_command += ['--stable-ids', build.stable_ids_path]
 
+  logging.debug('Running aapt2 compile (and jetify)')
   partials = _CompileDeps(options.aapt2_path, dep_subdirs, build.temp_dir)
   for partial in partials:
     link_command += ['-R', partial]

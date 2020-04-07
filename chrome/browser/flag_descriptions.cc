@@ -3812,6 +3812,12 @@ const char kRemoteCopyImageNotificationDescription[] =
     "Enables image notifications to be shown for the remote copy feature "
     "when receiving a message.";
 
+const char kRemoteCopyPersistentNotificationName[] =
+    "Enables persistent notifications for the remote copy feature";
+const char kRemoteCopyPersistentNotificationDescription[] =
+    "Enables persistent notifications to be shown for the remote copy feature "
+    "when receiving a message.";
+
 const char kRemoteCopyProgressNotificationName[] =
     "Enables progress notifications for the remote copy feature";
 const char kRemoteCopyProgressNotificationDescription[] =

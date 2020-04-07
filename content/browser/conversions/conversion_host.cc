@@ -6,13 +6,16 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "content/browser/conversions/conversion_manager.h"
 #include "content/browser/conversions/conversion_manager_impl.h"
 #include "content/browser/conversions/conversion_policy.h"
-#include "content/browser/conversions/storable_conversion.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
@@ -53,12 +56,72 @@ std::unique_ptr<ConversionHost> ConversionHost::CreateForTesting(
 }
 
 ConversionHost::ConversionHost(WebContents* web_contents)
-    : conversion_manager_provider_(
+    : WebContentsObserver(web_contents),
+      conversion_manager_provider_(
           std::make_unique<ConversionManagerProviderImpl>()),
-      web_contents_(web_contents),
       receiver_(web_contents, this) {}
 
 ConversionHost::~ConversionHost() = default;
+
+void ConversionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
+  ConversionManager* conversion_manager =
+      conversion_manager_provider_->GetManager(web_contents());
+  if (!conversion_manager)
+    return;
+
+  // Get the impression data off the navigation.
+  if (!navigation_handle->GetImpression())
+    return;
+  const Impression& impression = *(navigation_handle->GetImpression());
+
+  // If an impression is not associated with a main frame navigation, ignore it.
+  // If the navigation did not commit, committed to a Chrome error page, or was
+  // same document, ignore it. Impressions should never be attached to
+  // same-document navigations but can be the result of a bad renderer.
+  if (!navigation_handle->IsInMainFrame() ||
+      !navigation_handle->HasCommitted() || navigation_handle->IsErrorPage() ||
+      navigation_handle->IsSameDocument())
+    return;
+
+  // If the impression's conversion destination does not match the final top
+  // frame origin of this new navigation ignore it.
+  if (impression.conversion_destination !=
+      navigation_handle->GetRenderFrameHost()->GetLastCommittedOrigin())
+    return;
+
+  // TODO(johnidel): When impression_origin is available, we should default to
+  // it instead of conversion destination. We also need to verify that
+  // impression actually occurred on a secure site.
+  //
+  // Convert |impression| into a StorableImpression that can be forwarded to
+  // storage. If a reporting origin was not provided, default to the conversion
+  // destination for reporting.
+  const url::Origin& reporting_origin = !impression.reporting_origin
+                                            ? impression.conversion_destination
+                                            : *impression.reporting_origin;
+
+  // Conversion measurement is only allowed in secure contexts.
+  if (!network::IsOriginPotentiallyTrustworthy(reporting_origin) ||
+      !network::IsOriginPotentiallyTrustworthy(
+          impression.conversion_destination)) {
+    // TODO (1049654): This should log a console error when it occurs.
+    return;
+  }
+
+  base::Time impression_time = base::Time::Now();
+  const ConversionPolicy& policy = conversion_manager->GetConversionPolicy();
+
+  // TODO(https://crbug.com/1061645): The impression origin should be provided
+  // by looking up the navigation initiator frame's top frame origin.
+  StorableImpression storable_impression(
+      policy.GetSanitizedImpressionData(impression.impression_data),
+      url::Origin() /* impression_origin */, impression.conversion_destination,
+      reporting_origin, impression_time,
+      policy.GetExpiryTimeForImpression(impression.expiry, impression_time),
+      /*impression_id=*/base::nullopt);
+
+  conversion_manager->HandleImpression(storable_impression);
+}
 
 // TODO(https://crbug.com/1044099): Limit the number of conversion redirects per
 // page-load to a reasonable number.
@@ -77,7 +140,7 @@ void ConversionHost::RegisterConversion(
   // If there is no conversion manager available, ignore any conversion
   // registrations.
   ConversionManager* conversion_manager =
-      conversion_manager_provider_->GetManager(web_contents_);
+      conversion_manager_provider_->GetManager(web_contents());
   if (!conversion_manager)
     return;
 

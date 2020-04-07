@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -19,6 +20,8 @@
 #include "components/performance_manager/graph/process_node_impl.h"
 #include "components/performance_manager/graph/system_node_impl.h"
 #include "components/performance_manager/graph/worker_node_impl.h"
+#include "components/performance_manager/public/graph/node_data_describer.h"
+#include "components/performance_manager/public/graph/node_data_describer_registry.h"
 
 namespace ukm {
 class UkmEntryBuilder;
@@ -53,6 +56,97 @@ void RemoveObserverImpl(std::vector<NodeObserverType*>* observers,
   // There should only have been one copy of the observer.
   it = std::find(observers->begin(), observers->end(), observer);
   DCHECK(it == observers->end());
+}
+
+class NodeDataDescriberRegistryImpl : public NodeDataDescriberRegistry {
+ public:
+  ~NodeDataDescriberRegistryImpl() override;
+
+  void RegisterDescriber(const NodeDataDescriber* describer,
+                         base::StringPiece name) override;
+  void UnregisterDescriber(const NodeDataDescriber* describer) override;
+
+  base::Value DescribeFrameNodeData(const FrameNode* node) const override;
+  base::Value DescribePageNodeData(const PageNode* node) const override;
+  base::Value DescribeProcessNodeData(const ProcessNode* node) const override;
+  base::Value DescribeSystemNodeData(const SystemNode* node) const override;
+  base::Value DescribeWorkerNodeData(const WorkerNode* node) const override;
+
+ private:
+  template <typename NodeType>
+  base::Value DescribeNodeImpl(
+      base::Value (NodeDataDescriber::*DescribeFn)(const NodeType*) const,
+      const NodeType* node) const;
+
+  base::flat_map<const NodeDataDescriber*, std::string> describers_;
+};
+
+template <typename NodeType>
+base::Value NodeDataDescriberRegistryImpl::DescribeNodeImpl(
+    base::Value (NodeDataDescriber::*Describe)(const NodeType*) const,
+    const NodeType* node) const {
+  base::Value result(base::Value::Type::DICTIONARY);
+
+  bool inserted = false;
+  for (const auto& name_and_describer : describers_) {
+    base::Value description = (name_and_describer.first->*Describe)(node);
+    if (!description.is_none()) {
+      DCHECK_EQ(nullptr, result.FindDictKey(name_and_describer.second));
+      result.SetKey(name_and_describer.second, std::move(description));
+      inserted = true;
+    }
+  }
+
+  return inserted ? std::move(result) : base::Value();
+}
+
+NodeDataDescriberRegistryImpl::~NodeDataDescriberRegistryImpl() {
+  // All describers should have unregistered before the graph is destroyed.
+  DCHECK(describers_.empty());
+}
+
+void NodeDataDescriberRegistryImpl::RegisterDescriber(
+    const NodeDataDescriber* describer,
+    base::StringPiece name) {
+#if DCHECK_IS_ON()
+  for (const auto& kv : describers_) {
+    DCHECK_NE(kv.second, name) << "Name must be unique";
+  }
+#endif
+  bool inserted =
+      describers_.insert(std::make_pair(describer, name.as_string())).second;
+  DCHECK(inserted);
+}
+
+void NodeDataDescriberRegistryImpl::UnregisterDescriber(
+    const NodeDataDescriber* describer) {
+  size_t erased = describers_.erase(describer);
+  DCHECK_EQ(1u, erased);
+}
+
+base::Value NodeDataDescriberRegistryImpl::DescribeFrameNodeData(
+    const FrameNode* node) const {
+  return DescribeNodeImpl(&NodeDataDescriber::DescribeFrameNodeData, node);
+}
+
+base::Value NodeDataDescriberRegistryImpl::DescribePageNodeData(
+    const PageNode* node) const {
+  return DescribeNodeImpl(&NodeDataDescriber::DescribePageNodeData, node);
+}
+
+base::Value NodeDataDescriberRegistryImpl::DescribeProcessNodeData(
+    const ProcessNode* node) const {
+  return DescribeNodeImpl(&NodeDataDescriber::DescribeProcessNodeData, node);
+}
+
+base::Value NodeDataDescriberRegistryImpl::DescribeSystemNodeData(
+    const SystemNode* node) const {
+  return DescribeNodeImpl(&NodeDataDescriber::DescribeSystemNodeData, node);
+}
+
+base::Value NodeDataDescriberRegistryImpl::DescribeWorkerNodeData(
+    const WorkerNode* node) const {
+  return DescribeNodeImpl(&NodeDataDescriber::DescribeWorkerNodeData, node);
 }
 
 }  // namespace
@@ -218,6 +312,13 @@ bool GraphImpl::IsEmpty() const {
 ukm::UkmRecorder* GraphImpl::GetUkmRecorder() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return ukm_recorder();
+}
+
+NodeDataDescriberRegistry* GraphImpl::GetNodeDataDescriberRegistry() const {
+  if (!describer_registry_)
+    describer_registry_ = std::make_unique<NodeDataDescriberRegistryImpl>();
+
+  return describer_registry_.get();
 }
 
 uintptr_t GraphImpl::GetImplType() const {

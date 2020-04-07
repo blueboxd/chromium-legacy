@@ -20,6 +20,11 @@ namespace {
 // A string used to log UMA for query tiles in image fetcher service.
 constexpr char kImageFetcherUmaClientName[] = "QueryTiles";
 
+// The time interval for the images to stay in image fetcher's cache after last
+// used time.
+constexpr base::TimeDelta kImageCacheExpirationInterval =
+    base::TimeDelta::FromDays(1);
+
 constexpr net::NetworkTrafficAnnotationTag kQueryTilesTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("query_tiles_image_loader", R"(
       semantics {
@@ -63,9 +68,9 @@ CachedImageLoader::~CachedImageLoader() = default;
 
 void CachedImageLoader::FetchImage(const GURL& url, BitmapCallback callback) {
   // Fetch and decode the image from network or disk cache.
-  // TODO(xingliu): Add custom expiration to ImageFetcherParams.
   image_fetcher::ImageFetcherParams params(kQueryTilesTrafficAnnotation,
                                            kImageFetcherUmaClientName);
+  params.set_hold_for_expiration_interval(kImageCacheExpirationInterval);
   image_fetcher_->FetchImage(
       url, base::BindOnce(&OnImageFetched, std::move(callback)), params);
 }

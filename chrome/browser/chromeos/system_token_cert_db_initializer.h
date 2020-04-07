@@ -6,10 +6,13 @@
 #define CHROME_BROWSER_CHROMEOS_SYSTEM_TOKEN_CERT_DB_INITIALIZER_H_
 
 #include <memory>
+#include <vector>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/sequence_checker.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "crypto/scoped_nss_types.h"
 
@@ -32,6 +35,9 @@ class SystemTokenCertDBInitializer final : public CryptohomeClient::Observer {
   SystemTokenCertDBInitializer();
   ~SystemTokenCertDBInitializer() override;
 
+  // Returns a global instance. May return null if not initialized.
+  static SystemTokenCertDBInitializer* Get();
+
   // Stops making new requests to D-Bus services.
   void ShutDown();
 
@@ -39,6 +45,14 @@ class SystemTokenCertDBInitializer final : public CryptohomeClient::Observer {
   void TpmInitStatusUpdated(bool ready,
                             bool owned,
                             bool was_owned_this_boot) override;
+
+  // Retrieves the global NSSCertDatabase for the system token and passes it to
+  // |callback|. If the database is already initialized, calls |callback|
+  // immediately. Otherwise, |callback| will be called when the database is
+  // initialized.
+  using GetSystemTokenCertDbCallback =
+      base::OnceCallback<void(net::NSSCertDatabase*)>;
+  void GetSystemTokenCertDb(GetSystemTokenCertDbCallback callback);
 
  private:
   // Called once the cryptohome service is available.
@@ -53,6 +67,10 @@ class SystemTokenCertDBInitializer final : public CryptohomeClient::Observer {
   // database, unless it was already started before.
   void MaybeStartInitializingDatabase();
 
+  // This is called when the system token certificate database is created to run
+  // all entries in |get_system_token_cert_db_callback_list_| and clear it.
+  void RunAndClearGetSystemTokenCertDbCallbackList();
+
   // Initializes the global system token NSSCertDatabase with |system_slot|.
   // Also starts NetworkCertLoader with the system token database.
   void InitializeDatabase(crypto::ScopedPK11Slot system_slot);
@@ -62,6 +80,13 @@ class SystemTokenCertDBInitializer final : public CryptohomeClient::Observer {
 
   // Global NSSCertDatabase which sees the system token.
   std::unique_ptr<net::NSSCertDatabase> system_token_cert_database_;
+
+  // List of callbacks that should be executed when the system token certificate
+  // database is created.
+  std::vector<GetSystemTokenCertDbCallback>
+      get_system_token_cert_db_callback_list_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<SystemTokenCertDBInitializer> weak_ptr_factory_{this};
 

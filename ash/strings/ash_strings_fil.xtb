@@ -105,6 +105,7 @@
 <translation id="2268813581635650749">I-sign out ang lahat</translation>
 <translation id="2277103315734023688">Mag-seek Pasulong</translation>
 <translation id="2292698582925480719">Scale ng display</translation>
+<translation id="2295777434187870477">Naka-on ang mikropono, mamu-mute ang input kapag nag-toggle.</translation>
 <translation id="2298170939937364391">Na-enable ang Pang-magnify ng Full-screen. Pindutin ulit ang Ctrl+Search+M para i-off ito.</translation>
 <translation id="2302092602801625023">Pinapamahalaan ng Family Link ang account na ito</translation>
 <translation id="2303600792989757991">I-toggle ang window ng pangkalahatang-ideya</translation>
@@ -138,6 +139,7 @@
 <translation id="2658778018866295321">I-click at i-drag</translation>
 <translation id="2700493154570097719">Itakda ang iyong keyboard</translation>
 <translation id="2704781753052663061">Sumali sa iba pang Wi-Fi network</translation>
+<translation id="2705001408393684014">I-toggle ang Mikropono. <ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">Night Light</translation>
 <translation id="2727977024730340865">Naka-saksak sa isang low-power charger. Maaaring hindi maging tiyak ang pag-charge ng baterya.</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
@@ -296,6 +298,7 @@
 <translation id="4665114317261903604">I-toggle ang Huwag istorbohin. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">I-unlock ang device gamit ang parent code</translation>
 <translation id="4702647871202761252">Naka-off ang privacy screen</translation>
+<translation id="4705716602320768426">Magbigay ng feedback</translation>
 <translation id="4710243778082831592">Mga Setting ng IME</translation>
 <translation id="4731797938093519117">Pangunahing access</translation>
 <translation id="4734965478015604180">Horizontal</translation>
@@ -376,6 +379,7 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Naka-on</translation>
+<translation id="5920710855273935292">Naka-mute ang mikropono.</translation>
 <translation id="5947494881799873997">I-revert</translation>
 <translation id="595202126637698455">Naka-enable ang pagte-trace sa pagganap</translation>
 <translation id="5957083217255311415">Naka-off ang mobile data.</translation>

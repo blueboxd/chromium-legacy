@@ -31,6 +31,8 @@ class SystemNodeObserver;
 class WorkerNode;
 class WorkerNodeObserver;
 
+class NodeDataDescriberRegistry;
+
 // Represents a graph of the nodes representing a single browser. Maintains a
 // set of nodes that can be retrieved in different ways, some indexed. Keeps
 // a list of observers that are notified of node addition and removal.
@@ -85,6 +87,9 @@ class Graph {
 
   // Returns the associated UKM recorder if it is defined.
   virtual ukm::UkmRecorder* GetUkmRecorder() const = 0;
+
+  // Returns the data describer registry.
+  virtual NodeDataDescriberRegistry* GetNodeDataDescriberRegistry() const = 0;
 
   // The following functions are implementation detail and should not need to be
   // used by external clients. They provide the ability to safely downcast to

@@ -24,6 +24,7 @@
 #include "third_party/blink/public/platform/web_content_security_policy_struct.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_http_body.h"
+#include "third_party/blink/public/platform/web_impression.h"
 #include "third_party/blink/public/platform/web_navigation_body_loader.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_source_location.h"
@@ -150,6 +151,11 @@ struct BLINK_EXPORT WebNavigationInfo {
   // The value of hrefTranslate attribute of a link, if this navigation was
   // inititated by clicking a link.
   WebString href_translate;
+
+  // Optional impression associated with this navigation. This is attached when
+  // a navigation results from a click on an anchor tag that has conversion
+  // measurement attributes.
+  base::Optional<WebImpression> impression;
 
   // The navigation initiator's address space.
   network::mojom::IPAddressSpace initiator_address_space =

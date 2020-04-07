@@ -22,10 +22,28 @@
 
 namespace content {
 
+namespace {
+
+const char kConversionUrl[] = "https://b.com";
+
+Impression CreateValidImpression() {
+  Impression result;
+  result.conversion_destination = url::Origin::Create(GURL(kConversionUrl));
+  result.reporting_origin = url::Origin::Create(GURL("https://c.com"));
+  result.impression_data = 1UL;
+  return result;
+}
+
+}  // namespace
+
 class TestConversionManager : public ConversionManager {
  public:
   TestConversionManager() = default;
   ~TestConversionManager() override = default;
+
+  void HandleImpression(const StorableImpression& impression) override {
+    num_impressions_++;
+  }
 
   void HandleConversion(const StorableConversion& impression) override {
     num_conversions_++;
@@ -165,6 +183,125 @@ TEST_F(ConversionHostTest, ValidConversion_NoBadMessage) {
   // triggered.
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(bad_message_observer.got_bad_message());
+}
+
+TEST_F(ConversionHostTest, NavigationWithNoImpression_Ignored) {
+  NavigationSimulatorImpl::NavigateAndCommitFromDocument(GURL(kConversionUrl),
+                                                         main_rfh());
+
+  EXPECT_EQ(0u, test_manager_.num_impressions());
+}
+
+TEST_F(ConversionHostTest, ValidImpression_ForwardedToManager) {
+  auto navigation = NavigationSimulatorImpl::CreateRendererInitiated(
+      GURL(kConversionUrl), main_rfh());
+  navigation->set_impression(CreateValidImpression());
+  navigation->Commit();
+
+  EXPECT_EQ(1u, test_manager_.num_impressions());
+}
+
+TEST_F(ConversionHostTest, ImpressionWithNoManagerAvilable_NoCrash) {
+  // Replace the ConversionHost on the WebContents with one that is backed by a
+  // null ConversionManager.
+  static_cast<WebContentsImpl*>(web_contents())
+      ->RemoveReceiverSetForTesting(blink::mojom::ConversionHost::Name_);
+  auto conversion_host = ConversionHost::CreateForTesting(
+      web_contents(), std::make_unique<TestManagerProvider>(nullptr));
+
+  auto navigation = NavigationSimulatorImpl::CreateRendererInitiated(
+      GURL(kConversionUrl), main_rfh());
+  navigation->set_impression(CreateValidImpression());
+  navigation->Commit();
+}
+
+TEST_F(ConversionHostTest, ImpressionInSubframe_Ignored) {
+  contents()->NavigateAndCommit(GURL("https://a.com"));
+
+  // Create a subframe and use it as a target for the conversion registration
+  // mojo.
+  content::RenderFrameHostTester* rfh_tester =
+      content::RenderFrameHostTester::For(main_rfh());
+  content::RenderFrameHost* subframe = rfh_tester->AppendChild("subframe");
+
+  auto navigation = NavigationSimulatorImpl::CreateRendererInitiated(
+      GURL(kConversionUrl), subframe);
+  navigation->set_impression(CreateValidImpression());
+  navigation->Commit();
+
+  EXPECT_EQ(0u, test_manager_.num_impressions());
+}
+
+TEST_F(ConversionHostTest, ImpressionNavigationCommitsToErrorPage_Ignored) {
+  auto navigation = NavigationSimulatorImpl::CreateRendererInitiated(
+      GURL(kConversionUrl), main_rfh());
+  navigation->set_impression(CreateValidImpression());
+  navigation->Fail(net::ERR_FAILED);
+  navigation->CommitErrorPage();
+
+  EXPECT_EQ(0u, test_manager_.num_impressions());
+}
+
+TEST_F(ConversionHostTest, ImpressionNavigationAborts_Ignored) {
+  auto navigation = NavigationSimulatorImpl::CreateRendererInitiated(
+      GURL(kConversionUrl), main_rfh());
+  navigation->set_impression(CreateValidImpression());
+  navigation->AbortCommit();
+
+  EXPECT_EQ(0u, test_manager_.num_impressions());
+}
+
+TEST_F(ConversionHostTest,
+       CommittedOriginDiffersFromConversionDesintation_Ignored) {
+  auto navigation = NavigationSimulatorImpl::CreateRendererInitiated(
+      GURL("https://different.com"), main_rfh());
+  navigation->set_impression(CreateValidImpression());
+  navigation->Commit();
+
+  EXPECT_EQ(0u, test_manager_.num_impressions());
+}
+
+TEST_F(ConversionHostTest,
+       ImpressionNavigation_OriginTrustworthyChecksPerformed) {
+  const char kLocalHost[] = "http://localhost";
+
+  struct {
+    std::string conversion_origin;
+    std::string reporting_origin;
+    bool impression_expected;
+  } kTestCases[] = {
+      {kLocalHost /* conversion_origin */, kLocalHost /* reporting_origin */,
+       true /* impression_expected */},
+      {"http://127.0.0.1" /* conversion_origin */,
+       "http://127.0.0.1" /* reporting_origin */,
+       true /* impression_expected */},
+      {kLocalHost /* conversion_origin */,
+       "http://insecure.com" /* reporting_origin */,
+       false /* impression_expected */},
+      {"http://insecure.com" /* conversion_origin */,
+       kLocalHost /* reporting_origin */, false /* impression_expected */},
+      {"https://secure.com" /* conversion_origin */,
+       "https://secure.com" /* reporting_origin */,
+       true /* impression_expected */},
+  };
+
+  for (const auto& test_case : kTestCases) {
+    auto navigation = NavigationSimulatorImpl::CreateRendererInitiated(
+        GURL(test_case.conversion_origin), main_rfh());
+
+    Impression impression;
+    impression.conversion_destination =
+        url::Origin::Create(GURL(test_case.conversion_origin));
+    impression.reporting_origin =
+        url::Origin::Create(GURL(test_case.reporting_origin));
+    navigation->set_impression(impression);
+    navigation->Commit();
+
+    EXPECT_EQ(test_case.impression_expected, test_manager_.num_impressions())
+        << "For test case: " << test_case.conversion_origin << " | "
+        << test_case.reporting_origin;
+    test_manager_.Reset();
+  }
 }
 
 }  // namespace content

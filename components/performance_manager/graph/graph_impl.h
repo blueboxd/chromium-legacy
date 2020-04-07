@@ -72,6 +72,7 @@ class GraphImpl : public Graph {
   std::vector<const WorkerNode*> GetAllWorkerNodes() const override;
   bool IsEmpty() const override;
   ukm::UkmRecorder* GetUkmRecorder() const override;
+  NodeDataDescriberRegistry* GetNodeDataDescriberRegistry() const override;
   uintptr_t GetImplType() const override;
   const void* GetImpl() const override;
 
@@ -182,6 +183,9 @@ class GraphImpl : public Graph {
   // Graph-owned objects. For now we only expect O(10) clients, hence the
   // flat_map.
   base::flat_map<GraphOwned*, std::unique_ptr<GraphOwned>> graph_owned_;
+
+  // Allocated on first use.
+  mutable std::unique_ptr<NodeDataDescriberRegistry> describer_registry_;
 
   // User data storage for the graph.
   friend class NodeAttachedDataMapHelper;

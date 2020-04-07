@@ -7,6 +7,7 @@ import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 import 'chrome://print-management/print_management.js';
 
 import {setMetadataProviderForTesting} from 'chrome://print-management/mojo_interface_provider.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 const CompletionStatus = {
   FAILED: 0,
@@ -60,6 +61,35 @@ function createJobEntry(id, title, completionStatus, jsDate, printerName) {
   return jobEntry;
 }
 
+/**
+ * @param{!Array<!chromeos.printing.printingManager.mojom.PrintJobInfo>}
+ *     expected
+ * @param{!Array<!HTMLElement>} actual
+ */
+function verifyPrintJobs(expected, actual) {
+  assertEquals(expected.length, actual.length);
+  for (let i = 0; i < expected.length; i++) {
+    const actualJobInfo = actual[i].jobEntry;
+    assertEquals(expected[i].id, actualJobInfo.id);
+    assertEquals(expected[i].title, actualJobInfo.title);
+    assertEquals(expected[i].completionStatus, actualJobInfo.completionStatus);
+    assertEquals(expected[i].creationTime, actualJobInfo.creationTime);
+    assertEquals(expected[i].printerName, actualJobInfo.printerName);
+    assertEquals(expected[i].creationTime, actualJobInfo.creationTime);
+  }
+}
+
+/**
+ * @param {!HTMLElement} page
+ * @return {!Array<!HTMLElement>}
+ */
+function getPrintJobEntries(page) {
+  flush();
+  const entryList = page.$$('#entryList');
+  return Array.from(
+      entryList.querySelectorAll('print-job-entry:not([hidden])'));
+}
+
 class FakePrintingMetadataProvider {
   constructor() {
     /** @private {!Map<string, !PromiseResolver>} */
@@ -107,6 +137,14 @@ class FakePrintingMetadataProvider {
   }
 
   /**
+   * @param {?Array<!chromeos.printing.printingManager.mojom.PrintJobInfo>}
+   *     printJobs
+   */
+  setPrintJobs(printJobs) {
+    this.printJobs_ = printJobs;
+  }
+
+  /**
    * @param {chromeos.printing.printingManager.mojom.PrintJobInfo} job
    */
   addPrintJob(job) {
@@ -145,8 +183,6 @@ suite('PrintManagementTest', () => {
 
   setup(function() {
     PolymerTest.clearBody();
-    page = document.createElement('print-management');
-    document.body.appendChild(page);
   });
 
   teardown(function() {
@@ -154,10 +190,38 @@ suite('PrintManagementTest', () => {
     page = null;
   });
 
-  test('MainPageLoaded', () => {
-    // TODO(jimmyxgong): Remove this stub test once the app has more
-    // capabilities to test.
-    assertEquals('Print Management', page.$$('#header').textContent);
+  /**
+   * @param {?Array<!chromeos.printing.printingManager.mojom.PrintJobInfo>}
+   *     printJobs
+   */
+  function initializePrintManagementApp(printJobs) {
+    mojoApi_.setPrintJobs(printJobs);
+    page = document.createElement('print-management');
+    document.body.appendChild(page);
+    flush();
+  }
+
+  test('PrintHistoryListIsSortedReverseChronologically', () => {
+    const expectedArr = [
+      createJobEntry(
+          'newest', 'titleA', CompletionStatus.PRINTED,
+          new Date(Date.UTC(2020, 3, 1, 1, 1, 1)), 'nameA'),
+      createJobEntry(
+          'middle', 'titleA', CompletionStatus.PRINTED,
+          new Date(Date.UTC(2020, 2, 1, 1, 1, 1)), 'nameB'),
+      createJobEntry(
+          'oldest', 'titleC', CompletionStatus.PRINTED,
+          new Date(Date.UTC(2020, 1, 1, 1, 1, 1)), 'nameC')
+    ];
+
+    // Initialize with a reversed array of |expectedArr|, since we expect the
+    // app to sort the list when it first loads. Since reverse() mutates the
+    // original array, use a copy array to prevent mutating |expectedArr|.
+    initializePrintManagementApp(expectedArr.slice().reverse());
+
+    mojoApi_.whenCalled('getPrintJobs').then(() => {
+      verifyPrintJobs(expectedArr, getPrintJobEntries(page));
+    });
   });
 });
 

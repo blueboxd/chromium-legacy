@@ -141,7 +141,7 @@ ExtensionFunction::ResponseAction IdentityGetAuthTokenFunction::Run() {
   token_key_.scopes = scopes;
   token_key_.extension_id = extension()->id();
 
-  if (gaia_id.empty()) {
+  if (gaia_id.empty() && !IsPrimaryAccountOnly()) {
     gaia_id = IdentityAPI::GetFactoryInstance()
                   ->Get(GetProfile())
                   ->GetGaiaIdForExtension(token_key_.extension_id)
@@ -181,8 +181,7 @@ void IdentityGetAuthTokenFunction::GetAuthTokenForPrimaryAccount(
   // than the primary account.
   if (primary_account_only && !extension_gaia_id.empty() &&
       extension_gaia_id != primary_account_info.gaia) {
-    // TODO(courage): should this be a different error?
-    CompleteFunctionWithError(identity_constants::kUserNotSignedIn);
+    CompleteFunctionWithError(identity_constants::kUserNonPrimary);
     return;
   }
 
@@ -742,6 +741,16 @@ void IdentityGetAuthTokenFunction::OnGaiaRemoteConsentFlowApproved(
   if (!account) {
     CompleteFunctionWithError(identity_constants::kUserNotSignedIn);
     return;
+  }
+
+  if (IsPrimaryAccountOnly()) {
+    CoreAccountId primary_account_id =
+        IdentityManagerFactory::GetForProfile(GetProfile())
+            ->GetPrimaryAccountId();
+    if (primary_account_id != account->account_id) {
+      CompleteFunctionWithError(identity_constants::kUserNonPrimary);
+      return;
+    }
   }
 
   IdentityAPI* id_api = IdentityAPI::GetFactoryInstance()->Get(GetProfile());

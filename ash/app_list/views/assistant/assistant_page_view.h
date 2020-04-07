@@ -56,6 +56,8 @@ class APP_LIST_EXPORT AssistantPageView : public AppListPage,
       const gfx::Rect& search_box_bounds) const override;
   views::View* GetFirstFocusableView() override;
   views::View* GetLastFocusableView() override;
+  void AnimateYPosition(AppListViewState target_view_state,
+                        const TransformAnimator& animator) override;
 
   // AssistantUiModelObserver:
   void OnUiVisibilityChanged(

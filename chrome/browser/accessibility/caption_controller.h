@@ -1,0 +1,73 @@
+// Copyright (c) 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_ACCESSIBILITY_CAPTION_CONTROLLER_H_
+#define CHROME_BROWSER_ACCESSIBILITY_CAPTION_CONTROLLER_H_
+
+#include <memory>
+#include <unordered_map>
+
+#include "chrome/browser/ui/browser_list_observer.h"
+#include "components/keyed_service/core/keyed_service.h"
+
+class Browser;
+class Profile;
+class PrefChangeRegistrar;
+
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
+namespace captions {
+
+class CaptionBubbleController;
+
+///////////////////////////////////////////////////////////////////////////////
+// Caption Controller
+//
+//  The controller of the live caption feature. It enables the captioning
+//  service when the preference is enabled. The caption controller is a
+//  KeyedService and BrowserListObserver. There exists one caption controller
+//  per profile and it lasts for the duration of the session. The caption
+//  controller owns the live caption UI, which are caption bubble controllers.
+//
+class CaptionController : public BrowserListObserver, public KeyedService {
+ public:
+  explicit CaptionController(Profile* profile);
+  ~CaptionController() override;
+  CaptionController(const CaptionController&) = delete;
+  CaptionController& operator=(const CaptionController&) = delete;
+
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
+  // Off the record profiles will default to having the feature disabled.
+  static void InitOffTheRecordPrefs(Profile* off_the_record_profile);
+
+  void Init();
+
+ private:
+  friend class CaptionControllerFactory;
+
+  // BrowserListObserver:
+  void OnBrowserAdded(Browser* browser) override;
+  void OnBrowserRemoved(Browser* browser) override;
+
+  void OnLiveCaptionEnabledChanged();
+
+  // Owns us via the KeyedService mechanism.
+  Profile* profile_;
+
+  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
+
+  // A map of Browsers using this profile to CaptionBubbleControllers anchored
+  // to the browser.
+  std::unordered_map<Browser*, std::unique_ptr<CaptionBubbleController>>
+      caption_bubble_controllers_;
+
+  bool enabled_ = false;
+};
+
+}  // namespace captions
+
+#endif  // CHROME_BROWSER_ACCESSIBILITY_CAPTION_CONTROLLER_H_

@@ -196,8 +196,8 @@ class CONTENT_EXPORT StoragePartitionImpl
   CookieStoreContext* GetCookieStoreContext();
   NativeFileSystemManagerImpl* GetNativeFileSystemManager();
   QuotaContext* GetQuotaContext();
-  ConversionManagerImpl* GetConversionManager();
   NativeIOContext* GetNativeIOContext();
+  ConversionManagerImpl* GetConversionManager();
 
   // blink::mojom::DomStorage interface.
   void OpenLocalStorage(
@@ -495,8 +495,8 @@ class CONTENT_EXPORT StoragePartitionImpl
   std::unique_ptr<leveldb_proto::ProtoDatabaseProvider>
       proto_database_provider_;
   scoped_refptr<ContentIndexContextImpl> content_index_context_;
-  std::unique_ptr<ConversionManagerImpl> conversion_manager_;
   std::unique_ptr<NativeIOContext> native_io_context_;
+  std::unique_ptr<ConversionManagerImpl> conversion_manager_;
 
   // ReceiverSet for DomStorage, using the
   // ChildProcessSecurityPolicyImpl::Handle as the binding context type. The

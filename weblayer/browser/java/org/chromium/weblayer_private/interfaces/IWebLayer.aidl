@@ -70,8 +70,8 @@ interface IWebLayer {
       in IObjectWrapper appContext,
       in IObjectWrapper remoteContext) = 10;
 
-  // Forwards download intent notifications to the implementation.
-  void onReceivedDownloadNotification(in IObjectWrapper appContext, in Intent intent) = 11;
+  // Forwards broadcast from a notification to the implementation.
+  void onReceivedBroadcast(in IObjectWrapper appContext, in Intent intent) = 11;
 
   // Added in Version 82.
   void enumerateAllProfileNames(in IObjectWrapper valueCallback) = 12;

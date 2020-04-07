@@ -1365,7 +1365,7 @@ class CONTENT_EXPORT RenderFrameImpl
   bool in_frame_tree_;
 
   RenderViewImpl* render_view_;
-  int routing_id_;
+  const int routing_id_;
 
   // If this RenderFrame was created to replace a previous object, this will
   // store its routing id. The previous object can be:

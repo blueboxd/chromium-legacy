@@ -212,15 +212,16 @@ void AppsContainerView::AnimateYPosition(AppListViewState target_view_state,
       AppListView::GetTransitionProgressForState(target_view_state));
 
   suggestion_chip_container_view_->SetY(target_suggestion_chip_y);
-  animator.Run(suggestion_chip_container_view_);
+  animator.Run(suggestion_chip_container_view_->layer(),
+               suggestion_chip_container_view_);
 
   apps_grid_view_->SetY(suggestion_chip_container_view_->y() +
                         chip_grid_y_distance_);
-  animator.Run(apps_grid_view_);
+  animator.Run(apps_grid_view_->layer(), apps_grid_view_);
 
   page_switcher_->SetY(suggestion_chip_container_view_->y() +
                        chip_grid_y_distance_);
-  animator.Run(page_switcher_);
+  animator.Run(page_switcher_->layer(), page_switcher_);
 }
 
 void AppsContainerView::UpdateYPositionAndOpacity(float progress,

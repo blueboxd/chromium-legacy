@@ -2869,7 +2869,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/omnibox/OmniboxViewUtil.java",
     "java/src/org/chromium/chrome/browser/omnibox/geo/GeolocationHeader.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteController.java",
-    "java/src/org/chromium/chrome/browser/page_info/ConnectionInfoPopup.java",
     "java/src/org/chromium/chrome/browser/page_info/PageInfoController.java",
     "java/src/org/chromium/chrome/browser/paint_preview/services/PaintPreviewDemoService.java",
     "java/src/org/chromium/chrome/browser/paint_preview/services/PaintPreviewDemoServiceFactory.java",

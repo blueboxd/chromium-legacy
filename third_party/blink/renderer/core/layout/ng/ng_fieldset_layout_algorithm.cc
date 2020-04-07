@@ -43,9 +43,6 @@ NGFieldsetLayoutAlgorithm::NGFieldsetLayoutAlgorithm(
 }
 
 scoped_refptr<const NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
-  // TODO(almaher): Make sure the border start is handled correctly during
-  // fragmentation.
-
   // Layout of a fieldset container consists of two parts: Create a child
   // fragment for the rendered legend (if any), and create a child fragment for
   // the fieldset contents anonymous box (if any). Fieldset scrollbars and
@@ -68,11 +65,11 @@ scoped_refptr<const NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
       container_builder_.SetIsInitialColumnBalancingPass();
   }
 
-  // TODO(almaher): Instead of setting this to 0 when resuming layout, this
-  // should equal the amount of the border block-start that is remaining from
-  // the previous fragment(s).
-  if (!IsResumingLayout(BreakToken()))
-    intrinsic_block_size_ = borders_.block_start;
+  // Calculate the amount of the border block-start that was consumed in
+  // previous fragments.
+  consumed_border_block_start_ =
+      std::min(consumed_block_size_, borders_.block_start);
+  intrinsic_block_size_ = borders_.block_start - consumed_border_block_start_;
 
   NGBreakStatus break_status = LayoutChildren();
   if (break_status == NGBreakStatus::kNeedsEarlierBreak) {
@@ -174,10 +171,11 @@ NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutChildren() {
       ShrinkAvailableSize(border_box_size_, borders_with_legend);
 
   if (adjusted_padding_box_size.block_size != kIndefiniteSize) {
-    // If intrinsic_block_size_ does not include the border block-start, exclude
-    // it from adjusted_padding_box_size, as well.
-    if (intrinsic_block_size_ == LayoutUnit())
-      adjusted_padding_box_size.block_size -= borders_.block_start;
+    // If intrinsic_block_size_ does not include the border block-start that was
+    // consumed in previous fragments, exclude consumed_border_block_start_ from
+    // adjusted_padding_box_size, as well.
+    if (consumed_border_block_start_ > LayoutUnit())
+      adjusted_padding_box_size.block_size -= consumed_border_block_start_;
 
     // If the legend has been laid out in previous fragments,
     // adjusted_padding_box_size will need to be adjusted further to account for
@@ -281,17 +279,11 @@ NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutLegend(
         legend_margins.BlockSum();
     LayoutUnit space_left = borders_.block_start - legend_margin_box_block_size;
 
-    // If the border is smaller, intrinsic_block_size_ should now be based on
-    // the size of the legend instead of the border.
-    if (space_left <= LayoutUnit())
-      intrinsic_block_size_ = legend_margin_box_block_size;
-
-    // Don't adjust the block-start offset of the legend or fragment border if
-    // the legend broke.
-    if (legend_break_token || legend_broke_)
-      break;
-
     if (space_left > LayoutUnit()) {
+      // Don't adjust the block-start offset of the legend if the legend broke.
+      if (legend_break_token || legend_broke_)
+        break;
+
       // If the border is the larger one, though, it will stay put at the
       // border-box block-start edge of the fieldset. Then it's the legend
       // that needs to be pushed. We'll center the margin box in this case, to
@@ -305,6 +297,15 @@ NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutLegend(
         continue;
       }
     } else {
+      // If the border is smaller, intrinsic_block_size_ should now be based on
+      // the size of the legend instead of the border.
+      intrinsic_block_size_ = legend_margin_box_block_size;
+
+      // Don't adjust the block-start offset of the fragment border if it broke.
+      if (BreakToken() || (ConstraintSpace().HasKnownFragmentainerBlockSize() &&
+                           legend_margin_box_block_size >
+                               ConstraintSpace().FragmentainerBlockSize()))
+        break;
       // If the legend is larger than the width of the fieldset block-start
       // border, the actual padding edge of the fieldset will be moved
       // accordingly. This will be the block-start offset for the fieldset

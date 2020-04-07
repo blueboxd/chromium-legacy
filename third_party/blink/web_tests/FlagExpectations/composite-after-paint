@@ -100,16 +100,8 @@ http/tests/devtools/layers/layer-compositing-reasons.js [ Failure ]
 # Missing WheelEventHandler
 http/tests/devtools/layers/layer-scroll-rects-get.js [ Failure ]
 
-# Crash on non-contiguous effect on multiple columns
-crbug.com/1064341 fast/multicol/composited-layer-will-change.html [ Crash ]
-crbug.com/1064341 paint/clipath/change-mask-clip-path-multicol-crash.html [ Crash ]
-crbug.com/1064341 fast/multicol/composited-layer-multiple-fragments-translated.html [ Crash ]
-crbug.com/1064341 fast/multicol/composited-layer-multiple-fragments.html [ Crash ]
-crbug.com/1064341 fast/multicol/composited-layer-nested.html [ Crash ]
-
-# Outline paints incorrectly with columns. For now this is hidden by crbug.com/1064341.
-# crbug.com/1047358 paint/pagination/composited-paginated-outlined-box.html [ Failure ]
-crbug.com/1064341 paint/pagination/composited-paginated-outlined-box.html [ Crash ]
+# Outline paints incorrectly with columns.
+crbug.com/1047358 paint/pagination/composited-paginated-outlined-box.html [ Failure ]
 
 # Crash on weird clip hierarchy in multiple columns
 compositing/geometry/composited-in-columns.html [ Crash ]

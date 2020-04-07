@@ -8,6 +8,7 @@ import org.chromium.base.Callback;
 import org.chromium.chrome.browser.paint_preview.services.PaintPreviewTabService;
 import org.chromium.chrome.browser.paint_preview.services.PaintPreviewTabServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.components.paintpreview.player.PlayerManager;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.url.GURL;
@@ -40,8 +41,9 @@ public class TabbedPaintPreviewPlayer {
         if (hasCapture) {
             mPlayerManager = new PlayerManager(mTab.getUrl(), mTab.getContext(),
                     mPaintPreviewTabService, String.valueOf(mTab.getId()),
-                    TabbedPaintPreviewPlayer.this::onLinkClicked,
-                    safeToShow -> { addPlayerView(safeToShow, shownCallback); });
+                    TabbedPaintPreviewPlayer.this::onLinkClicked, safeToShow -> {
+                        addPlayerView(safeToShow, shownCallback);
+                    }, TabThemeColorHelper.getBackgroundColor(mTab));
         }
 
         return hasCapture;

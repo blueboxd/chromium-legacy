@@ -337,7 +337,7 @@ void LoginScreenController::FocusLoginShelf(bool reverse) {
   Shelf* shelf = Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow());
   // Tell the focus direction to the status area or the shelf so they can focus
   // the correct child view.
-  if (reverse || !ShelfWidget::IsUsingViewsShelf()) {
+  if (reverse) {
     if (!Shell::GetPrimaryRootWindowController()->IsSystemTrayVisible())
       return;
     shelf->GetStatusAreaWidget()

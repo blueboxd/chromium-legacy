@@ -275,6 +275,7 @@ void BrowserImpl::SetActiveTab(Tab* tab) {
       AttachCurrentThread(), java_impl_,
       active_tab_ ? active_tab_->GetJavaTab() : nullptr);
 #endif
+  VisibleSecurityStateOfActiveTabChanged();
   for (BrowserObserver& obs : browser_observers_)
     obs.OnActiveTabChanged(active_tab_);
   if (active_tab_)

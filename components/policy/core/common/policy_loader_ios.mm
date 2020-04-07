@@ -9,6 +9,7 @@
 #import <UIKit/UIKit.h>
 
 #include "base/bind.h"
+#include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
@@ -20,6 +21,8 @@
 #import "components/policy/core/common/policy_loader_ios_constants.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
+#include "components/policy/core/common/schema.h"
+#include "components/policy/core/common/schema_registry.h"
 #include "components/policy/policy_constants.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -83,9 +86,12 @@
 namespace policy {
 
 PolicyLoaderIOS::PolicyLoaderIOS(
+    SchemaRegistry* registry,
     scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : AsyncPolicyLoader(task_runner),
-      weak_factory_(this) {}
+    : AsyncPolicyLoader(task_runner), weak_factory_(this) {
+  PolicyNamespace ns(POLICY_DOMAIN_CHROME, std::string());
+  policy_schema_ = registry->schema_map()->GetSchema(ns);
+}
 
 PolicyLoaderIOS::~PolicyLoaderIOS() {
   DCHECK(task_runner()->RunsTasksInCurrentSequence());
@@ -136,7 +142,6 @@ void PolicyLoaderIOS::UserDefaultsChanged() {
   Reload(false);
 }
 
-// static
 void PolicyLoaderIOS::LoadNSDictionaryToPolicyBundle(NSDictionary* dictionary,
                                                      PolicyBundle* bundle) {
   // NSDictionary is toll-free bridged to CFDictionaryRef, which is a
@@ -150,9 +155,34 @@ void PolicyLoaderIOS::LoadNSDictionaryToPolicyBundle(NSDictionary* dictionary,
     dict->RemoveKey(base::SysNSStringToUTF8(kPolicyLoaderIOSLoadPolicyKey));
 
     PolicyMap& map = bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, ""));
-    map.LoadFrom(dict, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                 POLICY_SOURCE_PLATFORM);
+    for (const auto& it : dict->DictItems()) {
+      map.Set(it.first, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+              POLICY_SOURCE_PLATFORM,
+              ConvertPolicyDataIfNecessary(it.first, it.second), nullptr);
+    }
   }
+}
+
+std::unique_ptr<base::Value> PolicyLoaderIOS::ConvertPolicyDataIfNecessary(
+    const std::string& key,
+    const base::Value& value) {
+  const Schema schema = policy_schema_->GetKnownProperty(key);
+
+  if (!schema.valid()) {
+    return value.CreateDeepCopy();
+  }
+
+  // Handle the case of a JSON-encoded string for a dict policy.
+  if (schema.type() == base::Value::Type::DICTIONARY && value.is_string()) {
+    base::Optional<base::Value> decoded_value = base::JSONReader::Read(
+        value.GetString(), base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
+    if (decoded_value.has_value()) {
+      return base::Value::ToUniquePtrValue(std::move(decoded_value.value()));
+    }
+  }
+
+  // Otherwise return an unchanged value.
+  return value.CreateDeepCopy();
 }
 
 }  // namespace policy

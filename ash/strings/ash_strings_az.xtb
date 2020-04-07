@@ -105,6 +105,7 @@
 <translation id="2268813581635650749">Hamısından çıxın</translation>
 <translation id="2277103315734023688">İrəli çəkin</translation>
 <translation id="2292698582925480719">Miqyası göstərin</translation>
+<translation id="2295777434187870477">Mikrofon aktivdir, dəyişdirdikdə daxiletmə səssiz ediləcək.</translation>
 <translation id="2298170939937364391">Tam Ekran Böyüdücüsü aktiv edildi. Rejimi deaktiv etmək üçün Ctrl+Search+M düymələrinə basın.</translation>
 <translation id="2302092602801625023">Bu hesab Family Link tərəfindən idarə olunur</translation>
 <translation id="2303600792989757991">Pəncərə ümumi görünüşünə keçirin</translation>
@@ -138,6 +139,7 @@
 <translation id="2658778018866295321">Klikləyin və çəkin</translation>
 <translation id="2700493154570097719">Klaviaturanı ayarlayın</translation>
 <translation id="2704781753052663061">Digər Wi-Fi şəbəkələrinə qoşulun</translation>
+<translation id="2705001408393684014">Mikrofonu dəyişdirin. <ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">Gecə İşığı</translation>
 <translation id="2727977024730340865">Zəif şarjerə qoşulub. Ola bilər ki, enerji dolmasın.</translation>
 <translation id="2792498699870441125">Alt+Axtarış</translation>
@@ -296,6 +298,7 @@
 <translation id="4665114317261903604">"Narahat etməyin" rejiminə keçin. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Cihazı valideyn kodu ilə kiliddən çıxarın</translation>
 <translation id="4702647871202761252">Məxfilik ekranı deaktivdir</translation>
+<translation id="4705716602320768426">Rəy göndərin</translation>
 <translation id="4710243778082831592">IME ayarları</translation>
 <translation id="4731797938093519117">Valideyn girişi</translation>
 <translation id="4734965478015604180">Üfüqi</translation>
@@ -376,6 +379,7 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Aktiv</translation>
+<translation id="5920710855273935292">Mikrofon səssiz edilib.</translation>
 <translation id="5947494881799873997">Geri dönün</translation>
 <translation id="595202126637698455">Fəaliyyət izləməsi aktiv edildi</translation>
 <translation id="5957083217255311415">Mobil data deaktiv edildi.</translation>

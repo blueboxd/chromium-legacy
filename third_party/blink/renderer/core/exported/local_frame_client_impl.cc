@@ -541,6 +541,7 @@ void LocalFrameClientImpl::BeginNavigation(
     mojo::PendingRemote<mojom::blink::BlobURLToken> blob_url_token,
     base::TimeTicks input_start_time,
     const String& href_translate,
+    const base::Optional<WebImpression>& impression,
     WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr> initiator_csp,
     network::mojom::blink::CSPSourcePtr initiator_self_source,
     network::mojom::IPAddressSpace initiator_address_space,
@@ -573,6 +574,8 @@ void LocalFrameClientImpl::BeginNavigation(
   navigation_info->initiator_address_space = initiator_address_space;
   navigation_info->navigation_initiator_remote =
       std::move(navigation_initiator);
+
+  navigation_info->impression = impression;
 
   // Can be null.
   LocalFrame* local_parent_frame = GetLocalParentFrame(web_frame_);

@@ -134,13 +134,6 @@ const char kHasInternalStylus[] = "has-internal-stylus";
 // option "Show taps".
 const char kShowTaps[] = "show-taps";
 
-// If true, the webui lock screen will be shown. This is deprecated and will be
-// removed in the future.
-const char kShowWebUiLock[] = "show-webui-lock";
-
-// Forces the webui login implementation.
-const char kShowWebUiLogin[] = "show-webui-login";
-
 // Chromebases' touchscreens can be used to wake from suspend, unlike the
 // touchscreens on other Chrome OS devices. If set, the touchscreen is kept
 // enabled while the screen is off so that it can be used to turn the screen
@@ -177,11 +170,6 @@ bool ContextualNudgesResetShownCount() {
 
 bool IsUsingShelfAutoDim() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableDimShelf);
-}
-
-// Returns true if the device will NOT show the webui lock screen.
-bool IsUsingViewsLock() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(kShowWebUiLock);
 }
 
 }  // namespace switches

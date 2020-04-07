@@ -105,6 +105,7 @@
 <translation id="2268813581635650749">सभी को साइन आउट करें</translation>
 <translation id="2277103315734023688">आगे बढ़ाएं</translation>
 <translation id="2292698582925480719">डिसप्ले पैमाना</translation>
+<translation id="2295777434187870477">माइक चालू है, टॉगल करने से इनपुट बंद हो जाएगा.</translation>
 <translation id="2298170939937364391">फ़ुलस्क्रीन पर सामग्री को बड़ा करके दिखाने की सुविधा चालू है. उसे टॉगल करके बंद करने के लिए फिर से Ctrl+Search+M दबाएं.</translation>
 <translation id="2302092602801625023">यह खाता Family Link के ज़रिए प्रबंधित किया जाता है</translation>
 <translation id="2303600792989757991">टॉगल विंडो का संक्षिप्त विवरण</translation>
@@ -138,6 +139,7 @@
 <translation id="2658778018866295321">क्लिक करके खींचें और छोड़ें</translation>
 <translation id="2700493154570097719">अपना कीबोर्ड सेट करें</translation>
 <translation id="2704781753052663061">अन्य वाई-फ़ाई नेटवर्क से कनेक्ट करें</translation>
+<translation id="2705001408393684014">माइक टॉगल करें. <ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">नाइट लाइट</translation>
 <translation id="2727977024730340865">कम-शक्ति वाले चार्जर में प्लग इन करें. बैटरी चार्ज करना संभवत: विश्वसनीय नहीं होगा.</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
@@ -297,6 +299,7 @@
 <translation id="4665114317261903604">'परेशान न करें' को टॉगल करें. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">माता-पिता के कोड से डिवाइस अनलॉक करें</translation>
 <translation id="4702647871202761252">निजता स्क्रीन बंद है</translation>
+<translation id="4705716602320768426">फ़ाइल के बारे में सुझाव/शिकायत/राय दें</translation>
 <translation id="4710243778082831592">IME की सेटिंग</translation>
 <translation id="4731797938093519117">अभिभावक ऐक्सेस</translation>
 <translation id="4734965478015604180">क्षैतिज</translation>
@@ -377,6 +380,7 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">चालू</translation>
+<translation id="5920710855273935292">माइक म्यूट है.</translation>
 <translation id="5947494881799873997">वापस लाएं</translation>
 <translation id="595202126637698455">निष्पादन ट्रेसिंग सक्षम है</translation>
 <translation id="5957083217255311415">मोबाइल डेटा बंद कर दिया गया है.</translation>
@@ -512,7 +516,7 @@
 <translation id="7649070708921625228">सहायता</translation>
 <translation id="7654687942625752712">कंप्यूटर का बोलकर दिया गया जवाब बंद करने के लिए दोनों वॉल्यूम की पांच सेकंड तक दबाकर रखें.</translation>
 <translation id="7705524343798198388">वीपीएन</translation>
-<translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{एक सूचना}one{# सूचनाएं}other{# सूचनाएं}}</translation>
+<translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 सूचना}one{# सूचनाएं}other{# सूचनाएं}}</translation>
 <translation id="7749443890790263709">ज़्यादा से ज़्यादा इतने ही डेस्क जोड़े जा सकते हैं.</translation>
 <translation id="776344839111254542">अपडेट के विवरण देखने के लिए क्लिक करें</translation>
 <translation id="7780159184141939021">स्क्रीन घुमाएं</translation>

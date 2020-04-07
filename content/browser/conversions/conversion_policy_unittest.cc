@@ -48,6 +48,15 @@ TEST_F(ConversionPolicyTest, HighEntropyConversionData_StrippedToLowerBits) {
                      ->GetSanitizedConversionData(conversion_data));
 }
 
+TEST_F(ConversionPolicyTest, SanitizeHighEntropyImpressionData_Unchanged) {
+  uint64_t impression_data = 256LU;
+
+  // The policy should not alter the impression data, and return the hexadecimal
+  // representation.
+  EXPECT_EQ("100",
+            ConversionPolicy().GetSanitizedImpressionData(impression_data));
+}
+
 TEST_F(ConversionPolicyTest, ThreeBitConversionData_Unchanged) {
   std::unique_ptr<ConversionPolicy> policy = ConversionPolicy::CreateForTesting(
       std::make_unique<EmptyNoiseProvider>());
@@ -62,6 +71,29 @@ TEST_F(ConversionPolicyTest, SantizizeConversionData_OutputHasNoise) {
   EXPECT_EQ("5", ConversionPolicy::CreateForTesting(
                      std::make_unique<IncrementingNoiseProvider>())
                      ->GetSanitizedConversionData(4UL));
+}
+
+TEST_F(ConversionPolicyTest, NoExpiryForImpression_DefaultUsed) {
+  base::Time impression_time = base::Time::Now();
+  EXPECT_EQ(impression_time + base::TimeDelta::FromDays(30),
+            ConversionPolicy().GetExpiryTimeForImpression(
+                /*declared_expiry=*/base::nullopt, impression_time));
+}
+
+TEST_F(ConversionPolicyTest, LargeImpressionExpirySpecified_ClampedTo30Days) {
+  constexpr base::TimeDelta declared_expiry = base::TimeDelta::FromDays(60);
+  base::Time impression_time = base::Time::Now();
+  EXPECT_EQ(impression_time + base::TimeDelta::FromDays(30),
+            ConversionPolicy().GetExpiryTimeForImpression(declared_expiry,
+                                                          impression_time));
+}
+
+TEST_F(ConversionPolicyTest, ImpressionExpirySpecified_ExpiryOverrideDefault) {
+  constexpr base::TimeDelta declared_expiry = base::TimeDelta::FromDays(10);
+  base::Time impression_time = base::Time::Now();
+  EXPECT_EQ(impression_time + base::TimeDelta::FromDays(10),
+            ConversionPolicy().GetExpiryTimeForImpression(declared_expiry,
+                                                          impression_time));
 }
 
 }  // namespace content

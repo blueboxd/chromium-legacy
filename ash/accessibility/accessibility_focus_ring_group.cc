@@ -90,6 +90,8 @@ void AccessibilityFocusRingGroup::UpdateFocusRingsFromInfo(
 }
 
 bool AccessibilityFocusRingGroup::CanAnimate() const {
+  if (no_fade_for_testing_)
+    return false;
   return !focus_rings_.empty() && focus_layers_[0]->CanAnimate();
 }
 

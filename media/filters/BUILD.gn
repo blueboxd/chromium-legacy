@@ -187,6 +187,13 @@ jumbo_source_set("filters") {
         "ffmpeg_video_decoder.h",
       ]
     }
+
+    if (is_android) {
+      sources += [
+        "android/video_frame_extractor.cc",
+        "android/video_frame_extractor.h",
+      ]
+    }
   }
 
   if (is_android) {
@@ -199,8 +206,6 @@ jumbo_source_set("filters") {
     sources += [
       "android/media_codec_audio_decoder.cc",
       "android/media_codec_audio_decoder.h",
-      "android/video_frame_extractor.cc",
-      "android/video_frame_extractor.h",
     ]
     deps += [ "//media/base/android" ]
   }

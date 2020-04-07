@@ -47,6 +47,7 @@ import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.omnibox.OmniboxUrlEmphasizer;
+import org.chromium.components.page_info.ConnectionInfoPopup;
 import org.chromium.components.page_info.CookieControlsStatus;
 import org.chromium.components.page_info.CookieControlsView;
 import org.chromium.components.page_info.PageInfoDialog;
@@ -461,7 +462,8 @@ public class PageInfoController implements ModalDialogProperties.Controller,
                 runAfterDismiss(() -> {
                     if (!mWebContents.isDestroyed()) {
                         recordAction(PageInfoAction.PAGE_INFO_SECURITY_DETAILS_OPENED);
-                        ConnectionInfoPopup.show(context, mWebContents);
+                        ConnectionInfoPopup.show(context, mWebContents,
+                                context.getModalDialogManager(), VrModuleProvider.getDelegate());
                     }
                 });
             };

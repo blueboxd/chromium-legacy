@@ -21,6 +21,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 
@@ -45,6 +46,9 @@ class AutofillPopupControllerBrowserTest : public InProcessBrowserTest,
         std::make_unique<TestAutofillExternalDelegate>(
             driver->autofill_manager(), driver,
             /*call_parent_methods=*/true);
+
+    disable_animation_ = std::make_unique<ui::ScopedAnimationDurationScaleMode>(
+        ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
   }
 
   // Normally the WebContents will automatically delete the delegate, but here
@@ -56,6 +60,7 @@ class AutofillPopupControllerBrowserTest : public InProcessBrowserTest,
 
  protected:
   std::unique_ptr<TestAutofillExternalDelegate> autofill_external_delegate_;
+  std::unique_ptr<ui::ScopedAnimationDurationScaleMode> disable_animation_;
 };
 
 #if defined(OS_MACOSX)

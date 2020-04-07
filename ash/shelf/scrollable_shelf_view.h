@@ -86,6 +86,10 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // Returns whether the view should adapt to RTL.
   bool ShouldAdaptToRTL() const;
 
+  // Returns whether the scrollable shelf's current size is equal to the target
+  // size.
+  bool NeedUpdateToTargetBounds() const;
+
   // Returns the icon's target bounds in screen. The returned bounds are
   // calculated with the hotseat's target bounds instead of the actual bounds.
   // It helps to get the icon's final location before the bounds animation on

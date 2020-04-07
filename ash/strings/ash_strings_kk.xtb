@@ -105,6 +105,7 @@
 <translation id="2268813581635650749">Барлығын шығару</translation>
 <translation id="2277103315734023688">Алға</translation>
 <translation id="2292698582925480719">Дисплей масштабы</translation>
+<translation id="2295777434187870477">Микрофон қосулы. Егер басқасына ауыссаңыз, кіріс дыбыс өшеді.</translation>
 <translation id="2298170939937364391">Толық экран ұлғайтқышы қосулы. Оны өшіру үшін Ctrl+Search+M пернелер тіркесімін қайта басыңыз.</translation>
 <translation id="2302092602801625023">Бұл есептік жазба Family Link арқылы басқарылады</translation>
 <translation id="2303600792989757991">Терезеде шолу режимін ауыстыру</translation>
@@ -138,6 +139,7 @@
 <translation id="2658778018866295321">Басу және сүйреу</translation>
 <translation id="2700493154570097719">Пернетақтаны орнатыңыз</translation>
 <translation id="2704781753052663061">Басқа Wi-Fi желілеріне қосылу</translation>
+<translation id="2705001408393684014">Басқа микрофонға ауысыңыз. <ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">Түнгі жарық</translation>
 <translation id="2727977024730340865">Төмен қуатты зарядтағышқа жалғанған. Батареяны зарядтау кезінде қиындықтар болуы мүмкін.</translation>
 <translation id="2792498699870441125">Alt+Іздеу</translation>
@@ -296,6 +298,7 @@
 <translation id="4665114317261903604">"Мазаламау" режиміне ауысыңыз. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Құрылғының құлпын ата-ана кодымен ашыңыз</translation>
 <translation id="4702647871202761252">Құпиялылық экраны өшірулі.</translation>
+<translation id="4705716602320768426">Пікір жіберу</translation>
 <translation id="4710243778082831592">IME параметрлері</translation>
 <translation id="4731797938093519117">Ата-ананың кіру рұқсаты</translation>
 <translation id="4734965478015604180">Көлденең</translation>
@@ -376,6 +379,7 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Қосу</translation>
+<translation id="5920710855273935292">Микрофон дыбысы өшірулі.</translation>
 <translation id="5947494881799873997">Қайтару</translation>
 <translation id="595202126637698455">Өнімділікті бақылау қосылған</translation>
 <translation id="5957083217255311415">Мобильдік деректер өшірулі.</translation>

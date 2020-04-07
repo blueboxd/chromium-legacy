@@ -10,8 +10,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/network_config_service.h"
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "base/bind.h"
@@ -601,10 +599,6 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
   localized_strings->SetString("highlightStrength",
                                keyboard_driven_oobe ? "strong" : "normal");
 
-  localized_strings->SetString(
-      "showViewsLock", ash::switches::IsUsingViewsLock() ? "on" : "off");
-  localized_strings->SetString(
-      "showViewsLogin", ash::features::IsViewsLoginEnabled() ? "on" : "off");
   localized_strings->SetBoolean(
       "changePictureVideoModeEnabled",
       base::FeatureList::IsEnabled(features::kChangePictureVideoMode));

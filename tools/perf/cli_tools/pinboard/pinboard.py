@@ -58,25 +58,51 @@ MEASUREMENTS = set([
 # Compute averages over a fixed set of active stories. These may need to be
 # periodically updated.
 ACTIVE_STORIES = set([
+    # v8.browsing_mobile.
     'browse:chrome:newtab:2019',
     'browse:chrome:omnibox:2019',
     'browse:media:facebook_photos:2019',
+    'browse:media:flickr_infinite_scroll:2019',
     'browse:media:googleplaystore:2019',
     'browse:media:imgur:2019',
     'browse:media:youtube:2019',
     'browse:news:cricbuzz:2019',
     'browse:news:globo:2019',
+    'browse:news:nytimes:2019',
+    'browse:news:qq:2019',
+    'browse:news:reddit:2019',
     'browse:news:toi:2019',
     'browse:shopping:amazon:2019',
+    'browse:news:washingtonpost:2019',
+    'browse:search:amp:sxg:2019',
+    'browse:shopping:amazon:2019',
+    'browse:shopping:avito:2019',
+    'browse:shopping:flipkart:2019',
     'browse:shopping:lazada:2019',
     'browse:social:facebook:2019',
     'browse:social:instagram:2019',
+    'browse:social:twitter:2019',
     'browse:tools:maps:2019',
-    'load:media:facebook_photos:2019',
-    'load:media:youtube:2018',
-    'load:news:irctc:2019',
-    'load:news:wikipedia:2018',
-    'intent:coldish:bbc',
+
+    # v8.browsing_desktop.
+    'browse:news:nytimes:2018',
+    'browse:news:flipboard:2018',
+    'browse:social:facebook_infinite_scroll:2018',
+    'browse:tools:sheets:2019',
+    'browse:media:tumblr:2018',
+    'browse:tools:maps:2019',
+    'browse:social:twitter_infinite_scroll:2018',
+    'browse:tech:discourse_infinite_scroll:2018',
+    'browse:social:twitter:2018',
+    'browse:social:tumblr_infinite_scroll:2018',
+    'browse:media:googleplaystore:2018',
+    'browse:search:google:2018',
+    'browse:news:cnn:2018',
+    'browse:news:reddit:2018',
+    'browse:search:google_india:2018',
+    'browse:media:youtubetv:2019',
+
+    # Speedometer2.
     'Speedometer2',
 ])
 

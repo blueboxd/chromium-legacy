@@ -179,7 +179,13 @@ class OptimizationGuideHintsManager
       HintsFetched_AtSRP_ECT_SLOW_2G_NonHTTPOrHTTPSHostsRemoved);
   FRIEND_TEST_ALL_PREFIXES(
       OptimizationGuideHintsManagerFetchingTest,
-      HintsFetched_ExternalAndroidApp_ECT_SLOW_2G_NonHTTPOrHTTPSHostsRemoved);
+      HintsFetched_ExternalAndroidApp_ECT_SLOW_2G_NonHTTPOrHTTPSHostsRemovedAppWhitelisted);
+  FRIEND_TEST_ALL_PREFIXES(
+      OptimizationGuideHintsManagerFetchingTest,
+      HintsFetched_ExternalAndroidApp_ECT_SLOW_2G_NonHTTPOrHTTPSHostsRemovedNotAllAppsWhitelisted);
+  FRIEND_TEST_ALL_PREFIXES(
+      OptimizationGuideHintsManagerFetchingTest,
+      HintsFetched_ExternalAndroidApp_ECT_SLOW_2G_NonHTTPOrHTTPSHostsRemovedAppNotWhitelisted);
 
   // Processes the hints component.
   //
@@ -304,6 +310,11 @@ class OptimizationGuideHintsManager
   // search results page (www.google.*).
   bool IsGoogleURL(const GURL& url) const;
 
+  // Returns true if we can make a request for hints for |prediction|.
+  bool IsAllowedToFetchForNavigationPrediction(
+      const base::Optional<NavigationPredictorKeyedService::Prediction>
+          prediction) const;
+
   // NavigationPredictorKeyedService::Observer:
   void OnPredictionUpdated(
       const base::Optional<NavigationPredictorKeyedService::Prediction>
@@ -403,6 +414,10 @@ class OptimizationGuideHintsManager
   // used to create the initial fetcher for the batch update context.
   std::unique_ptr<optimization_guide::HintsFetcherFactory>
       hints_fetcher_factory_;
+
+  // The external app packages that have been approved for fetching from the
+  // remote Optimization Guide Service.
+  base::flat_set<std::string> external_app_packages_approved_for_fetch_;
 
   // The top host provider that can be queried. Not owned.
   optimization_guide::TopHostProvider* top_host_provider_ = nullptr;

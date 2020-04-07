@@ -168,6 +168,7 @@
 <translation id="3112556859945124369">標示…</translation>
 <translation id="3153862085237805241">儲存卡片</translation>
 <translation id="3157684681743766797">全部標示…</translation>
+<translation id="3161291298470460782">這項操作會將你登出帳戶、關閉同步功能，並清除這部裝置上的所有 Chrome 資料，但是已同步處理的資料會繼續保留在你的 Google 帳戶中。</translation>
 <translation id="3175081911749765310">網路服務</translation>
 <translation id="3178650076442119961">上次使用時間：今天</translation>
 <translation id="3207960819495026254">已加入書籤</translation>
@@ -200,6 +201,7 @@
 <translation id="3494788280727468875">確認清除瀏覽資料</translation>
 <translation id="35083190962747987">開啟 ${url}</translation>
 <translation id="3519193562722059437">透過新開啟的分頁瀏覽網頁。</translation>
+<translation id="3523473570015918798">登出帳戶之後，你的書籤、歷史記錄、密碼和其他 Chrome 資料將停止同步到你的 Google 帳戶。</translation>
 <translation id="3527085408025491307">資料夾</translation>
 <translation id="3529024052484145543">不安全</translation>
 <translation id="3533202363250687977">關閉所有無痕式分頁</translation>
@@ -333,6 +335,7 @@
 <translation id="54401264925851789">網頁安全性資訊</translation>
 <translation id="5443952882982198570">信用卡</translation>
 <translation id="5457907402803865181">同步密碼時發生錯誤。</translation>
+<translation id="5508435575041083207">登出帳戶並清除這部裝置上的資料</translation>
 <translation id="5525269841082836315">建立通關密語</translation>
 <translation id="5548760955356983418">有了 Handoff，您使用這個裝置開始瀏覽網站後，可輕鬆改用 Mac 繼續瀏覽。目前開啟的網站會自動顯示在 Mac 的 Dock 中。
 
@@ -506,6 +509,9 @@
 <translation id="766891008101699113">如要以私密模式瀏覽網頁，請開啟新分頁。</translation>
 <translation id="7671141431838911305">安裝</translation>
 <translation id="7765158879357617694">移動</translation>
+<translation id="7771470029643830783">登出帳戶之後，你的書籤、歷史記錄、密碼和其他 Chrome 資料將停止同步到你的 Google 帳戶。
+
+由於你的帳戶是由 <ph name="HOSTED_DOMAIN" /> 管理，因此當你登出帳戶時，系統會將你的 Chrome 資料從這部裝置上刪除，但是已同步處理的資料會繼續保留在你的 Google 帳戶中。</translation>
 <translation id="7772032839648071052">確認通關密語</translation>
 <translation id="7781011649027948662">是否要翻譯網頁？</translation>
 <translation id="7781829728241885113">昨天</translation>
@@ -555,6 +561,7 @@
 <translation id="8490978609246021741">儲存變更</translation>
 <translation id="8503813439785031346">使用者名稱</translation>
 <translation id="850600235656508448">以無痕模式開啟</translation>
+<translation id="8510057420705599706">這項操作會將你登出帳戶並關閉同步功能，但是你的書籤、歷史記錄、密碼和其他 Chrome 資料會繼續保留在這部裝置上。</translation>
 <translation id="8517375800490286174">開放原始碼授權</translation>
 <translation id="8524799873541103884">第 <ph name="FIRST_VISIBLE_TAB" /> 至 <ph name="LAST_VISIBLE_TAB" /> 個<ph name="INCOGNITO" />分頁，共 <ph name="NUMBER_OF_OPEN_TABS" /> 個</translation>
 <translation id="8529767659511976195">新功能</translation>
@@ -597,6 +604,7 @@
 <translation id="9094033019050270033">更新密碼</translation>
 <translation id="9100610230175265781">請提供通關密語</translation>
 <translation id="9148126808321036104">重新登入</translation>
+<translation id="9152539721251340337">建立 QR 圖碼</translation>
 <translation id="9157836665414082580">禁止顯示對話方塊</translation>
 <translation id="9188680907066685419">登出受管理的帳戶</translation>
 <translation id="9203116392574189331">Handoff</translation>

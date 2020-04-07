@@ -38,6 +38,17 @@ ConversionManagerImpl::ConversionManagerImpl(
 
 ConversionManagerImpl::~ConversionManagerImpl() = default;
 
+void ConversionManagerImpl::HandleImpression(
+    const StorableImpression& impression) {
+  if (!storage_)
+    return;
+
+  // Add the impression to storage.
+  storage_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&ConversionStorage::StoreImpression,
+                                base::Unretained(storage_.get()), impression));
+}
+
 void ConversionManagerImpl::HandleConversion(
     const StorableConversion& conversion) {
   if (!storage_)

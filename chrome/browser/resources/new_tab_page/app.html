@@ -183,7 +183,7 @@
     <dom-if if="[[showCustomizeDialog_]]" restamp>
       <template>
         <ntp-customize-dialog on-close="onCustomizeDialogClose_"
-            theme="[[theme_]]">
+            theme="[[theme_]]" background-selection="{{backgroundSelection_}}">
         </ntp-customize-dialog>
       </template>
     </dom-if>
@@ -205,17 +205,17 @@
       </cr-button>
     </div>
     <a id="backgroundImageAttribution"
-        href="[[theme_.backgroundImageAttributionUrl.url]]"
-        hidden="[[!theme_.backgroundImageAttribution1]]">
+        href="[[backgroundImageAttributionUrl_]]"
+        hidden="[[!backgroundImageAttribution1_]]">
       <div id="backgroundImageAttribution1Container">
         <div id="linkIcon"></div>
         <div id="backgroundImageAttribution1">
-          [[theme_.backgroundImageAttribution1]]
+          [[backgroundImageAttribution1_]]
         </div>
       </div>
       <div id="backgroundImageAttribution2"
-          hidden="[[!theme_.backgroundImageAttribution2]]">
-        [[theme_.backgroundImageAttribution2]]
+          hidden="[[!backgroundImageAttribution2_]]">
+        [[backgroundImageAttribution2_]]
       </div>
     </a>
   </div>

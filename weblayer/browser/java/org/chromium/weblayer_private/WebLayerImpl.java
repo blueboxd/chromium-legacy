@@ -305,7 +305,7 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     }
 
     @Override
-    public void onReceivedDownloadNotification(IObjectWrapper appContextWrapper, Intent intent) {
+    public void onReceivedBroadcast(IObjectWrapper appContextWrapper, Intent intent) {
         StrictModeWorkaround.apply();
         Context context = ObjectWrapper.unwrap(appContextWrapper, Context.class);
         DownloadImpl.forwardIntent(context, intent, mProfileManager);

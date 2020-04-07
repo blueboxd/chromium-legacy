@@ -504,8 +504,8 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
       gl->glGetFramebufferAttachmentParameterivEXTFn;
   functions->fGetRenderbufferParameteriv =
       gl->glGetRenderbufferParameterivEXTFn;
-  functions->fBindFramebuffer =
-      bind_with_flush_on_mac(gl->glBindFramebufferEXTFn);
+  functions->fBindFramebuffer = bind_slow_with_flush_on_mac(
+      gl->glBindFramebufferEXTFn, progress_reporter);
   functions->fFramebufferTexture2D = gl->glFramebufferTexture2DEXTFn;
   functions->fCheckFramebufferStatus = gl->glCheckFramebufferStatusEXTFn;
   functions->fDeleteFramebuffers = bind_slow_with_flush_on_mac(

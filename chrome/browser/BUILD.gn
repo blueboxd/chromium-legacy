@@ -2292,7 +2292,12 @@ jumbo_static_library("browser") {
   ]
 
   if (is_win) {
-    libs += [ "secur32.lib" ]
+    libs += [
+      "secur32.lib",
+
+      # Needed for _variant_t used in browser_dm_token_storage_win.cc
+      "comsuppw.lib",
+    ]
     sources +=
         [ "component_updater/recovery_improved_component_installer_win.cc" ]
     deps += [ "//chrome/elevation_service:elevation_service_idl" ]
@@ -3086,6 +3091,10 @@ jumbo_static_library("browser") {
     }
   } else {  # !is_android
     sources += [
+      "accessibility/caption_controller.cc",
+      "accessibility/caption_controller.h",
+      "accessibility/caption_controller_factory.cc",
+      "accessibility/caption_controller_factory.h",
       "accessibility/invert_bubble_prefs.cc",
       "accessibility/invert_bubble_prefs.h",
       "apps/app_service/app_icon_factory.cc",

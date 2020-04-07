@@ -143,13 +143,18 @@ def _DownloadAndAnalyze(signed_prefix, unsigned_prefix):
   trichrome_chrome.AddSize(metrics)
   trichrome_webview.AddSize(metrics)
   trichrome_library.AddSize(metrics)
+
+  # Separate where spreadsheet has computed columns for easier copy/paste.
+  _DumpCsv(metrics)
+  metrics = collections.OrderedDict()
   trichrome64_chrome.AddSize(metrics)
   trichrome64_webview.AddSize(metrics)
   trichrome64_library.AddSize(metrics)
 
   _DumpCsv(metrics)
-
   metrics = collections.OrderedDict()
+
+  webview.PrintLibraryCompression()
 
   # AndroidGo size exists only for webview & library.
   go_install_size = (
@@ -163,10 +168,13 @@ def _DownloadAndAnalyze(signed_prefix, unsigned_prefix):
 
   chrome.AddMethodCount(metrics)
   monochrome.AddMethodCount(metrics)
+
+  # Separate where spreadsheet has computed columns for easier copy/paste.
+  _DumpCsv(metrics)
+  metrics = collections.OrderedDict()
+
   trichrome_chrome.AddDfmSizes(metrics)
   _DumpCsv(metrics)
-
-  webview.PrintLibraryCompression()
 
 
 def main():

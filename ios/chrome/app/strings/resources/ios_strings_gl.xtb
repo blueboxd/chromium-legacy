@@ -168,6 +168,7 @@
 <translation id="3112556859945124369">Marcar como...</translation>
 <translation id="3153862085237805241">Gardar tarxeta</translation>
 <translation id="3157684681743766797">Marcar todo como...</translation>
+<translation id="3161291298470460782">Pecharás sesión, desactivarase a sincronización e borraranse deste dispositivo todos os teus datos de Chrome. Os datos sincronizados conservaranse na túa Conta de Google.</translation>
 <translation id="3175081911749765310">Servizos web</translation>
 <translation id="3178650076442119961">Dispositivo activo hoxe</translation>
 <translation id="3207960819495026254">Engadida a marcadores</translation>
@@ -200,6 +201,7 @@
 <translation id="3494788280727468875">Confirmar a eliminación dos datos de navegación</translation>
 <translation id="35083190962747987">Abrir ${url}</translation>
 <translation id="3519193562722059437">Abre unha pestana para examinar a web.</translation>
+<translation id="3523473570015918798">Ao pechar sesión, os marcadores, o historial, os contrasinais e outros datos de Chrome deixarán de sincronizarse coa túa Conta de Google.</translation>
 <translation id="3527085408025491307">Cartafol</translation>
 <translation id="3529024052484145543">Contido non-seguro</translation>
 <translation id="3533202363250687977">Pechar todas as pestanas do modo de incógnito</translation>
@@ -333,6 +335,7 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="54401264925851789">Información de seguranza da páxina</translation>
 <translation id="5443952882982198570">Tarxetas de crédito</translation>
 <translation id="5457907402803865181">Produciuse un erro ao sincronizar os contrasinais.</translation>
+<translation id="5508435575041083207">Pechar sesión e borrar datos deste dispositivo</translation>
 <translation id="5525269841082836315">Crear contrasinal</translation>
 <translation id="5548760955356983418">Handoff permíteche comezar a navegar nun sitio web neste dispositivo e despois continuar facilmente no teu Mac. O sitio web aberto actualmente aparecerá no Dock do teu Mac.
 
@@ -506,6 +509,9 @@ Os teus datos encriptáronse co teu contrasinal de sincronización o <ph name="T
 <translation id="766891008101699113">Para navegar pola web de forma privada, engade unha nova pestana.</translation>
 <translation id="7671141431838911305">INSTALAR</translation>
 <translation id="7765158879357617694">Mover</translation>
+<translation id="7771470029643830783">Ao pechar sesión, os marcadores, o historial, os contrasinais e outros datos de Chrome deixarán de sincronizarse coa túa Conta de Google.
+
+Ademais, dado que a conta está xestionada por <ph name="HOSTED_DOMAIN" />, os teus datos de Chrome eliminaranse deste dispositivo cando peches sesión. Os datos sincronizados conservaranse na túa Conta de Google.</translation>
 <translation id="7772032839648071052">Confirmar frase de acceso</translation>
 <translation id="7781011649027948662">Traducir esta páxina?</translation>
 <translation id="7781829728241885113">Onte</translation>
@@ -555,6 +561,7 @@ Os teus datos encriptáronse co teu contrasinal de sincronización o <ph name="T
 <translation id="8490978609246021741">Gardar cambios</translation>
 <translation id="8503813439785031346">Nome de usuario</translation>
 <translation id="850600235656508448">Abrir marcador no modo de incógnito</translation>
+<translation id="8510057420705599706">Pecharás sesión e desactivarase a sincronización, pero conservaranse neste dispositivo os marcadores, o historial, os contrasinais e outros datos de Chrome.</translation>
 <translation id="8517375800490286174">Licenzas de código aberto</translation>
 <translation id="8524799873541103884">Etiquetas de <ph name="INCOGNITO" /> <ph name="FIRST_VISIBLE_TAB" /> a <ph name="LAST_VISIBLE_TAB" /> de <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">Novidade</translation>
@@ -597,6 +604,7 @@ Os teus datos encriptáronse co teu contrasinal de sincronización o <ph name="T
 <translation id="9094033019050270033">Actualizar contrasinal</translation>
 <translation id="9100610230175265781">Contrasinal obrigatorio</translation>
 <translation id="9148126808321036104">Iniciar sesión de novo</translation>
+<translation id="9152539721251340337">Crear código QR</translation>
 <translation id="9157836665414082580">Suprimir cadros de diálogos</translation>
 <translation id="9188680907066685419">Pechar sesión na conta xestionada</translation>
 <translation id="9203116392574189331">Handoff</translation>

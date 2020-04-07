@@ -31,6 +31,7 @@
 #include "third_party/blink/public/common/navigation/triggering_event_info.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
+#include "third_party/blink/public/platform/web_impression.h"
 #include "third_party/blink/public/web/web_window_features.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
@@ -144,6 +145,14 @@ struct CORE_EXPORT FrameLoadRequest {
     resource_request_.ClearHTTPOrigin();
   }
 
+  // Impressions are set when a FrameLoadRequest is created for a click on an
+  // anchor tag that has conversion measurement attributes.
+  void SetImpression(const WebImpression& impression) {
+    impression_ = impression;
+  }
+
+  const base::Optional<WebImpression>& Impression() { return impression_; }
+
   // Whether either OriginDocument, RequestorOrigin or IsolatedWorldOrigin can
   // display the |url|,
   bool CanDisplay(const KURL&) const;
@@ -168,6 +177,7 @@ struct CORE_EXPORT FrameLoadRequest {
       mojom::RequestContextFrameType::kNone;
   WebWindowFeatures window_features_;
   bool is_window_open_ = false;
+  base::Optional<WebImpression> impression_;
 };
 
 }  // namespace blink

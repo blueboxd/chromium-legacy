@@ -105,6 +105,28 @@ class APP_LIST_EXPORT AppListPage : public views::View {
   // Returns true if the search box should be shown in this page.
   virtual bool ShouldShowSearchBox() const;
 
+  // Called when the app list view state changes to |target_view_state| to
+  // animate the app list page opacity.
+  // |current_progress| - the current app list transition progress.
+  // |animator| - callback that when run starts the opacity animation.
+  using OpacityAnimator =
+      base::RepeatingCallback<void(views::View* view, bool target_visibility)>;
+  virtual void AnimateOpacity(float current_progress,
+                              AppListViewState target_view_state,
+                              const OpacityAnimator& animator);
+
+  // Called when the app list view state changes to |target_view_state| to
+  // animate the app list page vertical offset from the app list view top.
+  // |animator| - The callback that runs the transform animation to update the
+  // page's vertical position. (The layer is required argument, while view is
+  // optional, and should be used with layers associated with views - the
+  // animator will send out a11y position change notification for the view when
+  // the animation finishes).
+  using TransformAnimator =
+      base::RepeatingCallback<void(ui::Layer* layer, views::View* view)>;
+  virtual void AnimateYPosition(AppListViewState target_view_state,
+                                const TransformAnimator& animator);
+
   // Returns the area above the contents view, given the desired size of this
   // page, in the contents view's coordinate space.
   gfx::Rect GetAboveContentsOffscreenBounds(const gfx::Size& size) const;

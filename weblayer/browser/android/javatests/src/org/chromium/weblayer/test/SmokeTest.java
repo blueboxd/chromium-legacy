@@ -5,7 +5,8 @@
 package org.chromium.weblayer.test;
 
 import android.support.test.filters.SmallTest;
-import android.support.v4.app.Fragment;
+
+import androidx.fragment.app.Fragment;
 
 import org.junit.Assert;
 import org.junit.Rule;

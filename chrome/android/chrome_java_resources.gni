@@ -1073,7 +1073,6 @@ chrome_java_resources = [
   "java/res/layout/compositor_view_holder.xml",
   "java/res/layout/confirm_import_sync_data.xml",
   "java/res/layout/confirm_important_sites_list_row.xml",
-  "java/res/layout/connection_info.xml",
   "java/res/layout/contact_view.xml",
   "java/res/layout/contacts_list_item_view.xml",
   "java/res/layout/contacts_picker_dialog.xml",

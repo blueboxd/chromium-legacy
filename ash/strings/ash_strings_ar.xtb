@@ -105,6 +105,7 @@
 <translation id="2268813581635650749">خروج من كل الحسابات</translation>
 <translation id="2277103315734023688">الانتقال إلى الأمام</translation>
 <translation id="2292698582925480719">مقياس العرض</translation>
+<translation id="2295777434187870477">الميكروفون مفعّل، وسيؤدي التبديل إلى كتم المُدخَلات.</translation>
 <translation id="2298170939937364391">‏تم تفعيل ميزة "المكبِّر بملء الشاشة". يمكنك إيقافها بالضغط على Ctrl+Search+M مرة أخرى.</translation>
 <translation id="2302092602801625023">‏تتم إدارة هذا الحساب من خلال Family Link</translation>
 <translation id="2303600792989757991">نظرة عامة لنافذة التبديل</translation>
@@ -138,6 +139,7 @@
 <translation id="2658778018866295321">انقر واسحب</translation>
 <translation id="2700493154570097719">تعيين لوحة المفاتيح</translation>
 <translation id="2704781753052663061">‏الانضمام إلى شبكات Wi-Fi أخرى</translation>
+<translation id="2705001408393684014">تبديل الميكروفون: <ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">الإضاءة الليلية</translation>
 <translation id="2727977024730340865">تمّ توصيل شاحن منخفض الطاقة. لذا قد لا تكون عملية شحن البطارية جديرة بالثقة.</translation>
 <translation id="2792498699870441125">‏Alt+مفتاح البحث</translation>
@@ -296,6 +298,7 @@
 <translation id="4665114317261903604">تبديل حالة "عدم الإزعاج" <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">فتح قفل الجهاز باستخدام رمز الوالدين</translation>
 <translation id="4702647871202761252">تم إيقاف شاشة الخصوصية.</translation>
+<translation id="4705716602320768426">تقديم تعليقات</translation>
 <translation id="4710243778082831592">‏إعدادات أداة IME</translation>
 <translation id="4731797938093519117">وصول أحد الوالدين</translation>
 <translation id="4734965478015604180">أفقي</translation>
@@ -376,6 +379,7 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">مفعّل</translation>
+<translation id="5920710855273935292">تم كتم الميكروفون.</translation>
 <translation id="5947494881799873997">التراجع عن الإجراء</translation>
 <translation id="595202126637698455">تم تفعيل تتبع مستوى الأداء</translation>
 <translation id="5957083217255311415">تم إيقاف ميزة بيانات الجوّال.</translation>

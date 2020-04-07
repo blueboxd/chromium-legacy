@@ -368,6 +368,19 @@ SkColor GetDefaultColor(NativeTheme::ColorId color_id,
     case NativeTheme::kColorId_LinkPressed:
       return gfx::kGoogleBlue600;
 
+    // Notification view
+    // TODO(crbug.com/1065604): Add support for dark mode.
+    case NativeTheme::kColorId_NotificationDefaultBackground:
+    case NativeTheme::kColorId_NotificationPlaceholderIconColor:
+      return SK_ColorWHITE;
+    case NativeTheme::kColorId_NotificationActionsRowBackground:
+    case NativeTheme::kColorId_NotificationInlineSettingsBackground:
+      return SkColorSetRGB(0xee, 0xee, 0xee);
+    case NativeTheme::kColorId_NotificationLargeImageBackground:
+      return SkColorSetRGB(0xf5, 0xf5, 0xf5);
+    case NativeTheme::kColorId_NotificationEmptyPlaceholderIconColor:
+      return SkColorSetA(SK_ColorWHITE, 0x60);
+
     // Scrollbar
     case NativeTheme::kColorId_OverlayScrollbarThumbBackground:
       return SK_ColorBLACK;

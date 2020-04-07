@@ -16,6 +16,7 @@
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/common/impression.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/was_activated_option.mojom.h"
 #include "services/network/public/cpp/resource_request_body.h"
@@ -288,6 +289,11 @@ struct NavigateParams {
 
   // Indicates the reload type of this navigation.
   content::ReloadType reload_type = content::ReloadType::NONE;
+
+  // Optional impression associated with this navigation. Only set on
+  // navigations that originate from links with impression attributes. Used for
+  // conversion measurement.
+  base::Optional<content::Impression> impression;
 
  private:
   NavigateParams();

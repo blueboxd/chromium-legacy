@@ -826,6 +826,7 @@
 <translation id="2119349053129246860"><ph name="APP" />에서 열기</translation>
 <translation id="2120297377148151361">활동 및 상호작용</translation>
 <translation id="2120639962942052471"><ph name="PERMISSION" /> 권한이 차단됨</translation>
+<translation id="2121055421682309734">{COUNT,plural, =0{쿠키가 차단됨}=1{쿠키가 차단됨, 예외 1개}other{쿠키가 차단됨, 예외 {COUNT}개}}</translation>
 <translation id="2121825465123208577">크기 조정</translation>
 <translation id="2122305276694332719">숨겨진 네트워크에 자동 연결하면 다른 사용자가 내 기기 및 일부 네트워크 설정을 볼 수 있으므로 권장되지 않습니다.</translation>
 <translation id="2123766928840368256">다른 파일 선택</translation>
@@ -859,7 +860,6 @@
 <translation id="2154484045852737596">카드 수정</translation>
 <translation id="2154710561487035718">URL 복사</translation>
 <translation id="2155772377859296191"><ph name="WIDTH" />x<ph name="HEIGHT" />처럼 보입니다.</translation>
-<translation id="2156283799932971644">일부 시스템 정보와 페이지 콘텐츠를 Google로 전송하여 세이프 브라우징을 개선하도록 도와주세요.</translation>
 <translation id="2156294658807918600">서비스 워커: <ph name="SCRIPT_URL" /></translation>
 <translation id="2157474325782140681">추가 기능을 사용하려면 이 Chromebook과 호환되는 Dell 도킹 스테이션을 사용하세요.</translation>
 <translation id="215753907730220065">전체화면 종료</translation>
@@ -991,7 +991,6 @@
 <translation id="2326931316514688470">앱 새로고침(&amp;R)</translation>
 <translation id="2327492829706409234">앱 사용</translation>
 <translation id="2329597144923131178">로그인하면 모든 기기에서 북마크, 방문 기록, 비밀번호, 기타 설정을 사용할 수 있습니다.</translation>
-<translation id="2330607597130465898">보호되지 않음</translation>
 <translation id="2332131598580221120">스토어에서 보기</translation>
 <translation id="2332192922827071008">환경설정 열기</translation>
 <translation id="2332742915001411729">기본 설정으로 돌아가기</translation>
@@ -1871,7 +1870,6 @@
 <translation id="3492788708641132712">동기화가 작동하지 않습니다. 다시 로그인하세요.</translation>
 <translation id="3493486281776271508">인터넷에 연결되어 있어야 합니다.</translation>
 <translation id="3493881266323043047">유효성</translation>
-<translation id="3494155060718700400">위험한 웹사이트, 다운로드 항목 또는 확장 프로그램으로부터 사용자를 보호하지 않습니다(권장하지 않음). Gmail, Google 검색과 같은 다른 Google 서비스에서는 가능한 경우 세이프 브라우징 보호가 계속 제공됩니다.</translation>
 <translation id="3494769164076977169">사이트에서 첫 파일 다운로드 후 자동으로 파일을 다운로드하려고 할 때 확인(권장)</translation>
 <translation id="3495660573538963482">Google 어시스턴트 설정</translation>
 <translation id="3496213124478423963">축소</translation>
@@ -2920,7 +2918,6 @@
 <translation id="4920887663447894854">이 페이지에서 사용자 위치 추적이 차단된 사이트는 다음과 같습니다.</translation>
 <translation id="49226369361073053">{0,plural, =0{지금 기기 업데이트}=1{1초 내 기기 업데이트}other{#초 내 기기 업데이트}}</translation>
 <translation id="492299503953721473">Android 앱 삭제</translation>
-<translation id="4923279099980110923">네, 돕고 싶습니다.</translation>
 <translation id="4924352752174756392">12배</translation>
 <translation id="4925320384394644410">포트가 여기에 표시됩니다</translation>
 <translation id="4925542575807923399">이 계정이 멀티 로그인 세션에서 처음으로 로그인하는 계정이 되도록 계정 관리자가 요청합니다.</translation>
@@ -3234,7 +3231,6 @@
 <translation id="5362741141255528695">비공개 키 파일을 선택합니다.</translation>
 <translation id="5363109466694494651">Powerwash 및 되돌리기</translation>
 <translation id="5365881113273618889">선택한 폴더에 민감한 파일이 포함되어 있습니다. 이 폴더에 '<ph name="APP_NAME" />' 영구 쓰기 액세스 권한을 부여하시겠습니까?</translation>
-<translation id="5367091008316207019">파일 읽는 중..</translation>
 <translation id="5368720394188453070">휴대전화가 잠겨있습니다. 이용하려면 기기를 잠금 해제하세요.</translation>
 <translation id="5368779022775404937"><ph name="REALM" /> 로그인</translation>
 <translation id="5369491905435686894">마우스 가속 사용</translation>
@@ -5960,7 +5956,6 @@
 <translation id="8985264973231822211"><ph name="DEVICE_LAST_ACTIVATED_TIME" />일 전에 사용</translation>
 <translation id="8986362086234534611">저장 안함</translation>
 <translation id="8986494364107987395">사용 통계 및 비정상 종료 보고서를 Google에 자동으로 전송합니다.</translation>
-<translation id="8986651757229422279"><ph name="ORIGIN_NAME" />에서 저장한 모든 데이터와 쿠키 및 설치된 앱이 삭제됩니다.</translation>
 <translation id="8987927404178983737">월</translation>
 <translation id="8991520179165052608">사이트에서 마이크를 사용할 수 있습니다.</translation>
 <translation id="899403249577094719">Netscape Certificate Base URL</translation>

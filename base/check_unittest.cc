@@ -6,6 +6,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
+#include "base/test/gtest_util.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -56,7 +57,7 @@ class ScopedCheckExpectation {
 #if defined(OFFICIAL_BUILD) && defined(NDEBUG)
 #define EXPECT_CHECK(msg, check_expr) \
   do {                                \
-    EXPECT_DEATH(check_expr, "");     \
+    EXPECT_CHECK_DEATH(check_expr);   \
   } while (0)
 #else
 #define EXPECT_CHECK(msg, check_expr)                          \

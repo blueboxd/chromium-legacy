@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/login/app_launch_controller.h"
 
-#include "ash/public/cpp/ash_features.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -27,7 +26,6 @@
 #include "chrome/browser/chromeos/app_mode/startup_app_launcher.h"
 #include "chrome/browser/chromeos/login/enterprise_user_session_metrics.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -167,18 +165,7 @@ void AppLaunchController::StartAppLaunch(bool is_auto_launch) {
 
   RecordKioskLaunchUMA(is_auto_launch);
 
-  // Ensure WebUILoginView is enabled so that bailout shortcut key works.
-  if (ash::features::IsViewsLoginEnabled()) {
-    host_->GetLoginDisplay()->SetUIEnabled(true);
-    login_screen_visible_ = true;
-  } else {
-    host_->GetWebUILoginView()->SetUIEnabled(true);
-    login_screen_visible_ = host_->GetWebUILoginView()->webui_visible();
-    if (!login_screen_visible_) {
-      registrar_.Add(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-                     content::NotificationService::AllSources());
-    }
-  }
+  host_->GetLoginDisplay()->SetUIEnabled(true);
 
   launch_splash_start_time_ = base::TimeTicks::Now().ToInternalValue();
 
@@ -269,17 +256,6 @@ void AppLaunchController::OnConfigureNetwork() {
 void AppLaunchController::OnOwnerSigninSuccess() {
   ShowNetworkConfigureUIWhenReady();
   signin_screen_.reset();
-}
-
-void AppLaunchController::Observe(int type,
-                                  const content::NotificationSource& source,
-                                  const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE, type);
-  DCHECK(!login_screen_visible_);
-  login_screen_visible_ = true;
-  launch_splash_start_time_ = base::TimeTicks::Now().ToInternalValue();
-  if (launcher_ready_)
-    OnReadyToLaunch();
 }
 
 void AppLaunchController::OnCancelAppLaunch() {
@@ -517,9 +493,6 @@ void AppLaunchController::OnReadyToLaunch() {
     return;
 
   if (network_config_requested_)
-    return;
-
-  if (!login_screen_visible_)
     return;
 
   if (splash_wait_timer_.IsRunning())

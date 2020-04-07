@@ -3473,6 +3473,11 @@
     "expiry_milestone": 85
   },
   {
+    "name": "remote-copy-persistent-notification",
+    "owners": [ "//chrome/browser/sharing/OWNERS" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "remote-copy-progress-notification",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
     "expiry_milestone": 85

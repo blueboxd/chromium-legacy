@@ -16,6 +16,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -113,6 +114,8 @@ class AutofillUiTest : public InProcessBrowserTest,
   // ends up going off that the |event| doesn't have an |os_event| associated
   // with it.
   content::RenderWidgetHost::KeyPressEventCallback key_press_event_sink_;
+
+  std::unique_ptr<ui::ScopedAnimationDurationScaleMode> disable_animation_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillUiTest);
 };

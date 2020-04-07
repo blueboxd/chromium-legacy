@@ -607,10 +607,6 @@ const base::Feature kVrBrowsingFeedback{"VrBrowsingFeedback",
 const base::Feature kWebApkAdaptiveIcon{"WebApkAdaptiveIcon",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
-static jboolean JNI_ChromeFeatureList_IsInitialized(JNIEnv* env) {
-  return !!base::FeatureList::GetInstance();
-}
-
 static jboolean JNI_ChromeFeatureList_IsEnabled(
     JNIEnv* env,
     const JavaParamRef<jstring>& jfeature_name) {

@@ -5892,9 +5892,6 @@ if (!is_android) {
         "../browser/ui/views/tabs/tab_hover_card_bubble_view_interactive_uitest.cc",
         "../browser/ui/views/test/view_event_test_base.cc",
         "../browser/ui/views/test/view_event_test_base.h",
-        "../browser/ui/views/test/view_event_test_platform_part.h",
-        "../browser/ui/views/test/view_event_test_platform_part_chromeos.cc",
-        "../browser/ui/views/test/view_event_test_platform_part_default.cc",
         "../browser/ui/views/toolbar/toolbar_action_view_interactive_uitest.cc",
         "../browser/ui/views/toolbar/toolbar_view_interactive_uitest.cc",
         "../browser/ui/views/translate/translate_bubble_test_utils_views.cc",
@@ -5947,12 +5944,8 @@ if (!is_android) {
         "//chrome/browser/media/router:test_support",
         "//chromeos/dbus",
       ]
-      sources -= [
-        "../browser/ui/signin_view_controller_interactive_uitest.cc",
-
-        # Use only the _chromeos version on Ash / Chrome OS.
-        "../browser/ui/views/test/view_event_test_platform_part_default.cc",
-      ]
+      sources -=
+          [ "../browser/ui/signin_view_controller_interactive_uitest.cc" ]
       sources +=
           [ "../browser/ui/app_list/app_list_client_interactive_uitest.cc" ]
 

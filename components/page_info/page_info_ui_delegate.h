@@ -12,7 +12,7 @@
 
 class PageInfoUiDelegate {
  public:
-  ~PageInfoUiDelegate() = default;
+  virtual ~PageInfoUiDelegate() = default;
 #if !defined(OS_ANDROID)
   virtual bool IsBlockAutoPlayEnabled() = 0;
 #endif

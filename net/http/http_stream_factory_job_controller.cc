@@ -1105,8 +1105,8 @@ quic::ParsedQuicVersion HttpStreamFactory::JobController::SelectQuicVersion(
   if (advertised_versions.empty())
     return supported_versions[0];
 
-  for (const quic::ParsedQuicVersion& supported : supported_versions) {
-    for (const quic::ParsedQuicVersion& advertised : advertised_versions) {
+  for (const quic::ParsedQuicVersion& advertised : advertised_versions) {
+    for (const quic::ParsedQuicVersion& supported : supported_versions) {
       if (supported == advertised) {
         DCHECK_NE(quic::UnsupportedQuicVersion(), supported);
         return supported;

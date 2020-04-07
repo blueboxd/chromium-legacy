@@ -59,6 +59,17 @@ bool AppListPage::ShouldShowSearchBox() const {
   return true;
 }
 
+void AppListPage::AnimateOpacity(float current_progress,
+                                 AppListViewState target_view_state,
+                                 const OpacityAnimator& animator) {
+  animator.Run(this, target_view_state != AppListViewState::kClosed);
+}
+
+void AppListPage::AnimateYPosition(AppListViewState target_view_state,
+                                   const TransformAnimator& animator) {
+  animator.Run(layer(), this);
+}
+
 gfx::Rect AppListPage::GetAboveContentsOffscreenBounds(
     const gfx::Size& size) const {
   gfx::Rect rect(size);

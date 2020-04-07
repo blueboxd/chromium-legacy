@@ -105,6 +105,7 @@
 <translation id="2268813581635650749">سبھی سے سائن آؤٹ کریں</translation>
 <translation id="2277103315734023688">آگے کریں</translation>
 <translation id="2292698582925480719">ڈسپلے اسکیل</translation>
+<translation id="2295777434187870477">مائیک آن ہے، ٹوگل کرنے سے ان پٹ خاموش ہو جائے گا۔</translation>
 <translation id="2298170939937364391">‏فُل اسکرین میگنیفائر فعال ہے۔ اسے ٹوگل کر کے بند کرنے کے لیے Ctrl+Search+M کو دوبارہ دبائیں۔</translation>
 <translation id="2302092602801625023">‏یہ اکاؤنٹ Family Link کے زیر نظم ہے</translation>
 <translation id="2303600792989757991">ونڈو کا عمومی جائزہ ٹوگل کریں</translation>
@@ -138,6 +139,7 @@
 <translation id="2658778018866295321">کلک کریں اور گھسیٹیں</translation>
 <translation id="2700493154570097719">اپنا کی بورڈ سیٹ کریں</translation>
 <translation id="2704781753052663061">‏Wi-Fi کے دیگر نیٹ ورکس میں شامل ہوں</translation>
+<translation id="2705001408393684014">مائیک ٹوگل کریں۔ <ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">نائٹ لائٹ</translation>
 <translation id="2727977024730340865">ایک کم پاور کے چارجر میں پلگ ان ہے۔ بیٹری چارجنگ ممکن ہے بھروسہ مند نہ ہو۔</translation>
 <translation id="2792498699870441125">‏Alt+تلاش</translation>
@@ -296,6 +298,7 @@
 <translation id="4665114317261903604">ڈسٹرب نہ کریں کو ٹوگل کریں۔ <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">والدین کے کوڈ سے آلہ غیر مقفل کریں</translation>
 <translation id="4702647871202761252">رازداری کی اسکرین آف ہے</translation>
+<translation id="4705716602320768426">تاثرات فائل کریں</translation>
 <translation id="4710243778082831592">‏IME کی ترتیبات</translation>
 <translation id="4731797938093519117">والدین کی رسائی</translation>
 <translation id="4734965478015604180">افقی</translation>
@@ -376,6 +379,7 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">آن</translation>
+<translation id="5920710855273935292">مائیک خاموش کیا ہوا ہے۔</translation>
 <translation id="5947494881799873997">واپس لوٹیں</translation>
 <translation id="595202126637698455">کارکردگی کی ٹریسنگ فعال کر دی گئی</translation>
 <translation id="5957083217255311415">موبائل ڈیٹا بند ہے۔</translation>

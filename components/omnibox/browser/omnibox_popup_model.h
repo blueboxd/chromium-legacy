@@ -233,10 +233,10 @@ class OmniboxPopupModel {
   // Returns new selection.
   Selection ClearSelectionState();
 
- private:
   // Returns true if the |selection| is available according to result matches.
   bool IsSelectionAvailable(Selection selection) const;
 
+ private:
   // Returns the next line state that can be applied for given |from| selection,
   // with |direction| indicating the direction of step. May return NO_STATE.
   LineState GetNextAvailableLineState(Selection from,

@@ -157,10 +157,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         return false;
     }
 
-    protected boolean isInitialized() {
-        return mIsInitialized;
-    }
-
     protected WebappInfo createWebappInfo(Intent intent) {
         if (intent == null) return WebappInfo.createEmpty();
 
@@ -552,10 +548,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         }
         ScreenOrientationProvider.getInstance().lockOrientation(
                 getWindowAndroid(), (byte) mWebappInfo.orientation());
-    }
-
-    protected boolean isSplashShowing() {
-        return mSplashController.isSplashShowing();
     }
 
     @Override

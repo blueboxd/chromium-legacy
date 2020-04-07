@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/system/accessibility/tray_accessibility.h"
 #include "ash/system/tray/actionable_view.h"
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "base/bind.h"
@@ -98,6 +99,8 @@ class HoverHighlightView : public ActionableView {
   TriView* tri_view() { return tri_view_; }
 
  private:
+  friend class TrayAccessibilityTest;
+
   // Adds the image and label to the row with the label being styled using
   // |font_style|.
   void DoAddIconAndLabel(const gfx::ImageSkia& image,

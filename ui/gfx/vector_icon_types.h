@@ -46,7 +46,12 @@ namespace gfx {
   DECLARE_VECTOR_COMMAND(CUBIC_TO)                                             \
   DECLARE_VECTOR_COMMAND(R_CUBIC_TO)                                           \
   DECLARE_VECTOR_COMMAND(CUBIC_TO_SHORTHAND)                                   \
+  DECLARE_VECTOR_COMMAND(QUADRATIC_TO)                                         \
+  DECLARE_VECTOR_COMMAND(R_QUADRATIC_TO)                                       \
+  DECLARE_VECTOR_COMMAND(QUADRATIC_TO_SHORTHAND)                               \
+  DECLARE_VECTOR_COMMAND(R_QUADRATIC_TO_SHORTHAND)                             \
   DECLARE_VECTOR_COMMAND(CIRCLE)                                               \
+  DECLARE_VECTOR_COMMAND(OVAL)                                                 \
   DECLARE_VECTOR_COMMAND(ROUND_RECT)                                           \
   DECLARE_VECTOR_COMMAND(CLOSE)                                                \
   /* Sets the dimensions of the canvas in dip. */                              \

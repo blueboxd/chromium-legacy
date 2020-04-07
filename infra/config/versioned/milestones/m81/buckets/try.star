@@ -163,7 +163,6 @@ try_.chromium_linux_builder(
 
 try_.chromium_linux_builder(
     name = 'linux-ozone-rel',
-    tryjob = try_.job(),
 )
 
 try_.chromium_linux_builder(

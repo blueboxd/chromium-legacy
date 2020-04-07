@@ -2259,3 +2259,35 @@ CrSettingsBasicPageTest.prototype = {
 TEST_F('CrSettingsBasicPageTest', 'All', function() {
   mocha.run();
 });
+
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsAdvancedPageTest() {}
+
+CrSettingsAdvancedPageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'settings_page_test_util.js',
+    'advanced_page_test.js',
+  ]),
+};
+
+// Times out on debug builders because the Settings page can take several
+// seconds to load in a Release build and several times that in a Debug build.
+// See https://crbug.com/558434.
+GEN('#if !defined(NDEBUG)');
+GEN('#define MAYBE_Load DISABLED_Load');
+GEN('#else');
+GEN('#define MAYBE_Load Load');
+GEN('#endif');
+
+TEST_F('CrSettingsAdvancedPageTest', 'MAYBE_Load', function() {
+  mocha.run();
+});

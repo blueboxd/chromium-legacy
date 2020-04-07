@@ -36,10 +36,6 @@ const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {
 
 }  // namespace
 
-static jboolean JNI_ContentSettingsFeatureList_IsInitialized(JNIEnv* env) {
-  return !!base::FeatureList::GetInstance();
-}
-
 static jboolean JNI_ContentSettingsFeatureList_IsEnabled(
     JNIEnv* env,
     const JavaParamRef<jstring>& jfeature_name) {

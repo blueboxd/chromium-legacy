@@ -463,24 +463,28 @@ void OmniboxResultView::Layout() {
                               suggestion_height);
 
   if (OmniboxFieldTrial::IsSuggestionButtonRowEnabled()) {
+    const auto check_state = [=](auto state) {
+      return popup_contents_view_->model()->IsSelectionAvailable(
+          OmniboxPopupModel::Selection(model_index_, state));
+    };
     int start_indent = OmniboxMatchCellView::GetTextIndent();
     // This button_indent strictly increases with each button added.
     int button_indent = start_indent;
-    if (match_.associated_keyword) {
+    if (check_state(OmniboxPopupModel::FOCUSED_BUTTON_KEYWORD)) {
       button_indent =
           LayoutPillButton(keyword_button_, button_indent, suggestion_height);
     } else if (keyword_button_->GetVisible()) {
       // Setting visibility does lots of work, even if not changing.
       keyword_button_->SetVisible(false);
     }
-    if (match_.pedal) {
+    if (check_state(OmniboxPopupModel::FOCUSED_BUTTON_PEDAL)) {
       pedal_button_->SetText(match_.pedal->GetLabelStrings().hint);
       button_indent =
           LayoutPillButton(pedal_button_, button_indent, suggestion_height);
     } else if (pedal_button_->GetVisible()) {
       pedal_button_->SetVisible(false);
     }
-    if (match_.has_tab_match) {
+    if (check_state(OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH)) {
       button_indent = LayoutPillButton(tab_switch_button_, button_indent,
                                        suggestion_height);
     } else if (tab_switch_button_->GetVisible()) {

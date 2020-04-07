@@ -28,16 +28,10 @@ const base::FilePath::CharType kDatabaseName[] =
     FILE_PATH_LITERAL("Conversions");
 
 std::string SerializeOrigin(const url::Origin& origin) {
-  // Conversion API is only designed to be used for secure contexts (targets and
-  // reporting endpoints). We should have filtered out bad origins at a higher
-  // layer.
-  //
-  // Because we only allow https origins to use the API, we could potentially
-  // omit the scheme from storage to save 8 bytes per origin. However this would
-  // require maintaining our own serialization logic and also complicates
-  // extending storage to other scheme in the future.
-  DCHECK(!origin.opaque());
-  DCHECK_EQ(url::kHttpsScheme, origin.scheme());
+  // TODO(johnidel): Conversion API is only designed to be used for secure
+  // contexts (targets and reporting endpoints). We should have filtered out bad
+  // origins at a higher layer. When impression origin is properly available,
+  // this can be enforced via DCHECK.
   return origin.Serialize();
 }
 
@@ -91,6 +85,12 @@ bool ConversionStorageSql::Initialize() {
 void ConversionStorageSql::StoreImpression(
     const StorableImpression& impression) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Cleanup any impression that may be expired by this point. This is done when
+  // an impression is added to prevent additional logic for cleaning the table
+  // while providing a guarantee that the size of the table is proportional to
+  // the number of active impression.
+  DeleteExpiredImpressions();
 
   // Wrap the deactivation and insertion in the same transaction. If the
   // deactivation fails, we do not want to store the new impression as we may

@@ -13,7 +13,7 @@ class Profile;
 class ChromePageInfoUiDelegate : public PageInfoUiDelegate {
  public:
   explicit ChromePageInfoUiDelegate(Profile* profile);
-  ~ChromePageInfoUiDelegate() = default;
+  ~ChromePageInfoUiDelegate() override = default;
 
   // PageInfoUiDelegate implementation
 #if !defined(OS_ANDROID)
@@ -21,7 +21,6 @@ class ChromePageInfoUiDelegate : public PageInfoUiDelegate {
 #endif
   permissions::PermissionResult GetPermissionStatus(ContentSettingsType type,
                                                     const GURL& url) override;
-
  private:
   Profile* profile_;
 };

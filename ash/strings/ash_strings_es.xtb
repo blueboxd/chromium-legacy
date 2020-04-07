@@ -105,6 +105,7 @@
 <translation id="2268813581635650749">Cerrar sesiones</translation>
 <translation id="2277103315734023688">Ir hacia delante</translation>
 <translation id="2292698582925480719">Escala de pantalla</translation>
+<translation id="2295777434187870477">El micrófono está activado. Utiliza el botón para silenciarlo.</translation>
 <translation id="2298170939937364391">Se ha habilitado la lupa de pantalla completa. Pulsa Ctrl + tecla de búsqueda + M de nuevo para desactivarla.</translation>
 <translation id="2302092602801625023">Esta cuenta se gestiona con Family Link</translation>
 <translation id="2303600792989757991">Activar descripción general de ventanas</translation>
@@ -138,6 +139,7 @@
 <translation id="2658778018866295321">Hacer clic y arrastrar</translation>
 <translation id="2700493154570097719">Elegir el teclado</translation>
 <translation id="2704781753052663061">Conectarse a otras redes Wi‑Fi</translation>
+<translation id="2705001408393684014">Activar o desactivar micrófono. <ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">Luz nocturna</translation>
 <translation id="2727977024730340865">Conectado a un cargador de baja potencia. Es posible que la carga de la batería no sea fiable.</translation>
 <translation id="2792498699870441125">Alt+tecla de búsqueda</translation>
@@ -297,6 +299,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="4665114317261903604">Activar o desactivar el modo No molestar. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Desbloquear el dispositivo con código parental</translation>
 <translation id="4702647871202761252">La pantalla de privacidad está desactivada</translation>
+<translation id="4705716602320768426">Comentarios sobre el archivo</translation>
 <translation id="4710243778082831592">Ajustes de IME</translation>
 <translation id="4731797938093519117">Acceso parental</translation>
 <translation id="4734965478015604180">Horizontal</translation>
@@ -377,6 +380,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="5901316534475909376">Mayús+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Activado</translation>
+<translation id="5920710855273935292">El micrófono está silenciado.</translation>
 <translation id="5947494881799873997">Deshacer</translation>
 <translation id="595202126637698455">Se ha habilitado el control del rendimiento</translation>
 <translation id="5957083217255311415">Los datos móviles están desactivados.</translation>

@@ -19,6 +19,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/child_process_host.h"
+#include "content/public/common/impression.h"
 #include "content/public/common/referrer.h"
 #include "ipc/ipc_message.h"
 #include "services/network/public/cpp/resource_request_body.h"
@@ -137,6 +138,11 @@ struct CONTENT_EXPORT OpenURLParams {
 
   // Indicates if this navigation is a reload.
   ReloadType reload_type;
+
+  // Optional impression associated with this navigation. Only set on
+  // navigations that originate from links with impression attributes. Used for
+  // conversion measurement.
+  base::Optional<Impression> impression;
 };
 
 class PageNavigator {

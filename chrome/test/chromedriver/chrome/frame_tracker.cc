@@ -121,28 +121,6 @@ Status FrameTracker::OnEvent(DevToolsClient* client,
         return Status(kUnknownError, method + " has invalid 'frameId' value");
     }
 
-    if (context->HasKey("isDefault")) {
-      // TODO(samuong): remove this when we stop supporting Chrome 53.
-      if (!context->GetBoolean("isDefault", &is_default))
-        return Status(kUnknownError, method + " has invalid 'isDefault' value");
-    }
-
-    if (context->HasKey("frameId")) {
-      // TODO(samuong): remove this when we stop supporting Chrome 53.
-      if (!context->GetString("frameId", &frame_id))
-        return Status(kUnknownError, method + " has invalid 'frameId' value");
-    }
-
-    if (context->HasKey("type")) {
-      // Before crrev.com/381172, the optional |type| field can be used to
-      // determine whether we're looking at the default context.
-      // TODO(samuong): remove this when we stop supporting Chrome 50.
-      std::string type;
-      if (!context->GetString("type", &type))
-        return Status(kUnknownError, method + " has invalid 'context.type'");
-      is_default = type != "Extension";  // exclude content scripts
-    }
-
     if (is_default && !frame_id.empty())
       frame_to_context_map_[frame_id] = context_id;
   } else if (method == "Runtime.executionContextDestroyed") {

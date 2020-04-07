@@ -351,7 +351,7 @@ void TrayBubbleView::ChangeAnchorAlignment(ShelfAlignment alignment) {
 }
 
 bool TrayBubbleView::IsAnchoredToStatusArea() const {
-  return true;
+  return params_.is_anchored_to_status_area;
 }
 
 void TrayBubbleView::StopReroutingEvents() {

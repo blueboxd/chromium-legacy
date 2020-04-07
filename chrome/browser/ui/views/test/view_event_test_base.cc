@@ -6,21 +6,26 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/views/test/view_event_test_platform_part.h"
 #include "chrome/test/base/chrome_unit_test_suite.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "mojo/core/embedder/embedder.h"
-#include "ui/base/clipboard/clipboard.h"
-#include "ui/base/ime/init/input_method_initializer.h"
-#include "ui/compositor/test/test_context_factories.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+#include "ui/display/screen.h"
+
+#if defined(USE_X11)
+#include "ui/views/test/test_desktop_screen_x11.h"
+#else
+#include "ui/views/widget/desktop_aura/desktop_screen.h"
+#endif
+#endif
 
 namespace {
 
@@ -83,9 +88,26 @@ ViewEventTestBase::ViewEventTestBase() {
   // Mojo when starting. This only works because each interactive_ui_test runs
   // in a new process.
   mojo::core::Init();
+
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+  // TODO(pkasting): Determine why the TestScreen in AuraTestHelper is
+  // insufficient for these tests, then either bolster/replace it or fix the
+  // tests.
+  DCHECK(!display::Screen::GetScreen());
+#if defined(USE_X11)
+  display::Screen::SetScreenInstance(
+      views::test::TestDesktopScreenX11::GetInstance());
+#else
+  screen_.reset(views::CreateDesktopScreen());
+  display::Screen::SetScreenInstance(screen_.get());
+#endif
+#endif
 }
 
 ViewEventTestBase::~ViewEventTestBase() {
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+  display::Screen::SetScreenInstance(nullptr);
+#endif
   TestingBrowserProcess::DeleteInstance();
 }
 
@@ -95,22 +117,13 @@ void ViewEventTestBase::SetUpTestCase() {
 }
 
 void ViewEventTestBase::SetUp() {
-  ui::InitializeInputMethodForTesting();
+  ChromeViewsTestBase::SetUp();
 
-  // The ContextFactory must exist before any Compositors are created.
-  context_factories_ = std::make_unique<ui::TestContextFactories>(false);
-
-#if defined(OS_MACOSX)
-  views_delegate_.set_context_factory(context_factories_->GetContextFactory());
-#endif
-  views_delegate_.set_use_desktop_native_widgets(true);
-
-  platform_part_.reset(ViewEventTestPlatformPart::Create(
-      context_factories_->GetContextFactory()));
+  test_views_delegate()->set_use_desktop_native_widgets(true);
 
   window_ = views::Widget::CreateWindowWithContext(
       new TestBaseWidgetDelegate(this),  // Owns itself.
-      platform_part_->GetContext());
+      GetContext());
   window_->Show();
 }
 
@@ -120,12 +133,7 @@ void ViewEventTestBase::TearDown() {
     base::RunLoop().RunUntilIdle();
   }
 
-  ui::Clipboard::DestroyClipboardForCurrentThread();
-  platform_part_.reset();
-
-  context_factories_.reset();
-
-  ui::ShutdownInputMethodForTesting();
+  ChromeViewsTestBase::TearDown();
 }
 
 gfx::Size ViewEventTestBase::GetPreferredSizeForContents() const {

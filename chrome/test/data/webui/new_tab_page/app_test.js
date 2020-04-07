@@ -5,6 +5,7 @@
 import 'chrome://new-tab-page/app.js';
 
 import {BrowserProxy} from 'chrome://new-tab-page/browser_proxy.js';
+import {BackgroundSelectionType} from 'chrome://new-tab-page/customize_dialog.js';
 import {assertNotStyle, assertStyle, createTestProxy} from 'chrome://test/new_tab_page/test_support.js';
 import {flushTasks} from 'chrome://test/test_util.m.js';
 
@@ -180,5 +181,45 @@ suite('NewTabPageAppTest', () => {
     // Assert.
     assertTrue(app.$.logo.singleColored);
     assertStyle(app.$.logo, '--ntp-logo-color', 'rgb(255, 0, 0)');
+  });
+
+  test('preview background image', async () => {
+    const theme = createTheme();
+    theme.backgroundImageUrl = {url: 'https://example.com/image.png'};
+    theme.backgroundImageAttribution1 = 'foo';
+    theme.backgroundImageAttribution2 = 'bar';
+    theme.backgroundImageAttributionUrl = {url: 'https://info.com'};
+    testProxy.callbackRouterRemote.setTheme(theme);
+    await testProxy.callbackRouterRemote.$.flushForTesting();
+    assertEquals(
+        'background_image?https://example.com/image.png',
+        app.$.backgroundImage.path);
+    assertEquals('https://info.com/', app.$.backgroundImageAttribution.href);
+    assertEquals('foo', app.$.backgroundImageAttribution1.innerText);
+    assertEquals('bar', app.$.backgroundImageAttribution2.innerText);
+    app.$.customizeButton.click();
+    await flushTasks();
+    const dialog = app.shadowRoot.querySelector('ntp-customize-dialog');
+    dialog.backgroundSelection = {
+      type: BackgroundSelectionType.IMAGE,
+      image: {
+        attribution1: '1',
+        attribution2: '2',
+        attributionUrl: {url: 'https://example.com'},
+        imageUrl: {url: 'https://example.com/other.png'},
+      },
+    };
+    assertEquals(
+        'background_image?https://example.com/other.png',
+        app.$.backgroundImage.path);
+    assertEquals('https://example.com/', app.$.backgroundImageAttribution.href);
+    assertEquals('1', app.$.backgroundImageAttribution1.innerText);
+    assertEquals('2', app.$.backgroundImageAttribution2.innerText);
+    assertFalse(app.$.backgroundImageAttribution2.hidden);
+
+    dialog.backgroundSelection = {type: BackgroundSelectionType.NO_SELECTION};
+    assertEquals(
+        'background_image?https://example.com/image.png',
+        app.$.backgroundImage.path);
   });
 });

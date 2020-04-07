@@ -178,6 +178,12 @@ class JobControllerPeer {
                                                         stream_type);
   }
 
+  static quic::ParsedQuicVersion SelectQuicVersion(
+      HttpStreamFactory::JobController* job_controller,
+      const quic::ParsedQuicVersionVector& advertised_versions) {
+    return job_controller->SelectQuicVersion(advertised_versions);
+  }
+
   static void SetAltJobFailedOnDefaultNetwork(
       HttpStreamFactory::JobController* job_controller) {
     DCHECK(job_controller->alternative_job() != nullptr);
@@ -320,6 +326,10 @@ class HttpStreamFactoryJobControllerTest : public TestWithTaskEnvironment {
       bool alt_job_retried_on_non_default_network);
   void TestMainJobFailsAfterAltJobSucceeded(
       bool alt_job_retried_on_non_default_network);
+  void TestAltSvcVersionSelection(
+      const std::string& alt_svc_header,
+      const quic::ParsedQuicVersion& expected_version,
+      const quic::ParsedQuicVersionVector& supported_versions);
 
   RecordingBoundTestNetLog net_log_;
   TestJobFactory job_factory_;
@@ -3306,11 +3316,6 @@ TEST_F(HttpStreamFactoryJobControllerTest, GetAlternativeServiceInfoFor) {
       HttpStreamRequest::HTTP_STREAM);
   EXPECT_EQ(2u, alt_svc_info.advertised_versions().size());
   // Verify that JobController returns the list of versions specified in set.
-  std::sort(
-      mixed_quic_versions.begin(), mixed_quic_versions.end(),
-      [](const quic::ParsedQuicVersion& a, const quic::ParsedQuicVersion& b) {
-        return a.transport_version < b.transport_version;
-      });
   EXPECT_EQ(mixed_quic_versions, alt_svc_info.advertised_versions());
 
   // Set alternative service for the same server with two unsupported QUIC
@@ -3325,6 +3330,100 @@ TEST_F(HttpStreamFactoryJobControllerTest, GetAlternativeServiceInfoFor) {
   // Verify that JobController returns no valid alternative service.
   EXPECT_EQ(kProtoUnknown, alt_svc_info.alternative_service().protocol);
   EXPECT_EQ(0u, alt_svc_info.advertised_versions().size());
+}
+
+void HttpStreamFactoryJobControllerTest::TestAltSvcVersionSelection(
+    const std::string& alt_svc_header,
+    const quic::ParsedQuicVersion& expected_version,
+    const quic::ParsedQuicVersionVector& supported_versions) {
+  quic_context_.params()->supported_versions = supported_versions;
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://example.com");
+  Initialize(request_info);
+  url::SchemeHostPort origin(request_info.url);
+  NetworkIsolationKey network_isolation_key(
+      url::Origin::Create(GURL("https://example.com")),
+      url::Origin::Create(GURL("https://example.com")));
+  scoped_refptr<HttpResponseHeaders> headers(
+      base::MakeRefCounted<HttpResponseHeaders>(""));
+  headers->AddHeader(alt_svc_header);
+  session_->http_stream_factory()->ProcessAlternativeServices(
+      session_.get(), network_isolation_key, headers.get(), origin);
+  AlternativeServiceInfo alt_svc_info =
+      JobControllerPeer::GetAlternativeServiceInfoFor(
+          job_controller_, request_info, &request_delegate_,
+          HttpStreamRequest::HTTP_STREAM);
+  quic::ParsedQuicVersionVector advertised_versions =
+      alt_svc_info.advertised_versions();
+  quic::ParsedQuicVersion selected_version =
+      JobControllerPeer::SelectQuicVersion(job_controller_,
+                                           advertised_versions);
+  EXPECT_EQ(expected_version, selected_version)
+      << alt_svc_info.ToString() << " "
+      << quic::ParsedQuicVersionVectorToString(advertised_versions);
+}
+
+TEST_F(HttpStreamFactoryJobControllerTest,
+       AltSvcVersionSelectionWithOldFormatFirst) {
+  TestAltSvcVersionSelection(
+      "alt-svc: "
+      "quic=\":443\"; ma=2592000; v=\"46,43\","
+      "h3-Q050=\":443\"; ma=2592000,"
+      "h3-Q049=\":443\"; ma=2592000,"
+      "h3-Q048=\":443\"; ma=2592000,"
+      "h3-Q046=\":443\"; ma=2592000,"
+      "h3-Q043=\":443\"; ma=2592000,"
+      "h3-T050=\":443\"; ma=2592000",
+      quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
+                              quic::QUIC_VERSION_46),
+      quic::AllSupportedVersions());
+}
+
+TEST_F(HttpStreamFactoryJobControllerTest,
+       AltSvcVersionSelectionWithNewFormatFirst) {
+  TestAltSvcVersionSelection(
+      "alt-svc: "
+      "h3-Q050=\":443\"; ma=2592000,"
+      "h3-Q049=\":443\"; ma=2592000,"
+      "h3-Q048=\":443\"; ma=2592000,"
+      "h3-Q046=\":443\"; ma=2592000,"
+      "h3-Q043=\":443\"; ma=2592000,"
+      "h3-T050=\":443\"; ma=2592000,"
+      "quic=\":443\"; ma=2592000; v=\"46,43\"",
+      quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
+                              quic::QUIC_VERSION_50),
+      quic::AllSupportedVersions());
+}
+
+TEST_F(HttpStreamFactoryJobControllerTest,
+       AltSvcVersionSelectionWithInverseOrderingOldFormat) {
+  // Server prefers Q043 but client prefers Q046.
+  TestAltSvcVersionSelection(
+      "alt-svc: quic=\":443\"; ma=2592000; v=\"43,46\"",
+      quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
+                              quic::QUIC_VERSION_43),
+      quic::ParsedQuicVersionVector{
+          quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
+                                  quic::QUIC_VERSION_46),
+          quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
+                                  quic::QUIC_VERSION_43)});
+}
+
+TEST_F(HttpStreamFactoryJobControllerTest,
+       AltSvcVersionSelectionWithInverseOrderingNewFormat) {
+  // Server prefers Q043 but client prefers Q046.
+  TestAltSvcVersionSelection(
+      "alt-svc: "
+      "h3-Q043=\":443\"; ma=2592000,"
+      "h3-Q046=\":443\"; ma=2592000",
+      quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
+                              quic::QUIC_VERSION_43),
+      quic::ParsedQuicVersionVector{
+          quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
+                                  quic::QUIC_VERSION_46),
+          quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
+                                  quic::QUIC_VERSION_43)});
 }
 
 // Tests that if HttpNetworkSession has a non-empty QUIC host allowlist,

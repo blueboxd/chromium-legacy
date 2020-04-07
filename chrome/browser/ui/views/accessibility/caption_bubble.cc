@@ -42,22 +42,17 @@ class CaptionBubbleFrameView : public views::BubbleFrameView {
 
 namespace captions {
 
-CaptionBubble::CaptionBubble(views::View* anchor)
+CaptionBubble::CaptionBubble(views::View* anchor,
+                             base::OnceClosure destroyed_callback)
     : BubbleDialogDelegateView(anchor,
                                views::BubbleBorder::FLOAT,
-                               views::BubbleBorder::Shadow::NO_SHADOW) {
+                               views::BubbleBorder::Shadow::NO_SHADOW),
+      destroyed_callback_(std::move(destroyed_callback)) {
   DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
   DialogDelegate::set_draggable(true);
 }
 
 CaptionBubble::~CaptionBubble() = default;
-
-// static
-void CaptionBubble::CreateAndShow(views::View* anchor) {
-  CaptionBubble* caption_bubble = new CaptionBubble(anchor);
-  views::BubbleDialogDelegateView::CreateBubble(caption_bubble);
-  caption_bubble->GetWidget()->Show();
-}
 
 void CaptionBubble::Init() {
   SetLayoutManager(std::make_unique<views::BoxLayout>(

@@ -32,7 +32,8 @@ NavigationController::LoadURLParams::LoadURLParams(const OpenURLParams& input)
       started_from_context_menu(input.started_from_context_menu),
       blob_url_loader_factory(input.blob_url_loader_factory),
       href_translate(input.href_translate),
-      reload_type(input.reload_type) {
+      reload_type(input.reload_type),
+      impression(input.impression) {
 #if DCHECK_IS_ON()
   DCHECK(input.Valid());
 #endif

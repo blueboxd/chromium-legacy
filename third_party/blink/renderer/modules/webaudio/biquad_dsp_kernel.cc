@@ -47,7 +47,8 @@ static bool hasConstantValues(float* values, int frames_to_process) {
 }
 
 void BiquadDSPKernel::UpdateCoefficientsIfNecessary(int frames_to_process) {
-  if (GetBiquadProcessor()->FilterCoefficientsDirty()) {
+  if (GetBiquadProcessor()->FilterCoefficientsDirty() &&
+      GetBiquadProcessor()->IsAudioRate()) {
     float cutoff_frequency[audio_utilities::kRenderQuantumFrames];
     float q[audio_utilities::kRenderQuantumFrames];
     float gain[audio_utilities::kRenderQuantumFrames];
@@ -79,10 +80,10 @@ void BiquadDSPKernel::UpdateCoefficientsIfNecessary(int frames_to_process) {
       UpdateCoefficients(isConstant ? 1 : frames_to_process, cutoff_frequency,
                          q, gain, detune);
     } else {
-      cutoff_frequency[0] = GetBiquadProcessor()->Parameter1().Value();
-      q[0] = GetBiquadProcessor()->Parameter2().Value();
-      gain[0] = GetBiquadProcessor()->Parameter3().Value();
-      detune[0] = GetBiquadProcessor()->Parameter4().Value();
+      cutoff_frequency[0] = GetBiquadProcessor()->Parameter1().FinalValue();
+      q[0] = GetBiquadProcessor()->Parameter2().FinalValue();
+      gain[0] = GetBiquadProcessor()->Parameter3().FinalValue();
+      detune[0] = GetBiquadProcessor()->Parameter4().FinalValue();
       UpdateCoefficients(1, cutoff_frequency, q, gain, detune);
     }
   }

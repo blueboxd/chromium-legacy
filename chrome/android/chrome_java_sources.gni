@@ -1216,7 +1216,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/omnibox/suggestions/tail/TailSuggestionViewProperties.java",
   "java/src/org/chromium/chrome/browser/omnibox/voice/AssistantVoiceSearchService.java",
   "java/src/org/chromium/chrome/browser/omnibox/voice/VoiceRecognitionHandler.java",
-  "java/src/org/chromium/chrome/browser/page_info/ConnectionInfoPopup.java",
   "java/src/org/chromium/chrome/browser/page_info/PageInfoController.java",
   "java/src/org/chromium/chrome/browser/page_info/PermissionParamsListBuilder.java",
   "java/src/org/chromium/chrome/browser/page_info/SiteSettingsHelper.java",

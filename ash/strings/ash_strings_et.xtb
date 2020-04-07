@@ -105,6 +105,7 @@
 <translation id="2268813581635650749">Logi kõik kasutajad välja</translation>
 <translation id="2277103315734023688">Keri edasi</translation>
 <translation id="2292698582925480719">Ekraani skaala</translation>
+<translation id="2295777434187870477">Mikrofon on sees, lülitamisel sisend vaigistatakse.</translation>
 <translation id="2298170939937364391">Täisekraani suurendus on lubatud. Vajutage selle väljalülitamiseks uuesti klahvikombinatsiooni Ctrl + otsinguklahv + M.</translation>
 <translation id="2302092602801625023">Kontot haldab Family Link</translation>
 <translation id="2303600792989757991">Akna ülevaate sisse- ja väljalülitamine</translation>
@@ -138,6 +139,7 @@
 <translation id="2658778018866295321">Klõpsamine ja lohistamine</translation>
 <translation id="2700493154570097719">Valige klaviatuur</translation>
 <translation id="2704781753052663061">Muude WiFi-võrkudega liitumine</translation>
+<translation id="2705001408393684014">Lülitage mikrofoni. <ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">Öövalgus</translation>
 <translation id="2727977024730340865">Ühendatud väikese energiakuluga laadijaga. Aku laadimine võib olla ebastabiilne.</translation>
 <translation id="2792498699870441125">Alt + otsinguklahv</translation>
@@ -297,6 +299,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4665114317261903604">Lülitab režiimi Mitte segada sisse või välja. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Avage seade lapsevanema koodiga</translation>
 <translation id="4702647871202761252">Privaatsuskuva on väljas</translation>
+<translation id="4705716602320768426">Tagasiside esitamine</translation>
 <translation id="4710243778082831592">IME seaded</translation>
 <translation id="4731797938093519117">Vanema juurdepääs</translation>
 <translation id="4734965478015604180">Horisontaalne</translation>
@@ -377,6 +380,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="5901316534475909376">Tõstuklahv + ESC</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Sees</translation>
+<translation id="5920710855273935292">Mikrofon on vaigistatud.</translation>
 <translation id="5947494881799873997">Ennista</translation>
 <translation id="595202126637698455">Toimivuse jälgimine on lubatud</translation>
 <translation id="5957083217255311415">Mobiilne andmeside on välja lülitatud.</translation>

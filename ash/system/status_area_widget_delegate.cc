@@ -96,10 +96,6 @@ void StatusAreaWidgetDelegate::SetFocusCyclerForTesting(
 }
 
 bool StatusAreaWidgetDelegate::ShouldFocusOut(bool reverse) {
-  // Never bring the focus out if it's not a views-based shelf as it is visually
-  // not on par with the status widget.
-  if (!ShelfWidget::IsUsingViewsShelf())
-    return false;
   views::View* focused_view = GetFocusManager()->GetFocusedView();
   return (reverse && focused_view == GetFirstFocusableChild()) ||
          (!reverse && focused_view == GetLastFocusableChild());

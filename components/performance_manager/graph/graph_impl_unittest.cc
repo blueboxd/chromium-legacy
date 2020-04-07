@@ -10,6 +10,8 @@
 #include "components/performance_manager/graph/frame_node_impl.h"
 #include "components/performance_manager/graph/process_node_impl.h"
 #include "components/performance_manager/graph/system_node_impl.h"
+#include "components/performance_manager/public/graph/node_data_describer.h"
+#include "components/performance_manager/public/graph/node_data_describer_registry.h"
 #include "components/performance_manager/test_support/graph_test_harness.h"
 #include "components/performance_manager/test_support/mock_graphs.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -219,6 +221,127 @@ TEST_F(GraphImplTest, GraphOwned) {
   graph->TearDown();
   graph.reset();
   EXPECT_EQ(2, destructor_count);
+}
+
+namespace {
+
+class TestNodeDataDescriber : public NodeDataDescriber {
+ public:
+  explicit TestNodeDataDescriber(base::StringPiece name) : name_(name) {}
+
+  base::Value DescribeFrameNodeData(const FrameNode* node) const override {
+    base::Value list(base::Value::Type::LIST);
+    list.Append(name_);
+    list.Append("FrameNode");
+    return list;
+  }
+
+  base::Value DescribePageNodeData(const PageNode* node) const override {
+    base::Value list(base::Value::Type::LIST);
+    list.Append(name_);
+    list.Append("PageNode");
+    return list;
+  }
+
+  base::Value DescribeProcessNodeData(const ProcessNode* node) const override {
+    base::Value list(base::Value::Type::LIST);
+    list.Append(name_);
+    list.Append("ProcessNode");
+    return list;
+  }
+
+  base::Value DescribeSystemNodeData(const SystemNode* node) const override {
+    base::Value list(base::Value::Type::LIST);
+    list.Append(name_);
+    list.Append("SystemNode");
+    return list;
+  }
+
+  base::Value DescribeWorkerNodeData(const WorkerNode* node) const override {
+    base::Value list(base::Value::Type::LIST);
+    list.Append(name_);
+    list.Append("WorkerNode");
+    return list;
+  }
+
+ private:
+  const std::string name_;
+};
+
+void AssertDictValueContainsListKey(const base::Value& descr,
+                                    const char* key,
+                                    const char* s1,
+                                    const char* s2) {
+  ASSERT_TRUE(descr.is_dict());
+  const base::Value* v = descr.FindListKey(key);
+  ASSERT_NE(nullptr, v);
+
+  const auto list = v->GetList();
+  ASSERT_EQ(2u, list.size());
+  ASSERT_EQ(list[0], base::Value(s1));
+  ASSERT_EQ(list[1], base::Value(s2));
+}
+
+}  // namespace
+
+TEST_F(GraphImplTest, NodeDataDescribers) {
+  MockSinglePageInSingleProcessGraph mock_graph(graph());
+  NodeDataDescriberRegistry* registry = graph()->GetNodeDataDescriberRegistry();
+
+  // No describers->no description.
+  base::Value descr = registry->DescribeFrameNodeData(mock_graph.frame.get());
+  EXPECT_TRUE(descr.is_none());
+
+  // Test that the default impl does nothing.
+  NodeDataDescriberDefaultImpl default_impl;
+  registry->RegisterDescriber(&default_impl, "default_impl");
+
+  // Test a single non-default describer for each node type.
+  TestNodeDataDescriber d1("d1");
+  registry->RegisterDescriber(&d1, "d1");
+
+  descr = registry->DescribeFrameNodeData(mock_graph.frame.get());
+  AssertDictValueContainsListKey(descr, "d1", "d1", "FrameNode");
+  EXPECT_EQ(1u, descr.DictSize());
+
+  descr = registry->DescribePageNodeData(mock_graph.page.get());
+  AssertDictValueContainsListKey(descr, "d1", "d1", "PageNode");
+  EXPECT_EQ(1u, descr.DictSize());
+
+  descr = registry->DescribeProcessNodeData(mock_graph.process.get());
+  AssertDictValueContainsListKey(descr, "d1", "d1", "ProcessNode");
+  EXPECT_EQ(1u, descr.DictSize());
+
+  descr =
+      registry->DescribeSystemNodeData(graph()->FindOrCreateSystemNodeImpl());
+  AssertDictValueContainsListKey(descr, "d1", "d1", "SystemNode");
+  EXPECT_EQ(1u, descr.DictSize());
+
+  auto worker = CreateNode<WorkerNodeImpl>(WorkerNode::WorkerType::kDedicated,
+                                           mock_graph.process.get());
+  descr = registry->DescribeWorkerNodeData(worker.get());
+  AssertDictValueContainsListKey(descr, "d1", "d1", "WorkerNode");
+  EXPECT_EQ(1u, descr.DictSize());
+
+  // Unregister the default impl now that it's been verified to say nothing
+  // about all node types.
+  registry->UnregisterDescriber(&default_impl);
+
+  // Register a second describer and test one node type.
+  TestNodeDataDescriber d2("d2");
+  registry->RegisterDescriber(&d2, "d2");
+
+  descr = registry->DescribeFrameNodeData(mock_graph.frame.get());
+  EXPECT_EQ(2u, descr.DictSize());
+  AssertDictValueContainsListKey(descr, "d1", "d1", "FrameNode");
+  AssertDictValueContainsListKey(descr, "d2", "d2", "FrameNode");
+
+  registry->UnregisterDescriber(&d2);
+  registry->UnregisterDescriber(&d1);
+
+  // No describers after unregistration->no description.
+  descr = registry->DescribeFrameNodeData(mock_graph.frame.get());
+  EXPECT_TRUE(descr.is_none());
 }
 
 }  // namespace performance_manager

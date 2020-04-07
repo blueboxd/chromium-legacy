@@ -10,6 +10,7 @@ import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.paint_preview.services.PaintPreviewDemoService;
 import org.chromium.chrome.browser.paint_preview.services.PaintPreviewDemoServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.components.paintpreview.player.PlayerManager;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -47,8 +48,9 @@ public class PaintPreviewDemoManager implements Destroyable {
         if (success) {
             mPlayerManager = new PlayerManager(mTab.getUrl(), mTab.getContext(),
                     mPaintPreviewDemoService, String.valueOf(mTab.getId()),
-                    PaintPreviewDemoManager.this::onLinkClicked,
-                    safeToShow -> { addPlayerView(safeToShow); });
+                    PaintPreviewDemoManager.this::onLinkClicked, safeToShow -> {
+                        addPlayerView(safeToShow);
+                    }, TabThemeColorHelper.getBackgroundColor(mTab));
         }
         int toastStringRes = success ? R.string.paint_preview_demo_capture_success
                                      : R.string.paint_preview_demo_capture_failure;

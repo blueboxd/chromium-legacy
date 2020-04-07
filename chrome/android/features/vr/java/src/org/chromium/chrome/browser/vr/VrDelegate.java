@@ -24,6 +24,7 @@ import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.components.page_info.VrHandler;
 import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.DisplayAndroidManager;
 
@@ -32,7 +33,7 @@ import java.util.Collections;
 import java.util.Set;
 
 /** Delegate to call into VR. */
-public abstract class VrDelegate {
+public abstract class VrDelegate implements VrHandler {
     private static final String TAG = "VrDelegate";
     private static final String VR_BOOT_SYSTEM_PROPERTY = "ro.boot.vr";
     private static final String SAMSUNG_GALAXY_PREFIX = "SM-";
@@ -55,6 +56,7 @@ public abstract class VrDelegate {
     public abstract void forceExitVrImmediately();
     public abstract boolean onActivityResultWithNative(int requestCode, int resultCode);
     public abstract void onNativeLibraryAvailable();
+    @Override
     public abstract boolean isInVr();
     public abstract boolean canLaunch2DIntents();
     public abstract boolean onBackPressed();
@@ -140,6 +142,23 @@ public abstract class VrDelegate {
     }
 
     public abstract void onSaveInstanceState(Bundle outState);
+
+    @Override
+    public void exitVrAndRun(Runnable r, @VrHandler.UiType int uiType) {
+        assert (isInVr());
+        switch (uiType) {
+            case UiType.CERTIFICATE_INFO:
+                requestToExitVrAndRunOnSuccess(r, UiUnsupportedMode.UNHANDLED_CERTIFICATE_INFO);
+                return;
+            case UiType.CONNECTION_SECURITY_INFO:
+                requestToExitVrAndRunOnSuccess(
+                        r, UiUnsupportedMode.UNHANDLED_CONNECTION_SECURITY_INFO);
+                return;
+            default:
+                assert false : "Unrecognized uiType";
+                return;
+        }
+    }
 
     /* package */ void setSystemUiVisibilityForVr(Activity activity) {
         activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);

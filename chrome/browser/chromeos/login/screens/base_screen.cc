@@ -26,12 +26,8 @@ void BaseScreen::Hide() {
   is_hidden_ = true;
 }
 
-bool BaseScreen::ShouldSkipScreen() {
+bool BaseScreen::MaybeSkip() {
   return false;
-}
-
-void BaseScreen::Skip() {
-  NOTREACHED() << "Skip methog should be overriden along with ShouldSkipScreen";
 }
 
 void BaseScreen::HandleUserAction(const std::string& action_id) {

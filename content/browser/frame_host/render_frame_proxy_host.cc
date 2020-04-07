@@ -443,7 +443,8 @@ void RenderFrameProxyHost::OnOpenURL(
       params.referrer, ui::PAGE_TRANSITION_LINK,
       params.should_replace_current_entry, download_policy,
       params.post_body ? "POST" : "GET", params.post_body, params.extra_headers,
-      std::move(blob_url_loader_factory), params.user_gesture);
+      std::move(blob_url_loader_factory), params.user_gesture,
+      params.impression);
 }
 
 void RenderFrameProxyHost::CheckCompleted() {

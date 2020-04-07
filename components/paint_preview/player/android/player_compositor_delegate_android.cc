@@ -11,6 +11,7 @@
 #include "base/android/jni_string.h"
 #include "base/android/unguessable_token_android.h"
 #include "base/bind.h"
+#include "base/task/post_task.h"
 #include "base/unguessable_token.h"
 #include "components/paint_preview/browser/paint_preview_base_service.h"
 #include "components/paint_preview/player/android/jni_headers/PlayerCompositorDelegateImpl_jni.h"
@@ -44,6 +45,10 @@ ScopedJavaLocalRef<jobjectArray> ToJavaUnguessableTokenArray(
   }
 
   return ScopedJavaLocalRef<jobjectArray>(env, joa);
+}
+
+ScopedJavaGlobalRef<jobject> ConvertToJavaBitmap(const SkBitmap& sk_bitmap) {
+  return ScopedJavaGlobalRef<jobject>(gfx::ConvertToJavaBitmap(&sk_bitmap));
 }
 
 }  // namespace
@@ -182,8 +187,11 @@ void PlayerCompositorDelegateAndroid::OnBitmapCallback(
     mojom::PaintPreviewCompositor::Status status,
     const SkBitmap& sk_bitmap) {
   if (status == mojom::PaintPreviewCompositor::Status::kSuccess) {
-    base::android::RunObjectCallbackAndroid(
-        j_bitmap_callback, gfx::ConvertToJavaBitmap(&sk_bitmap));
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::TaskPriority::USER_VISIBLE},
+        base::BindOnce(&ConvertToJavaBitmap, sk_bitmap),
+        base::BindOnce(&base::android::RunObjectCallbackAndroid,
+                       j_bitmap_callback));
   } else {
     base::android::RunRunnableAndroid(j_error_callback);
   }

@@ -542,8 +542,10 @@ void RemoteCopyMessageHandler::WriteImageAndShowNotification(
   // On macOS we can't replace a persistent notification with a non-persistent
   // one because they are posted from different sources (app vs xpc). To avoid
   // having both notifications on screen, remove the progress one first.
-  if (!progress_notification_closed_)
+  if (!progress_notification_closed_ &&
+      !base::FeatureList::IsEnabled(kRemoteCopyPersistentNotification)) {
     CancelProgressNotification();
+  }
 #endif  // defined(OS_MACOSX)
 
   std::string notification_id = image_notification_id_;
@@ -585,6 +587,8 @@ void RemoteCopyMessageHandler::ShowNotification(
   }
 
   rich_notification_data.vector_small_image = &kSendTabToSelfIcon;
+  rich_notification_data.never_timeout =
+      base::FeatureList::IsEnabled(kRemoteCopyPersistentNotification);
 
   message_center::NotificationType type =
       use_image_notification ? message_center::NOTIFICATION_TYPE_IMAGE

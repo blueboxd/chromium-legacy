@@ -129,25 +129,23 @@ class TestingGestureRecognizer : public ui::GestureRecognizerImpl {
 
 class TouchEventsViewTest : public ViewEventTestBase {
  public:
-  TouchEventsViewTest() : ViewEventTestBase(), touch_view_(nullptr) {}
+  TouchEventsViewTest() = default;
 
   // ViewEventTestBase:
   void SetUp() override {
-    touch_view_ = new views::View();
     ViewEventTestBase::SetUp();
+
+    auto gesture_recognizer = std::make_unique<TestingGestureRecognizer>();
+    gesture_recognizer_ = gesture_recognizer.get();
     aura::test::EnvTestHelper().SetGestureRecognizer(
-        std::make_unique<TestingGestureRecognizer>());
-    gesture_recognizer_ = static_cast<TestingGestureRecognizer*>(
-        aura::Env::GetInstance()->gesture_recognizer());
+        std::move(gesture_recognizer));
   }
 
-  void TearDown() override {
-    touch_view_ = nullptr;
-    gesture_recognizer_ = nullptr;
-    ViewEventTestBase::TearDown();
+  std::unique_ptr<views::View> CreateContentsView() override {
+    auto touch_view = std::make_unique<views::View>();
+    touch_view_ = touch_view.get();
+    return touch_view;
   }
-
-  views::View* CreateContentsView() override { return touch_view_; }
 
   gfx::Size GetPreferredSizeForContents() const override {
     return gfx::Size(600, 600);

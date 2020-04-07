@@ -80,7 +80,6 @@ jumbo_source_set("common") {
     "loader/mime_sniffing_url_loader.cc",
     "loader/resource_type_util.cc",
     "loader/throttling_url_loader.cc",
-    "loader/throttling_url_loader.h",
     "loader/url_loader_factory_bundle.cc",
     "loader/url_loader_factory_bundle_mojom_traits.cc",
     "loader/url_loader_throttle.cc",
@@ -132,6 +131,8 @@ jumbo_source_set("common") {
 
   deps = [
     "//base",
+    "//media/capture:capture_base",
+    "//media/capture/mojom:video_capture_mojom_support",
     "//mojo/public/cpp/system",
     "//net",
     "//services/metrics/public/cpp:metrics_cpp",

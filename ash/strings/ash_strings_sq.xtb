@@ -105,6 +105,7 @@
 <translation id="2268813581635650749">Dil nga të gjitha</translation>
 <translation id="2277103315734023688">Kërko përpara</translation>
 <translation id="2292698582925480719">Shkalla e ekranit</translation>
+<translation id="2295777434187870477">Mikrofoni është aktiv. Ndryshimi i tij do ta çaktivizojë hyrjen.</translation>
 <translation id="2298170939937364391">"Zmadhuesi i ekranit të plotë" u aktivizua. Shtyp përsëri Ctrl+Kërko+M për ta çaktivizuar.</translation>
 <translation id="2302092602801625023">Kjo llogari menaxhohet nga Family Link</translation>
 <translation id="2303600792989757991">Ndrysho përmbledhjen e dritares</translation>
@@ -138,6 +139,7 @@
 <translation id="2658778018866295321">Kliko dhe zvarrit</translation>
 <translation id="2700493154570097719">Vendos tastierën</translation>
 <translation id="2704781753052663061">Bashkohu me rrjete të tjera Wi-Fi</translation>
+<translation id="2705001408393684014">Aktivizo/çaktivizo mikrofonin. <ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">Drita e natës</translation>
 <translation id="2727977024730340865">E lidhur me një karikues me fuqi të ulët. Ngarkimi i baterisë mund të mos jetë i sigurt.</translation>
 <translation id="2792498699870441125">Alt+Kërko</translation>
@@ -296,6 +298,7 @@
 <translation id="4665114317261903604">Aktivizo/çaktivizo modalitetin "Mos shqetëso". <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Shkyç pajisjen me kodin e prindit</translation>
 <translation id="4702647871202761252">Ekrani i privatësisë është joaktiv</translation>
+<translation id="4705716602320768426">Dërgo komente</translation>
 <translation id="4710243778082831592">Cilësimet e redaktorit IME</translation>
 <translation id="4731797938093519117">Qasja e prindit</translation>
 <translation id="4734965478015604180">Horizontal</translation>
@@ -376,6 +379,7 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Aktiv</translation>
+<translation id="5920710855273935292">Mikrofoni është i çaktivizuar.</translation>
 <translation id="5947494881799873997">Riktheje</translation>
 <translation id="595202126637698455">Gjurmimi i rendimentit u aktivizua</translation>
 <translation id="5957083217255311415">Të dhënat celulare janë çaktivizuar.</translation>

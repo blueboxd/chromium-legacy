@@ -122,6 +122,8 @@ jumbo_source_set("common_sources") {
     "font_cache_dispatcher_win.h",
     "frame_navigate_params.cc",
     "frame_navigate_params.h",
+    "impression.cc",
+    "impression.h",
     "injection_test_mac.h",
     "injection_test_win.h",
     "input_event_ack_source.h",

@@ -537,6 +537,23 @@ void SearchResultPageView::OnShown() {
   ScheduleResultsChangedA11yNotification();
 }
 
+void SearchResultPageView::AnimateYPosition(AppListViewState target_view_state,
+                                            const TransformAnimator& animator) {
+  // Search result page view may host a native view to show answer card results.
+  // The native view hosts use view to widget coordinate conversion to calculate
+  // the native view bounds, and thus depend on the view transform values.
+  // Make sure the view is laid out before starting the transform animation so
+  // native views are not placed according to interim, animated page transform
+  // value.
+  layer()->GetAnimator()->StopAnimatingProperty(
+      ui::LayerAnimationElement::TRANSFORM);
+  if (needs_layout())
+    Layout();
+
+  animator.Run(layer(), this);
+  animator.Run(view_shadow_->shadow()->shadow_layer(), nullptr);
+}
+
 void SearchResultPageView::OnAnimationStarted(AppListState from_state,
                                               AppListState to_state) {
   if (from_state != AppListState::kStateSearchResults &&

@@ -168,6 +168,19 @@ bool HorizontalPageContainer::ShouldShowSearchBox() const {
   return GetSelectedPage()->ShouldShowSearchBox();
 }
 
+void HorizontalPageContainer::AnimateOpacity(float current_progress,
+                                             AppListViewState target_view_state,
+                                             const OpacityAnimator& animator) {
+  apps_container_view_->AnimateOpacity(current_progress, target_view_state,
+                                       animator);
+}
+
+void HorizontalPageContainer::AnimateYPosition(
+    AppListViewState target_view_state,
+    const TransformAnimator& animator) {
+  apps_container_view_->AnimateYPosition(target_view_state, animator);
+}
+
 void HorizontalPageContainer::OnTabletModeChanged(bool started) {
   pagination_controller_->set_is_tablet_mode(started);
 }

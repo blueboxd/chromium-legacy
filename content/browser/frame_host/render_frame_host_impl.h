@@ -1440,6 +1440,20 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // - Ignore any OnUnloadACK sent by the renderer process.
   void DoNotDeleteForTesting();
 
+  // Document-associated data. This is cleared whenever a new document is hosted
+  // by this RenderFrameHost. Please refer to the description at
+  // content/public/browser/render_document_host_user_data.h for more details.
+  base::SupportsUserData::Data* GetRenderDocumentHostUserData(
+      const void* key) const {
+    return document_associated_data_.GetUserData(key);
+  }
+
+  void SetRenderDocumentHostUserData(
+      const void* key,
+      std::unique_ptr<base::SupportsUserData::Data> data) {
+    document_associated_data_.SetUserData(key, std::move(data));
+  }
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -1582,6 +1596,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplTest, ExpectedMainWorldOrigin);
   FRIEND_TEST_ALL_PREFIXES(SecurityExploitBrowserTest,
                            AttemptDuplicateRenderWidgetHost);
+  FRIEND_TEST_ALL_PREFIXES(RenderDocumentHostUserDataTest,
+                           CheckInPendingDeletionState);
 
   class DroppedInterfaceRequestLogger;
 
@@ -2752,6 +2768,15 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   scoped_refptr<WebAuthRequestSecurityChecker>
       webauth_request_security_checker_;
+
+  // Container for arbitrary document-associated feature-specific data. Should
+  // be reset when committing a cross-document navigation in this
+  // RenderFrameHost. Please refer to the description at
+  // content/public/browser/render_document_host_user_data.h for more details.
+  class DocumentAssociatedData : public base::SupportsUserData {
+    friend class RenderFrameHostImpl;
+  };
+  DocumentAssociatedData document_associated_data_;
 
   // This time is used to record the last WebXR DOM Overlay setup request.
   base::TimeTicks last_xr_overlay_setup_time_;

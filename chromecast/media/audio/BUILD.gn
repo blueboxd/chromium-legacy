@@ -29,6 +29,20 @@ cast_source_set("processing") {
     "audio_fader.cc",
     "audio_fader.h",
     "audio_provider.h",
+    "cast_audio_bus.cc",
+    "cast_audio_bus.h",
+  ]
+
+  deps = [ "//base" ]
+
+  # Use fastest possible float math.
+  configs -= [ "//build/config/compiler:default_optimization" ]
+  configs += [ "//build/config/compiler:optimize_speed" ]
+  cflags = [ "-ffast-math" ]
+}
+
+cast_source_set("interleaved_channel_mixer") {
+  sources = [
     "interleaved_channel_mixer.cc",
     "interleaved_channel_mixer.h",
   ]
@@ -37,11 +51,6 @@ cast_source_set("processing") {
     "//base",
     "//media",
   ]
-
-  # Use fastest possible float math.
-  configs -= [ "//build/config/compiler:default_optimization" ]
-  configs += [ "//build/config/compiler:optimize_speed" ]
-  cflags = [ "-ffast-math" ]
 }
 
 cast_source_set("audio") {
@@ -164,6 +173,7 @@ cast_source_set("unittests") {
   ]
 
   deps = [
+    ":interleaved_channel_mixer",
     ":processing",
     "//base",
     "//media",

@@ -63,6 +63,7 @@ class LargeImageView : public views::View {
 
   void OnPaint(gfx::Canvas* canvas) override;
   const char* GetClassName() const override;
+  void OnThemeChanged() override;
 
  private:
   gfx::Size GetResizedImageSize();
@@ -129,6 +130,7 @@ class NotificationInputContainerMD : public views::InkDropHostView,
   void RemoveLayerBeneathView(ui::Layer* layer) override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   SkColor GetInkDropBaseColor() const override;
+  void OnThemeChanged() override;
 
   // Overridden from views::TextfieldController:
   bool HandleKeyEvent(views::Textfield* sender,
@@ -142,6 +144,8 @@ class NotificationInputContainerMD : public views::InkDropHostView,
   views::ImageButton* button() const { return button_; }
 
  private:
+  void SetButtonImage();
+
   NotificationInputDelegate* const delegate_;
 
   views::InkDropContainerView* const ink_drop_container_;
@@ -194,6 +198,7 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   bool IsManuallyExpandedOrCollapsed() const override;
   void SetManuallyExpandedOrCollapsed(bool value) override;
   void OnSettingsButtonPressed(const ui::Event& event) override;
+  void OnThemeChanged() override;
 
   // views::InkDropObserver:
   void InkDropAnimationStarted() override;

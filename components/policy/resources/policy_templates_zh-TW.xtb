@@ -689,7 +689,6 @@
 <translation id="2024476116966025075">設定遠端存取用戶端的網域名稱 (必要)</translation>
 <translation id="2030905906517501646">預設搜尋引擎關鍵字</translation>
 <translation id="203096360153626918">這項政策對 Android 應用程式沒有影響。即使將這項政策設為 <ph name="FALSE" />，Android 應用程式仍可進入全螢幕模式。</translation>
-<translation id="2042881179131103248">配置要停用的攝影機及其設定功能</translation>
 <translation id="2043749682619281558">在登入畫面上啟用游標醒目顯示功能</translation>
 <translation id="2043770014371753404">停用的企業印表機</translation>
 <translation id="2050629715135525072">控管使用者在連線到遠端存取主機後，是否能在用戶端和主機之間傳輸檔案。這項政策不適用於遠端協助連線，這類連線並不支援檔案傳輸。
@@ -2898,7 +2897,6 @@
 
       如果 M76 以下版本 (包含 M76 版) 不設定這項政策，則 <ph name="PRODUCT_NAME" /> 根據預設無法收集及上傳這類記錄。自 M77 版起，針對大多數會受到雲端使用者層級企業政策影響的設定檔，<ph name="PRODUCT_NAME" /> 根據預設可以收集及上傳這類記錄。自 M77 版起 (包含 M80 版)，針對會受到 <ph name="PRODUCT_NAME" /> 內部部署管理影響的設定檔，<ph name="PRODUCT_NAME" /> 根據預設也可以收集及上傳這類記錄。</translation>
 <translation id="5331746669335642668"><ph name="PRODUCT_NAME" /> 雲端政策會覆寫平台政策。</translation>
-<translation id="53381168777357359">設定功能</translation>
 <translation id="5362531528507578966">覆寫預設的背景圖形列印模式。</translation>
 <translation id="5365476955714838841">替代瀏覽器的指令行參數。</translation>
 <translation id="5365946944967967336">在工具列上顯示 [首頁] 按鈕</translation>

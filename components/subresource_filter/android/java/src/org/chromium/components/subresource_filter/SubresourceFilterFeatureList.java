@@ -4,10 +4,10 @@
 
 package org.chromium.components.subresource_filter;
 
+import org.chromium.base.FeatureList;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.base.library_loader.LibraryLoader;
 
 /**
  * Provides an API for querying the status of subresource_filter component Features.
@@ -31,29 +31,12 @@ public class SubresourceFilterFeatureList {
      * @return Whether the feature is enabled or not.
      */
     public static boolean isEnabled(String featureName) {
-        assert isNativeInitialized();
+        assert FeatureList.isNativeInitialized();
         return SubresourceFilterFeatureListJni.get().isEnabled(featureName);
-    }
-
-    /**
-     * @return Whether the native FeatureList is initialized or not.
-     */
-    private static boolean isNativeInitialized() {
-        if (!LibraryLoader.getInstance().isInitialized()) return false;
-        // Even if the native library is loaded, the C++ FeatureList might not be initialized yet.
-        // In that case, accessing it will not immediately fail, but instead cause a crash later
-        // when it is initialized. Return whether the native FeatureList has been initialized,
-        // so the return value can be tested, or asserted for a more actionable stack trace
-        // on failure.
-        //
-        // The FeatureList is however guaranteed to be initialized by the time
-        // AsyncInitializationActivity#finishNativeInitialization is called.
-        return SubresourceFilterFeatureListJni.get().isInitialized();
     }
 
     @NativeMethods
     interface Natives {
-        boolean isInitialized();
         boolean isEnabled(String featureName);
     }
 }

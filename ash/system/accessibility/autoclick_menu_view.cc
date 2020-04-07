@@ -35,24 +35,6 @@ const int kSeparatorHeight = 16;
 
 }  // namespace
 
-// ------ AutoclickMenuBubbleView  ------ //
-
-AutoclickMenuBubbleView::AutoclickMenuBubbleView(
-    TrayBubbleView::InitParams init_params)
-    : TrayBubbleView(init_params) {}
-
-AutoclickMenuBubbleView::~AutoclickMenuBubbleView() {}
-
-bool AutoclickMenuBubbleView::IsAnchoredToStatusArea() const {
-  return false;
-}
-
-const char* AutoclickMenuBubbleView::GetClassName() const {
-  return "AutoclickMenuBubbleView";
-}
-
-// ------ AutoclickMenuView  ------ //
-
 AutoclickMenuView::AutoclickMenuView(AutoclickEventType type,
                                      AutoclickMenuPosition position)
     : left_click_button_(

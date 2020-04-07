@@ -13,6 +13,7 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -311,7 +312,7 @@ void NavigateClientOnUI(const GURL& url,
       WindowOpenDisposition::CURRENT_TAB,
       false /* should_replace_current_entry */, false /* user_gesture */,
       blink::TriggeringEventInfo::kUnknown, std::string() /* href_translate */,
-      nullptr /* blob_url_loader_factory */);
+      nullptr /* blob_url_loader_factory */, base::nullopt);
   new OpenURLObserver(web_contents, frame_tree_node_id, std::move(callback));
 }
 

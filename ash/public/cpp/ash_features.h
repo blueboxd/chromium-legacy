@@ -114,9 +114,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kTrilinearFiltering;
 // Enables running an external binary which provides lock screen authentication.
 ASH_PUBLIC_EXPORT extern const base::Feature kUnlockWithExternalBinary;
 
-// Enables views login.
-ASH_PUBLIC_EXPORT extern const base::Feature kViewsLogin;
-
 // Enables using the BluetoothSystem Mojo interface for Bluetooth operations.
 ASH_PUBLIC_EXPORT extern const base::Feature kUseBluetoothSystemInAsh;
 
@@ -186,8 +183,6 @@ ASH_PUBLIC_EXPORT bool IsPipRoundedCornersEnabled();
 ASH_PUBLIC_EXPORT bool IsSeparateNetworkIconsEnabled();
 
 ASH_PUBLIC_EXPORT bool IsTrilinearFilteringEnabled();
-
-ASH_PUBLIC_EXPORT bool IsViewsLoginEnabled();
 
 ASH_PUBLIC_EXPORT bool IsSupervisedUserDeprecationNoticeEnabled();
 

@@ -72,6 +72,7 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/impression.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/navigation_policy.h"
 #include "content/public/common/page_state.h"
@@ -102,6 +103,7 @@
 #include "content/renderer/history_entry.h"
 #include "content/renderer/history_serialization.h"
 #include "content/renderer/ime_event_guard.h"
+#include "content/renderer/impression_conversions.h"
 #include "content/renderer/input/frame_input_handler_impl.h"
 #include "content/renderer/input/input_target_client_impl.h"
 #include "content/renderer/input/widget_input_handler_manager.h"
@@ -6005,6 +6007,10 @@ void RenderFrameImpl::OpenURL(std::unique_ptr<blink::WebNavigationInfo> info) {
       info->frame_load_type == WebFrameLoadType::kReplaceCurrentItem &&
       render_view_->history_list_length_;
   params.user_gesture = info->has_transient_user_activation;
+
+  if (info->impression)
+    params.impression = ConvertWebImpressionToImpression(*info->impression);
+
   if (GetContentClient()->renderer()->AllowPopup())
     params.user_gesture = true;
 
@@ -6305,6 +6311,7 @@ void RenderFrameImpl::BeginNavigationInternal(
     initiator = base::DictionaryValue::From(
         base::JSONReader::ReadDeprecated(info->devtools_initiator_info.Utf8()));
   }
+
   mojom::BeginNavigationParamsPtr begin_navigation_params =
       mojom::BeginNavigationParams::New(
           GetWebURLRequestHeadersAsString(info->url_request), load_flags,
@@ -6319,7 +6326,11 @@ void RenderFrameImpl::BeginNavigationInternal(
           info->url_request.GetExtraData()->attach_same_site_cookies(),
           info->url_request.TrustTokenParams()
               ? info->url_request.TrustTokenParams()->Clone()
-              : nullptr);
+              : nullptr,
+          info->impression
+              ? base::make_optional<Impression>(
+                    ConvertWebImpressionToImpression(*info->impression))
+              : base::nullopt);
 
   mojo::PendingAssociatedRemote<mojom::NavigationClient>
       navigation_client_remote;

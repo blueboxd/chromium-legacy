@@ -242,7 +242,7 @@ int DatabaseAuthorizer::CreateVTable(const String& table_name,
     return kSQLAuthDeny;
 
   // Allow only the FTS3 extension
-  if (!DeprecatedEqualIgnoringCase(module_name, "fts3"))
+  if (!EqualIgnoringASCIICase(module_name, "fts3"))
     return kSQLAuthDeny;
 
   last_action_changed_database_ = true;

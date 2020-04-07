@@ -12,6 +12,7 @@
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/restore_type.h"
+#include "content/public/common/impression.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/transferrable_url_loader.mojom.h"
 #include "net/base/auth.h"
@@ -331,6 +332,11 @@ class CONTENT_EXPORT NavigationHandle {
   // Returns the value of the hrefTranslate attribute if this navigation was
   // initiated from a link that had that attribute set.
   virtual const std::string& GetHrefTranslate() = 0;
+
+  // Returns, if available, the impression associated with the link clicked to
+  // initiate this navigation. The impression is available for the entire
+  // lifetime of the navigation.
+  virtual const base::Optional<Impression>& GetImpression() = 0;
 
   // Returns, if available, the origin of the document that has initiated the
   // navigation for this NavigationHandle.

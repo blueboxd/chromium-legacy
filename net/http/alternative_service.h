@@ -201,8 +201,7 @@ class NET_EXPORT_PRIVATE AlternativeServiceInfo {
 
   // Lists all the QUIC versions that are advertised by the server and supported
   // by Chrome. If empty, defaults to versions used by the current instance of
-  // the netstack.
-  // This list MUST be sorted in ascending order.
+  // the netstack. This list is sorted according to the server's preference.
   quic::ParsedQuicVersionVector advertised_versions_;
 };
 

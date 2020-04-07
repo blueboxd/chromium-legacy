@@ -24,14 +24,18 @@
         <!-- TODO(davidmunro): Add Icon from
              https://docs.google.com/presentation/d/1cBU0TnQhuorL69NmifWJ1OzLMsu9dihw64Jo031jUZ4/edit#slide=id.g6b38a81213_0_0
           --->
-        <div id="containerUpgradeLabel" class="start">
-          $i18n{crostiniContainerUpgrade}
-          <div class="secondary" id="secondaryText">
+        <div class="start" aria-hidden="true">
+          <div id="containerUpgradeLabel">
+            $i18n{crostiniContainerUpgrade}
+          </div>
+          <div class="secondary" id="containerUpgradeDescription">
             $i18n{crostiniContainerUpgradeSubtext}
           </div>
         </div>
-        <cr-button on-click="onContainerUpgradeClick_"
-            aria-labelledby="upgradeCrostiniLabel"
+        <cr-button id="containerUpgradeButton"
+            on-click="onContainerUpgradeClick_"
+            aria-labelledby="containerUpgradeLabel containerUpgradeButton"
+            aria-describedby="containerUpgradeDescription"
             disabled="[[disableUpgradeButton_]]">
           $i18n{crostiniContainerUpgradeButton}
         </cr-button>
@@ -104,7 +108,9 @@
     </template>
     <template is="dom-if" if="[[!hideCrostiniUninstall_]]">
       <div id="remove" class="settings-box">
-        <div id="removeCrostiniLabel" class="start">$i18n{crostiniRemove}</div>
+        <div id="removeCrostiniLabel" class="start" aria-hidden="true">
+          $i18n{crostiniRemove}
+        </div>
         <cr-button on-click="onRemoveClick_"
             aria-labelledby="removeCrostiniLabel">
           $i18n{crostiniRemoveButton}

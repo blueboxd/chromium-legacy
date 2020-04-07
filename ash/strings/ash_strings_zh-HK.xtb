@@ -105,6 +105,7 @@
 <translation id="2268813581635650749">登出所有使用者</translation>
 <translation id="2277103315734023688">向前快轉</translation>
 <translation id="2292698582925480719">顯示比例</translation>
+<translation id="2295777434187870477">開咗咪高風，切換將會靜音。</translation>
 <translation id="2298170939937364391">已啟用全螢幕放大鏡。再次按下 Ctrl+Search+M 鍵即可停用。</translation>
 <translation id="2302092602801625023">此帳戶由 Family Link 管理</translation>
 <translation id="2303600792989757991">切換視窗總覽</translation>
@@ -138,6 +139,7 @@
 <translation id="2658778018866295321">按一下並拖曳</translation>
 <translation id="2700493154570097719">設定鍵盤</translation>
 <translation id="2704781753052663061">加入其他 Wi-Fi 網絡</translation>
+<translation id="2705001408393684014">切換去咪高風。<ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">夜燈模式</translation>
 <translation id="2727977024730340865">使用低功率充電器，可能導致充電狀態不穩定。</translation>
 <translation id="2792498699870441125">Alt + 搜尋鍵</translation>
@@ -296,6 +298,7 @@
 <translation id="4665114317261903604">切換「請勿騷擾」模式。<ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">使用家長存取碼解鎖裝置</translation>
 <translation id="4702647871202761252">已停用隱私保護畫面</translation>
+<translation id="4705716602320768426">提供意見</translation>
 <translation id="4710243778082831592">輸入法編輯器設定</translation>
 <translation id="4731797938093519117">家長存取</translation>
 <translation id="4734965478015604180">橫向</translation>
@@ -376,6 +379,7 @@
 <translation id="5901316534475909376">Shift + Esc 鍵</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">開啟</translation>
+<translation id="5920710855273935292">咪高風校咗靜音。</translation>
 <translation id="5947494881799873997">還原</translation>
 <translation id="595202126637698455">效能追蹤已啟用</translation>
 <translation id="5957083217255311415">流動數據已關閉。</translation>

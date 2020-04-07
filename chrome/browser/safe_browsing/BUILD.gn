@@ -298,6 +298,7 @@ source_set("verdict_cache_manager_factory") {
   ]
 
   deps = [
+    "//chrome/common",
     "//components/content_settings/core/browser",
     "//components/history/core/browser",
     "//components/keyed_service/content",

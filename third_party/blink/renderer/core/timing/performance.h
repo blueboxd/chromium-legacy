@@ -58,6 +58,7 @@ class TickClock;
 namespace blink {
 
 class PerformanceMarkOptions;
+class EventCounts;
 class ExceptionState;
 class LargestContentfulPaint;
 class LayoutShift;
@@ -97,6 +98,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   virtual MemoryInfo* memory() const;
   virtual ScriptPromise measureMemory(ScriptState*,
                                       ExceptionState& exception_state) const;
+  virtual EventCounts* eventCounts();
 
   // Reduce the resolution to prevent timing attacks. See:
   // http://www.w3.org/TR/hr-time-2/#privacy-security

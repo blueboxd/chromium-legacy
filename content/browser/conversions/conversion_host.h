@@ -5,9 +5,12 @@
 #ifndef CONTENT_BROWSER_CONVERSIONS_CONVERSION_HOST_H_
 #define CONTENT_BROWSER_CONVERSIONS_CONVERSION_HOST_H_
 
+#include <memory>
+
 #include "base/gtest_prod_util.h"
 #include "content/browser/conversions/conversion_manager.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_receiver_set.h"
 #include "third_party/blink/public/mojom/conversions/conversions.mojom.h"
 
@@ -19,7 +22,8 @@ class WebContents;
 // Class responsible for listening to conversion events originating from blink,
 // and verifying that they are valid. Owned by the WebContents. Lifetime is
 // bound to lifetime of the WebContents.
-class CONTENT_EXPORT ConversionHost : public blink::mojom::ConversionHost {
+class CONTENT_EXPORT ConversionHost : public WebContentsObserver,
+                                      public blink::mojom::ConversionHost {
  public:
   static std::unique_ptr<ConversionHost> CreateForTesting(
       WebContents* web_contents,
@@ -41,14 +45,15 @@ class CONTENT_EXPORT ConversionHost : public blink::mojom::ConversionHost {
   // blink::mojom::ConversionHost:
   void RegisterConversion(blink::mojom::ConversionPtr conversion) override;
 
+  // WebContentsObserver:
+  void DidFinishNavigation(NavigationHandle* navigation_handle) override;
+
   // Sets the target frame on |receiver_|.
   void SetCurrentTargetFrameForTesting(RenderFrameHost* render_frame_host);
 
   // Gives access to a ConversionManager implementation to forward impressions
   // and conversion registrations to.
   std::unique_ptr<ConversionManager::Provider> conversion_manager_provider_;
-
-  WebContents* web_contents_;
 
   WebContentsFrameReceiverSet<blink::mojom::ConversionHost> receiver_;
 };

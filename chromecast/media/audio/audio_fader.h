@@ -11,10 +11,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chromecast/media/audio/audio_provider.h"
-
-namespace media {
-class AudioBus;
-}  // namespace media
+#include "chromecast/media/audio/cast_audio_bus.h"
 
 namespace chromecast {
 namespace media {
@@ -87,7 +84,7 @@ class AudioFader : public AudioProvider {
   const double playback_rate_;
 
   State state_ = State::kSilent;
-  std::unique_ptr<::media::AudioBus> fade_buffer_;
+  std::unique_ptr<CastAudioBus> fade_buffer_;
   int buffered_frames_ = 0;
   int fade_frames_remaining_ = 0;
 

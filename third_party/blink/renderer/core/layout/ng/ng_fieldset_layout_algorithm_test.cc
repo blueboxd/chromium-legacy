@@ -1811,12 +1811,11 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, SmallLegendLargeBorderFragmentation) {
       node, space, fragment->BreakToken());
   ASSERT_TRUE(fragment->BreakToken());
 
-  // TODO(almaher): The fieldset content should start at offset 60,20.
   dump = DumpFragmentTree(fragment.get());
   expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
   offset:unplaced size:220x40
     offset:60,0 size:10x10
-    offset:60,0 size:100x0
+    offset:60,20 size:100x0
 )DUMP";
   EXPECT_EQ(expectation, dump);
 
@@ -1879,11 +1878,10 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, SmallerLegendLargeBorderFragmentation) {
       node, space, fragment->BreakToken());
   ASSERT_TRUE(fragment->BreakToken());
 
-  // TODO(almaher): The fieldset content should start at offset 60,20.
   dump = DumpFragmentTree(fragment.get());
   expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
   offset:unplaced size:220x40
-    offset:60,0 size:100x0
+    offset:60,20 size:100x0
 )DUMP";
   EXPECT_EQ(expectation, dump);
 
@@ -1946,11 +1944,10 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, SmallerLegendLargeBorderWithBreak) {
       node, space, fragment->BreakToken());
   ASSERT_TRUE(fragment->BreakToken());
 
-  // TODO(almaher): The fieldset content should start at offset 60,20.
   dump = DumpFragmentTree(fragment.get());
   expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
   offset:unplaced size:220x40
-    offset:60,0 size:100x0
+    offset:60,20 size:100x0
 )DUMP";
   EXPECT_EQ(expectation, dump);
 

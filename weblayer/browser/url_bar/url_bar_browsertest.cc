@@ -24,10 +24,13 @@ class UrlBarBrowserTest : public WebLayerBrowserTest {
     ASSERT_TRUE(embedded_test_server()->Start());
     browser_ = Browser::Create(GetProfile(), nullptr);
     tab_ = static_cast<TabImpl*>(browser_->AddTab(Tab::Create(GetProfile())));
+    another_tab_ =
+        static_cast<TabImpl*>(browser_->AddTab(Tab::Create(GetProfile())));
     browser_->SetActiveTab(tab_);
   }
   void PostRunTestOnMainThread() override {
     tab_ = nullptr;
+    another_tab_ = nullptr;
     browser_.reset();
     WebLayerBrowserTest::PostRunTestOnMainThread();
   }
@@ -42,8 +45,11 @@ class UrlBarBrowserTest : public WebLayerBrowserTest {
         std::move(closure));
   }
 
+  void SetActiveTab(TabImpl* tab) { browser_->SetActiveTab(tab); }
+
  protected:
   TabImpl* tab_ = nullptr;
+  TabImpl* another_tab_ = nullptr;
 
  private:
   std::unique_ptr<Browser> browser_;
@@ -65,6 +71,22 @@ IN_PROC_BROWSER_TEST_F(UrlBarBrowserTest, CanceledNavigationsUpdateUrl) {
     // The test won't finish until WebLayer acts on the resulting
     // WebContentsObserver::DidChangeVisibleSecurityState() notification, or the
     // test times out.
+    run_loop.Run();
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(UrlBarBrowserTest, ChangingActiveTabUpdatesUrlBarView) {
+  NavigateAndWaitForCompletion(real_url(), tab_);
+  NavigateAndWaitForCompletion(real_url(), another_tab_);
+
+  {
+    base::RunLoop run_loop;
+    SetVisibleSecurityStateChangedCallback(run_loop.QuitClosure());
+
+    SetActiveTab(another_tab_);
+
+    // The test won't finish until
+    // BrowserImpl::VisibleSecurityStateOfActiveTabChanged() gets called.
     run_loop.Run();
   }
 }

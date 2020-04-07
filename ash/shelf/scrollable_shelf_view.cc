@@ -608,6 +608,11 @@ bool ScrollableShelfView::ShouldAdaptToRTL() const {
   return base::i18n::IsRTL() && GetShelf()->IsHorizontalAlignment();
 }
 
+bool ScrollableShelfView::NeedUpdateToTargetBounds() const {
+  return GetAvailableLocalBounds(/*use_target_bounds=*/true) !=
+         GetAvailableLocalBounds(/*use_target_bounds=*/false);
+}
+
 gfx::Rect ScrollableShelfView::GetTargetScreenBoundsOfItemIcon(
     const ShelfID& id) const {
   // Calculates the available space for child views based on the target bounds.
@@ -1362,12 +1367,14 @@ gfx::Insets ScrollableShelfView::CalculateExtraEdgePadding(
       2 * base_padding_;
 
   int gap = CanFitAllAppsWithoutScrolling(use_target_bounds)
-                ? available_size_for_app_icons - icons_size  // shelf centering
-                : 0;                                         // overflow
+                ? available_size_for_app_icons - icons_size
+                : 0;  // overflow
 
   // Calculates the paddings before/after the visible area of scrollable shelf.
-  const int before_padding = gap / 2;
-  const int after_padding = (gap % 2 ? gap / 2 + 1 : gap / 2);
+  // |after_padding| being zero ensures that the available space after the
+  // visible area is filled first.
+  const int before_padding = gap;
+  const int after_padding = 0;
 
   gfx::Insets padding_insets;
   if (GetShelf()->IsHorizontalAlignment()) {

@@ -167,10 +167,6 @@ public class SplashController
         mParentView.addView(mSplashView);
     }
 
-    public boolean isSplashShowing() {
-        return mSplashView != null;
-    }
-
     @VisibleForTesting
     View getSplashScreenForTests() {
         return mSplashView;

@@ -233,8 +233,11 @@ bool ChildProcessSecurityPolicyImpl::Handle::CanReadFileSystemFile(
 
 bool ChildProcessSecurityPolicyImpl::Handle::CanAccessDataForOrigin(
     const GURL& url) {
-  if (child_id_ == ChildProcessHost::kInvalidUniqueID)
+  if (child_id_ == ChildProcessHost::kInvalidUniqueID) {
+    LogCanAccessDataForOriginCrashKeys(
+        "(unknown)", "(unknown)", url.GetOrigin().spec(), "handle_not_valid");
     return false;
+  }
 
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   return policy->CanAccessDataForOrigin(child_id_, url);
@@ -242,8 +245,11 @@ bool ChildProcessSecurityPolicyImpl::Handle::CanAccessDataForOrigin(
 
 bool ChildProcessSecurityPolicyImpl::Handle::CanAccessDataForOrigin(
     const url::Origin& origin) {
-  if (child_id_ == ChildProcessHost::kInvalidUniqueID)
+  if (child_id_ == ChildProcessHost::kInvalidUniqueID) {
+    LogCanAccessDataForOriginCrashKeys(
+        "(unknown)", "(unknown)", origin.GetDebugString(), "handle_not_valid");
     return false;
+  }
 
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   return policy->CanAccessDataForOrigin(child_id_, origin);

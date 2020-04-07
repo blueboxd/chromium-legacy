@@ -65,4 +65,23 @@ std::string ConversionPolicy::GetSanitizedConversionData(
                             conversion_data % kMaxAllowedConversionValues);
 }
 
+std::string ConversionPolicy::GetSanitizedImpressionData(
+    uint64_t impression_data) const {
+  // Impression data is allowed the full 64 bits.
+  return base::StringPrintf("%" PRIx64, impression_data);
+}
+
+base::Time ConversionPolicy::GetExpiryTimeForImpression(
+    const base::Optional<base::TimeDelta>& declared_expiry,
+    base::Time impression_time) const {
+  static constexpr base::TimeDelta kDefaultImpressionExpiry =
+      base::TimeDelta::FromDays(30);
+
+  // Default to the maximum expiry time.
+  base::TimeDelta expiry = declared_expiry.value_or(kDefaultImpressionExpiry);
+
+  // If the impression specified its own expiry, clamp it to the maximum.
+  return impression_time + std::min(expiry, kDefaultImpressionExpiry);
+}
+
 }  // namespace content

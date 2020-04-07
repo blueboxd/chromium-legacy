@@ -362,7 +362,8 @@ void NavigatorImpl::RequestOpenURL(
     bool user_gesture,
     blink::TriggeringEventInfo triggering_event_info,
     const std::string& href_translate,
-    scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {
+    scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
+    const base::Optional<Impression>& impression) {
   // Note: This can be called for subframes (even when OOPIFs are not possible)
   // if the disposition calls for a different window.
 
@@ -425,6 +426,7 @@ void NavigatorImpl::RequestOpenURL(
 
   params.blob_url_loader_factory = std::move(blob_url_loader_factory);
   params.href_translate = href_translate;
+  params.impression = impression;
 
   if (delegate_)
     delegate_->OpenURL(params);
@@ -443,7 +445,8 @@ void NavigatorImpl::NavigateFromFrameProxy(
     scoped_refptr<network::ResourceRequestBody> post_body,
     const std::string& extra_headers,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
-    bool has_user_gesture) {
+    bool has_user_gesture,
+    const base::Optional<Impression>& impression) {
   // |method != "POST"| should imply absence of |post_body|.
   if (method != "POST" && post_body) {
     NOTREACHED();
@@ -481,7 +484,7 @@ void NavigatorImpl::NavigateFromFrameProxy(
       render_frame_host, url, initiator_origin, is_renderer_initiated,
       source_site_instance, referrer_to_use, page_transition,
       should_replace_current_entry, download_policy, method, post_body,
-      extra_headers, std::move(blob_url_loader_factory));
+      extra_headers, std::move(blob_url_loader_factory), impression);
 }
 
 void NavigatorImpl::BeforeUnloadCompleted(FrameTreeNode* frame_tree_node,

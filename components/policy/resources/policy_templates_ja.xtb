@@ -699,7 +699,6 @@
 <translation id="2024476116966025075">リモート アクセスのクライアントに要求する必須のドメイン名を設定する</translation>
 <translation id="2030905906517501646">デフォルトの検索プロバイダのキーワード</translation>
 <translation id="203096360153626918">このポリシーは Android アプリには適用されません。このポリシーを <ph name="FALSE" /> に設定した場合でも、Android アプリの全画面表示は可能です。</translation>
-<translation id="2042881179131103248">カメラとその設定機能を無効にする</translation>
 <translation id="2043749682619281558">ログイン画面でカーソルによるハイライト表示を有効にする</translation>
 <translation id="2043770014371753404">無効な企業プリンタ</translation>
 <translation id="2050629715135525072">リモート アクセス ホストに接続しているユーザーが、クライアントとホスト間でファイルを転送できるかどうかを管理します。この設定は、リモート サポート接続には適用されません。リモート サポート接続ではファイル転送がサポートされていません。
@@ -2914,7 +2913,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 
       ポリシーが未設定の場合、<ph name="PRODUCT_NAME" /> M76 まではデフォルトの設定によりログの収集とアップロードは行えません。<ph name="PRODUCT_NAME" /> M77 以降では、クラウドベースのユーザーレベル エンタープライズ ポリシーの対象となるほとんどのプロファイルから、ログの収集とアップロードをデフォルトで行うことができます。<ph name="PRODUCT_NAME" /> M77 から M80 までは、<ph name="PRODUCT_NAME" /> オンプレミス管理の対象となるプロファイルからも、ログの収集とアップロードをデフォルトで行うことができます。</translation>
 <translation id="5331746669335642668"><ph name="PRODUCT_NAME" /> のクラウド ポリシーはプラットフォーム ポリシーに優先します。</translation>
-<translation id="53381168777357359">設定機能</translation>
 <translation id="5362531528507578966">背景のグラフィックのデフォルト印刷モードをオーバーライドします。</translation>
 <translation id="5365476955714838841">代替ブラウザに渡すコマンドラインのパラメータ。</translation>
 <translation id="5365946944967967336">ツールバーにホーム ボタンを表示する</translation>

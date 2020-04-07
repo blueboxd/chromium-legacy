@@ -4841,7 +4841,7 @@ TEST_F(NavigationControllerTest, NoURLRewriteForSubframes) {
       true /* is_renderer_initiated */, main_test_rfh()->GetSiteInstance(),
       Referrer(), ui::PAGE_TRANSITION_LINK,
       false /* should_replace_current_entry */, NavigationDownloadPolicy(),
-      "GET", nullptr, "", nullptr);
+      "GET", nullptr, "", nullptr, base::nullopt);
 
   // Clean up the handler.
   BrowserURLHandlerImpl::GetInstance()->SetFixupHandlerForTesting(nullptr);
@@ -4876,7 +4876,7 @@ TEST_F(NavigationControllerTest,
       frame, other_contents_url, url::Origin::Create(main_url),
       true /* is_renderer_initiated */, main_test_rfh()->GetSiteInstance(),
       Referrer(), ui::PAGE_TRANSITION_LINK, should_replace_current_entry,
-      NavigationDownloadPolicy(), "GET", nullptr, "", nullptr);
+      NavigationDownloadPolicy(), "GET", nullptr, "", nullptr, base::nullopt);
   NavigationRequest* request = node->navigation_request();
   ASSERT_TRUE(request);
 

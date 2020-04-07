@@ -132,22 +132,13 @@ cr.define('safe_browsing', function() {
       addReportingEvent(reportingEvent);
     });
 
-    cr.sendWithPromise('getDeepScanRequests', []).then((requests) => {
+    cr.sendWithPromise('getDeepScans', []).then((requests) => {
       requests.forEach(function(request) {
-        addDeepScanRequest(request);
+        addDeepScan(request);
       });
     });
     cr.addWebUIListener('deep-scan-request-update', function(result) {
-      addDeepScanRequest(result);
-    });
-
-    cr.sendWithPromise('getDeepScanResponses', []).then((responses) => {
-      responses.forEach(function(response) {
-        addDeepScanResponse(response);
-      });
-    });
-    cr.addWebUIListener('deep-scan-response-update', function(result) {
-      addDeepScanResponse(result);
+      addDeepScan(result);
     });
 
     $('get-referrer-chain-form').addEventListener('submit', addReferrerChain);
@@ -265,45 +256,53 @@ cr.define('safe_browsing', function() {
     row.insertCell().className = 'content';
   }
 
-  function addResultToTable(tableId, result, position) {
-    const token = result[0];
-    const request = result[1];
-
+  function addResultToTable(tableId, token, result, position) {
     if ($(tableId + '-' + token) === null) {
       insertTokenToTable(tableId, token);
     }
 
     const cell = $(tableId + '-' + token).cells[position];
-    appendChildWithInnerText(cell, request);
+    cell.innerText = result;
   }
 
   function addPGPing(result) {
-    addResultToTable('pg-ping-list', result, 0);
+    addResultToTable('pg-ping-list', result[0], result[1], 0);
   }
 
   function addPGResponse(result) {
-    addResultToTable('pg-ping-list', result, 1);
+    addResultToTable('pg-ping-list', result[0], result[1], 1);
   }
 
   function addRTLookupPing(result) {
-    addResultToTable('rt-lookup-ping-list', result, 0);
+    addResultToTable('rt-lookup-ping-list', result[0], result[1], 0);
   }
 
   function addRTLookupResponse(result) {
-    addResultToTable('rt-lookup-ping-list', result, 1);
+    addResultToTable('rt-lookup-ping-list', result[0], result[1], 1);
   }
 
-  function addDeepScanRequest(result) {
-    addResultToTable('deep-scan-list', result, 0);
-  }
+  function addDeepScan(result) {
+    if (result['request_time'] != null) {
+      const requestFormatted = '[' +
+          (new Date(result['request_time'])).toLocaleString() + ']\n' +
+          result['request'];
+      addResultToTable('deep-scan-list', result['token'], requestFormatted, 0);
+    }
 
-  function addDeepScanResponse(result) {
-    if (result[1] === 'SUCCESS') {
-      // Display the response instead
-      addResultToTable('deep-scan-list', [result[0], result[2]], 1);
-    } else {
-      // Display the error code
-      addResultToTable('deep-scan-list', [result[0], result[1]], 1);
+    if (result['response_time'] != null) {
+      if (result['response_status'] == 'SUCCESS') {
+        // Display the response instead
+        const resultFormatted = '[' +
+            (new Date(result['response_time'])).toLocaleString() + ']\n' +
+            result['response'];
+        addResultToTable('deep-scan-list', result['token'], resultFormatted, 1);
+      } else {
+        // Display the error
+        const resultFormatted = '[' +
+            (new Date(result['response_time'])).toLocaleString() + ']\n' +
+            result['response_status'];
+        addResultToTable('deep-scan-list', result['token'], resultFormatted, 1);
+      }
     }
   }
 

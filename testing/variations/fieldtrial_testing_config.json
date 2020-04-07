@@ -6240,8 +6240,8 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
-                    "enable_features": [
+                    "name": "Default",
+                    "disable_features": [
                         "UsernameFirstFlow"
                     ]
                 }

@@ -77,19 +77,6 @@ bool DoesSupportConsentCheck() {
 #endif
 }
 
-// Returns the app menu view, except when the browser window is Cocoa; Cocoa
-// browser windows always have a null anchor view and use
-// GetSessionCrashedBubbleAnchorRect() instead.
-views::View* GetSessionCrashedBubbleAnchorView(Browser* browser) {
-  return BrowserView::GetBrowserViewForBrowser(browser)
-      ->toolbar_button_provider()
-      ->GetAppMenuButton();
-}
-
-gfx::Rect GetSessionCrashedBubbleAnchorRect(Browser* browser) {
-  return gfx::Rect();
-}
-
 }  // namespace
 
 // A helper class that listens to browser removal event.
@@ -158,9 +145,11 @@ void SessionCrashedBubbleView::Show(
     return;
   }
 
-  SessionCrashedBubbleView* crash_bubble = new SessionCrashedBubbleView(
-      GetSessionCrashedBubbleAnchorView(browser),
-      GetSessionCrashedBubbleAnchorRect(browser), browser, offer_uma_optin);
+  views::View* anchor_view = BrowserView::GetBrowserViewForBrowser(browser)
+                                 ->toolbar_button_provider()
+                                 ->GetAppMenuButton();
+  SessionCrashedBubbleView* crash_bubble =
+      new SessionCrashedBubbleView(anchor_view, browser, offer_uma_optin);
   views::BubbleDialogDelegateView::CreateBubble(crash_bubble)->Show();
 
   RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_SHOWN);
@@ -173,7 +162,6 @@ ax::mojom::Role SessionCrashedBubbleView::GetAccessibleWindowRole() {
 }
 
 SessionCrashedBubbleView::SessionCrashedBubbleView(views::View* anchor_view,
-                                                   const gfx::Rect& anchor_rect,
                                                    Browser* browser,
                                                    bool offer_uma_optin)
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
@@ -181,6 +169,8 @@ SessionCrashedBubbleView::SessionCrashedBubbleView(views::View* anchor_view,
       uma_option_(NULL),
       offer_uma_optin_(offer_uma_optin),
       ignored_(true) {
+  DCHECK(anchor_view);
+
   const SessionStartupPref session_startup_pref =
       SessionStartupPref::GetStartupPref(browser_->profile());
   // Offer the option to open the startup pages using the cancel button, but
@@ -205,12 +195,6 @@ SessionCrashedBubbleView::SessionCrashedBubbleView(views::View* anchor_view,
 
   set_close_on_deactivate(false);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::SESSION_CRASHED);
-
-  if (!anchor_view) {
-    SetAnchorRect(anchor_rect);
-    set_parent_window(
-        platform_util::GetViewForWindow(browser->window()->GetNativeWindow()));
-  }
 }
 
 SessionCrashedBubbleView::~SessionCrashedBubbleView() {

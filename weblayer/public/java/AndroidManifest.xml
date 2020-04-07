@@ -54,7 +54,7 @@
                 android:resource="@xml/weblayer_file_paths" />
         </provider>
 
-        <receiver android:name="org.chromium.weblayer.DownloadBroadcastReceiver"
+        <receiver android:name="org.chromium.weblayer.BroadcastReceiver"
             android:exported="false">
             <intent-filter>
                 <!-- these need to be in sync with DownloadImpl.java-->

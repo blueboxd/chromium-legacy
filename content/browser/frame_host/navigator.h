@@ -13,6 +13,7 @@
 #include "content/common/frame_messages.h"
 #include "content/common/navigation_params.mojom.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/common/impression.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/navigation/triggering_event_info.h"
@@ -108,7 +109,8 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       bool user_gesture,
       blink::TriggeringEventInfo triggering_event_info,
       const std::string& href_translate,
-      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {}
+      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
+      const base::Optional<Impression>& impression) {}
 
   // Called when a document requests a navigation in another document through a
   // RenderFrameProxy. If |method| is "POST", then |post_body| needs to specify
@@ -126,7 +128,8 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       scoped_refptr<network::ResourceRequestBody> post_body,
       const std::string& extra_headers,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
-      bool has_user_gesture) {}
+      bool has_user_gesture,
+      const base::Optional<Impression>& impression) {}
 
   // Called after BeforeUnloadCompleted callback is invoked from the renderer.
   // If |frame_tree_node| has a NavigationRequest waiting for the renderer

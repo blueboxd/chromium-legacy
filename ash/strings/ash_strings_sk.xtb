@@ -105,6 +105,7 @@
 <translation id="2268813581635650749">Odhlásiť všetkých</translation>
 <translation id="2277103315734023688">Pretočiť dopredu</translation>
 <translation id="2292698582925480719">Hustota zobrazenia</translation>
+<translation id="2295777434187870477">Mikrofón je zapnutý. Prepnutím vypnete zvuk vstupu.</translation>
 <translation id="2298170939937364391">Bola zapnutá lupa na celú obrazovku. Vypnete ju opätovným stlačením kombinácie klávesov Ctrl+Hľadať+M.</translation>
 <translation id="2302092602801625023">Tento účet spravuje aplikácia Family Link</translation>
 <translation id="2303600792989757991">Prepnúť prehľad okien</translation>
@@ -138,6 +139,7 @@
 <translation id="2658778018866295321">Kliknúť a presunúť</translation>
 <translation id="2700493154570097719">Nastavenie klávesnice</translation>
 <translation id="2704781753052663061">Pripojiť sa k iným sieťam Wi-Fi</translation>
+<translation id="2705001408393684014">Prepnúť mikrofón. <ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">Nočný režim</translation>
 <translation id="2727977024730340865">Batéria je zapojená do nabíjačky s nízkym výkonom. Nabíjanie batérie nemusí byť spoľahlivé.</translation>
 <translation id="2792498699870441125">Alt + Hľadať</translation>
@@ -296,6 +298,7 @@
 <translation id="4665114317261903604">Prepnúť režim bez vyrušení. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Odomknutie zariadenia kódom rodiča</translation>
 <translation id="4702647871202761252">Obrazovka ochrany súkromia je vypnutá</translation>
+<translation id="4705716602320768426">Odoslať spätnú väzbu</translation>
 <translation id="4710243778082831592">Nastavenia editora IME</translation>
 <translation id="4731797938093519117">Rodičovský prístup</translation>
 <translation id="4734965478015604180">Na šírku</translation>
@@ -376,6 +379,7 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Zapnuté</translation>
+<translation id="5920710855273935292">Mikrofón je vypnutý.</translation>
 <translation id="5947494881799873997">Vrátiť</translation>
 <translation id="595202126637698455">Sledovanie výkonnosti je povolené</translation>
 <translation id="5957083217255311415">Mobilné dáta sú vypnuté.</translation>

@@ -133,8 +133,6 @@ AlternativeServiceInfo::AlternativeServiceInfo(
     : alternative_service_(alternative_service), expiration_(expiration) {
   if (alternative_service_.protocol == kProtoQUIC) {
     advertised_versions_ = advertised_versions;
-    std::sort(advertised_versions_.begin(), advertised_versions_.end(),
-              TransportVersionLessThan);
   }
 }
 

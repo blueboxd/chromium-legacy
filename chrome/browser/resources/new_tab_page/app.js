@@ -17,6 +17,7 @@ import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BrowserProxy} from './browser_proxy.js';
+import {BackgroundSelection, BackgroundSelectionType} from './customize_dialog.js';
 import {skColorToRgb} from './utils.js';
 
 class AppElement extends PolymerElement {
@@ -53,14 +54,41 @@ class AppElement extends PolymerElement {
 
       /** @private */
       showBackgroundImage_: {
-        computed: 'computeShowBackgroundImage_(theme_)',
+        computed: 'computeShowBackgroundImage_(theme_, backgroundSelection_)',
         reflectToAttribute: true,
         type: Boolean,
       },
 
+      /** @private {!BackgroundSelection} */
+      backgroundSelection_: {
+        type: Object,
+        value: () => ({type: BackgroundSelectionType.NO_SELECTION}),
+      },
+
+      /** @private */
+      backgroundImageAttribution1_: {
+        type: String,
+        computed: `computeBackgroundImageAttribution1_(theme_,
+            backgroundSelection_)`,
+      },
+
+      /** @private */
+      backgroundImageAttribution2_: {
+        type: String,
+        computed: `computeBackgroundImageAttribution2_(theme_,
+            backgroundSelection_)`,
+      },
+
+      /** @private */
+      backgroundImageAttributionUrl_: {
+        type: String,
+        computed: `computeBackgroundImageAttributionUrl_(theme_,
+            backgroundSelection_)`,
+      },
+
       /** @private */
       backgroundImagePath_: {
-        computed: 'computeBackgroundImagePath_(theme_)',
+        computed: 'computeBackgroundImagePath_(theme_, backgroundSelection_)',
         type: String,
       },
 
@@ -118,6 +146,59 @@ class AppElement extends PolymerElement {
     this.eventTracker_.removeAll();
   }
 
+  /**
+   * @return {string}
+   * @private
+   */
+  computeBackgroundImageAttribution1_() {
+    switch (this.backgroundSelection_.type) {
+      case BackgroundSelectionType.NO_SELECTION:
+        return this.theme_ && this.theme_.backgroundImageAttribution1 || '';
+      case BackgroundSelectionType.IMAGE:
+        return this.backgroundSelection_.image.attribution1;
+      case BackgroundSelectionType.NO_BACKGROUND:
+      case BackgroundSelectionType.DAILY_REFRESH:
+      default:
+        return '';
+    }
+  }
+
+  /**
+   * @return {string}
+   * @private
+   */
+  computeBackgroundImageAttribution2_() {
+    switch (this.backgroundSelection_.type) {
+      case BackgroundSelectionType.NO_SELECTION:
+        return this.theme_ && this.theme_.backgroundImageAttribution2 || '';
+      case BackgroundSelectionType.IMAGE:
+        return this.backgroundSelection_.image.attribution2;
+      case BackgroundSelectionType.NO_BACKGROUND:
+      case BackgroundSelectionType.DAILY_REFRESH:
+      default:
+        return '';
+    }
+  }
+
+  /**
+   * @return {string}
+   * @private
+   */
+  computeBackgroundImageAttributionUrl_() {
+    switch (this.backgroundSelection_.type) {
+      case BackgroundSelectionType.NO_SELECTION:
+        return this.theme_ && this.theme_.backgroundImageAttributionUrl ?
+            this.theme_.backgroundImageAttributionUrl.url :
+            '';
+      case BackgroundSelectionType.IMAGE:
+        return this.backgroundSelection_.image.attributionUrl.url;
+      case BackgroundSelectionType.NO_BACKGROUND:
+      case BackgroundSelectionType.DAILY_REFRESH:
+      default:
+        return '';
+    }
+  }
+
   /** @private */
   onVoiceSearchClick_() {
     this.showVoiceSearchOverlay_ = true;
@@ -152,7 +233,16 @@ class AppElement extends PolymerElement {
    * @private
    */
   computeShowBackgroundImage_() {
-    return !!this.theme_ && !!this.theme_.backgroundImageUrl;
+    switch (this.backgroundSelection_.type) {
+      case BackgroundSelectionType.NO_SELECTION:
+        return !!this.theme_ && !!this.theme_.backgroundImageUrl;
+      case BackgroundSelectionType.IMAGE:
+        return true;
+      case BackgroundSelectionType.NO_BACKGROUND:
+      case BackgroundSelectionType.DAILY_REFRESH:
+      default:
+        return false;
+    }
   }
 
   /**
@@ -160,10 +250,19 @@ class AppElement extends PolymerElement {
    * @private
    */
   computeBackgroundImagePath_() {
-    if (!this.theme_ || !this.theme_.backgroundImageUrl) {
-      return '';
+    switch (this.backgroundSelection_.type) {
+      case BackgroundSelectionType.NO_SELECTION:
+        return this.theme_ && this.theme_.backgroundImageUrl ?
+            `background_image?${this.theme_.backgroundImageUrl.url}` :
+            '';
+      case BackgroundSelectionType.IMAGE:
+        return `background_image?${
+            this.backgroundSelection_.image.imageUrl.url}`;
+      case BackgroundSelectionType.NO_BACKGROUND:
+      case BackgroundSelectionType.DAILY_REFRESH:
+      default:
+        return '';
     }
-    return `background_image?${this.theme_.backgroundImageUrl.url}`;
   }
 
   /**

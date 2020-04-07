@@ -2687,8 +2687,10 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
       !cmd.HasSwitch(cc::switches::kDisableCheckerImaging) && is_threaded;
 
 #if defined(OS_ANDROID)
-  if (!viz::AlwaysUseWideColorGamut())
-    settings.prefer_raster_in_srgb = true;
+  // WebView should always raster in the default color space.
+  // Synchronous compositing indicates WebView.
+  if (!compositor_deps->UsingSynchronousCompositing())
+    settings.prefer_raster_in_srgb = features::IsDynamicColorGamutEnabled();
 
   // We can use a more aggressive limit on Android since decodes tend to take
   // longer on these devices.

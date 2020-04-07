@@ -21,6 +21,8 @@ class SubmenuView;
 // such that when MenuHostRootView is deleted it doesn't delete the menu items.
 class MenuHostRootView : public internal::RootView {
  public:
+  METADATA_HEADER(MenuHostRootView);
+
   MenuHostRootView(Widget* widget, SubmenuView* submenu);
 
   void ClearSubmenu() { submenu_ = nullptr; }

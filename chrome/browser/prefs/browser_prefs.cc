@@ -232,6 +232,7 @@
 #include "components/feed/core/common/pref_names.h"
 #endif  // BUILDFLAG(ENABLE_FEED_IN_CHROME)
 #else   // defined(OS_ANDROID)
+#include "chrome/browser/accessibility/caption_controller.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/enterprise/reporting/prefs.h"
 #include "chrome/browser/gcm/gcm_product_util.h"
@@ -382,7 +383,6 @@
 #include "chrome/browser/device_identity//device_oauth2_token_store_desktop.h"
 #include "chrome/browser/downgrade/downgrade_prefs.h"
 #include "chrome/browser/ui/startup/default_browser_prompt.h"
-
 #endif
 
 #if defined(TOOLKIT_VIEWS)
@@ -998,6 +998,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   apps::AppServiceProxy::RegisterProfilePrefs(registry);
   AppShortcutManager::RegisterProfilePrefs(registry);
   browser_sync::ForeignSessionHandler::RegisterProfilePrefs(registry);
+  captions::CaptionController::RegisterProfilePrefs(registry);
   ChromeAuthenticatorRequestDelegate::RegisterProfilePrefs(registry);
   DevToolsWindow::RegisterProfilePrefs(registry);
   enterprise_reporting::RegisterProfilePrefs(registry);

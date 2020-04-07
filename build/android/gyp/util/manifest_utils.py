@@ -138,4 +138,4 @@ def NormalizeManifest(path):
       else:
         lines.append(l)
 
-  return '\n'.join(lines)
+  return '\n'.join(lines) + '\n'

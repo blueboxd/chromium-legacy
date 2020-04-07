@@ -105,6 +105,7 @@
 <translation id="2268813581635650749">全部退出</translation>
 <translation id="2277103315734023688">快进</translation>
 <translation id="2292698582925480719">显示比例</translation>
+<translation id="2295777434187870477">麦克风已开启，使用切换开关可将输入的音频静音。</translation>
 <translation id="2298170939937364391">已启用全屏放大镜。再按一次 Ctrl+搜索键+M 组合键即可将其停用。</translation>
 <translation id="2302092602801625023">该帐号由 Family Link 管理</translation>
 <translation id="2303600792989757991">“切换窗口”概述</translation>
@@ -138,6 +139,7 @@
 <translation id="2658778018866295321">点击并拖动</translation>
 <translation id="2700493154570097719">设置键盘</translation>
 <translation id="2704781753052663061">连接到其他 Wi-Fi 网络</translation>
+<translation id="2705001408393684014">开启/关闭麦克风。<ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">夜间模式</translation>
 <translation id="2727977024730340865">已插入低功率充电器；可能无法保证充电成功。</translation>
 <translation id="2792498699870441125">Alt + 搜索键</translation>
@@ -296,6 +298,7 @@
 <translation id="4665114317261903604">开启/关闭“勿扰”模式。<ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">使用家长访问代码解锁设备</translation>
 <translation id="4702647871202761252">已关闭隐私保护屏</translation>
+<translation id="4705716602320768426">提交反馈</translation>
 <translation id="4710243778082831592">IME 设置</translation>
 <translation id="4731797938093519117">家长访问</translation>
 <translation id="4734965478015604180">横向</translation>
@@ -376,6 +379,7 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">启用</translation>
+<translation id="5920710855273935292">麦克风已静音。</translation>
 <translation id="5947494881799873997">还原</translation>
 <translation id="595202126637698455">已启用性能跟踪</translation>
 <translation id="5957083217255311415">移动数据网络现处于关闭状态。</translation>

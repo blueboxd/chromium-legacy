@@ -255,37 +255,14 @@ LRESULT CALLBACK InputDispatcher::MouseHook(int n_code,
 LRESULT CALLBACK InputDispatcher::KeyHook(int n_code,
                                           WPARAM w_param,
                                           LPARAM l_param) {
-  HHOOK next_hook = next_hook_;
-  if (n_code == HC_ACTION) {
+  if ((n_code == HC_ACTION) && (HIWORD(l_param) & KF_UP)) {
     DCHECK(current_dispatcher_);
-    // Only send when the key is transitioning from pressed to released. Note
-    // that the documentation for the bit state on KeyboardProc [1] can lead to
-    // confusion. The relevant information is that the transition state (bit 31
-    // -- zero-based) is always 1 for WM_KEYUP.
-    // [1]
-    // https://msdn.microsoft.com/en-us/library/windows/desktop/ms644984.aspx
-    //
-    // While this documentation states that the previous key state (bit 30) is
-    // always 1 on WM_KEYUP it has been observed to be 0 when the preceding
-    // WM_KEYDOWN is intercepted (e.g., by an extension hooking a keyboard
-    // shortcut).
-    //
-    // And to add to the confusion about bit 30, the documentation for WM_KEYUP
-    // [2] and for general keyboard input [3] contradict each other, one saying
-    // it's always set to 1, the other saying it's always set to 0 on
-    // WM_KEYUP...
-    // [2] https://docs.microsoft.com/en-us/windows/desktop/inputdev/wm-keyup
-    // [3]
-    // https://docs.microsoft.com/en-us/windows/desktop/inputdev/about-keyboard-input#keystroke-message-flags
-    if (l_param & (1 << 31)) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(&InputDispatcher::MatchingMessageProcessed,
-                         current_dispatcher_->weak_factory_.GetWeakPtr(),
-                         false));
-    }
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&InputDispatcher::MatchingMessageProcessed,
+                       current_dispatcher_->weak_factory_.GetWeakPtr(), false));
   }
-  return CallNextHookEx(next_hook, n_code, w_param, l_param);
+  return CallNextHookEx(next_hook_, n_code, w_param, l_param);
 }
 
 void InputDispatcher::DispatchedMessage(

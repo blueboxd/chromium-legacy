@@ -168,6 +168,7 @@
 <translation id="3112556859945124369">Markieren…</translation>
 <translation id="3153862085237805241">Karte speichern</translation>
 <translation id="3157684681743766797">Alle markieren…</translation>
+<translation id="3161291298470460782">Hierdurch werden Sie abgemeldet, die Synchronisierung wird deaktiviert und alle Chrome-Daten werden von diesem Gerät gelöscht. Ihre synchronisierten Daten verbleiben jedoch in Ihrem Google-Konto.</translation>
 <translation id="3175081911749765310">Webdienste</translation>
 <translation id="3178650076442119961">Heute aktiv</translation>
 <translation id="3207960819495026254">Mit einem Lesezeichen versehen</translation>
@@ -200,6 +201,7 @@
 <translation id="3494788280727468875">Löschen der Browserdaten bestätigen</translation>
 <translation id="35083190962747987">${url} öffnen</translation>
 <translation id="3519193562722059437">Öffnet einen Tab zum Surfen im Web</translation>
+<translation id="3523473570015918798">Wenn Sie sich abmelden, werden Ihre Lesezeichen, Ihr Verlauf, Ihre Passwörter und andere Chrome-Daten nicht mehr mit Ihrem Google-Konto synchronisiert.</translation>
 <translation id="3527085408025491307">Ordner</translation>
 <translation id="3529024052484145543">Nicht sicher</translation>
 <translation id="3533202363250687977">Alle Inkognito-Tabs schließen</translation>
@@ -333,6 +335,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="54401264925851789">Sicherheitsinformationen zur Seite</translation>
 <translation id="5443952882982198570">Kreditkarten</translation>
 <translation id="5457907402803865181">Fehler beim Synchronisieren von Passwörtern.</translation>
+<translation id="5508435575041083207">Abmelden und Daten von diesem Gerät löschen</translation>
 <translation id="5525269841082836315">Passphrase erstellen</translation>
 <translation id="5548760955356983418">Mit Handoff können Sie auf diesem Gerät auf einer Website stöbern und dann einfach auf Ihrem Mac an derselben Stelle weitermachen. Die aktuell geöffnete Website wird im Dock Ihres Macs angezeigt.
 
@@ -506,6 +509,9 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="766891008101699113">Fügen Sie einen neuen Tab hinzu, um privat im Web zu surfen.</translation>
 <translation id="7671141431838911305">Installieren</translation>
 <translation id="7765158879357617694">Verschieben</translation>
+<translation id="7771470029643830783">Wenn Sie sich abmelden, werden Ihre Lesezeichen, Ihr Verlauf, Ihre Passwörter und andere Chrome-Daten nicht mehr mit Ihrem Google-Konto synchronisiert.
+
+Da Ihr Konto von <ph name="HOSTED_DOMAIN" /> verwaltet wird, werden Ihre Chrome-Daten beim Abmelden von diesem Gerät gelöscht. Ihre synchronisierten Daten verbleiben jedoch in Ihrem Google-Konto.</translation>
 <translation id="7772032839648071052">Passphrase bestätigen</translation>
 <translation id="7781011649027948662">Seite übersetzen?</translation>
 <translation id="7781829728241885113">Gestern</translation>
@@ -555,6 +561,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="8490978609246021741">Änderungen speichern</translation>
 <translation id="8503813439785031346">Nutzername</translation>
 <translation id="850600235656508448">Im Inkognitomodus öffnen</translation>
+<translation id="8510057420705599706">Hierdurch werden Sie abgemeldet und die Synchronisierung wird deaktiviert. Ihre Lesezeichen, Ihr Verlauf, Ihre Passwörter sowie andere Chrome-Daten verbleiben jedoch auf diesem Gerät.</translation>
 <translation id="8517375800490286174">Open Source-Lizenzen</translation>
 <translation id="8524799873541103884"><ph name="INCOGNITO" />-Tabs <ph name="FIRST_VISIBLE_TAB" /> bis <ph name="LAST_VISIBLE_TAB" /> von <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">Neu</translation>
@@ -597,6 +604,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="9094033019050270033">Passwort aktualisieren</translation>
 <translation id="9100610230175265781">Passphrase erforderlich</translation>
 <translation id="9148126808321036104">Erneut anmelden</translation>
+<translation id="9152539721251340337">QR-Code erstellen</translation>
 <translation id="9157836665414082580">Dialogfelder unterdrücken</translation>
 <translation id="9188680907066685419">Von verwaltetem Konto abmelden</translation>
 <translation id="9203116392574189331">Handoff</translation>

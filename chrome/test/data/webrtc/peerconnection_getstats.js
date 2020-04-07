@@ -204,6 +204,12 @@ let kRTCOutboundRtpStreamStats = new RTCStats(kRTCSentRtpStreamStats, {
   pliCount: 'number',
   sliCount: 'number',
   encoderImplementation: 'string',
+  rid: 'string',
+  frameWidth: 'number',
+  frameHeight: 'number',
+  framesPerSecond: 'number',
+  framesSent: 'number',
+  hugeFramesSent: 'number',
 });
 addRTCStatsToWhitelist(
     Presence.MANDATORY, 'outbound-rtp', kRTCOutboundRtpStreamStats);

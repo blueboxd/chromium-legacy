@@ -73,7 +73,6 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/accelerator_table.h"
-#include "chrome/browser/ui/views/accessibility/caption_bubble.h"
 #include "chrome/browser/ui/views/accessibility/invert_bubble_view.h"
 #include "chrome/browser/ui/views/autofill/autofill_bubble_handler_impl.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
@@ -155,7 +154,6 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
-#include "media/base/media_switches.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -793,16 +791,6 @@ void BrowserView::Show() {
   browser()->OnWindowDidShow();
 
   MaybeShowInvertBubbleView(this);
-
-#if !defined(OS_ANDROID)
-  // If the kLiveCaption feature is enabled, create and show a caption bubble.
-  // This is temporary while the feature is in early development. Soon, a
-  // CaptionController will be introduced which will conditionally create and
-  // show the CaptionBubble from inside the BrowserView when the preference is
-  // enabled.
-  if (base::FeatureList::IsEnabled(media::kLiveCaption))
-    captions::CaptionBubble::CreateAndShow(contents_web_view_);
-#endif
 }
 
 void BrowserView::ShowInactive() {

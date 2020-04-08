@@ -23,14 +23,16 @@ namespace android {
 ScopedJavaLocalRef<jstring> JNI_DomDistillerUrlUtils_GetDistillerViewUrlFromUrl(
     JNIEnv* env,
     const JavaParamRef<jstring>& j_scheme,
-    const JavaParamRef<jstring>& j_url) {
-  std::string scheme(base::android::ConvertJavaStringToUTF8(env, j_scheme));
+    const JavaParamRef<jstring>& j_url,
+    const JavaParamRef<jstring>& j_title) {
   GURL url(base::android::ConvertJavaStringToUTF8(env, j_url));
   if (!url.is_valid()) {
     return ScopedJavaLocalRef<jstring>();
   }
+  std::string scheme(base::android::ConvertJavaStringToUTF8(env, j_scheme));
+  std::string title(base::android::ConvertJavaStringToUTF8(env, j_title));
   GURL view_url =
-      dom_distiller::url_utils::GetDistillerViewUrlFromUrl(scheme, url);
+      dom_distiller::url_utils::GetDistillerViewUrlFromUrl(scheme, url, title);
   if (!view_url.is_valid()) {
     return ScopedJavaLocalRef<jstring>();
   }

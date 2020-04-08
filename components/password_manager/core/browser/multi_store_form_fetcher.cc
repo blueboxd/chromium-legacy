@@ -25,14 +25,6 @@ MultiStoreFormFetcher::MultiStoreFormFetcher(
 
 MultiStoreFormFetcher::~MultiStoreFormFetcher() = default;
 
-bool MultiStoreFormFetcher::IsBlacklisted() const {
-  if (client_->GetPasswordFeatureManager()->GetDefaultPasswordStore() ==
-      PasswordForm::Store::kAccountStore) {
-    return is_blacklisted_in_account_store_;
-  }
-  return is_blacklisted_in_profile_store_;
-}
-
 void MultiStoreFormFetcher::Fetch() {
   if (password_manager_util::IsLoggingActive(client_)) {
     BrowserSavePasswordProgressLogger logger(client_->GetLogManager());
@@ -61,6 +53,14 @@ void MultiStoreFormFetcher::Fetch() {
     state_ = State::WAITING;
     wait_counter_++;
   }
+}
+
+bool MultiStoreFormFetcher::IsBlacklisted() const {
+  if (client_->GetPasswordFeatureManager()->GetDefaultPasswordStore() ==
+      PasswordForm::Store::kAccountStore) {
+    return is_blacklisted_in_account_store_;
+  }
+  return is_blacklisted_in_profile_store_;
 }
 
 void MultiStoreFormFetcher::OnGetPasswordStoreResults(

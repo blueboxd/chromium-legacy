@@ -162,7 +162,6 @@ gfx::ImageSkia* ChildProcessTask::s_icon_ = nullptr;
 
 ChildProcessTask::ChildProcessTask(const content::ChildProcessData& data)
     : Task(GetLocalizedTitle(data.name, data.process_type),
-           base::UTF16ToUTF8(data.name),
            FetchIcon(IDR_PLUGINS_FAVICON, &s_icon_),
            data.GetProcess().Handle()),
       process_resources_sampler_(CreateProcessResourcesSampler(data.id)),

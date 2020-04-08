@@ -77,9 +77,8 @@ public class WebappSplashDelegate implements SplashDelegate {
         splashScreen.setBackgroundColor(backgroundColor);
 
         if (mWebappInfo.isForWebApk()) {
-            WebApkInfo webApkInfo = (WebApkInfo) mWebappInfo;
             initializeWebApkInfoSplashLayout(splashScreen, backgroundColor,
-                    webApkInfo.splashIcon().bitmap(), webApkInfo.isSplashIconMaskable());
+                    mWebappInfo.splashIcon().bitmap(), mWebappInfo.isSplashIconMaskable());
             return splashScreen;
         }
 

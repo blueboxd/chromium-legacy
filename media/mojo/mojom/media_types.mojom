@@ -279,6 +279,7 @@ struct VideoFrame {
   mojo_base.mojom.DictionaryValue metadata;
 
   gfx.mojom.ColorSpace color_space;
+  HDRMetadata? hdr_metadata;
 };
 
 // Possible choices for storing VideoFrame data.

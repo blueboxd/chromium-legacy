@@ -89,13 +89,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, RetrySequential) {
   EXPECT_TRUE(ExpectUserEvents({specifics1, specifics1, specifics2}));
 }
 
-// Flaky (mostly) on ASan/TSan. http://crbug.com/998130
-#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
-#define MAYBE_RetryParallel DISABLED_RetryParallel
-#else
-#define MAYBE_RetryParallel RetryParallel
-#endif
-IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, MAYBE_RetryParallel) {
+IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, RetryParallel) {
   ASSERT_TRUE(SetupSync());
 
   const UserEventSpecifics specifics1 =
@@ -115,7 +109,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, MAYBE_RetryParallel) {
   UserEventSpecifics retry_specifics;
   GetFakeServer()->OverrideResponseType(base::BindLambdaForTesting(
       [&](const syncer::LoopbackServerEntity& entity) {
-        if (first) {
+        if (first && entity.GetModelType() == syncer::USER_EVENTS) {
           first = false;
           SyncEntity sync_entity;
           entity.SerializeAsProto(&sync_entity);

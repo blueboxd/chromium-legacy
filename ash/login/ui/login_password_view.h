@@ -59,6 +59,9 @@ class ASH_EXPORT LoginPasswordView : public views::View,
     views::ToggleImageButton* display_password_button() const;
     views::View* easy_unlock_icon() const;
     void set_immediately_hover_easy_unlock_icon();
+    // Sets the timers that are used to clear and hide the password.
+    void SetTimers(std::unique_ptr<base::RetainingOneShotTimer> clear_timer,
+                   std::unique_ptr<base::RetainingOneShotTimer> hide_timer);
 
    private:
     LoginPasswordView* view_;
@@ -95,6 +98,12 @@ class ASH_EXPORT LoginPasswordView : public views::View,
   // Enable or disable focus on the password field.
   void SetFocusEnabledOnTextfield(bool enable);
 
+  // Sets whether the display password button is visible.
+  void SetDisplayPasswordButtonVisible(bool visible);
+
+  // Clear the text and put the password into hide mode.
+  void Reset();
+
   // Clear all currently entered text.
   void Clear();
 
@@ -118,11 +127,18 @@ class ASH_EXPORT LoginPasswordView : public views::View,
   void RequestFocus() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
 
+  // Invert the textfield type and toggle the display password button.
+  void InvertPasswordDisplayingState();
+
   // views::ButtonListener:
   // Handles click on the display password button. Therefore, it inverts the
   // display password button icon's (show/hide) and shows/hides the content of
   // the password field.
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  // Hides the password. When |chromevox_exception| is true, the password is not
+  // hidden if ChromeVox is enabled.
+  void HidePassword(bool chromevox_exception);
 
   // views::TextfieldController:
   void ContentsChanged(views::Textfield* sender,
@@ -156,6 +172,15 @@ class ASH_EXPORT LoginPasswordView : public views::View,
 
   // Is the password field enabled when there is no text?
   bool enabled_on_empty_password_ = false;
+
+  // Clears the password field after a time without action if the display
+  // password feature is enabled.
+  std::unique_ptr<base::RetainingOneShotTimer> clear_password_timer_;
+
+  // Hides the password after a short delay if the password is shown, except if
+  // ChromeVox is enabled (otherwise, the user would not have time to navigate
+  // through the password and make the characters read out loud one by one).
+  std::unique_ptr<base::RetainingOneShotTimer> hide_password_timer_;
 
   views::View* password_row_ = nullptr;
 

@@ -75,7 +75,7 @@ class FakeboxElement extends PolymerElement {
   }
 
   /** @private */
-  onMousedown_() {
+  onPointerDown_() {
     this.pageHandler_.focusOmnibox();
   }
 

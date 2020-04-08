@@ -711,9 +711,6 @@
       status: "experimental",
     },
     {
-      name: "FallbackCursorMode",
-    },
-    {
       name: "FeaturePolicyForClientHints",
       status: "experimental",
     },

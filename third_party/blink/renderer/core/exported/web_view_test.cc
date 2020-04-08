@@ -67,7 +67,6 @@
 #include "third_party/blink/public/web/web_element.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_frame_content_dumper.h"
-#include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_hit_test_result.h"
 #include "third_party/blink/public/web/web_input_method_controller.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -80,6 +79,8 @@
 #include "third_party/blink/public/web/web_widget.h"
 #include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_document.h"
+#include "third_party/blink/renderer/core/css/media_query_list_listener.h"
+#include "third_party/blink/renderer/core/css/media_query_matcher.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
@@ -95,6 +96,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/forms/external_date_time_chooser.h"
@@ -3948,16 +3950,67 @@ WebLocalFrame* CreateChildCounterFrameClient::CreateChildFrame(
 
 TEST_F(WebViewTest, ChangeDisplayMode) {
   RegisterMockedHttpURLLoad("display_mode.html");
-  WebView* web_view =
+  WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "display_mode.html");
 
-  std::string content =
-      WebFrameContentDumper::DumpWebViewAsText(web_view, 21).Utf8();
+  String content = WebFrameContentDumper::DumpWebViewAsText(web_view, 21);
   EXPECT_EQ("regular-ui", content);
 
-  web_view->SetDisplayMode(blink::mojom::DisplayMode::kMinimalUi);
-  content = WebFrameContentDumper::DumpWebViewAsText(web_view, 21).Utf8();
+  web_view->MainFrameImpl()->LocalRootFrameWidget()->SetDisplayMode(
+      mojom::blink::DisplayMode::kMinimalUi);
+  content = WebFrameContentDumper::DumpWebViewAsText(web_view, 21);
   EXPECT_EQ("minimal-ui", content);
+  web_view_helper_.Reset();
+}
+
+TEST_F(WebViewTest, ChangeDisplayModeChildFrame) {
+  RegisterMockedHttpURLLoad("iframe-display_mode.html");
+  RegisterMockedHttpURLLoad("display_mode.html");
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
+      base_url_ + "iframe-display_mode.html");
+
+  String content = WebFrameContentDumper::DumpWebViewAsText(web_view, 21);
+  // An iframe inserts whitespace into the content.
+  EXPECT_EQ("regular-ui", content.StripWhiteSpace());
+
+  web_view->MainFrameImpl()->LocalRootFrameWidget()->SetDisplayMode(
+      mojom::blink::DisplayMode::kMinimalUi);
+  content = WebFrameContentDumper::DumpWebViewAsText(web_view, 21);
+  // An iframe inserts whitespace into the content.
+  EXPECT_EQ("minimal-ui", content.StripWhiteSpace());
+  web_view_helper_.Reset();
+}
+
+TEST_F(WebViewTest, ChangeDisplayModeAlertsListener) {
+  RegisterMockedHttpURLLoad("display_mode_listener.html");
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
+      base_url_ + "display_mode_listener.html");
+
+  String content = WebFrameContentDumper::DumpWebViewAsText(web_view, 21);
+  EXPECT_EQ("regular-ui", content);
+
+  web_view->MainFrameImpl()->LocalRootFrameWidget()->SetDisplayMode(
+      mojom::blink::DisplayMode::kMinimalUi);
+  content = WebFrameContentDumper::DumpWebViewAsText(web_view, 21);
+  EXPECT_EQ("minimal-ui", content);
+  web_view_helper_.Reset();
+}
+
+TEST_F(WebViewTest, ChangeDisplayModeChildFrameAlertsListener) {
+  RegisterMockedHttpURLLoad("iframe-display_mode_listener.html");
+  RegisterMockedHttpURLLoad("display_mode_listener.html");
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
+      base_url_ + "iframe-display_mode_listener.html");
+
+  String content = WebFrameContentDumper::DumpWebViewAsText(web_view, 21);
+  // An iframe inserts whitespace into the content.
+  EXPECT_EQ("regular-ui", content.StripWhiteSpace());
+
+  web_view->MainFrameImpl()->LocalRootFrameWidget()->SetDisplayMode(
+      mojom::blink::DisplayMode::kMinimalUi);
+  content = WebFrameContentDumper::DumpWebViewAsText(web_view, 21);
+  // An iframe inserts whitespace into the content.
+  EXPECT_EQ("minimal-ui", content.StripWhiteSpace());
   web_view_helper_.Reset();
 }
 

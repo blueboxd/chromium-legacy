@@ -12,6 +12,7 @@
 #include "base/containers/flat_set.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/trace_event/trace_event.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -622,6 +623,8 @@ DesktopWindowTreeHostWin::GetKeyboardLayoutMap() {
 }
 
 void DesktopWindowTreeHostWin::SetCursorNative(gfx::NativeCursor cursor) {
+  TRACE_EVENT1("ui,input", "DesktopWindowTreeHostWin::SetCursorNative",
+               "cursor", cursor.type());
   ui::CursorLoaderWin cursor_loader;
   cursor_loader.SetPlatformCursor(&cursor);
 

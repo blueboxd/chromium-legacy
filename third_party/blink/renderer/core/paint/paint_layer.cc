@@ -366,6 +366,7 @@ bool PaintLayer::FixedToViewport() const {
 }
 
 bool PaintLayer::ScrollsWithRespectTo(const PaintLayer* other) const {
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   if (FixedToViewport() != other->FixedToViewport())
     return true;
   // If either element sticks we cannot trivially determine that the layers do

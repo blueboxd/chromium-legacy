@@ -40,7 +40,6 @@ WorkerTask::WorkerTask(base::ProcessHandle handle,
                        Task::Type task_type,
                        int render_process_id)
     : Task(GetTaskTitle(/*script_url=*/GURL(), task_type),
-           /*rappor_sample=*/std::string(),
            /*icon=*/nullptr,
            handle),
       task_type_(task_type),
@@ -58,7 +57,6 @@ int WorkerTask::GetChildProcessUniqueID() const {
 
 void WorkerTask::SetScriptUrl(const GURL& script_url) {
   set_title(GetTaskTitle(script_url, task_type_));
-  set_rappor_sample_name(script_url.spec());
 }
 
 }  // namespace task_manager

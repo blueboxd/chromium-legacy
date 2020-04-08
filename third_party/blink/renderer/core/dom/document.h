@@ -38,10 +38,12 @@
 #include "base/timer/elapsed_timer.h"
 #include "net/cookies/site_for_cookies.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "services/network/public/mojom/trust_tokens.mojom-blink.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/accessibility/axid.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/media_value_change.h"
@@ -1138,6 +1140,7 @@ class CORE_EXPORT Document : public ContainerNode,
   const KURL& CookieURL() const { return cookie_url_; }
   void SetCookieURL(const KURL& url) { cookie_url_ = url; }
 
+  // Returns null if the document is not attached to a frame.
   scoped_refptr<const SecurityOrigin> TopFrameOrigin() const;
 
   net::SiteForCookies SiteForCookies() const;
@@ -1152,6 +1155,15 @@ class CORE_EXPORT Document : public ContainerNode,
   // may otherwise be blocked.
   ScriptPromise hasStorageAccess(ScriptState* script_state) const;
   ScriptPromise requestStorageAccess(ScriptState* script_state);
+
+  // Sends a query via Mojo to ask whether the user has any trust tokens. This
+  // can reject on permissions errors (e.g. associating |issuer| with the
+  // top-level origin would exceed the top-level origin's limit on the number of
+  // associated issuers) or on other internal errors (e.g. the network service
+  // is unavailable).
+  ScriptPromise hasTrustToken(ScriptState* script_state,
+                              const String& issuer,
+                              ExceptionState&);
 
   // The following implements the rule from HTML 4 for what valid names are.
   // To get this right for all the XML cases, we probably have to improve this
@@ -1765,6 +1777,7 @@ class CORE_EXPORT Document : public ContainerNode,
   }
 
  private:
+  friend class DocumentTest;
   friend class IgnoreDestructiveWriteCountIncrementer;
   friend class ThrowOnDynamicMarkupInsertionCountIncrementer;
   friend class IgnoreOpensDuringUnloadCountIncrementer;
@@ -1902,6 +1915,10 @@ class CORE_EXPORT Document : public ContainerNode,
   void DisplayNoneChangedForFrame();
 
   void ExecuteFormSubmission(HTMLFormElement* form_element);
+
+  // Handles a connection error to |has_trust_tokens_answerer_| by rejecting all
+  // pending promises created by |hasTrustToken|.
+  void HasTrustTokensAnswererConnectionError();
 
   DocumentLifecycle lifecycle_;
 
@@ -2317,6 +2334,22 @@ class CORE_EXPORT Document : public ContainerNode,
   // Mojo remote used to determine if the document has permission to access
   // storage or not.
   HeapMojoRemote<mojom::blink::PermissionService> permission_service_;
+
+  // Mojo remote used to answer API calls asking whether the user has trust
+  // tokens (https://github.com/wicg/trust-token-api). The other endpoint
+  // is in the network service, which may crash and restart. To handle this:
+  //   1. |pending_has_trust_tokens_resolvers_| keeps track of promises
+  // depending on |has_trust_tokens_answerer_|'s answers;
+  //   2. |HasTrustTokensAnswererConnectionError| handles connection errors by
+  // rejecting all pending promises and clearing the pending set.
+  HeapMojoRemote<network::mojom::blink::HasTrustTokensAnswerer>
+      has_trust_tokens_answerer_;
+
+  // In order to be able to answer promises when the Mojo remote disconnects,
+  // maintain all pending promises here, deleting them on successful completion
+  // or on connection error, whichever comes first.
+  HeapHashSet<Member<ScriptPromiseResolver>>
+      pending_has_trust_tokens_resolvers_;
 
   FontPreloadManager font_preload_manager_;
 };

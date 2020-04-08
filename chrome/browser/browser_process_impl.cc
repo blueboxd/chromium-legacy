@@ -311,6 +311,7 @@ void BrowserProcessImpl::Init() {
   KeepAliveRegistry::GetInstance()->AddObserver(this);
 #endif  // !defined(OS_ANDROID)
 
+  MigrateObsoleteLocalStatePrefs(local_state());
   pref_change_registrar_.Init(local_state());
 
   // Initialize the notification for the default browser setting policy.

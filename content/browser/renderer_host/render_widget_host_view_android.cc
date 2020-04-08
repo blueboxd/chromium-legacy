@@ -230,8 +230,6 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       using_viz_for_webview_(features::IsUsingVizForWebView()),
       synchronous_compositor_client_(nullptr),
       observing_root_window_(false),
-      fallback_cursor_mode_enabled_(
-          base::FeatureList::IsEnabled(features::kFallbackCursorMode)),
       prev_top_shown_pix_(0.f),
       prev_top_controls_translate_(0.f),
       prev_bottom_shown_pix_(0.f),
@@ -1589,27 +1587,6 @@ void RenderWidgetHostViewAndroid::ChildDidAckGestureEvent(
     gesture_listener_manager_->GestureEventAck(event, ack_result);
 }
 
-bool RenderWidgetHostViewAndroid::OnUnconsumedKeyboardEventAck(
-    const NativeWebKeyboardEventWithLatencyInfo& event) {
-  return fallback_cursor_mode_enabled_ &&
-         event.event.GetType() == blink::WebInputEvent::kKeyDown &&
-         view_.OnUnconsumedKeyboardEventAck(event.event.native_key_code);
-}
-
-void RenderWidgetHostViewAndroid::FallbackCursorModeLockCursor(bool left,
-                                                               bool right,
-                                                               bool up,
-                                                               bool down) {
-  DCHECK(fallback_cursor_mode_enabled_);
-  view_.FallbackCursorModeLockCursor(left, right, up, down);
-}
-
-void RenderWidgetHostViewAndroid::FallbackCursorModeSetCursorVisibility(
-    bool visible) {
-  DCHECK(fallback_cursor_mode_enabled_);
-  view_.FallbackCursorModeSetCursorVisibility(visible);
-}
-
 InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
     const blink::WebInputEvent& input_event) {
   if (overscroll_controller_ &&
@@ -2135,24 +2112,6 @@ void RenderWidgetHostViewAndroid::OnActivityStarted() {
   DCHECK(observing_root_window_);
   is_window_activity_started_ = true;
   ShowInternal();
-}
-
-void RenderWidgetHostViewAndroid::OnCursorVisibilityChanged(bool visible) {
-  DCHECK(observing_root_window_);
-  // The fallback_cursor_mode check should really happen higher up in the
-  // stack. We do it here because the call comes from Java ui/touchless which
-  // can't access the value of the blink Feature.
-  if (host() && fallback_cursor_mode_enabled_)
-    host()->OnCursorVisibilityStateChanged(visible);
-}
-
-void RenderWidgetHostViewAndroid::OnFallbackCursorModeToggled(bool is_on) {
-  DCHECK(observing_root_window_);
-  // The fallback_cursor_mode check should really happen higher up in the
-  // stack. We do it here because the call comes from Java ui/touchless which
-  // can't access the value of the blink Feature.
-  if (host() && fallback_cursor_mode_enabled_)
-    host()->OnFallbackCursorModeToggled(is_on);
 }
 
 void RenderWidgetHostViewAndroid::OnLostResources() {

@@ -237,8 +237,8 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest,
                    EXECUTE_SCRIPT_NO_USER_GESTURE));
 }
 
-// Flaky on Windows.  https://crbug.com/992529
-#if defined(OS_WIN)
+// TODO(https://crbug.com/992529): Fix test flakiness on Windows and Linux.
+#if defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_PointerLockEventRouting DISABLED_PointerLockEventRouting
 #else
 #define MAYBE_PointerLockEventRouting PointerLockEventRouting

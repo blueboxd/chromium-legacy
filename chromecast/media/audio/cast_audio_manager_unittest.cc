@@ -17,7 +17,7 @@
 #include "chromecast/common/mojom/multiroom.mojom.h"
 #include "chromecast/common/mojom/service_connector.mojom.h"
 #include "chromecast/media/api/cma_backend.h"
-#include "chromecast/media/cma/test/mock_cma_backend.h"
+#include "chromecast/media/api/test/mock_cma_backend.h"
 #include "chromecast/media/cma/test/mock_cma_backend_factory.h"
 #include "chromecast/media/cma/test/mock_multiroom_manager.h"
 #include "media/audio/audio_device_info_accessor_for_tests.h"
@@ -36,8 +36,8 @@
 using testing::_;
 using testing::AnyNumber;
 using testing::Invoke;
-using testing::Return;
 using testing::NiceMock;
+using testing::Return;
 using testing::StrictMock;
 
 namespace {

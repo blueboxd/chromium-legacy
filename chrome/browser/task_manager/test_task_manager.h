@@ -45,7 +45,6 @@ class TestTaskManager : public TaskManagerInterface {
   int GetOpenFdCount(TaskId task_id) const override;
   bool IsTaskOnBackgroundedProcess(TaskId task_id) const override;
   const base::string16& GetTitle(TaskId task_id) const override;
-  const std::string& GetTaskNameForRappor(TaskId task_id) const override;
   base::string16 GetProfileName(TaskId task_id) const override;
   const gfx::ImageSkia& GetIcon(TaskId task_id) const override;
   const base::ProcessHandle& GetProcessHandle(TaskId task_id) const override;
@@ -86,7 +85,6 @@ class TestTaskManager : public TaskManagerInterface {
   base::ProcessHandle handle_;
   base::ProcessId pid_;
   base::string16 title_;
-  std::string rappor_sample_;
   gfx::ImageSkia icon_;
   TaskIdList ids_;
 

@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/containers/adapters.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_action_data.h"
@@ -236,6 +237,15 @@ const ui::AXNodeData& AXVirtualView::GetData() const {
 
   if (populate_data_callback_ && GetOwnerView())
     populate_data_callback_.Run(&node_data);
+
+  // According to the ARIA spec, the node should not be ignored if it is
+  // focusable. This is to ensure that the focusable node is both understandable
+  // and operable.
+  if (node_data.HasState(ax::mojom::State::kIgnored) &&
+      node_data.HasState(ax::mojom::State::kFocusable)) {
+    node_data.RemoveState(ax::mojom::State::kIgnored);
+  }
+
   return node_data;
 }
 
@@ -302,12 +312,24 @@ gfx::Rect AXVirtualView::GetBoundsRect(
     const ui::AXCoordinateSystem coordinate_system,
     const ui::AXClippingBehavior clipping_behavior,
     ui::AXOffscreenResult* offscreen_result) const {
+  // We could optionally add clipping here if ever needed.
+  // TODO(nektar): Implement bounds that are relative to the parent.
+  gfx::Rect bounds = gfx::ToEnclosingRect(GetData().relative_bounds.bounds);
+  View* owner_view = GetOwnerView();
+  if (owner_view && owner_view->GetWidget())
+    View::ConvertRectToScreen(owner_view, &bounds);
   switch (coordinate_system) {
     case ui::AXCoordinateSystem::kScreenDIPs:
-      // We could optionally add clipping here if ever needed.
-      // TODO(nektar): Implement bounds that are relative to the parent.
-      return gfx::ToEnclosingRect(custom_data_.relative_bounds.bounds);
-    case ui::AXCoordinateSystem::kScreenPhysicalPixels:
+      return bounds;
+    case ui::AXCoordinateSystem::kScreenPhysicalPixels: {
+      float scale_factor = 1.0;
+      if (owner_view && owner_view->GetWidget()) {
+        gfx::NativeView native_view = owner_view->GetWidget()->GetNativeView();
+        if (native_view)
+          scale_factor = ui::GetScaleFactorForNativeView(native_view);
+      }
+      return gfx::ScaleToEnclosingRect(bounds, scale_factor);
+    }
     case ui::AXCoordinateSystem::kRootFrame:
     case ui::AXCoordinateSystem::kFrame:
       NOTIMPLEMENTED();
@@ -318,27 +340,39 @@ gfx::Rect AXVirtualView::GetBoundsRect(
 gfx::NativeViewAccessible AXVirtualView::HitTestSync(
     int screen_physical_pixel_x,
     int screen_physical_pixel_y) const {
-  if (custom_data_.relative_bounds.bounds.Contains(
-          static_cast<float>(screen_physical_pixel_x),
-          static_cast<float>(screen_physical_pixel_y))) {
-    if (!IsIgnored())
-      return GetNativeObject();
-  }
+  const ui::AXNodeData& node_data = GetData();
+  if (node_data.HasState(ax::mojom::State::kInvisible))
+    return nullptr;
 
   // Check if the point is within any of the virtual children of this view.
   // AXVirtualView's HitTestSync is a recursive function that will return the
   // deepest child, since it does not support relative bounds.
-  for (const std::unique_ptr<AXVirtualView>& child : children_) {
+  // Search the greater indices first, since they're on top in the z-order.
+  for (const std::unique_ptr<AXVirtualView>& child :
+       base::Reversed(children_)) {
     gfx::NativeViewAccessible result =
         child->HitTestSync(screen_physical_pixel_x, screen_physical_pixel_y);
     if (result)
       return result;
   }
+
+  // If it's not inside any of our virtual children, and it's inside the bounds
+  // of this virtual view, then it's inside this virtual view.
+  gfx::Rect bounds_in_screen_physical_pixels =
+      GetBoundsRect(ui::AXCoordinateSystem::kScreenPhysicalPixels,
+                    ui::AXClippingBehavior::kUnclipped);
+  if (bounds_in_screen_physical_pixels.Contains(
+          static_cast<float>(screen_physical_pixel_x),
+          static_cast<float>(screen_physical_pixel_y)) &&
+      !node_data.IsIgnored()) {
+    return GetNativeObject();
+  }
+
   return nullptr;
 }
 
 gfx::NativeViewAccessible AXVirtualView::GetFocus() {
-  auto* owner_view = GetOwnerView();
+  View* owner_view = GetOwnerView();
   if (owner_view) {
     if (!(owner_view->HasFocus())) {
       return nullptr;
@@ -389,15 +423,7 @@ gfx::AcceleratedWidget AXVirtualView::GetTargetForNativeAccessibilityEvent() {
 }
 
 bool AXVirtualView::IsIgnored() const {
-  const ui::AXNodeData& node_data = GetData();
-
-  // According to the ARIA spec, the node should not be ignored if it is
-  // focusable. This is to ensure that the focusable node is both understandable
-  // and operable.
-  if (node_data.HasState(ax::mojom::State::kFocusable))
-    return false;
-
-  return node_data.IsIgnored();
+  return GetData().IsIgnored();
 }
 
 bool AXVirtualView::HandleAccessibleAction(

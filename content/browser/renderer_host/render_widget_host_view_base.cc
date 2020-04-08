@@ -373,19 +373,6 @@ void RenderWidgetHostViewBase::ChildDidAckGestureEvent(
     const blink::WebGestureEvent& event,
     InputEventAckState ack_result) {}
 
-bool RenderWidgetHostViewBase::OnUnconsumedKeyboardEventAck(
-    const NativeWebKeyboardEventWithLatencyInfo& event) {
-  return false;
-}
-
-void RenderWidgetHostViewBase::FallbackCursorModeLockCursor(bool left,
-                                                            bool right,
-                                                            bool up,
-                                                            bool down) {}
-
-void RenderWidgetHostViewBase::FallbackCursorModeSetCursorVisibility(
-    bool visible) {}
-
 void RenderWidgetHostViewBase::ForwardTouchpadZoomEventIfNecessary(
     const blink::WebGestureEvent& event,
     InputEventAckState ack_result) {

@@ -39,6 +39,7 @@ import "services/network/public/mojom/restricted_cookie_manager.mojom";
 import "services/network/public/mojom/site_for_cookies.mojom";
 import "services/network/public/mojom/ssl_config.mojom";
 import "services/network/public/mojom/tcp_socket.mojom";
+import "services/network/public/mojom/trust_tokens.mojom";
 import "services/network/public/mojom/udp_socket.mojom";
 import "services/network/public/mojom/url_loader.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
@@ -863,6 +864,24 @@ interface NetworkContext {
       url.mojom.Origin top_frame_origin,
       bool is_service_worker,
       int32 process_id, int32 routing_id);
+
+  // Provides a HasTrustTokensAnswerer scoped to the given top-frame origin
+  // (subsequent calls to its HasTrustTokens(issuer) method will attempt to
+  // associate |issuer| with |top_frame_origin|, in the sense of
+  // TrustTokenStore::SetAssociation, and reject if |top_frame_origin| is
+  // already at its number-of-associated-issuers limit).
+  //
+  // The caller must ensure (enforced by ReportBadMessage) that
+  // |top_frame_origin| is both
+  // (1) potentially trustworthy and
+  // (2) either HTTP or HTTPS.
+  //
+  // The first is a general security requirement; the second is in order to
+  // ensure that the origin has a unique serialization (and, consequently, is
+  // suitable for keying persistent Trust Tokens state).
+  GetHasTrustTokensAnswerer(
+      pending_receiver<HasTrustTokensAnswerer> has_trust_tokens_answerer,
+      url.mojom.Origin top_frame_origin);
 
   // Clears network objects with implicit URL history information. Data related
   // to events that happened prior to |start_time| may be retained. Only applies

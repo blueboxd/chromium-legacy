@@ -154,6 +154,7 @@ class CORE_EXPORT HTMLCanvasElement final
   void DidDraw(const FloatRect&) override;
   void DidDraw() override;
 
+  void UpdateFilterQuality();
   void Paint(GraphicsContext&,
              const PhysicalRect&,
              bool flatten_composited_layers);

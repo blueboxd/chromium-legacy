@@ -311,8 +311,6 @@ android_library("ui_full_java") {
     "java/src/org/chromium/ui/resources/system/SystemResourceLoader.java",
     "java/src/org/chromium/ui/text/NoUnderlineClickableSpan.java",
     "java/src/org/chromium/ui/text/SpanApplier.java",
-    "java/src/org/chromium/ui/touchless/CursorObserver.java",
-    "java/src/org/chromium/ui/touchless/TouchlessEventHandler.java",
     "java/src/org/chromium/ui/util/ColorUtils.java",
     "java/src/org/chromium/ui/util/TokenHolder.java",
     "java/src/org/chromium/ui/vr/VrModeObserver.java",
@@ -456,12 +454,26 @@ test("ui_android_unittests") {
   ]
 }
 
+android_library("clipboard_java_test_support") {
+  testonly = true
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+
+  sources =
+      [ "javatests/src/org/chromium/ui/base/ClipboardAndroidTestSupport.java" ]
+
+  deps = [
+    "//base:base_java",
+    "//base:base_java_test_support",
+  ]
+}
+
 android_library("ui_javatests") {
   testonly = true
 
   sources = [ "javatests/src/org/chromium/ui/base/ClipboardAndroidTest.java" ]
 
   deps = [
+    ":clipboard_java_test_support",
     ":ui_java",
     ":ui_java_test_support",
     "//base:base_java",
@@ -470,12 +482,11 @@ android_library("ui_javatests") {
     "//content/public/test/android:content_java_test_support",
     "//third_party/junit",
   ]
-
-  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
 
 generate_jni("ui_javatest_jni_headers") {
   testonly = true
 
-  sources = [ "javatests/src/org/chromium/ui/base/ClipboardAndroidTest.java" ]
+  sources =
+      [ "javatests/src/org/chromium/ui/base/ClipboardAndroidTestSupport.java" ]
 }

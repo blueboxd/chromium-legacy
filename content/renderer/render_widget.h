@@ -53,7 +53,6 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/referrer_policy.mojom.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
-#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/blink/public/platform/viewport_intersection_state.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_text_input_info.h"
@@ -153,7 +152,6 @@ class CONTENT_EXPORT RenderWidget
  public:
   RenderWidget(int32_t widget_routing_id,
                CompositorDependencies* compositor_deps,
-               blink::mojom::DisplayMode display_mode,
                bool hidden,
                bool never_composited,
                mojo::PendingReceiver<mojom::Widget> widget_receiver);
@@ -176,7 +174,6 @@ class CONTENT_EXPORT RenderWidget
   using CreateRenderWidgetFunction = std::unique_ptr<RenderWidget> (*)(
       int32_t,
       CompositorDependencies*,
-      blink::mojom::DisplayMode display_mode,
       bool never_composited,
       mojo::PendingReceiver<mojom::Widget> widget_receiver);
   // Overrides the implementation of CreateForFrame() function below. Used by
@@ -190,7 +187,6 @@ class CONTENT_EXPORT RenderWidget
   static std::unique_ptr<RenderWidget> CreateForFrame(
       int32_t widget_routing_id,
       CompositorDependencies* compositor_deps,
-      blink::mojom::DisplayMode display_mode,
       bool never_composited);
 
   // Creates a RenderWidget for a popup. This is separate from CreateForFrame()
@@ -201,7 +197,6 @@ class CONTENT_EXPORT RenderWidget
   static RenderWidget* CreateForPopup(
       int32_t widget_routing_id,
       CompositorDependencies* compositor_deps,
-      blink::mojom::DisplayMode display_mode,
       bool hidden,
       bool never_composited,
       mojo::PendingReceiver<mojom::Widget> widget_receiver);
@@ -263,7 +258,6 @@ class CONTENT_EXPORT RenderWidget
 
   const gfx::Size& size() const { return size_; }
   bool is_fullscreen_granted() const { return is_fullscreen_granted_; }
-  blink::mojom::DisplayMode display_mode() const { return display_mode_; }
   bool is_hidden() const { return is_hidden_; }
   bool has_host_context_menu_location() const {
     return has_host_context_menu_location_;
@@ -420,11 +414,6 @@ class CONTENT_EXPORT RenderWidget
                                        const blink::WebRect& bounds) override;
   void ZoomToFindInPageRectInMainFrame(
       const blink::WebRect& rect_to_zoom) override;
-  void FallbackCursorModeLockCursor(bool left,
-                                    bool right,
-                                    bool up,
-                                    bool down) override;
-  void FallbackCursorModeSetCursorVisibility(bool visible) override;
   void SetPageScaleStateAndLimits(float page_scale_factor,
                                   bool is_pinch_gesture_active,
                                   float minimum,
@@ -563,7 +552,6 @@ class CONTENT_EXPORT RenderWidget
   void OnSetFocus(bool enable);
   void OnMouseCaptureLost();
   void OnCursorVisibilityChange(bool is_visible);
-  void OnFallbackCursorModeToggled(bool is_on);
   void OnSetEditCommandsForNextKeyEvent(const EditCommands& edit_commands);
   void OnImeSetComposition(
       const base::string16& text,
@@ -897,9 +885,6 @@ class CONTENT_EXPORT RenderWidget
 
   // Indicates whether tab-initiated fullscreen was granted.
   bool is_fullscreen_granted_ = false;
-
-  // Indicates the display mode.
-  blink::mojom::DisplayMode display_mode_;
 
   // It is possible that one ImeEventGuard is nested inside another
   // ImeEventGuard. We keep track of the outermost one, and update it as needed.

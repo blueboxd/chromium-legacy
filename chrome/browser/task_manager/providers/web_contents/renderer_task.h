@@ -48,11 +48,6 @@ class RendererTask : public Task,
   // can update their favicons.
   virtual void UpdateFavicon() = 0;
 
-  // An overridable method that will be called when the event
-  // WebContentsObserver::DidNavigateMainFrame() occurs, so that we can update
-  // their Rappor sample name when a navigation takes place.
-  virtual void UpdateRapporSampleName();
-
   // task_manager::Task:
   void Activate() override;
   void Refresh(const base::TimeDelta& update_interval,

@@ -1422,28 +1422,33 @@ void TableView::UpdateVirtualAccessibilityChildrenBounds() {
 }
 
 gfx::Rect TableView::CalculateHeaderRowAccessibilityBounds() const {
-  return AdjustRectForAXRelativeBounds(header_->GetVisibleBounds());
+  gfx::Rect header_bounds = header_->GetVisibleBounds();
+  gfx::Point header_origin = header_bounds.origin();
+  ConvertPointToTarget(header_, this, &header_origin);
+  header_bounds.set_origin(header_origin);
+  return header_bounds;
 }
 
 gfx::Rect TableView::CalculateHeaderCellAccessibilityBounds(
     const int visible_column_index) const {
+  const gfx::Rect& header_bounds = CalculateHeaderRowAccessibilityBounds();
   const VisibleColumn& visible_column = visible_columns_[visible_column_index];
-  gfx::Rect header_cell_bounds(visible_column.x, header_->y(),
-                               visible_column.width, header_->height());
-  return AdjustRectForAXRelativeBounds(header_cell_bounds);
+  gfx::Rect header_cell_bounds(visible_column.x, header_bounds.y(),
+                               visible_column.width, header_bounds.height());
+  return header_cell_bounds;
 }
 
 gfx::Rect TableView::CalculateTableRowAccessibilityBounds(
     const int row_index) const {
   gfx::Rect row_bounds = GetRowBounds(row_index);
-  return AdjustRectForAXRelativeBounds(row_bounds);
+  return row_bounds;
 }
 
 gfx::Rect TableView::CalculateTableCellAccessibilityBounds(
     const int row_index,
     const int visible_column_index) const {
   gfx::Rect cell_bounds = GetCellBounds(row_index, visible_column_index);
-  return AdjustRectForAXRelativeBounds(cell_bounds);
+  return cell_bounds;
 }
 
 void TableView::UpdateAccessibilityFocus() {
@@ -1508,13 +1513,6 @@ AXVirtualView* TableView::GetVirtualAccessibilityCell(
       << "|visible_column_index| not found. Did you forget to call "
       << "UpdateVirtualAccessibilityChildren()?";
   return i->get();
-}
-
-gfx::Rect TableView::AdjustRectForAXRelativeBounds(
-    const gfx::Rect& rect) const {
-  gfx::Rect converted_rect = rect;
-  View::ConvertRectToScreen(this, &converted_rect);
-  return converted_rect;
 }
 
 DEFINE_ENUM_CONVERTERS(TableTypes,

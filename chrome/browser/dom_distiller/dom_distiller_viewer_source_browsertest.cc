@@ -166,8 +166,8 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
   expect_distillation_ = true;
   expect_distiller_page_ = true;
   GURL original_url("http://www.example.com/1");
-  const GURL view_url =
-      url_utils::GetDistillerViewUrlFromUrl(kDomDistillerScheme, original_url);
+  const GURL view_url = url_utils::GetDistillerViewUrlFromUrl(
+      kDomDistillerScheme, original_url, "Title");
   ViewSingleDistilledPage(view_url, "text/html");
 }
 
@@ -263,8 +263,8 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
                        InvalidURLShouldGetErrorPage) {
   const GURL original_url("http://www.example.com/1");
   const GURL different_url("http://www.example.com/2");
-  const GURL view_url =
-      url_utils::GetDistillerViewUrlFromUrl(kDomDistillerScheme, original_url);
+  const GURL view_url = url_utils::GetDistillerViewUrlFromUrl(
+      kDomDistillerScheme, original_url, "Title");
   // This is a bogus URL, so no distillation will happen.
   const GURL bad_view_url = net::AppendOrReplaceQueryParameter(
       view_url, kUrlKey, different_url.spec());
@@ -289,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, EarlyTemplateLoad) {
 
   // Navigate to a URL.
   GURL url(dom_distiller::url_utils::GetDistillerViewUrlFromUrl(
-      kDomDistillerScheme, GURL("http://urlthatlooksvalid.com")));
+      kDomDistillerScheme, GURL("http://urlthatlooksvalid.com"), "Title"));
   NavigateParams params(browser(), url, ui::PAGE_TRANSITION_TYPED);
   Navigate(&params);
   distillation_done_runner->Run();
@@ -413,7 +413,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, MultiPageArticle) {
 
   // Navigate to a URL and wait for the distiller to flush contents to the page.
   GURL url(dom_distiller::url_utils::GetDistillerViewUrlFromUrl(
-      kDomDistillerScheme, GURL("http://urlthatlooksvalid.com")));
+      kDomDistillerScheme, GURL("http://urlthatlooksvalid.com"), "Title"));
   NavigateParams params(browser(), url, ui::PAGE_TRANSITION_TYPED);
   Navigate(&params);
   distillation_done_runner->Run();
@@ -507,7 +507,7 @@ void DomDistillerViewerSourceBrowserTest::PrefTest(bool is_error_page) {
     expect_distiller_page_ = true;
     GURL original_url("http://www.example.com/1");
     view_url = url_utils::GetDistillerViewUrlFromUrl(kDomDistillerScheme,
-                                                     original_url);
+                                                     original_url, "Title");
   }
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();

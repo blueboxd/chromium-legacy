@@ -27,7 +27,6 @@ class FakeTask : public Task {
            const std::string& title,
            SessionID tab_id)
       : Task(base::ASCIIToUTF16(title),
-             "FakeTask",
              nullptr,
              base::kNullProcessHandle,
              process_id),

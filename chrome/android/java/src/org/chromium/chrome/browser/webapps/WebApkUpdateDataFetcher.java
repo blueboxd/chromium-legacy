@@ -36,7 +36,7 @@ public class WebApkUpdateDataFetcher extends EmptyTabObserver {
          * @param splashIconUrl  The icon URL in {@link fetchedInfo#iconUrlToMurmur2HashMap()} best
          *                       suited for use as the splash icon on this device.
          */
-        void onGotManifestData(WebApkInfo fetchedInfo, String primaryIconUrl, String splashIconUrl);
+        void onGotManifestData(WebappInfo fetchedInfo, String primaryIconUrl, String splashIconUrl);
     }
 
     /**
@@ -49,12 +49,12 @@ public class WebApkUpdateDataFetcher extends EmptyTabObserver {
     private Tab mTab;
 
     /** Web Manifest data at the time that the WebAPK was generated. */
-    private WebApkInfo mOldInfo;
+    private WebappInfo mOldInfo;
 
     private Observer mObserver;
 
     /** Starts observing page loads in order to fetch the Web Manifest after each page load. */
-    public boolean start(Tab tab, WebApkInfo oldInfo, Observer observer) {
+    public boolean start(Tab tab, WebappInfo oldInfo, Observer observer) {
         if (tab.getWebContents() == null || TextUtils.isEmpty(oldInfo.manifestUrl())) {
             return false;
         }
@@ -140,7 +140,7 @@ public class WebApkUpdateDataFetcher extends EmptyTabObserver {
                         shareParamsAccepts);
 
         int defaultBackgroundColor = SplashLayout.getDefaultBackgroundColor(appContext);
-        WebApkInfo info = WebApkInfo.create(mOldInfo.url(), scopeUrl,
+        WebappInfo info = WebApkInfo.create(mOldInfo.url(), scopeUrl,
                 new WebappIcon(primaryIconBitmap), new WebappIcon(splashIconBitmap), name,
                 shortName, displayMode, orientation, mOldInfo.source(), themeColor, backgroundColor,
                 defaultBackgroundColor, isPrimaryIconMaskable, false /* isSplashIconMaskable */,

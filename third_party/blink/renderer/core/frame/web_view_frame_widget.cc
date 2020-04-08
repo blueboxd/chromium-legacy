@@ -129,10 +129,6 @@ void WebViewFrameWidget::SetCursorVisibilityState(bool is_visible) {
   web_view_->SetCursorVisibilityState(is_visible);
 }
 
-void WebViewFrameWidget::OnFallbackCursorModeToggled(bool is_on) {
-  web_view_->OnFallbackCursorModeToggled(is_on);
-}
-
 void WebViewFrameWidget::ApplyViewportChanges(
     const ApplyViewportChangesArgs& args) {
   web_view_->ApplyViewportChanges(args);

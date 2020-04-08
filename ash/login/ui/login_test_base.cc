@@ -103,8 +103,10 @@ void LoginTestBase::SetUserCount(size_t count) {
 
 void LoginTestBase::AddUsers(size_t num_users) {
   for (size_t i = 0; i < num_users; i++) {
+    // TODO(tellier): Use gmail.com instead of domain.com temporarily  so the
+    // display password button can be accessible. See crbug.com/1062524
     std::string email =
-        base::StrCat({"user", std::to_string(users_.size()), "@domain.com"});
+        base::StrCat({"user", std::to_string(users_.size()), "@gmail.com"});
     users_.push_back(CreateUser(email));
   }
 

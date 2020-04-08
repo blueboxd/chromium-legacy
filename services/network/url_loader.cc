@@ -64,6 +64,7 @@
 #include "services/network/resource_scheduler/resource_scheduler_client.h"
 #include "services/network/sec_header_helpers.h"
 #include "services/network/throttling/scoped_throttling_token.h"
+#include "services/network/trust_tokens/trust_token_request_helper_factory.h"
 
 namespace network {
 
@@ -490,7 +491,7 @@ URLLoader::URLLoader(
     base::WeakPtr<NetworkUsageAccumulator> network_usage_accumulator,
     mojom::TrustedURLLoaderHeaderClient* url_loader_header_client,
     mojom::OriginPolicyManager* origin_policy_manager,
-    std::unique_ptr<TrustTokenRequestHelper> trust_token_helper)
+    std::unique_ptr<TrustTokenRequestHelperFactory> trust_token_helper_factory)
     : url_request_context_(url_request_context),
       network_service_client_(network_service_client),
       network_context_client_(network_context_client),
@@ -527,7 +528,7 @@ URLLoader::URLLoader(
       custom_proxy_post_cache_headers_(request.custom_proxy_post_cache_headers),
       fetch_window_id_(request.fetch_window_id),
       origin_policy_manager_(nullptr),
-      trust_token_helper_(std::move(trust_token_helper)),
+      trust_token_helper_factory_(std::move(trust_token_helper_factory)),
       isolated_world_origin_(request.isolated_world_origin) {
   DCHECK(delete_callback_);
   DCHECK(factory_params_);
@@ -661,7 +662,7 @@ URLLoader::URLLoader(
     return;
   }
 
-  BeginTrustTokenOperationIfNecessaryAndThenScheduleStart();
+  BeginTrustTokenOperationIfNecessaryAndThenScheduleStart(request);
 }
 
 // This class is used to manage the queue of pending file upload operations
@@ -819,20 +820,45 @@ void URLLoader::SetUpUpload(const ResourceRequest& request,
                             base::Unretained(this)),
         url_request_.get());
   }
-  BeginTrustTokenOperationIfNecessaryAndThenScheduleStart();
+  BeginTrustTokenOperationIfNecessaryAndThenScheduleStart(request);
 }
 
-void URLLoader::BeginTrustTokenOperationIfNecessaryAndThenScheduleStart() {
-  if (!trust_token_helper_) {
+void URLLoader::BeginTrustTokenOperationIfNecessaryAndThenScheduleStart(
+    const ResourceRequest& request) {
+  if (!request.trust_token_params) {
     ScheduleStart();
     return;
   }
 
+  // Since the request has trust token parameters, |trust_token_helper_factory_|
+  // is guaranteed to be non-null by URLLoader's constructor's contract.
+  DCHECK(trust_token_helper_factory_);
+
+  trust_token_helper_factory_->CreateTrustTokenHelperForRequest(
+      *url_request_, request.trust_token_params.value(),
+      base::BindOnce(&URLLoader::OnDoneConstructingTrustTokenHelper,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void URLLoader::OnDoneConstructingTrustTokenHelper(
+    TrustTokenStatusOrRequestHelper status_or_helper) {
+  if (!status_or_helper.ok()) {
+    trust_token_status_ = status_or_helper.status();
+
+    // Defer calling NotifyCompleted to make sure the URLLoader
+    // finishes initializing before getting deleted.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&URLLoader::NotifyCompleted,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  net::ERR_TRUST_TOKEN_OPERATION_FAILED));
+    return;
+  }
+
+  trust_token_helper_ = status_or_helper.TakeOrCrash();
   trust_token_helper_->Begin(
       url_request_.get(),
       base::BindOnce(&URLLoader::OnDoneBeginningTrustTokenOperation,
                      weak_ptr_factory_.GetWeakPtr()));
-  // |this| may have been deleted.
 }
 
 void URLLoader::OnDoneBeginningTrustTokenOperation(

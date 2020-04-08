@@ -458,6 +458,10 @@ cc::EventListenerProperties WebFrameWidgetBase::EventListenerProperties(
       listener_class);
 }
 
+mojom::blink::DisplayMode WebFrameWidgetBase::DisplayMode() const {
+  return display_mode_;
+}
+
 void WebFrameWidgetBase::StartDeferringCommits(base::TimeDelta timeout) {
   if (!View()->does_composite())
     return;
@@ -629,6 +633,15 @@ void WebFrameWidgetBase::ApplyViewportChangesForTesting(
   // ApplyViewportChanges will eventually be removed when compositing moves into
   // |widget_base_|.
   ApplyViewportChanges(args);
+}
+
+void WebFrameWidgetBase::SetDisplayMode(mojom::blink::DisplayMode mode) {
+  if (mode != display_mode_) {
+    display_mode_ = mode;
+    LocalFrame* frame = LocalRootImpl()->GetFrame();
+    frame->MediaQueryAffectingValueChangedForLocalSubtree(
+        MediaValueChange::kOther);
+  }
 }
 
 void WebFrameWidgetBase::RequestAnimationAfterDelay(

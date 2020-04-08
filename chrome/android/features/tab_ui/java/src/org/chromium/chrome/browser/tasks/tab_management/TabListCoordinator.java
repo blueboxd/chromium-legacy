@@ -152,7 +152,7 @@ public class TabListCoordinator implements Destroyable {
                     float expectedThumbnailAspectRatio =
                             (float) ChromeFeatureList.getFieldTrialParamByFeatureAsDouble(
                                     ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
-                                    "thumbnail_aspect_ratio", 1.0);
+                                    TabUiFeatureUtilities.THUMBNAIL_ASPECT_RATIO_PARAM, 1.0);
                     expectedThumbnailAspectRatio =
                             MathUtils.clamp(expectedThumbnailAspectRatio, 0.5f, 2.0f);
                     int height = (int) (thumbnail.getWidth() * 1.0 / expectedThumbnailAspectRatio);
@@ -388,8 +388,8 @@ public class TabListCoordinator implements Destroyable {
         return mRecyclerView.getResourceId();
     }
 
-    long getLastDirtyTimeForTesting() {
-        return mRecyclerView.getLastDirtyTimeForTesting();
+    long getLastDirtyTime() {
+        return mRecyclerView.getLastDirtyTime();
     }
 
     /**

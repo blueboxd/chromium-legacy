@@ -7,6 +7,12 @@
 
 #include "third_party/blink/public/platform/web_url.h"
 
+#include <string>
+
+namespace gfx {
+class ColorSpace;
+}
+
 namespace content {
 struct TestPreferences;
 struct WebPreferences;
@@ -21,6 +27,10 @@ void ExportWebTestSpecificPreferences(const TestPreferences& from,
 // web_tests directory, or rewrite URLs generated from absolute
 // path links in web-platform-tests.
 blink::WebURL RewriteWebTestsURL(const std::string& utf8_url, bool is_wpt_mode);
+
+// Get the color space for a given name string. This is not in the ColorSpace
+// class to avoid bloating the shipping build.
+gfx::ColorSpace GetWebTestColorSpace(const std::string& name);
 
 }  // namespace content
 

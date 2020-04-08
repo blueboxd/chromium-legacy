@@ -1000,13 +1000,6 @@ class CONTENT_EXPORT ContentBrowserClient {
       RenderFrameHost* render_frame_host,
       service_manager::BinderMapWithContext<RenderFrameHost*>* map) {}
 
-  // Content was unable to bind a request for this interface, so the embedder
-  // should try.
-  virtual void BindInterfaceRequestFromFrame(
-      RenderFrameHost* render_frame_host,
-      const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle interface_pipe) {}
-
   // Content was unable to bind a CredentialManager pending receiver, so the
   // embedder should try.
   virtual void BindCredentialManagerReceiver(

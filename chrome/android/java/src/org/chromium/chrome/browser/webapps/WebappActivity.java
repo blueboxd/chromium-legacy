@@ -11,7 +11,6 @@ import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.StrictMode;
 import android.text.TextUtils;
 import android.view.ViewGroup;
@@ -51,7 +50,6 @@ import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityCo
 import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityModule;
 import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndroid;
 import org.chromium.content_public.browser.NavigationHandle;
-import org.chromium.content_public.browser.ScreenOrientationProvider;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
@@ -294,8 +292,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
 
         super.performPreInflationStartup();
 
-        applyScreenOrientation();
-
         if (mWebappInfo.displayMode() == WebDisplayMode.FULLSCREEN) {
             new ImmersiveModeController(getLifecycleDispatcher(), this).enterImmersiveMode(
                     LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT, false /*sticky*/);
@@ -517,37 +513,11 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     /** Inits the splash screen */
     private void initSplash() {
         // Splash screen is shown after preInflationStartup() is run and the delegate is set.
-        boolean isWindowInitiallyTranslucent = mWebappInfo.isSplashProvidedByWebApk();
+        boolean isWindowInitiallyTranslucent =
+                BaseCustomTabActivity.isWindowInitiallyTranslucent(this);
         mSplashController.setConfig(
                 new WebappSplashDelegate(this, mTabObserverRegistrar, mWebappInfo),
                 isWindowInitiallyTranslucent, WebappSplashDelegate.HIDE_ANIMATION_DURATION_MS);
-    }
-
-    /** Sets the screen orientation. */
-    private void applyScreenOrientation() {
-        if (mWebappInfo.isSplashProvidedByWebApk()
-                && Build.VERSION.SDK_INT == Build.VERSION_CODES.O) {
-            // When the splash screen is provided by the WebAPK, the activity is initially
-            // translucent. Setting the screen orientation while the activity is translucent
-            // throws an exception on O (but not O MR1). Delay setting it.
-            ScreenOrientationProvider.getInstance().delayOrientationRequests(getWindowAndroid());
-
-            mSplashController.addObserver(new SplashscreenObserver() {
-                @Override
-                public void onTranslucencyRemoved() {
-                    ScreenOrientationProvider.getInstance().runDelayedOrientationRequests(
-                            getWindowAndroid());
-                }
-
-                @Override
-                public void onSplashscreenHidden(long startTimestamp, long endTimestamp) {}
-            });
-
-            // Fall through and queue up request for the default screen orientation because the web
-            // page might change it via JavaScript.
-        }
-        ScreenOrientationProvider.getInstance().lockOrientation(
-                getWindowAndroid(), (byte) mWebappInfo.orientation());
     }
 
     @Override

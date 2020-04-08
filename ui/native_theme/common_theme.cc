@@ -47,6 +47,7 @@ base::Optional<SkColor> GetDarkSchemeColor(NativeTheme::ColorId color_id) {
   switch (color_id) {
     // Dialogs
     case NativeTheme::kColorId_WindowBackground:
+    case NativeTheme::kColorId_ButtonColor:
     case NativeTheme::kColorId_DialogBackground:
     case NativeTheme::kColorId_BubbleBackground:
       return color_utils::AlphaBlend(SK_ColorWHITE, gfx::kGoogleGrey900, 0.04f);
@@ -211,6 +212,7 @@ SkColor GetDefaultColor(NativeTheme::ColorId color_id,
   switch (color_id) {
     // Dialogs
     case NativeTheme::kColorId_WindowBackground:
+    case NativeTheme::kColorId_ButtonColor:
     case NativeTheme::kColorId_DialogBackground:
     case NativeTheme::kColorId_BubbleBackground:
       return SK_ColorWHITE;
@@ -252,7 +254,7 @@ SkColor GetDefaultColor(NativeTheme::ColorId color_id,
       return gfx::kGoogleGrey700;
     case NativeTheme::kColorId_ButtonDisabledColor: {
       const SkColor bg = base_theme->GetSystemColor(
-          NativeTheme::kColorId_DialogBackground, color_scheme);
+          NativeTheme::kColorId_ButtonColor, color_scheme);
       const SkColor fg = base_theme->GetSystemColor(
           NativeTheme::kColorId_LabelEnabledColor, color_scheme);
       return color_utils::BlendForMinContrast(gfx::kGoogleGrey600, bg, fg)
@@ -260,7 +262,7 @@ SkColor GetDefaultColor(NativeTheme::ColorId color_id,
     }
     case NativeTheme::kColorId_ProminentButtonDisabledColor: {
       const SkColor bg = base_theme->GetSystemColor(
-          NativeTheme::kColorId_DialogBackground, color_scheme);
+          NativeTheme::kColorId_ButtonColor, color_scheme);
       return color_utils::BlendForMinContrast(bg, bg, base::nullopt, 1.2f)
           .color;
     }

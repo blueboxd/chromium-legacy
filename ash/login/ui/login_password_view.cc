@@ -4,6 +4,7 @@
 
 #include "ash/login/ui/login_password_view.h"
 
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/login/ui/horizontal_image_sequence_animation_decoder.h"
 #include "ash/login/ui/hover_notifier.h"
 #include "ash/login/ui/lock_screen.h"
@@ -78,6 +79,15 @@ constexpr const int kHorizontalDistanceBetweenEasyUnlockAndPasswordDp = 12;
 
 // Non-empty height, useful for debugging/visualization.
 constexpr const int kNonEmptyHeight = 1;
+
+// Clears the password after some time if no action has been done and the
+// display password feature is enabled, for security reasons.
+constexpr base::TimeDelta kClearPasswordAfterDelay =
+    base::TimeDelta::FromSeconds(30);
+
+// Hides the password after a short delay for security reasons.
+constexpr base::TimeDelta kHidePasswordAfterDelay =
+    base::TimeDelta::FromSeconds(3);
 
 constexpr const char kLoginPasswordViewName[] = "LoginPasswordView";
 
@@ -199,6 +209,12 @@ class LoginPasswordView::LoginTextfield : public views::Textfield {
       SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
     else
       SetTextInputType(ui::TEXT_INPUT_TYPE_TEXT);
+  }
+
+  // This is useful when the display password button is not shown. In such a
+  // case, the login text field needs to define its size.
+  gfx::Size CalculatePreferredSize() const override {
+    return gfx::Size(kPasswordTotalWidthDp, kDisplayPasswordButtonSizeDp);
   }
 
  private:
@@ -412,7 +428,18 @@ void LoginPasswordView::TestApi::set_immediately_hover_easy_unlock_icon() {
   view_->easy_unlock_icon_->set_immediately_hover_for_test();
 }
 
-LoginPasswordView::LoginPasswordView() {
+void LoginPasswordView::TestApi::SetTimers(
+    std::unique_ptr<base::RetainingOneShotTimer> clear_timer,
+    std::unique_ptr<base::RetainingOneShotTimer> hide_timer) {
+  view_->clear_password_timer_ = std::move(clear_timer);
+  view_->hide_password_timer_ = std::move(hide_timer);
+  // Starts the clearing timer.
+  view_->SetDisplayPasswordButtonVisible(true);
+}
+
+LoginPasswordView::LoginPasswordView()
+    : clear_password_timer_(std::make_unique<base::RetainingOneShotTimer>()),
+      hide_password_timer_(std::make_unique<base::RetainingOneShotTimer>()) {
   Shell::Get()->ime_controller()->AddObserver(this);
 
   auto* root_layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -527,8 +554,28 @@ void LoginPasswordView::SetFocusEnabledOnTextfield(bool enable) {
   textfield_->SetFocusBehavior(behavior);
 }
 
+void LoginPasswordView::SetDisplayPasswordButtonVisible(bool visible) {
+  display_password_button_->SetVisible(visible);
+  // Only start the timer if the display password feature is enabled.
+  if (visible) {
+    clear_password_timer_->Start(
+        FROM_HERE, kClearPasswordAfterDelay,
+        base::BindRepeating(&LoginPasswordView::Clear, base::Unretained(this)));
+  }
+}
+
+void LoginPasswordView::Reset() {
+  Clear();
+  // A user could hit the display button, then quickly switch account and
+  // type; we want the password to be hidden in such a case.
+  HidePassword(false /*chromevox_exception*/);
+}
+
 void LoginPasswordView::Clear() {
   textfield_->SetText(base::string16());
+  // For security reasons, we also want to clear the edit history if the Clear
+  // function is invoked by the clear password timer.
+  textfield_->ClearEditHistory();
   // |ContentsChanged| won't be called by |Textfield| if the text is changed
   // by |Textfield::SetText()|.
   ContentsChanged(textfield_, textfield_->GetText());
@@ -585,17 +632,38 @@ bool LoginPasswordView::OnKeyPressed(const ui::KeyEvent& event) {
   return false;
 }
 
+void LoginPasswordView::InvertPasswordDisplayingState() {
+  display_password_button_->InvertToggled();
+  textfield_->InvertTextInputType();
+  hide_password_timer_->Start(
+      FROM_HERE, kHidePasswordAfterDelay,
+      base::BindRepeating(&LoginPasswordView::HidePassword,
+                          base::Unretained(this),
+                          true /*chromevox_exception*/));
+}
+
 void LoginPasswordView::ButtonPressed(views::Button* sender,
                                       const ui::Event& event) {
   DCHECK_EQ(sender, display_password_button_);
-  display_password_button_->InvertToggled();
-  textfield_->InvertTextInputType();
+  InvertPasswordDisplayingState();
+}
+
+void LoginPasswordView::HidePassword(bool chromevox_exception) {
+  if (chromevox_exception &&
+      Shell::Get()->accessibility_controller()->spoken_feedback_enabled()) {
+    return;
+  }
+  if (textfield_->GetTextInputType() == ui::TEXT_INPUT_TYPE_TEXT)
+    InvertPasswordDisplayingState();
 }
 
 void LoginPasswordView::ContentsChanged(views::Textfield* sender,
                                         const base::string16& new_contents) {
   DCHECK_EQ(sender, textfield_);
   on_password_text_changed_.Run(new_contents.empty() /*is_empty*/);
+  // Only reset the timer if the display password feature is enabled.
+  if (display_password_button_->GetVisible())
+    clear_password_timer_->Reset();
 }
 
 // Implements swapping active user with arrow keys

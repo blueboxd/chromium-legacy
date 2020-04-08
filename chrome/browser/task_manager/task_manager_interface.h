@@ -119,10 +119,6 @@ class TaskManagerInterface {
   // Returns the title of the task with |task_id|.
   virtual const base::string16& GetTitle(TaskId task_id) const = 0;
 
-  // Returns the canonicalized name of the task with |task_id| that can be used
-  // to represent this task in a Rappor sample via RapporServiceImpl.
-  virtual const std::string& GetTaskNameForRappor(TaskId task_id) const = 0;
-
   // Returns the name of the profile associated with the browser context of the
   // render view host that the task with |task_id| represents (if that task
   // represents a renderer).

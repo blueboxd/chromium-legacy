@@ -309,8 +309,9 @@ void CanvasAsyncBlobCreator::ScheduleAsyncBlobCreation(const double& quality) {
   // deadlines (6.7s or 13s) bypass the web test running deadline (6s)
   // and result in timeouts on different tests. We use
   // enforce_idle_encoding_for_test_ to test idle encoding in unit tests.
-  // We also don't use idle tasks in workers because there's no proper idle
-  // queue there and tasks can take too long without requestAnimationFrame.
+  // We also don't use idle tasks in workers because the short idle periods are
+  // not implemented, so the idle task can take a long time even when the thread
+  // is not busy.
   bool use_idle_encoding =
       WTF::IsMainThread() && (mime_type_ != kMimeTypeWebp) &&
       (enforce_idle_encoding_for_test_ ||

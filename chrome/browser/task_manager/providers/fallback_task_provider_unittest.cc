@@ -21,7 +21,6 @@ class FakeTask : public Task {
  public:
   FakeTask(base::ProcessId process_id, Type type, const std::string& title)
       : Task(base::ASCIIToUTF16(title),
-             "FakeTask",
              nullptr,
              base::kNullProcessHandle,
              process_id),

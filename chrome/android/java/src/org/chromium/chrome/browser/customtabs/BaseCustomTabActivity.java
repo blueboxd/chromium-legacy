@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.util.Pair;
 import android.view.KeyEvent;
@@ -32,6 +33,7 @@ import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
+import org.chromium.chrome.browser.webapps.SameTaskWebApkActivity;
 import org.chromium.chrome.browser.webapps.WebappActivityCoordinator;
 
 /**
@@ -62,6 +64,14 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
      */
     @VisibleForTesting
     public abstract BrowserServicesIntentDataProvider getIntentDataProvider();
+
+    /**
+     * @return Whether the activity window is initially translucent.
+     */
+    public static boolean isWindowInitiallyTranslucent(Activity activity) {
+        return activity instanceof TranslucentCustomTabActivity
+                || activity instanceof SameTaskWebApkActivity;
+    }
 
     @Override
     protected RootUiCoordinator createRootUiCoordinator() {

@@ -95,12 +95,6 @@ enum {
 class MockWidgetInputHandlerHost : public mojom::WidgetInputHandlerHost {
  public:
   MockWidgetInputHandlerHost() {}
-#if defined(OS_ANDROID)
-  MOCK_METHOD4(FallbackCursorModeLockCursor, void(bool, bool, bool, bool));
-
-  MOCK_METHOD1(FallbackCursorModeSetCursorVisibility, void(bool));
-#endif
-
   MOCK_METHOD1(SetTouchActionFromMain, void(cc::TouchAction));
 
   MOCK_METHOD3(SetWhiteListedTouchAction,
@@ -188,7 +182,6 @@ class InteractiveRenderWidget : public RenderWidget {
   explicit InteractiveRenderWidget(CompositorDependencies* compositor_deps)
       : RenderWidget(++next_routing_id_,
                      compositor_deps,
-                     blink::mojom::DisplayMode::kUndefined,
                      /*is_hidden=*/false,
                      /*never_composited=*/false,
                      mojo::NullReceiver()) {}
@@ -538,8 +531,6 @@ class StubRenderWidgetDelegate : public RenderWidgetDelegate {
   void SetActiveForWidget(bool active) override {}
   bool SupportsMultipleWindowsForWidget() override { return true; }
   bool ShouldAckSyntheticInputImmediately() override { return true; }
-  void ApplyNewDisplayModeForWidget(
-      blink::mojom::DisplayMode new_display_mode) override {}
   void ApplyAutoResizeLimitsForWidget(const gfx::Size& min_size,
                                       const gfx::Size& max_size) override {}
   void DisableAutoResizeForWidget() override {}

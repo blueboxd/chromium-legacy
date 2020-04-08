@@ -1346,15 +1346,17 @@ bool AXObject::CanSetFocusAttribute() const {
   if (IsDetached())
     return false;
 
+  // Objects within a portal are not focusable.
+  // Note that they are ignored but can be included in the tree.
+  bool inside_portal = GetDocument() && GetDocument()->GetPage() &&
+                       GetDocument()->GetPage()->InsidePortal();
+  if (inside_portal)
+    return false;
+
   // Focusable: web area -- this is the only focusable non-element. Web areas
   // inside portals are not focusable though (portal contents cannot get focus).
-  // The portal check is only necessary for web areas, as all other objects
-  // within a portal are ignored.
-  if (IsWebArea()) {
-    bool inside_portal = GetDocument() && GetDocument()->GetPage() &&
-                         GetDocument()->GetPage()->InsidePortal();
-    return !inside_portal;
-  }
+  if (IsWebArea())
+    return true;
 
   // NOT focusable: objects with no DOM node, e.g. extra layout blocks inserted
   // as filler, or objects where the node is not an element, such as a text

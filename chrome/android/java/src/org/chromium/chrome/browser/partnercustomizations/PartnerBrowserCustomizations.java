@@ -51,7 +51,7 @@ public class PartnerBrowserCustomizations {
     static final String PARTNER_DISABLE_INCOGNITO_MODE_PATH = "disableincognitomode";
 
     private static String sProviderAuthority = PROVIDER_AUTHORITY;
-    private static boolean sIgnoreBrowserProviderSystemPackageCheck;
+    private static Boolean sIgnoreSystemPackageCheck;
 
     private static volatile PartnerBrowserCustomizations sInstance;
 
@@ -97,17 +97,34 @@ public class PartnerBrowserCustomizations {
             if (providerInfo == null) {
                 return false;
             }
+            if ((providerInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0) {
+                return true;
+            }
 
-            if ((providerInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0
-                    && !sIgnoreBrowserProviderSystemPackageCheck) {
-                Log.w(TAG,
-                        "Browser Customizations content provider package, "
-                                + providerInfo.packageName + ", is not a system package. "
-                                + "This could be a malicious attempt from a third party "
-                                + "app, so skip reading the browser content provider.");
+            // In prod mode (sIgnoreBrowserProviderSystemPackageCheck == null), non-system package
+            // is rejected unless Chrome Android is a local build.
+            // When sIgnoreBrowserProviderSystemPackageCheck is true, accept non-system package.
+            // When sIgnoreBrowserProviderSystemPackageCheck is false, reject non-system package.
+            if (sIgnoreSystemPackageCheck != null && sIgnoreSystemPackageCheck) {
+                return true;
+            }
+
+            Log.w(TAG,
+                    "Browser Customizations content provider package, " + providerInfo.packageName
+                            + ", is not a system package. "
+                            + "This could be a malicious attempt from a third party "
+                            + "app, so skip reading the browser content provider.");
+            if (sIgnoreSystemPackageCheck != null && !sIgnoreSystemPackageCheck) {
                 return false;
             }
-            return true;
+            if (ChromeVersionInfo.isLocalBuild()) {
+                Log.w(TAG,
+                        "This is a local build of Chrome Android, "
+                                + "so keep reading the browser content provider, "
+                                + "to make debugging customization easier.");
+                return true;
+            }
+            return false;
         }
 
         private boolean isValid() {
@@ -240,7 +257,7 @@ public class PartnerBrowserCustomizations {
      */
     @VisibleForTesting
     static void ignoreBrowserProviderSystemPackageCheckForTests(boolean ignore) {
-        sIgnoreBrowserProviderSystemPackageCheck = ignore;
+        sIgnoreSystemPackageCheck = ignore;
     }
 
     @VisibleForTesting
@@ -402,6 +419,7 @@ public class PartnerBrowserCustomizations {
     public static void destroy() {
         getInstance().destroyInternal();
         sInstance = null;
+        sIgnoreSystemPackageCheck = null;
     }
 
     private void destroyInternal() {

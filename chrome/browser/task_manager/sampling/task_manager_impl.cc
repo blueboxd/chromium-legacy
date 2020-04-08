@@ -234,10 +234,6 @@ const base::string16& TaskManagerImpl::GetTitle(TaskId task_id) const {
   return GetTaskByTaskId(task_id)->title();
 }
 
-const std::string& TaskManagerImpl::GetTaskNameForRappor(TaskId task_id) const {
-  return GetTaskByTaskId(task_id)->rappor_sample_name();
-}
-
 base::string16 TaskManagerImpl::GetProfileName(TaskId task_id) const {
   return GetTaskByTaskId(task_id)->GetProfileName();
 }

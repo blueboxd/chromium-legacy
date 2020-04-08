@@ -51,7 +51,7 @@
 }
 
 - (void)setSelectedIdentity:(ChromeIdentity*)selectedIdentity {
-  if (selectedIdentity == self.selectedIdentity) {
+  if ([self.selectedIdentity isEqual:selectedIdentity]) {
     return;
   }
   // nil is allowed only if there is no other identity.
@@ -145,7 +145,7 @@
 }
 
 - (void)profileUpdate:(ChromeIdentity*)identity {
-  if (identity == self.selectedIdentity) {
+  if ([self.selectedIdentity isEqual:identity]) {
     [self updateViewController];
   }
 }

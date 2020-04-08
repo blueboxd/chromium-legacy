@@ -308,8 +308,8 @@ public class TabSwitcherCoordinator
     }
 
     @Override
-    public long getLastDirtyTimeForTesting() {
-        return mTabListCoordinator.getLastDirtyTimeForTesting();
+    public long getLastDirtyTime() {
+        return mTabListCoordinator.getLastDirtyTime();
     }
 
     @Override

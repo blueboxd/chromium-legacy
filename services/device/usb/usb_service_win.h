@@ -10,6 +10,7 @@
 #include <list>
 #include <unordered_map>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
@@ -40,12 +41,13 @@ class UsbServiceWin final : public DeviceMonitorWin::Observer,
 
   // Methods called by BlockingThreadHelper
   void HelperStarted();
-  void CreateDeviceObject(const base::string16& device_path,
-                          const base::string16& hub_path,
-                          const std::vector<base::string16>& child_device_paths,
-                          uint32_t bus_number,
-                          uint32_t port_number,
-                          const base::string16& driver_name);
+  void CreateDeviceObject(
+      const base::string16& device_path,
+      const base::string16& hub_path,
+      const base::flat_map<int, base::string16>& function_paths,
+      uint32_t bus_number,
+      uint32_t port_number,
+      const base::string16& driver_name);
 
   void DeviceReady(scoped_refptr<UsbDeviceWin> device, bool success);
 

@@ -131,6 +131,9 @@ class CONTENT_EXPORT StoragePartitionImpl
       int routing_id,
       mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver)
       override;
+  void CreateHasTrustTokensAnswerer(
+      mojo::PendingReceiver<network::mojom::HasTrustTokensAnswerer> receiver,
+      const url::Origin& top_frame_origin) override;
   storage::QuotaManager* GetQuotaManager() override;
   ChromeAppCacheService* GetAppCacheService() override;
   BackgroundSyncContextImpl* GetBackgroundSyncContext() override;

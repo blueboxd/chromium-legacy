@@ -237,17 +237,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual void ChildDidAckGestureEvent(const blink::WebGestureEvent& event,
                                        InputEventAckState ack_result);
 
-  // When key event is not uncosumed in render, browser may want to consume it.
-  virtual bool OnUnconsumedKeyboardEventAck(
-      const NativeWebKeyboardEventWithLatencyInfo& event);
-
-  // Call platform APIs for Fallback Cursor Mode.
-  virtual void FallbackCursorModeLockCursor(bool left,
-                                            bool right,
-                                            bool up,
-                                            bool down);
-  virtual void FallbackCursorModeSetCursorVisibility(bool visible);
-
   // Create a platform specific SyntheticGestureTarget implementation that will
   // be used to inject synthetic input events.
   virtual std::unique_ptr<SyntheticGestureTarget>

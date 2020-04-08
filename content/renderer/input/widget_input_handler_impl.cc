@@ -102,11 +102,6 @@ void WidgetInputHandlerImpl::CursorVisibilityChanged(bool visible) {
                                  render_widget_, visible));
 }
 
-void WidgetInputHandlerImpl::FallbackCursorModeToggled(bool is_on) {
-  RunOnMainThread(base::BindOnce(&RenderWidget::OnFallbackCursorModeToggled,
-                                 render_widget_, is_on));
-}
-
 void WidgetInputHandlerImpl::ImeSetComposition(
     const base::string16& text,
     const std::vector<ui::ImeTextSpan>& ime_text_spans,

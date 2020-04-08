@@ -19,7 +19,6 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.DoubleCachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.IntCachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.StringCachedFieldTrialParameter;
-import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -34,43 +33,40 @@ public class TabUiFeatureUtilities {
     private static final String TAG = "TabFeatureUtilities";
 
     // Field trial parameters:
-    public static final String SKIP_SLOW_ZOOMING_PARAM = "skip-slow-zooming";
+    private static final String SKIP_SLOW_ZOOMING_PARAM = "skip-slow-zooming";
     public static final BooleanCachedFieldTrialParameter SKIP_SLOW_ZOOMING =
             new BooleanCachedFieldTrialParameter(
                     ChromeFeatureList.TAB_TO_GTS_ANIMATION, SKIP_SLOW_ZOOMING_PARAM, true);
 
-    public static final String TAB_GRID_LAYOUT_ANDROID_NEW_TAB_TILE_PARAM =
+    private static final String TAB_GRID_LAYOUT_ANDROID_NEW_TAB_TILE_PARAM =
             "tab_grid_layout_android_new_tab_tile";
     public static final StringCachedFieldTrialParameter TAB_GRID_LAYOUT_ANDROID_NEW_TAB_TILE =
             new StringCachedFieldTrialParameter(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
                     TAB_GRID_LAYOUT_ANDROID_NEW_TAB_TILE_PARAM, "");
-
-    public static final IntCachedFieldTrialParameter TAB_SWITCHER_ON_RETURN_MS =
-            new IntCachedFieldTrialParameter(ChromeFeatureList.TAB_SWITCHER_ON_RETURN,
-                    ReturnToChromeExperimentsUtil.TAB_SWITCHER_ON_RETURN_MS, -1);
 
     public static final String THUMBNAIL_ASPECT_RATIO_PARAM = "thumbnail_aspect_ratio";
     public static final DoubleCachedFieldTrialParameter THUMBNAIL_ASPECT_RATIO =
             new DoubleCachedFieldTrialParameter(
                     ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, THUMBNAIL_ASPECT_RATIO_PARAM, 1.0);
 
-    public static final String SEARCH_CHIP_PARAM = "enable_search_term_chip";
+    private static final String SEARCH_CHIP_PARAM = "enable_search_term_chip";
     public static final BooleanCachedFieldTrialParameter ENABLE_SEARCH_CHIP =
             new BooleanCachedFieldTrialParameter(
                     ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, SEARCH_CHIP_PARAM, false);
 
-    public static final String SEARCH_CHIP_ADAPTIVE_PARAM = "enable_search_term_chip_adaptive_icon";
+    private static final String SEARCH_CHIP_ADAPTIVE_PARAM =
+            "enable_search_term_chip_adaptive_icon";
     public static final BooleanCachedFieldTrialParameter ENABLE_SEARCH_CHIP_ADAPTIVE =
             new BooleanCachedFieldTrialParameter(
                     ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, SEARCH_CHIP_ADAPTIVE_PARAM, false);
 
     // Field trial parameter for the minimum Android SDK version to enable zooming animation.
-    public static final String MIN_SDK_PARAM = "zooming-min-sdk-version";
+    private static final String MIN_SDK_PARAM = "zooming-min-sdk-version";
     public static final IntCachedFieldTrialParameter ZOOMING_MIN_SDK =
             new IntCachedFieldTrialParameter(
                     ChromeFeatureList.TAB_TO_GTS_ANIMATION, MIN_SDK_PARAM, Build.VERSION_CODES.M);
     // Field trial parameter for the minimum physical memory size to enable zooming animation.
-    public static final String MIN_MEMORY_MB_PARAM = "zooming-min-memory-mb";
+    private static final String MIN_MEMORY_MB_PARAM = "zooming-min-memory-mb";
     public static final IntCachedFieldTrialParameter ZOOMING_MIN_MEMORY =
             new IntCachedFieldTrialParameter(
                     ChromeFeatureList.TAB_TO_GTS_ANIMATION, MIN_MEMORY_MB_PARAM, 2048);

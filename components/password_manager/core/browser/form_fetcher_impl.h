@@ -45,25 +45,19 @@ class FormFetcherImpl : public FormFetcher,
   // FormFetcher:
   void AddConsumer(FormFetcher::Consumer* consumer) override;
   void RemoveConsumer(FormFetcher::Consumer* consumer) override;
+  void Fetch() override;
   State GetState() const override;
   const std::vector<InteractionsStats>& GetInteractionsStats() const override;
-
   std::vector<const autofill::PasswordForm*> GetNonFederatedMatches()
       const override;
   std::vector<const autofill::PasswordForm*> GetFederatedMatches()
       const override;
-
   bool IsBlacklisted() const override;
-
   const std::vector<const autofill::PasswordForm*>& GetAllRelevantMatches()
       const override;
-
   const std::vector<const autofill::PasswordForm*>& GetBestMatches()
       const override;
-
   const autofill::PasswordForm* GetPreferredMatch() const override;
-
-  void Fetch() override;
   std::unique_ptr<FormFetcher> Clone() override;
 
   // PasswordStoreConsumer:

@@ -49,7 +49,6 @@ struct AppCacheResourceInfo {
   bool is_foreign;
   bool is_explicit;
   int64 response_id;
-  mojo_base.mojom.Time token_expires;
 };
 
 struct AppCacheErrorDetails {

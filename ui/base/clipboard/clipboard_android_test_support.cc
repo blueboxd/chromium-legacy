@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/android/ui_javatest_jni_headers/ClipboardAndroidTest_jni.h"
+#include "ui/android/ui_javatest_jni_headers/ClipboardAndroidTestSupport_jni.h"
 
 #include <string>
 
@@ -15,11 +15,11 @@
 
 namespace ui {
 
-void JNI_ClipboardAndroidTest_Cleanup(JNIEnv* env) {
+void JNI_ClipboardAndroidTestSupport_Cleanup(JNIEnv* env) {
   Clipboard::DestroyClipboardForCurrentThread();
 }
 
-jboolean JNI_ClipboardAndroidTest_NativeWriteHtml(
+jboolean JNI_ClipboardAndroidTestSupport_NativeWriteHtml(
     JNIEnv* env,
     const base::android::JavaParamRef<jstring>& j_html_text) {
   {
@@ -39,7 +39,7 @@ jboolean JNI_ClipboardAndroidTest_NativeWriteHtml(
                                       ClipboardBuffer::kCopyPaste);
 }
 
-jboolean JNI_ClipboardAndroidTest_NativeClipboardContains(
+jboolean JNI_ClipboardAndroidTestSupport_NativeClipboardContains(
     JNIEnv* env,
     const base::android::JavaParamRef<jstring>& j_text) {
   // The Java side of the test pretended to be another app using

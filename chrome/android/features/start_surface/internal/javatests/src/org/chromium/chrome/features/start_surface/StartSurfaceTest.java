@@ -12,6 +12,7 @@ import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.Visibility.GONE;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.isRoot;
 import static android.support.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withParent;
@@ -164,18 +165,10 @@ public class StartSurfaceTest {
                 .check(matches(isDisplayed()));
 
         onView(withId(R.id.ss_explore_tab)).perform(click());
-        waitForView((ViewGroup) mActivityTestRule.getActivity()
-                            .getWindow()
-                            .getDecorView()
-                            .getRootView(),
-                withId(R.id.start_surface_explore_view));
+        onView(isRoot()).check(waitForView(withId(R.id.start_surface_explore_view)));
 
         pressBack();
-        waitForView((ViewGroup) mActivityTestRule.getActivity()
-                            .getWindow()
-                            .getDecorView()
-                            .getRootView(),
-                withId(R.id.primary_tasks_surface_view));
+        onView(isRoot()).check(waitForView(withId(R.id.primary_tasks_surface_view)));
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mActivityTestRule.getActivity().getLayoutManager().hideOverview(false));
@@ -214,18 +207,10 @@ public class StartSurfaceTest {
         } catch (ExecutionException e) {
             fail("Failed to tap 'more tabs' " + e.toString());
         }
-        waitForView((ViewGroup) mActivityTestRule.getActivity()
-                            .getWindow()
-                            .getDecorView()
-                            .getRootView(),
-                withId(R.id.secondary_tasks_surface_view));
+        onView(isRoot()).check(waitForView(withId(R.id.secondary_tasks_surface_view)));
 
         pressBack();
-        waitForView((ViewGroup) mActivityTestRule.getActivity()
-                            .getWindow()
-                            .getDecorView()
-                            .getRootView(),
-                withId(R.id.primary_tasks_surface_view));
+        onView(isRoot()).check(waitForView(withId(R.id.primary_tasks_surface_view)));
 
         OverviewModeBehaviorWatcher hideWatcher =
                 TabUiTestHelper.createOverviewHideWatcher(mActivityTestRule.getActivity());
@@ -274,18 +259,10 @@ public class StartSurfaceTest {
         } catch (ExecutionException e) {
             fail("Failed to tap 'more tabs' " + e.toString());
         }
-        waitForView((ViewGroup) mActivityTestRule.getActivity()
-                            .getWindow()
-                            .getDecorView()
-                            .getRootView(),
-                withId(R.id.secondary_tasks_surface_view));
+        onView(isRoot()).check(waitForView(withId(R.id.secondary_tasks_surface_view)));
 
         pressBack();
-        waitForView((ViewGroup) mActivityTestRule.getActivity()
-                            .getWindow()
-                            .getDecorView()
-                            .getRootView(),
-                withId(R.id.primary_tasks_surface_view));
+        onView(isRoot()).check(waitForView(withId(R.id.primary_tasks_surface_view)));
 
         OverviewModeBehaviorWatcher hideWatcher =
                 TabUiTestHelper.createOverviewHideWatcher(mActivityTestRule.getActivity());
@@ -336,18 +313,10 @@ public class StartSurfaceTest {
         } catch (ExecutionException e) {
             fail("Failed to tap 'more tabs' " + e.toString());
         }
-        waitForView((ViewGroup) mActivityTestRule.getActivity()
-                            .getWindow()
-                            .getDecorView()
-                            .getRootView(),
-                withId(R.id.secondary_tasks_surface_view));
+        onView(isRoot()).check(waitForView(withId(R.id.secondary_tasks_surface_view)));
 
         pressBack();
-        waitForView((ViewGroup) mActivityTestRule.getActivity()
-                            .getWindow()
-                            .getDecorView()
-                            .getRootView(),
-                withId(R.id.primary_tasks_surface_view));
+        onView(isRoot()).check(waitForView(withId(R.id.primary_tasks_surface_view)));
 
         OverviewModeBehaviorWatcher hideWatcher =
                 TabUiTestHelper.createOverviewHideWatcher(mActivityTestRule.getActivity());

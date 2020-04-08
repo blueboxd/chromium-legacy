@@ -57,11 +57,6 @@ void MockWidgetInputHandler::CursorVisibilityChanged(bool visible) {
       std::make_unique<DispatchedMessage>("CursorVisibilityChanged"));
 }
 
-void MockWidgetInputHandler::FallbackCursorModeToggled(bool is_on) {
-  dispatched_messages_.emplace_back(
-      std::make_unique<DispatchedMessage>("FallbackCursorModeToggled"));
-}
-
 void MockWidgetInputHandler::ImeSetComposition(
     const base::string16& text,
     const std::vector<ui::ImeTextSpan>& ime_text_spans,

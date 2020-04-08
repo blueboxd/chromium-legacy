@@ -27,6 +27,7 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "gpu/ipc/common/vulkan_ycbcr_info.h"
+#include "media/base/hdr_metadata.h"
 #include "media/base/video_frame_layout.h"
 #include "media/base/video_frame_metadata.h"
 #include "media/base/video_types.h"
@@ -417,6 +418,14 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
     color_space_ = color_space;
   }
 
+  const base::Optional<HDRMetadata>& hdr_metadata() const {
+    return hdr_metadata_;
+  }
+
+  void set_hdr_metadata(const base::Optional<HDRMetadata>& hdr_metadata) {
+    hdr_metadata_ = hdr_metadata;
+  }
+
   const VideoFrameLayout& layout() const { return layout_; }
 
   VideoPixelFormat format() const { return layout_.format(); }
@@ -686,6 +695,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   const int unique_id_;
 
   gfx::ColorSpace color_space_;
+  base::Optional<HDRMetadata> hdr_metadata_;
 
   // Sampler conversion information which is used in vulkan context for android.
   base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info_;

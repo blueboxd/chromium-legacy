@@ -9,9 +9,12 @@ component("system") {
   defines = [ "IS_CHROMEOS_SYSTEM_IMPL" ]
   deps = [
     "//base",
+    "//chromeos:chromeos_export",
     "//chromeos/constants",
   ]
   sources = [
+    "core_scheduling.cc",
+    "core_scheduling.h",
     "cpu_temperature_reader.cc",
     "cpu_temperature_reader.h",
     "devicemode.cc",

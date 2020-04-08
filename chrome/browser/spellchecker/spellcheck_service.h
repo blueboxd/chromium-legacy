@@ -94,6 +94,13 @@ class SpellcheckService : public KeyedService,
   // when we do not set an event to |status_event_|.
   static bool SignalStatusEvent(EventType type);
 
+  // Get the best match of a supported accept language code for the provided
+  // language tag. Returns an empty string if no match is found. Method cannot
+  // be defined in spellcheck_common.h as it depends on l10n_util, and code
+  // under components cannot depend on ui/base.
+  static std::string GetSupportedAcceptLanguageCode(
+      const std::string& supported_language_full_tag);
+
   // Instantiates SpellCheckHostMetrics object and makes it ready for recording
   // metrics. This should be called only if the metrics recording is active.
   void StartRecordingMetrics(bool spellcheck_enabled);
@@ -160,6 +167,11 @@ class SpellcheckService : public KeyedService,
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SpellcheckServiceBrowserTest, DeleteCorruptedBDICT);
+
+  // Parses a full BCP47 language tag to return just the language subtag,
+  // optionally with a hyphen and script subtag appended.
+  static std::string GetLanguageAndScriptTag(const std::string& full_tag,
+                                             bool include_script_tag);
 
   // Attaches an event so browser tests can listen the status events.
   static void AttachStatusEvent(base::WaitableEvent* status_event);

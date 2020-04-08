@@ -97,6 +97,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "storage/browser/blob/blob_registry_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/database/database_tracker.h"
@@ -1667,6 +1668,14 @@ void StoragePartitionImpl::CreateRestrictedCookieManager(
         std::move(receiver), role, origin, site_for_cookies, top_frame_origin,
         is_service_worker, process_id, routing_id);
   }
+}
+
+void StoragePartitionImpl::CreateHasTrustTokensAnswerer(
+    mojo::PendingReceiver<network::mojom::HasTrustTokensAnswerer> receiver,
+    const url::Origin& top_frame_origin) {
+  DCHECK(initialized_);
+  GetNetworkContext()->GetHasTrustTokensAnswerer(std::move(receiver),
+                                                 top_frame_origin);
 }
 
 storage::QuotaManager* StoragePartitionImpl::GetQuotaManager() {

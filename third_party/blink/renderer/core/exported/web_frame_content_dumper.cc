@@ -103,6 +103,10 @@ WebString WebFrameContentDumper::DumpWebViewAsText(WebView* web_view,
     return WebString();
 
   DCHECK(web_view->MainFrameWidget());
+  // Updating the document lifecycle isn't enough, the BeginFrame() step
+  // should come first which runs events such as notifying of media query
+  // changes or raf-based events.
+  web_view->MainFrameWidget()->BeginFrame(base::TimeTicks::Now());
   web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
       DocumentUpdateReason::kTest);
 

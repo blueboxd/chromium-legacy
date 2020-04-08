@@ -785,7 +785,6 @@ static_library("web_test_support_renderer") {
     "//content/public/renderer",
     "//content/renderer:for_content_tests",
     "//ui/events/blink",
-    "//ui/gfx:test_support",
     "//ui/gfx/geometry",
 
     # This is required to ensure

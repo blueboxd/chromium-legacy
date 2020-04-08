@@ -27,14 +27,14 @@ const uint16_t kUsbVersion2_1 = 0x0210;
 UsbDeviceWin::UsbDeviceWin(
     const base::string16& device_path,
     const base::string16& hub_path,
-    const std::vector<base::string16>& child_device_paths,
+    const base::flat_map<int, base::string16>& function_paths,
     uint32_t bus_number,
     uint32_t port_number,
     const base::string16& driver_name)
     : UsbDevice(bus_number, port_number),
       device_path_(device_path),
       hub_path_(hub_path),
-      child_device_paths_(child_device_paths),
+      function_paths_(function_paths),
       driver_name_(driver_name) {}
 
 UsbDeviceWin::~UsbDeviceWin() {}
@@ -44,10 +44,9 @@ void UsbDeviceWin::Open(OpenCallback callback) {
 
   scoped_refptr<UsbDeviceHandle> device_handle;
   if (base::EqualsCaseInsensitiveASCII(driver_name_, L"winusb"))
-    device_handle = new UsbDeviceHandleWin(this, false);
-  // TODO: Support composite devices.
-  // else if (base::EqualsCaseInsensitiveASCII(driver_name_, "usbccgp"))
-  //  device_handle = new UsbDeviceHandleWin(this, true);
+    device_handle = new UsbDeviceHandleWin(this, /*composite=*/false);
+  else if (base::EqualsCaseInsensitiveASCII(driver_name_, L"usbccgp"))
+    device_handle = new UsbDeviceHandleWin(this, /*composite=*/true);
 
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), device_handle));

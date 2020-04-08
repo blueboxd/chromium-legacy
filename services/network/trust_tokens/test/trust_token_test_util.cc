@@ -3,22 +3,26 @@
 // found in the LICENSE file.
 
 #include "services/network/trust_tokens/test/trust_token_test_util.h"
+
 #include "base/test/bind_test_util.h"
 #include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 
 namespace network {
 
-TrustTokenRequestHelperTest::TrustTokenRequestHelperTest(
-    base::test::TaskEnvironment::TimeSource time_source)
-    : env_(time_source) {}
-TrustTokenRequestHelperTest::~TrustTokenRequestHelperTest() = default;
+TestURLRequestMaker::TestURLRequestMaker() = default;
+TestURLRequestMaker::~TestURLRequestMaker() = default;
 
-std::unique_ptr<net::URLRequest> TrustTokenRequestHelperTest::MakeURLRequest(
-    std::string spec) {
+std::unique_ptr<net::URLRequest> TestURLRequestMaker::MakeURLRequest(
+    base::StringPiece spec) {
   return context_.CreateRequest(GURL(spec),
                                 net::RequestPriority::DEFAULT_PRIORITY,
                                 &delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
 }
+
+TrustTokenRequestHelperTest::TrustTokenRequestHelperTest(
+    base::test::TaskEnvironment::TimeSource time_source)
+    : env_(time_source) {}
+TrustTokenRequestHelperTest::~TrustTokenRequestHelperTest() = default;
 
 mojom::TrustTokenOperationStatus
 TrustTokenRequestHelperTest::ExecuteBeginOperationAndWaitForResult(

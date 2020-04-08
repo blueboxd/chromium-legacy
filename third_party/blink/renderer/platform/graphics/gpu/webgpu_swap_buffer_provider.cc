@@ -139,7 +139,7 @@ bool WebGPUSwapBufferProvider::PrepareTransferableResource(
   client_->OnTextureTransferred();
 
   // Make Dawn relinquish access to the texture so it can be used by the
-  // compositor. This will call dawn::Texture::Destroy so that further accesses
+  // compositor. This will call wgpu::Texture::Destroy so that further accesses
   // to the texture are errors.
   gpu::webgpu::WebGPUInterface* webgpu = dawn_control_client_->GetInterface();
   DCHECK_NE(wire_texture_id_, 0u);

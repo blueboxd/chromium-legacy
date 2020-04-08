@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/dom_distiller/core/article_distillation_update.h"
 #include "components/dom_distiller/core/article_entry.h"
@@ -32,16 +31,19 @@ class ViewerHandle {
   explicit ViewerHandle(CancelCallback callback);
   ~ViewerHandle();
 
+  ViewerHandle(const ViewerHandle&) = delete;
+  ViewerHandle& operator=(const ViewerHandle&) = delete;
+
  private:
   CancelCallback cancel_callback_;
-  DISALLOW_COPY_AND_ASSIGN(ViewerHandle);
 };
 
 // Interface for a DOM distiller entry viewer. Implement this to make a view
 // request and receive the data for an entry when it becomes available.
 class ViewRequestDelegate {
  public:
-  virtual ~ViewRequestDelegate() {}
+  virtual ~ViewRequestDelegate() = default;
+
   // Called when the distilled article contents are available. The
   // DistilledArticleProto is owned by a TaskTracker instance and is invalidated
   // when the corresponding ViewerHandle is destroyed (or when the
@@ -97,6 +99,9 @@ class TaskTracker {
   bool HasEntryId(const std::string& entry_id) const;
   bool HasUrl(const GURL& url) const;
 
+  TaskTracker(const TaskTracker&) = delete;
+  TaskTracker& operator=(const TaskTracker&) = delete;
+
  private:
   void OnArticleDistillationUpdated(
       const ArticleDistillationUpdate& article_update);
@@ -150,8 +155,6 @@ class TaskTracker {
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<TaskTracker> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(TaskTracker);
 };
 
 }  // namespace dom_distiller

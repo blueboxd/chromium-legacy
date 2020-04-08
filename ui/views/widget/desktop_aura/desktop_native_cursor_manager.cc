@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/trace_event/trace_event.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor_loader.h"
@@ -59,6 +60,8 @@ void DesktopNativeCursorManager::SetCursor(
 void DesktopNativeCursorManager::SetVisibility(
     bool visible,
     wm::NativeCursorManagerDelegate* delegate) {
+  TRACE_EVENT1("ui,input", "DesktopNativeCursorManager::SetVisibility",
+               "visible", visible);
   delegate->CommitVisibility(visible);
 
   if (visible) {
@@ -83,6 +86,7 @@ void DesktopNativeCursorManager::SetCursorSize(
 void DesktopNativeCursorManager::SetMouseEventsEnabled(
     bool enabled,
     wm::NativeCursorManagerDelegate* delegate) {
+  TRACE_EVENT0("ui,input", "DesktopNativeCursorManager::SetMouseEventsEnabled");
   delegate->CommitMouseEventsEnabled(enabled);
 
   // TODO(erg): In the ash version, we set the last mouse location on Env. I'm

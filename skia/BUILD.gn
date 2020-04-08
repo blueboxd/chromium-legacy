@@ -521,8 +521,9 @@ component("skia") {
   if (skia_use_dawn) {
     public_deps += [ "//third_party/dawn/src/dawn:dawncpp_headers" ]
     deps += [
-      "//third_party/dawn:libdawn_native",
-      "//third_party/dawn/src/dawn:libdawn",
+      "//third_party/dawn/src/dawn:dawncpp",
+      "//third_party/dawn/src/dawn:libdawn_proc",
+      "//third_party/dawn/src/dawn_native",
     ]
   }
 

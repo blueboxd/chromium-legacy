@@ -200,4 +200,9 @@ void PasswordInputType::HandleKeydownEvent(KeyboardEvent& event) {
   if (!event.DefaultHandled())
     BaseTextInputType::HandleKeydownEvent(event);
 }
+
+bool PasswordInputType::SupportsInputModeAttribute() const {
+  return true;
+}
+
 }  // namespace blink

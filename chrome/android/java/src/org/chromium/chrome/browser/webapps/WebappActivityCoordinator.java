@@ -12,6 +12,8 @@ import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProv
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.CurrentPageVerifier;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityBrowserControlsVisibilityManager;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier;
+import org.chromium.chrome.browser.customtabs.BaseCustomTabActivity;
+import org.chromium.chrome.browser.customtabs.CustomTabOrientationController;
 import org.chromium.chrome.browser.customtabs.ExternalIntentsPolicyProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
@@ -41,6 +43,7 @@ public class WebappActivityCoordinator implements InflationObserver {
             ActivityTabProvider activityTabProvider, CurrentPageVerifier currentPageVerifier,
             Verifier verifier, CustomTabActivityNavigationController navigationController,
             ExternalIntentsPolicyProvider externalIntentsPolicyProvider,
+            CustomTabOrientationController orientationController, SplashController splashController,
             WebappDeferredStartupWithStorageHandler deferredStartupWithStorageHandler,
             WebappActionsNotificationManager actionsNotificationManager,
             ActivityLifecycleDispatcher lifecycleDispatcher,
@@ -69,6 +72,9 @@ public class WebappActivityCoordinator implements InflationObserver {
                 updateStorage(storage);
             }
         });
+
+        orientationController.delayOrientationRequestsIfNeeded(
+                splashController, BaseCustomTabActivity.isWindowInitiallyTranslucent(activity));
 
         currentPageVerifier.addVerificationObserver(this::onVerificationUpdate);
         lifecycleDispatcher.register(this);

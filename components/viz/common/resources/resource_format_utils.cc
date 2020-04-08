@@ -200,6 +200,8 @@ unsigned int GLInternalFormat(ResourceFormat format) {
     return GL_RG8_EXT;
   else if (format == ETC1)
     return GL_ETC1_RGB8_OES;
+  else if (format == RGBA_1010102 || format == BGRA_1010102)
+    return GL_RGB10_A2_EXT;
 
   return GLDataFormat(format);
 }
@@ -337,6 +339,8 @@ bool IsGpuMemoryBufferFormatSupported(ResourceFormat format) {
     case R16_EXT:
     case RGBA_4444:
     case RGBA_8888:
+    case RGBA_1010102:
+    case BGRA_1010102:
     case RGBA_F16:
       return true;
     // These formats have no BufferFormat equivalent or are only used
@@ -350,8 +354,6 @@ bool IsGpuMemoryBufferFormatSupported(ResourceFormat format) {
     case RG_88:
     case RGBX_8888:
     case BGRX_8888:
-    case RGBA_1010102:
-    case BGRA_1010102:
     case YVU_420:
     case YUV_420_BIPLANAR:
     case P010:
@@ -431,7 +433,6 @@ bool GLSupportsFormat(ResourceFormat format) {
   switch (format) {
     case BGR_565:
     case BGRX_8888:
-    case BGRA_1010102:
     case YVU_420:
     case YUV_420_BIPLANAR:
     case P010:

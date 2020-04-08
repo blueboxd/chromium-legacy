@@ -8,6 +8,7 @@
 #include "base/memory/memory_pressure_listener.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/util/memory_pressure/fake_memory_pressure_monitor.h"
+#include "build/build_config.h"
 #include "components/performance_manager/graph/process_node_impl.h"
 #include "components/performance_manager/test_support/graph_test_harness.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -59,7 +60,14 @@ class MemoryPressureMetricsTest : public GraphTestHarness {
   std::unique_ptr<base::HistogramTester> histogram_tester_;
 };
 
-TEST_F(MemoryPressureMetricsTest, TestHistograms) {
+// Very flaky on Android. http://crbug.com/1069043.
+#if defined(OS_ANDROID)
+#define MAYBE_TestHistograms DISABLED_TestHistograms
+#else
+#define MAYBE_TestHistograms TestHistograms
+#endif
+
+TEST_F(MemoryPressureMetricsTest, MAYBE_TestHistograms) {
   const int kFakeSystemRamMb = 4096;
   // Pretends that we have one process using half of the RAM.
   process_node()->set_resident_set_kb(kFakeSystemRamMb * 1024 / 2);

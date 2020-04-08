@@ -746,13 +746,13 @@ SharedImageBackingFactoryGLTexture::SharedImageBackingFactoryGLTexture(
     FormatInfo& info = format_info_[i];
     if (!viz::GLSupportsFormat(format))
       continue;
-    GLuint image_internal_format = viz::GLInternalFormat(format);
-    GLenum gl_format = viz::GLDataFormat(format);
-    GLenum gl_type = viz::GLDataType(format);
-    bool uncompressed_format_valid =
+    const GLuint image_internal_format = viz::GLInternalFormat(format);
+    const GLenum gl_format = viz::GLDataFormat(format);
+    const GLenum gl_type = viz::GLDataType(format);
+    const bool uncompressed_format_valid =
         validators->texture_internal_format.IsValid(image_internal_format) &&
         validators->texture_format.IsValid(gl_format);
-    bool compressed_format_valid =
+    const bool compressed_format_valid =
         validators->compressed_texture_format.IsValid(image_internal_format);
     if ((uncompressed_format_valid || compressed_format_valid) &&
         validators->pixel_type.IsValid(gl_type)) {
@@ -781,21 +781,24 @@ SharedImageBackingFactoryGLTexture::SharedImageBackingFactoryGLTexture(
       }
     }
     if (!info.enabled || !enable_scanout_images ||
-        !IsGpuMemoryBufferFormatSupported(format))
+        !IsGpuMemoryBufferFormatSupported(format)) {
       continue;
-    gfx::BufferFormat buffer_format = viz::BufferFormat(format);
+    }
+    const gfx::BufferFormat buffer_format = viz::BufferFormat(format);
     switch (buffer_format) {
       case gfx::BufferFormat::RGBA_8888:
       case gfx::BufferFormat::BGRA_8888:
       case gfx::BufferFormat::RGBA_F16:
       case gfx::BufferFormat::R_8:
+      case gfx::BufferFormat::BGRA_1010102:
+      case gfx::BufferFormat::RGBA_1010102:
         break;
       default:
         continue;
     }
     info.allow_scanout = true;
     info.buffer_format = buffer_format;
-    DCHECK_EQ(info.gl_format,
+    DCHECK_EQ(info.image_internal_format,
               gl::BufferFormatToGLInternalFormat(buffer_format));
     if (base::Contains(gpu_preferences.texture_target_exception_list,
                        gfx::BufferUsageAndFormat(gfx::BufferUsage::SCANOUT,

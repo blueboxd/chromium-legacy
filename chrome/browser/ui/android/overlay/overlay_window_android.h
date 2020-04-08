@@ -48,8 +48,6 @@ class OverlayWindowAndroid : public content::OverlayWindow,
   void OnAnimate(base::TimeTicks frame_begin_time) override {}
   void OnActivityStopped() override;
   void OnActivityStarted() override {}
-  void OnCursorVisibilityChanged(bool visible) override {}
-  void OnFallbackCursorModeToggled(bool is_on) override {}
 
   // OverlayWindow implementation.
   bool IsActive() override;

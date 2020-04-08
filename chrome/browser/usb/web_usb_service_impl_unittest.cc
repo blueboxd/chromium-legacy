@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "chrome/browser/usb/frame_usb_services.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/browser/usb/usb_tab_helper.h"
@@ -74,8 +75,7 @@ class WebUsbServiceImplTest : public ChromeRenderViewHostTestHarness {
           std::move(pending_device_manager));
     }
 
-    auto* tab_helper = UsbTabHelper::GetOrCreateForWebContents(web_contents());
-    tab_helper->CreateWebUsbService(main_rfh(), std::move(receiver));
+    FrameUsbServices::CreateFrameUsbServices(main_rfh(), std::move(receiver));
   }
 
   UsbChooserContext* GetChooserContext() {

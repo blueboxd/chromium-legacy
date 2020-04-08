@@ -113,7 +113,7 @@ public class WebApkUpdateManagerUnitTest {
         }
 
         @Override
-        public boolean start(Tab tab, WebApkInfo oldInfo, Observer observer) {
+        public boolean start(Tab tab, WebappInfo oldInfo, Observer observer) {
             mStarted = true;
             return true;
         }
@@ -204,7 +204,7 @@ public class WebApkUpdateManagerUnitTest {
         }
 
         @Override
-        protected void storeWebApkUpdateRequestToFile(String updateRequestPath, WebApkInfo info,
+        protected void storeWebApkUpdateRequestToFile(String updateRequestPath, WebappInfo info,
                 String primaryIconUrl, String splashIconUrl, boolean isManifestStale,
                 @WebApkUpdateReason int updateReason, Callback<Boolean> callback) {
             mStoreUpdateRequestCallback = callback;
@@ -371,7 +371,7 @@ public class WebApkUpdateManagerUnitTest {
         return manifestData;
     }
 
-    private static WebApkInfo infoFromManifestData(ManifestData manifestData) {
+    private static WebappInfo infoFromManifestData(ManifestData manifestData) {
         if (manifestData == null) return null;
 
         final String kPackageName = "org.random.webapk";
@@ -412,7 +412,7 @@ public class WebApkUpdateManagerUnitTest {
         Intent intent = new Intent();
         intent.putExtra(ShortcutHelper.EXTRA_URL, "");
         intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, packageName);
-        WebApkInfo info = WebApkInfo.create(intent);
+        WebappInfo info = WebApkInfo.create(intent);
         info.getProvider().getWebApkExtras().shortcutItems.clear();
         info.getProvider().getWebApkExtras().shortcutItems.addAll(shortcuts);
 

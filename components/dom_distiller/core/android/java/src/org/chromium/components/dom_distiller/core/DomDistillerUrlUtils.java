@@ -24,13 +24,14 @@ public final class DomDistillerUrlUtils {
      *
      * @param scheme The scheme for the DOM Distiller source.
      * @param url The URL to distill.
+     * @param title The title of the page being distilled.
      * @return the URL to load to get the distilled version of a page.
      */
     @VisibleForTesting
-    public static String getDistillerViewUrlFromUrl(String scheme, String url) {
+    public static String getDistillerViewUrlFromUrl(String scheme, String url, String title) {
         assert scheme != null;
         if (TextUtils.isEmpty(url)) return url;
-        return DomDistillerUrlUtilsJni.get().getDistillerViewUrlFromUrl(scheme, url);
+        return DomDistillerUrlUtilsJni.get().getDistillerViewUrlFromUrl(scheme, url, title);
     }
 
     /**
@@ -63,7 +64,7 @@ public final class DomDistillerUrlUtils {
 
     @NativeMethods
     interface Natives {
-        String getDistillerViewUrlFromUrl(String scheme, String url);
+        String getDistillerViewUrlFromUrl(String scheme, String url, String title);
         String getOriginalUrlFromDistillerUrl(String viewerUrl);
         boolean isDistilledPage(String url);
         String getValueForKeyInUrl(String url, String key);

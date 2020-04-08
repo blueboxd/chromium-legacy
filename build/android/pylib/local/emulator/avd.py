@@ -183,7 +183,8 @@ class AvdConfig(object):
              force=False,
              snapshot=False,
              keep=False,
-             cipd_json_output=None):
+             cipd_json_output=None,
+             dry_run=False):
     """Create an instance of the AVD CIPD package.
 
     This method:
@@ -192,7 +193,8 @@ class AvdConfig(object):
      - modifies the AVD's ini files to support running chromium tests
        in chromium infrastructure
      - optionally starts & stops the AVD for snapshotting (default no)
-     - creates and uploads an instance of the AVD CIPD package
+     - By default creates and uploads an instance of the AVD CIPD package
+       (can be turned off by dry_run flag).
      - optionally deletes the AVD (default yes)
 
     Args:
@@ -202,6 +204,8 @@ class AvdConfig(object):
       keep: bool indicating whether to keep the AVD after creating
         the CIPD package.
       cipd_json_output: string path to pass to `cipd create` via -json-output.
+      dry_run: When set to True, it will skip the CIPD package creation
+        after creating the AVD.
     """
     logging.info('Installing required packages.')
     self._InstallCipdPackages(packages=[
@@ -309,13 +313,16 @@ class AvdConfig(object):
               '-json-output',
               cipd_json_output,
           ])
-        try:
-          for line in cmd_helper.IterCmdOutputLines(cipd_create_cmd):
-            logging.info('    %s', line)
-        except subprocess.CalledProcessError as e:
-          raise AvdException(
-              'CIPD package creation failed: %s' % str(e),
-              command=cipd_create_cmd)
+        if dry_run:
+          logging.info('Dry run. CIPD package creation skipped')
+        else:
+          try:
+            for line in cmd_helper.IterCmdOutputLines(cipd_create_cmd):
+              logging.info('    %s', line)
+          except subprocess.CalledProcessError as e:
+            raise AvdException(
+                'CIPD package creation failed: %s' % str(e),
+                command=cipd_create_cmd)
 
     finally:
       if not keep:

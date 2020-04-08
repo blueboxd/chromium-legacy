@@ -1861,6 +1861,8 @@ jumbo_static_library("browser") {
     "upboarding/query_tiles/tile_service_factory.h",
     "update_client/chrome_update_query_params_delegate.cc",
     "update_client/chrome_update_query_params_delegate.h",
+    "usb/frame_usb_services.cc",
+    "usb/frame_usb_services.h",
     "usb/usb_blocklist.cc",
     "usb/usb_blocklist.h",
     "usb/usb_chooser_context.cc",

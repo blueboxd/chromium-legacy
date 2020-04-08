@@ -16,6 +16,7 @@ namespace dom_distiller {
 namespace url_utils {
 
 // Returns the URL for viewing distilled content for an entry.
+// This is only used for testing.
 const GURL GetDistillerViewUrlFromEntryId(const std::string& scheme,
                                           const std::string& entry_id);
 
@@ -30,6 +31,7 @@ const GURL GetDistillerViewUrlFromEntryId(const std::string& scheme,
 // |view_url| and |start_time_ms|.
 const GURL GetDistillerViewUrlFromUrl(const std::string& scheme,
                                       const GURL& view_url,
+                                      const std::string& title,
                                       int64_t start_time_ms = 0);
 
 // Returns the original article's URL from the distilled URL.
@@ -41,6 +43,10 @@ const GURL GetOriginalUrlFromDistillerUrl(const GURL& distilled_url);
 // Returns the starting time from the distilled URL.
 // Returns 0 when not available or on error.
 int64_t GetTimeFromDistillerUrl(const GURL& url);
+
+// Returns the title of the original page from the distilled URL. Returns an
+// empty string if not available or on error.
+std::string GetTitleFromDistillerUrl(const GURL& url);
 
 // Returns the value of the query parameter for the given |key| for a given URL.
 // If the URL is invalid or if the key is not found, returns an empty string.

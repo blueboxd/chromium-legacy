@@ -484,15 +484,6 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
       WTF::CrossThreadOnceFunction<void(WebSwapResult, base::TimeTicks)>;
   virtual void NotifySwapTime(LocalFrame& frame, ReportTimeCallback callback) {}
 
-  virtual void FallbackCursorModeLockCursor(LocalFrame* frame,
-                                            bool left,
-                                            bool right,
-                                            bool up,
-                                            bool down) = 0;
-
-  virtual void FallbackCursorModeSetCursorVisibility(LocalFrame* frame,
-                                                     bool visible) = 0;
-
   // Enable or disable BeginMainFrameNotExpected signals from the compositor of
   // the local root of |frame|. These signals would be consumed by the blink
   // scheduler.

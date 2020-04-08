@@ -5141,7 +5141,7 @@ crbug.com/854910 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/smoot
 crbug.com/855816 [ Win ] virtual/stable/http/tests/navigation/rename-subframe-goback.html [ Pass Timeout ]
 
 # User Activation
-crbug.com/736415 external/wpt/html/user-activation/navigation-state-reset-crossorigin.sub.tentative.html [ Failure ]
+crbug.com/736415 external/wpt/html/user-activation/navigation-state-reset-crossorigin.sub.tentative.html [ Failure Timeout ]
 crbug.com/736415 external/wpt/html/user-activation/navigation-state-reset-sameorigin.tentative.html [ Failure ]
 
 # Sheriff 2018-07-05
@@ -6423,8 +6423,6 @@ crbug.com/1006759 http/tests/devtools/profiler/heap-snapshot-loader.js [ Pass Fa
 crbug.com/1064472 http/tests/devtools/elements/elements-tab-stops.js [ Pass Failure ]
 
 # Flaky tests blocking WPT import
-crbug.com/1049607 external/wpt/fetch/api/response/response-error-from-stream.html [ Pass Failure ]
-crbug.com/1049607 virtual/omt-worker-fetch/external/wpt/fetch/api/response/response-error-from-stream.html [ Pass Failure ]
 crbug.com/1049607 [ Linux ] external/wpt/js-self-profiling/idlharness.any.html [ Pass Failure ]
 crbug.com/1049607 [ Linux ] external/wpt/js-self-profiling/idlharness.any.worker.html [ Pass Failure ]
 crbug.com/1049607 [ Win ] external/wpt/html/semantics/selectors/pseudo-classes/link.html [ Pass Failure ]
@@ -6586,14 +6584,20 @@ crbug.com/1064839 fast/hidpi/image-srcset-svg-canvas-2x.html [ Pass Failure ]
 # Sheriff 2020-03-27
 crbug.com/1064839 fast/hidpi/image-srcset-svg-canvas.html [ Pass Failure ]
 crbug.com/1065335 [ Win ] fast/hidpi/image-srcset-relative-svg-canvas.html [ Pass Failure ]
+
 # Sheriff 2020-03-31
 crbug.com/1065335 [ Win ] fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Pass Failure ]
 # Sheriff 2020-04-01
 crbug.com/1066122 virtual/threaded-no-composited-antialiasing/animations/events/animation-iteration-event.html [ Pass Failure ]
 crbug.com/1066732 fast/events/platform-wheelevent-paging-x-in-scrolling-div.html [ Pass Failure ]
 crbug.com/1066732 fast/events/platform-wheelevent-paging-y-in-scrolling-div.html [ Pass Failure ]
+
+# These tests will pass once the --enable-features=TrustTokens flag is on by default.
+crbug.com/1061765 external/wpt/trust-tokens/end-to-end/* [ Skip ]
+
 # Sheriff 2020-04-02
 crbug.com/1067084 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-with-rtl.html [ Pass Failure ]
+
 # Sheriff 2020-04-04
 crbug.com/1067533 [ Mac10.10 ] external/wpt/shape-detection/idlharness.https.any.sharedworker.html [ Pass Failure ]
 

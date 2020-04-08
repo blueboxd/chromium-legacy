@@ -20,7 +20,8 @@ namespace dom_distiller {
 namespace {
 
 const GURL GetDistillerViewUrlFromUrl(const std::string& url) {
-  return url_utils::GetDistillerViewUrlFromUrl(kDomDistillerScheme, GURL(url));
+  return url_utils::GetDistillerViewUrlFromUrl(kDomDistillerScheme, GURL(url),
+                                               "Title");
 }
 
 const GURL GetDistillerViewUrlFromEntryId(const std::string& id) {

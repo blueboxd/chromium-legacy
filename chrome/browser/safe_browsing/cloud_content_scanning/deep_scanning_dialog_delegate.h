@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "chrome/browser/enterprise/connectors/connectors_manager.h"
 #include "chrome/browser/enterprise/connectors/enterprise_connectors_policy_handler.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
@@ -77,13 +78,16 @@ class DeepScanningDialogDelegate {
     bool do_malware_scan = false;
 
     // URL of the page that is to receive sensitive data.
-    std::string url;
+    GURL url;
 
     // Text data to scan, such as plain text, URLs, HTML content, etc.
     std::vector<base::string16> text;
 
     // List of files to scan.
     std::vector<base::FilePath> paths;
+
+    // The settings to use for the analysis of the data in this struct.
+    enterprise_connectors::ConnectorsManager::AnalysisSettings settings;
   };
 
   // Result of deep scanning.  Each Result contains the verdicts of deep scans
@@ -221,7 +225,10 @@ class DeepScanningDialogDelegate {
 
   // Determines if a request result should be used to allow a data use or to
   // block it.
-  static bool ResultShouldAllowDataUse(BinaryUploadService::Result result);
+  static bool ResultShouldAllowDataUse(
+      BinaryUploadService::Result result,
+      const enterprise_connectors::ConnectorsManager::AnalysisSettings&
+          settings);
 
  protected:
   DeepScanningDialogDelegate(content::WebContents* web_contents,
@@ -242,6 +249,15 @@ class DeepScanningDialogDelegate {
   }
 
  private:
+  // Callback used to obtain analysis settings from the Connectors manager.
+  static void OnGotAnalysisSettings(
+      content::WebContents* web_contents,
+      Data data,
+      CompletionCallback callback,
+      DeepScanAccessPoint access_point,
+      base::Optional<enterprise_connectors::ConnectorsManager::AnalysisSettings>
+          settings);
+
   // Uploads data for deep scanning.  Returns true if uploading is occurring in
   // the background and false if there is nothing to do.
   bool UploadData();

@@ -90,12 +90,6 @@ class CONTENT_EXPORT InputRouterClient {
 
   virtual void UnlockMouse() = 0;
 
-  virtual void FallbackCursorModeLockCursor(bool left,
-                                            bool right,
-                                            bool up,
-                                            bool down) = 0;
-  virtual void FallbackCursorModeSetCursorVisibility(bool visible) = 0;
-
   // Returns the size of visible viewport in screen space, in DIPs.
   virtual gfx::Size GetRootWidgetViewportSize() = 0;
 };

@@ -35,16 +35,42 @@ SmartStickyMode = class {
       return;
     }
 
-    const isRangeEditable =
-        newRange.start.node.state[chrome.automation.StateType.EDITABLE];
+    // Several cases arise which may lead to a sticky mode toggle:
+    // The node is either editable itself or a descendant of an editable.
+    // The node is a relation target of an editable.
+    const node = newRange.start.node;
+    let shouldTurnOffStickyMode = false;
+    if (node.state[chrome.automation.StateType.EDITABLE] ||
+        (node.parent &&
+         node.parent.state[chrome.automation.StateType.EDITABLE])) {
+      // This covers both editable nodes, and inline text boxes (which are not
+      // editable themselves, but may have an editable parent).
+      shouldTurnOffStickyMode = true;
+    } else {
+      let focus = node;
+      while (!shouldTurnOffStickyMode && focus) {
+        if (focus.activeDescendantFor && focus.activeDescendantFor.length) {
+          shouldTurnOffStickyMode |= focus.activeDescendantFor.some(
+              (n) => n.state[chrome.automation.StateType.EDITABLE]);
+        }
 
-    // This toggler should not make any changes when the range isn't editable
-    // and we haven't previously tracked any sticky mode state from the user.
-    if (!isRangeEditable && !this.didTurnOffStickyMode_) {
+        if (focus.controlledBy && focus.controlledBy.length) {
+          shouldTurnOffStickyMode |= focus.controlledBy.some(
+              (n) => n.state[chrome.automation.StateType.EDITABLE]);
+        }
+
+        focus = focus.parent;
+      }
+    }
+
+    // This toggler should not make any changes when the range isn't what we're
+    // lloking for and we haven't previously tracked any sticky mode state from
+    // the user.
+    if (!shouldTurnOffStickyMode && !this.didTurnOffStickyMode_) {
       return;
     }
 
-    if (isRangeEditable) {
+    if (shouldTurnOffStickyMode) {
       if (!ChromeVox.isStickyPrefOn) {
         // Sticky mode was already off; do not track the current sticky state
         // since we may have set it ourselves.

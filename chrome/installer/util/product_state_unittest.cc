@@ -342,36 +342,6 @@ TEST_P(ProductStateTest, InitializeMsi) {
   }
 }
 
-// Test detection of multi-install.
-TEST_P(ProductStateTest, InitializeMultiInstall) {
-  MinimallyInstallProduct(L"10.0.1.1");
-
-  // No uninstall command means single install.
-  {
-    ProductState state;
-    ApplyUninstallCommand(NULL, NULL);
-    EXPECT_TRUE(state.Initialize(system_install_));
-    EXPECT_FALSE(state.is_multi_install());
-  }
-
-  // Uninstall command without --multi-install is single install.
-  {
-    ProductState state;
-    ApplyUninstallCommand(L"setup.exe", L"--uninstall");
-    EXPECT_TRUE(state.Initialize(system_install_));
-    EXPECT_FALSE(state.is_multi_install());
-  }
-
-  // Uninstall command with --multi-install is multi install.
-  {
-    ProductState state;
-    ApplyUninstallCommand(L"setup.exe",
-                          L"--uninstall --chrome --multi-install");
-    EXPECT_TRUE(state.Initialize(system_install_));
-    EXPECT_TRUE(state.is_multi_install());
-  }
-}
-
 INSTANTIATE_TEST_SUITE_P(UserLevel, ProductStateTest, ::testing::Values(false));
 INSTANTIATE_TEST_SUITE_P(SystemLevel,
                          ProductStateTest,

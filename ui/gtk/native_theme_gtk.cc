@@ -219,6 +219,8 @@ base::Optional<SkColor> SkColorFromColorId(
       return GetSeparatorColor("GtkSeparator#separator.horizontal");
 
     // Button
+    case ui::NativeTheme::kColorId_ButtonColor:
+      return GetBgColor("GtkButton#button");
     case ui::NativeTheme::kColorId_ButtonEnabledColor:
     case ui::NativeTheme::kColorId_ButtonUncheckedColor:
       return GetFgColor("GtkButton#button.text-button GtkLabel");

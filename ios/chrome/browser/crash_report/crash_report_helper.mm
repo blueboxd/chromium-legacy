@@ -41,7 +41,7 @@
 namespace breakpad {
 // IMPORTANT: be careful if ever increasing this value, Breakpad reports have an
 // overall size limit
-const int kBreadcrumbsKeyCount = 6;
+const int kBreadcrumbsKeyCount = 1;
 }
 
 // WebStateListObserver that allows loaded urls to be sent to the crash server.

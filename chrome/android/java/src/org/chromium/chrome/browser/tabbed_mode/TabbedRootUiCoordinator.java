@@ -4,10 +4,12 @@
 
 package org.chromium.chrome.browser.tabbed_mode;
 
+import android.graphics.drawable.Drawable;
 import android.os.Handler;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
@@ -252,16 +254,20 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
                         mActivity.getResources(), R.color.offline_indicator_offline_color);
                 final int textColor = ApiCompatibilityUtils.getColor(
                         mActivity.getResources(), R.color.default_text_color_light);
+                final Drawable statusIcon = VectorDrawableCompat.create(mActivity.getResources(),
+                        R.drawable.ic_cloud_offline_24dp, mActivity.getTheme());
                 final int iconTint = ApiCompatibilityUtils.getColor(
                         mActivity.getResources(), R.color.default_icon_color_light);
                 mStatusIndicatorCoordinator.show(
-                        mActivity.getString(R.string.offline_indicator_v2_offline_text), null,
+                        mActivity.getString(R.string.offline_indicator_v2_offline_text), statusIcon,
                         backgroundColor, textColor, iconTint);
             } else {
                 final int backgroundColor = ApiCompatibilityUtils.getColor(
                         mActivity.getResources(), R.color.offline_indicator_back_online_color);
                 final int textColor = ApiCompatibilityUtils.getColor(
                         mActivity.getResources(), R.color.default_text_color_inverse);
+                final Drawable statusIcon = VectorDrawableCompat.create(
+                        mActivity.getResources(), R.drawable.ic_globe_24dp, mActivity.getTheme());
                 final int iconTint = ApiCompatibilityUtils.getColor(
                         mActivity.getResources(), R.color.default_icon_color_inverse);
                 Runnable hide = () -> {
@@ -270,8 +276,8 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
                             STATUS_INDICATOR_WAIT_BEFORE_HIDE_DURATION_MS);
                 };
                 mStatusIndicatorCoordinator.updateContent(
-                        mActivity.getString(R.string.offline_indicator_v2_back_online_text), null,
-                        backgroundColor, textColor, iconTint, hide);
+                        mActivity.getString(R.string.offline_indicator_v2_back_online_text),
+                        statusIcon, backgroundColor, textColor, iconTint, hide);
             }
         });
     }

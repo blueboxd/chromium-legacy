@@ -66,10 +66,6 @@ std::unique_ptr<blink::WebInputEvent> TransformScreenToWidgetCoordinates(
     WebWidgetTestProxy* web_widget_test_proxy,
     const blink::WebInputEvent& event);
 
-// Get the color space for a given name string. This is not in the ColorSpace
-// class to avoid bloating the shipping build.
-gfx::ColorSpace GetTestingColorSpace(const std::string& name);
-
 // Set the device color space.
 void SetDeviceColorSpace(RenderView* render_view,
                          const gfx::ColorSpace& color_space);

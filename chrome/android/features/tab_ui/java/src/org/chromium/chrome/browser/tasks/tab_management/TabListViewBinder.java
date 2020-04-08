@@ -63,7 +63,7 @@ class TabListViewBinder {
                 Resources.Theme theme = view.getContext().getTheme();
                 Drawable drawable = new InsetDrawable(
                         ResourcesCompat.getDrawable(res, selectedTabBackground, theme),
-                        (int) res.getDimension(R.dimen.tab_list_selected_inset));
+                        (int) res.getDimension(R.dimen.tab_list_selected_inset_low_end));
                 view.setForeground(model.get(TabProperties.IS_SELECTED) ? drawable : null);
             }
         } else if (TabProperties.TAB_SELECTED_LISTENER == propertyKey) {

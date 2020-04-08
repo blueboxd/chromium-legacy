@@ -2539,6 +2539,7 @@ enum WebFeature {
   // The above items are available in M83 branch.
 
   kWrongBaselineOfButtonElement = 3201,
+  kV8Document_HasTrustToken_Method = 3202,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

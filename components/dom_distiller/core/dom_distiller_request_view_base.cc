@@ -26,7 +26,7 @@ DomDistillerRequestViewBase::DomDistillerRequestViewBase(
       distilled_page_prefs_(distilled_page_prefs),
       is_error_page_(false) {}
 
-DomDistillerRequestViewBase::~DomDistillerRequestViewBase() {}
+DomDistillerRequestViewBase::~DomDistillerRequestViewBase() = default;
 
 void DomDistillerRequestViewBase::FlagAsErrorPage() {
   // Viewer handle is not passed to this in the case of error pages

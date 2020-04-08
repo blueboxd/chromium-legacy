@@ -94,7 +94,7 @@ void InMemoryContentStore::EraseUrlToIdMapping(
 InMemoryContentStore::CacheDeletor::CacheDeletor(InMemoryContentStore* store)
     : store_(store) {}
 
-InMemoryContentStore::CacheDeletor::~CacheDeletor() {}
+InMemoryContentStore::CacheDeletor::~CacheDeletor() = default;
 
 void InMemoryContentStore::CacheDeletor::operator()(
     DistilledArticleProto* proto) {

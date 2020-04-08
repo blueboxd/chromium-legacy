@@ -888,6 +888,12 @@ void GetAcceptLanguagesForLocale(const std::string& display_locale,
   }
 }
 
+void GetAcceptLanguages(std::vector<std::string>* locale_codes) {
+  for (const char* accept_language : kAcceptLanguageList) {
+    locale_codes->push_back(accept_language);
+  }
+}
+
 bool IsLanguageAccepted(const std::string& display_locale,
                         const std::string& locale) {
   for (const char* accept_language : kAcceptLanguageList) {

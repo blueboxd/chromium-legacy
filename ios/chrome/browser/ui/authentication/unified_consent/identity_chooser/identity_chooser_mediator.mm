@@ -42,7 +42,7 @@
 }
 
 - (void)setSelectedIdentity:(ChromeIdentity*)selectedIdentity {
-  if (_selectedIdentity == selectedIdentity)
+  if ([_selectedIdentity isEqual:selectedIdentity])
     return;
   IdentityChooserItem* previousSelectedItem = [self.consumer
       identityChooserItemWithGaiaID:self.selectedIdentity.gaiaID];

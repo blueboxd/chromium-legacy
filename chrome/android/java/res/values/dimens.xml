@@ -624,4 +624,9 @@
     <dimen name="tab_indicator_height">3dp</dimen>
     <dimen name="tab_indicator_radius">3dp</dimen>
     <dimen name="tab_indicator_padding">2dp</dimen>
+
+    <!-- Status indicator dimensions -->
+    <dimen name="status_indicator_min_height">21dp</dimen>
+    <dimen name="status_indicator_icon_padding">8dp</dimen>
+    <dimen name="status_indicator_icon_size">12dp</dimen>
 </resources>

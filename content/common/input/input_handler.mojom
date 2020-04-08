@@ -167,12 +167,6 @@ struct TouchActionOptional {
 
 // Interface exposed by the browser to the renderer.
 interface WidgetInputHandlerHost {
-  // Call platform Fallback Cursor Mode APIs.
-  [EnableIf=is_android]
-  FallbackCursorModeLockCursor(bool left, bool right, bool up, bool down);
-  [EnableIf=is_android]
-  FallbackCursorModeSetCursorVisibility(bool visible);
-
   // When the renderer's main thread computes the touch action, send this to the
   // browser.
   SetTouchActionFromMain(cc.mojom.TouchAction touch_action);
@@ -261,9 +255,6 @@ interface WidgetInputHandler {
 
   // Sends the cursor visibility state to the render widget.
   CursorVisibilityChanged(bool visible);
-
-  // Notifies the RenderWidget when toggle fallback cursor mode on/off.
-  FallbackCursorModeToggled(bool is_on);
 
   // This message sends a string being composed with an input method.
   ImeSetComposition(mojo_base.mojom.String16 text,

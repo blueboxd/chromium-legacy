@@ -694,6 +694,16 @@ bool HTMLCanvasElement::LowLatencyEnabled() const {
   return !!frame_dispatcher_;
 }
 
+void HTMLCanvasElement::UpdateFilterQuality() {
+  if (IsOffscreenCanvasRegistered())
+    UpdateOffscreenCanvasFilterQuality(FilterQuality());
+
+  if (context_ && Is3d())
+    context_->SetFilterQuality(FilterQuality());
+  else if (canvas2d_bridge_)
+    canvas2d_bridge_->UpdateFilterQuality();
+}
+
 // In some instances we don't actually want to paint to the parent layer
 // We still might want to set filter quality and MarkFirstContentfulPaint though
 void HTMLCanvasElement::Paint(GraphicsContext& context,
@@ -723,11 +733,6 @@ void HTMLCanvasElement::Paint(GraphicsContext& context,
   // compositing feature.
   if (!context_ && !OffscreenCanvasFrame())
     return;
-
-  if (Is3d())
-    context_->SetFilterQuality(FilterQuality());
-  else if (canvas2d_bridge_)
-    canvas2d_bridge_->UpdateFilterQuality();
 
   if (HasResourceProvider() && !canvas_is_clear_)
     PaintTiming::From(GetDocument()).MarkFirstContentfulPaint();

@@ -204,10 +204,6 @@ class UI_ANDROID_EXPORT ViewAndroid {
     return OnTouchEvent(event);
   }
 
-  bool OnUnconsumedKeyboardEventAck(int native_code);
-  void FallbackCursorModeLockCursor(bool left, bool right, bool up, bool down);
-  void FallbackCursorModeSetCursorVisibility(bool visible);
-
  protected:
   void RemoveAllChildren(bool attached_to_window);
 
@@ -274,8 +270,6 @@ class UI_ANDROID_EXPORT ViewAndroid {
 
   void OnSizeChangedInternal(const gfx::Size& size);
   void DispatchOnSizeChanged();
-
-  bool HasTouchlessEventHandler();
 
   // Returns the Java delegate for this view. This is used to delegate work
   // up to the embedding view (or the embedder that can deal with the

@@ -33,8 +33,12 @@ const char kFullscreenControllerContainerUserDataKey[] =
 // BrowserUserData when the flag is turned on by default.
 class FullscreenControllerContainer : public base::SupportsUserData::Data {
  public:
+  FullscreenControllerContainer(Browser* browser)
+      : fullscreen_controller_(
+            std::make_unique<FullscreenControllerImpl>(browser)) {}
   FullscreenControllerContainer()
-      : fullscreen_controller_(std::make_unique<FullscreenControllerImpl>()) {}
+      : fullscreen_controller_(
+            std::make_unique<FullscreenControllerImpl>(nullptr)) {}
   ~FullscreenControllerContainer() override;
 
   FullscreenControllerContainer(const FullscreenControllerContainer&) = delete;
@@ -84,7 +88,8 @@ FullscreenControllerContainer* FullscreenControllerContainer::GetForBrowser(
       static_cast<FullscreenControllerContainer*>(
           browser->GetUserData(kFullscreenControllerContainerUserDataKey));
   if (!fullscreen_controller_container) {
-    fullscreen_controller_container = new FullscreenControllerContainer;
+    fullscreen_controller_container =
+        new FullscreenControllerContainer(browser);
     browser->SetUserData(kFullscreenControllerContainerUserDataKey,
                          base::WrapUnique(fullscreen_controller_container));
   }
@@ -109,10 +114,11 @@ FullscreenController* FullscreenController::FromBrowserState(
       ->GetFullscreenController();
 }
 
-FullscreenControllerImpl::FullscreenControllerImpl()
+FullscreenControllerImpl::FullscreenControllerImpl(Browser* browser)
     : broadcaster_([[ChromeBroadcaster alloc] init]),
       mediator_(this, &model_),
       web_state_list_observer_(this, &model_, &mediator_),
+      fullscreen_browser_observer_(&web_state_list_observer_, browser),
       bridge_([[ChromeBroadcastOberverBridge alloc] initWithObserver:&model_]),
       notification_observer_([[FullscreenSystemNotificationObserver alloc]
           initWithController:this

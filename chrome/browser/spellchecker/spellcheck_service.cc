@@ -5,6 +5,7 @@
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 
 #include <algorithm>
+#include <iterator>
 #include <set>
 #include <utility>
 
@@ -38,6 +39,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 #include "base/task/post_task.h"
@@ -200,6 +202,84 @@ bool SpellcheckService::SignalStatusEvent(
   return true;
 }
 
+// static
+std::string SpellcheckService::GetSupportedAcceptLanguageCode(
+    const std::string& supported_language_full_tag) {
+  // Default to accept language in hardcoded list of Hunspell dictionaries
+  // (kSupportedSpellCheckerLanguages).
+  std::string supported_accept_language =
+      spellcheck::GetCorrespondingSpellCheckLanguage(
+          supported_language_full_tag);
+
+#if defined(OS_WIN)
+  if (!spellcheck::UseWinHybridSpellChecker())
+    return supported_accept_language;
+
+  // Collect the hardcoded list of accept-languages supported by the browser,
+  // that is, languages that can be added as preferred languages in the
+  // languages settings page.
+  std::vector<std::string> accept_languages;
+  l10n_util::GetAcceptLanguages(&accept_languages);
+
+  // First try exact match. Per BCP47, tags are in ASCII and should be treated
+  // as case-insensitive (although there are conventions for the capitalization
+  // of subtags).
+  auto iter =
+      std::find_if(accept_languages.begin(), accept_languages.end(),
+                   [supported_language_full_tag](const auto& accept_language) {
+                     return base::EqualsCaseInsensitiveASCII(
+                         supported_language_full_tag, accept_language);
+                   });
+  if (iter != accept_languages.end())
+    return *iter;
+
+  // Then try matching just the language and (optional) script subtags, but
+  // not the region subtag. For example, Edge supports sr-Cyrl-RS as an accept
+  // language, but not sr-Cyrl-CS. Matching language + script subtags assures
+  // we get the correct script for spellchecking, and not use sr-Latn-RS if
+  // language packs for both scripts are installed on the system.
+  if (!base::Contains(supported_language_full_tag, "-"))
+    return "";
+
+  iter =
+      std::find_if(accept_languages.begin(), accept_languages.end(),
+                   [supported_language_full_tag](const auto& accept_language) {
+                     return base::EqualsCaseInsensitiveASCII(
+                         SpellcheckService::GetLanguageAndScriptTag(
+                             supported_language_full_tag,
+                             /* include_script_tag */ true),
+                         SpellcheckService::GetLanguageAndScriptTag(
+                             accept_language,
+                             /* include_script_tag */ true));
+                   });
+
+  if (iter != accept_languages.end())
+    return *iter;
+
+  // Then try just matching the leading language subtag. E.g. Edge supports
+  // kok as an accept language, but if the Konkani language pack is
+  // installed the Windows spellcheck API reports kok-Deva-IN for the
+  // dictionary name.
+  iter =
+      std::find_if(accept_languages.begin(), accept_languages.end(),
+                   [supported_language_full_tag](const auto& accept_language) {
+                     return base::EqualsCaseInsensitiveASCII(
+                         SpellcheckService::GetLanguageAndScriptTag(
+                             supported_language_full_tag,
+                             /* include_script_tag */ false),
+                         SpellcheckService::GetLanguageAndScriptTag(
+                             accept_language,
+                             /* include_script_tag */ false));
+                   });
+
+  if (iter != accept_languages.end())
+    return *iter;
+
+#endif  // defined(OS_WIN)
+
+  return supported_accept_language;
+}
+
 void SpellcheckService::StartRecordingMetrics(bool spellcheck_enabled) {
   metrics_ = std::make_unique<SpellCheckHostMetrics>();
   metrics_->RecordEnabledStats(spellcheck_enabled);
@@ -358,6 +438,33 @@ void SpellcheckService::OnHunspellDictionaryDownloadFailure(
 // static
 void SpellcheckService::OverrideBinderForTesting(SpellCheckerBinder binder) {
   GetSpellCheckerBinderOverride() = std::move(binder);
+}
+
+// static
+std::string SpellcheckService::GetLanguageAndScriptTag(
+    const std::string& full_tag,
+    bool include_script_tag) {
+  std::string language_and_script_tag;
+
+  std::vector<std::string> subtags = base::SplitString(
+      full_tag, "-", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  // Language subtag is required, all others optional.
+  DCHECK_GE(subtags.size(), 1ULL);
+  std::vector<std::string> subtag_tokens_to_pass;
+  subtag_tokens_to_pass.push_back(subtags.front());
+  subtags.erase(subtags.begin());
+
+  // The optional script subtag always follows the language subtag, and is 4
+  // characters in length.
+  if (include_script_tag) {
+    if (!subtags.empty() && subtags.front().length() == 4) {
+      subtag_tokens_to_pass.push_back(subtags.front());
+    }
+  }
+
+  language_and_script_tag = base::JoinString(subtag_tokens_to_pass, "-");
+
+  return language_and_script_tag;
 }
 
 // static

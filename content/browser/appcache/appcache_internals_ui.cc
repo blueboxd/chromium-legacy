@@ -146,7 +146,6 @@ GetDictionaryValueForAppCacheResourceInfo(
   dict->SetBoolean("isFallback", resource_info.is_fallback);
   dict->SetBoolean("isIntercept", resource_info.is_intercept);
   dict->SetBoolean("isForeign", resource_info.is_foreign);
-  dict->SetDouble("tokenExpires", resource_info.token_expires.ToJsTime());
 
   return dict;
 }

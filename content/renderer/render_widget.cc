@@ -391,33 +391,30 @@ void RenderWidget::InstallCreateForFrameHook(
 std::unique_ptr<RenderWidget> RenderWidget::CreateForFrame(
     int32_t widget_routing_id,
     CompositorDependencies* compositor_deps,
-    blink::mojom::DisplayMode display_mode,
     bool never_composited) {
   if (g_create_render_widget_for_frame) {
     return g_create_render_widget_for_frame(widget_routing_id, compositor_deps,
-                                            display_mode, never_composited,
+                                            never_composited,
                                             mojo::NullReceiver());
   }
 
-  return std::make_unique<RenderWidget>(
-      widget_routing_id, compositor_deps, display_mode,
-      /*hidden=*/true, never_composited, mojo::NullReceiver());
+  return std::make_unique<RenderWidget>(widget_routing_id, compositor_deps,
+                                        /*hidden=*/true, never_composited,
+                                        mojo::NullReceiver());
 }
 
 RenderWidget* RenderWidget::CreateForPopup(
     int32_t widget_routing_id,
     CompositorDependencies* compositor_deps,
-    blink::mojom::DisplayMode display_mode,
     bool hidden,
     bool never_composited,
     mojo::PendingReceiver<mojom::Widget> widget_receiver) {
-  return new RenderWidget(widget_routing_id, compositor_deps, display_mode,
-                          hidden, never_composited, std::move(widget_receiver));
+  return new RenderWidget(widget_routing_id, compositor_deps, hidden,
+                          never_composited, std::move(widget_receiver));
 }
 
 RenderWidget::RenderWidget(int32_t widget_routing_id,
                            CompositorDependencies* compositor_deps,
-                           blink::mojom::DisplayMode display_mode,
                            bool hidden,
                            bool never_composited,
                            mojo::PendingReceiver<mojom::Widget> widget_receiver)
@@ -425,7 +422,6 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
       compositor_deps_(compositor_deps),
       is_hidden_(hidden),
       never_composited_(never_composited),
-      display_mode_(display_mode),
       next_previous_flags_(kInvalidNextPreviousFlagsValue),
       frame_swap_message_queue_(new FrameSwapMessageQueue(routing_id_)),
       widget_receiver_(this, std::move(widget_receiver)) {
@@ -730,16 +726,18 @@ void RenderWidget::OnUpdateVisualProperties(
           visual_properties.screen_info.color_space);
   }
 
+  // TODO(danakj): In order to synchronize updates between local roots, the
+  // display mode should be propagated to RenderFrameProxies and down through
+  // their RenderWidgetHosts to child RenderWidgets via the VisualProperties
+  // waterfall, instead of coming to each RenderWidget independently.
+  // https://developer.mozilla.org/en-US/docs/Web/CSS/@media/display-mode
+  GetWebWidget()->SetDisplayMode(visual_properties.display_mode);
+
   if (delegate()) {
     if (size_ != visual_properties.new_size) {
       // Only hide popups when the size changes. Eg https://crbug.com/761908.
       blink::WebView* web_view = GetFrameWidget()->LocalRoot()->View();
       web_view->CancelPagePopup();
-    }
-
-    if (display_mode_ != visual_properties.display_mode) {
-      display_mode_ = visual_properties.display_mode;
-      delegate()->ApplyNewDisplayModeForWidget(visual_properties.display_mode);
     }
 
     SetAutoResizeMode(visual_properties.auto_resize_enabled,
@@ -813,7 +811,6 @@ void RenderWidget::OnUpdateVisualProperties(
       // TODO(danakj): Isn't the display mode check redundant with the
       // fullscreen one?
       if (visual_properties.is_fullscreen_granted != is_fullscreen_granted_ ||
-          visual_properties.display_mode != display_mode_ ||
           visual_properties.screen_info.device_scale_factor !=
               screen_info_.device_scale_factor)
         ignore_resize_ipc = false;
@@ -859,7 +856,6 @@ void RenderWidget::OnUpdateVisualProperties(
       visible_viewport_size_ = visual_properties.visible_viewport_size;
 
       if (!auto_resize_mode_) {
-        display_mode_ = visual_properties.display_mode;
         size_ = visual_properties.new_size;
         ResizeWebWidget();
       }
@@ -1090,10 +1086,6 @@ scoped_refptr<MainThreadEventQueue> RenderWidget::GetInputEventQueue() {
 
 void RenderWidget::OnCursorVisibilityChange(bool is_visible) {
   GetWebWidget()->SetCursorVisibilityState(is_visible);
-}
-
-void RenderWidget::OnFallbackCursorModeToggled(bool is_on) {
-  GetWebWidget()->OnFallbackCursorModeToggled(is_on);
 }
 
 void RenderWidget::OnMouseCaptureLost() {
@@ -3172,18 +3164,6 @@ void RenderWidget::ZoomToFindInPageRectInMainFrame(
   DCHECK(!delegate_);
   Send(new WidgetHostMsg_ZoomToFindInPageRectInMainFrame(routing_id(),
                                                          rect_to_zoom));
-}
-
-void RenderWidget::FallbackCursorModeLockCursor(bool left,
-                                                bool right,
-                                                bool up,
-                                                bool down) {
-  widget_input_handler_manager_->FallbackCursorModeLockCursor(left, right, up,
-                                                              down);
-}
-
-void RenderWidget::FallbackCursorModeSetCursorVisibility(bool visible) {
-  widget_input_handler_manager_->FallbackCursorModeSetCursorVisibility(visible);
 }
 
 void RenderWidget::SetPageScaleStateAndLimits(float page_scale_factor,

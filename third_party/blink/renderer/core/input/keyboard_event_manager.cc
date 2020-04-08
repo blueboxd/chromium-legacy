@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
+#include "third_party/blink/renderer/platform/widget/frame_widget.h"
 #include "third_party/blink/renderer/platform/windows_keyboard_codes.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
@@ -44,7 +45,6 @@ namespace blink {
 namespace {
 
 const int kVKeyProcessKey = 229;
-const int kVKeySpatNavBack = 233;
 
 bool MapKeyCodeForScroll(int key_code,
                          WebInputEvent::Modifiers modifiers,
@@ -236,8 +236,8 @@ WebInputEventResult KeyboardEventManager::KeyEvent(
 
   if (!should_send_key_events_to_js &&
       frame_->GetDocument()->IsInWebAppScope()) {
-    DCHECK(frame_->View());
-    blink::mojom::DisplayMode display_mode = frame_->View()->DisplayMode();
+    mojom::blink::DisplayMode display_mode =
+        frame_->GetWidgetForLocalRoot()->DisplayMode();
     should_send_key_events_to_js =
         display_mode == blink::mojom::DisplayMode::kMinimalUi ||
         display_mode == blink::mojom::DisplayMode::kStandalone ||
@@ -396,8 +396,6 @@ void KeyboardEventManager::DefaultKeyboardEventHandler(
       return;
     if (event->key() == "Enter") {
       DefaultEnterEventHandler(event);
-    } else if (event->keyCode() == kVKeySpatNavBack) {
-      DefaultSpatNavBackEventHandler(event);
     }
   }
 }
@@ -513,34 +511,6 @@ void KeyboardEventManager::DefaultEscapeEventHandler(KeyboardEvent* event) {
 
   if (HTMLDialogElement* dialog = frame_->GetDocument()->ActiveModalDialog())
     dialog->DispatchEvent(*Event::CreateCancelable(event_type_names::kCancel));
-}
-
-bool KeyboardEventManager::DefaultSpatNavBackEventHandler(
-    KeyboardEvent* event) {
-  if (RuntimeEnabledFeatures::FallbackCursorModeEnabled()) {
-    bool handled = frame_->LocalFrameRoot()
-                       .GetEventHandler()
-                       .HandleFallbackCursorModeBackEvent();
-    if (handled) {
-      event->SetDefaultHandled();
-      return true;
-    }
-  }
-
-  if (IsSpatialNavigationEnabled(frame_) &&
-      !frame_->GetDocument()->InDesignMode()) {
-    Page* page = frame_->GetPage();
-    if (!page)
-      return false;
-    bool handled =
-        page->GetSpatialNavigationController().HandleEscapeKeyboardEvent(event);
-    if (handled) {
-      event->SetDefaultHandled();
-      return true;
-    }
-  }
-
-  return false;
 }
 
 void KeyboardEventManager::DefaultEnterEventHandler(KeyboardEvent* event) {

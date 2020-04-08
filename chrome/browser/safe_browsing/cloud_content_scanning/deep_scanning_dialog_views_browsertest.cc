@@ -5,12 +5,14 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_browsertest_base.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_views.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/fake_deep_scanning_dialog_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/image_view.h"
@@ -46,8 +48,9 @@ class DeepScanningDialogViewsBehaviorBrowserTest
     expected_scan_result_ = dlp_result && malware_result;
   }
 
-  void ConstructorCalled(DeepScanningDialogViews* views) override {
-    ctor_called_timestamp_ = base::TimeTicks::Now();
+  void ConstructorCalled(DeepScanningDialogViews* views,
+                         base::TimeTicks timestamp) override {
+    ctor_called_timestamp_ = timestamp;
     dialog_ = views;
 
     // The scan should be pending when constructed.
@@ -427,6 +430,8 @@ class DeepScanningDialogViewsAppearanceBrowserTest
   DeepScanAccessPoint access_point() const { return std::get<2>(GetParam()); }
 };
 
+constexpr char kTestUrl[] = "https://google.com";
+
 }  // namespace
 
 IN_PROC_BROWSER_TEST_P(DeepScanningDialogViewsBehaviorBrowserTest, Test) {
@@ -448,6 +453,9 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogViewsBehaviorBrowserTest, Test) {
   if (malware_enabled()) {
     malware = malware_success();
     SetMalwarePolicy(SEND_UPLOADS_AND_DOWNLOADS);
+    ListPrefUpdate(g_browser_process->local_state(),
+                   prefs::kURLsToCheckForMalwareOfUploadedContent)
+        ->Append("*");
   }
   SetStatusCallbackResponse(
       SimpleDeepScanningClientResponseForTesting(dlp, malware));
@@ -467,6 +475,8 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogViewsBehaviorBrowserTest, Test) {
   data.do_dlp_scan = dlp_enabled();
   data.do_malware_scan = malware_enabled();
   CreateFilesForTest({"foo.doc"}, {"content"}, &data);
+  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(browser()->profile(),
+                                                    GURL(kTestUrl), &data));
 
   DeepScanningDialogDelegate::ShowForWebContents(
       browser()->tab_strip_model()->GetActiveWebContents(), std::move(data),
@@ -536,6 +546,8 @@ IN_PROC_BROWSER_TEST_F(DeepScanningDialogViewsCancelPendingScanBrowserTest,
   data.do_malware_scan = false;
   CreateFilesForTest({"foo.doc", "bar.doc", "baz.doc"},
                      {"random", "file", "contents"}, &data);
+  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(browser()->profile(),
+                                                    GURL(kTestUrl), &data));
 
   DeepScanningDialogDelegate::ShowForWebContents(
       browser()->tab_strip_model()->GetActiveWebContents(), std::move(data),
@@ -584,6 +596,8 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogViewsWarningBrowserTest, Test) {
   data.text.emplace_back(base::UTF8ToUTF16("foo"));
   data.text.emplace_back(base::UTF8ToUTF16("bar"));
   CreateFilesForTest({"foo.doc", "bar.doc"}, {"file", "content"}, &data);
+  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(browser()->profile(),
+                                                    GURL(kTestUrl), &data));
 
   DeepScanningDialogDelegate::ShowForWebContents(
       browser()->tab_strip_model()->GetActiveWebContents(), std::move(data),
@@ -642,6 +656,8 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogViewsAppearanceBrowserTest, Test) {
     CreateFilesForTest({"foo.doc"}, {"content"}, &data);
   else
     data.text.emplace_back(base::UTF8ToUTF16("foo"));
+  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(browser()->profile(),
+                                                    GURL(kTestUrl), &data));
 
   DeepScanningDialogDelegate::ShowForWebContents(
       browser()->tab_strip_model()->GetActiveWebContents(), std::move(data),

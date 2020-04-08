@@ -5,10 +5,9 @@
 #ifndef CHROME_BROWSER_PREFS_BROWSER_PREFS_H_
 #define CHROME_BROWSER_PREFS_BROWSER_PREFS_H_
 
-#include <set>
+#include <string>
 
 #include "build/build_config.h"
-#include "components/prefs/pref_value_store.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -41,8 +40,8 @@ void RegisterSigninProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 // Migrate/cleanup deprecated prefs in |local_state|. Over time, long deprecated
 // prefs should be removed as new ones are added, but this call should never go
 // away (even if it becomes an empty call for some time) as it should remain
-// *the* place to drop deprecated browser prefs at.
-void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state);
+// *the* place to drop deprecated browser-level (Local State) prefs at.
+void MigrateObsoleteLocalStatePrefs(PrefService* local_state);
 
 // Migrate/cleanup deprecated prefs in |profile|'s pref store. Over time, long
 // deprecated prefs should be removed as new ones are added, but this call

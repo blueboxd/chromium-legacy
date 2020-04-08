@@ -227,6 +227,10 @@ class Profile : public content::BrowserContext {
   // Returns all OffTheRecord profiles.
   virtual std::vector<Profile*> GetAllOffTheRecordProfiles() = 0;
 
+  // Returns the primary OffTheRecord profile. Creates the profile if it doesn't
+  // exist.
+  Profile* GetPrimaryOTRProfile();
+
   // Destroys the OffTheRecord profile.
   virtual void DestroyOffTheRecordProfile(Profile* otr_profile) = 0;
 
@@ -242,6 +246,9 @@ class Profile : public content::BrowserContext {
 
   // Returns true if the profile has any OffTheRecord profiles.
   virtual bool HasAnyOffTheRecordProfile() = 0;
+
+  // True if the primary OffTheRecord profile exists.
+  bool HasPrimaryOTRProfile();
 
   // Return the original "recording" profile. This method returns this if the
   // profile is not OffTheRecord.

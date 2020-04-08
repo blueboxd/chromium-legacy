@@ -82,10 +82,6 @@ const base::string16& TestTaskManager::GetTitle(TaskId task_id) const {
   return title_;
 }
 
-const std::string& TestTaskManager::GetTaskNameForRappor(TaskId task_id) const {
-  return rappor_sample_;
-}
-
 base::string16 TestTaskManager::GetProfileName(TaskId task_id) const {
   return base::string16();
 }

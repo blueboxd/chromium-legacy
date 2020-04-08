@@ -45,6 +45,7 @@ _chromium_absl_clients = [
   "//third_party/webrtc/*",
   "//third_party/abseil-cpp/*",
   "//third_party/googletest:gtest",
+  "//third_party/shell-encryption/*",
 ]
 
 absl_visibility = _chromium_absl_clients + additional_absl_clients

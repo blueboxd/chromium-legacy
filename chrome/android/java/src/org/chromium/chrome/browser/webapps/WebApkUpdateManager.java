@@ -53,7 +53,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
     private static boolean sUpdatesEnabled = true;
 
     /** Data extracted from the WebAPK's launch intent and from the WebAPK's Android Manifest. */
-    private WebApkInfo mInfo;
+    private WebappInfo mInfo;
 
     /** The WebappDataStorage with cached data about prior update requests. */
     private WebappDataStorage mStorage;
@@ -80,7 +80,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
      * Checks whether the WebAPK's Web Manifest has changed. Requests an updated WebAPK if the Web
      * Manifest has changed. Skips the check if the check was done recently.
      */
-    public void updateIfNeeded(WebappDataStorage storage, WebApkInfo info) {
+    public void updateIfNeeded(WebappDataStorage storage, WebappInfo info) {
         mStorage = storage;
         mInfo = info;
 
@@ -113,7 +113,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
 
     @Override
     public void onGotManifestData(
-            WebApkInfo fetchedInfo, String primaryIconUrl, String splashIconUrl) {
+            WebappInfo fetchedInfo, String primaryIconUrl, String splashIconUrl) {
         mStorage.updateTimeOfLastCheckForUpdatedWebManifest();
         if (mUpdateFailureHandler != null) {
             mUpdateFailureHandler.removeCallbacksAndMessages(null);
@@ -177,7 +177,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
     }
 
     /** Builds proto to send to the WebAPK server. */
-    private void buildUpdateRequestAndSchedule(WebApkInfo info, String primaryIconUrl,
+    private void buildUpdateRequestAndSchedule(WebappInfo info, String primaryIconUrl,
             String splashIconUrl, boolean isManifestStale, @WebApkUpdateReason int updateReason) {
         Callback<Boolean> callback = (success) -> {
             if (!success) {
@@ -247,7 +247,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
     /**
      * Whether there is a new version of the //chrome/android/webapk/shell_apk code.
      */
-    private static boolean isShellApkVersionOutOfDate(WebApkInfo info) {
+    private static boolean isShellApkVersionOutOfDate(WebappInfo info) {
         return info.shellApkVersion() < WebApkVersion.REQUEST_UPDATE_FOR_SHELL_APK_VERSION;
     }
 
@@ -257,7 +257,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
      * @param info Meta data from WebAPK's Android Manifest.
      * True if there has not been any update attempts.
      */
-    private boolean shouldCheckIfWebManifestUpdated(WebApkInfo info) {
+    private boolean shouldCheckIfWebManifestUpdated(WebappInfo info) {
         if (!sUpdatesEnabled) return false;
 
         if (CommandLine.getInstance().hasSwitch(
@@ -338,7 +338,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
      * @return reason that an update is needed or {@link WebApkUpdateReason#NONE} if an update is
      *         not needed.
      */
-    private static @WebApkUpdateReason int needsUpdate(WebApkInfo oldInfo, WebApkInfo fetchedInfo,
+    private static @WebApkUpdateReason int needsUpdate(WebappInfo oldInfo, WebappInfo fetchedInfo,
             String primaryIconUrl, String splashIconUrl) {
         if (isShellApkVersionOutOfDate(oldInfo)) return WebApkUpdateReason.OLD_SHELL_APK;
         if (fetchedInfo == null) return WebApkUpdateReason.NONE;
@@ -402,7 +402,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
         return null;
     }
 
-    protected void storeWebApkUpdateRequestToFile(String updateRequestPath, WebApkInfo info,
+    protected void storeWebApkUpdateRequestToFile(String updateRequestPath, WebappInfo info,
             String primaryIconUrl, String splashIconUrl, boolean isManifestStale,
             @WebApkUpdateReason int updateReason, Callback<Boolean> callback) {
         int versionCode = info.webApkVersionCode();

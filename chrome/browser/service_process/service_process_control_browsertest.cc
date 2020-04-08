@@ -98,10 +98,14 @@ class ServiceProcessControlBrowserTest
   void SetUp() override {
     InProcessBrowserTest::SetUp();
 
+#if defined(OS_MACOSX) || defined(OS_LINUX)
     // This should not be needed because TearDown() ends with a closed
     // service_process_, but HistogramsTimeout and Histograms fail without this
-    // on Mac.
+    // on Mac, and on Linux asan builds (https://crbug.com/1059446).
+    // Note that closing the process handle means that the exit-code check in
+    // TearDown will be skipped.
     service_process_.Close();
+#endif
   }
 
   void TearDown() override {

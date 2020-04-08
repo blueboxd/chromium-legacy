@@ -153,7 +153,7 @@ public class AccessorySheetViewTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> mModel.set(ACTIVE_TAB_INDEX, 1));
 
-        onView(isRoot()).check((r, e) -> waitForView((ViewGroup) r, withText(kSecondTab)));
+        onView(isRoot()).check(waitForView(withText(kSecondTab)));
     }
 
     @Test
@@ -194,7 +194,7 @@ public class AccessorySheetViewTest {
             mModel.get(TABS).add(createTestTabWithTextView(kSecondTab));
             mModel.set(ACTIVE_TAB_INDEX, 0);
         });
-        onView(isRoot()).check((r, e) -> waitForView((ViewGroup) r, withText(kSecondTab)));
+        onView(isRoot()).check(waitForView(withText(kSecondTab)));
     }
 
     @Test
@@ -203,19 +203,15 @@ public class AccessorySheetViewTest {
         mModel.get(TABS).add(createTestTabWithTextView("SomeTab"));
         mModel.set(TOP_SHADOW_VISIBLE, false);
         TestThreadUtils.runOnUiThreadBlocking(() -> mModel.set(VISIBLE, true)); // Render view.
-        onView(isRoot()).check((r, e) -> {
-            waitForView(
-                    (ViewGroup) r, withId(R.id.accessory_sheet_shadow), ViewUtils.VIEW_INVISIBLE);
-        });
+        onView(isRoot()).check(
+                waitForView(withId(R.id.accessory_sheet_shadow), ViewUtils.VIEW_INVISIBLE));
 
         TestThreadUtils.runOnUiThreadBlocking(() -> mModel.set(TOP_SHADOW_VISIBLE, true));
         onView(withId(R.id.accessory_sheet_shadow)).check(matches(isDisplayed()));
 
         TestThreadUtils.runOnUiThreadBlocking(() -> mModel.set(TOP_SHADOW_VISIBLE, false));
-        onView(isRoot()).check((r, e) -> {
-            waitForView(
-                    (ViewGroup) r, withId(R.id.accessory_sheet_shadow), ViewUtils.VIEW_INVISIBLE);
-        });
+        onView(isRoot()).check(
+                waitForView(withId(R.id.accessory_sheet_shadow), ViewUtils.VIEW_INVISIBLE));
     }
 
     private Tab createTestTabWithTextView(String textViewCaption) {

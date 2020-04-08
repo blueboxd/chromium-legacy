@@ -69,11 +69,18 @@ def main(raw_args):
       metavar='PATH',
       help='Path to which `cipd create` should dump json output '
            'via -json-output.')
+  create_parser.add_argument(
+      '--dry-run',
+      action='store_true',
+      help='Skip the CIPD package creation after creating the AVD.')
 
   def create_cmd(args):
     avd.AvdConfig(args.avd_config).Create(
-        force=args.force, snapshot=args.snapshot, keep=args.keep,
-        cipd_json_output=args.cipd_json_output)
+        force=args.force,
+        snapshot=args.snapshot,
+        keep=args.keep,
+        cipd_json_output=args.cipd_json_output,
+        dry_run=args.dry_run)
     return 0
 
   create_parser.set_defaults(func=create_cmd)

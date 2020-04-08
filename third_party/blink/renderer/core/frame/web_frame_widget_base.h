@@ -14,6 +14,7 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/common/input/web_gesture_device.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom-blink.h"
 #include "third_party/blink/public/mojom/page/widget.mojom-blink.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
@@ -111,6 +112,7 @@ class CORE_EXPORT WebFrameWidgetBase
                                   cc::EventListenerProperties) final;
   cc::EventListenerProperties EventListenerProperties(
       cc::EventListenerClass) const final;
+  mojom::blink::DisplayMode DisplayMode() const override;
 
   // WebFrameWidget implementation.
   void Close() override;
@@ -167,6 +169,7 @@ class CORE_EXPORT WebFrameWidgetBase
   void SetCompositorVisible(bool visible) override;
   void UpdateVisualState() override;
   void WillBeginCompositorFrame() final;
+  void SetDisplayMode(mojom::blink::DisplayMode) override;
 
   // WidgetBaseClient methods.
   void DispatchRafAlignedInput(base::TimeTicks frame_time) override;
@@ -296,6 +299,8 @@ class CORE_EXPORT WebFrameWidgetBase
   void CancelDrag();
   void RequestAnimationAfterDelayTimerFired(TimerBase*);
 
+  static bool ignore_input_events_;
+
   WebWidgetClient* client_;
 
   // WebFrameWidget is associated with a subtree of the frame tree,
@@ -303,7 +308,7 @@ class CORE_EXPORT WebFrameWidgetBase
   // points to the root of that subtree.
   Member<WebLocalFrameImpl> local_root_;
 
-  static bool ignore_input_events_;
+  mojom::blink::DisplayMode display_mode_;
 
   // This is owned by the LayerTreeHostImpl, and should only be used on the
   // compositor thread, so we keep the TaskRunner where you post tasks to

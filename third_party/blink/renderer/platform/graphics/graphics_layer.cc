@@ -180,11 +180,6 @@ void GraphicsLayer::AppendAdditionalInfoAsJSON(LayerTreeFlags flags,
 #endif
 }
 
-void GraphicsLayer::SetHasWillChangeTransformHint(
-    bool has_will_change_transform) {
-  CcLayer()->SetHasWillChangeTransformHint(has_will_change_transform);
-}
-
 void GraphicsLayer::SetParent(GraphicsLayer* layer) {
 #if DCHECK_IS_ON()
   DCHECK(!layer || !layer->HasAncestor(this));

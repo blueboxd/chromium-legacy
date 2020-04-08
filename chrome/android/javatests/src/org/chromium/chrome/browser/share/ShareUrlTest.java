@@ -63,10 +63,10 @@ public class ShareUrlTest {
     @SmallTest
     public void testDistilledUrl() {
         final String DomDistillerScheme = "chrome-distiller";
-        String distilledHttpUrl =
-                DomDistillerUrlUtils.getDistillerViewUrlFromUrl(DomDistillerScheme, HTTP_URL);
-        String distilledHttpsUrl =
-                DomDistillerUrlUtils.getDistillerViewUrlFromUrl(DomDistillerScheme, HTTPS_URL);
+        String distilledHttpUrl = DomDistillerUrlUtils.getDistillerViewUrlFromUrl(
+                DomDistillerScheme, HTTP_URL, "Title");
+        String distilledHttpsUrl = DomDistillerUrlUtils.getDistillerViewUrlFromUrl(
+                DomDistillerScheme, HTTPS_URL, "Title");
 
         assertCorrectUrl(HTTP_URL, distilledHttpUrl);
         assertCorrectUrl(HTTPS_URL, distilledHttpsUrl);

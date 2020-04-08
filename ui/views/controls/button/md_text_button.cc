@@ -259,7 +259,7 @@ void MdTextButton::UpdateColors() {
 
   ui::NativeTheme* theme = GetNativeTheme();
   SkColor bg_color =
-      theme->GetSystemColor(ui::NativeTheme::kColorId_DialogBackground);
+      theme->GetSystemColor(ui::NativeTheme::kColorId_ButtonColor);
 
   if (bg_color_override_) {
     bg_color = *bg_color_override_;

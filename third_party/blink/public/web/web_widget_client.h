@@ -231,13 +231,6 @@ class WebWidgetClient {
   // Find in page zooms a rect in the main-frame renderer.
   virtual void ZoomToFindInPageRectInMainFrame(const blink::WebRect& rect) {}
 
-  // Used to call platform API for FallbackCursorMode.
-  virtual void FallbackCursorModeLockCursor(bool left,
-                                            bool right,
-                                            bool up,
-                                            bool down) {}
-  virtual void FallbackCursorModeSetCursorVisibility(bool visible) {}
-
   // Sets the current page scale factor and minimum / maximum limits. Both
   // limits are initially 1 (no page scale allowed).
   virtual void SetPageScaleStateAndLimits(float page_scale_factor,

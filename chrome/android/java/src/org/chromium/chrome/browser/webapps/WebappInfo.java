@@ -5,18 +5,27 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.content.Intent;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
+import androidx.browser.trusted.sharing.ShareData;
 
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.webapps.WebApkExtras.ShortcutItem;
+import org.chromium.chrome.browser.webapps.WebApkInfo.ShareTarget;
+import org.chromium.webapk.lib.common.WebApkConstants;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Stores info about a web app.
  */
 public class WebappInfo {
-    protected final BrowserServicesIntentDataProvider mProvider;
+    private final @NonNull BrowserServicesIntentDataProvider mProvider;
+    private final @NonNull WebApkExtras mWebApkExtras;
 
     public static WebappInfo createEmpty() {
         return new WebappInfo(
@@ -36,6 +45,8 @@ public class WebappInfo {
 
     protected WebappInfo(@NonNull BrowserServicesIntentDataProvider provider) {
         mProvider = provider;
+        WebApkExtras webApkExtras = provider.getWebApkExtras();
+        mWebApkExtras = (webApkExtras != null) ? webApkExtras : WebApkExtras.createEmpty();
     }
 
     @NonNull
@@ -76,11 +87,11 @@ public class WebappInfo {
     }
 
     public boolean isForWebApk() {
-        return false;
+        return !TextUtils.isEmpty(webApkPackageName());
     }
 
     public String webApkPackageName() {
-        return null;
+        return mWebApkExtras.webApkPackageName;
     }
 
     public int orientation() {
@@ -136,6 +147,7 @@ public class WebappInfo {
     /**
      * Returns the icon.
      */
+    @NonNull
     public WebappIcon icon() {
         return getWebappExtras().icon;
     }
@@ -159,7 +171,62 @@ public class WebappInfo {
      * and (2) has a content provider which provides a screenshot of the splash screen.
      */
     public boolean isSplashProvidedByWebApk() {
-        return false;
+        return mWebApkExtras.isSplashProvidedByWebApk;
+    }
+
+    /**
+     * Returns the WebAPK's splash icon.
+     */
+    @NonNull
+    public WebappIcon splashIcon() {
+        return mWebApkExtras.splashIcon;
+    }
+
+    public boolean isSplashIconMaskable() {
+        return mWebApkExtras.isSplashIconMaskable;
+    }
+
+    /** Returns data about the WebAPK's share intent handlers. */
+    @NonNull
+    public ShareTarget shareTarget() {
+        return mWebApkExtras.shareTarget;
+    }
+
+    /**
+     * Returns the WebAPK's version code.
+     */
+    public int webApkVersionCode() {
+        return mWebApkExtras.webApkVersionCode;
+    }
+
+    public int shellApkVersion() {
+        return mWebApkExtras.shellApkVersion;
+    }
+
+    public String manifestUrl() {
+        return mWebApkExtras.manifestUrl;
+    }
+
+    public String manifestStartUrl() {
+        return mWebApkExtras.manifestStartUrl;
+    }
+
+    public @WebApkDistributor int distributor() {
+        return mWebApkExtras.distributor;
+    }
+
+    @NonNull
+    public Map<String, String> iconUrlToMurmur2HashMap() {
+        return mWebApkExtras.iconUrlToMurmur2HashMap;
+    }
+
+    public ShareData shareData() {
+        return mProvider.getShareData();
+    }
+
+    @NonNull
+    public List<ShortcutItem> shortcutItems() {
+        return mWebApkExtras.shortcutItems;
     }
 
     /**
@@ -170,18 +237,24 @@ public class WebappInfo {
         intent.putExtra(ShortcutHelper.EXTRA_ID, id());
         intent.putExtra(ShortcutHelper.EXTRA_URL, url());
         intent.putExtra(ShortcutHelper.EXTRA_FORCE_NAVIGATION, shouldForceNavigation());
-        intent.putExtra(ShortcutHelper.EXTRA_SCOPE, scopeUrl());
-        intent.putExtra(ShortcutHelper.EXTRA_ICON, icon().encoded());
-        intent.putExtra(ShortcutHelper.EXTRA_VERSION, ShortcutHelper.WEBAPP_SHORTCUT_VERSION);
-        intent.putExtra(ShortcutHelper.EXTRA_NAME, name());
-        intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName());
-        intent.putExtra(ShortcutHelper.EXTRA_DISPLAY_MODE, displayMode());
-        intent.putExtra(ShortcutHelper.EXTRA_ORIENTATION, orientation());
         intent.putExtra(ShortcutHelper.EXTRA_SOURCE, source());
-        intent.putExtra(ShortcutHelper.EXTRA_THEME_COLOR, toolbarColor());
-        intent.putExtra(ShortcutHelper.EXTRA_BACKGROUND_COLOR, backgroundColor());
-        intent.putExtra(ShortcutHelper.EXTRA_IS_ICON_GENERATED, isIconGenerated());
-        intent.putExtra(ShortcutHelper.EXTRA_IS_ICON_ADAPTIVE, isIconAdaptive());
+        if (isForWebApk()) {
+            intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, webApkPackageName());
+            intent.putExtra(
+                    WebApkConstants.EXTRA_SPLASH_PROVIDED_BY_WEBAPK, isSplashProvidedByWebApk());
+        } else {
+            intent.putExtra(ShortcutHelper.EXTRA_SCOPE, scopeUrl());
+            intent.putExtra(ShortcutHelper.EXTRA_ICON, icon().encoded());
+            intent.putExtra(ShortcutHelper.EXTRA_VERSION, ShortcutHelper.WEBAPP_SHORTCUT_VERSION);
+            intent.putExtra(ShortcutHelper.EXTRA_NAME, name());
+            intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName());
+            intent.putExtra(ShortcutHelper.EXTRA_DISPLAY_MODE, displayMode());
+            intent.putExtra(ShortcutHelper.EXTRA_ORIENTATION, orientation());
+            intent.putExtra(ShortcutHelper.EXTRA_THEME_COLOR, toolbarColor());
+            intent.putExtra(ShortcutHelper.EXTRA_BACKGROUND_COLOR, backgroundColor());
+            intent.putExtra(ShortcutHelper.EXTRA_IS_ICON_GENERATED, isIconGenerated());
+            intent.putExtra(ShortcutHelper.EXTRA_IS_ICON_ADAPTIVE, isIconAdaptive());
+        }
     }
 
     /**

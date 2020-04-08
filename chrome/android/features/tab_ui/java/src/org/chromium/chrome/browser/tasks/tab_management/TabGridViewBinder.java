@@ -300,8 +300,8 @@ class TabGridViewBinder {
         if (TabUiFeatureUtilities.isTabThumbnailAspectRatioNotOne()) {
             float expectedThumbnailAspectRatio =
                     (float) ChromeFeatureList.getFieldTrialParamByFeatureAsDouble(
-                            ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, "thumbnail_aspect_ratio",
-                            1.0);
+                            ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
+                            TabUiFeatureUtilities.THUMBNAIL_ASPECT_RATIO_PARAM, 1.0);
             expectedThumbnailAspectRatio =
                     MathUtils.clamp(expectedThumbnailAspectRatio, 0.5f, 2.0f);
             int height = (int) (thumbnail.getWidth() * 1.0 / expectedThumbnailAspectRatio);

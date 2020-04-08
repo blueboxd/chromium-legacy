@@ -5,6 +5,9 @@
 
 """Sets environment variables needed to run a chromium unit test."""
 
+# Whitespace change to break swarming deduplication.
+# TODO(crbug.com/1069091): Delete this comment.
+
 import io
 import os
 import signal

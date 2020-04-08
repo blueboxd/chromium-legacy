@@ -257,9 +257,6 @@ class UnboundWidgetInputHandler : public mojom::WidgetInputHandler {
   void CursorVisibilityChanged(bool visible) override {
     DLOG(WARNING) << "Input request on unbound interface";
   }
-  void FallbackCursorModeToggled(bool is_on) override {
-    DLOG(WARNING) << "Input request on unbound interface";
-  }
   void ImeSetComposition(const base::string16& text,
                          const std::vector<ui::ImeTextSpan>& ime_text_spans,
                          const gfx::Range& range,
@@ -781,13 +778,23 @@ VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
   // which are to be sent to the renderer process.
   DCHECK(view_);
 
+  // Differentiate between widgets for frames vs widgets for popups/pepper.
+  // Historically this was done by finding the RenderViewHost for the widget,
+  // but a child local root would not convert to a RenderViewHost but is for a
+  // frame.
+  const bool is_frame_widget = owner_delegate_ || owned_by_render_frame_host_;
+
   VisualProperties visual_properties;
 
   GetScreenInfo(&visual_properties.screen_info);
 
   visual_properties.is_fullscreen_granted =
       delegate_->IsFullscreenForCurrentTab();
-  visual_properties.display_mode = delegate_->GetDisplayMode(this);
+
+  if (is_frame_widget)
+    visual_properties.display_mode = delegate_->GetDisplayMode();
+  else
+    visual_properties.display_mode = blink::mojom::DisplayMode::kBrowser;
   visual_properties.zoom_level = delegate_->GetPendingPageZoomLevel();
 
   RenderViewHostDelegateView* rvh_delegate_view = delegate_->GetDelegateView();
@@ -1597,10 +1604,6 @@ void RenderWidgetHostImpl::OnCursorVisibilityStateChanged(bool is_visible) {
   GetWidgetInputHandler()->CursorVisibilityChanged(is_visible);
 }
 
-void RenderWidgetHostImpl::OnFallbackCursorModeToggled(bool is_on) {
-  GetWidgetInputHandler()->FallbackCursorModeToggled(is_on);
-}
-
 // static
 void RenderWidgetHostImpl::DisableResizeAckCheckForTesting() {
   g_check_for_pending_visual_properties_ack = false;
@@ -2199,11 +2202,6 @@ void RenderWidgetHostImpl::OnKeyboardEventAck(
 
   bool processed = (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result);
 
-  // The view may be destroyed by the time we get this ack, as is the case with
-  // portal activations.
-  if (!processed && GetView())
-    processed = GetView()->OnUnconsumedKeyboardEventAck(event);
-
   // We only send unprocessed key event upwards if we are not hidden,
   // because the user has moved away from us and no longer expect any effect
   // of this key event.
@@ -2583,17 +2581,6 @@ void RenderWidgetHostImpl::UnlockMouse() {
       blink::mojom::PointerLockResult::kUserRejected);
   if (was_mouse_locked)
     is_last_unlocked_by_target_ = true;
-}
-
-void RenderWidgetHostImpl::FallbackCursorModeLockCursor(bool left,
-                                                        bool right,
-                                                        bool up,
-                                                        bool down) {
-  GetView()->FallbackCursorModeLockCursor(left, right, up, down);
-}
-
-void RenderWidgetHostImpl::FallbackCursorModeSetCursorVisibility(bool visible) {
-  GetView()->FallbackCursorModeSetCursorVisibility(visible);
 }
 
 void RenderWidgetHostImpl::OnInvalidFrameToken(uint32_t frame_token) {

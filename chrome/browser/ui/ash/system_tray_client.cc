@@ -271,7 +271,7 @@ void SystemTrayClient::ShowAccessibilityHelp() {
 
 void SystemTrayClient::ShowAccessibilitySettings() {
   base::RecordAction(base::UserMetricsAction("ShowAccessibilitySettings"));
-  ShowSettingsSubPageForActiveUser(chrome::kAccessibilitySubPage);
+  ShowSettingsSubPageForActiveUser(chrome::kOsAccessibilitySubPage);
 }
 
 void SystemTrayClient::ShowGestureEducationHelp() {

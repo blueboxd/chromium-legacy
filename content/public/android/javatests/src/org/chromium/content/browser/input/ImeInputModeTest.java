@@ -5,6 +5,7 @@
 package org.chromium.content.browser.input;
 
 import android.support.test.filters.SmallTest;
+import android.text.InputType;
 import android.view.inputmethod.EditorInfo;
 
 import org.junit.Assert;
@@ -29,6 +30,22 @@ public class ImeInputModeTest {
     @Before
     public void setUp() throws Exception {
         mRule.setUpForUrl(ImeActivityTestRule.INPUT_MODE_HTML);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testNumericPassword() throws Exception {
+        mRule.focusElement("input_numeric_password", true /* shouldShowKeyboard */);
+
+        mRule.waitForKeyboardStates(1, 0, 1, new Integer[] {TextInputType.PASSWORD},
+                new Integer[] {WebTextInputMode.NUMERIC});
+        Assert.assertNotNull(mRule.getInputMethodManagerWrapper().getInputConnection());
+
+        Assert.assertTrue(
+                (mRule.getConnectionFactory().getOutAttrs().inputType
+                        & (InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_PASSWORD))
+                != 0);
     }
 
     @Test

@@ -1,8 +1,8 @@
 # crbug.com/1054829
--All/TouchActionBrowserTest.PanXAtYAreaWithTimeout/*
--All/TouchActionBrowserTest.TouchActionNone/*
--All/TouchActionBrowserTest.TwoFingerPanXAtYAreaWithTimeout/*
--All/TouchActionBrowserTest.BlockDoubleTapDragZoom/*
+-All/TouchActionBrowserTest.PanXAtYAreaWithTimeout
+-All/TouchActionBrowserTest.TouchActionNone
+-All/TouchActionBrowserTest.TwoFingerPanXAtYAreaWithTimeout
+-All/TouchActionBrowserTest.BlockDoubleTapDragZoom
 
 # crbug.com/1056878
 -BackForwardCacheBrowserTest.VideoSuspendAndResume

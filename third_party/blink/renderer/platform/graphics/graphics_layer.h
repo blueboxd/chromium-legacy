@@ -214,8 +214,6 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
                                   const cc::Layer&,
                                   JSONObject&) const override;
 
-  void SetHasWillChangeTransformHint(bool);
-
   bool HasLayerState() const { return layer_state_.get(); }
   void SetLayerState(const PropertyTreeState&, const IntPoint& layer_offset);
   const PropertyTreeState& GetPropertyTreeState() const {

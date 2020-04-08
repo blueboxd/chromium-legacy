@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "base/feature_list.h"
+#include "base/memory/singleton.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "components/policy/core/browser/url_util.h"
@@ -53,6 +54,11 @@ bool MatchURLAgainstPatterns(const GURL& url,
 ConnectorsManager::~ConnectorsManager() = default;
 
 ConnectorsManager::ConnectorsManager() = default;
+
+// static
+ConnectorsManager* ConnectorsManager::GetInstance() {
+  return base::Singleton<ConnectorsManager>::get();
+}
 
 void ConnectorsManager::GetAnalysisSettings(const GURL& url,
                                             AnalysisConnector connector,

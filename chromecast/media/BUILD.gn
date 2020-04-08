@@ -77,6 +77,7 @@ test("cast_media_unittests") {
     "//chromecast/base",
     "//chromecast/base/metrics:test_support",
     "//chromecast/common/mojom",
+    "//chromecast/media/api:test_support",
     "//chromecast/media/audio:unittests",
     "//chromecast/media/audio/capture_service:unittests",
     "//chromecast/media/base:monotonic_clock",

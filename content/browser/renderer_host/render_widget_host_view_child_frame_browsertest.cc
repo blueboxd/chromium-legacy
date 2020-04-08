@@ -291,7 +291,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
     EXPECT_EQ(initial_size, child_visible_viewport_size);
   }
 
-  // Same check as abvoe but for a nested WebContents.
+  // Same check as above but for a nested WebContents.
   {
     base::RunLoop loop;
 
@@ -494,6 +494,103 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
     GiveItSomeTime();
   } while (histogram_tester.GetAllSamples("MPArch.RWH_TabSwitchPaintDuration")
                .size() != 1);
+}
+
+// Auto-resize is only implemented for Ash and GuestViews. So we need to inject
+// an implementation that actually resizes the top level widget.
+class DisplayModeControllingWebContentsDelegate : public WebContentsDelegate {
+ public:
+  blink::mojom::DisplayMode GetDisplayMode(
+      const WebContents* web_contents) override {
+    return mode_;
+  }
+
+  void set_display_mode(blink::mojom::DisplayMode mode) { mode_ = mode; }
+
+ private:
+  // The is the default value throughout the browser and renderer.
+  blink::mojom::DisplayMode mode_ = blink::mojom::DisplayMode::kBrowser;
+};
+
+// TODO(crbug.com/1060336): Unlike most VisualProperties, the DisplayMode does
+// not propagate down the tree of RenderWidgets, but is sent independently to
+// each RenderWidget.
+IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
+                       VisualPropertiesPropagation_DisplayMode) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a,b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  auto* web_contents = static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  DisplayModeControllingWebContentsDelegate display_mode_delegate;
+  shell()->web_contents()->SetDelegate(&display_mode_delegate);
+
+  // Main frame.
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  RenderWidgetHostImpl* root_widget =
+      root->current_frame_host()->GetRenderWidgetHost();
+  // In-process frame.
+  FrameTreeNode* ipchild = root->child_at(0);
+  RenderWidgetHostImpl* ipchild_widget =
+      ipchild->current_frame_host()->GetRenderWidgetHost();
+  // Out-of-process frame.
+  FrameTreeNode* oopchild = root->child_at(1);
+  RenderWidgetHostImpl* oopchild_widget =
+      oopchild->current_frame_host()->GetRenderWidgetHost();
+
+  // Check all frames for the initial value.
+  EXPECT_EQ(
+      true,
+      EvalJs(root, "window.matchMedia('(display-mode: browser)').matches"));
+  EXPECT_EQ(
+      true,
+      EvalJs(ipchild, "window.matchMedia('(display-mode: browser)').matches"));
+  EXPECT_EQ(
+      true,
+      EvalJs(oopchild, "window.matchMedia('(display-mode: browser)').matches"));
+
+  // The display mode changes.
+  display_mode_delegate.set_display_mode(
+      blink::mojom::DisplayMode::kStandalone);
+  // Each RenderWidgetHost would need to hear about that by having
+  // SynchronizeVisualProperties() called. It's not clear what triggers that but
+  // the place that changes the DisplayMode would be responsible.
+  root_widget->SynchronizeVisualProperties();
+  ipchild_widget->SynchronizeVisualProperties();
+  oopchild_widget->SynchronizeVisualProperties();
+
+  // Check all frames for the changed value.
+  EXPECT_EQ(
+      true,
+      EvalJsAfterLifecycleUpdate(
+          root, "", "window.matchMedia('(display-mode: standalone)').matches"));
+  EXPECT_EQ(true,
+            EvalJsAfterLifecycleUpdate(
+                ipchild, "",
+                "window.matchMedia('(display-mode: standalone)').matches"));
+  EXPECT_EQ(true,
+            EvalJsAfterLifecycleUpdate(
+                oopchild, "",
+                "window.matchMedia('(display-mode: standalone)').matches"));
+
+  // Navigate a frame to b.com, which we already have a process for.
+  GURL same_site_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  NavigateFrameToURL(root->child_at(0), same_site_url);
+
+  // The navigated frame sees the correct (non-default) value.
+  EXPECT_EQ(true,
+            EvalJs(root->child_at(0),
+                   "window.matchMedia('(display-mode: standalone)').matches"));
+
+  // Navigate the frame to c.com, which we don't have a process for.
+  GURL cross_site_url(embedded_test_server()->GetURL("c.com", "/title2.html"));
+  NavigateFrameToURL(root->child_at(0), cross_site_url);
+
+  // The navigated frame sees the correct (non-default) value.
+  EXPECT_EQ(true,
+            EvalJs(root->child_at(0),
+                   "window.matchMedia('(display-mode: standalone)').matches"));
 }
 
 }  // namespace content

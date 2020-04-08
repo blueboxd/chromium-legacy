@@ -25,8 +25,8 @@ std::wstring GetClientStateMediumKeyPathForApp(const wchar_t* app_guid) {
       .append(app_guid);
 }
 #else
-std::wstring GetUnregisteredKeyPathForProduct(const wchar_t* product) {
-  return std::wstring(L"Software\\").append(product);
+std::wstring GetUnregisteredKeyPathForProduct() {
+  return std::wstring(L"Software\\").append(kProductPathName);
 }
 #endif
 
@@ -34,7 +34,7 @@ std::wstring GetUnregisteredKeyPathForProduct(const wchar_t* product) {
 
 std::wstring GetClientsKeyPath(const wchar_t* app_guid) {
 #if !BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
-  return GetUnregisteredKeyPathForProduct(kProductPathName);
+  return GetUnregisteredKeyPathForProduct();
 #else
   return GetClientsKeyPathForApp(app_guid);
 #endif
@@ -42,41 +42,17 @@ std::wstring GetClientsKeyPath(const wchar_t* app_guid) {
 
 std::wstring GetClientStateKeyPath(const wchar_t* app_guid) {
 #if !BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
-  return GetUnregisteredKeyPathForProduct(kProductPathName);
+  return GetUnregisteredKeyPathForProduct();
 #else
   return GetClientStateKeyPathForApp(app_guid);
 #endif
 }
 
-std::wstring GetBinariesClientsKeyPath() {
-#if !BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
-  return GetUnregisteredKeyPathForProduct(kBinariesPathName);
-#else
-  return GetClientsKeyPathForApp(kBinariesAppGuid);
-#endif
-}
-
-std::wstring GetBinariesClientStateKeyPath() {
-#if !BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
-  return GetUnregisteredKeyPathForProduct(kBinariesPathName);
-#else
-  return GetClientStateKeyPathForApp(kBinariesAppGuid);
-#endif
-}
-
 std::wstring GetClientStateMediumKeyPath(const wchar_t* app_guid) {
 #if !BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
-  return GetUnregisteredKeyPathForProduct(kProductPathName);
+  return GetUnregisteredKeyPathForProduct();
 #else
   return GetClientStateMediumKeyPathForApp(app_guid);
-#endif
-}
-
-std::wstring GetBinariesClientStateMediumKeyPath() {
-#if !BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
-  return GetUnregisteredKeyPathForProduct(kBinariesPathName);
-#else
-  return GetClientStateMediumKeyPathForApp(kBinariesAppGuid);
 #endif
 }
 

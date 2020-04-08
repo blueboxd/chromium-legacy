@@ -188,6 +188,7 @@
 #include "services/device/public/mojom/wake_lock.mojom.h"
 #include "services/device/public/mojom/wake_lock_context.mojom.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -6978,6 +6979,44 @@ void RenderFrameHostImpl::BindRestrictedCookieManager(
       std::move(receiver));
 }
 
+void RenderFrameHostImpl::BindHasTrustTokensAnswerer(
+    mojo::PendingReceiver<network::mojom::HasTrustTokensAnswerer> receiver) {
+  auto top_frame_origin = ComputeTopFrameOrigin(GetLastCommittedOrigin());
+
+  // A check at the callsite in the renderer ensures a correctly functioning
+  // renderer will only request this Mojo handle if the top-frame origin is
+  // potentially trustworthy and has scheme HTTP or HTTPS.
+  if ((top_frame_origin.scheme() != url::kHttpScheme &&
+       top_frame_origin.scheme() != url::kHttpsScheme) ||
+      !network::IsOriginPotentiallyTrustworthy(top_frame_origin)) {
+    mojo::ReportBadMessage(
+        "Attempted to get a HasTrustTokensAnswerer for a non-trustworthy or "
+        "non-HTTP/HTTPS top-frame origin.");
+    return;
+  }
+
+  // This is enforced in benign renderers by the [SecureContext] IDL
+  // attribute on Document::hasTrustToken.
+  if (!network::IsOriginPotentiallyTrustworthy(GetLastCommittedOrigin())) {
+    mojo::ReportBadMessage(
+        "Attempted to get a HasTrustTokensAnswerer from an insecure context.");
+    return;
+  }
+
+  // This is enforced in benign renderers by the RuntimeEnabled=TrustTokens IDL
+  // attribute (the base::Feature's value is tied to the
+  // RuntimeEnabledFeature's).
+  if (!base::FeatureList::IsEnabled(network::features::kTrustTokens)) {
+    mojo::ReportBadMessage(
+        "Attempted to get a HasTrustTokensAnswerer with Trust Tokens "
+        "disabled.");
+    return;
+  }
+
+  GetProcess()->GetStoragePartition()->CreateHasTrustTokensAnswerer(
+      std::move(receiver), ComputeTopFrameOrigin(GetLastCommittedOrigin()));
+}
+
 void RenderFrameHostImpl::GetInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
@@ -6987,10 +7026,6 @@ void RenderFrameHostImpl::GetInterface(
   if (!registry_ ||
       !registry_->TryBindInterface(interface_name, &interface_pipe)) {
     delegate_->OnInterfaceRequest(this, interface_name, &interface_pipe);
-    if (interface_pipe.is_valid()) {
-      GetContentClient()->browser()->BindInterfaceRequestFromFrame(
-          this, interface_name, std::move(interface_pipe));
-    }
   }
 }
 

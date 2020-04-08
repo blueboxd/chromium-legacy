@@ -448,9 +448,6 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration(
 
   UpdateElementId();
 
-  graphics_layer_->SetHasWillChangeTransformHint(
-      style.HasWillChangeTransformHint());
-
   if (style.Preserves3D() && style.HasOpacity() &&
       owning_layer_.Has3DTransformedDescendant()) {
     UseCounter::Count(layout_object.GetDocument(),

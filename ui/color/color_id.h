@@ -28,7 +28,7 @@
   E(kColorBubbleBackground, NativeTheme::kColorId_BubbleBackground) \
   E(kColorBubbleFooterBackground, \
     NativeTheme::kColorId_BubbleFooterBackground) \
-  E(kColorButtonBackground, NativeTheme::kColorId_DialogBackground) \
+  E(kColorButtonBackground, NativeTheme::kColorId_ButtonColor) \
   E(kColorButtonBorder, NativeTheme::kColorId_ButtonBorderColor) \
   E(kColorButtonDisabledForeground, NativeTheme::kColorId_ButtonDisabledColor) \
   E(kColorButtonForeground, NativeTheme::kColorId_ButtonEnabledColor) \

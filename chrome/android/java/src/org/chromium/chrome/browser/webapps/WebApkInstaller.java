@@ -86,7 +86,7 @@ public class WebApkInstaller {
                         new WebappRegistry.FetchWebappDataStorageCallback() {
                             @Override
                             public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
-                                WebApkInfo webApkInfo = WebApkInfo.create(packageName, null, source,
+                                WebappInfo webApkInfo = WebApkInfo.create(packageName, null, source,
                                         false /* forceNavigation */,
                                         false /* canUseSplashFromContentProvider */,
                                         null /* shareData */,

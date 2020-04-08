@@ -25,6 +25,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/enterprise/connectors/connectors_manager.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/file_util_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -62,14 +63,6 @@ namespace {
 DeepScanningDialogDelegate::Factory* GetFactoryStorage() {
   static base::NoDestructor<DeepScanningDialogDelegate::Factory> factory;
   return factory.get();
-}
-
-// Determines if the completion callback should be called only after all the
-// scan requests have finished and the verdicts known.
-bool WaitForVerdict() {
-  int state = g_browser_process->local_state()->GetInteger(
-      prefs::kDelayDeliveryUntilVerdict);
-  return state == DELAY_UPLOADS || state == DELAY_UPLOADS_AND_DOWNLOADS;
 }
 
 // A BinaryUploadService::Request implementation that gets the data to scan
@@ -147,26 +140,6 @@ std::string GetFileMimeType(base::FilePath path) {
   std::string mime_type;
   net::GetMimeTypeFromFile(path, &mime_type);
   return mime_type;
-}
-
-bool AllowLargeFile() {
-  int state = g_browser_process->local_state()->GetInteger(
-      prefs::kBlockLargeFileTransfer);
-  return state != BLOCK_LARGE_UPLOADS &&
-         state != BLOCK_LARGE_UPLOADS_AND_DOWNLOADS;
-}
-
-bool AllowEncryptedFiles() {
-  int state = g_browser_process->local_state()->GetInteger(
-      prefs::kAllowPasswordProtectedFiles);
-  return state == ALLOW_UPLOADS || state == ALLOW_UPLOADS_AND_DOWNLOADS;
-}
-
-bool AllowUnsupportedFileTypes() {
-  int state = g_browser_process->local_state()->GetInteger(
-      prefs::kBlockUnsupportedFiletypes);
-  return state != BLOCK_UNSUPPORTED_FILETYPES_UPLOADS &&
-         state != BLOCK_UNSUPPORTED_FILETYPES_UPLOADS_AND_DOWNLOADS;
 }
 
 bool* UIEnabledStorage() {
@@ -252,8 +225,11 @@ void DeepScanningDialogDelegate::Cancel(bool warning) {
   RunCallback();
 }
 
+// static
 bool DeepScanningDialogDelegate::ResultShouldAllowDataUse(
-    BinaryUploadService::Result result) {
+    BinaryUploadService::Result result,
+    const enterprise_connectors::ConnectorsManager::AnalysisSettings&
+        settings) {
   // Keep this implemented as a switch instead of a simpler if statement so that
   // new values added to BinaryUploadService::Result cause a compiler error.
   switch (result) {
@@ -270,13 +246,13 @@ bool DeepScanningDialogDelegate::ResultShouldAllowDataUse(
       return true;
 
     case BinaryUploadService::Result::FILE_TOO_LARGE:
-      return AllowLargeFile();
+      return !settings.block_large_files;
 
     case BinaryUploadService::Result::FILE_ENCRYPTED:
-      return AllowEncryptedFiles();
+      return !settings.block_password_protected_files;
 
     case BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE:
-      return AllowUnsupportedFileTypes();
+      return !settings.block_unsupported_file_types;
   }
 }
 
@@ -300,15 +276,14 @@ bool DeepScanningDialogDelegate::IsEnabled(Profile* profile,
       (state == CHECK_UPLOADS || state == CHECK_UPLOADS_AND_DOWNLOADS);
 
   if (url.is_valid())
-    data->url = url.spec();
-  if (data->do_dlp_scan &&
-      g_browser_process->local_state()->HasPrefPath(
-          prefs::kURLsToNotCheckComplianceOfUploadedContent)) {
-    const base::ListValue* filters = g_browser_process->local_state()->GetList(
-        prefs::kURLsToNotCheckComplianceOfUploadedContent);
-    url_matcher::URLMatcher matcher;
-    policy::url_util::AddAllowFilters(&matcher, filters);
-    data->do_dlp_scan = matcher.MatchURL(url).empty();
+    data->url = url;
+  if (data->do_dlp_scan) {
+    // TODO(domfc): Instantiate the manager somewhere that can be accessed by
+    // both the upload and download paths instead. This is fine for now since
+    // the manager isn't caching anything.
+    data->do_dlp_scan =
+        enterprise_connectors::ConnectorsManager::GetInstance()
+            ->MatchURLAgainstLegacyDlpPolicies(url, /*upload*/ true);
   }
 
   // See if malware checks are needed.
@@ -320,17 +295,9 @@ bool DeepScanningDialogDelegate::IsEnabled(Profile* profile,
       (state == SEND_UPLOADS || state == SEND_UPLOADS_AND_DOWNLOADS);
 
   if (data->do_malware_scan) {
-    if (g_browser_process->local_state()->HasPrefPath(
-            prefs::kURLsToCheckForMalwareOfUploadedContent)) {
-      const base::ListValue* filters =
-          g_browser_process->local_state()->GetList(
-              prefs::kURLsToCheckForMalwareOfUploadedContent);
-      url_matcher::URLMatcher matcher;
-      policy::url_util::AddAllowFilters(&matcher, filters);
-      data->do_malware_scan = !matcher.MatchURL(url).empty();
-    } else {
-      data->do_malware_scan = false;
-    }
+    data->do_malware_scan =
+        enterprise_connectors::ConnectorsManager::GetInstance()
+            ->MatchURLAgainstLegacyMalwarePolicies(url, /*upload*/ true);
   }
 
   return data->do_dlp_scan || data->do_malware_scan;
@@ -342,8 +309,36 @@ void DeepScanningDialogDelegate::ShowForWebContents(
     Data data,
     CompletionCallback callback,
     DeepScanAccessPoint access_point) {
+  enterprise_connectors::ConnectorsManager::GetInstance()->GetAnalysisSettings(
+      data.url, enterprise_connectors::AnalysisConnector::FILE_ATTACHED,
+      base::BindOnce(&DeepScanningDialogDelegate::OnGotAnalysisSettings,
+                     web_contents, std::move(data), std::move(callback),
+                     access_point));
+}
+
+// static
+void DeepScanningDialogDelegate::OnGotAnalysisSettings(
+    content::WebContents* web_contents,
+    Data data,
+    CompletionCallback callback,
+    DeepScanAccessPoint access_point,
+    base::Optional<enterprise_connectors::ConnectorsManager::AnalysisSettings>
+        settings) {
+  // Proceed with a scan after obtaining settings, otherwise complete with a
+  // positive result.
+  if (!settings.has_value()) {
+    Result result;
+    result.text_results = std::vector<bool>(data.text.size(), true);
+    result.paths_results = std::vector<bool>(data.paths.size(), true);
+    std::move(callback).Run(std::move(data), std::move(result));
+    return;
+  }
+
+  data.settings = std::move(settings.value());
+
   Factory* testing_factory = GetFactoryStorage();
-  bool wait_for_verdict = WaitForVerdict();
+  bool wait_for_verdict = data.settings.block_until_verdict ==
+                          enterprise_connectors::BlockUntilVerdict::BLOCK;
 
   // Using new instead of std::make_unique<> to access non public constructor.
   auto delegate = testing_factory->is_null()
@@ -438,7 +433,7 @@ void DeepScanningDialogDelegate::StringRequestCallback(
       content_size, result, response);
 
   text_request_complete_ = true;
-  bool text_complies = ResultShouldAllowDataUse(result) &&
+  bool text_complies = ResultShouldAllowDataUse(result, data_.settings) &&
                        DlpTriggeredRulesOK(response.dlp_scan_verdict());
   std::fill(result_.text_results.begin(), result_.text_results.end(),
             text_complies);
@@ -476,7 +471,8 @@ void DeepScanningDialogDelegate::CompleteFileRequestCallback(
                  MalwareDeepScanningVerdict::CLEAN;
   }
 
-  bool file_complies = ResultShouldAllowDataUse(result) && dlp_ok && malware_ok;
+  bool file_complies =
+      ResultShouldAllowDataUse(result, data_.settings) && dlp_ok && malware_ok;
   result_.paths_results[index] = file_complies;
 
   ++file_result_count_;
@@ -610,7 +606,7 @@ void DeepScanningDialogDelegate::PrepareRequest(
   if (data_.do_dlp_scan) {
     DlpDeepScanningClientRequest dlp_request;
     dlp_request.set_content_source(trigger);
-    dlp_request.set_url(data_.url);
+    dlp_request.set_url(data_.url.spec());
     request->set_request_dlp_scan(std::move(dlp_request));
   }
 

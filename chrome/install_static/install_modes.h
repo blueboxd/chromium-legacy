@@ -56,16 +56,6 @@ extern const wchar_t kProductPathName[];
 // The length, in characters, of kProductPathName not including the terminator.
 extern const size_t kProductPathNameLength;
 
-// The GUID with which the brand's multi-install binaries were registered with
-// Google Update for modes that once supported the now-deprecated multi-install.
-// Must be empty if the brand does not integrate with Google Update.
-extern const wchar_t kBinariesAppGuid[];
-
-// The name of the registry key in which data for the brand's multi-install
-// binaries were stored for modes that once supported the now-deprecated
-// multi-install. Must be empty if the brand integrates with Google Update.
-extern const wchar_t kBinariesPathName[];
-
 // The brand-specific safe browsing client name.
 extern const char kSafeBrowsingName[];
 
@@ -78,13 +68,10 @@ extern const InstallConstants kInstallModes[];
 // "Software\Chromium Binaries". Otherwise, for brands that do integrate with
 // Google Update, they return something like
 // "Software\Google\Update\ClientState{Medium}\<guid>" where "<guid>" is either
-// |mode|'s appguid or the brand's kBinariesAppGuid.
+// |mode|'s appguid.
 std::wstring GetClientsKeyPath(const wchar_t* app_guid);
 std::wstring GetClientStateKeyPath(const wchar_t* app_guid);
 std::wstring GetClientStateMediumKeyPath(const wchar_t* app_guid);
-std::wstring GetBinariesClientsKeyPath();
-std::wstring GetBinariesClientStateKeyPath();
-std::wstring GetBinariesClientStateMediumKeyPath();
 
 }  // namespace install_static
 

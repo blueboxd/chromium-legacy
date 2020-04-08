@@ -230,13 +230,14 @@ void RecordDeepScanMetrics(DeepScanAccessPoint access_point,
       50);
 }
 
-std::array<const base::FilePath::CharType*, 21> SupportedDlpFileTypes() {
+std::array<const base::FilePath::CharType*, 23> SupportedDlpFileTypes() {
   // Keep sorted for efficient access.
-  static constexpr const std::array<const base::FilePath::CharType*, 21>
+  static constexpr const std::array<const base::FilePath::CharType*, 23>
       kSupportedDLPFileTypes = {
           FILE_PATH_LITERAL(".7z"),   FILE_PATH_LITERAL(".bzip"),
-          FILE_PATH_LITERAL(".cab"),  FILE_PATH_LITERAL(".doc"),
-          FILE_PATH_LITERAL(".docx"), FILE_PATH_LITERAL(".eps"),
+          FILE_PATH_LITERAL(".cab"),  FILE_PATH_LITERAL(".csv"),
+          FILE_PATH_LITERAL(".doc"),  FILE_PATH_LITERAL(".docx"),
+          FILE_PATH_LITERAL(".eps"),  FILE_PATH_LITERAL(".gz"),
           FILE_PATH_LITERAL(".gzip"), FILE_PATH_LITERAL(".odt"),
           FILE_PATH_LITERAL(".pdf"),  FILE_PATH_LITERAL(".ppt"),
           FILE_PATH_LITERAL(".pptx"), FILE_PATH_LITERAL(".ps"),

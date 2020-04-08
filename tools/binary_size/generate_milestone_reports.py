@@ -139,7 +139,6 @@ def _DownloadSizeFiles(base_url, reports):
   temp_dir = tempfile.mkdtemp()
   try:
     subpaths = set(x.size_file_subpath for x in reports)
-    logging.warning('Downloading %d .size files', len(subpaths))
     arg_tuples = ((p, temp_dir, base_url) for p in subpaths)
     for _ in _Shard(_DownloadOneSizeFile, arg_tuples):
       pass
@@ -178,8 +177,6 @@ def _BuildOneReport(report, output_directory, size_file_directory):
 def main():
   parser = argparse.ArgumentParser(description=__doc__)
   parser.add_argument(
-      'directory', help='Directory to save report files to (must not exist).')
-  parser.add_argument(
       '--size-file-bucket',
       required=True,
       help='GCS bucket to find size files in. (e.g. "gs://bucket/subdir")')
@@ -187,58 +184,36 @@ def main():
       '--sync',
       action='store_true',
       help='Sync data files to GCS (otherwise just prints out command to run).')
-  parser.add_argument(
-      '--skip-existing',
-      action='store_true',
-      help='Used to control skipping existing reports, now does nothing.')
-
   args = parser.parse_args()
 
   size_file_bucket = args.size_file_bucket.rstrip('/')
   if not size_file_bucket.startswith('gs://'):
     parser.error('Size file bucket must start with gs://')
 
-  _MakeDirectory(args.directory)
-  if os.listdir(args.directory):
-    parser.error('Directory must be empty')
-
   reports_to_make = set(_EnumerateReports())
 
+  logging.warning('Downloading %d size files.', len(reports_to_make))
   with _DownloadSizeFiles(args.size_file_bucket, reports_to_make) as sizes_dir:
-    logging.warning('Downloading %d size files.', len(reports_to_make))
 
-    for i, r in enumerate(reports_to_make):
-      _BuildOneReport(r, args.directory, sizes_dir)
-      sys.stdout.write('\rGenerated {} of {}'.format(i + 1,
-                                                     len(reports_to_make)))
-      sys.stdout.flush()
-    sys.stdout.write('\n')
+    staging_dir = os.path.join(sizes_dir, 'staging')
+    _MakeDirectory(staging_dir)
 
-  _WriteMilestonesJson(os.path.join(args.directory, 'milestones.json'))
+    for r in reports_to_make:
+      _BuildOneReport(r, staging_dir, sizes_dir)
 
-  logging.warning('Reports saved to %s', args.directory)
-  cmd = [
-      _GSUTIL,
-      '-m',
-      'rsync',
-      '-J',
-      '-a',
-      'public-read',
-      '-r',
-      args.directory,
-      _PUSH_URL,
-  ]
+    _WriteMilestonesJson(os.path.join(staging_dir, 'milestones.json'))
 
-  if args.sync:
-    subprocess.check_call(cmd)
-    subprocess.check_call([
-        _GSUTIL, 'setmeta', '-h', 'Cache-Control:no-cache',
-        _PUSH_URL + 'milestones.json'
-    ])
-  else:
-    print()
-    print('Sync files by running:')
-    print('   ', ' '.join(cmd))
+    if args.sync:
+      subprocess.check_call([
+          _GSUTIL, '-m', 'rsync', '-J', '-a', 'public-read', '-r', staging_dir,
+          _PUSH_URL
+      ])
+      subprocess.check_call([
+          _GSUTIL, 'setmeta', '-h', 'Cache-Control:no-cache',
+          _PUSH_URL + 'milestones.json'
+      ])
+    else:
+      logging.warning('Finished dry run. Run with --sync to upload.')
 
 
 if __name__ == '__main__':

@@ -11,7 +11,9 @@
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
+#include "components/open_from_clipboard/clipboard_recent_content_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/test/test_clipboard.h"
 #include "url/gurl.h"
@@ -75,14 +77,18 @@ TEST_F(ClipboardRecentContentGenericTest, RecognizesURLs) {
 }
 
 TEST_F(ClipboardRecentContentGenericTest, OlderURLsNotSuggested) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kClipboardMaximumAge, {{kClipboardMaximumAgeParam, "600"}});
   ClipboardRecentContentGeneric recent_content;
   base::Time now = base::Time::Now();
   std::string text = "http://example.com/";
   test_clipboard_->WriteText(text.data(), text.length());
-  test_clipboard_->SetLastModifiedTime(now - base::TimeDelta::FromSeconds(10));
+  test_clipboard_->SetLastModifiedTime(now - base::TimeDelta::FromMinutes(9));
   EXPECT_TRUE(recent_content.GetRecentURLFromClipboard().has_value());
-  // If the last modified time is days ago, the URL shouldn't be suggested.
-  test_clipboard_->SetLastModifiedTime(now - base::TimeDelta::FromDays(2));
+  // If the last modified time is 10 minutes ago, the URL shouldn't be
+  // suggested.
+  test_clipboard_->SetLastModifiedTime(now - base::TimeDelta::FromMinutes(11));
   EXPECT_FALSE(recent_content.GetRecentURLFromClipboard().has_value());
 }
 

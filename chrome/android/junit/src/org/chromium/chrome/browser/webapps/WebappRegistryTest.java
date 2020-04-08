@@ -342,10 +342,10 @@ public class WebappRegistryTest {
         String webApkPackage1 = "uninstalledWebApk1";
         String webApkPackage2 = "uninstalledWebApk2";
 
-        WebApkInfo webApkInfo1 = new WebApkInfoBuilder(webApkPackage1, START_URL).build();
+        WebappInfo webApkInfo1 = new WebApkInfoBuilder(webApkPackage1, START_URL).build();
         registerWebapp(webApkInfo1.id(), webApkInfo1);
 
-        WebApkInfo webApkInfo2 = new WebApkInfoBuilder(webApkPackage2, START_URL).build();
+        WebappInfo webApkInfo2 = new WebApkInfoBuilder(webApkPackage2, START_URL).build();
         registerWebapp(webApkInfo2.id(), webApkInfo2);
 
         // Verify that both WebAPKs are registered.
@@ -374,10 +374,10 @@ public class WebappRegistryTest {
         String webApkPackage = "installedWebApk";
         String uninstalledWebApkPackage = "uninstalledWebApk";
 
-        WebApkInfo webApkInfo = new WebApkInfoBuilder(webApkPackage, START_URL).build();
+        WebappInfo webApkInfo = new WebApkInfoBuilder(webApkPackage, START_URL).build();
         registerWebapp(webApkInfo.id(), webApkInfo);
 
-        WebApkInfo uninstalledWebApkInfo =
+        WebappInfo uninstalledWebApkInfo =
                 new WebApkInfoBuilder(uninstalledWebApkPackage, START_URL).build();
         registerWebapp(uninstalledWebApkInfo.id(), uninstalledWebApkInfo);
 
@@ -411,7 +411,7 @@ public class WebappRegistryTest {
     public void testCleanupDoesRemoveOldInstalledWebApks() throws Exception {
         String deprecatedWebApkIdPrefix = "webapk:";
         String webApkPackage = "installedWebApk";
-        WebApkInfo webApkInfo = new WebApkInfoBuilder(webApkPackage, START_URL).build();
+        WebappInfo webApkInfo = new WebApkInfoBuilder(webApkPackage, START_URL).build();
         String deprecatedWebApkId = deprecatedWebApkIdPrefix + webApkInfo.webApkPackageName();
 
         registerWebapp(deprecatedWebApkId, webApkInfo);
@@ -647,7 +647,7 @@ public class WebappRegistryTest {
         final String startUrl = START_URL;
         final String testUrl = START_URL + "/index.html";
 
-        WebApkInfo webApkInfo = new WebApkInfoBuilder("org.chromium.webapk", startUrl).build();
+        WebappInfo webApkInfo = new WebApkInfoBuilder("org.chromium.webapk", startUrl).build();
         registerWebapp(webApkInfo.id(), webApkInfo);
 
         // testUrl should return null.
@@ -676,7 +676,7 @@ public class WebappRegistryTest {
         registerWebapp(webappId, createShortcutWebappInfo(startUrl));
         assertFalse(WebappRegistry.getInstance().hasAtLeastOneWebApkForOrigin(testOrigin));
 
-        WebApkInfo webApkInfo = new WebApkInfoBuilder("org.chromium.webapk", startUrl).build();
+        WebappInfo webApkInfo = new WebApkInfoBuilder("org.chromium.webapk", startUrl).build();
         registerWebapp(webApkInfo.id(), webApkInfo);
         assertTrue(WebappRegistry.getInstance().hasAtLeastOneWebApkForOrigin(testOrigin));
     }

@@ -25,8 +25,6 @@ struct InteractionsStats;
 // indirection allows caching of identical requests from PFM on the same origin,
 // as well as easier testing (no need to mock the whole PasswordStore when
 // testing a PFM).
-// TODO(crbug.com/621355): Actually modify the API to support fetching in the
-// FormFetcher instance.
 class FormFetcher {
  public:
   // State of waiting for a response from a PasswordStore. There might be
@@ -53,6 +51,12 @@ class FormFetcher {
 
   // Call this to stop |consumer| from receiving updates from |this|.
   virtual void RemoveConsumer(Consumer* consumer) = 0;
+
+  // Fetches stored matching logins. In addition the statistics is fetched on
+  // platforms with the password bubble. This is called automatically during
+  // construction and can be called manually later as well to cause an update
+  // of the cached credentials.
+  virtual void Fetch() = 0;
 
   // Returns the current state of the FormFetcher
   virtual State GetState() const = 0;
@@ -86,12 +90,6 @@ class FormFetcher {
 
   // Pointer to a preferred entry in the vector returned by GetBestMatches().
   virtual const autofill::PasswordForm* GetPreferredMatch() const = 0;
-
-  // Fetches stored matching logins. In addition the statistics is fetched on
-  // platforms with the password bubble. This is called automatically during
-  // construction and can be called manually later as well to cause an update
-  // of the cached credentials.
-  virtual void Fetch() = 0;
 
   // Creates a copy of |*this| with contains the same credentials without the
   // need for calling Fetch().

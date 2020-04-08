@@ -212,6 +212,9 @@ UI_BASE_EXPORT void GetAcceptLanguagesForLocale(
     const std::string& display_locale,
     std::vector<std::string>* locale_codes);
 
+// Returns a vector of untranslated locale codes usable for accept-languages.
+UI_BASE_EXPORT void GetAcceptLanguages(std::vector<std::string>* locale_codes);
+
 // Returns true if |locale| is in a predefined AcceptLanguageList and
 // a display name for the |locale| is available in the locale |display_locale|.
 UI_BASE_EXPORT bool IsLanguageAccepted(const std::string& display_locale,

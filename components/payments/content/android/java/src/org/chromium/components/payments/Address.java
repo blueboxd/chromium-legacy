@@ -4,6 +4,10 @@
 
 package org.chromium.components.payments;
 
+import android.os.Bundle;
+
+import androidx.annotation.Nullable;
+
 /**
  * An immutable class that mirrors org.chromium.payments.mojom.PaymentAddress.
  * https://w3c.github.io/payment-request/#paymentaddress-interface
@@ -62,5 +66,40 @@ public class Address {
         this.organization = organization;
         this.recipient = recipient;
         this.phone = phone;
+    }
+
+    // Keys in shipping address bundle.
+    public static final String EXTRA_ADDRESS_COUNTRY = "country";
+    public static final String EXTRA_ADDRESS_LINES = "addressLines";
+    public static final String EXTRA_ADDRESS_REGION = "region";
+    public static final String EXTRA_ADDRESS_CITY = "city";
+    public static final String EXTRA_ADDRESS_DEPENDENT_LOCALITY = "dependentLocality";
+    public static final String EXTRA_ADDRESS_POSTAL_CODE = "postalCode";
+    public static final String EXTRA_ADDRESS_SORTING_CODE = "sortingCode";
+    public static final String EXTRA_ADDRESS_ORGANIZATION = "organization";
+    public static final String EXTRA_ADDRESS_RECIPIENT = "recipient";
+    public static final String EXTRA_ADDRESS_PHONE = "phone";
+
+    /**
+     * @param address Bundle to be parsed.
+     * @return converted Address or null.
+     */
+    @Nullable
+    public static Address createFromBundle(@Nullable Bundle address) {
+        if (address == null) return null;
+        return new Address(getStringOrEmpty(address, EXTRA_ADDRESS_COUNTRY),
+                address.getStringArray(EXTRA_ADDRESS_LINES),
+                getStringOrEmpty(address, EXTRA_ADDRESS_REGION),
+                getStringOrEmpty(address, EXTRA_ADDRESS_CITY),
+                getStringOrEmpty(address, EXTRA_ADDRESS_DEPENDENT_LOCALITY),
+                getStringOrEmpty(address, EXTRA_ADDRESS_POSTAL_CODE),
+                getStringOrEmpty(address, EXTRA_ADDRESS_SORTING_CODE),
+                getStringOrEmpty(address, EXTRA_ADDRESS_ORGANIZATION),
+                getStringOrEmpty(address, EXTRA_ADDRESS_RECIPIENT),
+                getStringOrEmpty(address, EXTRA_ADDRESS_PHONE));
+    }
+
+    private static String getStringOrEmpty(Bundle bundle, String key) {
+        return bundle.getString(key, /*defaultValue =*/"");
     }
 }

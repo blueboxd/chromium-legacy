@@ -1943,8 +1943,6 @@ void WebLocalFrameImpl::CreateFrameView() {
                                            web_view->MaxAutoSize());
   }
 
-  GetFrame()->View()->SetDisplayMode(web_view->DisplayMode());
-
   if (frame_widget_)
     frame_widget_->DidCreateLocalRootView();
 }

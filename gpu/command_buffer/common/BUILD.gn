@@ -176,7 +176,7 @@ source_set("webgpu_sources") {
   ]
 
   if (use_dawn) {
-    deps += [ "//third_party/dawn:libdawn_wire" ]
+    deps += [ "//third_party/dawn/src/dawn_wire" ]
   }
 
   public_deps = [

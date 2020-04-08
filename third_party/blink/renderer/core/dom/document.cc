@@ -48,6 +48,7 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/metrics/public/mojom/ukm_interface.mojom-blink.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink.h"
+#include "services/network/public/mojom/trust_tokens.mojom-blink.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/feature_policy/document_policy_features.h"
@@ -71,6 +72,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v0_custom_element_constructor_builder.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_element_creation_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_element_registration_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
 #include "third_party/blink/renderer/core/accessibility/ax_context.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
@@ -767,6 +769,7 @@ Document::Document(const DocumentInit& initializer,
       display_lock_document_state_(
           MakeGarbageCollected<DisplayLockDocumentState>(this)),
       permission_service_(GetExecutionContext()),
+      has_trust_tokens_answerer_(GetExecutionContext()),
       font_preload_manager_(*this) {
   security_initializer.ApplyPendingDataToDocument(*this);
   GetOriginTrialContext()->BindExecutionContext(GetExecutionContext());
@@ -6221,6 +6224,110 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
   return promise;
 }
 
+ScriptPromise Document::hasTrustToken(ScriptState* script_state,
+                                      const String& issuer,
+                                      ExceptionState& exception_state) {
+  ScriptPromiseResolver* resolver =
+      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+
+  ScriptPromise promise = resolver->Promise();
+
+  // Trust Tokens state is keyed by issuer and top-frame origins that
+  // are both (1) HTTP or HTTPS and (2) potentially trustworthy. Consequently,
+  // we can return early if either the issuer or the top-frame origin fails to
+  // satisfy either of these requirements.
+  KURL issuer_url = KURL(issuer);
+  auto issuer_origin = SecurityOrigin::Create(issuer_url);
+  if (!issuer_url.ProtocolIsInHTTPFamily() ||
+      !issuer_origin->IsPotentiallyTrustworthy()) {
+    exception_state.ThrowTypeError(
+        "hasTrustToken: Trust token issuer origins must be both HTTP(S) and "
+        "secure (\"potentially trustworthy\").");
+    resolver->Reject(exception_state);
+    return promise;
+  }
+
+  scoped_refptr<const SecurityOrigin> top_frame_origin = TopFrameOrigin();
+  if (!top_frame_origin) {
+    // Note: One case where there might be no top frame origin is if this
+    // document is destroyed. In this case, this function will return
+    // `undefined`. Still bother adding the exception and rejecting, just in
+    // case there are other situations in which the top frame origin might be
+    // absent.
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "hasTrustToken: Cannot execute in "
+                                      "documents lacking top-frame origins.");
+    resolver->Reject(exception_state);
+    return promise;
+  }
+
+  if (!top_frame_origin->IsPotentiallyTrustworthy() ||
+      (top_frame_origin->Protocol() != url::kHttpsScheme &&
+       top_frame_origin->Protocol() != url::kHttpScheme)) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotAllowedError,
+        "hasTrustToken: Cannot execute in "
+        "documents without secure, HTTP(S), top-frame origins.");
+    resolver->Reject(exception_state);
+    return promise;
+  }
+
+  if (!has_trust_tokens_answerer_.is_bound()) {
+    GetBrowserInterfaceBroker().GetInterface(
+        has_trust_tokens_answerer_.BindNewPipeAndPassReceiver(
+            GetExecutionContext()->GetTaskRunner(TaskType::kInternalDefault)));
+    has_trust_tokens_answerer_.set_disconnect_handler(
+        WTF::Bind(&Document::HasTrustTokensAnswererConnectionError,
+                  WrapWeakPersistent(this)));
+  }
+
+  pending_has_trust_tokens_resolvers_.insert(resolver);
+
+  has_trust_tokens_answerer_->HasTrustTokens(
+      issuer_origin,
+      WTF::Bind(
+          [](WeakPersistent<ScriptPromiseResolver> resolver,
+             WeakPersistent<Document> document,
+             network::mojom::blink::HasTrustTokensResultPtr result) {
+            // If there was a Mojo connection error, the promise was already
+            // resolved and deleted.
+            if (!base::Contains(document->pending_has_trust_tokens_resolvers_,
+                                resolver)) {
+              return;
+            }
+
+            if (result->status ==
+                network::mojom::blink::TrustTokenOperationStatus::kOk) {
+              resolver->Resolve(result->has_trust_tokens);
+            } else {
+              ScriptState* state = resolver->GetScriptState();
+              ScriptState::Scope scope(state);
+              resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+                  state->GetIsolate(), DOMExceptionCode::kOperationError,
+                  "Failed to retrieve hasTrustToken response. (Would "
+                  "associating the given issuer with this top-level origin "
+                  "have exceeded its number-of-issuers limit?)"));
+            }
+
+            document->pending_has_trust_tokens_resolvers_.erase(resolver);
+          },
+          WrapWeakPersistent(resolver), WrapWeakPersistent(this)));
+
+  return promise;
+}
+
+void Document::HasTrustTokensAnswererConnectionError() {
+  has_trust_tokens_answerer_.reset();
+  for (const auto& resolver : pending_has_trust_tokens_resolvers_) {
+    ScriptState* state = resolver->GetScriptState();
+    ScriptState::Scope scope(state);
+    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+        state->GetIsolate(), DOMExceptionCode::kOperationError,
+        "Internal error retrieving hasTrustToken response."));
+  }
+  pending_has_trust_tokens_resolvers_.clear();
+}
+
 static bool IsValidNameNonASCII(const LChar* characters, unsigned length) {
   if (!IsValidNameStart(characters[0]))
     return false;
@@ -8228,6 +8335,8 @@ void Document::Trace(Visitor* visitor) {
   visitor->Trace(display_lock_document_state_);
   visitor->Trace(form_to_pending_submission_);
   visitor->Trace(permission_service_);
+  visitor->Trace(has_trust_tokens_answerer_);
+  visitor->Trace(pending_has_trust_tokens_resolvers_);
   visitor->Trace(font_preload_manager_);
   Supplementable<Document>::Trace(visitor);
   TreeScope::Trace(visitor);

@@ -39,7 +39,7 @@ NativeThemeColorIdToColorIdMap() {
           {NTCID::kColorId_BubbleBackground, kColorBubbleBackground},
           {NTCID::kColorId_BubbleFooterBackground,
            kColorBubbleFooterBackground},
-          {NTCID::kColorId_DialogBackground, kColorButtonBackground},
+          {NTCID::kColorId_ButtonColor, kColorButtonBackground},
           {NTCID::kColorId_ButtonBorderColor, kColorButtonBorder},
           {NTCID::kColorId_ButtonDisabledColor, kColorButtonDisabledForeground},
           {NTCID::kColorId_ButtonEnabledColor, kColorButtonForeground},

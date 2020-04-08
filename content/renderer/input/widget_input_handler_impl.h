@@ -41,7 +41,6 @@ class WidgetInputHandlerImpl : public mojom::WidgetInputHandler {
   void SetEditCommandsForNextKeyEvent(
       const std::vector<EditCommand>& commands) override;
   void CursorVisibilityChanged(bool visible) override;
-  void FallbackCursorModeToggled(bool is_on) override;
   void ImeSetComposition(const base::string16& text,
                          const std::vector<ui::ImeTextSpan>& ime_text_spans,
                          const gfx::Range& range,

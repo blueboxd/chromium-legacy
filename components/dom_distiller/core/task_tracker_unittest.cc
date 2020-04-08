@@ -24,7 +24,7 @@ namespace test {
 
 class FakeViewRequestDelegate : public ViewRequestDelegate {
  public:
-  ~FakeViewRequestDelegate() override {}
+  ~FakeViewRequestDelegate() override = default;
   MOCK_METHOD1(OnArticleReady,
                void(const DistilledArticleProto* article_proto));
   MOCK_METHOD1(OnArticleUpdated,

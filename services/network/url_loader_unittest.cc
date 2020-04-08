@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
@@ -24,6 +25,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -78,6 +80,7 @@
 #include "services/network/test/test_url_loader_client.h"
 #include "services/network/test_chunked_data_pipe_getter.h"
 #include "services/network/trust_tokens/trust_token_request_helper.h"
+#include "services/network/trust_tokens/trust_token_request_helper_factory.h"
 #include "services/network/url_loader.h"
 #include "services/network/url_request_context_owner.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -4758,9 +4761,10 @@ TEST_F(URLLoaderTest, CrossOriginEmbedderPolicyValue) {
 
 namespace {
 
+enum class SyncOrAsync { kSync, kAsync };
+
 class MockTrustTokenRequestHelper : public TrustTokenRequestHelper {
  public:
-  enum class SyncOrAsync { kSync, kAsync };
 
   // |begin_operation_synchrony| denotes whether to complete the |Begin|
   // operation synchronously. (|Finalize| is always synchronous.)
@@ -4844,12 +4848,70 @@ class MockTrustTokenRequestHelper : public TrustTokenRequestHelper {
   bool* begin_done_flag_;
 };
 
+class MockTrustTokenRequestHelperFactory
+    : public TrustTokenRequestHelperFactory {
+ public:
+  MockTrustTokenRequestHelperFactory(
+      mojom::TrustTokenOperationStatus creation_failure_error,
+      SyncOrAsync sync_or_async)
+      : sync_or_async_(sync_or_async),
+        creation_failure_error_(creation_failure_error) {}
+
+  MockTrustTokenRequestHelperFactory(
+      base::Optional<mojom::TrustTokenOperationStatus> on_begin,
+      base::Optional<mojom::TrustTokenOperationStatus> on_finalize,
+      SyncOrAsync sync_or_async,
+      bool* begin_done_flag)
+      : sync_or_async_(sync_or_async),
+        helper_(
+            std::make_unique<MockTrustTokenRequestHelper>(on_begin,
+                                                          on_finalize,
+                                                          sync_or_async,
+                                                          begin_done_flag)) {}
+
+  void CreateTrustTokenHelperForRequest(
+      const net::URLRequest& request,
+      const mojom::TrustTokenParams& params,
+      base::OnceCallback<void(TrustTokenStatusOrRequestHelper)> done) override {
+    if (creation_failure_error_) {
+      switch (sync_or_async_) {
+        case SyncOrAsync::kSync: {
+          std::move(done).Run(std::move(*creation_failure_error_));
+          return;
+        }
+        case SyncOrAsync::kAsync:
+          base::ThreadTaskRunnerHandle::Get()->PostTask(
+              FROM_HERE, base::BindOnce(std::move(done),
+                                        std::move(*creation_failure_error_)));
+          return;
+      }
+    }
+
+    switch (sync_or_async_) {
+      case SyncOrAsync::kSync: {
+        std::move(done).Run(std::move(helper_));
+        return;
+      }
+      case SyncOrAsync::kAsync:
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE, base::BindOnce(std::move(done), std::move(helper_)));
+        return;
+    }
+
+    NOTREACHED();
+  }
+
+ private:
+  SyncOrAsync sync_or_async_;
+  base::Optional<mojom::TrustTokenOperationStatus> creation_failure_error_;
+  std::unique_ptr<TrustTokenRequestHelper> helper_;
+};
+
 }  // namespace
 
 class URLLoaderSyncOrAsyncTrustTokenOperationTest
     : public URLLoaderTest,
-      public ::testing::WithParamInterface<
-          MockTrustTokenRequestHelper::SyncOrAsync> {
+      public ::testing::WithParamInterface<SyncOrAsync> {
  public:
   void OnServerReceivedRequest(const net::test_server::HttpRequest&) override {
     EXPECT_TRUE(outbound_trust_token_operation_was_successful_);
@@ -4865,11 +4927,10 @@ class URLLoaderSyncOrAsyncTrustTokenOperationTest
   bool outbound_trust_token_operation_was_successful_ = false;
 };
 
-INSTANTIATE_TEST_SUITE_P(
-    WithSyncAndAsyncOperations,
-    URLLoaderSyncOrAsyncTrustTokenOperationTest,
-    ::testing::Values(MockTrustTokenRequestHelper::SyncOrAsync::kSync,
-                      MockTrustTokenRequestHelper::SyncOrAsync::kAsync));
+INSTANTIATE_TEST_SUITE_P(WithSyncAndAsyncOperations,
+                         URLLoaderSyncOrAsyncTrustTokenOperationTest,
+                         ::testing::Values(SyncOrAsync::kSync,
+                                           SyncOrAsync::kAsync));
 
 // An otherwise-successful request with an associated Trust Tokens operation
 // whose Begin and Finalize steps are both successful should succeed overall.
@@ -4877,6 +4938,8 @@ TEST_P(URLLoaderSyncOrAsyncTrustTokenOperationTest,
        HandlesTrustTokenOperationSuccess) {
   ResourceRequest request =
       CreateResourceRequest("GET", test_server()->GetURL("/simple_page.html"));
+  request.trust_token_params =
+      OptionalTrustTokenParams(mojom::TrustTokenParams::New());
 
   base::RunLoop delete_run_loop;
   mojo::PendingRemote<mojom::URLLoader> loader_remote;
@@ -4894,7 +4957,7 @@ TEST_P(URLLoaderSyncOrAsyncTrustTokenOperationTest,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
       nullptr /* origin_policy_manager */,
-      std::make_unique<MockTrustTokenRequestHelper>(
+      std::make_unique<MockTrustTokenRequestHelperFactory>(
           mojom::TrustTokenOperationStatus::kOk /* on_begin */,
           mojom::TrustTokenOperationStatus::kOk /* on_finalize */, GetParam(),
           &outbound_trust_token_operation_was_successful_));
@@ -4929,6 +4992,8 @@ TEST_P(URLLoaderSyncOrAsyncTrustTokenOperationTest,
        HandlesTrustTokenSignedRedemptionRecordCacheHit) {
   ResourceRequest request =
       CreateResourceRequest("GET", test_server()->GetURL("/simple_page.html"));
+  request.trust_token_params =
+      OptionalTrustTokenParams(mojom::TrustTokenParams::New());
 
   base::RunLoop delete_run_loop;
   mojo::PendingRemote<mojom::URLLoader> loader_remote;
@@ -4946,7 +5011,7 @@ TEST_P(URLLoaderSyncOrAsyncTrustTokenOperationTest,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
       nullptr /* origin_policy_manager */,
-      std::make_unique<MockTrustTokenRequestHelper>(
+      std::make_unique<MockTrustTokenRequestHelperFactory>(
           mojom::TrustTokenOperationStatus::kAlreadyExists /* on_begin */,
           base::nullopt /* on_finalize */, GetParam(),
           &outbound_trust_token_operation_was_successful_));
@@ -4969,6 +5034,8 @@ TEST_P(URLLoaderSyncOrAsyncTrustTokenOperationTest,
        HandlesTrustTokenBeginFailure) {
   ResourceRequest request =
       CreateResourceRequest("GET", test_server()->GetURL("/simple_page.html"));
+  request.trust_token_params =
+      OptionalTrustTokenParams(mojom::TrustTokenParams::New());
 
   base::RunLoop delete_run_loop;
   mojo::PendingRemote<mojom::URLLoader> loader_remote;
@@ -4986,7 +5053,7 @@ TEST_P(URLLoaderSyncOrAsyncTrustTokenOperationTest,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
       nullptr /* origin_policy_manager */,
-      std::make_unique<MockTrustTokenRequestHelper>(
+      std::make_unique<MockTrustTokenRequestHelperFactory>(
           mojom::TrustTokenOperationStatus::kFailedPrecondition /* on_begin */,
           base::nullopt /* on_finalize */, GetParam(),
           &outbound_trust_token_operation_was_successful_));
@@ -5009,6 +5076,8 @@ TEST_P(URLLoaderSyncOrAsyncTrustTokenOperationTest,
        HandlesTrustTokenFinalizeFailure) {
   ResourceRequest request =
       CreateResourceRequest("GET", test_server()->GetURL("/simple_page.html"));
+  request.trust_token_params =
+      OptionalTrustTokenParams(mojom::TrustTokenParams::New());
 
   base::RunLoop delete_run_loop;
   mojo::PendingRemote<mojom::URLLoader> loader_remote;
@@ -5026,7 +5095,7 @@ TEST_P(URLLoaderSyncOrAsyncTrustTokenOperationTest,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
       nullptr /* origin_policy_manager */,
-      std::make_unique<MockTrustTokenRequestHelper>(
+      std::make_unique<MockTrustTokenRequestHelperFactory>(
           mojom::TrustTokenOperationStatus::kOk /* on_begin */,
           mojom::TrustTokenOperationStatus::kBadResponse /* on_finalize */,
           GetParam(), &outbound_trust_token_operation_was_successful_));
@@ -5038,6 +5107,47 @@ TEST_P(URLLoaderSyncOrAsyncTrustTokenOperationTest,
             net::ERR_TRUST_TOKEN_OPERATION_FAILED);
   EXPECT_THAT(client()->completion_status().trust_token_operation_status,
               Optional(mojom::TrustTokenOperationStatus::kBadResponse));
+}
+
+// When URLLoader receives a  request parameterized to perform a Trust Tokens
+// operation but fails to create a trust token request helper (because a
+// universal Trust Tokens precondition is violated, for instance), the request
+// should fail entirely.
+TEST_P(URLLoaderSyncOrAsyncTrustTokenOperationTest,
+       HandlesTrustTokenRequestHelperCreationFailure) {
+  ResourceRequest request =
+      CreateResourceRequest("GET", test_server()->GetURL("/simple_page.html"));
+  request.trust_token_params =
+      OptionalTrustTokenParams(mojom::TrustTokenParams::New());
+
+  base::RunLoop delete_run_loop;
+  mojo::PendingRemote<mojom::URLLoader> loader_remote;
+  std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = mojom::kBrowserProcessId;
+
+  url_loader = std::make_unique<URLLoader>(
+      context(), nullptr /* network_service_client */,
+      nullptr /* network_context_client */,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      loader_remote.InitWithNewPipeAndPassReceiver(), 0, request,
+      client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      /*coep_reporter=*/nullptr, 0 /* request_id */,
+      0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */,
+      nullptr /* origin_policy_manager */,
+      std::make_unique<MockTrustTokenRequestHelperFactory>(
+          mojom::TrustTokenOperationStatus::
+              kInternalError /* helper_creation_error */,
+          GetParam()));
+
+  client()->RunUntilComplete();
+  delete_run_loop.Run();
+
+  EXPECT_EQ(client()->completion_status().error_code,
+            net::ERR_TRUST_TOKEN_OPERATION_FAILED);
+  EXPECT_THAT(client()->completion_status().trust_token_operation_status,
+              Optional(mojom::TrustTokenOperationStatus::kInternalError));
 }
 
 }  // namespace network

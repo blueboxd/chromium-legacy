@@ -263,7 +263,8 @@ TEST_F(WebEngineIntegrationTest, InvalidUserAgent) {
 // Check that if the CreateContextParams has |remote_debugging_port| set then:
 // - DevTools becomes available when the first debuggable Frame is created.
 // - DevTools closes when the last debuggable Frame is closed.
-TEST_F(WebEngineIntegrationTest, RemoteDebuggingPort) {
+// Test is flaky. http://crbug.com/1067727
+TEST_F(WebEngineIntegrationTest, DISABLED_RemoteDebuggingPort) {
   StartWebEngine();
 
   // Create a Context with remote debugging enabled via an ephemeral port.

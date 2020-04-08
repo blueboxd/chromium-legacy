@@ -34,7 +34,6 @@ import android.graphics.Rect;
 import android.support.test.espresso.matcher.RootMatchers;
 import android.support.test.filters.MediumTest;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.ViewStub;
 
 import androidx.annotation.Nullable;
@@ -205,7 +204,7 @@ public class KeyboardAccessoryModernViewTest {
                     createAutofillChipAndTab("Johnathan", result -> clickRecorded.set(true)));
         });
 
-        onView(isRoot()).check((root, e) -> waitForView((ViewGroup) root, withText("Johnathan")));
+        onView(isRoot()).check(waitForView(withText("Johnathan")));
         onView(withText("Johnathan")).perform(click());
 
         assertTrue(clickRecorded.get());
@@ -255,7 +254,7 @@ public class KeyboardAccessoryModernViewTest {
             mModel.get(BAR_ITEMS).set(new BarItem[] {itemWithIPH, createTabs()});
         });
 
-        onView(isRoot()).check((root, e) -> waitForView((ViewGroup) root, withText("Johnathan")));
+        onView(isRoot()).check(waitForView(withText("Johnathan")));
         waitForHelpBubble(withText(R.string.iph_keyboard_accessory_fill_password));
         onView(withChild(withText("Johnathan"))).check(matches(isSelected()));
         onView(withText("Johnathan")).perform(click());
@@ -283,7 +282,7 @@ public class KeyboardAccessoryModernViewTest {
             mModel.get(BAR_ITEMS).set(new BarItem[] {itemWithIPH, createTabs()});
         });
 
-        onView(isRoot()).check((root, e) -> waitForView((ViewGroup) root, withText("Johnathan")));
+        onView(isRoot()).check(waitForView(withText("Johnathan")));
         waitForHelpBubble(withText(R.string.iph_keyboard_accessory_fill_address));
         onView(withText("Johnathan")).perform(click());
 
@@ -309,7 +308,7 @@ public class KeyboardAccessoryModernViewTest {
             mModel.get(BAR_ITEMS).set(new BarItem[] {itemWithIPH, createTabs()});
         });
 
-        onView(isRoot()).check((root, e) -> waitForView((ViewGroup) root, withText("Johnathan")));
+        onView(isRoot()).check(waitForView(withText("Johnathan")));
         waitForHelpBubble(withText(R.string.iph_keyboard_accessory_fill_payment));
         onView(withText("Johnathan")).perform(click());
 
@@ -322,7 +321,7 @@ public class KeyboardAccessoryModernViewTest {
         View mainDecorView = mActivityTestRule.getActivity().getWindow().getDecorView();
         onView(isRoot())
                 .inRoot(RootMatchers.withDecorView(not(is(mainDecorView))))
-                .check((root, e) -> waitForView((ViewGroup) root, matcher));
+                .check(waitForView(matcher));
     }
 
     private void rotateActivityToLandscape() {

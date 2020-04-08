@@ -261,6 +261,10 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void DeviceScaleFactorChanged();
   double DevicePixelRatio() const;
 
+  // Informs the local root's document and its local descendant subtree that a
+  // media query value changed.
+  void MediaQueryAffectingValueChangedForLocalSubtree(MediaValueChange);
+
   String SelectedText() const;
   String SelectedTextForClipboard() const;
 

@@ -77,7 +77,7 @@ void RecordDeepScanMetrics(DeepScanAccessPoint access_point,
                            bool success);
 
 // Returns an array of the file types supported for DLP scanning.
-std::array<const base::FilePath::CharType*, 21> SupportedDlpFileTypes();
+std::array<const base::FilePath::CharType*, 23> SupportedDlpFileTypes();
 
 // Returns true if the given file type is supported for DLP scanning.
 bool FileTypeSupported(bool for_malware_scan,

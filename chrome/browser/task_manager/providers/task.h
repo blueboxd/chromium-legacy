@@ -60,11 +60,9 @@ class Task {
   };
 
   // Create a task with the given |title| and the given favicon |icon|. This
-  // task runs on a process whose handle is |handle|. |rappor_sample| is the
-  // name of the sample to be recorded if this task needs to be reported by
-  // Rappor. If |process_id| is not supplied, it will be determined by |handle|.
+  // task runs on a process whose handle is |handle|.
+  // If |process_id| is not supplied, it will be determined by |handle|.
   Task(const base::string16& title,
-       const std::string& rappor_sample,
        const gfx::ImageSkia* icon,
        base::ProcessHandle handle,
        base::ProcessId process_id = base::kNullProcessId);
@@ -177,7 +175,6 @@ class Task {
   }
 
   const base::string16& title() const { return title_; }
-  const std::string& rappor_sample_name() const { return rappor_sample_name_; }
   const gfx::ImageSkia& icon() const { return icon_; }
   const base::ProcessHandle& process_handle() const { return process_handle_; }
   const base::ProcessId& process_id() const { return process_id_; }
@@ -188,9 +185,6 @@ class Task {
   // Returns |*result_image|.
   static gfx::ImageSkia* FetchIcon(int id, gfx::ImageSkia** result_image);
   void set_title(const base::string16& new_title) { title_ = new_title; }
-  void set_rappor_sample_name(const std::string& sample) {
-    rappor_sample_name_ = sample;
-  }
   void set_icon(const gfx::ImageSkia& new_icon) { icon_ = new_icon; }
 
  private:
@@ -225,10 +219,6 @@ class Task {
 
   // The title of the task.
   base::string16 title_;
-
-  // The name of the sample representing this task when a Rappor sample needs to
-  // be recorded for it.
-  std::string rappor_sample_name_;
 
   // The favicon.
   gfx::ImageSkia icon_;

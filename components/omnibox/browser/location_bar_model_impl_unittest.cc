@@ -139,7 +139,7 @@ TEST_F(LocationBarModelImplTest, FormatsReaderModeUrls) {
             originalFormattedFullUrl);
 
   GURL distilled = dom_distiller::url_utils::GetDistillerViewUrlFromUrl(
-      dom_distiller::kDomDistillerScheme, http_url);
+      dom_distiller::kDomDistillerScheme, http_url, "title");
   // Ensure the test is set up properly by checking the reader mode URL has
   // the reader mode scheme.
   EXPECT_EQ(dom_distiller::kDomDistillerScheme, distilled.scheme());
@@ -152,7 +152,7 @@ TEST_F(LocationBarModelImplTest, FormatsReaderModeUrls) {
   // Similarly, https scheme should also be hidden.
   const GURL https_url("https://www.example.com/article.html");
   distilled = dom_distiller::url_utils::GetDistillerViewUrlFromUrl(
-      dom_distiller::kDomDistillerScheme, https_url);
+      dom_distiller::kDomDistillerScheme, https_url, "title");
   delegate()->SetURL(distilled);
   EXPECT_EQ(originalDisplayUrl, model()->GetURLForDisplay());
   EXPECT_EQ(originalFormattedFullUrl, model()->GetFormattedFullURL());

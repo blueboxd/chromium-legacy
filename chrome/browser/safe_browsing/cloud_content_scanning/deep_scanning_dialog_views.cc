@@ -193,14 +193,14 @@ DeepScanningDialogViews::DeepScanningDialogViews(
       web_contents_(web_contents),
       access_point_(std::move(access_point)),
       is_file_scan_(is_file_scan) {
+  if (observer_for_testing)
+    observer_for_testing->ConstructorCalled(this, base::TimeTicks::Now());
+
   // Show the pending dialog after a delay in case the response is fast enough.
   base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
                         base::BindOnce(&DeepScanningDialogViews::Show,
                                        weak_ptr_factory_.GetWeakPtr()),
                         GetInitialUIDelay());
-
-  if (observer_for_testing)
-    observer_for_testing->ConstructorCalled(this);
 }
 
 base::string16 DeepScanningDialogViews::GetWindowTitle() const {

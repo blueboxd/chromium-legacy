@@ -14,6 +14,7 @@
 #include "media/base/color_plane_layout.h"
 #include "media/base/format_utils.h"
 #include "media/mojo/common/mojo_shared_buffer_video_frame.h"
+#include "media/mojo/mojom/hdr_metadata_mojom_traits.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "mojo/public/cpp/base/values_mojom_traits.h"
 #include "mojo/public/cpp/system/handle.h"
@@ -284,6 +285,11 @@ bool StructTraits<media::mojom::VideoFrameDataView,
   if (!input.ReadColorSpace(&color_space))
     return false;
   frame->set_color_space(color_space);
+
+  base::Optional<media::HDRMetadata> hdr_metadata;
+  if (!input.ReadHdrMetadata(&hdr_metadata))
+    return false;
+  frame->set_hdr_metadata(std::move(hdr_metadata));
 
   *output = std::move(frame);
   return true;

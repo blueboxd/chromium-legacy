@@ -1168,7 +1168,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 #pragma mark ChromeIdentityServiceObserver
 
 - (void)profileUpdate:(ChromeIdentity*)identity {
-  if (identity == _identity) {
+  if ([_identity isEqual:identity]) {
     [self reloadAccountCell];
   }
 }

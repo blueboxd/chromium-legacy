@@ -11,6 +11,7 @@ import org.chromium.chrome.browser.flags.CachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
@@ -68,6 +69,7 @@ public class ChromeCachedFlags {
         // clang-format off
         List<CachedFieldTrialParameter> fieldTrialsToCache = Arrays.asList(
                 BottomToolbarVariationManager.BOTTOM_TOOLBAR_VARIATION,
+                ReturnToChromeExperimentsUtil.TAB_SWITCHER_ON_RETURN_MS,
                 StartSurfaceConfiguration.START_SURFACE_EXCLUDE_MV_TILES,
                 StartSurfaceConfiguration.START_SURFACE_HIDE_INCOGNITO_SWITCH,
                 StartSurfaceConfiguration.START_SURFACE_LAST_ACTIVE_TAB_ONLY,
@@ -79,7 +81,6 @@ public class ChromeCachedFlags {
                 TabUiFeatureUtilities.ZOOMING_MIN_SDK,
                 TabUiFeatureUtilities.SKIP_SLOW_ZOOMING,
                 TabUiFeatureUtilities.TAB_GRID_LAYOUT_ANDROID_NEW_TAB_TILE,
-                TabUiFeatureUtilities.TAB_SWITCHER_ON_RETURN_MS,
                 TabUiFeatureUtilities.THUMBNAIL_ASPECT_RATIO);
         // clang-format on
         CachedFeatureFlags.cacheFieldTrialParameters(fieldTrialsToCache);

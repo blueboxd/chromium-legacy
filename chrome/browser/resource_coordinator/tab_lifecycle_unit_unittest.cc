@@ -36,6 +36,7 @@
 #include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
+#include "chrome/browser/usb/frame_usb_services.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/browser/usb/usb_tab_helper.h"
@@ -470,12 +471,11 @@ TEST_F(TabLifecycleUnitTest, CannotFreezeOrDiscardWebUsbConnectionsOpen) {
   UsbChooserContextFactory::GetForProfile(profile())
       ->SetDeviceManagerForTesting(std::move(pending_device_manager));
 
-  UsbTabHelper* usb_tab_helper =
-      UsbTabHelper::GetOrCreateForWebContents(web_contents_);
   mojo::Remote<blink::mojom::WebUsbService> web_usb_service;
-  usb_tab_helper->CreateWebUsbService(
+  FrameUsbServices::CreateFrameUsbServices(
       web_contents_->GetMainFrame(),
       web_usb_service.BindNewPipeAndPassReceiver());
+  UsbTabHelper* helper = UsbTabHelper::FromWebContents(web_contents_);
 
   // Page could be intending to use the WebUSB API, but there's no connection
   // open yet, so it can still be discarded/frozen.
@@ -485,7 +485,7 @@ TEST_F(TabLifecycleUnitTest, CannotFreezeOrDiscardWebUsbConnectionsOpen) {
   EXPECT_TRUE(decision_details.IsPositive());
 
   // Open a USB connection. Shouldn't be freezable/discardable anymore.
-  usb_tab_helper->IncrementConnectionCount();
+  helper->IncrementConnectionCount();
   ExpectCanDiscardFalseAllReasons(
       &tab_lifecycle_unit, DecisionFailureReason::LIVE_STATE_USING_WEB_USB);
   decision_details = DecisionDetails();
@@ -495,7 +495,7 @@ TEST_F(TabLifecycleUnitTest, CannotFreezeOrDiscardWebUsbConnectionsOpen) {
             decision_details.FailureReason());
 
   // Close the USB connection. Should be freezable/discardable again.
-  usb_tab_helper->DecrementConnectionCount();
+  helper->DecrementConnectionCount();
   ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
   decision_details = DecisionDetails();
   EXPECT_TRUE(tab_lifecycle_unit.CanFreeze(&decision_details));

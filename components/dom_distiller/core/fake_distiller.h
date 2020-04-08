@@ -36,8 +36,8 @@ class FakeDistiller : public Distiller {
   explicit FakeDistiller(bool execute_callback);
   // TODO(yfriedman): Drop execute_callback from this and give the option of
   // "auto-distilling" or calling the provided closure.
-  explicit FakeDistiller(bool execute_callback,
-                         base::OnceClosure distillation_initiated_callback);
+  FakeDistiller(bool execute_callback,
+                base::OnceClosure distillation_initiated_callback);
   ~FakeDistiller() override;
   MOCK_METHOD0(Die, void());
 

@@ -108,6 +108,8 @@ static_library("usb") {
       "setupapi.lib",
       "winusb.lib",
     ]
+
+    deps += [ "//third_party/re2" ]
   }
 
   if (is_android || is_chromeos || is_linux) {

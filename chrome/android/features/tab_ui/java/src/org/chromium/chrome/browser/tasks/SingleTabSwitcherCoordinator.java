@@ -51,7 +51,7 @@ class SingleTabSwitcherCoordinator implements TabSwitcher {
             }
 
             @Override
-            public long getLastDirtyTimeForTesting() {
+            public long getLastDirtyTime() {
                 assert false : "should not reach here";
                 return 0;
             }

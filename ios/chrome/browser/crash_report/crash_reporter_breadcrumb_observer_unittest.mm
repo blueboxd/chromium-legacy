@@ -137,14 +137,17 @@ TEST_F(CrashReporterBreadcrumbObserverTest, MultipleKeysAttachedToCrashReport) {
           chrome_browser_state_.get());
   CrashReporterBreadcrumbObserver* crash_reporter_breadcrumb_observer =
       [[CrashReporterBreadcrumbObserver alloc] init];
-  crash_reporter_breadcrumb_observer.breadcrumbsKeyCount =
-      breakpad::kBreadcrumbsKeyCount;
+  crash_reporter_breadcrumb_observer.breadcrumbsKeyCount = 2;
+
+  const int max_product_data_length = 255;
+  crash_reporter_breadcrumb_observer.maxProductDataLength =
+      max_product_data_length;
   [crash_reporter_breadcrumb_observer
       observeBreadcrumbManagerService:breadcrumb_service];
 
   int time_size = strlen("00:00 ");
   int linebreak_size = strlen("\n");
-  int breadcrumb_size = kMaxProductDataLength - time_size - linebreak_size;
+  int breadcrumb_size = max_product_data_length - time_size - linebreak_size;
   std::string value1 = base::StringPrintf("%0*d", breadcrumb_size, 1);
   id validation_block1 = [OCMArg checkWithBlock:^(id value) {
     EXPECT_NSEQ(
@@ -186,12 +189,16 @@ TEST_F(CrashReporterBreadcrumbObserverTest, ProductDataOverflow) {
       [[CrashReporterBreadcrumbObserver alloc] init];
   // Testing with 2 keys requires less code and complexity.
   crash_reporter_breadcrumb_observer.breadcrumbsKeyCount = 2;
+
+  const int max_product_data_length = 255;
+  crash_reporter_breadcrumb_observer.maxProductDataLength =
+      max_product_data_length;
   [crash_reporter_breadcrumb_observer
       observeBreadcrumbManagerService:breadcrumb_service];
 
   int time_size = strlen("00:00 ");
   int linebreak_size = strlen("\n");
-  int breadcrumb_size = kMaxProductDataLength - time_size - linebreak_size;
+  int breadcrumb_size = max_product_data_length - time_size - linebreak_size;
   std::string value1 = base::StringPrintf("%0*d", breadcrumb_size, 1);
   id validation_block1 = [OCMArg checkWithBlock:^(id value) {
     EXPECT_NSEQ(

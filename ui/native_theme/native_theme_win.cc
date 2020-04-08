@@ -642,6 +642,7 @@ SkColor NativeThemeWin::GetPlatformHighContrastColor(ColorId color_id) const {
       return system_colors_[SystemThemeColor::kGrayText];
 
     // Button Background
+    case kColorId_ButtonColor:
     case kColorId_MenuBackgroundColor:
     case kColorId_HighlightedMenuItemBackgroundColor:
     case kColorId_TextfieldDefaultBackground:

@@ -107,7 +107,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   WebInputEventResult DispatchBufferedTouchEvents() override;
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) override;
   void SetCursorVisibilityState(bool is_visible) override;
-  void OnFallbackCursorModeToggled(bool is_on) override;
 
   void MouseCaptureLost() override;
   void SetFocus(bool enable) override;

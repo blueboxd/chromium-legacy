@@ -74,7 +74,7 @@ public class WebApkUpdateDataFetcherTest {
 
         @Override
         public void onGotManifestData(
-                WebApkInfo fetchedInfo, String primaryIconUrl, String splashIconUrl) {
+                WebappInfo fetchedInfo, String primaryIconUrl, String splashIconUrl) {
             Assert.assertNull(mName);
             mWebApkCompatible = true;
             mName = fetchedInfo.name();

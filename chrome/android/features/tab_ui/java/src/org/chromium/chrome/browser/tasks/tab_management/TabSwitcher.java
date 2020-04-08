@@ -142,7 +142,7 @@ public interface TabSwitcher {
          * @return The timestamp of last dirty event of {@link ViewResourceAdapter} of
          * {@link TabListRecyclerView}.
          */
-        long getLastDirtyTimeForTesting();
+        long getLastDirtyTime();
 
         /**
          * Before calling {@link Controller#showOverview} to start showing the

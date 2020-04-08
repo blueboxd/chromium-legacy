@@ -240,8 +240,6 @@ void WebContentsEntry::DidFinishNavigation(
   if (!main_frame_task)
     return;
 
-  main_frame_task->UpdateRapporSampleName();
-
   ForEachTask(base::Bind([](RendererTask* task) {
     // Listening to WebContentsObserver::TitleWasSet() only is not enough in
     // some cases when the the web page doesn't have a title. That's why we

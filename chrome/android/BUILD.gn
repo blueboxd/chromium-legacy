@@ -1628,7 +1628,7 @@ java_group("chrome_public_base_module_java_for_test") {
     "//components/minidump_uploader:minidump_uploader_java",
     "//components/paint_preview/player/android:player_java_test_support",
     "//content/public/test/android:content_java_test_support",
-    "//ui/android:ui_javatests",
+    "//ui/android:clipboard_java_test_support",
   ]
 }
 

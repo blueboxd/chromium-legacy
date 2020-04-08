@@ -902,6 +902,16 @@ void LocalFrame::DeviceScaleFactorChanged() {
   }
 }
 
+void LocalFrame::MediaQueryAffectingValueChangedForLocalSubtree(
+    MediaValueChange value) {
+  GetDocument()->MediaQueryAffectingValueChanged(value);
+  for (Frame* child = Tree().FirstChild(); child;
+       child = child->Tree().NextSibling()) {
+    if (auto* child_local_frame = DynamicTo<LocalFrame>(child))
+      child_local_frame->MediaQueryAffectingValueChangedForLocalSubtree(value);
+  }
+}
+
 double LocalFrame::DevicePixelRatio() const {
   if (!page_)
     return 0;

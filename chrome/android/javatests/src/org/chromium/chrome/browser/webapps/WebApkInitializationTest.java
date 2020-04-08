@@ -17,6 +17,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.customtabs.CustomTabOrientationController;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
 import org.chromium.chrome.browser.dependency_injection.ModuleOverridesRule;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -97,8 +98,9 @@ public class WebApkInitializationTest {
 
     /**
      * Test that {@link WebappActionsNotificationManager},
-     * {@link WebappDisclosureSnackbarController} and {@link WebApkActivityLifecycleUmaTracker} are
-     * constructed when a WebAPK Activity is launched.
+     * {@link WebappDisclosureSnackbarController}, {@link WebApkActivityLifecycleUmaTracker} and
+     * {@link CustomTabOrientationController} are constructed when a {@link WebApkActivity} is
+     * launched.
      */
     @Test
     @LargeTest
@@ -119,6 +121,8 @@ public class WebApkInitializationTest {
                 WebappDisclosureSnackbarController.class.getName()));
         assertTrue(registeredObserverClassNames.contains(
                 WebApkActivityLifecycleUmaTracker.class.getName()));
+        assertTrue(registeredObserverClassNames.contains(
+                CustomTabOrientationController.class.getName()));
 
         // Test that WebappActiveTabUmaTracker is hooked up.
         assertTrue(0 < RecordHistogram.getHistogramTotalCountForTesting(

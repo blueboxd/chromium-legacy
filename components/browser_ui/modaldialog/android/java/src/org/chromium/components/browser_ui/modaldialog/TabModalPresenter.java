@@ -35,6 +35,7 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
  * Several abstract methods allow embedder-specific specializations.
  */
 public abstract class TabModalPresenter extends ModalDialogManager.Presenter {
+    /** Enter and exit animation duration. */
     private static final int ENTER_EXIT_ANIMATION_DURATION_MS = 200;
 
     private final Context mContext;
@@ -48,9 +49,6 @@ public abstract class TabModalPresenter extends ModalDialogManager.Presenter {
 
     /** Whether the action bar on selected text is temporarily cleared for showing dialogs. */
     private boolean mDidClearTextControls;
-
-    /** Enter and exit animation duration that can be overwritten in tests. */
-    private int mEnterExitAnimationDurationMs;
 
     private class ViewBinder extends ModalDialogViewBinder {
         @Override
@@ -76,7 +74,6 @@ public abstract class TabModalPresenter extends ModalDialogManager.Presenter {
      */
     public TabModalPresenter(Context context) {
         mContext = context;
-        mEnterExitAnimationDurationMs = ENTER_EXIT_ANIMATION_DURATION_MS;
     }
 
     /**
@@ -206,7 +203,7 @@ public abstract class TabModalPresenter extends ModalDialogManager.Presenter {
         mDialogContainer.setAlpha(0f);
         mDialogContainer.setVisibility(View.VISIBLE);
         mDialogContainer.animate()
-                .setDuration(mEnterExitAnimationDurationMs)
+                .setDuration(ENTER_EXIT_ANIMATION_DURATION_MS)
                 .alpha(1f)
                 .setInterpolator(BakedBezierInterpolator.FADE_IN_CURVE)
                 .setListener(new AnimatorListenerAdapter() {
@@ -224,7 +221,7 @@ public abstract class TabModalPresenter extends ModalDialogManager.Presenter {
         dialogView.clearFocus();
         mDialogContainer.animate().cancel();
         mDialogContainer.animate()
-                .setDuration(mEnterExitAnimationDurationMs)
+                .setDuration(ENTER_EXIT_ANIMATION_DURATION_MS)
                 .alpha(0f)
                 .setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE)
                 .setListener(new AnimatorListenerAdapter() {
@@ -240,10 +237,5 @@ public abstract class TabModalPresenter extends ModalDialogManager.Presenter {
     @VisibleForTesting
     public View getDialogContainerForTest() {
         return mDialogContainer;
-    }
-
-    @VisibleForTesting
-    public void disableAnimationForTest() {
-        mEnterExitAnimationDurationMs = 0;
     }
 }

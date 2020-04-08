@@ -100,6 +100,8 @@ const CGFloat kReducedMotionDuration = 0.25;
   browser.view.frame = tabGrid.view.bounds;
   [tabGrid.view addSubview:browser.view];
 
+  browser.view.accessibilityViewIsModal = YES;
+
   browser.view.alpha = 0;
 
   if (UIAccessibilityIsReduceMotionEnabled() ||

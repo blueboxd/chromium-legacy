@@ -400,6 +400,7 @@ if (is_chromeos) {
       "background/logging/log_store_test.js",
       "background/output_test.js",
       "background/recovery_strategy_test.js",
+      "background/smart_sticky_mode_test.js",
       "braille/braille_table_test.js",
       "braille/braille_translator_manager_test.js",
       "braille/liblouis_test.js",

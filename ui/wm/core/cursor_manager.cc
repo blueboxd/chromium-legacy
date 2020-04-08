@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/aura/client/cursor_client_observer.h"
 #include "ui/base/cursor/cursor_size.h"
 #include "ui/base/mojom/cursor_type.mojom-shared.h"
@@ -154,6 +155,7 @@ ui::CursorSize CursorManager::GetCursorSize() const {
 }
 
 void CursorManager::EnableMouseEvents() {
+  TRACE_EVENT0("ui,input", "CursorManager::EnableMouseEvents");
   state_on_unlock_->SetMouseEventsEnabled(true);
   if (cursor_lock_count_ == 0 &&
       IsMouseEventsEnabled() != state_on_unlock_->mouse_events_enabled()) {
@@ -163,6 +165,7 @@ void CursorManager::EnableMouseEvents() {
 }
 
 void CursorManager::DisableMouseEvents() {
+  TRACE_EVENT0("ui,input", "CursorManager::DisableMouseEvents");
   state_on_unlock_->SetMouseEventsEnabled(false);
   if (cursor_lock_count_ == 0 &&
       IsMouseEventsEnabled() != state_on_unlock_->mouse_events_enabled()) {

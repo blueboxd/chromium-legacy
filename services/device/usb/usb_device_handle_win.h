@@ -91,7 +91,15 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
     ~Interface();
 
     uint8_t interface_number;
+
+    // If this interface is part of a function then this will be the interface
+    // number of the first interface in that function. Otherwise it will be
+    // equal to |interface_number|.
     uint8_t first_interface;
+
+    // In a composite device each function has its own driver and path to open.
+    base::string16 function_path;
+
     ScopedWinUsbHandle handle;
     bool claimed = false;
     uint8_t alternate_setting = 0;
@@ -143,6 +151,7 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
   SEQUENCE_CHECKER(sequence_checker_);
 
   scoped_refptr<UsbDeviceWin> device_;
+  const bool composite_;
 
   // |hub_handle_| or all the handles for claimed interfaces in |interfaces_|
   // must outlive their associated |requests_| because individual Request

@@ -59,6 +59,9 @@ class TestNetworkContext : public mojom::NetworkContext {
       bool is_service_worker,
       int32_t process_id,
       int32_t routing_id) override {}
+  void GetHasTrustTokensAnswerer(
+      mojo::PendingReceiver<mojom::HasTrustTokensAnswerer> receiver,
+      const url::Origin& top_frame_origin) override {}
   void ClearNetworkingHistorySince(
       base::Time start_time,
       ClearNetworkingHistorySinceCallback callback) override {}

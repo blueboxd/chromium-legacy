@@ -96,13 +96,13 @@ public class WebApkUpdateManagerTest {
 
         @Override
         public void onGotManifestData(
-                WebApkInfo fetchedInfo, String primaryIconUrl, String splashIconUrl) {
+                WebappInfo fetchedInfo, String primaryIconUrl, String splashIconUrl) {
             super.onGotManifestData(fetchedInfo, primaryIconUrl, splashIconUrl);
             mWaiter.notifyCalled();
         }
 
         @Override
-        protected void storeWebApkUpdateRequestToFile(String updateRequestPath, WebApkInfo info,
+        protected void storeWebApkUpdateRequestToFile(String updateRequestPath, WebappInfo info,
                 String primaryIconUrl, String splashIconUrl, boolean isManifestStale,
                 @WebApkUpdateReason int updateReason, Callback<Boolean> callback) {
             mNeedsUpdate = true;
@@ -176,7 +176,7 @@ public class WebApkUpdateManagerTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             WebappDataStorage storage =
                     WebappRegistry.getInstance().getWebappDataStorage(WEBAPK_ID);
-            WebApkInfo info = WebApkInfo.create("", creationData.scope, null, null,
+            WebappInfo info = WebApkInfo.create("", creationData.scope, null, null,
                     creationData.name, creationData.shortName, creationData.displayMode,
                     creationData.orientation, 0, creationData.themeColor,
                     creationData.backgroundColor, 0, creationData.isPrimaryIconMaskable,

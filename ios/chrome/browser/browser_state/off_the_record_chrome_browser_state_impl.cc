@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/browser_state/off_the_record_chrome_browser_state_impl.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
@@ -25,6 +26,7 @@ OffTheRecordChromeBrowserStateImpl::OffTheRecordChromeBrowserStateImpl(
     : ChromeBrowserState(std::move(io_task_runner)),
       otr_state_path_(otr_path),
       original_chrome_browser_state_(original_chrome_browser_state),
+      start_time_(base::Time::Now()),
       prefs_(CreateIncognitoBrowserStatePrefs(
           static_cast<sync_preferences::PrefServiceSyncable*>(
               original_chrome_browser_state->GetPrefs()))) {
@@ -39,6 +41,11 @@ OffTheRecordChromeBrowserStateImpl::~OffTheRecordChromeBrowserStateImpl() {
       this);
   if (pref_proxy_config_tracker_)
     pref_proxy_config_tracker_->DetachFromPrefService();
+
+  const base::TimeDelta duration = base::Time::Now() - start_time_;
+  base::UmaHistogramCustomCounts(
+      "Profile.Incognito.Lifetime", duration.InMinutes(), 1,
+      base::TimeDelta::FromDays(28).InMinutes(), 100);
 
   // Clears any data the network stack contains that may be related to the
   // OTR session.

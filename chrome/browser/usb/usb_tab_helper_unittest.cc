@@ -5,6 +5,7 @@
 #include "chrome/browser/usb/usb_tab_helper.h"
 
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
+#include "chrome/browser/usb/frame_usb_services.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -46,9 +47,10 @@ class UsbTabHelperTest
 TEST_F(UsbTabHelperTest, IncrementDecrementConnectionCount) {
   mojo::Remote<blink::mojom::WebUsbService> remote;
 
-  UsbTabHelper* helper =
-      UsbTabHelper::GetOrCreateForWebContents(web_contents());
-  helper->CreateWebUsbService(main_rfh(), remote.BindNewPipeAndPassReceiver());
+  FrameUsbServices::CreateFrameUsbServices(main_rfh(),
+                                           remote.BindNewPipeAndPassReceiver());
+  UsbTabHelper* helper = UsbTabHelper::FromWebContents(web_contents());
+
   EXPECT_FALSE(helper->IsDeviceConnected());
   performance_manager::testing::TestPageNodePropertyOnPMSequence(
       web_contents(),

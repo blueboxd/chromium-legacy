@@ -37,6 +37,9 @@ class FakeFormFetcher : public FormFetcher {
 
   void RemoveConsumer(Consumer* consumer) override;
 
+  // Only sets the internal state to WAITING, no call to PasswordStore.
+  void Fetch() override;
+
   // Returns State::WAITING if Fetch() was called after any Set* calls, and
   // State::NOT_WAITING otherwise.
   State GetState() const override;
@@ -79,9 +82,6 @@ class FakeFormFetcher : public FormFetcher {
   void SetBlacklisted(bool is_blacklisted);
 
   void NotifyFetchCompleted();
-
-  // Only sets the internal state to WAITING, no call to PasswordStore.
-  void Fetch() override;
 
   // Returns a new FakeFormFetcher.
   std::unique_ptr<FormFetcher> Clone() override;

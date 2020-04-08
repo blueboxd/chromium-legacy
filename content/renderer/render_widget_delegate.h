@@ -38,11 +38,6 @@ class CONTENT_EXPORT RenderWidgetDelegate {
   // These methods called during handling of a SynchronizeVisualProperties
   // message to handle updating state on the delegate.
   //
-  // Called during handling a SynchronizeVisualProperties message, with the new
-  // display mode that will be applied to the RenderWidget. The display mode in
-  // the RenderWidget is already changed when this method is called.
-  virtual void ApplyNewDisplayModeForWidget(
-      blink::mojom::DisplayMode new_display_mode) = 0;
   // Called during handling a SynchronizeVisualProperties message, if auto
   // resize is enabled, with the new auto size limits.
   virtual void ApplyAutoResizeLimitsForWidget(const gfx::Size& min_size,

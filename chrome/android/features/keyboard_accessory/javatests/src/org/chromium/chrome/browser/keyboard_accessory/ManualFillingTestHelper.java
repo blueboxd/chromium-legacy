@@ -452,7 +452,7 @@ public class ManualFillingTestHelper {
      * @return An interaction on the view matching |matcher.
      */
     public static ViewInteraction whenDisplayed(Matcher<View> matcher) {
-        onView(isRoot()).check((r, e) -> waitForView((ViewGroup) r, allOf(matcher, isDisplayed())));
+        onView(isRoot()).check(waitForView(allOf(matcher, isDisplayed())));
         return onView(matcher);
     }
 
@@ -468,9 +468,7 @@ public class ManualFillingTestHelper {
     }
 
     public static void waitToBeHidden(Matcher<View> matcher) {
-        onView(isRoot()).check((r, e) -> {
-            waitForView((ViewGroup) r, matcher, VIEW_INVISIBLE | VIEW_NULL | VIEW_GONE);
-        });
+        onView(isRoot()).check(waitForView(matcher, VIEW_INVISIBLE | VIEW_NULL | VIEW_GONE));
     }
 
     public String getAttribute(String node, String attribute)

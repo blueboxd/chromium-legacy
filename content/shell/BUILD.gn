@@ -194,6 +194,7 @@ static_library("web_test_renderer") {
     "//ui/events:events_base",
     "//ui/events/blink",
     "//ui/gfx",
+    "//ui/gfx:test_support",
     "//ui/gfx/geometry",
     "//v8",
   ]

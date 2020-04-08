@@ -487,11 +487,6 @@ void InProgressDownloadManager::StartDownload(
   std::vector<GURL> url_chain = info->url_chain;
   std::string mime_type = info->mime_type;
 
-  if (info->is_new_download) {
-    RecordDownloadContentTypeSecurity(info->url(), info->url_chain,
-                                      info->mime_type, is_origin_secure_cb_);
-  }
-
   // If the download cannot be found locally, ask |delegate_| to provide the
   // DownloadItem.
   if (delegate_ && !GetDownloadByGuid(info->guid)) {

@@ -79,7 +79,7 @@ public class TabContentManager {
     @VisibleForTesting
     public static final String UMA_THUMBNAIL_FETCHING_RESULT =
             "GridTabSwitcher.ThumbnailFetchingResult";
-    private Set<Integer> mRefectchedTabIds;
+    private final Set<Integer> mRefectchedTabIds = new HashSet<>();
 
     private float mThumbnailScale;
     private int mFullResThumbnailsMaxSize;
@@ -160,18 +160,43 @@ public class TabContentManager {
         mContentOffsetProvider = contentOffsetProvider;
         mTabFinder = tabFinder;
         mSnapshotsEnabled = snapshotsEnabled;
-    }
 
-    /**
-     * Called after native library is loaded.
-     */
-    public void initWithNative() {
         // Override the cache size on the command line with --thumbnails=100
         int defaultCacheSize = getIntegerResourceWithOverride(
                 mContext, R.integer.default_thumbnail_cache_size, ChromeSwitches.THUMBNAILS);
 
         mFullResThumbnailsMaxSize = defaultCacheSize;
 
+        float thumbnailScale = 1.f;
+        DisplayAndroid display = DisplayAndroid.getNonMultiDisplay(mContext);
+        float deviceDensity = display.getDipScale();
+        if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext)) {
+            // Scale all tablets to MDPI.
+            thumbnailScale = 1.f / deviceDensity;
+        } else {
+            // For phones, reduce the amount of memory usage by capturing a lower-res thumbnail for
+            // devices with resolution higher than HDPI (crbug.com/357740).
+            if (deviceDensity > 1.5f) {
+                thumbnailScale = 1.5f / deviceDensity;
+            }
+        }
+        mThumbnailScale = thumbnailScale;
+
+        mPriorityTabIds = new int[mFullResThumbnailsMaxSize];
+
+        if (TabUiFeatureUtilities.isTabThumbnailAspectRatioNotOne()
+                || ALLOW_TO_REFETCH_TAB_THUMBNAIL_VARIATION.getValue()) {
+            mExpectedThumbnailAspectRatio =
+                    (float) TabUiFeatureUtilities.THUMBNAIL_ASPECT_RATIO.getValue();
+            mExpectedThumbnailAspectRatio =
+                    MathUtils.clamp(mExpectedThumbnailAspectRatio, 0.5f, 2.0f);
+        }
+    }
+
+    /**
+     * Called after native library is loaded.
+     */
+    public void initWithNative() {
         int compressionQueueMaxSize =
                 mContext.getResources().getInteger(R.integer.default_compression_queue_size);
         int writeQueueMaxSize =
@@ -183,40 +208,12 @@ public class TabContentManager {
                 R.integer.default_approximation_thumbnail_cache_size,
                 ChromeSwitches.APPROXIMATION_THUMBNAILS);
 
-        float thumbnailScale = 1.f;
-        boolean useApproximationThumbnails;
+        boolean useApproximationThumbnails =
+                !DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext);
         boolean saveJpegThumbnails = TabUiFeatureUtilities.isGridTabSwitcherEnabled();
-        DisplayAndroid display = DisplayAndroid.getNonMultiDisplay(mContext);
-        float deviceDensity = display.getDipScale();
-        if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext)) {
-            // Scale all tablets to MDPI.
-            thumbnailScale = 1.f / deviceDensity;
-            useApproximationThumbnails = false;
-        } else {
-            // For phones, reduce the amount of memory usage by capturing a lower-res thumbnail for
-            // devices with resolution higher than HDPI (crbug.com/357740).
-            if (deviceDensity > 1.5f) {
-                thumbnailScale = 1.5f / deviceDensity;
-            }
-            useApproximationThumbnails = true;
-        }
-        mThumbnailScale = thumbnailScale;
-
-        mPriorityTabIds = new int[mFullResThumbnailsMaxSize];
-
-        if (TabUiFeatureUtilities.isTabThumbnailAspectRatioNotOne()
-                || ALLOW_TO_REFETCH_TAB_THUMBNAIL_VARIATION.getValue()) {
-            mRefectchedTabIds = new HashSet<>();
-            mExpectedThumbnailAspectRatio =
-                    (float) ChromeFeatureList.getFieldTrialParamByFeatureAsDouble(
-                            ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, "thumbnail_aspect_ratio",
-                            1.0);
-            mExpectedThumbnailAspectRatio =
-                    MathUtils.clamp(mExpectedThumbnailAspectRatio, 0.5f, 2.0f);
-        }
 
         mNativeTabContentManager = TabContentManagerJni.get().init(TabContentManager.this,
-                defaultCacheSize, approximationCacheSize, compressionQueueMaxSize,
+                mFullResThumbnailsMaxSize, approximationCacheSize, compressionQueueMaxSize,
                 writeQueueMaxSize, useApproximationThumbnails, saveJpegThumbnails);
     }
 
@@ -467,8 +464,14 @@ public class TabContentManager {
                                         >= ASPECT_RATIO_PRECISION) {
                             recordThumbnailFetchingResult(
                                     ThumbnailFetchingResult.GOT_DIFFERENT_ASPECT_RATIO_JPEG);
+
+                            if (mNativeTabContentManager == 0) {
+                                callback.onResult(jpeg);
+                                return;
+                            }
+                            if (!mSnapshotsEnabled) return;
+
                             mRefectchedTabIds.add(tabId);
-                            if (mNativeTabContentManager == 0 || !mSnapshotsEnabled) return;
                             TabContentManagerJni.get().getEtc1TabThumbnail(mNativeTabContentManager,
                                     TabContentManager.this, tabId,
                                     (etc1) -> callback.onResult(etc1));

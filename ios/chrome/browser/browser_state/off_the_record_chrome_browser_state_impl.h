@@ -52,6 +52,9 @@ class OffTheRecordChromeBrowserStateImpl : public ChromeBrowserState {
   base::FilePath otr_state_path_;
   ChromeBrowserState* original_chrome_browser_state_;  // weak
 
+  // Creation time of the off-the-record BrowserState.
+  const base::Time start_time_;
+
   std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs_;
 
   std::unique_ptr<OffTheRecordChromeBrowserStateIOData::Handle> io_data_;

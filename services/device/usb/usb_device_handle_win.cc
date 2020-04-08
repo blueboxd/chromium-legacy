@@ -488,9 +488,9 @@ const mojom::UsbInterfaceInfo* UsbDeviceHandleWin::FindInterfaceByEndpoint(
 UsbDeviceHandleWin::UsbDeviceHandleWin(scoped_refptr<UsbDeviceWin> device,
                                        bool composite)
     : device_(std::move(device)),
+      composite_(composite),
       task_runner_(base::SequencedTaskRunnerHandle::Get()),
       blocking_task_runner_(UsbService::CreateBlockingTaskRunner()) {
-  DCHECK(!composite);
   // Windows only supports configuration 1, which therefore must be active.
   DCHECK(device_->GetActiveConfiguration());
 
@@ -504,6 +504,13 @@ UsbDeviceHandleWin::UsbDeviceHandleWin(scoped_refptr<UsbDeviceWin> device,
       interface_info.first_interface = interface->first_interface;
       RegisterEndpoints(
           CombinedInterfaceInfo(interface.get(), alternate.get()));
+
+      if (composite_ &&
+          interface->interface_number == interface->first_interface) {
+        auto it = device_->function_paths().find(interface->interface_number);
+        if (it != device_->function_paths().end())
+          interface_info.function_path = it->second;
+      }
     }
   }
 }
@@ -511,11 +518,12 @@ UsbDeviceHandleWin::UsbDeviceHandleWin(scoped_refptr<UsbDeviceWin> device,
 UsbDeviceHandleWin::UsbDeviceHandleWin(scoped_refptr<UsbDeviceWin> device,
                                        base::win::ScopedHandle handle)
     : device_(std::move(device)),
+      composite_(false),
       hub_handle_(std::move(handle)),
       task_runner_(base::SequencedTaskRunnerHandle::Get()),
       blocking_task_runner_(UsbService::CreateBlockingTaskRunner()) {}
 
-UsbDeviceHandleWin::~UsbDeviceHandleWin() {}
+UsbDeviceHandleWin::~UsbDeviceHandleWin() = default;
 
 bool UsbDeviceHandleWin::OpenInterfaceHandle(Interface* interface) {
   if (interface->handle.IsValid())
@@ -524,12 +532,25 @@ bool UsbDeviceHandleWin::OpenInterfaceHandle(Interface* interface) {
   WINUSB_INTERFACE_HANDLE handle;
   if (interface->first_interface == interface->interface_number) {
     if (!function_handle_.IsValid()) {
+      const base::string16* function_path;
+      if (composite_) {
+        if (interface->function_path.empty()) {
+          USB_LOG(ERROR) << "No WinUSB interface for interface "
+                         << static_cast<int>(interface->interface_number)
+                         << ".";
+          return false;
+        }
+        function_path = &interface->function_path;
+      } else {
+        function_path = &device_->device_path();
+      }
+
       function_handle_.Set(CreateFile(
-          device_->device_path().c_str(), GENERIC_READ | GENERIC_WRITE,
-          FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING,
-          FILE_FLAG_OVERLAPPED, nullptr));
+          function_path->c_str(), GENERIC_READ | GENERIC_WRITE,
+          FILE_SHARE_READ | FILE_SHARE_WRITE, /*lpSecurityAttributes=*/nullptr,
+          OPEN_EXISTING, FILE_FLAG_OVERLAPPED, /*hTemplateFile=*/nullptr));
       if (!function_handle_.IsValid()) {
-        USB_PLOG(ERROR) << "Failed to open " << device_->device_path();
+        USB_PLOG(ERROR) << "Failed to open " << *function_path;
         return false;
       }
     }
@@ -583,6 +604,8 @@ WINUSB_INTERFACE_HANDLE UsbDeviceHandleWin::GetInterfaceForControlTransfer(
     UsbControlTransferRecipient recipient,
     uint16_t index) {
   if (recipient == UsbControlTransferRecipient::ENDPOINT) {
+    // By convention the lower bits of the wIndex field indicate the target
+    // endpoint.
     auto endpoint_it = endpoints_.find(index & 0xff);
     if (endpoint_it == endpoints_.end())
       return INVALID_HANDLE_VALUE;
@@ -592,18 +615,31 @@ WINUSB_INTERFACE_HANDLE UsbDeviceHandleWin::GetInterfaceForControlTransfer(
     index = endpoint_it->second.interface->interface_number;
   }
 
-  Interface* interface;
+  Interface* interface = nullptr;
   if (recipient == UsbControlTransferRecipient::INTERFACE) {
+    // By convention the lower bits of the wIndex field indicate the target
+    // interface.
     auto interface_it = interfaces_.find(index & 0xff);
     if (interface_it == interfaces_.end())
       return INVALID_HANDLE_VALUE;
 
     interface = &interface_it->second;
-  } else {
-    // TODO: To support composite devices a particular function handle must be
-    // chosen, probably arbitrarily.
-    interface = &interfaces_[0];
+  } else if (composite_) {
+    // For all other recipients any interface can be used but if the device
+    // is composite, then a function with the WinUSB driver loaded must be
+    // found.
+    for (auto& map_entry : interfaces_) {
+      if (!map_entry.second.function_path.empty())
+        interface = &map_entry.second;
+    }
+  } else if (!interfaces_.empty()) {
+    // For a non-composite device there is only a single device path to
+    // choose from so just pick the first interface.
+    interface = &interfaces_.begin()->second;
   }
+
+  if (!interface)
+    return INVALID_HANDLE_VALUE;
 
   OpenInterfaceHandle(interface);
   return interface->handle.Get();

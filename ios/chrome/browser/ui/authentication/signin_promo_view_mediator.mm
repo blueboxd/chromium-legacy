@@ -594,7 +594,7 @@ const char* AlreadySeenSigninViewPreferenceKey(
   if (identities.count != 0) {
     newIdentity = identities[0];
   }
-  if (newIdentity != _defaultIdentity) {
+  if (![_defaultIdentity isEqual:newIdentity]) {
     [self selectIdentity:newIdentity];
     [self sendConsumerNotificationWithIdentityChanged:YES];
   }

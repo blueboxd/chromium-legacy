@@ -20,7 +20,7 @@ namespace dom_distiller {
 
 class SourcePageHandle {
  public:
-  virtual ~SourcePageHandle() {}
+  virtual ~SourcePageHandle() = default;
 };
 
 // Injects JavaScript into a page, and uses it to extract and return long-form
@@ -50,6 +50,9 @@ class DistillerPage {
   virtual void OnDistillationDone(const GURL& page_url,
                                   const base::Value* value);
 
+  DistillerPage(const DistillerPage&) = delete;
+  DistillerPage& operator=(const DistillerPage&) = delete;
+
  protected:
   // Called by |DistillPage| to carry out platform-specific instructions to load
   // and distill the |url| using the provided |script|. The extracted content
@@ -64,7 +67,6 @@ class DistillerPage {
   bool ready_;
   DistillerPageCallback distiller_page_callback_;
   base::TimeTicks distillation_start_;
-  DISALLOW_COPY_AND_ASSIGN(DistillerPage);
 };
 
 // Factory for generating a |DistillerPage|.

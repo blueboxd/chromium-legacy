@@ -37,7 +37,9 @@
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/resource_scheduler/resource_scheduler.h"
 #include "services/network/resource_scheduler/resource_scheduler_client.h"
+#include "services/network/trust_tokens/pending_trust_token_store.h"
 #include "services/network/trust_tokens/trust_token_request_helper.h"
+#include "services/network/trust_tokens/trust_token_request_helper_factory.h"
 #include "services/network/upload_progress_tracker.h"
 
 namespace net {
@@ -90,9 +92,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // The URLLoader must be destroyed before the |url_request_context|.
   // The |origin_policy_manager| must always be provided for requests that
   // have the |obey_origin_policy| flag set.
-  // If |trust_token_helper| is non-null, it will be queried to perform trust
-  // token operation steps before each request is started, and after each
-  // response's headers arrive.
+  // |trust_token_helper_factory| must be non-null exactly when the request has
+  // Trust Tokens parameters.
   URLLoader(
       net::URLRequestContext* url_request_context,
       mojom::NetworkServiceClient* network_service_client,
@@ -112,7 +113,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       base::WeakPtr<NetworkUsageAccumulator> network_usage_accumulator,
       mojom::TrustedURLLoaderHeaderClient* url_loader_header_client,
       mojom::OriginPolicyManager* origin_policy_manager,
-      std::unique_ptr<TrustTokenRequestHelper> trust_token_helper);
+      std::unique_ptr<TrustTokenRequestHelperFactory>
+          trust_token_helper_factory);
   ~URLLoader() override;
 
   // mojom::URLLoader implementation:
@@ -241,9 +243,32 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   void SetUpUpload(const ResourceRequest& request,
                    int error_code,
                    const std::vector<base::File> opened_files);
-  void BeginTrustTokenOperationIfNecessaryAndThenScheduleStart();
+
+  // A request with Trust Tokens parameters will (assuming preconditions pass
+  // and operations are successful) have one TrustTokenRequestHelper::Begin
+  // executed against the request and one TrustTokenRequestHelper::Finalize
+  // executed against its response.
+  //
+  // Outbound control flow:
+  //
+  // Start in BeginTrustTokenOperationIfNecessaryAndThenScheduleStart
+  // - If there are no Trust Tokens parameters, immediately ScheduleStart.
+  // - Otherwise:
+  //   - asynchronously construct a TrustTokenRequestHelper;
+  //   - receive the helper (or an error) in OnDoneConstructingTrustTokenHelper
+  //   and, if an error, fail the request;
+  //   - execute TrustTokenRequestHelper::Begin against the helper;
+  //   - receive the result in OnDoneBeginningTrustTokenOperation;
+  //   - if successful, ScheduleStart; if there was an error, fail.
+  //
+  // (Inbound, response handling just takes a synchronous Finalize call.)
+  void BeginTrustTokenOperationIfNecessaryAndThenScheduleStart(
+      const ResourceRequest& request);
+  void OnDoneConstructingTrustTokenHelper(
+      TrustTokenStatusOrRequestHelper status_or_helper);
   void OnDoneBeginningTrustTokenOperation(
       mojom::TrustTokenOperationStatus status);
+
   void ScheduleStart();
   void ReadMore();
   void DidRead(int num_bytes, bool completed_synchronously);
@@ -433,9 +458,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // the request with the pertinent request headers and, on receiving the
   // corresponding response, processes and strips Trust Tokens response headers.
   //
-  // |trust_token_helper_| is null for (the usual case where) the request has no
-  // associated Trust Tokens operation.
+  // For requests configured for Trust Tokens operations, |trust_token_helper_|
+  // is constructed (using |trust_token_helper_factory_|) just before the
+  // outbound (Begin) operation; for requests without associated Trust Tokens
+  // operations, the field remains null, as does |trust_token_helper_factory_|.
   std::unique_ptr<TrustTokenRequestHelper> trust_token_helper_;
+  std::unique_ptr<TrustTokenRequestHelperFactory> trust_token_helper_factory_;
 
   // The cached result of the request's Trust Tokens protocol operation, if any.
   // This can describe the result of either an outbound (request-annotating)

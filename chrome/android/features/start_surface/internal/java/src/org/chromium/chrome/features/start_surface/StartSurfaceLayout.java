@@ -422,7 +422,7 @@ public class StartSurfaceLayout extends Layout implements StartSurface.OverviewM
     private void reportAnimationPerf(boolean isShrinking) {
         int frameRendered = mFrameCount - mStartFrame;
         long elapsedMs = SystemClock.elapsedRealtime() - mStartTime;
-        long lastDirty = mTabListDelegate.getLastDirtyTimeForTesting();
+        long lastDirty = mTabListDelegate.getLastDirtyTime();
         int dirtySpan = (int) (lastDirty - mStartTime);
         float fps = 1000.f * frameRendered / elapsedMs;
         String message = String.format(Locale.US,

@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/timer/mock_timer.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/button/image_button.h"
@@ -182,6 +183,63 @@ TEST_F(LoginPasswordViewTest, EasyUnlockMouseHover) {
 
   // Icon was not tapped.
   EXPECT_FALSE(easy_unlock_icon_tapped_called_);
+}
+
+// Checks that the user can't hit Ctrl+Z to revert the password when it has been
+// cleared.
+TEST_F(LoginPasswordViewTest, CtrlZDisabled) {
+  LoginPasswordView::TestApi test_api(view_);
+  ui::test::EventGenerator* generator = GetEventGenerator();
+
+  generator->PressKey(ui::KeyboardCode::VKEY_A, ui::EF_NONE);
+  EXPECT_FALSE(is_password_field_empty_);
+  view_->Clear();
+  EXPECT_TRUE(is_password_field_empty_);
+  generator->PressKey(ui::KeyboardCode::VKEY_Z, ui::EF_CONTROL_DOWN);
+  EXPECT_TRUE(is_password_field_empty_);
+}
+
+// Verifies that the password textfield  clear after a delay when the display
+// password button is shown.
+TEST_F(LoginPasswordViewTest, PasswordAutoClearsAndHides) {
+  LoginPasswordView::TestApi test_api(view_);
+  ui::test::EventGenerator* generator = GetEventGenerator();
+
+  // Install mock timers into the password view.
+  auto clear_timer0 = std::make_unique<base::MockRetainingOneShotTimer>();
+  auto hide_timer0 = std::make_unique<base::MockRetainingOneShotTimer>();
+  base::MockRetainingOneShotTimer* clear_timer = clear_timer0.get();
+  base::MockRetainingOneShotTimer* hide_timer = hide_timer0.get();
+  test_api.SetTimers(std::move(clear_timer0), std::move(hide_timer0));
+
+  // Verify clearing timer works.
+  generator->PressKey(ui::KeyboardCode::VKEY_A, ui::EF_NONE);
+  EXPECT_FALSE(is_password_field_empty_);
+
+  clear_timer->Fire();
+  EXPECT_TRUE(is_password_field_empty_);
+
+  // Check a second time.
+  generator->PressKey(ui::KeyboardCode::VKEY_A, ui::EF_NONE);
+  EXPECT_FALSE(is_password_field_empty_);
+  clear_timer->Fire();
+  EXPECT_TRUE(is_password_field_empty_);
+
+  // Verify hiding timer works; set the password visible first then fire the
+  // hiding timer and check it is hidden.
+  EXPECT_EQ(test_api.textfield()->GetTextInputType(),
+            ui::TEXT_INPUT_TYPE_PASSWORD);
+  generator->MoveMouseTo(
+      test_api.display_password_button()->GetBoundsInScreen().CenterPoint());
+  generator->ClickLeftButton();
+  EXPECT_EQ(test_api.textfield()->GetTextInputType(), ui::TEXT_INPUT_TYPE_TEXT);
+  hide_timer->Fire();
+  EXPECT_EQ(test_api.textfield()->GetTextInputType(),
+            ui::TEXT_INPUT_TYPE_PASSWORD);
+  // Hide an empty password already hidden and make sure a second fire works.
+  hide_timer->Fire();
+  EXPECT_EQ(test_api.textfield()->GetTextInputType(),
+            ui::TEXT_INPUT_TYPE_PASSWORD);
 }
 
 }  // namespace ash

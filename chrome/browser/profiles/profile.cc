@@ -423,6 +423,14 @@ void Profile::NotifyOffTheRecordProfileCreated(Profile* off_the_record) {
     observer.OnOffTheRecordProfileCreated(off_the_record);
 }
 
+Profile* Profile::GetPrimaryOTRProfile() {
+  return GetOffTheRecordProfile(OTRProfileID::PrimaryID());
+}
+
+bool Profile::HasPrimaryOTRProfile() {
+  return HasOffTheRecordProfile(OTRProfileID::PrimaryID());
+}
+
 variations::VariationsClient* Profile::GetVariationsClient() {
   if (!chrome_variations_client_)
     chrome_variations_client_ = std::make_unique<ChromeVariationsClient>(this);

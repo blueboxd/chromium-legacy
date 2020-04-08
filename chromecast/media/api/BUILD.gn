@@ -20,3 +20,19 @@ cast_source_set("api") {
 
   assert_no_deps = [ "//media" ]
 }
+
+cast_source_set("test_support") {
+  testonly = true
+  sources = [
+    "test/mock_cma_backend.cc",
+    "test/mock_cma_backend.h",
+  ]
+
+  deps = [
+    "//chromecast/media/api",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+
+  assert_no_deps = [ "//media" ]
+}

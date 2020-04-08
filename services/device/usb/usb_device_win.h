@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string16.h"
@@ -23,7 +24,7 @@ class UsbDeviceWin : public UsbDevice {
  public:
   UsbDeviceWin(const base::string16& device_path,
                const base::string16& hub_path,
-               const std::vector<base::string16>& child_device_paths,
+               const base::flat_map<int, base::string16>& child_device_paths,
                uint32_t bus_number,
                uint32_t port_number,
                const base::string16& driver_name);
@@ -38,8 +39,8 @@ class UsbDeviceWin : public UsbDevice {
   ~UsbDeviceWin() override;
 
   const base::string16& device_path() const { return device_path_; }
-  const std::vector<base::string16>& child_device_paths() const {
-    return child_device_paths_;
+  const base::flat_map<int, base::string16>& function_paths() const {
+    return function_paths_;
   }
   const base::string16& driver_name() const { return driver_name_; }
 
@@ -76,7 +77,7 @@ class UsbDeviceWin : public UsbDevice {
 
   const base::string16 device_path_;
   const base::string16 hub_path_;
-  const std::vector<base::string16> child_device_paths_;
+  const base::flat_map<int, base::string16> function_paths_;
   const base::string16 driver_name_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbDeviceWin);

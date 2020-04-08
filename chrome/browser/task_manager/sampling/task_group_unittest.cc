@@ -30,7 +30,6 @@ class FakeTask : public Task {
  public:
   FakeTask(base::ProcessId process_id, Type type, bool is_running_in_vm)
       : Task(base::string16(),
-             "FakeTask",
              nullptr,
              base::kNullProcessHandle,
              process_id),

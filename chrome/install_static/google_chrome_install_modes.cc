@@ -20,11 +20,6 @@ const wchar_t kProductPathName[] = L"Chrome";
 
 const size_t kProductPathNameLength = _countof(kProductPathName) - 1;
 
-const wchar_t kBinariesAppGuid[] = L"{4DC8B4CA-1BDA-483e-B5FA-D3C12E15B62D}";
-
-// Google Chrome integrates with Google Update, so the app GUID above is used.
-const wchar_t kBinariesPathName[] = L"";
-
 const char kSafeBrowsingName[] = "googlechrome";
 
 const InstallConstants kInstallModes[] = {
@@ -63,7 +58,6 @@ const InstallConstants kInstallModes[] = {
         true,  // Supports system-level installs.
         true,  // Supports in-product set as default browser UX.
         true,  // Supports retention experiments.
-        true,  // Supported multi-install.
         icon_resources::kApplicationIndex,  // App icon resource index.
         IDR_MAINFRAME,                      // App icon resource id.
         L"S-1-15-2-3251537155-1984446955-2931258699-841473695-1938553385-"
@@ -104,7 +98,6 @@ const InstallConstants kInstallModes[] = {
         true,   // Supports system-level installs.
         true,   // Supports in-product set as default browser UX.
         true,   // Supports retention experiments.
-        false,  // Did not support multi-install.
         icon_resources::kBetaApplicationIndex,  // App icon resource index.
         IDR_X005_BETA,                          // App icon resource id.
         L"S-1-15-2-3251537155-1984446955-2931258699-841473695-1938553385-"
@@ -145,7 +138,6 @@ const InstallConstants kInstallModes[] = {
         true,   // Supports system-level installs.
         true,   // Supports in-product set as default browser UX.
         true,   // Supports retention experiments.
-        false,  // Did not support multi-install.
         icon_resources::kDevApplicationIndex,  // App icon resource index.
         IDR_X004_DEV,                          // App icon resource id.
         L"S-1-15-2-3251537155-1984446955-2931258699-841473695-1938553385-"
@@ -186,7 +178,6 @@ const InstallConstants kInstallModes[] = {
         false,  // Does not support system-level installs.
         false,  // Does not support in-product set as default browser UX.
         true,   // Supports retention experiments.
-        false,  // Did not support multi-install.
         icon_resources::kSxSApplicationIndex,  // App icon resource index.
         IDR_SXS,                               // App icon resource id.
         L"S-1-15-2-3251537155-1984446955-2931258699-841473695-1938553385-"

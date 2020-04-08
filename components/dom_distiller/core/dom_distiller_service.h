@@ -32,7 +32,7 @@ class ViewRequestDelegate;
 // thread. Callbacks will be called on that same thread.
 class DomDistillerServiceInterface {
  public:
-  virtual ~DomDistillerServiceInterface() {}
+  virtual ~DomDistillerServiceInterface() = default;
 
   // Request to view an article by url.
   // Use CreateDefaultDistillerPage() to create a default |distiller_page|.
@@ -57,11 +57,12 @@ class DomDistillerServiceInterface {
   // DomDistillerService.
   virtual DistillerUIHandle* GetDistillerUIHandle() = 0;
 
- protected:
-  DomDistillerServiceInterface() {}
+  DomDistillerServiceInterface(const DomDistillerServiceInterface&) = delete;
+  DomDistillerServiceInterface& operator=(const DomDistillerServiceInterface&) =
+      delete;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(DomDistillerServiceInterface);
+ protected:
+  DomDistillerServiceInterface() = default;
 };
 
 // Provide a view of the article list and ways of interacting with it.
@@ -111,8 +112,6 @@ class DomDistillerService : public DomDistillerServiceInterface {
 
   typedef std::vector<std::unique_ptr<TaskTracker>> TaskList;
   TaskList tasks_;
-
-  DISALLOW_COPY_AND_ASSIGN(DomDistillerService);
 };
 
 }  // namespace dom_distiller

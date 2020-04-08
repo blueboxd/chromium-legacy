@@ -65,6 +65,13 @@ void MediaLog::NotifyError(PipelineStatus status) {
   AddLogRecord(std::move(record));
 }
 
+void MediaLog::NotifyError(Status status) {
+  DCHECK(!status.is_ok());
+  std::string output_str;
+  base::JSONWriter::Write(MediaSerialize(status), &output_str);
+  AddMessage(MediaLogMessageLevel::kERROR, output_str);
+}
+
 void MediaLog::OnWebMediaPlayerDestroyedLocked() {}
 void MediaLog::OnWebMediaPlayerDestroyed() {
   AddEvent<MediaLogEvent::kWebMediaPlayerDestroyed>();

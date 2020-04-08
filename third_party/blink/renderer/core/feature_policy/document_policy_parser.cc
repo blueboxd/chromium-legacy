@@ -137,6 +137,9 @@ base::Optional<ParsedFeature> ParseFeature(
 // static
 base::Optional<DocumentPolicy::ParsedDocumentPolicy>
 DocumentPolicyParser::Parse(const String& policy_string) {
+  if (policy_string.IsEmpty())
+    return base::make_optional<DocumentPolicy::ParsedDocumentPolicy>({});
+
   return ParseInternal(policy_string, GetDocumentPolicyNameFeatureMap(),
                        GetDocumentPolicyFeatureInfoMap(),
                        GetAvailableDocumentPolicyFeatures());

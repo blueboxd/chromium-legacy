@@ -12,8 +12,8 @@
 #define VERSION_MAJOR 1
 #define VERSION_MINOR 0
 #define VERSION_PATCH 0
-#define VERSION_EXTRA "errata1-avif-415-gc25910f6d"
+#define VERSION_EXTRA "errata1-avif-566-g611c58e51"
 #define VERSION_PACKED \
   ((VERSION_MAJOR << 16) | (VERSION_MINOR << 8) | (VERSION_PATCH))
-#define VERSION_STRING_NOSP "1.0.0-errata1-avif-415-gc25910f6d"
-#define VERSION_STRING " 1.0.0-errata1-avif-415-gc25910f6d"
+#define VERSION_STRING_NOSP "1.0.0-errata1-avif-566-g611c58e51"
+#define VERSION_STRING " 1.0.0-errata1-avif-566-g611c58e51"

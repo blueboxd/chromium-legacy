@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_window.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/widget/frame_widget.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -318,12 +319,15 @@ bool PictureInPictureControllerImpl::IsEnterAutoPictureInPictureAllowed()
   // - Document runs in a Chrome Extension.
   // - Document is in fullscreen.
   // - Document is in a PWA window that runs in the scope of the PWA.
+  bool is_in_pwa_window = false;
+  if (GetSupplementable()->GetFrame()) {
+    mojom::blink::DisplayMode display_mode =
+        GetSupplementable()->GetFrame()->GetWidgetForLocalRoot()->DisplayMode();
+    is_in_pwa_window = display_mode != mojom::blink::DisplayMode::kBrowser;
+  }
   if (!(GetSupplementable()->Url().ProtocolIs("chrome-extension") ||
         Fullscreen::FullscreenElementFrom(*GetSupplementable()) ||
-        (GetSupplementable()->View() &&
-         GetSupplementable()->View()->DisplayMode() !=
-             blink::mojom::DisplayMode::kBrowser &&
-         GetSupplementable()->IsInWebAppScope()))) {
+        (is_in_pwa_window && GetSupplementable()->IsInWebAppScope()))) {
     return false;
   }
 

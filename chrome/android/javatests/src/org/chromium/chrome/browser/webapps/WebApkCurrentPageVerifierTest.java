@@ -38,7 +38,7 @@ public final class WebApkCurrentPageVerifierTest {
     }
 
     private WebappActivity launchWebApk(String url) {
-        WebApkInfo webApkInfo = new WebApkInfoBuilder("org.chromium.webapk.random", url).build();
+        WebappInfo webApkInfo = new WebApkInfoBuilder("org.chromium.webapk.random", url).build();
         return mActivityTestRule.startWebApkActivity(webApkInfo);
     }
 

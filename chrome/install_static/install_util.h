@@ -88,11 +88,6 @@ std::wstring GetClientStateKeyPath();
 // for system-wide installs to hold values written by the browser.
 std::wstring GetClientStateMediumKeyPath();
 
-// Returns the path to the ClientState{,Medium} key for the deprecated Chrome
-// binaries.
-std::wstring GetClientStateKeyPathForBinaries();
-std::wstring GetClientStateMediumKeyPathForBinaries();
-
 // Returns the path
 // "Software\Microsoft\Windows\CurrentVersion\Uninstall\[kCompanyPathName ]
 // kProductPathName[install_suffix]. This is the key used for the browser's
@@ -292,15 +287,12 @@ std::wstring GetSwitchValueFromCommandLine(const std::wstring& command_line,
 bool RecursiveDirectoryCreate(const std::wstring& full_path);
 
 // Returns the unadorned channel name based on the channel strategy for the
-// install mode. |from_binaries| forces the registry locations corresponding to
-// the now-deprecated multi-install binaries to be read, and is only for use by
-// the installer. |update_ap|, if not null, is set to the raw "ap" value read
+// install mode. |update_ap|, if not null, is set to the raw "ap" value read
 // from Chrome's ClientState key in the registry. |update_cohort_name|, if not
 // null, is set to the raw "cohort\name" value read from Chrome's ClientState
 // key in the registry.
 std::wstring DetermineChannel(const InstallConstants& mode,
                               bool system_level,
-                              bool from_binaries,
                               std::wstring* update_ap,
                               std::wstring* update_cohort_name);
 

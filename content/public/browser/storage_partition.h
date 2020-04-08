@@ -18,6 +18,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/cookie_manager.mojom-forward.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom-forward.h"
+#include "services/network/public/mojom/trust_tokens.mojom-forward.h"
 
 class GURL;
 
@@ -119,6 +120,10 @@ class CONTENT_EXPORT StoragePartition {
       int routing_id,
       mojo::PendingReceiver<network::mojom::RestrictedCookieManager>
           receiver) = 0;
+
+  virtual void CreateHasTrustTokensAnswerer(
+      mojo::PendingReceiver<network::mojom::HasTrustTokensAnswerer> receiver,
+      const url::Origin& top_frame_origin) = 0;
 
   virtual storage::QuotaManager* GetQuotaManager() = 0;
   virtual AppCacheService* GetAppCacheService() = 0;

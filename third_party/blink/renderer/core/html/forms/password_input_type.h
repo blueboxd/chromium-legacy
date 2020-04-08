@@ -62,6 +62,7 @@ class PasswordInputType final : public BaseTextInputType {
   void HandleBeforeTextInsertedEvent(BeforeTextInsertedEvent&) override;
 
   void HandleBlurEvent() override;
+  bool SupportsInputModeAttribute() const override;
 
   bool should_show_reveal_button_ = false;
 };

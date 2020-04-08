@@ -122,9 +122,6 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
   void InputWasProcessed(const gfx::PresentationFeedback& feedback);
   void WaitForInputProcessed(base::OnceClosure callback);
 
-  void FallbackCursorModeLockCursor(bool left, bool right, bool up, bool down);
-  void FallbackCursorModeSetCursorVisibility(bool visible);
-
   // Called when the RenderWidget is notified of a navigation. Resets
   // the renderer pipeline deferral status, and resets the UMA recorder for
   // time of first input.

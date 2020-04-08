@@ -17,6 +17,9 @@
 #include "content/shell/common/web_test/web_test_switches.h"
 #include "content/shell/test_runner/test_preferences.h"
 #include "net/base/filename_util.h"
+#include "ui/display/display.h"
+#include "ui/gfx/color_space.h"
+#include "ui/gfx/test/icc_profiles.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/bundle_locations.h"
@@ -139,6 +142,21 @@ WebURL RewriteWebTestsURL(const std::string& utf8_url, bool is_wpt_mode) {
   std::string new_url =
       std::string("file://") + utf8_path + utf8_url.substr(kPrefix.size());
   return WebURL(GURL(new_url));
+}
+
+gfx::ColorSpace GetWebTestColorSpace(const std::string& name) {
+  if (name == "genericRGB") {
+    return gfx::ICCProfileForTestingGenericRGB().GetColorSpace();
+  } else if (name == "sRGB") {
+    return gfx::ColorSpace::CreateSRGB();
+  } else if (name == "test" || name == "colorSpin") {
+    return gfx::ICCProfileForTestingColorSpin().GetColorSpace();
+  } else if (name == "adobeRGB") {
+    return gfx::ICCProfileForTestingAdobeRGB().GetColorSpace();
+  } else if (name == "reset") {
+    return display::Display::GetForcedDisplayColorProfile();
+  }
+  return gfx::ColorSpace();
 }
 
 }  // namespace content

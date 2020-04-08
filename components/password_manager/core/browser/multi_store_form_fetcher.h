@@ -21,9 +21,10 @@ class MultiStoreFormFetcher : public FormFetcherImpl {
                         bool should_migrate_http_passwords);
   ~MultiStoreFormFetcher() override;
 
+  // FormFetcher overrides.
+  void Fetch() override;
   bool IsBlacklisted() const override;
 
-  void Fetch() override;
   void OnGetPasswordStoreResults(
       std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
 

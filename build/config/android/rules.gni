@@ -875,12 +875,12 @@ if (enable_java_templates) {
   # own dependencies.
   #
   # Variables
+  #   sources: List of resource files for this target.
   #   deps: Specifies the dependencies of this target. Any Android resources
   #     listed in deps will be included by libraries/apks that depend on this
   #     target.
   #   alternative_android_sdk_dep: Optional. Alternative Android system
   #     android java target to use.
-  #   resource_dirs: List of directories containing resources for this target.
   #   android_manifest: AndroidManifest.xml for this target (optional). Will be
   #     merged into apks that directly or indirectly depend on this target.
   #   android_manifest_dep: Target that generates AndroidManifest (if applicable)
@@ -918,7 +918,10 @@ if (enable_java_templates) {
       not_needed(invoker, [ "v14_skip" ])
     }
 
-    _pass_resource_files = defined(invoker.sources)
+    assert(!defined(invoker.resource_dirs) || defined(invoker.sources),
+           "resource_dirs in android_resources is deprecated. Please use " +
+               "sources=[] and list resource files instead. Details: " +
+               "https://crbug.com/1026378")
     _res_sources_path = "$target_gen_dir/${invoker.target_name}.res.sources"
 
     _resources_zip = "$target_out_dir/$target_name.resources.zip"
@@ -941,19 +944,11 @@ if (enable_java_templates) {
       _deps += [ "//third_party/android_sdk:android_sdk_java" ]
     }
 
-    if (_pass_resource_files) {
-      _resource_files = invoker.sources
-    } else {
-      _sources_build_rel = []
-
-      if (invoker.resource_dirs != []) {
-        _sources_build_rel +=
-            exec_script("//build/android/gyp/find.py",
-                        rebase_path(invoker.resource_dirs, root_build_dir),
-                        "list lines")
-      }
-      _resource_files = rebase_path(_sources_build_rel, ".", root_build_dir)
+    _resource_files = []
+    if (defined(invoker.sources)) {
+      _resource_files += invoker.sources
     }
+
     _rebased_resource_files = rebase_path(_resource_files, root_build_dir)
     write_file(_res_sources_path, _rebased_resource_files)
 

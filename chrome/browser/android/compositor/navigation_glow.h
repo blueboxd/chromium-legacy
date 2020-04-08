@@ -51,8 +51,6 @@ class NavigationGlow : public ui::OverscrollGlowClient,
   void OnAnimate(base::TimeTicks begin_frame_time) override;
   void OnActivityStopped() override {}
   void OnActivityStarted() override {}
-  void OnCursorVisibilityChanged(bool visible) override {}
-  void OnFallbackCursorModeToggled(bool is_on) override {}
 
   // ui::ViewAndroidObserver implementation.
   void OnAttachedToWindow() override;

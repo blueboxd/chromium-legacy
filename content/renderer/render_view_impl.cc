@@ -454,10 +454,6 @@ void RenderViewImpl::Initialize(
 
   bool local_main_frame = params->main_frame_routing_id != MSG_ROUTING_NONE;
 
-  // TODO(danakj): Put this in with making the RenderFrame? Does order matter?
-  if (local_main_frame)
-    GetWebView()->SetDisplayMode(params->visual_properties.display_mode);
-
   ApplyWebPreferences(webkit_preferences_, GetWebView());
   ApplyCommandLineToSettings(GetWebView()->GetSettings());
 
@@ -1048,11 +1044,6 @@ bool RenderViewImpl::ShouldAckSyntheticInputImmediately() {
   return false;
 }
 
-void RenderViewImpl::ApplyNewDisplayModeForWidget(
-    blink::mojom::DisplayMode new_display_mode) {
-  GetWebView()->SetDisplayMode(new_display_mode);
-}
-
 void RenderViewImpl::ApplyAutoResizeLimitsForWidget(const gfx::Size& min_size,
                                                     const gfx::Size& max_size) {
   GetWebView()->EnableAutoResizeMode(min_size, max_size);
@@ -1386,7 +1377,6 @@ blink::WebPagePopup* RenderViewImpl::CreatePopup(
 
   RenderWidget* popup_widget = RenderWidget::CreateForPopup(
       widget_routing_id, opener_render_widget->compositor_deps(),
-      blink::mojom::DisplayMode::kUndefined,
       /*hidden=*/false,
       /*never_composited=*/false, std::move(widget_channel_receiver));
 

@@ -218,9 +218,9 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // solid color is displayed instead.
   virtual bool ShouldShowStaleContentOnEviction();
 
-  // Returns the display mode for the view.
-  virtual blink::mojom::DisplayMode GetDisplayMode(
-      RenderWidgetHostImpl* render_widget_host) const;
+  // Returns the display mode for all widgets in the frame tree. Only applies
+  // to frame-based widgets. Other widgets are always kBrowser.
+  virtual blink::mojom::DisplayMode GetDisplayMode() const;
 
   // Notification that the widget has lost capture.
   virtual void LostCapture(RenderWidgetHostImpl* render_widget_host) {}

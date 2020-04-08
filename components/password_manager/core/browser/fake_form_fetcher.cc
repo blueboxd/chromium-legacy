@@ -26,6 +26,10 @@ void FakeFormFetcher::RemoveConsumer(Consumer* consumer) {
   consumers_.RemoveObserver(consumer);
 }
 
+void FakeFormFetcher::Fetch() {
+  state_ = State::WAITING;
+}
+
 FormFetcher::State FakeFormFetcher::GetState() const {
   return state_;
 }
@@ -78,10 +82,6 @@ void FakeFormFetcher::NotifyFetchCompleted() {
   state_ = State::NOT_WAITING;
   for (Consumer& consumer : consumers_)
     consumer.OnFetchCompleted();
-}
-
-void FakeFormFetcher::Fetch() {
-  state_ = State::WAITING;
 }
 
 std::unique_ptr<FormFetcher> FakeFormFetcher::Clone() {

@@ -231,7 +231,7 @@ TEST_F(OmniboxEditModelTest, AdjustTextForCopyReaderMode) {
   const GURL article_url("https://www.example.com/article.html");
   const GURL distiller_url =
       dom_distiller::url_utils::GetDistillerViewUrlFromUrl(
-          dom_distiller::kDomDistillerScheme, article_url);
+          dom_distiller::kDomDistillerScheme, article_url, "title");
   // In ReaderMode, the URL is chrome-distiller://<hash>,
   // but the user should only see the original URL minus the scheme.
   location_bar_model()->set_url(distiller_url);

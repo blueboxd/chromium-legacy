@@ -5,10 +5,17 @@
 #ifndef SERVICES_NETWORK_TRUST_TOKENS_TRUST_TOKEN_HTTP_HEADERS_H_
 #define SERVICES_NETWORK_TRUST_TOKENS_TRUST_TOKEN_HTTP_HEADERS_H_
 
+#include <vector>
+
+#include "base/strings/string_piece_forward.h"
+
 namespace network {
 
 // These are the HTTP headers defined in the Trust Tokens draft explainer:
 // https://github.com/WICG/trust-token-api
+//
+// NOTE: If you add more request headers, please make sure to update the
+// definition of |TrustTokensRequestHeaders|.
 
 // As a request header: during issuance, sends a collection of unsigned, blinded
 // tokens; during redemption, sends a single signed, unblinded token
@@ -36,6 +43,15 @@ constexpr char kTrustTokensRequestHeaderSecSignedRedemptionRecord[] =
 // of headers included in the signing data's canonical request data. An absent
 // header denotes an empty list.
 constexpr char kTrustTokensRequestHeaderSignedHeaders[] = "Signed-Headers";
+
+// Returns a view of all of the Trust Tokens-internal request headers.
+// This vector contains all of the headers that clients must not provide on
+// requests bearing Trust Tokens operations, because they are added internally
+// by Trust Tokens logic.
+//
+// In particular, this does *not* contain Signed-Headers because this header's
+// value is provided by the Trust Token API's client.
+const std::vector<base::StringPiece>& TrustTokensRequestHeaders();
 
 }  // namespace network
 

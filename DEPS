@@ -175,7 +175,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '6a5187a8895807f2412f6a4a1a209a859d4e93fb',
+  'skia_revision': '3150d88ba4ca076d7072bdc59502cfee2c0fc666',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -294,15 +294,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spirv_cross_revision': 'e58e8d5dbe03ea2cc755dbaf43ffefa1b8d77bef',
+  'spirv_cross_revision': 'a1d9b474b5caae6856c28bf9cde5aaf68e9c11b9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'shaderc_revision': '4e3bbd9c5f1a164add8faca83d28f24c960c752c',
+  'shaderc_revision': '8026364968acb2e55390f6ccf295740ab818ebda',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '36cd17488a631f7df530141e6faeb8afd2c39c84',
+  'dawn_revision': '7119a0278da3ae1044a0dcaaf979a2b5294a10ee',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -525,7 +525,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'c7ff69c0bd9b7d62491066f56b9c3d953a4a7f4b',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '4454d0be942d588fcea5a390fb78711c07513a6c',
       'condition': 'checkout_ios',
   },
 
@@ -856,7 +856,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'ca6b5b7a178116b8f514462b7b8c27bdd7cc4e4c',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'eb17dbb23599aadf015f4b5cee7d592a0910e6eb',
       'condition': 'checkout_linux',
   },
 
@@ -1086,7 +1086,7 @@ deps = {
     Var('chromium_git') + '/external/libaddressinput.git' + '@' + '390dfc08e3806a2125d08d4d8d034a24d587d77a',
 
   'src/third_party/libaom/source/libaom':
-    Var('aomedia_git') + '/aom.git' + '@' +  'c25910f6d213ec5ec45ae53caa5e40bd7ebd218f',
+    Var('aomedia_git') + '/aom.git' + '@' +  '611c58e511042782869dfcb6e0450587b30fc5f2',
 
   'src/third_party/libavif/src':
     Var('chromium_git') + '/external/github.com/AOMediaCodec/libavif.git' + '@' + Var('libavif_revision'),
@@ -1218,7 +1218,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + '6f26bce0b1c4e8ce0e13332f7c0083788def5fdf',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + '94b61ee5c25c872920f45e5581442e4bf1a5a7ea',
+    Var('chromium_git') + '/openscreen' + '@' + 'e998a6b46dddfecde30aa25642bad41a7e5d9780',
 
   'src/third_party/openxr/src': {
     'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + '9e97b73e7dd2bfc07745489d728f6a36665c648f',
@@ -1465,7 +1465,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'd03d968b75ce66437e8a6a2f45a656d74f552be9',
+    Var('webrtc_git') + '/src.git' + '@' + 'f7065f4414856c15038f8bdbe4ef84e54056f9d6',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1540,7 +1540,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@08494419674464d45d9d0f6d8ebfddc15286d992',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@6e3984a4c68ea883e183a3e8118f14b6a315ef2f',
     'condition': 'checkout_src_internal',
   },
 
@@ -3530,6 +3530,9 @@ include_rules = [
 
   # Chromium cannot directly depend on Abseil.
   '-absl',
+
+  # Chromium cannot directly depend on SHELL.
+  '-shell-encryption',
 ]
 
 

@@ -397,6 +397,13 @@ ScriptPromise CookieStore::DoRead(
     const CookieStoreGetOptions* options,
     DoReadBackendResultConverter backend_result_converter,
     ExceptionState& exception_state) {
+  ExecutionContext* context = ExecutionContext::From(script_state);
+  if (!context->GetSecurityOrigin()->CanAccessCookies()) {
+    exception_state.ThrowSecurityError(
+        "Access to the CookieStore API is denied in this context.");
+    return ScriptPromise();
+  }
+
   network::mojom::blink::CookieManagerGetOptionsPtr backend_options =
       ToBackendOptions(options, exception_state);
   KURL cookie_url = CookieUrlForRead(options, default_cookie_url_, script_state,
@@ -462,6 +469,13 @@ void CookieStore::GetAllForUrlToGetResult(
 ScriptPromise CookieStore::DoWrite(ScriptState* script_state,
                                    const CookieStoreSetExtraOptions* options,
                                    ExceptionState& exception_state) {
+  ExecutionContext* context = ExecutionContext::From(script_state);
+  if (!context->GetSecurityOrigin()->CanAccessCookies()) {
+    exception_state.ThrowSecurityError(
+        "Access to the CookieStore API is denied in this context.");
+    return ScriptPromise();
+  }
+
   base::Optional<CanonicalCookie> canonical_cookie =
       ToCanonicalCookie(default_cookie_url_, options, exception_state);
   if (!canonical_cookie) {

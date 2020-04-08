@@ -410,8 +410,14 @@ void BrowserGpuChannelHostFactory::RestartTimeout() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 // Only implement timeout on Android, which does not have a software fallback.
 #if defined(OS_ANDROID)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableTimeoutsForProfiling)) {
+  base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
+  if (cl->HasSwitch(switches::kDisableTimeoutsForProfiling)) {
+    return;
+  }
+  // Only enable it for out of process GPU. In-process generally only has false
+  // positives.
+  if (cl->HasSwitch(switches::kSingleProcess) ||
+      cl->HasSwitch(switches::kInProcessGPU)) {
     return;
   }
 

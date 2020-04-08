@@ -8,7 +8,6 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ShortcutSource;
-import org.chromium.chrome.browser.webapps.WebApkInfo;
 import org.chromium.chrome.browser.webapps.WebApkUkmRecorder;
 import org.chromium.chrome.browser.webapps.WebDisplayMode;
 import org.chromium.chrome.browser.webapps.WebappDataStorage;
@@ -52,7 +51,7 @@ public class LaunchMetrics {
         int source = webappInfo.source();
 
         if (webappInfo.isForWebApk() && source == ShortcutSource.UNKNOWN) {
-            // WebApkInfo#source() identifies how the WebAPK was launched (e.g. via deep link).
+            // WebappInfo#source() identifies how the WebAPK was launched (e.g. via deep link).
             // When the WebAPK is launched from the app list (ShortcutSource#UNKNOWN), query
             // WebappDataStorage to determine how the WebAPK was installed (SOURCE_APP_BANNER_WEBAPK
             // vs SOURCE_ADD_TO_HOMESCREEN_PWA). WebAPKs set WebappDataStorage#getSource() at
@@ -87,9 +86,8 @@ public class LaunchMetrics {
             LaunchMetricsJni.get().recordLaunch(
                     launch.mIsShortcut, launch.mUrl, launch.mSource, displayMode, webContents);
             if (webappInfo != null && webappInfo.isForWebApk()) {
-                WebApkInfo webApkInfo = (WebApkInfo) webappInfo;
-                WebApkUkmRecorder.recordWebApkLaunch(webApkInfo.manifestUrl(),
-                        webApkInfo.distributor(), webApkInfo.webApkVersionCode(), launch.mSource);
+                WebApkUkmRecorder.recordWebApkLaunch(webappInfo.manifestUrl(),
+                        webappInfo.distributor(), webappInfo.webApkVersionCode(), launch.mSource);
             }
         }
         sHomeScreenLaunches.clear();

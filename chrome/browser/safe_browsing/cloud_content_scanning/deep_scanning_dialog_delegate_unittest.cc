@@ -1232,9 +1232,11 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, SupportedTypes) {
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.7z"));
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.bzip"));
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.cab"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.csv"));
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.doc"));
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.docx"));
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.eps"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.tar.gz"));
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.gzip"));
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.odt"));
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.pdf"));
@@ -1262,8 +1264,8 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, SupportedTypes) {
              base::BindOnce(
                  [](bool* called, const DeepScanningDialogDelegate::Data& data,
                     const DeepScanningDialogDelegate::Result& result) {
-                   EXPECT_EQ(21u, data.paths.size());
-                   EXPECT_EQ(21u, result.paths_results.size());
+                   EXPECT_EQ(23u, data.paths.size());
+                   EXPECT_EQ(23u, result.paths_results.size());
 
                    // The supported types should be marked as false.
                    for (const auto& result : result.paths_results)
@@ -1466,7 +1468,7 @@ TEST_P(DeepScanningDialogDelegateResultHandlingTest, Test) {
 
             bool expected =
                 DeepScanningDialogDelegate::ResultShouldAllowDataUse(
-                    GetParam());
+                    GetParam(), data.settings);
             EXPECT_EQ(expected, result.paths_results[0]);
             *called = true;
           },
@@ -1487,7 +1489,25 @@ INSTANTIATE_TEST_SUITE_P(
                     BinaryUploadService::Result::UNAUTHORIZED,
                     BinaryUploadService::Result::FILE_ENCRYPTED));
 
-using DeepScanningDialogDelegatePolicyResultsTest = BaseTest;
+class DeepScanningDialogDelegatePolicyResultsTest : public BaseTest {
+ public:
+  enterprise_connectors::ConnectorsManager::AnalysisSettings settings() {
+    base::Optional<enterprise_connectors::ConnectorsManager::AnalysisSettings>
+        settings;
+    enterprise_connectors::ConnectorsManager::GetInstance()
+        ->GetAnalysisSettings(
+            GURL(kTestUrl),
+            enterprise_connectors::AnalysisConnector::FILE_ATTACHED,
+            base::BindLambdaForTesting(
+                [&settings](
+                    base::Optional<enterprise_connectors::ConnectorsManager::
+                                       AnalysisSettings> tmp_settings) {
+                  settings = std::move(tmp_settings);
+                }));
+    EXPECT_TRUE(settings.has_value());
+    return std::move(settings.value());
+  }
+};
 
 TEST_F(DeepScanningDialogDelegatePolicyResultsTest, BlockLargeFile) {
   // The value returned by ResultShouldAllowDataUse for FILE_TOO_LARGE should
@@ -1495,19 +1515,19 @@ TEST_F(DeepScanningDialogDelegatePolicyResultsTest, BlockLargeFile) {
   SetBlockLargeFilePolicy(
       BlockLargeFileTransferValues::BLOCK_LARGE_UPLOADS_AND_DOWNLOADS);
   EXPECT_FALSE(DeepScanningDialogDelegate::ResultShouldAllowDataUse(
-      BinaryUploadService::Result::FILE_TOO_LARGE));
+      BinaryUploadService::Result::FILE_TOO_LARGE, settings()));
 
   SetBlockLargeFilePolicy(BlockLargeFileTransferValues::BLOCK_LARGE_DOWNLOADS);
   EXPECT_TRUE(DeepScanningDialogDelegate::ResultShouldAllowDataUse(
-      BinaryUploadService::Result::FILE_TOO_LARGE));
+      BinaryUploadService::Result::FILE_TOO_LARGE, settings()));
 
   SetBlockLargeFilePolicy(BlockLargeFileTransferValues::BLOCK_LARGE_UPLOADS);
   EXPECT_FALSE(DeepScanningDialogDelegate::ResultShouldAllowDataUse(
-      BinaryUploadService::Result::FILE_TOO_LARGE));
+      BinaryUploadService::Result::FILE_TOO_LARGE, settings()));
 
   SetBlockLargeFilePolicy(BlockLargeFileTransferValues::BLOCK_NONE);
   EXPECT_TRUE(DeepScanningDialogDelegate::ResultShouldAllowDataUse(
-      BinaryUploadService::Result::FILE_TOO_LARGE));
+      BinaryUploadService::Result::FILE_TOO_LARGE, settings()));
 }
 
 TEST_F(DeepScanningDialogDelegatePolicyResultsTest,
@@ -1517,19 +1537,19 @@ TEST_F(DeepScanningDialogDelegatePolicyResultsTest,
   SetAllowPasswordPolicy(
       AllowPasswordProtectedFilesValues::ALLOW_UPLOADS_AND_DOWNLOADS);
   EXPECT_TRUE(DeepScanningDialogDelegate::ResultShouldAllowDataUse(
-      BinaryUploadService::Result::FILE_ENCRYPTED));
+      BinaryUploadService::Result::FILE_ENCRYPTED, settings()));
 
   SetAllowPasswordPolicy(AllowPasswordProtectedFilesValues::ALLOW_DOWNLOADS);
   EXPECT_FALSE(DeepScanningDialogDelegate::ResultShouldAllowDataUse(
-      BinaryUploadService::Result::FILE_ENCRYPTED));
+      BinaryUploadService::Result::FILE_ENCRYPTED, settings()));
 
   SetAllowPasswordPolicy(AllowPasswordProtectedFilesValues::ALLOW_UPLOADS);
   EXPECT_TRUE(DeepScanningDialogDelegate::ResultShouldAllowDataUse(
-      BinaryUploadService::Result::FILE_ENCRYPTED));
+      BinaryUploadService::Result::FILE_ENCRYPTED, settings()));
 
   SetAllowPasswordPolicy(AllowPasswordProtectedFilesValues::ALLOW_NONE);
   EXPECT_FALSE(DeepScanningDialogDelegate::ResultShouldAllowDataUse(
-      BinaryUploadService::Result::FILE_ENCRYPTED));
+      BinaryUploadService::Result::FILE_ENCRYPTED, settings()));
 }
 
 }  // namespace safe_browsing

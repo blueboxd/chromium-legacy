@@ -16,9 +16,8 @@ enum InstallationLevel {
 };
 
 // Returns the path to an installed chrome.exe at the specified level, if it can
-// be found in the registry. Prefers the installer from a multi-install, but may
-// also return that of a single-install of Chrome if no multi-install exists.
-// If |is_sxs| is true, gets the path to the SxS (Canary) version of chrome.exe.
+// be found in the registry. If |is_sxs| is true, gets the path to the SxS
+// (Canary) version of chrome.exe.
 base::FilePath GetChromePathForInstallationLevel(InstallationLevel level,
                                                  bool is_sxs);
 

@@ -34,10 +34,6 @@ extern const base::Feature kKalmanDirectionCutOff;
 COMPONENT_EXPORT(BLINK_FEATURES)
 extern const base::Feature kSendMouseLeaveEvents;
 
-// Enables fallback cursor mode for dpad devices.
-COMPONENT_EXPORT(BLINK_FEATURES)
-extern const base::Feature kFallbackCursorMode;
-
 // When enabled, this feature prevent blink sending key event to web unless it
 // is on installed PWA.
 COMPONENT_EXPORT(BLINK_FEATURES)

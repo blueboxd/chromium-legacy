@@ -11,12 +11,13 @@
 #include "base/syslog_logging.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_value_map.h"
 #include "components/spellcheck/browser/pref_names.h"
-#include "components/spellcheck/common/spellcheck_common.h"
+#include "components/spellcheck/common/spellcheck_features.h"
 #include "components/strings/grit/components_strings.h"
 
 SpellcheckLanguagePolicyHandler::SpellcheckLanguagePolicyHandler()
@@ -86,9 +87,11 @@ void SpellcheckLanguagePolicyHandler::SortForcedLanguages(
 
   // Separate the valid languages from the unknown / unsupported languages.
   for (const base::Value& language : value->GetList()) {
+    std::string candidate_language =
+        base::TrimWhitespaceASCII(language.GetString(), base::TRIM_ALL)
+            .as_string();
     std::string current_language =
-        spellcheck::GetCorrespondingSpellCheckLanguage(
-            base::TrimWhitespaceASCII(language.GetString(), base::TRIM_ALL));
+        SpellcheckService::GetSupportedAcceptLanguageCode(candidate_language);
 
     if (current_language.empty()) {
       unknown->emplace_back(language.GetString());

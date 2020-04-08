@@ -61,7 +61,6 @@ import android.support.test.espresso.matcher.BoundedMatcher;
 import android.support.test.filters.SmallTest;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 
@@ -1782,10 +1781,7 @@ public class PasswordSettingsTest {
         setPasswordSource(null);
         SettingsActivityTest.startSettingsActivity(
                 InstrumentationRegistry.getInstrumentation(), PasswordSettings.class.getName());
-        Espresso.onView(isRoot()).check(
-                (root, e)
-                        -> waitForView(
-                                (ViewGroup) root, withText(R.string.password_settings_title)));
+        Espresso.onView(isRoot()).check(waitForView(withText(R.string.password_settings_title)));
 
         // Retrieve the initial status and ensure that the help option is there at all.
         final AtomicReference<Boolean> helpInOverflowMenu = new AtomicReference<>(false);
@@ -1806,10 +1802,7 @@ public class PasswordSettingsTest {
         Espresso.onView(withSearchMenuIdOrText()).perform(click());
         Espresso.onView(withContentDescription(R.string.abc_action_bar_up_description))
                 .perform(click());
-        Espresso.onView(isRoot()).check(
-                (root, e)
-                        -> waitForView(
-                                (ViewGroup) root, withText(R.string.password_settings_title)));
+        Espresso.onView(isRoot()).check(waitForView(withText(R.string.password_settings_title)));
 
         // Check that the help option is exactly where it was to begin with.
         if (helpInOverflowMenu.get()) {
@@ -1962,12 +1955,9 @@ public class PasswordSettingsTest {
         Espresso.onView(withSearchMenuIdOrText()).perform(click());
 
         Espresso.onView(withText(R.string.passwords_auto_signin_title)).check(doesNotExist());
-        Espresso.onView(isRoot()).check(
-                (root, e)
-                        -> waitForView((ViewGroup) root,
-                                withParent(withContentDescription(
-                                        R.string.abc_action_menu_overflow_description)),
-                                VIEW_INVISIBLE | VIEW_GONE | VIEW_NULL));
+        Espresso.onView(isRoot()).check(waitForView(
+                withParent(withContentDescription(R.string.abc_action_menu_overflow_description)),
+                VIEW_INVISIBLE | VIEW_GONE | VIEW_NULL));
 
         Espresso.onView(withContentDescription(R.string.abc_action_bar_up_description))
                 .perform(click());
@@ -2018,9 +2008,7 @@ public class PasswordSettingsTest {
         // Trigger search which shouldn't have the button yet.
         Espresso.onView(withSearchMenuIdOrText()).perform(click());
         Espresso.onView(isRoot()).check(
-                (root, e)
-                        -> waitForView((ViewGroup) root, withId(R.id.search_close_btn),
-                                VIEW_INVISIBLE | VIEW_GONE | VIEW_NULL));
+                waitForView(withId(R.id.search_close_btn), VIEW_INVISIBLE | VIEW_GONE | VIEW_NULL));
 
         // Type something and see the button appear.
         Espresso.onView(withId(R.id.search_src_text))
@@ -2031,9 +2019,7 @@ public class PasswordSettingsTest {
         // Clear the search which should hide the button again.
         Espresso.onView(withId(R.id.search_close_btn)).perform(click()); // Clear search.
         Espresso.onView(isRoot()).check(
-                (root, e)
-                        -> waitForView((ViewGroup) root, withId(R.id.search_close_btn),
-                                VIEW_INVISIBLE | VIEW_GONE | VIEW_NULL));
+                waitForView(withId(R.id.search_close_btn), VIEW_INVISIBLE | VIEW_GONE | VIEW_NULL));
     }
 
     /**
@@ -2105,8 +2091,7 @@ public class PasswordSettingsTest {
         // Open the search and filter all but "Zeus".
         Espresso.onView(withSearchMenuIdOrText()).perform(click());
 
-        Espresso.onView(isRoot()).check(
-                (root, e) -> waitForView((ViewGroup) root, withId(R.id.search_src_text)));
+        Espresso.onView(isRoot()).check(waitForView(withId(R.id.search_src_text)));
         Espresso.onView(withId(R.id.search_src_text))
                 .perform(click(), typeText("Zeu"), closeSoftKeyboard());
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
@@ -2144,9 +2129,7 @@ public class PasswordSettingsTest {
 
         // The search bar should still be open and still display the search query.
         Espresso.onView(isRoot()).check(
-                (root, e)
-                        -> waitForView((ViewGroup) root,
-                                allOf(withId(R.id.search_src_text), withText("Zeu"))));
+                waitForView(allOf(withId(R.id.search_src_text), withText("Zeu"))));
         Espresso.onView(withId(R.id.search_src_text)).check(matches(withText("Zeu")));
     }
 

@@ -915,27 +915,6 @@ void ChromeClientImpl::NotifySwapTime(LocalFrame& frame,
       base::NullCallback(), ConvertToBaseOnceCallback(std::move(callback)));
 }
 
-void ChromeClientImpl::FallbackCursorModeLockCursor(LocalFrame* frame,
-                                                    bool left,
-                                                    bool right,
-                                                    bool up,
-                                                    bool down) {
-  FrameWidget* widget = frame->GetWidgetForLocalRoot();
-  if (!widget)
-    return;
-  if (WebWidgetClient* client = widget->Client())
-    client->FallbackCursorModeLockCursor(left, right, up, down);
-}
-
-void ChromeClientImpl::FallbackCursorModeSetCursorVisibility(LocalFrame* frame,
-                                                             bool visible) {
-  FrameWidget* widget = frame->GetWidgetForLocalRoot();
-  if (!widget)
-    return;
-  if (WebWidgetClient* client = widget->Client())
-    client->FallbackCursorModeSetCursorVisibility(visible);
-}
-
 void ChromeClientImpl::RequestBeginMainFrameNotExpected(LocalFrame& frame,
                                                         bool request) {
   frame.GetWidgetForLocalRoot()->RequestBeginMainFrameNotExpected(request);

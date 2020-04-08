@@ -42,13 +42,15 @@ def main():
     web_engine_dir = os.path.join(args.output_directory, 'gen',
         'fuchsia', 'engine')
 
-    # Install necessary packages on the device.
-    target.InstallPackage([
-        os.path.join(web_engine_dir, 'web_engine', 'web_engine.far'),
-        os.path.join(web_engine_dir, 'web_engine_shell',
-            'web_engine_shell.far')
-    ])
-    return subprocess.call(gpu_script)
+    # Keep the Amber repository live while the test runs.
+    with target.GetAmberRepo():
+      # Install necessary packages on the device.
+      target.InstallPackage([
+          os.path.join(web_engine_dir, 'web_engine', 'web_engine.far'),
+          os.path.join(web_engine_dir, 'web_engine_shell',
+                       'web_engine_shell.far')
+      ])
+      return subprocess.call(gpu_script)
 
 if __name__ == '__main__':
   sys.exit(main())

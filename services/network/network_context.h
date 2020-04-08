@@ -195,6 +195,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       bool is_service_worker,
       int32_t process_id,
       int32_t routing_id) override;
+  void GetHasTrustTokensAnswerer(
+      mojo::PendingReceiver<mojom::HasTrustTokensAnswerer> receiver,
+      const url::Origin& top_frame_origin) override;
   void ClearNetworkingHistorySince(
       base::Time time,
       base::OnceClosure completion_callback) override;
@@ -576,6 +579,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   // See the comment for |trust_token_store()|.
   std::unique_ptr<PendingTrustTokenStore> trust_token_store_;
+
+  // Ordering: this must be after |trust_token_store_| since the
+  // HasTrustTokensAnswerers are provided non-owning pointers to
+  // |trust_token_store_|.
+  mojo::UniqueReceiverSet<mojom::HasTrustTokensAnswerer>
+      has_trust_tokens_answerers_;
 
 #if !defined(OS_IOS)
   std::unique_ptr<WebSocketFactory> websocket_factory_;

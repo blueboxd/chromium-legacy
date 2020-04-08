@@ -1399,7 +1399,6 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
 
   std::unique_ptr<RenderWidget> render_widget = RenderWidget::CreateForFrame(
       params->main_frame_widget_routing_id, compositor_deps,
-      params->visual_properties.display_mode,
       render_view->widgets_never_composited());
   render_widget->set_delegate(render_view);
 
@@ -1563,7 +1562,6 @@ void RenderFrameImpl::CreateFrame(
 
     std::unique_ptr<RenderWidget> render_widget = RenderWidget::CreateForFrame(
         widget_params->routing_id, compositor_deps,
-        widget_params->visual_properties.display_mode,
         render_view->widgets_never_composited());
     render_widget->set_delegate(render_view);
 
@@ -1613,7 +1611,6 @@ void RenderFrameImpl::CreateFrame(
     // space/context.
     std::unique_ptr<RenderWidget> render_widget = RenderWidget::CreateForFrame(
         widget_params->routing_id, compositor_deps,
-        widget_params->visual_properties.display_mode,
         render_view->widgets_never_composited());
 
     // Non-owning pointer that is self-referencing and destroyed by calling

@@ -33,6 +33,8 @@ class TLSDeprecationConfigSingleton {
     return proto_.get();
   }
 
+  void Reset() { proto_.reset(); }
+
   static TLSDeprecationConfigSingleton& GetInstance() {
     static base::NoDestructor<TLSDeprecationConfigSingleton> instance;
     return *instance;
@@ -76,4 +78,8 @@ bool ShouldSuppressLegacyTLSWarning(const GURL& url) {
                                 control_site_hashes.end(), host_hash);
 
   return lower != control_site_hashes.end() && *lower == host_hash;
+}
+
+void ResetTLSDeprecationConfigForTesting() {
+  TLSDeprecationConfigSingleton::GetInstance().Reset();
 }

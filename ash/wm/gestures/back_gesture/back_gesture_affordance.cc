@@ -10,9 +10,11 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/window_util.h"
+#include "base/i18n/rtl.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/paint_recorder.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/tween.h"
@@ -167,15 +169,18 @@ class AffordanceView : public views::View {
     // Draw the arrow.
     const float arrow_x = center_point.x() - kArrowSize / 2.f;
     const float arrow_y = center_point.y() - kArrowSize / 2.f;
+    const bool is_rtl = base::i18n::IsRTL();
     if (is_activated) {
       canvas->DrawImageInt(
-          gfx::CreateVectorIcon(vector_icons::kBackArrowIcon, kArrowSize,
-                                kArrowColorAfterActivated),
+          gfx::CreateVectorIcon(is_rtl ? vector_icons::kForwardArrowIcon
+                                       : vector_icons::kBackArrowIcon,
+                                kArrowSize, kArrowColorAfterActivated),
           static_cast<int>(arrow_x), static_cast<int>(arrow_y));
     } else {
       canvas->DrawImageInt(
-          gfx::CreateVectorIcon(vector_icons::kBackArrowIcon, kArrowSize,
-                                kArrowColorBeforeActivated),
+          gfx::CreateVectorIcon(is_rtl ? vector_icons::kForwardArrowIcon
+                                       : vector_icons::kBackArrowIcon,
+                                kArrowSize, kArrowColorBeforeActivated),
           static_cast<int>(arrow_x), static_cast<int>(arrow_y));
     }
   }
@@ -220,12 +225,13 @@ gfx::Rect GetAffordanceBounds(const gfx::Point& location,
       gfx::Rect(2 * kMaxBurstRippleRadius, 2 * kMaxBurstRippleRadius));
 
   gfx::Point origin;
-  // X origin of the affordance is beyond the left of this location. It could be
-  // the left of the display or the splitview divider.
-  int left_location = 0;
-  if (dragged_from_splitview_divider)
-    left_location = GetSplitViewDividerBoundsInScreen(location).x();
-  origin.set_x(left_location - kDistanceBeyondLeftOrSplitvieDivider);
+  // X origin of the affordance is always beyond the left of the screen. We'll
+  // apply translation to the affordance to put it in the right place during
+  // dragging.
+  const gfx::Rect work_area = display::Screen::GetScreen()
+                                  ->GetDisplayNearestPoint(location)
+                                  .work_area();
+  origin.set_x(work_area.x() - kDistanceBeyondLeftOrSplitvieDivider);
 
   int origin_y =
       location.y() - kDistanceFromArrowToTouchPoint - kMaxBurstRippleRadius;
@@ -240,13 +246,36 @@ gfx::Rect GetAffordanceBounds(const gfx::Point& location,
   return bounds;
 }
 
+// Returns the mirrored location of |location| if we're in rtl setting. If
+// |dragged_from_splitview_divider| is true,  it will return the mirrored
+// location against the center x position of the divider bar, otherwise, it will
+// return the mirrored location against the center x position of the screen.
+gfx::Point ToMirrorLocationIfRTL(const gfx::Point& location,
+                                 bool dragged_from_splitview_divider) {
+  if (!base::i18n::IsRTL())
+    return location;
+
+  const gfx::Rect work_area = display::Screen::GetScreen()
+                                  ->GetDisplayNearestPoint(location)
+                                  .work_area();
+  if (!dragged_from_splitview_divider) {
+    return gfx::Point(work_area.right() + work_area.x() - location.x(),
+                      location.y());
+  }
+
+  const gfx::Rect divider_bounds = GetSplitViewDividerBoundsInScreen(location);
+  return gfx::Point(2 * divider_bounds.CenterPoint().x() - location.x(),
+                    location.y());
+}
+
 }  // namespace
 
 BackGestureAffordance::BackGestureAffordance(
     const gfx::Point& location,
     bool dragged_from_splitview_divider)
     : dragged_from_splitview_divider_(dragged_from_splitview_divider) {
-  CreateAffordanceWidget(location);
+  CreateAffordanceWidget(
+      ToMirrorLocationIfRTL(location, dragged_from_splitview_divider));
 }
 
 BackGestureAffordance::~BackGestureAffordance() {}
@@ -259,7 +288,8 @@ void BackGestureAffordance::Update(int x_drag_amount,
   // Since affordance is put outside of the display, add the distance from its
   // center point to the left edge of the display to be the actual drag
   // distance.
-  x_drag_amount_ = x_drag_amount + kBackgroundRadius;
+  x_drag_amount_ = (base::i18n::IsRTL() ? -x_drag_amount : x_drag_amount) +
+                   kBackgroundRadius;
 
   float y_progress = y_drag_amount / kDistanceForFullYProgress;
   y_drag_progress_ = std::min(1.0f, std::max(-1.0f, y_progress));
@@ -321,10 +351,23 @@ void BackGestureAffordance::CreateAffordanceWidget(const gfx::Point& location) {
     // Clip the affordance to make sure it will only be visible inside the
     // snapped window's bounds. Note, |clip_bounds| is the area that the
     // affordance will be visible, and it is based on the layer's coordinate.
-    gfx::Rect clip_bounds(
-        GetSplitViewDividerBoundsInScreen(location).right() - widget_bounds.x(),
-        0, kDistanceForMaxRadius + kMaxBurstRippleRadius,
-        widget_bounds.height());
+    gfx::Rect clip_bounds;
+    const gfx::Rect divider_bounds =
+        GetSplitViewDividerBoundsInScreen(location);
+    const gfx::Rect work_area = display::Screen::GetScreen()
+                                    ->GetDisplayNearestPoint(location)
+                                    .work_area();
+    if (base::i18n::IsRTL()) {
+      clip_bounds = gfx::Rect(divider_bounds.x() - kDistanceForMaxRadius -
+                                  kMaxBurstRippleRadius - widget_bounds.x(),
+                              0, kDistanceForMaxRadius + kMaxBurstRippleRadius,
+                              widget_bounds.height());
+    } else {
+      clip_bounds = gfx::Rect(divider_bounds.right() - work_area.x() +
+                                  kDistanceBeyondLeftOrSplitvieDivider,
+                              0, kDistanceForMaxRadius + kMaxBurstRippleRadius,
+                              widget_bounds.height());
+    }
     affordance_widget_->GetLayer()->SetClipRect(clip_bounds);
   }
   affordance_widget_->Show();
@@ -358,6 +401,29 @@ void BackGestureAffordance::UpdateTransform() {
   }
   offset = std::fmin(kDistanceForMaxRadius, std::fmax(0, offset));
   current_offset_ = offset;
+
+  // Adjusting the affordance offset based on different configurations (e.g.,
+  // drag from split view divider bar or rtl language) so that affordance can
+  // remain under or above the finger.
+  const gfx::Rect work_area =
+      display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(affordance_widget_->GetNativeWindow())
+          .work_area();
+  if (dragged_from_splitview_divider_) {
+    auto* split_view_controller = SplitViewController::Get(
+        affordance_widget_->GetNativeWindow()->GetRootWindow());
+    const gfx::Rect divider_bounds =
+        split_view_controller->split_view_divider()->GetDividerBoundsInScreen(
+            /*is_dragging=*/false);
+    if (base::i18n::IsRTL()) {
+      offset = divider_bounds.right() - work_area.x() - offset +
+               kMaxBurstRippleRadius;
+    } else {
+      offset += divider_bounds.right() - work_area.x();
+    }
+  } else if (base::i18n::IsRTL()) {
+    offset = work_area.width() - offset + kMaxBurstRippleRadius;
+  }
 
   float y_offset = kMaxYMovement * y_drag_progress_;
   gfx::Transform transform;

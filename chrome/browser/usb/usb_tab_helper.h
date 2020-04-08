@@ -13,31 +13,13 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 
-namespace blink {
-namespace mojom {
-class WebUsbService;
-}
-}  // namespace blink
-
-class WebUsbChooser;
-
-struct FrameUsbServices;
-
-typedef std::map<content::RenderFrameHost*, std::unique_ptr<FrameUsbServices>>
-    FrameUsbServicesMap;
-
 // Per-tab owner of USB services provided to render frames within that tab.
-class UsbTabHelper : public content::WebContentsObserver,
-                     public content::WebContentsUserData<UsbTabHelper> {
+class UsbTabHelper : public content::WebContentsUserData<UsbTabHelper> {
  public:
   static UsbTabHelper* GetOrCreateForWebContents(
       content::WebContents* web_contents);
 
   ~UsbTabHelper() override;
-
-  void CreateWebUsbService(
-      content::RenderFrameHost* render_frame_host,
-      mojo::PendingReceiver<blink::mojom::WebUsbService> receiver);
 
   void IncrementConnectionCount();
   void DecrementConnectionCount();
@@ -47,26 +29,13 @@ class UsbTabHelper : public content::WebContentsObserver,
   explicit UsbTabHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<UsbTabHelper>;
 
-  // content::WebContentsObserver overrides:
-  void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
-  void RenderFrameHostChanged(content::RenderFrameHost* old_host,
-                              content::RenderFrameHost* new_host) override;
-  void DidFinishNavigation(content::NavigationHandle* handle) override;
-
-  FrameUsbServices* GetFrameUsbService(
-      content::RenderFrameHost* render_frame_host);
-  void DeleteFrameServices(content::RenderFrameHost* render_frame_host);
-
-  base::WeakPtr<WebUsbChooser> GetUsbChooser(
-      content::RenderFrameHost* render_frame_host);
-
   void NotifyIsDeviceConnectedChanged(bool is_device_connected) const;
 
-  bool AllowedByFeaturePolicy(
-      content::RenderFrameHost* render_frame_host) const;
-
-  FrameUsbServicesMap frame_usb_services_;
+  // Initially no device is connected, type int is used as there can be many
+  // devices connected to single UsbTabHelper.
   int device_connection_count_ = 0;
+
+  content::WebContents* web_contents_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

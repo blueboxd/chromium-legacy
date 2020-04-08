@@ -557,15 +557,17 @@ class Graph {
 
     // Give dead nodes a distinguishing class to exclude them from the selection
     // above. Interrupt any ongoing transitions, then transition them out.
-    const deletedNodes = node.exit().classed('dead', true).interrupt();
-
-    deletedNodes.select('circle')
+    const deletedNodes = node.exit().classed('dead', true);
+    deletedNodes.interrupt();
+    const deletedTransition = deletedNodes.transition();
+    deletedTransition.select('circle')
         .attr('r', 9)
         .attr('fill', 'red')
         .transition()
         .duration(2000)
-        .attr('r', 0)
-        .remove();
+        .attr('r', 0);
+    // Remove the nodes at the end of transition.
+    deletedTransition.remove();
 
     // Update the title for all nodes.
     node.selectAll('title').text(d => d.title);

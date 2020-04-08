@@ -12,10 +12,12 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
+#include "mojo/public/cpp/bindings/message.h"
 #include "services/network/cors/cors_url_loader_factory.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
 #include "services/network/network_usage_accumulator.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/resource_scheduler/resource_scheduler_client.h"
 #include "services/network/url_loader.h"
@@ -200,6 +202,22 @@ void URLLoaderFactory::CreateLoaderAndStart(
     return;
   }
 
+  if (url_request.trust_token_params && !context_->trust_token_store()) {
+    mojo::ReportBadMessage(
+        "Got a request with Trust Tokens parameters with Trust tokens "
+        "disabled.");
+    return;
+  }
+
+  if (url_request.trust_token_params && url_request.request_initiator &&
+      !IsOriginPotentiallyTrustworthy(*url_request.request_initiator)) {
+    mojo::ReportBadMessage(
+        "Got a request with Trust Tokens parameters from an insecure context, "
+        "but Trust Tokens operations may only be executed from secure "
+        "contexts.");
+    return;
+  }
+
   auto loader = std::make_unique<URLLoader>(
       context_->url_request_context(), network_service_client,
       context_->client(),
@@ -212,7 +230,12 @@ void URLLoaderFactory::CreateLoaderAndStart(
       std::move(keepalive_statistics_recorder),
       std::move(network_usage_accumulator),
       header_client_.is_bound() ? header_client_.get() : nullptr,
-      context_->origin_policy_manager(), nullptr /* trust_token_helper */);
+      context_->origin_policy_manager(),
+      url_request.trust_token_params
+          ? std::make_unique<TrustTokenRequestHelperFactory>(
+                context_->trust_token_store())
+          : nullptr);
+
   cors_url_loader_factory_->OnLoaderCreated(std::move(loader));
 }
 

@@ -35,7 +35,6 @@
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/icc_profile.h"
-#include "ui/gfx/test/icc_profiles.h"
 
 namespace content {
 
@@ -64,12 +63,11 @@ RenderViewImpl* CreateWebViewTestProxy(CompositorDependencies* compositor_deps,
 std::unique_ptr<RenderWidget> CreateRenderWidgetForFrame(
     int32_t routing_id,
     CompositorDependencies* compositor_deps,
-    blink::mojom::DisplayMode display_mode,
     bool never_composited,
     mojo::PendingReceiver<mojom::Widget> widget_receiver) {
-  return std::make_unique<WebWidgetTestProxy>(
-      routing_id, compositor_deps, display_mode,
-      /*hidden=*/true, never_composited, std::move(widget_receiver));
+  return std::make_unique<WebWidgetTestProxy>(routing_id, compositor_deps,
+                                              /*hidden=*/true, never_composited,
+                                              std::move(widget_receiver));
 }
 
 RenderFrameImpl* CreateWebFrameTestProxy(RenderFrameImpl::CreateParams params) {
@@ -171,21 +169,6 @@ std::unique_ptr<blink::WebInputEvent> TransformScreenToWidgetCoordinates(
   }
 
   return ui::TranslateAndScaleWebInputEvent(event, delta, scale);
-}
-
-gfx::ColorSpace GetTestingColorSpace(const std::string& name) {
-  if (name == "genericRGB") {
-    return gfx::ICCProfileForTestingGenericRGB().GetColorSpace();
-  } else if (name == "sRGB") {
-    return gfx::ColorSpace::CreateSRGB();
-  } else if (name == "test" || name == "colorSpin") {
-    return gfx::ICCProfileForTestingColorSpin().GetColorSpace();
-  } else if (name == "adobeRGB") {
-    return gfx::ICCProfileForTestingAdobeRGB().GetColorSpace();
-  } else if (name == "reset") {
-    return display::Display::GetForcedDisplayColorProfile();
-  }
-  return gfx::ColorSpace();
 }
 
 void SetDeviceColorSpace(RenderView* render_view,

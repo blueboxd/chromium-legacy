@@ -1,0 +1,115 @@
+diff --git a/montgomery.h b/montgomery.h
+index 50fb08a..336e925 100644
+--- a/montgomery.h
++++ b/montgomery.h
+@@ -105,8 +105,8 @@ struct MontgomeryIntParams {
+   static rlwe::StatusOr<std::unique_ptr<MontgomeryIntParams>> Create(
+       Int modulus) {
+     // Check that the modulus is smaller than max(Int) / 4.
+-    if (Int most_significant_bit = modulus >> (bitsize_int - 2);
+-        most_significant_bit != 0) {
++    Int most_significant_bit = modulus >> (bitsize_int - 2);
++    if (most_significant_bit != 0) {
+       return absl::InvalidArgumentError(absl::StrCat(
+           "The modulus should be less than 2^", (bitsize_int - 2), "."));
+     }
+diff --git a/ntt_parameters.h b/ntt_parameters.h
+index da03bfe..270a5a2 100644
+--- a/ntt_parameters.h
++++ b/ntt_parameters.h
+@@ -103,7 +103,8 @@ static void BitrevHelper(const std::vector<unsigned int>& bitrevs,
+   using std::swap;
+   for (int i = 0; i < item_to_reverse->size(); i++) {
+     // Only swap in one direction - don't accidentally swap twice.
+-    if (unsigned int r = bitrevs[i]; i < r) {
++    unsigned int r = bitrevs[i];
++    if (static_cast<unsigned int>(i) < r) {
+       swap((*item_to_reverse)[i], (*item_to_reverse)[r]);
+     }
+   }
+diff --git a/polynomial.h b/polynomial.h
+index 0b73dfa..fc0e38a 100644
+--- a/polynomial.h
++++ b/polynomial.h
+@@ -80,7 +80,8 @@ class Polynomial {
+                                  const NttParameters<ModularInt>& ntt_params,
+                                  ModularIntParams* modular_params) {
+     // Check to ensure that the coefficient vector is of the correct length.
+-    if (int len = poly_coeffs.size(); len <= 0 || (len & (len - 1)) != 0) {
++    int len = poly_coeffs.size();
++    if (len <= 0 || (len & (len - 1)) != 0) {
+       // An error value.
+       return Polynomial();
+     }
+diff --git a/prng/chacha_prng_util.cc b/prng/chacha_prng_util.cc
+index bd78ab8..39099e1 100644
+--- a/prng/chacha_prng_util.cc
++++ b/prng/chacha_prng_util.cc
+@@ -10,7 +10,8 @@
+ #include <openssl/rand.h>
+ #include "status_macros.h"
+ 
+-namespace rlwe::internal {
++namespace rlwe {
++namespace internal {
+ 
+ absl::Status ChaChaPrngResalt(absl::string_view key, int buffer_size,
+                               int* salt_counter, int* position_in_buffer,
+@@ -71,4 +72,5 @@ rlwe::StatusOr<Uint64> ChaChaPrngRand64(absl::string_view key,
+   return rand64;
+ }
+ 
+-}  // namespace rlwe::internal
++}  // namespace internal
++}  // namespace rlwe
+diff --git a/prng/chacha_prng_util.h b/prng/chacha_prng_util.h
+index 2bb2fcf..5490505 100644
+--- a/prng/chacha_prng_util.h
++++ b/prng/chacha_prng_util.h
+@@ -12,7 +12,8 @@
+ #include "integral_types.h"
+ #include "statusor.h"
+ 
+-namespace rlwe::internal {
++namespace rlwe {
++namespace internal {
+ 
+ const int kChaChaKeyBytesSize = 32;
+ const int kChaChaNonceSize = 12;
+@@ -43,6 +44,7 @@ rlwe::StatusOr<Uint64> ChaChaPrngRand64(absl::string_view key,
+                                         int* salt_counter,
+                                         std::vector<Uint8>* buffer);
+ 
+-}  // namespace rlwe::internal
++}  // namespace internal
++}  // namespace rlwe
+ 
+ #endif  // RLWE_CHACHA_PRNG_UTIL_H_
+diff --git a/statusor.h b/statusor.h
+index 4fdeade..42761e6 100644
+--- a/statusor.h
++++ b/statusor.h
+@@ -74,7 +74,7 @@ class StatusOr {
+ 
+   operator absl::Status() const { return status(); }
+ 
+-  template <template <typename> typename OtherStatusOrType>
++  template <template <typename> class OtherStatusOrType>
+   operator OtherStatusOrType<T>() {
+     if (value_) {
+       return OtherStatusOrType<T>(std::move(value_.value()));
+diff --git a/symmetric_encryption.h b/symmetric_encryption.h
+index d4ad730..0223149 100644
+--- a/symmetric_encryption.h
++++ b/symmetric_encryption.h
+@@ -584,8 +584,8 @@ class SymmetricRlweKey {
+       typename ModularIntQ::Params* modulus_params_q,
+       const NttParameters<ModularIntQ>* ntt_params_q) const {
+     // Configuration failure.
+-    if (Int t = (modulus_params_q->One() << log_t_) + modulus_params_q->One();
+-        modulus_params_->modulus % t != modulus_params_q->modulus % t) {
++    Int t = (modulus_params_q->One() << log_t_) + modulus_params_q->One();
++    if (modulus_params_->modulus % t != modulus_params_q->modulus % t) {
+       return absl::InvalidArgumentError("p % t != q % t");
+     }
+ 

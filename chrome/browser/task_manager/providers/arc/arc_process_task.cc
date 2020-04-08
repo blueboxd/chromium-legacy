@@ -74,7 +74,6 @@ constexpr char kEmptyActivityName[] = "";
 
 ArcProcessTask::ArcProcessTask(arc::ArcProcess arc_process)
     : Task(MakeTitle(arc_process),
-           arc_process.process_name(),
            nullptr /* icon */,
            arc_process.pid()),
       arc_process_(std::move(arc_process)) {

@@ -294,6 +294,11 @@ void PermissionBubbleMediaAccessHandler::OnMediaStreamRequestResponse(
     bool blocked_by_feature_policy,
     ContentSetting audio_setting,
     ContentSetting video_setting) {
+  if (pending_requests_.find(web_contents) == pending_requests_.end()) {
+    // WebContents has been destroyed. Don't need to do anything.
+    return;
+  }
+
   // If the kill switch is, or the request was blocked because of feature
   // policy we don't update the tab context.
   if (result != blink::mojom::MediaStreamRequestResult::KILL_SWITCH_ON &&

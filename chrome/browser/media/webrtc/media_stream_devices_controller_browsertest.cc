@@ -172,7 +172,18 @@ class MediaStreamDevicesControllerTest : public WebRtcTestBase {
     return prompt_factory_.get();
   }
 
- private:
+  void VerifyResultState(blink::mojom::MediaStreamRequestResult result,
+                         bool has_audio,
+                         bool has_video) {
+    EXPECT_EQ(result, media_stream_result());
+    EXPECT_EQ(has_audio,
+              CheckDevicesListContains(
+                  blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
+    EXPECT_EQ(has_video,
+              CheckDevicesListContains(
+                  blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
+  }
+
   void SetUpOnMainThread() override {
     WebRtcTestBase::SetUpOnMainThread();
 
@@ -702,13 +713,9 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest, ContentSettings) {
 
     // Check the media stream result is expected and the devices returned are
     // expected;
-    ASSERT_EQ(test.ExpectedMediaStreamResult(), media_stream_result());
-    ASSERT_EQ(CheckDevicesListContains(
-                  blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE),
-              test.ExpectMicAllowed() && test.ExpectCamAllowed());
-    ASSERT_EQ(CheckDevicesListContains(
-                  blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE),
-              test.ExpectMicAllowed() && test.ExpectCamAllowed());
+    VerifyResultState(test.ExpectedMediaStreamResult(),
+                      test.ExpectMicAllowed() && test.ExpectCamAllowed(),
+                      test.ExpectMicAllowed() && test.ExpectCamAllowed());
   }
 }
 
@@ -721,11 +728,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
 
   ASSERT_EQ(0, prompt_factory()->TotalRequestCount());
 
-  ASSERT_EQ(blink::mojom::MediaStreamRequestResult::OK, media_stream_result());
-  ASSERT_FALSE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
-  ASSERT_TRUE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
+  VerifyResultState(blink::mojom::MediaStreamRequestResult::OK, false, true);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
@@ -745,12 +748,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   ASSERT_TRUE(prompt_factory()->RequestTypeSeen(
       permissions::PermissionRequestType::PERMISSION_MEDIASTREAM_MIC));
 
-  // Accept the prompt.
-  ASSERT_EQ(blink::mojom::MediaStreamRequestResult::OK, media_stream_result());
-  ASSERT_TRUE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
-  ASSERT_TRUE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
+  VerifyResultState(blink::mojom::MediaStreamRequestResult::OK, true, true);
 
   // Check that re-requesting allows without prompting.
   prompt_factory()->ResetCounts();
@@ -758,11 +756,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
                      CreateRequest(example_audio_id(), example_video_id()));
   ASSERT_EQ(0, prompt_factory()->TotalRequestCount());
 
-  ASSERT_EQ(blink::mojom::MediaStreamRequestResult::OK, media_stream_result());
-  ASSERT_TRUE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
-  ASSERT_TRUE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
+  VerifyResultState(blink::mojom::MediaStreamRequestResult::OK, true, true);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
@@ -778,16 +772,12 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
                             blink::MEDIA_OPEN_DEVICE_PEPPER_ONLY));
   ASSERT_EQ(0, prompt_factory()->TotalRequestCount());
 
-  ASSERT_EQ(blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED,
-            media_stream_result());
-  ASSERT_FALSE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
-  ASSERT_FALSE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
+  VerifyResultState(blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED,
+                    false, false);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest, WebContentsDestroyed) {
-  InitWithUrl(GURL("http://www.example.com"));
+  InitWithUrl(embedded_test_server()->GetURL("/simple.html"));
 
   prompt_factory()->set_response_type(
       permissions::PermissionRequestManager::ACCEPT_ALL);
@@ -801,12 +791,46 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest, WebContentsDestroyed) {
   RequestPermissions(nullptr, request);
   ASSERT_EQ(0, prompt_factory()->TotalRequestCount());
 
-  ASSERT_EQ(blink::mojom::MediaStreamRequestResult::FAILED_DUE_TO_SHUTDOWN,
-            media_stream_result());
-  ASSERT_FALSE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
-  ASSERT_FALSE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
+  VerifyResultState(
+      blink::mojom::MediaStreamRequestResult::FAILED_DUE_TO_SHUTDOWN, false,
+      false);
+}
+
+IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
+                       WebContentsDestroyedDuringRequest) {
+  InitWithUrl(embedded_test_server()->GetURL("/simple.html"));
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL("about:blank"), WindowOpenDisposition::NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+
+  prompt_factory()->set_response_type(
+      permissions::PermissionRequestManager::ACCEPT_ALL);
+
+  content::WebContents* prompt_contents = GetWebContents();
+  const int prompt_contents_index =
+      browser()->tab_strip_model()->GetIndexOfWebContents(prompt_contents);
+
+  // Now request permissions, but before the callback is asynchronously called,
+  // destroy the tab.
+  permission_bubble_media_access_handler_->HandleRequest(
+      prompt_contents, CreateRequest(example_audio_id(), example_video_id()),
+      base::BindOnce([](const blink::MediaStreamDevices& devices,
+                        blink::mojom::MediaStreamRequestResult result,
+                        std::unique_ptr<content::MediaStreamUI> ui) {
+        ADD_FAILURE() << " this callback shouldn't be reached";
+      }),
+      nullptr);
+  // Since the mock prompt factory holds a reference to the
+  // PermissionRequestManager for the WebContents and uses that reference in its
+  // destructor, it has to be destroyed before the tab.
+  prompt_factory_.reset();
+  ASSERT_TRUE(browser()->tab_strip_model()->CloseWebContentsAt(
+      prompt_contents_index, TabStripModel::CloseTypes::CLOSE_USER_GESTURE));
+  base::RunLoop().RunUntilIdle();
+
+  VerifyResultState(
+      blink::mojom::MediaStreamRequestResult::NUM_MEDIA_REQUEST_RESULTS, false,
+      false);
 }
 
 // Request and block microphone and camera access with kill switch.
@@ -832,13 +856,8 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
                      CreateRequest(example_audio_id(), example_video_id()));
 
   ASSERT_EQ(0, prompt_factory()->TotalRequestCount());
-
-  ASSERT_EQ(blink::mojom::MediaStreamRequestResult::KILL_SWITCH_ON,
-            media_stream_result());
-  ASSERT_FALSE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
-  ASSERT_FALSE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
+  VerifyResultState(blink::mojom::MediaStreamRequestResult::KILL_SWITCH_ON,
+                    false, false);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
@@ -865,12 +884,8 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
 
   ASSERT_EQ(0, prompt_factory()->TotalRequestCount());
 
-  ASSERT_EQ(blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED,
-            media_stream_result());
-  ASSERT_FALSE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
-  ASSERT_FALSE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
+  VerifyResultState(blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED,
+                    false, false);
   EXPECT_EQ(TabSpecificContentSettings::MICROPHONE_CAMERA_NOT_ACCESSED,
             GetContentSettings()->GetMicrophoneCameraState());
 }
@@ -899,12 +914,8 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
 
   ASSERT_EQ(0, prompt_factory()->TotalRequestCount());
 
-  ASSERT_EQ(blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED,
-            media_stream_result());
-  ASSERT_FALSE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
-  ASSERT_FALSE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
+  VerifyResultState(blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED,
+                    false, false);
   EXPECT_EQ(TabSpecificContentSettings::MICROPHONE_CAMERA_NOT_ACCESSED,
             GetContentSettings()->GetMicrophoneCameraState());
 }
@@ -917,12 +928,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
       GetWebContents(),
       CreateRequestWithType(example_audio_id(), std::string(),
                             blink::MEDIA_OPEN_DEVICE_PEPPER_ONLY));
-
-  EXPECT_EQ(blink::mojom::MediaStreamRequestResult::OK, media_stream_result());
-  EXPECT_TRUE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
-  EXPECT_FALSE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
+  VerifyResultState(blink::mojom::MediaStreamRequestResult::OK, true, false);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
@@ -933,10 +939,5 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
       GetWebContents(),
       CreateRequestWithType(std::string(), example_video_id(),
                             blink::MEDIA_OPEN_DEVICE_PEPPER_ONLY));
-
-  EXPECT_EQ(blink::mojom::MediaStreamRequestResult::OK, media_stream_result());
-  EXPECT_FALSE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
-  EXPECT_TRUE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
+  VerifyResultState(blink::mojom::MediaStreamRequestResult::OK, false, true);
 }

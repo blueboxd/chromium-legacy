@@ -97,8 +97,10 @@
 #include "services/network/throttling/network_conditions.h"
 #include "services/network/throttling/throttling_controller.h"
 #include "services/network/throttling/throttling_network_transaction_factory.h"
+#include "services/network/trust_tokens/has_trust_tokens_answerer.h"
 #include "services/network/trust_tokens/pending_trust_token_store.h"
 #include "services/network/trust_tokens/sqlite_trust_token_persister.h"
+#include "services/network/trust_tokens/suitable_trust_token_origin.h"
 #include "services/network/trust_tokens/trust_token_parameterization.h"
 #include "services/network/trust_tokens/trust_token_store.h"
 #include "services/network/url_loader.h"
@@ -570,6 +572,25 @@ void NetworkContext::GetRestrictedCookieManager(
           top_frame_origin, client(), is_service_worker, process_id,
           routing_id),
       std::move(receiver));
+}
+
+void NetworkContext::GetHasTrustTokensAnswerer(
+    mojo::PendingReceiver<mojom::HasTrustTokensAnswerer> receiver,
+    const url::Origin& top_frame_origin) {
+  // Only called when Trust Tokens is enabled, i.e. trust_token_store_ is
+  // non-null.
+  DCHECK(trust_token_store_);
+
+  base::Optional<SuitableTrustTokenOrigin> suitable_top_frame_origin =
+      SuitableTrustTokenOrigin::Create(top_frame_origin);
+
+  // It's safe to dereference |suitable_top_frame_origin| here as, during the
+  // process of vending the HasTrustTokensAnswerer, the browser ensures that
+  // the requesting context's top frame origin is suitable for Trust Tokens.
+  auto answerer = std::make_unique<HasTrustTokensAnswerer>(
+      std::move(*suitable_top_frame_origin), trust_token_store_.get());
+
+  has_trust_tokens_answerers_.Add(std::move(answerer), std::move(receiver));
 }
 
 void NetworkContext::OnProxyLookupComplete(

@@ -11,8 +11,8 @@ import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityTestUtil;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.webapps.WebApkActivityTestRule;
-import org.chromium.chrome.browser.webapps.WebApkInfo;
 import org.chromium.chrome.browser.webapps.WebappActivityTestRule;
+import org.chromium.chrome.browser.webapps.WebappInfo;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.util.browser.webapps.WebApkInfoBuilder;
 
@@ -62,7 +62,7 @@ public class CustomTabActivityTypeTestUtils {
     }
 
     private static void launchWebApk(WebApkActivityTestRule activityTestRule, String url) {
-        WebApkInfo webApkInfo = new WebApkInfoBuilder("org.chromium.webapk.random", url).build();
+        WebappInfo webApkInfo = new WebApkInfoBuilder("org.chromium.webapk.random", url).build();
         activityTestRule.startWebApkActivity(webApkInfo);
     }
 

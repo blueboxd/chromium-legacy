@@ -165,6 +165,14 @@ void DecoderSelector<StreamType>::OnDecoderInitializeDone(Status status) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (!status.is_ok()) {
+    // TODO(tmathmeyer) this might be noisy in media log. Consider batching
+    // all failures as causes to a single Status object and only surfacing it if
+    // decoder selection fails entirely.
+    media_log_->NotifyError(
+        Status(StatusCode::kDecoderFailedInitialization)
+            .WithData("Decoder name", decoder_->GetDisplayName())
+            .AddCause(std::move(status)));
+
     // Try the next decoder on the list.
     decoder_.reset();
     InitializeDecoder();

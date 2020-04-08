@@ -420,13 +420,6 @@ COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadConnectionSecurity(
     const GURL& download_url,
     const std::vector<GURL>& url_chain);
 
-COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadContentTypeSecurity(
-    const GURL& download_url,
-    const std::vector<GURL>& url_chain,
-    const std::string& mime_type,
-    const base::RepeatingCallback<bool(const GURL&)>&
-        is_origin_secure_callback);
-
 COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadSourcePageTransitionType(
     const base::Optional<ui::PageTransition>& transition);
 

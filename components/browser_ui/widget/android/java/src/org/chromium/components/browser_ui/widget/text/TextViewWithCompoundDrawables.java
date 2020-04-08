@@ -13,6 +13,7 @@ import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatTextView;
 
 import org.chromium.components.browser_ui.widget.R;
@@ -59,6 +60,19 @@ public class TextViewWithCompoundDrawables extends AppCompatTextView {
         }
     }
 
+    @Override
+    public void setCompoundDrawablesRelative(@Nullable Drawable start, @Nullable Drawable top,
+            @Nullable Drawable end, @Nullable Drawable bottom) {
+        Drawable[] drawables = {start, top, end, bottom};
+        setDrawableBounds(drawables);
+
+        if (mDrawableTint != null) {
+            setDrawableTint(drawables);
+        }
+
+        super.setCompoundDrawablesRelative(drawables[0], drawables[1], drawables[2], drawables[3]);
+    }
+
     private void init(Context context, AttributeSet attrs, int defStyleAttr) {
         TypedArray array = context.obtainStyledAttributes(
                 attrs, R.styleable.TextViewWithCompoundDrawables, defStyleAttr, 0);
@@ -75,20 +89,8 @@ public class TextViewWithCompoundDrawables extends AppCompatTextView {
         if (mDrawableWidth <= 0 && mDrawableHeight <= 0 && mDrawableTint == null) return;
 
         Drawable[] drawables = getCompoundDrawablesRelative();
-        for (Drawable drawable : drawables) {
-            if (drawable == null) continue;
 
-            if (mDrawableWidth > 0 || mDrawableHeight > 0) {
-                Rect bounds = drawable.getBounds();
-                if (mDrawableWidth > 0) {
-                    bounds.right = bounds.left + mDrawableWidth;
-                }
-                if (mDrawableHeight > 0) {
-                    bounds.bottom = bounds.top + mDrawableHeight;
-                }
-                drawable.setBounds(bounds);
-            }
-        }
+        setDrawableBounds(drawables);
 
         if (mDrawableTint != null) setDrawableTint(drawables);
 
@@ -102,6 +104,23 @@ public class TextViewWithCompoundDrawables extends AppCompatTextView {
             drawable.mutate();
             drawable.setColorFilter(
                     mDrawableTint.getColorForState(getDrawableState(), 0), PorterDuff.Mode.SRC_IN);
+        }
+    }
+
+    private void setDrawableBounds(Drawable[] drawables) {
+        for (Drawable drawable : drawables) {
+            if (drawable == null) continue;
+
+            if (mDrawableWidth > 0 || mDrawableHeight > 0) {
+                Rect bounds = drawable.copyBounds();
+                if (mDrawableWidth > 0) {
+                    bounds.right = bounds.left + mDrawableWidth;
+                }
+                if (mDrawableHeight > 0) {
+                    bounds.bottom = bounds.top + mDrawableHeight;
+                }
+                drawable.setBounds(bounds);
+            }
         }
     }
 }

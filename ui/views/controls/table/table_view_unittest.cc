@@ -80,23 +80,33 @@ class TableViewTestHelper {
 
     // Generate the bounds for the header row and cells.
     auto header_row = std::vector<gfx::Rect>();
-    header_row.push_back(table_->CalculateHeaderRowAccessibilityBounds());
+    gfx::Rect header_row_bounds =
+        table_->CalculateHeaderRowAccessibilityBounds();
+    View::ConvertRectToScreen(table_, &header_row_bounds);
+    header_row.push_back(header_row_bounds);
     for (size_t column_index = 0; column_index < visible_col_count();
          column_index++) {
-      header_row.push_back(
-          table_->CalculateHeaderCellAccessibilityBounds(column_index));
+      gfx::Rect header_cell_bounds =
+          table_->CalculateHeaderCellAccessibilityBounds(column_index);
+      View::ConvertRectToScreen(table_, &header_cell_bounds);
+      header_row.push_back(header_cell_bounds);
     }
     expected_bounds.push_back(header_row);
 
     // Generate the bounds for the table rows and cells.
     for (int row_index = 0; row_index < table_->GetRowCount(); row_index++) {
       auto table_row = std::vector<gfx::Rect>();
-      table_row.push_back(
-          table_->CalculateTableRowAccessibilityBounds(row_index));
+      gfx::Rect table_row_bounds =
+          table_->CalculateTableRowAccessibilityBounds(row_index);
+      View::ConvertRectToScreen(table_, &table_row_bounds);
+      table_row.push_back(table_row_bounds);
       for (size_t column_index = 0; column_index < visible_col_count();
            column_index++) {
-        table_row.push_back(table_->CalculateTableCellAccessibilityBounds(
-            row_index, column_index));
+        gfx::Rect table_cell_bounds =
+            table_->CalculateTableCellAccessibilityBounds(row_index,
+                                                          column_index);
+        View::ConvertRectToScreen(table_, &table_cell_bounds);
+        table_row.push_back(table_cell_bounds);
       }
       expected_bounds.push_back(table_row);
     }

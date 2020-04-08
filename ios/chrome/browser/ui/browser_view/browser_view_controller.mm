@@ -934,7 +934,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
            webStateList:self.browser->GetWebStateList()];
     StartBroadcastingMainContentUI(self, broadcaster);
 
-    self.fullscreenController->SetWebStateList(self.browser->GetWebStateList());
+    if (!fullscreen::features::ShouldScopeFullscreenControllerToBrowser()) {
+      self.fullscreenController->SetWebStateList(
+          self.browser->GetWebStateList());
+    }
 
     _fullscreenUIUpdater =
         std::make_unique<FullscreenUIUpdater>(self.fullscreenController, self);
@@ -950,7 +953,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
     _fullscreenUIUpdater = nullptr;
 
-    self.fullscreenController->SetWebStateList(nullptr);
+    if (!fullscreen::features::ShouldScopeFullscreenControllerToBrowser()) {
+      self.fullscreenController->SetWebStateList(nullptr);
+    }
   }
 }
 

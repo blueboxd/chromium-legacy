@@ -9,7 +9,6 @@ http/tests/devtools/tracing/* [ Skip ]
 
 virtual/composite-after-paint/* [ Skip ]
 
-virtual/gpu/fast/canvas/* [ Skip ]
 virtual/layout_ng_block_frag/* [ Skip ]
 virtual/layout_ng_fieldset/* [ Skip ]
 virtual/layout_ng_flex_box/* [ Skip ]
@@ -25,6 +24,11 @@ virtual/threaded/http/tests/devtools/tracing/* [ Skip ]
 virtual/controls-refresh/* [ Skip ]
 virtual/controls-refresh-hc/* [ Skip ]
 virtual/web-components-v0-disabled/* [ Skip ]
+
+# They test Layer::ScrollsWithRespectTo() which is for pre-CompositeAfterPaint only.
+compositing/overflow/scrolls-with-respect-to-nested.html [ Skip ]
+compositing/overflow/scrolls-with-respect-to-transform.html [ Skip ]
+compositing/overflow/scrolls-with-respect-to.html [ Skip ]
 
 # Can't rebaseline because the file path is too long.
 virtual/compositor_threaded_scrollbar_scrolling/paint/invalidation/scroll/sticky/invalidate-after-composited-scroll-with-sticky.html [ Skip ]
@@ -51,14 +55,8 @@ compositing/reflections/deeply-nested-reflections.html [ Failure ]
 # A fieldset paints its background twice.
 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-overflow.html [ Crash ]
 
-#image-rendering: pixelated doesn't work on canvas.
-fast/webgl/pixelated.html [ Failure ]
-
 compositing/masks/broken-mask.html [ Failure ]
 compositing/masks/mask-with-removed-filters.html [ Failure ]
-crbug.com/667946 compositing/overflow/scrolls-with-respect-to-nested.html [ Failure ]
-crbug.com/667946 compositing/overflow/scrolls-with-respect-to-transform.html [ Failure ]
-crbug.com/667946 compositing/overflow/scrolls-with-respect-to.html [ Failure ]
 external/wpt/css/css-transforms/transform3d-backface-visibility-006.html [ Failure ]
 external/wpt/portals/portals-rendering.html [ Failure ]
 fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure ]
@@ -78,11 +76,7 @@ paint/invalidation/raster-under-invalidation-checking.html [ Failure ]
 # No composited scrolling for overflow:hidden (on marquee).
 compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Failure ]
 
-# Extra layers for non-fast scrolling areas.
-compositing/overflow/textarea-scroll-touch.html [ Failure ]
-
 # Subpixel or invisible color differences that look benign, but we can't rebaseline ref tests.
-compositing/overflow/ancestor-with-clip-path.html [ Failure ]
 fullscreen/rendering/backdrop-object.html [ Failure ]
 
 # Passes on bot, timeouts locally.
@@ -103,9 +97,6 @@ http/tests/devtools/layers/layer-scroll-rects-get.js [ Failure ]
 # Outline paints incorrectly with columns.
 crbug.com/1047358 paint/pagination/composited-paginated-outlined-box.html [ Failure ]
 
-# Crash on weird clip hierarchy in multiple columns
-compositing/geometry/composited-in-columns.html [ Crash ]
-
 # Ad frame highlight size is incorrect
 crbug.com/1047359 http/tests/subresource_filter/ad-highlight-frame-resized.html [ Failure ]
 
@@ -121,7 +112,3 @@ crbug.com/1041322 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gestu
 
 compositing/gestures/gesture-tapHighlight-composited-img.html [ Pass Failure ]
 http/tests/images/image-decode-in-frame.html [ Pass Failure ]
-
-# TODO(iopopesc) these need to be rebaselined for FormControlsRefresh focus ring.
-crbug.com/1035582 virtual/scalefactor200withzoom/fast/hidpi/static/validation-bubble-appearance-hidpi.html [ Failure ]
-crbug.com/1035582 compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ Failure ]

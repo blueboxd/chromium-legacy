@@ -71,10 +71,11 @@ class DeepScanningDialogViews : public views::DialogDelegate,
    public:
     virtual ~TestObserver() {}
 
-    // Called at the end of DeepScanningDialogViews's constructor. |views| is a
-    // pointer to the newly constructed DeepScanningDialogViews and should be
+    // Called at the start of DeepScanningDialogViews's constructor. |views| is
+    // a pointer to the newly constructed DeepScanningDialogViews and should be
     // kept in memory by the test in order to validate its state.
-    virtual void ConstructorCalled(DeepScanningDialogViews* views) {}
+    virtual void ConstructorCalled(DeepScanningDialogViews* views,
+                                   base::TimeTicks timestamp) {}
 
     // Called at the end of DeepScanningDialogViews::Show. |timestamp| is the
     // time used by DeepScanningDialogViews to decide whether the pending state

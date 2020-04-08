@@ -51,7 +51,7 @@ DistillablePageDetector::DistillablePageDetector(
   }
 }
 
-DistillablePageDetector::~DistillablePageDetector() {}
+DistillablePageDetector::~DistillablePageDetector() = default;
 
 bool DistillablePageDetector::Classify(
     const std::vector<double>& features) const {

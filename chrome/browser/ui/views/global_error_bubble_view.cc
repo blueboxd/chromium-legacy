@@ -34,33 +34,17 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/grid_layout.h"
 
-namespace {
-
-const int kMaxBubbleViewWidth = 362;
-
-views::View* GetGlobalErrorBubbleAnchorView(Browser* browser) {
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  return browser_view->toolbar_button_provider()->GetAppMenuButton();
-}
-
-gfx::Rect GetGlobalErrorBubbleAnchorRect(Browser* browser) {
-  return gfx::Rect();
-}
-
-}  // namespace
-
 // GlobalErrorBubbleViewBase ---------------------------------------------------
 
 // static
 GlobalErrorBubbleViewBase* GlobalErrorBubbleViewBase::ShowStandardBubbleView(
     Browser* browser,
     const base::WeakPtr<GlobalErrorWithStandardBubble>& error) {
-  views::View* anchor_view = GetGlobalErrorBubbleAnchorView(browser);
-  gfx::Rect anchor_rect;
-  if (!anchor_view)
-    anchor_rect = GetGlobalErrorBubbleAnchorRect(browser);
+  views::View* anchor_view = BrowserView::GetBrowserViewForBrowser(browser)
+                                 ->toolbar_button_provider()
+                                 ->GetAppMenuButton();
   GlobalErrorBubbleView* bubble_view = new GlobalErrorBubbleView(
-      anchor_view, anchor_rect, views::BubbleBorder::TOP_RIGHT, browser, error);
+      anchor_view, views::BubbleBorder::TOP_RIGHT, browser, error);
   views::BubbleDialogDelegateView::CreateBubble(bubble_view);
   bubble_view->GetWidget()->Show();
   return bubble_view;
@@ -70,7 +54,6 @@ GlobalErrorBubbleViewBase* GlobalErrorBubbleViewBase::ShowStandardBubbleView(
 
 GlobalErrorBubbleView::GlobalErrorBubbleView(
     views::View* anchor_view,
-    const gfx::Rect& anchor_rect,
     views::BubbleBorder::Arrow arrow,
     Browser* browser,
     const base::WeakPtr<GlobalErrorWithStandardBubble>& error)
@@ -104,11 +87,6 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
         this, error_->GetBubbleViewDetailsButtonLabel()));
   }
 
-  if (!anchor_view) {
-    SetAnchorRect(anchor_rect);
-    set_parent_window(
-        platform_util::GetViewForWindow(browser->window()->GetNativeWindow()));
-  }
   chrome::RecordDialogCreation(chrome::DialogIdentifier::GLOBAL_ERROR);
 }
 
@@ -126,6 +104,7 @@ void GlobalErrorBubbleView::WindowClosing() {
 }
 
 void GlobalErrorBubbleView::Init() {
+  const int kMaxBubbleViewWidth = 362;
   // |error_| is assumed to be valid, and stay valid, at least until Init()
   // returns.
 

@@ -61,7 +61,6 @@ XWindow::WindowType GetXWindowType(PlatformWindowType window_type) {
       return WindowType::kPopup;
     case PlatformWindowType::kDrag:
       return WindowType::kDrag;
-      break;
     case PlatformWindowType::kBubble:
       return WindowType::kBubble;
   }

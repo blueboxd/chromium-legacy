@@ -12,8 +12,6 @@
 #error "This file requires ARC support."
 #endif
 
-const int kMaxProductDataLength = 255;
-
 @interface CrashReporterBreadcrumbObserver () {
   // Map associating the observed BreadcrumbManager with the corresponding
   // observer bridge instances.
@@ -44,6 +42,7 @@ const int kMaxProductDataLength = 255;
 - (instancetype)init {
   if ((self = [super init])) {
     _breadcrumbs = [[NSMutableString alloc] init];
+    _maxProductDataLength = 1530U;  // 6 keys * 255 bytes/key
   }
   return self;
 }
@@ -82,7 +81,7 @@ const int kMaxProductDataLength = 255;
   [_breadcrumbs insertString:eventWithSeperator atIndex:0];
 
   NSUInteger maxBreadcrumbsLength =
-      self.breadcrumbsKeyCount * kMaxProductDataLength;
+      self.breadcrumbsKeyCount * self.maxProductDataLength;
   if (_breadcrumbs.length > maxBreadcrumbsLength) {
     NSRange trimRange = NSMakeRange(maxBreadcrumbsLength,
                                     _breadcrumbs.length - maxBreadcrumbsLength);
@@ -93,11 +92,11 @@ const int kMaxProductDataLength = 255;
   NSMutableArray* breadcrumbs =
       [[NSMutableArray alloc] initWithCapacity:self.breadcrumbsKeyCount];
   for (NSUInteger i = 0; i < self.breadcrumbsKeyCount &&
-                         (i * kMaxProductDataLength) < _breadcrumbs.length;
+                         (i * self.maxProductDataLength) < _breadcrumbs.length;
        i++) {
-    NSUInteger location = i * kMaxProductDataLength;
-    NSRange range = NSMakeRange(
-        location, MIN(kMaxProductDataLength, _breadcrumbs.length - location));
+    NSUInteger location = i * self.maxProductDataLength;
+    NSRange range = NSMakeRange(location, MIN(self.maxProductDataLength,
+                                              _breadcrumbs.length - location));
     [breadcrumbs addObject:[_breadcrumbs substringWithRange:range]];
   }
   breakpad_helper::SetBreadcrumbEvents(breadcrumbs);

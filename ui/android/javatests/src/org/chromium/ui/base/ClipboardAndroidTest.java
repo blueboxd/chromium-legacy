@@ -14,10 +14,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -26,7 +23,6 @@ import org.chromium.ui.test.util.DummyUiActivityTestCase;
 /**
  * Clipboard tests for Android platform that depend on access to the ClipboardManager.
  */
-@JNINamespace("ui")
 @RunWith(BaseJUnit4ClassRunner.class)
 public class ClipboardAndroidTest extends DummyUiActivityTestCase {
     @Rule
@@ -40,7 +36,8 @@ public class ClipboardAndroidTest extends DummyUiActivityTestCase {
 
     @Override
     public void tearDownTest() throws Exception {
-        ClipboardAndroidTestJni.get().cleanup();
+        ClipboardAndroidTestSupport.cleanup();
+        super.tearDownTest();
     }
 
     /**
@@ -49,7 +46,6 @@ public class ClipboardAndroidTest extends DummyUiActivityTestCase {
      */
     @Test
     @SmallTest
-    @DisabledTest(message = "https://crbug.com/1067719")
     public void internalClipboardInvalidation() {
         CriteriaHelper.pollUiThread(() -> getActivity().hasWindowFocus());
 
@@ -57,7 +53,7 @@ public class ClipboardAndroidTest extends DummyUiActivityTestCase {
         final String originalText = "foo";
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertTrue("Original text was not written to the native clipboard.",
-                    ClipboardAndroidTestJni.get().nativeWriteHtml(originalText));
+                    ClipboardAndroidTestSupport.writeHtml(originalText));
         });
 
         // Assert that the ClipboardManager contains the original text. Then simulate another
@@ -76,14 +72,7 @@ public class ClipboardAndroidTest extends DummyUiActivityTestCase {
         // Assert that the overwrite from another application is registered by the native clipboard.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertTrue("Invalidating text not found in the native clipboard.",
-                    ClipboardAndroidTestJni.get().nativeClipboardContains(invalidatingText));
+                    ClipboardAndroidTestSupport.clipboardContains(invalidatingText));
         });
-    }
-
-    @NativeMethods
-    interface Natives {
-        void cleanup();
-        boolean nativeWriteHtml(String htmlText);
-        boolean nativeClipboardContains(String text);
     }
 }

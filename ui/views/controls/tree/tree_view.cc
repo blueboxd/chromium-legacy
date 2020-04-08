@@ -922,7 +922,6 @@ void TreeView::PopulateAccessibilityData(InternalNode* node,
     data->AddAction(ax::mojom::Action::kFocus);
     data->AddAction(ax::mojom::Action::kScrollToMakeVisible);
     gfx::Rect node_bounds = GetBackgroundBoundsForNode(node);
-    View::ConvertRectToScreen(this, &node_bounds);
     data->relative_bounds.bounds = gfx::RectF(node_bounds);
   } else {
     data->AddState(ax::mojom::State::kInvisible);

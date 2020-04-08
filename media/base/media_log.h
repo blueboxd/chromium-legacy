@@ -81,6 +81,9 @@ class MEDIA_EXPORT MediaLog {
   // TODO(tmathmeyer) replace with Status when that's ready.
   void NotifyError(PipelineStatus status);
 
+  // Notify a non-ok Status. This method Should _not_ be given an OK status.
+  void NotifyError(Status status);
+
   // Notify the media log that the player is destroyed. Some implementations
   // will want to change event handling based on this.
   void OnWebMediaPlayerDestroyed();

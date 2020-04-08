@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "base/test/gtest_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -181,14 +182,15 @@ void DcheckEmptyFunction2() {}
 #if defined(DCHECK_IS_CONFIGURABLE)
 class ScopedDcheckSeverity {
  public:
-  ScopedDcheckSeverity(LogSeverity new_severity) : old_severity_(LOG_DCHECK) {
-    LOG_DCHECK = new_severity;
+  ScopedDcheckSeverity(logging::LogSeverity new_severity)
+      : old_severity_(logging::LOG_DCHECK) {
+    logging::LOG_DCHECK = new_severity;
   }
 
-  ~ScopedDcheckSeverity() { LOG_DCHECK = old_severity_; }
+  ~ScopedDcheckSeverity() { logging::LOG_DCHECK = old_severity_; }
 
  private:
-  LogSeverity old_severity_;
+  logging::LogSeverity old_severity_;
 };
 #endif  // defined(DCHECK_IS_CONFIGURABLE)
 
@@ -203,7 +205,7 @@ TEST_F(CheckTest, MAYBE_Dcheck) {
   // DCHECKs are enabled, and LOG_DCHECK is mutable, but defaults to non-fatal.
   // Set it to LOG_FATAL to get the expected behavior from the rest of this
   // test.
-  ScopedDcheckSeverity dcheck_severity(LOG_FATAL);
+  ScopedDcheckSeverity dcheck_severity(logging::LOG_FATAL);
 #endif  // defined(DCHECK_IS_CONFIGURABLE)
 
 #if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
@@ -305,16 +307,16 @@ TEST_F(CheckTest, ConfigurableDCheck) {
   // Verify that DCHECKs default to non-fatal in configurable-DCHECK builds.
   // Note that we require only that DCHECK is non-fatal by default, rather
   // than requiring that it be exactly INFO, ERROR, etc level.
-  EXPECT_LT(LOG_DCHECK, LOG_FATAL);
+  EXPECT_LT(logging::LOG_DCHECK, logging::LOG_FATAL);
   DCHECK(false);
 
   // Verify that DCHECK* aren't hard-wired to crash on failure.
-  LOG_DCHECK = LOG_INFO;
+  logging::LOG_DCHECK = logging::LOG_INFO;
   DCHECK(false);
   DCHECK_EQ(1, 2);
 
   // Verify that DCHECK does crash if LOG_DCHECK is set to LOG_FATAL.
-  LOG_DCHECK = LOG_FATAL;
+  logging::LOG_DCHECK = logging::LOG_FATAL;
   EXPECT_CHECK("Check failed: false. ", DCHECK(false));
   EXPECT_CHECK("Check failed: 1 == 2 (1 vs. 2)", DCHECK_EQ(1, 2));
 }
@@ -327,20 +329,20 @@ TEST_F(CheckTest, ConfigurableDCheckFeature) {
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitFromCommandLine("DcheckIsFatal", "");
-    EXPECT_EQ(LOG_DCHECK, LOG_FATAL);
+    EXPECT_EQ(logging::LOG_DCHECK, logging::LOG_FATAL);
   }
 
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitFromCommandLine("", "DcheckIsFatal");
-    EXPECT_LT(LOG_DCHECK, LOG_FATAL);
+    EXPECT_LT(logging::LOG_DCHECK, logging::LOG_FATAL);
   }
 
   // The default case is last, so we leave LOG_DCHECK in the default state.
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitFromCommandLine("", "");
-    EXPECT_LT(LOG_DCHECK, LOG_FATAL);
+    EXPECT_LT(logging::LOG_DCHECK, logging::LOG_FATAL);
   }
 }
 #endif  // defined(DCHECK_IS_CONFIGURABLE)

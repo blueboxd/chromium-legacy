@@ -476,24 +476,6 @@ void WidgetInputHandlerManager::WaitForInputProcessed(
       base::BindOnce(&WaitForInputProcessedFromMain, render_widget_));
 }
 
-void WidgetInputHandlerManager::FallbackCursorModeLockCursor(bool left,
-                                                             bool right,
-                                                             bool up,
-                                                             bool down) {
-#if defined(OS_ANDROID)
-  if (mojom::WidgetInputHandlerHost* host = GetWidgetInputHandlerHost())
-    host->FallbackCursorModeLockCursor(left, right, up, down);
-#endif
-}
-
-void WidgetInputHandlerManager::FallbackCursorModeSetCursorVisibility(
-    bool visible) {
-#if defined(OS_ANDROID)
-  if (mojom::WidgetInputHandlerHost* host = GetWidgetInputHandlerHost())
-    host->FallbackCursorModeSetCursorVisibility(visible);
-#endif
-}
-
 void WidgetInputHandlerManager::DidNavigate() {
   renderer_deferral_state_ = 0;
   have_emitted_uma_ = false;

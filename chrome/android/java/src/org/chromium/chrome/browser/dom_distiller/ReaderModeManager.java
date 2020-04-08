@@ -485,8 +485,8 @@ public class ReaderModeManager extends TabModelSelectorTabObserver {
 
         DomDistillerTabUtils.distillCurrentPage(baseWebContents);
 
-        String distillerUrl =
-                DomDistillerUrlUtils.getDistillerViewUrlFromUrl(DOM_DISTILLER_SCHEME, url);
+        String distillerUrl = DomDistillerUrlUtils.getDistillerViewUrlFromUrl(
+                DOM_DISTILLER_SCHEME, url, baseWebContents.getTitle());
 
         CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
         builder.setShowTitle(true);

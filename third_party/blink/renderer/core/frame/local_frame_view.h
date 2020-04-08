@@ -30,7 +30,6 @@
 
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
-#include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/shape_properties.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -274,9 +273,6 @@ class CORE_EXPORT LocalFrameView final
   AtomicString MediaType() const;
   void SetMediaType(const AtomicString&);
   void AdjustMediaTypeForPrinting(bool printing);
-
-  blink::mojom::DisplayMode DisplayMode() { return display_mode_; }
-  void SetDisplayMode(blink::mojom::DisplayMode);
 
   DisplayShape GetDisplayShape() { return display_shape_; }
   void SetDisplayShape(DisplayShape);
@@ -857,8 +853,6 @@ class CORE_EXPORT LocalFrameView final
   EmbeddedObjectSet part_update_set_;
 
   Member<LocalFrame> frame_;
-
-  blink::mojom::DisplayMode display_mode_;
 
   DisplayShape display_shape_;
 

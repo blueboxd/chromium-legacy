@@ -27,8 +27,10 @@ public class NewTabTileMediator {
             TabCreatorManager tabCreatorManager) {
         mTabModelSelector = tabModelSelector;
 
+        // Deliberately use un-cached value to match with native.
         float aspectRatio = (float) ChromeFeatureList.getFieldTrialParamByFeatureAsDouble(
-                ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, "thumbnail_aspect_ratio", 1.0);
+                ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
+                TabUiFeatureUtilities.THUMBNAIL_ASPECT_RATIO_PARAM, 1.0);
         aspectRatio = MathUtils.clamp(aspectRatio, 0.5f, 2.0f);
         model.set(NewTabTileViewProperties.THUMBNAIL_ASPECT_RATIO, aspectRatio);
         model.set(NewTabTileViewProperties.CARD_HEIGHT_INTERCEPT, 0);

@@ -113,7 +113,7 @@ public final class WebApkActivityTest {
         ChromeActivityTestRule.waitFor(WebappActivity.class);
     }
 
-    private WebApkInfo createWebApkInfo(String startUrl, String scopeUrl) {
+    private WebappInfo createWebApkInfo(String startUrl, String scopeUrl) {
         WebApkInfoBuilder webApkInfoBuilder =
                 new WebApkInfoBuilder(TEST_WEBAPK_PACKAGE_NAME, startUrl);
         webApkInfoBuilder.setScope(scopeUrl);

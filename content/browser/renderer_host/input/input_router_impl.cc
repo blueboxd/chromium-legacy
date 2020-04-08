@@ -277,19 +277,6 @@ void InputRouterImpl::ProcessDeferredGestureEventQueue() {
   }
 }
 
-#if defined(OS_ANDROID)
-void InputRouterImpl::FallbackCursorModeLockCursor(bool left,
-                                                   bool right,
-                                                   bool up,
-                                                   bool down) {
-  client_->FallbackCursorModeLockCursor(left, right, up, down);
-}
-
-void InputRouterImpl::FallbackCursorModeSetCursorVisibility(bool visible) {
-  client_->FallbackCursorModeSetCursorVisibility(visible);
-}
-#endif
-
 void InputRouterImpl::SetTouchActionFromMain(cc::TouchAction touch_action) {
   TRACE_EVENT1("input", "InputRouterImpl::SetTouchActionFromMain",
                "touch_action", TouchActionToString(touch_action));

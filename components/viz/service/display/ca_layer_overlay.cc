@@ -196,7 +196,8 @@ class CALayerOverlayProcessorInternal {
       return CA_LAYER_FAILED_QUAD_BLEND_MODE;
 
     // Early-out for invisible quads.
-    if (quad->shared_quad_state->opacity == 0.f) {
+    if (quad->shared_quad_state->opacity == 0.f ||
+        quad->visible_rect.IsEmpty()) {
       *skip = true;
       return CA_LAYER_SUCCESS;
     }
@@ -307,8 +308,15 @@ bool CALayerOverlayProcessor::ProcessForCALayerOverlays(
     CALayerOverlayList* ca_layer_overlays) const {
   CALayerResult result = CA_LAYER_SUCCESS;
 
-  if (quad_list.size() < kTooManyQuads)
-    ca_layer_overlays->reserve(quad_list.size());
+  size_t num_visible_quads = quad_list.size();
+  for (const auto* quad : quad_list) {
+    if (quad->shared_quad_state->opacity == 0.f ||
+        quad->visible_rect.IsEmpty()) {
+      num_visible_quads--;
+    }
+  }
+  if (num_visible_quads < kTooManyQuads)
+    ca_layer_overlays->reserve(num_visible_quads);
   else
     result = CA_LAYER_FAILED_TOO_MANY_QUADS;
 

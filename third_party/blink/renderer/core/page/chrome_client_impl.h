@@ -270,15 +270,6 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
 
   void NotifySwapTime(LocalFrame& frame, ReportTimeCallback callback) override;
 
-  void FallbackCursorModeLockCursor(LocalFrame* frame,
-                                    bool left,
-                                    bool right,
-                                    bool up,
-                                    bool down) override;
-
-  void FallbackCursorModeSetCursorVisibility(LocalFrame* frame,
-                                             bool visible) override;
-
   void RequestBeginMainFrameNotExpected(LocalFrame& frame,
                                         bool request) override;
 

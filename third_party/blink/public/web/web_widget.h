@@ -39,6 +39,7 @@
 #include "cc/trees/layer_tree_host_client.h"
 #include "third_party/blink/public/common/input/web_menu_source_type.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -178,9 +179,6 @@ class WebWidget {
   // Called to inform the WebWidget of the mouse cursor's visibility.
   virtual void SetCursorVisibilityState(bool is_visible) {}
 
-  // Inform WebWidget fallback cursor mode toggled.
-  virtual void OnFallbackCursorModeToggled(bool is_on) {}
-
   // Applies viewport related properties during a commit from the compositor
   // thread.
   virtual void ApplyViewportChanges(const cc::ApplyViewportChangesArgs& args) {}
@@ -198,6 +196,10 @@ class WebWidget {
 
   // Called to inform the WebWidget that it has gained or lost keyboard focus.
   virtual void SetFocus(bool) {}
+
+  // Sets the display mode, which comes from the top-level browsing context and
+  // is applied to all widgets.
+  virtual void SetDisplayMode(mojom::DisplayMode) {}
 
   // Returns the anchor and focus bounds of the current selection.
   // If the selection range is empty, it returns the caret bounds.

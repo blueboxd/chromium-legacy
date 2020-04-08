@@ -1768,6 +1768,7 @@ interface Document : Node
     method getSelection
     method hasFocus
     method hasStorageAccess
+    method hasTrustToken
     method importNode
     method open
     method prepend

@@ -65,7 +65,7 @@ public class WebappLauncherActivity extends Activity {
     private static final String TAG = "webapps";
 
     /** Creates intent to relaunch WebAPK. */
-    public static Intent createRelaunchWebApkIntent(Intent sourceIntent, WebApkInfo webApkInfo) {
+    public static Intent createRelaunchWebApkIntent(Intent sourceIntent, WebappInfo webApkInfo) {
         assert webApkInfo != null;
 
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(webApkInfo.url()));
@@ -97,7 +97,7 @@ public class WebappLauncherActivity extends Activity {
      * if the intent does not launch either a WebappLauncherActivity or a WebAPK Activity. This
      * method is slow. It makes several PackageManager calls.
      */
-    public static @Nullable WebApkInfo maybeSlowlyGenerateWebApkInfoFromIntent(Intent fromIntent) {
+    public static @Nullable WebappInfo maybeSlowlyGenerateWebApkInfoFromIntent(Intent fromIntent) {
         // Check for intents targeted at WebappActivity, WebappActivity0-9,
         // SameTaskWebApkActivity and WebappLauncherActivity.
         String targetActivityClassName = fromIntent.getComponent().getClassName();
@@ -215,7 +215,7 @@ public class WebappLauncherActivity extends Activity {
     /** Relaunches WebAPK. */
     private static void relaunchWebApk(
             Activity launchingActivity, Intent sourceIntent, @NonNull WebappInfo info) {
-        Intent launchIntent = createRelaunchWebApkIntent(sourceIntent, (WebApkInfo) info);
+        Intent launchIntent = createRelaunchWebApkIntent(sourceIntent, info);
         launchAfterDelay(
                 launchingActivity.getApplicationContext(), launchIntent, WEBAPK_LAUNCH_DELAY_MS);
         ApiCompatibilityUtils.finishAndRemoveTask(launchingActivity);
@@ -350,10 +350,10 @@ public class WebappLauncherActivity extends Activity {
         return launchIntent;
     }
 
-    /** Tries to create WebappInfo/WebApkInfo for the intent. */
+    /** Tries to create WebappInfo for the intent. */
     @VisibleForTesting
     static WebappInfo tryCreateWebappInfo(Intent intent) {
-        // Builds WebApkInfo for the intent if the WebAPK package specified in the intent is a valid
+        // Builds WebappInfo for the intent if the WebAPK package specified in the intent is a valid
         // WebAPK and the URL specified in the intent can be fulfilled by the WebAPK.
         String webApkPackage =
                 IntentUtils.safeGetStringExtra(intent, WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME);

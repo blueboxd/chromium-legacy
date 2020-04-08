@@ -1,0 +1,15 @@
+rootWebArea focusable
+++genericContainer ignored
+++++genericContainer ignored
+++++++paragraph
+++++++++staticText name='Before portal'
+++++++++++inlineTextBox name='Before portal'
+++++++portal focusable name='portal'
+++++++++rootWebArea name='Ordinary Button'
+++++++++++genericContainer ignored
+++++++++++++genericContainer ignored
+++++++++++++++genericContainer ignored
+++++++++++++++++button ignored name='Ordinary Button'
+++++++paragraph
+++++++++staticText name='After portal'
+++++++++++inlineTextBox name='After portal'

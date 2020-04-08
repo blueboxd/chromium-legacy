@@ -11,6 +11,7 @@ import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.webapps.WebApkDistributor;
 import org.chromium.chrome.browser.webapps.WebApkInfo;
 import org.chromium.chrome.browser.webapps.WebDisplayMode;
+import org.chromium.chrome.browser.webapps.WebappInfo;
 import org.chromium.content_public.common.ScreenOrientationValues;
 
 import java.util.ArrayList;
@@ -49,7 +50,7 @@ public class WebApkInfoBuilder {
     /**
      * Builds {@link WebApkInfo} object using options that have been set.
      */
-    public WebApkInfo build() {
+    public WebappInfo build() {
         return WebApkInfo.create(mUrl, mScope, null, null, null, null, mDisplayMode,
                 ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,

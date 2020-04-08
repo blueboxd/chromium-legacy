@@ -22,7 +22,6 @@ class FakeInstallDetails : public InstallDetails {
     constants.size = sizeof(constants);
     constants.install_suffix = L"";
     constants.default_channel_name = L"";
-    constants.supported_multi_install = true;
 #if BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
     constants.app_guid = L"testguid";
     constants.channel_strategy = ChannelStrategy::FIXED;

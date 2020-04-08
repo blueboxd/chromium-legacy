@@ -57,6 +57,10 @@
 #include "third_party/blink/public/web/web_view.h"
 #endif  // OS_MACOSX
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/system/core_scheduling.h"
+#endif  // OS_CHROMEOS
+
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/renderer/pepper/pepper_plugin_registry.h"
 #endif
@@ -121,6 +125,10 @@ int RendererMain(const MainFunctionParams& parameters) {
         command_line.GetSwitchValueASCII(switches::kLang);
     base::i18n::SetICUDefaultLocale(locale);
   }
+
+  // When we start the renderer on ChromeOS if the system has core scheduling
+  // available we want to turn it on.
+  chromeos::system::EnableCoreSchedulingIfAvailable();
 #endif
 
   InitializeSkia();

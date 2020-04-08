@@ -75,6 +75,10 @@ class TestStoragePartition : public StoragePartition {
       mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver)
       override;
 
+  void CreateHasTrustTokensAnswerer(
+      mojo::PendingReceiver<network::mojom::HasTrustTokensAnswerer> receiver,
+      const url::Origin& top_frame_origin) override;
+
   void set_quota_manager(storage::QuotaManager* manager) {
     quota_manager_ = manager;
   }

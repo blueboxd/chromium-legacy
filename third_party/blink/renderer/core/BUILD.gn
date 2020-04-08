@@ -1171,7 +1171,6 @@ jumbo_source_set("unit_tests") {
     "geometry/dom_matrix_test.cc",
     "imagebitmap/image_bitmap_test.cc",
     "input/event_handler_test.cc",
-    "input/fallback_cursor_event_manager_test.cc",
     "input/ime_on_focus_test.cc",
     "input/overscroll_behavior_test.cc",
     "input/pointer_event_manager_test.cc",

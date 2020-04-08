@@ -2165,6 +2165,7 @@ String Internals::layerTreeAsText(Document* document,
 bool Internals::scrollsWithRespectTo(Element* element1,
                                      Element* element2,
                                      ExceptionState& exception_state) {
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   DCHECK(element1 && element2);
   element1->GetDocument().View()->UpdateAllLifecyclePhases(
       DocumentUpdateReason::kTest);

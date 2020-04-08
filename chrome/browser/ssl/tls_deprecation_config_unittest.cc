@@ -14,14 +14,19 @@
 
 using chrome_browser_ssl::LegacyTLSExperimentConfig;
 
+class TLSDeprecationConfigTest : public testing::Test {
+ protected:
+  void TearDown() override { ResetTLSDeprecationConfigForTesting(); }
+};
+
 // Tests the case where no proto has been set by the component installer.
-TEST(TLSDeprecationConfigTest, NoProto) {
+TEST_F(TLSDeprecationConfigTest, NoProto) {
   EXPECT_TRUE(ShouldSuppressLegacyTLSWarning(GURL("https://example.test")));
 }
 
 // This tests that when no sites are in the control set,
 // IsTLSDeprecationControlSite() returns false.
-TEST(TLSDeprecationConfigTest, NoControlSites) {
+TEST_F(TLSDeprecationConfigTest, NoControlSites) {
   GURL control_site("https://control.test");
   std::string control_site_hex =
       "f12b47771bb3c2bcc85a5347d195523013ec5a23b4c761b5d6aacf04bafc5e23";
@@ -38,7 +43,7 @@ TEST(TLSDeprecationConfigTest, NoControlSites) {
 // This tests that when only a single control site is in the control set,
 // IsTLSDeprecationControlSite() works correctly for the site in the control and
 // for sites not in the control.
-TEST(TLSDeprecationConfigTest, SingleControlSite) {
+TEST_F(TLSDeprecationConfigTest, SingleControlSite) {
   GURL control_site("https://control.test");
   std::string control_site_hex =
       "f12b47771bb3c2bcc85a5347d195523013ec5a23b4c761b5d6aacf04bafc5e23";
@@ -65,7 +70,7 @@ TEST(TLSDeprecationConfigTest, SingleControlSite) {
 
 // This tests that the binary search in IsTLSDeprecationControlSite() works for
 // both a site that is in the control set and a site that is not.
-TEST(TLSDeprecationConfigTest, ManyControlSites) {
+TEST_F(TLSDeprecationConfigTest, ManyControlSites) {
   const struct {
     GURL url;
     std::string hash;

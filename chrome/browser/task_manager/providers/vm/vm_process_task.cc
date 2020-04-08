@@ -33,7 +33,7 @@ VmProcessTask::VmProcessTask(gfx::ImageSkia* icon,
                              base::ProcessId pid,
                              const std::string& owner_id,
                              const std::string& vm_name)
-    : Task(MakeTitle(ids_vm_prefix, vm_name), vm_name, icon, pid),
+    : Task(MakeTitle(ids_vm_prefix, vm_name), icon, pid),
       owner_id_(owner_id),
       vm_name_(vm_name) {}
 

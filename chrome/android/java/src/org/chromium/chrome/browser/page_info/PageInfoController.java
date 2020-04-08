@@ -300,8 +300,11 @@ public class PageInfoController implements ModalDialogProperties.Controller,
         CookieControlsView.CookieControlsParams cookieControlsParams =
                 new CookieControlsView.CookieControlsParams();
         cookieControlsParams.onUiClosingCallback = mBridge::onUiClosing;
-        cookieControlsParams.onCheckedChangedCallback =
-                mBridge::setThirdPartyCookieBlockingEnabledForSite;
+        cookieControlsParams.onCheckedChangedCallback = (Boolean blockCookies) -> {
+            recordAction(blockCookies ? PageInfoAction.PAGE_INFO_COOKIE_BLOCKED_FOR_SITE
+                                      : PageInfoAction.PAGE_INFO_COOKIE_ALLOWED_FOR_SITE);
+            mBridge.setThirdPartyCookieBlockingEnabledForSite(blockCookies);
+        };
         mView.getCookieControlsView().setParams(cookieControlsParams);
 
         mWebContentsObserver = new WebContentsObserver(webContents) {

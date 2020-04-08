@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.webapps;
 
 import android.graphics.Color;
 
+import androidx.annotation.NonNull;
+
 import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.content_public.common.ScreenOrientationValues;
 
@@ -28,6 +30,7 @@ public class WebappExtras {
     /**
      * The webapp's launcher icon.
      */
+    @NonNull
     public final WebappIcon icon;
 
     /**
@@ -87,10 +90,10 @@ public class WebappExtras {
                 false /* isIconAdaptive */, false /* shouldForceNavigation */);
     }
 
-    public WebappExtras(String id, String url, String scopeUrl, WebappIcon icon, String name,
-            String shortName, @WebDisplayMode int displayMode, int orientation, int source,
-            Integer backgroundColor, int defaultBackgroundColor, boolean isIconGenerated,
-            boolean isIconAdaptive, boolean shouldForceNavigation) {
+    public WebappExtras(String id, String url, String scopeUrl, @NonNull WebappIcon icon,
+            String name, String shortName, @WebDisplayMode int displayMode, int orientation,
+            int source, Integer backgroundColor, int defaultBackgroundColor,
+            boolean isIconGenerated, boolean isIconAdaptive, boolean shouldForceNavigation) {
         this.id = id;
         this.url = url;
         this.scopeUrl = scopeUrl;

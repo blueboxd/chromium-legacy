@@ -281,8 +281,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
      kUseFeatureState},
     {wf::EnableGetDisplayMedia, blink::features::kRTCGetDisplayMedia,
      kUseFeatureState},
-    {wf::EnableFallbackCursorMode, features::kFallbackCursorMode,
-     kUseFeatureState},
     {wf::EnableSignedExchangePrefetchCacheForNavigations,
      features::kSignedExchangePrefetchCacheForNavigations, kUseFeatureState},
     {wf::EnableSignedExchangeSubresourcePrefetch,

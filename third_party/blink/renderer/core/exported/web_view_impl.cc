@@ -401,14 +401,6 @@ void WebViewImpl::HandleMouseDown(LocalFrame& main_frame,
   }
 }
 
-void WebViewImpl::SetDisplayMode(blink::mojom::DisplayMode mode) {
-  display_mode_ = mode;
-  if (!MainFrameImpl() || !MainFrameImpl()->GetFrameView())
-    return;
-
-  MainFrameImpl()->GetFrameView()->SetDisplayMode(mode);
-}
-
 void WebViewImpl::MouseContextMenu(const WebMouseEvent& event) {
   if (!MainFrameImpl() || !MainFrameImpl()->GetFrameView())
     return;
@@ -1872,12 +1864,6 @@ WebInputEventResult WebViewImpl::HandleCapturedMouseEvent(
 void WebViewImpl::SetCursorVisibilityState(bool is_visible) {
   if (AsView().page)
     AsView().page->SetIsCursorVisible(is_visible);
-}
-
-void WebViewImpl::OnFallbackCursorModeToggled(bool is_on) {
-  DCHECK(MainFrameImpl());
-  MainFrameImpl()->GetFrame()->GetEventHandler().SetIsFallbackCursorModeOn(
-      is_on);
 }
 
 void WebViewImpl::MouseCaptureLost() {

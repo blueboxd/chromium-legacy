@@ -322,11 +322,10 @@ void GraphicsContext::CompositeRecord(sk_sp<PaintRecord> record,
 
 namespace {
 
-int AdjustedFocusRingOffset(int offset, int width) {
-  if (::features::IsFormControlsRefreshEnabled()) {
-    // For FormControlsRefresh just use the value of outline-offset.
-    return offset;
-  }
+int AdjustedFocusRingOffset(int offset) {
+  // For FormControlsRefresh we just use the value of outline-offset so we don't
+  // need to call this method.
+  DCHECK(!::features::IsFormControlsRefreshEnabled());
 
 #if defined(OS_MACOSX)
   return offset + 2;
@@ -344,10 +343,10 @@ int GraphicsContext::FocusRingOutsetExtent(int offset,
   // only half of the width is outside of the offset.
   if (::features::IsFormControlsRefreshEnabled()) {
     // For FormControlsRefresh 2/3 of the width is outside of the offset.
-    return AdjustedFocusRingOffset(offset, width) + std::ceil(width / 3.f) * 2;
+    return offset + std::ceil(width / 3.f) * 2;
   }
 
-  return AdjustedFocusRingOffset(offset, width) + (width + 1) / 2;
+  return AdjustedFocusRingOffset(offset) + (width + 1) / 2;
 }
 
 void GraphicsContext::DrawFocusRingPath(const SkPath& path,
@@ -394,9 +393,8 @@ void GraphicsContext::DrawFocusRingInternal(const Vector<IntRect>& rects,
 
   SkRegion focus_ring_region;
   if (!::features::IsFormControlsRefreshEnabled()) {
-    // For FormControlsRefresh the offset is already adjusted by
-    // GraphicsContext::DrawFocusRing.
-    offset = AdjustedFocusRingOffset(offset, std::ceil(width));
+    // For FormControlsRefresh we don't need to adjust the offset.
+    offset = AdjustedFocusRingOffset(offset);
   }
   for (unsigned i = 0; i < rect_count; i++) {
     SkIRect r = rects[i];
@@ -430,7 +428,6 @@ void GraphicsContext::DrawFocusRing(const Vector<IntRect>& rects,
     const float first_border_width = (width / 3) * 2;
     const float second_border_width = width - first_border_width;
 
-    offset = AdjustedFocusRingOffset(offset, std::ceil(width));
     // How much space the focus ring would like to take from the actual border.
     const float inside_border_width = 1;
     if (min_border_width >= inside_border_width) {

@@ -626,6 +626,51 @@ TEST_F(AXVirtualViewTest, Navigation) {
   EXPECT_EQ(0, virtual_child_4->GetIndexInParent());
 }
 
+TEST_F(AXVirtualViewTest, HitTesting) {
+  ASSERT_EQ(0, virtual_label_->GetChildCount());
+
+  const gfx::Vector2d offset_from_origin =
+      button_->GetBoundsInScreen().OffsetFromOrigin();
+
+  // Test that hit testing is recursive.
+  AXVirtualView* virtual_child_1 = new AXVirtualView;
+  virtual_child_1->GetCustomData().relative_bounds.bounds =
+      gfx::RectF(0, 0, 10, 10);
+  virtual_label_->AddChildView(base::WrapUnique(virtual_child_1));
+  AXVirtualView* virtual_child_2 = new AXVirtualView;
+  virtual_child_2->GetCustomData().relative_bounds.bounds =
+      gfx::RectF(5, 5, 5, 5);
+  virtual_child_1->AddChildView(base::WrapUnique(virtual_child_2));
+  gfx::Point point_1 = gfx::Point(2, 2) + offset_from_origin;
+  EXPECT_EQ(virtual_child_1->GetNativeObject(),
+            virtual_child_1->HitTestSync(point_1.x(), point_1.y()));
+  gfx::Point point_2 = gfx::Point(7, 7) + offset_from_origin;
+  EXPECT_EQ(virtual_child_2->GetNativeObject(),
+            virtual_label_->HitTestSync(point_2.x(), point_2.y()));
+
+  // Test that hit testing follows the z-order.
+  AXVirtualView* virtual_child_3 = new AXVirtualView;
+  virtual_child_3->GetCustomData().relative_bounds.bounds =
+      gfx::RectF(5, 5, 10, 10);
+  virtual_label_->AddChildView(base::WrapUnique(virtual_child_3));
+  AXVirtualView* virtual_child_4 = new AXVirtualView;
+  virtual_child_4->GetCustomData().relative_bounds.bounds =
+      gfx::RectF(10, 10, 10, 10);
+  virtual_child_3->AddChildView(base::WrapUnique(virtual_child_4));
+  EXPECT_EQ(virtual_child_3->GetNativeObject(),
+            virtual_label_->HitTestSync(point_2.x(), point_2.y()));
+  gfx::Point point_3 = gfx::Point(12, 12) + offset_from_origin;
+  EXPECT_EQ(virtual_child_4->GetNativeObject(),
+            virtual_label_->HitTestSync(point_3.x(), point_3.y()));
+
+  // Test that hit testing skips ignored nodes but not their descendants.
+  virtual_child_3->GetCustomData().AddState(ax::mojom::State::kIgnored);
+  EXPECT_EQ(virtual_child_2->GetNativeObject(),
+            virtual_label_->HitTestSync(point_2.x(), point_2.y()));
+  EXPECT_EQ(virtual_child_4->GetNativeObject(),
+            virtual_label_->HitTestSync(point_3.x(), point_3.y()));
+}
+
 // Test for GetTargetForNativeAccessibilityEvent().
 #if defined(OS_WIN)
 TEST_F(AXVirtualViewTest, GetTargetForEvents) {

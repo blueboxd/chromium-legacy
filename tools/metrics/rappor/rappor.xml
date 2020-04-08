@@ -161,6 +161,9 @@ components/rappor/rappor_parameters.h.
 </rappor-metric>
 
 <rappor-metric name="ResourceReporter.Cpu" type="UMA_RAPPOR_TYPE">
+  <obsolete>
+    Removed 04/2020.
+  </obsolete>
   <owner>afakhry@chromium.org</owner>
   <summary>
     A Chrome task, its process priority, and its CPU usage range.
@@ -200,6 +203,9 @@ components/rappor/rappor_parameters.h.
 </rappor-metric>
 
 <rappor-metric name="ResourceReporter.Memory" type="UMA_RAPPOR_TYPE">
+  <obsolete>
+    Removed 04/2020.
+  </obsolete>
   <owner>afakhry@chromium.org</owner>
   <summary>
     A Chrome task, and its memory usage range.

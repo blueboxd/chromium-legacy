@@ -13,4 +13,6 @@ void SetRemoteTLSDeprecationConfig(const std::string& binary_config);
 
 bool ShouldSuppressLegacyTLSWarning(const GURL& url);
 
+void ResetTLSDeprecationConfigForTesting();
+
 #endif  // CHROME_BROWSER_SSL_TLS_DEPRECATION_CONFIG_H_

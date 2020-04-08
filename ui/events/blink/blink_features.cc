@@ -21,9 +21,6 @@ const base::Feature kKalmanDirectionCutOff{"KalmanDirectionCutOff",
 const base::Feature kSendMouseLeaveEvents{"SendMouseLeaveEvents",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kFallbackCursorMode{"FallbackCursorMode",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kDontSendKeyEventsToJavascript{
     "DontSendKeyEventsToJavascript", base::FEATURE_DISABLED_BY_DEFAULT};
 

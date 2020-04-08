@@ -35,7 +35,6 @@
 #include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/events/text_event_input_type.h"
-#include "third_party/blink/renderer/core/input/fallback_cursor_event_manager.h"
 #include "third_party/blink/renderer/core/input/gesture_manager.h"
 #include "third_party/blink/renderer/core/input/keyboard_event_manager.h"
 #include "third_party/blink/renderer/core/input/mouse_event_manager.h"
@@ -225,7 +224,6 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
   bool HandleAccessKey(const WebKeyboardEvent&);
   WebInputEventResult KeyEvent(const WebKeyboardEvent&);
   void DefaultKeyboardEventHandler(KeyboardEvent*);
-  bool HandleFallbackCursorModeBackEvent();
 
   bool HandleTextInputEvent(const String& text,
                             Event* underlying_event = nullptr,
@@ -261,8 +259,6 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
   void RecomputeMouseHoverStateIfNeeded();
 
   void MarkHoverStateDirty();
-
-  void SetIsFallbackCursorModeOn(bool is_on);
 
   // Reset the last mouse position so that movement after unlock will be
   // restart from the lock position.
@@ -404,7 +400,6 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
   Member<KeyboardEventManager> keyboard_event_manager_;
   Member<PointerEventManager> pointer_event_manager_;
   Member<GestureManager> gesture_manager_;
-  Member<FallbackCursorEventManager> fallback_cursor_event_manager_;
 
   double max_mouse_moved_duration_;
 
@@ -458,13 +453,6 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
   FRIEND_TEST_ALL_PREFIXES(EventHandlerTest,
                            CursorForInlineVerticalWritingMode);
   FRIEND_TEST_ALL_PREFIXES(EventHandlerTest, CursorForBlockVerticalWritingMode);
-
-  FRIEND_TEST_ALL_PREFIXES(FallbackCursorEventManagerTest,
-                           MouseMoveCursorLockOnDiv);
-  FRIEND_TEST_ALL_PREFIXES(FallbackCursorEventManagerTest,
-                           MouseMoveCursorLockOnIFrame);
-  FRIEND_TEST_ALL_PREFIXES(FallbackCursorEventManagerTest, KeyBackAndMouseMove);
-  FRIEND_TEST_ALL_PREFIXES(FallbackCursorEventManagerTest, MouseDownOnEditor);
 
   DISALLOW_COPY_AND_ASSIGN(EventHandler);
 };

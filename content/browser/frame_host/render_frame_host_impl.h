@@ -83,6 +83,7 @@
 #include "services/network/public/cpp/content_security_policy/csp_context.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "services/viz/public/mojom/hit_test/input_target_client.mojom.h"
@@ -1237,6 +1238,18 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void BindRestrictedCookieManager(
       mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver);
+
+  // Requires the following preconditions, reporting a bad message otherwise.
+  //
+  // 1. This frame's top-frame origin must be potentially trustworthy and
+  // have scheme HTTP or HTTPS. (See network::SuitableTrustTokenOrigin's class
+  // comment for the rationale.)
+  //
+  // 2. Trust Tokens must be enabled (network::features::kTrustTokens).
+  //
+  // 3. This frame's origin must be potentially trustworthy.
+  void BindHasTrustTokensAnswerer(
+      mojo::PendingReceiver<network::mojom::HasTrustTokensAnswerer> receiver);
 
   // Creates connections to WebUSB interfaces bound to this frame.
   void CreateWebUsbService(

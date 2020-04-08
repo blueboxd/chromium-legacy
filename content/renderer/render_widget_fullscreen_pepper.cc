@@ -199,7 +199,6 @@ RenderWidgetFullscreenPepper::RenderWidgetFullscreenPepper(
     blink::WebURL main_frame_url)
     : RenderWidget(routing_id,
                    compositor_deps,
-                   /*display_mode=*/blink::mojom::DisplayMode::kUndefined,
                    /*hidden=*/false,
                    /*never_composited=*/false,
                    std::move(widget_receiver)),

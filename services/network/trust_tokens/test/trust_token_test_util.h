@@ -26,9 +26,27 @@ class URLRequest;
 
 namespace network {
 
+// TestURLRequestMaker is a mixin allowing consumers to factor out the
+// boilerplate of constructing URLRequests in tests.
+class TestURLRequestMaker {
+ public:
+  TestURLRequestMaker();
+  virtual ~TestURLRequestMaker();
+
+  TestURLRequestMaker(const TestURLRequestMaker&) = delete;
+  TestURLRequestMaker& operator=(const TestURLRequestMaker&) = delete;
+
+  // Constructs and returns a URLRequest with destination |spec|.
+  std::unique_ptr<net::URLRequest> MakeURLRequest(base::StringPiece spec);
+
+ protected:
+  net::TestDelegate delegate_;
+  net::TestURLRequestContext context_;
+};
+
 // TrustTokenRequestHelperTest is a fixture common to tests for Trust Tokens
 // issuance, redemption, and signing. It factors out the boilerplate of
-// constructing net::URLRequests.
+// waiting for asynchronous store operations' results.
 class TrustTokenRequestHelperTest : public ::testing::Test {
  public:
   explicit TrustTokenRequestHelperTest(
@@ -41,8 +59,13 @@ class TrustTokenRequestHelperTest : public ::testing::Test {
       delete;
 
  protected:
-  // Constructs and returns a URLRequest with destination |spec|.
-  std::unique_ptr<net::URLRequest> MakeURLRequest(std::string spec);
+  base::test::TaskEnvironment env_;
+
+  TestURLRequestMaker request_maker_;
+
+  std::unique_ptr<net::URLRequest> MakeURLRequest(base::StringPiece spec) {
+    return request_maker_.MakeURLRequest(spec);
+  }
 
   // Executes a request helper's Begin operation synchronously, removing some
   // boilerplate from waiting for the results of the (actually asynchronous)
@@ -50,10 +73,6 @@ class TrustTokenRequestHelperTest : public ::testing::Test {
   mojom::TrustTokenOperationStatus ExecuteBeginOperationAndWaitForResult(
       TrustTokenRequestHelper* helper,
       net::URLRequest* request);
-
-  base::test::TaskEnvironment env_;
-  net::TestDelegate delegate_;
-  net::TestURLRequestContext context_;
 };
 
 // The following helper methods unify parameterized unit/integration testing of

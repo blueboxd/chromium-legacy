@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/graphics/color_space_gamut.h"
+#include "third_party/blink/renderer/platform/widget/frame_widget.h"
 
 namespace blink {
 
@@ -123,18 +124,19 @@ const String MediaValues::CalculateMediaType(LocalFrame* frame) {
   return frame->View()->MediaType();
 }
 
-blink::mojom::DisplayMode MediaValues::CalculateDisplayMode(LocalFrame* frame) {
+mojom::blink::DisplayMode MediaValues::CalculateDisplayMode(LocalFrame* frame) {
   DCHECK(frame);
+
   blink::mojom::DisplayMode mode =
       frame->GetPage()->GetSettings().GetDisplayModeOverride();
-
-  if (mode != blink::mojom::DisplayMode::kUndefined)
+  if (mode != mojom::blink::DisplayMode::kUndefined)
     return mode;
 
-  if (!frame->View())
-    return blink::mojom::DisplayMode::kBrowser;
+  FrameWidget* widget = frame->GetWidgetForLocalRoot();
+  if (!widget)  // Is null in non-ordinary Pages.
+    return mojom::blink::DisplayMode::kBrowser;
 
-  return frame->View()->DisplayMode();
+  return widget->DisplayMode();
 }
 
 bool MediaValues::CalculateThreeDEnabled(LocalFrame* frame) {

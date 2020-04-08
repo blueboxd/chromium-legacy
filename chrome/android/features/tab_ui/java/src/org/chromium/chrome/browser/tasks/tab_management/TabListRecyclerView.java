@@ -266,7 +266,7 @@ class TabListRecyclerView
         return mResourceId;
     }
 
-    long getLastDirtyTimeForTesting() {
+    long getLastDirtyTime() {
         return mLastDirtyTime;
     }
 

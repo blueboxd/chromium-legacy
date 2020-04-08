@@ -150,3 +150,13 @@ ChromeVoxState.observers = [];
 ChromeVoxState.addObserver = function(observer) {
   ChromeVoxState.observers.push(observer);
 };
+
+/**
+ * @param {ChromeVoxStateObserver} observer
+ */
+ChromeVoxState.removeObserver = function(observer) {
+  const index = ChromeVoxState.observers.indexOf(observer);
+  if (index > -1) {
+    ChromeVoxState.observers.splice(index, 1);
+  }
+};

@@ -14,6 +14,7 @@ namespace {
 const char* const kPublicSessionWhitelist[] = {
     // Public sessions in general:
     "cbkkbcmdlboombapidmoeolnmdacpkch",  // Chrome RDP
+    "inomeogfingihgjfjlpeplalcfajhgai",  // Chrome Remote Desktop
     "djflhoibgkdhkhhcedjiklpkjnoahfmg",  // User Agent Switcher
     "iabmpiboiopbgfabjmgeedhcmjenhbla",  // VNC Viewer
     "haiffjcadagjlijoggckpgfnoeiflnem",  // Citrix Receiver

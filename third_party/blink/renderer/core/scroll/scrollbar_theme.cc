@@ -191,7 +191,7 @@ int ScrollbarTheme::ThumbPosition(const Scrollbar& scrollbar,
       return 0;
     float pos = std::max(0.0f, scroll_position) *
                 (TrackLength(scrollbar) - ThumbLength(scrollbar)) / size;
-    return (pos < 1 && pos > 0) ? 1 : pos;
+    return (pos < 1 && pos > 0) ? 1 : base::saturated_cast<int>(pos);
   }
   return 0;
 }

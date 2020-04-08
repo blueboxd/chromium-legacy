@@ -195,10 +195,6 @@ void WebRuntimeFeatures::EnableDecodeLossyWebPImagesToYUV(bool enable) {
   RuntimeEnabledFeatures::SetDecodeLossyWebPImagesToYUVEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableFallbackCursorMode(bool enable) {
-  RuntimeEnabledFeatures::SetFallbackCursorModeEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableFeaturePolicyForSandbox(bool enable) {
   RuntimeEnabledFeatures::SetFeaturePolicyForSandboxEnabled(enable);
 }

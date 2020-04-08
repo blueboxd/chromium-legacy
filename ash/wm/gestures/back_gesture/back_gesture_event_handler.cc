@@ -21,6 +21,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
+#include "base/i18n/rtl.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -75,8 +76,15 @@ bool CanStartGoingBackFromSplitViewDivider(const gfx::Point& screen_location) {
     return false;
   }
 
-  divider_bounds.set_x(divider_bounds.x() -
-                       SplitViewDivider::kDividerEdgeInsetForTouch);
+  if (!base::i18n::IsRTL()) {
+    divider_bounds.set_x(divider_bounds.x() -
+                         SplitViewDivider::kDividerEdgeInsetForTouch);
+  } else {
+    divider_bounds.set_x(divider_bounds.x() -
+                         SplitViewDivider::kDividerEdgeInsetForTouch -
+                         BackGestureEventHandler::kStartGoingBackLeftEdgeInset);
+  }
+
   divider_bounds.set_width(
       divider_bounds.width() + SplitViewDivider::kDividerEdgeInsetForTouch +
       BackGestureEventHandler::kStartGoingBackLeftEdgeInset);
@@ -101,8 +109,11 @@ void ActivateUnderneathWindowInSplitViewMode(
   if (!split_view_controller->InTabletSplitViewMode())
     return;
 
-  auto* left_window = split_view_controller->left_window();
-  auto* right_window = split_view_controller->right_window();
+  const bool is_rtl = base::i18n::IsRTL();
+  auto* left_window = is_rtl ? split_view_controller->right_window()
+                             : split_view_controller->left_window();
+  auto* right_window = is_rtl ? split_view_controller->left_window()
+                              : split_view_controller->right_window();
   const OrientationLockType current_orientation = GetCurrentScreenOrientation();
   if (current_orientation == OrientationLockType::kLandscapePrimary) {
     ActivateWindow(dragged_from_splitview_divider ? right_window : left_window);
@@ -191,10 +202,11 @@ void BackGestureEventHandler::OnTouchEvent(ui::TouchEvent* event) {
 
     // Do not update |during_reverse_dragging_| if touch point's location
     // doesn't change.
-    if (current_location.x() < last_touch_point_.x())
-      during_reverse_dragging_ = true;
-    else if (current_location.x() > last_touch_point_.x())
-      during_reverse_dragging_ = false;
+    if (current_location.x() != last_touch_point_.x()) {
+      during_reverse_dragging_ = current_location.x() < last_touch_point_.x();
+      if (base::i18n::IsRTL())
+        during_reverse_dragging_ = !during_reverse_dragging_;
+    }
   }
   last_touch_point_ = event->location();
 
@@ -392,6 +404,10 @@ bool BackGestureEventHandler::CanStartGoingBack(
   gfx::Rect hit_bounds_in_screen(display::Screen::GetScreen()
                                      ->GetDisplayNearestWindow(top_window)
                                      .work_area());
+  if (base::i18n::IsRTL()) {
+    hit_bounds_in_screen.set_x(hit_bounds_in_screen.right() -
+                               kStartGoingBackLeftEdgeInset);
+  }
   hit_bounds_in_screen.set_width(kStartGoingBackLeftEdgeInset);
   if (hit_bounds_in_screen.Contains(screen_location))
     return true;

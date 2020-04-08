@@ -48,7 +48,7 @@ public class WebApkActivityTestRule extends ChromeActivityTestRule<WebappActivit
      * Launches a WebAPK Activity and waits for the page to have finished loading and for the splash
      * screen to be hidden.
      */
-    public WebappActivity startWebApkActivity(WebApkInfo webApkInfo) {
+    public WebappActivity startWebApkActivity(WebappInfo webApkInfo) {
         Intent intent = createIntent(webApkInfo);
 
         WebappActivity.addWebappInfo(webApkInfo.id(), webApkInfo);
@@ -74,7 +74,7 @@ public class WebApkActivityTestRule extends ChromeActivityTestRule<WebappActivit
         return webApkActivity;
     }
 
-    private Intent createIntent(WebApkInfo webApkInfo) {
+    private Intent createIntent(WebappInfo webApkInfo) {
         Intent intent =
                 new Intent(InstrumentationRegistry.getTargetContext(), WebappActivity0.class);
         intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, webApkInfo.webApkPackageName());

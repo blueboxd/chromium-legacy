@@ -34,7 +34,6 @@ base::ProcessId DetermineProcessId(base::ProcessHandle handle,
 }  // namespace
 
 Task::Task(const base::string16& title,
-           const std::string& rappor_sample,
            const gfx::ImageSkia* icon,
            base::ProcessHandle handle,
            base::ProcessId process_id)
@@ -46,12 +45,11 @@ Task::Task(const base::string16& title,
       network_sent_rate_(0),
       network_read_rate_(0),
       title_(title),
-      rappor_sample_name_(rappor_sample),
       icon_(icon ? *icon : gfx::ImageSkia()),
       process_handle_(handle),
       process_id_(DetermineProcessId(handle, process_id)) {}
 
-Task::~Task() {}
+Task::~Task() = default;
 
 // static
 base::string16 Task::GetProfileNameFromProfile(Profile* profile) {

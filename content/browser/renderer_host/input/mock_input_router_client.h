@@ -52,11 +52,6 @@ class MockInputRouterClient : public InputRouterClient,
       mojom::WidgetInputHandlerHost::RequestMouseLockCallback response)
       override {}
   void UnlockMouse() override {}
-  void FallbackCursorModeLockCursor(bool left,
-                                    bool right,
-                                    bool up,
-                                    bool down) override {}
-  void FallbackCursorModeSetCursorVisibility(bool visible) override {}
   gfx::Size GetRootWidgetViewportSize() override;
 
   bool GetAndResetFilterEventCalled();

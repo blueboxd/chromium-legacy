@@ -75,18 +75,8 @@ public class WebPaymentIntentHelper {
     public static final String EXTRA_RESPONSE_PAYER_EMAIL = "payerEmail";
     public static final String EXTRA_RESPONSE_PAYER_PHONE = "payerPhone";
 
-    // Shipping address parsable and its fields, used in payment response and shippingAddressChange.
+    // Shipping address bundle used in payment response and shippingAddressChange.
     public static final String EXTRA_SHIPPING_ADDRESS = "shippingAddress";
-    public static final String EXTRA_ADDRESS_COUNTRY = "country";
-    public static final String EXTRA_ADDRESS_LINES = "addressLines";
-    public static final String EXTRA_ADDRESS_REGION = "region";
-    public static final String EXTRA_ADDRESS_CITY = "city";
-    public static final String EXTRA_ADDRESS_DEPENDENT_LOCALITY = "dependentLocality";
-    public static final String EXTRA_ADDRESS_POSTAL_CODE = "postalCode";
-    public static final String EXTRA_ADDRESS_SORTING_CODE = "sortingCode";
-    public static final String EXTRA_ADDRESS_ORGANIZATION = "organization";
-    public static final String EXTRA_ADDRESS_RECIPIENT = "recipient";
-    public static final String EXTRA_ADDRESS_PHONE = "phone";
 
     private static final String EMPTY_JSON_DATA = "{}";
 
@@ -165,16 +155,7 @@ public class WebPaymentIntentHelper {
                 errorCallback.onPaymentError(ErrorStrings.SHIPPING_ADDRESS_INVALID);
                 return;
             }
-            shippingAddress = new Address(getStringOrEmpty(addressBundle, EXTRA_ADDRESS_COUNTRY),
-                    addressBundle.getStringArray(EXTRA_ADDRESS_LINES),
-                    getStringOrEmpty(addressBundle, EXTRA_ADDRESS_REGION),
-                    getStringOrEmpty(addressBundle, EXTRA_ADDRESS_CITY),
-                    getStringOrEmpty(addressBundle, EXTRA_ADDRESS_DEPENDENT_LOCALITY),
-                    getStringOrEmpty(addressBundle, EXTRA_ADDRESS_POSTAL_CODE),
-                    getStringOrEmpty(addressBundle, EXTRA_ADDRESS_SORTING_CODE),
-                    getStringOrEmpty(addressBundle, EXTRA_ADDRESS_ORGANIZATION),
-                    getStringOrEmpty(addressBundle, EXTRA_ADDRESS_RECIPIENT),
-                    getStringOrEmpty(addressBundle, EXTRA_ADDRESS_PHONE));
+            shippingAddress = Address.createFromBundle(addressBundle);
         } else { // !requestedPaymentOptions.requestShipping
             shippingAddress = new Address();
         }
@@ -585,10 +566,6 @@ public class WebPaymentIntentHelper {
     }
 
     private static String getStringOrEmpty(Intent data, String key) {
-        return getStringOrEmpty(data.getExtras(), key);
-    }
-
-    private static String getStringOrEmpty(Bundle bundle, String key) {
-        return bundle.getString(key, /*defaultValue =*/"");
+        return data.getExtras().getString(key, /*defaultValue =*/"");
     }
 }

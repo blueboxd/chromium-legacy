@@ -60,6 +60,8 @@ source_set("coordinators") {
 
 source_set("internal") {
   sources = [
+    "fullscreen_browser_observer.h",
+    "fullscreen_browser_observer.mm",
     "fullscreen_content_adjustment_util.h",
     "fullscreen_content_adjustment_util.mm",
     "fullscreen_controller_impl.h",
@@ -126,6 +128,7 @@ source_set("ui") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "fullscreen_browser_observer_unittest.mm",
     "fullscreen_mediator_unittest.mm",
     "fullscreen_model_unittest.mm",
     "fullscreen_ui_updater_unittest.mm",
@@ -141,6 +144,7 @@ source_set("unit_tests") {
     ":internal",
     ":ui",
     "//base/test:test_support",
+    "//ios/chrome/browser/main:test_support",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/broadcaster",
     "//ios/chrome/browser/ui/fullscreen/test",

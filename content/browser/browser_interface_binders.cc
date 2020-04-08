@@ -615,6 +615,10 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
       base::BindRepeating(&RenderFrameHostImpl::BindRestrictedCookieManager,
                           base::Unretained(host)));
 
+  map->Add<network::mojom::HasTrustTokensAnswerer>(
+      base::BindRepeating(&RenderFrameHostImpl::BindHasTrustTokensAnswerer,
+                          base::Unretained(host)));
+
   map->Add<shape_detection::mojom::BarcodeDetectionProvider>(
       base::BindRepeating(&BindBarcodeDetectionProvider));
 

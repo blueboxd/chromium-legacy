@@ -113,18 +113,6 @@ TEST(InstallModes, VerifyModes) {
   }
 }
 
-TEST(InstallModes, VerifyBrand) {
-#if BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
-  // Binaries were registered via an app guid with Google Update integration.
-  ASSERT_THAT(kBinariesAppGuid, StrNe(L""));
-  ASSERT_THAT(kBinariesPathName, StrEq(L""));
-#else
-  // Binaries were registered via a different path name without.
-  ASSERT_THAT(kBinariesAppGuid, StrEq(L""));
-  ASSERT_THAT(kBinariesPathName, StrNe(L""));
-#endif
-}
-
 TEST(InstallModes, GetClientsKeyPath) {
   constexpr wchar_t kAppGuid[] = L"test";
 
@@ -149,28 +137,6 @@ TEST(InstallModes, GetClientStateKeyPath) {
 #endif
 }
 
-TEST(InstallModes, GetBinariesClientsKeyPath) {
-#if BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
-  ASSERT_THAT(GetBinariesClientsKeyPath(),
-              StrEq(std::wstring(L"Software\\Google\\Update\\Clients\\")
-                        .append(kBinariesAppGuid)));
-#else
-  ASSERT_THAT(GetBinariesClientsKeyPath(),
-              StrEq(std::wstring(L"Software\\").append(kBinariesPathName)));
-#endif
-}
-
-TEST(InstallModes, GetBinariesClientStateKeyPath) {
-#if BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
-  ASSERT_THAT(GetBinariesClientStateKeyPath(),
-              StrEq(std::wstring(L"Software\\Google\\Update\\ClientState\\")
-                        .append(kBinariesAppGuid)));
-#else
-  ASSERT_THAT(GetBinariesClientStateKeyPath(),
-              StrEq(std::wstring(L"Software\\").append(kBinariesPathName)));
-#endif
-}
-
 TEST(InstallModes, GetClientStateMediumKeyPath) {
   constexpr wchar_t kAppGuid[] = L"test";
 
@@ -180,18 +146,6 @@ TEST(InstallModes, GetClientStateMediumKeyPath) {
 #else
   ASSERT_THAT(GetClientStateMediumKeyPath(kAppGuid),
               StrEq(std::wstring(L"Software\\").append(kProductPathName)));
-#endif
-}
-
-TEST(InstallModes, GetBinariesClientStateMediumKeyPath) {
-#if BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
-  ASSERT_THAT(
-      GetBinariesClientStateMediumKeyPath(),
-      StrEq(std::wstring(L"Software\\Google\\Update\\ClientStateMedium\\")
-                .append(kBinariesAppGuid)));
-#else
-  ASSERT_THAT(GetBinariesClientStateMediumKeyPath(),
-              StrEq(std::wstring(L"Software\\").append(kBinariesPathName)));
 #endif
 }
 

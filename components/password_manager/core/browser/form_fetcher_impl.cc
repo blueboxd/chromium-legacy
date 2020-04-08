@@ -89,6 +89,41 @@ void FormFetcherImpl::RemoveConsumer(FormFetcher::Consumer* consumer) {
   consumers_.RemoveObserver(consumer);
 }
 
+void FormFetcherImpl::Fetch() {
+  std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
+  if (password_manager_util::IsLoggingActive(client_)) {
+    logger.reset(
+        new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
+    logger->LogMessage(Logger::STRING_FETCH_METHOD);
+    logger->LogNumber(Logger::STRING_FORM_FETCHER_STATE,
+                      static_cast<int>(state_));
+  }
+
+  if (state_ == State::WAITING) {
+    // There is currently a password store query in progress, need to re-fetch
+    // store results later.
+    need_to_refetch_ = true;
+    return;
+  }
+
+  PasswordStore* password_store = client_->GetProfilePasswordStore();
+  if (!password_store) {
+    if (logger)
+      logger->LogMessage(Logger::STRING_NO_STORE);
+    NOTREACHED();
+    return;
+  }
+  state_ = State::WAITING;
+  password_store->GetLogins(form_digest_, this);
+
+// The statistics isn't needed on mobile, only on desktop. Let's save some
+// processor cycles.
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+  // The statistics is needed for the "Save password?" bubble.
+  password_store->GetSiteStats(form_digest_.origin.GetOrigin(), this);
+#endif
+}
+
 FormFetcherImpl::State FormFetcherImpl::GetState() const {
   return state_;
 }
@@ -165,41 +200,6 @@ void FormFetcherImpl::OnGetSiteStatistics(
 void FormFetcherImpl::ProcessMigratedForms(
     std::vector<std::unique_ptr<PasswordForm>> forms) {
   ProcessPasswordStoreResults(std::move(forms));
-}
-
-void FormFetcherImpl::Fetch() {
-  std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
-  if (password_manager_util::IsLoggingActive(client_)) {
-    logger.reset(
-        new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
-    logger->LogMessage(Logger::STRING_FETCH_METHOD);
-    logger->LogNumber(Logger::STRING_FORM_FETCHER_STATE,
-                      static_cast<int>(state_));
-  }
-
-  if (state_ == State::WAITING) {
-    // There is currently a password store query in progress, need to re-fetch
-    // store results later.
-    need_to_refetch_ = true;
-    return;
-  }
-
-  PasswordStore* password_store = client_->GetProfilePasswordStore();
-  if (!password_store) {
-    if (logger)
-      logger->LogMessage(Logger::STRING_NO_STORE);
-    NOTREACHED();
-    return;
-  }
-  state_ = State::WAITING;
-  password_store->GetLogins(form_digest_, this);
-
-// The statistics isn't needed on mobile, only on desktop. Let's save some
-// processor cycles.
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
-  // The statistics is needed for the "Save password?" bubble.
-  password_store->GetSiteStats(form_digest_.origin.GetOrigin(), this);
-#endif
 }
 
 std::unique_ptr<FormFetcher> FormFetcherImpl::Clone() {

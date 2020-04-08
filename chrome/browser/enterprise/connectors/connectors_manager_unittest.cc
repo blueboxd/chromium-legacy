@@ -87,6 +87,8 @@ class ConnectorsManagerLegacyPoliciesTest
 
     EXPECT_TRUE(profile_manager_.SetUp());
     profile_ = profile_manager_.CreateTestingProfile("test-user");
+
+    connectors_manager_ = ConnectorsManager::GetInstance();
   }
 
   AnalysisConnector connector() const { return std::get<0>(this->GetParam()); }
@@ -117,7 +119,7 @@ class ConnectorsManagerLegacyPoliciesTest
             base::Optional<ConnectorsManager::AnalysisSettings> tmp_settings) {
           settings = std::move(tmp_settings);
         });
-    connectors_manager_.GetAnalysisSettings(url, connector, callback);
+    connectors_manager_->GetAnalysisSettings(url, connector, callback);
     return settings;
   }
 
@@ -223,7 +225,7 @@ class ConnectorsManagerLegacyPoliciesTest
   base::test::ScopedFeatureList scoped_feature_list_;
   TestingProfileManager profile_manager_;
   TestingProfile* profile_;
-  ConnectorsManager connectors_manager_;
+  ConnectorsManager* connectors_manager_;
   GURL url_ = GURL("https://google.com");
 
   // Set to the default value of their legacy policy.

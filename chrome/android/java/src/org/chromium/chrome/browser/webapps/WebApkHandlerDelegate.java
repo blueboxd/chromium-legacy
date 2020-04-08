@@ -78,7 +78,7 @@ public class WebApkHandlerDelegate {
         }
         // Pass non-null URL parameter so that {@link WebApkInfo#create()}
         // return value is non-null
-        WebApkInfo webApkInfo =
+        WebappInfo webApkInfo =
                 WebApkInfo.create(packageInfo.packageName, "", ShortcutSource.UNKNOWN,
                         false /* forceNavigation */, false /* isSplashProvidedByWebApk */,
                         null /* shareData */, null /* shareDataActivityClassName */);

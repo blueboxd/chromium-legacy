@@ -16,6 +16,7 @@ include_rules = [
   # If adding a new component dependency, email content/OWNERS first.
   # ****************************************************************************
 
+  "+chromeos/system/core_scheduling.h",
   "+content/public/child",
   "+content/public/renderer",
   "+content/child",

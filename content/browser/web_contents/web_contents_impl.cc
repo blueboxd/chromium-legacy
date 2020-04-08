@@ -2687,11 +2687,7 @@ bool WebContentsImpl::IsFullscreen() {
   return IsFullscreenForCurrentTab();
 }
 
-blink::mojom::DisplayMode WebContentsImpl::GetDisplayMode(
-    RenderWidgetHostImpl* render_widget_host) const {
-  if (!RenderViewHostImpl::From(render_widget_host))
-    return blink::mojom::DisplayMode::kBrowser;
-
+blink::mojom::DisplayMode WebContentsImpl::GetDisplayMode() const {
   return delegate_ ? delegate_->GetDisplayMode(this)
                    : blink::mojom::DisplayMode::kBrowser;
 }

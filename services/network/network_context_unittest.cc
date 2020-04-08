@@ -47,6 +47,7 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/prefs/testing_pref_service.h"
 #include "crypto/sha2.h"
+#include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/cache_type.h"
@@ -210,9 +211,11 @@ std::unique_ptr<TestURLLoaderClient> FetchRequest(
     const ResourceRequest& request,
     NetworkContext* network_context,
     int url_loader_options = mojom::kURLLoadOptionNone,
-    int process_id = mojom::kBrowserProcessId) {
+    int process_id = mojom::kBrowserProcessId,
+    mojom::URLLoaderFactoryParamsPtr params = nullptr) {
   mojo::Remote<mojom::URLLoaderFactory> loader_factory;
-  auto params = mojom::URLLoaderFactoryParams::New();
+  if (!params)
+    params = mojom::URLLoaderFactoryParams::New();
   params->process_id = process_id;
   params->is_corb_enabled = false;
 
@@ -6501,6 +6504,110 @@ TEST_F(NetworkContextTest, DisableTrustTokens) {
   task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(network_context->trust_token_store());
+}
+
+class NetworkContextExpectBadMessageTest : public NetworkContextTest {
+ public:
+  NetworkContextExpectBadMessageTest() {
+    mojo::core::SetDefaultProcessErrorCallback(
+        base::BindLambdaForTesting([&](const std::string&) {
+          EXPECT_FALSE(got_bad_message_);
+          got_bad_message_ = true;
+        }));
+  }
+  ~NetworkContextExpectBadMessageTest() override {
+    mojo::core::SetDefaultProcessErrorCallback(
+        mojo::core::ProcessErrorCallback());
+  }
+
+ protected:
+  void AssertBadMessage() { EXPECT_TRUE(got_bad_message_); }
+
+  bool got_bad_message_ = false;
+};
+
+TEST_F(NetworkContextExpectBadMessageTest,
+       FailsTrustTokenBearingRequestWhenTrustTokensIsDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kTrustTokens);
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(mojom::NetworkContextParams::New());
+
+  // Allow the store time to initialize asynchronously.
+  task_environment_.RunUntilIdle();
+
+  EXPECT_FALSE(network_context->trust_token_store());
+
+  ResourceRequest my_request;
+  my_request.request_initiator =
+      url::Origin::Create(GURL("https://initiator.com"));
+  my_request.trust_token_params =
+      OptionalTrustTokenParams(mojom::TrustTokenParams::New());
+
+  std::unique_ptr<TestURLLoaderClient> client =
+      FetchRequest(my_request, network_context.get());
+
+  AssertBadMessage();
+}
+
+TEST_F(NetworkContextExpectBadMessageTest,
+       FailsTrustTokenBearingRequestFromInsecureContext) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kTrustTokens);
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(mojom::NetworkContextParams::New());
+
+  // Allow |network_context|'s Trust Tokens store time to initialize
+  // asynchronously, if necessary.
+  task_environment_.RunUntilIdle();
+
+  ASSERT_TRUE(network_context->trust_token_store());
+
+  ResourceRequest my_request;
+  my_request.request_initiator =
+      url::Origin::Create(GURL("http://insecure-initiator.com"));
+  my_request.trust_token_params =
+      OptionalTrustTokenParams(mojom::TrustTokenParams::New());
+
+  std::unique_ptr<TestURLLoaderClient> client =
+      FetchRequest(my_request, network_context.get());
+
+  AssertBadMessage();
+}
+
+TEST_F(NetworkContextTest,
+       FailsTrustTokenBearingRequestWhenTrustTokensIsEnabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kTrustTokens);
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(mojom::NetworkContextParams::New());
+
+  // Allow the store time to initialize asynchronously.
+  task_environment_.RunUntilIdle();
+
+  ResourceRequest my_request;
+  my_request.request_initiator =
+      url::Origin::Create(GURL("https://initiator.com"));
+  my_request.trust_token_params =
+      OptionalTrustTokenParams(mojom::TrustTokenParams::New());
+
+  auto factory_params = mojom::URLLoaderFactoryParams::New();
+  factory_params->top_frame_origin =
+      url::Origin::Create(GURL("https://topframe.com/"));
+
+  // Since Trust Tokens operations haven't been implemented yet, requests
+  // configured for these operations should fail even if Trust Tokens is
+  // enabled.
+  std::unique_ptr<TestURLLoaderClient> client =
+      FetchRequest(my_request, network_context.get(), mojom::kURLLoadOptionNone,
+                   mojom::kBrowserProcessId, std::move(factory_params));
+  EXPECT_EQ(client->completion_status().error_code,
+            net::ERR_TRUST_TOKEN_OPERATION_FAILED);
+  EXPECT_THAT(client->completion_status().trust_token_operation_status,
+              Optional(mojom::TrustTokenOperationStatus::kUnavailable));
 }
 
 }  // namespace

@@ -344,6 +344,17 @@ source_set("common") {
     libs += [ "android" ]
   }
 
+  if (is_chromeos) {
+    sources += [
+      "//chromeos/system/core_scheduling.cc",
+      "//chromeos/system/core_scheduling.h",
+    ]
+    deps += [
+      "//chromeos:chromeos_export",
+      "//chromeos/system",
+    ]
+  }
+
   if (is_debug && !is_component_build && enable_plugins) {
     # Content depends on the PPAPI message logging stuff; if this isn't here,
     # some unit test binaries won't compile. This only worked in release mode

@@ -738,5 +738,10 @@
     "prefix": "web-bluetooth-new-permissions-backend",
     "bases": ["bluetooth", "external/wpt/bluetooth"],
     "args": ["--enable-features=WebBluetoothNewPermissionsBackend"]
+  },
+  {
+    "prefix": "trust-tokens",
+    "bases": [ "external/wpt/trust-tokens/end-to-end" ],
+    "args": [ "--enable-features=TrustTokens" ]
   }
 ]

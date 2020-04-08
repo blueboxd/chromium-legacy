@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.status_indicator;
 
 import android.content.res.ColorStateList;
+import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.widget.TextView;
 
@@ -40,9 +41,9 @@ class StatusIndicatorViewBinder {
             ((TextView) view.javaViewRoot.findViewById(R.id.status_text))
                     .setText(model.get(StatusIndicatorProperties.STATUS_TEXT));
         } else if (StatusIndicatorProperties.STATUS_ICON == propertyKey) {
+            final Drawable drawable = model.get(StatusIndicatorProperties.STATUS_ICON);
             ((TextView) view.javaViewRoot.findViewById(R.id.status_text))
-                    .setCompoundDrawablesRelativeWithIntrinsicBounds(
-                            model.get(StatusIndicatorProperties.STATUS_ICON), null, null, null);
+                    .setCompoundDrawablesRelative(drawable, null, null, null);
         } else if (StatusIndicatorProperties.COMPOSITED_VIEW_VISIBLE == propertyKey) {
             assert view.sceneLayer != null;
             view.sceneLayer.setIsVisible(

@@ -174,7 +174,6 @@ cr.define('appcache', function() {
         properties: properties,
         fileUrl: details.url,
         responseId: details.responseId,
-        tokenExpires: details.tokenExpires,
       });
     }
     return simpleVector;

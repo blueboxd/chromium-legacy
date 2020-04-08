@@ -368,7 +368,7 @@ target(link_target_type, "gles2_sources") {
   }
 
   if (use_dawn) {
-    deps += [ "//third_party/dawn:libdawn_native" ]
+    deps += [ "//third_party/dawn/src/dawn_native" ]
   }
 
   if (is_mac) {
@@ -390,7 +390,8 @@ target(link_target_type, "gles2_sources") {
   if (skia_use_dawn) {
     deps += [
       "//components/viz/common:dawn_context_provider",
-      "//third_party/dawn/src/dawn:libdawn",
+      "//third_party/dawn/src/dawn:dawncpp",
+      "//third_party/dawn/src/dawn:libdawn_proc",
     ]
   }
 

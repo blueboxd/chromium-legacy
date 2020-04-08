@@ -124,13 +124,6 @@ class MockInputRouterImplClient : public InputRouterImplClient {
 
   void UnlockMouse() override {}
 
-  void FallbackCursorModeLockCursor(bool left,
-                                    bool right,
-                                    bool up,
-                                    bool down) override {}
-
-  void FallbackCursorModeSetCursorVisibility(bool visible) override {}
-
   gfx::Size GetRootWidgetViewportSize() override {
     return gfx::Size(1920, 1080);
   }

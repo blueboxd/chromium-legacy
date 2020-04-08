@@ -399,9 +399,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Notifies the RenderWidget of the current mouse cursor visibility state.
   void OnCursorVisibilityStateChanged(bool is_visible);
 
-  // Notifies the RenderWidget when toggle fallback cursor mode on/off.
-  void OnFallbackCursorModeToggled(bool is_on);
-
   // Notifies the RenderWidgetHost that the View was destroyed.
   void ViewDestroyed();
 
@@ -717,11 +714,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       bool unadjusted_movement,
       InputRouterImpl::RequestMouseLockCallback response) override;
   void UnlockMouse() override;
-  void FallbackCursorModeLockCursor(bool left,
-                                    bool right,
-                                    bool up,
-                                    bool down) override;
-  void FallbackCursorModeSetCursorVisibility(bool visible) override;
   gfx::Size GetRootWidgetViewportSize() override;
 
   // FrameTokenMessageQueue::Client:

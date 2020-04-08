@@ -30,7 +30,6 @@ import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 
 import android.support.test.filters.MediumTest;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.ViewStub;
 
 import com.google.android.material.tabs.TabLayout;
@@ -134,7 +133,7 @@ public class KeyboardAccessoryViewTest {
             mModel.get(BAR_ITEMS).add(testItem);
         });
 
-        onView(isRoot()).check((root, e) -> waitForView((ViewGroup) root, withText("Test Button")));
+        onView(isRoot()).check(waitForView(withText("Test Button")));
         onView(withText("Test Button")).perform(click());
 
         assertTrue(buttonClicked.get());
@@ -152,7 +151,7 @@ public class KeyboardAccessoryViewTest {
                             new Action("Second", AUTOFILL_SUGGESTION, action -> {}))});
         });
 
-        onView(isRoot()).check((root, e) -> waitForView((ViewGroup) root, withText("First")));
+        onView(isRoot()).check(waitForView(withText("First")));
         onView(withText("First")).check(matches(isDisplayed()));
         onView(withText("Second")).check(matches(isDisplayed()));
 
@@ -161,7 +160,7 @@ public class KeyboardAccessoryViewTest {
                     new Action("Third", GENERATE_PASSWORD_AUTOMATIC, action -> {})));
         });
 
-        onView(isRoot()).check((root, e) -> waitForView((ViewGroup) root, withText("Third")));
+        onView(isRoot()).check(waitForView(withText("Third")));
         onView(withText("First")).check(matches(isDisplayed()));
         onView(withText("Second")).check(matches(isDisplayed()));
         onView(withText("Third")).check(matches(isDisplayed()));
@@ -181,7 +180,7 @@ public class KeyboardAccessoryViewTest {
                             new Action("Third", GENERATE_PASSWORD_AUTOMATIC, action -> {}))});
         });
 
-        onView(isRoot()).check((root, e) -> waitForView((ViewGroup) root, withText("First")));
+        onView(isRoot()).check(waitForView(withText("First")));
         onView(withText("First")).check(matches(isDisplayed()));
         onView(withText("Second")).check(matches(isDisplayed()));
         onView(withText("Third")).check(matches(isDisplayed()));
@@ -189,9 +188,8 @@ public class KeyboardAccessoryViewTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mModel.get(BAR_ITEMS).remove(mModel.get(BAR_ITEMS).get(1)));
 
-        onView(isRoot()).check((root, e)
-                                       -> waitForView((ViewGroup) root, withText("Second"),
-                                               VIEW_INVISIBLE | VIEW_GONE | VIEW_NULL));
+        onView(isRoot()).check(
+                waitForView(withText("Second"), VIEW_INVISIBLE | VIEW_GONE | VIEW_NULL));
         onView(withText("First")).check(matches(isDisplayed()));
         onView(withText("Second")).check(doesNotExist());
         onView(withText("Third")).check(matches(isDisplayed()));

@@ -11,12 +11,13 @@ namespace blink {
 // Compare CoreText.h in an up to date SDK, redefining here since we don't seem
 // to have access to this value when building against the 10.10 SDK in our
 // standard Chrome build configuration.
-static const uint32_t kBlinkLocalCTVersionNumber10_12 = 0x00090000;
+// static const uint32_t kBlinkLocalCTVersionNumber10_12 = 0x00090000;
 static const uint32_t kBlinkLocalCTVersionNumber10_13 = 0x000A0000;
+static const uint32_t kBlinkLocalCTVersionNumber10_14 = 0x000B0000;
 
 bool CoreTextVersionSupportsVariations() {
   return &CTGetCoreTextVersion &&
-         CTGetCoreTextVersion() >= kBlinkLocalCTVersionNumber10_12;
+         CTGetCoreTextVersion() >= kBlinkLocalCTVersionNumber10_14;
 }
 
 // CoreText versions below 10.13 display COLR cpal as black/foreground-color

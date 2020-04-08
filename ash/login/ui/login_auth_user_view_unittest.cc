@@ -228,6 +228,14 @@ TEST_F(LoginAuthUserViewUnittest, PasswordFieldChangeOnUpdateUser) {
   auto another_user = CreateUser("user2@domain.com");
   view_->UpdateForUser(another_user);
   EXPECT_TRUE(password_test.textfield()->GetText().empty());
+  password_test.textfield()->SetTextInputType(ui::TEXT_INPUT_TYPE_TEXT);
+  EXPECT_EQ(password_test.textfield()->GetTextInputType(),
+            ui::TEXT_INPUT_TYPE_TEXT);
+
+  // Updating user should make the textfield as a password again.
+  view_->UpdateForUser(user_);
+  EXPECT_EQ(password_test.textfield()->GetTextInputType(),
+            ui::TEXT_INPUT_TYPE_PASSWORD);
 }
 
 }  // namespace ash

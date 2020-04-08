@@ -137,7 +137,6 @@ enum InstallerStage {
   CREATING_VISUAL_MANIFEST,  // Creating VisualElementsManifest.xml.
   BUILDING,                  // Building the install work item list.
   EXECUTING,                 // Executing the install work item list.
-  UPDATING_CHANNELS,         // Updating channel information.
   COPYING_PREFERENCES_FILE,  // Copying preferences file.
   CREATING_SHORTCUTS,        // Creating shortcuts.
   REGISTERING_CHROME,        // Performing Chrome registration.

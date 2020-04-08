@@ -27,6 +27,9 @@ extern const int kMaxProductDataLength;
 // Number of product data keys to use for breadcrumbs.
 @property(nonatomic) NSUInteger breadcrumbsKeyCount;
 
+// Maximum allowed length for a single product data value.
+@property(nonatomic) NSUInteger maxProductDataLength;
+
 // Starts collecting breadcrumb events logged to |breadcrumbManager|.
 - (void)observeBreadcrumbManager:(BreadcrumbManager*)breadcrumbManager;
 

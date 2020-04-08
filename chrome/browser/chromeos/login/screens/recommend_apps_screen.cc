@@ -19,6 +19,8 @@ std::string RecommendAppsScreen::GetResultString(Result result) {
       return "Selected";
     case Result::SKIPPED:
       return "Skipped";
+    case Result::LOAD_ERROR:
+      return "LoadError";
     case Result::NOT_APPLICABLE:
       return BaseScreen::kNotApplicable;
   }
@@ -43,10 +45,6 @@ RecommendAppsScreen::~RecommendAppsScreen() {
 
 void RecommendAppsScreen::OnSkip() {
   exit_callback_.Run(Result::SKIPPED);
-}
-
-void RecommendAppsScreen::OnRetry() {
-  recommend_apps_fetcher_->Retry();
 }
 
 void RecommendAppsScreen::OnInstall() {
@@ -90,8 +88,7 @@ void RecommendAppsScreen::OnLoadSuccess(const base::Value& app_list) {
 }
 
 void RecommendAppsScreen::OnLoadError() {
-  if (view_)
-    view_->OnLoadError();
+  exit_callback_.Run(Result::LOAD_ERROR);
 }
 
 void RecommendAppsScreen::OnParseResponseError() {

@@ -694,6 +694,8 @@ bool ShellSurfaceBase::OnCloseRequested(
 
 void ShellSurfaceBase::WindowClosing() {
   SetEnabled(false);
+  if (widget_)
+    widget_->RemoveObserver(this);
   widget_ = nullptr;
 }
 

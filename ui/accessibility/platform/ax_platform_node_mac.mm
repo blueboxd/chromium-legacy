@@ -1257,11 +1257,6 @@ void AXPlatformNodeMac::AnnounceText(const base::string16& text) {
                                [native_node_ AXWindow], false);
 }
 
-int AXPlatformNodeMac::GetIndexInParent() {
-  // TODO(dmazzoni): implement this.  http://crbug.com/396137
-  return -1;
-}
-
 bool IsNameExposedInAXValueForRole(ax::mojom::Role role) {
   switch (role) {
     case ax::mojom::Role::kListBoxOption:

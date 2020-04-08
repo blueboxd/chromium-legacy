@@ -10,6 +10,7 @@
 @class ASCredentialServiceIdentifier;
 @class ASCredentialProviderExtensionContext;
 @class UIViewController;
+@protocol CredentialStore;
 
 // This feature presents a list of credentials for the user to choose.
 @interface CredentialListCoordinator : NSObject
@@ -19,6 +20,7 @@
 // can be nil.
 - (instancetype)
     initWithBaseViewController:(UIViewController*)baseViewController
+               credentialStore:(id<CredentialStore>)credentialStore
                        context:(ASCredentialProviderExtensionContext*)context
             serviceIdentifiers:
                 (NSArray<ASCredentialServiceIdentifier*>*)serviceIdentifiers

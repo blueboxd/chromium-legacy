@@ -1,0 +1,29 @@
+Verifies that setting a cookie cross-scheme triggers an inspector issue.
+
+Inspector issue: {
+  "issue": {
+    "code": "SameSiteCookieIssue",
+    "details": {
+      "sameSiteCookieIssueDetails": {
+        "cookie": {
+          "name": "name",
+          "path": "/inspector-protocol/network/resources",
+          "domain": "cookie.test"
+        },
+        "cookieWarningReasons": [
+          "WarnSameSiteCrossSchemeSecureUrlLax"
+        ],
+        "cookieExclusionReasons": [],
+        "operation": "SetCookie",
+        "siteForCookies": "http://cookie.test/",
+        "cookieUrl": "https://cookie.test:8443/inspector-protocol/network/resources/set-cookie.php?cookie=name%3Dvalue%3B",
+        "request": {
+          "requestId": "<request-id>",
+          "url": "https://cookie.test:8443/inspector-protocol/network/resources/set-cookie.php?cookie=name%3Dvalue%3B"
+        }
+      }
+    }
+  }
+}
+
+

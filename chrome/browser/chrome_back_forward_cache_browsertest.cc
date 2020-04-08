@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/test/mock_callback.h"
@@ -10,18 +9,15 @@
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
-#include "chrome/browser/printing/print_view_manager_common.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/permissions/permission_manager.h"
-#include "components/printing/common/print.mojom.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -32,7 +28,6 @@
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/mojom/webshare/webshare.mojom.h"
 
 class ChromeBackForwardCacheBrowserTest : public InProcessBrowserTest {
@@ -245,120 +240,6 @@ IN_PROC_BROWSER_TEST_F(ChromeBackForwardCacheBrowserTest,
                           /* user_gesture = */ true, callback.Get());
 
   delete_observer_rfh_a.WaitUntilDeleted();
-}
-
-class PrintPreviewObserver : printing::PrintPreviewUI::TestDelegate {
- public:
-  explicit PrintPreviewObserver(bool wait_for_loaded) {
-    if (wait_for_loaded)
-      queue_.emplace();  // DOMMessageQueue doesn't allow assignment
-    printing::PrintPreviewUI::SetDelegateForTesting(this);
-  }
-
-  ~PrintPreviewObserver() override {
-    printing::PrintPreviewUI::SetDelegateForTesting(nullptr);
-  }
-
-  void WaitUntilPreviewIsReady() {
-    if (rendered_page_count_ >= total_page_count_)
-      return;
-
-    base::RunLoop run_loop;
-    base::AutoReset<base::RunLoop*> auto_reset(&run_loop_, &run_loop);
-    run_loop.Run();
-
-    if (queue_.has_value()) {
-      std::string message;
-      EXPECT_TRUE(queue_->WaitForMessage(&message));
-      EXPECT_EQ("\"success\"", message);
-    }
-  }
-
- private:
-  // PrintPreviewUI::TestDelegate:
-  void DidGetPreviewPageCount(int page_count) override {
-    total_page_count_ = page_count;
-  }
-
-  // PrintPreviewUI::TestDelegate:
-  void DidRenderPreviewPage(content::WebContents* preview_dialog) override {
-    ++rendered_page_count_;
-    CHECK(rendered_page_count_ <= total_page_count_);
-    if (rendered_page_count_ == total_page_count_ && run_loop_) {
-      run_loop_->Quit();
-
-      if (queue_.has_value()) {
-        content::ExecuteScriptAsync(
-            preview_dialog,
-            "window.addEventListener('message', event => {"
-            "  if (event.data.type === 'documentLoaded') {"
-            "    domAutomationController.send(event.data.load_state);"
-            "  }"
-            "});");
-      }
-    }
-  }
-
-  base::Optional<content::DOMMessageQueue> queue_;
-  int total_page_count_ = 1;
-  int rendered_page_count_ = 0;
-  base::RunLoop* run_loop_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(PrintPreviewObserver);
-};
-
-class ChromeBackForwardCacheBrowserTestWithPrinting
-    : public ChromeBackForwardCacheBrowserTest {
- public:
-  ChromeBackForwardCacheBrowserTestWithPrinting() = default;
-  ~ChromeBackForwardCacheBrowserTestWithPrinting() override = default;
-
-  void PrintAndWaitUntilPreviewIsReady(bool print_only_selection) {
-    PrintPreviewObserver print_preview_observer(/*wait_for_loaded=*/true);
-    printing::StartPrint(browser()->tab_strip_model()->GetActiveWebContents(),
-                         /*print_renderer=*/mojo::NullAssociatedRemote(),
-                         /*print_preview_disabled=*/false,
-                         print_only_selection);
-    print_preview_observer.WaitUntilPreviewIsReady();
-  }
-
-  void WaitUntilMessagesReceived() {
-    run_loop_ = std::make_unique<base::RunLoop>();
-    run_loop_->Run();
-  }
-
-  static mojo::AssociatedRemote<printing::mojom::PrintRenderFrame>
-  GetPrintRenderFrame(content::RenderFrameHost* rfh) {
-    mojo::AssociatedRemote<printing::mojom::PrintRenderFrame> remote;
-    rfh->GetRemoteAssociatedInterfaces()->GetInterface(&remote);
-    return remote;
-  }
-
- private:
-  std::unique_ptr<base::RunLoop> run_loop_;
-};
-
-IN_PROC_BROWSER_TEST_F(ChromeBackForwardCacheBrowserTestWithPrinting,
-                       DoesNotCacheIfPrinting) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  // 1) Navigate to A.
-  EXPECT_TRUE(content::NavigateToURL(
-      web_contents(), embedded_test_server()->GetURL("/printing/test1.html")));
-  content::RenderFrameHost* rfh_a = current_frame_host();
-  content::RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
-  PrintAndWaitUntilPreviewIsReady(/*print_only_selection=*/false);
-
-  // 2) Navigate to B.
-  EXPECT_TRUE(content::NavigateToURL(web_contents(), GetURL("b.com")));
-  content::RenderFrameHost* rfh_b = current_frame_host();
-  content::RenderFrameDeletedObserver delete_observer_rfh_b(rfh_b);
-  // A is not cached because of printing.
-  EXPECT_TRUE(delete_observer_rfh_a.deleted());
-
-  // 3) Navigate back.
-  web_contents()->GetController().GoBack();
-  EXPECT_TRUE(content::WaitForLoadStop(web_contents()));
 }
 
 #if defined(OS_ANDROID)

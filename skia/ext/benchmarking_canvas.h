@@ -32,7 +32,7 @@ protected:
   SaveLayerStrategy getSaveLayerStrategy(const SaveLayerRec&) override;
   void willRestore() override;
 
-  void didConcat44(const SkScalar[16]) override;
+  void didConcat44(const SkM44&) override;
   void didConcat(const SkMatrix&) override;
   void didScale(SkScalar, SkScalar) override;
   void didTranslate(SkScalar, SkScalar) override;

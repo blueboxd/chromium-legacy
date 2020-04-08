@@ -31,10 +31,6 @@ class RecommendAppsScreenView {
   // Hides the contents of the screen.
   virtual void Hide() = 0;
 
-  // Called when the download of the recommend app list fails. Show an error
-  // message to the user.
-  virtual void OnLoadError() = 0;
-
   // Called when the download of the recommend app list is successful. Shows the
   // downloaded |app_list| to the user.
   virtual void OnLoadSuccess(const base::Value& app_list) = 0;
@@ -62,7 +58,6 @@ class RecommendAppsScreenHandler : public BaseScreenHandler,
   void Bind(RecommendAppsScreen* screen) override;
   void Show() override;
   void Hide() override;
-  void OnLoadError() override;
   void OnLoadSuccess(const base::Value& app_list) override;
   void OnParseResponseError() override;
 
@@ -84,6 +79,9 @@ class RecommendAppsScreenHandler : public BaseScreenHandler,
   PrefService* pref_service_;
 
   int recommended_app_count_ = 0;
+
+  // If true, Initialize() will call Show().
+  bool show_on_init_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(RecommendAppsScreenHandler);
 };

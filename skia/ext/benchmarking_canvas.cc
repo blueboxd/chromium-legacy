@@ -428,9 +428,11 @@ void BenchmarkingCanvas::willRestore() {
   INHERITED::willRestore();
 }
 
-void BenchmarkingCanvas::didConcat44(const SkScalar m[16]) {
+void BenchmarkingCanvas::didConcat44(const SkM44& m) {
+  SkScalar values[16];
+  m.getColMajor(values);
   AutoOp op(this, "Concat44");
-  op.addParam("column-major", AsListValue(m, 16));
+  op.addParam("column-major", AsListValue(values, 16));
 
   INHERITED::didConcat44(m);
 }

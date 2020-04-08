@@ -128,7 +128,7 @@ class MockService : public sample::blink::Service {
 // GC the HeapMojoUniqueReceiverSet with context observer and verify that the
 // receiver is no longer part of the set, and that the service was deleted.
 TEST_F(HeapMojoUniqueReceiverSetWithContextObserverTest, ResetsOnGC) {
-  auto receiver_set = owner()->receiver_set();
+  auto& receiver_set = owner()->receiver_set();
   auto service = std::make_unique<
       MockService<HeapMojoUniqueReceiverSetWithContextObserverTest>>(this);
   auto receiver = mojo::PendingReceiver<sample::blink::Service>(
@@ -150,7 +150,7 @@ TEST_F(HeapMojoUniqueReceiverSetWithContextObserverTest, ResetsOnGC) {
 // GC the HeapMojoUniqueReceiverSet without context observer and verify that the
 // receiver is no longer part of the set, and that the service was deleted.
 TEST_F(HeapMojoUniqueReceiverSetWithoutContextObserverTest, ResetsOnGC) {
-  auto receiver_set = owner()->receiver_set();
+  auto& receiver_set = owner()->receiver_set();
   auto service = std::make_unique<
       MockService<HeapMojoUniqueReceiverSetWithoutContextObserverTest>>(this);
   auto receiver = mojo::PendingReceiver<sample::blink::Service>(

@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/extension_icon_manager.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_install_prompt_test_helper.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -31,6 +32,9 @@
 #include "components/constrained_window/constrained_window_views.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_features.h"
 #include "extensions/common/permissions/permission_message_provider.h"
@@ -68,6 +72,9 @@ class ExtensionInstallDialogViewTestBase
   // Creates and returns an install prompt of |prompt_type|.
   std::unique_ptr<ExtensionInstallPrompt::Prompt> CreatePrompt(
       ExtensionInstallPrompt::PromptType prompt_type);
+  std::unique_ptr<ExtensionInstallPrompt::Prompt> CreatePrompt(
+      ExtensionInstallPrompt::PromptType prompt_type,
+      const extensions::Extension* extension);
 
   content::WebContents* web_contents() { return web_contents_; }
 
@@ -93,13 +100,20 @@ void ExtensionInstallDialogViewTestBase::SetUpOnMainThread() {
 std::unique_ptr<ExtensionInstallPrompt::Prompt>
 ExtensionInstallDialogViewTestBase::CreatePrompt(
     ExtensionInstallPrompt::PromptType prompt_type) {
+  return CreatePrompt(prompt_type, extension_);
+}
+
+std::unique_ptr<ExtensionInstallPrompt::Prompt>
+ExtensionInstallDialogViewTestBase::CreatePrompt(
+    ExtensionInstallPrompt::PromptType prompt_type,
+    const extensions::Extension* extension) {
   std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt(
       new ExtensionInstallPrompt::Prompt(prompt_type));
-  prompt->set_extension(extension_);
+  prompt->set_extension(extension);
 
   std::unique_ptr<ExtensionIconManager> icon_manager(
       new ExtensionIconManager());
-  prompt->set_icon(icon_manager->GetIcon(extension_->id()));
+  prompt->set_icon(icon_manager->GetIcon(extension->id()));
 
   return prompt;
 }
@@ -434,6 +448,82 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
   AddRetainedDevice("USB Device");
   AddRetainedFile(base::FilePath(FILE_PATH_LITERAL("/dev/null")));
   ShowAndVerifyUi();
+}
+
+class ExtensionInstallDialogViewOnUninstallationTest
+    : public ExtensionInstallDialogViewTest {
+ public:
+  ExtensionInstallDialogViewOnUninstallationTest() = default;
+  ExtensionInstallDialogViewOnUninstallationTest(
+      const ExtensionInstallDialogViewOnUninstallationTest&) = delete;
+  ExtensionInstallDialogViewOnUninstallationTest& operator=(
+      const ExtensionInstallDialogViewOnUninstallationTest&) = delete;
+
+ protected:
+  void UninstallExtension(const std::string& extension_id);
+};
+
+void ExtensionInstallDialogViewOnUninstallationTest::UninstallExtension(
+    const std::string& extension_id) {
+  extensions::TestExtensionRegistryObserver observer(
+      extensions::ExtensionRegistry::Get(browser()->profile()), extension_id);
+  extensions::ExtensionSystem::Get(browser()->profile())
+      ->extension_service()
+      ->UninstallExtension(
+          extension_id,
+          extensions::UninstallReason::UNINSTALL_REASON_FOR_TESTING, nullptr);
+  observer.WaitForExtensionUninstalled();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewOnUninstallationTest,
+                       UninstallingExtensionClosesDialog) {
+  const extensions::Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII(
+          "install_prompt/dialog_on_uninstall/same_extension"));
+  ASSERT_TRUE(extension);
+  std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt =
+      CreatePrompt(ExtensionInstallPrompt::REPAIR_PROMPT, extension);
+  ExtensionInstallDialogView* dialog = new ExtensionInstallDialogView(
+      profile(), web_contents(), base::DoNothing(), std::move(prompt));
+
+  views::Widget* modal_dialog = views::DialogDelegate::CreateDialogWidget(
+      dialog, nullptr,
+      platform_util::GetViewForWindow(browser()->window()->GetNativeWindow()));
+  ASSERT_TRUE(modal_dialog);
+  views::test::WidgetClosingObserver dialog_observer(modal_dialog);
+  modal_dialog->Show();
+  EXPECT_FALSE(modal_dialog->IsClosed());
+  UninstallExtension(extension->id());
+  dialog_observer.Wait();
+  EXPECT_TRUE(dialog_observer.widget_closed());
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewOnUninstallationTest,
+                       UninstallingOtherExtensionDoesNotCloseDialog) {
+  const extensions::Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII(
+          "install_prompt/dialog_on_uninstall/same_extension"));
+  const extensions::Extension* other_extension =
+      LoadExtension(test_data_dir_.AppendASCII(
+          "install_prompt/dialog_on_uninstall/other_extension"));
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(other_extension);
+  std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt =
+      CreatePrompt(ExtensionInstallPrompt::REPAIR_PROMPT, extension);
+  ExtensionInstallDialogView* dialog = new ExtensionInstallDialogView(
+      profile(), web_contents(), base::DoNothing(), std::move(prompt));
+
+  views::Widget* modal_dialog = views::DialogDelegate::CreateDialogWidget(
+      dialog, nullptr,
+      platform_util::GetViewForWindow(browser()->window()->GetNativeWindow()));
+  ASSERT_TRUE(modal_dialog);
+  views::test::WidgetClosingObserver dialog_observer(modal_dialog);
+  modal_dialog->Show();
+  EXPECT_FALSE(modal_dialog->IsClosed());
+  UninstallExtension(other_extension->id());
+  ASSERT_TRUE(modal_dialog);
+  modal_dialog->Close();
+  dialog_observer.Wait();
 }
 
 class ExtensionInstallDialogRatingsSectionTest

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -20,6 +21,54 @@ namespace {
 
 constexpr const char kUserActionAcceptButtonClicked[] = "accept-button";
 constexpr const char kUserActionBackButtonClicked[] = "back-button";
+constexpr const char kUserActionShowAdditionalTos[] = "show-additional-tos";
+constexpr const char kUserActionShowSecuritySettings[] =
+    "show-security-settings";
+constexpr const char kUserActionShowStatsUsageLearnMore[] =
+    "show-stats-usage-learn-more";
+constexpr const char kUserActionUnselectStatsUsage[] = "unselect-stats-usage";
+constexpr const char kUserActionSelectStatsUsage[] = "select-stats-usage";
+
+struct EulaUserAction {
+  const char* name_;
+  EulaScreen::UserAction uma_name_;
+};
+
+const EulaUserAction actions[] = {
+    {kUserActionAcceptButtonClicked,
+     EulaScreen::UserAction::kAcceptButtonClicked},
+    {kUserActionBackButtonClicked, EulaScreen::UserAction::kBackButtonClicked},
+    {kUserActionShowAdditionalTos, EulaScreen::UserAction::kShowAdditionalTos},
+    {kUserActionShowSecuritySettings,
+     EulaScreen::UserAction::kShowSecuritySettings},
+    {kUserActionShowStatsUsageLearnMore,
+     EulaScreen::UserAction::kShowStatsUsageLearnMore},
+    {kUserActionUnselectStatsUsage,
+     EulaScreen::UserAction::kUnselectStatsUsage},
+    {kUserActionSelectStatsUsage, EulaScreen::UserAction::kSelectStatsUsage},
+};
+
+void RecordEulaScreenAction(EulaScreen::UserAction value) {
+  base::UmaHistogramEnumeration("OOBE.EulaScreen.UserActions", value);
+}
+
+bool IsEulaUserAction(const std::string& action_id) {
+  for (const auto& el : actions) {
+    if (action_id == el.name_)
+      return true;
+  }
+  return false;
+}
+
+void RecordUserAction(const std::string& action_id) {
+  for (const auto& el : actions) {
+    if (action_id == el.name_) {
+      RecordEulaScreenAction(el.uma_name_);
+      return;
+    }
+  }
+  NOTREACHED() << "Unexpected action id: " << action_id;
+}
 
 // Reflects the value of usage statistics reporting checkbox shown in eula
 // UI. The value is expected to survive EulaScreen res-hows within a single
@@ -93,14 +142,17 @@ void EulaScreen::HideImpl() {
 }
 
 void EulaScreen::OnUserAction(const std::string& action_id) {
+  if (!IsEulaUserAction(action_id)) {
+    BaseScreen::OnUserAction(action_id);
+    return;
+  }
+  RecordUserAction(action_id);
   if (action_id == kUserActionAcceptButtonClicked) {
     exit_callback_.Run(g_usage_statistics_reporting_enabled
                            ? Result::ACCEPTED_WITH_USAGE_STATS_REPORTING
                            : Result::ACCEPTED_WITHOUT_USAGE_STATS_REPORTING);
   } else if (action_id == kUserActionBackButtonClicked) {
     exit_callback_.Run(Result::BACK);
-  } else {
-    BaseScreen::OnUserAction(action_id);
   }
 }
 

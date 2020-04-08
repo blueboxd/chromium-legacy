@@ -35,6 +35,8 @@ class HeapMojoReceiver {
     static_assert(IsGarbageCollectedType<Owner>::value,
                   "Owner needs to be a garbage collected object");
   }
+  HeapMojoReceiver(const HeapMojoReceiver&) = delete;
+  HeapMojoReceiver& operator=(const HeapMojoReceiver&) = delete;
 
   // Methods to redirect to mojo::Receiver:
   bool is_bound() const { return wrapper_->receiver().is_bound(); }

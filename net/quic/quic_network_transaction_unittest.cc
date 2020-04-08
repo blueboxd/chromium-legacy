@@ -3307,8 +3307,10 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
 // Verify that if a QUIC connection RTOs, the QuicHttpStream will
 // return QUIC_PROTOCOL_ERROR.
 TEST_P(QuicNetworkTransactionTest, TooManyRtosAfterHandshakeConfirmed) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 ||
+      GetQuicReloadableFlag(quic_use_blackhole_detector)) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    // TODO(fayang): Add time driven TOO_MANY_RTOS test.
     return;
   }
 
@@ -3436,8 +3438,10 @@ TEST_P(QuicNetworkTransactionTest, TooManyRtosAfterHandshakeConfirmed) {
 // QUIC will not be marked as broken.
 TEST_P(QuicNetworkTransactionTest,
        TooManyRtosAfterHandshakeConfirmedAndStreamReset) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 ||
+      GetQuicReloadableFlag(quic_use_blackhole_detector)) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    // TODO(fayang): Add time driven TOO_MANY_RTOS test.
     return;
   }
 

@@ -84,6 +84,9 @@ void QueryStorageUsageAndQuotaCallback(
 
 }  // namespace
 
+StorageManager::StorageManager(ContextLifecycleNotifier* notifier)
+    : permission_service_(notifier), quota_host_(notifier) {}
+
 ScriptPromise StorageManager::persist(ScriptState* script_state) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -158,9 +161,15 @@ ScriptPromise StorageManager::estimate(ScriptState* script_state) {
   return promise;
 }
 
+void StorageManager::Trace(Visitor* visitor) {
+  visitor->Trace(permission_service_);
+  visitor->Trace(quota_host_);
+  ScriptWrappable::Trace(visitor);
+}
+
 PermissionService* StorageManager::GetPermissionService(
     ExecutionContext* execution_context) {
-  if (!permission_service_) {
+  if (!permission_service_.is_bound()) {
     ConnectToPermissionService(
         execution_context,
         permission_service_.BindNewPipeAndPassReceiver(
@@ -186,7 +195,7 @@ void StorageManager::PermissionRequestComplete(ScriptPromiseResolver* resolver,
 
 mojom::blink::QuotaManagerHost* StorageManager::GetQuotaHost(
     ExecutionContext* execution_context) {
-  if (!quota_host_) {
+  if (!quota_host_.is_bound()) {
     ConnectToQuotaManagerHost(
         execution_context,
         quota_host_.BindNewPipeAndPassReceiver(

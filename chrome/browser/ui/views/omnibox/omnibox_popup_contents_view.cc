@@ -151,9 +151,10 @@ OmniboxPopupContentsView::OmniboxPopupContentsView(
 }
 
 OmniboxPopupContentsView::~OmniboxPopupContentsView() {
-  // We don't need to do anything with |popup_| here.  The OS either has already
-  // closed the window, in which case it's been deleted, or it will soon, in
-  // which case there's nothing we need to do.
+  // We don't need to close or delete |popup_| here. The OS either has already
+  // closed the window, in which case it's been deleted, or it will soon.
+  if (popup_)
+    popup_->RemoveObserver(this);
 }
 
 void OmniboxPopupContentsView::OpenMatch(

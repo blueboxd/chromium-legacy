@@ -17,6 +17,8 @@ console.error('On first page');
   document.getElementById('page2').hidden = true;
   history.replaceState({}, '', window.location.pathname + '#identifier');
   gaia.chromeOSLogin.backButton(false);
+  sendSetPrimaryActionLabel('Next');
+  sendSetPrimaryActionEnabled(true);
 }
 
 gaia.chromeOSLogin.registerHtml5Listener = function() {
@@ -28,6 +30,10 @@ gaia.chromeOSLogin.registerHtml5Listener = function() {
         if (!gaia.chromeOSLogin.initialized_) {
           gaia.chromeOSLogin.initialized_ = true;
           goFirstPage();
+        } else if (e.data == 'primaryActionHit') {
+          goNext();
+        } else if (e.data == 'secondaryActionHit') {
+          sendSetSecondaryActionEnabled(false);
         }
     }
   };
@@ -111,6 +117,10 @@ function goNext() {
 
     gaia.chromeOSLogin.attemptLogin(email, "");
     gaia.chromeOSLogin.backButton(true);
+    sendSetPrimaryActionLabel('Next');
+    sendSetPrimaryActionEnabled(true);
+    sendSetSecondaryActionLabel('Disable button');
+    sendSetSecondaryActionEnabled(true);
   } else if (!document.getElementById("page2").hidden) {
     var email = document.getElementById("identifier").value;
     var password = document.getElementById("password").value;

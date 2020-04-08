@@ -150,6 +150,11 @@ Polymer({
    * @private
    */
   onUsageChanged_() {
+    if (this.$.usageStats.checked) {
+      chrome.send('login.EulaScreen.userActed', ['select-stats-usage']);
+    } else {
+      chrome.send('login.EulaScreen.userActed', ['unselect-stats-usage']);
+    }
     this.screen.onUsageStatsClicked_(this.$.usageStats.checked);
   },
 
@@ -157,6 +162,7 @@ Polymer({
    * @private
    */
   onAdditionalTermsClicked_() {
+    chrome.send('login.EulaScreen.userActed', ['show-additional-tos']);
     this.$['additional-tos'].showModal();
   },
 
@@ -182,6 +188,7 @@ Polymer({
    * @private
    */
   onInstallationSettingsClicked_() {
+    chrome.send('login.EulaScreen.userActed', ['show-security-settings']);
     chrome.send('eulaOnInstallationSettingsPopupOpened');
     this.$.eulaDialog.hidden = true;
     this.$.installationSettingsDialog.hidden = false;
@@ -205,6 +212,7 @@ Polymer({
    * @private
    */
   onUsageStatsHelpLinkClicked_(e) {
+    chrome.send('login.EulaScreen.userActed', ['show-stats-usage-learn-more']);
     this.$['learn-more'].focus();
     chrome.send('eulaOnLearnMore');
     e.stopPropagation();

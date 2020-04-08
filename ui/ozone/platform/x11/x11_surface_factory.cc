@@ -10,10 +10,10 @@
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/gl/gl_surface_egl.h"
+#include "ui/gl/gl_surface_egl_x11_gles2.h"
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/common/gl_ozone_egl.h"
 #include "ui/ozone/platform/x11/gl_ozone_glx.h"
-#include "ui/ozone/platform/x11/gl_surface_egl_ozone_x11.h"
 #include "ui/ozone/platform/x11/gl_surface_egl_readback_x11.h"
 #include "ui/ozone/platform/x11/x11_canvas_surface.h"
 
@@ -43,7 +43,7 @@ class GLOzoneEGLX11 : public GLOzoneEGL {
           base::MakeRefCounted<GLSurfaceEglReadbackX11>(window));
     } else {
       return gl::InitializeGLSurface(
-          base::MakeRefCounted<GLSurfaceEGLOzoneX11>(window));
+          base::MakeRefCounted<gl::NativeViewGLSurfaceEGLX11GLES2>(window));
     }
   }
 

@@ -255,7 +255,7 @@ jumbo_component("gl") {
     ]
   }
 
-  if (use_x11) {
+  if (use_x11 || ozone_platform_x11) {
     sources += [
       "gl_surface_egl_x11.cc",
       "gl_surface_egl_x11.h",
@@ -604,6 +604,7 @@ test("gl_unittests") {
 
   data_deps = [ "//third_party/mesa_headers" ]
 
+  # TODO(https://crbug.com/789065): this must be moved to Ozone.
   if (use_x11) {
     sources += [ "gl_context_glx_unittest.cc" ]
     deps += [ "//ui/gfx/x" ]

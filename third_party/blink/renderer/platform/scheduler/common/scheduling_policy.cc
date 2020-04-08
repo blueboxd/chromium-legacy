@@ -52,7 +52,6 @@ bool SchedulingPolicy::IsFeatureSticky(SchedulingPolicy::Feature feature) {
     case Feature::kWebNfc:
     case Feature::kWebFileSystem:
     case Feature::kAppBanner:
-    case Feature::kPrinting:
       return true;
   }
 }

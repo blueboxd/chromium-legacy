@@ -27,7 +27,7 @@ class RecommendAppsScreenView;
 class RecommendAppsScreen : public BaseScreen,
                             public RecommendAppsFetcherDelegate {
  public:
-  enum class Result { SELECTED, SKIPPED, NOT_APPLICABLE };
+  enum class Result { SELECTED, SKIPPED, NOT_APPLICABLE, LOAD_ERROR };
 
   static std::string GetResultString(Result result);
 

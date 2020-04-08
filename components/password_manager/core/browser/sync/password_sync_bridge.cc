@@ -846,7 +846,9 @@ std::set<int> PasswordSyncBridge::GetUnsyncedPasswordsStorageKeys() {
   std::unique_ptr<syncer::MetadataBatch> batch =
       metadata_store->GetAllSyncMetadata();
   for (const auto& metadata_entry : batch->GetAllMetadata()) {
-    if (change_processor()->IsEntityUnsynced(metadata_entry.first)) {
+    // Ignore unsynced deletions.
+    if (!metadata_entry.second->is_deleted() &&
+        change_processor()->IsEntityUnsynced(metadata_entry.first)) {
       storage_keys.insert(ParsePrimaryKey(metadata_entry.first));
     }
   }

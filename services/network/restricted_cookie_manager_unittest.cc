@@ -45,10 +45,11 @@ class RecordingNetworkContextClient : public network::TestNetworkContextClient {
     // one thing.
     std::vector<net::CanonicalCookie> cookie;
     net::CanonicalCookie::CookieInclusionStatus status;
+    base::Optional<std::string> devtools_request_id;
   };
 
-  RecordingNetworkContextClient() {}
-  ~RecordingNetworkContextClient() override {}
+  RecordingNetworkContextClient() = default;
+  ~RecordingNetworkContextClient() override = default;
 
   const std::vector<CookieOp>& recorded_activity() const {
     return recorded_activity_;
@@ -60,7 +61,8 @@ class RecordingNetworkContextClient : public network::TestNetworkContextClient {
       int32_t routing_id,
       const GURL& url,
       const net::SiteForCookies& site_for_cookies,
-      const std::vector<net::CookieWithStatus>& cookie_list) override {
+      const std::vector<net::CookieWithStatus>& cookie_list,
+      const base::Optional<std::string>& devtools_request_id) override {
     EXPECT_EQ(false, is_service_worker);
     EXPECT_EQ(kProcessId, process_id);
     EXPECT_EQ(kRoutingId, routing_id);
@@ -70,6 +72,7 @@ class RecordingNetworkContextClient : public network::TestNetworkContextClient {
       set.site_for_cookies = site_for_cookies.RepresentativeUrl();
       set.cookie.push_back(cookie_and_status.cookie);
       set.status = cookie_and_status.status;
+      set.devtools_request_id = devtools_request_id;
       recorded_activity_.push_back(set);
     }
   }
@@ -80,7 +83,8 @@ class RecordingNetworkContextClient : public network::TestNetworkContextClient {
       int32_t routing_id,
       const GURL& url,
       const net::SiteForCookies& site_for_cookies,
-      const std::vector<net::CookieWithStatus>& cookie_list) override {
+      const std::vector<net::CookieWithStatus>& cookie_list,
+      const base::Optional<std::string>& devtools_request_id) override {
     EXPECT_EQ(false, is_service_worker);
     EXPECT_EQ(kProcessId, process_id);
     EXPECT_EQ(kRoutingId, routing_id);
@@ -91,6 +95,7 @@ class RecordingNetworkContextClient : public network::TestNetworkContextClient {
       get.site_for_cookies = site_for_cookies.RepresentativeUrl();
       get.cookie.push_back(cookie_and_status.cookie);
       get.status = cookie_and_status.status;
+      get.devtools_request_id = devtools_request_id;
       recorded_activity_.push_back(get);
     }
   }

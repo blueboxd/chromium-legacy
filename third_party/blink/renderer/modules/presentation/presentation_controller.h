@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom-blink.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -30,6 +31,7 @@ class PresentationAvailabilityState;
 class MODULES_EXPORT PresentationController
     : public GarbageCollected<PresentationController>,
       public Supplement<LocalFrame>,
+      public ExecutionContextLifecycleObserver,
       public mojom::blink::PresentationController {
   USING_GARBAGE_COLLECTED_MIXIN(PresentationController);
 
@@ -77,6 +79,9 @@ class MODULES_EXPORT PresentationController
   virtual void RemoveAvailabilityObserver(PresentationAvailabilityObserver*);
 
  private:
+  // Implementation of ExecutionContextLifecycleObserver.
+  void ContextDestroyed() override {}
+
   // mojom::blink::PresentationController implementation.
   void OnScreenAvailabilityUpdated(const KURL&,
                                    mojom::blink::ScreenAvailability) override;

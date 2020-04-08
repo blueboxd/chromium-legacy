@@ -529,6 +529,12 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ChromeVoxFindInPage) {
   // Press Search+/ to enter ChromeVox's "find in page".
   sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_OEM_2); });
   sm_.ExpectSpeech("Find in page");
+  sm_.ExpectSpeech("Search");
+  sm_.ExpectSpeech(
+      "Type to search the page. Press enter to jump to the result, up or down "
+      "arrows to browse results, keep typing to change your search, or escape "
+      "to cancel.");
+
   sm_.Replay();
 }
 

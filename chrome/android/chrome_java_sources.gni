@@ -1595,7 +1595,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/tab/TabLifecycle.java",
   "java/src/org/chromium/chrome/browser/tab/TabObserver.java",
   "java/src/org/chromium/chrome/browser/tab/TabParentIntent.java",
-  "java/src/org/chromium/chrome/browser/tab/TabRedirectHandler.java",
   "java/src/org/chromium/chrome/browser/tab/TabState.java",
   "java/src/org/chromium/chrome/browser/tab/TabStateBrowserControlsVisibilityDelegate.java",
   "java/src/org/chromium/chrome/browser/tab/TabThemeColorHelper.java",

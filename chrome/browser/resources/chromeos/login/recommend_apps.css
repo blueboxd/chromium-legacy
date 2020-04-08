@@ -15,11 +15,7 @@
 .recommend-apps-loading #app-list-error,
 .recommend-apps-loaded #recommend-apps-retry-button,
 .recommend-apps-loading #recommend-apps-install-button,
-.recommend-apps-loading #recommend-apps-retry-button,
-.error #subtitle,
-.error #app-list-view-container,
-.error .app-list-loading,
-.error #recommend-apps-install-button {
+.recommend-apps-loading #recommend-apps-retry-button {
   display: none;
 }
 

@@ -84,7 +84,6 @@ public class AccountManagerFacade {
     /**
      * @param delegate the AccountManagerDelegate to use as a backend
      */
-    @VisibleForTesting
     public AccountManagerFacade(AccountManagerDelegate delegate) {
         ThreadUtils.assertOnUiThread();
         mDelegate = delegate;

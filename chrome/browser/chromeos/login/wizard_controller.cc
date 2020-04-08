@@ -1176,6 +1176,7 @@ void WizardController::OnRecommendAppsScreenExit(
       break;
     case RecommendAppsScreen::Result::SKIPPED:
     case RecommendAppsScreen::Result::NOT_APPLICABLE:
+    case RecommendAppsScreen::Result::LOAD_ERROR:
       ShowAssistantOptInFlowScreen();
       break;
   }

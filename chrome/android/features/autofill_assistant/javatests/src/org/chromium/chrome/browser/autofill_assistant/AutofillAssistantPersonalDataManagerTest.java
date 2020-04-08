@@ -10,6 +10,7 @@ import static android.support.test.espresso.action.ViewActions.clearText;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.scrollTo;
 import static android.support.test.espresso.action.ViewActions.typeText;
+import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.RootMatchers.withDecorView;
 import static android.support.test.espresso.matcher.ViewMatchers.hasDescendant;
@@ -167,6 +168,68 @@ public class AutofillAssistantPersonalDataManagerTest {
         waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
         assertThat(getElementValue(getWebContents(), "profile_name"), is("John Doe"));
         assertThat(getElementValue(getWebContents(), "email"), is("johndoe@google.com"));
+    }
+
+    /**
+     * Add a contact with Autofill Assistant UI, then edit the profile multiple times (see
+     * b/153139772).
+     */
+    @Test
+    @MediumTest
+    public void testCreateAndEditProfileMultipleTimes() throws Exception {
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add(
+                (ActionProto) ActionProto.newBuilder()
+                        .setCollectUserData(
+                                CollectUserDataProto.newBuilder()
+                                        .setContactDetails(ContactDetailsProto.newBuilder()
+                                                                   .setContactDetailsName("contact")
+                                                                   .setRequestPayerName(true)
+                                                                   .setRequestPayerEmail(true)
+                                                                   .setRequestPayerPhone(false))
+                                        .setRequestTermsAndConditions(false))
+                        .build());
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("form_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Address")))
+                        .build(),
+                list);
+        runScript(script);
+
+        waitUntilViewMatchesCondition(
+                allOf(withId(R.id.section_title_add_button_label), withText("Add contact info")),
+                isCompletelyDisplayed());
+        onView(allOf(withId(R.id.section_title_add_button_label), withText("Add contact info")))
+                .perform(click());
+        waitUntilViewMatchesCondition(
+                withContentDescription("Name*"), allOf(isDisplayed(), isEnabled()));
+        onView(withContentDescription("Name*")).perform(typeText("John Doe"));
+        waitUntilViewMatchesCondition(
+                withContentDescription("Email*"), allOf(isDisplayed(), isEnabled()));
+        onView(withContentDescription("Email*")).perform(typeText("doe@google.com"));
+        onView(withId(org.chromium.chrome.R.id.editor_dialog_done_button)).perform(click());
+        waitUntilViewMatchesCondition(withText("Continue"), isEnabled());
+
+        // First edit: no changes.
+        onView(withText("Contact info")).perform(click());
+        onView(withContentDescription("Edit contact info")).perform(click());
+        waitUntilViewMatchesCondition(
+                withContentDescription("Name*"), allOf(isDisplayed(), isEnabled()));
+        onView(withId(org.chromium.chrome.R.id.editor_dialog_done_button)).perform(click());
+
+        // Second edit: change name from John Doe to Jane Doe.
+        onView(withContentDescription("Edit contact info")).perform(click());
+        waitUntilViewMatchesCondition(
+                withContentDescription("Name*"), allOf(isDisplayed(), isEnabled()));
+        onView(withContentDescription("Name*")).perform(clearText(), typeText("Jane Doe"));
+        onView(withId(org.chromium.chrome.R.id.editor_dialog_done_button)).perform(click());
+
+        // There used to be a bug where consecutive edits of the same profile would create a
+        // duplicate profile, which would break the following checks.
+        onView(withText(containsString("John Doe"))).check(doesNotExist());
+        onView(withText(containsString("Jane Doe"))).check(matches(isDisplayed()));
     }
 
     /**

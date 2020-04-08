@@ -20326,6 +20326,17 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="3" label="NON_ERROR_PAGE_URL_AND_NO_ERROR_INFO"/>
 </enum>
 
+<enum name="EulaScreenUserAction">
+  <summary>Actions which happen on the screen.</summary>
+  <int value="0" label="Accept button clicked"/>
+  <int value="1" label="Back button clicked"/>
+  <int value="2" label="Additional ToS shown"/>
+  <int value="3" label="Security settings shown"/>
+  <int value="4" label="Learn more about usage stats shown"/>
+  <int value="5" label="Stats usage unselected"/>
+  <int value="6" label="Stats usage selected"/>
+</enum>
+
 <enum name="EVCTCompliance">
   <obsolete>
     Deprecated 06/2017.
@@ -69268,7 +69279,6 @@ Called by update_scheduler_enums.py.-->
   <int value="40" label="OutstandingNetworkRequestFetch"/>
   <int value="41" label="OutstandingNetworkRequestXHR"/>
   <int value="42" label="AppBanner"/>
-  <int value="43" label="Printing"/>
 </enum>
 
 <enum name="WebShareMethod">

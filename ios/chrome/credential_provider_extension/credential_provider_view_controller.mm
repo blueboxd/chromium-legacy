@@ -4,6 +4,8 @@
 
 #import "ios/chrome/credential_provider_extension/credential_provider_view_controller.h"
 
+#import "ios/chrome/common/credential_provider/archivable_credential_store.h"
+#import "ios/chrome/common/credential_provider/constants.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #import "ios/chrome/credential_provider_extension/reauthentication_handler.h"
 #import "ios/chrome/credential_provider_extension/ui/credential_list_coordinator.h"
@@ -13,6 +15,9 @@
 #endif
 
 @interface CredentialProviderViewController () <SuccessfulReauthTimeAccessor>
+
+// Interface for the persistent credential store.
+@property(nonatomic, strong) id<CredentialStore> credentialStore;
 
 // List coordinator that shows the list of passwords when started.
 @property(nonatomic, strong) CredentialListCoordinator* listCoordinator;
@@ -38,6 +43,7 @@
     if (result != ReauthenticationResult::kFailure) {
       self.listCoordinator = [[CredentialListCoordinator alloc]
           initWithBaseViewController:self
+                     credentialStore:self.credentialStore
                              context:self.extensionContext
                   serviceIdentifiers:serviceIdentifiers];
       [self.listCoordinator start];
@@ -54,6 +60,14 @@
 }
 
 #pragma mark - Properties
+
+- (id<CredentialStore>)credentialStore {
+  if (!_credentialStore) {
+    _credentialStore = [[ArchivableCredentialStore alloc]
+        initWithFileURL:CredentialProviderSharedArchivableStoreURL()];
+  }
+  return _credentialStore;
+}
 
 - (ReauthenticationHandler*)reauthenticationHandler {
   if (!_reauthenticationHandler) {

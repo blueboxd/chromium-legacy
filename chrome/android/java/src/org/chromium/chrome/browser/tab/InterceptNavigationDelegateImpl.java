@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.components.external_intents.ExternalNavigationParams;
+import org.chromium.components.external_intents.RedirectHandlerImpl;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content_public.browser.NavigationController;
@@ -149,9 +150,9 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
             return true;
         }
 
-        TabRedirectHandler tabRedirectHandler = null;
+        RedirectHandlerImpl redirectHandler = null;
         if (navigationParams.isMainFrame) {
-            tabRedirectHandler = RedirectHandlerTabHelper.getOrCreateHandlerFor(mTab);
+            redirectHandler = RedirectHandlerTabHelper.getOrCreateHandlerFor(mTab);
         } else if (navigationParams.isExternalProtocol) {
             // Only external protocol navigations are intercepted for iframe navigations.  Since
             // we do not see all previous navigations for the iframe, we can not build a complete
@@ -163,20 +164,20 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
             // not covering the case where a gesture is carried over via a redirect.  This is
             // currently not feasible because we do not see all navigations for iframes and it is
             // better to error on the side of caution and require direct user gestures for iframes.
-            tabRedirectHandler = TabRedirectHandler.create();
+            redirectHandler = RedirectHandlerImpl.create();
         } else {
             assert false;
             return false;
         }
-        tabRedirectHandler.updateNewUrlLoading(navigationParams.pageTransitionType,
+        redirectHandler.updateNewUrlLoading(navigationParams.pageTransitionType,
                 navigationParams.isRedirect,
                 navigationParams.hasUserGesture || navigationParams.hasUserGestureCarryover,
                 lastUserInteractionTime, getLastCommittedEntryIndex());
 
         boolean shouldCloseTab = shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent();
-        ExternalNavigationParams params = buildExternalNavigationParams(navigationParams,
-                tabRedirectHandler,
-                shouldCloseTab).build();
+        ExternalNavigationParams params =
+                buildExternalNavigationParams(navigationParams, redirectHandler, shouldCloseTab)
+                        .build();
         @OverrideUrlLoadingResult
         int result = mExternalNavHandler.shouldOverrideUrlLoading(params);
         mLastOverrideUrlLoadingResult = result;
@@ -213,7 +214,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
      * ExternalNavigationHandler#shouldOverrideUrlLoading().
      */
     public ExternalNavigationParams.Builder buildExternalNavigationParams(
-            NavigationParams navigationParams, TabRedirectHandler tabRedirectHandler,
+            NavigationParams navigationParams, RedirectHandlerImpl redirectHandler,
             boolean shouldCloseTab) {
         boolean isInitialTabLaunchInBackground =
                 mTab.getLaunchType() == TabLaunchType.FROM_LONGPRESS_BACKGROUND && shouldCloseTab;
@@ -223,7 +224,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
                 .Builder(navigationParams.url, mTab.isIncognito(), navigationParams.referrer,
                         navigationParams.pageTransitionType, navigationParams.isRedirect)
                 .setApplicationMustBeInForeground(true)
-                .setRedirectHandler(tabRedirectHandler)
+                .setRedirectHandler(redirectHandler)
                 .setOpenInNewTab(shouldCloseTab)
                 .setIsBackgroundTabNavigation(mTab.isHidden() && !isInitialTabLaunchInBackground)
                 .setIsMainFrame(navigationParams.isMainFrame)
@@ -281,7 +282,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
         if (RedirectHandlerTabHelper.getOrCreateHandlerFor(mTab).isOnNavigation()) {
             return RedirectHandlerTabHelper.getOrCreateHandlerFor(mTab)
                            .getLastCommittedEntryIndexBeforeStartingNavigation()
-                    == TabRedirectHandler.INVALID_ENTRY_INDEX;
+                    == RedirectHandlerImpl.INVALID_ENTRY_INDEX;
         }
         return false;
     }

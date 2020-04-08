@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.tab;
+package org.chromium.components.external_intents;
 
 import android.content.ComponentName;
 import android.content.Intent;
@@ -14,7 +14,6 @@ import android.text.TextUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.PackageManagerUtils;
-import org.chromium.components.external_intents.RedirectHandler;
 import org.chromium.ui.base.PageTransition;
 
 import java.util.HashSet;
@@ -23,7 +22,7 @@ import java.util.List;
 /**
  * This class contains the logic to determine effective navigation/redirect.
  */
-public class TabRedirectHandler implements RedirectHandler {
+public class RedirectHandlerImpl implements RedirectHandler {
     /**
      * An invalid entry index.
      */
@@ -50,11 +49,11 @@ public class TabRedirectHandler implements RedirectHandler {
 
     private boolean mShouldNotOverrideUrlLoadingOnCurrentRedirectChain;
 
-    public static TabRedirectHandler create() {
-        return new TabRedirectHandler();
+    public static RedirectHandlerImpl create() {
+        return new RedirectHandlerImpl();
     }
 
-    protected TabRedirectHandler() {}
+    protected RedirectHandlerImpl() {}
 
     /**
      * Updates |mIntentHistory| and |mLastIntentUpdatedTime|. If |intent| comes from chrome and
@@ -92,8 +91,8 @@ public class TabRedirectHandler implements RedirectHandler {
     private static boolean isIntentToChrome(Intent intent) {
         String chromePackageName = ContextUtils.getApplicationContext().getPackageName();
         return TextUtils.equals(chromePackageName, intent.getPackage())
-                || TextUtils.equals(chromePackageName, IntentUtils.safeGetStringExtra(intent,
-                        Browser.EXTRA_APPLICATION_ID));
+                || TextUtils.equals(chromePackageName,
+                        IntentUtils.safeGetStringExtra(intent, Browser.EXTRA_APPLICATION_ID));
     }
 
     private void clearIntentHistory() {

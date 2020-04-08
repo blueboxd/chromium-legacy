@@ -18,6 +18,7 @@
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
+#include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-forward.h"
 
 class GURL;
 
@@ -158,10 +159,13 @@ void PortalAttached(RenderFrameHostImpl* render_frame_host_impl);
 void PortalDetached(RenderFrameHostImpl* render_frame_host_impl);
 void PortalActivated(RenderFrameHostImpl* render_frame_host_impl);
 
-void ReportSameSiteCookieIssue(RenderFrameHostImpl* render_frame_host_impl,
-                               const net::CookieWithStatus& excluded_cookie,
-                               const GURL& url,
-                               const GURL& site_for_cookies);
+void ReportSameSiteCookieIssue(
+    RenderFrameHostImpl* render_frame_host_impl,
+    const net::CookieWithStatus& excluded_cookie,
+    const GURL& url,
+    const net::SiteForCookies& site_for_cookies,
+    blink::mojom::SameSiteCookieOperation operation,
+    const base::Optional<std::string>& devtools_request_id);
 }  // namespace devtools_instrumentation
 
 }  // namespace content

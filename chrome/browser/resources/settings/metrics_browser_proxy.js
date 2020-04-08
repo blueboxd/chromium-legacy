@@ -30,7 +30,7 @@ cr.define('settings', function() {
     PASSWORD_CHECK: 7,
     IMPROVE_SECURITY: 8,
     // Leave this at the end.
-    MAX_VALUE: 8,
+    COUNT: 9,
   };
 
   /**
@@ -97,8 +97,8 @@ cr.define('settings', function() {
     /** @override*/
     recordSettingsPageHistogram(interaction) {
       chrome.send('metricsHandler:recordInHistogram', [
-        'SettingsPage.PrivacyElementInteractions', interaction,
-        settings.PrivacyElementInteractions.MAX_VALUE
+        'Settings.PrivacyElementInteractions', interaction,
+        settings.PrivacyElementInteractions.COUNT
       ]);
     }
   }

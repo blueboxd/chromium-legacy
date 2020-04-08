@@ -485,6 +485,27 @@ class PasswordManagerTest : public testing::Test {
     return form;
   }
 
+  PasswordForm MakeSimpleFormWithOnlyUsernameField() {
+    PasswordForm form;
+    form.origin = GURL("http://www.google.com/a/LoginAuth");
+    form.username_element = ASCIIToUTF16("Email");
+    form.submit_element = ASCIIToUTF16("signIn");
+    form.signon_realm = "http://www.google.com/";
+    form.form_data.name = ASCIIToUTF16("username_only_form");
+    form.form_data.url = GURL("http://www.google.com/a/LoginAuth");
+    form.form_data.unique_renderer_id = 10;
+
+    FormFieldData field;
+    field.name = ASCIIToUTF16("Email");
+    field.id_attribute = field.name;
+    field.name_attribute = field.name;
+    field.form_control_type = "text";
+    field.unique_renderer_id = 2;
+    form.form_data.fields.push_back(field);
+
+    return form;
+  }
+
   PasswordForm MakeSimpleFormWithOnlyPasswordField() {
     PasswordForm form(MakeSimpleForm());
     form.username_element.clear();
@@ -2907,22 +2928,69 @@ TEST_F(PasswordManagerTest, AutofillPredictionBeforeFormParsed) {
       .WillRepeatedly(Return(true));
 
   PasswordForm form(MakeSimpleForm());
-  // Simulate that the form is incorrectly marked as sign-up, which means it can
-  // not be filled without server predictions.
-  form.form_data.fields[1].autocomplete_attribute = "new-password";
 
   // Server predictions says that this is a sign-in form. Since they have higher
   // priority than autocomplete attributes then the form should be filled.
   FormStructure form_structure(form.form_data);
   form_structure.field(1)->set_server_type(autofill::PASSWORD);
+#if !defined(OS_IOS)
   manager()->ProcessAutofillPredictions(&driver_, {&form_structure});
+#else  // On iOS predictions are propagated with nullptr driver.
+  manager()->ProcessAutofillPredictions(nullptr, {&form_structure});
+#endif
 
   EXPECT_CALL(*store_, GetLogins(_, _))
       .WillRepeatedly(WithArg<1>(InvokeConsumer(form)));
   EXPECT_CALL(driver_, FillPasswordForm(_));
 
+  // Simulate that the form is incorrectly marked as sign-up, which means it can
+  // not be filled without server predictions.
+  form.form_data.fields[1].autocomplete_attribute = "new-password";
+
   manager()->OnPasswordFormsParsed(&driver_, {form.form_data});
-  task_runner_->FastForwardUntilNoTasksRemain();
+}
+
+// Check that when autofill predictions are received before a form is found then
+// server predictions are not ignored and used for filling in case there are
+// multiple forms on a page, including forms that have UsernameFirstFlow votes.
+TEST_F(PasswordManagerTest, AutofillPredictionBeforeMultipleFormsParsed) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kUsernameFirstFlow);
+  PasswordFormManager::set_wait_for_server_predictions_for_filling(true);
+  EXPECT_CALL(client_, IsSavingAndFillingEnabled(_))
+      .WillRepeatedly(Return(true));
+
+  PasswordForm form1(MakeSimpleFormWithOnlyUsernameField());
+  PasswordForm form2(MakeSimpleForm());
+
+  EXPECT_CALL(*store_, GetLogins)
+      .WillRepeatedly(WithArg<1>(InvokeConsumer(form2)));
+
+  FormStructure form_structure1(form1.form_data);
+  form_structure1.field(0)->set_server_type(autofill::SINGLE_USERNAME);
+  // Server predictions says that this is a sign-in form. Since they have higher
+  // priority than autocomplete attributes then the form should be filled.
+  FormStructure form_structure2(form2.form_data);
+  form_structure2.field(1)->set_server_type(autofill::PASSWORD);
+
+#if !defined(OS_IOS)
+  manager()->ProcessAutofillPredictions(&driver_,
+                                        {&form_structure1, &form_structure2});
+  // Both forms should be filled.
+  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(2);
+#else  // On iOS predictions are propagated with nullptr driver.
+  manager()->ProcessAutofillPredictions(nullptr,
+                                        {&form_structure1, &form_structure2});
+  // Only one form should be filled, as username first flow is not supported
+  // yet on iOS.
+  EXPECT_CALL(driver_, FillPasswordForm(_));
+#endif
+
+  // Simulate that the form is incorrectly marked as sign-up, which means it can
+  // not be filled without server predictions.
+  form2.form_data.fields[1].autocomplete_attribute = "new-password";
+  manager()->OnPasswordFormsParsed(&driver_,
+                                   {form1.form_data, form2.form_data});
 }
 
 // Checks the following scenario:

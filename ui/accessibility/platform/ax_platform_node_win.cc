@@ -1370,10 +1370,11 @@ IFACEMETHODIMP AXPlatformNodeWin::get_attributes(BSTR* attributes) {
 IFACEMETHODIMP AXPlatformNodeWin::get_indexInParent(LONG* index_in_parent) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_INDEX_IN_PARENT);
   COM_OBJECT_VALIDATE_1_ARG(index_in_parent);
-  *index_in_parent = GetIndexInParent();
-  if (*index_in_parent < 0)
+  base::Optional<int> index = GetIndexInParent();
+  if (!index.has_value())
     return E_FAIL;
 
+  *index_in_parent = index.value();
   return S_OK;
 }
 

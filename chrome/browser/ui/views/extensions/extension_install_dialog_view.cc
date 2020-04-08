@@ -205,6 +205,10 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
       withhold_permissions_checkbox_(nullptr) {
   DCHECK(prompt_->extension());
 
+  extensions::ExtensionRegistry* extension_registry =
+      extensions::ExtensionRegistry::Get(profile_);
+  extension_registry_observer_.Add(extension_registry);
+
   int buttons = prompt_->GetDialogButtons();
   DCHECK(buttons & ui::DIALOG_BUTTON_CANCEL);
 
@@ -399,6 +403,29 @@ bool ExtensionInstallDialogView::ShouldShowCloseButton() const {
   return true;
 }
 
+void ExtensionInstallDialogView::CloseDialog() {
+  GetWidget()->Close();
+}
+
+void ExtensionInstallDialogView::OnExtensionUninstalled(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    extensions::UninstallReason reason) {
+  // Close the dialog if the extension is uninstalled.
+  if (extension->id() != prompt_->extension()->id())
+    return;
+  CloseDialog();
+}
+
+void ExtensionInstallDialogView::OnShutdown(
+    extensions::ExtensionRegistry* registry) {
+  extensions::ExtensionRegistry* extension_registry =
+      extensions::ExtensionRegistry::Get(profile_);
+  DCHECK_EQ(extension_registry, registry);
+  extension_registry_observer_.Remove(extension_registry);
+  CloseDialog();
+}
+
 ax::mojom::Role ExtensionInstallDialogView::GetAccessibleWindowRole() {
   return ax::mojom::Role::kAlertDialog;
 }
@@ -424,7 +451,7 @@ void ExtensionInstallDialogView::LinkClicked() {
     chrome::ScopedTabbedBrowserDisplayer displayer(profile_);
     displayer.browser()->OpenURL(params);
   }
-  GetWidget()->Close();
+  CloseDialog();
 }
 
 void ExtensionInstallDialogView::CreateContents() {

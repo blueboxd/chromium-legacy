@@ -1,0 +1,31 @@
+Verifies that setting a cookie with SameSite=None and without Secure triggers an inspector issue.
+
+Inspector issue: {
+  "issue": {
+    "code": "SameSiteCookieIssue",
+    "details": {
+      "sameSiteCookieIssueDetails": {
+        "cookie": {
+          "name": "name",
+          "path": "/inspector-protocol/network/resources",
+          "domain": "cookie.test"
+        },
+        "cookieWarningReasons": [
+          "WarnSameSiteNoneInsecure"
+        ],
+        "cookieExclusionReasons": [
+          "ExcludeSameSiteNoneInsecure"
+        ],
+        "operation": "SetCookie",
+        "siteForCookies": "http://127.0.0.1/",
+        "cookieUrl": "https://cookie.test:8443/inspector-protocol/network/resources/set-cookie.php?cookie=name%3Dvalue%3B%20SameSite%3DNone",
+        "request": {
+          "requestId": "<request-id>",
+          "url": "https://cookie.test:8443/inspector-protocol/network/resources/set-cookie.php?cookie=name%3Dvalue%3B%20SameSite%3DNone"
+        }
+      }
+    }
+  }
+}
+
+

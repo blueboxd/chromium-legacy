@@ -31,6 +31,8 @@ class HeapMojoRemote {
  public:
   explicit HeapMojoRemote(ContextLifecycleNotifier* notifier)
       : wrapper_(MakeGarbageCollected<Wrapper>(notifier)) {}
+  HeapMojoRemote(const HeapMojoRemote&) = delete;
+  HeapMojoRemote& operator=(const HeapMojoRemote&) = delete;
 
   // Methods to redirect to mojo::Remote.
   using Proxy = typename Interface::Proxy_;

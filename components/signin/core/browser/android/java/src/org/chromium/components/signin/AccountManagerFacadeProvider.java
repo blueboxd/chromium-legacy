@@ -25,18 +25,17 @@ public class AccountManagerFacadeProvider {
     private AccountManagerFacadeProvider() {}
 
     /**
-     * Initializes AccountManagerFacade singleton instance. Can only be called once.
+     * Sets AccountManagerFacade singleton instance. Can only be called once.
      * Tests can override the instance with {@link #setInstanceForTests}.
      *
-     * @param delegate the AccountManagerDelegate to use
      */
     @MainThread
-    public static void initializeAccountManagerFacade(AccountManagerDelegate delegate) {
+    public static void setInstance(AccountManagerFacade accountManagerFacade) {
         ThreadUtils.assertOnUiThread();
         if (sInstance != null) {
             throw new IllegalStateException("AccountManagerFacade is already initialized!");
         }
-        sInstance = new AccountManagerFacade(delegate);
+        sInstance = accountManagerFacade;
         if (sTestingInstance != null) return;
         sAtomicInstance.set(sInstance);
     }
@@ -67,7 +66,7 @@ public class AccountManagerFacadeProvider {
 
     /**
      * Singleton instance getter. Singleton must be initialized before calling this by
-     * {@link #initializeAccountManagerFacade} or {@link #setInstanceForTests}.
+     * {@link #setInstance} or {@link #setInstanceForTests}.
      *
      * @return a singleton instance
      */

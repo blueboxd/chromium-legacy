@@ -40,11 +40,6 @@ Polymer({
     this.screen.onInstall();
   },
 
-  /** @private */
-  onRetry_() {
-    this.screen.onRetry();
-  },
-
   /**
    * Returns element by its id.
    * @param id String The ID of the element.

@@ -1149,8 +1149,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessible2IndexInParent) {
   ComPtr<IAccessible2> right_iaccessible2 = ToIAccessible2(right_iaccessible);
 
   LONG index;
-  EXPECT_EQ(S_OK, root_iaccessible2->get_indexInParent(&index));
-  EXPECT_EQ(0, index);
+  EXPECT_EQ(E_FAIL, root_iaccessible2->get_indexInParent(&index));
 
   EXPECT_EQ(S_OK, left_iaccessible2->get_indexInParent(&index));
   EXPECT_EQ(0, index);

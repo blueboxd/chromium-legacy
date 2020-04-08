@@ -54,7 +54,7 @@ class ParkableStringTest : public ::testing::Test {
 
   bool ParkAndWait(const ParkableString& string) {
     bool success =
-        string.Impl()->Park(ParkableStringImpl::ParkingMode::kAlways);
+        string.Impl()->Park(ParkableStringImpl::ParkingMode::kCompress);
     RunPostedTasks();
     return success;
   }
@@ -110,7 +110,8 @@ class ParkableStringTest : public ::testing::Test {
 // doesn't change. If it does, |kCompressedsize| will need to be updated.
 TEST_F(ParkableStringTest, CheckCompressedSize) {
   ParkableString parkable(MakeLargeString().ReleaseImpl());
-  EXPECT_TRUE(parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kAlways));
+  EXPECT_TRUE(
+      parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kCompress));
   RunPostedTasks();
   EXPECT_TRUE(parkable.Impl()->is_parked());
   EXPECT_EQ(kCompressedSize, parkable.Impl()->compressed_size());
@@ -132,7 +133,8 @@ TEST_F(ParkableStringTest, DontCompressRandomString) {
   }
   ParkableString parkable(String(data.data(), data.size()).ReleaseImpl());
 
-  EXPECT_TRUE(parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kAlways));
+  EXPECT_TRUE(
+      parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kCompress));
   RunPostedTasks();
   // Not parked because the temporary buffer wasn't large enough.
   EXPECT_FALSE(parkable.Impl()->is_parked());
@@ -140,7 +142,8 @@ TEST_F(ParkableStringTest, DontCompressRandomString) {
 
 TEST_F(ParkableStringTest, ParkUnparkIdenticalContent) {
   ParkableString parkable(MakeLargeString().ReleaseImpl());
-  EXPECT_TRUE(parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kAlways));
+  EXPECT_TRUE(
+      parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kCompress));
   RunPostedTasks();
   EXPECT_TRUE(parkable.Impl()->is_parked());
 
@@ -165,7 +168,8 @@ TEST_F(ParkableStringTest, DecompressUtf16String) {
   EXPECT_EQ(size_in_chars, parkable.length());
   EXPECT_EQ(sizeof(UChar) * size_in_chars, parkable.CharactersSizeInBytes());
 
-  EXPECT_TRUE(parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kAlways));
+  EXPECT_TRUE(
+      parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kCompress));
   RunPostedTasks();
   EXPECT_TRUE(parkable.Impl()->is_parked());
 
@@ -215,10 +219,10 @@ TEST_F(ParkableStringTest, Park) {
     EXPECT_TRUE(parkable.may_be_parked());
     EXPECT_FALSE(parkable.Impl()->is_parked());
     EXPECT_TRUE(
-        parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kAlways));
+        parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kCompress));
     // Should not crash, it is allowed to call |Park()| twice in a row.
     EXPECT_TRUE(
-        parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kAlways));
+        parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kCompress));
     parkable = ParkableString();  // Release the reference.
     RunPostedTasks();             // Should not crash.
   }
@@ -253,7 +257,7 @@ TEST_F(ParkableStringTest, AbortParking) {
 
     // The string is locked at the end of parking, should cancel it.
     EXPECT_TRUE(
-        parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kAlways));
+        parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kCompress));
     parkable.Impl()->Lock();
     RunPostedTasks();
     EXPECT_FALSE(parkable.Impl()->is_parked());
@@ -267,7 +271,7 @@ TEST_F(ParkableStringTest, AbortParking) {
     ParkableString parkable(MakeLargeString().ReleaseImpl());
     // |ToString()| cancels parking as |content| is kept alive.
     EXPECT_TRUE(
-        parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kAlways));
+        parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kCompress));
     {
       String content = parkable.Impl()->ToString();
       RunPostedTasks();
@@ -280,7 +284,7 @@ TEST_F(ParkableStringTest, AbortParking) {
     ParkableString parkable(MakeLargeString().ReleaseImpl());
     // Transient |Lock()| or |ToString()| cancel parking.
     EXPECT_TRUE(
-        parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kAlways));
+        parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kCompress));
     parkable.Impl()->Lock();
     parkable.Impl()->ToString();
     parkable.Impl()->Unlock();
@@ -290,7 +294,7 @@ TEST_F(ParkableStringTest, AbortParking) {
     // In order to test synchronous parking below, need to park the string
     // first.
     EXPECT_TRUE(
-        parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kAlways));
+        parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kCompress));
     RunPostedTasks();
     EXPECT_TRUE(parkable.Impl()->is_parked());
     parkable.ToString();
@@ -300,16 +304,16 @@ TEST_F(ParkableStringTest, AbortParking) {
     EXPECT_TRUE(parkable.Impl()->has_compressed_data());
     parkable.Lock();
     EXPECT_FALSE(
-        parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kAlways));
+        parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kCompress));
     parkable.Unlock();
     {
       String content = parkable.ToString();
       EXPECT_FALSE(
-          parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kAlways));
+          parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kCompress));
     }
     // Parking is synchronous.
     EXPECT_TRUE(
-        parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kAlways));
+        parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kCompress));
     EXPECT_TRUE(parkable.Impl()->is_parked());
   }
 }
@@ -319,7 +323,8 @@ TEST_F(ParkableStringTest, AbortedParkingRetainsCompressedData) {
   EXPECT_TRUE(parkable.may_be_parked());
   EXPECT_FALSE(parkable.Impl()->is_parked());
 
-  EXPECT_TRUE(parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kAlways));
+  EXPECT_TRUE(
+      parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kCompress));
   parkable.ToString();  // Cancels parking.
   RunPostedTasks();
   EXPECT_FALSE(parkable.Impl()->is_parked());
@@ -327,7 +332,8 @@ TEST_F(ParkableStringTest, AbortedParkingRetainsCompressedData) {
   EXPECT_TRUE(parkable.Impl()->has_compressed_data());
 
   // Synchronous parking.
-  EXPECT_TRUE(parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kAlways));
+  EXPECT_TRUE(
+      parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kCompress));
   EXPECT_TRUE(parkable.Impl()->is_parked());
 }
 
@@ -509,7 +515,8 @@ TEST_F(ParkableStringTest, AsanPoisoningTest) {
 // Non-regression test for crbug.com/905137.
 TEST_F(ParkableStringTest, CorrectAsanPoisoning) {
   ParkableString parkable(MakeLargeString().ReleaseImpl());
-  EXPECT_TRUE(parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kAlways));
+  EXPECT_TRUE(
+      parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kCompress));
   // A main thread task is posted once compression is done.
   while (task_environment_.GetPendingMainThreadTaskCount() == 0) {
     parkable.Lock();
@@ -531,8 +538,7 @@ TEST_F(ParkableStringTest, Compression) {
   parkable.ToString();  // First decompression.
   EXPECT_FALSE(impl->is_parked());
   EXPECT_TRUE(impl->has_compressed_data());
-  EXPECT_TRUE(
-      impl->Park(ParkableStringImpl::ParkingMode::kIfCompressedDataExists));
+  EXPECT_TRUE(impl->Park(ParkableStringImpl::ParkingMode::kSynchronousOnly));
   EXPECT_TRUE(impl->is_parked());
   parkable.ToString();  // Second decompression.
 
@@ -558,7 +564,7 @@ TEST_F(ParkableStringTest, SynchronousCompression) {
   parkable.ToString();
   EXPECT_TRUE(parkable.Impl()->has_compressed_data());
   // No waiting, synchronous compression.
-  manager.ParkAll(ParkableStringImpl::ParkingMode::kIfCompressedDataExists);
+  manager.ParkAll(ParkableStringImpl::ParkingMode::kSynchronousOnly);
   EXPECT_TRUE(parkable.Impl()->is_parked());
   task_environment_.FastForwardUntilNoTasksRemain();
 }
@@ -701,37 +707,44 @@ TEST_F(ParkableStringTest, CompressionDisabled) {
 
 TEST_F(ParkableStringTest, Aging) {
   ParkableString parkable(MakeLargeString().ReleaseImpl());
-  EXPECT_TRUE(parkable.Impl()->is_young_for_testing());
+  EXPECT_EQ(ParkableStringImpl::Age::kYoung,
+            parkable.Impl()->age_for_testing());
   WaitForAging();
-  EXPECT_FALSE(parkable.Impl()->is_young_for_testing());
+  EXPECT_EQ(ParkableStringImpl::Age::kOld, parkable.Impl()->age_for_testing());
 
   parkable.Lock();
-  EXPECT_TRUE(parkable.Impl()->is_young_for_testing());
+  EXPECT_EQ(ParkableStringImpl::Age::kYoung,
+            parkable.Impl()->age_for_testing());
   // Locked strings don't age.
   WaitForAging();
-  EXPECT_TRUE(parkable.Impl()->is_young_for_testing());
+  EXPECT_EQ(ParkableStringImpl::Age::kYoung,
+            parkable.Impl()->age_for_testing());
   parkable.Unlock();
   WaitForAging();
-  EXPECT_FALSE(parkable.Impl()->is_young_for_testing());
+  EXPECT_EQ(ParkableStringImpl::Age::kOld, parkable.Impl()->age_for_testing());
 
   parkable.ToString();
-  EXPECT_TRUE(parkable.Impl()->is_young_for_testing());
+  EXPECT_EQ(ParkableStringImpl::Age::kYoung,
+            parkable.Impl()->age_for_testing());
   // No external reference, can age again.
   WaitForAging();
-  EXPECT_FALSE(parkable.Impl()->is_young_for_testing());
+  EXPECT_EQ(ParkableStringImpl::Age::kOld, parkable.Impl()->age_for_testing());
 
   // External references prevent a string from aging.
   String retained = parkable.ToString();
-  EXPECT_TRUE(parkable.Impl()->is_young_for_testing());
+  EXPECT_EQ(ParkableStringImpl::Age::kYoung,
+            parkable.Impl()->age_for_testing());
   WaitForAging();
-  EXPECT_TRUE(parkable.Impl()->is_young_for_testing());
+  EXPECT_EQ(ParkableStringImpl::Age::kYoung,
+            parkable.Impl()->age_for_testing());
 }
 
 TEST_F(ParkableStringTest, OldStringsAreParked) {
   ParkableString parkable(MakeLargeString().ReleaseImpl());
-  EXPECT_TRUE(parkable.Impl()->is_young_for_testing());
+  EXPECT_EQ(ParkableStringImpl::Age::kYoung,
+            parkable.Impl()->age_for_testing());
   WaitForAging();
-  EXPECT_FALSE(parkable.Impl()->is_young_for_testing());
+  EXPECT_EQ(ParkableStringImpl::Age::kOld, parkable.Impl()->age_for_testing());
   WaitForAging();
   EXPECT_TRUE(parkable.Impl()->is_parked());
 
@@ -890,7 +903,7 @@ TEST_F(ParkableStringTestWithQueuedThreadPool, AgingParkingInProgress) {
   ParkableString parkable(MakeLargeString().ReleaseImpl());
 
   WaitForAging();
-  parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kAlways);
+  parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kCompress);
 
   // Advance the main thread until aging occurs. This uses RunLoop combined with
   // ThreadPoolExecutionMode::QUEUED to force the 2-seconds-delayed aging task

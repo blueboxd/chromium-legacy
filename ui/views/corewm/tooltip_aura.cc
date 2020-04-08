@@ -296,6 +296,8 @@ bool TooltipAura::IsVisible() {
 
 void TooltipAura::OnWidgetDestroying(views::Widget* widget) {
   DCHECK_EQ(widget_, widget);
+  if (widget_)
+    widget_->RemoveObserver(this);
   widget_ = nullptr;
   tooltip_window_ = nullptr;
 }

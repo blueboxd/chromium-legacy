@@ -772,10 +772,14 @@ interface NetworkContextClient {
   //
   // If |is_service_worker| is false, |process_id| and |routing_id| identify
   // the relevant frame.
+  //
+  // |devtools_request_id| contains the DevTools request id of the request
+  // that triggered the cookie change, if the change was triggered by a request.
+  // May be set regardless of |is_service_worker|.
   OnCookiesChanged(
       bool is_service_worker, int32 process_id, int32 routing_id,
       url.mojom.Url url, SiteForCookies site_for_cookies,
-      array<CookieWithStatus> cookie_list);
+      array<CookieWithStatus> cookie_list, string? devtools_request_id);
 
   // Called when an attempt has been made to read the cookies in |cookie_list|,
   // with the status indicating whether the cookies were actually used or
@@ -794,10 +798,14 @@ interface NetworkContextClient {
   //
   // If |is_service_worker| is false, |process_id| and |routing_id| identify
   // the relevant frame.
+  //
+  // |devtools_request_id| contains the DevTools request id of the request
+  // that triggered the cookie change, if the read was triggered by a request.
+  // May be set regardless of |is_service_worker|.
   OnCookiesRead(
       bool is_service_worker, int32 process_id, int32 routing_id,
       url.mojom.Url url, SiteForCookies site_for_cookies,
-      array<CookieWithStatus> cookie_list);
+      array<CookieWithStatus> cookie_list, string? devtools_request_id);
 
   // Called to generate an auth token for SPNEGO authentication on Android.
   [EnableIf=is_android]

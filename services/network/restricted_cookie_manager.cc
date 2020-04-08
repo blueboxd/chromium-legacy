@@ -296,7 +296,7 @@ void RestrictedCookieManager::CookieListToGetAllForUrlCallback(
   if (network_context_client_) {
     network_context_client_->OnCookiesRead(is_service_worker_, process_id_,
                                            frame_id_, url, site_for_cookies,
-                                           result_with_status);
+                                           result_with_status, base::nullopt);
   }
 
   if (blocked) {
@@ -349,7 +349,7 @@ void RestrictedCookieManager::SetCanonicalCookie(
           {cookie, status}};
       network_context_client_->OnCookiesChanged(
           is_service_worker_, process_id_, frame_id_, url, site_for_cookies,
-          result_with_status);
+          result_with_status, base::nullopt);
     }
     std::move(callback).Run(false);
     return;
@@ -397,7 +397,7 @@ void RestrictedCookieManager::SetCanonicalCookieResult(
       notify.push_back({cookie, status});
       network_context_client_->OnCookiesChanged(
           is_service_worker_, process_id_, frame_id_, url, site_for_cookies,
-          std::move(notify));
+          std::move(notify), base::nullopt);
     }
   }
   std::move(user_callback).Run(status.IsInclude());

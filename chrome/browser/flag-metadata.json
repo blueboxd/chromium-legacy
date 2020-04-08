@@ -114,7 +114,7 @@
   },
   {
     "name": "app-management",
-    "owners": [ "//chrome/browser/resources/app_management/OWNERS" ],
+    "owners": [ "//chrome/browser/ui/webui/app_management/OWNERS" ],
     "expiry_milestone": 81
   },
   {

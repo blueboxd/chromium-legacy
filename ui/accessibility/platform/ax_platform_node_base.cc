@@ -149,15 +149,16 @@ base::string16 AXPlatformNodeBase::GetNameAsString16() const {
   return base::UTF8ToUTF16(name);
 }
 
-int AXPlatformNodeBase::GetIndexInParent() {
+base::Optional<int> AXPlatformNodeBase::GetIndexInParent() {
   AXPlatformNodeBase* parent = FromNativeViewAccessible(GetParent());
   if (!parent)
-    return 0;
+    return base::nullopt;
 
   int child_count = parent->GetChildCount();
   if (child_count == 0) {
-    // |child_count| could be 0 if the node is PlatformIsLeaf.
-    return 0;
+    // |child_count| could be 0 if the parent is IsLeaf.
+    DCHECK(parent->IsLeaf());
+    return base::nullopt;
   }
 
   // Ask the delegate for the index in parent, and return it if it's plausible.
@@ -176,7 +177,9 @@ int AXPlatformNodeBase::GetIndexInParent() {
     if (parent->ChildAtIndex(i) == current)
       return i;
   }
-  return -1;
+  NOTREACHED()
+      << "Unable to find the child in the list of its parent's children.";
+  return base::nullopt;
 }
 
 // AXPlatformNode overrides.
@@ -1429,12 +1432,8 @@ int32_t AXPlatformNodeBase::GetHypertextOffsetFromChild(
   // cross-tree traversal is necessary.
   if (child->IsTextOnlyObject()) {
     int32_t hypertext_offset = 0;
-    int32_t index_in_parent = child->GetIndexInParent();
-    DCHECK_GE(index_in_parent, 0);
-    DCHECK_LT(index_in_parent, static_cast<int32_t>(GetChildCount()));
-    for (uint32_t i = 0; i < static_cast<uint32_t>(index_in_parent); ++i) {
-      auto* sibling = static_cast<AXPlatformNodeBase*>(
-          FromNativeViewAccessible(ChildAtIndex(i)));
+    for (AXPlatformNodeBase* sibling = GetFirstChild(); sibling != child;
+         sibling = sibling->GetNextSibling()) {
       DCHECK(sibling);
       if (sibling->IsTextOnlyObject()) {
         hypertext_offset += (int32_t)sibling->GetHypertext().size();
@@ -1510,7 +1509,7 @@ int AXPlatformNodeBase::GetHypertextOffsetFromEndpoint(
   }
 
   AXPlatformNodeBase* common_parent = this;
-  int32_t index_in_common_parent = GetIndexInParent();
+  base::Optional<int> index_in_common_parent = GetIndexInParent();
   while (common_parent && !endpoint_object->IsDescendantOf(common_parent)) {
     index_in_common_parent = common_parent->GetIndexInParent();
     common_parent = static_cast<AXPlatformNodeBase*>(
@@ -1519,7 +1518,6 @@ int AXPlatformNodeBase::GetHypertextOffsetFromEndpoint(
   if (!common_parent)
     return -1;
 
-  DCHECK_GE(index_in_common_parent, 0);
   DCHECK(!(common_parent->IsTextOnlyObject()));
 
   // Case 2. Is the selection endpoint inside a descendant of this object?
@@ -1547,17 +1545,14 @@ int AXPlatformNodeBase::GetHypertextOffsetFromEndpoint(
   //
   // We can safely assume that the endpoint is in another part of the tree or
   // at common parent, and that this object is a descendant of common parent.
-  int32_t endpoint_index_in_common_parent = -1;
-  for (int i = 0; i < common_parent->GetDelegate()->GetChildCount(); ++i) {
-    auto* child = static_cast<AXPlatformNodeBase*>(FromNativeViewAccessible(
-        common_parent->GetDelegate()->ChildAtIndex(i)));
-    DCHECK(child);
+  base::Optional<int> endpoint_index_in_common_parent;
+  for (AXPlatformNodeBase* child = common_parent->GetFirstChild();
+       child != nullptr; child = child->GetNextSibling()) {
     if (endpoint_object->IsDescendantOf(child)) {
       endpoint_index_in_common_parent = child->GetIndexInParent();
       break;
     }
   }
-  DCHECK_GE(endpoint_index_in_common_parent, 0);
 
   if (endpoint_index_in_common_parent < index_in_common_parent)
     return 0;

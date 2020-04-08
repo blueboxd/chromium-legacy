@@ -274,7 +274,7 @@ crbug.com/968791 virtual/scalefactor200/css3/filters/filterRegions.html [ Failur
 
 # These appear to be actually incorrect at device_scale_factor 2.0:
 crbug.com/968791 crbug.com/1051044 virtual/scalefactor200/css3/filters/effect-reference-image-lazy-attach.html [ Failure ]
-crbug.com/968791 crbug.com/1051044 virtual/scalefactor200/css3/filters/effect-reference-image.html [ Failure ]
+crbug.com/968791 crbug.com/1051044 virtual/scalefactor200/external/wpt/css/filter-effects/effect-reference-feimage.html [ Failure ]
 crbug.com/968791 crbug.com/1051044 virtual/scalefactor200/css3/filters/effect-reference-image-hw.html [ Failure ]
 crbug.com/968791 virtual/scalefactor200/external/wpt/css/filter-effects/filters-test-brightness-003.html [ Failure ]
 
@@ -2342,7 +2342,7 @@ crbug.com/636239 [ Win7 ] virtual/audio-service/media/video-zoom-controls.html [
 
 crbug.com/377696 printing/setPrinting.html [ Failure ]
 
-crbug.com/1051044 css3/filters/effect-reference-image.html [ Pass Failure ]
+crbug.com/1051044 external/wpt/css/filter-effects/effect-reference-feimage.html [ Pass Failure ]
 crbug.com/1051044 css3/filters/effect-reference-image-lazy-attach.html [ Pass Failure ]
 
 crbug.com/524160 [ Debug ] http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-default-buffers.html [ Timeout ]

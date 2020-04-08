@@ -274,7 +274,8 @@ void PasswordAccessoryControllerImpl::RefreshSuggestionsForField(
 
   if (base::FeatureList::IsEnabled(
           password_manager::features::kRecoverFromNeverSaveAndroid) &&
-      is_password_field) {
+      is_password_field &&
+      !web_contents_->GetBrowserContext()->IsOffTheRecord()) {
     BlacklistedStatus blacklisted_status =
         credential_cache_->GetCredentialStore(origin).GetBlacklistedStatus();
     if (blacklisted_status == BlacklistedStatus::kWasBlacklisted ||

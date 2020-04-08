@@ -45,7 +45,6 @@ import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
-import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
@@ -54,6 +53,7 @@ import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.components.external_intents.ExternalNavigationParams;
+import org.chromium.components.external_intents.RedirectHandlerImpl;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
@@ -156,7 +156,7 @@ public class ContextualSearchManager
     private long mNativeContextualSearchManagerPtr;
 
     private ViewGroup mParentView;
-    private TabRedirectHandler mTabRedirectHandler;
+    private RedirectHandlerImpl mRedirectHandler;
     private OverlayPanelContentViewDelegate mSearchContentViewDelegate;
     private TabModelSelectorTabModelObserver mTabModelObserver;
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
@@ -277,7 +277,7 @@ public class ContextualSearchManager
 
         mInProductHelp.setParentView(parentView);
 
-        mTabRedirectHandler = TabRedirectHandler.create();
+        mRedirectHandler = RedirectHandlerImpl.create();
 
         mIsShowingPromo = false;
         mDidLogPromoOutcome = false;
@@ -303,7 +303,7 @@ public class ContextualSearchManager
         mParentView.getViewTreeObserver().removeOnGlobalFocusChangeListener(mOnFocusChangeListener);
         ContextualSearchManagerJni.get().destroy(mNativeContextualSearchManagerPtr, this);
         stopListeningForHideNotifications();
-        mTabRedirectHandler.clear();
+        mRedirectHandler.clear();
         mInternalStateController.enter(InternalState.UNDEFINED);
         AccessibilityUtil.removeObserver(this);
     }
@@ -1069,17 +1069,18 @@ public class ContextualSearchManager
         public boolean shouldInterceptNavigation(
                 ExternalNavigationHandler externalNavHandler, NavigationParams navigationParams) {
             assert mSearchPanel != null;
-            mTabRedirectHandler.updateNewUrlLoading(navigationParams.pageTransitionType,
+            mRedirectHandler.updateNewUrlLoading(navigationParams.pageTransitionType,
                     navigationParams.isRedirect,
                     navigationParams.hasUserGesture || navigationParams.hasUserGestureCarryover,
-                    mActivity.getLastUserInteractionTime(), TabRedirectHandler.INVALID_ENTRY_INDEX);
+                    mActivity.getLastUserInteractionTime(),
+                    RedirectHandlerImpl.INVALID_ENTRY_INDEX);
             ExternalNavigationParams params =
                     new ExternalNavigationParams
                             .Builder(navigationParams.url, false, navigationParams.referrer,
                                     navigationParams.pageTransitionType,
                                     navigationParams.isRedirect)
                             .setApplicationMustBeInForeground(true)
-                            .setRedirectHandler(mTabRedirectHandler)
+                            .setRedirectHandler(mRedirectHandler)
                             .setIsMainFrame(navigationParams.isMainFrame)
                             .build();
             if (externalNavHandler.shouldOverrideUrlLoading(params)

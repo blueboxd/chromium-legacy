@@ -1900,7 +1900,8 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketReadError) {
 }
 
 TEST_P(QuicChromiumClientSessionTest, DetectPathDegradingDuringHandshake) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 ||
+      GetQuicReloadableFlag(quic_use_blackhole_detector)) {
     // TODO(nharper, b/112643533): Figure out why this test fails when TLS is
     // enabled and fix it.
     return;

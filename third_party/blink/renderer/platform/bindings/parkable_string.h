@@ -41,11 +41,12 @@ struct CompressionTaskParams;
 class PLATFORM_EXPORT ParkableStringImpl final
     : public RefCounted<ParkableStringImpl> {
  public:
-  enum class ParkingMode { kIfCompressedDataExists, kAlways };
+  enum class ParkingMode { kSynchronousOnly, kCompress };
   enum class AgeOrParkResult {
     kSuccessOrTransientFailure,
     kNonTransientFailure
   };
+  enum class Age { kYoung = 0, kOld = 1 };
 
   constexpr static size_t kDigestSize = 32;  // SHA256.
   using SecureDigest = Vector<uint8_t, kDigestSize>;
@@ -121,7 +122,6 @@ class PLATFORM_EXPORT ParkableStringImpl final
 
   // Returns true if the string is parked.
   bool is_parked() const;
-
   // Returns whether synchronous parking is possible, that is the string was
   // parked in the past.
   bool has_compressed_data() const { return !!metadata_->compressed_; }
@@ -133,9 +133,9 @@ class PLATFORM_EXPORT ParkableStringImpl final
     return metadata_->compressed_->size();
   }
 
-  bool is_young_for_testing() {
+  Age age_for_testing() {
     MutexLocker locker(metadata_->mutex_);
-    return metadata_->is_young_;
+    return metadata_->age_;
   }
 
   const SecureDigest* digest() const {
@@ -164,17 +164,24 @@ class PLATFORM_EXPORT ParkableStringImpl final
   void LockWithoutMakingYoung();
 #endif  // defined(ADDRESS_SANITIZER)
   // May be called from any thread.
-  void MakeYoung() EXCLUSIVE_LOCKS_REQUIRED(metadata_->mutex_);
+
+  void MakeYoung() EXCLUSIVE_LOCKS_REQUIRED(metadata_->mutex_) {
+    metadata_->age_ = Age::kYoung;
+  }
   // Whether the string is referenced or locked. The return value is valid as
   // long as |mutex_| is held.
   Status CurrentStatus() const EXCLUSIVE_LOCKS_REQUIRED(metadata_->mutex_);
   bool CanParkNow() const EXCLUSIVE_LOCKS_REQUIRED(metadata_->mutex_);
-  void ParkInternal(ParkingMode mode)
+  bool ParkInternal(ParkingMode mode)
       EXCLUSIVE_LOCKS_REQUIRED(metadata_->mutex_);
   void Unpark() EXCLUSIVE_LOCKS_REQUIRED(metadata_->mutex_);
-  String UnparkInternal() const EXCLUSIVE_LOCKS_REQUIRED(metadata_->mutex_);
+  String UnparkInternal() EXCLUSIVE_LOCKS_REQUIRED(metadata_->mutex_);
+
+  void PostBackgroundCompressionTask();
+  static void CompressInBackground(std::unique_ptr<CompressionTaskParams>);
   // Called on the main thread after compression is done.
-  // |params| is the same as the one passed to |CompressInBackground()|,
+  // |params| is the same as the one passed to
+  // |PostBackgroundCompressionTask()|,
   // |compressed| is the compressed data, nullptr if compression failed.
   // |parking_thread_time| is the CPU time used by the background compression
   // task.
@@ -183,8 +190,7 @@ class PLATFORM_EXPORT ParkableStringImpl final
       std::unique_ptr<Vector<uint8_t>> compressed,
       base::TimeDelta parking_thread_time);
 
-  // Background thread.
-  static void CompressInBackground(std::unique_ptr<CompressionTaskParams>);
+  void DiscardUncompressedData();
 
   int lock_depth_for_testing() {
     MutexLocker locker_(metadata_->mutex_);
@@ -203,8 +209,10 @@ class PLATFORM_EXPORT ParkableStringImpl final
     std::unique_ptr<Vector<uint8_t>> compressed_;
     const SecureDigest digest_;
 
-    // A string can either be "young" or "old". It starts young, and transitions
-    // are:
+    // A string can be young or old. It starts young, and ages with
+    // |MaybeAgeOrParkString()|.
+    //
+    // Transitions are:
     // Young -> Old: By calling |MaybeAgeOrParkString()|.
     // Old -> Young: When the string is accessed, either by |Lock()|-ing it or
     //               calling |ToString()|.
@@ -212,7 +220,7 @@ class PLATFORM_EXPORT ParkableStringImpl final
     // Thread safety: it is typically not safe to guard only one part of a
     // bitfield with a mutex, but this is correct here, as the other members are
     // const (and never change).
-    bool is_young_ : 1 GUARDED_BY(mutex_);
+    Age age_ : 3 GUARDED_BY(mutex_);
     const bool is_8bit_ : 1;
     const unsigned length_;
 

@@ -18,12 +18,15 @@ struct AffectedCookie {
   string name;
   string path;
   string domain;
-  url.mojom.Url? site_for_cookies;
 };
 
-// The resources affected by an InspectorIssue.
-struct AffectedResources {
-  array<AffectedCookie> cookies;
+struct AffectedRequest {
+  string request_id;
+  string? url;
+};
+
+enum SameSiteCookieOperation {
+  SetCookie, ReadCookie
 };
 
 enum SameSiteCookieExclusionReason {
@@ -45,8 +48,13 @@ enum SameSiteCookieWarningReason {
 
 // Specific information about |kSameSiteCookieIssue| type issues.
 struct SameSiteCookieIssueDetails {
+  AffectedCookie cookie;
   array<SameSiteCookieExclusionReason> exclusionReason;
   array<SameSiteCookieWarningReason> warningReason;
+  SameSiteCookieOperation operation;
+  url.mojom.Url? site_for_cookies;
+  url.mojom.Url? cookie_url;
+  AffectedRequest? request;
 };
 
 // A collection of optional fields that may store additional data depending
@@ -58,5 +66,4 @@ struct InspectorIssueDetails {
 struct InspectorIssueInfo {
   InspectorIssueCode code;
   InspectorIssueDetails details;
-  AffectedResources resources;
 };

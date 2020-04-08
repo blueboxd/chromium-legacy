@@ -69,8 +69,9 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   std::string GetName() const;
   base::string16 GetNameAsString16() const;
 
-  // This returns 0 if there's no parent.
-  virtual int GetIndexInParent();
+  // This returns nullopt if there's no parent, it's unable to find the child in
+  // the list of its parent's children, or its parent doesn't have children.
+  virtual base::Optional<int> GetIndexInParent();
 
   // AXPlatformNode.
   void Destroy() override;

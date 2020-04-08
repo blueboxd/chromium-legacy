@@ -114,7 +114,7 @@ class InterceptingCanvasBase : public SkCanvas {
                      const SkMatrix*,
                      const SkPaint*) override = 0;
   void didSetMatrix(const SkMatrix&) override = 0;
-  void didConcat44(const SkScalar[16]) override = 0;
+  void didConcat44(const SkM44&) override = 0;
   void didConcat(const SkMatrix&) override = 0;
   void didScale(SkScalar, SkScalar) override = 0;
   void didTranslate(SkScalar, SkScalar) override = 0;
@@ -252,9 +252,7 @@ class InterceptingCanvas : public InterceptingCanvasBase {
     Interceptor interceptor(this);
   }
 
-  void didConcat44(const SkScalar m[16]) override {
-    Interceptor interceptor(this);
-  }
+  void didConcat44(const SkM44&) override { Interceptor interceptor(this); }
 
   void didConcat(const SkMatrix& matrix) override {
     Interceptor interceptor(this);

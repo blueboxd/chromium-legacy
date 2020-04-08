@@ -45,6 +45,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
@@ -88,6 +89,11 @@ constexpr char kTestGuid[] = "cccccccc-cccc-4ccc-0ccc-ccccccccccc1";
 constexpr char kTestCookieName[] = "TestCookie";
 constexpr char kTestCookieValue[] = "present";
 constexpr char kTestCookieHost[] = "host1.com";
+
+constexpr std::initializer_list<base::StringPiece> kPrimaryButton = {
+    "gaia-signin", "primary-action-button"};
+constexpr std::initializer_list<base::StringPiece> kSecondaryButton = {
+    "gaia-signin", "secondary-action-button"};
 
 void InjectCookieDoneCallback(
     base::OnceClosure done_closure,
@@ -183,7 +189,9 @@ void PrefChangeWatcher::OnPrefChange() {
 
 class WebviewLoginTest : public OobeBaseTest {
  public:
-  WebviewLoginTest() = default;
+  WebviewLoginTest() {
+    scoped_feature_list_.InitWithFeatures({features::kGaiaActionButtons}, {});
+  }
   ~WebviewLoginTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -247,8 +255,57 @@ class WebviewLoginTest : public OobeBaseTest {
   FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(WebviewLoginTest);
 };
+
+// Basic signin with username and password.
+IN_PROC_BROWSER_TEST_F(WebviewLoginTest, NativeTest) {
+  WaitForGaiaPageLoadAndPropertyUpdate();
+  ExpectIdentifierPage();
+  SigninFrameJS().TypeIntoPath(FakeGaiaMixin::kFakeUserEmail, {"identifier"});
+  test::OobeJS().ClickOnPath(kPrimaryButton);
+  WaitForGaiaPageBackButtonUpdate();
+  ExpectPasswordPage();
+
+  test::OobeJS().ExpectVisiblePath(kSecondaryButton);
+  test::OobeJS().ExpectEnabledPath(kSecondaryButton);
+
+  // Check events propagation.
+  SigninFrameJS().ExecuteAsync("sendSetAllActionsEnabled(false)");
+  test::OobeJS().CreateEnabledWaiter(false, kPrimaryButton)->Wait();
+  test::OobeJS().CreateEnabledWaiter(false, kSecondaryButton)->Wait();
+  test::OobeJS().ExpectVisiblePath(kPrimaryButton);
+  test::OobeJS().ExpectVisiblePath(kSecondaryButton);
+
+  SigninFrameJS().ExecuteAsync("sendSetSecondaryActionEnabled(true)");
+  test::OobeJS().CreateEnabledWaiter(true, kSecondaryButton)->Wait();
+  test::OobeJS().ExpectVisiblePath(kSecondaryButton);
+
+  // Click on the secondary button disables it.
+  test::OobeJS().ClickOnPath(kSecondaryButton);
+  test::OobeJS().CreateEnabledWaiter(false, kSecondaryButton)->Wait();
+
+  SigninFrameJS().ExecuteAsync("sendSetPrimaryActionEnabled(true)");
+  test::OobeJS().CreateEnabledWaiter(true, kPrimaryButton)->Wait();
+  test::OobeJS().ExpectVisiblePath(kPrimaryButton);
+
+  SigninFrameJS().ExecuteAsync("sendSetPrimaryActionLabel(null)");
+  test::OobeJS().CreateVisibilityWaiter(false, kPrimaryButton)->Wait();
+
+  SigninFrameJS().ExecuteAsync("sendSetSecondaryActionLabel(null)");
+  test::OobeJS().CreateVisibilityWaiter(false, kSecondaryButton)->Wait();
+
+  SigninFrameJS().ExecuteAsync("sendSetPrimaryActionLabel('Submit')");
+  test::OobeJS().CreateVisibilityWaiter(true, kPrimaryButton)->Wait();
+  test::OobeJS().ExpectElementText("Submit", kPrimaryButton);
+
+  SigninFrameJS().TypeIntoPath("[]", {"services"});
+  SigninFrameJS().TypeIntoPath(FakeGaiaMixin::kFakeUserPassword, {"password"});
+  test::OobeJS().ClickOnPath(kPrimaryButton);
+
+  test::WaitForPrimaryUserSessionStart();
+}
 
 // Basic signin with username and password.
 IN_PROC_BROWSER_TEST_F(WebviewLoginTest, Basic) {
@@ -291,7 +348,7 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, BackButton) {
 
   // Move to password page.
   SigninFrameJS().TypeIntoPath(FakeGaiaMixin::kFakeUserEmail, {"identifier"});
-  SigninFrameJS().TapOn("nextButton");
+  test::OobeJS().ClickOnPath(kPrimaryButton);
   WaitForGaiaPageBackButtonUpdate();
   ExpectPasswordPage();
 
@@ -300,14 +357,14 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, BackButton) {
   WaitForGaiaPageBackButtonUpdate();
   ExpectIdentifierPage();
   // Click next to password page, user id is remembered.
-  SigninFrameJS().TapOn("nextButton");
+  test::OobeJS().ClickOnPath(kPrimaryButton);
   WaitForGaiaPageBackButtonUpdate();
   ExpectPasswordPage();
 
   // Finish sign-up.
   SigninFrameJS().TypeIntoPath("[]", {"services"});
   SigninFrameJS().TypeIntoPath(FakeGaiaMixin::kFakeUserPassword, {"password"});
-  SigninFrameJS().TapOn("nextButton");
+  test::OobeJS().ClickOnPath(kPrimaryButton);
 
   test::WaitForPrimaryUserSessionStart();
 }

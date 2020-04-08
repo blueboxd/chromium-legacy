@@ -27,7 +27,6 @@ class AXPlatformNodeMac : public AXPlatformNodeBase {
 
   // AXPlatformNodeBase.
   void Destroy() override;
-  int GetIndexInParent() override;
 
  protected:
   void AddAttributeToList(const char* name,

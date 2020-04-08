@@ -380,11 +380,11 @@ QUIC_FLAG(
 // keys are available).
 QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_quic_send_settings_on_write_key_available,
-          false)
+          true)
 
 // If true, use blackhole detector in QuicConnection to detect path degrading
 // and network blackhole.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_blackhole_detector, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_blackhole_detector, true)
 
 // If true, use idle network detector to detect handshake timeout and idle
 // network timeout.

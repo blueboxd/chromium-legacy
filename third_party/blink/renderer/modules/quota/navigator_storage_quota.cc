@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/modules/quota/navigator_storage_quota.h"
 
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/modules/quota/deprecated_storage_quota.h"
 #include "third_party/blink/renderer/modules/quota/storage_manager.h"
@@ -50,7 +51,6 @@ NavigatorStorageQuota& NavigatorStorageQuota::From(Navigator& navigator) {
   }
   return *supplement;
 }
-
 
 DeprecatedStorageQuota* NavigatorStorageQuota::webkitTemporaryStorage(
     Navigator& navigator) {
@@ -83,8 +83,10 @@ DeprecatedStorageQuota* NavigatorStorageQuota::webkitPersistentStorage() const {
 }
 
 StorageManager* NavigatorStorageQuota::storage() const {
-  if (!storage_manager_)
-    storage_manager_ = MakeGarbageCollected<StorageManager>();
+  if (!storage_manager_) {
+    storage_manager_ = MakeGarbageCollected<StorageManager>(
+        GetSupplementable() ? GetSupplementable()->DomWindow() : nullptr);
+  }
   return storage_manager_.Get();
 }
 

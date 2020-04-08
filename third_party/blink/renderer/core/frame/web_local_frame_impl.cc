@@ -254,7 +254,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
-#include "third_party/blink/renderer/platform/scheduler/public/scheduling_policy.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
@@ -1492,11 +1491,6 @@ void WebLocalFrameImpl::DispatchBeforePrintEvent() {
   is_in_printing_ = true;
 #endif
 
-  // Disable BackForwardCache when printing API is used.
-  GetFrame()->GetFrameScheduler()->RegisterStickyFeature(
-      blink::SchedulingPolicy::Feature::kPrinting,
-      {blink::SchedulingPolicy::RecordMetricsForBackForwardCache()});
-
   GetFrame()->GetDocument()->SetPrinting(Document::kBeforePrinting);
   DispatchPrintEventRecursively(event_type_names::kBeforeprint);
 }
@@ -2503,8 +2497,7 @@ void WebLocalFrameImpl::AddInspectorIssueImpl(
     mojom::blink::InspectorIssueCode code) {
   DCHECK(GetFrame());
   auto info = mojom::blink::InspectorIssueInfo::New(
-      code, mojom::blink::InspectorIssueDetails::New(),
-      mojom::blink::AffectedResources::New());
+      code, mojom::blink::InspectorIssueDetails::New());
   GetFrame()->GetDocument()->AddInspectorIssue(
       InspectorIssue::Create(std::move(info)));
 }

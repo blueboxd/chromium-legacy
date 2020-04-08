@@ -33,6 +33,8 @@ class GL_EXPORT NativeViewGLSurfaceEGLX11 : public NativeViewGLSurfaceEGL,
  protected:
   ~NativeViewGLSurfaceEGLX11() override;
 
+  Display* GetXNativeDisplay() const;
+
  private:
   // NativeViewGLSurfaceEGL overrides:
   std::unique_ptr<gfx::VSyncProvider> CreateVsyncProviderInternal() override;

@@ -38,39 +38,16 @@ AssistantCollectUserDataDelegate::~AssistantCollectUserDataDelegate() {
 void AssistantCollectUserDataDelegate::OnContactInfoChanged(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
-    const base::android::JavaParamRef<jstring>& jpayer_name,
-    const base::android::JavaParamRef<jstring>& jpayer_phone,
-    const base::android::JavaParamRef<jstring>& jpayer_email) {
-  if (!jpayer_name && !jpayer_phone && !jpayer_email) {
+    const base::android::JavaParamRef<jobject>& jcontact_profile) {
+  if (!jcontact_profile) {
     ui_controller_->OnContactInfoChanged(nullptr);
     return;
   }
 
-  std::string name = ui_controller_android_utils::SafeConvertJavaStringToNative(
-      env, jpayer_name);
-  std::string phone =
-      ui_controller_android_utils::SafeConvertJavaStringToNative(env,
-                                                                 jpayer_phone);
-  std::string email =
-      ui_controller_android_utils::SafeConvertJavaStringToNative(env,
-                                                                 jpayer_email);
-
   auto contact_profile = std::make_unique<autofill::AutofillProfile>();
-  contact_profile->SetRawInfo(autofill::ServerFieldType::NAME_FULL,
-                              base::UTF8ToUTF16(name));
-  autofill::data_util::NameParts parts =
-      autofill::data_util::SplitName(base::UTF8ToUTF16(name));
-  contact_profile->SetRawInfo(autofill::ServerFieldType::NAME_FIRST,
-                              parts.given);
-  contact_profile->SetRawInfo(autofill::ServerFieldType::NAME_MIDDLE,
-                              parts.middle);
-  contact_profile->SetRawInfo(autofill::ServerFieldType::NAME_LAST,
-                              parts.family);
-  contact_profile->SetRawInfo(autofill::ServerFieldType::EMAIL_ADDRESS,
-                              base::UTF8ToUTF16(email));
-  contact_profile->SetRawInfo(
-      autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER,
-      base::UTF8ToUTF16(phone));
+  autofill::PersonalDataManagerAndroid::PopulateNativeProfileFromJava(
+      jcontact_profile, env, contact_profile.get());
+
   ui_controller_->OnContactInfoChanged(std::move(contact_profile));
 }
 

@@ -6,6 +6,7 @@
 
 #import <AuthenticationServices/AuthenticationServices.h>
 
+#import "ios/chrome/common/credential_provider/credential_store.h"
 #import "ios/chrome/credential_provider_extension/ui/credential_list_consumer.h"
 #import "ios/chrome/credential_provider_extension/ui/credential_list_ui_handler.h"
 
@@ -21,6 +22,9 @@
 // The consumer for this mediator.
 @property(nonatomic, weak) id<CredentialListConsumer> consumer;
 
+// Interface for the persistent credential store.
+@property(nonatomic, weak) id<CredentialStore> credentialStore;
+
 // The service identifiers to be prioritized.
 @property(nonatomic, strong)
     NSArray<ASCredentialServiceIdentifier*>* serviceIdentifiers;
@@ -34,6 +38,7 @@
 
 - (instancetype)initWithConsumer:(id<CredentialListConsumer>)consumer
                        UIHandler:(id<CredentialListUIHandler>)UIHandler
+                 credentialStore:(id<CredentialStore>)credentialStore
                          context:(ASCredentialProviderExtensionContext*)context
               serviceIdentifiers:
                   (NSArray<ASCredentialServiceIdentifier*>*)serviceIdentifiers {
@@ -43,15 +48,20 @@
     _UIHandler = UIHandler;
     _consumer = consumer;
     _consumer.delegate = self;
+    _credentialStore = credentialStore;
     _context = context;
   }
   return self;
 }
 
 - (void)fetchCredentials {
-  // TODO(crbug.com/1045454): Implement this method. For now present the empty
-  // credentials screen all the time.
-  [self.UIHandler showEmptyCredentials];
+  // TODO(crbug.com/1045454): Implement ordering and suggestions.
+  NSArray<id<Credential>>* allCredentials = self.credentialStore.credentials;
+  if (!allCredentials.count) {
+    [self.UIHandler showEmptyCredentials];
+    return;
+  }
+  [self.consumer presentSuggestedPasswords:nil allPasswords:allCredentials];
 }
 
 #pragma mark - CredentialListConsumerDelegate

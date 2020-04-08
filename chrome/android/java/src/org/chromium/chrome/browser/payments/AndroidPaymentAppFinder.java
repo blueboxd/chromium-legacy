@@ -15,6 +15,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.payments.PaymentManifestVerifier.ManifestVerifyCallback;
 import org.chromium.components.payments.MethodStrings;
 import org.chromium.components.payments.PaymentManifestDownloader;
@@ -22,7 +23,6 @@ import org.chromium.components.payments.PaymentManifestParser;
 import org.chromium.components.payments.intent.WebPaymentIntentHelper;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentMethodData;
-import org.chromium.url.GURL;
 import org.chromium.url.URI;
 
 import java.util.ArrayList;
@@ -69,6 +69,12 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
     /* package */ static final String META_DATA_NAME_OF_SUPPORTED_DELEGATIONS =
             "org.chromium.payment_supported_delegations";
 
+    /*
+     * The ignored payment method identifiers. Payment apps with this payment method identifier are
+     * ignored.
+     */
+    private final Set<String> mIgnoredMethods = new HashSet<>();
+
     private final Set<String> mNonUriPaymentMethods = new HashSet<>();
     private final Set<URI> mUriPaymentMethods = new HashSet<>();
     private final PaymentManifestDownloader mDownloader;
@@ -80,13 +86,10 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
     private final boolean mIsIncognito;
 
     /**
-     * The app stores that supports app-store billing methods.
-     *
-     * key: the app-store app's package name, e.g., "com.google.vendor" (Google Play Store).
-     * value: the app-store app's billing method identifier, e.g.,
-     * "https://play.google.com/billing". Only valid GURLs are allowed.
+     * A map from an app-store app's package name to its billing method. All of the supported
+     * app-store billing method must insert an entry to this map.
      */
-    private final Map<String, GURL> mAppStores = new HashMap();
+    private final Map<String, String> mAppStoreBillingMethodMap = new HashMap();
 
     /**
      * A mapping from an Android package name to the payment app with that package name. The apps
@@ -170,10 +173,9 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
             PaymentAppFactoryInterface factory) {
         mDelegate = delegate;
 
-        mAppStores.put(PLAY_STORE_PACKAGE_NAME, new GURL(MethodStrings.GOOGLE_PLAY_BILLING));
-        for (GURL method : mAppStores.values()) {
-            assert method.isValid();
-        }
+        mIgnoredMethods.add(MethodStrings.GOOGLE_PLAY_BILLING);
+
+        mAppStoreBillingMethodMap.put(PLAY_STORE_PACKAGE_NAME, MethodStrings.GOOGLE_PLAY_BILLING);
 
         mDownloader = downloader;
         mWebDataService = webDataService;
@@ -185,62 +187,19 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
         mIsIncognito = activity != null && activity.getCurrentTabModel().isIncognito();
     }
 
-    private boolean isInTwaInstalledFromAppStore(ChromeActivity activity) {
-        assert activity != null;
-        String twaPackageName = mPackageManagerDelegate.getTwaPackageName(activity);
+    private boolean isInTwaInstalledFromAppStore() {
+        ChromeActivity activity =
+                ChromeActivity.fromWebContents(mDelegate.getParams().getWebContents());
+        if (activity == null) return false;
+        if (!(activity instanceof CustomTabActivity)) return false;
+        CustomTabActivity customTabActivity = ((CustomTabActivity) activity);
+        if (!customTabActivity.isInTwaMode()) return false;
+        String twaPackageName = customTabActivity.getTwaPackage();
         if (twaPackageName == null) return false;
-        String installerPackageName = mPackageManagerDelegate.getInstallerPackage(twaPackageName);
+        String installerPackageName =
+                activity.getPackageManager().getInstallerPackageName(twaPackageName);
         if (installerPackageName == null) return false;
-        return mAppStores.containsKey(installerPackageName);
-    }
-
-    /** Precondition: {@link #isInTwaInstalledFromAppStore} returns true. */
-    private void findAppStoreBillingApp(
-            ChromeActivity activity, List<ResolveInfo> allInstalledPaymentApps) {
-        assert activity != null;
-        // The following asserts are assumed to have been checked in {@link
-        // isInTwaInstalledFromAppStore}.
-        String twaPackageName = mPackageManagerDelegate.getTwaPackageName(activity);
-        assert twaPackageName != null;
-        String installerAppStorePackageName =
-                mPackageManagerDelegate.getInstallerPackage(twaPackageName);
-        assert installerAppStorePackageName != null;
-
-        GURL appStoreBillingUriMethod = mAppStores.get(installerAppStorePackageName);
-        assert appStoreBillingUriMethod != null;
-        assert appStoreBillingUriMethod.isValid();
-        String appStoreBillingMethod = appStoreBillingUriMethod.getSpec();
-        if (!mDelegate.getParams().getMethodData().containsKey(appStoreBillingMethod)) return;
-        ResolveInfo twaApp = findAppWithPackageNameAndSupportedMethod(
-                allInstalledPaymentApps, twaPackageName, appStoreBillingUriMethod);
-        if (twaApp == null) {
-            android.util.Log.d(TAG, "The current TWA cannot handle Payment Request.");
-            return;
-        }
-        onValidPaymentAppForPaymentMethodName(twaApp, appStoreBillingMethod);
-    }
-
-    private ResolveInfo findAppWithPackageNameAndSupportedMethod(
-            List<ResolveInfo> apps, String packageName, GURL uriMethod) {
-        assert packageName != null;
-        assert uriMethod != null;
-        for (int i = 0; i < apps.size(); i++) {
-            ResolveInfo app = apps.get(i);
-            String appPackageName = app.activityInfo.packageName;
-            if (!packageName.equals(appPackageName)) continue;
-            String defaultMethod = app.activityInfo.metaData == null
-                    ? null
-                    : app.activityInfo.metaData.getString(
-                            META_DATA_NAME_OF_DEFAULT_PAYMENT_METHOD_NAME);
-            GURL defaultUriMethod = new GURL(defaultMethod);
-            if ((uriMethod.isValid()
-                        && getSupportedPaymentMethods(app.activityInfo)
-                                   .contains(uriMethod.getSpec()))
-                    || (defaultUriMethod.isValid() && uriMethod.equals(defaultUriMethod))) {
-                return app;
-            }
-        }
-        return null;
+        return mAppStoreBillingMethodMap.keySet().contains(installerPackageName);
     }
 
     /**
@@ -259,7 +218,7 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
 
         for (String method : mDelegate.getParams().getMethodData().keySet()) {
             assert !TextUtils.isEmpty(method);
-            if (mAppStores.containsValue(new GURL(method))) continue;
+            if (mIgnoredMethods.contains(method)) continue;
             if (supportedNonUriPaymentMethods.contains(method)) {
                 mNonUriPaymentMethods.add(method);
             } else if (UriUtils.looksLikeUriMethod(method)) {
@@ -286,17 +245,9 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
             }
         }
 
-        // WebContents is possible to attach to different activities on {@link PaymentRequest}
-        // created and shown. Ideally {@link #findAppStoreBillingApp} should have based on the
-        // activity that is used when PaymentRequest is shown. But we intentionally not do that for
-        // the sake of simple design and better performance. Plus, for app store billing case in
-        // particular, it's unusual for a TWA to switch to CCT without destroying JavaScript context
-        // and, consequently, the {@link PaymentRequest} object.
-        ChromeActivity activity =
-                ChromeActivity.fromWebContents(mDelegate.getParams().getWebContents());
-        if (!mDelegate.getParams().requestShippingOrPayerContact() && activity != null
-                && isInTwaInstalledFromAppStore(activity)) {
-            findAppStoreBillingApp(activity, allInstalledPaymentApps);
+        if (isInTwaInstalledFromAppStore()) {
+            // TODO(crbug.com/1064740): the finder would special-case the TWA installed from App
+            // Store to return only the app-store app.
         }
 
         // All URI methods for which manifests should be downloaded. For example, if merchant
@@ -695,14 +646,14 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
     }
 
     /**
-     * Add an app store for testing.
+     * Ignores the given payment method identifier, so no Android payment apps for this method are
+     * looked up in findAndroidPaymentApps(). Calling this multiple times will union the new payment
+     * methods with the existing set.
      *
-     * @param packageName The package name of the app store.
-     * @param paymentMethod The payment method identifier of the app store.
+     * @param ignoredPaymentMethodIdentifier The ignored payment method identifier.
      */
     @VisibleForTesting
-    /* package */ void addAppStoreForTest(String packageName, GURL paymentMethod) {
-        assert paymentMethod.isValid();
-        mAppStores.put(packageName, paymentMethod);
+    /* package */ void ignorePaymentMethodForTest(String ignoredPaymentMethodIdentifier) {
+        mIgnoredMethods.add(ignoredPaymentMethodIdentifier);
     }
 }

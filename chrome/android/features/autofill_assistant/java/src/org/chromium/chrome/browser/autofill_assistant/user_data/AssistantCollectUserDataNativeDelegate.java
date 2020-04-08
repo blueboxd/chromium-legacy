@@ -33,19 +33,10 @@ public class AssistantCollectUserDataNativeDelegate implements AssistantCollectU
     @Override
     public void onContactInfoChanged(@Nullable AutofillContact contact) {
         if (mNativeAssistantCollectUserDataDelegate != 0) {
-            String name = null;
-            String phone = null;
-            String email = null;
-
-            if (contact != null) {
-                name = contact.getPayerName();
-                phone = contact.getPayerPhone();
-                email = contact.getPayerEmail();
-            }
-
             AssistantCollectUserDataNativeDelegateJni.get().onContactInfoChanged(
                     mNativeAssistantCollectUserDataDelegate,
-                    AssistantCollectUserDataNativeDelegate.this, name, phone, email);
+                    AssistantCollectUserDataNativeDelegate.this,
+                    contact != null ? contact.getProfile() : null);
         }
     }
 
@@ -186,8 +177,8 @@ public class AssistantCollectUserDataNativeDelegate implements AssistantCollectU
     @NativeMethods
     interface Natives {
         void onContactInfoChanged(long nativeAssistantCollectUserDataDelegate,
-                AssistantCollectUserDataNativeDelegate caller, @Nullable String payerName,
-                @Nullable String payerPhone, @Nullable String payerEmail);
+                AssistantCollectUserDataNativeDelegate caller,
+                @Nullable PersonalDataManager.AutofillProfile contactProfile);
         void onShippingAddressChanged(long nativeAssistantCollectUserDataDelegate,
                 AssistantCollectUserDataNativeDelegate caller,
                 @Nullable PersonalDataManager.AutofillProfile address);

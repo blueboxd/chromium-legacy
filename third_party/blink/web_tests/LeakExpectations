@@ -119,6 +119,7 @@ crbug.com/1029417 [ Linux ] external/wpt/web-nfc/NDEFReader_scan_filter.https.ht
 crbug.com/1038388 [ Linux ] http/tests/devtools/tracing/timeline-time/timeline-time.js [ Pass Failure ]
 
 # Sheriff 2020-04-03
+crbug.com/1067650 [ Linux ] http/tests/devtools/tracing/timeline-misc/timeline-load-event.js [ Pass Failure ]
 crbug.com/1067650 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-load-event.js [ Pass Failure ]
 
 # Sheriff 2020-04-06

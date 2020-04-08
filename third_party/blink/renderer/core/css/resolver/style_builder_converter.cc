@@ -1834,11 +1834,6 @@ StyleBuilderConverter::ConvertRegisteredPropertyVariableData(
       has_root_font_units, absolutized, g_null_atom, WTF::TextEncoding());
 }
 
-const CSSToLengthConversionData&
-StyleBuilderConverter::CssToLengthConversionData(StyleResolverState& state) {
-  return state.CssToLengthConversionData();
-}
-
 LengthSize StyleBuilderConverter::ConvertIntrinsicSize(
     StyleResolverState& state,
     const CSSValue& value) {

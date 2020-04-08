@@ -5,7 +5,9 @@
 #ifndef UI_MESSAGE_CENTER_VIEWS_MESSAGE_POPUP_VIEW_H_
 #define UI_MESSAGE_CENTER_VIEWS_MESSAGE_POPUP_VIEW_H_
 
+#include "base/scoped_observer.h"
 #include "ui/message_center/message_center_export.h"
+#include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -59,6 +61,7 @@ class MESSAGE_CENTER_EXPORT MessagePopupView : public views::WidgetDelegateView,
 
   // views::WidgetObserver:
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
+  void OnWidgetDestroyed(views::Widget* widget) override;
 
   bool is_hovered() const { return is_hovered_; }
   bool is_active() const { return is_active_; }
@@ -82,6 +85,8 @@ class MESSAGE_CENTER_EXPORT MessagePopupView : public views::WidgetDelegateView,
   const bool a11y_feedback_on_init_;
   bool is_hovered_ = false;
   bool is_active_ = false;
+
+  ScopedObserver<views::Widget, views::WidgetObserver> observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MessagePopupView);
 };

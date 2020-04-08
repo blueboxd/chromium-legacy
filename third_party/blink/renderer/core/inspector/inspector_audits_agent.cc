@@ -153,21 +153,23 @@ void InspectorAuditsAgent::InnerEnable() {
 }
 
 namespace {
-std::unique_ptr<protocol::Array<protocol::Audits::AffectedCookie>> BuildCookies(
-    const WTF::Vector<mojom::blink::AffectedCookiePtr>& cookies) {
-  auto result =
-      std::make_unique<protocol::Array<protocol::Audits::AffectedCookie>>();
-  for (const auto& cookie : cookies) {
-    auto protocol_cookie = std::move(protocol::Audits::AffectedCookie::create()
-                                         .setName(cookie->name)
-                                         .setPath(cookie->path)
-                                         .setDomain(cookie->domain));
-    if (cookie->site_for_cookies) {
-      protocol_cookie.setSiteForCookies(*cookie->site_for_cookies);
-    }
-    result->push_back(protocol_cookie.build());
+std::unique_ptr<protocol::Audits::AffectedCookie> BuildAffectedCookie(
+    const mojom::blink::AffectedCookiePtr& cookie) {
+  auto protocol_cookie = std::move(protocol::Audits::AffectedCookie::create()
+                                       .setName(cookie->name)
+                                       .setPath(cookie->path)
+                                       .setDomain(cookie->domain));
+  return protocol_cookie.build();
+}
+std::unique_ptr<protocol::Audits::AffectedRequest> BuildAffectedRequest(
+    const mojom::blink::AffectedRequestPtr& request) {
+  auto protocol_request = protocol::Audits::AffectedRequest::create()
+                              .setRequestId(request->request_id)
+                              .build();
+  if (!request->url.IsEmpty()) {
+    protocol_request->setUrl(request->url);
   }
-  return result;
+  return protocol_request;
 }
 blink::protocol::String InspectorIssueCodeValue(
     mojom::blink::InspectorIssueCode code) {
@@ -257,32 +259,47 @@ std::unique_ptr<std::vector<blink::protocol::String>> BuildCookieWarningReasons(
   }
   return protocol_warning_reasons;
 }
+protocol::String BuildCookieOperation(
+    mojom::blink::SameSiteCookieOperation operation) {
+  switch (operation) {
+    case blink::mojom::blink::SameSiteCookieOperation::SetCookie:
+      return protocol::Audits::SameSiteCookieOperationEnum::SetCookie;
+    case blink::mojom::blink::SameSiteCookieOperation::ReadCookie:
+      return protocol::Audits::SameSiteCookieOperationEnum::ReadCookie;
+  }
+  NOTREACHED();
+  return "unknown";
+}
 }  // namespace
 
 void InspectorAuditsAgent::InspectorIssueAdded(InspectorIssue* issue) {
   auto issueDetails = protocol::Audits::InspectorIssueDetails::create();
 
-  if (issue->Details()->sameSiteCookieIssueDetails) {
+  if (const auto& d = issue->Details()->sameSiteCookieIssueDetails) {
     auto sameSiteCookieDetails =
-        protocol::Audits::SameSiteCookieIssueDetails::create()
-            .setCookieExclusionReasons(BuildCookieExclusionReasons(
-                issue->Details()->sameSiteCookieIssueDetails->exclusionReason))
-            .setCookieWarningReasons(BuildCookieWarningReasons(
-                issue->Details()->sameSiteCookieIssueDetails->warningReason))
-            .build();
-    issueDetails.setSameSiteCookieIssueDetails(
-        std::move(sameSiteCookieDetails));
-  }
+        std::move(protocol::Audits::SameSiteCookieIssueDetails::create()
+                      .setCookie(BuildAffectedCookie(d->cookie))
+                      .setCookieExclusionReasons(
+                          BuildCookieExclusionReasons(d->exclusionReason))
+                      .setCookieWarningReasons(
+                          BuildCookieWarningReasons(d->warningReason))
+                      .setOperation(BuildCookieOperation(d->operation)));
 
-  auto affectedResources =
-      protocol::Audits::AffectedResources::create()
-          .setCookies(BuildCookies(issue->Resources()->cookies))
-          .build();
+    if (d->site_for_cookies) {
+      sameSiteCookieDetails.setSiteForCookies(*d->site_for_cookies);
+    }
+    if (d->cookie_url) {
+      sameSiteCookieDetails.setCookieUrl(*d->cookie_url);
+    }
+    if (d->request) {
+      sameSiteCookieDetails.setRequest(BuildAffectedRequest(d->request));
+    }
+    issueDetails.setSameSiteCookieIssueDetails(sameSiteCookieDetails.build());
+  }
 
   auto inspector_issue = protocol::Audits::InspectorIssue::create()
                              .setCode(InspectorIssueCodeValue(issue->Code()))
                              .setDetails(issueDetails.build())
-                             .setResources(std::move(affectedResources))
                              .build();
 
   GetFrontend()->issueAdded(std::move(inspector_issue));

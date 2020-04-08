@@ -182,7 +182,7 @@ bool MockCryptoClientStream::CryptoConnect() {
               std::make_unique<NullDecrypter>(Perspective::IS_CLIENT));
         }
         session()->connection()->SetEncrypter(ENCRYPTION_INITIAL, nullptr);
-        session()->connection()->SetEncrypter(
+        session()->OnNewEncryptionKeyAvailable(
             ENCRYPTION_FORWARD_SECURE,
             std::make_unique<NullEncrypter>(Perspective::IS_CLIENT));
       }
@@ -264,7 +264,7 @@ void MockCryptoClientStream::NotifySessionOneRttKeyAvailable() {
             std::make_unique<NullDecrypter>(Perspective::IS_CLIENT));
       }
       session()->connection()->SetEncrypter(ENCRYPTION_INITIAL, nullptr);
-      session()->connection()->SetEncrypter(
+      session()->OnNewEncryptionKeyAvailable(
           ENCRYPTION_FORWARD_SECURE,
           std::make_unique<NullEncrypter>(Perspective::IS_CLIENT));
     }

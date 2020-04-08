@@ -1737,7 +1737,7 @@ void URLLoader::SetRawRequestHeadersAndNotify(
       network_context_client_->OnCookiesRead(
           /* is_service_worker = */ false, GetProcessId(), GetRenderFrameId(),
           url_request_->url(), url_request_->site_for_cookies(),
-          reported_cookies);
+          reported_cookies, devtools_request_id());
     }
   }
 
@@ -1951,7 +1951,7 @@ void URLLoader::ReportFlaggedResponseCookies() {
       network_context_client_->OnCookiesChanged(
           /* is_service_worker = */ false, GetProcessId(), GetRenderFrameId(),
           url_request_->url(), url_request_->site_for_cookies(),
-          reported_cookies);
+          reported_cookies, devtools_request_id());
     }
   }
 }

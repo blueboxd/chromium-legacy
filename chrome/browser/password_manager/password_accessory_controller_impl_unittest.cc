@@ -21,6 +21,7 @@
 #include "chrome/browser/password_manager/password_generation_controller_impl.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
@@ -28,7 +29,9 @@
 #include "components/password_manager/core/browser/credential_cache.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -552,14 +555,18 @@ TEST_F(PasswordAccessoryControllerTest, OnManualGenerationRequested) {
 }
 
 TEST_F(PasswordAccessoryControllerTest, AddsSaveToggleIfIsBlacklisted) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      password_manager::features::kRecoverFromNeverSaveAndroid);
   cache()->SaveCredentialsAndBlacklistedForOrigin(
       {}, CredentialCache::IsOriginBlacklisted(true),
       url::Origin::Create(GURL(kExampleSite)));
   AccessorySheetData::Builder data_builder(AccessoryTabType::PASSWORDS,
                                            passwords_empty_str(kExampleDomain));
   data_builder
-      .SetOptionToggle(base::ASCIIToUTF16("Save passwords"), false,
-                       autofill::AccessoryAction::TOGGLE_SAVE_PASSWORDS)
+      .SetOptionToggle(
+          l10n_util::GetStringUTF16(IDS_PASSWORD_SAVING_STATUS_TOGGLE), false,
+          autofill::AccessoryAction::TOGGLE_SAVE_PASSWORDS)
       .AppendFooterCommand(manage_passwords_str(),
                            autofill::AccessoryAction::MANAGE_PASSWORDS);
   EXPECT_CALL(mock_manual_filling_controller_,
@@ -569,7 +576,47 @@ TEST_F(PasswordAccessoryControllerTest, AddsSaveToggleIfIsBlacklisted) {
       /*is_manual_generation_available=*/false);
 }
 
+TEST_F(PasswordAccessoryControllerTest,
+       NoSaveToggleIfIsBlacklistedAndIncognito) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      password_manager::features::kRecoverFromNeverSaveAndroid);
+
+  auto incognito_web_contents(content::WebContentsTester::CreateTestWebContents(
+      profile()->GetOffTheRecordProfile(), /*site_instance=*/nullptr));
+  content::WebContents* raw_web_contents = incognito_web_contents.get();
+
+  // Set the correct WebContents for the test and make sure the right frame
+  // is focused.
+  SetContents(std::move(incognito_web_contents));
+  NavigateAndCommit(GURL(kExampleSite));
+  FocusWebContentsOnMainFrame();
+
+  PasswordAccessoryControllerImpl::CreateForWebContentsForTesting(
+      raw_web_contents, cache(), mock_manual_filling_controller_.AsWeakPtr());
+  PasswordAccessoryController* incognito_accessory =
+      PasswordAccessoryControllerImpl::FromWebContents(raw_web_contents);
+  cache()->SaveCredentialsAndBlacklistedForOrigin(
+      {}, CredentialCache::IsOriginBlacklisted(true),
+      url::Origin::Create(GURL(kExampleSite)));
+
+  // Check that the accessory data passed to the |ManualFillingController| does
+  // not contain the save passwords toggle.
+  AccessorySheetData::Builder data_builder(AccessoryTabType::PASSWORDS,
+                                           passwords_empty_str(kExampleDomain));
+  data_builder.AppendFooterCommand(manage_passwords_str(),
+                                   autofill::AccessoryAction::MANAGE_PASSWORDS);
+  EXPECT_CALL(mock_manual_filling_controller_,
+              RefreshSuggestions(std::move(data_builder).Build()));
+  incognito_accessory->RefreshSuggestionsForField(
+      FocusedFieldType::kFillablePasswordField,
+      /*is_manual_generation_available=*/false);
+}
+
 TEST_F(PasswordAccessoryControllerTest, AddsSaveToggleIfWasBlacklisted) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      password_manager::features::kRecoverFromNeverSaveAndroid);
   cache()->SaveCredentialsAndBlacklistedForOrigin(
       {}, CredentialCache::IsOriginBlacklisted(true),
       url::Origin::Create(GURL(kExampleSite)));
@@ -580,8 +627,9 @@ TEST_F(PasswordAccessoryControllerTest, AddsSaveToggleIfWasBlacklisted) {
   AccessorySheetData::Builder data_builder(AccessoryTabType::PASSWORDS,
                                            passwords_empty_str(kExampleDomain));
   data_builder
-      .SetOptionToggle(base::ASCIIToUTF16("Save passwords"), true,
-                       autofill::AccessoryAction::TOGGLE_SAVE_PASSWORDS)
+      .SetOptionToggle(
+          l10n_util::GetStringUTF16(IDS_PASSWORD_SAVING_STATUS_TOGGLE), true,
+          autofill::AccessoryAction::TOGGLE_SAVE_PASSWORDS)
       .AppendFooterCommand(manage_passwords_str(),
                            autofill::AccessoryAction::MANAGE_PASSWORDS);
   EXPECT_CALL(mock_manual_filling_controller_,

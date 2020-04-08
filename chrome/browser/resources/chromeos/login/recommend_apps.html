@@ -18,16 +18,6 @@
       <iron-icon src="chrome://oobe/playstore.svg" slot="oobe-icon">
       </iron-icon>
       <div id="subtitle" slot="subtitle"></div>
-      <div id="app-list-error" slot="subtitle">
-        [[i18nDynamic(locale, 'recommendAppsError')]]
-      </div>
-      <div slot="footer" class="flex layout vertical center center-justified"
-          id="download-fail-illustration">
-        <img id="illustration"
-            srcset="images/1x/download_fail_illustration.svg 1x,
-            images/2x/download_fail_illustration.svg 2x"
-            class="oobe-illustration">
-      </div>
       <div id="app-list-view-container" slot="footer">
         <webview id="app-list-view"></webview>
       </div>
@@ -41,9 +31,6 @@
         <oobe-next-button id="recommend-apps-install-button"
             text-key="recommendAppsInstall" on-tap="onInstall_" inverse>
         </oobe-next-button>
-        <oobe-text-button id="recommend-apps-retry-button"
-            text-key="recommendAppsRetry" on-tap="onRetry_" border inverse>
-        </oobe-text-button>
       </div>
     </oobe-dialog>
   </template>

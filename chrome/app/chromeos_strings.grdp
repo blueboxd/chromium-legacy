@@ -864,14 +864,8 @@
   <message name="IDS_LOGIN_RECOMMEND_APPS_INSTALL" desc="The label on the button that installs the user selected apps">
     Install &#38; continue
   </message>
-  <message name="IDS_LOGIN_RECOMMEND_APPS_RETRY" desc="The label on the button that tries to load the app list again">
-    Retry
-  </message>
   <message name="IDS_LOGIN_RECOMMEND_APPS_SCREEN_LOADING" desc="Message shown while the recommended app list is being downloaded.">
     Please wait...
-  </message>
-  <message name="IDS_LOGIN_RECOMMEND_APPS_SCREEN_ERROR" desc="Load error message of the Recommend Apps OOBE dialog.">
-    The list of apps cannot be loaded. Please retry.
   </message>
   <message name="IDS_LOGIN_APP_DOWNLOADING_SCREEN_TITLE_SINGULAR" desc="The title of the dialog that tells the user the selected Android App is downloading.">
     We'll install that app for you

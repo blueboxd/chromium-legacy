@@ -54,7 +54,7 @@ bool NativeViewGLSurfaceEGLX11::Initialize(GLSurfaceFormat format) {
   // Query all child windows and store them. ANGLE creates a child window when
   // eglCreateWidnowSurface is called on X11 and expose events from this window
   // need to be received by this class.
-  Display* x11_display = GetNativeDisplay();
+  Display* x11_display = GetXNativeDisplay();
   Window root = 0;
   Window parent = 0;
   Window* children = nullptr;
@@ -92,8 +92,8 @@ gfx::SwapResult NativeViewGLSurfaceEGLX11::SwapBuffers(
   // views::DesktopWindowTreeHostX11::InitX11Window back to None for the
   // XWindow associated to this surface after the first SwapBuffers has
   // happened, to avoid showing a weird white background while resizing.
-  if (GetNativeDisplay() && !has_swapped_buffers_) {
-    XSetWindowBackgroundPixmap(GetNativeDisplay(), window_, 0);
+  if (GetXNativeDisplay() && !has_swapped_buffers_) {
+    XSetWindowBackgroundPixmap(GetXNativeDisplay(), window_, 0);
     has_swapped_buffers_ = true;
   }
   return result;
@@ -103,9 +103,13 @@ NativeViewGLSurfaceEGLX11::~NativeViewGLSurfaceEGLX11() {
   Destroy();
 }
 
+Display* NativeViewGLSurfaceEGLX11::GetXNativeDisplay() const {
+  return reinterpret_cast<Display*>(GetNativeDisplay());
+}
+
 std::unique_ptr<gfx::VSyncProvider>
 NativeViewGLSurfaceEGLX11::CreateVsyncProviderInternal() {
-  return std::make_unique<XrandrIntervalOnlyVSyncProvider>(GetNativeDisplay());
+  return std::make_unique<XrandrIntervalOnlyVSyncProvider>(GetXNativeDisplay());
 }
 
 bool NativeViewGLSurfaceEGLX11::DispatchXEvent(XEvent* x_event) {
@@ -119,7 +123,7 @@ bool NativeViewGLSurfaceEGLX11::DispatchXEvent(XEvent* x_event) {
     return false;
 
   x_event->xexpose.window = window_;
-  Display* x11_display = GetNativeDisplay();
+  Display* x11_display = GetXNativeDisplay();
   XSendEvent(x11_display, window_, x11::False, ExposureMask, x_event);
   XFlush(x11_display);
   return true;

@@ -35,6 +35,9 @@ class HeapMojoUniqueReceiverSet {
       : wrapper_(MakeGarbageCollected<Wrapper>(context)) {
     DCHECK(context);
   }
+  HeapMojoUniqueReceiverSet(const HeapMojoUniqueReceiverSet&) = delete;
+  HeapMojoUniqueReceiverSet& operator=(const HeapMojoUniqueReceiverSet&) =
+      delete;
 
   // Methods to redirect to mojo::ReceiverSet:
   mojo::ReceiverId Add(ImplPointerType impl,

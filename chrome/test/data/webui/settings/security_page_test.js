@@ -176,6 +176,37 @@ suite('CrSettingsSecurityPageTest', function() {
         page.prefs.profile.password_manager_leak_detection.value == previous);
   });
 
+  test('SafeBrowsingRadio_PreferenceUpdate', function() {
+    const enhancedRadio = page.$$('#safeBrowsingEnhanced');
+    const standardRadio = page.$$('#safeBrowsingStandard');
+    const disabledRadio = page.$$('#safeBrowsingDisabled');
+
+    // Set an enhanced protection preference state and ensure the radio buttons
+    // correctly reflect this.
+    page.set('prefs.safebrowsing.enabled.value', true);
+    page.set('prefs.safebrowsing.enhanced.value', true);
+    Polymer.dom.flush();
+    assertTrue(enhancedRadio.checked);
+    assertFalse(standardRadio.checked);
+    assertFalse(disabledRadio.checked);
+
+    // As above but for an enabled protection state.
+    page.set('prefs.safebrowsing.enabled.value', true);
+    page.set('prefs.safebrowsing.enhanced.value', false);
+    Polymer.dom.flush();
+    assertFalse(enhancedRadio.checked);
+    assertTrue(standardRadio.checked);
+    assertFalse(disabledRadio.checked);
+
+    // As above but for a safebrowsing disabled state.
+    page.set('prefs.safebrowsing.enabled.value', false);
+    page.set('prefs.safebrowsing.enhanced.value', false);
+    Polymer.dom.flush();
+    assertFalse(enhancedRadio.checked);
+    assertFalse(standardRadio.checked);
+    assertTrue(disabledRadio.checked);
+  });
+
   test('SafeBrowsingRadio_ManagedState', async function() {
     const enhancedRadio = page.$$('#safeBrowsingEnhanced');
     const standardRadio = page.$$('#safeBrowsingStandard');

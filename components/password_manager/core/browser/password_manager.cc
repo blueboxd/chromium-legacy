@@ -109,19 +109,9 @@ bool IsThereVisiblePasswordField(const FormData& form) {
   return false;
 }
 
-// Finds the matched form manager for |form| in |form_managers|.
-PasswordFormManager* FindMatchedManager(
-    const FormData& form,
-    const std::vector<std::unique_ptr<PasswordFormManager>>& form_managers,
-    const PasswordManagerDriver* driver) {
-  for (const auto& form_manager : form_managers) {
-    if (form_manager->DoesManage(form, driver))
-      return form_manager.get();
-  }
-  return nullptr;
-}
-
-// Finds the matched form manager with id |form_renderer_id| in |form_managers|.
+#if !defined(OS_IOS)
+// Finds the matched form manager with id |form_renderer_id| in
+// |form_managers|.
 PasswordFormManager* FindMatchedManagerByRendererId(
     uint32_t form_renderer_id,
     const std::vector<std::unique_ptr<PasswordFormManager>>& form_managers,
@@ -132,6 +122,7 @@ PasswordFormManager* FindMatchedManagerByRendererId(
   }
   return nullptr;
 }
+#endif  // !defined(OS_IOS)
 
 bool HasSingleUsernameVote(const FormPredictions& form) {
   if (!base::FeatureList::IsEnabled(
@@ -189,6 +180,15 @@ void AddLocallySavedPredictions(FieldInfoManager* field_info_manager,
       logger->LogString(Logger::STRING_LOCALLY_SAVED_PREDICTION, message);
     }
   }
+}
+
+FormData SimplifiedFormDataFromFormStructure(
+    const FormStructure& form_structure) {
+  FormData form_data;
+  form_data.name = form_structure.form_name();
+  form_data.is_form_tag = form_structure.is_form_tag();
+  form_data.unique_renderer_id = form_structure.unique_renderer_id();
+  return form_data;
 }
 
 }  // namespace
@@ -534,8 +534,7 @@ void PasswordManager::CreateFormManagers(
     if (!client_->IsFillingEnabled(form_data.url))
       continue;
 
-    PasswordFormManager* manager =
-        FindMatchedManager(form_data, form_managers_, driver);
+    PasswordFormManager* manager = GetMatchedManager(driver, form_data);
 
     if (manager) {
       // This extra filling is just duplicating redundancy that was in
@@ -643,6 +642,7 @@ PasswordFormManager* PasswordManager::ProvisionallySaveForm(
   return matched_manager;
 }
 
+#if !defined(OS_IOS)
 void PasswordManager::LogFirstFillingResult(PasswordManagerDriver* driver,
                                             uint32_t form_renderer_id,
                                             int32_t result) {
@@ -652,6 +652,7 @@ void PasswordManager::LogFirstFillingResult(PasswordManagerDriver* driver,
     return;
   matching_manager->GetMetricsRecorder()->RecordFirstFillingResult(result);
 }
+#endif  // !defined(OS_IOS)
 
 void PasswordManager::NotifyStorePasswordCalled() {
   store_password_called_ = true;
@@ -664,8 +665,7 @@ void PasswordManager::PresaveGeneratedPassword(
     const FormData& form,
     const base::string16& generated_password,
     const base::string16& generation_element) {
-  PasswordFormManager* form_manager =
-      FindMatchedManager(form, form_managers_, driver);
+  PasswordFormManager* form_manager = GetMatchedManager(driver, form);
   UMA_HISTOGRAM_BOOLEAN("PasswordManager.GeneratedFormHasNoFormManager",
                         !form_manager);
 
@@ -1007,8 +1007,8 @@ void PasswordManager::ProcessAutofillPredictions(
   for (const FormStructure* form : forms) {
     if (logger)
       logger->LogFormStructure(Logger::STRING_SERVER_PREDICTIONS, *form);
-    if (FindMatchedManagerByRendererId(form->unique_renderer_id(),
-                                       form_managers_, driver)) {
+    FormData form_data = SimplifiedFormDataFromFormStructure(*form);
+    if (GetMatchedManager(driver, form_data)) {
       // The form manager is already created.
       continue;
     }

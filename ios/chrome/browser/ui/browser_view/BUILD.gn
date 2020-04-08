@@ -127,6 +127,7 @@ source_set("browser_view") {
     "//ios/chrome/browser/ui/popup_menu",
     "//ios/chrome/browser/ui/presenters",
     "//ios/chrome/browser/ui/print",
+    "//ios/chrome/browser/ui/qr_generator",
     "//ios/chrome/browser/ui/qr_scanner:coordinator",
     "//ios/chrome/browser/ui/reading_list",
     "//ios/chrome/browser/ui/recent_tabs",

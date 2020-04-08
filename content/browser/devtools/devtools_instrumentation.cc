@@ -611,7 +611,7 @@ void OnCorsPreflightRequestCompleted(
 }
 
 namespace {
-blink::mojom::SameSiteCookieIssueDetailsPtr BuildSameSiteCookieIssueDetails(
+std::vector<blink::mojom::SameSiteCookieExclusionReason> BuildExclusionReasons(
     net::CanonicalCookie::CookieInclusionStatus status) {
   std::vector<blink::mojom::SameSiteCookieExclusionReason> exclusion_reasons;
   if (status.HasExclusionReason(
@@ -625,7 +625,11 @@ blink::mojom::SameSiteCookieIssueDetailsPtr BuildSameSiteCookieIssueDetails(
     exclusion_reasons.push_back(blink::mojom::SameSiteCookieExclusionReason::
                                     ExcludeSameSiteNoneInsecure);
   }
+  return exclusion_reasons;
+}
 
+std::vector<blink::mojom::SameSiteCookieWarningReason> BuildWarningReasons(
+    net::CanonicalCookie::CookieInclusionStatus status) {
   std::vector<blink::mojom::SameSiteCookieWarningReason> warning_reasons;
   if (status.HasWarningReason(
           net::CanonicalCookie::CookieInclusionStatus::
@@ -679,28 +683,43 @@ blink::mojom::SameSiteCookieIssueDetailsPtr BuildSameSiteCookieIssueDetails(
     warning_reasons.push_back(blink::mojom::SameSiteCookieWarningReason::
                                   WarnSameSiteCrossSchemeInsecureUrlStrict);
   }
-
-  return blink::mojom::SameSiteCookieIssueDetails::New(
-      std::move(exclusion_reasons), std::move(warning_reasons));
+  return warning_reasons;
 }
 }  // namespace
 
-void ReportSameSiteCookieIssue(RenderFrameHostImpl* render_frame_host_impl,
-                               const net::CookieWithStatus& excluded_cookie,
-                               const GURL& url,
-                               const GURL& site_for_cookies) {
-  auto details = blink::mojom::InspectorIssueDetails::New();
-  details->sameSiteCookieIssueDetails =
-      BuildSameSiteCookieIssueDetails(excluded_cookie.status);
-  auto resources = blink::mojom::AffectedResources::New();
-  resources->cookies.push_back(blink::mojom::AffectedCookie::New(
+void ReportSameSiteCookieIssue(
+    RenderFrameHostImpl* render_frame_host_impl,
+    const net::CookieWithStatus& excluded_cookie,
+    const GURL& url,
+    const net::SiteForCookies& site_for_cookies,
+    blink::mojom::SameSiteCookieOperation operation,
+    const base::Optional<std::string>& devtools_request_id) {
+  blink::mojom::AffectedRequestPtr affected_request;
+  if (devtools_request_id) {
+    // We can report the url here, because if devtools_request_id is set, the
+    // url is the url of the request.
+    affected_request =
+        blink::mojom::AffectedRequest::New(*devtools_request_id, url.spec());
+  }
+  auto affected_cookie = blink::mojom::AffectedCookie::New(
       excluded_cookie.cookie.Name(), excluded_cookie.cookie.Path(),
-      excluded_cookie.cookie.Domain(), site_for_cookies));
+      excluded_cookie.cookie.Domain());
+  auto details = blink::mojom::InspectorIssueDetails::New();
+  base::Optional<GURL> optional_site_for_cookies_url;
+  if (!site_for_cookies.IsNull()) {
+    optional_site_for_cookies_url = site_for_cookies.RepresentativeUrl();
+  }
+  details->sameSiteCookieIssueDetails =
+      blink::mojom::SameSiteCookieIssueDetails::New(
+          std::move(affected_cookie),
+          BuildExclusionReasons(excluded_cookie.status),
+          BuildWarningReasons(excluded_cookie.status), operation,
+          optional_site_for_cookies_url, url, std::move(affected_request));
 
   render_frame_host_impl->AddInspectorIssue(
       blink::mojom::InspectorIssueInfo::New(
           blink::mojom::InspectorIssueCode::kSameSiteCookieIssue,
-          std::move(details), std::move(resources)));
+          std::move(details)));
 }
 
 }  // namespace devtools_instrumentation

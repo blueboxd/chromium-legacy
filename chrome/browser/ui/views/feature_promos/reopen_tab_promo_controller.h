@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FEATURE_PROMOS_REOPEN_TAB_PROMO_CONTROLLER_H_
 #define CHROME_BROWSER_UI_VIEWS_FEATURE_PROMOS_REOPEN_TAB_PROMO_CONTROLLER_H_
 
+#include "base/scoped_observer.h"
 #include "chrome/browser/ui/views/frame/app_menu_button_observer.h"
+#include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
 class BrowserView;
@@ -19,7 +21,7 @@ class ReopenTabPromoController : public AppMenuButtonObserver,
                                  public views::WidgetObserver {
  public:
   explicit ReopenTabPromoController(BrowserView* browser_view);
-  ~ReopenTabPromoController() override = default;
+  ~ReopenTabPromoController() override;
 
   // Shows the IPH promo. Should only be called once.
   void ShowPromo();
@@ -66,6 +68,8 @@ class ReopenTabPromoController : public AppMenuButtonObserver,
   ReopenTabInProductHelp* const iph_service_;
   BrowserView* const browser_view_;
   FeaturePromoBubbleView* promo_bubble_ = nullptr;
+
+  ScopedObserver<views::Widget, views::WidgetObserver> observer_{this};
 
   // The promo stage that has been reached, logged to a histogram when the promo
   // flow ends.

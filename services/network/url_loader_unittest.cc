@@ -2779,7 +2779,8 @@ class MockNetworkContextClient : public TestNetworkContextClient {
       int32_t routing_id,
       const GURL& url,
       const net::SiteForCookies& site_for_cookies,
-      const std::vector<net::CookieWithStatus>& cookie_list) override {
+      const std::vector<net::CookieWithStatus>& cookie_list,
+      const base::Optional<std::string>& devtools_request_id) override {
     for (const auto& cookie_and_status : cookie_list) {
       reported_response_cookies_.push_back(
           CookieInfo(url, site_for_cookies.RepresentativeUrl(),
@@ -2798,7 +2799,8 @@ class MockNetworkContextClient : public TestNetworkContextClient {
       int32_t routing_id,
       const GURL& url,
       const net::SiteForCookies& site_for_cookies,
-      const std::vector<net::CookieWithStatus>& cookie_list) override {
+      const std::vector<net::CookieWithStatus>& cookie_list,
+      const base::Optional<std::string>& devtools_request_id) override {
     for (const auto& cookie_and_status : cookie_list) {
       reported_request_cookies_.push_back(
           CookieInfo(url, site_for_cookies.RepresentativeUrl(),

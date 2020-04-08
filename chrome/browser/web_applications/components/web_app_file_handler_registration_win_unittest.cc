@@ -61,14 +61,6 @@ class WebAppFileHandlerRegistrationWinTest : public testing::Test {
         registry_override_.OverrideRegistry(HKEY_LOCAL_MACHINE));
     ASSERT_NO_FATAL_FAILURE(
         registry_override_.OverrideRegistry(HKEY_CURRENT_USER));
-
-    // Create a mock chrome_pwa_launcher.exe in a mock Chrome version directory,
-    // where the file-registration code expects it to be.
-    const base::FilePath pwa_launcher_path = GetChromePwaLauncherPath();
-    ASSERT_TRUE(temp_version_dir_.Set(pwa_launcher_path.DirName()));
-    ASSERT_TRUE(
-        base::File(pwa_launcher_path, base::File::FLAG_CREATE).IsValid());
-
     testing_profile_manager_ = std::make_unique<TestingProfileManager>(
         TestingBrowserProcess::GetGlobal());
     ASSERT_TRUE(testing_profile_manager_->SetUp());

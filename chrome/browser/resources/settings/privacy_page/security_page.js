@@ -56,7 +56,7 @@ Polymer({
     /** @private */
     selectSafeBrowsingRadio_: {
       type: String,
-      computed: 'computeSelectSafeBrowsingRadio_(prefs.safeBrowsing.*)',
+      computed: 'computeSelectSafeBrowsingRadio_(prefs.safebrowsing.*)',
     },
 
     /** @private {!settings.SafeBrowsingRadioManagedState} */

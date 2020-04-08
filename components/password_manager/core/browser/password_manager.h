@@ -194,12 +194,14 @@ class PasswordManager : public FormSubmissionObserver {
 
 #endif  // defined(UNIT_TEST)
 
+#if !defined(OS_IOS)
   // Reports the success from the renderer's PasswordAutofillAgent to fill
   // credentials into a site. This may be called multiple times, but only
   // the first result will be recorded for each PasswordFormManager.
   void LogFirstFillingResult(PasswordManagerDriver* driver,
                              uint32_t form_renderer_id,
                              int32_t result);
+#endif  // !defined(OS_IOS)
 
   // Notifies that Credential Management API function store() is called.
   void NotifyStorePasswordCalled();

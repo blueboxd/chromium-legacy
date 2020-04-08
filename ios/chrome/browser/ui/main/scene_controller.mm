@@ -320,8 +320,6 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
               startupInformation:self.mainController
                         appState:self.mainController.appState];
 
-  [self scheduleShowPromo];
-
   // Before bringing up the UI, make sure the launch mode is correct, and
   // check for previous crashes.
   BOOL startInIncognito =
@@ -416,6 +414,8 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
     [self showFirstRunUI];
     // Do not ever show the 'restore' infobar during first run.
     self.mainController.restoreHelper = nil;
+  } else {
+    [self scheduleShowPromo];
   }
 }
 
@@ -453,6 +453,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 
 // Initializes the first run UI and presents it to the user.
 - (void)showFirstRunUI {
+  DCHECK(!self.signinCoordinator);
   // Register for the first run dismissal notification to reset
   // |sceneState.presentingFirstRunUI| flag;
   [[NSNotificationCenter defaultCenter]

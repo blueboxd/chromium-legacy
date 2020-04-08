@@ -113,7 +113,7 @@ void MessagePopupView::Show() {
   views::Widget* widget = new views::Widget();
   popup_collection_->ConfigureWidgetInitParamsForContainer(widget, &params);
   widget->set_focus_on_creation(false);
-  widget->AddObserver(this);
+  observer_.Add(widget);
 
 #if defined(OS_WIN)
   // We want to ensure that this toast always goes to the native desktop,
@@ -202,6 +202,10 @@ void MessagePopupView::OnWidgetActivationChanged(views::Widget* widget,
                                                  bool active) {
   is_active_ = active;
   popup_collection_->Update();
+}
+
+void MessagePopupView::OnWidgetDestroyed(views::Widget* widget) {
+  observer_.Remove(widget);
 }
 
 bool MessagePopupView::IsWidgetValid() const {

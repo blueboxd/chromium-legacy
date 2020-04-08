@@ -5,6 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_PARKABLE_STRING_MANAGER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_PARKABLE_STRING_MANAGER_H_
 
+#include <memory>
+#include <utility>
+
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -68,11 +71,16 @@ class PLATFORM_EXPORT ParkableStringManager {
   constexpr static int kAgingIntervalInSeconds = 2;
 
   static const char* kAllocatorDumpName;
+  // Relies on secure hash equality for deduplication. If one day SHA256 becomes
+  // insecure, then this would need to be updated to a more robust hash.
+  struct SecureDigestHash;
+  using StringMap = WTF::HashMap<const ParkableStringImpl::SecureDigest*,
+                                 ParkableStringImpl*,
+                                 SecureDigestHash>;
 
  private:
   friend class ParkableString;
   friend class ParkableStringImpl;
-  struct SecureDigestHash;
 
   scoped_refptr<ParkableStringImpl> Add(scoped_refptr<StringImpl>&&);
   void Remove(ParkableStringImpl*);
@@ -88,11 +96,9 @@ class PLATFORM_EXPORT ParkableStringManager {
   void RecordParkingThreadTime(base::TimeDelta parking_thread_time) {
     total_parking_thread_time_ += parking_thread_time;
   }
-  Vector<ParkableStringImpl*> GetUnparkedStrings() const;
   Statistics ComputeStatistics() const;
 
   void ResetForTesting();
-
   ParkableStringManager();
 
   bool backgrounded_;
@@ -102,16 +108,8 @@ class PLATFORM_EXPORT ParkableStringManager {
   base::TimeDelta total_unparking_time_;
   base::TimeDelta total_parking_thread_time_;
 
-  // Relies on secure hash equality for deduplication. If one day SHA256 becomes
-  // insecure, then this would need to be updated to a more robust hash.
-  WTF::HashMap<const ParkableStringImpl::SecureDigest*,
-               ParkableStringImpl*,
-               SecureDigestHash>
-      unparked_strings_;
-  WTF::HashMap<const ParkableStringImpl::SecureDigest*,
-               ParkableStringImpl*,
-               SecureDigestHash>
-      parked_strings_;
+  StringMap unparked_strings_;
+  StringMap parked_strings_;
 
   friend class ParkableStringTest;
   FRIEND_TEST_ALL_PREFIXES(ParkableStringTest, SynchronousCompression);

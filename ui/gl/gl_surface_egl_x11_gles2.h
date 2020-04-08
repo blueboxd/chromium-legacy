@@ -30,9 +30,10 @@ class GL_EXPORT NativeViewGLSurfaceEGLX11GLES2
               bool has_alpha) override;
   bool InitializeNativeWindow() override;
 
- private:
+ protected:
   ~NativeViewGLSurfaceEGLX11GLES2() override;
 
+ private:
   // XEventDispatcher:
   bool DispatchXEvent(XEvent* xev) override;
 

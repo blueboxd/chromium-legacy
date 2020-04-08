@@ -472,8 +472,7 @@ CacheStorage::CacheStorage(ExecutionContext* context,
     mojo::PendingRemote<mojom::blink::CacheStorage> info =
         service_worker->TakeCacheStorage();
     if (info) {
-      cache_storage_remote_ =
-          HeapMojoRemote<mojom::blink::CacheStorage>(context);
+      cache_storage_remote_.reset();
       cache_storage_remote_.Bind(std::move(info), task_runner);
       return;
     }

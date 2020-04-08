@@ -29,6 +29,9 @@
 // The mediator of this coordinator.
 @property(nonatomic, strong) CredentialListMediator* mediator;
 
+// Interface for the persistent credential store.
+@property(nonatomic, weak) id<CredentialStore> credentialStore;
+
 // The extension context in which the credential list was started.
 @property(nonatomic, weak) ASCredentialProviderExtensionContext* context;
 
@@ -42,6 +45,7 @@
 
 - (instancetype)
     initWithBaseViewController:(UIViewController*)baseViewController
+               credentialStore:(id<CredentialStore>)credentialStore
                        context:(ASCredentialProviderExtensionContext*)context
             serviceIdentifiers:
                 (NSArray<ASCredentialServiceIdentifier*>*)serviceIdentifiers {
@@ -50,6 +54,7 @@
     _baseViewController = baseViewController;
     _context = context;
     _serviceIdentifiers = serviceIdentifiers;
+    _credentialStore = credentialStore;
   }
   return self;
 }
@@ -60,6 +65,7 @@
   self.mediator = [[CredentialListMediator alloc]
         initWithConsumer:credentialListViewController
                UIHandler:self
+         credentialStore:self.credentialStore
                  context:self.context
       serviceIdentifiers:self.serviceIdentifiers];
 

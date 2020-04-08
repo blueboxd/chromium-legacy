@@ -280,17 +280,13 @@ class StyleBuilderConverter {
                                              const CSSValue& value);
 
   static AtomicString ConvertPage(StyleResolverState&, const CSSValue&);
-
- private:
-  static const CSSToLengthConversionData& CssToLengthConversionData(
-      StyleResolverState&);
 };
 
 template <typename T>
 T StyleBuilderConverter::ConvertComputedLength(StyleResolverState& state,
                                                const CSSValue& value) {
   return To<CSSPrimitiveValue>(value).ComputeLength<T>(
-      CssToLengthConversionData(state));
+      state.CssToLengthConversionData());
 }
 
 template <typename T>
@@ -327,7 +323,7 @@ T StyleBuilderConverter::ConvertLineWidth(StyleResolverState& state,
   // device pixels or zoom adjusted CSS pixels instead of raw CSS pixels.
   // Reference crbug.com/485650 and crbug.com/382483
   double result =
-      primitive_value.ComputeLength<double>(CssToLengthConversionData(state));
+      primitive_value.ComputeLength<double>(state.CssToLengthConversionData());
   double zoomed_result = state.StyleRef().EffectiveZoom() * result;
   if (zoomed_result > 0.0 && zoomed_result < 1.0)
     return 1.0;

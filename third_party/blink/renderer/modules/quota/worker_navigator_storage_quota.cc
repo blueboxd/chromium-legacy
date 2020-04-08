@@ -57,8 +57,11 @@ StorageManager* WorkerNavigatorStorageQuota::storage(
 }
 
 StorageManager* WorkerNavigatorStorageQuota::storage() const {
-  if (!storage_manager_)
-    storage_manager_ = MakeGarbageCollected<StorageManager>();
+  if (!storage_manager_) {
+    storage_manager_ = MakeGarbageCollected<StorageManager>(
+        GetSupplementable() ? GetSupplementable()->GetExecutionContext()
+                            : nullptr);
+  }
   return storage_manager_.Get();
 }
 

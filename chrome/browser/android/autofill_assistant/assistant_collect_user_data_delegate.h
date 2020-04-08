@@ -18,9 +18,7 @@ class AssistantCollectUserDataDelegate {
   void OnContactInfoChanged(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller,
-      const base::android::JavaParamRef<jstring>& jpayer_name,
-      const base::android::JavaParamRef<jstring>& jpayer_phone,
-      const base::android::JavaParamRef<jstring>& jpayer_email);
+      const base::android::JavaParamRef<jobject>& jcontact_profile);
 
   void OnShippingAddressChanged(
       JNIEnv* env,

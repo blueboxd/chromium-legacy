@@ -8,8 +8,7 @@
 
 login.createScreen('RecommendAppsScreen', 'recommend-apps', function() {
   return {
-    EXTERNAL_API:
-        ['loadAppList', 'setThrobberVisible', 'setWebview', 'showError'],
+    EXTERNAL_API: ['loadAppList', 'setThrobberVisible', 'setWebview'],
 
     /** Initial UI State for screen */
     getOobeUIInitialState() {
@@ -83,21 +82,6 @@ login.createScreen('RecommendAppsScreen', 'recommend-apps', function() {
       window.addEventListener('message', this.onMessage);
     },
 
-    /**
-     * Shows error UI when it fails to load the recommended app list.
-     */
-    showError() {
-      this.ensureInitialized_();
-
-      // Hide the loading throbber and show the error message.
-      this.setThrobberVisible(false);
-      this.removeClass_('recommend-apps-loading');
-      this.removeClass_('recommend-apps-loaded');
-      this.addClass_('error');
-
-      this.getElement_('recommend-apps-retry-button').focus();
-    },
-
     setWebview(contents) {
       const appListView = this.getElement_('app-list-view');
       appListView.src =
@@ -149,7 +133,6 @@ login.createScreen('RecommendAppsScreen', 'recommend-apps', function() {
      */
     onGenerateContents() {
       this.removeClass_('recommend-apps-loading');
-      this.removeClass_('error');
       this.addClass_('recommend-apps-loaded');
       this.getElement_('recommend-apps-install-button').focus();
     },
@@ -174,18 +157,6 @@ login.createScreen('RecommendAppsScreen', 'recommend-apps', function() {
               chrome.send('recommendAppsInstall', result[0]);
             });
       }
-    },
-
-    /**
-     * Handles Retry button click.
-     */
-    onRetry() {
-      this.setThrobberVisible(true);
-      this.removeClass_('recommend-apps-loaded');
-      this.removeClass_('error');
-      this.addClass_('recommend-apps-loading');
-
-      chrome.send('recommendAppsRetry');
     },
 
     /**

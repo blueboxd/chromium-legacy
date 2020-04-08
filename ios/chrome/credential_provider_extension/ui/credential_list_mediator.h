@@ -11,6 +11,7 @@
 @class ASCredentialProviderExtensionContext;
 @protocol CredentialListConsumer;
 @protocol CredentialListUIHandler;
+@protocol CredentialStore;
 
 // This mediator fetches and organizes the credentials for its consumer.
 @interface CredentialListMediator : NSObject
@@ -18,6 +19,7 @@
 // |serviceIdentifiers| will be used to prioritize data, can be nil.
 - (instancetype)initWithConsumer:(id<CredentialListConsumer>)consumer
                        UIHandler:(id<CredentialListUIHandler>)UIHandler
+                 credentialStore:(id<CredentialStore>)credentialStore
                          context:(ASCredentialProviderExtensionContext*)context
               serviceIdentifiers:
                   (NSArray<ASCredentialServiceIdentifier*>*)serviceIdentifiers

@@ -60,6 +60,28 @@ class OnPurgeMemoryListener : public GarbageCollected<OnPurgeMemoryListener>,
   }
 };
 
+Vector<ParkableStringImpl*> EnumerateStrings(
+    const ParkableStringManager::StringMap& strings) {
+  WTF::Vector<ParkableStringImpl*> all_strings;
+  all_strings.ReserveCapacity(strings.size());
+
+  for (const auto& kv : strings)
+    all_strings.push_back(kv.value);
+
+  return all_strings;
+}
+
+void MoveString(ParkableStringImpl* string,
+                ParkableStringManager::StringMap* from,
+                ParkableStringManager::StringMap* to) {
+  auto it = from->find(string->digest());
+  DCHECK(it != from->end());
+  DCHECK_EQ(it->value, string);
+  from->erase(it);
+  auto insert_result = to->insert(string->digest(), string);
+  DCHECK(insert_result.is_new_entry);
+}
+
 }  // namespace
 
 const char* ParkableStringManager::kAllocatorDumpName = "parkable_strings";
@@ -103,7 +125,6 @@ ParkableStringManagerDumpProvider::ParkableStringManagerDumpProvider() =
     default;
 
 ParkableStringManager& ParkableStringManager::Instance() {
-  DCHECK(IsMainThread());
   DEFINE_STATIC_LOCAL(ParkableStringManager, instance, ());
   return instance;
 }
@@ -170,10 +191,9 @@ scoped_refptr<ParkableStringImpl> ParkableStringManager::Add(
   if (it != parked_strings_.end())
     return it->value;
 
+  // No hit, new unparked string.
   auto new_parkable = ParkableStringImpl::MakeParkable(std::move(string_impl),
                                                        std::move(digest));
-
-  // No hit, new unparked string.
   auto insert_result =
       unparked_strings_.insert(new_parkable->digest(), new_parkable.get());
   DCHECK(insert_result.is_new_entry);
@@ -209,37 +229,29 @@ void ParkableStringManager::Remove(ParkableStringImpl* string) {
   DCHECK(string->may_be_parked());
   DCHECK(string->digest());
 
-  if (string->is_parked()) {
-    auto it = parked_strings_.find(string->digest());
-    DCHECK(it != parked_strings_.end());
-    parked_strings_.erase(it);
-  } else {
-    auto it = unparked_strings_.find(string->digest());
-    DCHECK(it != unparked_strings_.end());
-    unparked_strings_.erase(it);
-  }
+  StringMap* map = nullptr;
+  if (string->is_parked())
+    map = &parked_strings_;
+  else
+    map = &unparked_strings_;
+
+  auto it = map->find(string->digest());
+  DCHECK(it != map->end());
+  map->erase(it);
 }
 
 void ParkableStringManager::OnParked(ParkableStringImpl* newly_parked_string) {
   DCHECK(IsMainThread());
   DCHECK(newly_parked_string->may_be_parked());
   DCHECK(newly_parked_string->is_parked());
-  auto it = unparked_strings_.find(newly_parked_string->digest());
-  DCHECK(it != unparked_strings_.end());
-  DCHECK_EQ(it->value, newly_parked_string);
-  unparked_strings_.erase(it);
-  parked_strings_.insert(newly_parked_string->digest(), newly_parked_string);
+  MoveString(newly_parked_string, &unparked_strings_, &parked_strings_);
 }
 
 void ParkableStringManager::OnUnparked(ParkableStringImpl* was_parked_string) {
   DCHECK(IsMainThread());
   DCHECK(was_parked_string->may_be_parked());
   DCHECK(!was_parked_string->is_parked());
-  auto it = parked_strings_.find(was_parked_string->digest());
-  DCHECK(it != parked_strings_.end());
-  DCHECK_EQ(it->value, was_parked_string);
-  parked_strings_.erase(it);
-  unparked_strings_.insert(was_parked_string->digest(), was_parked_string);
+  MoveString(was_parked_string, &parked_strings_, &unparked_strings_);
   ScheduleAgingTaskIfNeeded();
 }
 
@@ -265,7 +277,7 @@ void ParkableStringManager::ParkAll(ParkableStringImpl::ParkingMode mode) {
   // and |unparked_strings_| can contain a few 10s of strings (and we will
   // trigger expensive compression), or this is a subsequent one, and
   // |unparked_strings_| will have few entries.
-  WTF::Vector<ParkableStringImpl*> unparked = GetUnparkedStrings();
+  auto unparked = EnumerateStrings(unparked_strings_);
 
   for (ParkableStringImpl* str : unparked) {
     str->Park(mode);
@@ -274,6 +286,8 @@ void ParkableStringManager::ParkAll(ParkableStringImpl::ParkingMode mode) {
 }
 
 size_t ParkableStringManager::Size() const {
+  DCHECK(IsMainThread());
+
   return parked_strings_.size() + unparked_strings_.size();
 }
 
@@ -307,12 +321,13 @@ void ParkableStringManager::AgeStringsAndPark() {
   TRACE_EVENT0("blink", "ParkableStringManager::AgeStringsAndPark");
   has_pending_aging_task_ = false;
 
-  WTF::Vector<ParkableStringImpl*> unparked = GetUnparkedStrings();
+  auto unparked = EnumerateStrings(unparked_strings_);
   bool can_make_progress = false;
   for (ParkableStringImpl* str : unparked) {
     if (str->MaybeAgeOrParkString() ==
-        ParkableStringImpl::AgeOrParkResult::kSuccessOrTransientFailure)
+        ParkableStringImpl::AgeOrParkResult::kSuccessOrTransientFailure) {
       can_make_progress = true;
+    }
   }
 
   // Some strings will never be parkable because there are lasting external
@@ -350,7 +365,7 @@ void ParkableStringManager::PurgeMemory() {
   DCHECK(IsMainThread());
   DCHECK(CompressionEnabled());
 
-  ParkAll(ParkableStringImpl::ParkingMode::kAlways);
+  ParkAll(ParkableStringImpl::ParkingMode::kCompress);
   // Critical memory pressure: drop compressed data for strings that we cannot
   // park now.
   //
@@ -361,15 +376,6 @@ void ParkableStringManager::PurgeMemory() {
     for (const auto& kv : unparked_strings_)
       kv.value->PurgeMemory();
   }
-}
-
-Vector<ParkableStringImpl*> ParkableStringManager::GetUnparkedStrings() const {
-  WTF::Vector<ParkableStringImpl*> unparked;
-  unparked.ReserveCapacity(unparked_strings_.size());
-  for (const auto& kv : unparked_strings_)
-    unparked.push_back(kv.value);
-
-  return unparked;
 }
 
 ParkableStringManager::Statistics ParkableStringManager::ComputeStatistics()
@@ -439,10 +445,6 @@ ParkableStringManager::ParkableStringManager()
     : backgrounded_(false),
       has_pending_aging_task_(false),
       has_posted_unparking_time_accounting_task_(false),
-      did_register_memory_pressure_listener_(false),
-      total_unparking_time_(),
-      total_parking_thread_time_(),
-      unparked_strings_(),
-      parked_strings_() {}
+      did_register_memory_pressure_listener_(false) {}
 
 }  // namespace blink

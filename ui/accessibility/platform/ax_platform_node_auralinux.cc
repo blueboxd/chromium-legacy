@@ -2116,7 +2116,7 @@ gint GetIndexInParent(AtkObject* atk_object) {
   if (!obj)
     return -1;
 
-  return obj->GetIndexInParent();
+  return obj->GetIndexInParent().value_or(-1);
 }
 
 gint AtkGetIndexInParent(AtkObject* atk_object) {
@@ -3822,7 +3822,7 @@ void AXPlatformNodeAuraLinux::OnSubtreeCreated() {
     return;
 
   g_signal_emit_by_name(GetParent(), "children-changed::add",
-                        GetIndexInParent(), atk_object);
+                        GetIndexInParent().value_or(-1), atk_object);
 }
 
 void AXPlatformNodeAuraLinux::OnSubtreeWillBeDeleted() {
@@ -3836,7 +3836,7 @@ void AXPlatformNodeAuraLinux::OnSubtreeWillBeDeleted() {
     return;
 
   g_signal_emit_by_name(GetParent(), "children-changed::remove",
-                        GetIndexInParent(), atk_object);
+                        GetIndexInParent().value_or(-1), atk_object);
 }
 
 void AXPlatformNodeAuraLinux::OnParentChanged() {

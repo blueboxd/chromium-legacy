@@ -1970,8 +1970,7 @@ void Internals::triggerTestInspectorIssue(Document* document) {
   DCHECK(document);
   auto info = mojom::blink::InspectorIssueInfo::New(
       mojom::InspectorIssueCode::kSameSiteCookieIssue,
-      mojom::blink::InspectorIssueDetails::New(),
-      mojom::blink::AffectedResources::New());
+      mojom::blink::InspectorIssueDetails::New());
   document->AddInspectorIssue(InspectorIssue::Create(std::move(info)));
 }
 

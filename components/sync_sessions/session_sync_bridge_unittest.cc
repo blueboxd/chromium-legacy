@@ -228,6 +228,7 @@ class SessionSyncBridgeTest : public ::testing::Test {
     state.set_initial_sync_done(true);
     state.mutable_progress_marker()->set_data_type_id(
         GetSpecificsFieldNumberFromModelType(syncer::SESSIONS));
+    state.set_authenticated_account_id("SomeAccountId");
     syncer::UpdateResponseDataList initial_updates;
     for (const SessionSpecifics& specifics : remote_data) {
       initial_updates.push_back(SpecificsToUpdateResponse(specifics));

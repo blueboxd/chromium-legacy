@@ -5,8 +5,10 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FEATURE_PROMOS_GLOBAL_MEDIA_CONTROLS_PROMO_CONTROLLER_H_
 #define CHROME_BROWSER_UI_VIEWS_FEATURE_PROMOS_GLOBAL_MEDIA_CONTROLS_PROMO_CONTROLLER_H_
 
+#include "base/scoped_observer.h"
 #include "chrome/browser/ui/global_media_controls/media_toolbar_button_observer.h"
 #include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_view.h"
+#include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
 class MediaToolbarButtonView;
@@ -21,7 +23,7 @@ class GlobalMediaControlsPromoController : public views::WidgetObserver,
  public:
   GlobalMediaControlsPromoController(MediaToolbarButtonView* owner,
                                      Profile* profile);
-  ~GlobalMediaControlsPromoController() override = default;
+  ~GlobalMediaControlsPromoController() override;
 
   // Shows the IPH promo. Should only be called once.
   void ShowPromo();
@@ -50,6 +52,8 @@ class GlobalMediaControlsPromoController : public views::WidgetObserver,
   MediaToolbarButtonView* const owner_;
   Profile* const profile_;
   FeaturePromoBubbleView* promo_bubble_ = nullptr;
+
+  ScopedObserver<views::Widget, views::WidgetObserver> observer_{this};
 
   // Whether we are showing the promo.
   bool is_showing_ = false;

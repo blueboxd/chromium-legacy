@@ -32,7 +32,7 @@ MIDIAccessInitializer::MIDIAccessInitializer(ScriptState* script_state,
                                              const MIDIOptions* options)
     : ScriptPromiseResolver(script_state),
       options_(options),
-      permission_service_(GetExecutionContext()) {}
+      permission_service_(ExecutionContext::From(script_state)) {}
 
 void MIDIAccessInitializer::Dispose() {
   dispatcher_.reset();

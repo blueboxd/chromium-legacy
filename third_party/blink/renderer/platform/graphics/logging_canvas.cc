@@ -582,7 +582,9 @@ void LoggingCanvas::didSetMatrix(const SkMatrix& matrix) {
   params->SetArray("matrix", ArrayForSkMatrix(matrix));
 }
 
-void LoggingCanvas::didConcat44(const SkScalar m[16]) {
+void LoggingCanvas::didConcat44(const SkM44& matrix) {
+  SkScalar m[16];
+  matrix.getColMajor(m);
   AutoLogger logger(this);
   JSONObject* params = logger.LogItemWithParams("concat44");
   params->SetArray("matrix44", ArrayForSkScalars(16, m));

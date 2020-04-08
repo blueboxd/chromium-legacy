@@ -127,12 +127,16 @@ class Profile : public content::BrowserContext {
       return profile_id_ < other.profile_id_;
     }
 
+   private:
+    friend std::ostream& operator<<(std::ostream& out,
+                                    const Profile::OTRProfileID& profile_id);
+
+    OTRProfileID() = default;
+
     // Returns this OTRProfileID in a string format that can be used for debug
     // message.
     const std::string& ToString() const;
 
-   private:
-    OTRProfileID() = default;
     const std::string profile_id_;
   };
 

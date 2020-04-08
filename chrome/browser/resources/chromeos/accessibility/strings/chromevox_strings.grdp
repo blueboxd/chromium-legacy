@@ -1504,6 +1504,9 @@
   <message desc="Spoken when the search widget first shows." name="IDS_CHROMEVOX_SEARCH_WIDGET_INTRO">
     Find in page
   </message>
+  <message desc="Instructions on how to use the ChromeVox find in page text input." name="IDS_CHROMEVOX_SEARCH_WIDGET_DESCRIPTION">
+    Type to search the page. Press enter to jump to the result, up or down arrows to browse results, keep typing to change your search, or escape to cancel.
+  </message>
   <message desc="Category displayed in the options page under keyboard commands." name="IDS_CHROMEVOX_MODIFIER_KEYS">
     Modifier Keys
   </message>

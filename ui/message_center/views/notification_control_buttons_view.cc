@@ -28,8 +28,11 @@ NotificationControlButtonsView::NotificationControlButtonsView(
     MessageView* message_view)
     : message_view_(message_view), icon_color_(gfx::kChromeIconGrey) {
   DCHECK(message_view);
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
+  auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal));
+  // Do not stretch buttons as that would stretch their focus indicator.
+  layout->set_cross_axis_alignment(
+      views::BoxLayout::CrossAxisAlignment::kStart);
 
   // Use layer to change the opacity.
   SetPaintToLayer();

@@ -902,32 +902,51 @@ TEST_F(PasswordSyncBridgeTest, ShouldNotifyUnsyncedCredentialsIfAccountStore) {
   ON_CALL(*mock_password_store_sync(), IsAccountStore())
       .WillByDefault(Return(true));
 
-  const int kPrimaryKeyUnsyncedEntry = 1000;
-  const int kPrimaryKeySyncedEntry = 1001;
-  const std::string kPrimaryKeyUnsyncedEntryStr = "1000";
-  const std::string kPrimaryKeySyncedEntryStr = "1001";
-  ON_CALL(mock_processor(), IsEntityUnsynced(kPrimaryKeyUnsyncedEntryStr))
+  const std::string kPrimaryKeyUnsyncedCredentialStr = "1000";
+  const std::string kPrimaryKeySyncedCredentialStr = "1001";
+  const std::string kPrimaryKeyUnsyncedDeletionStr = "1002";
+  ON_CALL(mock_processor(), IsEntityUnsynced(kPrimaryKeyUnsyncedCredentialStr))
       .WillByDefault(Return(true));
-  ON_CALL(mock_processor(), IsEntityUnsynced(kPrimaryKeySyncedEntryStr))
+  ON_CALL(mock_processor(), IsEntityUnsynced(kPrimaryKeySyncedCredentialStr))
       .WillByDefault(Return(false));
+  ON_CALL(mock_processor(), IsEntityUnsynced(kPrimaryKeyUnsyncedDeletionStr))
+      .WillByDefault(Return(true));
+
+  sync_pb::EntityMetadata is_deletion_metadata;
+  is_deletion_metadata.set_is_deleted(true);
+  sync_pb::EntityMetadata is_not_deletion_metadata;
+  is_not_deletion_metadata.set_is_deleted(false);
   ON_CALL(*mock_sync_metadata_store_sync(), GetAllSyncMetadata())
       .WillByDefault([&]() {
         auto batch = std::make_unique<syncer::MetadataBatch>();
-        batch->AddMetadata(kPrimaryKeyUnsyncedEntryStr,
-                           std::make_unique<sync_pb::EntityMetadata>());
-        batch->AddMetadata(kPrimaryKeySyncedEntryStr,
-                           std::make_unique<sync_pb::EntityMetadata>());
+        batch->AddMetadata(kPrimaryKeyUnsyncedCredentialStr,
+                           std::make_unique<sync_pb::EntityMetadata>(
+                               is_not_deletion_metadata));
+        batch->AddMetadata(kPrimaryKeySyncedCredentialStr,
+                           std::make_unique<sync_pb::EntityMetadata>(
+                               is_not_deletion_metadata));
+        batch->AddMetadata(
+            kPrimaryKeyUnsyncedDeletionStr,
+            std::make_unique<sync_pb::EntityMetadata>(is_deletion_metadata));
         return batch;
       });
 
-  autofill::PasswordForm unsynced_entry = MakePasswordForm(kSignonRealm1);
-  autofill::PasswordForm synced_entry = MakePasswordForm(kSignonRealm2);
-  fake_db()->AddLoginForPrimaryKey(kPrimaryKeyUnsyncedEntry, unsynced_entry);
-  fake_db()->AddLoginForPrimaryKey(kPrimaryKeySyncedEntry, synced_entry);
+  // No form is added to the database for the unsynced deletion primary key,
+  // because the deletion is supposed to have already removed such form.
+  const int kPrimaryKeyUnsyncedCredential = 1000;
+  const int kPrimaryKeySyncedCredential = 1001;
+  autofill::PasswordForm unsynced_credential = MakePasswordForm(kSignonRealm1);
+  autofill::PasswordForm synced_credential = MakePasswordForm(kSignonRealm2);
+  fake_db()->AddLoginForPrimaryKey(kPrimaryKeyUnsyncedCredential,
+                                   unsynced_credential);
+  fake_db()->AddLoginForPrimaryKey(kPrimaryKeySyncedCredential,
+                                   synced_credential);
 
+  // The notification should only contain new credentials that are unsynced,
+  // ignoring both synced ones and deletion entries.
   EXPECT_CALL(*mock_password_store_sync(),
               NotifyUnsyncedCredentialsWillBeDeleted(
-                  UnorderedElementsAre(unsynced_entry)));
+                  UnorderedElementsAre(unsynced_credential)));
 
   // The content of the metadata change list does not matter in this case.
   bridge()->ApplyStopSyncChanges(bridge()->CreateMetadataChangeList());
@@ -938,28 +957,25 @@ TEST_F(PasswordSyncBridgeTest,
   ON_CALL(*mock_password_store_sync(), IsAccountStore())
       .WillByDefault(Return(false));
 
-  const int kPrimaryKeyUnsyncedEntry = 1000;
-  const int kPrimaryKeySyncedEntry = 1001;
-  const std::string kPrimaryKeyUnsyncedEntryStr = "1000";
-  const std::string kPrimaryKeySyncedEntryStr = "1001";
-  ON_CALL(mock_processor(), IsEntityUnsynced(kPrimaryKeyUnsyncedEntryStr))
+  const int kPrimaryKeyUnsyncedCredential = 1000;
+  const std::string kPrimaryKeyUnsyncedCredentialStr = "1000";
+  ON_CALL(mock_processor(), IsEntityUnsynced(kPrimaryKeyUnsyncedCredentialStr))
       .WillByDefault(Return(true));
-  ON_CALL(mock_processor(), IsEntityUnsynced(kPrimaryKeySyncedEntryStr))
-      .WillByDefault(Return(false));
+
+  sync_pb::EntityMetadata is_not_deletion_metadata;
+  is_not_deletion_metadata.set_is_deleted(false);
   ON_CALL(*mock_sync_metadata_store_sync(), GetAllSyncMetadata())
       .WillByDefault([&]() {
         auto batch = std::make_unique<syncer::MetadataBatch>();
-        batch->AddMetadata(kPrimaryKeyUnsyncedEntryStr,
-                           std::make_unique<sync_pb::EntityMetadata>());
-        batch->AddMetadata(kPrimaryKeySyncedEntryStr,
-                           std::make_unique<sync_pb::EntityMetadata>());
+        batch->AddMetadata(kPrimaryKeyUnsyncedCredentialStr,
+                           std::make_unique<sync_pb::EntityMetadata>(
+                               is_not_deletion_metadata));
         return batch;
       });
 
-  fake_db()->AddLoginForPrimaryKey(kPrimaryKeyUnsyncedEntry,
+  autofill::PasswordForm unsynced_deletion = MakePasswordForm(kSignonRealm3);
+  fake_db()->AddLoginForPrimaryKey(kPrimaryKeyUnsyncedCredential,
                                    MakePasswordForm(kSignonRealm1));
-  fake_db()->AddLoginForPrimaryKey(kPrimaryKeySyncedEntry,
-                                   MakePasswordForm(kSignonRealm2));
 
   EXPECT_CALL(*mock_password_store_sync(),
               NotifyUnsyncedCredentialsWillBeDeleted)

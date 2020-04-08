@@ -11,7 +11,6 @@
 
 #include "base/macros.h"
 #include "content/renderer/render_frame_impl.h"
-#include "content/shell/test_runner/test_runner_export.h"
 #include "content/shell/test_runner/web_frame_test_client.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -22,12 +21,13 @@ namespace content {
 class RenderViewImpl;
 }  // namespace content
 
-namespace test_runner {
+namespace content {
+class WebWidgetTestProxy;
 
 // WebFrameTestProxy is used during running web tests instead of a
 // RenderFrameImpl to inject test-only behaviour by overriding methods in the
 // base class.
-class TEST_RUNNER_EXPORT WebFrameTestProxy : public content::RenderFrameImpl {
+class WebFrameTestProxy : public content::RenderFrameImpl {
  public:
   template <typename... Args>
   explicit WebFrameTestProxy(Args&&... args)
@@ -36,9 +36,15 @@ class TEST_RUNNER_EXPORT WebFrameTestProxy : public content::RenderFrameImpl {
 
   void Initialize(content::RenderViewImpl* render_view_for_frame);
 
+  // Reset state between tests.
+  void Reset();
+
   // Returns a frame name that can be used in the output of web tests
   // (the name is derived from the frame's unique name).
   std::string GetFrameNameForWebTests();
+
+  // Returns the test-subclass of RenderWidget for the local root of this frame.
+  WebWidgetTestProxy* GetLocalRootWebWidgetTestProxy();
 
   // RenderFrameImpl overrides.
   void UpdateAllLifecyclePhasesAndCompositeForTesting() override;
@@ -75,6 +81,6 @@ class TEST_RUNNER_EXPORT WebFrameTestProxy : public content::RenderFrameImpl {
   DISALLOW_COPY_AND_ASSIGN(WebFrameTestProxy);
 };
 
-}  // namespace test_runner
+}  // namespace content
 
 #endif  // CONTENT_SHELL_TEST_RUNNER_WEB_FRAME_TEST_PROXY_H_

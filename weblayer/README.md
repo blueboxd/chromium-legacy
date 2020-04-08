@@ -76,20 +76,48 @@ The test script will build and install all necessary APKs.
 
 To run WPT on android against weblayer do the following:
 
-$ export WPT_TEST= test you want to run, relative to wpt directory.
-$ autoninja -C out/Default run_weblayer_shell weblayer_shell_wpt
-$ out/Default/bin/run_weblayer_shell
-$ testing/scripts/run_android_wpt.py --webdriver-binary=out/Default/clang_x64/chromedriver --product android_weblayer --isolated-script-test-output /tmp/weblayer_out.json --include ./third_party/blink/web_tests/external/wpt/$WPT_TEST
+    $ export WPT_TEST= test you want to run, relative to wpt directory.
+    $ autoninja -C out/Default run_weblayer_shell weblayer_shell_wpt
+    $ out/Default/bin/run_weblayer_shell
+    $ testing/scripts/run_android_wpt.py --webdriver-binary=out/Default/clang_x64/chromedriver --product android_weblayer --isolated-script-test-output /tmp/weblayer_out.json --include ./third_party/blink/web_tests/external/wpt/$WPT_TEST
 
 `run_android_wpt.py` does not install weblayer-shell, you need to do that
 yourself (executing run_weblayer_shell will do that).
 
 To run against clank:
 
-$ autoninja -C out/Default monochrome_public_apk
-$ out/Default/bin/monochrome_public_apk install
-$ testing/scripts/run_android_wpt.py --webdriver-binary=out/Default/clang_x64/chromedriver --product chrome_android --package-name org.chromium.chrome --isolated-script-test-output /tmp/weblayer_out.json --include ./third_party/blink/web_tests/external/wpt/$WPT_TEST
+    $ autoninja -C out/Default monochrome_public_apk
+    $ out/Default/bin/monochrome_public_apk install
+    $ testing/scripts/run_android_wpt.py --webdriver-binary=out/Default/clang_x64/chromedriver --product chrome_android --package-name org.chromium.chrome --isolated-script-test-output /tmp/weblayer_out.json --include ./third_party/blink/web_tests/external/wpt/$WPT_TEST
 
 Passing in `-vvvv` may be useful if you want to see loads of information about
 test execution.
 
+## Telemetry
+
+Telemetry is run against WebLayer, currently on the bot
+[android-pixel2_weblayer-perf]
+(https://ci.chromium.org/p/chrome/builders/ci/android-pixel2_weblayer-perf).
+
+Telemetry currently only runs on real hardware. Bug [1067712]
+(https://bugs.chromium.org/p/chromium/issues/detail?id=1067712) is for
+adding support for emulators.
+
+### Tricks:
+
+To see the set of stories executed, click on a successful run, search for
+`performance_weblayer_test_suite` and click on the `json.output`
+link.
+
+Googlers can submit jobs against your own patch using [pinpoint]
+(https://pinpoint-dot-chromeperf.appspot.com/). At the time of this
+writing, logcat is *not* captured for successful runs ([1067024]
+(https://bugs.chromium.org/p/chromium/issues/detail?id=1067024)). Submitting
+a pinpoint run against a patch with a CHECK will generate
+logcat. For such a run, the logcat is viewable by way of:
+
+1. Click on Id next to `task` under `Test`.
+2. Expand `+` (under `More Details`).
+3. Click on link next to `Isolated Outputs`.
+4. Click on `test_results.json`.
+5. Replace `gs://` with `https://pantheon.corp.google.com/storage/browser`.

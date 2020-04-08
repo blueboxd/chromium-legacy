@@ -3,6 +3,7 @@ Tests stability of performance metrics list.
 
 Metrics reported:
 AdSubframes
+ArrayBufferContents
 AudioHandlers
 ContextLifecycleStateObservers
 DetachedScriptStates

@@ -283,8 +283,6 @@ bool PrefetchURLLoaderService::IsValidCrossOriginPrefetch(
 }
 
 void PrefetchURLLoaderService::EnsureCrossOriginFactory() {
-  DCHECK(base::FeatureList::IsEnabled(
-      network::features::kPrefetchMainResourceNetworkIsolationKey));
   BindContext& current_context = *current_bind_context();
   // If the factory has already been created, don't re-create it.
   if (current_context.cross_origin_factory)

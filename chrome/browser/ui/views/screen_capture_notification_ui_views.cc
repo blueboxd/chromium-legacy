@@ -153,7 +153,6 @@ ScreenCaptureNotificationUIViews::ScreenCaptureNotificationUIViews(
         view->GetWidget()->Minimize();
       },
       base::Unretained(this)));
-  hide_link->SetUnderline(false);
   hide_link_ = AddChildView(std::move(hide_link));
 
   // The client rect for NotificationBarClientView uses the bounds for the

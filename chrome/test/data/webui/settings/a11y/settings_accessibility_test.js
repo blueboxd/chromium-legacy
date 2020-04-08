@@ -10,6 +10,8 @@ GEN_INCLUDE([
   '//chrome/test/data/webui/polymer_browser_test_base.js',
 ]);
 
+GEN('#include "chrome/browser/ui/ui_features.h"');
+
 /**
  * Test fixture for Accessibility of Chrome Settings.
  * @constructor
@@ -80,6 +82,9 @@ SettingsAccessibilityTest.prototype = {
     ...PolymerTest.prototype.extraLibraries,
     '../ensure_lazy_loaded.js',
   ],
+
+  /** @override */
+  featureList: {disabled: ['features::kSettingsPolymer3']},
 
   setUp: function() {
     PolymerTest.prototype.setUp.call(this);

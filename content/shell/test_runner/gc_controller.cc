@@ -14,7 +14,7 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "v8/include/v8.h"
 
-namespace test_runner {
+namespace content {
 
 gin::WrapperInfo GCController::kWrapperInfo = {gin::kEmbedderNativeGin};
 
@@ -110,4 +110,4 @@ void GCController::MinorCollect(const gin::Arguments& args) {
       v8::Isolate::kMinorGarbageCollection);
 }
 
-}  // namespace test_runner
+}  // namespace content

@@ -122,6 +122,7 @@
 /libaom/source/libaom
 /libc++-static/libc++.a
 /libaddressinput/src
+/libavif/src
 /libdrm/src
 /libFuzzer/src
 /libgav1/src

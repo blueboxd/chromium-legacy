@@ -6596,3 +6596,6 @@ crbug.com/1066732 fast/events/platform-wheelevent-paging-y-in-scrolling-div.html
 crbug.com/1067084 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-with-rtl.html [ Pass Failure ]
 # Sheriff 2020-04-04
 crbug.com/1067533 [ Mac10.10 ] external/wpt/shape-detection/idlharness.https.any.sharedworker.html [ Pass Failure ]
+
+crbug.com/1064422 external/wpt/html/user-activation/propagation-crossorigin.sub.tentative.html [ Pass Timeout ]
+crbug.com/1066178 external/wpt/html/user-activation/consumption-crossorigin.sub.tentative.html [ Pass Timeout ]

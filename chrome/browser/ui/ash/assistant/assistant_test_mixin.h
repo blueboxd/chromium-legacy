@@ -60,8 +60,10 @@ class AssistantTestMixin : public InProcessBrowserTestMixin {
   void StartAssistantAndWaitForReady(
       base::TimeDelta wait_timeout = kDefaultWaitTimeout);
 
-  // Changes the user setting controlling whether the user prefers voice or
-  // keyboard.
+  // Changes the user setting controlling if the user has enabled Assistant.
+  void SetAssistantEnabled(bool enabled);
+
+  // Changes the user setting controlling if the user prefers voice or keyboard.
   void SetPreferVoice(bool prefer_voice);
 
   // Submits a text query. Can only be used when the Assistant UI is visible and

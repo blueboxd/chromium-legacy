@@ -72,7 +72,6 @@
 #endif
 
 namespace {
-const char kReverseAutologinEnabled[] = "reverse_autologin.enabled";
 const char kLastKnownGoogleURL[] = "browser.last_known_google_url";
 const char kLastPromptedGoogleURL[] = "browser.last_prompted_google_url";
 
@@ -197,7 +196,6 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kSearchSuggestEnabled, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(prefs::kSavingBrowserHistoryDisabled, false);
-  registry->RegisterIntegerPref(prefs::kNtpShownPage, 1 << 10);
 
   // This comes from components/bookmarks/core/browser/bookmark_model.h
   // Defaults to 3, which is the id of bookmarkModel_->mobile_node()
@@ -206,7 +204,6 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   // Register prefs used by Clear Browsing Data UI.
   browsing_data::prefs::RegisterBrowserUserPrefs(registry);
 
-  registry->RegisterBooleanPref(kReverseAutologinEnabled, true);
   registry->RegisterStringPref(kLastKnownGoogleURL, std::string());
   registry->RegisterStringPref(kLastPromptedGoogleURL, std::string());
   registry->RegisterStringPref(kGoogleServicesUsername, std::string());
@@ -236,14 +233,8 @@ void MigrateObsoleteLocalStatePrefs(PrefService* prefs) {
 
 // This method should be periodically pruned of year+ old migrations.
 void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {
-  // Added 01/2018.
-  prefs->ClearPref(::prefs::kNtpShownPage);
-
-  // Added 8/2018.
+  // Check MigrateDeprecatedAutofillPrefs() to see if this is safe to remove.
   autofill::prefs::MigrateDeprecatedAutofillPrefs(prefs);
-
-  // Added 10/2018.
-  prefs->ClearPref(kReverseAutologinEnabled);
 
   // Added 07/2019.
   syncer::MigrateSyncSuppressedPref(prefs);

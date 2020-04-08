@@ -53,6 +53,7 @@
  *   OS_LANGUAGES: !settings.Route,
  *   OS_LANGUAGES_DETAILS: !settings.Route,
  *   OS_LANGUAGES_INPUT_METHODS: !settings.Route,
+ *   OS_LANGUAGES_SMART_INPUTS: !settings.Route,
  *   OS_PRINTING: !settings.Route,
  *   OS_PRIVACY: !settings.Route,
  *   OS_RESET: !settings.Route,

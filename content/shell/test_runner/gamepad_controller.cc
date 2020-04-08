@@ -25,7 +25,7 @@
 using device::Gamepad;
 using device::Gamepads;
 
-namespace test_runner {
+namespace content {
 
 namespace {
 
@@ -414,4 +414,4 @@ void GamepadController::SetDualRumbleVibrationActuator(int index,
   gamepads_->seqlock.WriteEnd();
 }
 
-}  // namespace test_runner
+}  // namespace content

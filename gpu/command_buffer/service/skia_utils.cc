@@ -9,6 +9,7 @@
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
+#include "gpu/config/skia_limits.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "ui/gfx/geometry/size.h"
@@ -62,6 +63,26 @@ void DeleteSkObject(SharedContextState* context_state, sk_sp<T> sk_object) {
 }
 
 }  // namespace
+
+GrContextOptions GetDefaultGrContextOptions(GrContextType type) {
+  // If you make any changes to the GrContext::Options here that could affect
+  // text rendering, make sure to match the capabilities initialized in
+  // GetCapabilities and ensuring these are also used by the
+  // PaintOpBufferSerializer.
+  GrContextOptions options;
+  size_t max_resource_cache_bytes;
+  size_t glyph_cache_max_texture_bytes;
+  DetermineGrCacheLimitsFromAvailableMemory(&max_resource_cache_bytes,
+                                            &glyph_cache_max_texture_bytes);
+  options.fDisableCoverageCountingPaths = true;
+  options.fGlyphCacheTextureMaximumBytes = glyph_cache_max_texture_bytes;
+  // TODO(csmartdalton): enable internal multisampling after the related Skia
+  // rolls are in.
+  options.fInternalMultisampleCount = 0;
+  if (type == GrContextType::kMetal)
+    options.fRuntimeProgramCacheSize = 1024;
+  return options;
+}
 
 GLuint GetGrGLBackendTextureFormat(const gles2::FeatureInfo* feature_info,
                                    viz::ResourceFormat resource_format) {

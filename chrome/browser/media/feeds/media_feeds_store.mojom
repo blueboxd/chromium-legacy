@@ -31,8 +31,8 @@ struct MediaFeed {
   // The number of times in a row the feed has failed to be fetched.
   int64 fetch_failed_count;
 
-  // The time the previously fetched feed should expire in the cache.
-  mojo_base.mojom.Time? cache_expiry_time;
+  // The time we previously fetched the feed that did not hit the cache.
+  mojo_base.mojom.Time? last_fetch_time_not_cache_hit;
 
   // The number of items in the last feed fetch.
   int64 last_fetch_item_count;

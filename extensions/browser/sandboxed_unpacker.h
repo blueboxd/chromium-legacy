@@ -18,6 +18,7 @@
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "extensions/browser/api/declarative_net_request/index_helper.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_checksum.h"
 #include "extensions/browser/crx_file_info.h"
 #include "extensions/browser/image_sanitizer.h"
@@ -223,8 +224,7 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   void IndexAndPersistJSONRulesetsIfNeeded();
 
   void OnJSONRulesetsIndexed(
-      std::vector<declarative_net_request::IndexAndPersistJSONRulesetResult>
-          results);
+      declarative_net_request::IndexHelper::Result result);
 
   // Computed hashes: if requested (via ShouldComputeHashes callback in
   // SandbloxedUnpackerClient), calculate hashes of all extensions' resources

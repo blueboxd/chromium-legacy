@@ -7,17 +7,14 @@
 
 #include "third_party/blink/public/platform/web_url.h"
 
-namespace test_runner {
-struct TestPreferences;
-}
-
 namespace content {
+struct TestPreferences;
 struct WebPreferences;
 
 // The TestRunner library keeps its settings in a TestPreferences object.
 // The content_shell, however, uses WebPreferences. This method exports the
 // settings from the TestRunner library which are relevant for web tests.
-void ExportWebTestSpecificPreferences(const test_runner::TestPreferences& from,
+void ExportWebTestSpecificPreferences(const TestPreferences& from,
                                       WebPreferences* to);
 
 // Replaces file:///tmp/web_tests/ with the actual path to the

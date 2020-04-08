@@ -7,6 +7,8 @@
 // Polymer BrowserTest fixture.
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
+GEN('#include "chrome/browser/ui/ui_features.h"');
+
 /**
  * @constructor
  * @extends {PolymerTest}
@@ -18,6 +20,9 @@ SettingsHelpPageBrowserTest.prototype = {
 
   /** @override */
   browsePreload: 'chrome://help/',
+
+  /** @override */
+  featureList: {disabled: ['features::kSettingsPolymer3']},
 
   /** @override */
   extraLibraries: [

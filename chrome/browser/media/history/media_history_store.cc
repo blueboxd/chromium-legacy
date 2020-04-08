@@ -100,7 +100,7 @@ class MediaHistoryStoreInternal
       const int64_t feed_id,
       std::vector<media_feeds::mojom::MediaFeedItemPtr> items,
       const media_feeds::mojom::FetchResult result,
-      const base::Time& expiry_time,
+      const bool was_fetched_from_cache,
       const std::vector<media_session::MediaImage>& logos,
       const std::string& display_name);
 
@@ -630,7 +630,7 @@ void MediaHistoryStoreInternal::StoreMediaFeedFetchResult(
     const int64_t feed_id,
     std::vector<media_feeds::mojom::MediaFeedItemPtr> items,
     const media_feeds::mojom::FetchResult result,
-    const base::Time& expiry_time,
+    const bool was_fetched_from_cache,
     const std::vector<media_session::MediaImage>& logos,
     const std::string& display_name) {
   DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
@@ -674,8 +674,8 @@ void MediaHistoryStoreInternal::StoreMediaFeedFetchResult(
 
   // Update the metadata associated with this feed.
   if (!feeds_table_->UpdateFeedFromFetch(
-          feed_id, result, expiry_time, items.size(), item_play_next_count,
-          item_content_types, logos, display_name)) {
+          feed_id, result, was_fetched_from_cache, items.size(),
+          item_play_next_count, item_content_types, logos, display_name)) {
     DB()->RollbackTransaction();
     return;
   }
@@ -915,14 +915,14 @@ void MediaHistoryStore::StoreMediaFeedFetchResult(
     const int64_t feed_id,
     std::vector<media_feeds::mojom::MediaFeedItemPtr> items,
     const media_feeds::mojom::FetchResult result,
-    const base::Time& expiry_time,
+    const bool was_fetched_from_cache,
     const std::vector<media_session::MediaImage>& logos,
     const std::string& display_name) {
   db_->db_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&MediaHistoryStoreInternal::StoreMediaFeedFetchResult, db_,
-                     feed_id, std::move(items), result, expiry_time, logos,
-                     display_name));
+                     feed_id, std::move(items), result, was_fetched_from_cache,
+                     logos, display_name));
 }
 
 void MediaHistoryStore::GetItemsForMediaFeedForDebug(

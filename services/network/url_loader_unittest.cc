@@ -40,6 +40,7 @@
 #include "net/base/escape.h"
 #include "net/base/features.h"
 #include "net/base/io_buffer.h"
+#include "net/base/isolation_info.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_sniffer.h"
 #include "net/base/net_errors.h"
@@ -483,7 +484,8 @@ class URLLoaderTest : public testing::Test {
     params.process_id = mojom::kBrowserProcessId;
     params.is_corb_enabled = false;
     url::Origin origin = url::Origin::Create(url);
-    params.network_isolation_key = net::NetworkIsolationKey(origin, origin);
+    params.isolation_info =
+        net::IsolationInfo::CreateForInternalRequest(origin);
     params.is_trusted = true;
     url_loader = std::make_unique<URLLoader>(
         context(), nullptr /* network_service_client */,

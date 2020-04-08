@@ -35,23 +35,10 @@ class VIEWS_EXPORT Link : public Label {
   using ClickedCallback =
       base::RepeatingCallback<void(Link* source, int event_flags)>;
 
-  // The padding for the focus ring border when rendering a focused Link with
-  // FocusStyle::kRing.
-  static constexpr gfx::Insets kFocusBorderPadding = gfx::Insets(1);
-
-  // How the Link is styled when focused.
-  enum class FocusStyle {
-    kUnderline,  // An underline style is added to the text only when focused.
-    kRing,       // A focus ring is drawn around the View.
-  };
-
   explicit Link(const base::string16& title,
                 int text_context = style::CONTEXT_LABEL,
                 int text_style = style::STYLE_LINK);
   ~Link() override;
-
-  // Returns the current FocusStyle of this Link.
-  FocusStyle GetFocusStyle() const;
 
   // Allow providing callbacks that expect either zero or two args, since many
   // callers don't care about the arguments and can avoid adapter functions this
@@ -69,8 +56,6 @@ class VIEWS_EXPORT Link : public Label {
   SkColor GetColor() const;
 
   // Label:
-  void PaintFocusRing(gfx::Canvas* canvas) const override;
-  gfx::Insets GetInsets() const override;
   gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
   bool CanProcessEventsWithinSubtree() const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
@@ -89,13 +74,6 @@ class VIEWS_EXPORT Link : public Label {
   void SetEnabledColor(SkColor color) override;
   bool IsSelectionSupported() const override;
 
-  bool GetUnderline() const;
-  // TODO(estade): almost all the places that call this pass false. With
-  // Harmony, false is already the default so those callsites can be removed.
-  // TODO(tapted): Then remove all callsites when client code sets a correct
-  // typography style and derives this from style::GetFont(STYLE_LINK).
-  void SetUnderline(bool underline);
-
  private:
   void SetPressed(bool pressed);
 
@@ -104,9 +82,6 @@ class VIEWS_EXPORT Link : public Label {
   void ConfigureFocus();
 
   ClickedCallback callback_;
-
-  // Whether the link should be underlined when enabled.
-  bool underline_ = false;
 
   // Whether the link is currently pressed.
   bool pressed_ = false;

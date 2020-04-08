@@ -40,13 +40,11 @@ class ParseInfo;
 struct IndexAndPersistJSONRulesetResult {
  public:
   static IndexAndPersistJSONRulesetResult CreateSuccessResult(
-      int ruleset_id,
       int ruleset_checksum,
       std::vector<InstallWarning> warnings,
       size_t rules_count,
       base::TimeDelta index_and_persist_time);
-  static IndexAndPersistJSONRulesetResult CreateErrorResult(int ruleset_id,
-                                                            std::string error);
+  static IndexAndPersistJSONRulesetResult CreateErrorResult(std::string error);
   ~IndexAndPersistJSONRulesetResult();
   IndexAndPersistJSONRulesetResult(IndexAndPersistJSONRulesetResult&&);
   IndexAndPersistJSONRulesetResult& operator=(
@@ -54,9 +52,6 @@ struct IndexAndPersistJSONRulesetResult {
 
   // Whether IndexAndPersistRules succeeded.
   bool success = false;
-
-  // ID for the ruleset.
-  int ruleset_id = kInvalidRulesetID;
 
   // Checksum of the persisted indexed ruleset file. Valid if |success| if true.
   // Note: there's no sane default value for this, any integer value is a valid

@@ -183,8 +183,9 @@ enum ChromePage {
   OSPRIVACY,
   OSSEARCH,
   OSRESET,
+  OSLANGUAGESSMARTINPUTS,
 
-  LAST = OSRESET,
+  LAST = OSLANGUAGESSMARTINPUTS
 };
 
 // Describes an unique chrome app.

@@ -13,6 +13,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/debug/alias.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/files/file.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
@@ -558,10 +560,11 @@ URLLoader::URLLoader(
   url_request_->set_referrer_policy(request.referrer_policy);
   url_request_->set_upgrade_if_insecure(request.upgrade_if_insecure);
 
-  net::IsolationInfo::RedirectMode redirect_mode;
-  if (!request.trusted_params) {
-    redirect_mode = net::IsolationInfo::RedirectMode::kUpdateNothing;
-  } else {
+  if (!factory_params_->isolation_info.IsEmpty()) {
+    url_request_->set_isolation_info(factory_params_->isolation_info);
+  } else if (request.trusted_params &&
+             !request.trusted_params->network_isolation_key.IsEmpty()) {
+    net::IsolationInfo::RedirectMode redirect_mode;
     switch (request.trusted_params->update_network_isolation_key_on_redirect) {
       case mojom::UpdateNetworkIsolationKeyOnRedirect::
           kUpdateTopFrameAndFrameOrigin:
@@ -574,12 +577,6 @@ URLLoader::URLLoader(
         redirect_mode = net::IsolationInfo::RedirectMode::kUpdateNothing;
         break;
     }
-  }
-  if (factory_params_->network_isolation_key) {
-    url_request_->set_isolation_info(net::IsolationInfo::CreatePartial(
-        redirect_mode, factory_params_->network_isolation_key.value()));
-  } else if (request.trusted_params &&
-             !request.trusted_params->network_isolation_key.IsEmpty()) {
     url_request_->set_isolation_info(net::IsolationInfo::CreatePartial(
         redirect_mode, request.trusted_params->network_isolation_key));
   }

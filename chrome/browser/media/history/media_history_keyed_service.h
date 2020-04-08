@@ -94,12 +94,13 @@ class MediaHistoryKeyedService : public KeyedService,
 
   // Replaces the media items in |feed_id|. This will delete any old feed items
   // and store the new ones in |items|. This will also update the |result|,
-  // |expiry_time|, |logos| and |display_name| for the feed.
+  // |logos| and |display_name| for the feed. If the feed was fetched from the
+  // browser cache then |was_fetched_from_cache| should be true.
   void StoreMediaFeedFetchResult(
       const int64_t feed_id,
       std::vector<media_feeds::mojom::MediaFeedItemPtr> items,
       const media_feeds::mojom::FetchResult result,
-      const base::Time& expiry_time,
+      const bool was_fetched_from_cache,
       const std::vector<media_session::MediaImage>& logos,
       const std::string& display_name);
 

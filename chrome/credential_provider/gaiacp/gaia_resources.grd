@@ -180,7 +180,7 @@
         Only the user who locked this device can sign in
       </message>
       <message name="IDS_ADD_USER_DISALLOWED" desc="">
-        Failed to add a new user. This computer only allows one user to be created using a work account.
+        Another work account is already associated with this device. Sign in with your Windows account.
       </message>
       <message name="IDS_FORGOT_PASSWORD_LINK" desc="">
         Forgot Windows Password

@@ -12,6 +12,7 @@ GEN('#include "chromeos/constants/chromeos_features.h"');
 GEN('#endif  // defined(OS_CHROMEOS)');
 
 GEN('#include "build/branding_buildflags.h"');
+GEN('#include "chrome/browser/ui/ui_features.h"');
 GEN('#include "chrome/common/chrome_features.h"');
 GEN('#include "components/autofill/core/common/autofill_features.h"');
 GEN('#include "components/omnibox/common/omnibox_features.h"');
@@ -37,6 +38,22 @@ CrSettingsBrowserTest.prototype = {
     ...PolymerTest.prototype.extraLibraries,
     'ensure_lazy_loaded.js',
   ],
+
+  /** @override */
+  get featureList() {
+    return {
+      enabled: this.featureListInternal.enabled || [],
+      disabled: [
+        'features::kSettingsPolymer3',
+        ...(this.featureListInternal.disabled || []),
+      ],
+    };
+  },
+
+  /** @return {!{enabled: !Array<string>, disabled: !Array<string>}} */
+  get featureListInternal() {
+    return {enabled: [], disabled: []};
+  },
 
   /** @override */
   setUp: function() {
@@ -298,7 +315,9 @@ CrSettingsAutofillSectionCompanyEnabledTest.prototype = {
   /** @override */
   browsePreload: 'chrome://settings/autofill_page/autofill_section.html',
 
-  featureList: {enabled: ['autofill::features::kAutofillEnableCompanyName']},
+  /** @override */
+  featureListInternal:
+      {enabled: ['autofill::features::kAutofillEnableCompanyName']},
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
@@ -324,7 +343,9 @@ CrSettingsAutofillSectionCompanyDisabledTest.prototype = {
   /** @override */
   browsePreload: 'chrome://settings/autofill_page/autofill_section.html',
 
-  featureList: {disabled: ['autofill::features::kAutofillEnableCompanyName']},
+  /** @override */
+  featureListInternal:
+      {disabled: ['autofill::features::kAutofillEnableCompanyName']},
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
@@ -356,7 +377,9 @@ CrSettingsPasswordsSectionTest.prototype = {
   /** @override */
   browsePreload: 'chrome://settings/autofill_page/passwords_section.html',
 
-  featureList: {enabled: ['password_manager::features::kPasswordCheck']},
+  /** @override */
+  featureListInternal:
+      {enabled: ['password_manager::features::kPasswordCheck']},
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
@@ -389,7 +412,9 @@ CrSettingsPasswordsCheckTest.prototype = {
   /** @override */
   browsePreload: 'chrome://settings/autofill_page/password_check.html',
 
-  featureList: {enabled: ['password_manager::features::kPasswordCheck']},
+  /** @override */
+  featureListInternal:
+      {enabled: ['password_manager::features::kPasswordCheck']},
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
@@ -517,7 +542,8 @@ CrSettingsPeoplePageTest.prototype = {
   // length-checked in this test. The feature is defaulted on here during
   // rollout, reflecting its value in fieldtrial_testing_config.json.
   // See crbug.com/908435.
-  featureList: {enabled: ['omnibox::kDocumentProvider']},
+  /** @override */
+  featureListInternal: {enabled: ['omnibox::kDocumentProvider']},
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
@@ -640,7 +666,8 @@ CrSettingsPeoplePageSyncPageTest.prototype = {
   // length-checked in this test. The feature is defaulted on here during
   // rollout, reflecting its value in fieldtrial_testing_config.json.
   // See crbug.com/908435.
-  featureList: {enabled: ['omnibox::kDocumentProvider']},
+  /** @override */
+  featureListInternal: {enabled: ['omnibox::kDocumentProvider']},
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
@@ -1079,7 +1106,8 @@ CrSettingsPrivacyPageRedesignTest.prototype = {
   /** @override */
   browsePreload: 'chrome://settings/privacy_page/privacy_page.html',
 
-  featureList: {enabled: ['features::kPrivacySettingsRedesign']},
+  /** @override */
+  featureListInternal: {enabled: ['features::kPrivacySettingsRedesign']},
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
@@ -1153,11 +1181,12 @@ CrSettingsSafetyCheckPageTest.prototype = {
   /** @override */
   browsePreload: 'chrome://settings/safety_check_page/safety_check_page.html',
 
-  featureList: {
+  /** @override */
+  featureListInternal: {
     enabled: [
       'features::kPrivacySettingsRedesign',
-      'password_manager::features::kPasswordCheck'
-    ]
+      'password_manager::features::kPasswordCheck',
+    ],
   },
 
   /** @override */

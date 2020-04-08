@@ -231,6 +231,23 @@
     System text is shown in this language
   </message>
 
+  <!-- Smart Inputs Section -->
+  <message name="IDS_SETTINGS_SMART_INPUTS_TITLE" desc="The label for the smart inputs section, which contains features to help users type faster or more expressively such as suggesting personal information or suggesting emoji to use.">
+    Smart inputs
+  </message>
+  <message name="IDS_SETTINGS_SMART_INPUTS_PERSONAL_INFO_TITLE" desc="The label for personal information suggestion section.">
+    Personal information suggestions
+  </message>
+  <message name="IDS_SETTINGS_SMART_INPUTS_PERSONAL_INFO_DESCRIPTION" desc="The description for personal information suggestion section.">
+    Personal information suggestions help you write faster by suggesting your name, address or phone number when you type some specific words. Only you see your own private, personalized suggestions for your account.
+  </message>
+  <message name="IDS_SETTINGS_SMART_INPUTS_SHOW_PERSONAL_INFO" desc="The label for the toggle button controlling showing personal information suggestions.">
+    Show input personal information suggestions
+  </message>
+  <message name="IDS_SETTINGS_SMART_INPUTS_MANAGE_PERSONAL_INFO" desc="The label for opening Chrome's browser settings page for managing personal addresses">
+    Manage personal information
+  </message>
+
   <!-- Device Page (OS Settings) -->
   <message name="IDS_OS_SETTINGS_TOUCHPAD_REVERSE_SCROLL_LABEL">
     Reverse scrolling <ph name="LINK_BEGIN">&lt;a&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>

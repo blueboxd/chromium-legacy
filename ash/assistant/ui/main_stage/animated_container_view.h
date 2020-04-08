@@ -52,6 +52,7 @@ class ElementAnimator;
 //       through OnAllViewsAnimatedIn().
 class COMPONENT_EXPORT(ASSISTANT_UI) AnimatedContainerView
     : public AssistantScrollView,
+      public AssistantScrollView::Observer,
       public AssistantInteractionModelObserver,
       public AssistantResponseObserver {
  public:

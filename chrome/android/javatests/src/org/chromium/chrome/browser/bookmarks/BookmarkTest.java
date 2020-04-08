@@ -308,11 +308,9 @@ public class BookmarkTest {
         openBookmarkManager();
         Assert.assertTrue("Grid view does not contain added bookmark: ",
                 isItemPresentInBookmarkList(TEST_PAGE_TITLE_GOOGLE));
-        final View tile = getViewWithText(mItemsContainer, TEST_PAGE_TITLE_GOOGLE);
-        ChromeTabUtils.waitForTabPageLoaded(mActivityTestRule.getActivity().getActivityTab(),
-                mTestPage, () -> TouchCommon.singleClickView(tile));
-        Assert.assertEquals(TEST_PAGE_TITLE_GOOGLE,
-                mActivityTestRule.getActivity().getActivityTab().getTitle());
+        final View title = getViewWithText(mItemsContainer, TEST_PAGE_TITLE_GOOGLE);
+        ChromeTabUtils.waitForTabPageLoadStart(mActivityTestRule.getActivity().getActivityTab(),
+                mTestPage, () -> TouchCommon.singleClickView(title));
     }
 
     @Test

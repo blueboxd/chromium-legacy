@@ -21,7 +21,7 @@
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_view.h"
 
-namespace test_runner {
+namespace content {
 
 class AccessibilityControllerBindings
     : public gin::Wrappable<AccessibilityControllerBindings> {
@@ -307,4 +307,4 @@ AccessibilityController::GetAccessibilityObjectForMainFrame() {
       web_view()->MainFrame()->ToWebLocalFrame()->GetDocument());
 }
 
-}  // namespace test_runner
+}  // namespace content

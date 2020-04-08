@@ -40,7 +40,7 @@
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
-namespace test_runner {
+namespace content {
 
 namespace {
 
@@ -309,8 +309,7 @@ blink::WebPlugin* WebFrameTestClient::CreatePlugin(
 
 void WebFrameTestClient::ShowContextMenu(
     const blink::WebContextMenuData& context_menu_data) {
-  delegate()
-      ->GetWebWidgetTestProxy(web_frame_test_proxy_->GetWebFrame())
+  web_frame_test_proxy_->GetLocalRootWebWidgetTestProxy()
       ->event_sender()
       ->SetContextMenuData(context_menu_data);
 }
@@ -500,10 +499,14 @@ void WebFrameTestClient::CheckIfAudioSinkExistsAndIsAuthorized(
 }
 
 void WebFrameTestClient::DidClearWindowObject() {
+  TestInterfaces* interfaces = web_view_test_proxy_->test_interfaces();
+  WebWidgetTestProxy* web_widget_test_proxy =
+      web_frame_test_proxy_->GetLocalRootWebWidgetTestProxy();
+
   blink::WebLocalFrame* frame = web_frame_test_proxy_->GetWebFrame();
-  web_view_test_proxy_->test_interfaces()->BindTo(frame);
+  interfaces->BindTo(frame);
   web_view_test_proxy_->BindTo(frame);
-  delegate()->GetWebWidgetTestProxy(frame)->BindTo(frame);
+  web_widget_test_proxy->BindTo(frame);
 }
 
 blink::WebEffectiveConnectionType
@@ -519,4 +522,4 @@ TestRunner* WebFrameTestClient::test_runner() {
   return web_view_test_proxy_->test_interfaces()->GetTestRunner();
 }
 
-}  // namespace test_runner
+}  // namespace content

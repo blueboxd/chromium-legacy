@@ -6,8 +6,7 @@
 
 #include <utility>
 
-
-namespace test_runner {
+namespace content {
 
 TrackedDictionary::TrackedDictionary() {}
 
@@ -47,4 +46,4 @@ void TrackedDictionary::SetString(const std::string& path,
   Set(path, std::make_unique<base::Value>(new_value));
 }
 
-}  // namespace test_runner
+}  // namespace content

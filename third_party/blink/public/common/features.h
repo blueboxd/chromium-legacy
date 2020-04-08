@@ -167,6 +167,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kKeepScriptResourceAlive;
 
 BLINK_COMMON_EXPORT extern const base::Feature kAppCache;
 
+BLINK_COMMON_EXPORT extern const base::Feature kAVIF;
+
 }  // namespace features
 }  // namespace blink
 

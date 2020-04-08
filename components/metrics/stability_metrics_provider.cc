@@ -71,9 +71,6 @@ void StabilityMetricsProvider::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kStabilityGmsCoreVersion, "");
   registry->RegisterIntegerPref(prefs::kStabilityCrashCountDueToGmsCoreUpdate,
                                 0);
-  // Obsolete. See MigrateObsoleteBrowserPrefs().
-  registry->RegisterIntegerPref(
-      prefs::kStabilityCrashCountWithoutGmsCoreUpdateObsolete, 0);
 #endif
 #if defined(OS_WIN)
   registry->RegisterIntegerPref(prefs::kStabilitySystemCrashCount, 0);

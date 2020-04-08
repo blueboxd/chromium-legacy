@@ -228,6 +228,18 @@ void ServiceDiscardableManager::OnTextureDeleted(
   entries_.Erase(found);
 }
 
+void ServiceDiscardableManager::OnContextLost() {
+  auto iter = entries_.begin();
+  while (iter != entries_.end()) {
+    iter->second.handle.ForceDelete();
+    if (iter->second.unlocked_texture_ref)
+      iter->second.unlocked_texture_ref->ForceContextLost();
+
+    total_size_ -= iter->second.size;
+    iter = entries_.Erase(iter);
+  }
+}
+
 void ServiceDiscardableManager::OnTextureSizeChanged(
     uint32_t texture_id,
     gles2::TextureManager* texture_manager,

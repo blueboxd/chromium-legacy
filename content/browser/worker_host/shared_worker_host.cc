@@ -30,7 +30,8 @@
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/common/content_client.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
-#include "net/base/network_isolation_key.h"
+#include "net/base/isolation_info.h"
+#include "net/cookies/site_for_cookies.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
@@ -264,12 +265,15 @@ SharedWorkerHost::CreateNetworkFactoryForSubresources(
           pending_default_factory.InitWithNewPipeAndPassReceiver();
 
   const url::Origin& origin = instance_.constructor_origin();
+
   // TODO(https://crbug.com/1060832): Implement COEP reporter for shared
   // workers.
   network::mojom::URLLoaderFactoryParamsPtr factory_params =
       URLLoaderFactoryParamsHelper::CreateForWorker(
           worker_process_host_, origin,
-          net::NetworkIsolationKey(origin, origin),
+          net::IsolationInfo::Create(
+              net::IsolationInfo::RedirectMode::kUpdateNothing, origin, origin,
+              net::SiteForCookies::FromOrigin(origin)),
           /*coep_reporter=*/mojo::NullRemote());
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       worker_process_host_->GetBrowserContext(),

@@ -8,6 +8,7 @@ import("//build/config/compiler/compiler.gni")
 import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
+import("//media/media_options.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//third_party/blink/public/public_features.gni")
@@ -1608,6 +1609,15 @@ jumbo_component("platform") {
       "text/hyphenation/hyphenator_aosp.cc",
       "text/hyphenation/hyphenator_aosp.h",
     ]
+  }
+
+  if (enable_av1_decoder) {
+    sources += [
+      "image-decoders/avif/avif_image_decoder.cc",
+      "image-decoders/avif/avif_image_decoder.h",
+    ]
+
+    deps += [ "//third_party/libavif" ]
   }
 
   if (current_cpu == "x86" || current_cpu == "x64") {

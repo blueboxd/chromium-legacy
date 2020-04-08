@@ -215,7 +215,6 @@ void CardUnmaskPromptViews::ShowNewCardLink() {
 
   auto new_card_link = std::make_unique<views::Link>(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_CARD_UNMASK_NEW_CARD_LINK));
-  new_card_link->SetUnderline(false);
   new_card_link->set_callback(base::BindRepeating(
       &CardUnmaskPromptViews::LinkClicked, base::Unretained(this)));
   new_card_link_ = input_row_->AddChildView(std::move(new_card_link));

@@ -28,10 +28,6 @@ bool MockClientHintsControllerDelegate::IsJavaScriptAllowed(const GURL& url) {
   return true;
 }
 
-std::string MockClientHintsControllerDelegate::GetAcceptLanguageString() {
-  return content::GetShellLanguage();
-}
-
 blink::UserAgentMetadata
 MockClientHintsControllerDelegate::GetUserAgentMetadata() {
   return content::GetShellUserAgentMetadata();

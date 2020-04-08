@@ -405,6 +405,13 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
       }
       return false;
     }
+
+    // It's a bug if we got an update containing more nodes than
+    // the size of the resulting tree. If Unserialize succeeded that
+    // means a node just got repeated or something harmless like that,
+    // but it should still be investigated and could be the sign of a
+    // performance issue.
+    DCHECK_LE(int{tree_update.nodes.size()}, ax_tree()->size());
   }
 
   // If this page is hidden by an interstitial, suppress all events.

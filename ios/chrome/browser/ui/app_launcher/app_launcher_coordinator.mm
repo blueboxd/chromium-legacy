@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
+#import "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/overlays/public/overlay_callback_manager.h"
 #import "ios/chrome/browser/overlays/public/overlay_request.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
@@ -19,9 +20,13 @@
 #include "ios/chrome/browser/procedural_block_types.h"
 #import "ios/chrome/browser/ui/app_launcher/app_launcher_util.h"
 #import "ios/chrome/browser/ui/dialogs/dialog_features.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/mailto/mailto_handler_provider.h"
+#import "ios/web/public/navigation/navigation_manager.h"
+#import "ios/web/public/web_state.h"
 #import "net/base/mac/url_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -115,18 +120,37 @@ void AppLauncherOverlayCallback(ProceduralBlockWithBool app_launch_completion,
   if (base::FeatureList::IsEnabled(dialogs::kNonModalDialogs)) {
     std::unique_ptr<OverlayRequest> request =
         OverlayRequest::CreateWithConfig<AppLauncherAlertOverlayRequestConfig>(
-            /* is_repeated_request= */ false);
+            /*is_repeated_request=*/false);
     request->GetCallbackManager()->AddCompletionCallback(
         base::BindOnce(&AppLauncherOverlayCallback, completion));
-    OverlayRequestQueue::FromWebState(webState,
-                                      OverlayModality::kWebContentArea)
-        ->AddRequest(std::move(request));
+    [self overlayRequestQueueForWebState:webState]->AddRequest(
+        std::move(request));
   } else {
     [self showAlertWithMessage:prompt
              acceptActionTitle:openLabel
              rejectActionTitle:cancelLabel
              completionHandler:completion];
   }
+}
+
+// Returns the OverlayRequestQueue to use when displaying the app launcher
+// dialog when requested by |webState|.
+- (OverlayRequestQueue*)overlayRequestQueueForWebState:
+    (web::WebState*)webState {
+  web::WebState* queueWebState = webState;
+  // If an app launch navigation is occurring in a new tab, the tab will be
+  // closed immediately after the navigation fails, cancelling the app launcher
+  // dialog before it gets a chance to be shown.  When this occurs, use the
+  // OverlayRequestQueue for the tab's opener instead.
+  if (!webState->GetNavigationManager()->GetItemCount() &&
+      webState->HasOpener()) {
+    WebStateList* webStateList = self.browser->GetWebStateList();
+    int index = webStateList->GetIndexOfWebState(webState);
+    queueWebState =
+        webStateList->GetOpenerOfWebStateAt(index).opener ?: queueWebState;
+  }
+  return OverlayRequestQueue::FromWebState(queueWebState,
+                                           OverlayModality::kWebContentArea);
 }
 
 #pragma mark - AppLauncherTabHelperDelegate

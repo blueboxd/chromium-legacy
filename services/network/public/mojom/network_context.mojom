@@ -25,6 +25,7 @@ import "services/network/public/mojom/mdns_responder.mojom";
 import "services/network/public/mojom/mutable_network_traffic_annotation_tag.mojom";
 import "services/network/public/mojom/net_log.mojom";
 import "services/network/public/mojom/network_isolation_key.mojom";
+import "services/network/public/mojom/isolation_info.mojom";
 import "services/network/public/mojom/network_param.mojom";
 import "services/network/public/mojom/origin_policy_manager.mojom";
 import "services/network/public/mojom/p2p.mojom";
@@ -592,8 +593,9 @@ struct URLLoaderFactoryParams {
   // interface. This still respects the per-context block lists.
   CorsOriginAccessPatterns? factory_bound_access_patterns;
 
-  // Key used to isolate shared network resources like the cache.
-  NetworkIsolationKey? network_isolation_key;
+  // Information used restrict access to identity information (like SameSite
+  // cookies) and to shard network resources, like the cache.
+  IsolationInfo isolation_info;
 
   // Whether secure DNS should be disabled for requests.
   bool disable_secure_dns = false;

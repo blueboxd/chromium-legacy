@@ -802,6 +802,14 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
     // parts of the code as well, so we need to ensure the object still exists.
     if (!obj.UpdateLayoutAndCheckValidity())
       continue;
+
+    // If the object in question is not included in the tree, get the
+    // nearest ancestor that is (ParentObject() will do this for us).
+    // Otherwise this can lead to the serializer doing extra work because
+    // the object won't be in |already_serialized_ids|.
+    if (!obj.AccessibilityIsIncludedInTree())
+      obj = obj.ParentObject();
+
     if (already_serialized_ids.find(obj.AxID()) != already_serialized_ids.end())
       continue;
 

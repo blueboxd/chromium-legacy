@@ -249,10 +249,6 @@ class APP_LIST_EXPORT ContentsView : public views::View,
                                 AppListState current_state,
                                 AppListState target_state);
 
-  // Updates the opacity of the expand arrow to the target state. Set |animate|
-  // to true when the opacity changes gradually.
-  void UpdateExpandArrowOpacity(AppListState target_state, bool animate);
-
   // Updates the expand arrow's behavior based on AppListViewState.
   void UpdateExpandArrowBehavior(AppListViewState target_state);
 

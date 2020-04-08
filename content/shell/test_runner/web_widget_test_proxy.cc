@@ -17,7 +17,7 @@
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/blink/public/web/web_widget.h"
 
-namespace test_runner {
+namespace content {
 
 WebWidgetTestProxy::~WebWidgetTestProxy() = default;
 
@@ -240,4 +240,4 @@ void WebWidgetTestProxy::AnimateNow() {
   SynchronouslyComposite(do_raster);
 }
 
-}  // namespace test_runner
+}  // namespace content

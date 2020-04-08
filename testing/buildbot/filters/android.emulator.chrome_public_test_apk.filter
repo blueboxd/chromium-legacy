@@ -8,9 +8,6 @@
 -org.chromium.chrome.browser.shape_detection.ShapeDetectionTest.testBarcodeDetection
 -org.chromium.chrome.browser.shape_detection.ShapeDetectionTest.testTextDetection
 
-# crbug/1017141
--org.chromium.chrome.browser.tasks.tab_management.TabSwitcherMultiWindowTest.testMoveTabsAcrossWindow_GTS_WithoutGroup
-
 # crbug/1036552
 -org.chromium.chrome.browser.tasks.tab_management.TabGridDialogParentTest.testDialog_ZoomInFadeOut
 -org.chromium.chrome.browser.tasks.tab_management.TabGridDialogParentTest.testDialog_ZoomInZoomOut

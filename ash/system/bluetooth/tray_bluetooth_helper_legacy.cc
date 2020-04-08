@@ -38,6 +38,24 @@ namespace {
 // System tray shows a limited number of bluetooth devices.
 const int kMaximumDevicesShown = 50;
 
+device::ConnectionFailureReason GetConnectionFailureReason(
+    device::BluetoothDevice::ConnectErrorCode error_code) {
+  switch (error_code) {
+    case device::BluetoothDevice::ConnectErrorCode::ERROR_AUTH_FAILED:
+      return device::ConnectionFailureReason::kAuthFailed;
+    case device::BluetoothDevice::ConnectErrorCode::ERROR_AUTH_TIMEOUT:
+      return device::ConnectionFailureReason::kAuthTimeout;
+    case device::BluetoothDevice::ConnectErrorCode::ERROR_FAILED:
+      return device::ConnectionFailureReason::kFailed;
+    case device::BluetoothDevice::ConnectErrorCode::ERROR_UNKNOWN:
+      return device::ConnectionFailureReason::kUnknownConnectionError;
+    case device::BluetoothDevice::ConnectErrorCode::ERROR_UNSUPPORTED_DEVICE:
+      return device::ConnectionFailureReason::kUnsupportedDevice;
+    default:
+      return device::ConnectionFailureReason::kUnknownError;
+  }
+}
+
 void BluetoothSetDiscoveringError() {
   LOG(ERROR) << "BluetoothSetDiscovering failed.";
 }
@@ -45,7 +63,8 @@ void BluetoothSetDiscoveringError() {
 void OnBluetoothDeviceConnect(bool was_device_already_paired) {
   if (was_device_already_paired) {
     device::RecordUserInitiatedReconnectionAttemptResult(
-        true /* success */, device::BluetoothUiSurface::kSystemTray);
+        base::nullopt /* failure_reason */,
+        device::BluetoothUiSurface::kSystemTray);
   }
 }
 
@@ -58,7 +77,8 @@ void OnBluetoothDeviceConnectError(
 
   if (was_device_already_paired) {
     device::RecordUserInitiatedReconnectionAttemptResult(
-        false /* success */, device::BluetoothUiSurface::kSystemTray);
+        GetConnectionFailureReason(error_code),
+        device::BluetoothUiSurface::kSystemTray);
   }
 }
 
@@ -225,7 +245,8 @@ void TrayBluetoothHelperLegacy::ConnectToBluetoothDevice(
 
     if (!device->IsConnectable()) {
       device::RecordUserInitiatedReconnectionAttemptResult(
-          false /* success */, device::BluetoothUiSurface::kSystemTray);
+          device::ConnectionFailureReason::kNotConnectable,
+          device::BluetoothUiSurface::kSystemTray);
       return;
     }
 

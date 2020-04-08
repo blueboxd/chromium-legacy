@@ -62,5 +62,7 @@ public final class ProductionSupportedFlagList {
                     "WebViewBrotliSupport", "Enables brotli compression support in WebView."),
             Flag.baseFeature("SafeBrowsingCommittedInterstitials",
                     "Commits Safe Browsing warning pages like page navigations."),
+            Flag.baseFeature(
+                    "AppCache", "Controls AppCache to facilitate testing against future removal."),
     };
 }

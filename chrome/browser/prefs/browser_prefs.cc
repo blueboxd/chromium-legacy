@@ -391,45 +391,6 @@
 
 namespace {
 
-// Deprecated 8/2018.
-const char kDnsPrefetchingStartupList[] = "dns_prefetching.startup_list";
-const char kDnsPrefetchingHostReferralList[] =
-    "dns_prefetching.host_referral_list";
-
-// Deprecated 9/2018
-const char kGeolocationAccessToken[] = "geolocation.access_token";
-const char kGoogleServicesPasswordHash[] = "google.services.password_hash";
-const char kModuleConflictBubbleShown[] = "module_conflict.bubble_shown";
-const char kOptionsWindowLastTabIndex[] = "options_window.last_tab_index";
-const char kTrustedDownloadSources[] = "trusted_download_sources";
-#if defined(OS_WIN)
-const char kLastWelcomedOSVersion[] = "browser.last_welcomed_os_version";
-#endif
-const char kSupervisedUserCreationAllowed[] =
-    "profile.managed_user_creation_allowed";
-
-// Deprecated 10/2018
-const char kReverseAutologinEnabled[] = "reverse_autologin.enabled";
-
-// Deprecated 11/2018.
-const char kNetworkQualities[] = "net.network_qualities";
-const char kForceSessionSync[] = "settings.history_recorded";
-const char kOnboardDuringNUX[] = "browser.onboard_during_nux";
-const char kNuxOnboardGroup[] = "browser.onboard_group";
-// This pref is particularly large, taking up 15+% of the prefs file, so should
-// perhaps be kept around longer than the others.
-const char kHttpServerProperties[] = "net.http_server_properties";
-
-// Deprecated 1/2019.
-const char kNextUpdateCheck[] = "extensions.autoupdate.next_check";
-const char kLastUpdateCheck[] = "extensions.autoupdate.last_check";
-
-// Deprecated 3/2019.
-const char kCurrentThemeImages[] = "extensions.theme.images";
-const char kCurrentThemeColors[] = "extensions.theme.colors";
-const char kCurrentThemeTints[] = "extensions.theme.tints";
-const char kCurrentThemeDisplayProperties[] = "extensions.theme.properties";
-
 #if defined(OS_ANDROID)
 // Deprecated 4/2019.
 const char kDismissedAssetDownloadSuggestions[] =
@@ -562,32 +523,6 @@ const char kAmbientModeTopicSource[] = "settings.ambient_mode.topic_source";
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterListPref(kDnsPrefetchingStartupList);
-  registry->RegisterListPref(kDnsPrefetchingHostReferralList);
-
-  registry->RegisterStringPref(kGeolocationAccessToken, std::string());
-  registry->RegisterStringPref(kGoogleServicesPasswordHash, std::string());
-  registry->RegisterIntegerPref(kModuleConflictBubbleShown, 0);
-  registry->RegisterIntegerPref(kOptionsWindowLastTabIndex, 0);
-  registry->RegisterStringPref(kTrustedDownloadSources, std::string());
-  registry->RegisterBooleanPref(kSupervisedUserCreationAllowed, true);
-
-  registry->RegisterBooleanPref(kReverseAutologinEnabled, true);
-
-  registry->RegisterDictionaryPref(kNetworkQualities, PrefRegistry::LOSSY_PREF);
-  registry->RegisterBooleanPref(kForceSessionSync, false);
-  registry->RegisterBooleanPref(kOnboardDuringNUX, false);
-  registry->RegisterIntegerPref(kNuxOnboardGroup, 0);
-  registry->RegisterDictionaryPref(kHttpServerProperties,
-                                   PrefRegistry::LOSSY_PREF);
-  registry->RegisterIntegerPref(kLastUpdateCheck, 0);
-  registry->RegisterIntegerPref(kNextUpdateCheck, 0);
-
-  registry->RegisterDictionaryPref(kCurrentThemeImages);
-  registry->RegisterDictionaryPref(kCurrentThemeColors);
-  registry->RegisterDictionaryPref(kCurrentThemeTints);
-  registry->RegisterDictionaryPref(kCurrentThemeDisplayProperties);
-
 #if defined(OS_ANDROID)
   registry->RegisterListPref(kDismissedAssetDownloadSuggestions);
   registry->RegisterListPref(kDismissedOfflinePageDownloadSuggestions);
@@ -816,7 +751,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
   registry->RegisterBooleanPref(kHasSeenWin10PromoPage, false);  // DEPRECATED
-  registry->RegisterStringPref(kLastWelcomedOSVersion, std::string());
 #endif  // defined(OS_WIN)
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
@@ -825,8 +759,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   DeviceOAuth2TokenStoreDesktop::RegisterPrefs(registry);
 #endif
 
-  // Obsolete. See MigrateObsoleteBrowserPrefs().
-  registry->RegisterIntegerPref(metrics::prefs::kStabilityExecutionPhase, 0);
 #if !defined(OS_ANDROID)
   registry->RegisterBooleanPref(kNtpActivateHideShortcutsFieldTrial, false);
 #endif  // !defined(OS_ANDROID)
@@ -1136,24 +1068,6 @@ void RegisterSigninProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 // This method should be periodically pruned of year+ old migrations.
 void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state) {
-  // Added 12/2018.
-  local_state->ClearPref(metrics::prefs::kStabilityExecutionPhase);
-
-#if defined(OS_ANDROID)
-  // Added 9/2018
-  local_state->ClearPref(
-      metrics::prefs::kStabilityCrashCountWithoutGmsCoreUpdateObsolete);
-#endif  // defined(OS_ANDROID)
-
-#if defined(OS_WIN)
-  // Added 9/2018
-  local_state->ClearPref(kLastWelcomedOSVersion);
-#endif
-#if defined(OS_CHROMEOS)
-  // Added 12/2018
-  local_state->ClearPref(prefs::kCarrierDealPromoShown);
-#endif
-
 #if defined(OS_WIN)
   // Added 6/2019.
   local_state->ClearPref(kHasSeenWin10PromoPage);
@@ -1190,56 +1104,8 @@ void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state) {
 void MigrateObsoleteProfilePrefs(Profile* profile) {
   PrefService* profile_prefs = profile->GetPrefs();
 
-  // Added 8/2018.
+  // Check MigrateDeprecatedAutofillPrefs() to see if this is safe to remove.
   autofill::prefs::MigrateDeprecatedAutofillPrefs(profile_prefs);
-
-  // Added 8/2018
-  profile_prefs->ClearPref(kDnsPrefetchingStartupList);
-  profile_prefs->ClearPref(kDnsPrefetchingHostReferralList);
-
-  // Added 9/2018
-  profile_prefs->ClearPref(kGeolocationAccessToken);
-  profile_prefs->ClearPref(kGoogleServicesPasswordHash);
-  profile_prefs->ClearPref(kModuleConflictBubbleShown);
-  profile_prefs->ClearPref(kOptionsWindowLastTabIndex);
-  profile_prefs->ClearPref(kTrustedDownloadSources);
-  profile_prefs->ClearPref(kSupervisedUserCreationAllowed);
-
-  // Added 10/2018
-  profile_prefs->ClearPref(kReverseAutologinEnabled);
-
-  // Added 11/2018.
-  profile_prefs->ClearPref(kNetworkQualities);
-  profile_prefs->ClearPref(kForceSessionSync);
-  profile_prefs->ClearPref(kOnboardDuringNUX);
-  profile_prefs->ClearPref(kNuxOnboardGroup);
-  profile_prefs->ClearPref(kHttpServerProperties);
-
-#if defined(OS_CHROMEOS)
-  // Added 12/2018.
-  profile_prefs->ClearPref(prefs::kDataSaverPromptsShown);
-#endif
-
-  // Added 1/2019.
-  profile_prefs->ClearPref(kLastUpdateCheck);
-  profile_prefs->ClearPref(kNextUpdateCheck);
-
-  syncer::MigrateSessionsToProxyTabsPrefs(profile_prefs);
-  syncer::ClearObsoleteUserTypePrefs(profile_prefs);
-
-  // Added 2/2019.
-  syncer::ClearObsoleteClearServerDataPrefs(profile_prefs);
-  syncer::ClearObsoleteAuthErrorPrefs(profile_prefs);
-
-  // Added 3/2019.
-  syncer::ClearObsoleteFirstSyncTime(profile_prefs);
-  syncer::ClearObsoleteSyncLongPollIntervalSeconds(profile_prefs);
-
-  // Added 3/2019.
-  profile_prefs->ClearPref(kCurrentThemeImages);
-  profile_prefs->ClearPref(kCurrentThemeColors);
-  profile_prefs->ClearPref(kCurrentThemeTints);
-  profile_prefs->ClearPref(kCurrentThemeDisplayProperties);
 
 #if defined(OS_ANDROID)
   // Added 4/2019.

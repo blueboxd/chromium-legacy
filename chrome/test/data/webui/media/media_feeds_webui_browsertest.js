@@ -111,8 +111,7 @@ MediaFeedsWebUIBrowserTest.prototype = {
     GEN('logos.push_back(logo2);');
     GEN('service->StoreMediaFeedFetchResult(');
     GEN('  1, std::move(items), media_feeds::mojom::FetchResult::kSuccess,');
-    GEN('  base::Time::FromDeltaSinceWindowsEpoch(');
-    GEN('  base::TimeDelta::FromMinutes(40)), logos, "Test Feed");');
+    GEN('  false, logos, "Test Feed");');
     GEN('base::RunLoop run_loop;');
     GEN('service->PostTaskToDBForTest(run_loop.QuitClosure());');
     GEN('run_loop.Run();');
@@ -137,7 +136,7 @@ TEST_F('MediaFeedsWebUIBrowserTest', 'All', function() {
         [
           'ID', 'Url', 'Display Name', 'Last Discovery Time', 'Last Fetch Time',
           'User Status', 'Last Fetch Result', 'Fetch Failed Count',
-          'Cache Expiry Time', 'Last Fetch Item Count',
+          'Last Fetch Time (not cache hit)', 'Last Fetch Item Count',
           'Last Fetch Play Next Count', 'Last Fetch Content Types', 'Logos',
           'Actions'
         ],

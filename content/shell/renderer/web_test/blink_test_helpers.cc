@@ -69,7 +69,7 @@ WebURL RewriteAbsolutePathInCsswgTest(const std::string& utf8_url) {
 
 namespace content {
 
-void ExportWebTestSpecificPreferences(const test_runner::TestPreferences& from,
+void ExportWebTestSpecificPreferences(const TestPreferences& from,
                                       WebPreferences* to) {
   to->javascript_can_access_clipboard = from.java_script_can_access_clipboard;
   to->editing_behavior = static_cast<EditingBehavior>(from.editing_behavior);

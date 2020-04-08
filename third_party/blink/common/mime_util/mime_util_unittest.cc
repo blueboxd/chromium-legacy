@@ -5,8 +5,10 @@
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 
 #include "build/build_config.h"
+#include "media/media_buildflags.h"
 #include "net/base/mime_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace blink {
 
@@ -16,6 +18,15 @@ TEST(MimeUtilTest, LookupTypes) {
 
   EXPECT_TRUE(IsSupportedImageMimeType("image/jpeg"));
   EXPECT_TRUE(IsSupportedImageMimeType("Image/JPEG"));
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+  EXPECT_EQ(IsSupportedImageMimeType("image/avif"),
+            base::FeatureList::IsEnabled(features::kAVIF));
+  EXPECT_EQ(IsSupportedImageMimeType("image/avif-sequence"),
+            base::FeatureList::IsEnabled(features::kAVIF));
+#else
+  EXPECT_FALSE(IsSupportedImageMimeType("image/avif"));
+  EXPECT_FALSE(IsSupportedImageMimeType("image/avif-sequence"));
+#endif
   EXPECT_FALSE(IsSupportedImageMimeType("image/lolcat"));
   EXPECT_FALSE(IsSupportedImageMimeType("Image/LolCat"));
   EXPECT_TRUE(IsSupportedNonImageMimeType("text/html"));

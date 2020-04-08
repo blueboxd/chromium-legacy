@@ -33,6 +33,8 @@ class LayoutDetailsMarker final : public LayoutBlockFlow {
 
   Orientation GetOrientation() const;
 
+  bool CreatesNewFormattingContext() const override { return true; }
+
   const char* GetName() const override { return "LayoutDetailsMarker"; }
 
  private:

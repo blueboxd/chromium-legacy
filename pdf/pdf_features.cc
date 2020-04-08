@@ -11,7 +11,7 @@ const base::Feature kAccessiblePDFForm = {"AccessiblePDFForm",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAccessiblePDFHighlight = {
-    "AccessiblePDFHighlight", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AccessiblePDFHighlight", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kPDFAnnotations = {"PDFAnnotations",
 #if defined(OS_CHROMEOS)

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CLIENT_HINTS_CLIENT_HINTS_H_
-#define CHROME_BROWSER_CLIENT_HINTS_CLIENT_HINTS_H_
+#ifndef COMPONENTS_CLIENT_HINTS_BROWSER_CLIENT_HINTS_H_
+#define COMPONENTS_CLIENT_HINTS_BROWSER_CLIENT_HINTS_H_
 
 #include <memory>
 #include <string>
@@ -16,6 +16,7 @@
 #include "content/public/browser/web_contents_user_data.h"
 
 class GURL;
+class HostContentSettingsMap;
 
 namespace client_hints {
 
@@ -23,9 +24,17 @@ class ClientHints : public KeyedService,
                     public content::ClientHintsControllerDelegate,
                     public content::WebContentsUserData<ClientHints> {
  public:
-  explicit ClientHints(content::BrowserContext* context);
-  explicit ClientHints(content::WebContents* tab);
+  ClientHints(content::BrowserContext* context,
+              network::NetworkQualityTracker* network_quality_tracker,
+              HostContentSettingsMap* settings_map,
+              const blink::UserAgentMetadata& user_agent_metadata);
   ~ClientHints() override;
+
+  static void CreateForWebContents(
+      content::WebContents* web_contents,
+      network::NetworkQualityTracker* network_quality_tracker,
+      HostContentSettingsMap* settings_map,
+      const blink::UserAgentMetadata& user_agent_metadata);
 
   // content::ClientHintsControllerDelegate:
   network::NetworkQualityTracker* GetNetworkQualityTracker() override;
@@ -36,8 +45,6 @@ class ClientHints : public KeyedService,
 
   bool IsJavaScriptAllowed(const GURL& url) override;
 
-  std::string GetAcceptLanguageString() override;
-
   blink::UserAgentMetadata GetUserAgentMetadata() override;
 
   void PersistClientHints(
@@ -46,10 +53,17 @@ class ClientHints : public KeyedService,
       base::TimeDelta expiration_duration) override;
 
  private:
-  content::BrowserContext* GetContext();
-
   friend class content::WebContentsUserData<ClientHints>;
+
+  ClientHints(content::WebContents* web_contents,
+              network::NetworkQualityTracker* network_quality_tracker,
+              HostContentSettingsMap* settings_map,
+              const blink::UserAgentMetadata& user_agent_metadata);
+
   content::BrowserContext* context_ = nullptr;
+  network::NetworkQualityTracker* network_quality_tracker_ = nullptr;
+  HostContentSettingsMap* settings_map_ = nullptr;
+  blink::UserAgentMetadata user_agent_metadata_;
   std::unique_ptr<
       content::WebContentsFrameReceiverSet<client_hints::mojom::ClientHints>>
       receiver_;
@@ -61,4 +75,4 @@ class ClientHints : public KeyedService,
 
 }  // namespace client_hints
 
-#endif  // CHROME_BROWSER_CLIENT_HINTS_CLIENT_HINTS_H_
+#endif  // COMPONENTS_CLIENT_HINTS_BROWSER_CLIENT_HINTS_H_

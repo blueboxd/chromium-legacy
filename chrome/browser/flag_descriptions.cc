@@ -1629,13 +1629,6 @@ const char kPrefetchPrivacyChangesDescription[] =
     "not send credentials for cross-origin requests, and do not pass through "
     "service workers.";
 
-const char kPrefetchMainResourceNetworkIsolationKeyName[] =
-    "Prefetch requests for cross-origin main resources are fetched with a "
-    "special NetworkIsolationKey";
-const char kPrefetchMainResourceNetworkIsolationKeyDescription[] =
-    "Prefetch requests for cross-origin main resources can be reused by next "
-    "top-level navigations when HTTP cache is double-keyed.";
-
 const char kPrinterStatusName[] = "Show printer Status";
 const char kPrinterStatusDescription[] =
     "Enables printer status icons and labels for saved and nearby printers";

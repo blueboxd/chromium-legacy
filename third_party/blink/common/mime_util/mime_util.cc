@@ -10,7 +10,9 @@
 #include "base/lazy_instance.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "media/media_buildflags.h"
 #include "net/base/mime_util.h"
+#include "third_party/blink/public/common/features.h"
 
 #if !defined(OS_IOS)
 // iOS doesn't use and must not depend on //media
@@ -134,6 +136,14 @@ MimeUtil::MimeUtil() {
     non_image_types_.insert(type);
   for (const char* type : kSupportedImageTypes)
     image_types_.insert(type);
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+  // TODO(wtc): Add "image/avif" and "image/avif-sequence" to the
+  // kSupportedImageTypes array when the AVIF feature is shipped.
+  if (base::FeatureList::IsEnabled(features::kAVIF)) {
+    image_types_.insert("image/avif");
+    image_types_.insert("image/avif-sequence");
+  }
+#endif
   for (const char* type : kUnsupportedTextTypes)
     unsupported_text_types_.insert(type);
   for (const char* type : kSupportedJavascriptTypes) {

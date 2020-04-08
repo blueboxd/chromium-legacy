@@ -306,6 +306,9 @@ IN_PROC_BROWSER_TEST_F(ScrollThroughputBrowserTest,
   EXPECT_TRUE(VerifyRecordedSamplesForHistogram(
       1,
       "Graphics.Smoothness.PercentDroppedFrames.ScrollingThread.TouchScroll"));
+
+  RunUntilInputProcessed(GetWidgetHost());
+  FetchHistogramsFromChildProcesses();
   EXPECT_TRUE(VerifyRecordedSamplesForHistogram(
       1, "Event.Latency.ScrollBegin.Touch.BrowserNotifiedToBeforeGpuSwap2"));
 }

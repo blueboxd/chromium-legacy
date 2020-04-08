@@ -51,13 +51,9 @@ class PrefetchBrowserTest
     if (split_cache_enabled_) {
       enable_features.push_back(
           net::features::kSplitCacheByNetworkIsolationKey);
-      enable_features.push_back(
-          network::features::kPrefetchMainResourceNetworkIsolationKey);
     } else {
       disabled_features.push_back(
           net::features::kSplitCacheByNetworkIsolationKey);
-      disabled_features.push_back(
-          network::features::kPrefetchMainResourceNetworkIsolationKey);
     }
 
     feature_list_.InitWithFeatures(enable_features, disabled_features);
@@ -639,7 +635,7 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, CrossOriginWithPreload) {
   preload_waiter.Run();
   EXPECT_EQ(1, target_request_counter->GetRequestCount());
   EXPECT_EQ(1, preload_request_counter->GetRequestCount());
-  EXPECT_EQ(split_cache_enabled_ ? 2 : 1, GetPrefetchURLLoaderCallCount());
+  EXPECT_EQ(2, GetPrefetchURLLoaderCallCount());
 
   GURL cross_origin_preload_url =
       cross_origin_server_->GetURL("3p.example", preload_path);
@@ -828,7 +824,7 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest,
   preload_waiter.Run();
   EXPECT_EQ(1, preload_request_counter->GetRequestCount());
 
-  EXPECT_EQ(split_cache_enabled_ ? 2 : 1, GetPrefetchURLLoaderCallCount());
+  EXPECT_EQ(2, GetPrefetchURLLoaderCallCount());
 
   WaitUntilLoaded(preload_url_in_sxg);
 

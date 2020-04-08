@@ -21,6 +21,7 @@
 #include "content/browser/frame_host/navigator.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/host_zoom_map.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/url_util.h"
@@ -337,10 +338,11 @@ void AddEctHeader(net::HttpRequestHeaders* headers,
 }
 
 void AddLangHeader(net::HttpRequestHeaders* headers,
-                   content::ClientHintsControllerDelegate* delegate) {
+                   content::BrowserContext* context) {
   SetHeaderToString(
       headers, network::mojom::WebClientHintsType::kLang,
-      blink::SerializeLangClientHint(delegate->GetAcceptLanguageString()));
+      blink::SerializeLangClientHint(
+          content::GetContentClient()->browser()->GetAcceptLangs(context)));
 }
 
 bool IsValidURLForClientHints(const GURL& url) {
@@ -505,7 +507,7 @@ void AddNavigationRequestClientHintsHeaders(
           web_client_hints, is_main_frame, is_1p_origin, feature_policy,
           resource_origin, network::mojom::WebClientHintsType::kLang,
           blink::mojom::FeaturePolicyFeature::kClientHintLang)) {
-    AddLangHeader(headers, delegate);
+    AddLangHeader(headers, context);
   }
 
   base::Optional<blink::UserAgentMetadata> ch_ua_override;

@@ -274,6 +274,8 @@ void TestAllOSSettingPages(const GURL& base_url) {
                      base_url.Resolve(chrome::kOsLanguagesDetailsSubPage));
   TestOpenChromePage(ChromePage::OSLANGUAGESINPUTMETHODS,
                      base_url.Resolve(chrome::kOsLanguagesInputMethodsSubPage));
+  TestOpenChromePage(ChromePage::OSLANGUAGESSMARTINPUTS,
+                     base_url.Resolve(chrome::kOsLanguagesSmartInputsSubPage));
   TestOpenChromePage(ChromePage::LOCKSCREEN,
                      base_url.Resolve(chrome::kLockScreenSubPage));
   TestOpenChromePage(ChromePage::MANAGEACCESSIBILITY,

@@ -4,8 +4,11 @@
 
 #include "chrome/browser/client_hints/client_hints_factory.h"
 
-#include "chrome/browser/client_hints/client_hints.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_content_browser_client.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
+#include "components/client_hints/browser/client_hints.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
 
@@ -33,11 +36,14 @@ ClientHintsFactory::ClientHintsFactory()
           "ClientHints",
           BrowserContextDependencyManager::GetInstance()) {}
 
-ClientHintsFactory::~ClientHintsFactory() {}
+ClientHintsFactory::~ClientHintsFactory() = default;
 
 KeyedService* ClientHintsFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new client_hints::ClientHints(context);
+  return new client_hints::ClientHints(
+      context, g_browser_process->network_quality_tracker(),
+      HostContentSettingsMapFactory::GetForProfile(context),
+      GetUserAgentMetadata());
 }
 
 content::BrowserContext* ClientHintsFactory::GetBrowserContextToUse(

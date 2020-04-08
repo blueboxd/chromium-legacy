@@ -5,10 +5,15 @@
 #include "gpu/vulkan/vulkan_image.h"
 
 #include "build/build_config.h"
+#include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "gpu/vulkan/tests/basic_vulkan_test.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "ui/gfx/geometry/rect.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/android_hardware_buffer_compat.h"
+#endif
 
 namespace gpu {
 
@@ -113,6 +118,64 @@ TEST_F(VulkanImageTest, CreateWithExternalMemory) {
   }
 }
 
-// TODO(penghuang): Add test for creating from GpuMemoryBufferHandle
+#if defined(OS_ANDROID)
+TEST_F(VulkanImageTest, CreateFromGpuMemoryBufferHandle) {
+  if (!base::AndroidHardwareBufferCompat::IsSupportAvailable()) {
+    LOG(ERROR) << "AndroidHardwareBuffer is not supported";
+    return;
+  }
+
+  auto* device_queue = GetDeviceQueue();
+  if (!gfx::HasExtension(
+          device_queue->enabled_extensions(),
+          VK_ANDROID_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER_EXTENSION_NAME)) {
+    LOG(ERROR) << "Vulkan extension "
+                  "VK_ANDROID_external_memory_android_hardware_buffer is not "
+                  "supported";
+    return;
+  }
+
+  auto factory = GpuMemoryBufferFactory::CreateNativeType(
+      /*viz::VulkanContextProvider=*/nullptr);
+  EXPECT_TRUE(factory);
+  constexpr gfx::Size size(100, 100);
+  constexpr VkImageUsageFlags usage =
+      VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+      VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+  const struct {
+    gfx::BufferFormat buffer;
+    VkFormat vk;
+  } formats[] = {
+      {gfx::BufferFormat::RGBA_8888, VK_FORMAT_R8G8B8A8_UNORM},
+      {gfx::BufferFormat::BGR_565, VK_FORMAT_R5G6B5_UNORM_PACK16},
+      {gfx::BufferFormat::RGBA_F16, VK_FORMAT_R16G16B16A16_SFLOAT},
+      {gfx::BufferFormat::RGBX_8888, VK_FORMAT_R8G8B8A8_UNORM},
+      {gfx::BufferFormat::RGBA_1010102, VK_FORMAT_A2B10G10R10_UNORM_PACK32},
+  };
+  for (const auto format : formats) {
+    gfx::GpuMemoryBufferId id(1);
+    gfx::BufferUsage buffer_usage = gfx::BufferUsage::SCANOUT;
+    int client_id = 1;
+    auto gmb_handle = factory->CreateGpuMemoryBuffer(
+        id, size, format.buffer, buffer_usage, client_id, kNullSurfaceHandle);
+    EXPECT_TRUE(!gmb_handle.is_null());
+    EXPECT_EQ(gmb_handle.type,
+              gfx::GpuMemoryBufferType::ANDROID_HARDWARE_BUFFER);
+    auto image = VulkanImage::CreateFromGpuMemoryBufferHandle(
+        device_queue, std::move(gmb_handle), size, format.vk, usage);
+    EXPECT_TRUE(image);
+    EXPECT_EQ(image->size(), size);
+    EXPECT_EQ(image->format(), format.vk);
+    EXPECT_GT(image->device_size(), 0u);
+    EXPECT_EQ(image->image_tiling(), VK_IMAGE_TILING_OPTIMAL);
+    EXPECT_EQ(image->image_layout(), VK_IMAGE_LAYOUT_UNDEFINED);
+    EXPECT_NE(image->image(), static_cast<VkImage>(VK_NULL_HANDLE));
+    EXPECT_NE(image->device_memory(),
+              static_cast<VkDeviceMemory>(VK_NULL_HANDLE));
+    image->Destroy();
+    factory->DestroyGpuMemoryBuffer(id, client_id);
+  }
+}
+#endif
 
 }  // namespace gpu

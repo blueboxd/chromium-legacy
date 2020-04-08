@@ -16,7 +16,7 @@
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "url/origin.h"
 
-namespace test_runner {
+namespace content {
 
 class WebTestDelegate;
 class WebTestRuntimeFlags;
@@ -61,6 +61,6 @@ class MockContentSettingsClient : public blink::WebContentSettingsClient {
   DISALLOW_COPY_AND_ASSIGN(MockContentSettingsClient);
 };
 
-}  // namespace test_runner
+}  // namespace content
 
 #endif  // CONTENT_SHELL_TEST_RUNNER_MOCK_CONTENT_SETTINGS_CLIENT_H_

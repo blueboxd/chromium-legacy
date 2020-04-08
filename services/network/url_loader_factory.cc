@@ -70,6 +70,9 @@ URLLoaderFactory::URLLoaderFactory(
   DCHECK(context);
   DCHECK_NE(mojom::kInvalidProcessId, params_->process_id);
   DCHECK(!params_->factory_override);
+  // Only non-navigation IsolationInfos should be bound to URLLoaderFactories.
+  DCHECK_EQ(net::IsolationInfo::RedirectMode::kUpdateNothing,
+            params_->isolation_info.redirect_mode());
 
   if (!params_->top_frame_id) {
     params_->top_frame_id = base::UnguessableToken::Create();

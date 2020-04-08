@@ -29,6 +29,7 @@
 
 #include <string.h>
 #include "base/allocator/partition_allocator/partition_alloc.h"
+#include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
@@ -118,6 +119,8 @@ void* ArrayBufferContents::AllocateMemoryWithFlags(size_t size,
   void* data = PartitionAllocGenericFlags(
       WTF::Partitions::ArrayBufferPartition(), flags, size,
       WTF_HEAP_PROFILER_TYPE_NAME(ArrayBufferContents));
+  InstanceCounters::IncrementCounter(
+      InstanceCounters::kArrayBufferContentsCounter);
   return data;
 }
 
@@ -127,6 +130,8 @@ void* ArrayBufferContents::AllocateMemoryOrNull(size_t size,
 }
 
 void ArrayBufferContents::FreeMemory(void* data) {
+  InstanceCounters::DecrementCounter(
+      InstanceCounters::kArrayBufferContentsCounter);
   WTF::Partitions::ArrayBufferPartition()->Free(data);
 }
 

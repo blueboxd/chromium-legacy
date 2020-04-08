@@ -18,7 +18,7 @@
 #include "third_party/blink/public/web/web_text_checking_completion.h"
 #include "third_party/blink/public/web/web_text_checking_result.h"
 
-namespace test_runner {
+namespace content {
 
 SpellCheckClient::SpellCheckClient(TestRunner* test_runner)
     : last_requested_text_checking_completion_(nullptr),
@@ -158,4 +158,4 @@ void SpellCheckClient::RequestResolved() {
       context->Global(), 0, nullptr);
 }
 
-}  // namespace test_runner
+}  // namespace content

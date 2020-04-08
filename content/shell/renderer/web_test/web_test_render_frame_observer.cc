@@ -25,10 +25,9 @@ namespace content {
 WebTestRenderFrameObserver::WebTestRenderFrameObserver(
     RenderFrame* render_frame)
     : RenderFrameObserver(render_frame) {
-  test_runner::TestRunner* test_runner =
-      WebTestRenderThreadObserver::GetInstance()
-          ->test_interfaces()
-          ->GetTestRunner();
+  TestRunner* test_runner = WebTestRenderThreadObserver::GetInstance()
+                                ->test_interfaces()
+                                ->GetTestRunner();
   render_frame->GetWebFrame()->SetContentSettingsClient(
       test_runner->GetWebContentSettings());
   render_frame->GetWebFrame()->SetTextCheckClient(
@@ -78,9 +77,9 @@ void WebTestRenderFrameObserver::CompositeWithRaster(
 
 void WebTestRenderFrameObserver::DumpFrameLayout(
     DumpFrameLayoutCallback callback) {
-  test_runner::TestInterfaces* interfaces =
+  TestInterfaces* interfaces =
       WebTestRenderThreadObserver::GetInstance()->test_interfaces();
-  test_runner::TestRunner* test_runner = interfaces->GetTestRunner();
+  TestRunner* test_runner = interfaces->GetTestRunner();
   std::string dump = test_runner->DumpLayout(render_frame()->GetWebFrame());
   std::move(callback).Run(std::move(dump));
 }

@@ -69,6 +69,28 @@ bool IsActualConnectionFailure(bt_private::ConnectResultType result) {
       return true;
   }
 }
+
+base::Optional<device::ConnectionFailureReason> GetConnectionFailureReason(
+    bt_private::ConnectResultType result) {
+  DCHECK(IsActualConnectionFailure(result));
+
+  switch (result) {
+    case bt_private::CONNECT_RESULT_TYPE_NONE:
+      return device::ConnectionFailureReason::kSystemError;
+    case bt_private::CONNECT_RESULT_TYPE_AUTHFAILED:
+      return device::ConnectionFailureReason::kAuthFailed;
+    case bt_private::CONNECT_RESULT_TYPE_AUTHTIMEOUT:
+      return device::ConnectionFailureReason::kAuthTimeout;
+    case bt_private::CONNECT_RESULT_TYPE_FAILED:
+      return device::ConnectionFailureReason::kFailed;
+    case bt_private::CONNECT_RESULT_TYPE_UNKNOWNERROR:
+      return device::ConnectionFailureReason::kUnknownConnectionError;
+    case bt_private::CONNECT_RESULT_TYPE_UNSUPPORTEDDEVICE:
+      return device::ConnectionFailureReason::kUnsupportedDevice;
+    default:
+      return device::ConnectionFailureReason::kUnknownError;
+  }
+}
 #endif  // defined(OS_CHROMEOS)
 
 std::string GetListenerId(const EventListenerInfo& details) {
@@ -654,7 +676,8 @@ void BluetoothPrivateRecordPairingFunction::DoWork(
   // Only emit metrics if this is a success or a true connection failure.
   if (success || IsActualConnectionFailure(result)) {
     device::RecordPairingResult(
-        success, GetBluetoothTransport(params_->transport),
+        success ? base::nullopt : GetConnectionFailureReason(result),
+        GetBluetoothTransport(params_->transport),
         base::TimeDelta::FromMilliseconds(params_->pairing_duration_ms));
   }
 #endif  // defined(OS_CHROMEOS)
@@ -684,7 +707,8 @@ void BluetoothPrivateRecordReconnectionFunction::DoWork(
   // Only emit metrics if this is a success or a true connection failure.
   if (success || IsActualConnectionFailure(result)) {
     device::RecordUserInitiatedReconnectionAttemptResult(
-        success, device::BluetoothUiSurface::kSettings);
+        success ? base::nullopt : GetConnectionFailureReason(result),
+        device::BluetoothUiSurface::kSettings);
   }
 #endif  // defined(OS_CHROMEOS)
 

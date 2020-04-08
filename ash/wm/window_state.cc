@@ -963,8 +963,8 @@ void WindowState::OnWindowBoundsChanged(aura::Window* window,
                                         const gfx::Rect& new_bounds,
                                         ui::PropertyChangeReason reason) {
   DCHECK_EQ(this->window(), window);
-  if (window_->transparent() &&
-      window_->type() == aura::client::WINDOW_TYPE_NORMAL) {
+  if (window_->transparent() && IsNormalStateType() &&
+      window_->GetProperty(ash::kWindowManagerManagesOpacityKey)) {
     window_->SetOpaqueRegionsForOcclusion({gfx::Rect(new_bounds.size())});
   }
 }

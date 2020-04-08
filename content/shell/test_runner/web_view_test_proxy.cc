@@ -11,15 +11,15 @@
 #include "content/shell/test_runner/mock_screen_orientation_client.h"
 #include "content/shell/test_runner/test_interfaces.h"
 #include "content/shell/test_runner/test_runner.h"
+#include "content/shell/test_runner/web_frame_test_proxy.h"
 #include "content/shell/test_runner/web_test_delegate.h"
-#include "content/shell/test_runner/web_widget_test_proxy.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_print_params.h"
 #include "third_party/blink/public/web/web_view.h"
 
-namespace test_runner {
+namespace content {
 
 void WebViewTestProxy::Initialize(TestInterfaces* interfaces,
                                   std::unique_ptr<WebTestDelegate> delegate) {
@@ -82,16 +82,15 @@ void WebViewTestProxy::Reset() {
   accessibility_controller_.Reset();
   // |text_input_controller_| doesn't have any state to reset.
   view_test_runner_.Reset();
-  if (GetMainRenderFrame()) {
-    auto* widget_proxy = static_cast<WebWidgetTestProxy*>(
-        GetMainRenderFrame()->GetLocalRootRenderWidget());
-    widget_proxy->Reset();
-  }
 
   for (blink::WebFrame* frame = GetWebView()->MainFrame(); frame;
        frame = frame->TraverseNext()) {
-    if (frame->IsWebLocalFrame())
-      delegate_->GetWebWidgetTestProxy(frame->ToWebLocalFrame())->Reset();
+    if (frame->IsWebLocalFrame()) {
+      RenderFrame* render_frame =
+          RenderFrame::FromWebFrame(frame->ToWebLocalFrame());
+      auto* frame_proxy = static_cast<WebFrameTestProxy*>(render_frame);
+      frame_proxy->Reset();
+    }
   }
 }
 
@@ -109,4 +108,4 @@ TestRunner* WebViewTestProxy::GetTestRunner() {
   return test_interfaces()->GetTestRunner();
 }
 
-}  // namespace test_runner
+}  // namespace content

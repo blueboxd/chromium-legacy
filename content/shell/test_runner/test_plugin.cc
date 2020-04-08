@@ -43,7 +43,7 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 
-namespace test_runner {
+namespace content {
 
 namespace {
 
@@ -647,4 +647,4 @@ bool TestPlugin::IsSupportedMimeType(const blink::WebString& mime_type) {
          mime_type == PluginPersistsMimeType();
 }
 
-}  // namespace test_runner
+}  // namespace content

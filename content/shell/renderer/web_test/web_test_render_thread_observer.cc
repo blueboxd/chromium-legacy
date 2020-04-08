@@ -32,7 +32,7 @@ WebTestRenderThreadObserver::WebTestRenderThreadObserver() {
   EnableRendererWebTestMode();
   blink::SetWebTestMode(true);
 
-  test_interfaces_ = std::make_unique<test_runner::TestInterfaces>();
+  test_interfaces_ = std::make_unique<TestInterfaces>();
   test_interfaces_->ResetAll();
 }
 

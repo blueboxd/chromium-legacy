@@ -70,7 +70,7 @@ class CONTENT_EXPORT WorkerScriptFetchInitiator {
       RenderFrameHost* creator_render_frame_host,
       const net::SiteForCookies& site_for_cookies,
       const url::Origin& request_initiator,
-      const net::NetworkIsolationKey& trusted_network_isolation_key,
+      const net::IsolationInfo& trusted_isolation_info,
       network::mojom::CredentialsMode credentials_mode,
       blink::mojom::FetchClientSettingsObjectPtr
           outside_fetch_client_settings_object,
@@ -111,7 +111,7 @@ class CONTENT_EXPORT WorkerScriptFetchInitiator {
       int worker_process_id,
       const GURL& initial_request_url,
       RenderFrameHost* creator_render_frame_host,
-      const net::NetworkIsolationKey& trusted_network_isolation_key,
+      const net::IsolationInfo& trusted_isolation_info,
       std::unique_ptr<network::ResourceRequest> resource_request,
       std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
           factory_bundle_for_browser_info,

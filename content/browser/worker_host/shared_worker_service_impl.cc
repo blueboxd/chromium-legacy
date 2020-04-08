@@ -35,6 +35,8 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/base/isolation_info.h"
+#include "net/cookies/site_for_cookies.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
@@ -333,8 +335,10 @@ SharedWorkerHost* SharedWorkerServiceImpl::CreateWorker(
       worker_process_host->GetID(), host->instance().url(),
       creator_render_frame_host, net::SiteForCookies::FromOrigin(worker_origin),
       host->instance().constructor_origin(),
-      net::NetworkIsolationKey(worker_origin, worker_origin), credentials_mode,
-      std::move(outside_fetch_client_settings_object),
+      net::IsolationInfo::Create(
+          net::IsolationInfo::RedirectMode::kUpdateNothing, worker_origin,
+          worker_origin, net::SiteForCookies::FromOrigin(worker_origin)),
+      credentials_mode, std::move(outside_fetch_client_settings_object),
       blink::mojom::ResourceType::kSharedWorker, service_worker_context_,
       service_worker_handle_raw, std::move(appcache_host),
       std::move(blob_url_loader_factory), url_loader_factory_override_,

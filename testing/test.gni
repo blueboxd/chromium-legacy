@@ -217,7 +217,7 @@ template("test") {
       package = ":$_pkg_target"
       package_name_override = _output_name
 
-      data_deps = [ "//testing/buildbot/filters:fuchsia_filters" ]
+      deps = [ "//testing/buildbot/filters:fuchsia_filters" ]
     }
 
     cr_fuchsia_package(_pkg_target) {

@@ -552,6 +552,59 @@ TEST_F(LoadingPredictorTabHelperOptimizationGuideDeciderTest,
 }
 
 // Tests that document on load completed is recorded with correct navigation
+// id and optimization guide prediction and does not crash if callback comes
+// after everything has been recorded.
+TEST_F(
+    LoadingPredictorTabHelperOptimizationGuideDeciderTest,
+    DocumentOnLoadCompletedOptimizationGuidePredictionComesAfterDocumentOnLoad) {
+  base::HistogramTester histogram_tester;
+
+  optimization_guide::OptimizationMetadata optimization_metadata;
+  optimization_guide::proto::LoadingPredictorMetadata lp_metadata;
+  lp_metadata.add_subresources()->set_url("http://test.org/resource1");
+  lp_metadata.add_subresources()->set_url("http://other.org/resource2");
+  lp_metadata.add_subresources()->set_url("http://other.org/resource3");
+  optimization_metadata.set_loading_predictor_metadata(lp_metadata);
+  optimization_guide::OptimizationGuideDecisionCallback callback;
+  EXPECT_CALL(
+      *mock_optimization_guide_keyed_service_,
+      CanApplyOptimizationAsync(_, optimization_guide::proto::LOADING_PREDICTOR,
+                                base::test::IsNotNullCallback()))
+      .WillOnce(WithArg<2>(
+          Invoke([&](optimization_guide::OptimizationGuideDecisionCallback
+                         got_callback) -> void {
+            callback = std::move(got_callback);
+          })));
+  NavigateAndCommitInMainFrameAndVerifyMetrics("http://test.org");
+  auto navigation_id =
+      CreateNavigationID(GetTabID(), "http://test.org",
+                         web_contents()->GetLastCommittedSourceId());
+
+  // Adding subframe navigation to ensure that the committed main frame url will
+  // be used.
+  auto* subframe =
+      content::RenderFrameHostTester::For(main_rfh())->AppendChild("subframe");
+  NavigateAndCommitInFrame("http://sub.test.org", subframe);
+
+  base::Optional<OptimizationGuidePrediction> prediction =
+      OptimizationGuidePrediction();
+  prediction->decision =
+      optimization_guide::OptimizationGuideDecision::kUnknown;
+  EXPECT_CALL(*mock_collector_,
+              RecordMainFrameLoadComplete(navigation_id, prediction));
+  tab_helper_->DocumentOnLoadCompletedInMainFrame();
+
+  // Invoke callback after document completed in main frame..
+  std::move(callback).Run(optimization_guide::OptimizationGuideDecision::kTrue,
+                          optimization_metadata);
+
+  // Optimization guide predictions came after commit.
+  histogram_tester.ExpectUniqueSample(
+      "LoadingPredictor.OptimizationHintsReceiveStatus",
+      OptimizationHintsReceiveStatus::kAfterNavigationFinish, 1);
+}
+
+// Tests that document on load completed is recorded with correct navigation
 // id and optimization guide prediction with no prediction..
 TEST_F(LoadingPredictorTabHelperOptimizationGuideDeciderTest,
        DocumentOnLoadCompletedOptimizationGuidePredictionArrivedNoPrediction) {

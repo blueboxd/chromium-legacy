@@ -10,7 +10,7 @@
 #include "third_party/blink/public/platform/web_url.h"
 #include "url/gurl.h"
 
-namespace test_runner {
+namespace content {
 
 MockWebDocumentSubresourceFilter::MockWebDocumentSubresourceFilter(
     const std::vector<std::string>& disallowed_path_suffixes,
@@ -52,4 +52,4 @@ bool MockWebDocumentSubresourceFilter::ShouldLogToConsole() {
   return true;
 }
 
-}  // namespace test_runner
+}  // namespace content

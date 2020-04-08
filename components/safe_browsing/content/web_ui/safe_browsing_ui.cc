@@ -1446,6 +1446,8 @@ std::string SerializeDeepScanningResponse(
     }
 
     dlp_verdict.SetKey("triggered_rules", std::move(triggered_rules));
+
+    response_dict.SetKey("dlp_scan_verdict", std::move(dlp_verdict));
   }
 
   std::string response_serialized;

@@ -7,20 +7,19 @@
 
 #include <string>
 
-#include "content/shell/test_runner/test_runner_export.h"
 #include "content/shell/test_runner/web_test_runtime_flags.h"
 
 namespace blink {
 class WebLocalFrame;
 }  // namespace blink
 
-namespace test_runner {
+namespace content {
 
 // Dumps textual representation of |frame| contents.  Exact dump mode depends
 // on |flags| (i.e. dump_as_text VS dump_as_markup and/or is_printing).
-TEST_RUNNER_EXPORT std::string DumpLayout(blink::WebLocalFrame* frame,
-                                          const WebTestRuntimeFlags& flags);
+std::string DumpLayoutAsString(blink::WebLocalFrame* frame,
+                               const WebTestRuntimeFlags& flags);
 
-}  // namespace test_runner
+}  // namespace content
 
 #endif  // CONTENT_SHELL_TEST_RUNNER_LAYOUT_DUMP_H_

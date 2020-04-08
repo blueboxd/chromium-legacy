@@ -134,8 +134,7 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision",
-          "${got_cr_revision}"
+          "--git-revision=${got_cr_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -144,12 +143,9 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--gerrit-issue",
-          "${patch_issue}",
-          "--gerrit-patchset",
-          "${patch_set}",
-          "--buildbucket-id",
-          "${buildbucket_build_id}"
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -177,8 +173,7 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision",
-          "${got_cr_revision}"
+          "--git-revision=${got_cr_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -187,12 +182,9 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--gerrit-issue",
-          "${patch_issue}",
-          "--gerrit-patchset",
-          "${patch_set}",
-          "--buildbucket-id",
-          "${buildbucket_build_id}"
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -1611,8 +1603,7 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision",
-          "${got_cr_revision}"
+          "--git-revision=${got_cr_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -1621,12 +1612,9 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--gerrit-issue",
-          "${patch_issue}",
-          "--gerrit-patchset",
-          "${patch_set}",
-          "--buildbucket-id",
-          "${buildbucket_build_id}"
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -1653,8 +1641,7 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision",
-          "${got_cr_revision}"
+          "--git-revision=${got_cr_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -1663,12 +1650,9 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--gerrit-issue",
-          "${patch_issue}",
-          "--gerrit-patchset",
-          "${patch_set}",
-          "--buildbucket-id",
-          "${buildbucket_build_id}"
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -1937,8 +1921,7 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision",
-          "${got_cr_revision}"
+          "--git-revision=${got_cr_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -1947,12 +1930,9 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--gerrit-issue",
-          "${patch_issue}",
-          "--gerrit-patchset",
-          "${patch_set}",
-          "--buildbucket-id",
-          "${buildbucket_build_id}"
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -1979,8 +1959,7 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision",
-          "${got_cr_revision}"
+          "--git-revision=${got_cr_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -1989,12 +1968,9 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--gerrit-issue",
-          "${patch_issue}",
-          "--gerrit-patchset",
-          "${patch_set}",
-          "--buildbucket-id",
-          "${buildbucket_build_id}"
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -2259,8 +2235,7 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision",
-          "${got_cr_revision}"
+          "--git-revision=${got_cr_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -2269,12 +2244,9 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--gerrit-issue",
-          "${patch_issue}",
-          "--gerrit-patchset",
-          "${patch_set}",
-          "--buildbucket-id",
-          "${buildbucket_build_id}"
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -2300,8 +2272,7 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision",
-          "${got_cr_revision}"
+          "--git-revision=${got_cr_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -2310,12 +2281,9 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--gerrit-issue",
-          "${patch_issue}",
-          "--gerrit-patchset",
-          "${patch_set}",
-          "--buildbucket-id",
-          "${buildbucket_build_id}"
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -2927,8 +2895,7 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision",
-          "${got_cr_revision}"
+          "--git-revision=${got_cr_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -2937,12 +2904,9 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--gerrit-issue",
-          "${patch_issue}",
-          "--gerrit-patchset",
-          "${patch_set}",
-          "--buildbucket-id",
-          "${buildbucket_build_id}"
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -2969,8 +2933,7 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision",
-          "${got_cr_revision}"
+          "--git-revision=${got_cr_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -2979,12 +2942,9 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--gerrit-issue",
-          "${patch_issue}",
-          "--gerrit-patchset",
-          "${patch_set}",
-          "--buildbucket-id",
-          "${buildbucket_build_id}"
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
         "swarming": {

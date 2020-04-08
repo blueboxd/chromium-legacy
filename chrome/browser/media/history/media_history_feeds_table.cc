@@ -38,29 +38,29 @@ sql::InitStatus MediaHistoryFeedsTable::CreateTableIfNonExistent() {
   if (!CanAccessDatabase())
     return sql::INIT_FAILURE;
 
-  bool success =
-      DB()->Execute(base::StringPrintf("CREATE TABLE IF NOT EXISTS %s("
-                                       "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                                       "origin_id INTEGER NOT NULL UNIQUE,"
-                                       "url TEXT NOT NULL, "
-                                       "last_discovery_time_s INTEGER, "
-                                       "last_fetch_time_s INTEGER, "
-                                       "user_status INTEGER DEFAULT 0, "
-                                       "last_fetch_result INTEGER DEFAULT 0, "
-                                       "fetch_failed_count INTEGER, "
-                                       "cache_expiry_time_s INTEGER, "
-                                       "last_fetch_item_count INTEGER, "
-                                       "last_fetch_play_next_count INTEGER, "
-                                       "last_fetch_content_types INTEGER, "
-                                       "logo BLOB, "
-                                       "display_name TEXT, "
-                                       "CONSTRAINT fk_origin "
-                                       "FOREIGN KEY (origin_id) "
-                                       "REFERENCES origin(id) "
-                                       "ON DELETE CASCADE"
-                                       ")",
-                                       kTableName)
-                        .c_str());
+  bool success = DB()->Execute(
+      base::StringPrintf("CREATE TABLE IF NOT EXISTS %s("
+                         "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                         "origin_id INTEGER NOT NULL UNIQUE,"
+                         "url TEXT NOT NULL, "
+                         "last_discovery_time_s INTEGER, "
+                         "last_fetch_time_s INTEGER, "
+                         "user_status INTEGER DEFAULT 0, "
+                         "last_fetch_result INTEGER DEFAULT 0, "
+                         "fetch_failed_count INTEGER, "
+                         "last_fetch_time_not_cache_hit_s INTEGER, "
+                         "last_fetch_item_count INTEGER, "
+                         "last_fetch_play_next_count INTEGER, "
+                         "last_fetch_content_types INTEGER, "
+                         "logo BLOB, "
+                         "display_name TEXT, "
+                         "CONSTRAINT fk_origin "
+                         "FOREIGN KEY (origin_id) "
+                         "REFERENCES origin(id) "
+                         "ON DELETE CASCADE"
+                         ")",
+                         kTableName)
+          .c_str());
 
   if (success) {
     success = DB()->Execute(
@@ -142,7 +142,7 @@ MediaHistoryFeedsTable::GetRows() {
   sql::Statement statement(DB()->GetUniqueStatement(
       "SELECT id, url, last_discovery_time_s, last_fetch_time_s, "
       "user_status, last_fetch_result, fetch_failed_count, "
-      "cache_expiry_time_s, "
+      "last_fetch_time_not_cache_hit_s, "
       "last_fetch_item_count, last_fetch_play_next_count, "
       "last_fetch_content_types, "
       "logo, display_name FROM mediaFeed"));
@@ -195,8 +195,9 @@ MediaHistoryFeedsTable::GetRows() {
     feed->fetch_failed_count = statement.ColumnInt64(6);
 
     if (statement.GetColumnType(7) == sql::ColumnType::kInteger) {
-      feed->cache_expiry_time = base::Time::FromDeltaSinceWindowsEpoch(
-          base::TimeDelta::FromSeconds(statement.ColumnInt64(7)));
+      feed->last_fetch_time_not_cache_hit =
+          base::Time::FromDeltaSinceWindowsEpoch(
+              base::TimeDelta::FromSeconds(statement.ColumnInt64(7)));
     }
 
     feed->last_fetch_item_count = statement.ColumnInt64(8);
@@ -215,7 +216,7 @@ MediaHistoryFeedsTable::GetRows() {
 bool MediaHistoryFeedsTable::UpdateFeedFromFetch(
     const int64_t feed_id,
     const media_feeds::mojom::FetchResult result,
-    const base::Time& expiry_time,
+    const bool was_fetched_from_cache,
     const int item_count,
     const int item_play_next_count,
     const int item_content_types,
@@ -242,32 +243,48 @@ bool MediaHistoryFeedsTable::UpdateFeedFromFetch(
     }
   }
 
-  sql::Statement statement(DB()->GetCachedStatement(
-      SQL_FROM_HERE,
-      "UPDATE mediaFeed SET last_fetch_time_s = ?, last_fetch_result = ?, "
-      "fetch_failed_count = ?, cache_expiry_time_s = ?, last_fetch_item_count "
-      "= ?, "
-      "last_fetch_play_next_count = ?, last_fetch_content_types = ?, "
-      "logo = ?, display_name = ?  WHERE id = ?"));
+  sql::Statement statement;
+  if (was_fetched_from_cache) {
+    statement.Assign(DB()->GetCachedStatement(
+        SQL_FROM_HERE,
+        "UPDATE mediaFeed SET last_fetch_time_s = ?, last_fetch_result = ?, "
+        "fetch_failed_count = ?, last_fetch_item_count = ?, "
+        "last_fetch_play_next_count = ?, last_fetch_content_types = ?, "
+        "logo = ?, display_name = ?  WHERE id = ?"));
+  } else {
+    statement.Assign(DB()->GetCachedStatement(
+        SQL_FROM_HERE,
+        "UPDATE mediaFeed SET last_fetch_time_s = ?, last_fetch_result = ?, "
+        "fetch_failed_count = ?, last_fetch_item_count = ?, "
+        "last_fetch_play_next_count = ?, last_fetch_content_types = ?, "
+        "logo = ?, display_name = ?, last_fetch_time_not_cache_hit_s = ? WHERE "
+        "id = ?"));
+  }
 
   statement.BindInt64(0,
                       base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds());
   statement.BindInt64(1, static_cast<int>(result));
   statement.BindInt64(2, fetch_failed_count);
-  statement.BindInt64(3, expiry_time.ToDeltaSinceWindowsEpoch().InSeconds());
-  statement.BindInt64(4, item_count);
-  statement.BindInt64(5, item_play_next_count);
-  statement.BindInt64(6, item_content_types);
+  statement.BindInt64(3, item_count);
+  statement.BindInt64(4, item_play_next_count);
+  statement.BindInt64(5, item_content_types);
 
   if (!logos.empty()) {
-    BindProto(statement, 7,
+    BindProto(statement, 6,
               media_feeds::MediaImagesToProto(logos, kMaxLogoCount));
   } else {
-    statement.BindNull(7);
+    statement.BindNull(6);
   }
 
-  statement.BindString(8, display_name);
-  statement.BindInt64(9, feed_id);
+  statement.BindString(7, display_name);
+
+  if (was_fetched_from_cache) {
+    statement.BindInt64(8, feed_id);
+  } else {
+    statement.BindInt64(
+        8, base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds());
+    statement.BindInt64(9, feed_id);
+  }
 
   return statement.Run() && DB()->GetLastChangeCount() == 1;
 }

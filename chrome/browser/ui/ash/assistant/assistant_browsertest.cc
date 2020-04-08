@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/strings/string_util.h"
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/ui/ash/assistant/assistant_test_mixin.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
@@ -9,6 +10,8 @@
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "chromeos/services/assistant/public/features.h"
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/public/cpp/notification.h"
 
 namespace chromeos {
 namespace assistant {
@@ -16,6 +19,14 @@ namespace assistant {
 namespace {
 
 constexpr int kStartBrightnessPercent = 50;
+
+// Ensures that |str_| starts with |prefix_|. If it doesn't, this will print a
+// nice error message.
+#define EXPECT_STARTS_WITH(str_, prefix_)                                      \
+  ({                                                                           \
+    EXPECT_TRUE(base::StartsWith(str_, prefix_, base::CompareCase::SENSITIVE)) \
+        << "Expected '" << str_ << "'' to start with '" << prefix_ << "'";     \
+  })
 
 // Ensures that |value_| is within the range {min_, max_}. If it isn't, this
 // will print a nice error message.
@@ -324,6 +335,34 @@ IN_PROC_BROWSER_TEST_F(AssistantTimersV2BrowserTest,
 
   // Assert that the UI has been updated to meet our expectations.
   tester()->ExpectTimersResponse(timers);
+}
+
+IN_PROC_BROWSER_TEST_F(AssistantTimersV2BrowserTest,
+                       ShouldDismissTimerNotificationsWhenDisablingAssistant) {
+  tester()->StartAssistantAndWaitForReady();
+
+  ShowAssistantUi();
+  EXPECT_TRUE(tester()->IsVisible());
+
+  // Confirm no Assistant notifications are currently being shown.
+  auto* message_center = message_center::MessageCenter::Get();
+  EXPECT_TRUE(message_center->FindNotificationsByAppId("assistant").empty());
+
+  // Start a timer for one minute.
+  tester()->SendTextQuery("Set a timer for 1 minute.");
+  tester()->ExpectTextResponse("Alright, 1 min. And that's starting… now.");
+
+  // Confirm that an Assistant timer notification is now showing.
+  auto notifications = message_center->FindNotificationsByAppId("assistant");
+  EXPECT_EQ(1u, notifications.size());
+  EXPECT_STARTS_WITH((*notifications.begin())->id(), "assistant/timer");
+
+  // Disable Assistant.
+  tester()->SetAssistantEnabled(false);
+  base::RunLoop().RunUntilIdle();
+
+  // Confirm that our Assistant timer notification has been dismissed.
+  EXPECT_TRUE(message_center->FindNotificationsByAppId("assistant").empty());
 }
 
 }  // namespace assistant

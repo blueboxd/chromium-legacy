@@ -13,6 +13,7 @@
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/service_transfer_cache.h"
 #include "gpu/command_buffer/service/service_utils.h"
+#include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/skia_limits.h"
 #include "gpu/vulkan/buildflags.h"
@@ -222,14 +223,9 @@ void SharedContextState::InitializeGrContext(
     // affect text rendering, make sure to match the capabilities initialized
     // in GetCapabilities and ensuring these are also used by the
     // PaintOpBufferSerializer.
-    GrContextOptions options;
-    if (GrContextIsMetal()) {
-      options.fRuntimeProgramCacheSize = 1024;
-    }
+    GrContextOptions options = GetDefaultGrContextOptions(GrContextType::kGL);
     options.fDriverBugWorkarounds =
         GrDriverBugWorkarounds(workarounds.ToIntSet());
-    options.fDisableCoverageCountingPaths = true;
-    options.fGlyphCacheTextureMaximumBytes = glyph_cache_max_texture_bytes;
     options.fPersistentCache = cache;
     options.fAvoidStencilBuffers = workarounds.avoid_stencil_buffers;
     if (workarounds.disable_program_disk_cache) {
@@ -239,9 +235,6 @@ void SharedContextState::InitializeGrContext(
     options.fShaderErrorHandler = this;
     if (gpu_preferences.force_max_texture_size)
       options.fMaxTextureSizeOverride = gpu_preferences.force_max_texture_size;
-    // TODO(csmartdalton): enable internal multisampling after the related Skia
-    // rolls are in.
-    options.fInternalMultisampleCount = 0;
     owned_gr_context_ = GrContext::MakeGL(std::move(interface), options);
     gr_context_ = owned_gr_context_.get();
   }

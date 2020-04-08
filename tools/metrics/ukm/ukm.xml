@@ -6020,6 +6020,11 @@ be describing additional metrics about the same event.
       The number of ad subframes that the associated renderer owns.
     </summary>
   </metric>
+  <metric name="NumberOfArrayBufferContents">
+    <summary>
+      The number of arraybuffer contents that the associated renderer owns.
+    </summary>
+  </metric>
   <metric name="NumberOfCallsInDetachedWindowByClosing">
     <obsolete>
       Deprecated as of 01/2020.

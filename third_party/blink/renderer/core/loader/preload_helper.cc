@@ -515,17 +515,14 @@ Resource* PreloadHelper::PrefetchIfNeeded(const LinkLoadParameters& params,
 
     ResourceRequest resource_request(params.href);
 
-    if (base::FeatureList::IsEnabled(
-            network::features::kPrefetchMainResourceNetworkIsolationKey)) {
-      if (EqualIgnoringASCIICase(params.as, "document"))
-        resource_request.SetPrefetchMaybeForTopLevelNavigation(true);
+    if (EqualIgnoringASCIICase(params.as, "document"))
+      resource_request.SetPrefetchMaybeForTopLevelNavigation(true);
 
-      // If this request was originally a preload header on a prefetch response,
-      // it may have a recursive prefetch token, used by the browser process to
-      // ensure this request is cached correctly.
-      resource_request.SetRecursivePrefetchToken(
-          params.recursive_prefetch_token);
-    }
+    // This request could have originally been a preload header on a prefetch
+    // response, that was promoted to a prefetch request by LoadLinksFromHeader.
+    // In that case, it may have a recursive prefetch token used by the browser
+    // process to ensure this request is cached correctly. Propagate it.
+    resource_request.SetRecursivePrefetchToken(params.recursive_prefetch_token);
 
     resource_request.SetReferrerPolicy(params.referrer_policy);
     resource_request.SetFetchImportanceMode(

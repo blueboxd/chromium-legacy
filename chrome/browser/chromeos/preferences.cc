@@ -157,9 +157,6 @@ void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
       prefs::kSystemTimezoneAutomaticDetectionPolicy,
       enterprise_management::SystemTimezoneProto::USERS_DECIDE);
   registry->RegisterStringPref(prefs::kMinimumAllowedChromeVersion, "");
-  // TODO(tonydeluna): Remove deprecated pref.
-  // Carrier deal notification shown count defaults to 0.
-  registry->RegisterIntegerPref(prefs::kCarrierDealPromoShown, 0);
 
   ash::RegisterLocalStatePrefs(registry);
 }
@@ -339,11 +336,6 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kWakeOnWifiDarkConnect, true);
 
   registry->RegisterBooleanPref(prefs::kShowMobileDataNotification, true);
-
-  // Number of times Data Saver prompt has been shown on 3G data network.
-  registry->RegisterIntegerPref(
-      prefs::kDataSaverPromptsShown, 0,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
 
   // Initially all existing users would see "What's new" for current version
   // after update.

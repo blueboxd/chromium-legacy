@@ -12,7 +12,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 
-namespace test_runner {
+namespace content {
 
 namespace {
 
@@ -179,4 +179,4 @@ bool MockSpellCheck::InitializeIfNeeded() {
   return false;
 }
 
-}  // namespace test_runner
+}  // namespace content

@@ -19,7 +19,7 @@ namespace blink {
 class WebTextCheckingCompletion;
 }  // namespace blink
 
-namespace test_runner {
+namespace content {
 
 class TestRunner;
 class WebTestDelegate;
@@ -77,6 +77,6 @@ class SpellCheckClient : public blink::WebTextCheckClient {
   DISALLOW_COPY_AND_ASSIGN(SpellCheckClient);
 };
 
-}  // namespace test_runner
+}  // namespace content
 
 #endif  // CONTENT_SHELL_TEST_RUNNER_SPELL_CHECK_CLIENT_H_

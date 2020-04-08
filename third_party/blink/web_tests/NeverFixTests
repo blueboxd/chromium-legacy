@@ -2119,3 +2119,6 @@ crbug.com/626703 [ Win7 ] external/wpt/pointerevents/pointerevent_fractional_coo
 
 # These tests require a preferred dark color-scheme and are only run as virtual tests
 external/wpt/css/css-color-adjust/rendering/dark-color-scheme/* [ Skip ]
+crbug.com/626703 [ Linux ] external/wpt/payment-request/dynamically-change-shipping-options-manual.https.html [ Skip ]
+crbug.com/626703 [ Mac ] external/wpt/payment-request/dynamically-change-shipping-options-manual.https.html [ Skip ]
+crbug.com/626703 [ Win ] external/wpt/payment-request/dynamically-change-shipping-options-manual.https.html [ Skip ]

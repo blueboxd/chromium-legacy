@@ -225,19 +225,37 @@ public class ChromeTabUtils {
      * Waits for the given tab to start loading its current page.
      *
      * @param tab The tab to wait for the page loading to be started.
+     * @param expectedUrl The expected url of the started page load.  Pass in null if starting
+     *                    any load is sufficient.
+     * @param loadTrigger The trigger action that will result in a page load started event
+     *                    to be fired (not run on the UI thread by default).
+     */
+    public static void waitForTabPageLoadStart(
+            final Tab tab, @Nullable final String expectedUrl, Runnable loadTrigger) {
+        waitForTabPageLoadStart(tab, expectedUrl, loadTrigger, CallbackHelper.WAIT_TIMEOUT_SECONDS);
+    }
+
+    /**
+     * Waits for the given tab to start loading its current page.
+     *
+     * @param tab The tab to wait for the page loading to be started.
+     * @param expectedUrl The expected url of the started page load.  Pass in null if starting
+     *                    any load is sufficient.
      * @param loadTrigger The trigger action that will result in a page load started event
      *                    to be fired (not run on the UI thread by default).
      * @param secondsToWait The number of seconds to wait for the page to be load to be started.
      */
-    public static void waitForTabPageLoadStart(
-            final Tab tab, Runnable loadTrigger, long secondsToWait) {
+    public static void waitForTabPageLoadStart(final Tab tab, @Nullable final String expectedUrl,
+            Runnable loadTrigger, long secondsToWait) {
         final CallbackHelper startedCallback = new CallbackHelper();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             tab.addObserver(new EmptyTabObserver() {
                 @Override
                 public void onPageLoadStarted(Tab tab, String url) {
-                    startedCallback.notifyCalled();
-                    tab.removeObserver(this);
+                    if (expectedUrl == null || TextUtils.equals(url, expectedUrl)) {
+                        startedCallback.notifyCalled();
+                        tab.removeObserver(this);
+                    }
                 }
             });
         });

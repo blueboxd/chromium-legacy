@@ -77,12 +77,6 @@ const char kMethodDataRequired[] = "Method data required.";
 
 const char kMethodNameRequired[] = "Method name required.";
 
-const char kMissingDetailsFromPaymentApp[] =
-    "Payment app returned invalid response. Missing field \"details\".";
-
-const char kMissingMethodNameFromPaymentApp[] =
-    "Payment app returned invalid response. Missing field \"methodName\".";
-
 const char kMultiplePaymentMethodsNotSupportedFormat[] =
     "The payment methods $ are not supported.";
 
@@ -92,15 +86,6 @@ const char kNoResponseToPaymentEvent[] =
 const char kNotInitialized[] = "Not initialized.";
 
 const char kNotShown[] = "Not shown.";
-
-const char kPayerEmailEmpty[] =
-    "Payment app returned invalid response. Missing field \"payerEmail\".";
-
-const char kPayerNameEmpty[] =
-    "Payment app returned invalid response. Missing field \"payerName\".";
-
-const char kPayerPhoneEmpty[] =
-    "Payment app returned invalid response. Missing field \"payerPhone\".";
 
 const char kPaymentManifestCrossSiteRedirectNotAllowed[] =
     "Cross-site redirect from \"$1\" to \"$2\" not allowed for payment "
@@ -150,12 +135,6 @@ const char kSinglePaymentMethodNotSupportedFormat[] =
     "The payment method $ is not supported.";
 
 const char kShippingOptionIdRequired[] = "Shipping option identifier required.";
-
-const char kShippingAddressInvalid[] =
-    "Payment app returned invalid shipping address in response.";
-
-const char kShippingOptionEmpty[] =
-    "Payment app returned invalid response. Missing field \"shipping option\".";
 
 const char kCanMakePaymentEventRejected[] =
     "Payment handler rejected the promise passed into "

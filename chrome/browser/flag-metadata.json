@@ -3351,11 +3351,6 @@
     "expiry_milestone": 86
   },
   {
-    "name": "prefetch-main-resource-network-isolation-key",
-    "owners": [ "dom", "yhirano" ],
-    "expiry_milestone": 85
-  },
-  {
     "name": "prefetch-notification-scheduling-integration",
     "owners": [ "hesen" ],
     "expiry_milestone": 88

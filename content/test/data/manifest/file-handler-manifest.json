@@ -1,0 +1,11 @@
+{
+  "file_handlers": [
+    {
+      "name": "name",
+      "action": "/files",
+      "accept": {
+        "image/png": ".png"
+      }
+    }
+  ]
+}

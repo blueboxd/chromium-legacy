@@ -201,8 +201,8 @@ bool VulkanSurface::CreateSwapChain(const gfx::Size& size,
   VkResult result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
       device_queue_->GetVulkanPhysicalDevice(), surface_, &surface_caps);
   if (VK_SUCCESS != result) {
-    DLOG(ERROR) << "vkGetPhysicalDeviceSurfaceCapabilitiesKHR() failed: "
-                << result;
+    LOG(FATAL) << "vkGetPhysicalDeviceSurfaceCapabilitiesKHR() failed: "
+               << result;
     return false;
   }
 

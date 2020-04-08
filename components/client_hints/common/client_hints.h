@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_CLIENT_HINTS_CLIENT_HINTS_H_
-#define CHROME_COMMON_CLIENT_HINTS_CLIENT_HINTS_H_
+#ifndef COMPONENTS_CLIENT_HINTS_COMMON_CLIENT_HINTS_H_
+#define COMPONENTS_CLIENT_HINTS_COMMON_CLIENT_HINTS_H_
 
 #include "components/content_settings/core/common/content_settings.h"
 
@@ -25,4 +25,4 @@ void GetAllowedClientHintsFromSource(
 
 }  // namespace client_hints
 
-#endif  // CHROME_COMMON_CLIENT_HINTS_CLIENT_HINTS_H_
+#endif  // COMPONENTS_CLIENT_HINTS_COMMON_CLIENT_HINTS_H_

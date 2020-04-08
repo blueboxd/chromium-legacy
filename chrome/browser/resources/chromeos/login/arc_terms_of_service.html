@@ -11,9 +11,11 @@
     <link rel="stylesheet" href="oobe_dialog_host.css">
     <link rel="stylesheet" href="arc_terms_of_service.css">
     <link rel="stylesheet" href="oobe_flex_layout.css">
+    <!-- As this dialog have pre-loading logic that require access to elements,
+         dialog is marked as no-lazy. -->
     <oobe-dialog id="arcTosDialog" has-buttons class="arc-tos-loading"
         title-key="arcTermsOfServiceScreenHeading"
-        subtitle-key="arcTermsOfServiceScreenDescription">
+        subtitle-key="arcTermsOfServiceScreenDescription" no-lazy>
       <iron-icon src="chrome://oobe/playstore.svg" slot="oobe-icon">
       </iron-icon>
       <div id="arcTosContainer" slot="footer" class="flex layout vertical">

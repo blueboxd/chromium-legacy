@@ -71,6 +71,8 @@
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_installer.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_installer_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/chromeos/settings/stats_reporting_controller.h"
@@ -1836,8 +1838,12 @@ AutotestPrivateInstallPluginVMFunction::Run() {
            << ", " << params->image_hash << ", " << params->license_key;
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
+  plugin_vm::PluginVmInstallerFactory::GetForProfile(profile)
+      ->SetFreeDiskSpaceForTesting(
+          plugin_vm::PluginVmInstaller::kRecommendedFreeDiskSpace);
   plugin_vm::SetFakePluginVmPolicy(profile, params->image_url,
                                    params->image_hash, params->license_key);
+
   plugin_vm::ShowPluginVmInstallerView(profile);
   PluginVmInstallerView::GetActiveViewForTesting()
       ->SetFinishedCallbackForTesting(base::BindOnce(

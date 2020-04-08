@@ -96,115 +96,119 @@ class TEST_TYPES(object):
 LIGHTWEIGHT_TESTERS = ['linux-perf-fyi']
 
 FYI_BUILDERS = {
-  'android-nexus5x-perf-fyi': {
-    'tests': [
-      {
-        'isolate': 'performance_test_suite',
-        'extra_args': [
-          '--output-format=histograms',
-          '--experimental-tbmv3-metrics',
+    'android-nexus5x-perf-fyi': {
+        'tests': [{
+            'isolate':
+            'performance_test_suite',
+            'extra_args': [
+                '--output-format=histograms',
+                '--experimental-tbmv3-metrics',
+            ],
+        }],
+        'platform':
+        'android-chrome',
+        'dimension': {
+            'pool': 'chrome.tests.perf-fyi',
+            'os': 'Android',
+            'device_type': 'bullhead',
+            'device_os': 'MMB29Q',
+            'device_os_flavor': 'google',
+        },
+    },
+    'android-pixel2-perf-fyi': {
+        'tests': [{
+            'isolate': 'performance_test_suite',
+        }],
+        'platform': 'android-chrome',
+        'browser': 'bin/monochrome_64_32_bundle',
+        'dimension': {
+            'pool': 'chrome.tests.perf-fyi',
+            'os': 'Android',
+            'device_type': 'walleye',
+            'device_os': 'O',
+            'device_os_flavor': 'google',
+        },
+    },
+    'android-pixel2-perf-aab-fyi': {
+        'tests': [{
+            'isolate': 'performance_test_suite',
+            'extra_args': [
+                '--run-ref-build',
+            ],
+        }],
+        'platform':
+        'android-chrome-bundle',
+        'dimension': {
+            'pool': 'chrome.tests.perf-fyi',
+            'os': 'Android',
+            'device_type': 'walleye',
+            'device_os': 'O',
+            'device_os_flavor': 'google',
+        },
+    },
+    'linux-perf-fyi': {
+        'tests': [{
+            'isolate':
+            'performance_test_suite',
+            'extra_args': [
+                '--output-format=histograms',
+                '--experimental-tbmv3-metrics',
+            ],
+        }],
+        'platform':
+        'linux',
+        'dimension': {
+            'gpu': '10de',
+            'id': 'build186-b7',
+            'os': 'Ubuntu-14.04',
+            'pool': 'chrome.tests.perf-fyi',
+        },
+    },
+    'win-10_laptop_low_end-perf_HP-Candidate': {
+        'tests': [
+            {
+                'isolate': 'performance_test_suite',
+            },
         ],
-      }
-    ],
-    'platform': 'android-chrome',
-    'dimension': {
-      'pool': 'chrome.tests.perf-fyi',
-      'os': 'Android',
-      'device_type': 'bullhead',
-      'device_os': 'MMB29Q',
-      'device_os_flavor': 'google',
+        'platform': 'win',
+        'target_bits': 64,
+        'dimension': {
+            'pool': 'chrome.tests.perf-fyi',
+            'id': 'build370-a7',
+            # TODO(crbug.com/971204): Explicitly set the gpu to None to make
+            # chromium_swarming recipe_module ignore this dimension.
+            'gpu': None,
+            'os': 'Windows-10',
+        },
     },
-  },
-  'android-pixel2-perf-fyi': {
-    'tests': [
-      {
-        'isolate': 'performance_test_suite',
-      }
-    ],
-    'platform': 'android-chrome',
-    'browser': 'bin/monochrome_64_32_bundle',
-    'dimension': {
-      'pool': 'chrome.tests.perf-fyi',
-      'os': 'Android',
-      'device_type': 'walleye',
-      'device_os': 'O',
-      'device_os_flavor': 'google',
-    },
-  },
-  'android-pixel2-perf-aab-fyi': {
-    'tests': [
-      {
-        'isolate': 'performance_test_suite',
-        'extra_args': [
-           '--run-ref-build',
+    'chromeos-kevin-perf-fyi': {
+        'tests': [
+            {
+                'isolate':
+                'performance_test_suite',
+                'extra_args': [
+                    # The magic hostname that resolves to a CrOS device in the test lab
+                    '--remote=variable_chromeos_device_hostname',
+                ],
+            },
         ],
-      }
-    ],
-    'platform': 'android-chrome-bundle',
-    'dimension': {
-      'pool': 'chrome.tests.perf-fyi',
-      'os': 'Android',
-      'device_type': 'walleye',
-      'device_os': 'O',
-      'device_os_flavor': 'google',
+        'platform':
+        'chromeos',
+        'target_bits':
+        32,
+        'dimension': {
+            'pool': 'luci.chrome.cros-dut',
+            # TODO(crbug.com/971204): Explicitly set the gpu to None to make
+            # chromium_swarming recipe_module ignore this dimension.
+            'gpu': None,
+            'os': 'ChromeOS',
+            'device_type': 'kevin',
+        },
     },
-  },
-  'linux-perf-fyi': {
-    'tests': [
-      {
-        'isolate': 'performance_test_suite',
-        'extra_args': [
-            '--output-format=histograms',
-            '--experimental-tbmv3-metrics',
-        ],
-      }
-    ],
-    'platform': 'linux',
-    'dimension': {
-      'gpu': '10de',
-      'id': 'build186-b7',
-      'os': 'Ubuntu-14.04',
-      'pool': 'chrome.tests.perf-fyi',
+    'linux-processor-perf-fyi': {
+        'platform': 'linux',
+        'perf_processor': True,
     },
-  },
-  'win-10_laptop_low_end-perf_HP-Candidate': {
-    'tests': [
-      {
-        'isolate': 'performance_test_suite',
-      },
-    ],
-    'platform': 'win',
-    'target_bits': 64,
-    'dimension': {
-      'pool': 'chrome.tests.perf-fyi',
-      'id': 'build370-a7',
-      # TODO(crbug.com/971204): Explicitly set the gpu to None to make
-      # chromium_swarming recipe_module ignore this dimension.
-      'gpu': None,
-      'os': 'Windows-10',
-    },
-  },
-  'chromeos-kevin-perf-fyi': {
-    'tests': [
-      {
-        'isolate': 'performance_test_suite',
-        'extra_args': [
-            # The magic hostname that resolves to a CrOS device in the test lab
-            '--remote=variable_chromeos_device_hostname',
-        ],
-      },
-    ],
-    'platform': 'chromeos',
-    'target_bits': 32,
-    'dimension': {
-      'pool': 'luci.chrome.cros-dut',
-      # TODO(crbug.com/971204): Explicitly set the gpu to None to make
-      # chromium_swarming recipe_module ignore this dimension.
-      'gpu': None,
-      'os': 'ChromeOS',
-      'device_type': 'kevin',
-    },
-  },
 }
 
 # These configurations are taken from chromium_perf.py in
@@ -1039,7 +1043,7 @@ def generate_performance_test(tester_config, test, builder_name):
       'script': '//tools/perf/process_perf_results.py',
   }
   if builder_name in LIGHTWEIGHT_TESTERS:
-    result['merge']['args'] = ['--skip-perf']
+    result['merge']['args'] = ['--lightweight', '--skip-perf']
 
   result['swarming'] = {
       # Always say this is true regardless of whether the tester
@@ -1074,6 +1078,11 @@ def generate_builder_config(condensed_config, builder_name):
   if 'additional_compile_targets' in condensed_config:
     config['additional_compile_targets'] = (
         condensed_config['additional_compile_targets'])
+  if 'perf_processor' in condensed_config:
+    config['merge'] = {
+        'script': '//tools/perf/process_perf_results.py',
+    }
+    config['merge']['args'] = ['--lightweight']
 
   condensed_tests = condensed_config.get('tests')
   if condensed_tests:

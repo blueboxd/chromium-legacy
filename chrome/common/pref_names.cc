@@ -628,10 +628,6 @@ const char kLabsMediaplayerEnabled[] = "settings.labs.mediaplayer";
 const char kShowMobileDataNotification[] =
     "settings.internet.mobile.show_3g_promo_notification";
 
-// An integer pref counting times Data Saver prompt has been shown.
-const char kDataSaverPromptsShown[] =
-    "settings.internet.mobile.datasaver_prompts_shown";
-
 // A string pref that contains version where "What's new" promo was shown.
 const char kChromeOSReleaseNotesVersion[] = "settings.release_notes.version";
 
@@ -2089,11 +2085,6 @@ const char kDeviceSettingsCache[] = "signed_settings_cache";
 // The hardware keyboard layout of the device. This should look like
 // "xkb:us::eng".
 const char kHardwareKeyboardLayout[] = "intl.hardware_keyboard";
-
-// An integer pref which shows number of times carrier deal promo
-// notification has been shown to user.
-const char kCarrierDealPromoShown[] =
-    "settings.internet.mobile.carrier_deal_promo_shown";
 
 // A boolean pref of the auto-enrollment decision. Its value is only valid if
 // it's not the default value; otherwise, no auto-enrollment decision has been

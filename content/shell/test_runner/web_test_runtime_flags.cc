@@ -4,7 +4,7 @@
 
 #include "content/shell/test_runner/web_test_runtime_flags.h"
 
-namespace test_runner {
+namespace content {
 
 WebTestRuntimeFlags::WebTestRuntimeFlags() {
   Reset();
@@ -67,4 +67,4 @@ void WebTestRuntimeFlags::Reset() {
   tracked_dictionary().ResetChangeTracking();
 }
 
-}  // namespace test_runner
+}  // namespace content

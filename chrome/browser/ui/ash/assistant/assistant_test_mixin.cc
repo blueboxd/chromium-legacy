@@ -407,6 +407,10 @@ void AssistantTestMixin::StartAssistantAndWaitForReady(
   DisableWarmerWelcome();
 }
 
+void AssistantTestMixin::SetAssistantEnabled(bool enabled) {
+  test_api_->SetAssistantEnabled(enabled);
+}
+
 void AssistantTestMixin::SetPreferVoice(bool prefer_voice) {
   test_api_->SetPreferVoice(prefer_voice);
 }

@@ -15,7 +15,6 @@
 namespace blink {
 struct Manifest;
 class WebInputEvent;
-class WebLocalFrame;
 struct WebSize;
 class WebURL;
 class WebView;
@@ -25,25 +24,15 @@ namespace gfx {
 class ColorSpace;
 }
 
-namespace test_runner {
+namespace content {
+class RenderFrame;
+class RenderView;
 class WebFrameTestProxy;
 class WebViewTestProxy;
 class WebWidgetTestProxy;
-}  // namespace test_runner
-
-namespace content {
-
-class RenderFrame;
-class RenderView;
 
 // Turn a renderer into web test mode.
 void EnableRendererWebTestMode();
-
-// Gets WebWidgetTestProxy associated with |frame| (either the view's widget
-// or the local root's frame widget).  Caller has to ensure that prior to
-// construction of |render_frame|, EnableWebTestProxyCreation was called.
-test_runner::WebWidgetTestProxy* GetWebWidgetTestProxy(
-    blink::WebLocalFrame* frame);
 
 // Enable injecting of a WebViewTestProxy between WebViews and RenderViews,
 // WebWidgetTestProxy between WebWidgets and RenderWidgets and WebFrameTestProxy
@@ -74,7 +63,7 @@ void SetDeviceScaleFactor(RenderView* render_view, float factor);
 // transformation was necessary (e.g. for a keyboard event OR if widget requires
 // no scaling and has coordinates starting at (0,0)).
 std::unique_ptr<blink::WebInputEvent> TransformScreenToWidgetCoordinates(
-    test_runner::WebWidgetTestProxy* web_widget_test_proxy,
+    WebWidgetTestProxy* web_widget_test_proxy,
     const blink::WebInputEvent& event);
 
 // Get the color space for a given name string. This is not in the ColorSpace

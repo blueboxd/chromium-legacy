@@ -24,7 +24,7 @@
 #include "components/sync/model/string_ordinal.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/api/declarative_net_request/ruleset_source.h"
+#include "extensions/browser/api/declarative_net_request/index_helper.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -33,7 +33,6 @@
 #include "extensions/browser/policy_check.h"
 #include "extensions/browser/preload_check_group.h"
 #include "extensions/browser/requirements_checker.h"
-#include "extensions/common/api/declarative_net_request/dnr_manifest_data.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"
@@ -268,29 +267,20 @@ bool UnpackedInstaller::LoadExtension(Manifest::Location location,
 bool UnpackedInstaller::IndexAndPersistRulesIfNeeded(std::string* error) {
   DCHECK(extension());
 
-  using RulesetSource = declarative_net_request::RulesetSource;
-
-  // TODO(crbug.com/761107): Change this so that we don't need to parse JSON
-  // in the browser process.
-  // TODO(crbug.com/754526): Impose a limit on the total number of rules across
-  // all the rulesets for an extension. Also, limit the number of install
-  // warnings across all rulesets.
-  // Note |sources| may be empty.
-  std::vector<RulesetSource> sources =
-      RulesetSource::CreateStatic(*extension());
-
-  for (const RulesetSource& source : sources) {
-    declarative_net_request::IndexAndPersistJSONRulesetResult result =
-        source.IndexAndPersistJSONRulesetUnsafe();
-    if (!result.success) {
-      *error = std::move(result.error);
-      return false;
-    }
-
-    ruleset_checksums_.emplace_back(result.ruleset_id, result.ruleset_checksum);
-    if (!result.warnings.empty())
-      extension_->AddInstallWarnings(std::move(result.warnings));
+  // TODO(crbug.com/761107): IndexStaticRulesetsUnsafe will read and parse JSON
+  // synchronously. Change this so that we don't need to parse JSON in the
+  // browser process.
+  declarative_net_request::IndexHelper::Result result =
+      declarative_net_request::IndexHelper::IndexStaticRulesetsUnsafe(
+          *extension());
+  if (result.error) {
+    *error = std::move(*result.error);
+    return false;
   }
+
+  ruleset_checksums_ = std::move(result.ruleset_checksums);
+  if (!result.warnings.empty())
+    extension_->AddInstallWarnings(std::move(result.warnings));
 
   return true;
 }

@@ -13,7 +13,6 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "content/shell/test_runner/test_runner_export.h"
 #include "v8/include/v8.h"
 
 class SkBitmap;
@@ -33,7 +32,7 @@ namespace gin {
 class Arguments;
 }
 
-namespace test_runner {
+namespace content {
 class WebTestDelegate;
 class WebWidgetTestProxy;
 class WebViewTestProxy;
@@ -43,7 +42,7 @@ class WebViewTestProxy;
 // - testRunner.capturePixelsAsyncThen
 // - testRunner.setPageVisibility
 // Note that "global" bindings are handled by TestRunner class.
-class TEST_RUNNER_EXPORT TestRunnerForSpecificView {
+class TestRunnerForSpecificView {
  public:
   explicit TestRunnerForSpecificView(WebViewTestProxy* web_view_test_proxy);
   ~TestRunnerForSpecificView();
@@ -238,6 +237,6 @@ class TEST_RUNNER_EXPORT TestRunnerForSpecificView {
   DISALLOW_COPY_AND_ASSIGN(TestRunnerForSpecificView);
 };
 
-}  // namespace test_runner
+}  // namespace content
 
 #endif  // CONTENT_SHELL_TEST_RUNNER_TEST_RUNNER_FOR_SPECIFIC_VIEW_H_

@@ -28,6 +28,12 @@ class ScopedUserPolicyUpdate {
     return &policy_builder_->payload();
   }
 
+  // Accessor to the PolicyData message (will contain serialized
+  // policy_payload() among other things).
+  enterprise_management::PolicyData* policy_data() {
+    return &policy_builder_->policy_data();
+  }
+
  private:
   policy::UserPolicyBuilder* const policy_builder_;
   base::OnceClosure callback_;

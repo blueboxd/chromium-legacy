@@ -108,12 +108,27 @@ bool PassthroughDiscardableManager::LockTexture(
 }
 
 void PassthroughDiscardableManager::DeleteContextGroup(
-    const gles2::ContextGroup* context_group) {
+    const gles2::ContextGroup* context_group,
+    bool has_context) {
+  DCHECK(context_group);
+
+  DeleteTextures(context_group, has_context);
+}
+
+void PassthroughDiscardableManager::OnContextLost() {
+  DeleteTextures(nullptr, false);
+}
+
+void PassthroughDiscardableManager::DeleteTextures(
+    const gles2::ContextGroup* context_group,
+    bool has_context) {
   auto iter = cache_.begin();
   while (iter != cache_.end()) {
-    if (iter->first.second == context_group) {
+    if (iter->first.second == context_group || !context_group) {
       iter->second.handle.ForceDelete();
       total_size_ -= iter->second.size;
+      if (!has_context && iter->second.unlocked_texture)
+        iter->second.unlocked_texture->MarkContextLost();
       iter = cache_.Erase(iter);
     } else {
       iter++;

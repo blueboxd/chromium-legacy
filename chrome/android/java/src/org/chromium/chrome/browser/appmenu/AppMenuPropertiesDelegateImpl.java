@@ -18,6 +18,7 @@ import android.view.View;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.graphics.drawable.DrawableCompat;
@@ -417,6 +418,14 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
     }
 
     /**
+     * @param currentTab The currentTab for which the app menu is showing.
+     * @return Whether the translate menu item should be displayed.
+     */
+    protected boolean shouldShowTranslateMenuItem(@NonNull Tab currentTab) {
+        return TranslateUtils.canTranslateCurrentTab(currentTab);
+    }
+
+    /**
      * @param isChromeScheme Whether URL for the current tab starts with the chrome:// scheme.
      * @param isFileScheme Whether URL for the current tab starts with the file:// scheme.
      * @param isContentScheme Whether URL for the current tab starts with the file:// scheme.
@@ -465,7 +474,7 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
                 homescreenItem.setVisible(false);
                 openWebApkItem.setVisible(true);
             } else {
-                homescreenItem.setTitle(AppBannerManager.getHomescreenLanguageOption());
+                homescreenItem.setTitle(getAddToHomeScreenTitle());
                 homescreenItem.setVisible(true);
                 openWebApkItem.setVisible(false);
             }
@@ -473,6 +482,12 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
             homescreenItem.setVisible(false);
             openWebApkItem.setVisible(false);
         }
+    }
+
+    @VisibleForTesting
+    @StringRes
+    int getAddToHomeScreenTitle() {
+        return AppBannerManager.getHomescreenLanguageOption();
     }
 
     @Override
@@ -484,7 +499,7 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
      * Sets the visibility of the "Translate" menu item.
      */
     protected void prepareTranslateMenuItem(Menu menu, Tab currentTab) {
-        boolean isTranslateVisible = TranslateUtils.canTranslateCurrentTab(currentTab);
+        boolean isTranslateVisible = shouldShowTranslateMenuItem(currentTab);
         RecordHistogram.recordBooleanHistogram(
                 "Translate.MobileMenuTranslate.Shown", isTranslateVisible);
         menu.findItem(R.id.translate_id).setVisible(isTranslateVisible);
@@ -515,7 +530,8 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
         }
     }
 
-    private boolean shouldShowIconRow() {
+    @VisibleForTesting
+    boolean shouldShowIconRow() {
         boolean shouldShowIconRow = !mIsTablet
                 || mDecorView.getWidth()
                         < DeviceFormFactor.getNonMultiDisplayMinimumTabletWidthPx(mContext);

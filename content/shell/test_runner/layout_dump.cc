@@ -15,7 +15,7 @@
 #include "third_party/blink/public/web/web_frame_content_dumper.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 
-namespace test_runner {
+namespace content {
 
 using blink::WebFrame;
 using blink::WebFrameContentDumper;
@@ -56,7 +56,8 @@ std::string DumpFrameScrollPosition(WebLocalFrame* frame) {
 
 }  // namespace
 
-std::string DumpLayout(WebLocalFrame* frame, const WebTestRuntimeFlags& flags) {
+std::string DumpLayoutAsString(WebLocalFrame* frame,
+                               const WebTestRuntimeFlags& flags) {
   DCHECK(frame);
   std::string result;
 
@@ -85,4 +86,4 @@ std::string DumpLayout(WebLocalFrame* frame, const WebTestRuntimeFlags& flags) {
   return result;
 }
 
-}  // namespace test_runner
+}  // namespace content

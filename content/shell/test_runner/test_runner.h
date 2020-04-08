@@ -20,7 +20,6 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "content/shell/test_runner/mock_screen_orientation_client.h"
-#include "content/shell/test_runner/test_runner_export.h"
 #include "content/shell/test_runner/web_test_runtime_flags.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -51,7 +50,7 @@ class ArrayBufferView;
 class Arguments;
 }
 
-namespace test_runner {
+namespace content {
 class MockContentSettingsClient;
 class MockScreenOrientationClient;
 class SpellCheckClient;
@@ -72,7 +71,7 @@ class WebTestDelegate;
 //    - Tracking topLoadingFrame that can finish the test when it loads.
 //    - WorkQueue holding load requests from the TestInterfaces
 //    - WebTestRuntimeFlags
-class TEST_RUNNER_EXPORT TestRunner {
+class TestRunner {
  public:
   explicit TestRunner(TestInterfaces*);
   virtual ~TestRunner();
@@ -671,6 +670,6 @@ class TEST_RUNNER_EXPORT TestRunner {
   DISALLOW_COPY_AND_ASSIGN(TestRunner);
 };
 
-}  // namespace test_runner
+}  // namespace content
 
 #endif  // CONTENT_SHELL_TEST_RUNNER_TEST_RUNNER_H_

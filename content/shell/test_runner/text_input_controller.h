@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "content/shell/test_runner/test_runner_export.h"
 
 namespace blink {
 class WebInputMethodController;
@@ -18,14 +17,14 @@ class WebLocalFrame;
 class WebView;
 }
 
-namespace test_runner {
+namespace content {
 
 class WebViewTestProxy;
 
 // TextInputController is bound to window.textInputController in Javascript
 // when content_shell is running. Web tests use it to exercise various
 // corners of text input.
-class TEST_RUNNER_EXPORT TextInputController {
+class TextInputController {
  public:
   explicit TextInputController(WebViewTestProxy* web_view_test_proxy);
   ~TextInputController();
@@ -63,6 +62,6 @@ class TEST_RUNNER_EXPORT TextInputController {
   DISALLOW_COPY_AND_ASSIGN(TextInputController);
 };
 
-}  // namespace test_runner
+}  // namespace content
 
 #endif  // CONTENT_SHELL_TEST_RUNNER_TEXT_INPUT_CONTROLLER_H_

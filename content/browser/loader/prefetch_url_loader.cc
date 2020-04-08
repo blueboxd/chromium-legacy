@@ -60,7 +60,6 @@ PrefetchURLLoader::PrefetchURLLoader(
           signed_exchange_utils::IsSignedExchangeHandlingEnabled(
               browser_context)) {
   DCHECK(network_loader_factory_);
-  RecordPrefetchRedirectHistogram(PrefetchRedirect::kPrefetchMade);
 
   if (is_signed_exchange_handling_enabled_) {
     // Set the SignedExchange accept header.
@@ -88,16 +87,6 @@ PrefetchURLLoader::PrefetchURLLoader(
 
 PrefetchURLLoader::~PrefetchURLLoader() = default;
 
-void PrefetchURLLoader::RecordPrefetchRedirectHistogram(
-    PrefetchRedirect event) {
-  // We only want to record prefetch vs prefetch redirects when we're not
-  // experimenting with a request's redirect mode.
-  if (base::FeatureList::IsEnabled(blink::features::kPrefetchPrivacyChanges))
-    return;
-
-  base::UmaHistogramEnumeration("Prefetch.Redirect", event);
-}
-
 void PrefetchURLLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
@@ -108,16 +97,11 @@ void PrefetchURLLoader::FollowRedirect(
   DCHECK(!new_url) << "Redirect with modified URL was not "
                       "supported yet. crbug.com/845683";
   if (signed_exchange_prefetch_handler_) {
-    RecordPrefetchRedirectHistogram(
-        PrefetchRedirect::kPrefetchRedirectedSXGHandler);
-
     // Rebind |client_receiver_| and |loader_|.
     client_receiver_.Bind(signed_exchange_prefetch_handler_->FollowRedirect(
         loader_.BindNewPipeAndPassReceiver()));
     return;
   }
-
-  RecordPrefetchRedirectHistogram(PrefetchRedirect::kPrefetchRedirected);
 
   DCHECK(loader_);
   loader_->FollowRedirect(removed_headers,

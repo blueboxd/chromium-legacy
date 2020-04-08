@@ -3427,8 +3427,8 @@ int LoadBasicRequest(network::mojom::NetworkContext* network_context,
   url_loader_factory_params->process_id = process_id;
   url_loader_factory_params->is_corb_enabled = false;
   url::Origin origin = url::Origin::Create(url);
-  url_loader_factory_params->network_isolation_key =
-      net::NetworkIsolationKey(origin, origin);
+  url_loader_factory_params->isolation_info =
+      net::IsolationInfo::CreateForInternalRequest(origin);
   network_context->CreateURLLoaderFactory(
       url_loader_factory.BindNewPipeAndPassReceiver(),
       std::move(url_loader_factory_params));

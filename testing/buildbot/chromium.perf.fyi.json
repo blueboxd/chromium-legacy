@@ -204,6 +204,7 @@
         "isolate_name": "performance_test_suite",
         "merge": {
           "args": [
+            "--lightweight",
             "--skip-perf"
           ],
           "script": "//tools/perf/process_perf_results.py"
@@ -239,6 +240,14 @@
         }
       }
     ]
+  },
+  "linux-processor-perf-fyi": {
+    "merge": {
+      "args": [
+        "--lightweight"
+      ],
+      "script": "//tools/perf/process_perf_results.py"
+    }
   },
   "win-10_laptop_low_end-perf_HP-Candidate": {
     "isolated_scripts": [

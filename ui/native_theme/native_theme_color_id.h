@@ -137,6 +137,8 @@
   OP(kColorId_ThrobberLightColor),                                             \
   /* Colors for Bubble Border */                                               \
   OP(kColorId_BubbleBorder),                                                   \
+  /* Colors for Footnote Container. */                                         \
+  OP(kColorId_FootnoteContainerBorder),                                        \
   /* Colors for icons that alert, e.g. upgrade reminders. */                   \
   OP(kColorId_AlertSeverityLow),                                               \
   OP(kColorId_AlertSeverityMedium),                                            \

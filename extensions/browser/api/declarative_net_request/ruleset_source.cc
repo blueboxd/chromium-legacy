@@ -197,7 +197,6 @@ IndexAndPersistJSONRulesetResult IndexAndPersistRuleset(
     const base::ElapsedTimer& timer) {
   if (read_result.status != Status::kSuccess) {
     return IndexAndPersistJSONRulesetResult::CreateErrorResult(
-        source.id(),
         GetErrorWithFilename(source.json_path(), read_result.error));
   }
 
@@ -209,7 +208,7 @@ IndexAndPersistJSONRulesetResult IndexAndPersistRuleset(
   if (info.has_error()) {
     std::string error = GetErrorWithFilename(source.json_path(), info.error());
     return IndexAndPersistJSONRulesetResult::CreateErrorResult(
-        source.id(), std::move(error));
+        std::move(error));
   }
 
   // Don't cause a hard error if the regex failed compilation due to
@@ -225,8 +224,7 @@ IndexAndPersistJSONRulesetResult IndexAndPersistRuleset(
   rules_count -= info.regex_limit_exceeded_rules().size();
 
   return IndexAndPersistJSONRulesetResult::CreateSuccessResult(
-      source.id(), ruleset_checksum, std::move(warnings), rules_count,
-      timer.Elapsed());
+      ruleset_checksum, std::move(warnings), rules_count, timer.Elapsed());
 }
 
 void OnSafeJSONParse(const base::FilePath& json_path,
@@ -235,7 +233,7 @@ void OnSafeJSONParse(const base::FilePath& json_path,
                      data_decoder::DataDecoder::ValueOrError result) {
   if (!result.value) {
     std::move(callback).Run(IndexAndPersistJSONRulesetResult::CreateErrorResult(
-        source.id(), GetErrorWithFilename(json_path, *result.error)));
+        GetErrorWithFilename(json_path, *result.error)));
     return;
   }
 
@@ -252,13 +250,11 @@ void OnSafeJSONParse(const base::FilePath& json_path,
 // static
 IndexAndPersistJSONRulesetResult
 IndexAndPersistJSONRulesetResult::CreateSuccessResult(
-    int ruleset_id,
     int ruleset_checksum,
     std::vector<InstallWarning> warnings,
     size_t rules_count,
     base::TimeDelta index_and_persist_time) {
   IndexAndPersistJSONRulesetResult result;
-  result.ruleset_id = ruleset_id;
   result.success = true;
   result.ruleset_checksum = ruleset_checksum;
   result.warnings = std::move(warnings);
@@ -269,10 +265,8 @@ IndexAndPersistJSONRulesetResult::CreateSuccessResult(
 
 // static
 IndexAndPersistJSONRulesetResult
-IndexAndPersistJSONRulesetResult::CreateErrorResult(int ruleset_id,
-                                                    std::string error) {
+IndexAndPersistJSONRulesetResult::CreateErrorResult(std::string error) {
   IndexAndPersistJSONRulesetResult result;
-  result.ruleset_id = ruleset_id;
   result.success = false;
   result.error = std::move(error);
   return result;
@@ -376,14 +370,14 @@ void RulesetSource::IndexAndPersistJSONRuleset(
 
   if (!base::PathExists(json_path_)) {
     std::move(callback).Run(IndexAndPersistJSONRulesetResult::CreateErrorResult(
-        id(), GetErrorWithFilename(json_path_, kFileDoesNotExistError)));
+        GetErrorWithFilename(json_path_, kFileDoesNotExistError)));
     return;
   }
 
   std::string json_contents;
   if (!base::ReadFileToString(json_path_, &json_contents)) {
     std::move(callback).Run(IndexAndPersistJSONRulesetResult::CreateErrorResult(
-        id(), GetErrorWithFilename(json_path_, kFileReadError)));
+        GetErrorWithFilename(json_path_, kFileReadError)));
     return;
   }
 

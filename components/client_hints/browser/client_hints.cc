@@ -6,84 +6,85 @@
 #include <functional>
 #include <string>
 
-#include "chrome/browser/client_hints/client_hints.h"
+#include "components/client_hints/browser/client_hints.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_content_browser_client.h"
-#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/client_hints/client_hints.h"
+#include "components/client_hints/common/client_hints.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
-#include "components/language/core/browser/pref_names.h"
-#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/origin_util.h"
 
 namespace client_hints {
 
-ClientHints::ClientHints(content::BrowserContext* context)
-    : context_(context) {}
-
-ClientHints::ClientHints(content::WebContents* tab) {
-  receiver_ = std::make_unique<
-      content::WebContentsFrameReceiverSet<client_hints::mojom::ClientHints>>(
-      tab, this);
+ClientHints::ClientHints(
+    content::BrowserContext* context,
+    network::NetworkQualityTracker* network_quality_tracker,
+    HostContentSettingsMap* settings_map,
+    const blink::UserAgentMetadata& user_agent_metadata)
+    : context_(context),
+      network_quality_tracker_(network_quality_tracker),
+      settings_map_(settings_map),
+      user_agent_metadata_(user_agent_metadata) {
+  DCHECK(context_);
+  DCHECK(network_quality_tracker_);
+  DCHECK(settings_map_);
 }
 
-content::BrowserContext* ClientHints::GetContext() {
-  if (!context_) {
-    content::RenderProcessHost* rph =
-        receiver_->GetCurrentTargetFrame()->GetProcess();
-    DCHECK(rph);
-    context_ = rph->GetBrowserContext();
+// static
+void ClientHints::CreateForWebContents(
+    content::WebContents* web_contents,
+    network::NetworkQualityTracker* network_quality_tracker,
+    HostContentSettingsMap* settings_map,
+    const blink::UserAgentMetadata& user_agent_metadata) {
+  DCHECK(web_contents);
+  if (!FromWebContents(web_contents)) {
+    web_contents->SetUserData(
+        UserDataKey(),
+        base::WrapUnique(new ClientHints(web_contents, network_quality_tracker,
+                                         settings_map, user_agent_metadata)));
   }
-  return context_;
 }
 
 ClientHints::~ClientHints() = default;
 
 network::NetworkQualityTracker* ClientHints::GetNetworkQualityTracker() {
-  DCHECK(g_browser_process);
-  return g_browser_process->network_quality_tracker();
+  return network_quality_tracker_;
 }
 
 void ClientHints::GetAllowedClientHintsFromSource(
     const GURL& url,
     blink::WebEnabledClientHints* client_hints) {
   ContentSettingsForOneType client_hints_rules;
-  Profile* profile = Profile::FromBrowserContext(GetContext());
-  if (!profile)
-    return;
-
-  HostContentSettingsMapFactory::GetForProfile(profile)->GetSettingsForOneType(
-      ContentSettingsType::CLIENT_HINTS, std::string(), &client_hints_rules);
+  settings_map_->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS,
+                                       std::string(), &client_hints_rules);
   client_hints::GetAllowedClientHintsFromSource(url, client_hints_rules,
                                                 client_hints);
 }
 
 bool ClientHints::IsJavaScriptAllowed(const GURL& url) {
-  Profile* profile = Profile::FromBrowserContext(GetContext());
-  if (!profile)
-    return false;
-
-  return HostContentSettingsMapFactory::GetForProfile(profile)
-             ->GetContentSetting(url, url, ContentSettingsType::JAVASCRIPT,
-                                 std::string()) == CONTENT_SETTING_ALLOW;
-}
-
-std::string ClientHints::GetAcceptLanguageString() {
-  Profile* profile = Profile::FromBrowserContext(GetContext());
-  if (!profile)
-    return std::string();
-  DCHECK(profile->GetPrefs());
-  return profile->GetPrefs()->GetString(language::prefs::kAcceptLanguages);
+  return settings_map_->GetContentSetting(
+             url, url, ContentSettingsType::JAVASCRIPT, std::string()) ==
+         CONTENT_SETTING_ALLOW;
 }
 
 blink::UserAgentMetadata ClientHints::GetUserAgentMetadata() {
-  return ::GetUserAgentMetadata();
+  return user_agent_metadata_;
+}
+
+ClientHints::ClientHints(
+    content::WebContents* web_contents,
+    network::NetworkQualityTracker* network_quality_tracker,
+    HostContentSettingsMap* settings_map,
+    const blink::UserAgentMetadata& user_agent_metadata)
+    : ClientHints(web_contents->GetBrowserContext(),
+                  network_quality_tracker,
+                  settings_map,
+                  user_agent_metadata) {
+  receiver_ = std::make_unique<
+      content::WebContentsFrameReceiverSet<client_hints::mojom::ClientHints>>(
+      web_contents, this);
 }
 
 void ClientHints::PersistClientHints(
@@ -117,11 +118,6 @@ void ClientHints::PersistClientHints(
   if (expiration_duration <= base::TimeDelta::FromSeconds(0))
     return;
 
-  Profile* profile = Profile::FromBrowserContext(GetContext());
-
-  HostContentSettingsMap* map =
-      HostContentSettingsMapFactory::GetForProfile(profile);
-
   std::unique_ptr<base::ListValue> expiration_times_list =
       std::make_unique<base::ListValue>();
   expiration_times_list->Reserve(client_hints.size());
@@ -141,7 +137,7 @@ void ClientHints::PersistClientHints(
 
   // TODO(tbansal): crbug.com/735518. Disable updates to client hints settings
   // when cookies are disabled for |primary_origin|.
-  map->SetWebsiteSettingDefaultScope(
+  settings_map_->SetWebsiteSettingDefaultScope(
       primary_url, GURL(), ContentSettingsType::CLIENT_HINTS, std::string(),
       std::move(expiration_times_dictionary));
 

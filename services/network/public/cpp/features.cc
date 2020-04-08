@@ -115,15 +115,6 @@ const base::Feature kCrossOriginEmbedderPolicy{
 const base::Feature kBlockNonSecureExternalRequests{
     "BlockNonSecureExternalRequests", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When kPrefetchMainResourceNetworkIsolationKey is enabled, cross-origin
-// prefetch requests for main-resources, as well as their preload response
-// headers, will use a special NetworkIsolationKey allowing them to be reusable
-// from a cross-origin context when the HTTP cache is partitioned by the
-// NetworkIsolationKey.
-const base::Feature kPrefetchMainResourceNetworkIsolationKey{
-    "PrefetchMainResourceNetworkIsolationKey",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables or defaults splittup up server (not proxy) entries in the
 // HttpAuthCache.
 const base::Feature kSplitAuthCacheByNetworkIsolationKey{

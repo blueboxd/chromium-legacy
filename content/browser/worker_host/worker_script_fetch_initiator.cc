@@ -42,8 +42,8 @@
 #include "content/public/common/referrer.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "net/base/isolation_info.h"
 #include "net/base/load_flags.h"
-#include "net/base/network_isolation_key.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -67,7 +67,7 @@ void WorkerScriptFetchInitiator::Start(
     RenderFrameHost* creator_render_frame_host,
     const net::SiteForCookies& site_for_cookies,
     const url::Origin& request_initiator,
-    const net::NetworkIsolationKey& trusted_network_isolation_key,
+    const net::IsolationInfo& trusted_isolation_info,
     network::mojom::CredentialsMode credentials_mode,
     blink::mojom::FetchClientSettingsObjectPtr
         outside_fetch_client_settings_object,
@@ -179,7 +179,7 @@ void WorkerScriptFetchInitiator::Start(
 
   CreateScriptLoader(
       worker_process_id, initial_request_url, creator_render_frame_host,
-      trusted_network_isolation_key, std::move(resource_request),
+      trusted_isolation_info, std::move(resource_request),
       std::move(factory_bundle_for_browser),
       std::move(subresource_loader_factories),
       std::move(service_worker_context), service_worker_handle,
@@ -284,7 +284,7 @@ void WorkerScriptFetchInitiator::CreateScriptLoader(
     int worker_process_id,
     const GURL& initial_request_url,
     RenderFrameHost* creator_render_frame_host,
-    const net::NetworkIsolationKey& trusted_network_isolation_key,
+    const net::IsolationInfo& trusted_isolation_info,
     std::unique_ptr<network::ResourceRequest> resource_request,
     std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
         factory_bundle_for_browser_info,
@@ -324,7 +324,7 @@ void WorkerScriptFetchInitiator::CreateScriptLoader(
     // to the COEP reporter in DedicatedWorkerHost.
     network::mojom::URLLoaderFactoryParamsPtr factory_params =
         URLLoaderFactoryParamsHelper::CreateForWorker(
-            factory_process, request_initiator, trusted_network_isolation_key,
+            factory_process, request_initiator, trusted_isolation_info,
             /*coep_reporter=*/mojo::NullRemote());
 
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>

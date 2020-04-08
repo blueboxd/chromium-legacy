@@ -7,6 +7,8 @@
 // Polymer BrowserTest fixture.
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_interactive_ui_test.js']);
 
+GEN('#include "chrome/browser/ui/ui_features.h"');
+
 /**
  * Test fixture for interactive Polymer Settings elements.
  * @constructor
@@ -27,6 +29,11 @@ CrSettingsInteractiveUITest.prototype = {
     ...PolymerInteractiveUITest.prototype.extraLibraries,
     'ensure_lazy_loaded.js',
   ],
+
+  /** @override */
+  get featureList() {
+    return {disabled: ['features::kSettingsPolymer3']};
+  },
 
   /** @override */
   setUp: function() {

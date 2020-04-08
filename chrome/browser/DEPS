@@ -57,6 +57,7 @@ include_rules = [
   "+components/chrome_cleaner/public",
   "+components/chrome_cleaner/test",
   "+components/chromeos_camera",
+  "+components/client_hints/browser",
   "+components/cloud_devices/common",
   "+components/component_updater",
   "+components/component_updater/installer_policies",

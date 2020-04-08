@@ -29,9 +29,7 @@
 #include "components/crx_file/crx_verifier.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/index_helper.h"
-#include "extensions/browser/api/declarative_net_request/ruleset_source.h"
 #include "extensions/browser/computed_hashes.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/install/crx_install_error.h"
@@ -692,48 +690,25 @@ void SandboxedUnpacker::IndexAndPersistJSONRulesetsIfNeeded() {
   DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(extension_);
 
-  declarative_net_request::IndexHelper::Start(
-      declarative_net_request::RulesetSource::CreateStatic(*extension_),
+  declarative_net_request::IndexHelper::IndexStaticRulesets(
+      *extension_,
       base::BindOnce(&SandboxedUnpacker::OnJSONRulesetsIndexed, this));
 }
 
 void SandboxedUnpacker::OnJSONRulesetsIndexed(
-    std::vector<declarative_net_request::IndexAndPersistJSONRulesetResult>
-        results) {
-  // Early return if there were no rulesets to index originally.
-  if (results.empty()) {
-    CheckComputeHashes();
+    declarative_net_request::IndexHelper::Result result) {
+  if (result.error) {
+    ReportFailure(
+        SandboxedUnpackerFailureReason::ERROR_INDEXING_DNR_RULESET,
+        l10n_util::GetStringFUTF16(IDS_EXTENSION_PACKAGE_ERROR_MESSAGE,
+                                   base::UTF8ToUTF16(*result.error)));
     return;
   }
 
-  base::TimeDelta total_index_and_persist_time;
-  size_t total_rules_count = 0;
+  if (!result.warnings.empty())
+    extension_->AddInstallWarnings(std::move(result.warnings));
 
-  // TODO(crbug.com/754526): Impose a limit on the total number of rules across
-  // all the rulesets for an extension. Also, limit the number of install
-  // warnings across all rulesets.
-  for (auto& result : results) {
-    if (!result.success) {
-      ReportFailure(
-          SandboxedUnpackerFailureReason::ERROR_INDEXING_DNR_RULESET,
-          l10n_util::GetStringFUTF16(IDS_EXTENSION_PACKAGE_ERROR_MESSAGE,
-                                     base::UTF8ToUTF16(result.error)));
-      return;
-    }
-
-    if (!result.warnings.empty())
-      extension_->AddInstallWarnings(std::move(result.warnings));
-
-    total_index_and_persist_time += result.index_and_persist_time;
-    total_rules_count += result.rules_count;
-    ruleset_checksums_.emplace_back(result.ruleset_id, result.ruleset_checksum);
-  }
-
-  UMA_HISTOGRAM_TIMES(
-      declarative_net_request::kIndexAndPersistRulesTimeHistogram,
-      total_index_and_persist_time);
-  UMA_HISTOGRAM_COUNTS_100000(
-      declarative_net_request::kManifestRulesCountHistogram, total_rules_count);
+  ruleset_checksums_ = std::move(result.ruleset_checksums);
 
   CheckComputeHashes();
 }

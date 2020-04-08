@@ -322,6 +322,9 @@ void AssistantManagerServiceImpl::RegisterAlarmsTimersListener() {
             assistant_client::AlarmTimerManager::EventActionType ignore) {
           listener.Run();
         });
+
+    // Force sync initial alarm/timer state.
+    OnAlarmTimerStateChanged();
   }
 }
 
@@ -534,6 +537,11 @@ void AssistantManagerServiceImpl::RetrieveNotification(
 
 void AssistantManagerServiceImpl::DismissNotification(
     mojom::AssistantNotificationPtr notification) {
+  // |assistant_manager_internal_| may not exist if we are dismissing
+  // notifications as part of a shutdown sequence.
+  if (!assistant_manager_internal_)
+    return;
+
   const std::string& notification_id = notification->server_id;
   const std::string& consistency_token = notification->consistency_token;
   const std::string& opaque_token = notification->opaque_token;
@@ -1384,6 +1392,14 @@ void AssistantManagerServiceImpl::MediaSessionChanged(
 // TODO(dmblack): Handle non-firing (e.g. paused or scheduled) timers.
 void AssistantManagerServiceImpl::OnAlarmTimerStateChanged() {
   ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnAlarmTimerStateChanged);
+
+  // |assistant_manager_internal_| may not exist if we are receiving this event
+  // as part of a shutdown sequence. When this occurs, we notify our alarm/timer
+  // controller to clear its cache to remain in sync with LibAssistant.
+  if (!assistant_manager_internal_) {
+    assistant_alarm_timer_controller()->OnTimerStateChanged({});
+    return;
+  }
 
   std::vector<ash::mojom::AssistantTimerPtr> timers;
 

@@ -4,6 +4,7 @@
 
 /** @fileoverview Tests for settings-idle-load. */
 
+GEN('#include "chrome/browser/ui/ui_features.h"');
 
 /**
  * @constructor
@@ -23,6 +24,11 @@ SettingsIdleLoadBrowserTest.prototype = {
     '../mocha_adapter.js',
     'idle_load_tests.js',
   ],
+
+  /** @override */
+  get featureList() {
+    return {disabled: ['features::kSettingsPolymer3']};
+  },
 
   /** @override */
   isAsync: true,

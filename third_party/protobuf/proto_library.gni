@@ -116,6 +116,7 @@
 #  }
 
 import("//build/config/sanitizers/sanitizers.gni")
+import("//build/toolchain/kythe.gni")
 
 if (host_os == "win") {
   _host_executable_suffix = ".exe"
@@ -277,6 +278,9 @@ template("proto_library") {
         "--cc-out-dir",
         rel_cc_out_dir,
       ]
+      if (enable_kythe_annotations) {
+        args += [ "--enable-kythe-annotation" ]
+      }
       if (defined(invoker.cc_generator_options)) {
         args += [
           "--cc-options",

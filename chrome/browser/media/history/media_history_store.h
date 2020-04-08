@@ -148,7 +148,7 @@ class MediaHistoryStore {
       const int64_t feed_id,
       std::vector<media_feeds::mojom::MediaFeedItemPtr> items,
       const media_feeds::mojom::FetchResult result,
-      const base::Time& expiry_time,
+      const bool was_fetched_from_cache,
       const std::vector<media_session::MediaImage>& logos,
       const std::string& display_name);
 

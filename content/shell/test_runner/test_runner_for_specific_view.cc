@@ -63,7 +63,7 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/switches.h"
 
-namespace test_runner {
+namespace content {
 
 TestRunnerForSpecificView::TestRunnerForSpecificView(
     WebViewTestProxy* web_view_test_proxy)
@@ -229,8 +229,7 @@ void TestRunnerForSpecificView::CapturePixelsAsyncThen(
       << "Web tests harness doesn't currently support running "
       << "testRuner.capturePixelsAsyncThen from an OOPIF";
 
-  test_runner::TestInterfaces* interfaces =
-      web_view_test_proxy_->test_interfaces();
+  TestInterfaces* interfaces = web_view_test_proxy_->test_interfaces();
 
   if (interfaces->GetTestRunner()->CanDumpPixelsFromRenderer()) {
     // If we're grabbing pixels from printing, we do that in the renderer, and
@@ -736,4 +735,4 @@ WebTestDelegate* TestRunnerForSpecificView::delegate() {
   return web_view_test_proxy_->delegate();
 }
 
-}  // namespace test_runner
+}  // namespace content

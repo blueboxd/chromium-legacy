@@ -19,6 +19,7 @@
 #include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
 #include "chrome/browser/media/router/providers/cast/cast_session_tracker.h"
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
+#include "chrome/common/media_router/media_sink.h"
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -159,9 +160,11 @@ class CastActivityManager : public CastActivityManagerBase,
         const url::Origin& origin,
         int tab_id,
         mojom::MediaRouteProvider::CreateRouteCallback callback);
+    DoLaunchSessionParams(const DoLaunchSessionParams& other) = delete;
     DoLaunchSessionParams(DoLaunchSessionParams&& other);
     ~DoLaunchSessionParams();
-    DoLaunchSessionParams& operator=(DoLaunchSessionParams&&) = delete;
+    DoLaunchSessionParams& operator=(DoLaunchSessionParams&) = delete;
+    DoLaunchSessionParams& operator=(DoLaunchSessionParams&&) = default;
 
     // The route for which a session is being launched.
     MediaRoute route;
@@ -183,11 +186,6 @@ class CastActivityManager : public CastActivityManagerBase,
   };
 
   void DoLaunchSession(DoLaunchSessionParams params);
-  void LaunchSessionAfterTerminatingExisting(
-      const MediaRoute::Id& existing_route_id,
-      DoLaunchSessionParams params,
-      const base::Optional<std::string>& error_string,
-      RouteRequestResult::ResultCode result);
 
   void RemoveActivityByRouteId(const std::string& route_id);
 
@@ -267,6 +265,12 @@ class CastActivityManager : public CastActivityManagerBase,
   // The values of this map are the subset of those in |activites_| where
   // there is a CastActivityRecord.
   CastActivityMap cast_activities_;
+
+  // Information for a session that will be launched once |this| is notified
+  // that the existing session on the receiver has been removed. We only store
+  // one pending launch at a time so that we don't accumulate orphaned pending
+  // launches over time.
+  base::Optional<DoLaunchSessionParams> pending_launch_;
 
   // The following raw pointer fields are assumed to outlive |this|.
   MediaSinkServiceBase* const media_sink_service_;

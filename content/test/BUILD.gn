@@ -784,7 +784,6 @@ static_library("web_test_support_renderer") {
     "//content/public/common",
     "//content/public/renderer",
     "//content/renderer:for_content_tests",
-    "//content/shell/test_runner:test_runner",
     "//ui/events/blink",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",

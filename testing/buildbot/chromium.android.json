@@ -21233,8 +21233,7 @@
           "--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_keyboard/vr_keyboard_current.apk",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--git-revision",
-          "${got_revision}"
+          "--git-revision=${got_revision}"
         ],
         "merge": {
           "args": [
@@ -21247,12 +21246,9 @@
         },
         "name": "chrome_public_test_vr_apk-ddready-ddview",
         "precommit_args": [
-          "--gerrit-issue",
-          "${patch_issue}",
-          "--gerrit-patchset",
-          "${patch_set}",
-          "--buildbucket-id",
-          "${buildbucket_build_id}"
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -21625,8 +21621,7 @@
           "--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_keyboard/vr_keyboard_current.apk",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--git-revision",
-          "${got_revision}"
+          "--git-revision=${got_revision}"
         ],
         "merge": {
           "args": [
@@ -21639,12 +21634,9 @@
         },
         "name": "chrome_public_test_vr_apk-ddready-ddview",
         "precommit_args": [
-          "--gerrit-issue",
-          "${patch_issue}",
-          "--gerrit-patchset",
-          "${patch_set}",
-          "--buildbucket-id",
-          "${buildbucket_build_id}"
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -37211,8 +37203,7 @@
           "--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_keyboard/vr_keyboard_current.apk",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--git-revision",
-          "${got_revision}"
+          "--git-revision=${got_revision}"
         ],
         "merge": {
           "args": [
@@ -37225,12 +37216,9 @@
         },
         "name": "chrome_public_test_vr_apk-ddready-ddview",
         "precommit_args": [
-          "--gerrit-issue",
-          "${patch_issue}",
-          "--gerrit-patchset",
-          "${patch_set}",
-          "--buildbucket-id",
-          "${buildbucket_build_id}"
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,

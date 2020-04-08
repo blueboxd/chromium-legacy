@@ -2581,17 +2581,17 @@
             ],
             "experiments": [
                 {
-                    "name": "Settings_Main",
+                    "name": "Settings_Privacy",
                     "params": {
-                        "en_site_id": "u4ggjx6754eqhvca4nct6iytdi",
+                        "en_site_id": "gjhdonsbcw64p5i2sfhrdetucq",
                         "probability": "1.0",
-                        "survey": "settings"
+                        "survey": "settings-privacy"
                     },
                     "enable_features": [
-                        "HappinessTrackingSurveysForDesktopSettings"
+                        "HappinessTrackingSurveysForDesktopSettingsPrivacy"
                     ],
                     "disable_features": [
-                        "HappinessTrackingSurveysForDesktopSettingsPrivacy"
+                        "HappinessTrackingSurveysForDesktopSettings"
                     ]
                 }
             ]

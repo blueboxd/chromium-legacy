@@ -39,6 +39,12 @@ AHardwareBuffer_Desc GetBufferDescription(const gfx::Size& size,
     case gfx::BufferFormat::BGR_565:
       desc.format = AHARDWAREBUFFER_FORMAT_R5G6B5_UNORM;
       break;
+    case gfx::BufferFormat::RGBA_F16:
+      desc.format = AHARDWAREBUFFER_FORMAT_R16G16B16A16_FLOAT;
+      break;
+    case gfx::BufferFormat::RGBA_1010102:
+      desc.format = AHARDWAREBUFFER_FORMAT_R10G10B10A2_UNORM;
+      break;
     default:
       NOTREACHED();
   }

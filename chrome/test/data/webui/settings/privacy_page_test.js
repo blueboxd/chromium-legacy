@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {CookieControlsMode, SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
+// #import {SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {MetricsBrowserProxyImpl, PrivacyElementInteractions, PrivacyPageBrowserProxyImpl, SyncBrowserProxyImpl, HatsBrowserProxyImpl, Router, routes} from 'chrome://settings/settings.js';
 // #import {TestMetricsBrowserProxy} from 'chrome://test/settings/test_metrics_browser_proxy.m.js';
@@ -225,30 +225,6 @@ suite('PrivacyPage', function() {
       assertTrue(
           test_util.isChildVisible(page, '#security-keys-subpage-trigger'));
     }
-  });
-
-  test('BlockThirdPartyCookiesToggle', async function() {
-    page.prefs.profile.block_third_party_cookies = {value: false};
-    page.prefs.profile.cookie_controls_mode = {
-      value: settings.CookieControlsMode.DISABLED
-    };
-    settings.Router.getInstance().navigateTo(
-        settings.routes.SITE_SETTINGS_COOKIES);
-    Polymer.dom.flush();
-
-    page.$$('#blockThirdPartyCookies').click();
-    Polymer.dom.flush();
-    assertTrue(page.prefs.profile.block_third_party_cookies.value);
-    assertEquals(
-        page.prefs.profile.cookie_controls_mode.value,
-        settings.CookieControlsMode.ENABLED);
-
-    page.$$('#blockThirdPartyCookies').click();
-    Polymer.dom.flush();
-    assertFalse(page.prefs.profile.block_third_party_cookies.value);
-    assertEquals(
-        page.prefs.profile.cookie_controls_mode.value,
-        settings.CookieControlsMode.DISABLED);
   });
 });
 

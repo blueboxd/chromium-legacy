@@ -496,5 +496,8 @@ const base::Feature kKeepScriptResourceAlive{"KeepScriptResourceAlive",
 
 const base::Feature kAppCache{"AppCache", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables the AV1 Image File Format (AVIF).
+const base::Feature kAVIF{"AVIF", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace blink

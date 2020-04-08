@@ -76,7 +76,7 @@ using blink::WebURL;
 using blink::WebVector;
 using blink::WebView;
 
-namespace test_runner {
+namespace content {
 
 namespace {
 
@@ -2886,4 +2886,4 @@ void EventSender::UpdateLifecycleToPrePaint() {
                             blink::DocumentUpdateReason::kTest);
 }
 
-}  // namespace test_runner
+}  // namespace content

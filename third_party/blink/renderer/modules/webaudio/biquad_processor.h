@@ -82,7 +82,6 @@ class BiquadProcessor final : public AudioDSPKernelProcessor {
 
   bool FilterCoefficientsDirty() const { return filter_coefficients_dirty_; }
   bool HasSampleAccurateValues() const { return has_sample_accurate_values_; }
-  bool IsAudioRate() const { return is_audio_rate_; }
 
   AudioParamHandler& Parameter1() { return *parameter1_; }
   AudioParamHandler& Parameter2() { return *parameter2_; }
@@ -105,9 +104,6 @@ class BiquadProcessor final : public AudioDSPKernelProcessor {
 
   // Set to true if any of the filter parameters are sample-accurate.
   bool has_sample_accurate_values_;
-
-  // Set to true if any of the filter parameters are a-rate.
-  bool is_audio_rate_;
 };
 
 }  // namespace blink

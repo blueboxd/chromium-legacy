@@ -437,25 +437,6 @@ void ContentsView::UpdateSearchBoxAnimation(double progress,
   search_box->GetWidget()->GetLayer()->SetTransform(transform);
 }
 
-void ContentsView::UpdateExpandArrowOpacity(AppListState target_state,
-                                            bool animate) {
-  float expand_arrow_target_opacity = 0.0f;
-  if (target_state == AppListState::kStateApps) {
-    expand_arrow_target_opacity = 1.0f;
-  } else if (target_state == AppListState::kStateSearchResults ||
-             target_state == AppListState::kStateEmbeddedAssistant) {
-    expand_arrow_target_opacity = 0.0f;
-  } else {
-    // not updated.
-    return;
-  }
-
-  std::unique_ptr<ui::ScopedLayerAnimationSettings> settings;
-  if (animate)
-    settings = CreateTransitionAnimationSettings(expand_arrow_view_->layer());
-  expand_arrow_view_->layer()->SetOpacity(expand_arrow_target_opacity);
-}
-
 void ContentsView::UpdateExpandArrowBehavior(AppListViewState target_state) {
   const bool expand_arrow_enabled = target_state == AppListViewState::kPeeking;
   // The expand arrow is only focusable and has InkDropMode on in peeking
@@ -656,8 +637,6 @@ void ContentsView::Layout() {
     page->UpdateOpacityForState(current_state);
   }
 
-  UpdateExpandArrowOpacity(current_state, false);
-
   // Update the searchbox bounds.
   auto* search_box = GetSearchBoxView();
   // Convert search box bounds to the search box widget's coordinate system.
@@ -697,7 +676,6 @@ void ContentsView::TransitionStarted() {
     page->OnAnimationStarted(current_state, target_state);
 
   InitializeSearchBoxAnimation(current_state, target_state);
-  UpdateExpandArrowOpacity(target_state, true);
 }
 
 void ContentsView::TransitionChanged() {

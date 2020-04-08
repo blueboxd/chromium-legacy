@@ -67,6 +67,9 @@ class GPU_GLES2_EXPORT ServiceDiscardableManager
                             gles2::TextureManager* texture_manager,
                             size_t new_size);
 
+  // Called when all contexts with cached textures in this manager are lost.
+  void OnContextLost();
+
   // Test only functions:
   size_t NumCacheEntriesForTesting() const { return entries_.size(); }
   bool IsEntryLockedForTesting(uint32_t texture_id,

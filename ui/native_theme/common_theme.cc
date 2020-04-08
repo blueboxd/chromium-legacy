@@ -185,6 +185,9 @@ base::Optional<SkColor> GetDarkSchemeColor(NativeTheme::ColorId color_id) {
     case NativeTheme::kColorId_BubbleBorder:
       return gfx::kGoogleGrey800;
 
+    case NativeTheme::kColorId_FootnoteContainerBorder:
+      return gfx::kGoogleGrey900;
+
     // Alert icon colors
     case NativeTheme::kColorId_AlertSeverityLow:
       return gfx::kGoogleGreen300;
@@ -515,6 +518,9 @@ SkColor GetDefaultColor(NativeTheme::ColorId color_id,
       return gfx::kGoogleYellow700;
     case NativeTheme::kColorId_AlertSeverityHigh:
       return gfx::kGoogleRed600;
+
+    case NativeTheme::kColorId_FootnoteContainerBorder:
+      return gfx::kGoogleGrey200;
 
     case NativeTheme::kColorId_DefaultIconColor:
       return gfx::kGoogleGrey700;

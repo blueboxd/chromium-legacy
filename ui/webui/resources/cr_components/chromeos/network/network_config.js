@@ -990,7 +990,7 @@ Polymer({
 
   /** @private */
   updateVpnType_() {
-    if (this.configProperties_ === undefined) {
+    if (this.configProperties_ === undefined || this.vpnType_ === undefined) {
       return;
     }
 

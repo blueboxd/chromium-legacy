@@ -26,9 +26,6 @@ class ASH_EXPORT AmbientContainerView : public views::WidgetDelegateView {
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
 
-  // Fade out the background photo.
-  void FadeOutPhotoView();
-
  private:
   void Init();
 

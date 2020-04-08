@@ -124,9 +124,6 @@ void LoadingPredictorTabHelper::DidStartNavigation(
   if (!IsHandledNavigation(navigation_handle))
     return;
 
-  // Clear out prediction from previous navigation.
-  last_optimization_guide_prediction_ = base::nullopt;
-
   auto navigation_id = NavigationID(
       web_contents(),
       ukm::ConvertToSourceId(navigation_handle->GetNavigationId(),
@@ -260,6 +257,9 @@ void LoadingPredictorTabHelper::DocumentOnLoadCompletedInMainFrame() {
 
   predictor_->loading_data_collector()->RecordMainFrameLoadComplete(
       navigation_id, last_optimization_guide_prediction_);
+
+  // Clear out Optimization Guide Prediction, as it is no longer needed.
+  last_optimization_guide_prediction_ = base::nullopt;
 }
 
 void LoadingPredictorTabHelper::OnOptimizationGuideDecision(
@@ -302,7 +302,12 @@ void LoadingPredictorTabHelper::OnOptimizationGuideDecision(
         OptimizationHintsReceiveStatus::kBeforeNavigationFinish);
   }
 
-  DCHECK(last_optimization_guide_prediction_);
+  if (!last_optimization_guide_prediction_) {
+    // Data for the navigation has already been recorded, do not proceed any
+    // further, even for counterfactual logging.
+    return;
+  }
+
   last_optimization_guide_prediction_->decision = decision;
 
   if (decision != optimization_guide::OptimizationGuideDecision::kTrue)

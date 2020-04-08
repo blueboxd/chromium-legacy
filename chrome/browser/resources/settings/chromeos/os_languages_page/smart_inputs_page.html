@@ -1,0 +1,43 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="../../controls/settings_toggle_button.html">
+<link rel="import" href="../../i18n_setup.html">
+<link rel="import" href="../../prefs/prefs_behavior.html">
+<link rel="import" href="../../settings_shared_css.html">
+
+<dom-module id="os-settings-smart-inputs-page">
+  <template>
+    <style include="settings-shared">
+      h2 {
+        padding-inline-start: var(--cr-section-padding);
+      }
+    </style>
+
+    <div route-path="default">
+      <template is="dom-if" if="[[allowAssistivePersonalInfo_]]">
+        <div id="assistPersonalInfo">
+          <h2 aria-describedby="personalInfoSuggestionDescription">
+            $i18n{personalInfoSuggestionTitle}
+          </h2>
+          <span class="settings-box first" aria-hidden="true"
+              id="personalInfoSuggestionDescription">
+            $i18n{personalInfoSuggestionDescription}
+          </span>
+          <div class="list-frame vertical-list">
+            <settings-toggle-button class="list-item first"
+                pref="{{prefs.assistive_feature_enabled.personal_info_suggester}}"
+                label="$i18n{showPersonalInfoSuggestion}">
+            </settings-toggle-button>
+            <cr-link-row class="hr list-item"
+                label="$i18n{managePersonalInfo}"
+                on-click="onManagePersonalInfoClick_" external>
+            </cr-link-row>
+          </div>
+        </div>
+      </template>
+    </div>
+  </template>
+  <script src="smart_inputs_page.js"></script>
+</dom-module>

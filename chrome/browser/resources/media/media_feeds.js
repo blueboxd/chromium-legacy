@@ -62,7 +62,7 @@ class MediaFeedsTableDelegate {
       td.textContent = data.url;
     } else if (
         key === 'lastDiscoveryTime' || key === 'lastFetchTime' ||
-        key === 'cacheExpiryTime' || key === 'datePublished') {
+        key === 'lastFetchTimeNotCacheHit' || key === 'datePublished') {
       // Format a mojo time.
       td.textContent =
           convertMojoTimeToJS(/** @type {mojoBase.mojom.Time} */ (data))
@@ -277,7 +277,7 @@ class MediaFeedsTableDelegate {
       return val1 > val2 ? 1 : -1;
     } else if (
         sortKey === 'lastDiscoveryTime' || sortKey === 'lastFetchTime' ||
-        sortKey === 'cacheExpiryTime') {
+        sortKey === 'lastFetchTimeNotCacheHit') {
       return val1.internalValue > val2.internalValue ? 1 : -1;
     }
 

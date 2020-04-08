@@ -47,9 +47,9 @@ bool Manifest::IsEmpty() const {
          display == blink::mojom::DisplayMode::kUndefined &&
          orientation == blink::kWebScreenOrientationLockDefault &&
          icons.empty() && shortcuts.empty() && !share_target.has_value() &&
-         related_applications.empty() && !prefer_related_applications &&
-         !theme_color && !background_color && gcm_sender_id.is_null() &&
-         scope.is_empty();
+         related_applications.empty() && file_handlers.empty() &&
+         !prefer_related_applications && !theme_color && !background_color &&
+         gcm_sender_id.is_null() && scope.is_empty();
 }
 
 }  // namespace blink

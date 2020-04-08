@@ -25,13 +25,13 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
+#include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/config/dx_diag_node.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/config/gpu_util.h"
-#include "gpu/config/skia_limits.h"
 #include "gpu/ipc/common/gpu_client_ids.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/common/gpu_peak_memory.h"
@@ -294,13 +294,8 @@ GpuServiceImpl::GpuServiceImpl(
   protected_buffer_manager_ = new arc::ProtectedBufferManager();
 #endif  // defined(OS_CHROMEOS)
 
-  size_t max_resource_cache_bytes;
-  size_t max_glyph_cache_texture_bytes;
-  gpu::DetermineGrCacheLimitsFromAvailableMemory(
-      &max_resource_cache_bytes, &max_glyph_cache_texture_bytes);
-  GrContextOptions context_options;
-  context_options.fGlyphCacheTextureMaximumBytes =
-      max_glyph_cache_texture_bytes;
+  GrContextOptions context_options =
+      GetDefaultGrContextOptions(gpu_preferences_.gr_context_type);
   if (gpu_preferences_.force_max_texture_size) {
     context_options.fMaxTextureSizeOverride =
         gpu_preferences_.force_max_texture_size;

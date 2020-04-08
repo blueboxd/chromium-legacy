@@ -1210,8 +1210,9 @@ bool NGBlockNode::IsAtomicInlineLevel() const {
 bool NGBlockNode::HasAspectRatio() const {
   LayoutBox* layout_object = GetLayoutBox();
   if (!layout_object->IsImage() && !IsA<LayoutVideo>(layout_object) &&
-      !layout_object->IsCanvas())
+      !layout_object->IsCanvas() && !layout_object->IsSVGRoot()) {
     return false;
+  }
 
   // Retrieving this and throwing it away is wasteful. We could make this method
   // return Optional<LogicalSize> that returns the aspect_ratio if there is one.

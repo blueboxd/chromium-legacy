@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.appmenu;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
@@ -62,6 +63,8 @@ public class AppMenuPropertiesDelegateUnitTest {
     @Mock
     private TabModel mTabModel;
     @Mock
+    private TabModel mIncognitoTabModel;
+    @Mock
     private ToolbarManager mToolbarManager;
     @Mock
     private View mDecorView;
@@ -85,6 +88,10 @@ public class AppMenuPropertiesDelegateUnitTest {
         when(mNavigationController.getUseDesktopUserAgent()).thenReturn(false);
         when(mToolbarManager.isMenuFromBottom()).thenReturn(false);
         when(mTabModelSelector.getCurrentModel()).thenReturn(mTabModel);
+        when(mTabModelSelector.getModel(false)).thenReturn((mTabModel));
+        when(mTabModelSelector.getModel(true)).thenReturn((mIncognitoTabModel));
+        when(mTabModel.isIncognito()).thenReturn(false);
+        when(mIncognitoTabModel.isIncognito()).thenReturn(true);
 
         mAppMenuPropertiesDelegate = Mockito.spy(new AppMenuPropertiesDelegateImpl(
                 ContextUtils.getApplicationContext(), mActivityTabProvider,
@@ -98,15 +105,6 @@ public class AppMenuPropertiesDelegateUnitTest {
         setUpMocksForPageMenu();
         Assert.assertTrue(mAppMenuPropertiesDelegate.shouldShowPageMenu());
         Assert.assertEquals(MenuGroup.PAGE_MENU, mAppMenuPropertiesDelegate.getMenuGroup());
-    }
-
-    @Test
-    @Config(qualifiers = "sw320dp")
-    public void testShouldShowOverviewMenu_Phone() {
-        when(mOverviewModeBehavior.overviewVisible()).thenReturn(true);
-        Assert.assertFalse(mAppMenuPropertiesDelegate.shouldShowPageMenu());
-        Assert.assertEquals(
-                MenuGroup.OVERVIEW_MODE_MENU, mAppMenuPropertiesDelegate.getMenuGroup());
     }
 
     @Test
@@ -129,13 +127,33 @@ public class AppMenuPropertiesDelegateUnitTest {
     }
 
     @Test
+    @Config(qualifiers = "sw320dp")
+    public void testShouldShowIconRow_Phone() {
+        Assert.assertTrue(mAppMenuPropertiesDelegate.shouldShowIconRow());
+    }
+
+    @Test
     @Config(qualifiers = "sw600dp")
-    public void testShouldShowOverviewMenu_Tablet_NoTabs() {
-        when(mOverviewModeBehavior.overviewVisible()).thenReturn(false);
-        when(mTabModel.getCount()).thenReturn(0);
-        Assert.assertFalse(mAppMenuPropertiesDelegate.shouldShowPageMenu());
-        Assert.assertEquals(
-                MenuGroup.TABLET_EMPTY_MODE_MENU, mAppMenuPropertiesDelegate.getMenuGroup());
+    public void testShouldShowIconRow_Tablet() {
+        when(mDecorView.getWidth())
+                .thenReturn((int) (600
+                        * ContextUtils.getApplicationContext()
+                                  .getResources()
+                                  .getDisplayMetrics()
+                                  .density));
+        Assert.assertFalse(mAppMenuPropertiesDelegate.shouldShowIconRow());
+    }
+
+    @Test
+    @Config(qualifiers = "sw600dp")
+    public void testShouldShowIconRow_TabletNarrow() {
+        when(mDecorView.getWidth())
+                .thenReturn((int) (100
+                        * ContextUtils.getApplicationContext()
+                                  .getResources()
+                                  .getDisplayMetrics()
+                                  .density));
+        Assert.assertTrue(mAppMenuPropertiesDelegate.shouldShowIconRow());
     }
 
     @Test
@@ -156,13 +174,86 @@ public class AppMenuPropertiesDelegateUnitTest {
         assertMenuItemsAreEqual(menu, expectedItems);
     }
 
+    @Test
+    @Config(qualifiers = "sw320dp")
+    public void testPageMenuItems_Phone_RegularPage() {
+        setUpMocksForPageMenu();
+        when(mTab.getUrlString()).thenReturn("https://google.com");
+        when(mTab.isNativePage()).thenReturn(false);
+        doReturn(false)
+                .when(mAppMenuPropertiesDelegate)
+                .shouldShowPaintPreview(anyBoolean(), any(Tab.class), anyBoolean());
+        doReturn(true).when(mAppMenuPropertiesDelegate).shouldShowTranslateMenuItem(any(Tab.class));
+        doReturn(R.string.menu_add_to_homescreen)
+                .when(mAppMenuPropertiesDelegate)
+                .getAddToHomeScreenTitle();
+
+        Assert.assertEquals(MenuGroup.PAGE_MENU, mAppMenuPropertiesDelegate.getMenuGroup());
+        Menu menu = createTestMenu();
+        mAppMenuPropertiesDelegate.prepareMenu(menu, null);
+
+        Integer[] expectedItems = {R.id.icon_row_menu_id, R.id.new_tab_menu_id,
+                R.id.new_incognito_tab_menu_id, R.id.all_bookmarks_menu_id,
+                R.id.recent_tabs_menu_id, R.id.open_history_menu_id, R.id.downloads_menu_id,
+                R.id.translate_id, R.id.share_row_menu_id, R.id.find_in_page_id,
+                R.id.add_to_homescreen_id, R.id.request_desktop_site_row_menu_id,
+                R.id.preferences_id, R.id.help_id};
+        assertMenuItemsAreEqual(menu, expectedItems);
+    }
+
+    @Test
+    @Config(qualifiers = "sw320dp")
+    public void testOverviewMenuItems_Phone() {
+        setUpMocksForOverviewMenu();
+        when(mIncognitoTabModel.getCount()).thenReturn(0);
+
+        Assert.assertFalse(mAppMenuPropertiesDelegate.shouldShowPageMenu());
+        Assert.assertEquals(
+                MenuGroup.OVERVIEW_MODE_MENU, mAppMenuPropertiesDelegate.getMenuGroup());
+
+        Menu menu = createTestMenu();
+        mAppMenuPropertiesDelegate.prepareMenu(menu, null);
+
+        Integer[] expectedItems = {R.id.new_tab_menu_id, R.id.new_incognito_tab_menu_id,
+                R.id.close_all_tabs_menu_id, R.id.preferences_id};
+        assertMenuItemsAreEqual(menu, expectedItems);
+    }
+
+    @Test
+    @Config(qualifiers = "sw600dp")
+    public void testOverviewMenuItems_Tablet_NoTabs() {
+        setUpIncognitoMocks();
+        when(mOverviewModeBehavior.overviewVisible()).thenReturn(false);
+        when(mTabModel.getCount()).thenReturn(0);
+
+        Assert.assertEquals(
+                MenuGroup.TABLET_EMPTY_MODE_MENU, mAppMenuPropertiesDelegate.getMenuGroup());
+        Assert.assertFalse(mAppMenuPropertiesDelegate.shouldShowPageMenu());
+
+        Menu menu = createTestMenu();
+        mAppMenuPropertiesDelegate.prepareMenu(menu, null);
+
+        Integer[] expectedItems = {
+                R.id.new_tab_menu_id, R.id.new_incognito_tab_menu_id, R.id.preferences_id};
+        assertMenuItemsAreEqual(menu, expectedItems);
+    }
+
     private void setUpMocksForPageMenu() {
         when(mActivityTabProvider.get()).thenReturn(mTab);
         when(mOverviewModeBehavior.overviewVisible()).thenReturn(false);
-        when(mTabModel.isIncognito()).thenReturn(false);
         doReturn(false).when(mAppMenuPropertiesDelegate).shouldCheckBookmarkStar(any(Tab.class));
         doReturn(false).when(mAppMenuPropertiesDelegate).shouldEnableDownloadPage(any(Tab.class));
         doReturn(false).when(mAppMenuPropertiesDelegate).shouldShowReaderModePrefs(any(Tab.class));
+        setUpIncognitoMocks();
+    }
+
+    private void setUpMocksForOverviewMenu() {
+        when(mOverviewModeBehavior.overviewVisible()).thenReturn(true);
+        when(mTabModelSelector.getTotalTabCount()).thenReturn(1);
+        setUpIncognitoMocks();
+    }
+
+    private void setUpIncognitoMocks() {
         doReturn(true).when(mAppMenuPropertiesDelegate).isIncognitoEnabled();
         doReturn(false).when(mAppMenuPropertiesDelegate).isIncognitoManaged();
     }

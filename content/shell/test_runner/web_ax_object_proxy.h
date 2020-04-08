@@ -20,7 +20,7 @@ namespace blink {
 class WebLocalFrame;
 }
 
-namespace test_runner {
+namespace content {
 
 class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
  public:
@@ -257,6 +257,6 @@ class WebAXObjectProxyList : public WebAXObjectProxy::Factory {
   ElementList elements_;
 };
 
-}  // namespace test_runner
+}  // namespace content
 
 #endif  // CONTENT_SHELL_TEST_RUNNER_WEB_AX_OBJECT_PROXY_H_

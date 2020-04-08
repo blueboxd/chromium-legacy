@@ -516,8 +516,6 @@ int WebURLRequest::GetLoadFlagsForWebUrlRequest() const {
   if (resource_request_->PrefetchMaybeForTopLeveNavigation()) {
     DCHECK_EQ(resource_request_->GetRequestContext(),
               blink::mojom::RequestContextType::PREFETCH);
-    DCHECK(base::FeatureList::IsEnabled(
-        network::features::kPrefetchMainResourceNetworkIsolationKey));
     if (!resource_request_->RequestorOrigin()->IsSameOriginWith(
             SecurityOrigin::Create(resource_request_->Url()).get())) {
       load_flags |= net::LOAD_RESTRICTED_PREFETCH;

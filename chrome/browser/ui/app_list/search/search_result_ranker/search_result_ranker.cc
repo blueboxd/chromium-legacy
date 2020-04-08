@@ -310,6 +310,10 @@ void SearchResultRanker::Rank(Mixer::SortedResults* results) {
         result.score = search_ranker_score_map[result.result->id()];
       }
     } else if (model == Model::APPS) {
+      // Do not rerank apps for a query-based search.
+      if (!last_query_.empty())
+        continue;
+
       if (using_aggregated_app_inference_) {
         const std::string id = NormalizeAppId(result.result->id());
 

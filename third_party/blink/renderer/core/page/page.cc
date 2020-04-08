@@ -219,7 +219,8 @@ Page::Page(PageClients& page_clients)
   // Android, unit tests run without a ThemeEngine and thus must set a mock
   // ScrollbarTheme, if they don't this call will crash. To set a mock theme,
   // see ScopedMockOverlayScrollbars or WebScopedMockScrollbars.
-  DCHECK(&GetScrollbarTheme());
+  // TODO(bokan): Reenable once all tests are fixed. crbug.com/1068595
+  // DCHECK(&GetScrollbarTheme());
 }
 
 Page::~Page() {

@@ -856,7 +856,7 @@ const base::Feature kWebNfc{"WebNFC", base::FEATURE_ENABLED_BY_DEFAULT};
 // TODO(crbug.com/955194): Remove this once chrome://oobe migrates off of
 // Polymer 1.
 const base::Feature kWebUIPolymer2Exceptions{"WebUIPolymer2Exceptions",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_MACOSX)

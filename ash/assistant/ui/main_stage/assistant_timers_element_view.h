@@ -7,13 +7,9 @@
 
 #include <string>
 
-#include "ash/assistant/model/assistant_alarm_timer_model_observer.h"
+#include "ash/assistant/ui/base/assistant_scroll_view.h"
 #include "ash/assistant/ui/main_stage/assistant_ui_element_view.h"
 #include "base/component_export.h"
-
-namespace views {
-class Label;
-}  // namespace views
 
 namespace ash {
 
@@ -24,7 +20,7 @@ class AssistantViewDelegate;
 // AssistantTimersElement. It is a child view of UiElementContainerView.
 class COMPONENT_EXPORT(ASSISTANT_UI) AssistantTimersElementView
     : public AssistantUiElementView,
-      public AssistantAlarmTimerModelObserver {
+      public AssistantScrollView::Observer {
  public:
   AssistantTimersElementView(AssistantViewDelegate* delegate,
                              const AssistantTimersElement* timers_element);
@@ -37,19 +33,18 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantTimersElementView
   const char* GetClassName() const override;
   ui::Layer* GetLayerForAnimating() override;
   std::string ToStringForTesting() const override;
+  gfx::Size CalculatePreferredSize() const override;
+  int GetHeightForWidth(int width) const override;
   void ChildPreferredSizeChanged(views::View* child) override;
 
-  // AssistantAlarmTimerModelObserver:
-  void OnTimerUpdated(const mojom::AssistantTimer& timer) override;
+  // AssistantScrollView::Observer:
+  void OnContentsPreferredSizeChanged(views::View* content_view) override;
 
  private:
-  void InitLayout();
-  void UpdateLayout();
+  void InitLayout(AssistantViewDelegate* delegate,
+                  const AssistantTimersElement* timers_element);
 
-  AssistantViewDelegate* const delegate_;  // Owned (indirectly) by Shell.
-  views::Label* label_;                    // Owned by view hierarchy.
-
-  const AssistantTimersElement* timers_element_;
+  AssistantScrollView* scroll_view_;  // Owned by view hierarchy.
 };
 
 }  // namespace ash

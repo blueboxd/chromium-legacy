@@ -38,7 +38,7 @@
 #include "third_party/blink/public/web/web_widget.h"
 #include "ui/gfx/geometry/point.h"
 
-namespace test_runner {
+namespace content {
 
 namespace {
 
@@ -112,4 +112,4 @@ void CopyImageAtAndCapturePixels(
   std::move(callback).Run(bitmap);
 }
 
-}  // namespace test_runner
+}  // namespace content

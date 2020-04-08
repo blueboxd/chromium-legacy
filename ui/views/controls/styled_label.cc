@@ -556,9 +556,6 @@ std::unique_ptr<Label> StyledLabel::CreateLabel(
     // Note this ignores |default_text_style_|, in favor of style::STYLE_LINK.
     auto link = std::make_unique<Link>(text, text_context_);
 
-    // Links in a StyledLabel do not get underlines.
-    link->SetUnderline(false);
-
     layout_views_->link_targets[link.get()] = range;
 
     result = std::move(link);

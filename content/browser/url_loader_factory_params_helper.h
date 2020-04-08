@@ -6,13 +6,12 @@
 #define CONTENT_BROWSER_URL_LOADER_FACTORY_PARAMS_HELPER_H_
 
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "net/base/network_isolation_key.h"
 #include "services/network/public/mojom/cross_origin_embedder_policy.mojom-forward.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "url/origin.h"
 
 namespace net {
-class NetworkIsolationKey;
+class IsolationInfo;
 }  // namespace net
 
 namespace content {
@@ -66,7 +65,7 @@ class URLLoaderFactoryParamsHelper {
   static network::mojom::URLLoaderFactoryParamsPtr CreateForWorker(
       RenderProcessHost* process,
       const url::Origin& request_initiator,
-      const net::NetworkIsolationKey& network_isolation_key,
+      const net::IsolationInfo& isolation_info,
       mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
           coep_reporter);
 

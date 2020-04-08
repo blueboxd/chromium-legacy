@@ -104,6 +104,8 @@ cr.define('settings', function() {
     r.OS_LANGUAGES_DETAILS = r.OS_LANGUAGES.createChild('/osLanguages/details');
     r.OS_LANGUAGES_INPUT_METHODS =
         r.OS_LANGUAGES.createChild('/osLanguages/inputMethods');
+    r.OS_LANGUAGES_SMART_INPUTS =
+        r.OS_LANGUAGES.createChild('/osLanguages/smartInputs');
 
     r.OS_PRINTING = r.ADVANCED.createSection('/osPrinting', 'osPrinting');
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/client_hints/client_hints.h"
+#include "components/client_hints/common/client_hints.h"
 
 #include "content/public/common/origin_util.h"
 #include "third_party/blink/public/platform/web_client_hints_type.h"

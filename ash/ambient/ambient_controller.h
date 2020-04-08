@@ -45,20 +45,11 @@ class ASH_EXPORT AmbientController : public views::WidgetObserver,
   // SessionObserver:
   void OnLockStateChanged(bool locked) override;
 
-  // Creates and displays the ambient mode screen on top of the lock screen.
-  void Show();
-  // Destroys the ambient mode screen widget.
-  void Destroy();
-  // Toggle between show and destroy the ambient mode screen.
-  // Should be removed once we delete the shortcut entry point.
+  void Start();
+  void Stop();
   void Toggle();
 
   PhotoModel* photo_model() { return &photo_model_; }
-
-  // Handles user interactions on the background photo. For now the behavior
-  // is showing lock screen contents (login pod and media control view) on top
-  // while fading-out the current shown image.
-  void OnBackgroundPhotoEvents();
 
   AmbientContainerView* get_container_view_for_testing() {
     return container_view_;
@@ -77,8 +68,6 @@ class ASH_EXPORT AmbientController : public views::WidgetObserver,
   void ScheduleRefreshImage();
   void GetNextImage();
   void OnPhotoDownloaded(bool success, const gfx::ImageSkia& image);
-
-  void StartFadeOutAnimation();
 
   AmbientViewDelegateImpl delegate_{this};
   AmbientContainerView* container_view_ = nullptr;   // Owned by view hierarchy.

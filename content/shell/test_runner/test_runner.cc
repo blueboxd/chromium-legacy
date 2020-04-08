@@ -66,7 +66,7 @@
 #include "third_party/blink/public/platform/web_font_render_style.h"
 #endif
 
-namespace test_runner {
+namespace content {
 
 namespace {
 
@@ -1656,7 +1656,7 @@ bool TestRunner::IsRecursiveLayoutDumpRequested() {
 
 std::string TestRunner::DumpLayout(blink::WebLocalFrame* frame) {
   CheckResponseMimeType();
-  return ::test_runner::DumpLayout(frame, web_test_runtime_flags_);
+  return DumpLayoutAsString(frame, web_test_runtime_flags_);
 }
 
 bool TestRunner::CanDumpPixelsFromRenderer() const {
@@ -1695,7 +1695,7 @@ void TestRunner::DumpPixelsAsync(
     if (frame_to_print && frame_to_print->IsWebLocalFrame())
       target_frame = frame_to_print->ToWebLocalFrame();
   }
-  test_runner::PrintFrameAsync(target_frame, std::move(callback));
+  PrintFrameAsync(target_frame, std::move(callback));
 }
 
 void TestRunner::ReplicateWebTestRuntimeFlagsChanges(
@@ -2615,4 +2615,4 @@ void TestRunner::NotifyDone() {
   OnWebTestRuntimeFlagsChanged();
 }
 
-}  // namespace test_runner
+}  // namespace content

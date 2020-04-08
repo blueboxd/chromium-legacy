@@ -43,11 +43,10 @@ namespace {
 
 RenderViewImpl* CreateWebViewTestProxy(CompositorDependencies* compositor_deps,
                                        const mojom::CreateViewParams& params) {
-  test_runner::TestInterfaces* interfaces =
+  TestInterfaces* interfaces =
       WebTestRenderThreadObserver::GetInstance()->test_interfaces();
 
-  auto* render_view_proxy =
-      new test_runner::WebViewTestProxy(compositor_deps, params);
+  auto* render_view_proxy = new WebViewTestProxy(compositor_deps, params);
 
   auto blink_test_runner = std::make_unique<BlinkTestRunner>(render_view_proxy);
   // TODO(lukasza): Using the first BlinkTestRunner as the main delegate is
@@ -68,7 +67,7 @@ std::unique_ptr<RenderWidget> CreateRenderWidgetForFrame(
     blink::mojom::DisplayMode display_mode,
     bool never_composited,
     mojo::PendingReceiver<mojom::Widget> widget_receiver) {
-  return std::make_unique<test_runner::WebWidgetTestProxy>(
+  return std::make_unique<WebWidgetTestProxy>(
       routing_id, compositor_deps, display_mode,
       /*hidden=*/true, never_composited, std::move(widget_receiver));
 }
@@ -77,24 +76,12 @@ RenderFrameImpl* CreateWebFrameTestProxy(RenderFrameImpl::CreateParams params) {
   // RenderFrameImpl always has a RenderViewImpl for it.
   RenderViewImpl* render_view_impl = params.render_view;
 
-  auto* render_frame_proxy =
-      new test_runner::WebFrameTestProxy(std::move(params));
+  auto* render_frame_proxy = new WebFrameTestProxy(std::move(params));
   render_frame_proxy->Initialize(render_view_impl);
   return render_frame_proxy;
 }
 
 }  // namespace
-
-test_runner::WebWidgetTestProxy* GetWebWidgetTestProxy(
-    blink::WebLocalFrame* frame) {
-  DCHECK(frame);
-  RenderFrame* local_root = RenderFrame::FromWebFrame(frame->LocalRoot());
-  RenderFrameImpl* local_root_impl = static_cast<RenderFrameImpl*>(local_root);
-  DCHECK(local_root);
-
-  return static_cast<test_runner::WebWidgetTestProxy*>(
-      local_root_impl->GetLocalRootRenderWidget());
-}
 
 void EnableWebTestProxyCreation() {
   RenderViewImpl::InstallCreateHook(CreateWebViewTestProxy);
@@ -151,20 +138,17 @@ void SetDeviceScaleFactor(RenderView* render_view, float factor) {
 }
 
 std::unique_ptr<blink::WebInputEvent> TransformScreenToWidgetCoordinates(
-    test_runner::WebWidgetTestProxy* web_widget_test_proxy,
+    WebWidgetTestProxy* web_widget_test_proxy,
     const blink::WebInputEvent& event) {
   DCHECK(web_widget_test_proxy);
-
-  RenderWidget* render_widget =
-      static_cast<RenderWidget*>(web_widget_test_proxy);
 
   // Compute the scale from window (dsf-independent) to blink (dsf-dependent
   // under UseZoomForDSF).
   blink::WebFloatRect rect(0, 0, 1.0f, 0.0);
-  render_widget->ConvertWindowToViewport(&rect);
+  web_widget_test_proxy->ConvertWindowToViewport(&rect);
   float scale = rect.width;
 
-  blink::WebRect view_rect = render_widget->ViewRect();
+  blink::WebRect view_rect = web_widget_test_proxy->ViewRect();
   gfx::Vector2d delta(-view_rect.x, -view_rect.y);
 
   // The coordinates are given in terms of the root widget, so adjust for the
@@ -172,11 +156,15 @@ std::unique_ptr<blink::WebInputEvent> TransformScreenToWidgetCoordinates(
   // TODO(sgilhuly): This doesn't work for events sent to OOPIFs because the
   // main frame is remote, and doesn't have a corresponding RenderWidget.
   // Currently none of those tests are run out of headless mode.
-  blink::WebFrame* frame =
-      web_widget_test_proxy->GetWebViewTestProxy()->GetWebView()->MainFrame();
-  if (frame->IsWebLocalFrame()) {
-    test_runner::WebWidgetTestProxy* root_widget =
-        GetWebWidgetTestProxy(frame->ToWebLocalFrame());
+  // TODO(danakj): In a frame, the ViewRect is the same in every local root
+  // and this would just remove and add it back, so this should be fine in
+  // OOPIFs, we should only do the ViewRect() translation for popup widgets,
+  // just as RenderWidget does.
+  RenderFrameImpl* main_frame =
+      web_widget_test_proxy->GetWebViewTestProxy()->GetMainRenderFrame();
+  if (main_frame) {
+    RenderWidget* root_widget = main_frame->GetLocalRootRenderWidget();
+
     blink::WebRect root_rect = root_widget->ViewRect();
     gfx::Vector2d root_delta(root_rect.x, root_rect.y);
     delta.Add(root_delta);

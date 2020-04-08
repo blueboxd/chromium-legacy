@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/test/test_system_web_app_installation.h"
 #include "chrome/browser/web_applications/test/test_system_web_app_url_data_source.h"
 #include "chrome/browser/web_applications/web_app_provider.h"

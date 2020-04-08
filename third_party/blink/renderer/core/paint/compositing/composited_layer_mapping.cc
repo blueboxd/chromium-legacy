@@ -1305,6 +1305,7 @@ bool CompositedLayerMapping::UpdateMaskLayer(bool needs_mask_layer) {
       mask_layer_->SetElementId(element_id);
       if (GetLayoutObject().HasBackdropFilter())
         mask_layer_->CcLayer()->SetIsBackdropFilterMask(true);
+      mask_layer_->SetHitTestable(true);
       layer_changed = true;
     }
   } else if (mask_layer_) {

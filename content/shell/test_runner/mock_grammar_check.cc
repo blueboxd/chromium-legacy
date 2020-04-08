@@ -22,7 +22,7 @@ bool IsASCIIAlpha(char ch) {
 
 }  // namespace
 
-namespace test_runner {
+namespace content {
 
 bool MockGrammarCheck::CheckGrammarOfString(
     const blink::WebString& text,
@@ -69,4 +69,4 @@ bool MockGrammarCheck::CheckGrammarOfString(
   return false;
 }
 
-}  // namespace test_runner
+}  // namespace content

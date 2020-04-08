@@ -6,6 +6,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_scrollable_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
 
 <!--
   Simple OOBE dialog which should be used for OOBE UI elements.
@@ -75,38 +76,42 @@
     <link rel="stylesheet" href="oobe_dialog.css">
     <link rel="stylesheet" href="oobe_flex_layout.css">
     <style include="cr-shared-style"></style>
-    <div id="top-scroll-container" class="layout vertical flex" scrollable>
-      <div id="header-container" hidden="[[noHeader]]">
-        <div id="oobe-icon-div" class="slot-container">
-          <slot name="oobe-icon"></slot>
+    <cr-lazy-render id="lazy">
+      <template>
+        <div id="top-scroll-container" class="layout vertical flex" scrollable>
+          <div id="header-container" hidden="[[noHeader]]">
+            <div id="oobe-icon-div" class="slot-container">
+              <slot name="oobe-icon"></slot>
+            </div>
+            <div id="oobe-title" class="slot-container layout vertical
+                end-justified">
+              <slot name="title">
+                <h1 class="fallback">[[i18nDynamic(locale, titleKey)]]</h1>
+              </slot>
+            </div>
+            <div id="oobe-subtitle" class="slot-container layout vertical">
+              <slot name="subtitle">
+                <div class="fallback">[[i18nDynamic(locale, subtitleKey)]]</div>
+              </slot>
+            </div>
+            <div id="oobe-progress" class="slot-container layout vertical">
+              <slot name="progress"></slot>
+            </div>
+          </div>
+          <div id="footer-container" noFooterPadding$="[[noFooterPadding]]"
+              footerShrinkable$="[[footerShrinkable]]"
+              class="slot-container flex-grow layout vertical">
+            <slot name="footer"></slot>
+          </div>
         </div>
-        <div id="oobe-title" class="slot-container layout vertical
-            end-justified">
-          <slot name="title">
-            <h1 class="fallback">[[i18nDynamic(locale, titleKey)]]</h1>
-          </slot>
-        </div>
-        <div id="oobe-subtitle" class="slot-container layout vertical">
-          <slot name="subtitle">
-            <div class="fallback">[[i18nDynamic(locale, subtitleKey)]]</div>
-          </slot>
-        </div>
-        <div id="oobe-progress" class="slot-container layout vertical">
-          <slot name="progress"></slot>
-        </div>
-      </div>
-      <div id="footer-container" noFooterPadding$="[[noFooterPadding]]"
-          footerShrinkable$="[[footerShrinkable]]"
-          class="slot-container flex-grow layout vertical">
-        <slot name="footer"></slot>
-      </div>
-    </div>
-    <template is="dom-if" if="[[hasButtons]]">
-      <div id="oobe-bottom" hideShadow$="[[hideShadow]]"
-          class="slot-container layout horizontal center">
-        <slot name="bottom-buttons"></slot>
-      </div>
+        <template is="dom-if" if="[[hasButtons]]">
+          <div id="oobe-bottom" hideShadow$="[[hideShadow]]"
+              class="slot-container layout horizontal center">
+            <slot name="bottom-buttons"></slot>
+          </div>
+        </template>
+      </template>
     </template>
-  </template>
+  </cr-lazy-render>
 </dom-module>
 

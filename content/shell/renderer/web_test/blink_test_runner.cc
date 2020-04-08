@@ -49,6 +49,7 @@
 #include "content/shell/test_runner/pixel_dump.h"
 #include "content/shell/test_runner/test_interfaces.h"
 #include "content/shell/test_runner/test_runner.h"
+#include "content/shell/test_runner/web_frame_test_proxy.h"
 #include "content/shell/test_runner/web_widget_test_proxy.h"
 #include "ipc/ipc_sync_channel.h"
 #include "media/base/audio_capturer_source.h"
@@ -232,7 +233,7 @@ WebURL BlinkTestRunner::RewriteWebTestsURL(const std::string& utf8_url,
   return content::RewriteWebTestsURL(utf8_url, is_wpt_mode);
 }
 
-test_runner::TestPreferences* BlinkTestRunner::Preferences() {
+TestPreferences* BlinkTestRunner::Preferences() {
   return &prefs_;
 }
 
@@ -310,15 +311,10 @@ void BlinkTestRunner::SetDeviceScaleFactor(float factor) {
 
 std::unique_ptr<blink::WebInputEvent>
 BlinkTestRunner::TransformScreenToWidgetCoordinates(
-    test_runner::WebWidgetTestProxy* web_widget_test_proxy,
+    WebWidgetTestProxy* web_widget_test_proxy,
     const blink::WebInputEvent& event) {
   return content::TransformScreenToWidgetCoordinates(web_widget_test_proxy,
                                                      event);
-}
-
-test_runner::WebWidgetTestProxy* BlinkTestRunner::GetWebWidgetTestProxy(
-    blink::WebLocalFrame* frame) {
-  return content::GetWebWidgetTestProxy(frame);
 }
 
 void BlinkTestRunner::EnableUseZoomForDSF() {
@@ -407,7 +403,7 @@ void BlinkTestRunner::OnWebTestRuntimeFlagsChanged(
   // Ignore changes that happen before we got the initial, accumulated
   // web flag changes in either OnReplicateTestConfiguration or
   // OnSetTestConfiguration.
-  test_runner::TestInterfaces* interfaces =
+  TestInterfaces* interfaces =
       WebTestRenderThreadObserver::GetInstance()->test_interfaces();
   if (!interfaces->TestIsRunning())
     return;
@@ -416,9 +412,9 @@ void BlinkTestRunner::OnWebTestRuntimeFlagsChanged(
 }
 
 void BlinkTestRunner::TestFinished() {
-  test_runner::TestInterfaces* interfaces =
+  TestInterfaces* interfaces =
       WebTestRenderThreadObserver::GetInstance()->test_interfaces();
-  test_runner::TestRunner* test_runner = interfaces->GetTestRunner();
+  TestRunner* test_runner = interfaces->GetTestRunner();
 
   // We might get multiple TestFinished calls, ensure to only process the dump
   // once.
@@ -490,7 +486,7 @@ void BlinkTestRunner::TestFinished() {
 
 void BlinkTestRunner::CaptureLocalAudioDump() {
   TRACE_EVENT0("shell", "BlinkTestRunner::CaptureLocalAudioDump");
-  test_runner::TestInterfaces* interfaces =
+  TestInterfaces* interfaces =
       WebTestRenderThreadObserver::GetInstance()->test_interfaces();
   dump_result_->audio.emplace();
   interfaces->GetTestRunner()->GetAudioData(&*dump_result_->audio);
@@ -498,9 +494,9 @@ void BlinkTestRunner::CaptureLocalAudioDump() {
 
 void BlinkTestRunner::CaptureLocalLayoutDump() {
   TRACE_EVENT0("shell", "BlinkTestRunner::CaptureLocalLayoutDump");
-  test_runner::TestInterfaces* interfaces =
+  TestInterfaces* interfaces =
       WebTestRenderThreadObserver::GetInstance()->test_interfaces();
-  test_runner::TestRunner* test_runner = interfaces->GetTestRunner();
+  TestRunner* test_runner = interfaces->GetTestRunner();
   std::string layout;
   if (test_runner->HasCustomTextDump(&layout)) {
     dump_result_->layout.emplace(layout + "\n");
@@ -524,7 +520,7 @@ void BlinkTestRunner::CaptureLocalPixelsDump() {
 
   waiting_for_pixels_dump_result_ = true;
 
-  test_runner::TestInterfaces* interfaces =
+  TestInterfaces* interfaces =
       WebTestRenderThreadObserver::GetInstance()->test_interfaces();
   interfaces->GetTestRunner()->DumpPixelsAsync(
       render_view(), base::BindOnce(&BlinkTestRunner::OnPixelsDumpCompleted,
@@ -622,7 +618,7 @@ void BlinkTestRunner::ResetPermissions() {
 void BlinkTestRunner::DispatchBeforeInstallPromptEvent(
     const std::vector<std::string>& event_platforms,
     base::OnceCallback<void(bool)> callback) {
-  app_banner_service_.reset(new test_runner::AppBannerService());
+  app_banner_service_.reset(new AppBannerService());
   render_view()->GetMainRenderFrame()->BindLocalInterface(
       blink::mojom::AppBannerController::Name_,
       app_banner_service_->controller()
@@ -674,20 +670,14 @@ void BlinkTestRunner::Reset(bool for_new_test) {
   prefs_.Reset();
   waiting_for_reset_ = false;
 
-  WebFrame* main_frame = render_view()->GetWebView()->MainFrame();
+  // TODO(danakj): Does any of this need to happen when for_new_test = false?
+  // If not, move to WebViewTestProxy::Reset() and WebFrameTestProxy::Reset().
 
   render_view()->ClearEditCommands();
-  if (for_new_test) {
-    if (main_frame->IsWebLocalFrame()) {
-      WebLocalFrame* local_main_frame = main_frame->ToWebLocalFrame();
-      local_main_frame->SetName(WebString());
-      GetWebWidgetTestProxy(local_main_frame)->EndSyntheticGestures();
-    }
-    main_frame->ClearOpener();
-  }
 
   // Resetting the internals object also overrides the WebPreferences, so we
   // have to sync them to WebKit again.
+  WebFrame* main_frame = render_view()->GetWebView()->MainFrame();
   if (main_frame->IsWebLocalFrame()) {
     WebTestingSupport::ResetInternalsObject(main_frame->ToWebLocalFrame());
     render_view()->SetWebkitPreferences(render_view()->GetWebkitPreferences());
@@ -774,7 +764,7 @@ void BlinkTestRunner::OnSetupSecondaryRenderer() {
   // |!is_main_window_|.
   is_secondary_window_ = true;
 
-  test_runner::TestInterfaces* interfaces =
+  TestInterfaces* interfaces =
       WebTestRenderThreadObserver::GetInstance()->test_interfaces();
   interfaces->SetTestIsRunning(true);
   ForceResizeRenderView(render_view(), WebSize(800, 600));
@@ -782,7 +772,7 @@ void BlinkTestRunner::OnSetupSecondaryRenderer() {
 
 void BlinkTestRunner::ApplyTestConfiguration(
     mojom::ShellTestConfigurationPtr params) {
-  test_runner::TestInterfaces* interfaces =
+  TestInterfaces* interfaces =
       WebTestRenderThreadObserver::GetInstance()->test_interfaces();
 
   test_config_ = params.Clone();
@@ -808,9 +798,9 @@ void BlinkTestRunner::OnSetTestConfiguration(
                         WebSize(local_params->initial_size.width(),
                                 local_params->initial_size.height()));
 
-  test_runner::TestInterfaces* interfaces =
+  TestInterfaces* interfaces =
       WebTestRenderThreadObserver::GetInstance()->test_interfaces();
-  test_runner::TestRunner* test_runner = interfaces->GetTestRunner();
+  TestRunner* test_runner = interfaces->GetTestRunner();
   test_runner->SetFocus(render_view()->GetWebView(), true);
 }
 
@@ -839,7 +829,7 @@ void BlinkTestRunner::OnTestFinishedInSecondaryRenderer() {
 
   // Avoid a situation where TestFinished is called twice, because
   // of a racey test finish in 2 secondary renderers.
-  test_runner::TestInterfaces* interfaces =
+  TestInterfaces* interfaces =
       WebTestRenderThreadObserver::GetInstance()->test_interfaces();
   if (!interfaces->TestIsRunning())
     return;

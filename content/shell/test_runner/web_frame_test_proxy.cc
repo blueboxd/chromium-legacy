@@ -13,7 +13,7 @@
 #include "content/shell/test_runner/web_view_test_proxy.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 
-namespace test_runner {
+namespace content {
 
 namespace {
 
@@ -130,6 +130,17 @@ void WebFrameTestProxy::Initialize(
       std::make_unique<WebFrameTestClient>(view_proxy_for_frame, this);
 
   new TestRenderFrameObserver(this, view_proxy_for_frame);  // deletes itself.
+}
+
+void WebFrameTestProxy::Reset() {
+  if (IsMainFrame()) {
+    GetWebFrame()->SetName(blink::WebString());
+    GetWebFrame()->ClearOpener();
+  }
+  if (IsLocalRoot()) {
+    GetLocalRootWebWidgetTestProxy()->Reset();
+    GetLocalRootWebWidgetTestProxy()->EndSyntheticGestures();
+  }
 }
 
 std::string WebFrameTestProxy::GetFrameNameForWebTests() {
@@ -252,4 +263,8 @@ void WebFrameTestProxy::DidClearWindowObject() {
   RenderFrameImpl::DidClearWindowObject();
 }
 
-}  // namespace test_runner
+WebWidgetTestProxy* WebFrameTestProxy::GetLocalRootWebWidgetTestProxy() {
+  return static_cast<WebWidgetTestProxy*>(GetLocalRootRenderWidget());
+}
+
+}  // namespace content

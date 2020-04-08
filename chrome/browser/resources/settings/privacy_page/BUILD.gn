@@ -563,7 +563,7 @@ polymer_modulizer("privacy_page") {
                    "chrome/browser/resources/settings/metrics_browser_proxy.html|PrivacyElementInteractions,MetricsBrowserProxyImpl",
                    "chrome/browser/resources/settings/privacy_page/privacy_page_browser_proxy.html|PrivacyPageBrowserProxy,PrivacyPageBrowserProxyImpl",
                    "chrome/browser/resources/settings/site_settings/site_settings_prefs_browser_proxy.html|SiteSettingsPrefsBrowserProxyImpl",
-                   "chrome/browser/resources/settings/site_settings/constants.html|ContentSettingsTypes,CookieControlsMode,ChooserType",
+                   "chrome/browser/resources/settings/site_settings/constants.html|ContentSettingsTypes,ChooserType",
                    "chrome/browser/resources/settings/people_page/sync_browser_proxy.html|SyncBrowserProxyImpl,SyncStatus",
                    "chrome/browser/resources/settings/hats_browser_proxy.html|HatsBrowserProxyImpl",
                    "chrome/browser/resources/settings/page_visibility.html|PrivacyPageVisibility",

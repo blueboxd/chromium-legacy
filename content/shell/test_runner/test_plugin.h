@@ -42,7 +42,7 @@ namespace viz {
 struct TransferableResource;
 }
 
-namespace test_runner {
+namespace content {
 
 class TestInterfaces;
 
@@ -198,6 +198,6 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
   DISALLOW_COPY_AND_ASSIGN(TestPlugin);
 };
 
-}  // namespace test_runner
+}  // namespace content
 
 #endif  // CONTENT_SHELL_TEST_RUNNER_TEST_PLUGIN_H_

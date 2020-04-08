@@ -30,7 +30,7 @@ class AX_EXPORT AXSystemCaretWin : private AXPlatformNodeDelegateBase {
   ~AXSystemCaretWin() override;
 
   Microsoft::WRL::ComPtr<IAccessible> GetCaret() const;
-  void MoveCaretTo(const gfx::Rect& bounds);
+  void MoveCaretTo(const gfx::Rect& bounds_physical_pixels);
   void Hide();
 
  private:

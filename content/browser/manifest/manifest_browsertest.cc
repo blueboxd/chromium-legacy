@@ -320,6 +320,22 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, DynamicManifest) {
   EXPECT_EQ(0, GetConsoleErrorCount());
 }
 
+// This page has a manifest with only file handlers specified. Asking
+// for just the manifest should succeed with a non empty manifest.
+IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, FileHandlerManifest) {
+  GURL test_url =
+      embedded_test_server()->GetURL("/manifest/file-handler-manifest.html");
+  ASSERT_TRUE(NavigateToURL(shell(), test_url));
+
+  GetManifestAndWait();
+  EXPECT_FALSE(manifest().IsEmpty());
+  EXPECT_FALSE(manifest_url().is_empty());
+  EXPECT_FALSE(manifest().file_handlers.empty());
+  EXPECT_EQ(0, GetConsoleErrorCount());
+  ASSERT_EQ(1u, reported_manifest_urls().size());
+  EXPECT_EQ(manifest_url(), reported_manifest_urls()[0]);
+}
+
 // If a page's manifest lives in a different origin, it should follow the CORS
 // rules and requesting the manifest should return an empty manifest (unless the
 // response contains CORS headers).

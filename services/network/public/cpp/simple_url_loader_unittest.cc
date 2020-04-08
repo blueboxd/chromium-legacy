@@ -614,7 +614,8 @@ class SimpleURLLoaderTestBase {
     params->process_id = mojom::kBrowserProcessId;
     params->is_corb_enabled = false;
     url::Origin origin = url::Origin::Create(test_server_.base_url());
-    params->network_isolation_key = net::NetworkIsolationKey(origin, origin);
+    params->isolation_info =
+        net::IsolationInfo::CreateForInternalRequest(origin);
     params->is_trusted = true;
     network_context_->CreateURLLoaderFactory(
         url_loader_factory_.BindNewPipeAndPassReceiver(), std::move(params));

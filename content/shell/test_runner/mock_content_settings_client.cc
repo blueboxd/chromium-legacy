@@ -13,7 +13,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url.h"
 
-namespace test_runner {
+namespace content {
 
 MockContentSettingsClient::MockContentSettingsClient(
     WebTestRuntimeFlags* web_test_runtime_flags)
@@ -126,4 +126,4 @@ void MockContentSettingsClient::ResetClientHintsPersistencyData() {
   client_hints_map_.clear();
 }
 
-}  // namespace test_runner
+}  // namespace content

@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 
-namespace test_runner {
+namespace content {
 
 class TestRunner;
 class WebFrameTestProxy;
@@ -75,6 +75,6 @@ class WebFrameTestClient : public blink::WebLocalFrameClient {
   DISALLOW_COPY_AND_ASSIGN(WebFrameTestClient);
 };
 
-}  // namespace test_runner
+}  // namespace content
 
 #endif  // CONTENT_SHELL_TEST_RUNNER_WEB_FRAME_TEST_CLIENT_H_

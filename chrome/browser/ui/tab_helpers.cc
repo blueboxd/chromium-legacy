@@ -16,8 +16,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/buildflags.h"
 #include "chrome/browser/captive_portal/captive_portal_service_factory.h"
-#include "chrome/browser/client_hints/client_hints.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/complex_tasks/task_tab_helper.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/mixed_content_settings_tab_helper.h"
 #include "chrome/browser/content_settings/sound_content_setting_observer.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -94,6 +95,7 @@
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/captive_portal/core/buildflags.h"
+#include "components/client_hints/browser/client_hints.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/download/content/factory/navigation_monitor_factory.h"
 #include "components/download/content/public/download_navigation_observer.h"
@@ -238,7 +240,10 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
     ChromeSubresourceFilterClient::CreateForWebContents(web_contents);
   }
   ChromeTranslateClient::CreateForWebContents(web_contents);
-  client_hints::ClientHints::CreateForWebContents(web_contents);
+  client_hints::ClientHints::CreateForWebContents(
+      web_contents, g_browser_process->network_quality_tracker(),
+      HostContentSettingsMapFactory::GetForProfile(profile),
+      GetUserAgentMetadata());
   ConnectionHelpTabHelper::CreateForWebContents(web_contents);
   CoreTabHelper::CreateForWebContents(web_contents);
   DataReductionProxyTabHelper::CreateForWebContents(web_contents);

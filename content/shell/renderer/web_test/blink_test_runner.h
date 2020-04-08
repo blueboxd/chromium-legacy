@@ -36,18 +36,15 @@ namespace blink {
 class WebView;
 }  // namespace blink
 
-namespace test_runner {
-class AppBannerService;
-}  // namespace test_runner
-
 namespace content {
+class AppBannerService;
 
 // This is the renderer side of the webkit test runner.
 // TODO(lukasza): Rename to WebTestRenderViewObserver for consistency with
 // WebTestRenderFrameObserver.
 class BlinkTestRunner : public RenderViewObserver,
                         public RenderViewObserverTracker<BlinkTestRunner>,
-                        public test_runner::WebTestDelegate {
+                        public WebTestDelegate {
  public:
   explicit BlinkTestRunner(RenderView* render_view);
   ~BlinkTestRunner() override;
@@ -70,7 +67,7 @@ class BlinkTestRunner : public RenderViewObserver,
       const std::string& utf8_path) override;
   blink::WebURL RewriteWebTestsURL(const std::string& utf8_url,
                                    bool is_wpt_mode) override;
-  test_runner::TestPreferences* Preferences() override;
+  TestPreferences* Preferences() override;
   void ApplyPreferences() override;
   void SetPopupBlockingEnabled(bool block_popups) override;
   void UseUnfortunateSynchronousResizeMode(bool enable) override;
@@ -92,10 +89,8 @@ class BlinkTestRunner : public RenderViewObserver,
   void SetDeviceScaleFactor(float factor) override;
   void SetDeviceColorSpace(const std::string& name) override;
   std::unique_ptr<blink::WebInputEvent> TransformScreenToWidgetCoordinates(
-      test_runner::WebWidgetTestProxy* web_widget_test_proxy,
+      WebWidgetTestProxy* web_widget_test_proxy,
       const blink::WebInputEvent& event) override;
-  test_runner::WebWidgetTestProxy* GetWebWidgetTestProxy(
-      blink::WebLocalFrame* frame) override;
   void EnableUseZoomForDSF() override;
   bool IsUseZoomForDSFEnabled() override;
   void SetBluetoothFakeAdapter(const std::string& adapter_name,
@@ -190,7 +185,7 @@ class BlinkTestRunner : public RenderViewObserver,
   mojo::AssociatedRemote<mojom::WebTestClient>& GetWebTestClientRemote();
   mojo::AssociatedRemote<mojom::WebTestClient> web_test_client_remote_;
 
-  test_runner::TestPreferences prefs_;
+  TestPreferences prefs_;
 
   mojom::ShellTestConfigurationPtr test_config_;
 
@@ -203,7 +198,7 @@ class BlinkTestRunner : public RenderViewObserver,
 
   bool waiting_for_reset_ = false;
 
-  std::unique_ptr<test_runner::AppBannerService> app_banner_service_;
+  std::unique_ptr<AppBannerService> app_banner_service_;
 
   mojom::BlinkTestControl::CaptureDumpCallback dump_callback_;
   mojom::BlinkTestDumpPtr dump_result_;

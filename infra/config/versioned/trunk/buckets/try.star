@@ -119,6 +119,7 @@ try_.chromium_android_builder(
             '.+/[+]/chrome/android/java/src/org/chromium/chrome/browser/vr/.+',
             '.+/[+]/chrome/android/javatests/src/org/chromium/chrome/browser/vr/.+',
             '.+/[+]/chrome/browser/vr/.+',
+            '.+/[+]/content/browser/xr/.+',
             '.+/[+]/third_party/gvr-android-sdk/.+',
             '.+/[+]/third_party/arcore-android-sdk/.+',
             '.+/[+]/third_party/arcore-android-sdk-client/.+',
@@ -146,6 +147,7 @@ try_.chromium_android_builder(
         location_regexp = [
             '.+/[+]/chrome/android/java/src/org/chromium/chrome/browser/vr/.+',
             '.+/[+]/chrome/browser/vr/.+',
+            '.+/[+]/content/browser/xr/.+',
             '.+/[+]/sandbox/linux/seccomp-bpf/.+',
             '.+/[+]/sandbox/linux/seccomp-bpf-helpers/.+',
             '.+/[+]/sandbox/linux/system_headers/.+',
@@ -161,6 +163,7 @@ try_.chromium_android_builder(
         location_regexp = [
             '.+/[+]/chrome/android/java/src/org/chromium/chrome/browser/vr/.+',
             '.+/[+]/chrome/browser/vr/.+',
+            '.+/[+]/content/browser/xr/.+',
             '.+/[+]/sandbox/linux/seccomp-bpf/.+',
             '.+/[+]/sandbox/linux/seccomp-bpf-helpers/.+',
             '.+/[+]/sandbox/linux/system_headers/.+',
@@ -451,6 +454,7 @@ try_.chromium_linux_builder(
     tryjob = try_.job(
         location_regexp = [
             '.+/[+]/chrome/browser/vr/.+',
+            '.+/[+]/content/browser/xr/.+',
         ],
     ),
 )
@@ -535,6 +539,7 @@ try_.gpu_chromium_android_builder(
         location_regexp = [
             '.+/[+]/cc/.+',
             '.+/[+]/chrome/browser/vr/.+',
+            '.+/[+]/content/browser/xr/.+',
             '.+/[+]/components/viz/.+',
             '.+/[+]/content/test/gpu/.+',
             '.+/[+]/gpu/.+',
@@ -557,6 +562,7 @@ try_.gpu_chromium_linux_builder(
     tryjob = try_.job(
         location_regexp = [
             '.+/[+]/chrome/browser/vr/.+',
+            '.+/[+]/content/browser/xr/.+',
             '.+/[+]/content/test/gpu/.+',
             '.+/[+]/gpu/.+',
             '.+/[+]/media/audio/.+',
@@ -578,6 +584,7 @@ try_.gpu_chromium_mac_builder(
     tryjob = try_.job(
         location_regexp = [
             '.+/[+]/chrome/browser/vr/.+',
+            '.+/[+]/content/browser/xr/.+',
             '.+/[+]/content/test/gpu/.+',
             '.+/[+]/gpu/.+',
             '.+/[+]/media/audio/.+',
@@ -602,6 +609,7 @@ try_.gpu_chromium_win_builder(
     tryjob = try_.job(
         location_regexp = [
             '.+/[+]/chrome/browser/vr/.+',
+            '.+/[+]/content/browser/xr/.+',
             '.+/[+]/content/test/gpu/.+',
             '.+/[+]/device/vr/.+',
             '.+/[+]/gpu/.+',

@@ -384,6 +384,28 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
   ::settings::AddCaptionSubpageStrings(html_source);
 }
 
+void AddSmartInputsStrings(content::WebUIDataSource* html_source) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"smartInputsTitle", IDS_SETTINGS_SMART_INPUTS_TITLE},
+      {"personalInfoSuggestionTitle",
+       IDS_SETTINGS_SMART_INPUTS_PERSONAL_INFO_TITLE},
+      {"personalInfoSuggestionDescription",
+       IDS_SETTINGS_SMART_INPUTS_PERSONAL_INFO_DESCRIPTION},
+      {"showPersonalInfoSuggestion",
+       IDS_SETTINGS_SMART_INPUTS_SHOW_PERSONAL_INFO},
+      {"managePersonalInfo", IDS_SETTINGS_SMART_INPUTS_MANAGE_PERSONAL_INFO},
+  };
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+
+  // Assistive personal info is allowed when the feature flag is enabled and the
+  // user is not in guest mode.
+  html_source->AddBoolean(
+      "allowAssistivePersonalInfo",
+      base::FeatureList::IsEnabled(features::kAssistPersonalInfo) &&
+          !(user_manager::UserManager::Get()->IsLoggedInAsGuest() ||
+            user_manager::UserManager::Get()->IsLoggedInAsPublicAccount()));
+}
+
 void AddLanguagesStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"orderLanguagesInstructions",
@@ -417,6 +439,7 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source) {
       {"moveUp", IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_MOVE_UP},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+  AddSmartInputsStrings(html_source);
 
   html_source->AddString(
       "languagesLearnMoreURL",

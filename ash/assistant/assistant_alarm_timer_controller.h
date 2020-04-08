@@ -13,6 +13,7 @@
 #include "ash/assistant/model/assistant_alarm_timer_model.h"
 #include "ash/assistant/model/assistant_alarm_timer_model_observer.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
+#include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/mojom/assistant_controller.mojom.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
@@ -35,6 +36,7 @@ class AssistantController;
 class AssistantAlarmTimerController
     : public mojom::AssistantAlarmTimerController,
       public AssistantControllerObserver,
+      public AssistantStateObserver,
       public AssistantAlarmTimerModelObserver,
       public AssistantUiModelObserver {
  public:
@@ -52,16 +54,6 @@ class AssistantAlarmTimerController
   void AddModelObserver(AssistantAlarmTimerModelObserver* observer);
   void RemoveModelObserver(AssistantAlarmTimerModelObserver* observer);
 
-  // mojom::AssistantAlarmTimerController:
-  void OnTimerStateChanged(
-      std::vector<mojom::AssistantTimerPtr> timers) override;
-
-  // AssistantAlarmTimerModelObserver:
-  void OnTimerAdded(const mojom::AssistantTimer& timer) override;
-  void OnTimerUpdated(const mojom::AssistantTimer& timer) override;
-  void OnTimerRemoved(const mojom::AssistantTimer& timer) override;
-  void OnAllTimersRemoved() override;
-
   // Provides a pointer to the |assistant| owned by AssistantController.
   void SetAssistant(chromeos::assistant::mojom::Assistant* assistant);
 
@@ -71,6 +63,19 @@ class AssistantAlarmTimerController
   void OnDeepLinkReceived(
       assistant::util::DeepLinkType type,
       const std::map<std::string, std::string>& params) override;
+
+  // AssistantStateObserver:
+  void OnAssistantStatusChanged(mojom::AssistantState state) override;
+
+  // mojom::AssistantAlarmTimerController:
+  void OnTimerStateChanged(
+      std::vector<mojom::AssistantTimerPtr> timers) override;
+
+  // AssistantAlarmTimerModelObserver:
+  void OnTimerAdded(const mojom::AssistantTimer& timer) override;
+  void OnTimerUpdated(const mojom::AssistantTimer& timer) override;
+  void OnTimerRemoved(const mojom::AssistantTimer& timer) override;
+  void OnAllTimersRemoved() override;
 
   // AssistantUiModelObserver:
   void OnUiVisibilityChanged(

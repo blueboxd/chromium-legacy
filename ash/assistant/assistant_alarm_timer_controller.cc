@@ -202,6 +202,55 @@ void AssistantAlarmTimerController::RemoveModelObserver(
   model_.RemoveObserver(observer);
 }
 
+void AssistantAlarmTimerController::SetAssistant(
+    chromeos::assistant::mojom::Assistant* assistant) {
+  assistant_ = assistant;
+}
+
+void AssistantAlarmTimerController::OnAssistantControllerConstructed() {
+  assistant_controller_->state_controller()->AddObserver(this);
+  assistant_controller_->ui_controller()->AddModelObserver(this);
+}
+
+void AssistantAlarmTimerController::OnAssistantControllerDestroying() {
+  assistant_controller_->ui_controller()->RemoveModelObserver(this);
+  assistant_controller_->state_controller()->RemoveObserver(this);
+}
+
+void AssistantAlarmTimerController::OnDeepLinkReceived(
+    assistant::util::DeepLinkType type,
+    const std::map<std::string, std::string>& params) {
+  using assistant::util::DeepLinkParam;
+  using assistant::util::DeepLinkType;
+
+  if (type != DeepLinkType::kAlarmTimer)
+    return;
+
+  const base::Optional<assistant::util::AlarmTimerAction>& action =
+      assistant::util::GetDeepLinkParamAsAlarmTimerAction(params);
+  if (!action.has_value())
+    return;
+
+  // Timer ID is optional. Only used for adding time to timer.
+  const base::Optional<std::string>& alarm_timer_id =
+      assistant::util::GetDeepLinkParam(params, DeepLinkParam::kId);
+
+  // Duration is optional. Only used for adding time to timer.
+  const base::Optional<base::TimeDelta>& duration =
+      assistant::util::GetDeepLinkParamAsTimeDelta(params,
+                                                   DeepLinkParam::kDurationMs);
+
+  PerformAlarmTimerAction(action.value(), alarm_timer_id, duration);
+}
+
+void AssistantAlarmTimerController::OnAssistantStatusChanged(
+    mojom::AssistantState state) {
+  // If LibAssistant is no longer running we need to clear our cache to
+  // accurately reflect LibAssistant alarm/timer state.
+  if (state == mojom::AssistantState::NOT_READY)
+    model_.RemoveAllTimers();
+}
+
 void AssistantAlarmTimerController::OnTimerStateChanged(
     std::vector<mojom::AssistantTimerPtr> timers) {
   if (timers.empty()) {
@@ -269,45 +318,6 @@ void AssistantAlarmTimerController::OnAllTimersRemoved() {
   assistant_controller_->notification_controller()
       ->RemoveNotificationByGroupingKey(kTimerNotificationGroupingKey,
                                         /*from_server=*/false);
-}
-
-void AssistantAlarmTimerController::SetAssistant(
-    chromeos::assistant::mojom::Assistant* assistant) {
-  assistant_ = assistant;
-}
-
-void AssistantAlarmTimerController::OnAssistantControllerConstructed() {
-  assistant_controller_->ui_controller()->AddModelObserver(this);
-}
-
-void AssistantAlarmTimerController::OnAssistantControllerDestroying() {
-  assistant_controller_->ui_controller()->RemoveModelObserver(this);
-}
-
-void AssistantAlarmTimerController::OnDeepLinkReceived(
-    assistant::util::DeepLinkType type,
-    const std::map<std::string, std::string>& params) {
-  using assistant::util::DeepLinkParam;
-  using assistant::util::DeepLinkType;
-
-  if (type != DeepLinkType::kAlarmTimer)
-    return;
-
-  const base::Optional<assistant::util::AlarmTimerAction>& action =
-      assistant::util::GetDeepLinkParamAsAlarmTimerAction(params);
-  if (!action.has_value())
-    return;
-
-  // Timer ID is optional. Only used for adding time to timer.
-  const base::Optional<std::string>& alarm_timer_id =
-      assistant::util::GetDeepLinkParam(params, DeepLinkParam::kId);
-
-  // Duration is optional. Only used for adding time to timer.
-  const base::Optional<base::TimeDelta>& duration =
-      assistant::util::GetDeepLinkParamAsTimeDelta(params,
-                                                   DeepLinkParam::kDurationMs);
-
-  PerformAlarmTimerAction(action.value(), alarm_timer_id, duration);
 }
 
 void AssistantAlarmTimerController::OnUiVisibilityChanged(

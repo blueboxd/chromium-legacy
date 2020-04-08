@@ -118,6 +118,24 @@ OmniboxResultView::OmniboxResultView(
     // TODO(orinj): Use the real translated string table values here instead.
     tab_switch_button_ =
         CreatePillButton(button_row_, this, "Switch to this tab");
+
+    const auto make_predicate = [=](auto state) {
+      return [=](View* view) {
+        return view->GetVisible() &&
+               popup_contents_view_->model()->selection() ==
+                   OmniboxPopupModel::Selection(model_index_, state);
+      };
+    };
+    keyword_button_focus_ring_ = views::FocusRing::Install(keyword_button_);
+    keyword_button_focus_ring_->SetHasFocusPredicate(
+        make_predicate(OmniboxPopupModel::FOCUSED_BUTTON_KEYWORD));
+    pedal_button_focus_ring_ = views::FocusRing::Install(pedal_button_);
+    pedal_button_focus_ring_->SetHasFocusPredicate(
+        make_predicate(OmniboxPopupModel::FOCUSED_BUTTON_PEDAL));
+    tab_switch_button_focus_ring_ =
+        views::FocusRing::Install(tab_switch_button_);
+    tab_switch_button_focus_ring_->SetHasFocusPredicate(
+        make_predicate(OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH));
   }
 
   keyword_view_ = AddChildView(std::make_unique<OmniboxMatchCellView>(this));
@@ -231,6 +249,12 @@ void OmniboxResultView::ApplyThemeAndRefreshIcons(bool force_reapply_styles) {
   if (keyword_view_->GetVisible()) {
     keyword_view_->description()->ApplyTextColor(
         OmniboxPart::RESULTS_TEXT_DIMMED);
+  }
+
+  if (OmniboxFieldTrial::IsSuggestionButtonRowEnabled()) {
+    keyword_button_focus_ring_->SchedulePaint();
+    pedal_button_focus_ring_->SchedulePaint();
+    tab_switch_button_focus_ring_->SchedulePaint();
   }
 }
 

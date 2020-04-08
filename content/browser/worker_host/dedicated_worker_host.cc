@@ -31,7 +31,6 @@
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "net/base/network_isolation_key.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom.h"
@@ -143,8 +142,8 @@ void DedicatedWorkerHost::StartScriptLoad(
     return;
   }
 
-  network_isolation_key_ =
-      nearest_ancestor_render_frame_host->GetNetworkIsolationKey();
+  isolation_info_ =
+      nearest_ancestor_render_frame_host->GetIsolationInfoForSubresources();
 
   // Get a storage domain.
   SiteInstance* site_instance =
@@ -209,7 +208,7 @@ void DedicatedWorkerHost::StartScriptLoad(
   WorkerScriptFetchInitiator::Start(
       worker_process_host_->GetID(), script_url, creator_render_frame_host,
       nearest_ancestor_render_frame_host->ComputeSiteForCookies(),
-      creator_origin_, network_isolation_key_, credentials_mode,
+      creator_origin_, isolation_info_, credentials_mode,
       std::move(outside_fetch_client_settings_object),
       blink::mojom::ResourceType::kWorker,
       storage_partition_impl->GetServiceWorkerContext(),
@@ -371,7 +370,7 @@ void DedicatedWorkerHost::CreateWebSocketConnector(
       std::make_unique<WebSocketConnectorImpl>(
           ancestor_render_frame_host_id_.child_id,
           ancestor_render_frame_host_id_.frame_routing_id, worker_origin_,
-          network_isolation_key_),
+          isolation_info_.network_isolation_key()),
       std::move(receiver));
 }
 
@@ -387,7 +386,7 @@ void DedicatedWorkerHost::CreateQuicTransportConnector(
   }
   mojo::MakeSelfOwnedReceiver(std::make_unique<QuicTransportConnectorImpl>(
                                   worker_process_host_->GetID(), worker_origin_,
-                                  network_isolation_key_),
+                                  isolation_info_.network_isolation_key()),
                               std::move(receiver));
 }
 

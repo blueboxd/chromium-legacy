@@ -103,12 +103,6 @@ const char kStabilityCrashCount[] =
 const char kStabilityCrashCountDueToGmsCoreUpdate[] =
     "user_experience_metrics.stability.crash_count_due_to_gms_core_update";
 
-// Number of times the application exited uncleanly since the last report
-// without gms core update (Deprecated 2018-09).
-// TODO(wnwen): Remove this after 2019-09.
-const char kStabilityCrashCountWithoutGmsCoreUpdateObsolete[] =
-    "user_experience_metrics.stability.crash_count_without_gms_core_update";
-
 // Number of times the initial stability log upload was deferred to the next
 // startup.
 const char kStabilityDeferredCount[] =
@@ -126,11 +120,6 @@ const char kStabilityDebuggerPresent[] =
 // Number of times the browser has not been run under a debugger.
 const char kStabilityDebuggerNotPresent[] =
     "user_experience_metrics.stability.debugger_not_present";
-
-// An enum value to indicate the execution phase the browser was in.
-// TODO(asvitkine): Remove this after 2019-12.
-const char kStabilityExecutionPhase[] =
-    "user_experience_metrics.stability.execution_phase";
 
 // True if the previous run of the program exited cleanly.
 const char kStabilityExitedCleanly[] =

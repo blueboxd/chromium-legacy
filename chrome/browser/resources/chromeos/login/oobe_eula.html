@@ -21,10 +21,12 @@
           icon1x="oobe-32:googleg" icon2x="oobe-64:googleg">
       </hd-iron-icon>
     </oobe-dialog>
+    <!-- As this dialog have pre-loading logic that require access to elements,
+         dialog is marked as no-lazy. -->
     <oobe-dialog id="eulaDialog" hidden="[[eulaLoadingScreenShown]]"
         role="dialog" title-key="oobeEulaSectionTitle"
         aria-label$="[[i18nDynamic(locale, 'oobeEulaSectionTitle')]]"
-        aria-describedby="crosEulaFrame" has-buttons>
+        aria-describedby="crosEulaFrame" has-buttons no-lazy>
       <hd-iron-icon slot="oobe-icon"
           icon1x="oobe-32:googleg" icon2x="oobe-64:googleg">
       </hd-iron-icon>

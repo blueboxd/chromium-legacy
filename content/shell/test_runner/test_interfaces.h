@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "content/shell/test_runner/test_runner_export.h"
 
 namespace blink {
 class WebLocalFrame;
@@ -18,13 +17,13 @@ class WebURL;
 class WebView;
 }
 
-namespace test_runner {
+namespace content {
 class GamepadController;
 class TestRunner;
 class WebTestDelegate;
 class WebViewTestProxy;
 
-class TEST_RUNNER_EXPORT TestInterfaces {
+class TestInterfaces {
  public:
   TestInterfaces();
   ~TestInterfaces();
@@ -64,6 +63,6 @@ class TEST_RUNNER_EXPORT TestInterfaces {
   DISALLOW_COPY_AND_ASSIGN(TestInterfaces);
 };
 
-}  // namespace test_runner
+}  // namespace content
 
 #endif  // CONTENT_SHELL_TEST_RUNNER_TEST_INTERFACES_H_

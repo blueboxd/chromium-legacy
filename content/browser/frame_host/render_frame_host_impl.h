@@ -74,6 +74,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
+#include "net/base/isolation_info.h"
 #include "net/base/network_isolation_key.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/http/http_response_headers.h"
@@ -283,6 +284,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   const GURL& GetLastCommittedURL() override;
   const url::Origin& GetLastCommittedOrigin() override;
   const net::NetworkIsolationKey& GetNetworkIsolationKey() override;
+  const net::IsolationInfo& GetIsolationInfoForSubresources() override;
   gfx::NativeView GetNativeView() override;
   void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                            const std::string& message) override;
@@ -1628,14 +1630,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnFrameDidCallFocus();
   void OnSaveImageFromDataURL(const std::string& url_str);
 
-  // To be called by ComputeSiteForCookiesForNavigation() and
-  // ComputeSiteForCookies().
-  // Starts traversing the tree from |render_frame_host|.
-  // |is_origin_secure| is whether the origin of the destination of the
-  // navigation whose site_for_cookies is being calculated is secure.
-  net::SiteForCookies ComputeSiteForCookiesInternal(
-      const RenderFrameHostImpl* render_frame_host,
-      bool is_origin_secure) const;
+  // Computes the IsolationInfo for both navigations and subresources.
+  //
+  // For navigations, |frame_origin| is the origin being navigated to. For
+  // subresources, |frame_origin| is the value of |last_committed_origin_|.
+  net::IsolationInfo ComputeIsolationInfoInternal(
+      const url::Origin& frame_origin,
+      net::IsolationInfo::RedirectMode redirect_mode) const;
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
   void OnShowPopup(const FrameHostMsg_ShowPopup_Params& params);
@@ -1942,11 +1943,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Update this frame's last committed origin.
   void SetLastCommittedOrigin(const url::Origin& origin);
 
-  // Set the |last_committed_origin_| and |network_isolation_key_| of |this|
-  // frame, inheriting the origin from |new_frame_creator| as appropriate
-  // (e.g. depending on whether |this| frame should be sandboxed / should have
-  // an opaque origin instead).
-  void SetOriginAndNetworkIsolationKeyOfNewFrame(
+  // Set the |last_committed_origin_| and |isolation_info_| of |this| frame,
+  // inheriting the origin from |new_frame_creator| as appropriate (e.g.
+  // depending on whether |this| frame should be sandboxed / should have an
+  // opaque origin instead).
+  void SetOriginAndIsolationInfoOfNewFrame(
       const url::Origin& new_frame_creator);
 
   // Called when a navigation commits succesfully to |url|. This will update
@@ -2701,12 +2702,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   scoped_refptr<PrefetchedSignedExchangeCache>
       prefetched_signed_exchange_cache_;
 
-  // Network isolation key to be used for subresources from the currently
-  // committed navigation. This is specific to a document and should be reset on
+  // Isolation information to be used for subresources from the currently
+  // committed navigation. Stores both the SiteForCookies and the
+  // NetworkIsolationKey. This is specific to a document and should be reset on
   // every cross-document commit. When a new frame is created, the new frame
-  // inherits the network isolation key from the creator frame, similarly to the
-  // last committed origin.
-  net::NetworkIsolationKey network_isolation_key_;
+  // inherits the IsolationInfo from the creator frame, similarly to the last
+  // committed origin.
+  net::IsolationInfo isolation_info_;
 
   // Hold onto hashes of the last |kMaxCookieSameSiteDeprecationUrls| cookie
   // URLs that we have seen since the last committed navigation, in order to

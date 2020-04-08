@@ -459,6 +459,11 @@ bool V4L2VideoEncodeAccelerator::AllocateImageProcessorOutputBuffers(
   DCHECK(image_processor_);
   DCHECK_EQ(image_processor_->output_mode(),
             ImageProcessor::OutputMode::IMPORT);
+
+  // The existing buffers in |image_processor_output_buffers_| may be alive
+  // until they are actually consumed by the encoder driver, after they are
+  // destroyed here.
+  image_processor_output_buffers_.clear();
   image_processor_output_buffers_.resize(count);
   const ImageProcessor::PortConfig& output_config =
       image_processor_->output_config();
@@ -755,19 +760,36 @@ bool V4L2VideoEncodeAccelerator::ReconfigureFormatIfNeeded(
   }
 
   if (!input_buffer_map_.empty()) {
-    // TODO(crbug.com/1060057): Handle coded_size change.
-    if (frame.coded_size() != input_frame_size_) {
-      VLOGF(1) << "Input frame size is changed during encoding"
-               << ", frame.coded_size()=" << frame.coded_size().ToString()
-               << ", input_frame_size=" << input_frame_size_.ToString();
+    // ReconfigureFormatIfNeeded() has been called with the first VideoFrame.
+    // We checks here we need to (re)create ImageProcessor because the visible
+    // rectangle of |frame| differs from the first VideoFrame.
+    // |frame.natural_size()| is the size to be encoded. It must be the same as
+    // |encoder_input_visible_rect_.size()|, otherwise VEA client must recreate
+    // VEA with the new encoder resolution.
+    if (frame.natural_size() != encoder_input_visible_rect_.size()) {
+      VLOGF(1) << "Encoder resolution is changed during encoding"
+               << ", frame.natural_size()=" << frame.natural_size().ToString()
+               << ", encoder_input_visible_rect_="
+               << input_frame_size_.ToString();
       return false;
     }
-    return true;
-  }
+    if (frame.coded_size() == input_frame_size_) {
+      return true;
+    }
 
-  // Height and width that V4L2VEA needs to configure.
-  const gfx::Size buffer_size(frame.stride(0), frame.coded_size().height());
-  if (frame.coded_size() == input_frame_size_) {
+    // If a dimension of the underlying VideoFrame varies during video encoding
+    // (i.e. frame.coded_size() != input_frame_size_), we (re)create
+    // ImageProcessor to crop the VideoFrame, |frame.visible_rect()| ->
+    // |encoder_input_visible_rect_|.
+    // TODO(hiroh): if |frame.coded_size()| is the same as VideoFrame::
+    // DetermineAlignedSize(input_format, encoder_input_visible_rect_.size())
+    // and don't need a pixel format conversion, image processor is not
+    // necessary but we should rather NegotiateInputFormat().
+  } else if (frame.coded_size() == input_frame_size_) {
+    // This path is for the first frame on Encode().
+    // Height and width that V4L2VEA needs to configure.
+    const gfx::Size buffer_size(frame.stride(0), frame.coded_size().height());
+
     // A buffer given by client is allocated with the same dimension using
     // minigbm. However, it is possible that stride and height are different
     // from ones adjusted by a driver.
@@ -790,13 +812,30 @@ bool V4L2VideoEncodeAccelerator::ReconfigureFormatIfNeeded(
 
   // The |frame| dimension is different from the resolution configured to
   // V4L2VEA. This is the case that V4L2VEA needs to create ImageProcessor for
-  // scaling. Update |input_frame_size_| to check if succeeding frames'
-  // dimensions are not different from one of the first frame.
+  // cropping and scaling. Update |input_frame_size_| to check if succeeding
+  // frames' dimensions are not different from the current one.
   input_frame_size_ = frame.coded_size();
-  return CreateImageProcessor(frame.layout(), device_input_layout_->format(),
-                              device_input_layout_->coded_size(),
-                              frame.visible_rect(),
-                              encoder_input_visible_rect_);
+  if (!CreateImageProcessor(frame.layout(), device_input_layout_->format(),
+                            device_input_layout_->coded_size(),
+                            frame.visible_rect(),
+                            encoder_input_visible_rect_)) {
+    return false;
+  }
+
+  if (gfx::Size(image_processor_->output_config().planes[0].stride,
+                image_processor_->output_config().size.height()) !=
+      device_input_layout_->coded_size()) {
+    VLOGF(1) << "Image Processor's output buffer's size is different from "
+             << "input buffer size configure to the encoder driver. "
+             << "ip's output buffer size: "
+             << gfx::Size(image_processor_->output_config().planes[0].stride,
+                          image_processor_->output_config().size.height())
+                    .ToString()
+             << ", encoder's input buffer size: "
+             << device_input_layout_->coded_size().ToString();
+    return false;
+  }
+  return true;
 }
 
 void V4L2VideoEncodeAccelerator::InputImageProcessorTask() {
@@ -1496,8 +1535,28 @@ bool V4L2VideoEncodeAccelerator::SetFormats(VideoPixelFormat input_format,
   if (!SetOutputFormat(output_profile))
     return false;
 
-  auto v4l2_format =
-      NegotiateInputFormat(input_format, encoder_input_visible_rect_.size());
+  gfx::Size input_size = encoder_input_visible_rect_.size();
+  if (native_input_mode_) {
+    DCHECK(!image_processor_gmb_factory_);
+    image_processor_gmb_factory_ =
+        gpu::GpuMemoryBufferFactory::CreateNativeType(nullptr);
+    if (!image_processor_gmb_factory_) {
+      VLOGF(1) << "Failed to create GpuMemoryBufferFactory";
+      return false;
+    }
+
+    auto input_layout = GetPlatformVideoFrameLayout(
+        image_processor_gmb_factory_.get(), input_format,
+        encoder_input_visible_rect_.size(),
+        gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE);
+    if (!input_layout)
+      return false;
+    input_size = gfx::Size(input_layout->planes()[0].stride,
+                           input_layout->coded_size().height());
+  }
+
+  DCHECK(input_frame_size_.IsEmpty());
+  auto v4l2_format = NegotiateInputFormat(input_format, input_size);
   if (!v4l2_format)
     return false;
 

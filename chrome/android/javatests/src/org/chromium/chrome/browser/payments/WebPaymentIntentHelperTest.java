@@ -53,6 +53,33 @@ public class WebPaymentIntentHelperTest {
     private String mMethodName;
     private PayerData mPayerData;
 
+    private Intent createPaymentResponseWithMissingField(String missingField) {
+        Intent intent = new Intent();
+        Bundle extras = new Bundle();
+        extras.putString(WebPaymentIntentHelper.EXTRA_RESPONSE_DETAILS, "\"key\":\"value\"}");
+        extras.putString(WebPaymentIntentHelper.EXTRA_RESPONSE_METHOD_NAME, "maxPay");
+        Bundle addressBundle = new Bundle();
+        addressBundle.putString(WebPaymentIntentHelper.EXTRA_ADDRESS_COUNTRY, "Canada");
+        String[] addressLine = {"111 Richmond Street West"};
+        addressBundle.putStringArray(WebPaymentIntentHelper.EXTRA_ADDRESS_LINES, addressLine);
+        addressBundle.putString(WebPaymentIntentHelper.EXTRA_ADDRESS_REGION, "Ontario");
+        addressBundle.putString(WebPaymentIntentHelper.EXTRA_ADDRESS_CITY, "Toronto");
+        addressBundle.putString(WebPaymentIntentHelper.EXTRA_ADDRESS_POSTAL_CODE, "M5H2G4");
+        addressBundle.putString(WebPaymentIntentHelper.EXTRA_ADDRESS_RECIPIENT, "John Smith");
+        addressBundle.putString(WebPaymentIntentHelper.EXTRA_ADDRESS_PHONE, "4169158200");
+        extras.putBundle(WebPaymentIntentHelper.EXTRA_SHIPPING_ADDRESS, addressBundle);
+        extras.putString(WebPaymentIntentHelper.EXTRA_RESPONSE_PAYER_NAME, "John Smith");
+        extras.putString(WebPaymentIntentHelper.EXTRA_RESPONSE_PAYER_PHONE, "4169158200");
+        extras.putString(WebPaymentIntentHelper.EXTRA_RESPONSE_PAYER_EMAIL, "JohnSmith@google.com");
+        extras.putString(WebPaymentIntentHelper.EXTRA_SHIPPING_OPTION_ID, "shippingId");
+
+        // Redact the entry with missingField key.
+        extras.remove(missingField);
+
+        intent.putExtras(extras);
+        return intent;
+    }
+
     // Test the happy path of createPayIntent and verify the non-deprecated extras.
     @Test
     @SmallTest
@@ -595,19 +622,136 @@ public class WebPaymentIntentHelperTest {
     @Test
     @SmallTest
     @Feature({"Payments"})
+    public void parsePaymentResponseMissingDetailsTest() throws Throwable {
+        Intent intent = createPaymentResponseWithMissingField(
+                WebPaymentIntentHelper.EXTRA_RESPONSE_DETAILS);
+        mErrorString = null;
+        WebPaymentIntentHelper.parsePaymentResponse(Activity.RESULT_OK, intent,
+                /*requestedPaymentOptions=*/null,
+                (errorString)
+                        -> mErrorString = errorString,
+                (methodName, details, payerData) -> Assert.fail("Parsing should fail."));
+        Assert.assertEquals(ErrorStrings.MISSING_DETAILS_FROM_PAYMENT_APP, mErrorString);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Payments"})
+    public void parsePaymentResponseMissingMethodNameTest() throws Throwable {
+        Intent intent = createPaymentResponseWithMissingField(
+                WebPaymentIntentHelper.EXTRA_RESPONSE_METHOD_NAME);
+        mErrorString = null;
+        WebPaymentIntentHelper.parsePaymentResponse(Activity.RESULT_OK, intent,
+                /*requestedPaymentOptions=*/null,
+                (errorString)
+                        -> mErrorString = errorString,
+                (methodName, details, payerData) -> Assert.fail("Parsing should fail."));
+        Assert.assertEquals(ErrorStrings.MISSING_METHOD_NAME_FROM_PAYMENT_APP, mErrorString);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Payments"})
+    public void parsePaymentResponseMissingShippingAddressTest() throws Throwable {
+        Intent intent = createPaymentResponseWithMissingField(
+                WebPaymentIntentHelper.EXTRA_SHIPPING_ADDRESS);
+        mErrorString = null;
+        WebPaymentIntentHelper.parsePaymentResponse(Activity.RESULT_OK, intent,
+                new PaymentOptions(/*requestPayerName=*/false, /*requestPayerEmail=*/false,
+                        /*requestPayerPhone=*/false, /*requestShipping=*/true,
+                        /*shippingType=*/"shipping"),
+                (errorString)
+                        -> mErrorString = errorString,
+                (methodName, details, payerData) -> Assert.fail("Parsing should fail."));
+        Assert.assertEquals(ErrorStrings.SHIPPING_ADDRESS_INVALID, mErrorString);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Payments"})
+    public void parsePaymentResponseMissingShippingOptionTest() throws Throwable {
+        Intent intent = createPaymentResponseWithMissingField(
+                WebPaymentIntentHelper.EXTRA_SHIPPING_OPTION_ID);
+        mErrorString = null;
+        WebPaymentIntentHelper.parsePaymentResponse(Activity.RESULT_OK, intent,
+                new PaymentOptions(/*requestPayerName=*/false, /*requestPayerEmail=*/false,
+                        /*requestPayerPhone=*/false, /*requestShipping=*/true,
+                        /*shippingType=*/"shipping"),
+                (errorString)
+                        -> mErrorString = errorString,
+                (methodName, details, payerData) -> Assert.fail("Parsing should fail."));
+        Assert.assertEquals(ErrorStrings.SHIPPING_OPTION_EMPTY, mErrorString);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Payments"})
+    public void parsePaymentResponseMissingPayerNameTest() throws Throwable {
+        Intent intent = createPaymentResponseWithMissingField(
+                WebPaymentIntentHelper.EXTRA_RESPONSE_PAYER_NAME);
+        mErrorString = null;
+        WebPaymentIntentHelper.parsePaymentResponse(Activity.RESULT_OK, intent,
+                new PaymentOptions(/*requestPayerName=*/true, /*requestPayerEmail=*/false,
+                        /*requestPayerPhone=*/false, /*requestShipping=*/false,
+                        /*shippingType=*/""),
+                (errorString)
+                        -> mErrorString = errorString,
+                (methodName, details, payerData) -> Assert.fail("Parsing should fail."));
+        Assert.assertEquals(ErrorStrings.PAYER_NAME_EMPTY, mErrorString);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Payments"})
+    public void parsePaymentResponseMissingPayerEmailTest() throws Throwable {
+        Intent intent = createPaymentResponseWithMissingField(
+                WebPaymentIntentHelper.EXTRA_RESPONSE_PAYER_EMAIL);
+        mErrorString = null;
+        WebPaymentIntentHelper.parsePaymentResponse(Activity.RESULT_OK, intent,
+                new PaymentOptions(/*requestPayerName=*/false, /*requestPayerEmail=*/true,
+                        /*requestPayerPhone=*/false, /*requestShipping=*/false,
+                        /*shippingType=*/""),
+                (errorString)
+                        -> mErrorString = errorString,
+                (methodName, details, payerData) -> Assert.fail("Parsing should fail."));
+        Assert.assertEquals(ErrorStrings.PAYER_EMAIL_EMPTY, mErrorString);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Payments"})
+    public void parsePaymentResponseMissingPayerPhoneTest() throws Throwable {
+        Intent intent = createPaymentResponseWithMissingField(
+                WebPaymentIntentHelper.EXTRA_RESPONSE_PAYER_PHONE);
+        mErrorString = null;
+        WebPaymentIntentHelper.parsePaymentResponse(Activity.RESULT_OK, intent,
+                new PaymentOptions(/*requestPayerName=*/false, /*requestPayerEmail=*/false,
+                        /*requestPayerPhone=*/true, /*requestShipping=*/false,
+                        /*shippingType=*/""),
+                (errorString)
+                        -> mErrorString = errorString,
+                (methodName, details, payerData) -> Assert.fail("Parsing should fail."));
+        Assert.assertEquals(ErrorStrings.PAYER_PHONE_EMPTY, mErrorString);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Payments"})
     public void parsePaymentResponseOKTest() throws Throwable {
         Intent intent = new Intent();
         Bundle extras = new Bundle();
         extras.putString(WebPaymentIntentHelper.EXTRA_RESPONSE_DETAILS, "\"key\":\"value\"}");
         extras.putString(WebPaymentIntentHelper.EXTRA_RESPONSE_METHOD_NAME, "maxPay");
-        extras.putString(WebPaymentIntentHelper.EXTRA_ADDRESS_COUNTRY, "Canada");
+        Bundle addressBundle = new Bundle();
+        addressBundle.putString(WebPaymentIntentHelper.EXTRA_ADDRESS_COUNTRY, "Canada");
         String[] addressLine = {"111 Richmond Street West"};
-        extras.putStringArray(WebPaymentIntentHelper.EXTRA_ADDRESS_LINES, addressLine);
-        extras.putString(WebPaymentIntentHelper.EXTRA_ADDRESS_REGION, "Ontario");
-        extras.putString(WebPaymentIntentHelper.EXTRA_ADDRESS_CITY, "Toronto");
-        extras.putString(WebPaymentIntentHelper.EXTRA_ADDRESS_POSTAL_CODE, "M5H2G4");
-        extras.putString(WebPaymentIntentHelper.EXTRA_ADDRESS_RECIPIENT, "John Smith");
-        extras.putString(WebPaymentIntentHelper.EXTRA_ADDRESS_PHONE, "4169158200");
+        addressBundle.putStringArray(WebPaymentIntentHelper.EXTRA_ADDRESS_LINES, addressLine);
+        addressBundle.putString(WebPaymentIntentHelper.EXTRA_ADDRESS_REGION, "Ontario");
+        addressBundle.putString(WebPaymentIntentHelper.EXTRA_ADDRESS_CITY, "Toronto");
+        addressBundle.putString(WebPaymentIntentHelper.EXTRA_ADDRESS_POSTAL_CODE, "M5H2G4");
+        addressBundle.putString(WebPaymentIntentHelper.EXTRA_ADDRESS_RECIPIENT, "John Smith");
+        addressBundle.putString(WebPaymentIntentHelper.EXTRA_ADDRESS_PHONE, "4169158200");
+        extras.putBundle(WebPaymentIntentHelper.EXTRA_SHIPPING_ADDRESS, addressBundle);
         extras.putString(WebPaymentIntentHelper.EXTRA_RESPONSE_PAYER_NAME, "John Smith");
         extras.putString(WebPaymentIntentHelper.EXTRA_RESPONSE_PAYER_PHONE, "4169158200");
         extras.putString(WebPaymentIntentHelper.EXTRA_RESPONSE_PAYER_EMAIL, "JohnSmith@google.com");

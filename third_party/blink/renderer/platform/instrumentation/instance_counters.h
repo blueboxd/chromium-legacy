@@ -55,7 +55,8 @@ namespace blink {
   V(RTCPeerConnection)             \
   V(ResourceFetcher)               \
   V(AdSubframe)                    \
-  V(DetachedScriptState)
+  V(DetachedScriptState)           \
+  V(ArrayBufferContents)
 
 // Atomic counters of the number of instances of objects that exist.
 //

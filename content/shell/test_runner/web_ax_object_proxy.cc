@@ -19,7 +19,7 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/transform.h"
 
-namespace test_runner {
+namespace content {
 
 namespace {
 
@@ -2159,4 +2159,4 @@ v8::Local<v8::Object> WebAXObjectProxyList::GetOrCreate(
   return handle;
 }
 
-}  // namespace test_runner
+}  // namespace content

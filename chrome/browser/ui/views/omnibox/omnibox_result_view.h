@@ -169,6 +169,9 @@ class OmniboxResultView : public views::View,
   views::MdTextButton* keyword_button_ = nullptr;
   views::MdTextButton* pedal_button_ = nullptr;
   views::MdTextButton* tab_switch_button_ = nullptr;
+  std::unique_ptr<views::FocusRing> keyword_button_focus_ring_;
+  std::unique_ptr<views::FocusRing> pedal_button_focus_ring_;
+  std::unique_ptr<views::FocusRing> tab_switch_button_focus_ring_;
 
   // The "X" button at the end of the match cell, used to remove suggestions.
   views::ImageButton* remove_suggestion_button_;

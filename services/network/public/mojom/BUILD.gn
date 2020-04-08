@@ -290,6 +290,7 @@ mojom("mojom") {
     "http_raw_request_response_info.mojom",
     "http_request_headers.mojom",
     "ip_address_space.mojom",
+    "isolation_info.mojom",
     "load_timing_info.mojom",
     "mdns_responder.mojom",
     "net_log.mojom",
@@ -434,6 +435,20 @@ mojom("mojom") {
       traits_headers = [
         "//services/network/public/cpp/http_request_headers_mojom_traits.h",
       ]
+      traits_public_deps = [
+        "//net",
+        "//services/network/public/cpp:cpp_base",
+      ]
+    },
+    {
+      types = [
+        {
+          mojom = "network.mojom.IsolationInfo"
+          cpp = "::net::IsolationInfo"
+        },
+      ]
+      traits_headers =
+          [ "//services/network/public/cpp/isolation_info_mojom_traits.h" ]
       traits_public_deps = [
         "//net",
         "//services/network/public/cpp:cpp_base",

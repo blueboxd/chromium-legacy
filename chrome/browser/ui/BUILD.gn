@@ -423,6 +423,7 @@ jumbo_static_library("ui") {
     "//chrome/services/qrcode_generator/public/cpp",
     "//chrome/services/qrcode_generator/public/mojom",
     "//components/about_ui",
+    "//components/client_hints/browser",
     "//components/account_id",
     "//components/autofill/content/browser:risk_proto",
     "//components/autofill/core/browser",

@@ -25,7 +25,7 @@
 #include "ui/events/base_event_utils.h"
 #include "v8/include/v8.h"
 
-namespace test_runner {
+namespace content {
 
 class TextInputControllerBindings
     : public gin::Wrappable<TextInputControllerBindings> {
@@ -427,4 +427,4 @@ TextInputController::GetInputMethodController() {
       ->GetActiveWebInputMethodController();
 }
 
-}  // namespace test_runner
+}  // namespace content

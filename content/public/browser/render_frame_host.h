@@ -57,6 +57,7 @@ CONTENT_EXPORT extern const base::Feature kCrashReporting;
 }  // namespace features
 
 namespace net {
+class IsolationInfo;
 class NetworkIsolationKey;
 }
 
@@ -218,7 +219,14 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // Returns the network isolation key used for subresources from the currently
   // committed navigation. It's set on commit and does not change until the next
   // navigation is committed.
+  //
+  // TODO(mmenke): Remove this in favor of GetIsolationInfoForSubresoruces().
   virtual const net::NetworkIsolationKey& GetNetworkIsolationKey() = 0;
+
+  // Returns the IsolationInfo used for subresources from the currently
+  // committed navigation. It's set on commit and does not change until the next
+  // navigation is committed.
+  virtual const net::IsolationInfo& GetIsolationInfoForSubresources() = 0;
 
   // Returns the associated widget's native view.
   virtual gfx::NativeView GetNativeView() = 0;

@@ -5,7 +5,7 @@
 #include "content/shell/test_runner/app_banner_service.h"
 #include "base/bind.h"
 
-namespace test_runner {
+namespace content {
 
 AppBannerService::AppBannerService() = default;
 
@@ -44,4 +44,4 @@ void AppBannerService::OnBannerPromptReply(
   std::move(callback).Run(reply == blink::mojom::AppBannerPromptReply::CANCEL);
 }
 
-}  // namespace test_runner
+}  // namespace content

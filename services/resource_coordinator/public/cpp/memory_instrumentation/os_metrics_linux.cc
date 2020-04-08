@@ -181,6 +181,8 @@ uint32_t ParseSmapsCounter(char* counter_line, VmRegion* region) {
     region->byte_stats_shared_clean_resident = ReadCounterBytes(counter_line);
   } else if (strcmp(counter_name, "Swap:") == 0) {
     region->byte_stats_swapped = ReadCounterBytes(counter_line);
+  } else if (strcmp(counter_name, "Locked:") == 0) {
+    region->byte_locked = ReadCounterBytes(counter_line);
   } else {
     res = 0;
   }
@@ -196,7 +198,7 @@ uint32_t ReadLinuxProcSmapsFile(FILE* smaps_file,
   fseek(smaps_file, 0, SEEK_SET);
 
   char line[kMaxLineSize];
-  const uint32_t kNumExpectedCountersPerRegion = 6;
+  const uint32_t kNumExpectedCountersPerRegion = 7;
   uint32_t counters_parsed_for_current_region = 0;
   uint32_t num_valid_regions = 0;
   bool should_add_current_region = false;

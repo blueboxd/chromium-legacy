@@ -195,13 +195,10 @@ device::BluetoothAdapter::DeviceList FilterBluetoothDeviceList(
   return GetLimitedNumDevices(max_devices, filtered_devices);
 }
 
-void RecordPairingResult(bool success,
+void RecordPairingResult(base::Optional<ConnectionFailureReason> failure_reason,
                          BluetoothTransport transport,
                          base::TimeDelta duration) {
   RecordPairingTransport(transport);
-
-  std::string result_histogram_name_prefix =
-      "Bluetooth.ChromeOS.Pairing.Result";
 
   std::string transport_histogram_name;
   switch (transport) {
@@ -220,6 +217,10 @@ void RecordPairingResult(bool success,
       return;
   }
 
+  bool success = !failure_reason.has_value();
+  std::string result_histogram_name_prefix =
+      "Bluetooth.ChromeOS.Pairing.Result";
+
   base::UmaHistogramBoolean(result_histogram_name_prefix, success);
   base::UmaHistogramBoolean(
       result_histogram_name_prefix + "." + transport_histogram_name, success);
@@ -233,17 +234,37 @@ void RecordPairingResult(bool success,
   RecordPairingDuration(base_histogram_name, duration);
   RecordPairingDuration(base_histogram_name + "." + transport_histogram_name,
                         duration);
+
+  if (!success) {
+    base::UmaHistogramEnumeration(
+        result_histogram_name_prefix + ".FailureReason", *failure_reason);
+    base::UmaHistogramEnumeration(result_histogram_name_prefix +
+                                      ".FailureReason." +
+                                      transport_histogram_name,
+                                  *failure_reason);
+  }
 }
 
-void RecordUserInitiatedReconnectionAttemptResult(bool success,
-                                                  BluetoothUiSurface surface) {
+void RecordUserInitiatedReconnectionAttemptResult(
+    base::Optional<ConnectionFailureReason> failure_reason,
+    BluetoothUiSurface surface) {
+  bool success = !failure_reason.has_value();
   std::string base_histogram_name =
       "Bluetooth.ChromeOS.UserInitiatedReconnectionAttempt.Result";
+
   base::UmaHistogramBoolean(base_histogram_name, success);
 
   std::string surface_name =
       (surface == BluetoothUiSurface::kSettings ? "Settings" : "SystemTray");
   base::UmaHistogramBoolean(base_histogram_name + "." + surface_name, success);
+
+  if (!success) {
+    base::UmaHistogramEnumeration(base_histogram_name + ".FailureReason",
+                                  *failure_reason);
+    base::UmaHistogramEnumeration(
+        base_histogram_name + ".FailureReason." + surface_name,
+        *failure_reason);
+  }
 }
 
 void RecordDeviceSelectionDuration(base::TimeDelta duration,

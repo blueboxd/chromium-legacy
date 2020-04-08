@@ -528,4 +528,9 @@ bool WebTestContentBrowserClient::PreSpawnRenderer(
 }
 #endif  // OS_WIN
 
+std::string WebTestContentBrowserClient::GetAcceptLangs(
+    BrowserContext* context) {
+  return content::GetShellLanguage();
+}
+
 }  // namespace content

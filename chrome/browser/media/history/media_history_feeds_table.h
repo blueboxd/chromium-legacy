@@ -54,7 +54,7 @@ class MediaHistoryFeedsTable : public MediaHistoryTableBase {
   // Updates the feed following a fetch.
   bool UpdateFeedFromFetch(const int64_t feed_id,
                            const media_feeds::mojom::FetchResult result,
-                           const base::Time& expiry_time,
+                           const bool was_fetched_from_cache,
                            const int item_count,
                            const int item_play_next_count,
                            const int item_content_types,

@@ -36,9 +36,15 @@ var CrSettingsV3BrowserTest = class extends PolymerTest {
       enabled: [
         'network::features::kOutOfBlinkCors',
         'features::kSettingsPolymer3',
+        ...(this.featureListInternal.enabled || []),
       ],
-      disabled: [],
+      disabled: this.featureListInternal.disabled || [],
     };
+  }
+
+  /** @return {!{enabled: !Array<string>, disabled: !Array<string>}} */
+  get featureListInternal() {
+    return {enabled: [], disabled: []};
   }
 };
 
@@ -142,10 +148,10 @@ var CrSettingsAutofillSectionCompanyEnabledV3Test =
   }
 
   /** @override */
-  get featureList() {
-    const list = super.featureList;
-    list.enabled.push('autofill::features::kAutofillEnableCompanyName');
-    return list;
+  get featureListInternal() {
+    return {
+      enabled: ['autofill::features::kAutofillEnableCompanyName'],
+    };
   }
 };
 
@@ -166,10 +172,8 @@ var CrSettingsAutofillSectionCompanyDisabledV3Test =
   }
 
   /** @override */
-  get featureList() {
-    const list = super.featureList;
-    list.disabled.push('autofill::features::kAutofillEnableCompanyName');
-    return list;
+  get featureListInternal() {
+    return {disabled: ['autofill::features::kAutofillEnableCompanyName']};
   }
 };
 
@@ -187,11 +191,10 @@ var CrSettingsPasswordsSectionV3Test = class extends CrSettingsV3BrowserTest {
   get browsePreload() {
     return 'chrome://settings/test_loader.html?module=settings/passwords_section_test.m.js';
   }
+
   /** @override */
-  get featureList() {
-    const list = super.featureList;
-    list.enabled.push('password_manager::features::kPasswordCheck');
-    return list;
+  get featureListInternal() {
+    return {enabled: ['password_manager::features::kPasswordCheck']};
   }
 };
 
@@ -207,10 +210,8 @@ var CrSettingsPasswordsCheckV3Test = class extends CrSettingsV3BrowserTest {
   }
 
   /** @override */
-  get featureList() {
-    const list = super.featureList;
-    list.enabled.push('password_manager::features::kPasswordCheck');
-    return list;
+  get featureListInternal() {
+    return {enabled: ['password_manager::features::kPasswordCheck']};
   }
 };
 
@@ -226,11 +227,13 @@ var CrSettingsSafetyCheckPageV3Test = class extends CrSettingsV3BrowserTest {
   }
 
   /** @override */
-  get featureList() {
-    const list = super.featureList;
-    list.enabled.push('features::kPrivacySettingsRedesign');
-    list.enabled.push('password_manager::features::kPasswordCheck');
-    return list;
+  get featureListInternal() {
+    return {
+      enabled: [
+        'features::kPrivacySettingsRedesign',
+        'password_manager::features::kPasswordCheck',
+      ],
+    };
   }
 };
 
@@ -348,10 +351,9 @@ var CrSettingsPrivacyPageRedesignV3Test =
     return 'chrome://settings/test_loader.html?module=settings/privacy_page_test.m.js';
   }
 
-  get featureList() {
-    const list = super.featureList;
-    list.enabled.push('features::kPrivacySettingsRedesign');
-    return list;
+  /** @override */
+  get featureListInternal() {
+    return {enabled: ['features::kPrivacySettingsRedesign']};
   }
 };
 

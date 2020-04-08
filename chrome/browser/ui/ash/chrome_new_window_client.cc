@@ -110,6 +110,8 @@ constexpr std::pair<arc::mojom::ChromePage, const char*> kOSSettingsMapping[] =
      {ChromePage::OSLANGUAGESDETAILS, chrome::kOsLanguagesDetailsSubPage},
      {ChromePage::OSLANGUAGESINPUTMETHODS,
       chrome::kOsLanguagesInputMethodsSubPage},
+     {ChromePage::OSLANGUAGESSMARTINPUTS,
+      chrome::kOsLanguagesSmartInputsSubPage},
      {ChromePage::LOCKSCREEN, chrome::kLockScreenSubPage},
      {ChromePage::MAIN, ""},
      {ChromePage::MANAGEACCESSIBILITY, chrome::kManageAccessibilitySubPage},

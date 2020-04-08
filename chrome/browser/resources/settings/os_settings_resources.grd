@@ -621,6 +621,12 @@
       <structure name="IDR_OS_SETTINGS_LANGUAGES_MANAGE_INPUT_METHODS_PAGE_JS"
                  file="chromeos/os_languages_page/manage_input_methods_page.js"
                  type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_LANGUAGES_SMART_INPUTS_PAGE_HTML"
+                 file="chromeos/os_languages_page/smart_inputs_page.html"
+                 type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_LANGUAGES_SMART_INPUTS_PAGE_JS"
+                 file="chromeos/os_languages_page/smart_inputs_page.js"
+                 type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_OS_SEARCH_RESULT_ROW_JS"
                  file="chromeos/os_settings_search_box/os_search_result_row.js"
                  type="chrome_html" />

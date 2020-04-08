@@ -124,9 +124,6 @@ class AssociatedUserValidator {
       CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus,
       const std::vector<base::string16>& reauth_sids);
 
-  // Returns true if any associated user is enforced to reauth via google.
-  bool IsAuthEnforcedOnAssociatedUsers();
-
   // Restores the access for a user that was denied access (if applicable).
   // Returns S_OK on success, failure otherwise.
   HRESULT RestoreUserAccess(const base::string16& sid);

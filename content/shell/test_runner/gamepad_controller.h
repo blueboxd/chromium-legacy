@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
-#include "content/shell/test_runner/test_runner_export.h"
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "device/gamepad/public/mojom/gamepad.mojom.h"
 #include "device/gamepad/public/mojom/gamepad_hardware_buffer.h"
@@ -25,10 +24,9 @@ namespace blink {
 class WebLocalFrame;
 }
 
-namespace test_runner {
+namespace content {
 
-class TEST_RUNNER_EXPORT GamepadController
-    : public base::SupportsWeakPtr<GamepadController> {
+class GamepadController : public base::SupportsWeakPtr<GamepadController> {
  public:
   GamepadController();
   ~GamepadController();
@@ -104,6 +102,6 @@ class TEST_RUNNER_EXPORT GamepadController
   DISALLOW_COPY_AND_ASSIGN(GamepadController);
 };
 
-}  // namespace test_runner
+}  // namespace content
 
 #endif  // CONTENT_SHELL_TEST_RUNNER_GAMEPAD_CONTROLLER_H_

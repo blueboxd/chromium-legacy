@@ -32,7 +32,23 @@ Polymer({
               settings.routes.OS_LANGUAGES_DETAILS.path,
               '#languagesSubpageTrigger');
         }
+        if (settings.routes.OS_LANGUAGES_SMART_INPUTS) {
+          map.set(
+              settings.routes.OS_LANGUAGES_SMART_INPUTS.path,
+              '#smartInputsSubpageTrigger');
+        }
         return map;
+      },
+    },
+
+    /**
+     * This is enabled when any of the smart inputs features is allowed.
+     * @private
+     * */
+    smartInputsEnabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('allowAssistivePersonalInfo');
       },
     }
   },
@@ -42,6 +58,12 @@ Polymer({
     // TODO(crbug.com/950007): Add UMA metric for opening language details.
     settings.Router.getInstance().navigateTo(
         settings.routes.OS_LANGUAGES_DETAILS);
+  },
+
+  /** @private */
+  onSmartInputsClick_() {
+    settings.Router.getInstance().navigateTo(
+        settings.routes.OS_LANGUAGES_SMART_INPUTS);
   },
 
   /**

@@ -103,6 +103,7 @@ class WebTestContentBrowserClient : public ShellContentBrowserClient {
   bool PreSpawnRenderer(sandbox::TargetPolicy* policy,
                         RendererSpawnFlags flags) override;
 #endif
+  std::string GetAcceptLangs(BrowserContext* context) override;
 
  private:
   // ShellContentBrowserClient overrides.

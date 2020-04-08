@@ -421,6 +421,7 @@ const char kKnownNetworksSubPage[] = "knownNetworks";
 const char kOsLanguagesSubPage[] = "osLanguages";
 const char kOsLanguagesDetailsSubPage[] = "osLanguages/details";
 const char kOsLanguagesInputMethodsSubPage[] = "osLanguages/inputMethods";
+const char kOsLanguagesSmartInputsSubPage[] = "osLanguages/smartInputs";
 const char kLockScreenSubPage[] = "lockScreen";
 const char kManageAccessibilitySubPage[] = "manageAccessibility";
 const char kManageAccessibilityTtsSubPage[] = "manageAccessibility/tts";
@@ -492,6 +493,7 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       kOsLanguagesSubPage,
       kOsLanguagesDetailsSubPage,
       kOsLanguagesInputMethodsSubPage,
+      kOsLanguagesSmartInputsSubPage,
       kOsPeopleSubPage,
       kOsPrintingSubPage,
       kOsPrivacySubPage,

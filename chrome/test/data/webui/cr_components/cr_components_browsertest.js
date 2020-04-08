@@ -7,6 +7,8 @@
 // Polymer BrowserTest fixture.
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
+GEN('#include "chrome/browser/ui/ui_features.h"');
+
 /**
  * Test fixture for shared Polymer components.
  * @constructor
@@ -117,6 +119,9 @@ CrComponentsCertificateManagerTest.prototype = {
    * @override
    */
   browsePreload: 'chrome://settings/privacy_page/privacy_page.html',
+
+  /** @override */
+  featureList: {disabled: ['features::kSettingsPolymer3']},
 
   /** @override */
   extraLibraries: CrComponentsBrowserTest.prototype.extraLibraries.concat([

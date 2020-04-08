@@ -12,7 +12,7 @@
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_text_checking_result.h"
 
-namespace test_runner {
+namespace content {
 
 // A mock implementation of a spell-checker used for WebKit tests.
 // This class only implements the minimal functionalities required by WebKit
@@ -70,6 +70,6 @@ class MockSpellCheck {
   DISALLOW_COPY_AND_ASSIGN(MockSpellCheck);
 };
 
-}  // namespace test_runner
+}  // namespace content
 
 #endif  // CONTENT_SHELL_TEST_RUNNER_MOCK_SPELL_CHECK_H_

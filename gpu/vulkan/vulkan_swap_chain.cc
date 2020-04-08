@@ -125,7 +125,7 @@ gfx::SwapResult VulkanSwapChain::PresentBuffer(const gfx::Rect& rect) {
 
   result = vkQueuePresentKHR(queue, &present_info);
   if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-    DLOG(ERROR) << "vkQueuePresentKHR() failed: " << result;
+    LOG(FATAL) << "vkQueuePresentKHR() failed: " << result;
     return gfx::SwapResult::SWAP_FAILED;
   }
   DLOG_IF(ERROR, result == VK_SUBOPTIMAL_KHR) << "Swapchian is suboptimal.";
@@ -158,6 +158,7 @@ bool VulkanSwapChain::InitializeSwapChain(
     VkSurfaceTransformFlagBitsKHR pre_transform,
     bool use_protected_memory,
     std::unique_ptr<VulkanSwapChain> old_swap_chain) {
+  DCHECK(!acquired_image_);
   VkDevice device = device_queue_->GetVulkanDevice();
   VkResult result = VK_SUCCESS;
 
@@ -192,7 +193,7 @@ bool VulkanSwapChain::InitializeSwapChain(
   }
 
   if (VK_SUCCESS != result) {
-    DLOG(ERROR) << "vkCreateSwapchainKHR() failed: " << result;
+    LOG(FATAL) << "vkCreateSwapchainKHR() failed: " << result;
     return false;
   }
 
@@ -219,7 +220,7 @@ bool VulkanSwapChain::InitializeSwapImages(
   uint32_t image_count = 0;
   result = vkGetSwapchainImagesKHR(device, swap_chain_, &image_count, nullptr);
   if (VK_SUCCESS != result) {
-    DLOG(ERROR) << "vkGetSwapchainImagesKHR(NULL) failed: " << result;
+    LOG(FATAL) << "vkGetSwapchainImagesKHR(nullptr) failed: " << result;
     return false;
   }
 
@@ -227,7 +228,7 @@ bool VulkanSwapChain::InitializeSwapImages(
   result =
       vkGetSwapchainImagesKHR(device, swap_chain_, &image_count, images.data());
   if (VK_SUCCESS != result) {
-    DLOG(ERROR) << "vkGetSwapchainImagesKHR(images) failed: " << result;
+    LOG(FATAL) << "vkGetSwapchainImagesKHR(images) failed: " << result;
     return false;
   }
 
@@ -352,7 +353,7 @@ bool VulkanSwapChain::AcquireNextImage() {
                               VK_NULL_HANDLE, &next_image);
     if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
       vkDestroySemaphore(device, vk_semaphore, nullptr /* pAllocator */);
-      DLOG(ERROR) << "vkAcquireNextImageKHR() failed: " << result;
+      LOG(FATAL) << "vkAcquireNextImageKHR() failed: " << result;
       return false;
     }
 

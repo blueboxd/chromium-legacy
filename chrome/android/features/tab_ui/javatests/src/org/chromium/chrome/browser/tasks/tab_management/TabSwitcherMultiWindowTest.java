@@ -7,9 +7,9 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import static org.chromium.chrome.browser.multiwindow.MultiWindowTestHelper.moveActivityToFront;
 import static org.chromium.chrome.browser.multiwindow.MultiWindowTestHelper.waitForSecondChromeTabbedActivity;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.clickFirstCardFromTabSwitcher;
+import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.createTabs;
 
 import android.annotation.TargetApi;
 import android.os.Build;
@@ -26,7 +26,6 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -38,7 +37,6 @@ import org.chromium.chrome.features.start_surface.StartSurfaceLayout;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -77,12 +75,11 @@ public class TabSwitcherMultiWindowTest {
     @Test
     @MediumTest
     @TargetApi(Build.VERSION_CODES.N)
-    @DisableIf.Build(message = "crbug.com/1017141", sdk_is_less_than = Build.VERSION_CODES.P)
     public void testMoveTabsAcrossWindow_GTS_WithoutGroup() {
         final ChromeTabbedActivity cta1 = mActivityTestRule.getActivity();
         // Initially, we have 4 normal tabs and 3 incognito tabs in cta1.
-        initializeTabModel(cta1, false, 4);
-        initializeTabModel(cta1, true, 3);
+        createTabs(cta1, false, 4);
+        createTabs(cta1, true, 3);
         verifyTabModelTabCount(cta1, 4, 3);
 
         // Enter tab switcher in cta1 in incognito mode.
@@ -105,7 +102,6 @@ public class TabSwitcherMultiWindowTest {
         CriteriaHelper.pollUiThread(Criteria.equals(1, recyclerView1::getChildCount));
 
         // Enter tab switcher in cta2.
-        moveActivityToFront(cta2);
         enterTabSwitcher(cta2);
 
         // There should be two incognito tabs in tab switcher in cta2.
@@ -122,10 +118,8 @@ public class TabSwitcherMultiWindowTest {
         enterTabSwitcher(cta2);
         CriteriaHelper.pollUiThread(Criteria.equals(1, recyclerView2::getChildCount));
 
-        // Enter tab switcher in cta1.
-        moveActivityToFront(cta1);
-
-        // There should be two incognito tabs in tab switcher in cta1.
+        // Enter tab switcher in cta1. Verify there are two incognito tabs in tab switcher in cta1.
+        enterTabSwitcher(cta1);
         CriteriaHelper.pollUiThread(Criteria.equals(2, recyclerView1::getChildCount));
 
         // Switch to normal tab list in cta1.
@@ -148,7 +142,6 @@ public class TabSwitcherMultiWindowTest {
         CriteriaHelper.pollUiThread(Criteria.equals(1, recyclerView1::getChildCount));
 
         // Enter tab switcher in cta2.
-        moveActivityToFront(cta2);
         enterTabSwitcher(cta2);
 
         // There should be 3 normal tabs in tab switcher in cta2.
@@ -163,13 +156,6 @@ public class TabSwitcherMultiWindowTest {
         verifyTabModelTabCount(cta2, 1, 1);
         enterTabSwitcher(cta2);
         CriteriaHelper.pollUiThread(Criteria.equals(1, recyclerView2::getChildCount));
-    }
-
-    private void initializeTabModel(ChromeTabbedActivity cta, boolean isIncognito, int tabsCount) {
-        for (int i = 0; i < (isIncognito ? tabsCount : tabsCount - 1); i++) {
-            ChromeTabUtils.newTabFromMenu(
-                    InstrumentationRegistry.getInstrumentation(), cta, isIncognito, true);
-        }
     }
 
     private void moveTabsToOtherWindow(ChromeTabbedActivity cta, int number) {

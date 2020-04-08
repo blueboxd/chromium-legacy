@@ -9,7 +9,7 @@
 using blink::WebSettings;
 using blink::WebString;
 
-namespace test_runner {
+namespace content {
 
 TestPreferences::TestPreferences() {
   Reset();
@@ -47,4 +47,4 @@ void TestPreferences::Reset() {
   spatial_navigation_enabled = false;
 }
 
-}  // namespace test_runner
+}  // namespace content

@@ -36,6 +36,7 @@
 #include "third_party/libyuv/include/libyuv.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkImageGenerator.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
@@ -47,12 +48,14 @@
 // shown here to indicate where ideal conversions are currently missing.
 #if SK_B32_SHIFT == 0 && SK_G32_SHIFT == 8 && SK_R32_SHIFT == 16 && \
     SK_A32_SHIFT == 24
+#define LIBYUV_I400_TO_ARGB libyuv::I400ToARGB
 #define LIBYUV_I420_TO_ARGB libyuv::I420ToARGB
 #define LIBYUV_I422_TO_ARGB libyuv::I422ToARGB
 #define LIBYUV_I444_TO_ARGB libyuv::I444ToARGB
 
 #define LIBYUV_I420ALPHA_TO_ARGB libyuv::I420AlphaToARGB
 
+#define LIBYUV_J400_TO_ARGB libyuv::J400ToARGB
 #define LIBYUV_J420_TO_ARGB libyuv::J420ToARGB
 #define LIBYUV_J422_TO_ARGB libyuv::J422ToARGB
 #define LIBYUV_J444_TO_ARGB libyuv::J444ToARGB
@@ -84,12 +87,14 @@
 #define LIBYUV_NV12_TO_ARGB libyuv::NV12ToARGB
 #elif SK_R32_SHIFT == 0 && SK_G32_SHIFT == 8 && SK_B32_SHIFT == 16 && \
     SK_A32_SHIFT == 24
+#define LIBYUV_I400_TO_ARGB libyuv::I400ToARGB
 #define LIBYUV_I420_TO_ARGB libyuv::I420ToABGR
 #define LIBYUV_I422_TO_ARGB libyuv::I422ToABGR
 #define LIBYUV_I444_TO_ARGB libyuv::I444ToABGR
 
 #define LIBYUV_I420ALPHA_TO_ARGB libyuv::I420AlphaToABGR
 
+#define LIBYUV_J400_TO_ARGB libyuv::J400ToARGB
 #define LIBYUV_J420_TO_ARGB libyuv::J420ToABGR
 #define LIBYUV_J422_TO_ARGB libyuv::J422ToABGR
 #define LIBYUV_J444_TO_ARGB libyuv::J444ToABGR
@@ -423,6 +428,18 @@ void ConvertVideoFrameToRGBPixelsTask(const VideoFrame* video_frame,
   // https://crbug.com/828599
   SkYUVColorSpace color_space = kRec601_SkYUVColorSpace;
   video_frame->ColorSpace().ToSkYUVColorSpace(&color_space);
+
+  if (!video_frame->data(VideoFrame::kUPlane) &&
+      !video_frame->data(VideoFrame::kVPlane)) {
+    DCHECK_EQ(video_frame->format(), PIXEL_FORMAT_I420);
+    auto func = (color_space == kJPEG_SkYUVColorSpace) ? LIBYUV_J400_TO_ARGB
+                                                       : LIBYUV_I400_TO_ARGB;
+    func(plane_meta[VideoFrame::kYPlane].data,
+         plane_meta[VideoFrame::kYPlane].stride, pixels, row_bytes, width,
+         rows);
+    done->Run();
+    return;
+  }
 
   auto convert_yuv = [&](auto&& func) {
     func(plane_meta[VideoFrame::kYPlane].data,
@@ -903,6 +920,7 @@ scoped_refptr<VideoFrame> DownShiftHighbitVideoFrame(
   VideoPixelFormat format;
   switch (video_frame->format()) {
     case PIXEL_FORMAT_YUV420P12:
+    case PIXEL_FORMAT_YUV420P10:
     case PIXEL_FORMAT_YUV420P9:
       format = PIXEL_FORMAT_I420;
       break;
@@ -938,6 +956,13 @@ scoped_refptr<VideoFrame> DownShiftHighbitVideoFrame(
     const uint16_t* src =
         reinterpret_cast<const uint16_t*>(video_frame->data(plane));
     uint8_t* dst = ret->data(plane);
+    if (!src) {
+      // An AV1 monochrome (grayscale) frame has no U and V planes. Set all U
+      // and V samples to the neutral value (128).
+      DCHECK_NE(plane, VideoFrame::kYPlane);
+      memset(dst, 128, ret->rows(plane) * ret->stride(plane));
+      continue;
+    }
     for (int row = 0; row < video_frame->rows(plane); row++) {
       for (int x = 0; x < width; x++) {
         dst[x] = src[x] >> shift;
@@ -1099,6 +1124,17 @@ void PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
     case PIXEL_FORMAT_YUV444P12:
       temporary_frame = DownShiftHighbitVideoFrame(video_frame);
       video_frame = temporary_frame.get();
+      break;
+    case PIXEL_FORMAT_YUV420P10:
+      // In AV1, a monochrome (grayscale) frame is represented as a YUV 4:2:0
+      // frame with no U and V planes. Since there are no 10-bit versions of
+      // libyuv::I400ToARGB() and libyuv::J400ToARGB(), convert the frame to an
+      // 8-bit YUV 4:2:0 frame with U and V planes.
+      if (!video_frame->data(VideoFrame::kUPlane) &&
+          !video_frame->data(VideoFrame::kVPlane)) {
+        temporary_frame = DownShiftHighbitVideoFrame(video_frame);
+        video_frame = temporary_frame.get();
+      }
       break;
     case PIXEL_FORMAT_Y16:
       // Since it is grayscale conversion, we disregard

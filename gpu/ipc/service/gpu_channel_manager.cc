@@ -434,6 +434,8 @@ void GpuChannelManager::PopulateShaderCache(int32_t client_id,
 void GpuChannelManager::LoseAllContexts() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
+  discardable_manager_.OnContextLost();
+  passthrough_discardable_manager_.OnContextLost();
   share_group_ = base::MakeRefCounted<gl::GLShareGroup>();
   for (auto& kv : gpu_channels_) {
     kv.second->MarkAllContextsLost();
@@ -609,10 +611,15 @@ void GpuChannelManager::HandleMemoryPressure(
 
   if (program_cache_)
     program_cache_->HandleMemoryPressure(memory_pressure_level);
-  discardable_manager_.HandleMemoryPressure(memory_pressure_level);
-  passthrough_discardable_manager_.HandleMemoryPressure(memory_pressure_level);
-  if (shared_context_state_)
+
+  // These caches require a current context for cleanup.
+  if (shared_context_state_ &&
+      shared_context_state_->MakeCurrent(nullptr, true /* needs_gl */)) {
+    discardable_manager_.HandleMemoryPressure(memory_pressure_level);
+    passthrough_discardable_manager_.HandleMemoryPressure(
+        memory_pressure_level);
     shared_context_state_->PurgeMemory(memory_pressure_level);
+  }
   if (gr_shader_cache_)
     gr_shader_cache_->PurgeMemory(memory_pressure_level);
 #if defined(OS_WIN)

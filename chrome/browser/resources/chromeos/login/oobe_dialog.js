@@ -80,6 +80,15 @@ Polymer({
       type: String,
     },
 
+    /**
+     * If set, prevents lazy instantiation of the dialog.
+     */
+    noLazy: {
+      type: Boolean,
+      value: false,
+      observer: 'onNoLazyChanged_',
+    }
+
   },
 
   focus() {
@@ -93,6 +102,7 @@ Polymer({
   },
 
   onBeforeShow() {
+    this.$$('#lazy').get();
     var isOobe = window.hasOwnProperty('Oobe') &&
         window.hasOwnProperty('DISPLAY_TYPE') && Oobe.getInstance() &&
         Oobe.getInstance().displayType == DISPLAY_TYPE.OOBE;
@@ -142,4 +152,10 @@ Polymer({
     if (this.fullScreenDialog)
       document.documentElement.setAttribute('full-screen-dialog', true);
   },
+
+  /** @private */
+  onNoLazyChanged_() {
+    if (this.noLazy)
+      this.$$('#lazy').get();
+  }
 });

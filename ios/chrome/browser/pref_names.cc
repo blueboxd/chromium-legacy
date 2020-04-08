@@ -96,9 +96,6 @@ const char kLastSessionExitedCleanly[] =
 const char kMetricsReportingWifiOnly[] =
     "ios.user_experience_metrics.wifi_only";
 
-// Which page should be visible on the new tab page v4
-const char kNtpShownPage[] = "ntp.shown_page";
-
 // Boolean controlling whether history saving is disabled.
 const char kSavingBrowserHistoryDisabled[] = "history.saving_disabled";
 

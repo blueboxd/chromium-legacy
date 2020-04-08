@@ -10,17 +10,15 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "content/shell/test_runner/test_runner_export.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/app_banner/app_banner.mojom.h"
 
-namespace test_runner {
+namespace content {
 
 // Test app banner service that is registered as a Mojo service for
 // BeforeInstallPromptEvents to look up when the test runner is executed.
-class TEST_RUNNER_EXPORT AppBannerService
-    : public blink::mojom::AppBannerService {
+class AppBannerService : public blink::mojom::AppBannerService {
  public:
   AppBannerService();
   ~AppBannerService() override;
@@ -46,6 +44,6 @@ class TEST_RUNNER_EXPORT AppBannerService
   DISALLOW_COPY_AND_ASSIGN(AppBannerService);
 };
 
-}  // namespace test_runner
+}  // namespace content
 
 #endif  // CONTENT_SHELL_TEST_RUNNER_APP_BANNER_SERVICE_H_

@@ -5,7 +5,6 @@
 /* This file should contain style used on desktop but not Android or iOS. */
 
 :root {
-  --google-blue-600: 26, 115, 232;
   --google-grey-700: 95, 99, 104;
   --google-grey-800: 60, 64, 67;
 }

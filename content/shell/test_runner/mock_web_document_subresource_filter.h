@@ -16,7 +16,7 @@ namespace blink {
 class WebURL;
 }  // namespace blink
 
-namespace test_runner {
+namespace content {
 
 class MockWebDocumentSubresourceFilter
     : public blink::WebDocumentSubresourceFilter {
@@ -42,6 +42,6 @@ class MockWebDocumentSubresourceFilter
   DISALLOW_COPY_AND_ASSIGN(MockWebDocumentSubresourceFilter);
 };
 
-}  // namespace test_runner
+}  // namespace content
 
 #endif  // CONTENT_SHELL_TEST_RUNNER_MOCK_WEB_DOCUMENT_SUBRESOURCE_FILTER_H_

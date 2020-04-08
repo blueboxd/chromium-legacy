@@ -69,10 +69,10 @@ def WriteIncludes(headers, include):
 
 def main(argv):
   parser = argparse.ArgumentParser()
-  parser.add_argument("--protoc",
+  parser.add_argument("--protoc", required=True,
                       help="Relative path to compiler.")
 
-  parser.add_argument("--proto-in-dir",
+  parser.add_argument("--proto-in-dir", required=True,
                       help="Base directory with source protos.")
   parser.add_argument("--cc-out-dir",
                       help="Output directory for standard C++ generator.")
@@ -81,6 +81,9 @@ def main(argv):
   parser.add_argument("--plugin-out-dir",
                       help="Output directory for custom generator plugin.")
 
+  parser.add_argument('--enable-kythe-annotations', action='store_true',
+                      help='Enable generation of Kythe kzip, used for '
+                      'codesearch.')
   parser.add_argument("--plugin",
                       help="Relative path to custom generator plugin.")
   parser.add_argument("--plugin-options",
@@ -95,7 +98,7 @@ def main(argv):
   parser.add_argument("protos", nargs="+",
                       help="Input protobuf definition file(s).")
 
-  options = parser.parse_args()
+  options = parser.parse_args(argv)
 
   proto_dir = os.path.relpath(options.proto_in_dir)
   protoc_cmd = [os.path.realpath(options.protoc)]
@@ -109,7 +112,19 @@ def main(argv):
 
   if options.cc_out_dir:
     cc_out_dir = options.cc_out_dir
-    cc_options = FormatGeneratorOptions(options.cc_options)
+    cc_options_list = []
+    if options.enable_kythe_annotations:
+      cc_options_list.extend([
+          'annotate_headers', 'annotation_pragma_name=kythe_metadata',
+          'annotation_guard_name=KYTHE_IS_RUNNING'
+      ])
+
+    # cc_options will likely have trailing colon so needs to be inserted at the
+    # end.
+    if options.cc_options:
+      cc_options_list.append(options.cc_options)
+
+    cc_options = FormatGeneratorOptions(','.join(cc_options_list))
     protoc_cmd += ["--cpp_out", cc_options + cc_out_dir]
     for filename in protos:
       stripped_name = StripProtoExtension(filename)
@@ -146,7 +161,7 @@ def main(argv):
 
 if __name__ == "__main__":
   try:
-    main(sys.argv)
+    main(sys.argv[1:])
   except RuntimeError as e:
     print(e, file=sys.stderr)
     sys.exit(1)

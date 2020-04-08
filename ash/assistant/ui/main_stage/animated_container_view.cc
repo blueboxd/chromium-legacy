@@ -44,12 +44,14 @@ AnimatedContainerView::AnimatedContainerView(AssistantViewDelegate* delegate)
     : delegate_(delegate) {
   // The AssistantViewDelegate should outlive AnimatedContainerView.
   delegate_->AddInteractionModelObserver(this);
+  AddScrollViewObserver(this);
 }
 
 AnimatedContainerView::~AnimatedContainerView() {
   if (IsResponseProcessingV2Enabled() && response_)
     response_.get()->RemoveObserver(this);
 
+  RemoveScrollViewObserver(this);
   delegate_->RemoveInteractionModelObserver(this);
 }
 

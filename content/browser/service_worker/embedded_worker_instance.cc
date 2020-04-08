@@ -40,6 +40,8 @@
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "net/base/isolation_info.h"
+#include "net/cookies/site_for_cookies.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
@@ -1191,7 +1193,10 @@ EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
                                      .InitWithNewPipeAndPassReceiver();
   network::mojom::URLLoaderFactoryParamsPtr factory_params =
       URLLoaderFactoryParamsHelper::CreateForWorker(
-          rph, origin, net::NetworkIsolationKey(origin, origin),
+          rph, origin,
+          net::IsolationInfo::Create(
+              net::IsolationInfo::RedirectMode::kUpdateNothing, origin, origin,
+              net::SiteForCookies::FromOrigin(origin)),
           std::move(coep_reporter));
   bool bypass_redirect_checks = false;
 

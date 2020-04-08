@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Composited scrolling ignores CSS clip</title>
+    <link rel="help" href="https://bugs.chromium.org/p/chromium/issues/detail?id=1058870">
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src='../../resources/gesture-util.js'></script>
+    <style>
+    .behindscroller {
+      width: 200px;
+      height: 400px;
+      background: lightgreen;
+      position: absolute;
+      top: 50px;
+      left: 0;
+    }
+    .scroller {
+      width: 200px;
+      height: 400px;
+      overflow-y: scroll;
+      clip-path: circle(220px at 0 150px);
+      position: absolute;
+      top: 50px;
+      left: 0;
+    }
+    </style>
+  </head>
+  <body onload="onLoad()">
+    <div id="behindscroller" class="behindscroller"></div>
+    <div id="scroller" class="scroller">
+      <div id="forcescroll" style="height: 1000px; width: 100%; background: linear-gradient(grey, white)"></div>
+    </div>
+    You should not be able to wheel scroll with the mouse cursor in the green area.
+  </body>
+  <script>
+    function onLoad(){
+      var behindscroller= document.getElementById("behindscroller");
+      var behindscrollerRect = behindscroller.getBoundingClientRect();
+
+      if(window.promise_test){
+        promise_test(function(){
+          return new Promise(async function(resolve, reject){
+            const distance = 10;
+            const x = behindscrollerRect.right - 10;
+            const y = behindscrollerRect.top + 5;
+            const input_source = GestureSourceType.MOUSE_INPUT;
+            const direction = "down";
+            const scroll_speed = SPEED_INSTANT;
+
+            await smoothScroll(distance, x, y, input_source, direction,
+              scroll_speed,
+              true /* precise_scrolling_deltas */,
+              false /* scroll_by_page */);
+
+            await conditionHolds( () => {
+              return scroller.scrollTop == 0;
+            }).then(resolve, reject);
+          });
+        }, "No scrolling in clipped out region");
+      }
+    }
+  </script>
+</html>

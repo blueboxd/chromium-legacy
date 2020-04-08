@@ -35,7 +35,7 @@ struct WebSize;
 class WebView;
 }  // namespace blink
 
-namespace test_runner {
+namespace content {
 
 class WebWidgetTestProxy;
 struct TestPreferences;
@@ -125,20 +125,14 @@ class WebTestDelegate {
   // Controls the device scale factor of the main WebView for hidpi tests.
   virtual void SetDeviceScaleFactor(float factor) = 0;
 
-  // Converts |event| from screen coordinates used by test_runner::EventSender
+  // Converts |event| from screen coordinates used by EventSender
   // into coordinates that are understood by the widget associated with
   // |web_widget_test_proxy|.  Returns nullptr if no transformation was
   // necessary (e.g. for a keyboard event OR if widget requires no scaling
   // and has coordinates starting at (0,0)).
   virtual std::unique_ptr<blink::WebInputEvent>
-  TransformScreenToWidgetCoordinates(
-      test_runner::WebWidgetTestProxy* web_widget_test_proxy,
-      const blink::WebInputEvent& event) = 0;
-
-  // Gets WebWidgetTestProxy associated with |frame| (associated with either
-  // a RenderView or a RenderWidget for the local root).
-  virtual test_runner::WebWidgetTestProxy* GetWebWidgetTestProxy(
-      blink::WebLocalFrame* frame) = 0;
+  TransformScreenToWidgetCoordinates(WebWidgetTestProxy* web_widget_test_proxy,
+                                     const blink::WebInputEvent& event) = 0;
 
   // Enable zoom-for-dsf option.
   virtual void EnableUseZoomForDSF() = 0;
@@ -263,6 +257,6 @@ class WebTestDelegate {
   virtual void SetScreenOrientationChanged() = 0;
 };
 
-}  // namespace test_runner
+}  // namespace content
 
 #endif  // CONTENT_SHELL_TEST_RUNNER_WEB_TEST_DELEGATE_H_

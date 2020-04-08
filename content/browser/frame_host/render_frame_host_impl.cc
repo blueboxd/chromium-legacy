@@ -1263,7 +1263,14 @@ const url::Origin& RenderFrameHostImpl::GetLastCommittedOrigin() {
 }
 
 const net::NetworkIsolationKey& RenderFrameHostImpl::GetNetworkIsolationKey() {
-  return network_isolation_key_;
+  DCHECK(!isolation_info_.IsEmpty());
+  return isolation_info_.network_isolation_key();
+}
+
+const net::IsolationInfo&
+RenderFrameHostImpl::GetIsolationInfoForSubresources() {
+  DCHECK(!isolation_info_.IsEmpty());
+  return isolation_info_;
 }
 
 void RenderFrameHostImpl::GetCanonicalUrlForSharing(
@@ -2249,70 +2256,70 @@ const url::Origin& RenderFrameHostImpl::ComputeTopFrameOrigin(
 
 net::SiteForCookies RenderFrameHostImpl::ComputeSiteForCookiesForNavigation(
     const GURL& destination) const {
-  // For top-level navigation, |site_for_cookies| will always be the destination
-  // URL.
-  if (frame_tree_node_->IsMainFrame())
-    return net::SiteForCookies::FromUrl(destination);
-
-  // Check if everything above the frame being navigated is consistent. It's OK
-  // to skip checking the frame itself since it will be validated against
-  // |site_for_cookies| anyway.
-  return ComputeSiteForCookiesInternal(parent_,
-                                       destination.SchemeIsCryptographic());
+  net::IsolationInfo::RedirectMode redirect_mode =
+      frame_tree_node_->IsMainFrame()
+          ? net::IsolationInfo::RedirectMode::kUpdateTopFrame
+          : net::IsolationInfo::RedirectMode::kUpdateFrameOnly;
+  return ComputeIsolationInfoInternal(url::Origin::Create(destination),
+                                      redirect_mode)
+      .site_for_cookies();
 }
 
 net::SiteForCookies RenderFrameHostImpl::ComputeSiteForCookies() {
-  return ComputeSiteForCookiesInternal(
-      this, GetLastCommittedURL().SchemeIsCryptographic());
+  return isolation_info_.site_for_cookies();
 }
 
-net::SiteForCookies RenderFrameHostImpl::ComputeSiteForCookiesInternal(
-    const RenderFrameHostImpl* render_frame_host,
-    bool is_origin_secure) const {
-#if defined(OS_ANDROID)
-  // On Android, a base URL can be set for the frame. If this the case, it is
-  // the URL to use for cookies.
-  NavigationEntry* last_committed_entry =
-      frame_tree_node_->navigator()->GetController()->GetLastCommittedEntry();
-  if (last_committed_entry &&
-      !last_committed_entry->GetBaseURLForDataURL().is_empty()) {
-    return net::SiteForCookies::FromUrl(
-        last_committed_entry->GetBaseURLForDataURL());
-  }
-#endif
+net::IsolationInfo RenderFrameHostImpl::ComputeIsolationInfoInternal(
+    const url::Origin& frame_origin,
+    net::IsolationInfo::RedirectMode redirect_mode) const {
+  url::Origin top_frame_origin = ComputeTopFrameOrigin(frame_origin);
 
-  const url::Origin& top_document_origin =
-      ComputeTopFrameOrigin(render_frame_host->last_committed_origin_);
-  net::SiteForCookies candidate =
-      net::SiteForCookies::FromOrigin(top_document_origin);
+  net::SiteForCookies candidate_site_for_cookies =
+      net::SiteForCookies::FromOrigin(top_frame_origin);
 
   if (GetContentClient()
           ->browser()
           ->ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(
-              top_document_origin.scheme(), is_origin_secure)) {
-    return candidate;
+              top_frame_origin.scheme(),
+              GURL::SchemeIsCryptographic(frame_origin.scheme()))) {
+    return net::IsolationInfo::Create(redirect_mode, top_frame_origin,
+                                      frame_origin, candidate_site_for_cookies);
   }
 
-  // Make sure every ancestors are same-domain with the main document. Otherwise
-  // this will be a 3rd party cookie.
-  for (const RenderFrameHostImpl* rfh = render_frame_host; rfh;
+  // Make sure all ancestors have origins consistent with the candidate
+  // SiteForCookies of the main document. Otherwise, SameSite cookies may not be
+  // used. For frame requests, it's OK to skip checking the frame itself since
+  // each request will be validated against |site_for_cookies| anyway.
+  for (const RenderFrameHostImpl* rfh = this->parent_; rfh;
        rfh = rfh->parent_) {
-    if (!candidate.IsEquivalent(
+    if (!candidate_site_for_cookies.IsEquivalent(
             net::SiteForCookies::FromOrigin(rfh->last_committed_origin_))) {
-      return net::SiteForCookies();
+      return net::IsolationInfo::Create(redirect_mode, top_frame_origin,
+                                        frame_origin, net::SiteForCookies());
     }
   }
 
-  return candidate;
+  // If |redirect_mode| is kUpdateNothing, then IsolationInfo is being computed
+  // for subresource requests. In that case, also need to check the
+  // SiteForCookies against the frame origin.
+  if (redirect_mode == net::IsolationInfo::RedirectMode::kUpdateNothing &&
+      !candidate_site_for_cookies.IsEquivalent(
+          net::SiteForCookies::FromOrigin(frame_origin))) {
+    return net::IsolationInfo::Create(redirect_mode, top_frame_origin,
+                                      frame_origin, net::SiteForCookies());
+  }
+
+  return net::IsolationInfo::Create(redirect_mode, top_frame_origin,
+                                    frame_origin, candidate_site_for_cookies);
 }
 
-void RenderFrameHostImpl::SetOriginAndNetworkIsolationKeyOfNewFrame(
+void RenderFrameHostImpl::SetOriginAndIsolationInfoOfNewFrame(
     const url::Origin& new_frame_creator) {
   // This method should only be called for *new* frames, that haven't committed
   // a navigation yet.
   DCHECK(!has_committed_any_navigation_);
   DCHECK(GetLastCommittedOrigin().opaque());
-  DCHECK(network_isolation_key_.IsEmpty());
+  DCHECK(isolation_info_.IsEmpty());
 
   // Calculate and set |new_frame_origin|.
   bool new_frame_should_be_sandboxed =
@@ -2322,8 +2329,8 @@ void RenderFrameHostImpl::SetOriginAndNetworkIsolationKeyOfNewFrame(
   url::Origin new_frame_origin = new_frame_should_be_sandboxed
                                      ? new_frame_creator.DeriveNewOpaqueOrigin()
                                      : new_frame_creator;
-  network_isolation_key_ = net::NetworkIsolationKey(
-      ComputeTopFrameOrigin(new_frame_origin), new_frame_origin);
+  isolation_info_ = ComputeIsolationInfoInternal(
+      new_frame_origin, net::IsolationInfo::RedirectMode::kUpdateNothing);
   SetLastCommittedOrigin(new_frame_origin);
 }
 
@@ -2346,10 +2353,9 @@ FrameTreeNode* RenderFrameHostImpl::AddChild(
   frame_tree_node_->render_manager()->CreateProxiesForChildFrame(child.get());
 
   // When the child is added, it hasn't committed any navigation yet - its
-  // initial empty document should inherit the origin and network isolation key
-  // of its parent (the origin may change after the first commit). See also
-  // https://crbug.com/932067.
-  child->current_frame_host()->SetOriginAndNetworkIsolationKeyOfNewFrame(
+  // initial empty document should inherit the origin of its parent (the origin
+  // may change after the first commit). See also https://crbug.com/932067.
+  child->current_frame_host()->SetOriginAndIsolationInfoOfNewFrame(
       GetLastCommittedOrigin());
 
   children_.push_back(std::move(child));
@@ -4259,19 +4265,16 @@ void RenderFrameHostImpl::RequestOverlayRoutingToken(
 
 std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
 RenderFrameHostImpl::CreateCrossOriginPrefetchLoaderFactoryBundle() {
-  DCHECK(base::FeatureList::IsEnabled(
-      network::features::kPrefetchMainResourceNetworkIsolationKey));
-
   network::mojom::URLLoaderFactoryParamsPtr factory_params =
       URLLoaderFactoryParamsHelper::CreateForPrefetch(
           this, mojo::Clone(last_committed_client_security_state_));
 
   mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_default_factory;
   bool bypass_redirect_checks = false;
-  // Passing a nullopt NetworkIsolationKey ensures the factory is not
-  // initialized with a NetworkIsolationKey. This is necessary for a
-  // cross-origin prefetch factory because the factory must use the
-  // NetworkIsolationKey provided by requests going through it.
+  // Passing an empty IsolationInfo ensures the factory is not initialized with
+  // a IsolationInfo. This is necessary for a cross-origin prefetch factory
+  // because the factory must use the value provided by requests going through
+  // it.
   bypass_redirect_checks = CreateNetworkServiceDefaultFactoryAndObserve(
       std::move(factory_params),
       pending_default_factory.InitWithNewPipeAndPassReceiver());
@@ -4430,16 +4433,14 @@ void RenderFrameHostImpl::CreateNewWindow(
   RenderFrameHostImpl* main_frame = new_window->GetMainFrame();
 
   // When the popup is created, it hasn't committed any navigation yet - its
-  // initial empty document should inherit the origin and network isolation key
-  // of its opener (the origin may change after the first commit). See also
-  // https://crbug.com/932067.
+  // initial empty document should inherit the origin of its opener (the origin
+  // may change after the first commit). See also https://crbug.com/932067.
   //
   // Note that that origin of the new frame might depend on sandbox flags.
   // Checking sandbox flags of the new frame should be safe at this point,
   // because the flags should be already inherited by the CreateNewWindow call
   // above.
-  main_frame->SetOriginAndNetworkIsolationKeyOfNewFrame(
-      GetLastCommittedOrigin());
+  main_frame->SetOriginAndIsolationInfoOfNewFrame(GetLastCommittedOrigin());
   main_frame->cross_origin_opener_policy_ = popup_coop;
   main_frame->cross_origin_embedder_policy_ = popup_coep;
 
@@ -5396,16 +5397,16 @@ void RenderFrameHostImpl::CommitNavigation(
   url::Origin main_world_origin_for_url_loader_factory =
       GetOriginForURLLoaderFactory(navigation_request);
 
-  // Network isolation key should be filled before the URLLoaderFactory for
+  // IsolationInfo should be filled before the URLLoaderFactory for
   // sub-resources is created. Only update for cross document navigations since
   // for opaque origin same document navigations, a new origin should not be
   // created as that would be different from the original.
   if (!is_same_document) {
-    network_isolation_key_ = net::NetworkIsolationKey(
-        ComputeTopFrameOrigin(main_world_origin_for_url_loader_factory),
-        main_world_origin_for_url_loader_factory);
+    isolation_info_ = ComputeIsolationInfoInternal(
+        main_world_origin_for_url_loader_factory,
+        net::IsolationInfo::RedirectMode::kUpdateNothing);
   }
-  DCHECK(network_isolation_key_.IsFullyPopulated());
+  DCHECK(!isolation_info_.IsEmpty());
 
   if (navigation_request && navigation_request->appcache_handle()) {
     // AppCache may create a subresource URLLoaderFactory later, so make sure it
@@ -5819,6 +5820,7 @@ void RenderFrameHostImpl::FailedNavigation(
   // TODO(lukasza): https://crbug.com/888079: Use this origin when committing
   // later on.
   url::Origin origin = url::Origin();
+  isolation_info_ = net::IsolationInfo::CreateTransient();
 
   std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
       subresource_loader_factories;
@@ -6777,7 +6779,7 @@ void RenderFrameHostImpl::CreateWebSocketConnector(
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<WebSocketConnectorImpl>(
           GetProcess()->GetID(), routing_id_, last_committed_origin_,
-          network_isolation_key_),
+          isolation_info_.network_isolation_key()),
       std::move(receiver));
 }
 
@@ -6785,7 +6787,7 @@ void RenderFrameHostImpl::CreateQuicTransportConnector(
     mojo::PendingReceiver<blink::mojom::QuicTransportConnector> receiver) {
   mojo::MakeSelfOwnedReceiver(std::make_unique<QuicTransportConnectorImpl>(
                                   GetProcess()->GetID(), last_committed_origin_,
-                                  network_isolation_key_),
+                                  isolation_info_.network_isolation_key()),
                               std::move(receiver));
 }
 
@@ -6951,7 +6953,7 @@ void RenderFrameHostImpl::BindRestrictedCookieManager(
     mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver) {
   GetProcess()->GetStoragePartition()->CreateRestrictedCookieManager(
       network::mojom::RestrictedCookieManagerRole::SCRIPT,
-      GetLastCommittedOrigin(), ComputeSiteForCookies(),
+      GetLastCommittedOrigin(), isolation_info_.site_for_cookies(),
       ComputeTopFrameOrigin(GetLastCommittedOrigin()),
       /* is_service_worker = */ false, GetProcess()->GetID(), routing_id(),
       std::move(receiver));

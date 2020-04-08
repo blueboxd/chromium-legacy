@@ -99,7 +99,7 @@ public class OmniboxTest {
         OmniboxTestUtils.waitForOmniboxSuggestions(locationBar);
 
         ChromeTabUtils.waitForTabPageLoadStart(
-                mActivityTestRule.getActivity().getActivityTab(), new Runnable() {
+                mActivityTestRule.getActivity().getActivityTab(), null, new Runnable() {
                     @Override
                     public void run() {
                         final UrlBar urlBar =

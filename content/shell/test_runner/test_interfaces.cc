@@ -23,7 +23,7 @@
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_view.h"
 
-namespace test_runner {
+namespace content {
 
 TestInterfaces::TestInterfaces()
     : gamepad_controller_(new GamepadController()),
@@ -160,4 +160,4 @@ const std::vector<WebViewTestProxy*>& TestInterfaces::GetWindowList() {
   return window_list_;
 }
 
-}  // namespace test_runner
+}  // namespace content

@@ -114,8 +114,9 @@ class CastActivityManagerTest : public testing::Test,
         router_remote_.get(), "theHashToken");
 
     ON_CALL(message_handler_, StopSession)
-        .WillByDefault(WithArg<3>(
-            [this](auto callback) { result_callback_ = std::move(callback); }));
+        .WillByDefault(WithArg<3>([this](auto callback) {
+          stop_session_callback_ = std::move(callback);
+        }));
 
     RunUntilIdle();
 
@@ -241,7 +242,7 @@ class CastActivityManagerTest : public testing::Test,
     }
     manager_->TerminateSession(route_->media_route_id(),
                                MakeTerminateRouteCallback(expect_success));
-    std::move(result_callback_)
+    std::move(stop_session_callback_)
         .Run(expect_success ? cast_channel::Result::kOk
                             : cast_channel::Result::kFailed);
   }
@@ -323,7 +324,7 @@ class CastActivityManagerTest : public testing::Test,
   const url::Origin origin_ = url::Origin::Create(GURL(kOrigin));
   const MediaSource::Id route_query_ = "theRouteQuery";
   base::Optional<MediaRoute> updated_route_;
-  cast_channel::ResultCallback result_callback_;
+  cast_channel::ResultCallback stop_session_callback_;
 };
 
 TEST_F(CastActivityManagerTest, LaunchCastAppSession) {
@@ -385,9 +386,13 @@ TEST_F(CastActivityManagerTest, LaunchSessionTerminatesExistingSessionOnSink) {
       base::BindOnce(&CastActivityManagerTest::ExpectLaunchSessionSuccess,
                      base::Unretained(this)));
 
+  std::move(stop_session_callback_).Run(cast_channel::Result::kOk);
+
+  // LaunchSession() should not be called until we notify |maanger_| that the
+  // previous session was removed.
   EXPECT_CALL(message_handler_,
               LaunchSession(kChannelId, "BBBBBBBB", kDefaultLaunchTimeout, _));
-  std::move(result_callback_).Run(cast_channel::Result::kOk);
+  manager_->OnSessionRemoved(sink_);
 }
 
 TEST_F(CastActivityManagerTest, AddRemoveNonLocalActivity) {
@@ -422,6 +427,7 @@ TEST_F(CastActivityManagerTest, OnSessionAddedOrUpdated) {
   manager_->OnSessionAddedOrUpdated(sink_, *session);
 }
 
+// TODO(takumif): Add a test case to terminate a session and launch another.
 TEST_F(CastActivityManagerTest, TerminateSession) {
   LaunchCastAppSession();
   TerminateSession(true);

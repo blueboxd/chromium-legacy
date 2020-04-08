@@ -13,7 +13,7 @@ namespace blink {
 class WebLocalFrame;
 }  // namespace blink
 
-namespace test_runner {
+namespace content {
 
 // Asks |web_frame| to print itself and calls |callback| with the result.
 void PrintFrameAsync(blink::WebLocalFrame* web_frame,
@@ -27,6 +27,6 @@ void CopyImageAtAndCapturePixels(
     int y,
     base::OnceCallback<void(const SkBitmap&)> callback);
 
-}  // namespace test_runner
+}  // namespace content
 
 #endif  // CONTENT_SHELL_TEST_RUNNER_PIXEL_DUMP_H_

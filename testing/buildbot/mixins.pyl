@@ -633,12 +633,12 @@
   'skia_gold_test': {
     '$mixin_append': {
       'args': [
-        '--git-revision', '${got_revision}',
+        '--git-revision=${got_revision}',
       ],
       'precommit_args': [
-        '--gerrit-issue', '${patch_issue}',
-        '--gerrit-patchset', '${patch_set}',
-        '--buildbucket-id', '${buildbucket_build_id}',
+        '--gerrit-issue=${patch_issue}',
+        '--gerrit-patchset=${patch_set}',
+        '--buildbucket-id=${buildbucket_build_id}',
       ],
     }
   },

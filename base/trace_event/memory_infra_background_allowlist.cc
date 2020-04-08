@@ -77,6 +77,7 @@ const char* const kAllocatorDumpNameAllowlist[] = {
     "blink_gc/main/heap",
     "blink_gc/workers/heap/worker_0x?",
     "blink_objects/AdSubframe",
+    "blink_objects/ArrayBufferContents",
     "blink_objects/AudioHandler",
     "blink_objects/ContextLifecycleStateObserver",
     "blink_objects/DetachedScriptState",

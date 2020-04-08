@@ -15,7 +15,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 
-namespace test_runner {
+namespace content {
 
 MockScreenOrientationClient::MockScreenOrientationClient()
     : main_frame_(nullptr),
@@ -195,4 +195,4 @@ MockScreenOrientationClient::SuitableOrientationForCurrentLock() {
   }
 }
 
-}  // namespace test_runner
+}  // namespace content

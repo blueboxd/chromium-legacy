@@ -119,6 +119,7 @@ struct VmRegion {
   uint64 byte_stats_shared_clean_resident;
 
   uint64 byte_stats_swapped;
+  uint64 byte_locked;
 
   // For multiprocess accounting.
   uint64 byte_stats_proportional_resident;

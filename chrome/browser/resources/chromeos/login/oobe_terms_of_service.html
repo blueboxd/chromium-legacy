@@ -30,9 +30,11 @@
     </oobe-dialog>
 
     <!-- NORMAL DIALOG -->
+    <!-- As this dialog have pre-loading logic that require access to elements,
+         dialog is marked as no-lazy. -->
     <oobe-dialog id="termsOfServiceDialog" role="dialog"
         aria-labelledby="title"
-        hidden="[[isInErrorState_(uiState)]]" has-buttons>
+        hidden="[[isInErrorState_(uiState)]]" has-buttons no-lazy>
       <hd-iron-icon slot="oobe-icon" id="termsOfServiceGoogleIcon"
           icon1x="oobe-32:googleg" icon2x="oobe-64:googleg">
       </hd-iron-icon>

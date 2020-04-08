@@ -120,59 +120,102 @@ public class WebPaymentIntentHelper {
             PaymentSuccessCallback successCallback) {
         if (data == null) {
             errorCallback.onPaymentError(ErrorStrings.MISSING_INTENT_DATA);
-        } else if (data.getExtras() == null) {
+            return;
+        }
+        if (data.getExtras() == null) {
             errorCallback.onPaymentError(ErrorStrings.MISSING_INTENT_EXTRAS);
-        } else if (resultCode == Activity.RESULT_CANCELED) {
+            return;
+        }
+        if (resultCode == Activity.RESULT_CANCELED) {
             errorCallback.onPaymentError(ErrorStrings.RESULT_CANCELED);
-        } else if (resultCode != Activity.RESULT_OK) {
+            return;
+        }
+        if (resultCode != Activity.RESULT_OK) {
             errorCallback.onPaymentError(String.format(
                     Locale.US, ErrorStrings.UNRECOGNIZED_ACTIVITY_RESULT, resultCode));
-        } else {
-            // TODO(https://crbug.com/1026667): Validate presence of required fields and call
-            // errorCallback to make error handling consistent with Desktop.
-            String details = data.getExtras().getString(EXTRA_RESPONSE_DETAILS);
-            if (details == null) {
-                details = data.getExtras().getString(EXTRA_DEPRECATED_RESPONSE_INSTRUMENT_DETAILS);
-            }
-            if (details == null) details = EMPTY_JSON_DATA;
-            String methodName = data.getExtras().getString(EXTRA_RESPONSE_METHOD_NAME);
-            if (methodName == null) methodName = "";
-
-            PayerData payerData;
-            if (requestedPaymentOptions != null) {
-                // Create payer data based on requested payment options.
-                Address shippingAddress = !requestedPaymentOptions.requestShipping
-                        ? new Address()
-                        : new Address(getStringOrEmpty(data, EXTRA_ADDRESS_COUNTRY),
-                                data.getExtras().getStringArray(EXTRA_ADDRESS_LINES),
-                                getStringOrEmpty(data, EXTRA_ADDRESS_REGION),
-                                getStringOrEmpty(data, EXTRA_ADDRESS_CITY),
-                                getStringOrEmpty(data, EXTRA_ADDRESS_DEPENDENT_LOCALITY),
-                                getStringOrEmpty(data, EXTRA_ADDRESS_POSTAL_CODE),
-                                getStringOrEmpty(data, EXTRA_ADDRESS_SORTING_CODE),
-                                getStringOrEmpty(data, EXTRA_ADDRESS_ORGANIZATION),
-                                getStringOrEmpty(data, EXTRA_ADDRESS_RECIPIENT),
-                                getStringOrEmpty(data, EXTRA_ADDRESS_PHONE));
-                payerData = new PayerData(requestedPaymentOptions.requestPayerName
-                                ? data.getExtras().getString(EXTRA_RESPONSE_PAYER_NAME)
-                                : "",
-                        requestedPaymentOptions.requestPayerPhone
-                                ? data.getExtras().getString(EXTRA_RESPONSE_PAYER_PHONE)
-                                : "",
-                        requestedPaymentOptions.requestPayerEmail
-                                ? data.getExtras().getString(EXTRA_RESPONSE_PAYER_EMAIL)
-                                : "",
-                        shippingAddress,
-                        requestedPaymentOptions.requestShipping
-                                ? data.getExtras().getString(EXTRA_SHIPPING_OPTION_ID)
-                                : "");
-            } else {
-                payerData = new PayerData();
-            }
-
-            successCallback.onPaymentSuccess(
-                    /*methodName=*/methodName, /*details=*/details, payerData);
+            return;
         }
+
+        String details = data.getExtras().getString(EXTRA_RESPONSE_DETAILS);
+        if (details == null) {
+            // try to get deprecated details rather than early returning.
+            details = data.getExtras().getString(EXTRA_DEPRECATED_RESPONSE_INSTRUMENT_DETAILS);
+        }
+        if (TextUtils.isEmpty(details)) {
+            errorCallback.onPaymentError(ErrorStrings.MISSING_DETAILS_FROM_PAYMENT_APP);
+            return;
+        }
+
+        String methodName = data.getExtras().getString(EXTRA_RESPONSE_METHOD_NAME);
+        if (TextUtils.isEmpty(methodName)) {
+            errorCallback.onPaymentError(ErrorStrings.MISSING_METHOD_NAME_FROM_PAYMENT_APP);
+            return;
+        }
+
+        if (requestedPaymentOptions == null) {
+            successCallback.onPaymentSuccess(
+                    /*methodName=*/methodName, /*details=*/details, new PayerData());
+            return;
+        }
+
+        Address shippingAddress;
+        if (requestedPaymentOptions.requestShipping) {
+            Bundle addressBundle = data.getExtras().getBundle(EXTRA_SHIPPING_ADDRESS);
+            if (addressBundle == null || addressBundle.isEmpty()) {
+                errorCallback.onPaymentError(ErrorStrings.SHIPPING_ADDRESS_INVALID);
+                return;
+            }
+            shippingAddress = new Address(getStringOrEmpty(addressBundle, EXTRA_ADDRESS_COUNTRY),
+                    addressBundle.getStringArray(EXTRA_ADDRESS_LINES),
+                    getStringOrEmpty(addressBundle, EXTRA_ADDRESS_REGION),
+                    getStringOrEmpty(addressBundle, EXTRA_ADDRESS_CITY),
+                    getStringOrEmpty(addressBundle, EXTRA_ADDRESS_DEPENDENT_LOCALITY),
+                    getStringOrEmpty(addressBundle, EXTRA_ADDRESS_POSTAL_CODE),
+                    getStringOrEmpty(addressBundle, EXTRA_ADDRESS_SORTING_CODE),
+                    getStringOrEmpty(addressBundle, EXTRA_ADDRESS_ORGANIZATION),
+                    getStringOrEmpty(addressBundle, EXTRA_ADDRESS_RECIPIENT),
+                    getStringOrEmpty(addressBundle, EXTRA_ADDRESS_PHONE));
+        } else { // !requestedPaymentOptions.requestShipping
+            shippingAddress = new Address();
+        }
+
+        String payerName = requestedPaymentOptions.requestPayerName
+                ? getStringOrEmpty(data, EXTRA_RESPONSE_PAYER_NAME)
+                : "";
+        if (requestedPaymentOptions.requestPayerName && TextUtils.isEmpty(payerName)) {
+            errorCallback.onPaymentError(ErrorStrings.PAYER_NAME_EMPTY);
+            return;
+        }
+
+        String payerPhone = requestedPaymentOptions.requestPayerPhone
+                ? getStringOrEmpty(data, EXTRA_RESPONSE_PAYER_PHONE)
+                : "";
+        if (requestedPaymentOptions.requestPayerPhone && TextUtils.isEmpty(payerPhone)) {
+            errorCallback.onPaymentError(ErrorStrings.PAYER_PHONE_EMPTY);
+            return;
+        }
+
+        String payerEmail = requestedPaymentOptions.requestPayerEmail
+                ? getStringOrEmpty(data, EXTRA_RESPONSE_PAYER_EMAIL)
+                : "";
+        if (requestedPaymentOptions.requestPayerEmail && TextUtils.isEmpty(payerEmail)) {
+            errorCallback.onPaymentError(ErrorStrings.PAYER_EMAIL_EMPTY);
+            return;
+        }
+
+        String selectedShippingOptionId = requestedPaymentOptions.requestShipping
+                ? getStringOrEmpty(data, EXTRA_SHIPPING_OPTION_ID)
+                : "";
+        if (requestedPaymentOptions.requestShipping
+                && TextUtils.isEmpty(selectedShippingOptionId)) {
+            errorCallback.onPaymentError(ErrorStrings.SHIPPING_OPTION_EMPTY);
+            return;
+        }
+
+        successCallback.onPaymentSuccess(
+                /*methodName=*/methodName, /*details=*/details, /*payerData=*/
+                new PayerData(payerName, payerPhone, payerEmail, shippingAddress,
+                        selectedShippingOptionId));
     }
 
     /**
@@ -542,6 +585,10 @@ public class WebPaymentIntentHelper {
     }
 
     private static String getStringOrEmpty(Intent data, String key) {
-        return data.getExtras().getString(key, /*defaultValue =*/"");
+        return getStringOrEmpty(data.getExtras(), key);
+    }
+
+    private static String getStringOrEmpty(Bundle bundle, String key) {
+        return bundle.getString(key, /*defaultValue =*/"");
     }
 }

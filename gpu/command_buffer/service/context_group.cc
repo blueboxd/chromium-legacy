@@ -626,7 +626,7 @@ void ContextGroup::Destroy(DecoderContext* decoder, bool have_context) {
   }
 
   if (passthrough_discardable_manager_) {
-    passthrough_discardable_manager_->DeleteContextGroup(this);
+    passthrough_discardable_manager_->DeleteContextGroup(this, have_context);
   }
 
   if (passthrough_resources_) {

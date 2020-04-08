@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/dialogs/dialog_features.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/scoped_key_window.h"
+#import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -41,6 +42,11 @@ class AppLauncherCoordinatorTest : public PlatformTest {
     application_ = OCMClassMock([UIApplication class]);
     OCMStub([application_ sharedApplication]).andReturn(application_);
     AppLauncherTabHelper::CreateForWebState(&web_state_, nil, nil);
+    std::unique_ptr<web::TestNavigationManager> navigation_manager =
+        std::make_unique<web::TestNavigationManager>();
+    navigation_manager->AddItem(GURL("http://www.chromium.org"),
+                                ui::PAGE_TRANSITION_LINK);
+    web_state_.SetNavigationManager(std::move(navigation_manager));
   }
   ~AppLauncherCoordinatorTest() override {
     [application_ stopMocking];

@@ -17,7 +17,7 @@ class ASH_EXPORT AmbientViewDelegate {
 
   virtual PhotoModel* GetPhotoModel() = 0;
 
-  // Invoked when user interacting with the background photo using mouse,
+  // Invoked when user interacts with the background photo using mouse,
   // touchpad, or touchscreen.
   virtual void OnBackgroundPhotoEvents() = 0;
 };

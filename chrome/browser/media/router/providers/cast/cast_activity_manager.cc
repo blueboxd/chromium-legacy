@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/optional.h"
 #include "chrome/browser/media/router/data_decoder_util.h"
@@ -109,12 +110,14 @@ void CastActivityManager::LaunchSession(
   } else {
     const MediaRoute::Id& existing_route_id =
         it->second->route().media_route_id();
-    TerminateSession(
-        existing_route_id,
-        base::BindOnce(
-            &CastActivityManager::LaunchSessionAfterTerminatingExisting,
-            weak_ptr_factory_.GetWeakPtr(), existing_route_id,
-            std::move(params)));
+    // We cannot launch the new session in the TerminateSession() callback
+    // because if we create a session there, then it may get deleted when
+    // OnSessionRemoved() is called to notify that the previous session was
+    // removed on the receiver.
+    TerminateSession(existing_route_id, base::DoNothing());
+    // The new session will be launched when OnSessionRemoved() is called for
+    // the old session.
+    pending_launch_ = std::move(params);
   }
 }
 
@@ -160,24 +163,6 @@ void CastActivityManager::DoLaunchSession(DoLaunchSessionParams params) {
   std::move(params.callback)
       .Run(route, std::move(presentation_connection),
            /* error_text */ base::nullopt, RouteRequestResult::ResultCode::OK);
-}
-
-void CastActivityManager::LaunchSessionAfterTerminatingExisting(
-    const MediaRoute::Id& existing_route_id,
-    DoLaunchSessionParams params,
-    const base::Optional<std::string>& error_string,
-    RouteRequestResult::ResultCode result) {
-  // NOTE(mfoltz): I don't recall if an explicit STOP request is required by
-  // Cast V2 before launching a new session.  I think in the Javascript MRP
-  // session termination is a fire and forget operation.  In which case we could
-  // rely on RECEIVER_STATUS to clean up the state from the just-removed
-  // session, versus having to stop then wait for a response.
-  DLOG_IF(ERROR, error_string)
-      << "Failed to terminate existing session before launching new "
-      << "session! New session may not operate correctly. Error: "
-      << *error_string;
-  activities_.erase(existing_route_id);
-  DoLaunchSession(std::move(params));
 }
 
 CastActivityRecord* CastActivityManager::FindActivityForSessionJoin(
@@ -514,10 +499,14 @@ void CastActivityManager::OnSessionAddedOrUpdated(const MediaSinkInternal& sink,
 }
 
 void CastActivityManager::OnSessionRemoved(const MediaSinkInternal& sink) {
-  auto it = FindActivityBySink(sink);
-  if (it != activities_.end()) {
-    RemoveActivity(it, PresentationConnectionState::TERMINATED,
+  auto activity_it = FindActivityBySink(sink);
+  if (activity_it != activities_.end()) {
+    RemoveActivity(activity_it, PresentationConnectionState::TERMINATED,
                    PresentationConnectionCloseReason::CLOSED);
+  }
+  if (pending_launch_ && pending_launch_->sink.id() == sink.id()) {
+    DoLaunchSession(std::move(*pending_launch_));
+    pending_launch_.reset();
   }
 }
 

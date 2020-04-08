@@ -709,13 +709,18 @@ TEST_F(AssistantManagerServiceImplTest,
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kAssistantTimersV2);
 
+  StrictMock<AssistantAlarmTimerControllerMock> alarm_timer_controller;
+  fake_service_context()->set_assistant_alarm_timer_controller(
+      &alarm_timer_controller);
+
+  // We expect OnTimerStateChanged() to be invoked when starting LibAssistant.
+  EXPECT_CALL(alarm_timer_controller, OnTimerStateChanged).Times(1);
+
   Start();
   WaitUntilStartIsFinished();
   assistant_manager_service()->OnStartFinished();
 
-  StrictMock<AssistantAlarmTimerControllerMock> alarm_timer_controller;
-  fake_service_context()->set_assistant_alarm_timer_controller(
-      &alarm_timer_controller);
+  testing::Mock::VerifyAndClearExpectations(&alarm_timer_controller);
 
   std::vector<ash::mojom::AssistantTimerPtr> timers;
   EXPECT_CALL(alarm_timer_controller, OnTimerStateChanged)
@@ -740,6 +745,37 @@ TEST_F(AssistantManagerServiceImplTest,
   EXPECT_EQ(ash::mojom::AssistantTimerState::kScheduled, timers[0]->state);
   EXPECT_EQ(ash::mojom::AssistantTimerState::kPaused, timers[1]->state);
   EXPECT_EQ(ash::mojom::AssistantTimerState::kFired, timers[2]->state);
+}
+
+TEST_F(AssistantManagerServiceImplTest,
+       ShouldNotifyAlarmTimerControllerOfTimersWhenStartingLibAssistantInV2) {
+  // Enable timers V2.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kAssistantTimersV2);
+
+  // Pre-populate the AlarmTimerManager with a single scheduled timer.
+  std::vector<assistant_client::AlarmTimerEvent> events;
+  AddTimerEvent(events, assistant_client::Timer::State::SCHEDULED);
+  fake_alarm_timer_manager()->SetAllEvents(std::move(events));
+
+  // Bind AssistantAlarmTimerController.
+  StrictMock<AssistantAlarmTimerControllerMock> alarm_timer_controller;
+  fake_service_context()->set_assistant_alarm_timer_controller(
+      &alarm_timer_controller);
+
+  // Expect (and capture) |timers| to be sent to AssistantAlarmTimerController.
+  std::vector<ash::mojom::AssistantTimerPtr> timers;
+  EXPECT_CALL(alarm_timer_controller, OnTimerStateChanged)
+      .WillOnce(CloneArg<0>(&timers));
+
+  // Start LibAssistant.
+  Start();
+  WaitUntilStartIsFinished();
+  assistant_manager_service()->OnStartFinished();
+
+  // Verify AssistantAlarmTimerController is notified of the scheduled timer.
+  ASSERT_EQ(1u, timers.size());
+  EXPECT_EQ(ash::mojom::AssistantTimerState::kScheduled, timers[0]->state);
 }
 
 }  // namespace assistant

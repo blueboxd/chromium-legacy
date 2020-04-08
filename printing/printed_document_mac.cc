@@ -17,29 +17,22 @@ bool PrintedDocument::RenderPrintedDocument(PrintingContext* context) {
   DCHECK(context);
 
   const MetafilePlayer* metafile;
-  gfx::Size page_size;
-  gfx::Rect page_content_rect;
   {
     base::AutoLock lock(lock_);
     metafile = GetMetafile();
-    page_size = mutable_.page_size_;
-    page_content_rect = mutable_.page_content_rect_;
   }
 
   DCHECK(metafile);
   const PageSetup& page_setup = immutable_.settings_->page_setup_device_units();
-  gfx::Rect content_area = GetCenteredPageContentRect(
-      page_setup.physical_size(), page_size, page_content_rect);
+  const CGRect paper_rect = gfx::Rect(page_setup.physical_size()).ToCGRect();
 
-  struct Metafile::MacRenderPageParams params;
-  params.autorotate = true;
   size_t num_pages = expected_page_count();
   for (size_t metafile_page_number = 1; metafile_page_number <= num_pages;
        metafile_page_number++) {
     if (context->NewPage() != PrintingContext::OK)
       return false;
-    metafile->RenderPage(metafile_page_number, context->context(),
-                         content_area.ToCGRect(), params);
+    metafile->RenderPage(metafile_page_number, context->context(), paper_rect,
+                         /*autorotate=*/true, /*fit_to_page=*/false);
     if (context->PageDone() != PrintingContext::OK)
       return false;
   }

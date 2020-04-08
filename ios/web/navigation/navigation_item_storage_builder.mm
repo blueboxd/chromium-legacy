@@ -24,7 +24,7 @@ CRWNavigationItemStorage* NavigationItemStorageBuilder::BuildStorage(
   storage.displayState = navigation_item->GetPageDisplayState();
   storage.shouldSkipRepostFormConfirmation =
       navigation_item->ShouldSkipRepostFormConfirmation();
-  storage.userAgentType = navigation_item->GetUserAgentType();
+  storage.userAgentType = navigation_item->GetUserAgentForInheritance();
   storage.POSTData = navigation_item->GetPostData();
   storage.HTTPRequestHeaders = navigation_item->GetHttpRequestHeaders();
   return storage;

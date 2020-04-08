@@ -103,7 +103,7 @@ public class OfflinePageUtilsTest {
             // Ensure we start in an online state.
             NetworkChangeNotifier.forceConnectivityState(true);
 
-            Profile profile = Profile.getLastUsedProfile();
+            Profile profile = Profile.getLastUsedRegularProfile();
             mOfflinePageBridge = OfflinePageBridge.getForProfile(profile);
             if (!NetworkChangeNotifier.isInitialized()) {
                 NetworkChangeNotifier.init();

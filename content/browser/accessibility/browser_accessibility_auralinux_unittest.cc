@@ -55,8 +55,7 @@ TEST_F(BrowserAccessibilityAuraLinuxTest, TestSimpleAtkText) {
   std::unique_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(
           MakeAXTreeUpdate(root_data),
-          test_browser_accessibility_delegate_.get(),
-          new BrowserAccessibilityFactory()));
+          test_browser_accessibility_delegate_.get()));
 
   ui::AXPlatformNodeAuraLinux* root_obj =
       ToBrowserAccessibilityAuraLinux(manager->GetRoot())->GetNode();
@@ -109,8 +108,7 @@ TEST_F(BrowserAccessibilityAuraLinuxTest, TestCompositeAtkText) {
   std::unique_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(
           MakeAXTreeUpdate(root, text1, text2),
-          test_browser_accessibility_delegate_.get(),
-          new BrowserAccessibilityFactory()));
+          test_browser_accessibility_delegate_.get()));
 
   ui::AXPlatformNodeAuraLinux* root_obj =
       ToBrowserAccessibilityAuraLinux(manager->GetRoot())->GetNode();
@@ -213,8 +211,7 @@ TEST_F(BrowserAccessibilityAuraLinuxTest, TestComplexHypertext) {
       BrowserAccessibilityManager::Create(
           MakeAXTreeUpdate(root, text1, combo_box, text2, check_box,
                            radio_button, radio_button_text, link, link_text),
-          test_browser_accessibility_delegate_.get(),
-          new BrowserAccessibilityFactory()));
+          test_browser_accessibility_delegate_.get()));
 
   ui::AXPlatformNodeAuraLinux* root_obj =
       ToBrowserAccessibilityAuraLinux(manager->GetRoot())->GetNode();
@@ -398,8 +395,7 @@ TEST_F(BrowserAccessibilityAuraLinuxTest,
 
   std::unique_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(
-          update, test_browser_accessibility_delegate_.get(),
-          new BrowserAccessibilityFactory()));
+          update, test_browser_accessibility_delegate_.get()));
 
   ASSERT_NE(nullptr, manager->GetRoot());
   BrowserAccessibilityAuraLinux* ax_root =
@@ -586,8 +582,7 @@ TEST_F(BrowserAccessibilityAuraLinuxTest,
       BrowserAccessibilityManager::Create(
           MakeAXTreeUpdate(root, container, combo_box, menu_list, menu_option_1,
                            menu_option_2),
-          test_browser_accessibility_delegate_.get(),
-          new BrowserAccessibilityFactory()));
+          test_browser_accessibility_delegate_.get()));
 
   ui::AXPlatformNodeAuraLinux* combo_box_node =
       ToBrowserAccessibilityAuraLinux(manager->GetFromID(combo_box.id))
@@ -670,8 +665,7 @@ TEST_F(BrowserAccessibilityAuraLinuxTest,
       BrowserAccessibilityManager::Create(
           MakeAXTreeUpdate(root, combo_box, combo_box_div, static_text1,
                            static_text2),
-          test_browser_accessibility_delegate_.get(),
-          new BrowserAccessibilityFactory()));
+          test_browser_accessibility_delegate_.get()));
 
   ASSERT_NE(nullptr, manager->GetRoot());
   BrowserAccessibilityAuraLinux* ax_root =
@@ -756,8 +750,7 @@ TEST_F(BrowserAccessibilityAuraLinuxTest, TextAtkStaticTextChange) {
   std::unique_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(
           MakeAXTreeUpdate(root, div_editable, text),
-          test_browser_accessibility_delegate_.get(),
-          new BrowserAccessibilityFactory()));
+          test_browser_accessibility_delegate_.get()));
 
   text.SetName("Text2");
   ui::AXTree* tree = const_cast<ui::AXTree*>(manager->ax_tree());

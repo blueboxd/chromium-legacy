@@ -8,9 +8,15 @@
 #include <string>
 #include <vector>
 
+#include "base/feature_list.h"
+
 class GURL;
 
 namespace translate {
+
+// Controls whether translation applies to sub frames as well as the
+// main frame.
+extern const base::Feature kTranslateSubFrames;
 
 // Isolated world sets following security-origin by default.
 extern const char kSecurityOrigin[];
@@ -18,6 +24,9 @@ extern const char kSecurityOrigin[];
 // Gets Security origin with which Translate runs. This is used both for
 // language checks and to obtain the list of available languages.
 GURL GetTranslateSecurityOrigin();
+
+// Return whether sub frame translation is enabled.
+bool IsSubFrameTranslationEnabled();
 
 }  // namespace translate
 

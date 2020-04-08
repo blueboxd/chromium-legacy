@@ -78,7 +78,7 @@ public class OfflinePageBridgeTest {
             throws InterruptedException {
         final Semaphore semaphore = new Semaphore(0);
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
-            Profile profile = Profile.getLastUsedProfile();
+            Profile profile = Profile.getLastUsedRegularProfile();
             if (incognitoProfile) {
                 profile = profile.getOffTheRecordProfile();
             }
@@ -100,11 +100,16 @@ public class OfflinePageBridgeTest {
         if (!incognitoProfile) Assert.assertNotNull(mOfflinePageBridge);
     }
 
-    private OfflinePageBridge getBridgeForProfileKey() throws InterruptedException {
+    private OfflinePageBridge getBridgeForProfileKey(final boolean incognitoProfile)
+            throws InterruptedException {
         final Semaphore semaphore = new Semaphore(0);
         AtomicReference<OfflinePageBridge> offlinePageBridgeRef = new AtomicReference<>();
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
-            ProfileKey profileKey = ProfileKey.getLastUsedProfileKey();
+            Profile profile = Profile.getLastUsedRegularProfile();
+            if (incognitoProfile) {
+                profile = profile.getOffTheRecordProfile();
+            }
+            ProfileKey profileKey = profile.getProfileKey();
             // Ensure we start in an offline state.
             OfflinePageBridge offlinePageBridge = OfflinePageBridge.getForProfileKey(profileKey);
             offlinePageBridgeRef.set(offlinePageBridge);
@@ -121,7 +126,7 @@ public class OfflinePageBridgeTest {
             });
         });
         Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        Assert.assertNotNull(offlinePageBridgeRef.get());
+        if (!incognitoProfile) Assert.assertNotNull(offlinePageBridgeRef.get());
         return offlinePageBridgeRef.get();
     }
 
@@ -151,7 +156,7 @@ public class OfflinePageBridgeTest {
     @Test
     @MediumTest
     public void testProfileAndKeyMapToSameOfflinePageBridge() throws Exception {
-        OfflinePageBridge offlinePageBridgeRetrievedByKey = getBridgeForProfileKey();
+        OfflinePageBridge offlinePageBridgeRetrievedByKey = getBridgeForProfileKey(false);
         Assert.assertSame(mOfflinePageBridge, offlinePageBridgeRetrievedByKey);
     }
 
@@ -212,6 +217,14 @@ public class OfflinePageBridgeTest {
     public void testOfflinePageBridgeDisabledInIncognito() throws Exception {
         initializeBridgeForProfile(true);
         Assert.assertEquals(null, mOfflinePageBridge);
+    }
+
+    @Test
+    @MediumTest
+    @RetryOnFailure
+    public void testOfflinePageBridgeForProfileKeyDisabledInIncognito() throws Exception {
+        OfflinePageBridge offlinePageBridgeRetrievedByKey = getBridgeForProfileKey(true);
+        Assert.assertNull(offlinePageBridgeRetrievedByKey);
     }
 
     @Test

@@ -475,8 +475,8 @@ TEST_F(SafetyCheckHandlerTest, CheckSafeBrowsing_Enabled) {
           static_cast<int>(SafetyCheckHandler::SafeBrowsingStatus::kEnabled));
   ASSERT_TRUE(event);
   VerifyDisplayString(event,
-                      "Safe Browsing is up to date and protecting you from "
-                      "harmful sites and downloads");
+                      "Safe Browsing is on and protecting you from harmful "
+                      "sites and downloads");
   histogram_tester_.ExpectBucketCount(
       "Settings.SafetyCheck.SafeBrowsingResult",
       SafetyCheckHandler::SafeBrowsingStatus::kEnabled, 1);

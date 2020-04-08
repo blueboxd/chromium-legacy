@@ -145,6 +145,7 @@ source_set("unit_tests") {
   sources = [
     "app_shortcut_manager_unittest.cc",
     "file_handler_manager_unittest.cc",
+    "install_finalizer_unittest.cc",
     "pending_app_manager_unittest.cc",
     "web_app_constants_unittest.cc",
     "web_app_data_retriever_unittest.cc",
@@ -180,7 +181,9 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//chrome/app/theme:theme_resources",
     "//chrome/browser/web_applications:web_app_test_group",
+    "//chrome/browser/web_applications:web_applications",
     "//chrome/browser/web_applications:web_applications_test_support",
+    "//chrome/browser/web_applications/extensions:extensions",
     "//chrome/test:test_support",
     "//content/public/browser",
     "//skia",

@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_prefs_utils.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_finalizer_utils.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_registrar.h"
@@ -111,6 +112,11 @@ void BookmarkAppInstallFinalizer::FinalizeInstall(
       break;
   }
 
+  const web_app::AppId app_id =
+      web_app::GenerateAppIdFromURL(web_app_info.app_url);
+  web_app::UpdateIntWebAppPref(profile_->GetPrefs(), app_id,
+                               web_app::kLatestWebAppInstallSource,
+                               static_cast<int>(options.install_source));
   crx_installer->InstallWebApp(web_app_info);
 }
 

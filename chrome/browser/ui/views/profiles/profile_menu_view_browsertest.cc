@@ -520,7 +520,7 @@ PROFILE_MENU_CLICK_TEST(kActionableItems_SyncPaused,
   sync_harness()->EnterSyncPausedStateForPrimaryAccount();
   // Check that the setup was successful.
   ASSERT_TRUE(identity_manager()->HasPrimaryAccount());
-  ASSERT_TRUE(sync_service()->HasDisableReason(
+  ASSERT_FALSE(sync_service()->HasDisableReason(
       syncer::SyncService::DISABLE_REASON_PAUSED));
 
   RunTest();

@@ -141,7 +141,8 @@ public class StartSurfaceCoordinator implements StartSurface {
                         : null);
         if (mTabSwitcher != null) {
             mTabSwitcher.initWithNative(mActivity, mActivity.getTabContentManager(),
-                    mActivity.getCompositorViewHolder().getDynamicResourceLoader(), mActivity);
+                    mActivity.getCompositorViewHolder().getDynamicResourceLoader(), mActivity,
+                    mActivity.getModalDialogManager());
         }
         if (mTasksSurface != null) {
             mTasksSurface.onFinishNativeInitialization(

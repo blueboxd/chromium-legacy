@@ -29,10 +29,8 @@ class TestBrowserAccessibilityManager
 #else
 class TestBrowserAccessibilityManager : public BrowserAccessibilityManager {
  public:
-  TestBrowserAccessibilityManager(const ui::AXTreeUpdate& initial_tree)
-      : BrowserAccessibilityManager(initial_tree,
-                                    nullptr,
-                                    new BrowserAccessibilityFactory()) {}
+  explicit TestBrowserAccessibilityManager(const ui::AXTreeUpdate& initial_tree)
+      : BrowserAccessibilityManager(initial_tree, nullptr) {}
 };
 #endif
 

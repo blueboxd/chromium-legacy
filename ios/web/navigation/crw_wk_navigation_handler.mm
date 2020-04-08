@@ -158,7 +158,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   // code path leaving it uninitialized.
   web::UserAgentType userAgentType;
   if (item) {
-    userAgentType = item->GetUserAgentType();
+    userAgentType = item->GetUserAgentType(webView);
   } else {
     // Probably a renderer-initiated navigation. Use the UserAgent of the
     // previous navigation.

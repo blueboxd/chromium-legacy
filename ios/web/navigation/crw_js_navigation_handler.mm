@@ -183,8 +183,7 @@ GURL URLEscapedForHistory(const GURL& url) {
         self.navigationManagerImpl->GetItemAtIndex(currentIndex - 1);
     web::UserAgentType userAgent = previousItem->GetUserAgentForInheritance();
     if (userAgent != web::UserAgentType::NONE) {
-      navItem->SetUserAgentType(userAgent,
-                                /*update_inherited_user_agent =*/true);
+      navItem->SetUserAgentType(userAgent);
     }
   }
   // If the user interacted with the page, categorize it as a link navigation.

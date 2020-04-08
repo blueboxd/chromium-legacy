@@ -223,10 +223,9 @@ class NavigationManagerImpl : public NavigationManager {
 
   // Applies the user agent override to |pending_item|, or inherits the user
   // agent of |inherit_from| if |user_agent_override_option| is INHERIT.
-  static void UpdatePendingItemUserAgentType(
-      UserAgentOverrideOption override_option,
-      const NavigationItem* inherit_from,
-      NavigationItem* pending_item);
+  void UpdatePendingItemUserAgentType(UserAgentOverrideOption override_option,
+                                      const NavigationItem* inherit_from,
+                                      NavigationItem* pending_item);
 
   // Must be called by subclasses before restoring |item_count| navigation
   // items.

@@ -89,6 +89,10 @@ const char* FeatureToString(WebSchedulerTrackedFeature feature) {
       return "WebNfc";
     case WebSchedulerTrackedFeature::kWebFileSystem:
       return "WebFileSystem";
+    case WebSchedulerTrackedFeature::kAppBanner:
+      return "AppBanner";
+    case WebSchedulerTrackedFeature::kPrinting:
+      return "Printing";
   }
 }
 

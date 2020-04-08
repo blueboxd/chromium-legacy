@@ -947,17 +947,6 @@ BrowserAccessibility* BrowserAccessibility::ApproximateHitTest(
   return this;
 }
 
-void BrowserAccessibility::Destroy() {
-  node_ = nullptr;
-  manager_ = nullptr;
-
-  NativeReleaseReference();
-}
-
-void BrowserAccessibility::NativeReleaseReference() {
-  delete this;
-}
-
 bool BrowserAccessibility::HasBoolAttribute(
     ax::mojom::BoolAttribute attribute) const {
   return GetData().HasBoolAttribute(attribute);

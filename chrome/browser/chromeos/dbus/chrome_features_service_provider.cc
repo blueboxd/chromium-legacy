@@ -98,6 +98,14 @@ void ChromeFeaturesServiceProvider::Start(
                           weak_ptr_factory_.GetWeakPtr()));
   exported_object->ExportMethod(
       kChromeFeaturesServiceInterface,
+      kChromeFeaturesServiceIsCryptohomeDistributedModelEnabledMethod,
+      base::BindRepeating(
+          &ChromeFeaturesServiceProvider::IsCryptohomeDistributedModelEnabled,
+          weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&ChromeFeaturesServiceProvider::OnExported,
+                          weak_ptr_factory_.GetWeakPtr()));
+  exported_object->ExportMethod(
+      kChromeFeaturesServiceInterface,
       kChromeFeaturesServiceIsVmManagementCliAllowedMethod,
       base::BindRepeating(
           &ChromeFeaturesServiceProvider::IsVmManagementCliAllowed,
@@ -167,6 +175,14 @@ void ChromeFeaturesServiceProvider::IsCrostiniEnabled(
   SendResponse(
       method_call, std::move(response_sender),
       profile ? crostini::CrostiniFeatures::Get()->IsAllowed(profile) : false);
+}
+
+void ChromeFeaturesServiceProvider::IsCryptohomeDistributedModelEnabled(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  SendResponse(
+      method_call, std::move(response_sender),
+      base::FeatureList::IsEnabled(::features::kCryptohomeDistributedModel));
 }
 
 void ChromeFeaturesServiceProvider::IsPluginVmEnabled(

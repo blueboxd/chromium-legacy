@@ -169,16 +169,10 @@ void PrintedDocument::DropPage(const PrintedPage* page) {
 }
 #endif  // defined(OS_WIN)
 
-void PrintedDocument::SetDocument(std::unique_ptr<MetafilePlayer> metafile,
-                                  const gfx::Size& page_size,
-                                  const gfx::Rect& page_content_rect) {
+void PrintedDocument::SetDocument(std::unique_ptr<MetafilePlayer> metafile) {
   {
     base::AutoLock lock(lock_);
     mutable_.metafile_ = std::move(metafile);
-#if defined(OS_MACOSX)
-    mutable_.page_size_ = page_size;
-    mutable_.page_content_rect_ = page_content_rect;
-#endif
   }
 
   if (HasDebugDumpPath()) {
@@ -285,7 +279,7 @@ void PrintedDocument::DebugDumpData(
                      base::RetainedRef(data)));
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN)
 gfx::Rect PrintedDocument::GetCenteredPageContentRect(
     const gfx::Size& paper_size,
     const gfx::Size& page_size,

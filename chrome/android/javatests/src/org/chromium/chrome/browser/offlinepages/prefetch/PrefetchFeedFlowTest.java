@@ -247,7 +247,7 @@ public class PrefetchFeedFlowTest {
 
         // Register Offline Page observer and enable limitless prefetching.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            OfflinePageBridge.getForProfileKey(ProfileKey.getLastUsedProfileKey())
+            OfflinePageBridge.getForProfileKey(ProfileKey.getLastUsedRegularProfileKey())
                     .addObserver(new OfflinePageBridge.OfflinePageModelObserver() {
                         @Override
                         public void offlinePageAdded(OfflinePageItem addedPage) {

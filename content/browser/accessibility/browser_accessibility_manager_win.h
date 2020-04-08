@@ -31,10 +31,8 @@ static const wchar_t kUiaTestCompleteSentinel[] = L"kUiaTestCompleteSentinel";
 class CONTENT_EXPORT BrowserAccessibilityManagerWin
     : public BrowserAccessibilityManager {
  public:
-  BrowserAccessibilityManagerWin(
-      const ui::AXTreeUpdate& initial_tree,
-      BrowserAccessibilityDelegate* delegate,
-      BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
+  BrowserAccessibilityManagerWin(const ui::AXTreeUpdate& initial_tree,
+                                 BrowserAccessibilityDelegate* delegate);
 
   ~BrowserAccessibilityManagerWin() override;
 

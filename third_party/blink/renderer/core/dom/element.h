@@ -1299,7 +1299,17 @@ inline const AtomicString& Element::IdForStyleResolution() const {
 }
 
 inline const AtomicString& Element::GetIdAttribute() const {
-  return HasID() ? FastGetAttribute(html_names::kIdAttr) : g_null_atom;
+  // Note: HasID() can return false even if the id attribute exists. This
+  // happens when the attribute value is empty, which per spec is equivalent to
+  // not having an id attribute at all:
+  // https://dom.spec.whatwg.org/#concept-id. On the other hand, if HasID()
+  // returns true then there must be a non-empty id attribute.
+  if (HasID()) {
+    const AtomicString& attr_value = FastGetAttribute(html_names::kIdAttr);
+    DCHECK(!attr_value.IsEmpty());
+    return attr_value;
+  }
+  return g_null_atom;
 }
 
 inline const AtomicString& Element::GetNameAttribute() const {

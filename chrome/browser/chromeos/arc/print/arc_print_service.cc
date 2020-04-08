@@ -492,9 +492,7 @@ class PrintJobHostImpl : public mojom::PrintJobHost,
       return;
 
     printing::PrintedDocument* document = job_->document();
-    document->SetDocument(std::move(metafile_) /* metafile */,
-                          gfx::Size() /* paper_size */,
-                          gfx::Rect() /* page_rect */);
+    document->SetDocument(std::move(metafile_));
     UMA_HISTOGRAM_COUNTS_1000("Arc.CupsPrinting.PageCount",
                               document->page_count());
     job_->StartPrinting();

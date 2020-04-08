@@ -431,6 +431,12 @@ void LogRendererKillCrashKeys(const GURL& site_url) {
                                  site_url.possibly_invalid_spec());
 }
 
+void LogCanCommitOriginAndUrlFailureReason(const std::string& failure_reason) {
+  static auto* failure_reason_key = base::debug::AllocateCrashKeyString(
+      "rfhi_can_commit_failure_reason", base::debug::CrashKeySize::Size64);
+  base::debug::SetCrashKeyString(failure_reason_key, failure_reason);
+}
+
 url::Origin GetOriginForURLLoaderFactoryUnchecked(
     NavigationRequest* navigation_request) {
   // Return a safe opaque origin when there is no |navigation_request| (e.g.
@@ -4864,8 +4870,10 @@ CanCommitStatus RenderFrameHostImpl::CanCommitOriginAndUrl(
   }
 
   // Renderer-debug URLs can never be committed.
-  if (IsRendererDebugURL(url))
+  if (IsRendererDebugURL(url)) {
+    LogCanCommitOriginAndUrlFailureReason("is_renderer_debug_url");
     return CanCommitStatus::CANNOT_COMMIT_URL;
+  }
 
   // TODO(creis): We should also check for WebUI pages here.  Also, when the
   // out-of-process iframes implementation is ready, we should check for
@@ -4889,20 +4897,26 @@ CanCommitStatus RenderFrameHostImpl::CanCommitOriginAndUrl(
           base::debug::AllocateCrashKeyString(
               "oopif_in_mhtml_page", base::debug::CrashKeySize::Size32),
           is_mhtml_document() ? "is_mhtml_doc" : "not_mhtml_doc");
+      LogCanCommitOriginAndUrlFailureReason("oopif_in_mhtml_page");
       return CanCommitStatus::CANNOT_COMMIT_URL;
     }
   }
 
   // Give the client a chance to disallow URLs from committing.
-  if (!GetContentClient()->browser()->CanCommitURL(GetProcess(), url))
+  if (!GetContentClient()->browser()->CanCommitURL(GetProcess(), url)) {
+    LogCanCommitOriginAndUrlFailureReason(
+        "content_client_disallowed_commit_url");
     return CanCommitStatus::CANNOT_COMMIT_URL;
+  }
 
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   const CanCommitStatus can_commit_status = policy->CanCommitOriginAndUrl(
       GetProcess()->GetID(), GetSiteInstance()->GetIsolationContext(), origin,
       url);
-  if (can_commit_status != CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL)
+  if (can_commit_status != CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL) {
+    LogCanCommitOriginAndUrlFailureReason("cpspi_disallowed_commit");
     return can_commit_status;
+  }
 
   const auto origin_tuple_or_precursor_tuple =
       origin.GetTupleOrPrecursorTupleIfOpaque();
@@ -4912,8 +4926,11 @@ CanCommitStatus RenderFrameHostImpl::CanCommitOriginAndUrl(
     // about:blank, data, and blob URLs.
 
     // Renderer-debug URLs can never be committed.
-    if (IsRendererDebugURL(origin_tuple_or_precursor_tuple.GetURL()))
+    if (IsRendererDebugURL(origin_tuple_or_precursor_tuple.GetURL())) {
+      LogCanCommitOriginAndUrlFailureReason(
+          "origin_or_precursor_is_renderer_debug_url");
       return CanCommitStatus::CANNOT_COMMIT_ORIGIN;
+    }
 
     // Give the client a chance to disallow origin URLs from committing.
     // TODO(acolwell): Fix this code to work with opaque origins. Currently
@@ -4921,6 +4938,8 @@ CanCommitStatus RenderFrameHostImpl::CanCommitOriginAndUrl(
     // the commit to fail. These need to be investigated.
     if (!origin.opaque() && !GetContentClient()->browser()->CanCommitURL(
                                 GetProcess(), origin.GetURL())) {
+      LogCanCommitOriginAndUrlFailureReason(
+          "content_client_disallowed_commit_origin");
       return CanCommitStatus::CANNOT_COMMIT_ORIGIN;
     }
   }

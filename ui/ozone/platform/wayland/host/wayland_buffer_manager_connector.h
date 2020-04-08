@@ -7,6 +7,7 @@
 
 #include "ui/ozone/public/gpu_platform_support_host.h"
 
+#include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/ozone/public/mojom/wayland/wayland_buffer_manager.mojom.h"
 
@@ -39,6 +40,9 @@ class WaylandBufferManagerConnector : public GpuPlatformSupportHost {
       GpuHostTerminateCallback terminate_callback) override;
 
  private:
+  void OnGpuServiceLaunchedOnUI(int host_id,
+                                GpuHostTerminateCallback terminate_callback);
+
   void OnBufferManagerHostPtrBinded(
       mojo::PendingRemote<ozone::mojom::WaylandBufferManagerHost>
           buffer_manager_host) const;
@@ -53,6 +57,12 @@ class WaylandBufferManagerConnector : public GpuPlatformSupportHost {
   GpuHostTerminateCallback terminate_callback_;
 
   scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
+
+  // Owned by the ui thread.
+  int host_id_ = -1;
+
+  THREAD_CHECKER(ui_thread_checker_);
+  THREAD_CHECKER(io_thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(WaylandBufferManagerConnector);
 };

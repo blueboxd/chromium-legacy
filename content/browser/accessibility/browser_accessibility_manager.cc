@@ -122,10 +122,6 @@ ui::AXTreeUpdate MakeAXTreeUpdate(
   return update;
 }
 
-BrowserAccessibility* BrowserAccessibilityFactory::Create() {
-  return BrowserAccessibility::Create();
-}
-
 BrowserAccessibilityFindInPageInfo::BrowserAccessibilityFindInPageInfo()
     : request_id(-1),
       match_index(-1),
@@ -139,9 +135,8 @@ BrowserAccessibilityFindInPageInfo::BrowserAccessibilityFindInPageInfo()
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
     const ui::AXTreeUpdate& initial_tree,
-    BrowserAccessibilityDelegate* delegate,
-    BrowserAccessibilityFactory* factory) {
-  return new BrowserAccessibilityManager(initial_tree, delegate, factory);
+    BrowserAccessibilityDelegate* delegate) {
+  return new BrowserAccessibilityManager(initial_tree, delegate);
 }
 #endif
 
@@ -153,12 +148,10 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::FromID(
 }
 
 BrowserAccessibilityManager::BrowserAccessibilityManager(
-    BrowserAccessibilityDelegate* delegate,
-    BrowserAccessibilityFactory* factory)
+    BrowserAccessibilityDelegate* delegate)
     : WebContentsObserver(delegate ? delegate->AccessibilityWebContents()
                                    : nullptr),
       delegate_(delegate),
-      factory_(factory),
       user_is_navigating_away_(false),
       connected_to_parent_tree_node_(false),
       ax_tree_id_(ui::AXTreeIDUnknown()),
@@ -171,12 +164,10 @@ BrowserAccessibilityManager::BrowserAccessibilityManager(
 
 BrowserAccessibilityManager::BrowserAccessibilityManager(
     const ui::AXTreeUpdate& initial_tree,
-    BrowserAccessibilityDelegate* delegate,
-    BrowserAccessibilityFactory* factory)
+    BrowserAccessibilityDelegate* delegate)
     : WebContentsObserver(delegate ? delegate->AccessibilityWebContents()
                                    : nullptr),
       delegate_(delegate),
-      factory_(factory),
       user_is_navigating_away_(false),
       ax_tree_id_(ui::AXTreeIDUnknown()),
       device_scale_factor_(1.0f),
@@ -1272,7 +1263,7 @@ void BrowserAccessibilityManager::OnSubtreeWillBeDeleted(ui::AXTree* tree,
 void BrowserAccessibilityManager::OnNodeCreated(ui::AXTree* tree,
                                                 ui::AXNode* node) {
   DCHECK(node);
-  BrowserAccessibility* wrapper = factory_->Create();
+  BrowserAccessibility* wrapper = BrowserAccessibility::Create();
   id_wrapper_map_[node->id()] = wrapper;
   wrapper->Init(this, node);
 }
@@ -1282,7 +1273,7 @@ void BrowserAccessibilityManager::OnNodeDeleted(ui::AXTree* tree,
   DCHECK_NE(node_id, ui::AXNode::kInvalidAXID);
   if (BrowserAccessibility* wrapper = GetFromID(node_id)) {
     id_wrapper_map_.erase(node_id);
-    wrapper->Destroy();
+    delete wrapper;
   }
 }
 
@@ -1291,7 +1282,7 @@ void BrowserAccessibilityManager::OnNodeReparented(ui::AXTree* tree,
   DCHECK(node);
   BrowserAccessibility* wrapper = GetFromAXNode(node);
   if (!wrapper) {
-    wrapper = factory_->Create();
+    wrapper = BrowserAccessibility::Create();
     id_wrapper_map_[node->id()] = wrapper;
   }
   wrapper->Init(this, node);

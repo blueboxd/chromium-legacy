@@ -21,19 +21,18 @@ BrowserAccessibility* BrowserAccessibility::Create() {
 BrowserAccessibilityMac::BrowserAccessibilityMac()
     : browser_accessibility_cocoa_(NULL) {}
 
-bool BrowserAccessibilityMac::IsNative() const {
-  return true;
-}
-
-void BrowserAccessibilityMac::NativeReleaseReference() {
+BrowserAccessibilityMac::~BrowserAccessibilityMac() {
   // Detach this object from |browser_accessibility_cocoa_| so it
   // no longer has a pointer to this object.
   [browser_accessibility_cocoa_ detach];
+
   // Now, release it - but at this point, other processes may have a
   // reference to the cocoa object.
   [browser_accessibility_cocoa_ release];
-  // Finally, it's safe to delete this since we've detached.
-  delete this;
+}
+
+bool BrowserAccessibilityMac::IsNative() const {
+  return true;
 }
 
 void BrowserAccessibilityMac::OnDataChanged() {

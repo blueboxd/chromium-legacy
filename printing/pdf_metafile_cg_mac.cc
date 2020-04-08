@@ -158,7 +158,8 @@ bool PdfMetafileCg::FinishDocument() {
 bool PdfMetafileCg::RenderPage(unsigned int page_number,
                                CGContextRef context,
                                const CGRect& rect,
-                               const MacRenderPageParams& params) const {
+                               bool autorotate,
+                               bool fit_to_page) const {
   CGPDFDocumentRef pdf_doc = GetPDFDocument();
   if (!pdf_doc) {
     LOG(ERROR) << "Unable to create PDF document from data";
@@ -172,12 +173,11 @@ bool PdfMetafileCg::RenderPage(unsigned int page_number,
 
   CGPDFPageRef pdf_page = CGPDFDocumentGetPage(pdf_doc, page_number);
   CGRect source_rect = CGPDFPageGetBoxRect(pdf_page, kCGPDFCropBox);
-  int pdf_src_rotation = CGPDFPageGetRotationAngle(pdf_page);
+  const int pdf_src_rotation = CGPDFPageGetRotationAngle(pdf_page);
   const bool source_is_landscape =
       (source_rect.size.width > source_rect.size.height);
   const bool dest_is_landscape = (rect.size.width > rect.size.height);
-  const bool rotate =
-      params.autorotate ? (source_is_landscape != dest_is_landscape) : false;
+  const bool rotate = autorotate && (source_is_landscape != dest_is_landscape);
   const float source_width =
       rotate ? source_rect.size.height : source_rect.size.width;
   const float source_height =
@@ -186,39 +186,15 @@ bool PdfMetafileCg::RenderPage(unsigned int page_number,
   // See if we need to scale the output.
   float scaling_factor = 1.0;
   const bool scaling_needed =
-      (params.shrink_to_fit && ((source_width > rect.size.width) ||
-                                (source_height > rect.size.height))) ||
-      (params.stretch_to_fit && ((source_width < rect.size.width) &&
-                                 (source_height < rect.size.height)));
+      fit_to_page && ((source_width != rect.size.width) ||
+                      (source_height != rect.size.height));
   if (scaling_needed) {
     float x_scaling_factor = rect.size.width / source_width;
     float y_scaling_factor = rect.size.height / source_height;
     scaling_factor = std::min(x_scaling_factor, y_scaling_factor);
   }
-  // Some PDFs have a non-zero origin. Need to take that into account and align
-  // the PDF to the origin.
-  const float x_origin_offset = -1 * source_rect.origin.x;
-  const float y_origin_offset = -1 * source_rect.origin.y;
-
-  // If the PDF needs to be centered, calculate the offsets here.
-  float x_offset =
-      params.center_horizontally
-          ? ((rect.size.width - (source_width * scaling_factor)) / 2)
-          : 0;
-  if (rotate)
-    x_offset = -x_offset;
-
-  float y_offset =
-      params.center_vertically
-          ? ((rect.size.height - (source_height * scaling_factor)) / 2)
-          : 0;
 
   CGContextSaveGState(context);
-
-  // The transform operations specified here gets applied in reverse order.
-  // i.e. the origin offset translation happens first.
-  // Origin is at bottom-left.
-  CGContextTranslateCTM(context, x_offset, y_offset);
 
   int num_rotations = 0;
   if (rotate) {
@@ -235,6 +211,24 @@ bool PdfMetafileCg::RenderPage(unsigned int page_number,
   RotatePage(context, rect, num_rotations);
 
   CGContextScaleCTM(context, scaling_factor, scaling_factor);
+
+  // Some PDFs have a non-zero origin. Need to take that into account and align
+  // the PDF to the CoreGraphics's coordinate system origin. Also realign the
+  // contents from the bottom-left of the page to top-left in order to stay
+  // consistent with Print Preview.
+  // A rotational vertical offset is calculated to determine how much to offset
+  // the y-component of the origin to move the origin from bottom-left to
+  // top-right. When the source is not rotated, the offset is simply the
+  // difference between the paper height and the source height. When rotated,
+  // the y-axis of the source falls along the width of the source and paper, so
+  // the offset becomes the difference between the paper width and the source
+  // width.
+  const float rotational_vertical_offset =
+      rotate ? (rect.size.width - (scaling_factor * source_width))
+             : (rect.size.height - (scaling_factor * source_height));
+  const float x_origin_offset = -1 * source_rect.origin.x;
+  const float y_origin_offset =
+      rotational_vertical_offset - source_rect.origin.y;
   CGContextTranslateCTM(context, x_origin_offset, y_origin_offset);
 
   CGContextDrawPDFPage(context, pdf_page);

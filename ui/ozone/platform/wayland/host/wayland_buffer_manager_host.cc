@@ -639,7 +639,10 @@ void WaylandBufferManagerHost::SetTerminateGpuCallback(
 
 mojo::PendingRemote<ozone::mojom::WaylandBufferManagerHost>
 WaylandBufferManagerHost::BindInterface() {
-  DCHECK(!receiver_.is_bound());
+  // Allow to rebind the interface if it hasn't been destroyed yet.
+  if (receiver_.is_bound())
+    OnChannelDestroyed();
+
   mojo::PendingRemote<ozone::mojom::WaylandBufferManagerHost>
       buffer_manager_host;
   receiver_.Bind(buffer_manager_host.InitWithNewPipeAndPassReceiver());

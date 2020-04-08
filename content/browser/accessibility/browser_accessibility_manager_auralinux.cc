@@ -17,10 +17,8 @@ namespace content {
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
     const ui::AXTreeUpdate& initial_tree,
-    BrowserAccessibilityDelegate* delegate,
-    BrowserAccessibilityFactory* factory) {
-  return new BrowserAccessibilityManagerAuraLinux(initial_tree, delegate,
-                                                  factory);
+    BrowserAccessibilityDelegate* delegate) {
+  return new BrowserAccessibilityManagerAuraLinux(initial_tree, delegate);
 }
 
 BrowserAccessibilityManagerAuraLinux*
@@ -30,9 +28,8 @@ BrowserAccessibilityManager::ToBrowserAccessibilityManagerAuraLinux() {
 
 BrowserAccessibilityManagerAuraLinux::BrowserAccessibilityManagerAuraLinux(
     const ui::AXTreeUpdate& initial_tree,
-    BrowserAccessibilityDelegate* delegate,
-    BrowserAccessibilityFactory* factory)
-    : BrowserAccessibilityManager(delegate, factory) {
+    BrowserAccessibilityDelegate* delegate)
+    : BrowserAccessibilityManager(delegate) {
   Initialize(initial_tree);
 }
 

@@ -69267,6 +69267,8 @@ Called by update_scheduler_enums.py.-->
   <int value="39" label="WebFileSystem"/>
   <int value="40" label="OutstandingNetworkRequestFetch"/>
   <int value="41" label="OutstandingNetworkRequestXHR"/>
+  <int value="42" label="AppBanner"/>
+  <int value="43" label="Printing"/>
 </enum>
 
 <enum name="WebShareMethod">

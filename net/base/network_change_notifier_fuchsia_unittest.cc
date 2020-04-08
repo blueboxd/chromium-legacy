@@ -430,7 +430,7 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, IpChange) {
   netstack_.SetInterfaces(interfaces);
 
   // Expect a single OnIPAddressChanged() notification.
-  ip_observer_->RunAndExpectCallCount(1);
+  EXPECT_TRUE(ip_observer_->RunAndExpectCallCount(1));
 }
 
 TEST_F(NetworkChangeNotifierFuchsiaTest, IpChangeV6) {
@@ -451,7 +451,7 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, IpChangeV6) {
   netstack_.SetInterfaces(interfaces);
 
   // Expect a single OnIPAddressChanged() notification.
-  ip_observer_->RunAndExpectCallCount(1);
+  EXPECT_TRUE(ip_observer_->RunAndExpectCallCount(1));
 }
 
 TEST_F(NetworkChangeNotifierFuchsiaTest, MultiV6IPChanged) {
@@ -471,7 +471,7 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, MultiV6IPChanged) {
   netstack_.SetInterfaces(interfaces);
 
   // Expect a single OnIPAddressChanged() notification.
-  ip_observer_->RunAndExpectCallCount(1);
+  EXPECT_TRUE(ip_observer_->RunAndExpectCallCount(1));
 }
 
 TEST_F(NetworkChangeNotifierFuchsiaTest, Ipv6AdditionalIpChange) {
@@ -487,7 +487,7 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, Ipv6AdditionalIpChange) {
   netstack_.SetInterfaces(interfaces);
 
   // Expect a single OnIPAddressChanged() notification.
-  ip_observer_->RunAndExpectCallCount(1);
+  EXPECT_TRUE(ip_observer_->RunAndExpectCallCount(1));
 }
 
 TEST_F(NetworkChangeNotifierFuchsiaTest, InterfaceDown) {
@@ -502,9 +502,9 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, InterfaceDown) {
   interfaces[0].flags = 0;
   netstack_.SetInterfaces(interfaces);
 
-  type_observer_->RunAndExpectConnectionTypes(
-      {NetworkChangeNotifier::ConnectionType::CONNECTION_NONE});
-  ip_observer_->RunAndExpectCallCount(1);
+  EXPECT_TRUE(type_observer_->RunAndExpectConnectionTypes(
+      {NetworkChangeNotifier::ConnectionType::CONNECTION_NONE}));
+  EXPECT_TRUE(ip_observer_->RunAndExpectCallCount(1));
 }
 
 TEST_F(NetworkChangeNotifierFuchsiaTest, InterfaceUp) {
@@ -520,9 +520,9 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, InterfaceUp) {
   interfaces[0].flags = fuchsia::netstack::NetInterfaceFlagUp;
   netstack_.SetInterfaces(interfaces);
 
-  type_observer_->RunAndExpectConnectionTypes(
-      {NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN});
-  ip_observer_->RunAndExpectCallCount(1);
+  EXPECT_TRUE(type_observer_->RunAndExpectConnectionTypes(
+      {NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN}));
+  EXPECT_TRUE(ip_observer_->RunAndExpectCallCount(1));
 }
 
 TEST_F(NetworkChangeNotifierFuchsiaTest, InterfaceDeleted) {
@@ -536,9 +536,9 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, InterfaceDeleted) {
 
   netstack_.SetInterfaces({});
 
-  type_observer_->RunAndExpectConnectionTypes(
-      {NetworkChangeNotifier::ConnectionType::CONNECTION_NONE});
-  ip_observer_->RunAndExpectCallCount(1);
+  EXPECT_TRUE(type_observer_->RunAndExpectConnectionTypes(
+      {NetworkChangeNotifier::ConnectionType::CONNECTION_NONE}));
+  EXPECT_TRUE(ip_observer_->RunAndExpectCallCount(1));
 }
 
 TEST_F(NetworkChangeNotifierFuchsiaTest, InterfaceAdded) {
@@ -553,9 +553,9 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, InterfaceAdded) {
 
   netstack_.SetInterfaces(interfaces);
 
-  type_observer_->RunAndExpectConnectionTypes(
-      {NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI});
-  ip_observer_->RunAndExpectCallCount(1);
+  EXPECT_TRUE(type_observer_->RunAndExpectConnectionTypes(
+      {NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI}));
+  EXPECT_TRUE(ip_observer_->RunAndExpectCallCount(1));
 }
 
 TEST_F(NetworkChangeNotifierFuchsiaTest, SecondaryInterfaceAddedNoop) {

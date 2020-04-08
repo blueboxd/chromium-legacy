@@ -1987,6 +1987,27 @@ def make_indexed_property_setter_callback(cg_context, function_name):
         EmptyNode(),
     ])
 
+    if "Global" in cg_context.interface.extended_attributes:
+        body.append(
+            TextNode("""\
+// 7.4.8 [[Set]] ( P, V, Receiver )
+// https://html.spec.whatwg.org/C/#windowproxy-set
+// step 2. If ! IsPlatformObjectSameOrigin(W) is true, then return
+//   ? OrdinarySet(this, P, V, Receiver).
+//
+// 7.4.6 [[DefineOwnProperty]] ( P, Desc )
+// https://html.spec.whatwg.org/C/#windowproxy-defineownproperty
+// step 2.1. If P is an array index property name, return false.
+bindings::V8SetReturnValue(${info}, nullptr);
+if (${info}.ShouldThrowOnError()) {
+  ExceptionState exception_state(${info}.GetIsolate(),
+                                 ExceptionState::kIndexedSetterContext,
+                                 "${interface.identifier}");
+  exception_state.ThrowTypeError(
+      "Indexed property setter is not supported.");
+}"""))
+        return func_decl, func_def
+
     if not cg_context.indexed_property_setter:
         body.append(
             TextNode("""\
@@ -2135,6 +2156,25 @@ def make_indexed_property_definer_callback(cg_context, function_name):
     body.extend([
         make_runtime_call_timer_scope(cg_context, "IndexedPropertyDefiner"),
         EmptyNode(),
+    ])
+
+    if "Global" in cg_context.interface.extended_attributes:
+        body.append(
+            TextNode("""\
+// 7.4.6 [[DefineOwnProperty]] ( P, Desc )
+// https://html.spec.whatwg.org/C/#windowproxy-defineownproperty
+// step 2.1. If P is an array index property name, return false.
+bindings::V8SetReturnValue(${info}, nullptr);
+if (${info}.ShouldThrowOnError()) {
+  ExceptionState exception_state(${info}.GetIsolate(),
+                                 ExceptionState::kIndexedSetterContext,
+                                 "${interface.identifier}");
+  exception_state.ThrowTypeError(
+      "Indexed property setter is not supported.");
+}"""))
+        return func_decl, func_def
+
+    body.append(
         TextNode("""\
 // 3.8.3. [[DefineOwnProperty]]
 // https://heycam.github.io/webidl/#legacy-platform-object-defineownproperty
@@ -2150,8 +2190,7 @@ if (v8_property_desc.has_get() || v8_property_desc.has_set()) {
   }
   return;
 }
-"""),
-    ])
+"""))
 
     if not cg_context.interface.indexed_and_named_properties.indexed_setter:
         body.append(
@@ -2401,6 +2440,13 @@ def make_named_property_setter_callback(cg_context, function_name):
         EmptyNode(),
     ])
 
+    if "Global" in cg_context.interface.extended_attributes:
+        body.append(
+            TextNode("""\
+// Do not intercept.  Fallback to the default behavior.\
+"""))
+        return func_decl, func_def
+
     if not cg_context.named_property_setter:
         body.append(
             TextNode("""\
@@ -2517,6 +2563,21 @@ def make_named_property_deleter_callback(cg_context, function_name):
         EmptyNode(),
     ])
 
+    if "Global" in cg_context.interface.extended_attributes:
+        body.append(
+            TextNode("""\
+// 3.6.4.3. [[Delete]]
+// https://heycam.github.io/webidl/#named-properties-object-delete
+// step 1. Return false.
+bindings::V8SetReturnValue(${info}, false);
+if (${info}.ShouldThrowOnError()) {
+  ExceptionState exception_state(${info}.GetIsolate(),
+                                 ExceptionState::kDeletionContext,
+                                 "${interface.identifier}");
+  exception_state.ThrowTypeError("Named property deleter is not supported.");
+}"""))
+        return func_decl, func_def
+
     props = cg_context.interface.indexed_and_named_properties
     if (not cg_context.named_property_deleter
             and "NotEnumerable" in props.named_getter.extended_attributes):
@@ -2629,14 +2690,28 @@ def make_named_property_definer_callback(cg_context, function_name):
     body.extend([
         make_runtime_call_timer_scope(cg_context, "NamedPropertyDefiner"),
         EmptyNode(),
-        TextNode("""\
-// 3.8.3. [[DefineOwnProperty]]
-// https://heycam.github.io/webidl/#legacy-platform-object-defineownproperty\
-"""),
     ])
+
+    if "Global" in cg_context.interface.extended_attributes:
+        body.append(
+            TextNode("""\
+// 3.6.4.2. [[DefineOwnProperty]]
+// https://heycam.github.io/webidl/#named-properties-object-defineownproperty
+// step 1. Return false.
+bindings::V8SetReturnValue(${info}, nullptr);
+if (${info}.ShouldThrowOnError()) {
+  ExceptionState exception_state(${info}.GetIsolate(),
+                                 ExceptionState::kSetterContext,
+                                 "${interface.identifier}");
+  exception_state.ThrowTypeError("Named property setter is not supported.");
+}"""))
+        return func_decl, func_def
+
     if not cg_context.interface.indexed_and_named_properties.named_setter:
         body.append(
             TextNode("""\
+// 3.8.3. [[DefineOwnProperty]]
+// https://heycam.github.io/webidl/#legacy-platform-object-defineownproperty
 // step 2.1. Let creating be true if P is not a supported property name, and
 //   false otherwise.
 // step 2.2.1. If creating is false and O does not implement an interface
@@ -2659,6 +2734,8 @@ if (!is_creating) {
     else:
         body.append(
             TextNode("""\
+// 3.8.3. [[DefineOwnProperty]]
+// https://heycam.github.io/webidl/#legacy-platform-object-defineownproperty
 // step 2.2.2. If O implements an interface with a named property setter,
 //   then:
 // step 2.2.2.1. If the result of calling IsDataDescriptor(Desc) is false,
@@ -2714,7 +2791,29 @@ def make_named_property_descriptor_callback(cg_context, function_name):
         EmptyNode(),
     ])
 
-    pattern = """\
+    if "Global" in cg_context.interface.extended_attributes:
+        pattern = """\
+// 3.6.4.1. [[GetOwnProperty]]
+// https://heycam.github.io/webidl/#named-properties-object-getownproperty
+// step 4. If the result of running the named property visibility algorithm
+//   with property name P and object object is true, then:
+// step 5. Return OrdinaryGetOwnProperty(O, P).
+${class_name}::NamedPropertyGetterCallback(${v8_property_name}, ${info});
+v8::Local<v8::Value> v8_value = ${info}.GetReturnValue().Get();
+if (v8_value->IsUndefined())
+  return;  // Do not intercept.  Fallback to OrdinaryGetOwnProperty.
+
+// step 7. If A implements an interface with the
+//   [LegacyUnenumerableNamedProperties] extended attribute, then set
+//   desc.[[Enumerable]] to false, otherwise set it to true.
+// step 8. Set desc.[[Writable]] to true and desc.[[Configurable]] to true.
+v8::PropertyDescriptor desc(v8_value, /*writable=*/true);
+desc.set_enumerable({cxx_enumerable});
+desc.set_configurable(true);
+bindings::V8SetReturnValue(${info}, desc);\
+"""
+    else:
+        pattern = """\
 // LegacyPlatformObjectGetOwnProperty
 // https://heycam.github.io/webidl/#LegacyPlatformObjectGetOwnProperty
 // step 2.1.3. If operation was defined without an identifier, then set
@@ -2743,7 +2842,8 @@ if (v8_value->IsUndefined())
 v8::PropertyDescriptor desc(v8_value, /*writable=*/{cxx_writable});
 desc.set_enumerable({cxx_enumerable});
 desc.set_configurable(true);
-bindings::V8SetReturnValue(${info}, desc);"""
+bindings::V8SetReturnValue(${info}, desc);\
+"""
     props = cg_context.interface.indexed_and_named_properties
     writable = bool(props.named_setter)
     cxx_writable = "true" if writable else "false"
@@ -4043,6 +4143,10 @@ ${instance_template}->Set(
     v8::Undefined(${isolate}),
     static_cast<v8::PropertyAttribute>(
         v8::ReadOnly | v8::DontEnum | v8::DontDelete));
+// 7.7.4.2 [[SetPrototypeOf]] ( V )
+// https://html.spec.whatwg.org/C/#location-setprototypeof
+${instance_template}->SetImmutableProto();
+${prototype_template}->SetImmutableProto();
 """))
 
     if indexed_and_named_property_install_nodes:
@@ -4076,17 +4180,24 @@ ${prototype_template}->SetIntrinsicDataProperty(
     V8AtomicString(${isolate}, "forEach"), v8::kArrayProto_forEach, v8::None);
 """))
 
-    if ("Global" in cg_context.class_like.extended_attributes
-            or cg_context.class_like.identifier == "Location"):
-        if "Global" in cg_context.class_like.extended_attributes:
-            body.append(T("// [Global]"))
-        if cg_context.class_like.identifier == "Location":
-            body.append(T("// Location exotic object"))
-        body.extend([
-            T("${instance_template}->SetImmutableProto();"),
-            T("${prototype_template}->SetImmutableProto();"),
-            EmptyNode(),
-        ])
+    if "Global" in cg_context.class_like.extended_attributes:
+        body.append(
+            TextNode("""\
+// [Global]
+// 3.7.1. [[SetPrototypeOf]]
+// https://heycam.github.io/webidl/#platform-object-setprototypeof
+${instance_template}->SetImmutableProto();
+${prototype_template}->SetImmutableProto();
+"""))
+    elif any("Global" in derived.extended_attributes
+             for derived in cg_context.class_like.deriveds):
+        body.append(
+            TextNode("""\
+// [Global] - prototype object in the prototype chain of global objects
+// 3.7.1. [[SetPrototypeOf]]
+// https://heycam.github.io/webidl/#platform-object-setprototypeof
+${prototype_template}->SetImmutableProto();
+"""))
 
     func_call_pattern = ("{}(${isolate}, ${world}, ${instance_template}, "
                          "${prototype_template}, ${interface_template});")

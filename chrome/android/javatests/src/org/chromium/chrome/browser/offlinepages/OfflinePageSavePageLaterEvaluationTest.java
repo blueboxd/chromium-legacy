@@ -229,7 +229,9 @@ public class OfflinePageSavePageLaterEvaluationTest {
             throws InterruptedException {
         final Semaphore semaphore = new Semaphore(0);
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
-            Profile profile = Profile.getLastUsedProfile();
+            // TODO (https://crbug.com/714249):  Add incognito mode tests to check that
+            // OfflinePageEvaluationBridge is null for incognito.
+            Profile profile = Profile.getLastUsedRegularProfile();
             mBridge = new OfflinePageEvaluationBridge(profile, useTestingScheduler);
             if (mBridge == null) {
                 Assert.fail("OfflinePageEvaluationBridge initialization failed!");

@@ -56,7 +56,7 @@ public class OfflinePageArchivePublisherBridgeTest {
             throws InterruptedException {
         final Semaphore semaphore = new Semaphore(0);
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
-            Profile profile = Profile.getLastUsedProfile();
+            Profile profile = Profile.getLastUsedRegularProfile();
             if (incognitoProfile) {
                 profile = profile.getOffTheRecordProfile();
             }

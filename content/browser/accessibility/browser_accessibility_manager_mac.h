@@ -22,10 +22,8 @@ namespace content {
 class CONTENT_EXPORT BrowserAccessibilityManagerMac
     : public BrowserAccessibilityManager {
  public:
-  BrowserAccessibilityManagerMac(
-      const ui::AXTreeUpdate& initial_tree,
-      BrowserAccessibilityDelegate* delegate,
-      BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
+  BrowserAccessibilityManagerMac(const ui::AXTreeUpdate& initial_tree,
+                                 BrowserAccessibilityDelegate* delegate);
 
   ~BrowserAccessibilityManagerMac() override;
 

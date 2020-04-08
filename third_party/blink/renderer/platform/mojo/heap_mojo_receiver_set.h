@@ -23,24 +23,28 @@ namespace blink {
 // TODO(crbug.com/1058076) HeapMojoWrapperMode should be removed once we ensure
 // that the interface is not used after ContextDestroyed().
 template <typename Interface,
+          typename Owner,
           HeapMojoWrapperMode Mode = HeapMojoWrapperMode::kWithContextObserver>
 class HeapMojoReceiverSet {
   DISALLOW_NEW();
 
  public:
-  using ImplPointerType = typename mojo::Receiver<Interface>::ImplPointerType;
-
-  explicit HeapMojoReceiverSet(ContextLifecycleNotifier* context)
-      : wrapper_(MakeGarbageCollected<Wrapper>(context)) {
+  explicit HeapMojoReceiverSet(Owner* owner, ContextLifecycleNotifier* context)
+      : wrapper_(MakeGarbageCollected<Wrapper>(owner, context)) {
+    static_assert(std::is_base_of<Interface, Owner>::value,
+                  "Owner should implement Interface");
+    static_assert(IsGarbageCollectedType<Owner>::value,
+                  "Owner needs to be a garbage collected object");
     DCHECK(context);
   }
+  HeapMojoReceiverSet(const HeapMojoReceiverSet&) = delete;
+  HeapMojoReceiverSet& operator=(const HeapMojoReceiverSet&) = delete;
 
   // Methods to redirect to mojo::ReceiverSet:
-  mojo::ReceiverId Add(ImplPointerType impl,
-                       mojo::PendingReceiver<Interface> receiver,
+  mojo::ReceiverId Add(mojo::PendingReceiver<Interface> receiver,
                        scoped_refptr<base::SequencedTaskRunner> task_runner) {
     DCHECK(task_runner);
-    return wrapper_->receiver_set().Add(std::move(impl), std::move(receiver),
+    return wrapper_->receiver_set().Add(wrapper_->owner(), std::move(receiver),
                                         task_runner);
   }
 
@@ -57,6 +61,9 @@ class HeapMojoReceiverSet {
   void Trace(Visitor* visitor) { visitor->Trace(wrapper_); }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(HeapMojoReceiverSetGCWithContextObserverTest,
+                           NoClearOnConservativeGC);
+
   // Garbage collected wrapper class to add a prefinalizer.
   class Wrapper final : public GarbageCollected<Wrapper>,
                         public ContextLifecycleObserver {
@@ -64,17 +71,20 @@ class HeapMojoReceiverSet {
     USING_GARBAGE_COLLECTED_MIXIN(Wrapper);
 
    public:
-    explicit Wrapper(ContextLifecycleNotifier* notifier) {
+    explicit Wrapper(Owner* owner, ContextLifecycleNotifier* notifier)
+        : owner_(owner) {
       SetContextLifecycleNotifier(notifier);
     }
 
     void Trace(Visitor* visitor) override {
+      visitor->Trace(owner_);
       ContextLifecycleObserver::Trace(visitor);
     }
 
     void Dispose() { receiver_set_.Clear(); }
 
     mojo::ReceiverSet<Interface>& receiver_set() { return receiver_set_; }
+    Owner* owner() { return owner_; }
 
     // ContextLifecycleObserver methods
     void ContextDestroyed() override {
@@ -83,6 +93,7 @@ class HeapMojoReceiverSet {
     }
 
    private:
+    Member<Owner> owner_;
     mojo::ReceiverSet<Interface> receiver_set_;
   };
 

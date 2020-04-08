@@ -57,7 +57,7 @@ ShareToData* ShareToDataForWebState(web::WebState* web_state,
       web_state->GetNavigationManager()->GetVisibleItem();
   web::UserAgentType userAgent = web::UserAgentType::NONE;
   if (visibleItem)
-    userAgent = visibleItem->GetUserAgentType();
+    userAgent = visibleItem->GetUserAgentType(web_state->GetView());
 
   FindTabHelper* helper = FindTabHelper::FromWebState(web_state);
   BOOL is_page_searchable =

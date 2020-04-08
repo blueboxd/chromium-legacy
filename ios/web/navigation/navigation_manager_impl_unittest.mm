@@ -107,7 +107,6 @@ class MockNavigationManagerDelegate : public NavigationManagerDelegate {
 struct ItemInfoToBeRestored {
   GURL url;
   UserAgentType user_agent;
-  bool user_agent_inherited;
   PageDisplayState display_state;
 };
 
@@ -650,7 +649,10 @@ TEST_F(NavigationManagerTest, ReplaceSameUrlPendingItemIfOverrideDesktop) {
       navigation_manager()->GetPendingItem()->GetTransitionType(),
       ui::PAGE_TRANSITION_TYPED));
   EXPECT_EQ(web::UserAgentType::MOBILE,
-            navigation_manager()->GetPendingItem()->GetUserAgentType());
+            navigation_manager()->GetPendingItem()->GetUserAgentType(nil));
+  EXPECT_EQ(
+      web::UserAgentType::MOBILE,
+      navigation_manager()->GetPendingItem()->GetUserAgentForInheritance());
   EXPECT_EQ(0, navigation_manager()->GetItemCount());
 
   navigation_manager()->AddPendingItem(
@@ -678,7 +680,10 @@ TEST_F(NavigationManagerTest, ReplaceSameUrlPendingItemIfOverrideMobile) {
       navigation_manager()->GetPendingItem()->GetTransitionType(),
       ui::PAGE_TRANSITION_TYPED));
   EXPECT_EQ(web::UserAgentType::DESKTOP,
-            navigation_manager()->GetPendingItem()->GetUserAgentType());
+            navigation_manager()->GetPendingItem()->GetUserAgentType(nil));
+  EXPECT_EQ(
+      web::UserAgentType::DESKTOP,
+      navigation_manager()->GetPendingItem()->GetUserAgentForInheritance());
   EXPECT_EQ(0, navigation_manager()->GetItemCount());
 
   navigation_manager()->AddPendingItem(
@@ -832,8 +837,12 @@ TEST_F(NavigationManagerTest, AddSameUrlPendingItemIfOverrideDesktop) {
   EXPECT_TRUE(ui::PageTransitionCoreTypeIs(
       navigation_manager()->GetLastCommittedItem()->GetTransitionType(),
       ui::PAGE_TRANSITION_TYPED));
-  EXPECT_EQ(web::UserAgentType::MOBILE,
-            navigation_manager()->GetLastCommittedItem()->GetUserAgentType());
+  EXPECT_EQ(
+      web::UserAgentType::MOBILE,
+      navigation_manager()->GetLastCommittedItem()->GetUserAgentType(nil));
+  EXPECT_EQ(web::UserAgentType::MOBILE, navigation_manager()
+                                            ->GetLastCommittedItem()
+                                            ->GetUserAgentForInheritance());
   EXPECT_EQ(1, navigation_manager()->GetItemCount());
 
   navigation_manager()->AddPendingItem(
@@ -864,8 +873,12 @@ TEST_F(NavigationManagerTest, AddSameUrlPendingItemIfOverrideMobile) {
   EXPECT_TRUE(ui::PageTransitionCoreTypeIs(
       navigation_manager()->GetLastCommittedItem()->GetTransitionType(),
       ui::PAGE_TRANSITION_TYPED));
-  EXPECT_EQ(web::UserAgentType::DESKTOP,
-            navigation_manager()->GetLastCommittedItem()->GetUserAgentType());
+  EXPECT_EQ(
+      web::UserAgentType::DESKTOP,
+      navigation_manager()->GetLastCommittedItem()->GetUserAgentType(nil));
+  EXPECT_EQ(web::UserAgentType::DESKTOP, navigation_manager()
+                                             ->GetLastCommittedItem()
+                                             ->GetUserAgentForInheritance());
   EXPECT_EQ(1, navigation_manager()->GetItemCount());
 
   navigation_manager()->AddPendingItem(
@@ -892,7 +905,9 @@ TEST_F(NavigationManagerTest, OverrideUserAgentWithDesktop) {
 
   NavigationItem* last_committed_item =
       navigation_manager()->GetLastCommittedItem();
-  EXPECT_EQ(UserAgentType::MOBILE, last_committed_item->GetUserAgentType());
+  EXPECT_EQ(UserAgentType::MOBILE, last_committed_item->GetUserAgentType(nil));
+  EXPECT_EQ(UserAgentType::MOBILE,
+            last_committed_item->GetUserAgentForInheritance());
   EXPECT_EQ(1, navigation_manager()->GetItemCount());
 
   navigation_manager()->AddPendingItem(
@@ -901,7 +916,10 @@ TEST_F(NavigationManagerTest, OverrideUserAgentWithDesktop) {
       web::NavigationManager::UserAgentOverrideOption::DESKTOP);
   ASSERT_TRUE(navigation_manager()->GetPendingItem());
   EXPECT_EQ(UserAgentType::DESKTOP,
-            navigation_manager()->GetPendingItem()->GetUserAgentType());
+            navigation_manager()->GetPendingItem()->GetUserAgentType(nil));
+  EXPECT_EQ(
+      UserAgentType::DESKTOP,
+      navigation_manager()->GetPendingItem()->GetUserAgentForInheritance());
   EXPECT_EQ(1, navigation_manager()->GetItemCount());
 }
 
@@ -918,9 +936,10 @@ TEST_F(NavigationManagerTest, OverrideUserAgentWithMobile) {
 
   NavigationItem* last_committed_item =
       navigation_manager()->GetLastCommittedItem();
-  last_committed_item->SetUserAgentType(UserAgentType::DESKTOP,
-                                        /*update_inherited_user_agent =*/true);
-  EXPECT_EQ(UserAgentType::DESKTOP, last_committed_item->GetUserAgentType());
+  last_committed_item->SetUserAgentType(UserAgentType::DESKTOP);
+  EXPECT_EQ(UserAgentType::DESKTOP, last_committed_item->GetUserAgentType(nil));
+  EXPECT_EQ(UserAgentType::DESKTOP,
+            last_committed_item->GetUserAgentForInheritance());
 
   navigation_manager()->AddPendingItem(
       GURL("http://www.2.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -928,7 +947,10 @@ TEST_F(NavigationManagerTest, OverrideUserAgentWithMobile) {
       web::NavigationManager::UserAgentOverrideOption::MOBILE);
   ASSERT_TRUE(navigation_manager()->GetPendingItem());
   EXPECT_EQ(UserAgentType::MOBILE,
-            navigation_manager()->GetPendingItem()->GetUserAgentType());
+            navigation_manager()->GetPendingItem()->GetUserAgentType(nil));
+  EXPECT_EQ(
+      UserAgentType::MOBILE,
+      navigation_manager()->GetPendingItem()->GetUserAgentForInheritance());
 }
 
 // Tests that the UserAgentType of an INHERIT item is propagated to subsequent
@@ -943,8 +965,9 @@ TEST_F(NavigationManagerTest, OverrideUserAgentWithInheritAfterInherit) {
   navigation_manager()->CommitPendingItem();
 
   ASSERT_TRUE(navigation_manager()->GetLastCommittedItem());
-  EXPECT_EQ(web::UserAgentType::MOBILE,
-            navigation_manager()->GetLastCommittedItem()->GetUserAgentType());
+  EXPECT_EQ(web::UserAgentType::MOBILE, navigation_manager()
+                                            ->GetLastCommittedItem()
+                                            ->GetUserAgentForInheritance());
 
   navigation_manager()->AddPendingItem(
       GURL("http://www.2.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -957,8 +980,9 @@ TEST_F(NavigationManagerTest, OverrideUserAgentWithInheritAfterInherit) {
   navigation_manager()->CommitPendingItem();
 
   ASSERT_TRUE(navigation_manager()->GetLastCommittedItem());
-  EXPECT_EQ(web::UserAgentType::MOBILE,
-            navigation_manager()->GetLastCommittedItem()->GetUserAgentType());
+  EXPECT_EQ(web::UserAgentType::MOBILE, navigation_manager()
+                                            ->GetLastCommittedItem()
+                                            ->GetUserAgentForInheritance());
 }
 
 // Tests that the UserAgentType of a MOBILE item is propagated to subsequent
@@ -973,8 +997,12 @@ TEST_F(NavigationManagerTest, OverrideUserAgentWithInheritAfterMobile) {
   navigation_manager()->CommitPendingItem();
 
   ASSERT_TRUE(navigation_manager()->GetLastCommittedItem());
-  EXPECT_EQ(web::UserAgentType::MOBILE,
-            navigation_manager()->GetLastCommittedItem()->GetUserAgentType());
+  EXPECT_EQ(
+      web::UserAgentType::MOBILE,
+      navigation_manager()->GetLastCommittedItem()->GetUserAgentType(nil));
+  EXPECT_EQ(web::UserAgentType::MOBILE, navigation_manager()
+                                            ->GetLastCommittedItem()
+                                            ->GetUserAgentForInheritance());
 
   navigation_manager()->AddPendingItem(
       GURL("http://www.2.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -987,8 +1015,12 @@ TEST_F(NavigationManagerTest, OverrideUserAgentWithInheritAfterMobile) {
   navigation_manager()->CommitPendingItem();
 
   ASSERT_TRUE(navigation_manager()->GetLastCommittedItem());
-  EXPECT_EQ(web::UserAgentType::MOBILE,
-            navigation_manager()->GetLastCommittedItem()->GetUserAgentType());
+  EXPECT_EQ(
+      web::UserAgentType::MOBILE,
+      navigation_manager()->GetLastCommittedItem()->GetUserAgentType(nil));
+  EXPECT_EQ(web::UserAgentType::MOBILE, navigation_manager()
+                                            ->GetLastCommittedItem()
+                                            ->GetUserAgentForInheritance());
 }
 
 // Tests that the UserAgentType of a DESKTOP item is propagated to subsequent
@@ -1003,8 +1035,12 @@ TEST_F(NavigationManagerTest, OverrideUserAgentWithInheritAfterDesktop) {
   navigation_manager()->CommitPendingItem();
 
   ASSERT_TRUE(navigation_manager()->GetLastCommittedItem());
-  EXPECT_EQ(web::UserAgentType::DESKTOP,
-            navigation_manager()->GetLastCommittedItem()->GetUserAgentType());
+  EXPECT_EQ(
+      web::UserAgentType::DESKTOP,
+      navigation_manager()->GetLastCommittedItem()->GetUserAgentType(nil));
+  EXPECT_EQ(web::UserAgentType::DESKTOP, navigation_manager()
+                                             ->GetLastCommittedItem()
+                                             ->GetUserAgentForInheritance());
 
   navigation_manager()->AddPendingItem(
       GURL("http://www.2.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -1017,8 +1053,12 @@ TEST_F(NavigationManagerTest, OverrideUserAgentWithInheritAfterDesktop) {
   navigation_manager()->CommitPendingItem();
 
   ASSERT_TRUE(navigation_manager()->GetLastCommittedItem());
-  EXPECT_EQ(web::UserAgentType::DESKTOP,
-            navigation_manager()->GetLastCommittedItem()->GetUserAgentType());
+  EXPECT_EQ(
+      web::UserAgentType::DESKTOP,
+      navigation_manager()->GetLastCommittedItem()->GetUserAgentType(nil));
+  EXPECT_EQ(web::UserAgentType::DESKTOP, navigation_manager()
+                                             ->GetLastCommittedItem()
+                                             ->GetUserAgentForInheritance());
 }
 
 // Tests that the UserAgentType is propagated to subsequent NavigationItems if
@@ -1044,7 +1084,7 @@ TEST_F(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
   navigation_manager()->CommitPendingItem();
 
   NavigationItem* item1 = navigation_manager()->GetLastCommittedItem();
-  ASSERT_EQ(web::UserAgentType::MOBILE, item1->GetUserAgentType());
+  ASSERT_EQ(web::UserAgentType::MOBILE, item1->GetUserAgentType(nil));
 
   GURL item2_url =
       item1->GetURL().ReplaceComponents(app_specific_scheme_replacement);
@@ -1063,7 +1103,7 @@ TEST_F(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
   // Having a non-app-specific URL should not change the fact that the native
   // item should be skipped when determining user agent inheritance.
   native_item1->SetVirtualURL(GURL("http://non-app-specific-url"));
-  ASSERT_EQ(web::UserAgentType::NONE, native_item1->GetUserAgentType());
+  ASSERT_EQ(web::UserAgentType::NONE, native_item1->GetUserAgentType(nil));
   navigation_manager()->AddPendingItem(
       GURL("http://www.2.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::BROWSER_INITIATED,
@@ -1077,13 +1117,12 @@ TEST_F(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
   NavigationItem* item2 = navigation_manager()->GetLastCommittedItem();
 
   // Verify that |item1|'s UserAgentType is propagated to |item2|.
-  EXPECT_EQ(item1->GetUserAgentType(), item2->GetUserAgentType());
+  EXPECT_EQ(item1->GetUserAgentType(nil), item2->GetUserAgentType(nil));
 
   // Update |item2|'s UA type to DESKTOP and add a third non-native navigation,
   // once again separated by a native one.
-  item2->SetUserAgentType(web::UserAgentType::DESKTOP,
-                          /*update_inherited_user_agent =*/true);
-  ASSERT_EQ(web::UserAgentType::DESKTOP, item2->GetUserAgentType());
+  item2->SetUserAgentType(web::UserAgentType::DESKTOP);
+  ASSERT_EQ(web::UserAgentType::DESKTOP, item2->GetUserAgentType(nil));
 
   GURL item3_url =
       item2->GetURL().ReplaceComponents(app_specific_scheme_replacement);
@@ -1099,7 +1138,8 @@ TEST_F(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
   navigation_manager()->CommitPendingItem();
 
   NavigationItem* native_item2 = navigation_manager()->GetLastCommittedItem();
-  ASSERT_EQ(web::UserAgentType::NONE, native_item2->GetUserAgentType());
+  ASSERT_EQ(web::UserAgentType::NONE,
+            native_item2->GetUserAgentForInheritance());
   navigation_manager()->AddPendingItem(
       GURL("http://www.3.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::BROWSER_INITIATED,
@@ -1115,12 +1155,12 @@ TEST_F(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
   NavigationItem* item3 = navigation_manager()->GetLastCommittedItem();
 
   // Verify that |item2|'s UserAgentType is propagated to |item3|.
-  EXPECT_EQ(item2->GetUserAgentType(), item3->GetUserAgentType());
+  EXPECT_EQ(item2->GetUserAgentForInheritance(),
+            item3->GetUserAgentForInheritance());
 }
 
 // Tests that adding transient item for a pending item with mobile user agent
-// type results in a transient item with mobile user agent type when the type is
-// forcing the inheritance.
+// type results in a transient item with mobile user agent type.
 TEST_F(NavigationManagerTest, AddTransientItemForMobilePendingItem) {
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -1128,29 +1168,20 @@ TEST_F(NavigationManagerTest, AddTransientItemForMobilePendingItem) {
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
   ASSERT_TRUE(navigation_manager()->GetPendingItem());
   navigation_manager()->GetPendingItem()->SetUserAgentType(
-      UserAgentType::MOBILE, /*update_inherited_user_agent =*/true);
+      UserAgentType::MOBILE);
 
   navigation_manager()->AddTransientItem(GURL("http://www.url.com"));
   ASSERT_TRUE(navigation_manager()->GetTransientItem());
-  EXPECT_EQ(UserAgentType::MOBILE,
-            navigation_manager()->GetTransientItem()->GetUserAgentType());
-  EXPECT_EQ(UserAgentType::MOBILE,
-            navigation_manager()->GetPendingItem()->GetUserAgentType());
-
-  // Don't update the inherited user agent.
-  navigation_manager()->GetPendingItem()->SetUserAgentType(
-      UserAgentType::DESKTOP, /*update_inherited_user_agent =*/false);
-  navigation_manager()->AddTransientItem(GURL("http://www.url2.com"));
-  ASSERT_TRUE(navigation_manager()->GetTransientItem());
-  EXPECT_EQ(UserAgentType::MOBILE,
-            navigation_manager()->GetTransientItem()->GetUserAgentType());
-  EXPECT_EQ(UserAgentType::DESKTOP,
-            navigation_manager()->GetPendingItem()->GetUserAgentType());
+  EXPECT_EQ(
+      UserAgentType::MOBILE,
+      navigation_manager()->GetTransientItem()->GetUserAgentForInheritance());
+  EXPECT_EQ(
+      UserAgentType::MOBILE,
+      navigation_manager()->GetPendingItem()->GetUserAgentForInheritance());
 }
 
 // Tests that adding transient item for a pending item with desktop user agent
-// type results in a transient item with desktop user agent type when the type
-// is forcing the inheritance.
+// type results in a transient item with desktop user agent type.
 TEST_F(NavigationManagerTest, AddTransientItemForDesktopPendingItem) {
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -1158,24 +1189,16 @@ TEST_F(NavigationManagerTest, AddTransientItemForDesktopPendingItem) {
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
   ASSERT_TRUE(navigation_manager()->GetPendingItem());
   navigation_manager()->GetPendingItem()->SetUserAgentType(
-      UserAgentType::DESKTOP, /*update_inherited_user_agent =*/true);
+      UserAgentType::DESKTOP);
 
   navigation_manager()->AddTransientItem(GURL("http://www.url.com"));
   ASSERT_TRUE(navigation_manager()->GetTransientItem());
-  EXPECT_EQ(UserAgentType::DESKTOP,
-            navigation_manager()->GetTransientItem()->GetUserAgentType());
-  EXPECT_EQ(UserAgentType::DESKTOP,
-            navigation_manager()->GetPendingItem()->GetUserAgentType());
-
-  // Don't update the inherited user agent.
-  navigation_manager()->GetPendingItem()->SetUserAgentType(
-      UserAgentType::MOBILE, /*update_inherited_user_agent =*/false);
-  navigation_manager()->AddTransientItem(GURL("http://www.url2.com"));
-  ASSERT_TRUE(navigation_manager()->GetTransientItem());
-  EXPECT_EQ(UserAgentType::DESKTOP,
-            navigation_manager()->GetTransientItem()->GetUserAgentType());
-  EXPECT_EQ(UserAgentType::MOBILE,
-            navigation_manager()->GetPendingItem()->GetUserAgentType());
+  EXPECT_EQ(
+      UserAgentType::DESKTOP,
+      navigation_manager()->GetTransientItem()->GetUserAgentForInheritance());
+  EXPECT_EQ(
+      UserAgentType::DESKTOP,
+      navigation_manager()->GetPendingItem()->GetUserAgentForInheritance());
 }
 
 // Tests that calling |Reload| with web::ReloadType::NORMAL is no-op when there
@@ -1481,7 +1504,8 @@ TEST_F(NavigationManagerTest, ReloadWithUserAgentType) {
       navigation_manager()->GetPendingItemInCurrentOrRestoredSession();
   EXPECT_EQ(url, pending_item->GetURL());
   EXPECT_EQ(virtual_url, pending_item->GetVirtualURL());
-  EXPECT_EQ(UserAgentType::DESKTOP, pending_item->GetUserAgentType());
+  EXPECT_EQ(UserAgentType::DESKTOP, pending_item->GetUserAgentType(nil));
+  EXPECT_EQ(UserAgentType::DESKTOP, pending_item->GetUserAgentForInheritance());
 }
 
 // Tests that ReloadWithUserAgentType reloads on the last committed item before
@@ -1510,7 +1534,8 @@ TEST_F(NavigationManagerTest, ReloadWithUserAgentTypeOnRedirect) {
   NavigationItem* pending_item =
       navigation_manager()->GetPendingItemInCurrentOrRestoredSession();
   EXPECT_EQ(url, pending_item->GetURL());
-  EXPECT_EQ(UserAgentType::DESKTOP, pending_item->GetUserAgentType());
+  EXPECT_EQ(UserAgentType::DESKTOP, pending_item->GetUserAgentType(nil));
+  EXPECT_EQ(UserAgentType::DESKTOP, pending_item->GetUserAgentForInheritance());
 }
 
 // Tests that ReloadWithUserAgentType reloads on the last committed item if
@@ -1530,7 +1555,8 @@ TEST_F(NavigationManagerTest, ReloadWithUserAgentTypeOnNewTabRedirect) {
   NavigationItem* pending_item =
       navigation_manager()->GetPendingItemInCurrentOrRestoredSession();
   EXPECT_EQ(url, pending_item->GetURL());
-  EXPECT_EQ(UserAgentType::DESKTOP, pending_item->GetUserAgentType());
+  EXPECT_EQ(UserAgentType::DESKTOP, pending_item->GetUserAgentType(nil));
+  EXPECT_EQ(UserAgentType::DESKTOP, pending_item->GetUserAgentForInheritance());
 }
 
 // Tests that ReloadWithUserAgentType does not expose internal URLs.
@@ -1556,7 +1582,8 @@ TEST_F(NavigationManagerTest, ReloadWithUserAgentTypeOnIntenalUrl) {
       navigation_manager()->GetPendingItemInCurrentOrRestoredSession();
   EXPECT_EQ(url, pending_item->GetURL());
   EXPECT_EQ(virtual_url, pending_item->GetVirtualURL());
-  EXPECT_EQ(UserAgentType::DESKTOP, pending_item->GetUserAgentType());
+  EXPECT_EQ(UserAgentType::DESKTOP, pending_item->GetUserAgentType(nil));
+  EXPECT_EQ(UserAgentType::DESKTOP, pending_item->GetUserAgentForInheritance());
 }
 
 // Tests that app-specific URLs are not rewritten for renderer-initiated loads
@@ -1728,19 +1755,17 @@ TEST_F(NavigationManagerTest, TestBackwardForwardItems) {
 TEST_F(NavigationManagerTest, Restore) {
   ItemInfoToBeRestored restore_information[3];
   restore_information[0] = {GURL("http://www.url.com/0"), UserAgentType::MOBILE,
-                            true, PageDisplayState()};
+                            PageDisplayState()};
   restore_information[1] = {GURL("http://www.url.com/1"),
-                            UserAgentType::DESKTOP, true, PageDisplayState()};
+                            UserAgentType::AUTOMATIC, PageDisplayState()};
   restore_information[2] = {GURL("http://www.url.com/2"),
-                            UserAgentType::DESKTOP, false, PageDisplayState()};
+                            UserAgentType::DESKTOP, PageDisplayState()};
 
   std::vector<std::unique_ptr<NavigationItem>> items;
   for (size_t index = 0; index < base::size(restore_information); ++index) {
     items.push_back(NavigationItem::Create());
     items.back()->SetURL(restore_information[index].url);
-    items.back()->SetUserAgentType(
-        restore_information[index].user_agent,
-        restore_information[index].user_agent_inherited);
+    items.back()->SetUserAgentType(restore_information[index].user_agent);
     items.back()->SetPageDisplayState(restore_information[index].display_state);
   }
 
@@ -1790,20 +1815,7 @@ TEST_F(NavigationManagerTest, Restore) {
     NavigationItem* navigation_item = navigation_manager()->GetItemAtIndex(i);
     EXPECT_EQ(restore_information[i].url, navigation_item->GetURL());
     EXPECT_EQ(restore_information[i].user_agent,
-              navigation_item->GetUserAgentType());
-    if (restore_information[i].user_agent_inherited) {
-      EXPECT_EQ(restore_information[i].user_agent,
-                navigation_item->GetUserAgentForInheritance());
-    } else {
-      if (base::FeatureList::IsEnabled(
-              features::kUseDefaultUserAgentInWebClient)) {
-        EXPECT_EQ(UserAgentType::AUTOMATIC,
-                  navigation_item->GetUserAgentForInheritance());
-      } else {
-        EXPECT_EQ(UserAgentType::MOBILE,
-                  navigation_item->GetUserAgentForInheritance());
-      }
-    }
+              navigation_item->GetUserAgentForInheritance());
     EXPECT_EQ(restore_information[i].display_state,
               navigation_item->GetPageDisplayState());
   }

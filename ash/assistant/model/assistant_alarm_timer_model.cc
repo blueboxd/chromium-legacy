@@ -30,12 +30,12 @@ void AssistantAlarmTimerModel::AddOrUpdateTimer(
 
   auto it = timers_.find(timer->id);
   if (it == timers_.end()) {
-    timers_[timer->id] = std::move(timer);
+    timers_[ptr->id] = std::move(timer);
     NotifyTimerAdded(*ptr);
     return;
   }
 
-  timers_[timer->id] = std::move(timer);
+  timers_[ptr->id] = std::move(timer);
   NotifyTimerUpdated(*ptr);
 }
 

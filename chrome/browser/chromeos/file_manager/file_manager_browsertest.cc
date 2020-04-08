@@ -462,6 +462,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Toolbar, /* toolbar.js */
     FilesAppBrowserTest,
     ::testing::Values(TestCase("toolbarDeleteWithMenuItemNoEntrySelected"),
+                      TestCase("toolbarDeleteButtonKeepFocus"),
                       TestCase("toolbarDeleteEntry").InGuestMode(),
                       TestCase("toolbarDeleteEntry"),
                       TestCase("toolbarRefreshButtonWithSelection").EnableArc(),

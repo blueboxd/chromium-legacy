@@ -556,18 +556,11 @@ enum class BackForwardNavigationType {
   // in the web view, update |customUserAgent| property, which will be used by
   // the next request sent by this web view.
   web::UserAgentType itemUserAgentType =
-      self.currentNavItem->GetUserAgentType();
+      self.currentNavItem->GetUserAgentType(self.webView);
 
-  if (itemUserAgentType == web::UserAgentType::AUTOMATIC) {
-    DCHECK(base::FeatureList::IsEnabled(
-        web::features::kUseDefaultUserAgentInWebClient));
-    itemUserAgentType = web::GetWebClient()->GetDefaultUserAgent(
-        self.webView, self.currentNavItem->GetURL());
-    self.currentNavItem->SetUserAgentType(
-        itemUserAgentType, /*update_inherited_user_agent =*/false);
-  } else if (itemUserAgentType == web::UserAgentType::NONE &&
-             web::GetWebClient()->IsAppSpecificURL(
-                 self.currentNavItem->GetVirtualURL())) {
+  if (itemUserAgentType == web::UserAgentType::NONE &&
+      web::GetWebClient()->IsAppSpecificURL(
+          self.currentNavItem->GetVirtualURL())) {
     // In case the URL to be loaded is a WebUI URL and the user agent is nil,
     // get the mobile user agent.
     itemUserAgentType = web::UserAgentType::MOBILE;

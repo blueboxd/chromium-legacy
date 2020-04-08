@@ -12,6 +12,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/test/task_environment.h"
+#include "components/openscreen_platform/network_context.h"
 #include "components/openscreen_platform/task_runner.h"
 #include "components/openscreen_platform/tls_client_connection.h"
 #include "net/base/net_errors.h"
@@ -99,19 +100,27 @@ class TlsConnectionFactoryTest : public ::testing::Test {
         task_environment_->GetMainThreadTaskRunner());
 
     mock_network_context = std::make_unique<FakeNetworkContext>();
+    SetNetworkContextGetter(base::BindRepeating(
+        &TlsConnectionFactoryTest::GetNetworkContext, base::Unretained(this)));
+  }
+
+  void TearDown() override {
+    SetNetworkContextGetter(openscreen_platform::NetworkContextGetter());
+  }
+
+ protected:
+  network::mojom::NetworkContext* GetNetworkContext() {
+    return mock_network_context.get();
   }
 
   std::unique_ptr<openscreen_platform::TaskRunner> task_runner;
   std::unique_ptr<FakeNetworkContext> mock_network_context;
-
- private:
   std::unique_ptr<base::test::TaskEnvironment> task_environment_;
 };
 
 TEST_F(TlsConnectionFactoryTest, CallsNetworkContextCreateMethod) {
   StrictMock<MockTlsConnectionFactoryClient> mock_client;
-  TlsConnectionFactory factory(&mock_client, task_runner.get(),
-                               mock_network_context.get());
+  TlsConnectionFactory factory(&mock_client, task_runner.get());
 
   factory.Connect(kValidOpenscreenEndpoint, TlsConnectOptions{});
 
@@ -122,8 +131,7 @@ TEST_F(TlsConnectionFactoryTest, CallsNetworkContextCreateMethod) {
 TEST_F(TlsConnectionFactoryTest,
        CallsOnConnectionFailedWhenNetworkContextReportsError) {
   StrictMock<MockTlsConnectionFactoryClient> mock_client;
-  TlsConnectionFactory factory(&mock_client, task_runner.get(),
-                               mock_network_context.get());
+  TlsConnectionFactory factory(&mock_client, task_runner.get());
   EXPECT_CALL(mock_client,
               OnConnectionFailed(&factory, kValidOpenscreenEndpoint));
 

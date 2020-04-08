@@ -90,7 +90,7 @@ class RenderDocumentHostUserData : public base::SupportsUserData::Data {
 // This macro declares a static variable inside the class that inherits from
 // RenderDocumentHostUserData. The address of this static variable is used as
 // the key to store/retrieve an instance of the class on/from a WebState.
-#define RENDER_DOCUMENT_HOST_USER_USER_DATA_KEY_DECL() \
+#define RENDER_DOCUMENT_HOST_USER_DATA_KEY_DECL() \
   static constexpr int kUserDataKey = 0
 
 // This macro instantiates the static variable declared by the previous macro.

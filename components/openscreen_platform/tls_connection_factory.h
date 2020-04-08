@@ -11,7 +11,6 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/tcp_socket.mojom.h"
 #include "services/network/public/mojom/tls_socket.mojom.h"
 #include "third_party/openscreen/src/platform/api/tls_connection_factory.h"
@@ -34,11 +33,8 @@ namespace openscreen_platform {
 
 class TlsConnectionFactory : public openscreen::TlsConnectionFactory {
  public:
-  // If provided, the network context is stored and dereferenced when attempting
-  // to connect. If not provided, the network context is dynamically looked up.
   TlsConnectionFactory(openscreen::TlsConnectionFactory::Client* client,
-                       openscreen::TaskRunner* task_runner,
-                       network::mojom::NetworkContext* network_context);
+                       openscreen::TaskRunner* task_runner);
 
   ~TlsConnectionFactory() final;
 
@@ -108,7 +104,6 @@ class TlsConnectionFactory : public openscreen::TlsConnectionFactory {
 
   openscreen::TlsConnectionFactory::Client* client_;
   openscreen::TaskRunner* const task_runner_;
-  network::mojom::NetworkContext* const network_context_;
   base::WeakPtrFactory<TlsConnectionFactory> weak_factory_{this};
 };
 

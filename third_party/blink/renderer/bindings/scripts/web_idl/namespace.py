@@ -115,6 +115,11 @@ class Namespace(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
         return None
 
     @property
+    def deriveds(self):
+        """Returns the list of the derived namespaces."""
+        return ()
+
+    @property
     def attributes(self):
         """Returns attributes."""
         return self._attributes

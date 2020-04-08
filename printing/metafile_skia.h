@@ -62,7 +62,8 @@ class PRINTING_EXPORT MetafileSkia : public Metafile {
   bool RenderPage(unsigned int page_number,
                   printing::NativeDrawingContext context,
                   const CGRect& rect,
-                  const MacRenderPageParams& params) const override;
+                  bool autorotate,
+                  bool fit_to_page) const override;
 #endif
 
 #if defined(OS_ANDROID)

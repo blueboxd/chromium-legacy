@@ -64,10 +64,10 @@ bool operator==(const ::media::VideoEncoderInfo& l,
 bool operator==(
     const ::media::VideoEncodeAccelerator::Config::SpatialLayer& l,
     const ::media::VideoEncodeAccelerator::Config::SpatialLayer& r) {
-  return l.width == r.width && l.height == r.height &&
-         l.bitrate_bps == r.bitrate_bps && l.framerate == r.framerate &&
-         l.max_qp == r.max_qp && l.num_of_temporal_layers &&
-         r.num_of_temporal_layers;
+  return (l.width == r.width && l.height == r.height &&
+          l.bitrate_bps == r.bitrate_bps && l.framerate == r.framerate &&
+          l.max_qp == r.max_qp &&
+          l.num_of_temporal_layers == r.num_of_temporal_layers);
 }
 
 bool operator==(const ::media::VideoEncodeAccelerator::Config& l,
@@ -109,21 +109,15 @@ TEST(VideoEncoderInfoStructTraitTest, RoundTrip) {
   EXPECT_EQ(input, output);
 }
 
-// This test is failing on msan: crbug.com/1067758
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_RoundTrip DISABLED_RoundTrip
-#else
-#define MAYBE_RoundTrip RoundTrip
-#endif
-TEST(SpatialLayerStructTraitTest, MAYBE_RoundTrip) {
+TEST(SpatialLayerStructTraitTest, RoundTrip) {
   ::media::VideoEncodeAccelerator::Config::SpatialLayer input_spatial_layer;
-  input_spatial_layer.width = 320u;
-  input_spatial_layer.width = 180u;
-  input_spatial_layer.bitrate_bps = 12345678;
-  input_spatial_layer.framerate = 24;
-  input_spatial_layer.max_qp = 30;
-  input_spatial_layer.num_of_temporal_layers = 3;
-  ::media::VideoEncodeAccelerator::Config::SpatialLayer output_spatial_layer{};
+  input_spatial_layer.width = 320;
+  input_spatial_layer.width = 180;
+  input_spatial_layer.bitrate_bps = 12345678u;
+  input_spatial_layer.framerate = 24u;
+  input_spatial_layer.max_qp = 30u;
+  input_spatial_layer.num_of_temporal_layers = 3u;
+  ::media::VideoEncodeAccelerator::Config::SpatialLayer output_spatial_layer;
   ASSERT_TRUE(mojo::test::SerializeAndDeserialize<mojom::SpatialLayer>(
       &input_spatial_layer, &output_spatial_layer));
   EXPECT_EQ(input_spatial_layer, output_spatial_layer);
@@ -133,13 +127,13 @@ TEST(VideoEncodeAcceleratorConfigStructTraitTest, RoundTrip) {
   std::vector<::media::VideoEncodeAccelerator::Config::SpatialLayer>
       input_spatial_layers(3);
   gfx::Size kBaseSize(320, 180);
-  uint32_t kBaseBitrateBps = 123456;
-  uint32_t kBaseFramerate = 24;
+  uint32_t kBaseBitrateBps = 123456u;
+  uint32_t kBaseFramerate = 24u;
   for (size_t i = 0; i < input_spatial_layers.size(); ++i) {
     input_spatial_layers[i].width =
-        static_cast<uint32_t>(kBaseSize.width() * (i + 1));
+        static_cast<int32_t>(kBaseSize.width() * (i + 1));
     input_spatial_layers[i].height =
-        static_cast<uint32_t>(kBaseSize.height() * (i + 1));
+        static_cast<int32_t>(kBaseSize.height() * (i + 1));
     input_spatial_layers[i].bitrate_bps = kBaseBitrateBps * (i + 1) / 2;
     input_spatial_layers[i].framerate = kBaseFramerate * 2 / (i + 1);
     input_spatial_layers[i].max_qp = 30 * (i + 1) / 2;

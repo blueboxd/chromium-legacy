@@ -34,10 +34,8 @@ bool Image::LoadMetafile(const Metafile& metafile) {
       color_space, kCGImageAlphaPremultipliedLast));
   DCHECK(bitmap_context.get());
 
-  struct Metafile::MacRenderPageParams params;
-  params.shrink_to_fit = true;
-  metafile.RenderPage(page_number, bitmap_context, rect.ToCGRect(), params);
-  return true;
+  return metafile.RenderPage(page_number, bitmap_context, rect.ToCGRect(),
+                             /*autorotate=*/false, /*fit_to_page=*/true);
 }
 
 }  // namespace printing

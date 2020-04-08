@@ -30,6 +30,7 @@
 #include "components/crash/core/common/crash_key.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/translate/content/renderer/translate_agent.h"
+#include "components/translate/core/common/translate_util.h"
 #include "components/web_cache/renderer/web_cache_impl.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/renderer/render_frame.h"
@@ -135,8 +136,11 @@ ChromeRenderFrameObserver::ChromeRenderFrameObserver(
   if (!command_line.HasSwitch(switches::kDisableClientSidePhishingDetection))
     SetClientSidePhishingDetection(true);
 #endif
-  translate_agent_ = new translate::TranslateAgent(
-      render_frame, ISOLATED_WORLD_ID_TRANSLATE, extensions::kExtensionScheme);
+  if (!translate::IsSubFrameTranslationEnabled()) {
+    translate_agent_ =
+        new translate::TranslateAgent(render_frame, ISOLATED_WORLD_ID_TRANSLATE,
+                                      extensions::kExtensionScheme);
+  }
 }
 
 ChromeRenderFrameObserver::~ChromeRenderFrameObserver() {
@@ -472,6 +476,16 @@ void ChromeRenderFrameObserver::CapturePageText(TextCaptureType capture_type) {
   // Don't index/capture pages that are being prerendered.
   if (prerender::PrerenderHelper::IsPrerendering(render_frame()))
     return;
+
+    // Don't capture contents unless there is either a translate agent or a
+    // phishing classifier to consume them.
+#if BUILDFLAG(SAFE_BROWSING_CSD)
+  if (!translate_agent_ && !phishing_classifier_)
+    return;
+#else
+  if (!translate_agent_)
+    return;
+#endif
 
   base::TimeTicks capture_begin_time = base::TimeTicks::Now();
 

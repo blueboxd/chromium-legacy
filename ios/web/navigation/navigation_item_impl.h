@@ -56,9 +56,9 @@ class NavigationItemImpl : public web::NavigationItem {
   SSLStatus& GetSSL() override;
   void SetTimestamp(base::Time timestamp) override;
   base::Time GetTimestamp() const override;
-  void SetUserAgentType(UserAgentType type,
-                        bool update_inherited_user_agent) override;
-  UserAgentType GetUserAgentType() const override;
+  void SetUserAgentType(UserAgentType type) override;
+  UserAgentType GetUserAgentType(
+      id<UITraitEnvironment> web_view) const override;
   UserAgentType GetUserAgentForInheritance() const override;
   bool HasPostData() const override;
   NSDictionary* GetHttpRequestHeaders() const override;

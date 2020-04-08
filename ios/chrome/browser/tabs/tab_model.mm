@@ -133,9 +133,10 @@ BOOL ShouldRecordPageLoadStartForNavigation(
 
   web::NavigationItem* pending_item = navigation_manager->GetPendingItem();
   if (pending_item) {
+    UIView* webView = navigation->GetWebState()->GetView();
     if (IsTransitionBetweenDesktopAndMobileUserAgent(
-            pending_item->GetUserAgentType(),
-            last_committed_item->GetUserAgentType())) {
+            pending_item->GetUserAgentType(webView),
+            last_committed_item->GetUserAgentType(webView))) {
       // Switching between Desktop and Mobile user agent.
       return NO;
     }

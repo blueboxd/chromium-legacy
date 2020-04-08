@@ -68,8 +68,7 @@ TEST_F(BrowserAccessibilityManagerWinTest, DynamicallyAddedIFrame) {
 
   std::unique_ptr<BrowserAccessibilityManager> root_manager(
       BrowserAccessibilityManager::Create(
-          MakeAXTreeUpdate(root), test_browser_accessibility_delegate_.get(),
-          new BrowserAccessibilityFactory()));
+          MakeAXTreeUpdate(root), test_browser_accessibility_delegate_.get()));
 
   TestFragmentRootDelegate test_fragment_root_delegate(root_manager.get());
 
@@ -94,8 +93,7 @@ TEST_F(BrowserAccessibilityManagerWinTest, DynamicallyAddedIFrame) {
 
   std::unique_ptr<BrowserAccessibilityManager> iframe_manager(
       BrowserAccessibilityManager::Create(MakeAXTreeUpdate(root),
-                                          iframe_delegate.get(),
-                                          new BrowserAccessibilityFactory()));
+                                          iframe_delegate.get()));
 
   // The new frame is not a root frame, so the fragment root's lone child should
   // still be the same as before.
@@ -129,8 +127,7 @@ TEST_F(BrowserAccessibilityManagerWinTest, ChildTree) {
 
   std::unique_ptr<BrowserAccessibilityManager> parent_manager(
       BrowserAccessibilityManager::Create(
-          parent_tree_update, test_browser_accessibility_delegate_.get(),
-          new BrowserAccessibilityFactory()));
+          parent_tree_update, test_browser_accessibility_delegate_.get()));
 
   TestFragmentRootDelegate test_fragment_root_delegate(parent_manager.get());
 
@@ -153,8 +150,7 @@ TEST_F(BrowserAccessibilityManagerWinTest, ChildTree) {
   child_tree_delegate->accelerated_widget_ = gfx::kMockAcceleratedWidget;
   std::unique_ptr<BrowserAccessibilityManager> child_manager(
       BrowserAccessibilityManager::Create(child_tree_update,
-                                          child_tree_delegate.get(),
-                                          new BrowserAccessibilityFactory()));
+                                          child_tree_delegate.get()));
 
   // The fragment root's lone child should still be the same as before.
   EXPECT_EQ(fragment_root->GetChildCount(), 1);

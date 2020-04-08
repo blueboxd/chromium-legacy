@@ -15,9 +15,7 @@ source_set("openscreen_platform") {
     "trace_logging_platform.cc",
   ]
 
-  public_deps = [
-    "//third_party/openscreen/src/platform",
-  ]
+  public_deps = [ "//third_party/openscreen/src/platform" ]
 
   deps = [
     "//base",
@@ -27,6 +25,8 @@ source_set("openscreen_platform") {
 
 source_set("openscreen_platform_network_service") {
   sources = [
+    "network_context.cc",
+    "network_context.h",
     "tls_client_connection.cc",
     "tls_client_connection.h",
     "tls_connection_factory.cc",

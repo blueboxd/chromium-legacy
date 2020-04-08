@@ -289,6 +289,7 @@ class BreadCrumb extends HTMLElement {
 
     elider.hidden = parts.length <= 4;
     if (elider.hidden) {
+      this.shadowRoot.querySelector('cr-action-menu').innerHTML = '';
       elider.previousElementSibling.hidden = true;
       return;
     }

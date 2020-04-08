@@ -84,6 +84,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   static BrowserAccessibility* FromAXPlatformNodeDelegate(
       ui::AXPlatformNodeDelegate* delegate);
 
+  BrowserAccessibility();
   ~BrowserAccessibility() override;
 
   // Called only once, immediately after construction. The constructor doesn't
@@ -286,23 +287,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // http://www.chromium.org/developers/design-documents/blink-coordinate-spaces
   BrowserAccessibility* ApproximateHitTest(
       const gfx::Point& blink_screen_point);
-
-  // Marks this object for deletion, releases our reference to it, and
-  // nulls out the pointer to the underlying AXNode.  May not delete
-  // the object immediately due to reference counting.
-  //
-  // Reference counting is used on some platforms because the
-  // operating system may hold onto a reference to a BrowserAccessibility
-  // object even after we're through with it. When a BrowserAccessibility
-  // has had Destroy() called but its reference count is not yet zero,
-  // instance_active() returns false and queries on this object return failure.
-  virtual void Destroy();
-
-  // Subclasses should override this to support platform reference counting.
-  virtual void NativeAddReference() {}
-
-  // Subclasses should override this to support platform reference counting.
-  virtual void NativeReleaseReference();
 
   //
   // Accessors
@@ -615,8 +599,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
       ui::AXRange<BrowserAccessibilityPositionInstance::element_type>;
 
   virtual ui::TextAttributeList ComputeTextAttributes() const;
-
-  BrowserAccessibility();
 
   // The manager of this tree of accessibility objects.
   BrowserAccessibilityManager* manager_ = nullptr;

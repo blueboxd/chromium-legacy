@@ -53,6 +53,9 @@ class DriveQuickAccessProvider : public SearchProvider,
   drive::DriveIntegrationService* const drive_service_;
   SearchController* const search_controller_;
 
+  // Whether the suggested files experiment is enabled.
+  const bool suggested_files_enabled_;
+
   // Stores the last-returned results from the QuickAccess API.
   std::vector<drive::QuickAccessItem> results_cache_;
 

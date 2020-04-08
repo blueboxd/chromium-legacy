@@ -35,6 +35,7 @@ class NavigationInitiatorImpl
   // document. Used to report CSP violations that result from CSP blocking
   // navigation requests that were initiated by the owner document.
   HeapMojoReceiverSet<mojom::blink::NavigationInitiator,
+                      NavigationInitiatorImpl,
                       HeapMojoWrapperMode::kWithoutContextObserver>
       navigation_initiator_receivers_;
 

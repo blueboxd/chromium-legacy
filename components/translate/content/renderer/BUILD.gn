@@ -6,6 +6,8 @@ import("//build/config/features.gni")
 
 static_library("renderer") {
   sources = [
+    "per_frame_translate_agent.cc",
+    "per_frame_translate_agent.h",
     "translate_agent.cc",
     "translate_agent.h",
   ]

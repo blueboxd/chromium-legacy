@@ -13,7 +13,7 @@ import org.chromium.components.feature_engagement.Tracker;
  * One of the concrete {@link MessageService} that only serves {@link MessageType.IPH}.
  */
 public class IphMessageService extends MessageService {
-    private final TabGridIphDialogCoordinator.IphController mIphController;
+    private final TabSwitcherCoordinator.IphController mIphController;
     private final Tracker mTracker;
 
     /**
@@ -44,7 +44,7 @@ public class IphMessageService extends MessageService {
         }
     }
 
-    IphMessageService(TabGridIphDialogCoordinator.IphController controller) {
+    IphMessageService(TabSwitcherCoordinator.IphController controller) {
         super(MessageType.IPH);
         mIphController = controller;
         Profile profile = Profile.getLastUsedRegularProfile().getOriginalProfile();

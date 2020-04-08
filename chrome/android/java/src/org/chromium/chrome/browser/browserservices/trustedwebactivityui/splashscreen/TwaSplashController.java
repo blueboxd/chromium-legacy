@@ -125,8 +125,7 @@ public class TwaSplashController
     }
 
     @Override
-    public void onSplashHidden(Tab tab, @SplashController.SplashHidesReason int reason,
-            long startTimestamp, long endTimestamp) {
+    public void onSplashHidden(Tab tab, long startTimestamp, long endTimestamp) {
         mLifecycleDispatcher.unregister(this); // Unregister to get gc-ed
     }
 

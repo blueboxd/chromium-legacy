@@ -112,18 +112,18 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
 
     struct MEDIA_EXPORT SpatialLayer {
       // The encoder dimension of the spatial layer.
-      int32_t width;
-      int32_t height;
+      int32_t width = 0;
+      int32_t height = 0;
       // The bitrate of encoded output stream of the spatial layer in bits per
       // second.
-      uint32_t bitrate_bps;
-      uint32_t framerate;
+      uint32_t bitrate_bps = 0u;
+      uint32_t framerate = 0u;
       // The recommended maximum qp value of the spatial layer. VEA can ignore
       // this value.
-      uint8_t max_qp;
+      uint8_t max_qp = 0u;
       // The number of temporal layers of the spatial layer. The detail of
       // the temporal layer structure is up to VideoEncodeAccelerator.
-      uint8_t num_of_temporal_layers;
+      uint8_t num_of_temporal_layers = 0u;
     };
 
     Config();

@@ -14,7 +14,7 @@
 namespace blink {
 
 NavigationInitiatorImpl::NavigationInitiatorImpl(Document& document)
-    : navigation_initiator_receivers_(document.GetExecutionContext()),
+    : navigation_initiator_receivers_(this, document.GetExecutionContext()),
       document_(document) {
   DCHECK(document.GetExecutionContext());
 }
@@ -50,8 +50,7 @@ void NavigationInitiatorImpl::SendViolationReport(
 void NavigationInitiatorImpl::BindReceiver(
     mojo::PendingReceiver<mojom::blink::NavigationInitiator> receiver) {
   navigation_initiator_receivers_.Add(
-      this, std::move(receiver),
-      document_->GetTaskRunner(TaskType::kNetworking));
+      std::move(receiver), document_->GetTaskRunner(TaskType::kNetworking));
 }
 
 }  // namespace blink

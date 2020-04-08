@@ -67,9 +67,7 @@ class PRINTING_EXPORT PrintedDocument
 #endif  // defined(OS_WIN)
 
   // Sets the document data. Note: locks for a short amount of time.
-  void SetDocument(std::unique_ptr<MetafilePlayer> metafile,
-                   const gfx::Size& page_size,
-                   const gfx::Rect& page_content_rect);
+  void SetDocument(std::unique_ptr<MetafilePlayer> metafile);
 
   // Retrieves the metafile with the data to print. Lock must be held when
   // calling this function
@@ -131,7 +129,7 @@ class PRINTING_EXPORT PrintedDocument
   void DebugDumpData(const base::RefCountedMemory* data,
                      const base::FilePath::StringType& extension);
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN)
   // Get page content rect adjusted based on
   // http://dev.w3.org/csswg/css3-page/#positioning-page-box
   gfx::Rect GetCenteredPageContentRect(const gfx::Size& paper_size,
@@ -172,11 +170,6 @@ class PRINTING_EXPORT PrintedDocument
 
     // Whether the PDF is being converted for printing.
     bool converting_pdf_ = false;
-#endif
-
-#if defined(OS_MACOSX)
-    gfx::Size page_size_;
-    gfx::Rect page_content_rect_;
 #endif
   };
 

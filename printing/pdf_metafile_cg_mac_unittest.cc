@@ -62,6 +62,8 @@ void RenderedPdfSha1(const base::FilePath::StringType& pdf_filename,
                      size_t page_number,
                      const gfx::Rect& expected_page_bounds,
                      const gfx::Size& dest_size,
+                     bool autorotate,
+                     bool fit_to_page,
                      base::SHA1Digest* rendered_hash) {
   // Initialize and verify the metafile.
   std::unique_ptr<PdfMetafileCg> pdf_cg = GetPdfMetafile(pdf_filename);
@@ -83,10 +85,9 @@ void RenderedPdfSha1(const base::FilePath::StringType& pdf_filename,
       kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Little));
 
   // Render using metafile and calculate the output hash.
-  Metafile::MacRenderPageParams params;
-  params.autorotate = true;
   ASSERT_TRUE(pdf_cg->RenderPage(page_number, context,
-                                 gfx::Rect(dest_size).ToCGRect(), params));
+                                 gfx::Rect(dest_size).ToCGRect(), autorotate,
+                                 fit_to_page));
   *rendered_hash = base::SHA1HashSpan(rendered_bitmap);
 }
 
@@ -111,19 +112,32 @@ void ExpectedPngSha1(const base::FilePath::StringType& expected_png_filename,
   *expected_hash = base::SHA1HashSpan(expected_png_bitmap);
 }
 
-void TestRenderPage(const base::FilePath::StringType& pdf_filename,
-                    size_t page_number,
-                    const gfx::Rect& expected_page_bounds,
-                    const base::FilePath::StringType& expected_png_filename,
-                    const gfx::Size& dest_size) {
+void TestRenderPageWithTransformParams(
+    const base::FilePath::StringType& pdf_filename,
+    size_t page_number,
+    const gfx::Rect& expected_page_bounds,
+    const base::FilePath::StringType& expected_png_filename,
+    const gfx::Size& dest_size,
+    bool autorotate,
+    bool fit_to_page) {
   base::SHA1Digest rendered_hash;
   RenderedPdfSha1(pdf_filename, page_number, expected_page_bounds, dest_size,
-                  &rendered_hash);
+                  autorotate, fit_to_page, &rendered_hash);
   base::SHA1Digest expected_hash;
   ExpectedPngSha1(expected_png_filename, dest_size, &expected_hash);
 
   // Make sure the hashes match.
   EXPECT_EQ(expected_hash, rendered_hash);
+}
+
+void TestRenderPage(const base::FilePath::StringType& pdf_filename,
+                    size_t page_number,
+                    const gfx::Rect& expected_page_bounds,
+                    const base::FilePath::StringType& expected_png_filename,
+                    const gfx::Size& dest_size) {
+  TestRenderPageWithTransformParams(
+      pdf_filename, page_number, expected_page_bounds, expected_png_filename,
+      dest_size, /*autorotate=*/true, /*fit_to_page=*/false);
 }
 
 }  // namespace
@@ -297,6 +311,26 @@ TEST(PdfMetafileCgTest, RenderSmallLandscapeRectangles) {
   TestRenderPage("landscape_rectangles.pdf", /*page_number=*/1, kPageBounds,
                  "render_small_landscape_rectangles_expected.0.png",
                  kDestinationSize);
+}
+
+TEST(PdfMetafileCgTest, RenderScaledLargeLandscapeRectangles) {
+  constexpr gfx::Rect kPageBounds(800, 500);
+  constexpr gfx::Size kDestinationSize(300, 450);
+  TestRenderPageWithTransformParams(
+      "landscape_rectangles.pdf", /*page_number=*/1, kPageBounds,
+      "render_scaled_large_landscape_rectangles_expected.0.png",
+      kDestinationSize,
+      /*autorotate=*/true, /*fit_to_page=*/true);
+}
+
+TEST(PdfMetafileCgTest, RenderScaledSmallLandscapeRectangles) {
+  constexpr gfx::Rect kPageBounds(800, 500);
+  constexpr gfx::Size kDestinationSize(600, 900);
+  TestRenderPageWithTransformParams(
+      "landscape_rectangles.pdf", /*page_number=*/1, kPageBounds,
+      "render_scaled_small_landscape_rectangles_expected.0.png",
+      kDestinationSize,
+      /*autorotate=*/true, /*fit_to_page=*/true);
 }
 
 }  // namespace printing

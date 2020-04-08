@@ -145,9 +145,8 @@ void WKBasedNavigationManagerImpl::AddTransientItem(const GURL& url) {
   // Item may still be null in captive portal case if chrome://newtab is the
   // only entry in back/forward history.
   if (item) {
-    DCHECK(item->GetUserAgentType() != UserAgentType::NONE);
-    transient_item_->SetUserAgentType(item->GetUserAgentForInheritance(),
-                                      /*update_inherited_user_agent =*/true);
+    DCHECK(item->GetUserAgentForInheritance() != UserAgentType::NONE);
+    transient_item_->SetUserAgentType(item->GetUserAgentForInheritance());
   }
 }
 
@@ -234,11 +233,9 @@ void WKBasedNavigationManagerImpl::AddPendingItem(
       SetNavigationItemInWKItem(current_wk_item, std::move(pending_item_));
     }
     if (user_agent_override_option == UserAgentOverrideOption::DESKTOP) {
-      current_item->SetUserAgentType(UserAgentType::DESKTOP,
-                                     /*update_inherited_user_agent =*/true);
+      current_item->SetUserAgentType(UserAgentType::DESKTOP);
     } else if (user_agent_override_option == UserAgentOverrideOption::MOBILE) {
-      current_item->SetUserAgentType(UserAgentType::MOBILE,
-                                     /*update_inherited_user_agent =*/true);
+      current_item->SetUserAgentType(UserAgentType::MOBILE);
     }
 
     pending_item_.reset();
@@ -891,8 +888,7 @@ WKBasedNavigationManagerImpl::GetLastCommittedItemInCurrentOrRestoredSession()
     }
     if (current_committed_item) {
       last_committed_item->SetUserAgentType(
-          current_committed_item->GetUserAgentForInheritance(),
-          /*update_inherited_user_agent =*/true);
+          current_committed_item->GetUserAgentForInheritance());
     }
   }
   if (last_committed_item && GetWebState() &&

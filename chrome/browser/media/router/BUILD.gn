@@ -13,9 +13,9 @@ static_library("router") {
     "//chrome:strings",
     "//chrome/common:constants",
     "//components/cast_channel",
-    "//components/cast_channel",
     "//components/keyed_service/content",
     "//components/keyed_service/core",
+    "//components/openscreen_platform:openscreen_platform_network_service",
     "//content/public/browser",
     "//content/public/common",
     "//crypto",
@@ -165,7 +165,6 @@ static_library("router") {
       ]
 
       deps += [
-        "//components/openscreen_platform:openscreen_platform_network_service",
         "//third_party/openscreen/src/osp/public",
         "//third_party/openscreen/src/platform",
         "//third_party/openscreen/src/util",
@@ -180,9 +179,7 @@ static_library("test_support") {
     "//chrome/test:test_support",
     "//testing/gmock",
   ]
-  public_deps = [
-    ":router",
-  ]
+  public_deps = [ ":router" ]
   sources = [
     "test/mock_media_router.cc",
     "test/mock_media_router.h",
@@ -316,9 +313,7 @@ if (enable_openscreen) {
 }
 
 fuzzer_test("dial_internal_message_fuzzer") {
-  sources = [
-    "providers/dial/dial_internal_message_fuzzer.cc",
-  ]
+  sources = [ "providers/dial/dial_internal_message_fuzzer.cc" ]
   deps = [
     ":router",
     "//base",

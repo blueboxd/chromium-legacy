@@ -72,7 +72,7 @@ enum class WebappInstallSource {
   // Install icon in the Omnibox.
   OMNIBOX_INSTALL_ICON = 15,
 
-  // Installed from sync (not reported).
+  // Installed from sync (not reported by |TrackInstallEvent|).
   SYNC = 16,
 
   // Add any new values above this one.

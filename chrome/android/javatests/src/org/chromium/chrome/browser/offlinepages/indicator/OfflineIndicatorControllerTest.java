@@ -383,7 +383,7 @@ public class OfflineIndicatorControllerTest {
 
         final Semaphore semaphore = new Semaphore(0);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Profile profile = Profile.getLastUsedProfile();
+            Profile profile = Profile.getLastUsedRegularProfile();
             OfflinePageBridge offlinePageBridge = OfflinePageBridge.getForProfile(profile);
             offlinePageBridge.savePage(mActivityTestRule.getWebContents(), CLIENT_ID,
                     new OfflinePageBridge.SavePageCallback() {

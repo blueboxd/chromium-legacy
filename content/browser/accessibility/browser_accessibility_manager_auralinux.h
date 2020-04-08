@@ -17,10 +17,8 @@ class BrowserAccessibilityAuraLinux;
 class CONTENT_EXPORT BrowserAccessibilityManagerAuraLinux
     : public BrowserAccessibilityManager {
  public:
-  BrowserAccessibilityManagerAuraLinux(
-      const ui::AXTreeUpdate& initial_tree,
-      BrowserAccessibilityDelegate* delegate,
-      BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
+  BrowserAccessibilityManagerAuraLinux(const ui::AXTreeUpdate& initial_tree,
+                                       BrowserAccessibilityDelegate* delegate);
 
   ~BrowserAccessibilityManagerAuraLinux() override;
 

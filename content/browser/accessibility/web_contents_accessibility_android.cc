@@ -295,7 +295,7 @@ ui::AXNode* g_autofill_popup_proxy_node_ax_node = nullptr;
 
 void DeleteAutofillPopupProxy() {
   if (g_autofill_popup_proxy_node) {
-    g_autofill_popup_proxy_node->Destroy();
+    delete g_autofill_popup_proxy_node;
     delete g_autofill_popup_proxy_node_ax_node;
     g_autofill_popup_proxy_node = nullptr;
   }

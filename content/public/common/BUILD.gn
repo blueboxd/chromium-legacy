@@ -99,9 +99,6 @@ jumbo_source_set("common_sources") {
     "cdm_info.h",
     "child_process_host.h",
     "child_process_host_delegate.h",
-    "common_param_traits.cc",
-    "common_param_traits.h",
-    "common_param_traits_macros.h",
     "common_sandbox_support_linux.h",
     "console_message_level.h",
     "content_client.cc",
@@ -117,8 +114,6 @@ jumbo_source_set("common_sources") {
     "content_switch_dependent_feature_overrides.h",
     "content_switches.cc",
     "content_switches.h",
-    "drop_data.cc",
-    "drop_data.h",
     "font_cache_dispatcher_win.h",
     "frame_navigate_params.cc",
     "frame_navigate_params.h",
@@ -185,8 +180,6 @@ jumbo_source_set("common_sources") {
     "user_agent.h",
     "web_preferences.cc",
     "web_preferences.h",
-    "webplugininfo.cc",
-    "webplugininfo.h",
     "webplugininfo_param_traits.h",
     "widget_type.h",
   ]
@@ -199,6 +192,7 @@ jumbo_source_set("common_sources") {
   public_configs = [ "//v8:external_startup_data" ]
 
   public_deps = [
+    ":common_traits_types",
     ":interfaces",
     ":renderer_type",
     ":service_names",
@@ -220,6 +214,7 @@ jumbo_source_set("common_sources") {
     "//url/ipc:url_ipc",
   ]
   deps = [
+    ":common_traits_sources",
     ":content_descriptor_keys",
     "//build:branding_buildflags",
 
@@ -272,6 +267,7 @@ jumbo_source_set("common_sources") {
   # //content/common needs to include public headers.
   allow_circular_includes_from = [
     ":interfaces",
+    ":common_traits_sources",
     "//content/common",
     "//content/common:mojo_bindings",
   ]
@@ -282,6 +278,66 @@ jumbo_source_set("common_sources") {
       "pepper_plugin_info.h",
     ]
   }
+}
+
+source_set("common_traits_types") {
+  visibility = [
+    ":common_sources",
+    ":common_traits_sources",
+  ]
+
+  sources = [
+    "drop_data.cc",
+    "drop_data.h",
+    "webplugininfo.cc",
+    "webplugininfo.h",
+  ]
+
+  configs += [
+    "//build/config:precompiled_headers",
+    "//content:content_implementation",
+  ]
+
+  deps = [
+    "//build:branding_buildflags",
+    "//content:export",
+    "//third_party/blink/public:blink_headers",
+    "//ui/base",
+    "//url",
+  ]
+}
+
+source_set("common_traits_sources") {
+  visibility = [
+    ":common_sources",
+    ":interfaces",
+  ]
+
+  sources = [
+    "common_param_traits.cc",
+    "common_param_traits.h",
+    "common_param_traits_macros.h",
+    "webplugininfo_param_traits.h",
+  ]
+
+  configs += [
+    "//build/config:precompiled_headers",
+    "//content:content_implementation",
+  ]
+
+  deps = [
+    "//build:branding_buildflags",
+    "//content:export",
+    "//third_party/blink/public:blink_headers",
+    "//third_party/blink/public/common",
+    "//ui/accessibility",
+    "//ui/base",
+    "//ui/gfx/ipc/geometry",
+    "//ui/gfx/ipc/skia",
+    "//ui/surface",
+  ]
+
+  public_deps = [ ":common_traits_types" ]
 }
 
 mojom("interfaces") {

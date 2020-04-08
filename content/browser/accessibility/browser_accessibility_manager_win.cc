@@ -30,9 +30,8 @@ namespace content {
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
     const ui::AXTreeUpdate& initial_tree,
-    BrowserAccessibilityDelegate* delegate,
-    BrowserAccessibilityFactory* factory) {
-  return new BrowserAccessibilityManagerWin(initial_tree, delegate, factory);
+    BrowserAccessibilityDelegate* delegate) {
+  return new BrowserAccessibilityManagerWin(initial_tree, delegate);
 }
 
 BrowserAccessibilityManagerWin*
@@ -42,10 +41,8 @@ BrowserAccessibilityManager::ToBrowserAccessibilityManagerWin() {
 
 BrowserAccessibilityManagerWin::BrowserAccessibilityManagerWin(
     const ui::AXTreeUpdate& initial_tree,
-    BrowserAccessibilityDelegate* delegate,
-    BrowserAccessibilityFactory* factory)
-    : BrowserAccessibilityManager(delegate, factory),
-      load_complete_pending_(false) {
+    BrowserAccessibilityDelegate* delegate)
+    : BrowserAccessibilityManager(delegate), load_complete_pending_(false) {
   ui::win::CreateATLModuleIfNeeded();
   Initialize(initial_tree);
 }

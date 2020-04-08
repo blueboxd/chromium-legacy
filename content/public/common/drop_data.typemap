@@ -5,4 +5,5 @@
 mojom = "//content/public/common/drop_data.mojom"
 public_headers = [ "//content/public/common/drop_data.h" ]
 traits_headers = [ "//content/public/common/common_param_traits_macros.h" ]
+public_deps = [ "//content/public/common:common_traits_sources" ]
 type_mappings = [ "content.mojom.DropData=::content::DropData" ]

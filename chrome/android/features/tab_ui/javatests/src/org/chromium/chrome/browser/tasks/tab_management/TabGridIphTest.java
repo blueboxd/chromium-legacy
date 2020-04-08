@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.Espresso.pressBack;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
@@ -12,6 +13,7 @@ import static android.support.test.espresso.matcher.RootMatchers.withDecorView;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withParent;
+import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.Matchers.not;
@@ -19,7 +21,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.clickScrimToExitDialog;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.closeFirstTabInTabSwitcher;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.enterTabSwitcher;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.getSwipeToDismissAction;
@@ -32,6 +33,8 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.NoMatchingRootException;
 import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.filters.MediumTest;
+import android.support.test.uiautomator.UiDevice;
+import android.view.View;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -58,6 +61,8 @@ import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.io.IOException;
@@ -121,10 +126,27 @@ public class TabGridIphTest {
                 .perform(click());
         verifyIphDialogShowing(cta);
 
-        // Exit by clicking the scrim view.
-        clickScrimToExitDialog(cta);
+        // Press back should dismiss the IPH dialog.
+        pressBack();
         verifyIphDialogHiding(cta);
         onView(withId(R.id.tab_grid_message_item)).check(matches(isDisplayed()));
+
+        // Check the IPH message card is showing and open the IPH dialog.
+        onView(withId(R.id.tab_grid_message_item)).check(matches(isDisplayed()));
+        onView(allOf(withId(R.id.action_button), withParent(withId(R.id.tab_grid_message_item))))
+                .perform(click());
+        verifyIphDialogShowing(cta);
+
+        // Click outside of the dialog area to close the IPH dialog.
+        ModalDialogManager manager = cta.getModalDialogManager();
+        View dialogView = manager.getCurrentDialogForTest().get(ModalDialogProperties.CUSTOM_VIEW);
+        int[] location = new int[2];
+        // Get the position of the dialog view and click slightly above so that we essentially click
+        // on the scrim.
+        dialogView.getLocationOnScreen(location);
+        UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+                .click(location[0], location[1] / 2);
+        verifyIphDialogHiding(cta);
     }
 
     @Test
@@ -240,6 +262,7 @@ public class TabGridIphTest {
     }
 
     private void verifyIphDialogShowing(ChromeTabbedActivity cta) {
+        // Verify IPH dialog view.
         onView(withId(R.id.iph_dialog))
                 .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
                 .check((v, noMatchException) -> {
@@ -251,11 +274,11 @@ public class TabGridIphTest {
                     String description = cta.getString(R.string.iph_drag_and_drop_content);
                     assertEquals(
                             description, ((TextView) v.findViewById(R.id.description)).getText());
-
-                    String closeButtonText = cta.getString(R.string.ok);
-                    assertEquals(closeButtonText,
-                            ((TextView) v.findViewById(R.id.close_button)).getText());
                 });
+        // Verify ModalDialog button.
+        onView(withId(R.id.positive_button))
+                .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
+                .check(matches(withText(cta.getString(R.string.ok))));
     }
 
     private void verifyIphDialogHiding(ChromeTabbedActivity cta) {
@@ -273,7 +296,7 @@ public class TabGridIphTest {
     }
 
     private void exitIphDialogByClickingButton(ChromeTabbedActivity cta) {
-        onView(withId(R.id.close_button))
+        onView(withId(R.id.positive_button))
                 .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
                 .perform(click());
     }

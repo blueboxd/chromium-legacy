@@ -280,7 +280,8 @@ http://codereview.chromium.org/7200040/diff/1/webkit/plugins/ppapi/ppapi_plugin_
 bool MetafileSkia::RenderPage(unsigned int page_number,
                               CGContextRef context,
                               const CGRect& rect,
-                              const MacRenderPageParams& params) const {
+                              bool autorotate,
+                              bool fit_to_page) const {
   DCHECK_GT(GetDataSize(), 0U);
   if (data_->pdf_cg.GetDataSize() == 0) {
     if (GetDataSize() == 0)
@@ -290,7 +291,8 @@ bool MetafileSkia::RenderPage(unsigned int page_number,
     (void)WriteAssetToBuffer(data_->data_stream.get(), &buffer[0], length);
     data_->pdf_cg.InitFromData(buffer);
   }
-  return data_->pdf_cg.RenderPage(page_number, context, rect, params);
+  return data_->pdf_cg.RenderPage(page_number, context, rect, autorotate,
+                                  fit_to_page);
 }
 #endif
 

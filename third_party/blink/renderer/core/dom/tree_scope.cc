@@ -110,7 +110,9 @@ void TreeScope::ClearScopedStyleResolver() {
 }
 
 Element* TreeScope::getElementById(const AtomicString& element_id) const {
-  if (element_id.IsEmpty())
+  // |element_id| can never be null for calls that originated from JavaScript,
+  // but sometimes other C++ code can call this function with g_null_atom.
+  if (element_id.IsNull())
     return nullptr;
   if (!elements_by_id_)
     return nullptr;

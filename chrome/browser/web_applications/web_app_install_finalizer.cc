@@ -167,6 +167,8 @@ void WebAppInstallFinalizer::FinalizeInstall(
   web_app->AddSource(source);
   web_app->SetIsInSyncInstall(false);
 
+  UpdateIntWebAppPref(profile_->GetPrefs(), app_id, kLatestWebAppInstallSource,
+                      static_cast<int>(options.install_source));
   SetWebAppManifestFieldsAndWriteData(web_app_info, std::move(web_app),
                                       /*is_new_install=*/true,
                                       std::move(callback));
@@ -196,6 +198,9 @@ void WebAppInstallFinalizer::FinalizeFallbackInstallAfterSync(
   std::map<SquareSizePx, SkBitmap> icon_bitmaps =
       GenerateIcons(web_app->sync_data().name, background_icon_color);
   web_app->SetDownloadedIconSizes(GetSquareSizePxs(icon_bitmaps));
+
+  UpdateIntWebAppPref(profile_->GetPrefs(), app_id, kLatestWebAppInstallSource,
+                      static_cast<int>(WebappInstallSource::SYNC));
 
   InstallFinalizedCallback fallback_install_callback =
       base::BindOnce(&WebAppInstallFinalizer::OnFallbackInstallFinalized,

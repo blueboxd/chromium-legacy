@@ -2432,6 +2432,11 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
     AtomicString old_id = GetElementData()->IdForStyleResolution();
     AtomicString new_id = MakeIdForStyleResolution(
         params.new_value, GetDocument().InQuirksMode());
+    // Treat empty IDs the same way as nonexistent ID, per
+    // https://dom.spec.whatwg.org/#concept-id.
+    if (new_id.IsEmpty()) {
+      new_id = g_null_atom;
+    }
     if (new_id != old_id) {
       GetElementData()->SetIdForStyleResolution(new_id);
       GetDocument().GetStyleEngine().IdChangedForElement(old_id, new_id, *this);

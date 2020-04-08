@@ -102,15 +102,6 @@ class CONTENT_EXPORT BrowserAccessibilityDelegate {
   virtual bool AccessibilityIsMainFrame() const = 0;
 };
 
-class CONTENT_EXPORT BrowserAccessibilityFactory {
- public:
-  virtual ~BrowserAccessibilityFactory() {}
-
-  // Create an instance of BrowserAccessibility and return a new
-  // reference to it.
-  virtual BrowserAccessibility* Create();
-};
-
 // This is all of the information about the current find in page result,
 // so we can activate it if requested.
 struct BrowserAccessibilityFindInPageInfo {
@@ -146,8 +137,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   // with no parent window pointer. Only useful for unit tests.
   static BrowserAccessibilityManager* Create(
       const ui::AXTreeUpdate& initial_tree,
-      BrowserAccessibilityDelegate* delegate,
-      BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
+      BrowserAccessibilityDelegate* delegate);
 
   static BrowserAccessibilityManager* FromID(ui::AXTreeID ax_tree_id);
 
@@ -465,12 +455,10 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   void OnPortalActivated();
 
  protected:
-  BrowserAccessibilityManager(BrowserAccessibilityDelegate* delegate,
-                              BrowserAccessibilityFactory* factory);
+  explicit BrowserAccessibilityManager(BrowserAccessibilityDelegate* delegate);
 
   BrowserAccessibilityManager(const ui::AXTreeUpdate& initial_tree,
-                              BrowserAccessibilityDelegate* delegate,
-                              BrowserAccessibilityFactory* factory);
+                              BrowserAccessibilityDelegate* delegate);
 
   // Send platform-specific notifications to each of these objects that
   // their location has changed. This is called by OnLocationChanges
@@ -491,9 +479,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
 
   // The object that can perform actions on our behalf.
   BrowserAccessibilityDelegate* delegate_;
-
-  // Factory to create BrowserAccessibility objects (for dependency injection).
-  std::unique_ptr<BrowserAccessibilityFactory> factory_;
 
   // A mapping from a node id to its wrapper of type BrowserAccessibility.
   std::map<int32_t, BrowserAccessibility*> id_wrapper_map_;

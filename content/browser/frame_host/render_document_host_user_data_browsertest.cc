@@ -59,7 +59,7 @@ class Data : public RenderDocumentHostUserData<Data> {
 
   base::WeakPtrFactory<Data> weak_ptr_factory_{this};
 
-  RENDER_DOCUMENT_HOST_USER_USER_DATA_KEY_DECL();
+  RENDER_DOCUMENT_HOST_USER_DATA_KEY_DECL();
 };
 
 RENDER_DOCUMENT_HOST_USER_DATA_KEY_IMPL(Data)

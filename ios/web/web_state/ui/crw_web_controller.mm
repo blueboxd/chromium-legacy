@@ -1402,7 +1402,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
           : web::UserAgentType::MOBILE;
   web::NavigationItem* item = self.currentNavItem;
   web::UserAgentType userAgentType =
-      item ? item->GetUserAgentType() : defaultUserAgent;
+      item ? item->GetUserAgentType(_containerView) : defaultUserAgent;
   if (userAgentType == web::UserAgentType::AUTOMATIC) {
     userAgentType =
         web::GetWebClient()->GetDefaultUserAgent(_containerView, GURL());

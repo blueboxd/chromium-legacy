@@ -100,19 +100,24 @@ DriveQuickAccessProvider::DriveQuickAccessProvider(
     : profile_(profile),
       drive_service_(
           drive::DriveIntegrationServiceFactory::GetForProfile(profile)),
-      search_controller_(search_controller) {
+      search_controller_(search_controller),
+      suggested_files_enabled_(app_list_features::IsSuggestedFilesEnabled()) {
   DCHECK(profile_);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
       {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
-  if (drive_service_)
+  // Observe the drive integration service to warm the results cache once
+  // drivefs is mounted. This is necessary only if the suggested files
+  // experiment is enabled, so that results are ready for display in the
+  // suggested chips on the first launcher open after login.
+  if (suggested_files_enabled_ && drive_service_)
     drive_service_->AddObserver(this);
 }
 
 DriveQuickAccessProvider::~DriveQuickAccessProvider() {
-  if (drive_service_)
+  if (suggested_files_enabled_ && drive_service_)
     drive_service_->RemoveObserver(this);
 }
 
@@ -164,7 +169,7 @@ void DriveQuickAccessProvider::Start(const base::string16& query) {
     results.emplace_back(std::make_unique<DriveQuickAccessResult>(
         path, result.confidence, profile_));
     // Add suggestion chip file results
-    if (app_list_features::IsSuggestedFilesEnabled()) {
+    if (suggested_files_enabled_) {
       results.emplace_back(std::make_unique<DriveQuickAccessChipResult>(
           path, result.confidence, profile_));
     }

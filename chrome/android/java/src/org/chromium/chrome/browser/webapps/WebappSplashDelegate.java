@@ -17,7 +17,6 @@ import android.widget.ImageView;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.FileUtils;
 import org.chromium.base.StrictModeContext;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.ui.util.ColorUtils;
@@ -27,7 +26,6 @@ import org.chromium.webapk.lib.common.splash.SplashLayout;
 /** Delegate for splash screen for webapps and WebAPKs. */
 public class WebappSplashDelegate implements SplashDelegate {
     public static final int HIDE_ANIMATION_DURATION_MS = 300;
-    public static final String HISTOGRAM_SPLASHSCREEN_HIDES = "Webapp.Splashscreen.Hides";
 
     private TabObserverRegistrar mTabObserverRegistrar;
 
@@ -59,16 +57,12 @@ public class WebappSplashDelegate implements SplashDelegate {
     }
 
     @Override
-    public void onSplashHidden(Tab tab, @SplashController.SplashHidesReason int reason,
-            long startTimestamp, long endTimestamp) {
+    public void onSplashHidden(Tab tab, long startTimestamp, long endTimestamp) {
         if (mWebApkNetworkErrorObserver != null) {
             mTabObserverRegistrar.unregisterTabObserver(mWebApkNetworkErrorObserver);
             tab.removeObserver(mWebApkNetworkErrorObserver);
             mWebApkNetworkErrorObserver = null;
         }
-
-        RecordHistogram.recordEnumeratedHistogram(HISTOGRAM_SPLASHSCREEN_HIDES, reason,
-                SplashController.SplashHidesReason.NUM_ENTRIES);
     }
 
     @Override

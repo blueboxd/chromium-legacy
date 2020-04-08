@@ -62,8 +62,10 @@
 #include "services/device/public/cpp/test/fake_sensor_and_provider.h"
 #include "services/device/public/cpp/test/scoped_geolocation_overrider.h"
 #include "services/device/public/mojom/vibration_manager.mojom.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
+#include "third_party/blink/public/mojom/app_banner/app_banner.mojom.h"
 
 using testing::_;
 using testing::Each;
@@ -1985,6 +1987,91 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, DoesNotCacheIfHttpError) {
   ExpectNotRestored(
       {BackForwardCacheMetrics::NotRestoredReason::kHTTPStatusNotOK},
       FROM_HERE);
+}
+
+class MockAppBannerService : public blink::mojom::AppBannerService {
+ public:
+  MockAppBannerService() = default;
+  ~MockAppBannerService() override = default;
+
+  void Bind(mojo::ScopedMessagePipeHandle handle) {
+    receiver_.Bind(mojo::PendingReceiver<blink::mojom::AppBannerService>(
+        std::move(handle)));
+  }
+
+  mojo::Remote<blink::mojom::AppBannerController>& controller() {
+    return controller_;
+  }
+
+  void OnBannerPromptRequested(bool) {}
+
+  void SendBannerPromptRequest() {
+    blink::mojom::AppBannerController* controller_ptr = controller_.get();
+    base::OnceCallback<void(bool)> callback = base::BindOnce(
+        &MockAppBannerService::OnBannerPromptRequested, base::Unretained(this));
+    controller_ptr->BannerPromptRequest(
+        receiver_.BindNewPipeAndPassRemote(),
+        event_.BindNewPipeAndPassReceiver(), {"web"},
+        base::BindOnce(&MockAppBannerService::OnBannerPromptReply,
+                       base::Unretained(this), std::move(callback)));
+  }
+
+  void OnBannerPromptReply(base::OnceCallback<void(bool)> callback,
+                           blink::mojom::AppBannerPromptReply reply) {
+    std::move(callback).Run(reply ==
+                            blink::mojom::AppBannerPromptReply::CANCEL);
+  }
+
+  // blink::mojom::AppBannerService:
+  void DisplayAppBanner() override {}
+
+ private:
+  mojo::Receiver<blink::mojom::AppBannerService> receiver_{this};
+  mojo::Remote<blink::mojom::AppBannerEvent> event_;
+  mojo::Remote<blink::mojom::AppBannerController> controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockAppBannerService);
+};
+
+class BackForwardCacheBrowserTestWithAppBanner
+    : public BackForwardCacheBrowserTest {
+ protected:
+  void SetUpOnMainThread() override {
+    web_contents()->GetMainFrame()->GetRemoteInterfaces()->GetInterface(
+        mock_app_banner_service_.controller().BindNewPipeAndPassReceiver());
+    BackForwardCacheBrowserTest::SetUpOnMainThread();
+  }
+
+  void SendBannerPromptRequest() {
+    mock_app_banner_service_.SendBannerPromptRequest();
+  }
+
+ private:
+  MockAppBannerService mock_app_banner_service_;
+};
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithAppBanner,
+                       DoesNotCacheIfAppBanner) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // 1) Navigate to A and request a PWA app banner.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
+  SendBannerPromptRequest();
+  RenderFrameDeletedObserver delete_observer_rfh(current_frame_host());
+
+  // 2) Navigate away. Page A requested a PWA app banner, and thus not cached.
+  shell()->LoadURL(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  delete_observer_rfh.WaitUntilDeleted();
+
+  // 3) Go back to A.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ExpectNotRestored(
+      {BackForwardCacheMetrics::NotRestoredReason::kBlocklistedFeatures},
+      FROM_HERE);
+  ExpectBlocklistedFeature(
+      blink::scheduler::WebSchedulerTrackedFeature::kAppBanner, FROM_HERE);
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,

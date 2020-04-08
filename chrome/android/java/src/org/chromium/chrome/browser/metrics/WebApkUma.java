@@ -9,7 +9,6 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
 import android.provider.Settings;
-import android.text.format.DateUtils;
 
 import androidx.annotation.IntDef;
 
@@ -29,7 +28,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Centralizes UMA data collection for WebAPKs. NOTE: Histogram names and values are defined in
@@ -267,16 +265,6 @@ public class WebApkUma {
         }
     }
 
-    /**
-     * Recorded when a WebAPK is launched from the homescreen. Records the time elapsed since the
-     * previous WebAPK launch. Not recorded the first time that a WebAPK is launched.
-     */
-    public static void recordLaunchInterval(long intervalMs) {
-        RecordHistogram.recordCustomCountHistogram("WebApk.LaunchInterval2",
-                (int) (DateUtils.MINUTE_IN_MILLIS * intervalMs), 30,
-                (int) TimeUnit.DAYS.toMinutes(90), 50);
-    }
-
     /** Records to UMA the count of old "WebAPK update request" files. */
     public static void recordNumberOfStaleWebApkUpdateRequestFiles(int count) {
         RecordHistogram.recordCountHistogram("WebApk.Update.NumStaleUpdateRequestFiles", count);
@@ -297,10 +285,8 @@ public class WebApkUma {
      * @param isChildTab Whether {@link Tab#getParentId()} is non-empty.
      * @param isNavigationInScope
      */
-    public static void recordNavigation(boolean isChildTab, boolean isNavigationInScope) {
-        RecordHistogram.recordBooleanHistogram(
-                isChildTab ? "WebApk.Navigation.ChildTab.InScope" : "WebApk.Navigation.InScope",
-                isNavigationInScope);
+    public static void recordNavigation(boolean isNavigationInScope) {
+        RecordHistogram.recordBooleanHistogram("WebApk.Navigation.InScope", isNavigationInScope);
     }
 
     /**
@@ -328,9 +314,6 @@ public class WebApkUma {
     private static void logSpaceUsageUMAOnDataAvailable(long spaceSize, long cacheSize) {
         RecordHistogram.recordSparseHistogram(
                 "WebApk.Install.AvailableSpace.Fail", roundByteToMb(spaceSize));
-
-        RecordHistogram.recordSparseHistogram(
-                "WebApk.Install.ChromeCacheSize.Fail", roundByteToMb(cacheSize));
 
         RecordHistogram.recordSparseHistogram("WebApk.Install.AvailableSpaceAfterFreeUpCache.Fail",
                 roundByteToMb(spaceSize + cacheSize));

@@ -1,8 +1,0 @@
-This is a testharness.js-based test.
-PASS The method must exist
-PASS It must return null when there are no matches
-PASS It must return the first element when there are matches
-FAIL Empty string ID values assert_equals: Even if there is an element with an empty-string ID attribute, it must not be returned expected null but got Element node <div id=""></div>
-PASS It must return the first element when there are matches, using a template
-Harness: the test ran to completion.
-

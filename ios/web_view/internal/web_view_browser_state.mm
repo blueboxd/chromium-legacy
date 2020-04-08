@@ -22,7 +22,6 @@
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_filter.h"
 #include "components/prefs/pref_service_factory.h"
-#include "components/signin/ios/browser/active_state_manager.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync_device_info/device_info_prefs.h"
@@ -34,8 +33,6 @@
 #include "ios/web_view/internal/app/application_context.h"
 #import "ios/web_view/internal/autofill/web_view_autofill_log_router_factory.h"
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
-#include "ios/web_view/internal/content_settings/web_view_cookie_settings_factory.h"
-#include "ios/web_view/internal/content_settings/web_view_host_content_settings_map_factory.h"
 #include "ios/web_view/internal/language/web_view_language_model_manager_factory.h"
 #include "ios/web_view/internal/language/web_view_url_language_histogram_factory.h"
 #import "ios/web_view/internal/passwords/web_view_password_manager_log_router_factory.h"
@@ -108,8 +105,6 @@ WebViewBrowserState::WebViewBrowserState(
 
   base::ThreadRestrictions::SetIOAllowed(wasIOAllowed);
 
-  ActiveStateManager::FromBrowserState(this)->SetActive(true);
-
   BrowserStateDependencyManager::GetInstance()->CreateBrowserStateServices(
       this);
 }
@@ -117,8 +112,6 @@ WebViewBrowserState::WebViewBrowserState(
 WebViewBrowserState::~WebViewBrowserState() {
   BrowserStateDependencyManager::GetInstance()->DestroyBrowserStateServices(
       this);
-
-  ActiveStateManager::FromBrowserState(this)->SetActive(false);
 
   base::PostTask(FROM_HERE, {web::WebThread::IO},
                  base::BindOnce(&WebViewURLRequestContextGetter::ShutDown,
@@ -181,8 +174,6 @@ void WebViewBrowserState::RegisterPrefs(
   WebViewWebDataServiceWrapperFactory::GetInstance();
   WebViewPasswordManagerLogRouterFactory::GetInstance();
   WebViewPasswordStoreFactory::GetInstance();
-  WebViewCookieSettingsFactory::GetInstance();
-  WebViewHostContentSettingsMapFactory::GetInstance();
   WebViewSigninClientFactory::GetInstance();
   WebViewSigninErrorControllerFactory::GetInstance();
   WebViewIdentityManagerFactory::GetInstance();

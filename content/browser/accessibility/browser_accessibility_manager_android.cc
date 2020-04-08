@@ -18,18 +18,16 @@ namespace content {
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
     const ui::AXTreeUpdate& initial_tree,
-    BrowserAccessibilityDelegate* delegate,
-    BrowserAccessibilityFactory* factory) {
-  return new BrowserAccessibilityManagerAndroid(initial_tree, nullptr, delegate,
-                                                factory);
+    BrowserAccessibilityDelegate* delegate) {
+  return new BrowserAccessibilityManagerAndroid(initial_tree, nullptr,
+                                                delegate);
 }
 
 BrowserAccessibilityManagerAndroid::BrowserAccessibilityManagerAndroid(
     const ui::AXTreeUpdate& initial_tree,
     base::WeakPtr<WebContentsAccessibilityAndroid> web_contents_accessibility,
-    BrowserAccessibilityDelegate* delegate,
-    BrowserAccessibilityFactory* factory)
-    : BrowserAccessibilityManager(delegate, factory),
+    BrowserAccessibilityDelegate* delegate)
+    : BrowserAccessibilityManager(delegate),
       web_contents_accessibility_(std::move(web_contents_accessibility)),
       prune_tree_for_screen_reader_(true) {
   if (web_contents_accessibility_)

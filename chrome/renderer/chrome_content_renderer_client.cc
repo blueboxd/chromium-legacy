@@ -92,6 +92,8 @@
 #include "components/subresource_filter/content/renderer/unverified_ruleset_dealer.h"
 #include "components/subresource_filter/core/common/common_features.h"
 #include "components/sync/engine/sync_engine_switches.h"
+#include "components/translate/content/renderer/per_frame_translate_agent.h"
+#include "components/translate/core/common/translate_util.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "components/variations/variations_switches.h"
 #include "components/version_info/version_info.h"
@@ -592,6 +594,10 @@ void ChromeContentRendererClient::RenderFrameCreated(
   if (render_frame->IsMainFrame()) {
     new previews::ResourceLoadingHintsAgent(
         render_frame_observer->associated_interfaces(), render_frame);
+  }
+  if (translate::IsSubFrameTranslationEnabled()) {
+    new translate::PerFrameTranslateAgent(
+        render_frame, ISOLATED_WORLD_ID_TRANSLATE, associated_interfaces);
   }
 
 #if !defined(OS_ANDROID)

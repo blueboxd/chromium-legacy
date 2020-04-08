@@ -59,6 +59,7 @@ void PluginVmUninstallerNotification::SetFailed() {
       IDS_PLUGIN_VM_REMOVING_NOTIFICATION_FAILED_MESSAGE));
   notification_->set_pinned(false);
   notification_->set_never_timeout(false);
+  notification_->set_accent_color(ash::kSystemNotificationColorCriticalWarning);
 
   ForceRedisplay();
 }

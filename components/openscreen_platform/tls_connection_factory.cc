@@ -8,12 +8,14 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "components/openscreen_platform/network_context.h"
 #include "components/openscreen_platform/network_util.h"
 #include "components/openscreen_platform/tls_client_connection.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/ssl/ssl_info.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/openscreen/src/platform/api/tls_connection.h"
 #include "third_party/openscreen/src/platform/base/tls_connect_options.h"
 #include "third_party/openscreen/src/platform/base/tls_credentials.h"
@@ -25,7 +27,7 @@ std::unique_ptr<TlsConnectionFactory> TlsConnectionFactory::CreateFactory(
     Client* client,
     TaskRunner* task_runner) {
   return std::make_unique<openscreen_platform::TlsConnectionFactory>(
-      client, task_runner, nullptr /* network context */);
+      client, task_runner);
 }
 
 }  // namespace openscreen
@@ -70,8 +72,8 @@ TlsConnectionFactory::~TlsConnectionFactory() = default;
 
 void TlsConnectionFactory::Connect(const IPEndpoint& remote_address,
                                    const TlsConnectOptions& options) {
-  network::mojom::NetworkContext* network_context = network_context_;
-  // TODO(btolsch): Add fall-back lookup in follow-up NetworkContext patch.
+  network::mojom::NetworkContext* network_context =
+      openscreen_platform::GetNetworkContext();
   if (!network_context) {
     client_->OnError(this, openscreen::Error::Code::kItemNotFound);
     return;
@@ -107,11 +109,8 @@ void TlsConnectionFactory::Listen(const IPEndpoint& local_address,
 
 TlsConnectionFactory::TlsConnectionFactory(
     openscreen::TlsConnectionFactory::Client* client,
-    openscreen::TaskRunner* task_runner,
-    network::mojom::NetworkContext* network_context)
-    : client_(client),
-      task_runner_(task_runner),
-      network_context_(network_context) {}
+    openscreen::TaskRunner* task_runner)
+    : client_(client), task_runner_(task_runner) {}
 
 TlsConnectionFactory::TcpConnectRequest::TcpConnectRequest(
     openscreen::TlsConnectOptions options_in,

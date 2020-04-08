@@ -391,6 +391,8 @@ class IdlCompiler(object):
 
         self._ir_map.move_to_new_phase()
 
+        identifier_to_derived_set = {}
+
         for old_interface in old_interfaces.values():
             new_interface = make_copy(old_interface)
             self._ir_map.add(new_interface)
@@ -412,6 +414,17 @@ class IdlCompiler(object):
                     make_copy(operation) for operation in interface.operations
                     if is_own_member(operation)
                 ])
+
+                identifier_to_derived_set.setdefault(
+                    interface.identifier, set()).add(new_interface.identifier)
+
+        for new_interface in self._ir_map.irs_of_kind(IRMap.IR.Kind.INTERFACE):
+            assert not new_interface.deriveds
+            derived_set = identifier_to_derived_set.get(
+                new_interface.identifier, set())
+            new_interface.deriveds = map(
+                lambda id_: self._ref_to_idl_def_factory.create(id_),
+                sorted(derived_set))
 
     def _supplement_missing_html_constructor_operation(self):
         # Temporary mitigation of misuse of [HTMLConstructor]

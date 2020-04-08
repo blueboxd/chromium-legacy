@@ -57,8 +57,7 @@ TEST_F(BrowserAccessibilityTest, TestCanFireEvents) {
   std::unique_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(
           MakeAXTreeUpdate(root, para1, text1),
-          test_browser_accessibility_delegate_.get(),
-          new BrowserAccessibilityFactory()));
+          test_browser_accessibility_delegate_.get()));
 
   BrowserAccessibility* root_obj = manager->GetRoot();
   EXPECT_FALSE(root_obj->PlatformIsLeaf());
@@ -172,13 +171,11 @@ TEST_F(BrowserAccessibilityTest, PlatformChildIterator) {
 
   std::unique_ptr<BrowserAccessibilityManager> parent_manager(
       BrowserAccessibilityManager::Create(
-          parent_tree_update, test_browser_accessibility_delegate_.get(),
-          new BrowserAccessibilityFactory()));
+          parent_tree_update, test_browser_accessibility_delegate_.get()));
 
   std::unique_ptr<BrowserAccessibilityManager> child_manager(
       BrowserAccessibilityManager::Create(
-          child_tree_update, test_browser_accessibility_delegate_.get(),
-          new BrowserAccessibilityFactory()));
+          child_tree_update, test_browser_accessibility_delegate_.get()));
 
   BrowserAccessibility* root_obj = parent_manager->GetRoot();
   // Test traversal
@@ -319,8 +316,7 @@ TEST_F(BrowserAccessibilityTest, GetInnerTextRangeBoundsRect) {
   std::unique_ptr<BrowserAccessibilityManager> browser_accessibility_manager(
       BrowserAccessibilityManager::Create(
           MakeAXTreeUpdate(root, static_text, inline_text1, inline_text2),
-          test_browser_accessibility_delegate_.get(),
-          new BrowserAccessibilityFactory()));
+          test_browser_accessibility_delegate_.get()));
 
   BrowserAccessibility* root_accessible =
       browser_accessibility_manager->GetRoot();
@@ -435,8 +431,7 @@ TEST_F(BrowserAccessibilityTest, GetInnerTextRangeBoundsRectMultiElement) {
       BrowserAccessibilityManager::Create(
           MakeAXTreeUpdate(root, static_text, inline_text1, static_text2,
                            inline_text2),
-          test_browser_accessibility_delegate_.get(),
-          new BrowserAccessibilityFactory()));
+          test_browser_accessibility_delegate_.get()));
 
   BrowserAccessibility* root_accessible =
       browser_accessibility_manager->GetRoot();
@@ -562,8 +557,7 @@ TEST_F(BrowserAccessibilityTest, GetInnerTextRangeBoundsRectBiDi) {
   std::unique_ptr<BrowserAccessibilityManager> browser_accessibility_manager(
       BrowserAccessibilityManager::Create(
           MakeAXTreeUpdate(root, static_text, inline_text1, inline_text2),
-          test_browser_accessibility_delegate_.get(),
-          new BrowserAccessibilityFactory()));
+          test_browser_accessibility_delegate_.get()));
 
   BrowserAccessibility* root_accessible =
       browser_accessibility_manager->GetRoot();
@@ -649,8 +643,7 @@ TEST_F(BrowserAccessibilityTest, GetInnerTextRangeBoundsRectScrolledWindow) {
   std::unique_ptr<BrowserAccessibilityManager> browser_accessibility_manager(
       BrowserAccessibilityManager::Create(
           MakeAXTreeUpdate(root, static_text, inline_text),
-          test_browser_accessibility_delegate_.get(),
-          new BrowserAccessibilityFactory()));
+          test_browser_accessibility_delegate_.get()));
 
   BrowserAccessibility* root_accessible =
       browser_accessibility_manager->GetRoot();
@@ -685,8 +678,7 @@ TEST_F(BrowserAccessibilityTest, GetAuthorUniqueId) {
 
   std::unique_ptr<BrowserAccessibilityManager> browser_accessibility_manager(
       BrowserAccessibilityManager::Create(
-          MakeAXTreeUpdate(root), test_browser_accessibility_delegate_.get(),
-          new BrowserAccessibilityFactory()));
+          MakeAXTreeUpdate(root), test_browser_accessibility_delegate_.get()));
   ASSERT_NE(nullptr, browser_accessibility_manager.get());
 
   BrowserAccessibility* root_accessible =
@@ -728,8 +720,7 @@ TEST_F(BrowserAccessibilityTest, NextWordPositionWithHypertext) {
   std::unique_ptr<BrowserAccessibilityManager> browser_accessibility_manager(
       BrowserAccessibilityManager::Create(
           MakeAXTreeUpdate(root, input, static_text, inline_text),
-          test_browser_accessibility_delegate_.get(),
-          new BrowserAccessibilityFactory()));
+          test_browser_accessibility_delegate_.get()));
   ASSERT_NE(nullptr, browser_accessibility_manager.get());
 
   BrowserAccessibility* root_accessible =
@@ -807,13 +798,11 @@ TEST_F(BrowserAccessibilityTest, PortalName) {
 
   std::unique_ptr<BrowserAccessibilityManager> parent_manager(
       BrowserAccessibilityManager::Create(
-          parent_tree_update, test_browser_accessibility_delegate_.get(),
-          new BrowserAccessibilityFactory()));
+          parent_tree_update, test_browser_accessibility_delegate_.get()));
 
   std::unique_ptr<BrowserAccessibilityManager> child_manager(
       BrowserAccessibilityManager::Create(
-          child_tree_update, test_browser_accessibility_delegate_.get(),
-          new BrowserAccessibilityFactory()));
+          child_tree_update, test_browser_accessibility_delegate_.get()));
 
   // Portal node should use name from root of child tree.
   EXPECT_EQ("name", child_manager->GetRoot()->GetName());
@@ -844,8 +833,7 @@ TEST_F(BrowserAccessibilityTest, GetIndexInParent) {
   std::unique_ptr<BrowserAccessibilityManager> browser_accessibility_manager(
       BrowserAccessibilityManager::Create(
           MakeAXTreeUpdate(root, static_text),
-          test_browser_accessibility_delegate_.get(),
-          new BrowserAccessibilityFactory()));
+          test_browser_accessibility_delegate_.get()));
   ASSERT_NE(nullptr, browser_accessibility_manager.get());
 
   BrowserAccessibility* root_accessible =

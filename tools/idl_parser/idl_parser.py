@@ -918,7 +918,8 @@ class IDLParser(object):
 
     if len(p) == 6:
       cls = 'Sequence' if p[1] == 'sequence' else 'FrozenArray'
-      p[0] = self.BuildProduction(cls, p, 1, ListFromConcat(p[3], p[5]))
+      p[0] = self.BuildProduction(cls, p, 1, p[3])
+      p[0] = ListFromConcat(p[0], p[5])
 
   # Added StringType, OBJECT
   def p_PrimitiveType(self, p):

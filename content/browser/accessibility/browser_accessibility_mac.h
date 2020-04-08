@@ -27,7 +27,7 @@ CONTENT_EXPORT BrowserAccessibilityCocoa* ToBrowserAccessibilityCocoa(
 class BrowserAccessibilityMac : public BrowserAccessibility {
  public:
   // BrowserAccessibility overrides.
-  void NativeReleaseReference() override;
+  ~BrowserAccessibilityMac() override;
   bool IsNative() const override;
   void OnDataChanged() override;
   uint32_t PlatformChildCount() const override;

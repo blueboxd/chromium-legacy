@@ -53,7 +53,7 @@ ManifestManager::ManifestManager(LocalFrame& frame)
       ExecutionContextLifecycleObserver(frame.GetDocument()),
       may_have_manifest_(false),
       manifest_dirty_(true),
-      receivers_(GetExecutionContext()) {
+      receivers_(this, GetExecutionContext()) {
   if (frame.IsMainFrame()) {
     manifest_change_notifier_ =
         MakeGarbageCollected<ManifestChangeNotifier>(frame);
@@ -258,7 +258,7 @@ bool ManifestManager::ManifestUseCredentials() const {
 void ManifestManager::BindReceiver(
     mojo::PendingReceiver<mojom::blink::ManifestManager> receiver) {
   receivers_.Add(
-      this, std::move(receiver),
+      std::move(receiver),
       GetSupplementable()->GetDocument()->ToExecutionContext()->GetTaskRunner(
           TaskType::kNetworking));
 }

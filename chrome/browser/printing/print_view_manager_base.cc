@@ -180,7 +180,7 @@ void PrintViewManagerBase::PrintDocument(
 
   // Update the rendered document. It will send notifications to the listener.
   PrintedDocument* document = print_job_->document();
-  document->SetDocument(std::move(metafile), page_size, content_area);
+  document->SetDocument(std::move(metafile));
   ShouldQuitFromInnerMessageLoop();
 }
 

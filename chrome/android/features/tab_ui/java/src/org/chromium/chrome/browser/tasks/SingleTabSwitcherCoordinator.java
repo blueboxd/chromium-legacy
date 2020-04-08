@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.tasks.tab_management.TabListFaviconProvider;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.tab_ui.R;
+import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
@@ -120,7 +121,8 @@ class SingleTabSwitcherCoordinator implements TabSwitcher {
     @Override
     public void initWithNative(Context context, TabContentManager tabContentManager,
             DynamicResourceLoader dynamicResourceLoader,
-            SnackbarManager.SnackbarManageable snackbarManageable) {
+            SnackbarManager.SnackbarManageable snackbarManageable,
+            ModalDialogManager modalDialogManager) {
         mTabListFaviconProvider.initWithNative(Profile.getLastUsedRegularProfile());
     }
 

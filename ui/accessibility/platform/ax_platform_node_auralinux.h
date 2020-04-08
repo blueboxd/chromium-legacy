@@ -121,6 +121,8 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   AXPlatformNodeAuraLinux();
   ~AXPlatformNodeAuraLinux() override;
 
+  static AXPlatformNodeAuraLinux* FromAtkObject(const AtkObject*);
+
   // Set or get the root-level Application object that's the parent of all
   // top-level windows.
   static void SetApplication(AXPlatformNode* application);

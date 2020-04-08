@@ -174,35 +174,6 @@ public class WebappSplashScreenTest {
     @Test
     @SmallTest
     @Feature({"Webapps"})
-    public void testUmaOnNativeLoad() {
-        mActivityTestRule.startWebappActivityAndWaitForSplashScreen();
-
-        // Tests UMA values.
-        Assert.assertEquals(0,
-                getHistogramTotalCountFor(WebappSplashDelegate.HISTOGRAM_SPLASHSCREEN_HIDES,
-                        SplashController.SplashHidesReason.NUM_ENTRIES));
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"Webapps"})
-    public void testUmaWhenSplashHides() {
-        mActivityTestRule.startWebappActivityAndWaitForSplashScreen();
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                () -> TabTestUtils.simulateFirstVisuallyNonEmptyPaint(
-                                mActivityTestRule.getActivity().getActivityTab()));
-
-        mActivityTestRule.waitUntilSplashscreenHides();
-
-        // HIDES should now have a value.
-        Assert.assertEquals(1,
-                getHistogramTotalCountFor(WebappSplashDelegate.HISTOGRAM_SPLASHSCREEN_HIDES,
-                        SplashController.SplashHidesReason.NUM_ENTRIES));
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"Webapps"})
     public void testRegularSplashScreenAppears() throws Exception {
         // Register a properly-sized icon for the splash screen.
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();

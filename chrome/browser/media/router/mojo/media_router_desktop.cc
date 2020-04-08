@@ -14,10 +14,12 @@
 #include "chrome/browser/media/router/providers/cast/cast_media_route_provider.h"
 #include "chrome/browser/media/router/providers/cast/chrome_cast_message_handler.h"
 #include "chrome/browser/media/router/providers/wired_display/wired_display_media_route_provider.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/media_router/media_source.h"
 #include "components/cast_channel/cast_socket_service.h"
+#include "components/openscreen_platform/network_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/extension.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -208,6 +210,13 @@ void MediaRouterDesktop::ProvideSinks(
 }
 
 void MediaRouterDesktop::InitializeMediaRouteProviders() {
+  if (!openscreen_platform::HasNetworkContextGetter()) {
+    openscreen_platform::SetNetworkContextGetter(base::BindRepeating([] {
+      DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+      return g_browser_process->system_network_context_manager()->GetContext();
+    }));
+  }
+
   InitializeExtensionMediaRouteProviderProxy();
   InitializeWiredDisplayMediaRouteProvider();
   if (CastMediaRouteProviderEnabled())

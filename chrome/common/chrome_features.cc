@@ -168,6 +168,11 @@ const base::Feature kCrostiniForceClose{"CrostiniForceClose",
 const base::Feature kCrostiniArcSideload{"CrostiniArcSideload",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables distributed model for TPM1.2, i.e., using tpm_managerd and
+// attestationd.
+const base::Feature kCryptohomeDistributedModel{
+    "CryptohomeDistributedModel", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable support for "Plugin VMs" on Chrome OS.
 const base::Feature kPluginVm{"PluginVm", base::FEATURE_DISABLED_BY_DEFAULT};
 

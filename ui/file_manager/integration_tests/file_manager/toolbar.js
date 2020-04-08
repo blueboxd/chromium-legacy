@@ -25,6 +25,34 @@ testcase.toolbarDeleteWithMenuItemNoEntrySelected = async () => {
 };
 
 /**
+ * Tests Delete button keeps focus after closing confirmation
+ * dialog.
+ */
+testcase.toolbarDeleteButtonKeepFocus = async () => {
+  const entries = [ENTRIES.desktop];
+
+  // Open Files app.
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, entries, []);
+
+  // Select My Desktop Background.png
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'selectFile', appId, [ENTRIES.desktop.nameText]));
+
+  await remoteCall.simulateUiClick(appId, '#delete-button');
+
+  // Confirm that the confirmation dialog is shown.
+  await remoteCall.waitForElement(appId, '.cr-dialog-container.shown');
+
+  // Press cancel button.
+  await remoteCall.waitAndClickElement(appId, 'button.cr-dialog-cancel');
+
+  // Check focused element is Delete button.
+  const focusedElement =
+      await remoteCall.callRemoteTestUtil('getActiveElement', appId, []);
+  chrome.test.assertEq('delete-button', focusedElement.attributes['id']);
+};
+
+/**
  * Tests deleting an entry using the toolbar.
  */
 testcase.toolbarDeleteEntry = async () => {

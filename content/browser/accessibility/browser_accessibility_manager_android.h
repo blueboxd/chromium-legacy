@@ -43,8 +43,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
   BrowserAccessibilityManagerAndroid(
       const ui::AXTreeUpdate& initial_tree,
       base::WeakPtr<WebContentsAccessibilityAndroid> web_contents_accessibility,
-      BrowserAccessibilityDelegate* delegate,
-      BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
+      BrowserAccessibilityDelegate* delegate);
 
   ~BrowserAccessibilityManagerAndroid() override;
 

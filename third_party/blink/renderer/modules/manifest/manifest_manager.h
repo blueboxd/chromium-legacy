@@ -111,7 +111,8 @@ class MODULES_EXPORT ManifestManager
 
   Vector<InternalRequestManifestCallback> pending_callbacks_;
 
-  HeapMojoReceiverSet<mojom::blink::ManifestManager> receivers_;
+  HeapMojoReceiverSet<mojom::blink::ManifestManager, ManifestManager>
+      receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(ManifestManager);
 };

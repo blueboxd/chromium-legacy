@@ -889,7 +889,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (!visibleItem)
     return web::UserAgentType::NONE;
 
-  return visibleItem->GetUserAgentType();
+  return visibleItem->GetUserAgentType(self.view);
 }
 
 - (void)setVisible:(BOOL)visible {

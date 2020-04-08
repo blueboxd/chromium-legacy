@@ -36,6 +36,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "url/gurl.h"
@@ -45,9 +46,13 @@ class FakeTranslateAgent : public translate::mojom::TranslateAgent {
   FakeTranslateAgent();
   ~FakeTranslateAgent() override;
 
+  // TODO(crbug.com/1064974) Remove with subframe translation launch.
   mojo::PendingRemote<translate::mojom::TranslateAgent> BindToNewPageRemote();
 
   // translate::mojom::TranslateAgent implementation.
+  void GetWebLanguageDetectionDetails(
+      GetWebLanguageDetectionDetailsCallback callback) override;
+
   void TranslateFrame(const std::string& translate_script,
                       const std::string& source_lang,
                       const std::string& target_lang,
@@ -60,14 +65,21 @@ class FakeTranslateAgent : public translate::mojom::TranslateAgent {
                       const std::string& target_lang,
                       translate::TranslateErrors::Type error);
 
+  void BindRequest(mojo::ScopedInterfaceEndpointHandle handle);
+
   bool called_translate_;
   base::Optional<std::string> source_lang_;
   base::Optional<std::string> target_lang_;
   bool called_revert_translation_;
+  std::string next_page_lang_;
+  bool next_page_translatable_;
 
  private:
   TranslateFrameCallback translate_callback_pending_;
+  // TODO(crbug.com/1064974) Remove with subframe translation launch.
   mojo::Receiver<translate::mojom::TranslateAgent> receiver_{this};
+  mojo::AssociatedReceiverSet<translate::mojom::TranslateAgent>
+      per_frame_translate_agent_receivers_;
   DISALLOW_COPY_AND_ASSIGN(FakeTranslateAgent);
 };
 

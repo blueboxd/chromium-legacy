@@ -85,7 +85,9 @@ class WaylandBufferManagerHost : public ozone::mojom::WaylandBufferManagerHost,
   void SetTerminateGpuCallback(
       base::OnceCallback<void(std::string)> terminate_gpu_cb);
 
-  // Returns bound pointer to own mojo interface.
+  // Returns bound pointer to own mojo interface. If there were previous
+  // interface bindings, it will be unbound and the state of the
+  // |buffer_manager_| will be cleared.
   mojo::PendingRemote<ozone::mojom::WaylandBufferManagerHost> BindInterface();
 
   // Unbinds the interface and clears the state of the |buffer_manager_|. Used

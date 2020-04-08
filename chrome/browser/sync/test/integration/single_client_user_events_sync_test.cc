@@ -225,8 +225,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest,
 
   // Clear the "Sync paused" state again.
   GetClient(0)->ExitSyncPausedStateForPrimaryAccount();
-  // Once the auth error is gone, wait for Sync to start up again.
-  GetClient(0)->AwaitSyncSetupCompletion();
   ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
 
   // Just checking that we don't see test_event isn't very convincing yet,

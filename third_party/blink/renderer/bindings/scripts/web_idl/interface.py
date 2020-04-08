@@ -107,6 +107,7 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             self.is_partial = is_partial
             self.is_mixin = is_mixin
             self.inherited = inherited
+            self.deriveds = []
             self.attributes = list(attributes)
             self.constants = list(constants)
             self.constructors = list(constructors)
@@ -149,6 +150,7 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
 
         self._is_mixin = ir.is_mixin
         self._inherited = ir.inherited
+        self._deriveds = tuple(ir.deriveds)
         self._attributes = tuple([
             Attribute(attribute_ir, owner=self)
             for attribute_ir in ir.attributes
@@ -227,6 +229,11 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
     def inherited(self):
         """Returns the inherited interface or None."""
         return self._inherited.target_object if self._inherited else None
+
+    @property
+    def deriveds(self):
+        """Returns the list of the derived interfaces."""
+        return tuple(map(lambda ref: ref.target_object, self._deriveds))
 
     @property
     def inclusive_inherited_interfaces(self):

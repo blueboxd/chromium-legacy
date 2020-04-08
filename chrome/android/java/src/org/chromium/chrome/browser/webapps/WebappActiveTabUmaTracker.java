@@ -42,12 +42,11 @@ public class WebappActiveTabUmaTracker extends ActivityTabTabObserver {
             RecordHistogram.recordBooleanHistogram(
                     HISTOGRAM_NAVIGATION_STATUS, !navigation.isErrorPage());
 
-            if (mIntentDataProvider.isWebApkActivity()) {
+            if (mIntentDataProvider.isWebApkActivity() && tab.getParentId() == Tab.INVALID_TAB_ID) {
                 VerificationState verificationState = mCurrentPageVerifier.getState();
                 boolean isNavigationInScope = (verificationState == null
                         || verificationState.status != VerificationStatus.FAILURE);
-                boolean isChildTab = (tab.getParentId() != Tab.INVALID_TAB_ID);
-                WebApkUma.recordNavigation(isChildTab, isNavigationInScope);
+                WebApkUma.recordNavigation(isNavigationInScope);
             }
         }
     }

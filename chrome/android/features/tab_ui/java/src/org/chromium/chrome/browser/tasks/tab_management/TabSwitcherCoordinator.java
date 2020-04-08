@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestio
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
+import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modelutil.LayoutViewBuilder;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -51,6 +52,16 @@ public class TabSwitcherCoordinator
         implements Destroyable, TabSwitcher, TabSwitcher.TabListDelegate,
                    TabSwitcher.TabDialogDelegation, TabSwitcherMediator.ResetHandler,
                    TabSwitcherMediator.MessageItemsController {
+    /**
+     * Interface to control the IPH dialog.
+     */
+    interface IphController {
+        /**
+         * Show the dialog with IPH.
+         */
+        void showIph();
+    }
+
     // TODO(crbug.com/982018): Rename 'COMPONENT_NAME' so as to add different metrics for carousel
     // tab switcher.
     static final String COMPONENT_NAME = "GridTabSwitcher";
@@ -178,7 +189,8 @@ public class TabSwitcherCoordinator
     @Override
     public void initWithNative(Context context, TabContentManager tabContentManager,
             DynamicResourceLoader dynamicResourceLoader,
-            SnackbarManager.SnackbarManageable snackbarManageable) {
+            SnackbarManager.SnackbarManageable snackbarManageable,
+            ModalDialogManager modalDialogManager) {
         // For tab switcher in carousel mode, the selection editor should still follow grid style.
         int selectionEditorMode = mMode == TabListCoordinator.TabListMode.CAROUSEL
                 ? TabListCoordinator.TabListMode.GRID
@@ -221,9 +233,10 @@ public class TabSwitcherCoordinator
 
             if (TabUiFeatureUtilities.isTabGroupsAndroidEnabled()
                     && !TabSwitcherMediator.isShowingTabsInMRUOrder()) {
-                mTabGridIphDialogCoordinator = new TabGridIphDialogCoordinator(context, mContainer);
+                mTabGridIphDialogCoordinator =
+                        new TabGridIphDialogCoordinator(context, mContainer, modalDialogManager);
                 IphMessageService iphMessageService =
-                        new IphMessageService(mTabGridIphDialogCoordinator.getIphController());
+                        new IphMessageService(mTabGridIphDialogCoordinator);
                 mMessageCardProviderCoordinator.subscribeMessageService(iphMessageService);
             }
         }

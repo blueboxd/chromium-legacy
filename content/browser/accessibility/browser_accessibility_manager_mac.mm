@@ -106,9 +106,8 @@ namespace content {
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
     const ui::AXTreeUpdate& initial_tree,
-    BrowserAccessibilityDelegate* delegate,
-    BrowserAccessibilityFactory* factory) {
-  return new BrowserAccessibilityManagerMac(initial_tree, delegate, factory);
+    BrowserAccessibilityDelegate* delegate) {
+  return new BrowserAccessibilityManagerMac(initial_tree, delegate);
 }
 
 BrowserAccessibilityManagerMac*
@@ -118,9 +117,8 @@ BrowserAccessibilityManager::ToBrowserAccessibilityManagerMac() {
 
 BrowserAccessibilityManagerMac::BrowserAccessibilityManagerMac(
     const ui::AXTreeUpdate& initial_tree,
-    BrowserAccessibilityDelegate* delegate,
-    BrowserAccessibilityFactory* factory)
-    : BrowserAccessibilityManager(delegate, factory) {
+    BrowserAccessibilityDelegate* delegate)
+    : BrowserAccessibilityManager(delegate) {
   Initialize(initial_tree);
   ax_tree()->SetEnableExtraMacNodes(true);
 }

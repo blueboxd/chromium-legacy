@@ -28,6 +28,9 @@ namespace translate {
 
 // This class deals with page translation.
 // There is one TranslateAgent per RenderView.
+//
+// Note: this class only supports translation of the main frame. See
+// PerFrameTranslateAgent for sub frame translation support.
 class TranslateAgent : public content::RenderFrameObserver,
                        public mojom::TranslateAgent {
  public:
@@ -45,6 +48,8 @@ class TranslateAgent : public content::RenderFrameObserver,
   void PrepareForUrl(const GURL& url);
 
   // mojom::TranslateAgent implementation.
+  void GetWebLanguageDetectionDetails(
+      GetWebLanguageDetectionDetailsCallback callback) override;
   void TranslateFrame(const std::string& translate_script,
                       const std::string& source_lang,
                       const std::string& target_lang,
@@ -79,9 +84,9 @@ class TranslateAgent : public content::RenderFrameObserver,
   // Returns the language code on success, an empty string on failure.
   virtual std::string GetOriginalPageLanguage();
 
-  // Adjusts a delay time for a posted task. This is used in tests to do tasks
-  // immediately by returning 0.
-  virtual base::TimeDelta AdjustDelay(int delayInMs);
+  // Adjusts a delay time for a posted task. This is overridden in tests to do
+  // tasks immediately by returning 0.
+  virtual base::TimeDelta AdjustDelay(int delay_in_milliseconds);
 
   // Executes the JavaScript code in |script| in the main frame of RenderView.
   virtual void ExecuteScript(const std::string& script);

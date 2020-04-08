@@ -988,7 +988,7 @@
     Disk size
   </message>
   <message name="IDS_SETTINGS_CROSTINI_DISK_RESIZE_TITLE" desc="The title of the settings dialogue the user uses to resize the Crostini (AKA Linux (Beta)) Disk.">
-    Resize Linux Disk
+    Resize Linux disk
   </message>
   <message name="IDS_SETTINGS_CROSTINI_DISK_RESIZE_UNSUPPORTED" desc="The message diusplayed to the user when resizing their Crostini disk isn't supported, explaining a workaround.">
     Your container doesn't support being resized. To adjust the amount of space that is pre-allocated to Linux (Beta), back up and then restore into a new container.

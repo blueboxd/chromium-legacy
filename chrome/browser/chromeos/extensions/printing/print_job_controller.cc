@@ -167,11 +167,7 @@ void PrintJobControllerImpl::StartPrinting(
   job->Initialize(std::move(query), title, /*page_count=*/1);
   job->SetSource(printing::PrintJob::Source::EXTENSION, extension_id);
   printing::PrintedDocument* document = job->document();
-  // |paper_size| and |page_rect| are used only for OS_MACOSX, so just use
-  // default constructor values.
-  document->SetDocument(std::move(metafile),
-                        /*paper_size=*/gfx::Size(),
-                        /*page_rect=*/gfx::Rect());
+  document->SetDocument(std::move(metafile));
   // Save PrintJob scoped refptr and callback to resolve when print job is
   // created.
   extension_pending_jobs_[extension_id].emplace(job, std::move(callback));

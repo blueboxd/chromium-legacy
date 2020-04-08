@@ -11,6 +11,7 @@
 #import "ios/web/navigation/navigation_manager_delegate.h"
 #import "ios/web/navigation/wk_navigation_util.h"
 #import "ios/web/public/web_client.h"
+#import "ios/web/public/web_state.h"
 #include "ui/base/page_transition_types.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -72,7 +73,6 @@ NavigationItem* NavigationManagerImpl::GetLastCommittedNonRedirectedItem(
   return nullptr;
 }
 
-/* static */
 void NavigationManagerImpl::UpdatePendingItemUserAgentType(
     UserAgentOverrideOption user_agent_override_option,
     const NavigationItem* inherit_from_item,
@@ -82,35 +82,32 @@ void NavigationManagerImpl::UpdatePendingItemUserAgentType(
   // |user_agent_override_option| must be INHERIT if |pending_item|'s
   // UserAgentType is NONE, as requesting a desktop or mobile user agent should
   // be disabled for app-specific URLs.
-  DCHECK(pending_item->GetUserAgentType() != UserAgentType::NONE ||
+  DCHECK(pending_item->GetUserAgentForInheritance() != UserAgentType::NONE ||
          user_agent_override_option == UserAgentOverrideOption::INHERIT);
 
   // Newly created pending items are created with UserAgentType::NONE for native
-  // pages or UserAgentType::MOBILE for non-native pages.  If the pending item's
-  // URL is non-native, check which user agent type it should be created with
-  // based on |user_agent_override_option|.
-  DCHECK_NE(UserAgentType::DESKTOP, pending_item->GetUserAgentType());
-  if (pending_item->GetUserAgentType() == UserAgentType::NONE)
+  // pages or UserAgentType::MOBILE or UserAgentType::DESKTOP for non-native
+  // pages.  If the pending item's URL is non-native, check which user agent
+  // type it should be created with based on |user_agent_override_option|.
+  if (pending_item->GetUserAgentForInheritance() == UserAgentType::NONE)
     return;
 
   switch (user_agent_override_option) {
     case UserAgentOverrideOption::DESKTOP:
-      pending_item->SetUserAgentType(UserAgentType::DESKTOP,
-                                     /*update_inherited_user_agent =*/true);
+      pending_item->SetUserAgentType(UserAgentType::DESKTOP);
       break;
     case UserAgentOverrideOption::MOBILE:
-      pending_item->SetUserAgentType(UserAgentType::MOBILE,
-                                     /*update_inherited_user_agent =*/true);
+      pending_item->SetUserAgentType(UserAgentType::MOBILE);
       break;
     case UserAgentOverrideOption::INHERIT: {
       // Propagate the last committed non-native item's UserAgentType if there
       // is one, otherwise keep the default value, which is mobile.
       DCHECK(!inherit_from_item ||
-             inherit_from_item->GetUserAgentType() != UserAgentType::NONE);
+             inherit_from_item->GetUserAgentForInheritance() !=
+                 UserAgentType::NONE);
       if (inherit_from_item) {
         pending_item->SetUserAgentType(
-            inherit_from_item->GetUserAgentForInheritance(),
-            /*update_inherited_user_agent =*/true);
+            inherit_from_item->GetUserAgentForInheritance());
       }
       break;
     }
@@ -502,7 +499,7 @@ NavigationItem* NavigationManagerImpl::GetLastCommittedItemWithUserAgentType()
        index >= 0; index--) {
     NavigationItem* item = GetItemAtIndex(index);
     if (wk_navigation_util::URLNeedsUserAgentType(item->GetURL())) {
-      DCHECK_NE(item->GetUserAgentType(), UserAgentType::NONE);
+      DCHECK_NE(item->GetUserAgentForInheritance(), UserAgentType::NONE);
       return item;
     }
   }

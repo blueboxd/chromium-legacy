@@ -208,7 +208,11 @@ void FileInputType::CustomStyleForLayoutObject(ComputedStyle& style) {
 }
 
 bool FileInputType::TypeShouldForceLegacyLayout() const {
-  return !RuntimeEnabledFeatures::LayoutNGForControlsEnabled();
+  if (RuntimeEnabledFeatures::LayoutNGForControlsEnabled())
+    return false;
+  UseCounter::Count(GetElement().GetDocument(),
+                    WebFeature::kLegacyLayoutByFileUploadControl);
+  return true;
 }
 
 LayoutObject* FileInputType::CreateLayoutObject(const ComputedStyle& style,

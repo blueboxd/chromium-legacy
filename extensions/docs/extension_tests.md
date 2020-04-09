@@ -194,8 +194,8 @@ chrome.storage.local.get('config', (config) => {
 
 #### ResultCatcher
 A helper class to wait for the success or failure result of an extension test
-from an extension using the `chrome.test` API (TODO(devlin): Add a doc on how to
-use the chrome.test API).  This class is only useful in browser tests.
+from an extension using the `chrome.test` API. This class is only useful in
+browser tests.
 
 **Example Usage**
 
@@ -326,8 +326,5 @@ chrome.test.runTests([
 ]);
 ```
 
-Though slightly outdated,
-[this README](/chrome/test/data/extensions/api_test/README.txt) also includes
-some advice on how to write extension API tests.
-(TODO(devlin): Add more documentation on how to use chrome.test in this doc,
-and remove the old readme.)
+See [Using the chrome.test API](/extensions/docs/testing_api.md) for more
+information on how to write extension API tests.

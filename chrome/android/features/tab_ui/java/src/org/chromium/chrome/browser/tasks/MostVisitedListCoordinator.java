@@ -61,9 +61,10 @@ class MostVisitedListCoordinator implements TileGroup.Observer, TileGroup.TileSe
         if (mRenderer != null) return;
         assert mTileGroup == null;
 
-        boolean isIncognito = mActivity.getTabModelSelector().isIncognitoSelected();
-        Profile profile = isIncognito ? Profile.getLastUsedProfile().getOffTheRecordProfile()
-                                      : Profile.getLastUsedProfile();
+        // TODO(https://crbug.com/1041781): Use the current profile (i.e., regular profile or
+        // incognito profile) instead of always using regular profile. It is wrong and needs to be
+        // fixed.
+        Profile profile = Profile.getLastUsedRegularProfile();
         SuggestionsSource suggestionsSource =
                 SuggestionsDependencyFactory.getInstance().createSuggestionSource(profile);
         SuggestionsEventReporter eventReporter =

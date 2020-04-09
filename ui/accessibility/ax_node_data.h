@@ -190,6 +190,10 @@ struct AX_BASE_EXPORT AXNodeData {
   ax::mojom::ImageAnnotationStatus GetImageAnnotationStatus() const;
   void SetImageAnnotationStatus(ax::mojom::ImageAnnotationStatus status);
 
+  // Helper to determine if the data belongs to a node that is a native button
+  // or ARIA role="button" in a pressed state.
+  bool IsButtonPressed() const;
+
   // Helper to determine if the data belongs to a node that can respond to
   // clicks.
   bool IsClickable() const;
@@ -199,6 +203,9 @@ struct AX_BASE_EXPORT AXNodeData {
 
   // Helper to determine if the data belongs to a node that is invocable.
   bool IsInvocable() const;
+
+  // Helper to determine if the data belongs to a node that is a menu button.
+  bool IsMenuButton() const;
 
   // Helper to determine if the data belongs to a node that is a plain
   // textfield.

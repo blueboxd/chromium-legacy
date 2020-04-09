@@ -32,6 +32,8 @@ Polymer({
   behaviors: [SettingsBehavior, SelectBehavior],
 
   properties: {
+    ariaLabel: String,
+
     /** @type {{ option: Array<!SelectOption> }} */
     capability: Object,
 

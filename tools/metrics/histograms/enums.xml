@@ -26926,6 +26926,28 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3201" label="WrongBaselineOfButtonElement"/>
   <int value="3202" label="V8Document_HasTrustToken_Method"/>
   <int value="3203" label="ForceLoadAtTop"/>
+  <int value="3204" label="LegacyLayoutByButton"/>
+  <int value="3205" label="LegacyLayoutByDeprecatedFlexBox"/>
+  <int value="3206" label="LegacyLayoutByDetailsMarker"/>
+  <int value="3207" label="LegacyLayoutByEditing"/>
+  <int value="3208" label="LegacyLayoutByFieldSet"/>
+  <int value="3209" label="LegacyLayoutByFileUploadControl"/>
+  <int value="3210" label="LegacyLayoutByFlexBox"/>
+  <int value="3211" label="LegacyLayoutByFrameSet"/>
+  <int value="3212" label="LegacyLayoutByGrid"/>
+  <int value="3213" label="LegacyLayoutByMenuList"/>
+  <int value="3214" label="LegacyLayoutByMultiCol"/>
+  <int value="3215" label="LegacyLayoutByPrinting"/>
+  <int value="3216" label="LegacyLayoutByRuby"/>
+  <int value="3217" label="LegacyLayoutBySVG"/>
+  <int value="3218" label="LegacyLayoutBySlider"/>
+  <int value="3219" label="LegacyLayoutByTable"/>
+  <int value="3220" label="LegacyLayoutByTextCombine"/>
+  <int value="3221" label="LegacyLayoutByTextControl"/>
+  <int value="3222" label="LegacyLayoutByVTTCue"/>
+  <int value="3223" label="LegacyLayoutByWebkitBoxWithoutVerticalLineClamp"/>
+  <int value="3224"
+      label="LegacyLayoutByTableFlexGridBlockInNGFragmentationContext"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -38154,6 +38176,7 @@ from previous Chrome versions.
   <int value="-1391645613" label="ImeMozcProto:enabled"/>
   <int value="-1390331361"
       label="SyncPseudoUSSHistoryDeleteDirectives:enabled"/>
+  <int value="-1390005994" label="AppCache:disabled"/>
   <int value="-1388817073" label="OmniboxReverseAnswers:disabled"/>
   <int value="-1386966873" label="disable-mac-views-native-app-windows"/>
   <int value="-1386790338" label="ImeMozcProto:disabled"/>
@@ -39921,6 +39944,7 @@ from previous Chrome versions.
   <int value="684806628" label="TranslateLanguageByULP:disabled"/>
   <int value="685916283" label="enable-zip-archiver-on-file-manager"/>
   <int value="687838135" label="ThirdPartyDoodles:disabled"/>
+  <int value="688254068" label="AppCache:enabled"/>
   <int value="689489984" label="disable-zero-suggest"/>
   <int value="689577480" label="vr-shell-experimental-rendering"/>
   <int value="690185633" label="NonValidatingReloadOnNormalReload:disabled"/>

@@ -356,6 +356,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   void BroadcastEventToObservers(const void* const event_key);
 
   void OnEnterBackForwardCache();
+  void OnRestoreFromBackForwardCache();
 
  private:
   // This function converts a TimeTicks value taken in the browser process

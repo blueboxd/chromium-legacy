@@ -69,9 +69,6 @@ void BrowserAccessibilityManagerAuraLinux::FireSelectedEvent(
 void BrowserAccessibilityManagerAuraLinux::FireLoadingEvent(
     BrowserAccessibility* node,
     bool is_loading) {
-  if (!node->IsNative())
-    return;
-
   gfx::NativeViewAccessible obj = node->GetNativeViewAccessible();
   if (!ATK_IS_OBJECT(obj))
     return;
@@ -84,18 +81,12 @@ void BrowserAccessibilityManagerAuraLinux::FireLoadingEvent(
 void BrowserAccessibilityManagerAuraLinux::FireExpandedEvent(
     BrowserAccessibility* node,
     bool is_expanded) {
-  if (!node->IsNative())
-    return;
-
   ToBrowserAccessibilityAuraLinux(node)->GetNode()->OnExpandedStateChanged(
       is_expanded);
 }
 
 void BrowserAccessibilityManagerAuraLinux::FireEvent(BrowserAccessibility* node,
                                                      ax::mojom::Event event) {
-  if (!node->IsNative())
-    return;
-
   ToBrowserAccessibilityAuraLinux(node)->GetNode()->NotifyAccessibilityEvent(
       event);
 }
@@ -205,7 +196,7 @@ void BrowserAccessibilityManagerAuraLinux::OnNodeDataWillChange(
   // children-changed:add is handled with the generated Event::IGNORED_CHANGED.
   if (!old_node_data.IsIgnored() && new_node_data.IsIgnored()) {
     BrowserAccessibility* obj = GetFromID(old_node_data.id);
-    if (obj && obj->IsNative() && obj->GetParent()) {
+    if (obj && obj->GetParent()) {
       DCHECK(!obj->IsIgnored());
       g_signal_emit_by_name(obj->GetParent(), "children-changed::remove",
                             obj->GetIndexInParent(),
@@ -222,7 +213,7 @@ void BrowserAccessibilityManagerAuraLinux::OnSubtreeWillBeDeleted(
     return;
 
   BrowserAccessibility* obj = GetFromAXNode(node);
-  if (obj && obj->IsNative())
+  if (obj)
     ToBrowserAccessibilityAuraLinux(obj)->GetNode()->OnSubtreeWillBeDeleted();
 }
 

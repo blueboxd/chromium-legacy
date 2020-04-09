@@ -209,7 +209,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   void AddRAILModeObserver(RAILModeObserver* observer) override;
   void RemoveRAILModeObserver(RAILModeObserver const* observer) override;
   void SetRendererProcessType(WebRendererProcessType type) override;
-  PendingUserInputInfo GetPendingUserInputInfo() const override;
+  Vector<WebInputEventAttribution> GetPendingUserInputInfo(
+      bool include_continuous) const override;
   bool IsBeginMainFrameScheduled() const override;
 
   // ThreadScheduler implementation:

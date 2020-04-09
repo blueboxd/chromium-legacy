@@ -27,6 +27,7 @@
 
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -53,6 +54,7 @@ LayoutObject* HTMLButtonElement::CreateLayoutObject(const ComputedStyle& style,
       display == EDisplay::kInlineLayoutCustom ||
       display == EDisplay::kLayoutCustom)
     return HTMLFormControlElement::CreateLayoutObject(style, legacy);
+  UseCounter::Count(GetDocument(), WebFeature::kLegacyLayoutByButton);
   return new LayoutButton(this);
 }
 

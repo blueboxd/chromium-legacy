@@ -8,7 +8,6 @@
 class Browser;
 class GURL;
 class Profile;
-struct WebApplicationInfo;
 
 namespace content {
 class WebContents;
@@ -25,9 +24,6 @@ namespace browsertest_util {
 // via update urls). The chromeos device setup scripts take care of this in
 // actual production devices, but some tests need to do it manually.
 void CreateAndInitializeLocalCache();
-
-// Installs a Bookmark App into |profile| using |info|.
-const Extension* InstallBookmarkApp(Profile* profile, WebApplicationInfo info);
 
 // Launches a new app window for |app| in |profile|.
 Browser* LaunchAppBrowser(Profile* profile, const Extension* app);

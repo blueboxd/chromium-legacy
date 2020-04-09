@@ -560,10 +560,7 @@ bool MetricsWebContentsObserver::MaybeRestorePageLoadTrackerForBackForwardCache(
 
   committed_load_ = std::move(it->second);
   back_forward_cached_pages_.erase(it);
-  // TODO(hajimehoshi): Add dedicated methods to PageLoadMetricsTracker to allow
-  // them to observe pages being restored from bfcache.
-  if (web_contents()->GetVisibility() == content::Visibility::VISIBLE)
-    committed_load_->PageShown();
+  committed_load_->OnRestoreFromBackForwardCache();
   return true;
 }
 
@@ -660,6 +657,9 @@ void MetricsWebContentsObserver::OnVisibilityChanged(
       kv.second->PageHidden();
     }
   }
+
+  // As pages in back-forward cache are frozen, |back_forward_cached_pages_|
+  // don't have to be iterated here.
 }
 
 // This will occur when the process for the main RenderFrameHost exits, either

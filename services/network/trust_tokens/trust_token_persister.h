@@ -45,6 +45,12 @@ class TrustTokenPersister {
       const SuitableTrustTokenOrigin& issuer,
       const SuitableTrustTokenOrigin& toplevel,
       std::unique_ptr<TrustTokenIssuerToplevelPairConfig> config) = 0;
+
+  // Deletes any data stored keyed by matching origins (as issuers or top-level
+  // origins).
+  virtual bool DeleteForOrigins(
+      base::RepeatingCallback<bool(const SuitableTrustTokenOrigin&)>
+          matcher) = 0;
 };
 
 }  // namespace network

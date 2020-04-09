@@ -60,9 +60,9 @@ constexpr double kCrostiniTerminalRelevanceThreshold = 0.8;
 
 // Parameters for FuzzyTokenizedStringMatch.
 constexpr bool kUsePrefixOnly = false;
-constexpr bool kUseWeightedRatio = true;
+constexpr bool kUseWeightedRatio = false;
 constexpr bool kUseEditDistance = false;
-constexpr double kRelevanceThreshold = 0.3;
+constexpr double kRelevanceThreshold = 0.32;
 constexpr double kPartialMatchPenaltyRate = 0.9;
 
 // Adds |app_result| to |results| only in case no duplicate apps were already

@@ -311,8 +311,9 @@ class BreadCrumb extends HTMLElement {
    * its parts, which are stored in the <button>.textContent.
    *
    * @return {!Array<HTMLButtonElement>}
+   * @private
    */
-  getBreadcrumbButtons() {
+  getBreadcrumbButtons_() {
     const parts = this.shadowRoot.querySelectorAll('button[id]:not([hidden])');
     if (this.parts_.length <= 4) {
       return Array.from(parts);
@@ -332,11 +333,23 @@ class BreadCrumb extends HTMLElement {
    *    attribute on the returned buttons.
    */
   getEllipsisButtons() {
-    return this.getBreadcrumbButtons().filter(button => {
+    return this.getBreadcrumbButtons_().filter(button => {
       if (!button.hasAttribute('has-tooltip') && button.offsetWidth) {
         return button.offsetWidth < button.scrollWidth;
       }
     });
+  }
+
+  /**
+   * Returns breadcrumb buttons that have a 'has-tooltip' attribute. Note the
+   * elider button is excluded since it has an i18n aria-label.
+   *
+   * @return {!Array<HTMLButtonElement>} buttons Caller could remove the tool
+   *    tip event listeners from the returned buttons.
+   */
+  getToolTipButtons() {
+    const hasToolTip = 'button:not([elider])[has-tooltip]';
+    return Array.from(this.shadowRoot.querySelectorAll(hasToolTip));
   }
 
   /**
@@ -363,7 +376,7 @@ class BreadCrumb extends HTMLElement {
     }
 
     if (element instanceof HTMLButtonElement) {
-      const parts = this.getBreadcrumbButtons();
+      const parts = this.getBreadcrumbButtons_();
       this.signal_(parts.indexOf(element));
     }
   }

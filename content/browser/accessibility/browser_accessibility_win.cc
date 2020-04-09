@@ -47,10 +47,6 @@ ui::AXPlatformNode* BrowserAccessibilityWin::GetAXPlatformNode() const {
   return GetCOM();
 }
 
-bool BrowserAccessibilityWin::IsNative() const {
-  return true;
-}
-
 void BrowserAccessibilityWin::OnLocationChanged() {
   GetCOM()->FireNativeEvent(EVENT_OBJECT_LOCATIONCHANGE);
 }
@@ -104,13 +100,11 @@ BrowserAccessibilityComWin* BrowserAccessibilityWin::GetCOM() const {
 }
 
 BrowserAccessibilityWin* ToBrowserAccessibilityWin(BrowserAccessibility* obj) {
-  DCHECK(!obj || obj->IsNative());
   return static_cast<BrowserAccessibilityWin*>(obj);
 }
 
 const BrowserAccessibilityWin* ToBrowserAccessibilityWin(
     const BrowserAccessibility* obj) {
-  DCHECK(!obj || obj->IsNative());
   return static_cast<const BrowserAccessibilityWin*>(obj);
 }
 

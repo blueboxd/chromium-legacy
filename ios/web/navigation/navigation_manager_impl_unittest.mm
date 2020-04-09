@@ -106,6 +106,7 @@ class MockNavigationManagerDelegate : public NavigationManagerDelegate {
 // Data holder for the informations to be restored in the items.
 struct ItemInfoToBeRestored {
   GURL url;
+  GURL virtual_url;
   UserAgentType user_agent;
   PageDisplayState display_state;
 };
@@ -1754,17 +1755,20 @@ TEST_F(NavigationManagerTest, TestBackwardForwardItems) {
 // Tests that Restore() creates the correct navigation state.
 TEST_F(NavigationManagerTest, Restore) {
   ItemInfoToBeRestored restore_information[3];
-  restore_information[0] = {GURL("http://www.url.com/0"), UserAgentType::MOBILE,
+  restore_information[0] = {GURL("http://www.url.com/0"),
+                            GURL("http://virtual/0"), UserAgentType::MOBILE,
                             PageDisplayState()};
-  restore_information[1] = {GURL("http://www.url.com/1"),
+  restore_information[1] = {GURL("http://www.url.com/1"), GURL(),
                             UserAgentType::AUTOMATIC, PageDisplayState()};
   restore_information[2] = {GURL("http://www.url.com/2"),
-                            UserAgentType::DESKTOP, PageDisplayState()};
+                            GURL("http://virtual/2"), UserAgentType::DESKTOP,
+                            PageDisplayState()};
 
   std::vector<std::unique_ptr<NavigationItem>> items;
   for (size_t index = 0; index < base::size(restore_information); ++index) {
     items.push_back(NavigationItem::Create());
     items.back()->SetURL(restore_information[index].url);
+    items.back()->SetVirtualURL(restore_information[index].virtual_url);
     items.back()->SetUserAgentType(restore_information[index].user_agent);
     items.back()->SetPageDisplayState(restore_information[index].display_state);
   }
@@ -1791,7 +1795,7 @@ TEST_F(NavigationManagerTest, Restore) {
   GURL pending_url = pending_item->GetURL();
   EXPECT_TRUE(pending_url.SchemeIsFile());
   EXPECT_EQ("restore_session.html", pending_url.ExtractFileName());
-  EXPECT_EQ("http://www.url.com/0", pending_item->GetVirtualURL());
+  EXPECT_EQ("http://virtual/0", pending_item->GetVirtualURL());
   navigation_manager()->OnNavigationStarted(pending_url);
 
   // Simulate the end effect of loading the restore session URL in web view.
@@ -1814,6 +1818,10 @@ TEST_F(NavigationManagerTest, Restore) {
   for (size_t i = 0; i < base::size(restore_information); ++i) {
     NavigationItem* navigation_item = navigation_manager()->GetItemAtIndex(i);
     EXPECT_EQ(restore_information[i].url, navigation_item->GetURL());
+    if (!restore_information[i].virtual_url.is_empty()) {
+      EXPECT_EQ(restore_information[i].virtual_url,
+                navigation_item->GetVirtualURL());
+    }
     EXPECT_EQ(restore_information[i].user_agent,
               navigation_item->GetUserAgentForInheritance());
     EXPECT_EQ(restore_information[i].display_state,

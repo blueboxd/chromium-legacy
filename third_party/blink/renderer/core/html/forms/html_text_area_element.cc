@@ -214,6 +214,7 @@ void HTMLTextAreaElement::ParseAttribute(
 
 LayoutObject* HTMLTextAreaElement::CreateLayoutObject(const ComputedStyle&,
                                                       LegacyLayout) {
+  UseCounter::Count(GetDocument(), WebFeature::kLegacyLayoutByTextControl);
   return new LayoutTextControlMultiLine(this);
 }
 

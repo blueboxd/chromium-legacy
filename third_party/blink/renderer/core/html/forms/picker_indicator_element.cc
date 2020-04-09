@@ -63,6 +63,7 @@ LayoutObject* PickerIndicatorElement::CreateLayoutObject(
   if (features::IsFormControlsRefreshEnabled())
     return HTMLDivElement::CreateLayoutObject(style, legacy);
 
+  UseCounter::Count(GetDocument(), WebFeature::kLegacyLayoutByDetailsMarker);
   return new LayoutDetailsMarker(this);
 }
 

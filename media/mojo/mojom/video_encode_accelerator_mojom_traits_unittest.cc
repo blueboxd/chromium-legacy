@@ -87,8 +87,7 @@ TEST(VideoEncoderInfoStructTraitTest, RoundTrip) {
   ::media::VideoEncoderInfo input;
   input.implementation_name = "FakeVideoEncodeAccelerator";
   // Scaling settings.
-  input.scaling_settings.min_qp = 12;
-  input.scaling_settings.max_qp = 123;
+  input.scaling_settings = ::media::ScalingSettings(12, 123);
   // FPS allocation.
   for (size_t i = 0; i < ::media::VideoEncoderInfo::kMaxSpatialLayers; ++i)
     input.fps_allocation[i] = {5, 5, 10};

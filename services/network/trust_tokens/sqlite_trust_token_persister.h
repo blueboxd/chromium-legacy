@@ -11,6 +11,7 @@
 #include "base/task/task_traits.h"
 #include "components/sqlite_proto/key_value_data.h"
 #include "services/network/trust_tokens/proto/storage.pb.h"
+#include "services/network/trust_tokens/suitable_trust_token_origin.h"
 #include "services/network/trust_tokens/trust_token_database_owner.h"
 #include "services/network/trust_tokens/trust_token_persister.h"
 #include "sql/database.h"
@@ -76,6 +77,10 @@ class SQLiteTrustTokenPersister : public TrustTokenPersister {
       const SuitableTrustTokenOrigin& issuer,
       const SuitableTrustTokenOrigin& toplevel,
       std::unique_ptr<TrustTokenIssuerToplevelPairConfig> config) override;
+
+  bool DeleteForOrigins(
+      base::RepeatingCallback<bool(const SuitableTrustTokenOrigin&)> matcher)
+      override;
 
  private:
   // Manages the underlying database.

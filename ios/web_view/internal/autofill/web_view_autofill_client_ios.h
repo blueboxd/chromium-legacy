@@ -39,7 +39,6 @@ class WebViewAutofillClientIOS : public AutofillClient {
       id<CWVAutofillClientIOSBridge> bridge,
       signin::IdentityManager* identity_manager,
       StrikeDatabase* strike_database,
-      scoped_refptr<AutofillWebDataService> autofill_web_data_service,
       syncer::SyncService* sync_service);
   ~WebViewAutofillClientIOS() override;
 

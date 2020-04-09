@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/platform/scheduler/main_thread/pending_user_input.h"
-#include "third_party/blink/renderer/platform/scheduler/public/pending_user_input_type.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -15,85 +14,71 @@ class PendingUserInputMonitorTest : public testing::Test {
   PendingUserInput::Monitor monitor_;
 };
 
-// Tests that a single event type is tracked.
-TEST_F(PendingUserInputMonitorTest, TestCounterBasic) {
-  EXPECT_FALSE(
-      monitor_.Info().HasPendingInputType(PendingUserInputType::kMouseDown));
-  EXPECT_FALSE(monitor_.Info().HasPendingInputType(PendingUserInputType::kAny));
-
-  monitor_.OnEnqueue(WebInputEvent::kMouseDown);
-  EXPECT_TRUE(
-      monitor_.Info().HasPendingInputType(PendingUserInputType::kMouseDown));
-  EXPECT_TRUE(monitor_.Info().HasPendingInputType(PendingUserInputType::kAny));
-
-  monitor_.OnDequeue(WebInputEvent::kMouseDown);
-  EXPECT_FALSE(
-      monitor_.Info().HasPendingInputType(PendingUserInputType::kMouseDown));
-  EXPECT_FALSE(monitor_.Info().HasPendingInputType(PendingUserInputType::kAny));
+// Sanity check for discrete/continuous queues.
+TEST_F(PendingUserInputMonitorTest, QueuingSimple) {
+  monitor_.OnEnqueue(WebInputEvent::kMouseDown, {});
+  monitor_.OnEnqueue(WebInputEvent::kMouseMove, {});
+  monitor_.OnEnqueue(WebInputEvent::kMouseUp, {});
+  monitor_.OnDequeue(WebInputEvent::kMouseDown, {});
+  monitor_.OnDequeue(WebInputEvent::kMouseMove, {});
+  monitor_.OnDequeue(WebInputEvent::kMouseUp, {});
 }
 
-// Tests that enqueuing multiple identical event types is tracked correctly.
-TEST_F(PendingUserInputMonitorTest, TestCounterNested) {
-  EXPECT_FALSE(
-      monitor_.Info().HasPendingInputType(PendingUserInputType::kMouseDown));
-  EXPECT_FALSE(monitor_.Info().HasPendingInputType(PendingUserInputType::kAny));
+// Basic test of continuous and discrete event detection.
+TEST_F(PendingUserInputMonitorTest, EventDetection) {
+  WebInputEventAttribution focus(WebInputEventAttribution::kFocusedFrame);
+  WebInputEventAttribution frame(WebInputEventAttribution::kTargetedFrame,
+                                 cc::ElementId(0xDEADBEEF));
 
-  monitor_.OnEnqueue(WebInputEvent::kMouseDown);
-  EXPECT_TRUE(
-      monitor_.Info().HasPendingInputType(PendingUserInputType::kMouseDown));
-  EXPECT_TRUE(monitor_.Info().HasPendingInputType(PendingUserInputType::kAny));
+  EXPECT_EQ(monitor_.Info(false).size(), 0U);
+  EXPECT_EQ(monitor_.Info(true).size(), 0U);
 
-  monitor_.OnEnqueue(WebInputEvent::kMouseDown);
-  EXPECT_TRUE(
-      monitor_.Info().HasPendingInputType(PendingUserInputType::kMouseDown));
-  EXPECT_TRUE(monitor_.Info().HasPendingInputType(PendingUserInputType::kAny));
+  // Verify that an event with invalid attribution is ignored.
+  monitor_.OnEnqueue(WebInputEvent::kKeyDown, {});
+  EXPECT_EQ(monitor_.Info(false).size(), 0U);
+  EXPECT_EQ(monitor_.Info(true).size(), 0U);
 
-  monitor_.OnDequeue(WebInputEvent::kMouseDown);
-  EXPECT_TRUE(
-      monitor_.Info().HasPendingInputType(PendingUserInputType::kMouseDown));
-  EXPECT_TRUE(monitor_.Info().HasPendingInputType(PendingUserInputType::kAny));
+  // Discrete events with a unique attribution should increment the attribution
+  // count.
+  monitor_.OnEnqueue(WebInputEvent::kMouseDown, focus);
+  EXPECT_EQ(monitor_.Info(false).size(), 1U);
+  EXPECT_EQ(monitor_.Info(true).size(), 1U);
 
-  monitor_.OnDequeue(WebInputEvent::kMouseDown);
-  EXPECT_FALSE(
-      monitor_.Info().HasPendingInputType(PendingUserInputType::kMouseDown));
-  EXPECT_FALSE(monitor_.Info().HasPendingInputType(PendingUserInputType::kAny));
-}
+  // Multiple enqueued events with the same attribution target should not
+  // return the attribution twice.
+  monitor_.OnEnqueue(WebInputEvent::kMouseUp, focus);
+  EXPECT_EQ(monitor_.Info(false).size(), 1U);
+  EXPECT_EQ(monitor_.Info(true).size(), 1U);
 
-// Tests that non-overlapping input types are tracked independently.
-TEST_F(PendingUserInputMonitorTest, TestCounterDisjoint) {
-  EXPECT_FALSE(
-      monitor_.Info().HasPendingInputType(PendingUserInputType::kMouseDown));
-  EXPECT_FALSE(
-      monitor_.Info().HasPendingInputType(PendingUserInputType::kMouseUp));
-  EXPECT_FALSE(monitor_.Info().HasPendingInputType(PendingUserInputType::kAny));
+  // Events with new attribution information should return a new attribution
+  // (in this case, continuous).
+  monitor_.OnEnqueue(WebInputEvent::kMouseMove, frame);
+  EXPECT_EQ(monitor_.Info(false).size(), 1U);
+  EXPECT_EQ(monitor_.Info(true).size(), 2U);
 
-  monitor_.OnEnqueue(WebInputEvent::kMouseDown);
-  EXPECT_TRUE(
-      monitor_.Info().HasPendingInputType(PendingUserInputType::kMouseDown));
-  EXPECT_FALSE(
-      monitor_.Info().HasPendingInputType(PendingUserInputType::kMouseUp));
-  EXPECT_TRUE(monitor_.Info().HasPendingInputType(PendingUserInputType::kAny));
+  monitor_.OnEnqueue(WebInputEvent::kKeyDown, frame);
+  EXPECT_EQ(monitor_.Info(false).size(), 2U);
+  EXPECT_EQ(monitor_.Info(true).size(), 2U);
 
-  monitor_.OnEnqueue(WebInputEvent::kMouseUp);
-  EXPECT_TRUE(
-      monitor_.Info().HasPendingInputType(PendingUserInputType::kMouseDown));
-  EXPECT_TRUE(
-      monitor_.Info().HasPendingInputType(PendingUserInputType::kMouseUp));
-  EXPECT_TRUE(monitor_.Info().HasPendingInputType(PendingUserInputType::kAny));
+  monitor_.OnDequeue(WebInputEvent::kKeyDown, {});
+  EXPECT_EQ(monitor_.Info(false).size(), 2U);
+  EXPECT_EQ(monitor_.Info(true).size(), 2U);
 
-  monitor_.OnDequeue(WebInputEvent::kMouseDown);
-  EXPECT_FALSE(
-      monitor_.Info().HasPendingInputType(PendingUserInputType::kMouseDown));
-  EXPECT_TRUE(
-      monitor_.Info().HasPendingInputType(PendingUserInputType::kMouseUp));
-  EXPECT_TRUE(monitor_.Info().HasPendingInputType(PendingUserInputType::kAny));
+  monitor_.OnDequeue(WebInputEvent::kMouseDown, focus);
+  EXPECT_EQ(monitor_.Info(false).size(), 2U);
+  EXPECT_EQ(monitor_.Info(true).size(), 2U);
 
-  monitor_.OnDequeue(WebInputEvent::kMouseUp);
-  EXPECT_FALSE(
-      monitor_.Info().HasPendingInputType(PendingUserInputType::kMouseDown));
-  EXPECT_FALSE(
-      monitor_.Info().HasPendingInputType(PendingUserInputType::kMouseUp));
-  EXPECT_FALSE(monitor_.Info().HasPendingInputType(PendingUserInputType::kAny));
+  monitor_.OnDequeue(WebInputEvent::kMouseUp, focus);
+  EXPECT_EQ(monitor_.Info(false).size(), 1U);
+  EXPECT_EQ(monitor_.Info(true).size(), 1U);
+
+  monitor_.OnDequeue(WebInputEvent::kMouseMove, frame);
+  EXPECT_EQ(monitor_.Info(false).size(), 1U);
+  EXPECT_EQ(monitor_.Info(true).size(), 1U);
+
+  monitor_.OnDequeue(WebInputEvent::kKeyDown, frame);
+  EXPECT_EQ(monitor_.Info(false).size(), 0U);
+  EXPECT_EQ(monitor_.Info(true).size(), 0U);
 }
 
 }  // namespace scheduler

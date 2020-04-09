@@ -81,7 +81,51 @@ TEST(AXNodeDataTest, TextAttributes) {
   EXPECT_TRUE(moved_styles == node_1.GetTextStyles());
 }
 
-TEST(AXNodeDataTest, TestIsClickable) {
+TEST(AXNodeDataTest, IsButtonPressed) {
+  // A non-button element with CheckedState::kTrue should not return true for
+  // IsButtonPressed.
+  AXNodeData non_button_pressed;
+  non_button_pressed.role = ax::mojom::Role::kGenericContainer;
+  non_button_pressed.SetCheckedState(ax::mojom::CheckedState::kTrue);
+  EXPECT_FALSE(IsButton(non_button_pressed.role));
+  EXPECT_FALSE(non_button_pressed.IsButtonPressed());
+
+  // A button element with CheckedState::kTrue should return true for
+  // IsButtonPressed.
+  AXNodeData button_pressed;
+  button_pressed.role = ax::mojom::Role::kButton;
+  button_pressed.SetCheckedState(ax::mojom::CheckedState::kTrue);
+  EXPECT_TRUE(IsButton(button_pressed.role));
+  EXPECT_TRUE(button_pressed.IsButtonPressed());
+
+  button_pressed.role = ax::mojom::Role::kPopUpButton;
+  EXPECT_TRUE(IsButton(button_pressed.role));
+  EXPECT_TRUE(button_pressed.IsButtonPressed());
+
+  button_pressed.role = ax::mojom::Role::kToggleButton;
+  EXPECT_TRUE(IsButton(button_pressed.role));
+  EXPECT_TRUE(button_pressed.IsButtonPressed());
+
+  // A button element does not have CheckedState::kTrue should return false for
+  // IsButtonPressed.
+  AXNodeData button_not_pressed;
+  button_not_pressed.role = ax::mojom::Role::kButton;
+  button_not_pressed.SetCheckedState(ax::mojom::CheckedState::kNone);
+  EXPECT_TRUE(IsButton(button_not_pressed.role));
+  EXPECT_FALSE(button_not_pressed.IsButtonPressed());
+
+  button_not_pressed.role = ax::mojom::Role::kPopUpButton;
+  button_not_pressed.SetCheckedState(ax::mojom::CheckedState::kFalse);
+  EXPECT_TRUE(IsButton(button_not_pressed.role));
+  EXPECT_FALSE(button_not_pressed.IsButtonPressed());
+
+  button_not_pressed.role = ax::mojom::Role::kToggleButton;
+  button_not_pressed.SetCheckedState(ax::mojom::CheckedState::kMixed);
+  EXPECT_TRUE(IsButton(button_not_pressed.role));
+  EXPECT_FALSE(button_not_pressed.IsButtonPressed());
+}
+
+TEST(AXNodeDataTest, IsClickable) {
   // Test for ax node data attribute with a custom default action verb.
   AXNodeData data_default_action_verb;
 
@@ -154,7 +198,7 @@ TEST(AXNodeDataTest, TestIsClickable) {
   }
 }
 
-TEST(AXNodeDataTest, TestIsInvocable) {
+TEST(AXNodeDataTest, IsInvocable) {
   // Test for iterating through all roles and validate if a role is invocable.
   // A role is invocable if it is clickable and supports neither expand collpase
   // nor toggle.
@@ -182,7 +226,41 @@ TEST(AXNodeDataTest, TestIsInvocable) {
   }
 }
 
-TEST(AXNodeDataTest, TestSupportsExpandCollapse) {
+TEST(AXNodeDataTest, IsMenuButton) {
+  // A non button element should return false for IsMenuButton.
+  AXNodeData non_button;
+  non_button.role = ax::mojom::Role::kGenericContainer;
+  EXPECT_FALSE(IsButton(non_button.role));
+  EXPECT_FALSE(non_button.IsMenuButton());
+
+  // Only button element with HasPopup::kMenu should return true for
+  // IsMenuButton. All other ax::mojom::HasPopup types should return false.
+  AXNodeData button_with_popup;
+
+  button_with_popup.role = ax::mojom::Role::kButton;
+
+  for (int has_popup_idx = static_cast<int>(ax::mojom::HasPopup::kMinValue);
+       has_popup_idx <= static_cast<int>(ax::mojom::HasPopup::kMaxValue);
+       has_popup_idx++) {
+    button_with_popup.SetHasPopup(
+        static_cast<ax::mojom::HasPopup>(has_popup_idx));
+    bool is_menu_button = button_with_popup.IsMenuButton();
+
+    SCOPED_TRACE(testing::Message()
+                 << "ax::mojom::Role=" << ToString(button_with_popup.role)
+                 << ", hasPopup=" << button_with_popup.GetHasPopup()
+                 << ", Actual: isMenuButton=" << is_menu_button
+                 << ", Expected: isMenuButton=" << !is_menu_button);
+
+    if (IsButton(button_with_popup.role) &&
+        button_with_popup.GetHasPopup() == ax::mojom::HasPopup::kMenu)
+      EXPECT_TRUE(is_menu_button);
+    else
+      EXPECT_FALSE(is_menu_button);
+  }
+}
+
+TEST(AXNodeDataTest, SupportsExpandCollapse) {
   // Test for iterating through all hasPopup attributes and validate if a
   // hasPopup attribute supports expand collapse.
   AXNodeData data_has_popup;

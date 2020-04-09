@@ -237,6 +237,7 @@ LayoutObject* VTTCueBox::CreateLayoutObject(const ComputedStyle& style,
   if (style.GetPosition() == EPosition::kRelative)
     return HTMLDivElement::CreateLayoutObject(style, legacy);
 
+  UseCounter::Count(GetDocument(), WebFeature::kLegacyLayoutByVTTCue);
   return new LayoutVTTCue(this, snap_to_lines_position_);
 }
 

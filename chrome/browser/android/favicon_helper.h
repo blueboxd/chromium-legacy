@@ -111,6 +111,7 @@ class FaviconHelper {
 
   void OnFaviconBitmapResultsAvailable(
       const base::android::JavaRef<jobject>& j_favicon_image_callback,
+      const int desired_size_in_pixel,
       const std::vector<favicon_base::FaviconRawBitmapResult>& result);
 
   std::unique_ptr<base::CancelableTaskTracker> cancelable_task_tracker_;

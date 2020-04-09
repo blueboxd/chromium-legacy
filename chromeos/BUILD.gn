@@ -42,6 +42,7 @@ component("chromeos") {
     ":chromeos_export",
     "//base",
     "//base:i18n",
+    "//base/util/memory_pressure",
     "//chromeos/dbus",
     "//chromeos/dbus/constants",
     "//components/policy/proto",

@@ -35,7 +35,6 @@ WebViewAutofillClientIOS::WebViewAutofillClientIOS(
     id<CWVAutofillClientIOSBridge> bridge,
     signin::IdentityManager* identity_manager,
     StrikeDatabase* strike_database,
-    scoped_refptr<AutofillWebDataService> autofill_web_data_service,
     syncer::SyncService* sync_service)
     : pref_service_(pref_service),
       personal_data_manager_(personal_data_manager),
@@ -56,7 +55,6 @@ WebViewAutofillClientIOS::WebViewAutofillClientIOS(
           ios_web_view::ApplicationContext::GetInstance()
               ->GetApplicationLocale())),
       strike_database_(strike_database),
-      autofill_web_data_service_(autofill_web_data_service),
       sync_service_(sync_service),
       // TODO(crbug.com/928595): Replace the closure with a callback to the
       // renderer that indicates if log messages should be sent from the
@@ -264,7 +262,7 @@ void WebViewAutofillClientIOS::HideAutofillPopup(PopupHidingReason reason) {
 }
 
 bool WebViewAutofillClientIOS::IsAutocompleteEnabled() {
-  return prefs::IsAutocompleteEnabled(GetPrefs());
+  return false;
 }
 
 void WebViewAutofillClientIOS::PropagateAutofillPredictions(

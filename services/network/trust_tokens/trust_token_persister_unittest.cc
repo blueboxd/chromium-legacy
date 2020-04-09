@@ -4,6 +4,7 @@
 
 #include "services/network/trust_tokens/trust_token_persister.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -46,6 +47,8 @@ class NoDatabaseSqliteTrustTokenPersisterFactory {
  public:
   static std::unique_ptr<TrustTokenPersister> Create() {
     std::unique_ptr<TrustTokenDatabaseOwner> owner;
+    // Fail to open the database, in order to test that the in-memory fallback
+    // on database error works as intended.
     TrustTokenDatabaseOwner::Create(
         /*db_opener=*/base::BindOnce([](sql::Database*) { return false; }),
         base::ThreadTaskRunnerHandle::Get(),
@@ -90,7 +93,24 @@ typedef ::testing::Types<InMemoryTrustTokenPersisterFactory,
                          NoDatabaseSqliteTrustTokenPersisterFactory,
                          EndToEndSqliteTrustTokenPersisterFactory>
     TrustTokenPersisterFactoryTypes;
-TYPED_TEST_SUITE(TrustTokenPersisterTest, TrustTokenPersisterFactoryTypes);
+class PersisterFactoryTypeNames {
+ public:
+  template <typename T>
+  static std::string GetName(int) {
+    if (std::is_same<T, InMemoryTrustTokenPersisterFactory>())
+      return "InMemoryPersister";
+    if (std::is_same<T, NoDatabaseSqliteTrustTokenPersisterFactory>())
+      return "SQLitePersisterMemoryFallback";
+    if (std::is_same<T, EndToEndSqliteTrustTokenPersisterFactory>())
+      return "SQLitePersisterOnDisk";
+    NOTREACHED();
+    return "";
+  }
+};
+
+TYPED_TEST_SUITE(TrustTokenPersisterTest,
+                 TrustTokenPersisterFactoryTypes,
+                 PersisterFactoryTypeNames);
 
 TYPED_TEST(TrustTokenPersisterTest, NegativeResults) {
   base::test::TaskEnvironment env;
@@ -186,6 +206,135 @@ TYPED_TEST(TrustTokenPersisterTest, StoresIssuerToplevelPairConfigs) {
   auto result = persister->GetIssuerToplevelPairConfig(issuer, toplevel);
 
   EXPECT_THAT(result, Pointee(EqualsProto(config)));
+
+  // Some implementations of TrustTokenPersister may release resources
+  // asynchronously at destruction time; manually free the persister and allow
+  // this asynchronous release to occur, if any.
+  persister.reset();
+  env.RunUntilIdle();
+}
+
+TYPED_TEST(TrustTokenPersisterTest, DeletesIssuerToplevelKeyedData) {
+  base::test::TaskEnvironment env;
+  std::unique_ptr<TrustTokenPersister> persister = TypeParam::Create();
+  env.RunUntilIdle();  // Give implementations with asynchronous initialization
+                       // time to initialize.
+
+  TrustTokenIssuerToplevelPairConfig pair_config;
+  pair_config.set_last_redemption("five o'clock");
+
+  auto toplevel = *SuitableTrustTokenOrigin::Create(GURL("https://a.com/"));
+  auto issuer = *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/"));
+  persister->SetIssuerToplevelPairConfig(
+      issuer, toplevel,
+      std::make_unique<TrustTokenIssuerToplevelPairConfig>(pair_config));
+  env.RunUntilIdle();  // Give implementations with asynchronous write
+                       // operations time to complete the operation.
+
+  // A matcher matching neither the issuer nor the top-level origin should not
+  // delete (issuer, top level)-keyed data.
+  EXPECT_FALSE(persister->DeleteForOrigins(base::BindLambdaForTesting(
+      [&](const SuitableTrustTokenOrigin& origin) { return false; })));
+
+  // A matcher matching the issuer should delete (issuer, top level)-keyed data.
+  EXPECT_TRUE(persister->DeleteForOrigins(
+      base::BindLambdaForTesting([&](const SuitableTrustTokenOrigin& origin) {
+        return origin == issuer;
+      })));
+  env.RunUntilIdle();  // Give implementations with asynchronous write
+                       // operations time to complete the operation.
+  EXPECT_FALSE(persister->GetIssuerToplevelPairConfig(issuer, toplevel));
+
+  // A matcher matching the top-level origin should delete (issuer, top
+  // level)-keyed data, too.
+  persister->SetIssuerToplevelPairConfig(
+      issuer, toplevel,
+      std::make_unique<TrustTokenIssuerToplevelPairConfig>(pair_config));
+
+  env.RunUntilIdle();  // Give implementations with asynchronous write
+                       // operations time to complete the operation.
+  ASSERT_TRUE(persister->GetIssuerToplevelPairConfig(issuer, toplevel));
+
+  EXPECT_TRUE(persister->DeleteForOrigins(
+      base::BindLambdaForTesting([&](const SuitableTrustTokenOrigin& origin) {
+        return origin == toplevel;
+      })));
+  env.RunUntilIdle();  // Give implementations with asynchronous write
+                       // operations time to complete the operation.
+  EXPECT_FALSE(persister->GetIssuerToplevelPairConfig(issuer, toplevel));
+
+  // Some implementations of TrustTokenPersister may release resources
+  // asynchronously at destruction time; manually free the persister and allow
+  // this asynchronous release to occur, if any.
+  persister.reset();
+  env.RunUntilIdle();
+}
+
+TYPED_TEST(TrustTokenPersisterTest, DeletesIssuerKeyedData) {
+  base::test::TaskEnvironment env;
+  std::unique_ptr<TrustTokenPersister> persister = TypeParam::Create();
+  env.RunUntilIdle();  // Give implementations with asynchronous initialization
+                       // time to initialize.
+
+  TrustTokenIssuerConfig issuer_config;
+  issuer_config.add_tokens()->set_signing_key("key");
+
+  auto issuer = *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/"));
+
+  persister->SetIssuerConfig(
+      issuer, std::make_unique<TrustTokenIssuerConfig>(issuer_config));
+  env.RunUntilIdle();  // Give implementations with asynchronous write
+                       // operations time to complete the operation.
+  ASSERT_TRUE(persister->GetIssuerConfig(issuer));
+
+  // Deleting with a matcher not matching |issuer| should no-op.
+  EXPECT_FALSE(persister->DeleteForOrigins(base::BindLambdaForTesting(
+      [&](const SuitableTrustTokenOrigin& origin) { return false; })));
+
+  // Deleting with a matcher not matching |issuer| should delete data.
+  EXPECT_TRUE(persister->DeleteForOrigins(
+      base::BindLambdaForTesting([&](const SuitableTrustTokenOrigin& origin) {
+        return origin == issuer;
+      })));
+  env.RunUntilIdle();  // Give implementations with asynchronous write
+                       // operations time to complete the operation.
+  ASSERT_FALSE(persister->GetIssuerConfig(issuer));
+
+  // Some implementations of TrustTokenPersister may release resources
+  // asynchronously at destruction time; manually free the persister and allow
+  // this asynchronous release to occur, if any.
+  persister.reset();
+  env.RunUntilIdle();
+}
+
+TYPED_TEST(TrustTokenPersisterTest, DeletesToplevelKeyedData) {
+  base::test::TaskEnvironment env;
+  std::unique_ptr<TrustTokenPersister> persister = TypeParam::Create();
+  env.RunUntilIdle();  // Give implementations with asynchronous initialization
+                       // time to initialize.
+
+  TrustTokenToplevelConfig toplevel_config;
+  *toplevel_config.add_associated_issuers() = "some issuer";
+
+  auto toplevel = *SuitableTrustTokenOrigin::Create(GURL("https://a.com/"));
+  persister->SetToplevelConfig(
+      toplevel, std::make_unique<TrustTokenToplevelConfig>(toplevel_config));
+  env.RunUntilIdle();  // Give implementations with asynchronous write
+                       // operations time to complete the operation.
+  ASSERT_TRUE(persister->GetToplevelConfig(toplevel));
+
+  // Deleting with a matcher not matching |toplevel| should no-op.
+  EXPECT_FALSE(persister->DeleteForOrigins(base::BindLambdaForTesting(
+      [&](const SuitableTrustTokenOrigin& origin) { return false; })));
+
+  // Deleting with a matcher matching |toplevel| should delete the data.
+  EXPECT_TRUE(persister->DeleteForOrigins(
+      base::BindLambdaForTesting([&](const SuitableTrustTokenOrigin& origin) {
+        return origin == toplevel;
+      })));
+  env.RunUntilIdle();  // Give implementations with asynchronous write
+                       // operations time to complete the operation.
+  ASSERT_FALSE(persister->GetToplevelConfig(toplevel));
 
   // Some implementations of TrustTokenPersister may release resources
   // asynchronously at destruction time; manually free the persister and allow

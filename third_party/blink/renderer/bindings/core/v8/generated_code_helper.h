@@ -158,6 +158,12 @@ CORE_EXPORT v8::MaybeLocal<v8::Function> CreateNamedConstructorFunction(
     int func_length,
     const WrapperTypeInfo* wrapper_type_info);
 
+CORE_EXPORT void InstallUnscopablePropertyNames(
+    v8::Isolate* isolate,
+    v8::Local<v8::Context> context,
+    v8::Local<v8::Object> prototype_object,
+    base::span<const char* const> property_name_table);
+
 CORE_EXPORT v8::Local<v8::Array> EnumerateIndexedProperties(
     v8::Isolate* isolate,
     uint32_t length);

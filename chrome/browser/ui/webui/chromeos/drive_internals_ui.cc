@@ -555,8 +555,8 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
         GetIntegrationService();
     if (integration_service) {
       integration_service->ClearCacheAndRemountFileSystem(
-          base::Bind(&DriveInternalsWebUIHandler::ResetFinished,
-                     weak_ptr_factory_.GetWeakPtr()));
+          base::BindOnce(&DriveInternalsWebUIHandler::ResetFinished,
+                         weak_ptr_factory_.GetWeakPtr()));
     }
   }
 

@@ -265,8 +265,8 @@ component("printing") {
         "backend/print_backend_cups.h",
       ]
 
-      # We still build the utils for fuzzing.
-      if (use_fuzzing_engine) {
+      # We still build the utils for fuzzing if not already built.
+      if (use_fuzzing_engine && !use_cups_ipp) {
         sources += [
           "backend/cups_ipp_constants.cc",
           "backend/cups_ipp_constants.h",

@@ -21,14 +21,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/web_applications/components/install_manager.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_install_utils.h"
-#include "chrome/browser/web_applications/components/web_app_provider_base.h"
-#include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/web_application_info.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
@@ -56,39 +50,6 @@ void CreateAndInitializeLocalCache() {
       extensions::LocalExtensionCache::kCacheReadyFlagFileName);
   EXPECT_EQ(base::WriteFile(cache_init_file, "", 0), 0);
 #endif
-}
-
-const Extension* InstallBookmarkApp(Profile* profile, WebApplicationInfo info) {
-  size_t num_extensions =
-      ExtensionRegistry::Get(profile)->enabled_extensions().size();
-
-  base::RunLoop run_loop;
-  web_app::AppId app_id;
-  auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile);
-  DCHECK(provider);
-  provider->install_manager().InstallWebAppFromInfo(
-      std::make_unique<WebApplicationInfo>(info),
-      web_app::ForInstallableSite::kYes,
-      /*install_source=*/WebappInstallSource::OMNIBOX_INSTALL_ICON,
-      base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
-                                     web_app::InstallResultCode code) {
-        DCHECK_EQ(web_app::InstallResultCode::kSuccessNewInstall, code);
-        app_id = installed_app_id;
-        run_loop.Quit();
-      }));
-
-  const Extension* app = nullptr;
-  run_loop.Run();
-  app = ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(app_id);
-
-  EXPECT_EQ(++num_extensions,
-            ExtensionRegistry::Get(profile)->enabled_extensions().size());
-  DCHECK(app);
-  extensions::SetLaunchType(profile, app->id(),
-                            info.open_as_window
-                                ? extensions::LAUNCH_TYPE_WINDOW
-                                : extensions::LAUNCH_TYPE_REGULAR);
-  return app;
 }
 
 Browser* LaunchAppBrowser(Profile* profile, const Extension* extension_app) {

@@ -259,6 +259,8 @@ bool RangeInputType::TypeShouldForceLegacyLayout() const {
 
 LayoutObject* RangeInputType::CreateLayoutObject(const ComputedStyle&,
                                                  LegacyLayout) const {
+  UseCounter::Count(GetElement().GetDocument(),
+                    WebFeature::kLegacyLayoutBySlider);
   return new LayoutSlider(&GetElement());
 }
 

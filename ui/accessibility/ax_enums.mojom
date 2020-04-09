@@ -242,7 +242,7 @@ enum Role {
   kMath,
   kMenu,
   kMenuBar,
-  kMenuButton,
+  kMenuButton, // TODO: kMenuButton is not used anywhere, consider removal.
   kMenuItem,
   kMenuItemCheckBox,
   kMenuItemRadio,

@@ -47,8 +47,12 @@ cr.define('settings', function() {
 
   /**
    * @typedef {{
-   *   idleBehavior: settings.IdleBehavior,
-   *   idleControlled: boolean,
+   *   possibleAcIdleBehaviors: !Array<settings.IdleBehavior>,
+   *   possibleBatteryIdleBehaviors: !Array<settings.IdleBehavior>,
+   *   acIdleManaged: boolean,
+   *   batteryIdleManaged: boolean,
+   *   currentAcIdleBehavior: settings.IdleBehavior,
+   *   currentBatteryIdleBehavior: settings.IdleBehavior,
    *   lidClosedBehavior: settings.LidClosedBehavior,
    *   lidClosedControlled: boolean,
    *   hasLid: boolean,
@@ -115,8 +119,10 @@ cr.define('settings', function() {
     /**
      * Sets the idle power management behavior.
      * @param {settings.IdleBehavior} behavior Idle behavior.
+     * @param {boolean} whenOnAc If true sets AC idle behavior. Otherwise sets
+     *     battery idle behavior.
      */
-    setIdleBehavior(behavior) {}
+    setIdleBehavior(behavior, whenOnAc) {}
 
     /**
      * Sets the lid-closed power management behavior.
@@ -222,8 +228,8 @@ cr.define('settings', function() {
     }
 
     /** @override */
-    setIdleBehavior(behavior) {
-      chrome.send('setIdleBehavior', [behavior]);
+    setIdleBehavior(behavior, whenOnAc) {
+      chrome.send('setIdleBehavior', [behavior, whenOnAc]);
     }
 
     /** @override */

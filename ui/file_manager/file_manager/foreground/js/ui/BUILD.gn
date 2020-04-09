@@ -123,9 +123,14 @@ js_library("banners") {
 }
 
 js_library("breadcrumb") {
+  deps = [ "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu" ]
+}
+
+js_unittest("breadcrumb_unittest") {
   deps = [
-    "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
+    ":breadcrumb",
     "//ui/webui/resources/js:assert",
+    "//ui/webui/resources/js:webui_resource_test",
   ]
 }
 
@@ -506,6 +511,7 @@ js_library("suggest_apps_dialog") {
 js_test_gen_html("js_test_gen_html") {
   deps = [
     ":actions_submenu_unittest",
+    ":breadcrumb_unittest",
     ":directory_tree_unittest",
     ":file_list_selection_model_unittest",
     ":file_manager_dialog_base_unittest",

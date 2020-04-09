@@ -12,12 +12,14 @@
 
 namespace blink {
 
+class IsInputPendingOptions;
+
 // Low-level scheduling primitives for JS scheduler implementations.
 class Scheduling : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  bool isInputPending(ScriptState*, const Vector<String>& input_types) const;
+  bool isInputPending(ScriptState*, const IsInputPendingOptions* options) const;
   bool isFramePending() const;
 };
 

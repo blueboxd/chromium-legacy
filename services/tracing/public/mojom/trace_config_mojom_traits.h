@@ -107,6 +107,11 @@ class StructTraits<tracing::mojom::PerfettoBuiltinDataSourceDataView,
     return src.disable_system_info();
   }
 
+  static bool disable_service_events(
+      const perfetto::TraceConfig::BuiltinDataSource& src) {
+    return src.disable_service_events();
+  }
+
   static bool Read(tracing::mojom::PerfettoBuiltinDataSourceDataView data,
                    perfetto::TraceConfig::BuiltinDataSource* out);
 };

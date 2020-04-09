@@ -28,7 +28,6 @@
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
-#include "components/password_manager/core/browser/password_store_origin_unittest.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -138,7 +137,7 @@ TEST_F(PasswordStoreXTest, MigrationCompleted) {
   // Check the contents are still around.
   MockPasswordStoreConsumer consumer;
   EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(
-                            ElementsAre(Pointee(MakePasswordForm()))));
+                            testing::ElementsAre(Pointee(MakePasswordForm()))));
   store->GetAutofillableLogins(&consumer);
 
   WaitForPasswordStore();

@@ -85,10 +85,11 @@ webrtc::VideoEncoder::EncoderInfo CopyToWebrtcEncoderInfo(
   info.has_trusted_rate_controller = enc_info.has_trusted_rate_controller;
   info.is_hardware_accelerated = enc_info.is_hardware_accelerated;
   info.supports_simulcast = enc_info.supports_simulcast;
-  // TODO(crbug.com/1034686): Copy ScalingSettings once getStats() hang issue
-  // is resolved.
-  // info.scaling_settings = webrtc::VideoEncoder::ScalingSettings(
-  // enc_info.scaling_settings.min_qp, enc_info.scaling_settings.max_qp);
+  info.scaling_settings = enc_info.scaling_settings
+                              ? webrtc::VideoEncoder::ScalingSettings(
+                                    enc_info.scaling_settings->min_qp,
+                                    enc_info.scaling_settings->max_qp)
+                              : webrtc::VideoEncoder::ScalingSettings::kOff;
   static_assert(
       webrtc::kMaxSpatialLayers >= media::VideoEncoderInfo::kMaxSpatialLayers,
       "webrtc::kMaxSpatiallayers is less than "

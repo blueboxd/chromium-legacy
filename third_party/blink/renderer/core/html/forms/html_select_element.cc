@@ -368,7 +368,11 @@ bool HTMLSelectElement::CanSelectAll() const {
 }
 
 bool HTMLSelectElement::TypeShouldForceLegacyLayout() const {
-  return UsesMenuList();
+  if (UsesMenuList()) {
+    UseCounter::Count(GetDocument(), WebFeature::kLegacyLayoutByMenuList);
+    return true;
+  }
+  return false;
 }
 
 LayoutObject* HTMLSelectElement::CreateLayoutObject(

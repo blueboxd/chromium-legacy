@@ -138,6 +138,22 @@ scoped_refptr<const NGLayoutResult> NGSimplifiedLayoutAlgorithm::Layout() {
         AddChildFragment(*it, *To<NGPhysicalContainerFragment>(it->get()));
         ++it;
       }
+      if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+        continue;
+      // We add both items and LineBox fragments for existing mechanisms to
+      // work. We may revisit this in future. See also
+      // |NGBoxFragmentBuilder::AddResult|.
+      DCHECK(container_builder_.ItemsBuilder());
+      const NGPhysicalBoxFragment& previous_box_fragment =
+          To<NGPhysicalBoxFragment>(previous_result_.PhysicalFragment());
+      if (const NGFragmentItems* previous_items =
+              previous_box_fragment.Items()) {
+        container_builder_.ItemsBuilder()->AddItems(
+            *previous_items, writing_mode_, direction_,
+            previous_physical_container_size_);
+        continue;
+      }
+      NOTREACHED();
       continue;
     }
 
@@ -205,6 +221,18 @@ void NGSimplifiedLayoutAlgorithm::HandleOutOfFlowPositioned(
   }
 
   container_builder_.AddOutOfFlowChildCandidate(child, static_offset);
+}
+
+NOINLINE scoped_refptr<const NGLayoutResult>
+NGSimplifiedLayoutAlgorithm::LayoutWithItemsBuilder() {
+  NGFragmentItemsBuilder items_builder(&container_builder_);
+  container_builder_.SetItemsBuilder(&items_builder);
+  scoped_refptr<const NGLayoutResult> result = Layout();
+  // Ensure stack-allocated |NGFragmentItemsBuilder| is not used anymore.
+  // TODO(kojii): Revisit when the storage of |NGFragmentItemsBuilder| is
+  // finalized.
+  container_builder_.SetItemsBuilder(nullptr);
+  return result;
 }
 
 void NGSimplifiedLayoutAlgorithm::AddChildFragment(

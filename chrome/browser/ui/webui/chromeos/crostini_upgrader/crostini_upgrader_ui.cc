@@ -53,6 +53,7 @@ void AddStringResources(content::WebUIDataSource* source) {
       {"prechecksFailedTitle", IDS_CROSTINI_UPGRADER_PRECHECKS_FAILED_TITLE},
       {"upgradingTitle", IDS_CROSTINI_UPGRADER_UPGRADING_TITLE},
       {"restoreTitle", IDS_CROSTINI_UPGRADER_RESTORE_TITLE},
+      {"restoreSucceededTitle", IDS_CROSTINI_UPGRADER_RESTORE_SUCCEEDED_TITLE},
       {"succeededTitle", IDS_CROSTINI_UPGRADER_SUCCEEDED_TITLE},
       {"cancelingTitle", IDS_CROSTINI_UPGRADER_CANCELING_TITLE},
       {"errorTitle", IDS_CROSTINI_UPGRADER_ERROR_TITLE},
@@ -69,6 +70,8 @@ void AddStringResources(content::WebUIDataSource* source) {
       {"cancelingMessage", IDS_CROSTINI_UPGRADER_CANCELING},
       {"offerRestoreMessage", IDS_CROSTINI_UPGRADER_OFFER_RESTORE_MESSAGE},
       {"restoreMessage", IDS_CROSTINI_UPGRADER_RESTORE_MESSAGE},
+      {"restoreSucceededMessage",
+       IDS_CROSTINI_UPGRADER_RESTORE_SUCCEEDED_MESSAGE},
 
       {"backupCheckboxMessage", IDS_CROSTINI_UPGRADER_BACKUP_CHECKBOX_MESSAGE},
       {"backupChangeLocation", IDS_CROSTINI_UPGRADER_BACKUP_CHANGE_LOCATION},

@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/optional.h"
 #include "media/base/media_export.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -23,8 +24,10 @@ struct MEDIA_EXPORT ScalingSettings {
   ScalingSettings(const ScalingSettings&);
   ~ScalingSettings();
 
-  int min_qp = 4;
-  int max_qp = 157;
+  // Quantization Parameter in ScalingSettings are codec specific.
+  // The range of qp is 0-51 (H264), 0-127 (VP8) and 0-255 (VP9 and AV1).
+  int min_qp = 0;
+  int max_qp = 255;
 };
 
 struct MEDIA_EXPORT ResolutionBitrateLimit {
@@ -56,7 +59,7 @@ struct MEDIA_EXPORT VideoEncoderInfo {
   bool is_hardware_accelerated = true;
   bool supports_simulcast = false;
 
-  ScalingSettings scaling_settings;
+  base::Optional<ScalingSettings> scaling_settings;
   std::vector<uint8_t> fps_allocation[kMaxSpatialLayers];
   std::vector<ResolutionBitrateLimit> resolution_bitrate_limits;
 };

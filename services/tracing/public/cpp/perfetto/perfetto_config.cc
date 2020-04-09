@@ -70,6 +70,7 @@ perfetto::TraceConfig GetDefaultPerfettoConfig(
   auto* builtin_data_sources = perfetto_config.mutable_builtin_data_sources();
   builtin_data_sources->set_disable_trace_config(privacy_filtering_enabled);
   builtin_data_sources->set_disable_system_info(privacy_filtering_enabled);
+  builtin_data_sources->set_disable_service_events(privacy_filtering_enabled);
 
   // Clear incremental state every 5 seconds, so that we lose at most the first
   // 5 seconds of the trace (if we wrap around perfetto's central buffer).

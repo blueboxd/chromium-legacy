@@ -1256,7 +1256,8 @@ void MainThreadSchedulerImpl::WillPostInputEventToMainThread(
     WebInputEvent::Type web_input_event_type,
     const WebInputEventAttribution& web_input_event_attribution) {
   base::AutoLock lock(any_thread_lock_);
-  any_thread().pending_input_monitor.OnEnqueue(web_input_event_type);
+  any_thread().pending_input_monitor.OnEnqueue(web_input_event_type,
+                                               web_input_event_attribution);
 }
 
 void MainThreadSchedulerImpl::WillHandleInputEventOnMainThread(
@@ -1265,7 +1266,8 @@ void MainThreadSchedulerImpl::WillHandleInputEventOnMainThread(
   helper_.CheckOnValidThread();
 
   base::AutoLock lock(any_thread_lock_);
-  any_thread().pending_input_monitor.OnDequeue(web_input_event_type);
+  any_thread().pending_input_monitor.OnDequeue(web_input_event_type,
+                                               web_input_event_attribution);
 }
 
 void MainThreadSchedulerImpl::DidHandleInputEventOnMainThread(
@@ -2286,9 +2288,11 @@ void MainThreadSchedulerImpl::SetRendererProcessType(
   main_thread_only().process_type = type;
 }
 
-PendingUserInputInfo MainThreadSchedulerImpl::GetPendingUserInputInfo() const {
+Vector<WebInputEventAttribution>
+MainThreadSchedulerImpl::GetPendingUserInputInfo(
+    bool include_continuous) const {
   base::AutoLock lock(any_thread_lock_);
-  return any_thread().pending_input_monitor.Info();
+  return any_thread().pending_input_monitor.Info(include_continuous);
 }
 
 bool MainThreadSchedulerImpl::IsBeginMainFrameScheduled() const {

@@ -27,6 +27,10 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ActionsModelTest) {
   RunTestURL("foreground/js/actions_model_unittest_gen.html");
 }
 
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, Breadcrumb) {
+  RunTestURL("foreground/js/ui/breadcrumb_unittest_gen.html");
+}
+
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, NavigationListModelTest) {
   RunTestURL("foreground/js/navigation_list_model_unittest_gen.html");
 }

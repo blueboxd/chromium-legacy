@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_INPUT_WEB_INPUT_EVENT_ATTRIBUTION_H_
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_INPUT_WEB_INPUT_EVENT_ATTRIBUTION_H_
 
+#include "base/hash/hash.h"
 #include "cc/paint/element_id.h"
 
 namespace blink {
@@ -34,6 +35,14 @@ class WebInputEventAttribution {
 
   Type type() const { return type_; }
   cc::ElementId target_frame_id() const { return target_frame_id_; }
+
+  bool operator==(const WebInputEventAttribution& other) const {
+    return other.type() == type_ && other.target_frame_id() == target_frame_id_;
+  }
+
+  size_t GetHash() const {
+    return base::HashInts(type_, target_frame_id_.GetStableId());
+  }
 
  private:
   Type type_;

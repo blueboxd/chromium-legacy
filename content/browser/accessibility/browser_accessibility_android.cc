@@ -87,10 +87,6 @@ BrowserAccessibilityAndroid::~BrowserAccessibilityAndroid() {
     g_unique_id_map.Get().erase(unique_id());
 }
 
-bool BrowserAccessibilityAndroid::IsNative() const {
-  return true;
-}
-
 void BrowserAccessibilityAndroid::OnLocationChanged() {
   auto* manager =
       static_cast<BrowserAccessibilityManagerAndroid*>(this->manager());

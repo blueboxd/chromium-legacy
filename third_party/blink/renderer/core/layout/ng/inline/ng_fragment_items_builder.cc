@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items_builder.h"
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 
@@ -145,6 +146,48 @@ void NGFragmentItemsBuilder::AddListMarker(
   items_.push_back(base::MakeRefCounted<NGFragmentItem>(marker_fragment,
                                                         resolved_direction));
   offsets_.push_back(offset);
+}
+
+void NGFragmentItemsBuilder::AddItems(const NGFragmentItems& items,
+                                      WritingMode writing_mode,
+                                      TextDirection direction,
+                                      const PhysicalSize& container_size) {
+  DCHECK(items_.IsEmpty());
+  items_.AppendVector(items.Items());
+
+  // Convert offsets to logical. The logic is opposite to |ConvertToPhysical|.
+  // This is needed because the container size may be different, in that case,
+  // the physical offsets are different when `writing-mode: vertial-rl`.
+  DCHECK(!is_converted_to_physical_);
+  DCHECK(offsets_.IsEmpty());
+  offsets_.ReserveCapacity(items.Items().size());
+  const WritingMode line_writing_mode = ToLineWritingMode(writing_mode);
+  for (NGInlineCursor cursor(items); cursor;) {
+    DCHECK(cursor.Current().Item());
+    const NGFragmentItem& item = *cursor.Current().Item();
+    offsets_.push_back(item.OffsetInContainerBlock().ConvertToLogical(
+        writing_mode, direction, container_size, item.Size()));
+
+    if (item.Type() == NGFragmentItem::kLine) {
+      const PhysicalRect line_box_bounds = item.RectInContainerBlock();
+      for (NGInlineCursor line_children = cursor.CursorForDescendants();
+           line_children; line_children.MoveToNext()) {
+        const NGFragmentItem& line_child = *line_children.Current().Item();
+        offsets_.push_back(
+            (line_child.OffsetInContainerBlock() - line_box_bounds.offset)
+                .ConvertToLogical(line_writing_mode, TextDirection::kLtr,
+                                  line_box_bounds.size, line_child.Size()));
+      }
+      cursor.MoveToNextSkippingChildren();
+      continue;
+    }
+
+    cursor.MoveToNext();
+  }
+
+  DCHECK(!text_content_);
+  text_content_ = items.Text(false);
+  first_line_text_content_ = items.Text(true);
 }
 
 const Vector<scoped_refptr<NGFragmentItem>>& NGFragmentItemsBuilder::Items(

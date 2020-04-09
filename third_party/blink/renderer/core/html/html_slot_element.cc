@@ -171,6 +171,21 @@ const HeapVector<Member<Element>> HTMLSlotElement::AssignedElementsForBinding(
   return elements;
 }
 
+bool HTMLSlotElement::CheckNodesValidity(HeapVector<Member<Node>> nodes,
+                                         ExceptionState& exception_state) {
+  auto* host = OwnerShadowHost();
+  for (auto& node : nodes) {
+    if (node->parentNode() != host) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kNotAllowedError,
+          "Node:  '" + node->nodeName() +
+              "' is invalid for manual slot assignment.");
+      return false;
+    }
+  }
+  return true;
+}
+
 void HTMLSlotElement::assign(HeapVector<Member<Node>> nodes,
                              ExceptionState& exception_state) {
   if (!SupportsAssignment() || !ContainingShadowRoot()->IsManualSlotting()) {
@@ -180,30 +195,19 @@ void HTMLSlotElement::assign(HeapVector<Member<Node>> nodes,
     return;
   }
 
+  if (!CheckNodesValidity(nodes, exception_state))
+    return;
+
   ContainingShadowRoot()->GetSlotAssignment().ClearCandidateNodes(
       assigned_nodes_candidates_);
   assigned_nodes_candidates_.clear();
-  auto* host = OwnerShadowHost();
-  bool has_invalid_node = false;
   for (auto& node : nodes) {
-    if (node->parentNode() != host) {
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kNotAllowedError,
-          "Node:  '" + node->nodeName() +
-              "' is invalid for manual slot assignment.");
-      assigned_nodes_candidates_.clear();
-      has_invalid_node = true;
-      break;
-    }
-
     // Before assignment, see if this node belongs to another slot.
     ContainingShadowRoot()->GetSlotAssignment().UpdateCandidateNodeAssignedSlot(
         *node, *this);
     assigned_nodes_candidates_.AppendOrMoveToLast(node);
   }
-
-  if (!has_invalid_node)
-    ContainingShadowRoot()->GetSlotAssignment().SetNeedsAssignmentRecalc();
+  ContainingShadowRoot()->GetSlotAssignment().SetNeedsAssignmentRecalc();
 }
 
 void HTMLSlotElement::AppendAssignedNode(Node& host_child) {

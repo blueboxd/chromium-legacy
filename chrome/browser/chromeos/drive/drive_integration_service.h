@@ -152,12 +152,10 @@ class DriveIntegrationService : public KeyedService,
 
   EventLogger* event_logger() { return logger_.get(); }
 
-  // Clears all the local cache file, the local resource metadata, and
-  // in-memory Drive app registry, and remounts the file system. |callback|
+  // Clears all the local cache folder and remounts the file system. |callback|
   // is called with true when this operation is done successfully. Otherwise,
   // |callback| is called with false. |callback| must not be null.
-  void ClearCacheAndRemountFileSystem(
-      const base::Callback<void(bool)>& callback);
+  void ClearCacheAndRemountFileSystem(base::OnceCallback<void(bool)> callback);
 
   // Returns the DriveFsHost if it is enabled.
   drivefs::DriveFsHost* GetDriveFsHost() const;
@@ -208,6 +206,11 @@ class DriveIntegrationService : public KeyedService,
   void MaybeRemountFileSystem(base::Optional<base::TimeDelta> remount_delay,
                               bool failed_to_mount);
 
+  // Helper function for ClearCacheAndRemountFileSystem() that deletes the cache
+  // folder and remounts Drive.
+  void ClearCacheAndRemountFileSystemAfterUnmount(
+      base::OnceCallback<void(bool)> callback);
+
   // Initializes the object. This function should be called before any
   // other functions.
   void Initialize();
@@ -243,6 +246,7 @@ class DriveIntegrationService : public KeyedService,
   State state_;
   bool enabled_;
   bool mount_failed_ = false;
+  bool in_clear_cache_ = false;
   // Custom mount point name that can be injected for testing in constructor.
   std::string mount_point_name_;
 

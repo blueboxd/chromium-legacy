@@ -5558,6 +5558,7 @@ TEST_F(AXPlatformNodeWinTest, TestIExpandCollapsePatternProviderAction) {
   ui::AXNodeData button_has_popup_menu;
   ui::AXNodeData button_has_popup_menu_pressed;
   ui::AXNodeData button_has_popup_true;
+  ui::AXNodeData generic_container_has_popup_menu;
 
   combo_box_grouping_has_popup.id = 2;
   combo_box_grouping_expanded.id = 3;
@@ -5566,14 +5567,13 @@ TEST_F(AXPlatformNodeWinTest, TestIExpandCollapsePatternProviderAction) {
   button_has_popup_menu.id = 6;
   button_has_popup_menu_pressed.id = 7;
   button_has_popup_true.id = 8;
+  generic_container_has_popup_menu.id = 9;
 
-  root.child_ids.push_back(combo_box_grouping_has_popup.id);
-  root.child_ids.push_back(combo_box_grouping_expanded.id);
-  root.child_ids.push_back(combo_box_grouping_collapsed.id);
-  root.child_ids.push_back(combo_box_grouping_disabled.id);
-  root.child_ids.push_back(button_has_popup_menu.id);
-  root.child_ids.push_back(button_has_popup_menu_pressed.id);
-  root.child_ids.push_back(button_has_popup_true.id);
+  root.child_ids = {
+      combo_box_grouping_has_popup.id, combo_box_grouping_expanded.id,
+      combo_box_grouping_collapsed.id, combo_box_grouping_disabled.id,
+      button_has_popup_menu.id,        button_has_popup_menu_pressed.id,
+      button_has_popup_true.id,        generic_container_has_popup_menu.id};
 
   // combo_box_grouping HasPopup set to true, can collapse, can expand.
   // state is ExpandCollapseState_LeafNode.
@@ -5597,21 +5597,31 @@ TEST_F(AXPlatformNodeWinTest, TestIExpandCollapsePatternProviderAction) {
 
   // button_has_popup_menu HasPopup set to kMenu and is not STATE_PRESSED.
   // state is ExpandCollapseState_Collapsed.
+  button_has_popup_menu.role = ax::mojom::Role::kButton;
   button_has_popup_menu.SetHasPopup(ax::mojom::HasPopup::kMenu);
 
   // button_has_popup_menu_pressed HasPopup set to kMenu and is STATE_PRESSED.
   // state is ExpandCollapseState_Expanded.
+  button_has_popup_menu_pressed.role = ax::mojom::Role::kButton;
   button_has_popup_menu_pressed.SetHasPopup(ax::mojom::HasPopup::kMenu);
   button_has_popup_menu_pressed.SetCheckedState(ax::mojom::CheckedState::kTrue);
 
   // button_has_popup_true HasPopup set to true but is not a menu.
   // state is ExpandCollapseState_LeafNode.
+  button_has_popup_true.role = ax::mojom::Role::kButton;
   button_has_popup_true.SetHasPopup(ax::mojom::HasPopup::kTrue);
+
+  // generic_container_has_popup_menu HasPopup set to menu but with no expand
+  // state set.
+  // state is ExpandCollapseState_LeafNode.
+  generic_container_has_popup_menu.role = ax::mojom::Role::kGenericContainer;
+  generic_container_has_popup_menu.SetHasPopup(ax::mojom::HasPopup::kMenu);
 
   Init(root, combo_box_grouping_has_popup, combo_box_grouping_disabled,
        combo_box_grouping_expanded, combo_box_grouping_collapsed,
        combo_box_grouping_disabled, button_has_popup_menu,
-       button_has_popup_menu_pressed, button_has_popup_true);
+       button_has_popup_menu_pressed, button_has_popup_true,
+       generic_container_has_popup_menu);
 
   // combo_box_grouping HasPopup set to true, can collapse, can expand.
   // state is ExpandCollapseState_LeafNode.
@@ -5620,7 +5630,7 @@ TEST_F(AXPlatformNodeWinTest, TestIExpandCollapsePatternProviderAction) {
   ComPtr<IExpandCollapseProvider> expandcollapse_provider;
   EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
       UIA_ExpandCollapsePatternId, &expandcollapse_provider));
-  EXPECT_NE(nullptr, expandcollapse_provider.Get());
+  ASSERT_NE(nullptr, expandcollapse_provider.Get());
   EXPECT_HRESULT_SUCCEEDED(expandcollapse_provider->Collapse());
   EXPECT_HRESULT_SUCCEEDED(expandcollapse_provider->Expand());
   ExpandCollapseState state;
@@ -5633,7 +5643,7 @@ TEST_F(AXPlatformNodeWinTest, TestIExpandCollapsePatternProviderAction) {
   raw_element_provider_simple = GetIRawElementProviderSimpleFromChildIndex(1);
   EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
       UIA_ExpandCollapsePatternId, &expandcollapse_provider));
-  EXPECT_NE(nullptr, expandcollapse_provider.Get());
+  ASSERT_NE(nullptr, expandcollapse_provider.Get());
   EXPECT_HRESULT_SUCCEEDED(expandcollapse_provider->Collapse());
   EXPECT_HRESULT_FAILED(expandcollapse_provider->Expand());
   EXPECT_HRESULT_SUCCEEDED(
@@ -5645,7 +5655,7 @@ TEST_F(AXPlatformNodeWinTest, TestIExpandCollapsePatternProviderAction) {
   raw_element_provider_simple = GetIRawElementProviderSimpleFromChildIndex(2);
   EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
       UIA_ExpandCollapsePatternId, &expandcollapse_provider));
-  EXPECT_NE(nullptr, expandcollapse_provider.Get());
+  ASSERT_NE(nullptr, expandcollapse_provider.Get());
   EXPECT_HRESULT_FAILED(expandcollapse_provider->Collapse());
   EXPECT_HRESULT_SUCCEEDED(expandcollapse_provider->Expand());
   EXPECT_HRESULT_SUCCEEDED(
@@ -5657,7 +5667,7 @@ TEST_F(AXPlatformNodeWinTest, TestIExpandCollapsePatternProviderAction) {
   raw_element_provider_simple = GetIRawElementProviderSimpleFromChildIndex(3);
   EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
       UIA_ExpandCollapsePatternId, &expandcollapse_provider));
-  EXPECT_NE(nullptr, expandcollapse_provider.Get());
+  ASSERT_NE(nullptr, expandcollapse_provider.Get());
   EXPECT_HRESULT_FAILED(expandcollapse_provider->Collapse());
   EXPECT_HRESULT_FAILED(expandcollapse_provider->Expand());
   EXPECT_HRESULT_SUCCEEDED(
@@ -5669,7 +5679,7 @@ TEST_F(AXPlatformNodeWinTest, TestIExpandCollapsePatternProviderAction) {
   raw_element_provider_simple = GetIRawElementProviderSimpleFromChildIndex(4);
   EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
       UIA_ExpandCollapsePatternId, &expandcollapse_provider));
-  EXPECT_NE(nullptr, expandcollapse_provider.Get());
+  ASSERT_NE(nullptr, expandcollapse_provider.Get());
   EXPECT_HRESULT_SUCCEEDED(
       expandcollapse_provider->get_ExpandCollapseState(&state));
   EXPECT_EQ(ExpandCollapseState_Collapsed, state);
@@ -5679,7 +5689,7 @@ TEST_F(AXPlatformNodeWinTest, TestIExpandCollapsePatternProviderAction) {
   raw_element_provider_simple = GetIRawElementProviderSimpleFromChildIndex(5);
   EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
       UIA_ExpandCollapsePatternId, &expandcollapse_provider));
-  EXPECT_NE(nullptr, expandcollapse_provider.Get());
+  ASSERT_NE(nullptr, expandcollapse_provider.Get());
   EXPECT_HRESULT_SUCCEEDED(
       expandcollapse_provider->get_ExpandCollapseState(&state));
   EXPECT_EQ(ExpandCollapseState_Expanded, state);
@@ -5689,7 +5699,18 @@ TEST_F(AXPlatformNodeWinTest, TestIExpandCollapsePatternProviderAction) {
   raw_element_provider_simple = GetIRawElementProviderSimpleFromChildIndex(6);
   EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
       UIA_ExpandCollapsePatternId, &expandcollapse_provider));
-  EXPECT_NE(nullptr, expandcollapse_provider.Get());
+  ASSERT_NE(nullptr, expandcollapse_provider.Get());
+  EXPECT_HRESULT_SUCCEEDED(
+      expandcollapse_provider->get_ExpandCollapseState(&state));
+  EXPECT_EQ(ExpandCollapseState_LeafNode, state);
+
+  // generic_container_has_popup_menu HasPopup set to menu but with no expand
+  // state set.
+  // state is ExpandCollapseState_LeafNode.
+  raw_element_provider_simple = GetIRawElementProviderSimpleFromChildIndex(7);
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_ExpandCollapsePatternId, &expandcollapse_provider));
+  ASSERT_NE(nullptr, expandcollapse_provider.Get());
   EXPECT_HRESULT_SUCCEEDED(
       expandcollapse_provider->get_ExpandCollapseState(&state));
   EXPECT_EQ(ExpandCollapseState_LeafNode, state);

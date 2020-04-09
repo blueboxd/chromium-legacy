@@ -8,6 +8,8 @@
 #include <sys/mman.h>
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/util/memory_pressure/system_memory_pressure_evaluator_chromeos.h"
+#include "chromeos/memory/swap_configuration.h"
 
 namespace chromeos {
 
@@ -81,6 +83,14 @@ CHROMEOS_EXPORT void LockMainProgramText() {
   if (base::FeatureList::IsEnabled(chromeos::kCrOSLockMainProgramText)) {
     MlockAllText();
   }
+}
+
+CHROMEOS_EXPORT void UpdateMemoryParameters() {
+  auto* monitor = util::chromeos::SystemMemoryPressureEvaluator::Get();
+  if (monitor)
+    monitor->UpdateMemoryParameters();
+
+  ConfigureSwap();
 }
 
 }  // namespace chromeos

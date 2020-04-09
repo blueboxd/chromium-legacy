@@ -55,7 +55,7 @@ class LinkedHashSetConstIterator;
 template <typename LinkedHashSet>
 class LinkedHashSetConstReverseIterator;
 
-template <typename Value, typename HashFunctions>
+template <typename Value, typename HashFunctions, typename TraitsArg>
 struct LinkedHashSetTranslator;
 template <typename Value>
 struct LinkedHashSetExtractor;
@@ -216,7 +216,8 @@ class LinkedHashSet {
   typedef TraitsArg Traits;
   typedef LinkedHashSetNode<Value> Node;
   typedef LinkedHashSetNodeBase NodeBase;
-  typedef LinkedHashSetTranslator<Value, HashFunctions> NodeHashFunctions;
+  typedef LinkedHashSetTranslator<Value, HashFunctions, Traits>
+      NodeHashFunctions;
   typedef LinkedHashSetTraits<Value, Traits, Allocator> NodeHashTraits;
 
   typedef HashTable<Node,
@@ -250,7 +251,7 @@ class LinkedHashSet {
     bool is_new_entry;
   };
 
-  typedef typename HashTraits<Value>::PeekInType ValuePeekInType;
+  typedef typename TraitsArg::PeekInType ValuePeekInType;
 
   LinkedHashSet();
   LinkedHashSet(const LinkedHashSet&);
@@ -402,12 +403,12 @@ class LinkedHashSet {
   NodeBase anchor_;
 };
 
-template <typename Value, typename HashFunctions>
+template <typename Value, typename HashFunctions, typename TraitsArg>
 struct LinkedHashSetTranslator {
   STATIC_ONLY(LinkedHashSetTranslator);
   typedef LinkedHashSetNode<Value> Node;
   typedef LinkedHashSetNodeBase NodeBase;
-  typedef typename HashTraits<Value>::PeekInType ValuePeekInType;
+  typedef typename TraitsArg::PeekInType ValuePeekInType;
   static unsigned GetHash(const Node& node) {
     return HashFunctions::GetHash(node.value_);
   }

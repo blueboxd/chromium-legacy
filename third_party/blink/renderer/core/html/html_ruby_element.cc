@@ -14,10 +14,14 @@ HTMLRubyElement::HTMLRubyElement(Document& document)
 
 LayoutObject* HTMLRubyElement::CreateLayoutObject(const ComputedStyle& style,
                                                   LegacyLayout legacy) {
-  if (style.Display() == EDisplay::kInline)
+  if (style.Display() == EDisplay::kInline) {
+    UseCounter::Count(GetDocument(), WebFeature::kLegacyLayoutByRuby);
     return new LayoutRubyAsInline(this);
-  if (style.Display() == EDisplay::kBlock)
+  }
+  if (style.Display() == EDisplay::kBlock) {
+    UseCounter::Count(GetDocument(), WebFeature::kLegacyLayoutByRuby);
     return new LayoutRubyAsBlock(this);
+  }
   return LayoutObject::CreateObject(this, style, legacy);
 }
 

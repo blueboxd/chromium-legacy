@@ -229,10 +229,6 @@ BrowserAccessibility* BrowserAccessibility::PlatformGetSelectionContainer()
   return container;
 }
 
-bool BrowserAccessibility::IsNative() const {
-  return false;
-}
-
 bool BrowserAccessibility::IsDescendantOf(
     const BrowserAccessibility* ancestor) const {
   if (!ancestor)

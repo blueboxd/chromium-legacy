@@ -20,6 +20,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_METRICS_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_METRICS_H_
 
+#include <base/optional.h>
+
 #include "third_party/blink/renderer/platform/fonts/font_baseline.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -44,8 +46,6 @@ class FontMetrics {
         line_spacing_(0),
         x_height_(0),
         zero_width_(0),
-        underlinethickness_(0),
-        underline_position_(0),
         ascent_int_(0),
         descent_int_(0),
         has_x_height_(false),
@@ -148,12 +148,16 @@ class FontMetrics {
     has_zero_width_ = has_zero_width;
   }
 
-  float UnderlineThickness() const { return underlinethickness_; }
+  base::Optional<float> UnderlineThickness() const {
+    return underline_thickness_;
+  }
   void SetUnderlineThickness(float underline_thickness) {
-    underlinethickness_ = underline_thickness;
+    underline_thickness_ = underline_thickness;
   }
 
-  float UnderlinePosition() const { return underline_position_; }
+  base::Optional<float> UnderlinePosition() const {
+    return underline_position_;
+  }
   void SetUnderlinePosition(float underline_position) {
     underline_position_ = underline_position;
   }
@@ -184,8 +188,8 @@ class FontMetrics {
     line_spacing_ = 0;
     x_height_ = 0;
     has_x_height_ = false;
-    underlinethickness_ = 0;
-    underline_position_ = 0;
+    underline_thickness_.reset();
+    underline_position_.reset();
   }
 
   unsigned units_per_em_;
@@ -195,8 +199,8 @@ class FontMetrics {
   float line_spacing_;
   float x_height_;
   float zero_width_;
-  float underlinethickness_;
-  float underline_position_;
+  base::Optional<float> underline_thickness_ = base::nullopt;
+  base::Optional<float> underline_position_ = base::nullopt;
   int ascent_int_;
   int descent_int_;
   bool has_x_height_;

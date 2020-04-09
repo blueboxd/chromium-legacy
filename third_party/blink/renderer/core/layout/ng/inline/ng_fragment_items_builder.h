@@ -59,6 +59,12 @@ class CORE_EXPORT NGFragmentItemsBuilder {
   void AddListMarker(const NGPhysicalBoxFragment& marker_fragment,
                      const LogicalOffset& offset);
 
+  // Add previously laid out |NGFragmentItems|.
+  void AddItems(const NGFragmentItems& items,
+                WritingMode writing_mode,
+                TextDirection direction,
+                const PhysicalSize& container_size);
+
   // Find |LogicalOffset| of the first |NGFragmentItem| for |LayoutObject|.
   base::Optional<LogicalOffset> LogicalOffsetFor(const LayoutObject&) const;
 

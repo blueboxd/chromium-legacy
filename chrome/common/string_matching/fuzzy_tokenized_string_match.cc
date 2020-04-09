@@ -319,20 +319,10 @@ bool FuzzyTokenizedStringMatch::IsRelevant(const TokenizedString& query,
                  2;
   } else {
     // Use simple algorithm to calculate match ratio.
-    double partial_match = 0.0;
-    for (const auto& query_token : query.tokens()) {
-      for (const auto& text_token : text.tokens()) {
-        partial_match =
-            std::max(partial_match,
-                     SequenceMatcher(query_token, text_token, use_edit_distance)
-                         .Ratio());
-      }
-    }
-    const double partial_scale = 0.9;
     relevance_ =
-        (std::max(
-             SequenceMatcher(query_text, text_text, use_edit_distance).Ratio(),
-             partial_match * partial_scale) +
+        (SequenceMatcher(base::i18n::ToLower(query_text),
+                         base::i18n::ToLower(text_text), use_edit_distance)
+             .Ratio() +
          prefix_score) /
         2;
   }

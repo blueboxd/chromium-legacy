@@ -138,6 +138,7 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
       const HeapVector<Member<Node>>& new_slotted);
 
   void SetNeedsDistributionRecalcWillBeSetNeedsAssignmentRecalc();
+  bool CheckNodesValidity(HeapVector<Member<Node>> nodes, ExceptionState&);
 
   // SlotAssignnment:recalc runs in tree order. Update to assigned order.
   void UpdateManuallyAssignedNodesOrdering();

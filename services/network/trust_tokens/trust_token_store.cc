@@ -8,6 +8,8 @@
 #include <utility>
 
 #include "base/optional.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/mojom/trust_tokens.mojom-forward.h"
 #include "services/network/trust_tokens/in_memory_trust_token_persister.h"
 #include "services/network/trust_tokens/proto/public.pb.h"
@@ -15,6 +17,7 @@
 #include "services/network/trust_tokens/trust_token_parameterization.h"
 #include "services/network/trust_tokens/types.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
+#include "url/origin.h"
 
 namespace network {
 
@@ -262,6 +265,43 @@ TrustTokenStore::RetrieveNonstaleRedemptionRecord(
     return base::nullopt;
 
   return config->signed_redemption_record();
+}
+
+bool TrustTokenStore::ClearDataForFilter(mojom::ClearDataFilterPtr filter) {
+  DCHECK(filter);
+
+  // Returns whether |storage_key|'s data should be deleted, based on the logic
+  // |filter| specifies.
+  auto matcher = base::BindRepeating(
+      [](const mojom::ClearDataFilter& filter,
+         const SuitableTrustTokenOrigin& storage_key) -> bool {
+        // Match an origin if
+        // - it is an eTLD+1 (aka "domain and registry") match with anything on
+        // |filter|'s domain list, or
+        // - it is an origin match with anything on |filter|'s origin list.
+        bool is_match = base::Contains(filter.origins, storage_key.origin());
+
+        // Computing the domain might be a little expensive, so
+        // skip it if we know for sure the origin is a match because it
+        // matches the origin list.
+        if (!is_match) {
+          std::string etld1_for_origin =
+              net::registry_controlled_domains::GetDomainAndRegistry(
+                  storage_key.origin().host(),
+                  net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+          is_match = base::Contains(filter.domains, etld1_for_origin);
+        }
+
+        switch (filter.type) {
+          case mojom::ClearDataFilter::Type::KEEP_MATCHES:
+            return !is_match;
+          case mojom::ClearDataFilter::Type::DELETE_MATCHES:
+            return is_match;
+        }
+      },
+      *filter);
+
+  return persister_->DeleteForOrigins(std::move(matcher));
 }
 
 }  // namespace network

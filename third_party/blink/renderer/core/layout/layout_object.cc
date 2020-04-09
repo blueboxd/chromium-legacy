@@ -247,15 +247,23 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
       return LayoutObjectFactory::CreateBlockFlow(*element, style, legacy);
     case EDisplay::kTable:
     case EDisplay::kInlineTable:
+      UseCounter::Count(element->GetDocument(),
+                        WebFeature::kLegacyLayoutByTable);
       return new LayoutTable(element);
     case EDisplay::kTableRowGroup:
     case EDisplay::kTableHeaderGroup:
     case EDisplay::kTableFooterGroup:
+      UseCounter::Count(element->GetDocument(),
+                        WebFeature::kLegacyLayoutByTable);
       return new LayoutTableSection(element);
     case EDisplay::kTableRow:
+      UseCounter::Count(element->GetDocument(),
+                        WebFeature::kLegacyLayoutByTable);
       return new LayoutTableRow(element);
     case EDisplay::kTableColumnGroup:
     case EDisplay::kTableColumn:
+      UseCounter::Count(element->GetDocument(),
+                        WebFeature::kLegacyLayoutByTable);
       return new LayoutTableCol(element);
     case EDisplay::kTableCell:
       return LayoutObjectFactory::CreateTableCell(*element, style, legacy);
@@ -268,8 +276,13 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
         return LayoutObjectFactory::CreateBlockForLineClamp(*element, style,
                                                             legacy);
       }
-      if (style.IsDeprecatedFlexboxUsingFlexLayout())
+      if (style.IsDeprecatedFlexboxUsingFlexLayout()) {
+        UseCounter::Count(element->GetDocument(),
+                          WebFeature::kLegacyLayoutByFlexBox);
         return new LayoutFlexibleBox(element);
+      }
+      UseCounter::Count(element->GetDocument(),
+                        WebFeature::kLegacyLayoutByDeprecatedFlexBox);
       return new LayoutDeprecatedFlexibleBox(element);
     case EDisplay::kFlex:
     case EDisplay::kInlineFlex:

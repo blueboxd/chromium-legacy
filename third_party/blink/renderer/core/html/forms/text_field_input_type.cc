@@ -66,6 +66,7 @@ class DataListIndicatorElement final : public HTMLDivElement {
 
   LayoutObject* CreateLayoutObject(const ComputedStyle&,
                                    LegacyLayout) override {
+    UseCounter::Count(GetDocument(), WebFeature::kLegacyLayoutByDetailsMarker);
     return new LayoutDetailsMarker(this);
   }
 
@@ -288,6 +289,8 @@ bool TextFieldInputType::TypeShouldForceLegacyLayout() const {
 
 LayoutObject* TextFieldInputType::CreateLayoutObject(const ComputedStyle&,
                                                      LegacyLayout) const {
+  UseCounter::Count(GetElement().GetDocument(),
+                    WebFeature::kLegacyLayoutByTextControl);
   return new LayoutTextControlSingleLine(&GetElement());
 }
 

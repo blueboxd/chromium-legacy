@@ -26,7 +26,6 @@ class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
 
   // Overrides from BrowserAccessibility.
   void OnDataChanged() override;
-  bool IsNative() const override;
   void OnLocationChanged() override;
   base::string16 GetValue() const override;
 

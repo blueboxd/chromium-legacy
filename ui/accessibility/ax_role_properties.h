@@ -20,10 +20,13 @@ namespace ui {
 // https://www.w3.org/TR/wai-aria-1.1/#childrenArePresentational.
 AX_BASE_EXPORT bool HasPresentationalChildren(const ax::mojom::Role role);
 
-// Checks if the given role is an alert or alert-dialog type.
+// Returns if the given role is an alert or alert-dialog type.
 AX_BASE_EXPORT bool IsAlert(const ax::mojom::Role role);
 
-// Checks if the given role is a clickable type.
+// Returns if the given role is a native button or ARIA role="button".
+AX_BASE_EXPORT bool IsButton(const ax::mojom::Role role);
+
+// Returns if the given role is a clickable type.
 AX_BASE_EXPORT bool IsClickable(const ax::mojom::Role role);
 
 // Returns true if the provided role belongs to a cell or a table header.

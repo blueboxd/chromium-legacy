@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/callback.h"
 #include "services/network/trust_tokens/proto/public.pb.h"
 #include "services/network/trust_tokens/proto/storage.pb.h"
 #include "services/network/trust_tokens/suitable_trust_token_origin.h"
@@ -43,6 +44,10 @@ class InMemoryTrustTokenPersister : public TrustTokenPersister {
       const SuitableTrustTokenOrigin& issuer,
       const SuitableTrustTokenOrigin& toplevel,
       std::unique_ptr<TrustTokenIssuerToplevelPairConfig> config) override;
+
+  bool DeleteForOrigins(
+      base::RepeatingCallback<bool(const SuitableTrustTokenOrigin&)> matcher)
+      override;
 
  private:
   std::map<SuitableTrustTokenOrigin, std::unique_ptr<TrustTokenToplevelConfig>>

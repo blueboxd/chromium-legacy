@@ -326,24 +326,17 @@ static bool ShouldSetDecorationAntialias(const ComputedStyle& style) {
 
 float ComputeDecorationThickness(const ComputedStyle* style,
                                  const SimpleFontData* font_data) {
-  // Set the thick of the line to be 10% (or something else ?)of the computed
-  // font size and not less than 1px.  Using computedFontSize should take care
-  // of zoom as well.
+  // TODO(https://crbug.com/785230): Implement text-decoration-thickness setting
+  // and the from-font keyword here. We previously tried reading
+  // font_data->FontMetrics().UnderlineThickness() here but that never returned
+  // anything other than 0. Removed no-op implementation until we implement
+  // from-font behavior here. Keep font_data argument for now as this will be
+  // needed for the from-font implementation.
 
-  // Update Underline thickness, in case we have Faulty Font Metrics calculating
-  // underline thickness by old method.
-  float text_decoration_thickness = 0.0;
-  int font_height_int = 0;
-  if (font_data) {
-    text_decoration_thickness =
-        font_data->GetFontMetrics().UnderlineThickness();
-    font_height_int = font_data->GetFontMetrics().Height();
-  }
-  if ((text_decoration_thickness == 0.f) ||
-      (text_decoration_thickness >= (font_height_int >> 1))) {
-    text_decoration_thickness = std::max(1.f, style->ComputedFontSize() / 10.f);
-  }
-  return text_decoration_thickness;
+  // Set the thickness of the line to be 10% (or something else ?)of the
+  // computed font size and not less than 1px.  Using computedFontSize should
+  // take care of zoom as well.
+  return std::max(1.f, style->ComputedFontSize() / 10.f);
 }
 
 }  // anonymous namespace

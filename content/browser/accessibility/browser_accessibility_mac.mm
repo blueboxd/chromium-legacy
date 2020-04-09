@@ -31,10 +31,6 @@ BrowserAccessibilityMac::~BrowserAccessibilityMac() {
   [browser_accessibility_cocoa_ release];
 }
 
-bool BrowserAccessibilityMac::IsNative() const {
-  return true;
-}
-
 void BrowserAccessibilityMac::OnDataChanged() {
   BrowserAccessibility::OnDataChanged();
 
@@ -180,14 +176,12 @@ BrowserAccessibility* BrowserAccessibilityMac::PlatformGetPreviousSibling()
 const BrowserAccessibilityCocoa* ToBrowserAccessibilityCocoa(
     const BrowserAccessibility* obj) {
   DCHECK(obj);
-  DCHECK(obj->IsNative());
   return static_cast<const BrowserAccessibilityMac*>(obj)->native_view();
 }
 
 BrowserAccessibilityCocoa* ToBrowserAccessibilityCocoa(
     BrowserAccessibility* obj) {
   DCHECK(obj);
-  DCHECK(obj->IsNative());
   return static_cast<BrowserAccessibilityMac*>(obj)->native_view();
 }
 

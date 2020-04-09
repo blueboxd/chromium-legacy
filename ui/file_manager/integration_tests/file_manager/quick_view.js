@@ -305,7 +305,12 @@
     // Open the file in Quick View.
     await openQuickView(appId, ENTRIES.hello.nameText);
 
-    // Check: the correct mimeType should be displayed.
+    // Check: the correct mimeType should be displayed (note: MIME type
+    // identification differs depending on the metadata provider for the
+    // underlying volume. Here, it is reported as text/plain for ENTRIES.hello,
+    // because the file is on Drive, later (see
+    // openQuickViewTextFileWithUnknownMimeType) it is not reported because the
+    // file is on the local filesystem).
     const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
     chrome.test.assertEq('text/plain', mimeType);
   };
@@ -523,8 +528,8 @@
   };
 
   /**
-   * Tests opening Quick View with a document identified as text from file
-   * sniffing because it has no filename extension.
+   * Tests opening Quick View with a local text document identified as text from
+   * file sniffing (the first word of the file is "From ", note trailing space).
    */
   testcase.openQuickViewSniffedText = async () => {
     const caller = getCaller();
@@ -561,6 +566,51 @@
     // Check: the correct mimeType should be displayed.
     const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
     chrome.test.assertEq('text/plain', mimeType);
+  };
+
+  /**
+   * Tests opening Quick View with a local text document whose MIME type cannot
+   * be identified by MIME type sniffing.
+   */
+  testcase.openQuickViewTextFileWithUnknownMimeType = async () => {
+    const caller = getCaller();
+
+    /**
+     * The text <webview> resides in the #quick-view shadow DOM, as a child of
+     * the #dialog element.
+     */
+    const webView = ['#quick-view', '#dialog[open] webview.text-content'];
+
+    // Open Files app on Downloads containing ENTRIES.hello.
+    const appId =
+        await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.hello], []);
+
+    // Open the file in Quick View.
+    await openQuickView(appId, ENTRIES.hello.nameText);
+
+    // Wait for the Quick View <webview> to load and display its content.
+    function checkWebViewTextLoaded(elements) {
+      let haveElements = Array.isArray(elements) && elements.length === 1;
+      if (haveElements) {
+        haveElements = elements[0].styles.display.includes('block');
+      }
+      if (!haveElements || !elements[0].attributes.src) {
+        return pending(caller, 'Waiting for <webview> to load.');
+      }
+      return;
+    }
+    await repeatUntil(async () => {
+      return checkWebViewTextLoaded(await remoteCall.callRemoteTestUtil(
+          'deepQueryAllElements', appId, [webView, ['display']]));
+    });
+
+    // Check: no mimeType information is displayed. Note that there are multiple
+    // levels of shadow DOM present in this query.
+    const mimeTypeQuery = [
+      '#quick-view', '#dialog[open] files-metadata-box[metadata~="mime"]',
+      'files-metadata-entry[key="Type"]', '#box[hidden]'
+    ];
+    await remoteCall.waitForElement(appId, mimeTypeQuery);
   };
 
   /**
@@ -680,6 +730,10 @@
 
     // Check: the <webview> embed type should be PDF mime type.
     chrome.test.assertEq('application/pdf', type);
+
+    // Check: the correct mimeType should be displayed.
+    const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
+    chrome.test.assertEq('application/pdf', mimeType);
   };
 
   /**
@@ -759,6 +813,10 @@
       return checkWebViewTextLoaded(await remoteCall.callRemoteTestUtil(
           'deepQueryAllElements', appId, [webView, ['display']]));
     });
+
+    // Check: the correct mimeType should be displayed.
+    const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
+    chrome.test.assertEq('text/plain', mimeType);
   };
 
   /**
@@ -825,6 +883,14 @@
       return checkQuickViewHtmlScrollY(await remoteCall.callRemoteTestUtil(
           'deepExecuteScriptInWebView', appId, [webView, getScrollY]));
     });
+
+    // Check: no mimeType information is displayed. Note that there are multiple
+    // levels of shadow DOM present in this query.
+    const mimeTypeQuery = [
+      '#quick-view', '#dialog[open] files-metadata-box[metadata~="mime"]',
+      'files-metadata-entry[key="Type"]', '#box[hidden]'
+    ];
+    await remoteCall.waitForElement(appId, mimeTypeQuery);
   };
 
   /**
@@ -915,6 +981,10 @@
 
     // Check: the <webview> body backgroundColor should be transparent black.
     chrome.test.assertEq('rgba(0, 0, 0, 0)', backgroundColor[0]);
+
+    // Check: the correct mimeType should be displayed.
+    const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
+    chrome.test.assertEq('audio/ogg', mimeType);
   };
 
   /**
@@ -1013,6 +1083,10 @@
           'deepQueryAllElements', appId, [albumArtWebView, ['display']]));
     });
 
+    // Check: the correct mimeType should be displayed.
+    const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
+    chrome.test.assertEq('audio/mpeg', mimeType);
+
     // Check: the audio album metadata should also be displayed.
     const album = await getQuickViewMetadataBoxField(appId, 'Album');
     chrome.test.assertEq(album, 'OK Computer');
@@ -1062,6 +1136,10 @@
 
     // Check: the <webview> body backgroundColor should be transparent black.
     chrome.test.assertEq('rgba(0, 0, 0, 0)', backgroundColor[0]);
+
+    // Check: the correct mimeType should be displayed.
+    const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
+    chrome.test.assertEq('image/jpeg', mimeType);
   };
 
   /**
@@ -1208,6 +1286,10 @@
     // Check: the Dimensions shown in the metadata box are correct.
     const size = await getQuickViewMetadataBoxField(appId, 'Dimensions');
     chrome.test.assertEq('1324 x 4028', size);
+
+    // Check: the correct mimeType should be displayed.
+    const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
+    chrome.test.assertEq('image/tiff', mimeType);
   };
 
   /**
@@ -1360,6 +1442,10 @@
 
     // Check: the <webview> body backgroundColor should be transparent black.
     chrome.test.assertEq('rgba(0, 0, 0, 0)', backgroundColor[0]);
+
+    // Check: the correct mimeType should be displayed.
+    const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
+    chrome.test.assertEq('video/webm', mimeType);
 
     // Close Quick View.
     await closeQuickView(appId);
@@ -2725,17 +2811,19 @@
     const ctrlA = ['#file-list', 'a', true, false, false];
     await remoteCall.fakeKeyDown(appId, ...ctrlA);
 
+    const caller = getCaller();
+
     // Wait until the selection menu is visible.
-    function checkElementsDisplayFlex(elements) {
+    function checkElementsDisplayVisible(elements) {
       chrome.test.assertTrue(Array.isArray(elements));
-      if (elements.length == 0 || elements[0].styles.display !== 'flex') {
+      if (elements.length == 0 || elements[0].styles.display === 'none') {
         return pending(caller, 'Waiting for Selection Menu to be visible.');
       }
     }
 
     await repeatUntil(async () => {
       const elements = ['#selection-menu-button'];
-      return checkElementsDisplayFlex(await remoteCall.callRemoteTestUtil(
+      return checkElementsDisplayVisible(await remoteCall.callRemoteTestUtil(
           'deepQueryAllElements', appId, [elements, ['display']]));
     });
 
@@ -2764,7 +2852,6 @@
         '#file-context-menu:not([hidden]) [command="#get-info"]:not([hidden])');
 
     // Check: the Quick View dialog should be shown.
-    const caller = getCaller();
     await repeatUntil(async () => {
       const query = ['#quick-view', '#dialog[open]'];
       const elements = await remoteCall.callRemoteTestUtil(
@@ -2809,16 +2896,16 @@
     await remoteCall.fakeKeyDown(appId, ...ctrlA);
 
     // Wait until the selection menu is visible.
-    function checkElementsDisplayFlex(elements) {
+    function checkElementsDisplayVisible(elements) {
       chrome.test.assertTrue(Array.isArray(elements));
-      if (elements.length == 0 || elements[0].styles.display !== 'flex') {
+      if (elements.length == 0 || elements[0].styles.display === 'none') {
         return pending(caller, 'Waiting for Selection Menu to be visible.');
       }
     }
 
     await repeatUntil(async () => {
       const elements = ['#selection-menu-button'];
-      return checkElementsDisplayFlex(await remoteCall.callRemoteTestUtil(
+      return checkElementsDisplayVisible(await remoteCall.callRemoteTestUtil(
           'deepQueryAllElements', appId, [elements, ['display']]));
     });
 

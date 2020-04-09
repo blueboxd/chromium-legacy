@@ -3897,6 +3897,7 @@ void AXPlatformNodeAuraLinux::NotifyAccessibilityEvent(
       OnCheckedStateChanged();
       break;
     case ax::mojom::Event::kExpandedChanged:
+    case ax::mojom::Event::kStateChanged:
       OnExpandedStateChanged(GetData().HasState(ax::mojom::State::kExpanded));
       break;
     case ax::mojom::Event::kFocus:

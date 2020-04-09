@@ -254,10 +254,8 @@ def _WriteCfiData(cfi_data, out_file):
     _Write2Bytes(out_file, data)
 
 
-def _ParseCfiData(sym_file, output_path):
-  with open(sym_file, 'r') as f:
-    cfi_data =  _GetAllCfiRows(f)
-
+def _ParseCfiData(sym_stream, output_path):
+  cfi_data = _GetAllCfiRows(sym_stream)
   with open(output_path, 'wb') as out_file:
     _WriteCfiData(cfi_data, out_file)
 
@@ -275,13 +273,11 @@ def main():
       help='The path of the dump_syms binary')
 
   args = parser.parse_args()
+  cmd = ['./' + args.dump_syms_path, args.input_path]
+  proc = subprocess.Popen(cmd, bufsize=-1, stdout=subprocess.PIPE)
+  _ParseCfiData(proc.stdout, args.output_path)
+  assert proc.wait() == 0
 
-  with tempfile.NamedTemporaryFile() as sym_file:
-    out = subprocess.call(
-        ['./' +args.dump_syms_path, args.input_path], stdout=sym_file)
-    assert not out
-    sym_file.flush()
-    _ParseCfiData(sym_file.name, args.output_path)
   return 0
 
 if __name__ == '__main__':

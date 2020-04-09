@@ -427,9 +427,6 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
   // TODO(crbug.com/992953): Add a simplified layout pass for custom layout.
   if (cache_status == NGLayoutCacheStatus::kNeedsSimplifiedLayout &&
       block_flow && !GetFlowThread(block_flow) &&
-      // TODO(kojii): Enable simplified layout for fragment items.
-      !(block_flow->ChildrenInline() &&
-        RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) &&
       !block_flow->IsLayoutNGCustom()) {
     DCHECK(layout_result);
 #if DCHECK_IS_ON()
@@ -1393,8 +1390,14 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunLegacyLayout(
 
 scoped_refptr<const NGLayoutResult> NGBlockNode::RunSimplifiedLayout(
     const NGLayoutAlgorithmParams& params,
-    const NGLayoutResult& result) const {
-  return NGSimplifiedLayoutAlgorithm(params, result).Layout();
+    const NGLayoutResult& previous_result) const {
+  NGSimplifiedLayoutAlgorithm algorithm(params, previous_result);
+  if (const auto* previous_box_fragment = DynamicTo<NGPhysicalBoxFragment>(
+          &previous_result.PhysicalFragment())) {
+    if (previous_box_fragment->HasItems())
+      return algorithm.LayoutWithItemsBuilder();
+  }
+  return algorithm.Layout();
 }
 
 void NGBlockNode::CopyBaselinesFromLegacyLayout(

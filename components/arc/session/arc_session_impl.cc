@@ -26,9 +26,9 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
-#include "base/util/memory_pressure/system_memory_pressure_evaluator_chromeos.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
+#include "chromeos/memory/memory.h"
 #include "chromeos/system/scheduler_configuration_manager_base.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_util.h"
@@ -575,11 +575,8 @@ void ArcSessionImpl::OnMojoConnected(
   VLOG(0) << "ARC ready.";
   state_ = State::RUNNING_FULL_INSTANCE;
 
-  // Some memory parameters may be changed when ARC is launched, notify the
-  // memory monitor to update these parameters.
-  auto* monitor = util::chromeos::SystemMemoryPressureEvaluator::Get();
-  if (monitor)
-    monitor->UpdateMemoryParameters();
+  // Some memory parameters may be changed when ARC is launched.
+  chromeos::UpdateMemoryParameters();
 }
 
 void ArcSessionImpl::Stop() {

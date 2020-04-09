@@ -10,10 +10,11 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event_attribution.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
-#include "third_party/blink/renderer/platform/scheduler/public/pending_user_input_type.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace v8 {
 class Isolate;
@@ -132,8 +133,12 @@ class PLATFORM_EXPORT ThreadScheduler {
   virtual void AddTaskObserver(base::TaskObserver* task_observer) = 0;
   virtual void RemoveTaskObserver(base::TaskObserver* task_observer) = 0;
 
-  virtual scheduler::PendingUserInputInfo GetPendingUserInputInfo() const {
-    return scheduler::PendingUserInputInfo();
+  // Returns a list of all unique attributions that are marked for event
+  // dispatch. If |include_continuous| is true, include event types from
+  // "continuous" sources (see PendingUserInput::IsContinuousEventTypes).
+  virtual Vector<WebInputEventAttribution> GetPendingUserInputInfo(
+      bool include_continuous) const {
+    return {};
   }
 
   // Indicates that a BeginMainFrame task has been scheduled to run on the main

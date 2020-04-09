@@ -115,6 +115,12 @@ const char kAndroidPictureInPictureAPIName[] =
 const char kAndroidPictureInPictureAPIDescription[] =
     "Enable Picture-in-Picture Web API for Android";
 
+extern const char kAppCacheName[] = "AppCache web API and browser backend";
+extern const char kAppCacheDescription[] =
+    "When disabled, turns off all AppCache code so that developers "
+    "can test that their code works properly in the future when AppCache "
+    "has been removed.";
+
 const char kDnsHttpssvcName[] = "Support for HTTPSSVC records in DNS.";
 const char kDnsHttpssvcDescription[] =
     "When enabled, Chrome may query a configured DoH server for HTTPSSVC "

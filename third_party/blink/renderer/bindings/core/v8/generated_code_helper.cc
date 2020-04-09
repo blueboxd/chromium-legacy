@@ -266,6 +266,37 @@ v8::MaybeLocal<v8::Function> CreateNamedConstructorFunction(
   return function_template->GetFunction(script_state->GetContext());
 }
 
+void InstallUnscopablePropertyNames(
+    v8::Isolate* isolate,
+    v8::Local<v8::Context> context,
+    v8::Local<v8::Object> prototype_object,
+    base::span<const char* const> property_name_table) {
+  // 3.6.3. Interface prototype object
+  // https://heycam.github.io/webidl/#interface-prototype-object
+  // step 8. If interface has any member declared with the [Unscopable]
+  //   extended attribute, then:
+  // step 8.1. Let unscopableObject be the result of performing
+  //   ! ObjectCreate(null).
+  v8::Local<v8::Object> unscopable_object =
+      v8::Object::New(isolate, v8::Null(isolate), nullptr, nullptr, 0);
+  for (const char* const property_name : property_name_table) {
+    // step 8.2.2. Perform ! CreateDataProperty(unscopableObject, id, true).
+    unscopable_object
+        ->CreateDataProperty(context, V8AtomicString(isolate, property_name),
+                             v8::True(isolate))
+        .ToChecked();
+  }
+  // step 8.3. Let desc be the PropertyDescriptor{[[Value]]: unscopableObject,
+  //   [[Writable]]: false, [[Enumerable]]: false, [[Configurable]]: true}.
+  // step 8.4. Perform ! DefinePropertyOrThrow(interfaceProtoObj,
+  //   @@unscopables, desc).
+  prototype_object
+      ->DefineOwnProperty(
+          context, v8::Symbol::GetUnscopables(isolate), unscopable_object,
+          static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum))
+      .ToChecked();
+}
+
 v8::Local<v8::Array> EnumerateIndexedProperties(v8::Isolate* isolate,
                                                 uint32_t length) {
   Vector<v8::Local<v8::Value>> elements;

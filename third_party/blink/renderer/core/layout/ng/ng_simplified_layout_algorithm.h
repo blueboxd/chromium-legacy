@@ -44,6 +44,8 @@ class CORE_EXPORT NGSimplifiedLayoutAlgorithm
 
   scoped_refptr<const NGLayoutResult> Layout() override;
 
+  NOINLINE scoped_refptr<const NGLayoutResult> LayoutWithItemsBuilder();
+
  private:
   void HandleOutOfFlowPositioned(const NGBlockNode&);
 

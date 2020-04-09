@@ -797,7 +797,7 @@ TEST_F(AppSearchProviderTest, FuzzyAppSearchTest) {
   feature_list.InitAndEnableFeature(app_list_features::kEnableFuzzyAppSearch);
   CreateSearch();
   EXPECT_EQ("Packaged App 1,Packaged App 2", RunQuery("pa"));
-  std::string result = RunQuery("packahe");
+  std::string result = RunQuery("ackaged");
   EXPECT_TRUE(result == "Packaged App 1,Packaged App 2" ||
               result == "Packaged App 2,Packaged App 1");
   EXPECT_EQ(kKeyboardShortcutHelperInternalName, RunQuery("Helper"));

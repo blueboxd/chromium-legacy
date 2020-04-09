@@ -75,7 +75,7 @@ class StructTraits<media::mojom::VideoEncoderInfoDataView,
       const media::VideoEncoderInfo& video_encoder_info) {
     return video_encoder_info.supports_simulcast;
   }
-  static const media::ScalingSettings& scaling_settings(
+  static const base::Optional<media::ScalingSettings>& scaling_settings(
       const media::VideoEncoderInfo& video_encoder_info) {
     return video_encoder_info.scaling_settings;
   }

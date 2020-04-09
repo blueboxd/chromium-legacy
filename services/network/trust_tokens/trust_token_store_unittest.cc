@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/trust_tokens/in_memory_trust_token_persister.h"
 #include "services/network/trust_tokens/proto/public.pb.h"
 #include "services/network/trust_tokens/proto/storage.pb.h"
@@ -525,6 +526,121 @@ TEST(TrustTokenStore, DoesNotReturnStaleRedemptionRecord) {
 }
 
 // TODO(crbug.com/1065388) Add a test exercising the maximum batch size.
+
+TEST(TrustTokenStore, EmptyFilter) {
+  // Deletion with an empty filter should no-op.
+
+  auto store = TrustTokenStore::CreateInMemory();
+  auto issuer = *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com"));
+  store->AddTokens(issuer, std::vector<std::string>{"token"}, "key");
+
+  EXPECT_FALSE(store->ClearDataForFilter(mojom::ClearDataFilter::New()));
+  EXPECT_TRUE(store->CountTokens(issuer));
+}
+
+TEST(TrustTokenStore, EmptyFilterInKeepMatchesMode) {
+  auto store = TrustTokenStore::CreateInMemory();
+  auto issuer = *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com"));
+  store->AddTokens(issuer, std::vector<std::string>{"token"}, "key");
+
+  // An empty filter in mode KEEP_MATCHES should act as a wildcard "wipe the
+  // store" clear.
+  auto filter_matching_all_data = mojom::ClearDataFilter::New();
+  filter_matching_all_data->type = mojom::ClearDataFilter::Type::KEEP_MATCHES;
+
+  EXPECT_TRUE(store->ClearDataForFilter(std::move(filter_matching_all_data)));
+  EXPECT_FALSE(store->CountTokens(issuer));
+}
+
+TEST(TrustTokenStore, ClearsIssuerKeyedData) {
+  auto store = TrustTokenStore::CreateInMemory();
+  auto issuer = *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com"));
+
+  store->AddTokens(issuer, std::vector<std::string>{"token"}, "key");
+
+  auto filter = mojom::ClearDataFilter::New();
+  filter->origins.push_back(issuer);
+  EXPECT_TRUE(store->ClearDataForFilter(std::move(filter)));
+  EXPECT_FALSE(store->CountTokens(issuer));
+}
+
+TEST(TrustTokenStore, ClearsToplevelKeyedData) {
+  auto store = TrustTokenStore::CreateInMemory();
+  auto issuer = *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com"));
+  auto toplevel =
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com"));
+
+  // (The list of issuers associated with each top-level origin is keyed solely
+  // by top-level origin because it is configuration set by the top-level
+  // origin.)
+  ASSERT_TRUE(store->SetAssociation(issuer, toplevel));
+  auto filter = mojom::ClearDataFilter::New();
+  filter->origins.push_back(toplevel);
+  EXPECT_TRUE(store->ClearDataForFilter(std::move(filter)));
+  EXPECT_FALSE(store->IsAssociated(issuer, toplevel));
+}
+
+TEST(TrustTokenStore, ClearsIssuerToplevelPairKeyedData) {
+  auto store = TrustTokenStore::CreateInMemory();
+  auto issuer = *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com"));
+  auto toplevel =
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com"));
+
+  {
+    store->SetRedemptionRecord(issuer, toplevel,
+                               SignedTrustTokenRedemptionRecord());
+    auto filter = mojom::ClearDataFilter::New();
+    filter->origins.push_back(issuer);
+    EXPECT_TRUE(store->ClearDataForFilter(std::move(filter)));
+    EXPECT_FALSE(store->RetrieveNonstaleRedemptionRecord(issuer, toplevel));
+  }
+
+  {
+    store->SetRedemptionRecord(issuer, toplevel,
+                               SignedTrustTokenRedemptionRecord());
+    auto filter = mojom::ClearDataFilter::New();
+    filter->origins.push_back(toplevel);
+    EXPECT_TRUE(store->ClearDataForFilter(std::move(filter)));
+    EXPECT_FALSE(store->RetrieveNonstaleRedemptionRecord(issuer, toplevel));
+  }
+}
+
+TEST(TrustTokenStore, ClearDataCanFilterByDomain) {
+  auto store = TrustTokenStore::CreateInMemory();
+  auto issuer = *SuitableTrustTokenOrigin::Create(
+      GURL("https://arbitrary.https.subdomain.of.issuer.com"));
+
+  store->AddTokens(issuer, std::vector<std::string>{"token"}, "key");
+
+  auto filter = mojom::ClearDataFilter::New();
+  filter->domains.push_back("issuer.com");
+  EXPECT_TRUE(store->ClearDataForFilter(std::move(filter)));
+  EXPECT_FALSE(store->CountTokens(issuer));
+}
+
+TEST(TrustTokenStore, RemovesDataForInvertedFilters) {
+  auto store = TrustTokenStore::CreateInMemory();
+  auto issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://www.issuer.com"));
+  auto toplevel =
+      *SuitableTrustTokenOrigin::Create(GURL("https://www.toplevel.com"));
+
+  store->AddTokens(issuer, std::vector<std::string>{"token"}, "key");
+  store->SetRedemptionRecord(issuer, toplevel,
+                             SignedTrustTokenRedemptionRecord{});
+
+  // With a "delete all origins not covered by this filter"-type filter
+  // containing just the issuer, the issuer's data shouldn't be touched, but the
+  // (issuer, toplevel)-keyed data should be cleared as one origin (the
+  // non-matching one) qualifies for deletion.
+  auto filter = mojom::ClearDataFilter::New();
+  filter->type = mojom::ClearDataFilter::Type::KEEP_MATCHES;
+  filter->origins.push_back(issuer);
+
+  EXPECT_TRUE(store->ClearDataForFilter(std::move(filter)));
+  EXPECT_TRUE(store->CountTokens(issuer));
+  EXPECT_FALSE(store->RetrieveNonstaleRedemptionRecord(issuer, toplevel));
+}
 
 }  // namespace trust_tokens
 }  // namespace network

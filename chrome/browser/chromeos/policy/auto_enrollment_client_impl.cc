@@ -267,7 +267,7 @@ class StateDownloadMessageProcessorFRE
     parsed_response.is_license_packaged_with_device.reset();
 
     // Logging as "WARNING" to make sure it's preserved in the logs.
-    LOG(WARNING) << "Received restore_mode=" << state_response.restore_mode();
+    LOG(WARNING) << "Received restore_mode=" << parsed_response.restore_mode;
 
     return parsed_response;
   }

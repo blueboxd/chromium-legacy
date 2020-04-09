@@ -317,7 +317,7 @@ bool DefinitelyNewFormattingContext(const Node& node,
 
 bool CalculateStyleShouldForceLegacyLayout(const Element& element,
                                            const ComputedStyle& style) {
-  const Document& document = element.GetDocument();
+  Document& document = element.GetDocument();
 
   if (style.Display() == EDisplay::kLayoutCustom ||
       style.Display() == EDisplay::kInlineLayoutCustom)
@@ -326,26 +326,35 @@ bool CalculateStyleShouldForceLegacyLayout(const Element& element,
   // TODO(layout-dev): Once LayoutNG handles inline content editable, we
   // should get rid of following code fragment.
   if (!RuntimeEnabledFeatures::EditingNGEnabled()) {
-    if (style.UserModify() != EUserModify::kReadOnly || document.InDesignMode())
+    if (style.UserModify() != EUserModify::kReadOnly ||
+        document.InDesignMode()) {
+      UseCounter::Count(document, WebFeature::kLegacyLayoutByEditing);
       return true;
+    }
   }
 
   if (style.IsDeprecatedWebkitBox() &&
       (!style.IsDeprecatedWebkitBoxWithVerticalLineClamp() ||
        !RuntimeEnabledFeatures::BlockFlowHandlesWebkitLineClampEnabled())) {
+    UseCounter::Count(
+        document, WebFeature::kLegacyLayoutByWebkitBoxWithoutVerticalLineClamp);
     return true;
   }
 
   if (!RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled()) {
     // Disable NG for the entire subtree if we're establishing a multicol
     // container.
-    if (style.SpecifiesColumns())
+    if (style.SpecifiesColumns()) {
+      UseCounter::Count(document, WebFeature::kLegacyLayoutByMultiCol);
       return true;
+    }
   }
 
   // No printing support in LayoutNG yet.
-  if (document.Printing() && element == document.documentElement())
+  if (document.Printing() && element == document.documentElement()) {
+    UseCounter::Count(document, WebFeature::kLegacyLayoutByPrinting);
     return true;
+  }
 
   // Fall back to legacy layout for frameset documents. The frameset itself (and
   // the frames) can only create legacy layout objects anyway (no NG counterpart
@@ -354,12 +363,16 @@ bool CalculateStyleShouldForceLegacyLayout(const Element& element,
   // layout (because of the above check), which would re-attach all layout
   // objects, which would cause the frameset to lose state of some sort, leaving
   // everything blank when printed.
-  if (document.IsFrameSet())
+  if (document.IsFrameSet()) {
+    UseCounter::Count(document, WebFeature::kLegacyLayoutByFrameSet);
     return true;
+  }
 
   // 'text-combine-upright' property is not supported yet.
-  if (style.HasTextCombine() && !style.IsHorizontalWritingMode())
+  if (style.HasTextCombine() && !style.IsHorizontalWritingMode()) {
+    UseCounter::Count(document, WebFeature::kLegacyLayoutByTextCombine);
     return true;
+  }
 
   if (style.InsideNGFragmentationContext()) {
     // If we're inside an NG block fragmentation context, all fragmentable boxes
@@ -368,8 +381,13 @@ bool CalculateStyleShouldForceLegacyLayout(const Element& element,
     // on). Inline display types end up on a line, and are therefore monolithic,
     // so we can allow those.
     if (!style.IsDisplayInlineType()) {
-      if (style.IsDisplayTableType() || style.IsDisplayFlexibleOrGridBox())
+      if (style.IsDisplayTableType() || style.IsDisplayFlexibleOrGridBox()) {
+        UseCounter::Count(
+            document,
+            WebFeature::
+                kLegacyLayoutByTableFlexGridBlockInNGFragmentationContext);
         return true;
+      }
     }
   }
 

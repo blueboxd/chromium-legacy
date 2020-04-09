@@ -11,6 +11,7 @@ import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition;
 import static android.support.test.espresso.matcher.ViewMatchers.Visibility.GONE;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.isRoot;
 import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static android.support.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
@@ -34,6 +35,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.g
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.rotateDeviceToOrientation;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabModelTabCount;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabSwitcherCardCount;
+import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 import static org.chromium.chrome.test.util.browser.RecyclerViewTestUtils.waitForStableRecyclerView;
 import static org.chromium.components.embedder_support.util.UrlConstants.NTP_URL;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL;
@@ -1569,6 +1571,38 @@ public class StartSurfaceLayoutTest {
                 () -> TemplateUrlServiceFactory.get().setSearchEngine("yahoo.com"));
 
         assertNotEquals(googleDrawable, iconImageView.getDrawable());
+    }
+
+    @Test
+    @MediumTest
+    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
+    @DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
+    public void testTabGroupManualSelection() throws InterruptedException {
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        TabSelectionEditorTestingRobot robot = new TabSelectionEditorTestingRobot();
+        createTabs(cta, false, 3);
+        enterTabSwitcher(cta);
+        onView(allOf(withParent(withId(R.id.compositor_view_holder)), withId(R.id.tab_list_view)))
+                .check(TabCountAssertion.havingTabCount(3));
+
+        enterTabGroupManualSelection(cta);
+        robot.resultRobot.verifyTabSelectionEditorIsVisible();
+
+        // Group first two tabs.
+        robot.actionRobot.clickItemAtAdapterPosition(0);
+        robot.actionRobot.clickItemAtAdapterPosition(1);
+        robot.actionRobot.clickToolbarActionButton();
+
+        // Exit manual selection mode, back to tab switcher.
+        robot.resultRobot.verifyTabSelectionEditorIsHidden();
+        onView(allOf(withParent(withId(R.id.compositor_view_holder)), withId(R.id.tab_list_view)))
+                .check(TabCountAssertion.havingTabCount(2));
+        onView(isRoot()).check(waitForView(withText("2 tabs grouped")));
+    }
+
+    private void enterTabGroupManualSelection(ChromeTabbedActivity cta) {
+        MenuUtils.invokeCustomMenuActionSync(
+                InstrumentationRegistry.getInstrumentation(), cta, R.id.menu_group_tabs);
     }
 
     private void switchTabModel(boolean isIncognito) {

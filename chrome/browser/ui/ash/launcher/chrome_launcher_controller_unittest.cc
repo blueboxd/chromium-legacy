@@ -151,6 +151,7 @@ namespace {
 constexpr char kOfflineGmailUrl[] = "https://mail.google.com/mail/mu/u";
 constexpr char kGmailUrl[] = "https://mail.google.com/mail/u";
 constexpr char kGmailLaunchURL[] = "https://mail.google.com/mail/ca";
+constexpr char kLaunchURL[] = "https://foo.example/";
 
 // An extension prefix.
 constexpr char kCrxAppPrefix[] = "_crx_";
@@ -158,10 +159,6 @@ constexpr char kCrxAppPrefix[] = "_crx_";
 // Dummy app id is used to put at least one pin record to prevent initializing
 // pin model with default apps that can affect some tests.
 constexpr char kDummyAppId[] = "dummyappid_dummyappid_dummyappid";
-
-// Web App id.
-constexpr char kWebAppId[] = "lpikggcgamknpihimepdkohalcnpofed";
-constexpr char kWebAppUrl[] = "https://foo.example/";
 
 // Test implementation of AppIconLoader.
 class TestAppIconLoaderImpl : public AppIconLoader {
@@ -299,7 +296,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     // AppService checks the app's type. So set the
     // manifest_keys::kLaunchWebURL, so that the extension can get the type
     // from manifest value, and then AppService can get the extension's type.
-    manifest.SetString(extensions::manifest_keys::kLaunchWebURL, kWebAppUrl);
+    manifest.SetString(extensions::manifest_keys::kLaunchWebURL, kLaunchURL);
 
     base::DictionaryValue manifest_platform_app;
     manifest_platform_app.SetString(extensions::manifest_keys::kName,
@@ -408,10 +405,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     // manifest_keys::kLaunchWebURL, so that the extension can get the type
     // from manifest value, and then AppService can get the extension's type.
     manifest_web_app.SetString(extensions::manifest_keys::kLaunchWebURL,
-                               kWebAppUrl);
-    web_app_ = Extension::Create(base::FilePath(), Manifest::UNPACKED,
-                                 manifest_web_app, Extension::FROM_BOOKMARK,
-                                 kWebAppId, &error);
+                               kLaunchURL);
   }
 
   ui::BaseWindow* GetLastActiveWindowForItemController(
@@ -775,8 +769,6 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
             result += "Play Store";
           } else if (app == crostini::GetTerminalId()) {
             result += "Terminal";
-          } else if (app == web_app_->id()) {
-            result += "WebApp";
           } else {
             bool arc_app_found = false;
             for (const auto& arc_app : arc_test_.fake_apps()) {
@@ -946,7 +938,6 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   scoped_refptr<Extension> extensionYoutubeApp_;
   scoped_refptr<Extension> extension_platform_app_;
   scoped_refptr<Extension> arc_support_host_;
-  scoped_refptr<Extension> web_app_;
 
   ArcAppTest arc_test_;
   bool auto_start_arc_test_ = false;
@@ -1024,7 +1015,7 @@ class ChromeLauncherControllerExtendedShelfTest
     // AppService checks the app's type. So set the
     // manifest_keys::kLaunchWebURL, so that the extension can get the type
     // from manifest value, and then AppService can get the extension's type.
-    manifest.SetString(extensions::manifest_keys::kLaunchWebURL, kWebAppUrl);
+    manifest.SetString(extensions::manifest_keys::kLaunchWebURL, kLaunchURL);
 
     const std::vector<std::pair<std::string, std::string>> extra_extensions = {
         {extension_misc::kCalendarAppId, "Calendar"},
@@ -2996,42 +2987,6 @@ TEST_F(ChromeLauncherControllerTest, Policy) {
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kPolicyPinnedLauncherApps, policy_value.CreateDeepCopy());
   EXPECT_EQ("Chrome, App1, App2", GetPinnedAppStatus());
-}
-
-TEST_F(ChromeLauncherControllerTest, WebAppPolicy) {
-  // Simulate one Web App being installed.
-  web_app::ExternallyInstalledWebAppPrefs web_app_prefs(profile()->GetPrefs());
-  web_app_prefs.Insert(GURL(kWebAppUrl), kWebAppId,
-                       web_app::ExternalInstallSource::kExternalPolicy);
-  extension_service_->AddExtension(web_app_.get());
-
-  // Set the policy value.
-  base::ListValue policy_value;
-  AppendPrefValue(&policy_value, kWebAppUrl);
-  profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kPolicyPinnedLauncherApps,
-      base::Value::ToUniquePtrValue(std::move(policy_value)));
-
-  InitLauncherController();
-
-  EXPECT_EQ("Chrome, WebApp", GetPinnedAppStatus());
-  EXPECT_EQ(AppListControllerDelegate::PIN_FIXED,
-            GetPinnableForAppID(kWebAppId, profile()));
-}
-
-TEST_F(ChromeLauncherControllerTest, WebAppPolicyNonExistentApp) {
-  // Set the policy value but don't install an app for it.
-  base::ListValue policy_value;
-  AppendPrefValue(&policy_value, kWebAppUrl);
-  profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kPolicyPinnedLauncherApps,
-      base::Value::ToUniquePtrValue(std::move(policy_value)));
-
-  InitLauncherController();
-
-  EXPECT_EQ("Chrome", GetPinnedAppStatus());
-  EXPECT_EQ(AppListControllerDelegate::PIN_EDITABLE,
-            GetPinnableForAppID(kWebAppId, profile()));
 }
 
 TEST_F(ChromeLauncherControllerTest, UnpinWithUninstall) {

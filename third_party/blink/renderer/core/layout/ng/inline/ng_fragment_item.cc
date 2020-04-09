@@ -436,7 +436,6 @@ void NGFragmentItem::RecalcInkOverflow(
 }
 
 void NGFragmentItem::SetDeltaToNextForSameLayoutObject(wtf_size_t delta) const {
-  DCHECK_NE(delta, 0u);
   delta_to_next_for_same_layout_object_ = delta;
 }
 

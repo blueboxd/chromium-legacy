@@ -274,7 +274,7 @@ class PageLoadMetricsObserver {
 
   // OnEnterBackForwardCache is triggered when a page is put into the
   // back-forward cache. This page can be reused in the future for a
-  // back-forward navigation, in this case this OnRestoredFromBackForwardCache
+  // back-forward navigation, in this case this OnRestoreFromBackForwardCache
   // will be called for this PageLoadMetricsObserver. Note that the page in the
   // back-forward cache can be evicted at any moment, and in this case
   // OnComplete will be called.
@@ -286,13 +286,17 @@ class PageLoadMetricsObserver {
   // entire lifetime of the page, which is important for cases like tracking
   // feature use counts or total network usage.
   //
-  // TODO(hajimehoshi): Add OnRestoredFromBackForwardCache().
   // TODO(hajimehoshi): Consider to remove |timing| argument by adding a
   // function to PageLoadMetricsObserverDelegate. This would require
   // investigation to determine exposing the timing from the delegate would be
   // really safe.
   virtual ObservePolicy OnEnterBackForwardCache(
       const mojom::PageLoadTiming& timing);
+
+  // OnRestoreFromBackForwardCache is triggered when a page is restored from
+  // the back-forward cache.
+  virtual void OnRestoreFromBackForwardCache(
+      const mojom::PageLoadTiming& timing) {}
 
   // Called before OnCommit. The observer should return whether it wishes to
   // observe navigations whose main resource has MIME type |mine_type|. The

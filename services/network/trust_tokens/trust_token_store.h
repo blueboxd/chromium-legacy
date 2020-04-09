@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/trust_tokens/proto/public.pb.h"
 #include "services/network/trust_tokens/suitable_trust_token_origin.h"
@@ -185,6 +186,23 @@ class TrustTokenStore {
   WARN_UNUSED_RESULT virtual base::Optional<SignedTrustTokenRedemptionRecord>
   RetrieveNonstaleRedemptionRecord(const SuitableTrustTokenOrigin& issuer,
                                    const SuitableTrustTokenOrigin& top_level);
+
+  //// Methods concerning data removal
+
+  // Deletes any data stored keyed by matching origins (as issuers or top-level
+  // origins).
+  //
+  // An origin "matches" |filter| means it compares equal to a member of
+  // |filter->origins| or its domain-and-registry string---aka "eTLD+1"---is an
+  // exact match to a member of |filter->domains|.
+  //
+  // If |filter->type| is KEEP_MATCHING, deletes all data for every origin *not*
+  // matching the filter. (In particular, this will still delete data keyed by
+  // a pair of origins, one of which matches and one of which does not.)
+  //
+  // Returns whether any data was deleted.
+  WARN_UNUSED_RESULT virtual bool ClearDataForFilter(
+      mojom::ClearDataFilterPtr filter);
 
  private:
   std::unique_ptr<TrustTokenPersister> persister_;

@@ -444,7 +444,9 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
                      num_frames_in_flight_, expected_input_coded_size_,
                      output_buffer_byte_size_));
 
-  encoder_info_.scaling_settings = encoder_->GetScalingSettings();
+  // TODO(crbug.com/1034686): Set ScalingSettings causes getStats() hangs.
+  // Investigate and fix the issue.
+  // encoder_info_.scaling_settings = encoder_->GetScalingSettings();
 
   // TODO(crbug.com/1030199): VaapiVideoEncodeAccelerator doesn't support either
   // temporal-SVC or spatial-SVC. Update |fps_allocation| properly once they are

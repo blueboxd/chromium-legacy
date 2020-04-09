@@ -323,11 +323,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   typedef base::StringPairs HtmlAttributes;
   const HtmlAttributes& GetHtmlAttributes() const;
 
-  // Returns true if this is a native platform-specific object, vs a
-  // cross-platform generic object. Don't call ToBrowserAccessibilityXXX if
-  // IsNative returns false.
-  virtual bool IsNative() const;
-
   // Accessing accessibility attributes:
   //
   // There are dozens of possible attributes for an accessibility node,

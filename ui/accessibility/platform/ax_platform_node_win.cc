@@ -1764,18 +1764,20 @@ IFACEMETHODIMP AXPlatformNodeWin::Expand() {
 
 ExpandCollapseState AXPlatformNodeWin::ComputeExpandCollapseState() const {
   const AXNodeData& data = GetData();
-  const bool is_menu_button = data.GetHasPopup() == ax::mojom::HasPopup::kMenu;
-  const bool is_expanded_menu_button =
-      is_menu_button &&
-      data.GetCheckedState() == ax::mojom::CheckedState::kTrue;
-  const bool is_collapsed_menu_button =
-      is_menu_button &&
-      data.GetCheckedState() != ax::mojom::CheckedState::kTrue;
 
-  if (data.HasState(ax::mojom::State::kExpanded) || is_expanded_menu_button) {
+  // Since a menu button implies there is a popup and it is either expanded or
+  // collapsed, and it should not support ExpandCollapseState_LeafNode.
+  // According to the UIA spec, ExpandCollapseState_LeafNode indicates that the
+  // element neither expands nor collapses.
+  if (data.IsMenuButton()) {
+    if (data.IsButtonPressed())
+      return ExpandCollapseState_Expanded;
+    return ExpandCollapseState_Collapsed;
+  }
+
+  if (data.HasState(ax::mojom::State::kExpanded)) {
     return ExpandCollapseState_Expanded;
-  } else if (data.HasState(ax::mojom::State::kCollapsed) ||
-             is_collapsed_menu_button) {
+  } else if (data.HasState(ax::mojom::State::kCollapsed)) {
     return ExpandCollapseState_Collapsed;
   } else {
     return ExpandCollapseState_LeafNode;
@@ -7134,6 +7136,7 @@ base::Optional<DWORD> AXPlatformNodeWin::MojoEventToMSAAEvent(
       return EVENT_SYSTEM_ALERT;
     case ax::mojom::Event::kCheckedStateChanged:
     case ax::mojom::Event::kExpandedChanged:
+    case ax::mojom::Event::kStateChanged:
       return EVENT_OBJECT_STATECHANGE;
     case ax::mojom::Event::kFocus:
     case ax::mojom::Event::kFocusContext:
@@ -7210,6 +7213,9 @@ base::Optional<PROPERTYID> AXPlatformNodeWin::MojoEventToUIAProperty(
       return UIA_ControllerForPropertyId;
     case ax::mojom::Event::kCheckedStateChanged:
       return UIA_ToggleToggleStatePropertyId;
+    case ax::mojom::Event::kRowCollapsed:
+    case ax::mojom::Event::kRowExpanded:
+      return UIA_ExpandCollapseExpandCollapseStatePropertyId;
     default:
       return base::nullopt;
   }

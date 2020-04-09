@@ -58,4 +58,26 @@ void InMemoryTrustTokenPersister::SetIssuerToplevelPairConfig(
       std::move(config);
 }
 
+bool InMemoryTrustTokenPersister::DeleteForOrigins(
+    base::RepeatingCallback<bool(const SuitableTrustTokenOrigin&)> matcher) {
+  bool deleted_any_data = false;
+
+  auto predicate_for_origin_keyed_maps = [&matcher](const auto& entry) {
+    return matcher.Run(entry.first);
+  };
+  deleted_any_data |=
+      base::EraseIf(issuer_configs_, predicate_for_origin_keyed_maps);
+  deleted_any_data |=
+      base::EraseIf(toplevel_configs_, predicate_for_origin_keyed_maps);
+
+  deleted_any_data |= base::EraseIf(
+      issuer_toplevel_pair_configs_, [&matcher](const auto& entry) {
+        const std::pair<SuitableTrustTokenOrigin, SuitableTrustTokenOrigin>&
+            key = entry.first;
+        return matcher.Run(key.first) || matcher.Run(key.second);
+      });
+
+  return deleted_any_data;
+}
+
 }  // namespace network

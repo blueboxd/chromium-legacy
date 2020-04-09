@@ -2857,6 +2857,9 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTestWithBackForwardCache,
   histogram_tester_.ExpectBucketCount(
       internal::kHistogramBackForwardCacheEvent,
       internal::PageLoadBackForwardCacheEvent::kEnterBackForwardCache, 0);
+  histogram_tester_.ExpectBucketCount(
+      internal::kHistogramBackForwardCacheEvent,
+      internal::PageLoadBackForwardCacheEvent::kRestoreFromBackForwardCache, 0);
 
   // Go to URL2. The previous page (URL1) is put into the back-forward cache.
   ui_test_utils::NavigateToURL(browser(), url2);
@@ -2864,6 +2867,9 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTestWithBackForwardCache,
   histogram_tester_.ExpectBucketCount(
       internal::kHistogramBackForwardCacheEvent,
       internal::PageLoadBackForwardCacheEvent::kEnterBackForwardCache, 1);
+  histogram_tester_.ExpectBucketCount(
+      internal::kHistogramBackForwardCacheEvent,
+      internal::PageLoadBackForwardCacheEvent::kRestoreFromBackForwardCache, 0);
 
   // Go back to URL1. The previous page (URL2) is put into the back-forward
   // cache.
@@ -2875,4 +2881,13 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTestWithBackForwardCache,
   histogram_tester_.ExpectBucketCount(
       internal::kHistogramBackForwardCacheEvent,
       internal::PageLoadBackForwardCacheEvent::kEnterBackForwardCache, 2);
+
+  // For now CorePageLoadMetricsObserver::OnEnterBackForwardCache returns
+  // STOP_OBSERVING, OnRestoreFromBackForward is never reached.
+  //
+  // TODO(hajimehoshi): Update this when the CorePageLoadMetricsObserver
+  // continues to observe after entering to back-forward cache.
+  histogram_tester_.ExpectBucketCount(
+      internal::kHistogramBackForwardCacheEvent,
+      internal::PageLoadBackForwardCacheEvent::kRestoreFromBackForwardCache, 0);
 }

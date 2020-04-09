@@ -816,11 +816,25 @@ bool PageLoadTracker::IsFirstNavigationInWebContents() const {
 }
 
 void PageLoadTracker::OnEnterBackForwardCache() {
-  // TODO(hajimehoshi): Call PageShown from OnRestoreFromBackForwardCache.
-  if (visibility_tracker_.currently_in_foreground())
+  DCHECK(visibility_tracker_.currently_in_foreground());
+  if (GetWebContents()->GetVisibility() == content::Visibility::VISIBLE) {
     PageHidden();
+  }
+
   INVOKE_AND_PRUNE_OBSERVERS(observers_, OnEnterBackForwardCache,
                              metrics_update_dispatcher_.timing());
+}
+
+void PageLoadTracker::OnRestoreFromBackForwardCache() {
+  DCHECK(!visibility_tracker_.currently_in_foreground());
+  if (GetWebContents()->GetVisibility() == content::Visibility::VISIBLE) {
+    PageShown();
+  }
+
+  for (const auto& observer : observers_) {
+    observer->OnRestoreFromBackForwardCache(
+        metrics_update_dispatcher_.timing());
+  }
 }
 
 }  // namespace page_load_metrics

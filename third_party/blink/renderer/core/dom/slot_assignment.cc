@@ -260,13 +260,18 @@ void SlotAssignment::RecalcAssignment() {
         FindSlotByName(HTMLSlotElement::UserAgentCustomAssignSlotName());
   }
 
+  bool is_manual_slot_assignment = owner_->IsManualSlotting();
+  // Replaces candidate_assigned_slot_map_ after the loop, to avoid stale
+  // references resulting from calls to slot->DidRecalcAssignedNodes().
+  HeapHashMap<Member<Node>, Member<HTMLSlotElement>> candidate_map;
+
   for (Node& child : NodeTraversal::ChildrenOf(owner_->host())) {
     if (!child.IsSlotable())
       continue;
 
     HTMLSlotElement* slot = nullptr;
     if (!is_user_agent) {
-      if (owner_->IsManualSlotting()) {
+      if (is_manual_slot_assignment) {
         if (auto* candidate_slot = candidate_assigned_slot_map_.at(&child)) {
           if (candidate_slot->ContainingShadowRoot() == owner_) {
             slot = candidate_slot;
@@ -300,6 +305,8 @@ void SlotAssignment::RecalcAssignment() {
 
     if (slot) {
       slot->AppendAssignedNode(child);
+      if (is_manual_slot_assignment)
+        candidate_map.Set(&child, slot);
     } else {
       child.ClearFlatTreeNodeData();
       child.RemovedFromFlatTree();
@@ -314,6 +321,9 @@ void SlotAssignment::RecalcAssignment() {
 
   for (auto& slot : Slots())
     slot->DidRecalcAssignedNodes();
+
+  if (is_manual_slot_assignment)
+    candidate_assigned_slot_map_.swap(candidate_map);
 }
 
 const HeapVector<Member<HTMLSlotElement>>& SlotAssignment::Slots() {

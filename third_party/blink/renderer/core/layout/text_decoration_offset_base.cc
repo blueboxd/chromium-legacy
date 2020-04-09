@@ -5,6 +5,9 @@
 #include "third_party/blink/renderer/core/layout/text_decoration_offset_base.h"
 
 #include <algorithm>
+
+#include <base/optional.h>
+
 #include "third_party/blink/renderer/core/paint/decoration_info.h"
 #include "third_party/blink/renderer/platform/fonts/font_metrics.h"
 #include "third_party/blink/renderer/platform/fonts/font_vertical_position_type.h"
@@ -27,6 +30,14 @@ int ComputeUnderlineOffsetAuto(const blink::FontMetrics& font_metrics,
   return font_metrics.Ascent() + gap;
 }
 
+base::Optional<int> ComputeUnderlineOffsetFromFont(
+    const blink::FontMetrics& font_metrics) {
+  if (!font_metrics.UnderlinePosition())
+    return base::nullopt;
+
+  return roundf(font_metrics.FloatAscent() + *font_metrics.UnderlinePosition());
+}
+
 }  // namespace
 
 namespace blink {
@@ -41,8 +52,9 @@ int TextDecorationOffsetBase::ComputeUnderlineOffset(
       FALLTHROUGH;
     case ResolvedUnderlinePosition::kNearAlphabeticBaselineFromFont:
       DCHECK(RuntimeEnabledFeatures::UnderlineOffsetThicknessEnabled());
-      // TODO(https://crbug.com/785230): Implement in subsequent CL.
-      FALLTHROUGH;
+      return ComputeUnderlineOffsetFromFont(font_metrics)
+          .value_or(ComputeUnderlineOffsetAuto(font_metrics,
+                                               text_decoration_thickness));
     case ResolvedUnderlinePosition::kNearAlphabeticBaselineAuto:
       return ComputeUnderlineOffsetAuto(font_metrics,
                                         text_decoration_thickness);

@@ -3973,6 +3973,35 @@ def _make_property_entries_and_callback_defs(
     return callback_def_nodes
 
 
+def _make_install_unscopables(cg_context):
+    assert isinstance(cg_context, CodeGenContext)
+
+    unscopables = []
+    is_unscopable = lambda member: "Unscopable" in member.extended_attributes
+    unscopables.extend(filter(is_unscopable, cg_context.class_like.attributes))
+    unscopables.extend(filter(is_unscopable, cg_context.class_like.operations))
+
+    if not unscopables:
+        return None
+
+    return SequenceNode([
+        ListNode([
+            TextNode("// [Unscopable]"),
+            TextNode("static constexpr const char* "
+                     "kUnscopablePropertyNames[] = {"),
+            ListNode([
+                TextNode("\"{}\", ".format(member.identifier))
+                for member in unscopables
+            ]),
+            TextNode("};"),
+        ]),
+        TextNode("bindings::InstallUnscopablePropertyNames"
+                 "(${isolate}, ${v8_context}, ${prototype_object}, "
+                 "kUnscopablePropertyNames);"),
+        EmptyNode(),
+    ])
+
+
 def make_install_interface_template(
         cg_context, function_name, class_name, trampoline_var_name,
         constructor_entries, indexed_and_named_property_install_nodes,
@@ -4244,8 +4273,13 @@ def make_install_properties(cg_context, function_name, class_name,
         isinstance(entry, _PropEntryOperationGroup)
         for entry in operation_entries)
 
+    if is_context_dependent:
+        install_unscopables_node = _make_install_unscopables(cg_context)
+    else:
+        install_unscopables_node = None
+
     if not (attribute_entries or constant_entries or exposed_construct_entries
-            or operation_entries):
+            or operation_entries or install_unscopables_node):
         return None, None, None
 
     if is_context_dependent:
@@ -4327,6 +4361,8 @@ def make_install_properties(cg_context, function_name, class_name,
             "interface_template": "interface_template",
         })
     bind_installer_local_vars(body, cg_context)
+
+    body.append(install_unscopables_node)
 
     def group_by_condition(entries):
         unconditional_entries = []

@@ -14,8 +14,10 @@ HTMLRTElement::HTMLRTElement(Document& document)
 
 LayoutObject* HTMLRTElement::CreateLayoutObject(const ComputedStyle& style,
                                                 LegacyLayout legacy) {
-  if (style.Display() == EDisplay::kBlock)
+  if (style.Display() == EDisplay::kBlock) {
+    UseCounter::Count(GetDocument(), WebFeature::kLegacyLayoutByRuby);
     return new LayoutRubyText(this);
+  }
   return LayoutObject::CreateObject(this, style, legacy);
 }
 

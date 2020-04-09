@@ -16,6 +16,7 @@
 #include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/android/compose_bitmaps_helper.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/favicon/history_ui_favicon_request_handler_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -184,10 +185,13 @@ jboolean FaviconHelper::GetComposedFaviconImage(
   if (!favicon_service)
     return false;
 
+  int desired_size_in_pixel = static_cast<int>(j_desired_size_in_pixel);
+
   favicon_base::FaviconResultsCallback callback_runner =
       base::BindOnce(&FaviconHelper::OnFaviconBitmapResultsAvailable,
                      weak_ptr_factory_.GetWeakPtr(),
-                     ScopedJavaGlobalRef<jobject>(j_favicon_image_callback));
+                     ScopedJavaGlobalRef<jobject>(j_favicon_image_callback),
+                     desired_size_in_pixel);
 
   std::vector<std::string> urls;
   base::android::AppendJavaStringArrayToStringVector(env, j_urls, &urls);
@@ -462,12 +466,32 @@ void FaviconHelper::OnFaviconBitmapResultAvailable(
 
 void FaviconHelper::OnFaviconBitmapResultsAvailable(
     const JavaRef<jobject>& j_favicon_image_callback,
+    const int desired_size_in_pixel,
     const std::vector<favicon_base::FaviconRawBitmapResult>& results) {
-  JNIEnv* env = AttachCurrentThread();
-  // TODO(crbug.com/1064153): Integrate with ImageHelper to compose favicons.
-  // Convert favicon_image_result to java objects.
-  ScopedJavaLocalRef<jstring> j_icon_url;
+  std::vector<SkBitmap> result_bitmaps;
+
+  for (size_t i = 0; i < results.size(); i++) {
+    favicon_base::FaviconRawBitmapResult result = results[i];
+    if (!result.is_valid())
+      continue;
+    SkBitmap favicon_bitmap;
+    gfx::PNGCodec::Decode(result.bitmap_data->front(),
+                          result.bitmap_data->size(), &favicon_bitmap);
+    result_bitmaps.push_back(std::move(favicon_bitmap));
+  }
+
   ScopedJavaLocalRef<jobject> j_favicon_bitmap;
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> j_icon_url;
+
+  if (!result_bitmaps.empty()) {
+    std::unique_ptr<SkBitmap> composed_bitmap =
+        compose_bitmaps_helper::ComposeBitmaps(std::move(result_bitmaps),
+                                               desired_size_in_pixel);
+    if (composed_bitmap && !composed_bitmap->isNull()) {
+      j_favicon_bitmap = gfx::ConvertToJavaBitmap(composed_bitmap.get());
+    }
+  }
 
   // Call java side OnFaviconBitmapResultAvailable method.
   Java_FaviconImageCallback_onFaviconAvailable(env, j_favicon_image_callback,

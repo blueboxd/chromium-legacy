@@ -66,14 +66,19 @@ void NGFragmentItems::ClearAssociatedFragments() const {
            items_.begin() + 1, items_.end())) {
     if (!ShouldAssociateWithLayoutObject(*item)) {
       // These items are not associated and that no need to clear.
+      DCHECK_EQ(item->DeltaToNextForSameLayoutObject(), 0u);
       continue;
     }
     LayoutObject* object = item->GetMutableLayoutObject();
-    if (!object || object == last_object)
-      continue;
-    if (object->IsInLayoutNGInlineFormattingContext())
-      object->ClearFirstInlineFragmentItemIndex();
-    last_object = object;
+    if (object && object != last_object) {
+      if (object->IsInLayoutNGInlineFormattingContext())
+        object->ClearFirstInlineFragmentItemIndex();
+      last_object = object;
+    }
+
+    // Clear |DeltaToNextForSameLayoutObject| in case this |item| is re-used.
+    // This must be after |ClearFirstInlineFragmentItemIndex|.
+    item->SetDeltaToNextForSameLayoutObject(0u);
   }
 }
 

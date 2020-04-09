@@ -943,11 +943,21 @@ void CorePageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 CorePageLoadMetricsObserver::OnEnterBackForwardCache(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
-  // TODO(hajimehoshi): Record UMA when restoring from the back-forward cache.
   UMA_HISTOGRAM_ENUMERATION(
       internal::kHistogramBackForwardCacheEvent,
       internal::PageLoadBackForwardCacheEvent::kEnterBackForwardCache);
   return PageLoadMetricsObserver::OnEnterBackForwardCache(timing);
+}
+
+void CorePageLoadMetricsObserver::OnRestoreFromBackForwardCache(
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  // This never reaches yet because OnEnterBackForwardCache returns
+  // STOP_OBSERVING.
+  // TODO(hajimehoshi): After changing OnEnterBackForwardCache to continue
+  // observation, remove the above comment.
+  UMA_HISTOGRAM_ENUMERATION(
+      internal::kHistogramBackForwardCacheEvent,
+      internal::PageLoadBackForwardCacheEvent::kRestoreFromBackForwardCache);
 }
 
 void CorePageLoadMetricsObserver::OnLoadingBehaviorObserved(

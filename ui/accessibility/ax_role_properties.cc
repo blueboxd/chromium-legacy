@@ -52,6 +52,19 @@ bool IsAlert(const ax::mojom::Role role) {
   }
 }
 
+bool IsButton(const ax::mojom::Role role) {
+  // According to the WAI-ARIA spec, native button or role="button"
+  // supports |aria-expanded| and |aria-pressed|.
+  // If the button has |aria-expanded| set, then it takes on
+  // Role::kPopUpButton.
+  // If the button has |aria-pressed| set, then it takes on
+  // Role::kToggleButton.
+  // https://www.w3.org/TR/wai-aria-1.1/#button
+  return role == ax::mojom::Role::kButton ||
+         role == ax::mojom::Role::kPopUpButton ||
+         role == ax::mojom::Role::kToggleButton;
+}
+
 bool IsClickable(const ax::mojom::Role role) {
   switch (role) {
     case ax::mojom::Role::kButton:

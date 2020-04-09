@@ -24,9 +24,8 @@ from util import build_utils
 
 class TestExtractUnwindTables(unittest.TestCase):
   def testExtractCfi(self):
-    with tempfile.NamedTemporaryFile() as input_file, \
-        tempfile.NamedTemporaryFile() as output_file:
-      input_file.write("""
+    with tempfile.NamedTemporaryFile() as output_file:
+      test_data_lines = """
 MODULE Linux arm CDE12FE1DF2B37A9C6560B4CBEE056420 lib_chrome.so
 INFO CODE_ID E12FE1CD2BDFA937C6560B4CBEE05642
 FILE 0 ../../base/allocator/allocator_check.cc
@@ -63,9 +62,8 @@ STACK CFI INIT 3b92114 6c .cfa: sp 0 + .ra: lr
 STACK CFI 3b92118 .cfa: r7 16 + .ra: .cfa -20 + ^
 STACK CFI INIT 3b93214 fffff .cfa: sp 0 + .ra: lr
 STACK CFI 3b93218 .cfa: r7 16 + .ra: .cfa -4 + ^
-""")
-      input_file.flush()
-      extract_unwind_tables._ParseCfiData(input_file.name, output_file.name)
+""".splitlines()
+      extract_unwind_tables._ParseCfiData(test_data_lines, output_file.name)
 
       expected_cfi_data = {
         0xe1a1e4 : [0x2, 0x11, 0x4, 0x50],

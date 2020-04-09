@@ -50,7 +50,6 @@
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
 #import "ios/web_view/internal/sync/web_view_profile_sync_service_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
-#include "ios/web_view/internal/webdata_services/web_view_web_data_service_wrapper_factory.h"
 #import "ios/web_view/public/cwv_autofill_controller_delegate.h"
 
 @interface CWVAutofillController ()<AutofillDriverIOSBridge,
@@ -150,9 +149,6 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
             browserState->GetRecordingBrowserState()),
         ios_web_view::WebViewStrikeDatabaseFactory::GetForBrowserState(
             browserState->GetRecordingBrowserState()),
-        ios_web_view::WebViewWebDataServiceWrapperFactory::
-            GetAutofillWebDataForBrowserState(
-                browserState, ServiceAccessType::EXPLICIT_ACCESS),
         ios_web_view::WebViewProfileSyncServiceFactory::GetForBrowserState(
             browserState)));
     autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(

@@ -1534,7 +1534,7 @@ void BrowserAccessibilityManager::CollectChangedNodesAndParentsForAtomicUpdate(
     DCHECK(changed_node);
 
     BrowserAccessibility* obj = GetFromAXNode(changed_node);
-    if (obj && obj->IsNative())
+    if (obj)
       nodes_needing_update->insert(obj->GetAXPlatformNode());
 
     // When a node is a text node or line break, update its parent, because
@@ -1545,7 +1545,7 @@ void BrowserAccessibilityManager::CollectChangedNodesAndParentsForAtomicUpdate(
 
     if (ui::IsTextOrLineBreak(changed_node->data().role)) {
       BrowserAccessibility* parent_obj = GetFromAXNode(parent);
-      if (parent_obj && parent_obj->IsNative())
+      if (parent_obj)
         nodes_needing_update->insert(parent_obj->GetAXPlatformNode());
     }
 
@@ -1559,7 +1559,7 @@ void BrowserAccessibilityManager::CollectChangedNodesAndParentsForAtomicUpdate(
     }
 
     BrowserAccessibility* editable_root_obj = GetFromAXNode(editable_root);
-    if (editable_root_obj && editable_root_obj->IsNative())
+    if (editable_root_obj)
       nodes_needing_update->insert(editable_root_obj->GetAXPlatformNode());
   }
 }

@@ -105,6 +105,8 @@ LayoutBlock* LayoutObjectFactory::CreateFlexibleBox(Node& node,
                                                     const ComputedStyle& style,
                                                     LegacyLayout legacy) {
   bool disable_ng_for_type = !RuntimeEnabledFeatures::LayoutNGFlexBoxEnabled();
+  if (disable_ng_for_type)
+    UseCounter::Count(node.GetDocument(), WebFeature::kLegacyLayoutByFlexBox);
   return CreateObject<LayoutBlock, LayoutNGFlexibleBox, LayoutFlexibleBox>(
       node, style, legacy, disable_ng_for_type);
 }
@@ -113,6 +115,8 @@ LayoutBlock* LayoutObjectFactory::CreateGrid(Node& node,
                                              const ComputedStyle& style,
                                              LegacyLayout legacy) {
   bool disable_ng_for_type = !RuntimeEnabledFeatures::LayoutNGGridEnabled();
+  if (disable_ng_for_type)
+    UseCounter::Count(node.GetDocument(), WebFeature::kLegacyLayoutByGrid);
   return CreateObject<LayoutBlock, LayoutNGGrid, LayoutGrid>(
       node, style, legacy, disable_ng_for_type);
 }
@@ -152,6 +156,8 @@ LayoutBlock* LayoutObjectFactory::CreateFieldset(Node& node,
                                                  const ComputedStyle& style,
                                                  LegacyLayout legacy) {
   bool disable_ng_for_type = !RuntimeEnabledFeatures::LayoutNGFieldsetEnabled();
+  if (disable_ng_for_type)
+    UseCounter::Count(node.GetDocument(), WebFeature::kLegacyLayoutByFieldSet);
   return CreateObject<LayoutBlock, LayoutNGFieldset, LayoutFieldset>(
       node, style, legacy, disable_ng_for_type);
 }

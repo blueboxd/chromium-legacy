@@ -2381,6 +2381,8 @@ jumbo_static_library("browser") {
       "android/color_helpers.h",
       "android/component_updater/background_task_update_scheduler.cc",
       "android/component_updater/background_task_update_scheduler.h",
+      "android/compose_bitmaps_helper.cc",
+      "android/compose_bitmaps_helper.h",
       "android/compositor/compositor_view.cc",
       "android/compositor/compositor_view.h",
       "android/compositor/decoration_title.cc",

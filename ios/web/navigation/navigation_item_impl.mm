@@ -343,12 +343,17 @@ void NavigationItemImpl::ResetForCommit() {
 }
 
 void NavigationItemImpl::RestoreStateFromItem(NavigationItem* other) {
-  // Only restore the UserAgent type and the page display state. The other
-  // headers might not make sense after creating a new navigation to the page.
+  // Restore the UserAgent type in any case, as if the URLs are different it
+  // might mean that |this| is a next navigation. The page display state and the
+  // virtual URL only make sense if it is the same item. The other headers might
+  // not make sense after creating a new navigation to the page.
   if (other->GetUserAgentForInheritance() != UserAgentType::NONE) {
     SetUserAgentType(other->GetUserAgentForInheritance());
   }
-  SetPageDisplayState(other->GetPageDisplayState());
+  if (url_ == other->GetURL()) {
+    SetPageDisplayState(other->GetPageDisplayState());
+    SetVirtualURL(other->GetVirtualURL());
+  }
 }
 
 ErrorRetryStateMachine& NavigationItemImpl::error_retry_state_machine() {

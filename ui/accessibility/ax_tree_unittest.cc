@@ -2384,6 +2384,309 @@ TEST(AXTreeTest, UnignoredNextPreviousChild) {
   EXPECT_EQ(nullptr, tree.GetFromId(16)->GetPreviousUnignoredSibling());
 }
 
+TEST(AXTreeTest, GetSiblingsNoIgnored) {
+  // Since this tree contains no ignored nodes, PreviousSibling and NextSibling
+  // are equivalent to their unignored counterparts.
+  //
+  // 1
+  // ├── 2
+  // │   └── 4
+  // └── 3
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(4);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].child_ids = {2, 3};
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].child_ids = {4};
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[3].id = 4;
+
+  AXTree tree(tree_update);
+
+  EXPECT_EQ(nullptr, tree.GetFromId(1)->GetPreviousSibling());
+  EXPECT_EQ(nullptr, tree.GetFromId(1)->GetPreviousUnignoredSibling());
+  EXPECT_EQ(nullptr, tree.GetFromId(1)->GetNextSibling());
+  EXPECT_EQ(nullptr, tree.GetFromId(1)->GetNextUnignoredSibling());
+
+  EXPECT_EQ(nullptr, tree.GetFromId(2)->GetPreviousSibling());
+  EXPECT_EQ(nullptr, tree.GetFromId(2)->GetPreviousUnignoredSibling());
+  EXPECT_EQ(tree.GetFromId(3), tree.GetFromId(2)->GetNextSibling());
+  EXPECT_EQ(tree.GetFromId(3), tree.GetFromId(2)->GetNextUnignoredSibling());
+
+  EXPECT_EQ(tree.GetFromId(2), tree.GetFromId(3)->GetPreviousSibling());
+  EXPECT_EQ(tree.GetFromId(2),
+            tree.GetFromId(3)->GetPreviousUnignoredSibling());
+  EXPECT_EQ(nullptr, tree.GetFromId(3)->GetNextSibling());
+  EXPECT_EQ(nullptr, tree.GetFromId(3)->GetNextUnignoredSibling());
+
+  EXPECT_EQ(nullptr, tree.GetFromId(4)->GetPreviousSibling());
+  EXPECT_EQ(nullptr, tree.GetFromId(4)->GetPreviousUnignoredSibling());
+  EXPECT_EQ(nullptr, tree.GetFromId(4)->GetNextSibling());
+  EXPECT_EQ(nullptr, tree.GetFromId(4)->GetNextUnignoredSibling());
+}
+
+TEST(AXTreeTest, GetUnignoredSiblingsChildrenPromoted) {
+  // An ignored node has its' children considered as though they were promoted
+  // to their parents place.
+  //
+  // (i) => node is ignored.
+  //
+  // 1
+  // ├── 2(i)
+  // │   ├── 4
+  // │   └── 5
+  // └── 3
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(5);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].child_ids = {2, 3};
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].AddState(ax::mojom::State::kIgnored);
+  tree_update.nodes[1].child_ids = {4, 5};
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[3].id = 4;
+  tree_update.nodes[4].id = 5;
+
+  AXTree tree(tree_update);
+
+  // Root node has no siblings.
+  EXPECT_EQ(nullptr, tree.GetFromId(1)->GetPreviousUnignoredSibling());
+  EXPECT_EQ(nullptr, tree.GetFromId(2)->GetPreviousUnignoredSibling());
+
+  // Node 2's view of siblings:
+  // literal tree:   null <-- [2(i)] --> 3
+  // unignored tree: null <-- [2(i)] --> 3
+  EXPECT_EQ(nullptr, tree.GetFromId(2)->GetPreviousSibling());
+  EXPECT_EQ(nullptr, tree.GetFromId(2)->GetPreviousUnignoredSibling());
+  EXPECT_EQ(tree.GetFromId(3), tree.GetFromId(2)->GetNextSibling());
+  EXPECT_EQ(tree.GetFromId(3), tree.GetFromId(2)->GetNextUnignoredSibling());
+
+  // Node 3's view of siblings:
+  // literal tree:   2(i) <-- [3] --> null
+  // unignored tree:    5 <-- [4] --> null
+  EXPECT_EQ(tree.GetFromId(2), tree.GetFromId(3)->GetPreviousSibling());
+  EXPECT_EQ(tree.GetFromId(5),
+            tree.GetFromId(3)->GetPreviousUnignoredSibling());
+  EXPECT_EQ(nullptr, tree.GetFromId(3)->GetNextSibling());
+  EXPECT_EQ(nullptr, tree.GetFromId(3)->GetNextUnignoredSibling());
+
+  // Node 4's view of siblings:
+  // literal tree:   null <-- [4] --> 5
+  // unignored tree: null <-- [4] --> 5
+  EXPECT_EQ(nullptr, tree.GetFromId(4)->GetPreviousSibling());
+  EXPECT_EQ(nullptr, tree.GetFromId(4)->GetPreviousUnignoredSibling());
+  EXPECT_EQ(tree.GetFromId(5), tree.GetFromId(4)->GetNextSibling());
+  EXPECT_EQ(tree.GetFromId(5), tree.GetFromId(4)->GetNextUnignoredSibling());
+
+  // Node 5's view of siblings:
+  // literal tree:   4 <-- [5] --> null
+  // unignored tree: 4 <-- [5] --> 3
+  EXPECT_EQ(tree.GetFromId(4), tree.GetFromId(5)->GetPreviousSibling());
+  EXPECT_EQ(tree.GetFromId(4),
+            tree.GetFromId(5)->GetPreviousUnignoredSibling());
+  EXPECT_EQ(nullptr, tree.GetFromId(5)->GetNextSibling());
+  EXPECT_EQ(tree.GetFromId(3), tree.GetFromId(5)->GetNextUnignoredSibling());
+}
+
+TEST(AXTreeTest, GetUnignoredSiblingsIgnoredChildSkipped) {
+  // Ignored children of ignored parents are skipped over.
+  //
+  // (i) => node is ignored.
+  //
+  // 1
+  // ├── 2(i)
+  // │   ├── 4
+  // │   └── 5(i)
+  // └── 3
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(5);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].child_ids = {2, 3};
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].AddState(ax::mojom::State::kIgnored);
+  tree_update.nodes[1].child_ids = {4, 5};
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[3].id = 4;
+  tree_update.nodes[4].id = 5;
+  tree_update.nodes[4].AddState(ax::mojom::State::kIgnored);
+
+  AXTree tree(tree_update);
+
+  // Root node has no siblings.
+  EXPECT_EQ(nullptr, tree.GetFromId(1)->GetPreviousUnignoredSibling());
+  EXPECT_EQ(nullptr, tree.GetFromId(1)->GetNextUnignoredSibling());
+
+  // Node 2's view of siblings:
+  // literal tree:   null <-- [2(i)] --> 3
+  // unignored tree: null <-- [2(i)] --> 3
+  EXPECT_EQ(nullptr, tree.GetFromId(2)->GetPreviousSibling());
+  EXPECT_EQ(nullptr, tree.GetFromId(2)->GetPreviousUnignoredSibling());
+  EXPECT_EQ(tree.GetFromId(3), tree.GetFromId(2)->GetNextSibling());
+  EXPECT_EQ(tree.GetFromId(3), tree.GetFromId(2)->GetNextUnignoredSibling());
+
+  // Node 3's view of siblings:
+  // literal tree:   2(i) <-- [3] --> null
+  // unignored tree:    4 <-- [3] --> null
+  EXPECT_EQ(tree.GetFromId(2), tree.GetFromId(3)->GetPreviousSibling());
+  EXPECT_EQ(tree.GetFromId(4),
+            tree.GetFromId(3)->GetPreviousUnignoredSibling());
+  EXPECT_EQ(nullptr, tree.GetFromId(3)->GetNextSibling());
+  EXPECT_EQ(nullptr, tree.GetFromId(3)->GetNextUnignoredSibling());
+
+  // Node 4's view of siblings:
+  // literal tree:   null <-- [4] --> 5(i)
+  // unignored tree: null <-- [4] --> 3
+  EXPECT_EQ(nullptr, tree.GetFromId(4)->GetPreviousSibling());
+  EXPECT_EQ(nullptr, tree.GetFromId(4)->GetPreviousUnignoredSibling());
+  EXPECT_EQ(tree.GetFromId(5), tree.GetFromId(4)->GetNextSibling());
+  EXPECT_EQ(tree.GetFromId(3), tree.GetFromId(4)->GetNextUnignoredSibling());
+
+  // Node 5's view of siblings:
+  // literal tree:   4 <-- [5(i)] --> null
+  // unignored tree: 4 <-- [5(i)] --> 3
+  EXPECT_EQ(tree.GetFromId(4), tree.GetFromId(5)->GetPreviousSibling());
+  EXPECT_EQ(tree.GetFromId(4),
+            tree.GetFromId(5)->GetPreviousUnignoredSibling());
+  EXPECT_EQ(nullptr, tree.GetFromId(5)->GetNextSibling());
+  EXPECT_EQ(tree.GetFromId(3), tree.GetFromId(5)->GetNextUnignoredSibling());
+}
+
+TEST(AXTreeTest, GetUnignoredSiblingIgnoredParentIrrelevant) {
+  // An ignored parent is not relevant unless the search would need to continue
+  // up through it.
+  //
+  // (i) => node is ignored.
+  //
+  // 1(i)
+  // ├── 2
+  // └── 3
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(3);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].AddState(ax::mojom::State::kIgnored);
+  tree_update.nodes[0].child_ids = {2, 3};
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[2].id = 3;
+
+  AXTree tree(tree_update);
+
+  // Node 2 and 3 are each other's unignored siblings, the parent's ignored
+  // status is not relevant for this search.
+  EXPECT_EQ(tree.GetFromId(3), tree.GetFromId(2)->GetNextUnignoredSibling());
+  EXPECT_EQ(tree.GetFromId(2),
+            tree.GetFromId(3)->GetPreviousUnignoredSibling());
+}
+
+TEST(AXTreeTest, GetUnignoredSiblingsAllIgnored) {
+  // Test termination when all nodes, including the root node, are ignored.
+  //
+  // (i) => node is ignored.
+  //
+  // 1(i)
+  // └── 2(i)
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(2);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].AddState(ax::mojom::State::kIgnored);
+  tree_update.nodes[0].child_ids = {2};
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].AddState(ax::mojom::State::kIgnored);
+
+  AXTree tree(tree_update);
+
+  EXPECT_EQ(nullptr, tree.GetFromId(1)->GetPreviousUnignoredSibling());
+  EXPECT_EQ(nullptr, tree.GetFromId(1)->GetNextUnignoredSibling());
+  EXPECT_EQ(nullptr, tree.GetFromId(2)->GetPreviousUnignoredSibling());
+  EXPECT_EQ(nullptr, tree.GetFromId(2)->GetNextUnignoredSibling());
+}
+
+TEST(AXTreeTest, GetUnignoredSiblingsNestedIgnored) {
+  // Test promotion of children through multiple layers of ignored parents.
+  // (i) => node is ignored.
+  //
+  // 1
+  // ├── 2
+  // ├── 3(i)
+  // │   └── 5(i)
+  // │       └── 6
+  // └── 4
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(6);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].child_ids = {2, 3, 4};
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[2].AddState(ax::mojom::State::kIgnored);
+  tree_update.nodes[2].child_ids = {5};
+  tree_update.nodes[3].id = 4;
+  tree_update.nodes[4].id = 5;
+  tree_update.nodes[4].AddState(ax::mojom::State::kIgnored);
+  tree_update.nodes[4].child_ids = {6};
+  tree_update.nodes[5].id = 6;
+
+  AXTree tree(tree_update);
+
+  EXPECT_EQ(nullptr, tree.GetFromId(1)->GetPreviousUnignoredSibling());
+
+  const AXNode* node2 = tree.GetFromId(2);
+  const AXNode* node3 = tree.GetFromId(3);
+  const AXNode* node4 = tree.GetFromId(4);
+  const AXNode* node5 = tree.GetFromId(5);
+  const AXNode* node6 = tree.GetFromId(6);
+
+  ASSERT_NE(nullptr, node2);
+  ASSERT_NE(nullptr, node3);
+  ASSERT_NE(nullptr, node4);
+  ASSERT_NE(nullptr, node5);
+  ASSERT_NE(nullptr, node6);
+
+  // Node 2's view of siblings:
+  // literal tree:   null <-- [2] --> 3
+  // unignored tree: null <-- [2] --> 6
+  EXPECT_EQ(nullptr, node2->GetPreviousSibling());
+  EXPECT_EQ(nullptr, node2->GetPreviousUnignoredSibling());
+  EXPECT_EQ(node3, node2->GetNextSibling());
+  EXPECT_EQ(node6, node2->GetNextUnignoredSibling());
+
+  // Node 3's view of siblings:
+  // literal tree:   2 <-- [3(i)] --> 4
+  // unignored tree: 2 <-- [3(i)] --> 4
+  EXPECT_EQ(node2, node3->GetPreviousSibling());
+  EXPECT_EQ(node2, node3->GetPreviousUnignoredSibling());
+  EXPECT_EQ(node4, node3->GetNextSibling());
+  EXPECT_EQ(node4, node3->GetNextUnignoredSibling());
+
+  // Node 4's view of siblings:
+  // literal tree:   3 <-- [4] --> null
+  // unignored tree: 6 <-- [4] --> null
+  EXPECT_EQ(node3, node4->GetPreviousSibling());
+  EXPECT_EQ(node6, node4->GetPreviousUnignoredSibling());
+  EXPECT_EQ(nullptr, node4->GetNextSibling());
+  EXPECT_EQ(nullptr, node4->GetNextUnignoredSibling());
+
+  // Node 5's view of siblings:
+  // literal tree:   null <-- [5(i)] --> null
+  // unignored tree:    2 <-- [5(i)] --> 4
+  EXPECT_EQ(nullptr, node5->GetPreviousSibling());
+  EXPECT_EQ(node2, node5->GetPreviousUnignoredSibling());
+  EXPECT_EQ(nullptr, node5->GetNextSibling());
+  EXPECT_EQ(node4, node5->GetNextUnignoredSibling());
+
+  // Node 6's view of siblings:
+  // literal tree:   null <-- [6] --> null
+  // unignored tree:    2 <-- [6] --> 4
+  EXPECT_EQ(nullptr, node6->GetPreviousSibling());
+  EXPECT_EQ(node2, node6->GetPreviousUnignoredSibling());
+  EXPECT_EQ(nullptr, node6->GetNextSibling());
+  EXPECT_EQ(node4, node6->GetNextUnignoredSibling());
+}
+
 TEST(AXTreeTest, UnignoredSelection) {
   AXTreeUpdate tree_update;
   // (i) => node is ignored
@@ -2564,6 +2867,50 @@ TEST(AXTreeTest, UnignoredSelection) {
   input = {4, 0, 4, 0};
   expected = {4, 0, 4, 0};
   TEST_SELECTION(tree_update, test_ax_tree_manager.GetTree(), input, expected);
+}
+
+TEST(AXTreeTest, GetChildrenOrSiblings) {
+  // 1
+  // ├── 2
+  // │   └── 5
+  // ├── 3
+  // └── 4
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(5);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].child_ids = {2, 3, 4};
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].child_ids = {5};
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[3].id = 4;
+  tree_update.nodes[4].id = 5;
+
+  AXTree tree(tree_update);
+
+  EXPECT_EQ(tree.GetFromId(2), tree.GetFromId(1)->GetFirstChild());
+  EXPECT_EQ(tree.GetFromId(5), tree.GetFromId(2)->GetFirstChild());
+  EXPECT_EQ(nullptr, tree.GetFromId(3)->GetFirstChild());
+  EXPECT_EQ(nullptr, tree.GetFromId(4)->GetFirstChild());
+  EXPECT_EQ(nullptr, tree.GetFromId(5)->GetFirstChild());
+
+  EXPECT_EQ(tree.GetFromId(4), tree.GetFromId(1)->GetLastChild());
+  EXPECT_EQ(tree.GetFromId(5), tree.GetFromId(2)->GetLastChild());
+  EXPECT_EQ(nullptr, tree.GetFromId(3)->GetLastChild());
+  EXPECT_EQ(nullptr, tree.GetFromId(4)->GetLastChild());
+  EXPECT_EQ(nullptr, tree.GetFromId(5)->GetLastChild());
+
+  EXPECT_EQ(nullptr, tree.GetFromId(1)->GetPreviousSibling());
+  EXPECT_EQ(nullptr, tree.GetFromId(2)->GetPreviousSibling());
+  EXPECT_EQ(tree.GetFromId(2), tree.GetFromId(3)->GetPreviousSibling());
+  EXPECT_EQ(tree.GetFromId(3), tree.GetFromId(4)->GetPreviousSibling());
+  EXPECT_EQ(nullptr, tree.GetFromId(5)->GetPreviousSibling());
+
+  EXPECT_EQ(nullptr, tree.GetFromId(1)->GetNextSibling());
+  EXPECT_EQ(tree.GetFromId(3), tree.GetFromId(2)->GetNextSibling());
+  EXPECT_EQ(tree.GetFromId(4), tree.GetFromId(3)->GetNextSibling());
+  EXPECT_EQ(nullptr, tree.GetFromId(4)->GetNextSibling());
+  EXPECT_EQ(nullptr, tree.GetFromId(5)->GetNextSibling());
 }
 
 TEST(AXTreeTest, ChildTreeIds) {

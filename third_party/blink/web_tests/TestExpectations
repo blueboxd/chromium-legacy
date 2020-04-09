@@ -805,6 +805,16 @@ crbug.com/1066577 external/wpt/css/css-lists/li-value-reversed-005.html [ Failur
 crbug.com/1066577 external/wpt/css/css-lists/li-value-reversed-004.html [ Failure ]
 crbug.com/1066577 external/wpt/css/css-lists/li-value-reversed-003.html [ Failure ]
 
+# Comparing variable font rendering to static font rendering fails on systems that use FreeType for variable fonts
+crbug.com/1067242 [ Win7 ] external/wpt/css/css-text-decor/text-underline-position-from-font-variable.html [ Failure ]
+crbug.com/1067242 [ Mac10.10 ] external/wpt/css/css-text-decor/text-underline-position-from-font-variable.html [ Failure ]
+crbug.com/1067242 [ Mac10.11 ] external/wpt/css/css-text-decor/text-underline-position-from-font-variable.html [ Failure ]
+crbug.com/1067242 [ Mac10.12 ] external/wpt/css/css-text-decor/text-underline-position-from-font-variable.html [ Failure ]
+crbug.com/1067242 [ Mac10.13 ] external/wpt/css/css-text-decor/text-underline-position-from-font-variable.html [ Failure ]
+crbug.com/1067242 [ Retina ] external/wpt/css/css-text-decor/text-underline-position-from-font-variable.html [ Failure ]
+# Windows 10 bots are not on high enough a Windows version to render variable fonts in DirectWrite
+crbug.com/1068947 [ Win10 ] external/wpt/css/css-text-decor/text-underline-position-from-font-variable.html [ Failure ]
+
 # ====== Layout team owned tests to here ======
 
 # ====== LayoutNG-only failures from here ======

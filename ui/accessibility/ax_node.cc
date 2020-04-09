@@ -107,67 +107,177 @@ AXNode* AXNode::GetDeepestLastUnignoredChild() const {
   return deepest_child;
 }
 
+// Search for the next sibling of this node, skipping over any ignored nodes
+// encountered.
+//
+// In our search:
+//   If we find an ignored sibling, we consider its children as our siblings.
+//   If we run out of siblings, we consider an ignored parent's siblings as our
+//     own siblings.
+//
+// Note: this behaviour of 'skipping over' an ignored node makes this subtly
+// different to finding the next (direct) sibling which is unignored.
+//
+// Consider a tree, where (i) marks a node as ignored:
+//
+//   1
+//   ├── 2
+//   ├── 3(i)
+//   │   └── 5
+//   └── 4
+//
+// The next sibling of node 2 is node 3, which is ignored.
+// The next unignored sibling of node 2 could be either:
+//  1) node 4 - next unignored sibling in the literal tree, or
+//  2) node 5 - next unignored sibling in the logical document.
+//
+// There is no next sibling of node 5.
+// The next unignored sibling of node 5 could be either:
+//  1) null   - no next sibling in the literal tree, or
+//  2) node 4 - next unignored sibling in the logical document.
+//
+// In both cases, this method implements approach (2).
+//
+// TODO(chrishall): Can we remove this non-reflexive case by forbidding
+//   GetNextUnignoredSibling calls on an ignored started node?
+// Note: this means that Next/Previous-UnignoredSibling are not reflexive if
+// either of the nodes in question are ignored. From above we get an example:
+//   NextUnignoredSibling(3)     is 4, but
+//   PreviousUnignoredSibling(4) is 5.
+//
+// The view of unignored siblings for node 3 includes both node 2 and node 4:
+//    2 <-- [3(i)] --> 4
+//
+// Whereas nodes 2, 5, and 4 do not consider node 3 to be an unignored sibling:
+// null <-- [2] --> 5
+//    2 <-- [5] --> 4
+//    5 <-- [4] --> null
 AXNode* AXNode::GetNextUnignoredSibling() const {
   DCHECK(!tree_->GetTreeUpdateInProgressState());
-  AXNode* parent_node = parent();
-  size_t index = index_in_parent() + 1;
-  while (parent_node) {
-    if (index < parent_node->children().size()) {
-      AXNode* child = parent_node->children()[index];
-      if (!child->IsIgnored())
-        return child;  // valid position (unignored child)
+  const AXNode* current = this;
 
-      // If the node is ignored, drill down to the ignored node's first child.
-      parent_node = child;
-      index = 0;
+  // If there are children of the |current| node still to consider.
+  bool considerChildren = false;
+
+  while (current) {
+    // A |candidate| sibling to consider.
+    // If it is unignored then we have found our result.
+    // Otherwise promote it to |current| and consider its children.
+    AXNode* candidate;
+
+    if (considerChildren && (candidate = current->GetFirstChild())) {
+      if (!candidate->IsIgnored())
+        return candidate;
+      current = candidate;
+
+    } else if ((candidate = current->GetNextSibling())) {
+      if (!candidate->IsIgnored())
+        return candidate;
+      current = candidate;
+      // Look through the ignored candidate node to consider their children as
+      // though they were siblings.
+      considerChildren = true;
+
     } else {
-      // If the parent is not ignored and we are past all of its children, there
-      // is no next sibling.
-      if (!parent_node->IsIgnored())
+      // Continue our search through a parent iff they are ignored.
+      //
+      // If |current| has an ignored parent, then we consider the parent's
+      // siblings as though they were siblings of |current|.
+      //
+      // Given a tree:
+      //   1
+      //   ├── 2(?)
+      //   │   └── [4]
+      //   └── 3
+      //
+      // Node 4's view of siblings:
+      //   literal tree:   null <-- [4] --> null
+      //
+      // If node 2 is not ignored, then node 4's view doesn't change, and we
+      // have no more nodes to consider:
+      //   unignored tree: null <-- [4] --> null
+      //
+      // If instead node 2 is ignored, then node 4's view of siblings grows to
+      // include node 3, and we have more nodes to consider:
+      //   unignored tree: null <-- [4] --> 3
+      current = current->parent();
+      if (!current || !current->IsIgnored())
         return nullptr;
 
-      // If the parent is ignored and we are past all of its children, continue
-      // on to the parent's next sibling.
-      index = parent_node->index_in_parent() + 1;
-      parent_node = parent_node->parent();
+      // We have already considered all relevant descendants of |current|.
+      considerChildren = false;
     }
   }
+
   return nullptr;
 }
 
+// Search for the previous sibling of this node, skipping over any ignored nodes
+// encountered.
+//
+// In our search for a sibling:
+//   If we find an ignored sibling, we may consider its children as siblings.
+//   If we run out of siblings, we may consider an ignored parent's siblings as
+//     our own.
+//
+// See the documentation for |GetNextUnignoredSibling| for more details.
 AXNode* AXNode::GetPreviousUnignoredSibling() const {
   DCHECK(!tree_->GetTreeUpdateInProgressState());
-  AXNode* parent_node = parent();
-  base::Optional<size_t> index;
-  if (index_in_parent() > 0)
-    index = index_in_parent() - 1;
-  while (parent_node) {
-    if (index.has_value()) {
-      AXNode* child = parent_node->children()[index.value()];
-      if (!child->IsIgnored())
-        return child;  // valid position (unignored child)
+  const AXNode* current = this;
 
-      // If the node is ignored, drill down to the ignored node's last child.
-      parent_node = child;
-      if (parent_node->children().empty())
-        index = base::nullopt;
-      else
-        index = parent_node->children().size() - 1;
+  // If there are children of the |current| node still to consider.
+  bool considerChildren = false;
+
+  while (current) {
+    // A |candidate| sibling to consider.
+    // If it is unignored then we have found our result.
+    // Otherwise promote it to |current| and consider its children.
+    AXNode* candidate;
+
+    if (considerChildren && (candidate = current->GetLastChild())) {
+      if (!candidate->IsIgnored())
+        return candidate;
+      current = candidate;
+
+    } else if ((candidate = current->GetPreviousSibling())) {
+      if (!candidate->IsIgnored())
+        return candidate;
+      current = candidate;
+      // Look through the ignored candidate node to consider their children as
+      // though they were siblings.
+      considerChildren = true;
+
     } else {
-      // If the parent is not ignored and we are past all of its children, there
-      // is no next sibling.
-      if (!parent_node->IsIgnored())
+      // Continue our search through a parent iff they are ignored.
+      //
+      // If |current| has an ignored parent, then we consider the parent's
+      // siblings as though they were siblings of |current|.
+      //
+      // Given a tree:
+      //   1
+      //   ├── 2
+      //   └── 3(?)
+      //       └── [4]
+      //
+      // Node 4's view of siblings:
+      //   literal tree:   null <-- [4] --> null
+      //
+      // If node 3 is not ignored, then node 4's view doesn't change, and we
+      // have no more nodes to consider:
+      //   unignored tree: null <-- [4] --> null
+      //
+      // If instead node 3 is ignored, then node 4's view of siblings grows to
+      // include node 2, and we have more nodes to consider:
+      //   unignored tree:    2 <-- [4] --> null
+      current = current->parent();
+      if (!current || !current->IsIgnored())
         return nullptr;
 
-      // If the parent is ignored and we are past all of its children, continue
-      // on to the parent's previous sibling.
-      if (parent_node->index_in_parent() == 0)
-        index = base::nullopt;
-      else
-        index = parent_node->index_in_parent() - 1;
-      parent_node = parent_node->parent();
+      // We have already considered all relevant descendants of |current|.
+      considerChildren = false;
     }
   }
+
   return nullptr;
 }
 
@@ -206,6 +316,41 @@ AXNode::UnignoredChildIterator AXNode::UnignoredChildrenBegin() const {
 AXNode::UnignoredChildIterator AXNode::UnignoredChildrenEnd() const {
   DCHECK(!tree_->GetTreeUpdateInProgressState());
   return UnignoredChildIterator(this, nullptr);
+}
+
+// The first (direct) child, ignored or unignored.
+AXNode* AXNode::GetFirstChild() const {
+  if (children().size() == 0)
+    return nullptr;
+  return children()[0];
+}
+
+// The last (direct) child, ignored or unignored.
+AXNode* AXNode::GetLastChild() const {
+  size_t n = children().size();
+  if (n == 0)
+    return nullptr;
+  return children()[n - 1];
+}
+
+// The previous (direct) sibling, ignored or unignored.
+AXNode* AXNode::GetPreviousSibling() const {
+  // Root nodes lack a parent, their index_in_parent should be 0.
+  DCHECK(!parent() ? index_in_parent() == 0 : true);
+  size_t index = index_in_parent();
+  if (index == 0)
+    return nullptr;
+  return parent()->children()[index - 1];
+}
+
+// The next (direct) sibling, ignored or unignored.
+AXNode* AXNode::GetNextSibling() const {
+  if (!parent())
+    return nullptr;
+  size_t nextIndex = index_in_parent() + 1;
+  if (nextIndex >= parent()->children().size())
+    return nullptr;
+  return parent()->children()[nextIndex];
 }
 
 bool AXNode::IsText() const {

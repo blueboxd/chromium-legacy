@@ -203,9 +203,6 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
     ui::AXEventGenerator::Event event_type,
     BrowserAccessibility* node) {
   BrowserAccessibilityManager::FireGeneratedEvent(event_type, node);
-  if (!node->IsNative())
-    return;
-
   auto native_node = ToBrowserAccessibilityCocoa(node);
   DCHECK(native_node);
 
@@ -469,9 +466,6 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
 void BrowserAccessibilityManagerMac::FireNativeMacNotification(
     NSString* mac_notification,
     BrowserAccessibility* node) {
-  if (!node->IsNative())
-    return;
-
   DCHECK(mac_notification);
   auto native_node = ToBrowserAccessibilityCocoa(node);
   DCHECK(native_node);
@@ -494,7 +488,7 @@ void BrowserAccessibilityManagerMac::OnAtomicUpdateFinished(
   std::set<const BrowserAccessibilityCocoa*> changed_editable_roots;
   for (const auto& change : changes) {
     const BrowserAccessibility* obj = GetFromAXNode(change.node);
-    if (obj && obj->IsNative() && obj->HasState(ax::mojom::State::kEditable)) {
+    if (obj && obj->HasState(ax::mojom::State::kEditable)) {
       const BrowserAccessibilityCocoa* editable_root =
           [ToBrowserAccessibilityCocoa(obj) editableAncestor];
       if (editable_root && [editable_root instanceActive])

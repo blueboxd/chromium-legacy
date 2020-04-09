@@ -6,7 +6,7 @@ PASS Imperative slot API can assign nodes in manual slot assignment.
 PASS Order of slotables is preserved in manual slot assignment.
 PASS Previously assigned slotable is moved to new slot when it's reassigned.
 PASS Order and assignment of nodes are preserved during multiple assignment in a row.
-FAIL Assigning invalid nodes causes exception and slot returns to its previous state. assert_array_equals: lengths differ, expected array [] length 0, got [Element node <div id="c1"></div>, Element node <div id="c2"></div>] length 2
+PASS Assigning invalid nodes causes exception and slot returns to its previous state.
 PASS Moving a slot to a new host, the slot loses its previously assigned slotables.
 PASS Moving a slot's tree order position within a shadow host has no impact on its assigned slotables.
 PASS Appending slotable to different host, it loses slot assignment. It can be re-assigned within a new host.

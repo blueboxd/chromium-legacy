@@ -56,6 +56,7 @@ bool StructTraits<tracing::mojom::PerfettoBuiltinDataSourceDataView,
   out->set_disable_clock_snapshotting(data.disable_clock_snapshotting());
   out->set_disable_trace_config(data.disable_trace_config());
   out->set_disable_system_info(data.disable_system_info());
+  out->set_disable_service_events(data.disable_service_events());
   return true;
 }
 

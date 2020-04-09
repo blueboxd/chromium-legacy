@@ -752,7 +752,7 @@ TEST_F(WindowTreeHostManagerTest, SwapPrimaryById) {
   EXPECT_EQ("200,0 300x300", secondary_display.bounds().ToString());
   EXPECT_EQ(gfx::Rect(200, 0, 300, shelf_inset_second).ToString(),
             secondary_display.work_area().ToString());
-  EXPECT_EQ("id=2200000001, parent=2200000000, right, 50",
+  EXPECT_EQ("id=2200000257, parent=2200000000, right, 50",
             display_manager()
                 ->GetCurrentDisplayLayout()
                 .placement_list[0]
@@ -777,7 +777,7 @@ TEST_F(WindowTreeHostManagerTest, SwapPrimaryById) {
   const display::DisplayLayout& inverted_layout =
       display_manager()->GetCurrentDisplayLayout();
 
-  EXPECT_EQ("id=2200000000, parent=2200000001, left, -50",
+  EXPECT_EQ("id=2200000000, parent=2200000257, left, -50",
             inverted_layout.placement_list[0].ToString());
   // Test if the bounds are correctly swapped.
   display::Display swapped_primary =

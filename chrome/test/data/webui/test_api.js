@@ -179,6 +179,14 @@ Test.prototype = {
   testShouldFail: false,
 
   /**
+   * Starts a local test server if true and injects the server's base url to
+   * each test. The url can be accessed from
+   * |testRunnerParams.testServerBaseUrl|.
+   * @type {boolean}
+   */
+  testServer: false,
+
+  /**
    * Extra libraries to add before loading this test file.
    * @type {Array<string>}
    */

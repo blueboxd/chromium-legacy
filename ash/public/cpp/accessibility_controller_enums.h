@@ -122,10 +122,10 @@ enum class AutoclickEventType {
   kMaxValue = kScroll
 };
 
-// The Automatic Clicks feature's on-screen menu display location. These values
-// are written to prefs so they should not be changed. New values should be
-// added at the end.
-enum class AutoclickMenuPosition {
+// Display location of the on-screen floating menus used by accessibility features(e.g. the
+// Automatic Clicks) . These values are written to prefs so they should not be changed. New values
+// should be added at the end.
+enum class FloatingMenuPosition {
   // The bottom right of the screen.
   kBottomRight,
 

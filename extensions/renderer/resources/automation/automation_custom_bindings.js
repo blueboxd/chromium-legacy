@@ -190,7 +190,11 @@ automationInternal.onChildTreeID.addListener(function(childTreeId) {
   // browser process and set up a callback when it loads to attach that
   // tree as a child of this node and fire appropriate events.
   automationUtil.storeTreeCallback(childTreeId, function(root) {
-    privates(root).impl.dispatchEvent('loadComplete', 'page');
+    const rootImpl = privates(root).impl;
+    rootImpl.dispatchEvent('loadComplete', 'page');
+    if (rootImpl.parent) {
+      privates(rootImpl.parent).impl.dispatchEvent('childrenChanged');
+    }
   }, true);
 
   automationInternal.enableTree(childTreeId);

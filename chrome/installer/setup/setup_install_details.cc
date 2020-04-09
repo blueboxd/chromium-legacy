@@ -31,27 +31,6 @@ const install_static::InstallConstants* FindInstallMode(
   return &install_static::kInstallModes[0];
 }
 
-// Returns true if Chrome is installed (i.e., has a "pv" value) and its
-// UninstallArguments contains "--multi-install".
-bool IsUpdatingFromMulti(const install_static::InstallConstants& mode,
-                         bool system_level) {
-  const HKEY root = system_level ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-  const wchar_t* const app_guid = mode.app_guid;
-  base::win::RegKey key;
-  base::string16 value;
-
-  return key.Open(root, install_static::GetClientsKeyPath(app_guid).c_str(),
-                  KEY_QUERY_VALUE | KEY_WOW64_32KEY) == ERROR_SUCCESS &&
-         key.ReadValue(google_update::kRegVersionField, &value) ==
-             ERROR_SUCCESS &&
-         !value.empty() &&
-         key.Open(root, install_static::GetClientStateKeyPath(app_guid).c_str(),
-                  KEY_QUERY_VALUE | KEY_WOW64_32KEY) == ERROR_SUCCESS &&
-         key.ReadValue(installer::kUninstallArgumentsField, &value) ==
-             ERROR_SUCCESS &&
-         value.find(L"--multi-install") != base::string16::npos;
-}
-
 }  // namespace
 
 void InitializeInstallDetails(
@@ -87,18 +66,15 @@ std::unique_ptr<install_static::PrimaryInstallDetails> MakeInstallDetails(
   // ChannelStrategy. For brands that do not support Google Update, the channel
   // is an empty string. For modes using the FIXED strategy, the channel is the
   // default_channel_name in the mode. For modes using the ADDITIONAL_PARAMETERS
-  // strategy, the channel is parsed from the "ap" value in either the binaries'
-  // ClientState registry key or the mode's ClientState registry key. Which one
-  // is used depends on whether or not this Chrome is updating from a legacy
-  // multi-install Chrome.
+  // strategy, the channel is parsed from the "ap" value in the mode's
+  // ClientState registry key.
 
   // Cache the ap and cohort name values found in the registry for use in crash
   // keys.
   base::string16 update_ap;
   base::string16 update_cohort_name;
   details->set_channel(install_static::DetermineChannel(
-      *mode, system_level, IsUpdatingFromMulti(*mode, system_level), &update_ap,
-      &update_cohort_name));
+      *mode, system_level, &update_ap, &update_cohort_name));
   details->set_update_ap(update_ap);
   details->set_update_cohort_name(update_cohort_name);
 

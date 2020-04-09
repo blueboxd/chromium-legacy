@@ -1715,9 +1715,12 @@ bool AutomationInternalCustomBindings::GetFocusInternal(
     return false;
 
   // If the focused node is the owner of a child tree, that indicates
-  // a node within the child tree is the one that actually has focus.
+  // a node within the child tree is the one that actually has focus. This
+  // doesn't apply to portals: portals have a child tree, but nothing in the
+  // tree can have focus.
   while (focus->data().HasStringAttribute(
-      ax::mojom::StringAttribute::kChildTreeId)) {
+             ax::mojom::StringAttribute::kChildTreeId) &&
+         focus->data().role != ax::mojom::Role::kPortal) {
     // Try to keep following focus recursively, by letting |tree_id| be the
     // new subtree to search in, while keeping |focus_tree_id| set to the tree
     // where we know we found a focused node.

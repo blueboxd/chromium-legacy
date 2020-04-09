@@ -4,10 +4,10 @@ console-format-es6.js:15 Promise {<rejected>: -0}
 console-format-es6.js:16 [Promise]
 globals[0]
 Promise {<rejected>: -0}
-console-format-es6.js:15 Promise {<resolved>: 1}
+console-format-es6.js:15 Promise {<fulfilled>: 1}
 console-format-es6.js:16 [Promise]
 globals[1]
-Promise {<resolved>: 1}
+Promise {<fulfilled>: 1}
 console-format-es6.js:15 Promise {<pending>}
 console-format-es6.js:16 [Promise]
 globals[2]
@@ -78,18 +78,18 @@ Promise {<rejected>: -0}
     __proto__: Promise
     [[PromiseStatus]]: "rejected"
     [[PromiseValue]]: -0
-console-format-es6.js:15 Promise {<resolved>: 1}
+console-format-es6.js:15 Promise {<fulfilled>: 1}
     __proto__: Promise
-    [[PromiseStatus]]: "resolved"
+    [[PromiseStatus]]: "fulfilled"
     [[PromiseValue]]: 1
 console-format-es6.js:16 [Promise]
-    0: Promise {<resolved>: 1}
+    0: Promise {<fulfilled>: 1}
     length: 1
     __proto__: Array(0)
 globals[1]
-Promise {<resolved>: 1}
+Promise {<fulfilled>: 1}
     __proto__: Promise
-    [[PromiseStatus]]: "resolved"
+    [[PromiseStatus]]: "fulfilled"
     [[PromiseValue]]: 1
 console-format-es6.js:15 Promise {<pending>}
     __proto__: Promise

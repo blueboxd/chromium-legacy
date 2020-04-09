@@ -22,6 +22,7 @@
 #include "third_party/perfetto/include/perfetto/tracing/event_context.h"
 #include "third_party/perfetto/protos/perfetto/trace/interned_data/interned_data.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_thread_descriptor.pbzero.h"
+#include "third_party/perfetto/protos/perfetto/trace/track_event/counter_descriptor.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/track_event.pbzero.h"
 
 namespace tracing {
@@ -125,12 +126,16 @@ class COMPONENT_EXPORT(TRACING_CPP) TrackEventThreadLocalEventSink
  private:
   static constexpr size_t kMaxCompleteEventDepth = 30;
 
-  void EmitTrackDescriptor(
-      protozero::MessageHandle<perfetto::protos::pbzero::TracePacket>*
-          trace_packet,
-      base::trace_event::TraceEvent* trace_event,
+  void EmitThreadTrackDescriptor(base::trace_event::TraceEvent* trace_event,
+                                 base::TimeTicks timestamp,
+                                 const char* maybe_new_name = nullptr);
+  void EmitCounterTrackDescriptor(
       base::TimeTicks timestamp,
-      const char* maybe_new_name = nullptr);
+      uint64_t thread_track_uuid,
+      uint64_t counter_track_uuid_bit,
+      perfetto::protos::pbzero::CounterDescriptor::BuiltinCounterType
+          counter_type,
+      uint64_t unit_multiplier = 0u);
   void DoResetIncrementalState(base::trace_event::TraceEvent* trace_event,
                                bool explicit_timestamp);
   void SetPacketTimestamp(

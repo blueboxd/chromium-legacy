@@ -19,6 +19,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -125,7 +126,6 @@ bool IsWindows10OrNewer() {
 #endif
 }
 
-
 void DisableWelcomePages(const std::vector<Profile*>& profiles) {
   for (Profile* profile : profiles)
     profile->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, true);
@@ -148,6 +148,73 @@ Browser* CloseBrowserAndOpenNew(Browser* browser, Profile* profile) {
 #endif  // !defined(OS_CHROMEOS)
 
 typedef base::Optional<policy::PolicyLevel> PolicyVariant;
+
+// This class waits until all browser windows are closed, and then runs
+// a quit closure.
+class AllBrowsersClosedWaiter : public BrowserListObserver {
+ public:
+  explicit AllBrowsersClosedWaiter(base::OnceClosure quit_closure);
+  AllBrowsersClosedWaiter(const AllBrowsersClosedWaiter&) = delete;
+  AllBrowsersClosedWaiter& operator=(const AllBrowsersClosedWaiter&) = delete;
+  ~AllBrowsersClosedWaiter() override;
+
+  // BrowserListObserver:
+  void OnBrowserRemoved(Browser* browser) override;
+
+ private:
+  base::OnceClosure quit_closure_;
+};
+
+AllBrowsersClosedWaiter::AllBrowsersClosedWaiter(base::OnceClosure quit_closure)
+    : quit_closure_(std::move(quit_closure)) {
+  BrowserList::AddObserver(this);
+}
+
+AllBrowsersClosedWaiter::~AllBrowsersClosedWaiter() {
+  BrowserList::RemoveObserver(this);
+}
+
+void AllBrowsersClosedWaiter::OnBrowserRemoved(Browser* browser) {
+  if (chrome::GetTotalBrowserCount() == 0)
+    std::move(quit_closure_).Run();
+}
+
+// This class waits for a specified number of sessions to be restored.
+class SessionsRestoredWaiter {
+ public:
+  explicit SessionsRestoredWaiter(base::OnceClosure quit_closure,
+                                  int num_session_restores_expected);
+  SessionsRestoredWaiter(const SessionsRestoredWaiter&) = delete;
+  SessionsRestoredWaiter& operator=(const SessionsRestoredWaiter&) = delete;
+  ~SessionsRestoredWaiter();
+
+ private:
+  // Callback for session restore notifications.
+  void OnSessionRestoreDone(int num_tabs_restored);
+
+  // For automatically unsubscribing from callback-based notifications.
+  SessionRestore::CallbackSubscription callback_subscription_;
+  base::OnceClosure quit_closure_;
+  int num_session_restores_expected_;
+  int num_sessions_restored_ = 0;
+};
+
+SessionsRestoredWaiter::SessionsRestoredWaiter(
+    base::OnceClosure quit_closure,
+    int num_session_restores_expected)
+    : quit_closure_(std::move(quit_closure)),
+      num_session_restores_expected_(num_session_restores_expected) {
+  callback_subscription_ = SessionRestore::RegisterOnSessionRestoredCallback(
+      base::BindRepeating(&SessionsRestoredWaiter::OnSessionRestoreDone,
+                          base::Unretained(this)));
+}
+
+SessionsRestoredWaiter::~SessionsRestoredWaiter() = default;
+
+void SessionsRestoredWaiter::OnSessionRestoreDone(int num_tabs_restored) {
+  if (++num_sessions_restored_ == num_session_restores_expected_)
+    std::move(quit_closure_).Run();
+}
 
 }  // namespace
 
@@ -857,6 +924,85 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
 
   // profile_home2 was not launched since it would've only opened the home page.
   ASSERT_EQ(0u, chrome::GetBrowserCount(profile_home2));
+}
+
+// This tests that opening multiple profiles with session restore enabled,
+// shutting down, and then launching with kNoStartupWindow doesn't restore
+// the previously opened profiles.
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, RestoreWithNoStartupWindow) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+
+  // Create 2 more profiles.
+  base::FilePath dest_path1 = profile_manager->user_data_dir().Append(
+      FILE_PATH_LITERAL("New Profile 1"));
+  base::FilePath dest_path2 = profile_manager->user_data_dir().Append(
+      FILE_PATH_LITERAL("New Profile 2"));
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  Profile* profile1 = profile_manager->GetProfile(dest_path1);
+  ASSERT_TRUE(profile1);
+  Profile* profile2 = profile_manager->GetProfile(dest_path2);
+  ASSERT_TRUE(profile2);
+
+  DisableWelcomePages({profile1, profile2});
+
+  // Set the profiles to open last visited pages.
+  SessionStartupPref pref_last(SessionStartupPref::LAST);
+  SessionStartupPref::SetStartupPref(profile1, pref_last);
+  SessionStartupPref::SetStartupPref(profile2, pref_last);
+
+  auto keep_alive = std::make_unique<ScopedKeepAlive>(
+      KeepAliveOrigin::SESSION_RESTORE, KeepAliveRestartOption::DISABLED);
+
+  Profile* default_profile = browser()->profile();
+
+  // Open a page with profile1 and profile2.
+  Browser* browser1 = Browser::Create({Browser::TYPE_NORMAL, profile1, true});
+  chrome::NewTab(browser1);
+  ui_test_utils::NavigateToURL(browser1,
+                               embedded_test_server()->GetURL("/empty.html"));
+
+  Browser* browser2 = Browser::Create({Browser::TYPE_NORMAL, profile2, true});
+  chrome::NewTab(browser2);
+  ui_test_utils::NavigateToURL(browser2,
+                               embedded_test_server()->GetURL("/empty.html"));
+  // Close the browsers.
+  chrome::ExecuteCommand(browser(), IDC_EXIT);
+  {
+    base::RunLoop run_loop;
+    AllBrowsersClosedWaiter waiter(run_loop.QuitClosure());
+    run_loop.Run();
+  }
+  base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
+  dummy.AppendSwitch(switches::kNoStartupWindow);
+
+  StartupBrowserCreator browser_creator;
+  std::vector<Profile*> last_opened_profiles = {profile1, profile2};
+  browser_creator.Start(dummy, profile_manager->user_data_dir(),
+                        default_profile, last_opened_profiles);
+
+  // TODO(davidbienvenu): Waiting for some sort of browser is started
+  // notification would be better. But, we're not opening any browser
+  // windows, so we'd need to invent a new notification.
+  content::RunAllTasksUntilIdle();
+
+  // No browser windows should be opened.
+  EXPECT_EQ(chrome::GetBrowserCount(profile1), 0u);
+  EXPECT_EQ(chrome::GetBrowserCount(profile2), 0u);
+
+  base::CommandLine empty(base::CommandLine::NO_PROGRAM);
+  base::RunLoop run_loop;
+  SessionsRestoredWaiter restore_waiter(run_loop.QuitClosure(), 2);
+
+  StartupBrowserCreator::ProcessCommandLineAlreadyRunning(empty, {},
+                                                          dest_path1);
+  run_loop.Run();
+
+  // profile1 and profile2 browser windows should be opened.
+  EXPECT_EQ(chrome::GetBrowserCount(profile1), 1u);
+  EXPECT_EQ(chrome::GetBrowserCount(profile2), 1u);
 }
 
 // Flaky. See https://crbug.com/819976.

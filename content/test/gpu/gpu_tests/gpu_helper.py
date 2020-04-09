@@ -130,10 +130,15 @@ def GetCommandDecoder(gpu_info):
 def GetSkiaRenderer(extra_browser_args):
   if extra_browser_args:
     for o in extra_browser_args:
-      if "UseSkiaRenderer" in o:
+      if o.startswith('--enable-features') and "UseSkiaRenderer" in o:
         return 'skia-renderer'
+      if o.startswith('--disable-features') and "UseSkiaRenderer" in o:
+        return 'no-skia-renderer'
       if "--disable-vulkan-fallback-to-gl-for-testing" in o:
         return 'skia-renderer'
+  # TODO(kylechar): The feature is enabled/disabled differently depending on
+  # platform and official build status. Find out if SkiaRenderer is enabled
+  # through GPU info instead.
   return 'no-skia-renderer'
 
 

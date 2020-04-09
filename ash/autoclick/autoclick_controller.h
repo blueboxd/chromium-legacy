@@ -74,7 +74,7 @@ class ASH_EXPORT AutoclickController
   void SetMovementThreshold(int movement_threshold);
 
   // Sets the menu position and updates the UI.
-  void SetMenuPosition(AutoclickMenuPosition menu_position);
+  void SetMenuPosition(FloatingMenuPosition menu_position);
 
   // Performs the given ScrollPadAction at the current scrolling point.
   void DoScrollAction(ScrollPadAction action);
@@ -166,7 +166,7 @@ class ASH_EXPORT AutoclickController
   // manually, the position will be fixed regardless of language direction and
   // shelf position. This probably means adding a new AutoclickMenuPostion
   // enum for "system default".
-  AutoclickMenuPosition menu_position_ = kDefaultAutoclickMenuPosition;
+  FloatingMenuPosition menu_position_ = kDefaultAutoclickMenuPosition;
   int mouse_event_flags_ = ui::EF_NONE;
   // The target window is observed by AutoclickController for the duration
   // of a autoclick gesture.

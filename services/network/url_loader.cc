@@ -76,12 +76,7 @@ using ConcerningHeaderId = URLLoader::ConcerningHeaderId;
 // mojo::core::Core::CreateDataPipe
 constexpr size_t kBlockedBodyAllocationSize = 1;
 
-constexpr char kCrossOriginEmbedderPolicyValueHeader[] =
-    "Cross-Origin-Embedder-Policy";
-constexpr char kCrossOriginEmbedderPolicyValueReportOnlyHeader[] =
-    "Cross-Origin-Embedder-Policy-Report-Only";
 constexpr char kCrossOriginOpenerPolicyHeader[] = "Cross-Origin-Opener-Policy";
-constexpr char kRequireCorp[] = "require-corp";
 
 // TODO: this duplicates some of PopulateResourceResponse in
 // content/browser/loader/resource_loader.cc
@@ -446,28 +441,13 @@ std::pair<network::mojom::CrossOriginEmbedderPolicyValue,
 ParseCrossOriginEmbedderPolicyValueInternal(
     const net::HttpResponseHeaders* headers,
     base::StringPiece header_name) {
-  constexpr auto kNone = mojom::CrossOriginEmbedderPolicyValue::kNone;
-  using Item = net::structured_headers::Item;
   std::string header_value;
   if (!headers ||
       !headers->GetNormalizedHeader(header_name.as_string(), &header_value)) {
-    return std::make_pair(kNone, base::nullopt);
+    return std::make_pair(mojom::CrossOriginEmbedderPolicyValue::kNone,
+                          base::nullopt);
   }
-  const auto item = net::structured_headers::ParseItem(header_value);
-  if (!item || item->item.Type() != Item::kTokenType ||
-      item->item.GetString() != kRequireCorp) {
-    return std::make_pair(kNone, base::nullopt);
-  }
-  base::Optional<std::string> endpoint;
-  auto it = std::find_if(item->params.cbegin(), item->params.cend(),
-                         [](const std::pair<std::string, Item>& param) {
-                           return param.first == "report-to";
-                         });
-  if (it != item->params.end() && it->second.Type() == Item::kStringType) {
-    endpoint = it->second.GetString();
-  }
-  return std::make_pair(mojom::CrossOriginEmbedderPolicyValue::kRequireCorp,
-                        std::move(endpoint));
+  return CrossOriginEmbedderPolicy::Parse(header_value);
 }
 
 }  // namespace
@@ -1547,10 +1527,10 @@ CrossOriginEmbedderPolicy URLLoader::ParseCrossOriginEmbedderPolicyValue(
   CrossOriginEmbedderPolicy coep;
   std::tie(coep.value, coep.reporting_endpoint) =
       ParseCrossOriginEmbedderPolicyValueInternal(
-          headers, kCrossOriginEmbedderPolicyValueHeader);
+          headers, CrossOriginEmbedderPolicy::kHeaderName);
   std::tie(coep.report_only_value, coep.report_only_reporting_endpoint) =
       ParseCrossOriginEmbedderPolicyValueInternal(
-          headers, kCrossOriginEmbedderPolicyValueReportOnlyHeader);
+          headers, CrossOriginEmbedderPolicy::kReportOnlyHeaderName);
   return coep;
 }
 

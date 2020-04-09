@@ -230,7 +230,8 @@ class MockExternalUseClient : public ExternalUseClient {
  public:
   MockExternalUseClient() = default;
   MOCK_METHOD1(ReleaseImageContexts,
-               void(std::vector<std::unique_ptr<ImageContext>> image_contexts));
+               gpu::SyncToken(
+                   std::vector<std::unique_ptr<ImageContext>> image_contexts));
   MOCK_METHOD5(CreateImageContext,
                std::unique_ptr<ImageContext>(
                    const gpu::MailboxHolder&,
@@ -307,15 +308,20 @@ TEST_P(DisplayResourceProviderTest, LockForExternalUse) {
                              0x456);
   sync_token2.SetVerifyFlush();
 
+  gpu::SyncToken sync_token3(gpu::CommandBufferNamespace::GPU_IO,
+                             gpu::CommandBufferId::FromUnsafeValue(0x234),
+                             0x567);
+  sync_token3.SetVerifyFlush();
   // We will get a second release of |parent_id| now that we've released our
   // external lock.
   EXPECT_CALL(client, ReleaseImageContexts(
-                          testing::ElementsAre(SamePtr(locked_image_context))));
+                          testing::ElementsAre(SamePtr(locked_image_context))))
+      .WillOnce(Return(sync_token3));
   // UnlockResources will also call DeclareUsedResourcesFromChild.
   lock_set.UnlockResources(sync_token2);
   // The resource should be returned after the lock is released.
   EXPECT_EQ(1u, returned_to_child.size());
-  EXPECT_EQ(sync_token2, returned_to_child[0].sync_token);
+  EXPECT_EQ(sync_token3, returned_to_child[0].sync_token);
   child_resource_provider_->ReceiveReturnsFromParent(returned_to_child);
   child_resource_provider_->RemoveImportedResource(id1);
 }

@@ -100,7 +100,7 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
   void RemoveContextLostObserver(ContextLostObserver* observer) override;
 
   // ExternalUseClient implementation:
-  void ReleaseImageContexts(
+  gpu::SyncToken ReleaseImageContexts(
       const std::vector<std::unique_ptr<ImageContext>> image_contexts) override;
   std::unique_ptr<ImageContext> CreateImageContext(
       const gpu::MailboxHolder& holder,

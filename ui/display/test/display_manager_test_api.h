@@ -101,7 +101,9 @@ DISPLAY_EXPORT std::unique_ptr<DisplayLayout> CreateDisplayLayout(
 
 // Creates the DisplayIdList from ints.
 DISPLAY_EXPORT DisplayIdList CreateDisplayIdList2(int64_t id1, int64_t id2);
-DISPLAY_EXPORT DisplayIdList CreateDisplayIdListN(size_t count, ...);
+
+// Create the N number of DisplayIdList starting from |start_id},
+DISPLAY_EXPORT DisplayIdList CreateDisplayIdListN(int64_t start_id, size_t N);
 
 }  // namespace test
 }  // namespace display

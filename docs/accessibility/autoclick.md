@@ -30,7 +30,7 @@ the label “autoclick” (or, use
 [this template](https://bugs.chromium.org/p/chromium/issues/entry?summary=Autoclick%20-%20&status=Available&cc=katie%40chromium.org%2C%20qqwangxin%40google.com&labels=Pri-3%2C%20autoclick%2C&components=UI>Accessibility)).
 
 
-Open bugs have the label 
+Open bugs have the label
 “[autoclick](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=label%3Aautoclick)”.
 
 ## Developing
@@ -138,7 +138,7 @@ to accessibility tree information, and using a HitTest is able to find the view
 at the scroll location, then walks up the tree to find the first view which can
 scroll, or stops at the nearest window or dialog bounds. This logic takes place
 in autoclick.js, onAutomationHitTestResult_. When the scrolling location is
-found, the bounds of the scrollable area are highlighted with a focus ring. 
+found, the bounds of the scrollable area are highlighted with a focus ring.
 In addition, the bounds are sent back through the AccessibilityPrivate API,
 routed to the AutoclickController, which passes it via the
 AutoclickMenuBubbleController to the AutoclickScrollBubbleController, which
@@ -165,9 +165,9 @@ draw the custom shape buttons for left/right/up/down scrolling.
 The autoclick bubble menu can be positioned in the four corners of the screen
 and defaults to the same location as the volume widget (which depends on
 LTR/RTL language). AutoclickMenuBubbleController takes a preferred
-AutoclickMenuPosition enum and uses that to determine the best position for
+FloatingMenuPosition enum and uses that to determine the best position for
 the menu in AutoclickMenuBubbleController::SetPosition. This function finds
-the ideal corner of the screen, then uses CollisionDetectionUtils (also used 
+the ideal corner of the screen, then uses CollisionDetectionUtils (also used
 by Picture-in-Picture) to refine the position to avoid collisions with system
 UI.
 
@@ -178,7 +178,7 @@ if the user selects a new scroll point it will move. When a scroll point is
 selected, if the scrollable region found by the Autoclick component extension
 is large enough, the scroll bubble will be anchored near the scroll point
 itself, similarly to the way the context menu is anchored near the cursor on
-a right click. When the scrollable region is small, the scroll bubble will be 
+a right click. When the scrollable region is small, the scroll bubble will be
 anchored to the closest side of the scrollable region to the scroll point, as
 long as there is space for it on that side.
 
@@ -188,10 +188,10 @@ The AutomaticController cannot generate synthetic click events over the
 bubbles, because that would cause context and focus changes. For example, if
 the user has a drop-down menu open, clicking the autoclick menu bubble will
 cause the drop-down to close. Instead, the AutoclickController must check to
-see if an event will take place over a bubble menu, and if so, request that 
-AutoclickMenuBubbleController forward the event to the bubble via 
+see if an event will take place over a bubble menu, and if so, request that
+AutoclickMenuBubbleController forward the event to the bubble via
 AutoclickMenuBubbleController::ClickOnBubble. This generates a synthetic mouse
-event which does not propagate through the system, so there is no focus or 
+event which does not propagate through the system, so there is no focus or
 context change, allowing users to continue to interact with whatever was on
 screen.
 

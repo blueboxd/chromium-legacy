@@ -83,9 +83,6 @@ class ProductState {
     return uninstall_command_;
   }
 
-  // True if |uninstall_command| contains --multi-install.
-  bool is_multi_install() const { return multi_install_; }
-
   // Returns the set of Google Update commands.
   const AppCommands& commands() const { return commands_; }
 
@@ -107,7 +104,6 @@ class ProductState {
   DWORD eula_accepted_;
   DWORD usagestats_;
   bool msi_ : 1;
-  bool multi_install_ : 1;
   bool has_eula_accepted_ : 1;
   bool has_oem_install_ : 1;
   bool has_usagestats_ : 1;

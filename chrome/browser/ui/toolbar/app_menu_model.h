@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -195,6 +196,12 @@ class AppMenuModel : public ui::SimpleMenuModel,
   // took to select the command.
   void LogMenuMetrics(int command_id);
 
+#if defined(OS_CHROMEOS)
+  // Disables/Enables the settings item based on kSystemFeaturesDisableList
+  // pref.
+  void UpdateSettingsItemState();
+#endif  // defined(OS_CHROMEOS)
+
   // Time menu has been open. Used by LogMenuMetrics() to record the time
   // to action when the user selects a menu item.
   base::ElapsedTimer timer_;
@@ -224,6 +231,8 @@ class AppMenuModel : public ui::SimpleMenuModel,
 
   std::unique_ptr<content::HostZoomMap::Subscription>
       browser_zoom_subscription_;
+
+  PrefChangeRegistrar local_state_pref_change_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(AppMenuModel);
 };

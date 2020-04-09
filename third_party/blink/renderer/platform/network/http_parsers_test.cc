@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 
 #include "base/stl_util.h"
+#include "services/network/public/mojom/content_security_policy.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
@@ -612,6 +613,203 @@ TEST(HTTPParsersTest, ParseContentTypeOptionsTest) {
   for (const auto& test : cases) {
     SCOPED_TRACE(test.value);
     EXPECT_EQ(test.result, ParseContentTypeOptionsHeader(test.value));
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Blink's HTTP parser is reusing:
+// services/network/public/cpp/content_security_policy/, which is already tested
+// and fuzzed.
+// What needs to be tested is the basic conversion from/to blink types.
+// -----------------------------------------------------------------------------
+
+TEST(HTTPParsersTest, ParseContentSecurityPolicyEmpty) {
+  auto csp = ParseContentSecurityPolicy("HTTP/1.1 200 OK\r\n",
+                                        KURL("http://example.com"));
+  EXPECT_TRUE(csp.IsEmpty());
+}
+
+TEST(HTTPParsersTest, ParseContentSecurityPolicyMultiple) {
+  auto csp = ParseContentSecurityPolicy(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Security-Policy: frame-ancestors a.com\r\n"
+      "Content-Security-Policy: frame-ancestors b.com\r\n",
+      KURL("http://example.com"));
+  ASSERT_EQ(2u, csp.size());
+  EXPECT_EQ("frame-ancestors a.com", csp[0]->header->header_value);
+  EXPECT_EQ("frame-ancestors b.com", csp[1]->header->header_value);
+}
+
+TEST(HTTPParsersTest, ParseContentSecurityPolicyCoalesce) {
+  auto csp = ParseContentSecurityPolicy(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Security-Policy:"
+      "frame-ancestors a.com, frame-ancestors b.com\r\n",
+      KURL("http://example.com"));
+  ASSERT_EQ(2u, csp.size());
+  EXPECT_EQ("frame-ancestors a.com", csp[0]->header->header_value);
+  EXPECT_EQ("frame-ancestors b.com", csp[1]->header->header_value);
+}
+
+TEST(HTTPParsersTest, ParseContentSecurityPolicyHeader) {
+  auto csp = ParseContentSecurityPolicy(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Security-Policy: frame-ancestors a.com\r\n"
+      "Content-Security-Policy-Report-Only: frame-ancestors b.com",
+      KURL("http://example.com"));
+  ASSERT_EQ(2u, csp.size());
+
+  // Header source:
+  EXPECT_EQ(network::mojom::ContentSecurityPolicySource::kHTTP,
+            csp[0]->header->source);
+  EXPECT_EQ(network::mojom::ContentSecurityPolicySource::kHTTP,
+            csp[1]->header->source);
+
+  // Header type:
+  EXPECT_EQ(network::mojom::ContentSecurityPolicyType::kEnforce,
+            csp[0]->header->type);
+  EXPECT_EQ(network::mojom::ContentSecurityPolicyType::kReport,
+            csp[1]->header->type);
+
+  // Header value
+  EXPECT_EQ("frame-ancestors a.com", csp[0]->header->header_value);
+  EXPECT_EQ("frame-ancestors b.com", csp[1]->header->header_value);
+}
+
+TEST(HTTPParsersTest, ParseContentSecurityPolicyDirectiveName) {
+  auto policies = ParseContentSecurityPolicy(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Security-Policy: frame-ancestors 'none'\r\n"
+      "Content-Security-Policy: sandbox allow-script\r\n"
+      "Content-Security-Policy: form-action 'none'\r\n"
+      "Content-Security-Policy: navigate-to'none'\r\n"
+      "Content-Security-Policy: frame-src 'none'\r\n"
+      "Content-Security-Policy: child-src 'none'\r\n"
+      "Content-Security-Policy: script-src 'none'\r\n"
+      "Content-Security-Policy: default-src 'none'\r\n",
+      KURL("http://example.com"));
+  EXPECT_EQ(8u, policies.size());
+  // frame-ancestors
+  EXPECT_EQ(1u, policies[0]->directives.size());
+  // sandbox. TODO(https://crbug.com/1041376) Implement this.
+  EXPECT_EQ(0u, policies[1]->directives.size());
+  // form-action. Not parsed.
+  EXPECT_EQ(0u, policies[2]->directives.size());
+  // navigate-to. Not parsed.
+  EXPECT_EQ(0u, policies[3]->directives.size());
+  // frame-src. Not parsed.
+  EXPECT_EQ(0u, policies[4]->directives.size());
+  // child-src. Not parsed.
+  EXPECT_EQ(0u, policies[5]->directives.size());
+  // script-src. Not parsed.
+  EXPECT_EQ(0u, policies[6]->directives.size());
+  // default-src. Not parsed.
+  EXPECT_EQ(0u, policies[7]->directives.size());
+}
+
+TEST(HTTPParsersTest, ParseContentSecurityPolicyReportTo) {
+  auto policies = ParseContentSecurityPolicy(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Security-Policy: report-to a b\r\n",
+      KURL("http://example.com"));
+  EXPECT_TRUE(policies[0]->use_reporting_api);
+  ASSERT_EQ(2u, policies[0]->report_endpoints.size());
+  EXPECT_EQ("a", policies[0]->report_endpoints[0]);
+  EXPECT_EQ("b", policies[0]->report_endpoints[1]);
+}
+
+TEST(HTTPParsersTest, ParseContentSecurityPolicyReportUri) {
+  auto policies = ParseContentSecurityPolicy(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Security-Policy: report-uri ./report.py\r\n",
+      KURL("http://example.com"));
+  EXPECT_FALSE(policies[0]->use_reporting_api);
+  ASSERT_EQ(1u, policies[0]->report_endpoints.size());
+  EXPECT_EQ("http://example.com/report.py", policies[0]->report_endpoints[0]);
+}
+
+TEST(HTTPParsersTest, ParseContentSecurityPolicySourceBasic) {
+  auto frame_ancestors = network::mojom::CSPDirectiveName::FrameAncestors;
+  auto policies = ParseContentSecurityPolicy(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Security-Policy: frame-ancestors 'none'\r\n"
+      "Content-Security-Policy: frame-ancestors *\r\n"
+      "Content-Security-Policy: frame-ancestors 'self'\r\n"
+      "Content-Security-Policy: frame-ancestors http://a.com:22/path\r\n"
+      "Content-Security-Policy: frame-ancestors a.com:*\r\n"
+      "Content-Security-Policy: frame-ancestors */report.py\r\n",
+      KURL("http://example.com"));
+  // 'none'
+  {
+    auto source_list = policies[0]->directives.Take(frame_ancestors);
+    EXPECT_EQ(0u, source_list->sources.size());
+    EXPECT_FALSE(source_list->allow_self);
+    EXPECT_FALSE(source_list->allow_star);
+    EXPECT_FALSE(source_list->allow_response_redirects);
+  }
+
+  // *
+  {
+    auto source_list = policies[1]->directives.Take(frame_ancestors);
+    EXPECT_EQ(0u, source_list->sources.size());
+    EXPECT_FALSE(source_list->allow_self);
+    EXPECT_TRUE(source_list->allow_star);
+    EXPECT_FALSE(source_list->allow_response_redirects);
+  }
+
+  // 'self'
+  {
+    auto source_list = policies[2]->directives.Take(frame_ancestors);
+    EXPECT_EQ(0u, source_list->sources.size());
+    EXPECT_TRUE(source_list->allow_self);
+    EXPECT_FALSE(source_list->allow_star);
+    EXPECT_FALSE(source_list->allow_response_redirects);
+  }
+
+  // http://a.com:22/path
+  {
+    auto source_list = policies[3]->directives.Take(frame_ancestors);
+    EXPECT_FALSE(source_list->allow_self);
+    EXPECT_FALSE(source_list->allow_star);
+    EXPECT_FALSE(source_list->allow_response_redirects);
+    EXPECT_EQ(1u, source_list->sources.size());
+    auto& source = source_list->sources[0];
+    EXPECT_EQ("http", source->scheme);
+    EXPECT_EQ("a.com", source->host);
+    EXPECT_EQ("/path", source->path);
+    EXPECT_FALSE(source->is_host_wildcard);
+    EXPECT_FALSE(source->is_port_wildcard);
+  }
+
+  // a.com:*
+  {
+    auto source_list = policies[4]->directives.Take(frame_ancestors);
+    EXPECT_FALSE(source_list->allow_self);
+    EXPECT_FALSE(source_list->allow_star);
+    EXPECT_FALSE(source_list->allow_response_redirects);
+    EXPECT_EQ(1u, source_list->sources.size());
+    auto& source = source_list->sources[0];
+    EXPECT_EQ("", source->scheme);
+    EXPECT_EQ("a.com", source->host);
+    EXPECT_EQ("", source->path);
+    EXPECT_FALSE(source->is_host_wildcard);
+    EXPECT_TRUE(source->is_port_wildcard);
+  }
+
+  // frame-ancestors */report.py
+  {
+    auto source_list = policies[5]->directives.Take(frame_ancestors);
+    EXPECT_FALSE(source_list->allow_self);
+    EXPECT_FALSE(source_list->allow_star);
+    EXPECT_FALSE(source_list->allow_response_redirects);
+    EXPECT_EQ(1u, source_list->sources.size());
+    auto& source = source_list->sources[0];
+    EXPECT_EQ("", source->scheme);
+    EXPECT_EQ("", source->host);
+    EXPECT_EQ(-1, source->port);
+    EXPECT_EQ("/report.py", source->path);
+    EXPECT_TRUE(source->is_host_wildcard);
+    EXPECT_FALSE(source->is_port_wildcard);
   }
 }
 

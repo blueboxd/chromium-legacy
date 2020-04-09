@@ -203,15 +203,15 @@ def main(argv):
     print('[ RUN      ] %s' % os.path.relpath(actual))
     expected_output = actual_output = None
     with open(expected, 'r') as f:
-      expected_output = f.read().splitlines()
+      expected_output = f.readlines()
     with open(actual, 'r') as f:
-      actual_output =  f.read().splitlines()
+      actual_output =  f.readlines()
     if actual_output != expected_output:
       failed += 1
-      for line in difflib.unified_diff(expected_output, actual_output,
-                                       fromfile=os.path.relpath(expected),
-                                       tofile=os.path.relpath(actual)):
-        sys.stdout.write(line)
+      lines = difflib.unified_diff(expected_output, actual_output,
+                                   fromfile=os.path.relpath(expected),
+                                   tofile=os.path.relpath(actual))
+      sys.stdout.writelines(lines)
       print('[  FAILED  ] %s' % os.path.relpath(actual))
       # Don't clean up the file on failure, so the results can be referenced
       # more easily.

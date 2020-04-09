@@ -16,129 +16,42 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/policy/device_policy_builder.h"
-#include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/test/base/mixin_based_in_process_browser_test.h"
+#include "chrome/browser/chromeos/policy/device_display_cros_browser_test.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
-#include "chromeos/settings/cros_settings_names.h"
-#include "components/policy/proto/chrome_device_policy.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/display/display.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/manager/display_manager.h"
 
 namespace em = enterprise_management;
 
-namespace {
-
-display::DisplayManager* GetDisplayManager() {
-  return ash::Shell::Get()->display_manager();
-}
-
-display::Display::Rotation GetRotationOfFirstDisplay() {
-  const display::DisplayManager* const display_manager = GetDisplayManager();
-  const int64_t first_display_id = display_manager->first_display_id();
-  const display::Display& first_display =
-      display_manager->GetDisplayForId(first_display_id);
-  return first_display.rotation();
-}
-
-// Fails the test and returns ROTATE_0 if there is no second display.
-display::Display::Rotation GetRotationOfSecondDisplay() {
-  const display::DisplayManager* const display_manager = GetDisplayManager();
-  if (display_manager->GetNumDisplays() < 2) {
-    ADD_FAILURE()
-        << "Requested rotation of second display while there was only one.";
-    return display::Display::ROTATE_0;
-  }
-  const display::DisplayIdList display_id_pair =
-      display_manager->GetCurrentDisplayIdList();
-  const display::Display& second_display =
-      display_manager->GetDisplayForId(display_id_pair[1]);
-  return second_display.rotation();
-}
-
-} // anonymous namespace
-
 namespace policy {
 
 class DisplayRotationDefaultTest
-    : public policy::DevicePolicyCrosBrowserTest,
+    : public DeviceDisplayPolicyCrosBrowserTest,
       public testing::WithParamInterface<display::Display::Rotation> {
- public:
-  DisplayRotationDefaultTest() {}
-
+ protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(chromeos::switches::kLoginManager);
     command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
   }
 
-  void SetUpInProcessBrowserTestFixture() override {
-    ash::DisplayConfigurationController::DisableAnimatorForTest();
-    DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
-  }
-
-  void TearDownOnMainThread() override {
-    // If the login display is still showing, exit gracefully.
-    if (chromeos::LoginDisplayHost::default_host()) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(&chrome::AttemptExit));
-      RunUntilBrowserProcessQuits();
-    }
-  }
-
- protected:
-  void SetPolicy(int rotation) {
+  void SetRotationPolicy(int rotation) {
     em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
     proto.mutable_display_rotation_default()->set_display_rotation_default(
         static_cast<em::DisplayRotationDefaultProto::Rotation>(rotation));
-    RefreshPolicyAndWaitUntilDeviceSettingsUpdated();
+    policy_helper()->RefreshPolicyAndWaitUntilDeviceSettingsUpdated(
+        {chromeos::kDisplayRotationDefault, chromeos::kSystemUse24HourClock});
   }
 
-  // This is needed to test that refreshing the settings without change to the
-  // DisplayRotationDefault policy will not rotate the display again.
-  void SetADifferentPolicy() {
+  void RetriggerRotationPolicy() {
     em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
     const bool clock24 = proto.use_24hour_clock().use_24hour_clock();
     proto.mutable_use_24hour_clock()->set_use_24hour_clock(!clock24);
-    RefreshPolicyAndWaitUntilDeviceSettingsUpdated();
+    policy_helper()->RefreshPolicyAndWaitUntilDeviceSettingsUpdated(
+        {chromeos::kDisplayRotationDefault, chromeos::kSystemUse24HourClock});
   }
-
-  void UnsetPolicy() {
-    em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
-    proto.clear_display_rotation_default();
-    RefreshPolicyAndWaitUntilDeviceSettingsUpdated();
-  }
-
-  // Creates second display if there is none yet, or removes it if there is one.
-  void ToggleSecondDisplay() {
-    GetDisplayManager()->AddRemoveDisplay();
-    base::RunLoop().RunUntilIdle();
-  }
-
-  void RefreshPolicyAndWaitUntilDeviceSettingsUpdated() {
-    base::RunLoop run_loop;
-    // For calls from SetPolicy().
-    std::unique_ptr<chromeos::CrosSettings::ObserverSubscription> observer =
-        chromeos::CrosSettings::Get()->AddSettingsObserver(
-            chromeos::kDisplayRotationDefault, run_loop.QuitClosure());
-    // For calls from SetADifferentPolicy().
-    std::unique_ptr<chromeos::CrosSettings::ObserverSubscription> observer2 =
-        chromeos::CrosSettings::Get()->AddSettingsObserver(
-            chromeos::kSystemUse24HourClock, run_loop.QuitClosure());
-    RefreshDevicePolicy();
-    run_loop.Run();
-    // Allow tasks posted by CrosSettings observers to complete:
-    base::RunLoop().RunUntilIdle();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DisplayRotationDefaultTest);
 };
 
 // If display::Display::Rotation is ever modified and this test fails, there are
@@ -164,65 +77,71 @@ IN_PROC_BROWSER_TEST_P(DisplayRotationDefaultTest, EnumsInSync) {
 
 IN_PROC_BROWSER_TEST_P(DisplayRotationDefaultTest, FirstDisplay) {
   const display::Display::Rotation policy_rotation = GetParam();
-  EXPECT_EQ(display::Display::ROTATE_0, GetRotationOfFirstDisplay())
+  EXPECT_EQ(display::Display::ROTATE_0,
+            display_helper()->GetRotationOfFirstDisplay())
       << "Initial primary rotation before policy";
 
-  SetPolicy(policy_rotation);
+  SetRotationPolicy(policy_rotation);
   int settings_rotation;
   EXPECT_TRUE(chromeos::CrosSettings::Get()->GetInteger(
       chromeos::kDisplayRotationDefault, &settings_rotation));
   EXPECT_EQ(policy_rotation, settings_rotation)
       << "Value of CrosSettings after policy value changed";
-  EXPECT_EQ(policy_rotation, GetRotationOfFirstDisplay())
+  EXPECT_EQ(policy_rotation, display_helper()->GetRotationOfFirstDisplay())
       << "Rotation of primary display after policy";
 }
 
 IN_PROC_BROWSER_TEST_P(DisplayRotationDefaultTest, RefreshSecondDisplay) {
   const display::Display::Rotation policy_rotation = GetParam();
-  ToggleSecondDisplay();
-  EXPECT_EQ(display::Display::ROTATE_0, GetRotationOfSecondDisplay())
+  display_helper()->ToggleSecondDisplay();
+  EXPECT_EQ(display::Display::ROTATE_0,
+            display_helper()->GetRotationOfSecondDisplay())
       << "Rotation of secondary display before policy";
-  SetPolicy(policy_rotation);
-  EXPECT_EQ(policy_rotation, GetRotationOfSecondDisplay())
+  SetRotationPolicy(policy_rotation);
+  EXPECT_EQ(policy_rotation, display_helper()->GetRotationOfSecondDisplay())
       << "Rotation of already connected secondary display after policy";
 }
 
 IN_PROC_BROWSER_TEST_P(DisplayRotationDefaultTest, ConnectSecondDisplay) {
   const display::Display::Rotation policy_rotation = GetParam();
-  SetPolicy(policy_rotation);
-  ToggleSecondDisplay();
-  EXPECT_EQ(policy_rotation, GetRotationOfFirstDisplay())
+  SetRotationPolicy(policy_rotation);
+  display_helper()->ToggleSecondDisplay();
+  EXPECT_EQ(policy_rotation, display_helper()->GetRotationOfFirstDisplay())
       << "Rotation of primary display after policy";
-  EXPECT_EQ(policy_rotation, GetRotationOfSecondDisplay())
+  EXPECT_EQ(policy_rotation, display_helper()->GetRotationOfSecondDisplay())
       << "Rotation of newly connected secondary display after policy";
 }
 
+// This test is needed to test that refreshing the settings without change to
+// the DisplayRotationDefault policy will not rotate the display again because
+// it was changed by the user.
 IN_PROC_BROWSER_TEST_P(DisplayRotationDefaultTest, UserInteraction) {
   const display::Display::Rotation policy_rotation = GetParam();
   const display::Display::Rotation user_rotation = display::Display::ROTATE_90;
-  GetDisplayManager()->SetDisplayRotation(
-      GetDisplayManager()->first_display_id(), user_rotation,
+  display_helper()->GetDisplayManager()->SetDisplayRotation(
+      display_helper()->GetDisplayManager()->first_display_id(), user_rotation,
       display::Display::RotationSource::USER);
-  EXPECT_EQ(user_rotation, GetRotationOfFirstDisplay())
+  EXPECT_EQ(user_rotation, display_helper()->GetRotationOfFirstDisplay())
       << "Rotation of primary display after user change";
-  SetPolicy(policy_rotation);
-  EXPECT_EQ(policy_rotation, GetRotationOfFirstDisplay())
+  SetRotationPolicy(policy_rotation);
+  EXPECT_EQ(policy_rotation, display_helper()->GetRotationOfFirstDisplay())
       << "Rotation of primary display after policy overrode user change";
-  GetDisplayManager()->SetDisplayRotation(
-      GetDisplayManager()->first_display_id(), user_rotation,
+  display_helper()->GetDisplayManager()->SetDisplayRotation(
+      display_helper()->GetDisplayManager()->first_display_id(), user_rotation,
       display::Display::RotationSource::USER);
-  EXPECT_EQ(user_rotation, GetRotationOfFirstDisplay())
+  EXPECT_EQ(user_rotation, display_helper()->GetRotationOfFirstDisplay())
       << "Rotation of primary display after user overrode policy change";
-  SetADifferentPolicy();
-  EXPECT_EQ(user_rotation, GetRotationOfFirstDisplay())
+  RetriggerRotationPolicy();
+  EXPECT_EQ(user_rotation, display_helper()->GetRotationOfFirstDisplay())
       << "Rotation of primary display after policy reloaded without change";
 }
 
 IN_PROC_BROWSER_TEST_P(DisplayRotationDefaultTest, SetAndUnsetPolicy) {
   const display::Display::Rotation policy_rotation = GetParam();
-  SetPolicy(policy_rotation);
-  UnsetPolicy();
-  EXPECT_EQ(policy_rotation, GetRotationOfFirstDisplay())
+  SetRotationPolicy(policy_rotation);
+  policy_helper()->UnsetPolicy(
+      {chromeos::kDisplayRotationDefault, chromeos::kSystemUse24HourClock});
+  EXPECT_EQ(policy_rotation, display_helper()->GetRotationOfFirstDisplay())
       << "Rotation of primary display after policy was set and removed.";
 }
 
@@ -230,12 +149,13 @@ IN_PROC_BROWSER_TEST_P(DisplayRotationDefaultTest,
                        SetAndUnsetPolicyWithUserInteraction) {
   const display::Display::Rotation policy_rotation = GetParam();
   const display::Display::Rotation user_rotation = display::Display::ROTATE_90;
-  SetPolicy(policy_rotation);
-  GetDisplayManager()->SetDisplayRotation(
-      GetDisplayManager()->first_display_id(), user_rotation,
+  SetRotationPolicy(policy_rotation);
+  display_helper()->GetDisplayManager()->SetDisplayRotation(
+      display_helper()->GetDisplayManager()->first_display_id(), user_rotation,
       display::Display::RotationSource::USER);
-  UnsetPolicy();
-  EXPECT_EQ(user_rotation, GetRotationOfFirstDisplay())
+  policy_helper()->UnsetPolicy(
+      {chromeos::kDisplayRotationDefault, chromeos::kSystemUse24HourClock});
+  EXPECT_EQ(user_rotation, display_helper()->GetRotationOfFirstDisplay())
       << "Rotation of primary display after policy was set to "
       << policy_rotation << ", user changed the rotation to " << user_rotation
       << ", and policy was removed.";
@@ -265,19 +185,21 @@ class DisplayRotationBootTest
   ~DisplayRotationBootTest() override = default;
 
   void SetUpInProcessBrowserTestFixture() override {
-    // Override FakeSessionManagerClient. This will be shut down by the browser.
     chromeos::SessionManagerClient::InitializeFakeInMemory();
     ash::DisplayConfigurationController::DisableAnimatorForTest();
     MixinBasedInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
   }
 
-  policy::DevicePolicyCrosTestHelper test_helper_;
-
   chromeos::DeviceStateMixin device_state_{
       &mixin_host_,
       chromeos::DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
 
+  DevicePolicyCrosTestHelper* policy_helper() { return &policy_helper_; }
+  DeviceDisplayCrosTestHelper* display_helper() { return &display_helper_; }
+
  private:
+  DevicePolicyCrosTestHelper policy_helper_;
+  DeviceDisplayCrosTestHelper display_helper_;
   DISALLOW_COPY_AND_ASSIGN(DisplayRotationBootTest);
 };
 
@@ -287,7 +209,7 @@ IN_PROC_BROWSER_TEST_P(DisplayRotationBootTest, PRE_Reboot) {
 
   // Set policy.
   policy::DevicePolicyBuilder* const device_policy(
-      test_helper_.device_policy());
+      policy_helper()->device_policy());
   em::ChromeDeviceSettingsProto& proto(device_policy->payload());
   proto.mutable_display_rotation_default()->set_display_rotation_default(
       static_cast<em::DisplayRotationDefaultProto::Rotation>(policy_rotation));
@@ -305,25 +227,22 @@ IN_PROC_BROWSER_TEST_P(DisplayRotationBootTest, PRE_Reboot) {
   base::RunLoop().RunUntilIdle();
 
   // Check the display's rotation.
-  display::DisplayManager* const display_manager = GetDisplayManager();
-  const int64_t first_display_id = display_manager->first_display_id();
-  const display::Display& first_display =
-      display_manager->GetDisplayForId(first_display_id);
-  EXPECT_EQ(policy_rotation, first_display.rotation());
+  EXPECT_EQ(policy_rotation, display_helper()->GetRotationOfFirstDisplay());
 
   // Let the user rotate the display to a different orientation, to check that
   // the policy value is restored after reboot.
-  display_manager->SetDisplayRotation(first_display_id, user_rotation,
-                                      display::Display::RotationSource::USER);
+  display_helper()->GetDisplayManager()->SetDisplayRotation(
+      display_helper()->GetFirstDisplayId(), user_rotation,
+      display::Display::RotationSource::USER);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(user_rotation, first_display.rotation());
+  EXPECT_EQ(user_rotation, display_helper()->GetRotationOfFirstDisplay());
 }
 
 IN_PROC_BROWSER_TEST_P(DisplayRotationBootTest, Reboot) {
   const display::Display::Rotation policy_rotation = GetParam();
 
   // Check that the policy rotation is restored.
-  EXPECT_EQ(policy_rotation, GetRotationOfFirstDisplay());
+  EXPECT_EQ(policy_rotation, display_helper()->GetRotationOfFirstDisplay());
 }
 
 INSTANTIATE_TEST_SUITE_P(PolicyDisplayRotationDefault,

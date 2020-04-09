@@ -396,6 +396,7 @@ function TEST_F(testFixture, testFunction, testBody, opt_preamble) {
       resolveClosureModuleDeps(this[testFixture].prototype.closureModuleDeps),
       [testFile]);
   const testFLine = getTestDeclarationLineNumber();
+  const testServer = this[testFixture].prototype.testServer;
 
   if (typedefCppFixture && !typedeffedCppFixtures.has(testFixture)) {
     const switches = this[testFixture].prototype.commandLineSwitches;
@@ -413,7 +414,7 @@ typedef ${typedefCppFixture} ${testFixture};
       output(`
 class ${testFixture} : public ${typedefCppFixture} {
  protected:`);
-      if (featureList || featuresWithParameters) {
+      if (featureList || featuresWithParameters || testServer) {
         output(`
   ${testFixture}() {`);
         if (featureList) {
@@ -464,6 +465,10 @@ class ${testFixture} : public ${typedefCppFixture} {
             output(`
     });`);
           }
+        }
+        if (testServer) {
+          output(`
+    ignore_result(embedded_test_server()->Start());`);
         }
         output(`
   }`);

@@ -964,8 +964,17 @@ void StartupBrowserCreator::ProcessCommandLineAlreadyRunning(
     return;
   }
   StartupBrowserCreator startup_browser_creator;
-  startup_browser_creator.ProcessCmdLineImpl(
-      command_line, cur_dir, /*process_startup=*/false, profile, Profiles());
+  Profiles last_opened_profiles;
+#if !defined(OS_CHROMEOS)
+  // On ChromeOS multiple profiles doesn't apply.
+  // If no browser windows are open, i.e. the browser is being kept alive in
+  // background mode or for other processing, restore |last_opened_profiles|.
+  if (chrome::GetTotalBrowserCount() == 0)
+    last_opened_profiles = profile_manager->GetLastOpenedProfiles();
+#endif  // defined(OS_CHROMEOS)
+  startup_browser_creator.ProcessCmdLineImpl(command_line, cur_dir,
+                                             /*process_startup=*/false, profile,
+                                             last_opened_profiles);
 }
 
 // static

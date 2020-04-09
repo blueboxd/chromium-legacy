@@ -186,8 +186,7 @@ class GPU_EXPORT Scheduler {
     // Add a sync token fence that this sequence should wait on.
     void AddWaitFence(const SyncToken& sync_token,
                       uint32_t order_num,
-                      SequenceId release_sequence_id,
-                      Sequence* release_sequence);
+                      SequenceId release_sequence_id);
 
     // Remove a waiting sync token fence.
     void RemoveWaitFence(const SyncToken& sync_token,

@@ -68,7 +68,7 @@ class BinaryDepsManagerTests(unittest.TestCase):
         publicly_readable=True,
     )
 
-  def testSwitchBinaryVersion(self):
+  def testSwitchBinaryToNewPath(self):
     self.writeConfig({'dep': {'testos': {'remote_path': 'old/path/to/bin'}}})
     latest_path = 'new/path/to/bin'
 
@@ -81,7 +81,7 @@ class BinaryDepsManagerTests(unittest.TestCase):
       with mock.patch('py_utils.cloud_storage.CalculateHash') as hash_patch:
         get_patch.side_effect = write_latest_path
         hash_patch.return_value = '123'
-        binary_deps_manager.SwitchBinaryToLatestVersion('dep')
+        binary_deps_manager.SwitchBinaryToNewPath('dep', 'testos', latest_path)
 
     self.assertEqual(
         self.readConfig(),

@@ -135,6 +135,11 @@ constexpr MessageInfo kChromeCompositorSchedulerState = {
 constexpr int kChromeUserEventIndices[] = {2, -1};
 constexpr MessageInfo kChromeUserEvent = {kChromeUserEventIndices, nullptr};
 
+// Proto Message: ChromeKeyedService
+constexpr int kChromeKeyedServiceIndices[] = {1, -1};
+constexpr MessageInfo kChromeKeyedService = {kChromeKeyedServiceIndices,
+                                             nullptr};
+
 // Proto Message: ChromeLegacyIpc
 constexpr int kChromeLegacyIpcIndices[] = {1, 2, -1};
 constexpr MessageInfo kChromeLegacyIpc = {kChromeLegacyIpcIndices, nullptr};
@@ -146,25 +151,18 @@ constexpr MessageInfo kChromeHistogramSample = {kChromeHistogramSampleIndices,
 
 // Proto Message: ComponentInfo
 constexpr int kComponentInfoIndices[] = {1, 2, -1};
-constexpr MessageInfo kComponentInfo = {
-    kComponentInfoIndices,
-    nullptr};
+constexpr MessageInfo kComponentInfo = {kComponentInfoIndices, nullptr};
 
 // Proto Message: ChromeLatencyInfo
 constexpr int kChromeLatencyInfoIndices[] = {1, 2, 3, 4, 5, -1};
 constexpr MessageInfo const* kChromeLatencyInfoComplexMessages[] = {
-    nullptr,
-    nullptr,
-    nullptr,
-    &kComponentInfo,
-    nullptr};
+    nullptr, nullptr, nullptr, &kComponentInfo, nullptr};
 constexpr MessageInfo kChromeLatencyInfo = {kChromeLatencyInfoIndices,
                                             kChromeLatencyInfoComplexMessages};
 
 // Proto Message: TrackEvent
-// EDIT: Manually whitelisted: 29 (chrome_latency_info).
-constexpr int kTrackEventIndices[] = {1,  2,  3,  5,  6,  9,  10, 11,
-                                      16, 17, 24, 25, 27, 28, 29, -1};
+constexpr int kTrackEventIndices[] = {1,  2,  3,  5,  6,  9,  10, 11, 12, 16,
+                                      17, 24, 25, 26, 27, 28, 29, 30, 31, -1};
 constexpr MessageInfo const* kTrackEventComplexMessages[] = {
     nullptr,
     nullptr,
@@ -176,11 +174,15 @@ constexpr MessageInfo const* kTrackEventComplexMessages[] = {
     nullptr,
     nullptr,
     nullptr,
+    nullptr,
     &kChromeCompositorSchedulerState,
     &kChromeUserEvent,
+    &kChromeKeyedService,
     &kChromeLegacyIpc,
     &kChromeHistogramSample,
-    &kChromeLatencyInfo};
+    &kChromeLatencyInfo,
+    nullptr,
+    nullptr};
 constexpr MessageInfo kTrackEvent = {kTrackEventIndices,
                                      kTrackEventComplexMessages};
 
@@ -303,7 +305,8 @@ constexpr MessageInfo kHeapGraph = {kHeapGraphIndices,
                                     kHeapGraphComplexMessages};
 
 // Proto Message: TrackEventDefaults
-constexpr int kTrackEventDefaultsIndices[] = {11, -1};
+// Manually whitelisted: 31.
+constexpr int kTrackEventDefaultsIndices[] = {11, 31, -1};
 constexpr MessageInfo kTrackEventDefaults = {kTrackEventDefaultsIndices,
                                              nullptr};
 
@@ -324,11 +327,20 @@ constexpr int kChromeThreadDescriptorIndices[] = {1, 2, -1};
 constexpr MessageInfo kChromeThreadDescriptor = {kChromeThreadDescriptorIndices,
                                                  nullptr};
 
+// Proto Message: CounterDescriptor
+constexpr int kCounterDescriptorIndices[] = {1, 3, 4, 5, -1};
+constexpr MessageInfo kCounterDescriptor = {kCounterDescriptorIndices, nullptr};
+
 // Proto Message: TrackDescriptor
-constexpr int kTrackDescriptorIndices[] = {1, 3, 4, 5, 6, 7, -1};
+constexpr int kTrackDescriptorIndices[] = {1, 3, 4, 5, 6, 7, 8, -1};
 constexpr MessageInfo const* kTrackDescriptorComplexMessages[] = {
-    nullptr, &kProcessDescriptor,       &kThreadDescriptor,
-    nullptr, &kChromeProcessDescriptor, &kChromeThreadDescriptor};
+    nullptr,
+    &kProcessDescriptor,
+    &kThreadDescriptor,
+    nullptr,
+    &kChromeProcessDescriptor,
+    &kChromeThreadDescriptor,
+    &kCounterDescriptor};
 constexpr MessageInfo kTrackDescriptor = {kTrackDescriptorIndices,
                                           kTrackDescriptorComplexMessages};
 

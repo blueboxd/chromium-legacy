@@ -259,13 +259,6 @@ bool GoogleUpdateSettings::SetCollectStatsConsent(bool consented) {
   return (result == ERROR_SUCCESS);
 }
 
-google_update::Tristate
-GoogleUpdateSettings::GetCollectStatsConsentForBinaries() {
-  return GetCollectStatsConsentImpl(
-      &install_static::GetClientStateKeyPathForBinaries,
-      &install_static::GetClientStateMediumKeyPathForBinaries);
-}
-
 // static
 bool GoogleUpdateSettings::GetCollectStatsConsentDefault(
     bool* stats_consent_default) {
@@ -477,16 +470,6 @@ bool GoogleUpdateSettings::UpdateGoogleUpdateApKey(
     // It's okay if we don't know the archive type.  In this case, leave the
     // "-full" suffix as we found it.
     DCHECK_EQ(installer::UNKNOWN_ARCHIVE_TYPE, archive_type);
-  }
-
-  // The mini_installer in Chrome 10 through 12 added "-multifail" to the "ap"
-  // value if "--multi-install" was on the command line. Unconditionally remove
-  // it if present.
-  // TODO(grt): Move this cleanup into mini_installer.cc's SetInstallerFlags.
-  if (value->SetMultiFailSuffix(false)) {
-    VLOG(1) << "Removed multi-install failure key; switching to channel: "
-            << value->value();
-    modified = true;
   }
 
   if (value->ClearStage()) {

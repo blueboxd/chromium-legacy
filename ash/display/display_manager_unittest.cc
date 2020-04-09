@@ -386,8 +386,8 @@ TEST_F(DisplayManagerTest, UpdateThreeDisplaysWithDefaultLayout) {
 
 TEST_F(DisplayManagerTest, LayoutMorethanThreeDisplaysTest) {
   int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
-  display::DisplayIdList list = display::test::CreateDisplayIdListN(
-      3, primary_id, primary_id + 1, primary_id + 2);
+  display::DisplayIdList list =
+      display::test::CreateDisplayIdListN(primary_id, 3);
   {
     // Layout: [2]
     //         [1][P]
@@ -461,9 +461,7 @@ TEST_F(DisplayManagerTest, LayoutMorethanThreeDisplaysTest) {
   }
 
   {
-    list = display::test::CreateDisplayIdListN(5, primary_id, primary_id + 1,
-                                               primary_id + 2, primary_id + 3,
-                                               primary_id + 4);
+    list = display::test::CreateDisplayIdListN(primary_id, 5);
     // Layout: [P][2]
     //      [3][4]
     //      [1]
@@ -523,9 +521,8 @@ TEST_F(DisplayManagerTest, NoOverlappedDisplays) {
     //                 |        | |        |
     //                 +--------+ +--------+
 
-    display::DisplayIdList list = display::test::CreateDisplayIdListN(
-        8, primary_id, primary_id + 1, primary_id + 2, primary_id + 3,
-        primary_id + 4, primary_id + 5, primary_id + 6, primary_id + 7);
+    display::DisplayIdList list =
+        display::test::CreateDisplayIdListN(primary_id, 8);
     display::DisplayLayoutBuilder builder(primary_id);
     builder.AddDisplayPlacement(list[1], primary_id,
                                 display::DisplayPlacement::BOTTOM, 50);
@@ -633,8 +630,8 @@ TEST_F(DisplayManagerTest, NoOverlappedDisplays) {
     // +------+--+----+
     //
 
-    display::DisplayIdList list = display::test::CreateDisplayIdListN(
-        4, primary_id, primary_id + 1, primary_id + 2, primary_id + 3);
+    display::DisplayIdList list =
+        display::test::CreateDisplayIdListN(primary_id, 4);
     display::DisplayLayoutBuilder builder(primary_id);
     builder.AddDisplayPlacement(list[1], primary_id,
                                 display::DisplayPlacement::BOTTOM, 0);
@@ -702,8 +699,8 @@ TEST_F(DisplayManagerTest, NoOverlappedDisplays) {
     // |         |
     // +---------+
 
-    display::DisplayIdList list = display::test::CreateDisplayIdListN(
-        3, primary_id, primary_id + 1, primary_id + 2);
+    display::DisplayIdList list =
+        display::test::CreateDisplayIdListN(primary_id, 3);
     display::DisplayLayoutBuilder builder(primary_id);
     builder.AddDisplayPlacement(list[1], primary_id,
                                 display::DisplayPlacement::LEFT, 0);
@@ -753,8 +750,8 @@ TEST_F(DisplayManagerTest, NoOverlappedDisplays) {
     //           +---------+
     //
 
-    display::DisplayIdList list = display::test::CreateDisplayIdListN(
-        3, primary_id, primary_id + 1, primary_id + 2);
+    display::DisplayIdList list =
+        display::test::CreateDisplayIdListN(primary_id, 3);
     display::DisplayLayoutBuilder builder(primary_id);
     builder.AddDisplayPlacement(list[1], primary_id,
                                 display::DisplayPlacement::TOP, 0);
@@ -804,8 +801,8 @@ TEST_F(DisplayManagerTest, NoOverlappedDisplaysNotFitBetweenTwo) {
   //
 
   int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
-  display::DisplayIdList list = display::test::CreateDisplayIdListN(
-      4, primary_id, primary_id + 1, primary_id + 2, primary_id + 3);
+  display::DisplayIdList list =
+      display::test::CreateDisplayIdListN(primary_id, 4);
   display::DisplayLayoutBuilder builder(primary_id);
   builder.AddDisplayPlacement(list[1], primary_id,
                               display::DisplayPlacement::TOP, -110);
@@ -866,9 +863,8 @@ TEST_F(DisplayManagerTest, NoOverlappedDisplaysAfterResolutionChange) {
   //
 
   int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
-  display::DisplayIdList list = display::test::CreateDisplayIdListN(
-      5, primary_id, primary_id + 1, primary_id + 2, primary_id + 3,
-      primary_id + 4);
+  display::DisplayIdList list =
+      display::test::CreateDisplayIdListN(primary_id, 5);
   display::DisplayLayoutBuilder builder(primary_id);
   builder.AddDisplayPlacement(list[1], primary_id,
                               display::DisplayPlacement::TOP, -250);
@@ -949,9 +945,8 @@ TEST_F(DisplayManagerTest, NoOverlappedDisplaysWithDetachedDisplays) {
   //
 
   int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
-  display::DisplayIdList list = display::test::CreateDisplayIdListN(
-      6, primary_id, primary_id + 1, primary_id + 2, primary_id + 3,
-      primary_id + 4, primary_id + 5);
+  display::DisplayIdList list =
+      display::test::CreateDisplayIdListN(primary_id, 6);
   display::DisplayLayoutBuilder builder(primary_id);
   builder.AddDisplayPlacement(list[1], primary_id,
                               display::DisplayPlacement::TOP, -250);
@@ -1670,7 +1665,7 @@ TEST_F(DisplayManagerTest, DisplayAddRemoveAtTheSameTime) {
       display_manager()->GetDisplayInfo(secondary_id);
 
   // An id which is different from primary and secondary.
-  const int64_t third_id = secondary_id + 1;
+  const int64_t third_id = display::GetNextSynthesizedDisplayId(secondary_id);
 
   display::ManagedDisplayInfo third_info =
       display::CreateDisplayInfo(third_id, gfx::Rect(0, 0, 600, 600));
@@ -2452,11 +2447,11 @@ TEST_F(DisplayManagerTest, UnifiedDesktopBasic) {
   display::test::DisplayManagerTestApi display_manager_test(display_manager());
   EXPECT_EQ(gfx::Size(400, 500),
             display_manager_test.GetSecondaryDisplay().size());
-  EXPECT_EQ(
-      gfx::Size(500, 300),
-      display_manager()
-          ->GetDisplayForId(display_manager_test.GetSecondaryDisplay().id() + 1)
-          .size());
+  EXPECT_EQ(gfx::Size(500, 300),
+            display_manager()
+                ->GetDisplayForId(display::GetNextSynthesizedDisplayId(
+                    display_manager_test.GetSecondaryDisplay().id()))
+                .size());
 }
 
 TEST_F(DisplayManagerTest, UnifiedDesktopWithHardwareMirroring) {

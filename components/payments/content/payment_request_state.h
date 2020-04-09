@@ -150,9 +150,9 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
   void OnPaymentAppCreationError(const std::string& error_message) override;
   bool SkipCreatingNativePaymentApps() const override;
   void OnCreatingNativePaymentAppsSkipped(
-      const content::PaymentAppProvider::PaymentApps& apps,
-      const ServiceWorkerPaymentAppFinder::InstallablePaymentApps&
-          installable_apps) override;
+      content::PaymentAppProvider::PaymentApps apps,
+      ServiceWorkerPaymentAppFinder::InstallablePaymentApps installable_apps)
+      override;
   void OnDoneCreatingPaymentApps() override;
 
   // PaymentResponseHelper::Delegate

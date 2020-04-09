@@ -184,7 +184,8 @@ TEST_F(ScreenLayoutObserverTest, DisplayNotifications) {
 
   const int64_t first_display_id =
       display::Screen::GetScreen()->GetPrimaryDisplay().id();
-  const int64_t second_display_id = first_display_id + 1;
+  const int64_t second_display_id =
+      display::GetNextSynthesizedDisplayId(first_display_id);
   display::ManagedDisplayInfo first_display_info =
       display::CreateDisplayInfo(first_display_id, gfx::Rect(1, 1, 500, 500));
   display::ManagedDisplayInfo second_display_info =
@@ -310,7 +311,8 @@ TEST_F(ScreenLayoutObserverTest, DisplayNotificationsDisabled) {
 
   const int64_t first_display_id =
       display::Screen::GetScreen()->GetPrimaryDisplay().id();
-  const int64_t second_display_id = first_display_id + 1;
+  const int64_t second_display_id =
+      display::GetNextSynthesizedDisplayId(first_display_id);
   display::ManagedDisplayInfo first_display_info =
       display::CreateDisplayInfo(first_display_id, gfx::Rect(1, 1, 500, 500));
   display::ManagedDisplayInfo second_display_info =

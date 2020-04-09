@@ -356,17 +356,24 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromYUV(
   return image;
 }
 
-void SkiaOutputSurfaceImpl::ReleaseImageContexts(
+gpu::SyncToken SkiaOutputSurfaceImpl::ReleaseImageContexts(
     std::vector<std::unique_ptr<ImageContext>> image_contexts) {
   if (image_contexts.empty())
-    return;
+    return gpu::SyncToken();
+
+  gpu::SyncToken sync_token(
+      gpu::CommandBufferNamespace::VIZ_SKIA_OUTPUT_SURFACE,
+      impl_on_gpu_->command_buffer_id(), ++sync_fence_release_);
+  sync_token.SetVerifyFlush();
 
   // impl_on_gpu_ is released on the GPU thread by a posted task from
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
-  auto callback = base::BindOnce(
-      &SkiaOutputSurfaceImplOnGpu::ReleaseImageContexts,
-      base::Unretained(impl_on_gpu_.get()), std::move(image_contexts));
+  auto callback =
+      base::BindOnce(&SkiaOutputSurfaceImplOnGpu::ReleaseImageContexts,
+                     base::Unretained(impl_on_gpu_.get()),
+                     std::move(image_contexts), sync_fence_release_);
   gpu_task_scheduler_->ScheduleOrRetainGpuTask(std::move(callback), {});
+  return sync_token;
 }
 
 std::unique_ptr<ExternalUseClient::ImageContext>

@@ -383,6 +383,10 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
 // is necessary to avoid overflowing the output index.
 void DISPLAY_MANAGER_EXPORT ResetDisplayIdForTest();
 
+// Generates a fake, synthesized display ID that will be used when the
+// |kInvalidDisplayId| is passed to |ManagedDisplayInfo| constructor.
+int64_t DISPLAY_MANAGER_EXPORT GetNextSynthesizedDisplayId(int64_t id);
+
 }  // namespace display
 
 #endif  //  UI_DISPLAY_MANAGER_MANAGED_DISPLAY_INFO_H_

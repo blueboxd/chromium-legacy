@@ -181,8 +181,8 @@ bool PaymentRequestState::SkipCreatingNativePaymentApps() const {
 }
 
 void PaymentRequestState::OnCreatingNativePaymentAppsSkipped(
-    const content::PaymentAppProvider::PaymentApps& unused_apps,
-    const ServiceWorkerPaymentAppFinder::InstallablePaymentApps&
+    content::PaymentAppProvider::PaymentApps unused_apps,
+    ServiceWorkerPaymentAppFinder::InstallablePaymentApps
         unused_installable_apps) {
   NOTREACHED();
 }

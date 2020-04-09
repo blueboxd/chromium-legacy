@@ -9,7 +9,6 @@
 #include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "build/build_config.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/public/base/signin_buildflags.h"
@@ -59,16 +58,10 @@ class IdentityAPITest : public testing::Test {
   std::unique_ptr<IdentityAPI> api_;
 };
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-// Tests that all accounts in extensions is enabled when Dice is enabled.
-TEST_F(IdentityAPITest, DiceAllAccountsExtensions) {
+// Tests that all accounts in extensions is enabled for regular profiles.
+TEST_F(IdentityAPITest, AllAccountsExtensionEnabled) {
   EXPECT_FALSE(api()->AreExtensionsRestrictedToPrimaryAccount());
 }
-#else
-TEST_F(IdentityAPITest, AllAccountsExtensionDisabled) {
-  EXPECT_TRUE(api()->AreExtensionsRestrictedToPrimaryAccount());
-}
-#endif
 
 TEST_F(IdentityAPITest, GetGaiaIdForExtension) {
   std::string extension_id = prefs()->AddExtensionAndReturnId("extension");

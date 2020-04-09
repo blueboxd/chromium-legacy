@@ -36,7 +36,7 @@ const int kSeparatorHeight = 16;
 }  // namespace
 
 AutoclickMenuView::AutoclickMenuView(AutoclickEventType type,
-                                     AutoclickMenuPosition position)
+                                     FloatingMenuPosition position)
     : left_click_button_(
           new FloatingMenuButton(this,
                                  kAutoclickLeftClickIcon,
@@ -138,21 +138,21 @@ void AutoclickMenuView::UpdateEventType(AutoclickEventType type) {
     event_type_ = type;
 }
 
-void AutoclickMenuView::UpdatePosition(AutoclickMenuPosition position) {
+void AutoclickMenuView::UpdatePosition(FloatingMenuPosition position) {
   switch (position) {
-    case AutoclickMenuPosition::kBottomRight:
+    case FloatingMenuPosition::kBottomRight:
       position_button_->SetVectorIcon(kAutoclickPositionBottomRightIcon);
       return;
-    case AutoclickMenuPosition::kBottomLeft:
+    case FloatingMenuPosition::kBottomLeft:
       position_button_->SetVectorIcon(kAutoclickPositionBottomLeftIcon);
       return;
-    case AutoclickMenuPosition::kTopLeft:
+    case FloatingMenuPosition::kTopLeft:
       position_button_->SetVectorIcon(kAutoclickPositionTopLeftIcon);
       return;
-    case AutoclickMenuPosition::kTopRight:
+    case FloatingMenuPosition::kTopRight:
       position_button_->SetVectorIcon(kAutoclickPositionTopRightIcon);
       return;
-    case AutoclickMenuPosition::kSystemDefault:
+    case FloatingMenuPosition::kSystemDefault:
       position_button_->SetVectorIcon(base::i18n::IsRTL()
                                           ? kAutoclickPositionBottomLeftIcon
                                           : kAutoclickPositionBottomRightIcon);
@@ -163,25 +163,25 @@ void AutoclickMenuView::UpdatePosition(AutoclickMenuPosition position) {
 void AutoclickMenuView::ButtonPressed(views::Button* sender,
                                       const ui::Event& event) {
   if (sender == position_button_) {
-    AutoclickMenuPosition new_position;
+    FloatingMenuPosition new_position;
     // Rotate clockwise throughout the screen positions.
     switch (
         Shell::Get()->accessibility_controller()->GetAutoclickMenuPosition()) {
-      case AutoclickMenuPosition::kBottomRight:
-        new_position = AutoclickMenuPosition::kBottomLeft;
+      case FloatingMenuPosition::kBottomRight:
+        new_position = FloatingMenuPosition::kBottomLeft;
         break;
-      case AutoclickMenuPosition::kBottomLeft:
-        new_position = AutoclickMenuPosition::kTopLeft;
+      case FloatingMenuPosition::kBottomLeft:
+        new_position = FloatingMenuPosition::kTopLeft;
         break;
-      case AutoclickMenuPosition::kTopLeft:
-        new_position = AutoclickMenuPosition::kTopRight;
+      case FloatingMenuPosition::kTopLeft:
+        new_position = FloatingMenuPosition::kTopRight;
         break;
-      case AutoclickMenuPosition::kTopRight:
-        new_position = AutoclickMenuPosition::kBottomRight;
+      case FloatingMenuPosition::kTopRight:
+        new_position = FloatingMenuPosition::kBottomRight;
         break;
-      case AutoclickMenuPosition::kSystemDefault:
-        new_position = base::i18n::IsRTL() ? AutoclickMenuPosition::kTopLeft
-                                           : AutoclickMenuPosition::kBottomLeft;
+      case FloatingMenuPosition::kSystemDefault:
+        new_position = base::i18n::IsRTL() ? FloatingMenuPosition::kTopLeft
+                                           : FloatingMenuPosition::kBottomLeft;
         break;
     }
     Shell::Get()->accessibility_controller()->SetAutoclickMenuPosition(

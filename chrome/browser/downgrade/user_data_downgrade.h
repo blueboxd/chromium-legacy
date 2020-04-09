@@ -40,7 +40,7 @@ base::Optional<base::Version> GetLastVersion(
 // within the User Data directory).
 base::FilePath GetDiskCacheDir();
 
-// Returns the milestones that have a complete snapshot available.
+// Returns the versions that have a complete snapshot available.
 base::flat_set<base::Version> GetAvailableSnapshots(
     const base::FilePath& snapshot_dir);
 
@@ -50,7 +50,7 @@ std::vector<base::FilePath> GetInvalidSnapshots(
     const base::FilePath& snapshot_dir);
 
 // Return the highest available snapshot version that is not greater than
-// |milestone|.
+// |version|.
 base::Optional<base::Version> GetSnapshotToRestore(
     const base::Version& version,
     const base::FilePath& user_data_dir);

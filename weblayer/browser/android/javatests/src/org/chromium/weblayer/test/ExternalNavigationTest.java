@@ -333,20 +333,14 @@ public class ExternalNavigationTest {
     }
 
     /**
-     * Tests that a navigation that redirects to an external intent that can't be handled but has a
-     * fallback URL that launches an intent that *can* be handled results in the launching of the
-     * second intent.
      * |url| is a URL that redirects to an unhandleable intent but has a fallback URL that redirects
      * to a handleable intent.
-     * Tests that a navigation to |url| launches the handleable intent.
-     * TODO(crbug.com/1031465): Disallow such fallback intent launches by sharing Chrome's
-     * RedirectHandler impl, at which point this should fail and be updated to verify that the
-     * intent is blocked.
+     * Tests that a navigation to |url| blocks the handleable intent by policy on chained redirects.
      */
     @Test
     @SmallTest
     public void
-    testNonHandledExternalIntentWithFallbackUrlThatLaunchesIntentAfterRedirectLaunchesFallbackIntent()
+    testNonHandledExternalIntentWithFallbackUrlThatLaunchesIntentAfterRedirectBlocksFallbackIntent()
             throws Throwable {
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(ABOUT_BLANK_URL);
         IntentInterceptor intentInterceptor = new IntentInterceptor();
@@ -360,43 +354,43 @@ public class ExternalNavigationTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { tab.getNavigationController().navigate(Uri.parse(url)); });
 
-        intentInterceptor.waitForIntent();
+        NavigationWaiter waiter = new NavigationWaiter(
+                INTENT_TO_CHROME_URL, tab, /*expectFailure=*/true, /*waitForPaint=*/false);
+        waiter.waitForNavigation();
 
-        // The current URL should not have changed, and the intent should have been launched.
+        Assert.assertNull(intentInterceptor.mLastIntent);
+
+        // The current URL should not have changed.
         Assert.assertEquals(ABOUT_BLANK_URL, mActivityTestRule.getCurrentDisplayUrl());
-        Intent intent = intentInterceptor.mLastIntent;
-        Assert.assertNotNull(intent);
-        Assert.assertEquals(INTENT_TO_CHROME_PACKAGE, intent.getPackage());
-        Assert.assertEquals(INTENT_TO_CHROME_ACTION, intent.getAction());
-        Assert.assertEquals(INTENT_TO_CHROME_DATA_STRING, intent.getDataString());
     }
 
     /**
      * Tests that going to a page that loads an intent that can be handled in onload() results in
-     * the external intent being launched.
-     * TODO(crbug.com/1031465): Disallow such intent launches by sharing Chrome's RedirectHandler
-     * impl, at which point this should fail and be updated to verify that the intent is blocked.
+     * the external intent being blocked by policy on intents without user gestures loading in the
+     * midst of a user-typed navigation.
      */
     @Test
     @SmallTest
-    public void testExternalIntentLaunchedViaOnLoad() throws Throwable {
+    public void testExternalIntentViaOnLoadBlocked() throws Throwable {
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(ABOUT_BLANK_URL);
         IntentInterceptor intentInterceptor = new IntentInterceptor();
         activity.setIntentInterceptor(intentInterceptor);
 
         String url = mActivityTestRule.getTestDataURL(PAGE_THAT_INTENTS_TO_CHROME_ON_LOAD_FILE);
 
-        mActivityTestRule.navigateAndWait(url);
+        Tab tab = mActivityTestRule.getActivity().getTab();
 
-        intentInterceptor.waitForIntent();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { tab.getNavigationController().navigate(Uri.parse(url)); });
 
-        // The current URL should not have changed, and the intent should have been launched.
+        NavigationWaiter waiter = new NavigationWaiter(
+                INTENT_TO_CHROME_URL, tab, /*expectFailure=*/true, /*waitForPaint=*/false);
+        waiter.waitForNavigation();
+
+        Assert.assertNull(intentInterceptor.mLastIntent);
+
+        // The current URL should not have changed.
         Assert.assertEquals(url, mActivityTestRule.getCurrentDisplayUrl());
-        Intent intent = intentInterceptor.mLastIntent;
-        Assert.assertNotNull(intent);
-        Assert.assertEquals(INTENT_TO_CHROME_PACKAGE, intent.getPackage());
-        Assert.assertEquals(INTENT_TO_CHROME_ACTION, intent.getAction());
-        Assert.assertEquals(INTENT_TO_CHROME_DATA_STRING, intent.getDataString());
     }
 
     /**

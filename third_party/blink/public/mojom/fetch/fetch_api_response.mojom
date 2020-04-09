@@ -7,6 +7,7 @@ module blink.mojom;
 import "mojo/public/mojom/base/time.mojom";
 import "services/network/public/mojom/fetch_api.mojom";
 import "services/network/public/mojom/content_security_policy.mojom";
+import "services/network/public/mojom/cross_origin_embedder_policy.mojom";
 import "third_party/blink/public/mojom/blob/serialized_blob.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom";
 import "url/mojom/url.mojom";
@@ -72,6 +73,10 @@ struct FetchAPIResponse {
   // In case this response had a Content-Security-Policy header, this is the
   // parsed CSP.
   array<network.mojom.ContentSecurityPolicy> content_security_policy;
+
+  // The parsed representation of Cross-Origin-Embedder-Policy and
+  // Cross-Origin-Embedder-Policy-Report-Only headers.
+  network.mojom.CrossOriginEmbedderPolicy cross_origin_embedder_policy;
 
   // True if the response was loaded with a Request where the credentials mode
   // would potentially send cookies to the server:

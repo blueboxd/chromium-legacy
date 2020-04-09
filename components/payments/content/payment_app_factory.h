@@ -84,8 +84,8 @@ class PaymentAppFactory {
     // When SkipCreatingNativePaymentApps() is true, this callback is called
     // when service-worker payment app info is available.
     virtual void OnCreatingNativePaymentAppsSkipped(
-        const content::PaymentAppProvider::PaymentApps& apps,
-        const ServiceWorkerPaymentAppFinder::InstallablePaymentApps&
+        content::PaymentAppProvider::PaymentApps apps,
+        ServiceWorkerPaymentAppFinder::InstallablePaymentApps
             installable_apps) = 0;
 
     // Called when all apps of this factory have been created.

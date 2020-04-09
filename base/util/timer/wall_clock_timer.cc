@@ -35,10 +35,6 @@ void WallClockTimer::Start(const base::Location& posted_from,
                &WallClockTimer::RunUserTask);
 }
 
-base::Time WallClockTimer::Now() const {
-  return clock_->Now();
-}
-
 void WallClockTimer::Stop() {
   timer_.Stop();
   user_task_.Reset();
@@ -47,14 +43,6 @@ void WallClockTimer::Stop() {
 
 bool WallClockTimer::IsRunning() const {
   return timer_.IsRunning();
-}
-
-void WallClockTimer::RunUserTask() {
-  DCHECK(user_task_);
-  std::exchange(user_task_, {}).Run();
-  // TODO(crbug.com/1062410): Remove observer before running |task| so that
-  //|task| is able to call Start().
-  RemoveObserver();
 }
 
 void WallClockTimer::OnResume() {
@@ -73,6 +61,16 @@ void WallClockTimer::RemoveObserver() {
     base::PowerMonitor::RemoveObserver(this);
     observer_added_ = false;
   }
+}
+
+void WallClockTimer::RunUserTask() {
+  DCHECK(user_task_);
+  RemoveObserver();
+  std::exchange(user_task_, {}).Run();
+}
+
+base::Time WallClockTimer::Now() const {
+  return clock_->Now();
 }
 
 }  // namespace util

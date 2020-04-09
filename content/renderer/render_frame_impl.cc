@@ -4251,39 +4251,25 @@ void RenderFrameImpl::DidCommitNavigation(
                "id", routing_id_,
                "url", GetLoadingUrl().possibly_invalid_spec());
 
-  base::Optional<base::UnguessableToken> embedding_token = base::nullopt;
-  if (previous_routing_id_ != MSG_ROUTING_NONE) {
+  bool is_provisional_frame = previous_routing_id_ != MSG_ROUTING_NONE;
+  if (is_provisional_frame) {
     // If this is a provisional frame associated with a proxy (i.e., a frame
     // created for a remote-to-local navigation), swap it into the frame tree
     // now.
     if (!SwapIn())
       return;
+  }
 
-    // Main frames don't require an embedding token since they aren't embedded
-    // in anything. Frames local to their parent also aren't considered to be
-    // embedded.
-    if (!is_main_frame_ && frame_->Parent()->IsWebRemoteFrame()) {
-      embedding_token = base::UnguessableToken::Create();
-      GetWebFrame()->SetEmbeddingToken(embedding_token.value());
-    }
-  } else {
-    // If this is not a provisional frame then use the old embedding token. This
-    // will be base::nullopt if there was no old embedding token.
-    embedding_token = GetWebFrame()->GetEmbeddingToken();
-
-    // In the case a crashed subframe is navigating to the same site
-    // e.g. https://crbug.com/634368 then generate a new embedding token to
-    // restore a sane state.
-    //
-    // Logic behind this behavior:
-    // - Main frames don't have embedding tokens.
-    // - A remote subframe *must* have an embedding token.
-    // - If a remote subframe doesn't have an embedding token to re-use we
-    //   need to create one.
-    if (!is_main_frame_ && frame_->Parent()->IsWebRemoteFrame() &&
-        !embedding_token.has_value()) {
-      embedding_token = base::UnguessableToken::Create();
-      GetWebFrame()->SetEmbeddingToken(embedding_token.value());
+  // Main frames don't require an embedding token since they aren't embedded
+  // in anything. Frames local to their parent also aren't considered to be
+  // embedded.
+  if (!is_main_frame_ && frame_->Parent()->IsWebRemoteFrame()) {
+    // Provisional frames need a new token. Non-provisional frames need one if
+    // they don't already have one, e.g. a crashed subframe navigating to same
+    // site (https://crbug.com/634368).
+    if (is_provisional_frame ||
+        !GetWebFrame()->GetEmbeddingToken().has_value()) {
+      GetWebFrame()->SetEmbeddingToken(base::UnguessableToken::Create());
     }
   }
 
@@ -4377,7 +4363,7 @@ void RenderFrameImpl::DidCommitNavigation(
                 std::move(remote_interface_provider_receiver),
                 std::move(browser_interface_broker_receiver))
           : nullptr,
-      embedding_token);
+      GetWebFrame()->GetEmbeddingToken());
 
   // If we end up reusing this WebRequest (for example, due to a #ref click),
   // we don't want the transition type to persist.  Just clear it.

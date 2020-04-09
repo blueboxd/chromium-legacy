@@ -24,6 +24,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/color_palette.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
+#include "components/policy/core/common/policy_pref_names.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace {
 
 // Error class has a menu item.
@@ -217,3 +222,30 @@ TEST_F(AppMenuModelTest, GlobalError) {
   model.ActivatedAt(index2);
   EXPECT_EQ(1, error1->execute_count());
 }
+
+#if defined(OS_CHROMEOS)
+// Tests settings menu items is disabled in the app menu when
+// kSystemFeaturesDisableList is set.
+TEST_F(AppMenuModelTest, DisableSettingsItem) {
+  AppMenuModel model(this, browser());
+  model.Init();
+  int index = model.GetIndexOfCommandId(IDC_OPTIONS);
+  EXPECT_TRUE(model.IsEnabledAt(index));
+
+  {
+    ListPrefUpdate update(TestingBrowserProcess::GetGlobal()->local_state(),
+                          policy::policy_prefs::kSystemFeaturesDisableList);
+    base::ListValue* list = update.Get();
+    list->Append(policy::SystemFeature::BROWSER_SETTINGS);
+  }
+  EXPECT_FALSE(model.IsEnabledAt(index));
+
+  {
+    ListPrefUpdate update(TestingBrowserProcess::GetGlobal()->local_state(),
+                          policy::policy_prefs::kSystemFeaturesDisableList);
+    base::ListValue* list = update.Get();
+    list->Clear();
+  }
+  EXPECT_TRUE(model.IsEnabledAt(index));
+}
+#endif  // defined(OS_CHROMEOS)

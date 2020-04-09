@@ -29,34 +29,34 @@ namespace {
 const int kAutoclickMenuWidth = 369;
 const int kAutoclickMenuHeight = 64;
 
-AutoclickMenuPosition DefaultSystemPosition() {
-  return base::i18n::IsRTL() ? AutoclickMenuPosition::kBottomLeft
-                             : AutoclickMenuPosition::kBottomRight;
+FloatingMenuPosition DefaultSystemPosition() {
+  return base::i18n::IsRTL() ? FloatingMenuPosition::kBottomLeft
+                             : FloatingMenuPosition::kBottomRight;
 }
 
 views::BubbleBorder::Arrow GetScrollAnchorAlignmentForPosition(
-    AutoclickMenuPosition position) {
+    FloatingMenuPosition position) {
   // If this is the default system position, pick the position based on the
   // language direction.
-  if (position == AutoclickMenuPosition::kSystemDefault) {
+  if (position == FloatingMenuPosition::kSystemDefault) {
     position = DefaultSystemPosition();
   }
   // Mirror arrow in RTL languages so that it always stays near the screen
   // edge.
   switch (position) {
-    case AutoclickMenuPosition::kBottomLeft:
+    case FloatingMenuPosition::kBottomLeft:
       return base::i18n::IsRTL() ? views::BubbleBorder::Arrow::TOP_RIGHT
                                  : views::BubbleBorder::Arrow::TOP_LEFT;
-    case AutoclickMenuPosition::kTopLeft:
+    case FloatingMenuPosition::kTopLeft:
       return base::i18n::IsRTL() ? views::BubbleBorder::Arrow::BOTTOM_RIGHT
                                  : views::BubbleBorder::Arrow::BOTTOM_LEFT;
-    case AutoclickMenuPosition::kBottomRight:
+    case FloatingMenuPosition::kBottomRight:
       return base::i18n::IsRTL() ? views::BubbleBorder::Arrow::TOP_LEFT
                                  : views::BubbleBorder::Arrow::TOP_RIGHT;
-    case AutoclickMenuPosition::kTopRight:
+    case FloatingMenuPosition::kTopRight:
       return base::i18n::IsRTL() ? views::BubbleBorder::Arrow::BOTTOM_LEFT
                                  : views::BubbleBorder::Arrow::BOTTOM_RIGHT;
-    case AutoclickMenuPosition::kSystemDefault:
+    case FloatingMenuPosition::kSystemDefault:
       // It's not possible for position to be kSystemDefault here because we've
       // set it via DefaultSystemPosition() above if it was kSystemDefault.
       NOTREACHED();
@@ -102,21 +102,21 @@ void AutoclickMenuBubbleController::SetEventType(AutoclickEventType type) {
 }
 
 void AutoclickMenuBubbleController::SetPosition(
-    AutoclickMenuPosition new_position) {
+    FloatingMenuPosition new_position) {
   if (!menu_view_ || !bubble_view_ || !bubble_widget_)
     return;
 
   // Update the menu view's UX if the position has changed, or if it's not the
   // default position (because that can change with language direction).
   if (position_ != new_position ||
-      new_position == AutoclickMenuPosition::kSystemDefault) {
+      new_position == FloatingMenuPosition::kSystemDefault) {
     menu_view_->UpdatePosition(new_position);
   }
   position_ = new_position;
 
   // If this is the default system position, pick the position based on the
   // language direction.
-  if (new_position == AutoclickMenuPosition::kSystemDefault)
+  if (new_position == FloatingMenuPosition::kSystemDefault)
     new_position = DefaultSystemPosition();
 
   // Calculates the ideal bounds.
@@ -127,17 +127,17 @@ void AutoclickMenuBubbleController::SetPosition(
       WorkAreaInsets::ForWindow(window)->user_work_area_bounds();
   gfx::Rect new_bounds;
   switch (new_position) {
-    case AutoclickMenuPosition::kBottomRight:
+    case FloatingMenuPosition::kBottomRight:
       new_bounds = gfx::Rect(work_area.right() - kAutoclickMenuWidth,
                              work_area.bottom() - kAutoclickMenuHeight,
                              kAutoclickMenuWidth, kAutoclickMenuHeight);
       break;
-    case AutoclickMenuPosition::kBottomLeft:
+    case FloatingMenuPosition::kBottomLeft:
       new_bounds =
           gfx::Rect(work_area.x(), work_area.bottom() - kAutoclickMenuHeight,
                     kAutoclickMenuWidth, kAutoclickMenuHeight);
       break;
-    case AutoclickMenuPosition::kTopLeft:
+    case FloatingMenuPosition::kTopLeft:
       // Because there is no inset at the top of the widget, add
       // 2 * kCollisionWindowWorkAreaInsetsDp to the top of the work area.
       // to ensure correct padding.
@@ -145,7 +145,7 @@ void AutoclickMenuBubbleController::SetPosition(
           work_area.x(), work_area.y() + 2 * kCollisionWindowWorkAreaInsetsDp,
           kAutoclickMenuWidth, kAutoclickMenuHeight);
       break;
-    case AutoclickMenuPosition::kTopRight:
+    case FloatingMenuPosition::kTopRight:
       // Because there is no inset at the top of the widget, add
       // 2 * kCollisionWindowWorkAreaInsetsDp to the top of the work area.
       // to ensure correct padding.
@@ -154,7 +154,7 @@ void AutoclickMenuBubbleController::SetPosition(
                     work_area.y() + 2 * kCollisionWindowWorkAreaInsetsDp,
                     kAutoclickMenuWidth, kAutoclickMenuHeight);
       break;
-    case AutoclickMenuPosition::kSystemDefault:
+    case FloatingMenuPosition::kSystemDefault:
       return;
   }
 
@@ -200,7 +200,7 @@ void AutoclickMenuBubbleController::SetScrollPosition(
 }
 
 void AutoclickMenuBubbleController::ShowBubble(AutoclickEventType type,
-                                               AutoclickMenuPosition position) {
+                                               FloatingMenuPosition position) {
   // Ignore if bubble widget already exists.
   if (bubble_widget_)
     return;
@@ -319,7 +319,7 @@ void AutoclickMenuBubbleController::BubbleViewDestroyed() {
 void AutoclickMenuBubbleController::OnLocaleChanged() {
   // Layout update is needed when language changes between LTR and RTL, if the
   // position is the system default.
-  if (position_ == AutoclickMenuPosition::kSystemDefault)
+  if (position_ == FloatingMenuPosition::kSystemDefault)
     SetPosition(position_);
 }
 

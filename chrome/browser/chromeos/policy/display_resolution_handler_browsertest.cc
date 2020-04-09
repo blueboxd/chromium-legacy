@@ -15,8 +15,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "chrome/browser/chromeos/policy/device_display_cros_browser_test.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
-#include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
@@ -58,63 +58,8 @@ struct PolicyValue {
 };
 
 const gfx::Size kDefaultDisplayResolution(1280, 800);
-const gfx::Size kDefaultExternalDisplayResolution(1920, 1080);
+const gfx::Size kDefaultSecondDisplayResolution(1920, 1080);
 const int kDefaultDisplayScale = 100;
-
-display::DisplayManager* GetDisplayManager() {
-  return ash::Shell::Get()->display_manager();
-}
-
-int64_t GetInternalDisplayId() {
-  const display::DisplayManager* const display_manager = GetDisplayManager();
-  return display_manager->first_display_id();
-}
-
-gfx::Size GetResolution(int64_t display_id) {
-  const display::DisplayManager* const display_manager = GetDisplayManager();
-  display::ManagedDisplayMode display_mode;
-  if (display_manager->GetSelectedModeForDisplayId(display_id, &display_mode)) {
-    return display_mode.size();
-  }
-  const display::Display& display =
-      display_manager->GetDisplayForId(display_id);
-  return display.GetSizeInPixel();
-}
-
-double GetScale(int64_t display_id) {
-  const display::DisplayManager* const display_manager = GetDisplayManager();
-  display::ManagedDisplayMode display_mode;
-  const display::Display& display =
-      display_manager->GetDisplayForId(display_id);
-  return display.device_scale_factor();
-}
-
-int GetScaleOfInternalDisplay() {
-  // Converting scale to percents.
-  return floor(GetScale(GetInternalDisplayId()) * 100.0 + 0.5);
-}
-
-gfx::Size GetResolutionOfInternalDisplay() {
-  return GetResolution(GetInternalDisplayId());
-}
-
-int64_t GetExternalDisplayId() {
-  const display::DisplayManager* const display_manager = GetDisplayManager();
-  if (display_manager->GetNumDisplays() < 2) {
-    ADD_FAILURE() << "The external display is not connected.";
-    return 0;
-  }
-  return display_manager->GetCurrentDisplayIdList()[1];
-}
-
-int GetScaleOfExternalDisplay() {
-  // Converting scale to percents.
-  return floor(GetScale(GetExternalDisplayId()) * 100.0 + 0.5);
-}
-
-gfx::Size GetResolutionOfExternalDisplay() {
-  return GetResolution(GetExternalDisplayId());
-}
 
 PolicyValue GetPolicySetting() {
   const base::DictionaryValue* resolution_pref = nullptr;
@@ -150,8 +95,8 @@ PolicyValue GetPolicySetting() {
   return result;
 }
 
-void AddExternalDisplay() {
-  GetDisplayManager()->AddRemoveDisplay(
+void AddExternalDisplay(display::DisplayManager* display_manager) {
+  display_manager->AddRemoveDisplay(
       {display::ManagedDisplayMode(gfx::Size(800, 600), 30.0, false, false),
        display::ManagedDisplayMode(gfx::Size(800, 600), 60.0, false, false),
        display::ManagedDisplayMode(gfx::Size(1280, 800), 60.0, false, false),
@@ -188,12 +133,15 @@ void SetPolicyValue(em::ChromeDeviceSettingsProto* proto,
       "{" + base::JoinString(json_entries, ",") + "}");
 }
 
-std::unique_ptr<extensions::api::system_display::DisplayMode>
-CreateDisplayMode(int64_t display_id, int width, int height) {
+std::unique_ptr<extensions::api::system_display::DisplayMode> CreateDisplayMode(
+    int64_t display_id,
+    int width,
+    int height,
+    const display::DisplayManager* display_manager) {
   auto result =
       std::make_unique<extensions::api::system_display::DisplayMode>();
   const display::ManagedDisplayInfo& info =
-      GetDisplayManager()->GetDisplayInfo(display_id);
+      display_manager->GetDisplayInfo(display_id);
   for (const display::ManagedDisplayMode& mode : info.display_modes()) {
     if (mode.size().width() == width && mode.size().height() == height) {
       result->width = mode.size().width();
@@ -216,7 +164,7 @@ CreateDisplayMode(int64_t display_id, int width, int height) {
 namespace policy {
 
 class DeviceDisplayResolutionTestBase
-    : public policy::DevicePolicyCrosBrowserTest,
+    : public policy::DeviceDisplayPolicyCrosBrowserTest,
       public testing::WithParamInterface<PolicyValue> {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -225,45 +173,14 @@ class DeviceDisplayResolutionTestBase
     command_line->AppendSwitch(switches::kUseFirstDisplayAsInternal);
   }
 
-  void SetUpInProcessBrowserTestFixture() override {
-    ash::DisplayConfigurationController::DisableAnimatorForTest();
-    DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
-  }
-
-  void TearDownOnMainThread() override {
-    // If the login display is still showing, exit gracefully.
-    if (chromeos::LoginDisplayHost::default_host()) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(&chrome::AttemptExit));
-      RunUntilBrowserProcessQuits();
-    }
-  }
-
  protected:
   DeviceDisplayResolutionTestBase() {}
 
   void SetPolicy(PolicyValue policy, bool recommended) {
     em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
     SetPolicyValue(&proto, policy, recommended);
-    RefreshPolicyAndWaitUntilDeviceSettingsUpdated();
-  }
-
-  void UnsetPolicy() {
-    em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
-    proto.clear_device_display_resolution();
-    RefreshPolicyAndWaitUntilDeviceSettingsUpdated();
-  }
-
-  void RefreshPolicyAndWaitUntilDeviceSettingsUpdated() {
-    base::RunLoop run_loop;
-    // For calls from SetPolicy().
-    std::unique_ptr<chromeos::CrosSettings::ObserverSubscription> observer =
-        chromeos::CrosSettings::Get()->AddSettingsObserver(
-            chromeos::kDeviceDisplayResolution, run_loop.QuitClosure());
-    RefreshDevicePolicy();
-    run_loop.Run();
-    // Allow tasks posted by CrosSettings observers to complete:
-    base::RunLoop().RunUntilIdle();
+    policy_helper()->RefreshPolicyAndWaitUntilDeviceSettingsUpdated(
+        {chromeos::kDeviceDisplayResolution});
   }
 
  private:
@@ -287,9 +204,10 @@ class DeviceDisplayResolutionTest : public DeviceDisplayResolutionTestBase {
 IN_PROC_BROWSER_TEST_P(DeviceDisplayResolutionTest, DISABLED_Internal) {
   const PolicyValue policy_value = GetParam();
 
-  EXPECT_EQ(kDefaultDisplayScale, GetScaleOfInternalDisplay())
+  EXPECT_EQ(kDefaultDisplayScale, display_helper()->GetScaleOfFirstDisplay())
       << "Initial primary display scale before policy";
-  EXPECT_EQ(kDefaultDisplayResolution, GetResolutionOfInternalDisplay())
+  EXPECT_EQ(kDefaultDisplayResolution,
+            display_helper()->GetResolutionOfFirstDisplay())
       << "Initial primary display resolution before policy";
 
   SetPolicy(policy_value);
@@ -297,59 +215,61 @@ IN_PROC_BROWSER_TEST_P(DeviceDisplayResolutionTest, DISABLED_Internal) {
   EXPECT_EQ(policy_value, setting_resolution)
       << "Value of CrosSettings after policy value changed";
   EXPECT_EQ(policy_value.internal_scale_percentage.value_or(0),
-            GetScaleOfInternalDisplay())
+            display_helper()->GetScaleOfFirstDisplay())
       << "Scale of primary display after policy";
 }
 
 // crbug.com/1000694.
 IN_PROC_BROWSER_TEST_P(DeviceDisplayResolutionTest,
-                       DISABLED_ResizeExternalDisplay) {
+                       DISABLED_ResizeSecondDisplay) {
   const PolicyValue policy_value = GetParam();
 
-  AddExternalDisplay();
+  AddExternalDisplay(display_helper()->GetDisplayManager());
 
-  EXPECT_EQ(kDefaultDisplayScale, GetScaleOfInternalDisplay())
+  EXPECT_EQ(kDefaultDisplayScale, display_helper()->GetScaleOfFirstDisplay())
       << "Initial primary display scale after connecting external";
-  EXPECT_EQ(kDefaultDisplayResolution, GetResolutionOfInternalDisplay())
+  EXPECT_EQ(kDefaultDisplayResolution,
+            display_helper()->GetResolutionOfFirstDisplay())
       << "Initial primary display resolution after connecting external";
 
-  EXPECT_EQ(kDefaultDisplayScale, GetScaleOfExternalDisplay())
+  EXPECT_EQ(kDefaultDisplayScale, display_helper()->GetScaleOfSecondDisplay())
       << "Scale of external display before policy";
-  EXPECT_EQ(kDefaultExternalDisplayResolution, GetResolutionOfExternalDisplay())
+  EXPECT_EQ(kDefaultSecondDisplayResolution,
+            display_helper()->GetResolutionOfSecondDisplay())
       << "Resolution of external display before policy";
 
   SetPolicy(policy_value);
   EXPECT_EQ(policy_value.external_scale_percentage.value_or(0),
-            GetScaleOfExternalDisplay())
+            display_helper()->GetScaleOfSecondDisplay())
       << "Scale of already connected external display after policy";
   EXPECT_EQ(policy_value.external_display_size(),
-            GetResolutionOfExternalDisplay())
+            display_helper()->GetResolutionOfSecondDisplay())
       << "Resolution of already connected external display after policy";
 
   EXPECT_EQ(policy_value.internal_scale_percentage.value_or(0),
-            GetScaleOfInternalDisplay())
+            display_helper()->GetScaleOfFirstDisplay())
       << "Primary display scale after resizing external";
 }
 
 // crbug.com/1000694.
 IN_PROC_BROWSER_TEST_P(DeviceDisplayResolutionTest,
-                       DISABLED_ConnectExternalDisplay) {
+                       DISABLED_ConnectSecondDisplay) {
   const PolicyValue policy_value = GetParam();
 
   SetPolicy(policy_value);
   EXPECT_EQ(policy_value.internal_scale_percentage.value_or(0),
-            GetScaleOfInternalDisplay())
+            display_helper()->GetScaleOfFirstDisplay())
       << "Initial primary display scale after applying policy";
 
-  AddExternalDisplay();
+  AddExternalDisplay(display_helper()->GetDisplayManager());
   EXPECT_EQ(policy_value.external_scale_percentage.value_or(0),
-            GetScaleOfExternalDisplay())
+            display_helper()->GetScaleOfSecondDisplay())
       << "Scale of newly connected external display after policy";
   EXPECT_EQ(policy_value.external_display_size(),
-            GetResolutionOfExternalDisplay())
+            display_helper()->GetResolutionOfSecondDisplay())
       << "Resolution of newly connected external display after policy";
   EXPECT_EQ(policy_value.internal_scale_percentage.value_or(0),
-            GetScaleOfInternalDisplay())
+            display_helper()->GetScaleOfFirstDisplay())
       << "Primary display scale after connecting external";
 }
 
@@ -357,17 +277,17 @@ IN_PROC_BROWSER_TEST_P(DeviceDisplayResolutionTest,
 IN_PROC_BROWSER_TEST_P(DeviceDisplayResolutionTest,
                        DISABLED_SetAndUnsetPolicy) {
   const PolicyValue policy_value = GetParam();
-  AddExternalDisplay();
+  AddExternalDisplay(display_helper()->GetDisplayManager());
   SetPolicy(policy_value);
-  UnsetPolicy();
+  policy_helper()->UnsetPolicy({chromeos::kDeviceDisplayResolution});
   EXPECT_EQ(policy_value.external_scale_percentage.value_or(0),
-            GetScaleOfExternalDisplay())
+            display_helper()->GetScaleOfSecondDisplay())
       << "Scale of the external display after policy was set and unset";
   EXPECT_EQ(policy_value.external_display_size(),
-            GetResolutionOfExternalDisplay())
+            display_helper()->GetResolutionOfSecondDisplay())
       << "Resolution of the external display after policy was set and unset.";
   EXPECT_EQ(policy_value.internal_scale_percentage.value_or(0),
-            GetScaleOfInternalDisplay())
+            display_helper()->GetScaleOfFirstDisplay())
       << "Initial primary display scale after policy was set and unset";
 }
 
@@ -405,13 +325,16 @@ class DisplayResolutionBootTest
     MixinBasedInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
   }
 
-  policy::DevicePolicyCrosTestHelper test_helper_;
-
   chromeos::DeviceStateMixin device_state_{
       &mixin_host_,
       chromeos::DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
 
+  DeviceDisplayCrosTestHelper* display_helper() { return &helper_; }
+  DevicePolicyCrosTestHelper* policy_helper() { return &policy_helper_; }
+
  private:
+  DevicePolicyCrosTestHelper policy_helper_;
+  DeviceDisplayCrosTestHelper helper_;
   DISALLOW_COPY_AND_ASSIGN(DisplayResolutionBootTest);
 };
 
@@ -420,7 +343,7 @@ IN_PROC_BROWSER_TEST_P(DisplayResolutionBootTest, PRE_Reboot) {
 
   // Set policy.
   policy::DevicePolicyBuilder* const device_policy(
-      test_helper_.device_policy());
+      policy_helper()->device_policy());
   em::ChromeDeviceSettingsProto& proto(device_policy->payload());
   SetPolicyValue(&proto, policy_value, true);
   base::RunLoop run_loop;
@@ -435,16 +358,16 @@ IN_PROC_BROWSER_TEST_P(DisplayResolutionBootTest, PRE_Reboot) {
   run_loop.Run();
   // Allow tasks posted by CrosSettings observers to complete:
   base::RunLoop().RunUntilIdle();
-  AddExternalDisplay();
+  AddExternalDisplay(display_helper()->GetDisplayManager());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(policy_value.external_scale_percentage.value_or(0),
-            GetScaleOfExternalDisplay())
+            display_helper()->GetScaleOfSecondDisplay())
       << "Scale of the external display after policy set";
   EXPECT_EQ(policy_value.external_display_size(),
-            GetResolutionOfExternalDisplay())
+            display_helper()->GetResolutionOfSecondDisplay())
       << "Resolution of the external display after policy set";
   EXPECT_EQ(policy_value.internal_scale_percentage.value_or(0),
-            GetScaleOfInternalDisplay())
+            display_helper()->GetScaleOfFirstDisplay())
       << "Initial primary display scale after policy set";
 }
 
@@ -452,17 +375,17 @@ IN_PROC_BROWSER_TEST_P(DisplayResolutionBootTest, PRE_Reboot) {
 IN_PROC_BROWSER_TEST_P(DisplayResolutionBootTest, DISABLED_Reboot) {
   const PolicyValue policy_value = GetParam();
 
-  AddExternalDisplay();
+  AddExternalDisplay(display_helper()->GetDisplayManager());
   base::RunLoop().RunUntilIdle();
   // Check that the policy resolution is restored.
   EXPECT_EQ(policy_value.external_scale_percentage.value_or(0),
-            GetScaleOfExternalDisplay())
+            display_helper()->GetScaleOfSecondDisplay())
       << "Scale of the external display after reboot";
   EXPECT_EQ(policy_value.external_display_size(),
-            GetResolutionOfExternalDisplay())
+            display_helper()->GetResolutionOfSecondDisplay())
       << "Resolution of the external display after reboot";
   EXPECT_EQ(policy_value.internal_scale_percentage.value_or(0),
-            GetScaleOfInternalDisplay())
+            display_helper()->GetScaleOfFirstDisplay())
       << "Initial primary display scale after reboot";
 }
 
@@ -498,7 +421,10 @@ class DeviceDisplayResolutionRecommendedTest
     run_loop.Run();
   }
 
+  DeviceDisplayCrosTestHelper* display_helper() { return &display_helper_; }
+
  private:
+  DeviceDisplayCrosTestHelper display_helper_;
   DISALLOW_COPY_AND_ASSIGN(DeviceDisplayResolutionRecommendedTest);
 };
 
@@ -506,9 +432,10 @@ class DeviceDisplayResolutionRecommendedTest
 IN_PROC_BROWSER_TEST_P(DeviceDisplayResolutionRecommendedTest,
                        DISABLED_Internal) {
   const PolicyValue policy_value = GetParam();
-  EXPECT_EQ(kDefaultDisplayResolution, GetResolutionOfInternalDisplay())
+  EXPECT_EQ(kDefaultDisplayResolution,
+            display_helper()->GetResolutionOfFirstDisplay())
       << "Initial primary display resolution before policy";
-  EXPECT_EQ(kDefaultDisplayScale, GetScaleOfInternalDisplay())
+  EXPECT_EQ(kDefaultDisplayScale, display_helper()->GetScaleOfFirstDisplay())
       << "Initial primary display scale before policy";
 
   SetPolicy(policy_value);
@@ -516,45 +443,47 @@ IN_PROC_BROWSER_TEST_P(DeviceDisplayResolutionRecommendedTest,
   EXPECT_EQ(policy_value, setting_resolution)
       << "Value of CrosSettings after policy value changed";
   EXPECT_EQ(setting_resolution.internal_scale_percentage.value_or(0),
-            GetScaleOfInternalDisplay())
+            display_helper()->GetScaleOfFirstDisplay())
       << "Scale of primary display after policy";
 
   extensions::api::system_display::DisplayProperties props;
   double user_scale = 50;
   props.display_zoom_factor = std::make_unique<double>(user_scale / 100.0);
-  SetUserProperties(GetInternalDisplayId(), std::move(props));
+  SetUserProperties(display_helper()->GetFirstDisplayId(), std::move(props));
 
-  EXPECT_EQ(user_scale, GetScaleOfInternalDisplay())
+  EXPECT_EQ(user_scale, display_helper()->GetScaleOfFirstDisplay())
       << "Scale of internal display after user operation";
 }
 
 // crbug.com/1000694.
 IN_PROC_BROWSER_TEST_P(DeviceDisplayResolutionRecommendedTest,
-                       DISABLED_ResizeExternalDisplay) {
+                       DISABLED_ResizeSecondDisplay) {
   const PolicyValue policy_value = GetParam();
-  AddExternalDisplay();
+  AddExternalDisplay(display_helper()->GetDisplayManager());
 
-  EXPECT_EQ(kDefaultDisplayScale, GetScaleOfInternalDisplay())
+  EXPECT_EQ(kDefaultDisplayScale, display_helper()->GetScaleOfFirstDisplay())
       << "Initial primary display scale after connecting external";
-  EXPECT_EQ(kDefaultDisplayResolution, GetResolutionOfInternalDisplay())
+  EXPECT_EQ(kDefaultDisplayResolution,
+            display_helper()->GetResolutionOfFirstDisplay())
       << "Initial primary display resolution after connecting external";
 
-  EXPECT_EQ(kDefaultDisplayScale, GetScaleOfExternalDisplay())
+  EXPECT_EQ(kDefaultDisplayScale, display_helper()->GetScaleOfSecondDisplay())
       << "Scale of external display before policy";
-  EXPECT_EQ(kDefaultExternalDisplayResolution, GetResolutionOfExternalDisplay())
+  EXPECT_EQ(kDefaultSecondDisplayResolution,
+            display_helper()->GetResolutionOfSecondDisplay())
       << "Resolution of external display before policy";
 
   SetPolicy(policy_value);
 
   EXPECT_EQ(policy_value.external_scale_percentage.value_or(0),
-            GetScaleOfExternalDisplay())
+            display_helper()->GetScaleOfSecondDisplay())
       << "Scale of the external display after policy";
   EXPECT_EQ(policy_value.external_display_size(),
-            GetResolutionOfExternalDisplay())
+            display_helper()->GetResolutionOfSecondDisplay())
       << "Resolution the external display after policy";
 
   EXPECT_EQ(policy_value.internal_scale_percentage.value_or(0),
-            GetScaleOfInternalDisplay())
+            display_helper()->GetScaleOfFirstDisplay())
       << "Internal display scale after resizing external";
 
   extensions::api::system_display::DisplayProperties props;
@@ -563,17 +492,18 @@ IN_PROC_BROWSER_TEST_P(DeviceDisplayResolutionRecommendedTest,
   double user_height = 1080;
   props.display_zoom_factor = std::make_unique<double>(user_scale / 100.0);
   props.display_mode =
-      CreateDisplayMode(GetExternalDisplayId(), user_width, user_height);
-  SetUserProperties(GetExternalDisplayId(), std::move(props));
+      CreateDisplayMode(display_helper()->GetSecondDisplayId(), user_width,
+                        user_height, display_helper()->GetDisplayManager());
+  SetUserProperties(display_helper()->GetSecondDisplayId(), std::move(props));
 
-  EXPECT_EQ(user_scale, GetScaleOfExternalDisplay())
+  EXPECT_EQ(user_scale, display_helper()->GetScaleOfSecondDisplay())
       << "Scale of the external display after user operation";
   EXPECT_EQ(gfx::Size(user_width, user_height),
-            GetResolutionOfExternalDisplay())
+            display_helper()->GetResolutionOfSecondDisplay())
       << "Resolution of the external display after user operation";
 
   EXPECT_EQ(policy_value.internal_scale_percentage.value_or(0),
-            GetScaleOfInternalDisplay())
+            display_helper()->GetScaleOfFirstDisplay())
       << "Internal display scale after user operation";
 }
 

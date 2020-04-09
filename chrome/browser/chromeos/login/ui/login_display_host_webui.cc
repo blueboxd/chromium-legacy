@@ -51,6 +51,7 @@
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/system/device_disabling_manager.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
@@ -62,6 +63,7 @@
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/device_disabled_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
@@ -178,6 +180,20 @@ bool ShouldShowSigninScreen(chromeos::OobeScreenId first_screen) {
          first_screen == chromeos::OobeScreen::SCREEN_SPECIAL_LOGIN;
 }
 
+void MaybeShowDeviceDisabledScreen() {
+  DCHECK(chromeos::LoginDisplayHost::default_host());
+  if (!g_browser_process->platform_part()->device_disabling_manager()) {
+    // Device disabled check will be done in the DeviceDisablingManager.
+    return;
+  }
+
+  if (!system::DeviceDisablingManager::IsDeviceDisabledDuringNormalOperation())
+    return;
+
+  chromeos::LoginDisplayHost::default_host()->StartWizard(
+      DeviceDisabledScreenView::kScreenId);
+}
+
 // ShowLoginWizard is split into two parts. This function is sometimes called
 // from TriggerShowLoginWizardFinish() directly, and sometimes from
 // OnLanguageSwitchedCallback()
@@ -232,6 +248,7 @@ void ShowLoginWizardFinish(
   DCHECK(session_manager::SessionManager::Get());
   DCHECK(chromeos::LoginDisplayHost::default_host());
   WallpaperControllerClient::Get()->SetInitialWallpaper();
+  MaybeShowDeviceDisabledScreen();
 }
 
 struct ShowLoginWizardSwitchLanguageCallbackData {

@@ -14,11 +14,13 @@
 #include "base/path_service.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/constants/chromeos_paths.h"
 #include "chromeos/dbus/constants/dbus_paths.h"
 #include "chromeos/dbus/cryptohome/tpm_util.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
+#include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/tpm/install_attributes.h"
 #include "crypto/rsa_private_key.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -27,6 +29,8 @@
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::Return;
+
+namespace em = enterprise_management;
 
 namespace policy {
 
@@ -58,17 +62,52 @@ void DevicePolicyCrosTestHelper::OverridePaths() {
   chromeos::RegisterStubPathOverrides(user_data_dir);
 }
 
-DevicePolicyCrosBrowserTest::DevicePolicyCrosBrowserTest()
-    : fake_session_manager_client_(new chromeos::FakeSessionManagerClient) {}
-
-DevicePolicyCrosBrowserTest::~DevicePolicyCrosBrowserTest() = default;
-
-void DevicePolicyCrosBrowserTest::RefreshDevicePolicy() {
+const std::string DevicePolicyCrosTestHelper::device_policy_blob() {
   // Reset the key to its original state.
   device_policy()->SetDefaultSigningKey();
   device_policy()->Build();
-  session_manager_client()->set_device_policy(device_policy()->GetBlob());
-  session_manager_client()->OnPropertyChangeComplete(true);
+  return device_policy()->GetBlob();
+}
+
+void DevicePolicyCrosTestHelper::RefreshDevicePolicy() {
+  chromeos::FakeSessionManagerClient::Get()->set_device_policy(
+      device_policy_blob());
+  chromeos::FakeSessionManagerClient::Get()->OnPropertyChangeComplete(true);
+}
+
+void DevicePolicyCrosTestHelper::RefreshPolicyAndWaitUntilDeviceSettingsUpdated(
+    const std::vector<std::string>& settings) {
+  base::RunLoop run_loop;
+
+  // For calls from SetPolicy().
+  std::vector<std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>>
+      observers = {};
+  for (auto setting_it = settings.cbegin(); setting_it != settings.cend();
+       setting_it++) {
+    observers.push_back(chromeos::CrosSettings::Get()->AddSettingsObserver(
+        *setting_it, run_loop.QuitClosure()));
+  }
+  RefreshDevicePolicy();
+  run_loop.Run();
+  // Allow tasks posted by CrosSettings observers to complete:
+  base::RunLoop().RunUntilIdle();
+}
+
+void DevicePolicyCrosTestHelper::UnsetPolicy(
+    const std::vector<std::string>& settings) {
+  em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+  proto.clear_display_rotation_default();
+  proto.clear_device_display_resolution();
+  RefreshPolicyAndWaitUntilDeviceSettingsUpdated(settings);
+}
+
+DevicePolicyCrosBrowserTest::DevicePolicyCrosBrowserTest() {}
+
+DevicePolicyCrosBrowserTest::~DevicePolicyCrosBrowserTest() = default;
+
+chromeos::FakeSessionManagerClient*
+DevicePolicyCrosBrowserTest::session_manager_client() {
+  return chromeos::FakeSessionManagerClient::Get();
 }
 
 }  // namespace policy

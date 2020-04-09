@@ -1404,7 +1404,8 @@ SkiaOutputSurfaceImplOnGpu::GetGrContextThreadSafeProxy() {
 
 void SkiaOutputSurfaceImplOnGpu::ReleaseImageContexts(
     std::vector<std::unique_ptr<ExternalUseClient::ImageContext>>
-        image_contexts) {
+        image_contexts,
+    uint64_t sync_fence_release) {
   DCHECK(!image_contexts.empty());
   // The window could be destroyed already, and the MakeCurrent will fail with
   // an destroyed window, so MakeCurrent without requiring the fbo0.
@@ -1413,7 +1414,8 @@ void SkiaOutputSurfaceImplOnGpu::ReleaseImageContexts(
       context->OnContextLost();
   }
 
-  // |image_contexts| goes out of scope here.
+  image_contexts.clear();
+  ReleaseFenceSyncAndPushTextureUpdates(sync_fence_release);
 }
 
 void SkiaOutputSurfaceImplOnGpu::ScheduleOverlays(

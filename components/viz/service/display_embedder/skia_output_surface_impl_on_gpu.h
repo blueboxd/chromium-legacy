@@ -169,7 +169,8 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   size_t max_resource_cache_bytes() const { return max_resource_cache_bytes_; }
   void ReleaseImageContexts(
       std::vector<std::unique_ptr<ExternalUseClient::ImageContext>>
-          image_contexts);
+          image_contexts,
+      uint64_t sync_fence_release);
   void ScheduleOverlays(SkiaOutputSurface::OverlayList overlays);
 
 #if defined(OS_WIN)

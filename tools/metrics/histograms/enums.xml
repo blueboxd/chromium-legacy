@@ -19952,6 +19952,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="688" label="ManagedGuestSessionAutoLaunchNotificationReduced"/>
   <int value="689" label="SystemFeaturesDisableList"/>
   <int value="690" label="CrostiniArcAdbSideloadingAllowed"/>
+  <int value="691" label="FloatingAccessibilityMenuEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -34674,8 +34675,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="47" label="INVALID_STATE_FOR_OPTION"/>
   <int value="49" label="PATCH_INVALID_ARGUMENTS"/>
   <int value="50" label="DIFF_PATCH_SOURCE_MISSING"/>
-  <int value="51" label="UNUSED_BINARIES"/>
-  <int value="52" label="UNUSED_BINARIES_UNINSTALLED"/>
+  <int value="51" label="UNUSED_BINARIES (removed in M84)"/>
+  <int value="52" label="UNUSED_BINARIES_UNINSTALLED (removed in M84)"/>
   <int value="53" label="UNSUPPORTED_OPTION"/>
   <int value="54" label="CPU_NOT_SUPPORTED"/>
   <int value="55" label="REENABLE_UPDATES_SUCCEEDED"/>
@@ -60018,8 +60019,8 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
       label="No previous version archive found for differential update."/>
   <int value="51"
       label="No multi-install products to update. The binaries will be
-             uninstalled if they are not in use."/>
-  <int value="52" label="The binaries were uninstalled."/>
+             uninstalled if they are not in use. (Removed in M84.)"/>
+  <int value="52" label="The binaries were uninstalled. (Removed in M84.)"/>
   <int value="53" label="An unsupported legacy option was given."/>
   <int value="54" label="Current CPU not supported."/>
   <int value="55" label="Autoupdates are now enabled."/>

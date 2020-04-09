@@ -116,39 +116,34 @@ TEST_F(InstallerStateTest, InstallerResult) {
   std::wstring value;
   DWORD dw_value;
 
-  // Check results for a fresh install of Chrome and the same for an attempt at
-  // multi-install, which is now ignored.
-  static constexpr const wchar_t* kCommandLines[] = {
-      L"setup.exe --system-level",
-      L"setup.exe --system-level --multi-install --chrome",
-  };
-  for (const wchar_t* command_line : kCommandLines) {
-    RegistryOverrideManager override_manager;
-    ASSERT_NO_FATAL_FAILURE(override_manager.OverrideRegistry(root));
-    base::CommandLine cmd_line = base::CommandLine::FromString(command_line);
-    const MasterPreferences prefs(cmd_line);
-    InstallationState machine_state;
-    machine_state.Initialize();
-    InstallerState state;
-    state.Initialize(cmd_line, prefs, machine_state);
-    state.WriteInstallerResult(installer::FIRST_INSTALL_SUCCESS,
-                               IDS_INSTALL_OS_ERROR_BASE, &launch_cmd);
-    EXPECT_EQ(ERROR_SUCCESS,
-              key.Open(root, install_static::GetClientStateKeyPath().c_str(),
-                       KEY_READ));
-    EXPECT_EQ(ERROR_SUCCESS,
-        key.ReadValueDW(installer::kInstallerResult, &dw_value));
-    EXPECT_EQ(static_cast<DWORD>(0), dw_value);
-    EXPECT_EQ(ERROR_SUCCESS,
-        key.ReadValueDW(installer::kInstallerError, &dw_value));
-    EXPECT_EQ(static_cast<DWORD>(installer::FIRST_INSTALL_SUCCESS), dw_value);
-    EXPECT_EQ(ERROR_SUCCESS,
-        key.ReadValue(installer::kInstallerResultUIString, &value));
-    EXPECT_FALSE(value.empty());
-    EXPECT_EQ(ERROR_SUCCESS,
-        key.ReadValue(installer::kInstallerSuccessLaunchCmdLine, &value));
-    EXPECT_EQ(launch_cmd, value);
-  }
+  // Check results for a fresh install of Chrome.
+  constexpr wchar_t command_line[] = L"setup.exe --system-level";
+
+  RegistryOverrideManager override_manager;
+  ASSERT_NO_FATAL_FAILURE(override_manager.OverrideRegistry(root));
+  base::CommandLine cmd_line = base::CommandLine::FromString(command_line);
+  const MasterPreferences prefs(cmd_line);
+  InstallationState machine_state;
+  machine_state.Initialize();
+  InstallerState state;
+  state.Initialize(cmd_line, prefs, machine_state);
+  state.WriteInstallerResult(installer::FIRST_INSTALL_SUCCESS,
+                             IDS_INSTALL_OS_ERROR_BASE, &launch_cmd);
+  EXPECT_EQ(ERROR_SUCCESS,
+            key.Open(root, install_static::GetClientStateKeyPath().c_str(),
+                     KEY_READ));
+  EXPECT_EQ(ERROR_SUCCESS,
+            key.ReadValueDW(installer::kInstallerResult, &dw_value));
+  EXPECT_EQ(static_cast<DWORD>(0), dw_value);
+  EXPECT_EQ(ERROR_SUCCESS,
+            key.ReadValueDW(installer::kInstallerError, &dw_value));
+  EXPECT_EQ(static_cast<DWORD>(installer::FIRST_INSTALL_SUCCESS), dw_value);
+  EXPECT_EQ(ERROR_SUCCESS,
+            key.ReadValue(installer::kInstallerResultUIString, &value));
+  EXPECT_FALSE(value.empty());
+  EXPECT_EQ(ERROR_SUCCESS,
+            key.ReadValue(installer::kInstallerSuccessLaunchCmdLine, &value));
+  EXPECT_EQ(launch_cmd, value);
 }
 
 TEST_F(InstallerStateTest, InitializeTwice) {

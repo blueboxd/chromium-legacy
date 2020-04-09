@@ -42,6 +42,7 @@
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/display_manager_utilities.h"
 #include "ui/display/manager/json_converter.h"
+#include "ui/display/manager/managed_display_info.h"
 #include "ui/display/manager/test/touch_device_manager_test_api.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
@@ -252,8 +253,8 @@ TEST_F(DisplayPrefsTest, ListedLayoutOverrides) {
   UpdateDisplay("100x100,200x200");
 
   display::DisplayIdList list = display_manager()->GetCurrentDisplayIdList();
-  display::DisplayIdList dummy_list =
-      display::test::CreateDisplayIdList2(list[0], list[1] + 1);
+  display::DisplayIdList dummy_list = display::test::CreateDisplayIdList2(
+      list[0], display::GetNextSynthesizedDisplayId(list[1]));
   ASSERT_NE(list[0], dummy_list[1]);
 
   StoreDisplayLayoutPrefForList(list, display::DisplayPlacement::TOP, 20);
@@ -280,15 +281,15 @@ TEST_F(DisplayPrefsTest, ListedLayoutOverrides) {
   // The new layout overrides old layout.
   // Inverted one of for specified pair (id1, id2).  Not used for the list
   // (id1, dummy_id) since dummy_id is not connected right now.
-  EXPECT_EQ("id=2200000001, parent=2200000000, top, 20",
+  EXPECT_EQ("id=2200000257, parent=2200000000, top, 20",
             Shell::Get()
                 ->display_manager()
                 ->GetCurrentDisplayLayout()
                 .placement_list[0]
                 .ToString());
-  EXPECT_EQ("id=2200000001, parent=2200000000, top, 20",
+  EXPECT_EQ("id=2200000257, parent=2200000000, top, 20",
             GetRegisteredDisplayPlacementStr(list));
-  EXPECT_EQ("id=2200000002, parent=2200000000, left, 30",
+  EXPECT_EQ("id=2200000258, parent=2200000000, left, 30",
             GetRegisteredDisplayPlacementStr(dummy_list));
 }
 
@@ -304,7 +305,7 @@ TEST_F(DisplayPrefsTest, BasicStores) {
   UpdateDisplay("200x200*2, 400x300#400x400|300x200*1.25");
   display::test::DisplayManagerTestApi display_manager_test(display_manager());
   int64_t id2 = display_manager_test.GetSecondaryDisplay().id();
-  int64_t dummy_id = id2 + 1;
+  int64_t dummy_id = display::GetNextSynthesizedDisplayId(id2);
   ASSERT_NE(id1, dummy_id);
 
   LoggedInAsUser();
@@ -547,8 +548,8 @@ TEST_F(DisplayPrefsTest, BasicStores) {
 
   // Set new display's selected resolution.
   display_manager()->RegisterDisplayProperty(
-      id2 + 1, display::Display::ROTATE_0, nullptr, gfx::Size(500, 400), 1.0f,
-      1.0f, 60.f, false);
+      display::GetNextSynthesizedDisplayId(id2), display::Display::ROTATE_0,
+      nullptr, gfx::Size(500, 400), 1.0f, 1.0f, 60.f, false);
 
   UpdateDisplay("200x200*2, 600x500#600x500|500x400");
   EXPECT_FALSE(display_manager()->IsInMirrorMode());
@@ -573,8 +574,8 @@ TEST_F(DisplayPrefsTest, BasicStores) {
 
   // Set yet another new display's selected resolution.
   display_manager()->RegisterDisplayProperty(
-      id2 + 1, display::Display::ROTATE_0, nullptr, gfx::Size(500, 400), 1.0f,
-      1.0f, 60.f, false);
+      display::GetNextSynthesizedDisplayId(id2), display::Display::ROTATE_0,
+      nullptr, gfx::Size(500, 400), 1.0f, 1.0f, 60.f, false);
   // Disconnect 2nd display first to generate new id for external display.
   UpdateDisplay("200x200*2");
   UpdateDisplay("200x200*2, 500x400#600x500|500x400%60.0f");
@@ -1167,8 +1168,7 @@ TEST_F(DisplayPrefsTest, SaveThreeDisplays) {
 TEST_F(DisplayPrefsTest, RestoreThreeDisplays) {
   LoggedInAsUser();
   int64_t id1 = display::Screen::GetScreen()->GetPrimaryDisplay().id();
-  display::DisplayIdList list =
-      display::test::CreateDisplayIdListN(3, id1, id1 + 1, id1 + 2);
+  display::DisplayIdList list = display::test::CreateDisplayIdListN(id1, 3);
 
   display::DisplayLayoutBuilder builder(list[0]);
   builder.AddDisplayPlacement(list[1], list[0], display::DisplayPlacement::LEFT,

@@ -57,8 +57,8 @@ constexpr AutoclickEventType kDefaultAutoclickEventType =
 constexpr int kDefaultAutoclickMovementThreshold = 20;
 
 // The default automatic click menu position.
-constexpr AutoclickMenuPosition kDefaultAutoclickMenuPosition =
-    AutoclickMenuPosition::kSystemDefault;
+constexpr FloatingMenuPosition kDefaultAutoclickMenuPosition =
+    FloatingMenuPosition::kSystemDefault;
 
 // The default frame color.
 constexpr SkColor kDefaultFrameColor = SkColorSetRGB(0xFD, 0xFE, 0xFF);

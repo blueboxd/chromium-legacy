@@ -207,7 +207,7 @@ void AutoclickController::SetMovementThreshold(int movement_threshold) {
   UpdateRingSize();
 }
 
-void AutoclickController::SetMenuPosition(AutoclickMenuPosition menu_position) {
+void AutoclickController::SetMenuPosition(FloatingMenuPosition menu_position) {
   menu_position_ = menu_position;
   UpdateAutoclickMenuBoundsIfNeeded();
 }

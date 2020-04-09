@@ -1,23 +1,13 @@
 <!DOCTYPE html>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
-<title>When a block inside a flexbox adds scrollbars due to overflow, the parent flexbox should re-flex based on the child size including scrollbars.</title>
+<title>When a block inside an horizontal flexbox adds vertical scrollbars due to overflow, the parent flexbox should re-flex based on the child size including scrollbars.</title>
 <style>
-.vflex {
-  display: flex;
-  flex-direction: column;
-  max-width: 200px;
-  margin: 10px 0 10px 0;
-}
 .hflex {
   display: flex;
   flex-direction: row;
   max-height: 200px;
   margin: 10px 0 10px 0;
-}
-.hbox {
-  overflow-x: auto;
-  white-space: nowrap;
 }
 .vbox {
   overflow-y: auto;
@@ -30,13 +20,6 @@
   display: inline-block;
 }
 </style>
-
-<div class="vflex">
-  <div class="hbox">
-    <div class="rect"></div>
-    <div class="rect"></div>
-  </div>
-</div>
 
 <div class="hflex">
   <div class="vbox">
@@ -56,12 +39,6 @@
 </div>
 
 <script>
-  var hbox = document.querySelector('.hbox');
-  test(function() {
-    assert_equals(hbox.parentNode.clientHeight, hbox.parentNode.scrollHeight);
-    assert_equals(hbox.clientHeight, hbox.scrollHeight);
-  }, 'hbox dimensions');
-
   var measure = document.getElementById('measure');
   var scrollbarSize = measure.offsetWidth - measure.clientWidth;
   test(function() {

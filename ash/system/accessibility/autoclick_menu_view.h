@@ -28,11 +28,11 @@ class AutoclickMenuView : public views::View, public views::ButtonListener {
     kPause = 7,
   };
 
-  AutoclickMenuView(AutoclickEventType type, AutoclickMenuPosition position);
+  AutoclickMenuView(AutoclickEventType type, FloatingMenuPosition position);
   ~AutoclickMenuView() override = default;
 
   void UpdateEventType(AutoclickEventType type);
-  void UpdatePosition(AutoclickMenuPosition position);
+  void UpdatePosition(FloatingMenuPosition position);
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

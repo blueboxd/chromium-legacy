@@ -677,6 +677,7 @@ class CacheStorageCacheTest : public testing::Test {
         nullptr /* side_data_blob */,
         nullptr /* side_data_blob_for_cache_put */,
         std::vector<network::mojom::ContentSecurityPolicyPtr>(),
+        network::CrossOriginEmbedderPolicy(),
         false /* loaded_with_credentials */);
   }
 

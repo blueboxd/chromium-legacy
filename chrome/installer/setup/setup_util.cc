@@ -139,7 +139,13 @@ void RemoveProfileStatistics(const InstallerState& installer_state) {
 // for this mode of install was dropped from ToT in December 2016. Remove any
 // stray bits in the registry leftover from such installs.
 void RemoveBinariesVersionKey(const InstallerState& installer_state) {
-  base::string16 path(install_static::GetBinariesClientsKeyPath());
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  base::string16 path(install_static::GetClientsKeyPath(
+      L"{4DC8B4CA-1BDA-483e-B5FA-D3C12E15B62D}"));
+#else
+  // Assume that non-Google is Chromium branding.
+  base::string16 path(L"Software\\Chromium Binaries");
+#endif
   if (base::win::RegKey(installer_state.root_key(), path.c_str(),
                         KEY_QUERY_VALUE | KEY_WOW64_32KEY)
           .Valid()) {
@@ -677,21 +683,6 @@ void DeRegisterEventLogProvider() {
   // but leaves files behind.
   InstallUtil::DeleteRegistryKey(HKEY_LOCAL_MACHINE, reg_path,
                                  WorkItem::kWow64Default);
-}
-
-bool AreBinariesInstalled(const InstallerState& installer_state) {
-  if (!install_static::InstallDetails::Get().supported_multi_install())
-    return false;
-
-  base::win::RegKey key;
-  base::string16 pv;
-
-  // True if the "pv" value exists and isn't empty.
-  return key.Open(installer_state.root_key(),
-                  install_static::GetBinariesClientsKeyPath().c_str(),
-                  KEY_QUERY_VALUE | KEY_WOW64_32KEY) == ERROR_SUCCESS &&
-         key.ReadValue(google_update::kRegVersionField, &pv) == ERROR_SUCCESS &&
-         !pv.empty();
 }
 
 void DoLegacyCleanups(const InstallerState& installer_state,

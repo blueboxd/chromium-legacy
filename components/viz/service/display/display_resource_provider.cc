@@ -644,7 +644,9 @@ void DisplayResourceProvider::DeleteAndReturnUnusedResourcesToChild(
 
   std::vector<std::unique_ptr<ExternalUseClient::ImageContext>>
       image_contexts_to_return;
+  std::vector<ReturnedResource*> external_used_resources;
   image_contexts_to_return.reserve(unused.size());
+  external_used_resources.reserve(unused.size());
 
   GLES2Interface* gl = ContextGL();
   for (ResourceId local_id : unused) {
@@ -681,9 +683,6 @@ void DisplayResourceProvider::DeleteAndReturnUnusedResourcesToChild(
       is_lost = true;
     }
 
-    if (resource.image_context)
-      image_contexts_to_return.emplace_back(std::move(resource.image_context));
-
     if (resource.is_gpu_resource_type() &&
         resource.gl_id &&
         resource.filter != resource.transferable.filter) {
@@ -703,12 +702,20 @@ void DisplayResourceProvider::DeleteAndReturnUnusedResourcesToChild(
                            resource.imported_count, is_lost);
     auto& returned = to_return.back();
 
-    if (resource.is_gpu_resource_type()) {
-      if (resource.needs_sync_token()) {
-        need_synchronization_resources.push_back(&returned);
-      } else if (returned.sync_token.HasData() &&
-                 !returned.sync_token.verified_flush()) {
-        unverified_sync_tokens.push_back(returned.sync_token.GetData());
+    if (external_use_client_) {
+      if (resource.image_context) {
+        image_contexts_to_return.emplace_back(
+            std::move(resource.image_context));
+        external_used_resources.push_back(&returned);
+      }
+    } else {
+      if (resource.is_gpu_resource_type()) {
+        if (resource.needs_sync_token()) {
+          need_synchronization_resources.push_back(&returned);
+        } else if (returned.sync_token.HasData() &&
+                   !returned.sync_token.verified_flush()) {
+          unverified_sync_tokens.push_back(returned.sync_token.GetData());
+        }
       }
     }
 
@@ -720,28 +727,32 @@ void DisplayResourceProvider::DeleteAndReturnUnusedResourcesToChild(
     DeleteResourceInternal(it, style);
   }
 
-  gpu::SyncToken new_sync_token;
-  if (!need_synchronization_resources.empty()) {
-    DCHECK(gl);
-    gl->GenUnverifiedSyncTokenCHROMIUM(new_sync_token.GetData());
-    unverified_sync_tokens.push_back(new_sync_token.GetData());
+  if (external_use_client_) {
+    if (!image_contexts_to_return.empty()) {
+      gpu::SyncToken sync_token = external_use_client_->ReleaseImageContexts(
+          std::move(image_contexts_to_return));
+      for (auto* resource : external_used_resources) {
+        resource->sync_token = sync_token;
+      }
+    }
+  } else {
+    gpu::SyncToken new_sync_token;
+    if (!need_synchronization_resources.empty()) {
+      DCHECK(gl);
+      gl->GenUnverifiedSyncTokenCHROMIUM(new_sync_token.GetData());
+      unverified_sync_tokens.push_back(new_sync_token.GetData());
+    }
+
+    if (!unverified_sync_tokens.empty()) {
+      DCHECK(gl);
+      gl->VerifySyncTokensCHROMIUM(unverified_sync_tokens.data(),
+                                   unverified_sync_tokens.size());
+    }
+
+    // Set sync token after verification.
+    for (ReturnedResource* returned : need_synchronization_resources)
+      returned->sync_token = new_sync_token;
   }
-
-  if (!unverified_sync_tokens.empty()) {
-    DCHECK(gl);
-    gl->VerifySyncTokensCHROMIUM(unverified_sync_tokens.data(),
-                                 unverified_sync_tokens.size());
-  }
-
-  // Set sync token after verification.
-  for (ReturnedResource* returned : need_synchronization_resources)
-    returned->sync_token = new_sync_token;
-
-  if (external_use_client_ && !image_contexts_to_return.empty()) {
-    external_use_client_->ReleaseImageContexts(
-        std::move(image_contexts_to_return));
-  }
-
   if (!to_return.empty())
     child_info->return_callback.Run(to_return);
 

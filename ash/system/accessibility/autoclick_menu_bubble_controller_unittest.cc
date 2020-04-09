@@ -180,7 +180,7 @@ TEST_F(AutoclickMenuBubbleControllerTest, CanChangePosition) {
       Shell::Get()->accessibility_controller();
 
   // Set to a known position for than the first event in kTestCases.
-  controller->SetAutoclickMenuPosition(AutoclickMenuPosition::kTopRight);
+  controller->SetAutoclickMenuPosition(FloatingMenuPosition::kTopRight);
 
   // Get the full root window bounds to test the position.
   gfx::Rect window_bounds = Shell::GetPrimaryRootWindow()->bounds();
@@ -188,14 +188,14 @@ TEST_F(AutoclickMenuBubbleControllerTest, CanChangePosition) {
   // Test cases rotate clockwise.
   const struct {
     gfx::Point expected_location;
-    AutoclickMenuPosition expected_position;
+    FloatingMenuPosition expected_position;
   } kTestCases[] = {
       {gfx::Point(window_bounds.width(), window_bounds.height()),
-       AutoclickMenuPosition::kBottomRight},
+       FloatingMenuPosition::kBottomRight},
       {gfx::Point(0, window_bounds.height()),
-       AutoclickMenuPosition::kBottomLeft},
-      {gfx::Point(0, 0), AutoclickMenuPosition::kTopLeft},
-      {gfx::Point(window_bounds.width(), 0), AutoclickMenuPosition::kTopRight},
+       FloatingMenuPosition::kBottomLeft},
+      {gfx::Point(0, 0), FloatingMenuPosition::kTopLeft},
+      {gfx::Point(window_bounds.width(), 0), FloatingMenuPosition::kTopRight},
   };
 
   // Find the autoclick menu position button.
@@ -277,7 +277,7 @@ TEST_F(AutoclickMenuBubbleControllerTest, ScrollBubbleDefaultPositioning) {
 
     // When the menu is in the top right, the scroll view should be directly
     // under it and along the right side of the screen.
-    controller->SetAutoclickMenuPosition(AutoclickMenuPosition::kTopRight);
+    controller->SetAutoclickMenuPosition(FloatingMenuPosition::kTopRight);
     EXPECT_LT(GetScrollViewBounds().ManhattanDistanceToPoint(
                   GetMenuViewBounds().bottom_center()),
               kMenuViewBoundsBuffer);
@@ -285,7 +285,7 @@ TEST_F(AutoclickMenuBubbleControllerTest, ScrollBubbleDefaultPositioning) {
 
     // When the menu is in the bottom right, the scroll view is directly above
     // it and along the right side of the screen.
-    controller->SetAutoclickMenuPosition(AutoclickMenuPosition::kBottomRight);
+    controller->SetAutoclickMenuPosition(FloatingMenuPosition::kBottomRight);
     EXPECT_LT(GetScrollViewBounds().ManhattanDistanceToPoint(
                   GetMenuViewBounds().top_center()),
               kMenuViewBoundsBuffer);
@@ -293,7 +293,7 @@ TEST_F(AutoclickMenuBubbleControllerTest, ScrollBubbleDefaultPositioning) {
 
     // When the menu is on the bottom left, the scroll view is directly above it
     // and along the left side of the screen.
-    controller->SetAutoclickMenuPosition(AutoclickMenuPosition::kBottomLeft);
+    controller->SetAutoclickMenuPosition(FloatingMenuPosition::kBottomLeft);
     EXPECT_LT(GetScrollViewBounds().ManhattanDistanceToPoint(
                   GetMenuViewBounds().top_center()),
               kMenuViewBoundsBuffer);
@@ -301,7 +301,7 @@ TEST_F(AutoclickMenuBubbleControllerTest, ScrollBubbleDefaultPositioning) {
 
     // When the menu is on the top left, the scroll view is directly below it
     // and along the left side of the screen.
-    controller->SetAutoclickMenuPosition(AutoclickMenuPosition::kTopLeft);
+    controller->SetAutoclickMenuPosition(FloatingMenuPosition::kTopLeft);
     EXPECT_LT(GetScrollViewBounds().ManhattanDistanceToPoint(
                   GetMenuViewBounds().bottom_center()),
               kMenuViewBoundsBuffer);
@@ -333,7 +333,7 @@ TEST_F(AutoclickMenuBubbleControllerTest,
     UpdateDisplay(test.display_spec);
     base::i18n::SetRTLForTesting(test.is_RTL);
     gfx::Rect scroll_bounds = test.scroll_bounds;
-    controller->SetAutoclickMenuPosition(AutoclickMenuPosition::kTopRight);
+    controller->SetAutoclickMenuPosition(FloatingMenuPosition::kTopRight);
 
     // Start with a point no where near the autoclick menu.
     gfx::Point point = gfx::Point(400, 400);
@@ -355,7 +355,7 @@ TEST_F(AutoclickMenuBubbleControllerTest,
     // Moving the autoclick bubble doesn't impact the scroll bubble once it
     // has been manually set.
     gfx::Rect bubble_bounds = GetScrollViewBounds();
-    controller->SetAutoclickMenuPosition(AutoclickMenuPosition::kBottomRight);
+    controller->SetAutoclickMenuPosition(FloatingMenuPosition::kBottomRight);
     EXPECT_EQ(bubble_bounds, GetScrollViewBounds());
 
     // If we position it by the edge of the screen, it should stay on-screen,

@@ -14,6 +14,13 @@
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
+namespace {
+void RecordOAuth2TokenFetchResult(GoogleServiceAuthError::State state) {
+  UMA_HISTOGRAM_ENUMERATION("Signin.OAuth2TokenGetResult", state,
+                            GoogleServiceAuthError::NUM_STATES);
+}
+}  // namespace
+
 int OAuth2AccessTokenManager::max_fetch_retry_num_ = 5;
 
 OAuth2AccessTokenManager::Delegate::Delegate() = default;
@@ -275,6 +282,8 @@ void OAuth2AccessTokenManager::Fetcher::OnGetTokenSuccess(
     const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   fetcher_.reset();
 
+  RecordOAuth2TokenFetchResult(GoogleServiceAuthError::NONE);
+
   // Fetch completes.
   error_ = GoogleServiceAuthError::AuthErrorNone();
   token_response_ = token_response;
@@ -295,8 +304,8 @@ void OAuth2AccessTokenManager::Fetcher::OnGetTokenFailure(
   if (ShouldRetry(error) && RetryIfPossible(error))
     return;
 
-  UMA_HISTOGRAM_ENUMERATION("Signin.OAuth2TokenGetFailure", error.state(),
-                            GoogleServiceAuthError::NUM_STATES);
+  RecordOAuth2TokenFetchResult(error.state());
+
   error_ = error;
   InformWaitingRequestsAndDelete();
 }

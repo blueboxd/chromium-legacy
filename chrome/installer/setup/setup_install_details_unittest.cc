@@ -24,7 +24,6 @@ struct TestData {
   const wchar_t* command_line;
   const wchar_t* uninstall_args;
   const wchar_t* product_ap;
-  const wchar_t* binaries_ap;
 
   // Expectations:
   install_static::InstallConstantIndex index;
@@ -39,7 +38,6 @@ constexpr TestData kTestData[] = {
         L"setup.exe",                  // User-level, primary mode.
         L"",                           // New install.
         L"x64-stable",                 // Stable channel.
-        L"1.1-beta",                   // Value ignored in binaries.
         install_static::STABLE_INDEX,  // Expect primary mode.
         false,                         // Expect user-level.
         L"",                           // Expect stable channel.
@@ -48,25 +46,14 @@ constexpr TestData kTestData[] = {
         L"setup.exe",                  // User-level, primary mode.
         L"--uninstall",                // Updating an existing install.
         L"x64-stable",                 // Stable channel.
-        L"1.1-beta",                   // Value ignored in binaries.
         install_static::STABLE_INDEX,  // Expect primary mode.
         false,                         // Expect user-level.
         L"",                           // Expect stable channel.
     },
     {
-        L"setup.exe",                    // User-level, primary mode.
-        L"--uninstall --multi-install",  // Updating an existing multi-install.
-        L"x64-stable",                   // Value ignored in product.
-        L"1.1-beta",                     // Channel read from binaries.
-        install_static::STABLE_INDEX,    // Expect primary mode.
-        false,                           // Expect user-level.
-        L"beta",                         // Expect beta channel.
-    },
-    {
         L"setup.exe",                  // User-level, primary mode.
         L"",                           // New install.
         L"1.1-beta",                   // Beta channel.
-        L"x64-stable",                 // Value ignored in binaries.
         install_static::STABLE_INDEX,  // Expect primary mode.
         false,                         // Expect user-level.
         L"beta",                       // Expect beta channel.
@@ -74,7 +61,6 @@ constexpr TestData kTestData[] = {
     {
         L"setup.exe --chrome-beta",  // User-level, secondary SxS beta mode.
         L"",                         // New install.
-        L"",                         // Unused.
         L"",                         // Unused.
         install_static::BETA_INDEX,  // Expect SxS beta mode.
         false,                       // Expect user-level.
@@ -84,7 +70,6 @@ constexpr TestData kTestData[] = {
         L"setup.exe --chrome-beta",    // User-level, secondary SxS beta mode.
         L"--uninstall --chrome-beta",  // Update.
         L"",                           // Unused.
-        L"",                           // Unused.
         install_static::BETA_INDEX,    // Expect SxS beta mode.
         false,                         // Expect user-level.
         L"beta",                       // Expect beta channel.
@@ -92,7 +77,6 @@ constexpr TestData kTestData[] = {
     {
         L"setup.exe --chrome-dev",  // User-level, secondary SxS dev mode.
         L"",                        // New install.
-        L"",                        // Unused.
         L"",                        // Unused.
         install_static::DEV_INDEX,  // Expect SxS dev mode.
         false,                      // Expect user-level.
@@ -102,7 +86,6 @@ constexpr TestData kTestData[] = {
         L"setup.exe --chrome-dev",    // User-level, secondary SxS dev mode.
         L"--uninstall --chrome-dev",  // Update.
         L"",                          // Unused.
-        L"",                          // Unused.
         install_static::DEV_INDEX,    // Expect SxS dev mode.
         false,                        // Expect user-level.
         L"dev",                       // Expect dev channel.
@@ -111,7 +94,6 @@ constexpr TestData kTestData[] = {
         L"setup.exe --chrome-sxs",     // User-level, secondary SxS canary mode.
         L"",                           // New install.
         L"",                           // Unused.
-        L"",                           // Unused.
         install_static::CANARY_INDEX,  // Expect SxS canary mode.
         false,                         // Expect user-level.
         L"canary",                     // Expect canary channel.
@@ -119,7 +101,6 @@ constexpr TestData kTestData[] = {
     {
         L"setup.exe --chrome-sxs",     // User-level, secondary SxS canary mode.
         L"--uninstall --chrome-sxs",   // Update.
-        L"",                           // Unused.
         L"",                           // Unused.
         install_static::CANARY_INDEX,  // Expect SxS canary mode.
         false,                         // Expect user-level.
@@ -131,7 +112,6 @@ constexpr TestData kTestData[] = {
         L"setup.exe --system-level",   // System-level, primary mode.
         L"",                           // New install.
         L"x64-stable",                 // Stable channel.
-        L"1.1-beta",                   // Value ignored in binaries.
         install_static::STABLE_INDEX,  // Expect primary mode.
         true,                          // Expect system-level.
         L"",                           // Expect stable channel.
@@ -140,26 +120,14 @@ constexpr TestData kTestData[] = {
         L"setup.exe --system-level",    // System-level, primary mode.
         L"--uninstall --system-level",  // Updating an existing install.
         L"x64-stable",                  // Stable channel.
-        L"1.1-beta",                    // Value ignored in binaries.
         install_static::STABLE_INDEX,   // Expect primary mode.
         true,                           // Expect system-level.
         L"",                            // Expect stable channel.
     },
     {
-        L"setup.exe --system-level",  // System-level, primary mode.
-        // Updating an existing multi-install.
-        L"--uninstall --system-level --multi-install",
-        L"x64-stable",                 // Value ignored in product.
-        L"1.1-beta",                   // Channel read from binaries.
-        install_static::STABLE_INDEX,  // Expect primary mode.
-        true,                          // Expect system-level.
-        L"beta",                       // Expect beta channel.
-    },
-    {
         L"setup.exe --system-level",   // System-level, primary mode.
         L"",                           // New install.
         L"1.1-beta",                   // Beta channel.
-        L"x64-stable",                 // Value ignored in binaries.
         install_static::STABLE_INDEX,  // Expect primary mode.
         true,                          // Expect system-level.
         L"beta",                       // Expect beta channel.
@@ -168,7 +136,6 @@ constexpr TestData kTestData[] = {
         L"setup.exe --system-level --chrome-beta",  // User-level, secondary SxS
                                                     // beta mode.
         L"",                                        // New install.
-        L"",                                        // Unused.
         L"",                                        // Unused.
         install_static::BETA_INDEX,                 // Expect SxS beta mode.
         true,                                       // Expect user-level.
@@ -179,7 +146,6 @@ constexpr TestData kTestData[] = {
                                                     // beta mode.
         L"--uninstall --system-level --chrome-beta",  // Update.
         L"",                                          // Unused.
-        L"",                                          // Unused.
         install_static::BETA_INDEX,                   // Expect SxS beta mode.
         true,                                         // Expect user-level.
         L"beta",                                      // Expect beta channel.
@@ -189,7 +155,6 @@ constexpr TestData kTestData[] = {
                                                    // dev mode.
         L"",                                       // New install.
         L"",                                       // Unused.
-        L"",                                       // Unused.
         install_static::DEV_INDEX,                 // Expect SxS dev mode.
         true,                                      // Expect user-level.
         L"dev",                                    // Expect dev channel.
@@ -198,7 +163,6 @@ constexpr TestData kTestData[] = {
         L"setup.exe --system-level --chrome-dev",  // User-level, secondary SxS
                                                    // dev mode.
         L"--uninstall --system-level --chrome-dev",  // Update.
-        L"",                                         // Unused.
         L"",                                         // Unused.
         install_static::DEV_INDEX,                   // Expect SxS dev mode.
         true,                                        // Expect user-level.
@@ -212,7 +176,6 @@ constexpr TestData kTestData[] = {
         L"setup.exe",                    // User-level, primary mode.
         L"",                             // New install.
         L"",                             // Channels are not supported.
-        L"",                             // Channels are not supported.
         install_static::CHROMIUM_INDEX,  // Expect primary mode.
         false,                           // Expect user-level.
         L"",                             // Expect empty channel.
@@ -220,7 +183,6 @@ constexpr TestData kTestData[] = {
     {
         L"setup.exe",                    // User-level, primary mode.
         L"--uninstall",                  // Updating an existing install.
-        L"",                             // Channels are not supported.
         L"",                             // Channels are not supported.
         install_static::CHROMIUM_INDEX,  // Expect primary mode.
         false,                           // Expect user-level.
@@ -232,7 +194,6 @@ constexpr TestData kTestData[] = {
         L"setup.exe --system-level",     // System-level, primary mode.
         L"",                             // New install.
         L"",                             // Channels are not supported.
-        L"",                             // Channels are not supported.
         install_static::CHROMIUM_INDEX,  // Expect primary mode.
         true,                            // Expect system-level.
         L"",                             // Expect empty channel.
@@ -240,7 +201,6 @@ constexpr TestData kTestData[] = {
     {
         L"setup.exe --system-level",     // System-level, primary mode.
         L"--uninstall --system-level",   // Updating an existing install.
-        L"",                             // Channels are not supported.
         L"",                             // Channels are not supported.
         install_static::CHROMIUM_INDEX,  // Expect primary mode.
         true,                            // Expect system-level.
@@ -277,7 +237,6 @@ class MakeInstallDetailsTest : public testing::TestWithParam<TestData> {
     ASSERT_NO_FATAL_FAILURE(SetProductAp(
         root_key_, install_static::kInstallModes[test_data_.index].app_guid,
         test_data_.product_ap));
-    ASSERT_NO_FATAL_FAILURE(SetBinariesAp(root_key_, test_data_.binaries_ap));
 #endif
   }
 
@@ -325,18 +284,6 @@ class MakeInstallDetailsTest : public testing::TestWithParam<TestData> {
     ASSERT_THAT(
         base::win::RegKey(
             root_key, install_static::GetClientStateKeyPath(app_guid).c_str(),
-            KEY_WOW64_32KEY | KEY_SET_VALUE)
-            .WriteValue(L"ap", ap),
-        Eq(ERROR_SUCCESS));
-  }
-
-  static void SetBinariesAp(HKEY root_key, const wchar_t* ap) {
-    // Do nothing if there's no value to write.
-    if (!ap || !*ap)
-      return;
-    ASSERT_THAT(
-        base::win::RegKey(
-            root_key, install_static::GetBinariesClientStateKeyPath().c_str(),
             KEY_WOW64_32KEY | KEY_SET_VALUE)
             .WriteValue(L"ap", ap),
         Eq(ERROR_SUCCESS));

@@ -649,7 +649,7 @@ TEST_F(WindowCycleControllerTest, TabPastFullscreenWindow) {
 TEST_F(WindowCycleControllerTest, MultiDisplayPositioning) {
   int64_t primary_id = GetPrimaryDisplay().id();
   display::DisplayIdList list =
-      display::test::CreateDisplayIdListN(2, primary_id, primary_id + 1);
+      display::test::CreateDisplayIdListN(primary_id, 2);
 
   auto placements = {
       display::DisplayPlacement::BOTTOM, display::DisplayPlacement::TOP,

@@ -37,6 +37,11 @@
 namespace signin {
 namespace test {
 
+// A wrapper importing the settings module when the chrome://settings serve the
+// Polymer 3 version.
+const char kSettingsScriptWrapperFormat[] =
+    "import('./settings.js').then(settings => {%s});";
+
 enum class PrimarySyncAccountWait { kWaitForAdded, kWaitForCleared, kNotWait };
 
 // Observes various sign-in events and allows to wait for a specific state of
@@ -197,7 +202,9 @@ class LiveSignInTest : public signin::test::LiveTest {
     auto* settings_tab = browser()->tab_strip_model()->GetActiveWebContents();
     EXPECT_TRUE(content::ExecuteScript(
         settings_tab,
-        "settings.SyncBrowserProxyImpl.getInstance().startSignIn()"));
+        base::StringPrintf(
+            kSettingsScriptWrapperFormat,
+            "settings.SyncBrowserProxyImpl.getInstance().startSignIn();")));
     SignInFromCurrentPage(test_account, previously_signed_in_accounts);
   }
 
@@ -235,7 +242,9 @@ class LiveSignInTest : public signin::test::LiveTest {
     auto* settings_tab = browser()->tab_strip_model()->GetActiveWebContents();
     EXPECT_TRUE(content::ExecuteScript(
         settings_tab,
-        "settings.SyncBrowserProxyImpl.getInstance().signOut(false)"));
+        base::StringPrintf(
+            kSettingsScriptWrapperFormat,
+            "settings.SyncBrowserProxyImpl.getInstance().signOut(false)")));
     observer.WaitForAccountChanges(0, PrimarySyncAccountWait::kWaitForCleared);
   }
 
@@ -413,11 +422,13 @@ IN_PROC_BROWSER_TEST_F(LiveSignInTest, MANUAL_CancelSyncWithWebAccount) {
   GURL settings_url("chrome://settings");
   AddTabAtIndex(0, settings_url, ui::PageTransition::PAGE_TRANSITION_TYPED);
   auto* settings_tab = browser()->tab_strip_model()->GetActiveWebContents();
+  std::string start_syncing_script = base::StringPrintf(
+      "settings.SyncBrowserProxyImpl.getInstance()."
+      "startSyncingWithEmail(\"%s\", true);",
+      test_account.user.c_str());
   EXPECT_TRUE(content::ExecuteScript(
-      settings_tab,
-      base::StringPrintf("settings.SyncBrowserProxyImpl.getInstance()."
-                         "startSyncingWithEmail(\"%s\", true)",
-                         test_account.user.c_str())));
+      settings_tab, base::StringPrintf(kSettingsScriptWrapperFormat,
+                                       start_syncing_script.c_str())));
   EXPECT_TRUE(login_ui_test_utils::CancelSyncConfirmationDialog(
       browser(), base::TimeDelta::FromSeconds(3)));
   observer.WaitForAccountChanges(1, PrimarySyncAccountWait::kWaitForCleared);

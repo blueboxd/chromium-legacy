@@ -69,7 +69,11 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
+#include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_state.h"
+#include "chromeos/network/network_state_handler.h"
 #include "chromeos/tpm/stub_install_attributes.h"
 #include "components/user_manager/scoped_user_manager.h"
 #endif
@@ -87,6 +91,27 @@ namespace utils = extension_function_test_utils;
 
 static const char kAccessToken[] = "auth_token";
 static const char kExtensionId[] = "ext_id";
+
+#if defined(OS_CHROMEOS)
+void InitNetwork() {
+  const chromeos::NetworkState* default_network =
+      chromeos::NetworkHandler::Get()
+          ->network_state_handler()
+          ->DefaultNetwork();
+
+  auto* portal_detector = new chromeos::NetworkPortalDetectorTestImpl();
+  portal_detector->SetDefaultNetworkForTesting(default_network->guid());
+
+  chromeos::NetworkPortalDetector::CaptivePortalState online_state;
+  online_state.status =
+      chromeos::NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;
+  online_state.response_code = 204;
+  portal_detector->SetDetectionResultsForTesting(default_network->guid(),
+                                                 online_state);
+
+  chromeos::network_portal_detector::InitializeForTesting(portal_detector);
+}
+#endif
 
 // Asynchronous function runner allows tests to manipulate the browser window
 // after the call happens.
@@ -499,6 +524,11 @@ class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
   void SetUpOnMainThread() override {
     AsyncExtensionBrowserTest::SetUpOnMainThread();
 
+#if defined(OS_CHROMEOS)
+    // Fake the network online state so that Gaia requests can come through.
+    InitNetwork();
+#endif
+
     identity_test_env_profile_adaptor_ =
         std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile());
 
@@ -610,11 +640,7 @@ class IdentityGetAccountsFunctionTest : public IdentityTestWithSignin {
 };
 
 IN_PROC_BROWSER_TEST_F(IdentityGetAccountsFunctionTest, AllAccountsOn) {
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
   EXPECT_FALSE(id_api()->AreExtensionsRestrictedToPrimaryAccount());
-#else
-  EXPECT_TRUE(id_api()->AreExtensionsRestrictedToPrimaryAccount());
-#endif
 }
 
 IN_PROC_BROWSER_TEST_F(IdentityGetAccountsFunctionTest, NoneSignedIn) {
@@ -2020,6 +2046,8 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   }
 }
 
+// The signin flow is simply not used on ChromeOS.
+#if !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                        MultiSecondaryInteractiveInvalidToken) {
   // Setup a secondary account with no valid refresh token, and try to get a
@@ -2059,6 +2087,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
     EXPECT_TRUE(func->scope_ui_shown());
   }
 }
+#endif
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ScopesDefault) {
   SignIn("primary@example.com");

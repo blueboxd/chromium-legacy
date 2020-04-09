@@ -200,16 +200,6 @@ luci.console_view(
             short_name = 'dbg',
         ),
         luci.console_view_entry(
-            builder = builder_name('chromeos-amd64-generic-dbg'),
-            category = 'chromium.chromiumos|simple|debug|x64',
-            short_name = 'dbg',
-        ),
-        luci.console_view_entry(
-            builder = builder_name('chromeos-amd64-generic-rel'),
-            category = 'chromium.chromiumos|simple|release|x64',
-            short_name = 'rel',
-        ),
-        luci.console_view_entry(
             builder = builder_name('chromeos-arm-generic-rel'),
             category = 'chromium.chromiumos|simple|release',
             short_name = 'arm',
@@ -218,6 +208,16 @@ luci.console_view(
             builder = builder_name('chromeos-kevin-rel'),
             category = 'chromium.chromiumos|simple|release',
             short_name = 'kvn',
+        ),
+        luci.console_view_entry(
+            builder = builder_name('chromeos-amd64-generic-rel'),
+            category = 'chromium.chromiumos|simple|release|x64',
+            short_name = 'rel',
+        ),
+        luci.console_view_entry(
+            builder = builder_name('chromeos-amd64-generic-dbg'),
+            category = 'chromium.chromiumos|simple|debug|x64',
+            short_name = 'dbg',
         ),
         luci.console_view_entry(
             builder = builder_name('android-cronet-arm-dbg'),

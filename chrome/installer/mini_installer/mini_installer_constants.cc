@@ -31,8 +31,6 @@ const wchar_t kTempPrefix[] = L"CR_";
 // ap value suffix to force subsequent updates to use the full rather than
 // differential updater.
 const wchar_t kFullInstallerSuffix[] = L"-full";
-// ap value tag for a multi-install product.
-const wchar_t kMultiInstallTag[] = L"-multi";
 
 // The resource types that would be unpacked from the mini installer.
 // Uncompressed binary.

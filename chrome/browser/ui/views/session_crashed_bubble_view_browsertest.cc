@@ -66,7 +66,9 @@ IN_PROC_BROWSER_TEST_F(SessionCrashedBubbleViewTest,
   ShowAndVerifyUi();
 }
 
-#if defined(OS_LINUX)
+// TODO(https://crbug.com/1068579): Fails on Windows because the simulated key
+// events don't trigger the accelerators.
+#if !defined(OS_WIN)
 // Regression test for https://crbug.com/1042010, it should be possible to focus
 // the bubble with the "focus dialog" hotkey combination (Alt+Shift+A).
 IN_PROC_BROWSER_TEST_F(SessionCrashedBubbleViewTest,

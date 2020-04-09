@@ -171,8 +171,10 @@ sk_sp<SkImage> FakeSkiaOutputSurface::MakePromiseSkImageFromYUV(
   return nullptr;
 }
 
-void FakeSkiaOutputSurface::ReleaseImageContexts(
-    std::vector<std::unique_ptr<ImageContext>> image_contexts) {}
+gpu::SyncToken FakeSkiaOutputSurface::ReleaseImageContexts(
+    std::vector<std::unique_ptr<ImageContext>> image_contexts) {
+  return gpu::SyncToken();
+}
 
 std::unique_ptr<ExternalUseClient::ImageContext>
 FakeSkiaOutputSurface::CreateImageContext(

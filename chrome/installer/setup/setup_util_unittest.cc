@@ -437,8 +437,6 @@ TEST_F(FindArchiveToPatchTest, DesiredVersionNotFound) {
 TEST(SetupUtilTest, ContainsUnsupportedSwitch) {
   EXPECT_FALSE(installer::ContainsUnsupportedSwitch(
       base::CommandLine::FromString(L"foo.exe")));
-  EXPECT_FALSE(installer::ContainsUnsupportedSwitch(
-      base::CommandLine::FromString(L"foo.exe --multi-install --chrome")));
   EXPECT_TRUE(installer::ContainsUnsupportedSwitch(
       base::CommandLine::FromString(L"foo.exe --chrome-frame")));
 }

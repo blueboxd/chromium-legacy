@@ -188,15 +188,18 @@ void Scheduler::Sequence::FinishTask() {
 
 void Scheduler::Sequence::AddWaitFence(const SyncToken& sync_token,
                                        uint32_t order_num,
-                                       SequenceId release_sequence_id,
-                                       Sequence* release_sequence) {
+                                       SequenceId release_sequence_id) {
   auto it =
       wait_fences_.find(WaitFence{sync_token, order_num, release_sequence_id});
   if (it != wait_fences_.end())
     return;
 
-  DCHECK(release_sequence);
-  release_sequence->AddWaitingPriority(default_priority_);
+  // |release_sequence| can be nullptr if we wait on SyncToken from sequence
+  // that is not in this scheduler. It can happen on WebView when compositing
+  // that runs on different thread returns resources.
+  Sequence* release_sequence = scheduler_->GetSequence(release_sequence_id);
+  if (release_sequence)
+    release_sequence->AddWaitingPriority(default_priority_);
 
   wait_fences_.emplace(
       std::make_pair(WaitFence(sync_token, order_num, release_sequence_id),
@@ -393,16 +396,12 @@ void Scheduler::ScheduleTaskHelper(Task task) {
   for (const SyncToken& sync_token : task.sync_token_fences) {
     SequenceId release_sequence_id =
         sync_point_manager_->GetSyncTokenReleaseSequenceId(sync_token);
-    Sequence* release_sequence = GetSequence(release_sequence_id);
-    if (!release_sequence)
-      continue;
     if (sync_point_manager_->WaitNonThreadSafe(
             sync_token, sequence_id, order_num, task_runner_,
             base::BindOnce(&Scheduler::SyncTokenFenceReleased, weak_ptr_,
                            sync_token, order_num, release_sequence_id,
                            sequence_id))) {
-      sequence->AddWaitFence(sync_token, order_num, release_sequence_id,
-                             release_sequence);
+      sequence->AddWaitFence(sync_token, order_num, release_sequence_id);
     }
   }
 

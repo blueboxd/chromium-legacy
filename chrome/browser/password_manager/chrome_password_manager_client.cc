@@ -969,6 +969,18 @@ void ChromePasswordManagerClient::AutomaticGenerationAvailable(
   password_manager::ContentPasswordManagerDriver* driver =
       driver_factory_->GetDriverForFrame(
           password_generation_driver_receivers_.GetCurrentTargetFrame());
+
+  // Attempt to show the autofill dropdown UI first.
+  gfx::RectF element_bounds_in_top_frame_space =
+      TransformToRootCoordinates(driver->render_frame_host(), ui_data.bounds);
+  if (driver->GetPasswordAutofillManager()
+          ->MaybeShowPasswordSuggestionsWithGeneration(
+              element_bounds_in_top_frame_space, ui_data.text_direction,
+              /*show_password_suggestions=*/
+              ui_data.is_generation_element_password_type)) {
+    return;
+  }
+
   ShowPasswordGenerationPopup(driver, ui_data,
                               false /* is_manually_triggered */);
 #endif  // defined(OS_ANDROID)
@@ -1283,15 +1295,6 @@ void ChromePasswordManagerClient::ShowPasswordGenerationPopup(
     bool is_manually_triggered) {
   gfx::RectF element_bounds_in_top_frame_space =
       TransformToRootCoordinates(driver->render_frame_host(), ui_data.bounds);
-  // Only show password suggestions iff the field is of password type.
-  bool show_password_suggestions = ui_data.is_generation_element_password_type;
-  if (!is_manually_triggered &&
-      driver->GetPasswordAutofillManager()
-          ->MaybeShowPasswordSuggestionsWithGeneration(
-              element_bounds_in_top_frame_space, ui_data.text_direction,
-              show_password_suggestions)) {
-    return;
-  }
 
   gfx::RectF element_bounds_in_screen_space =
       GetBoundsInScreenSpace(element_bounds_in_top_frame_space);

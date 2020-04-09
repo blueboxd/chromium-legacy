@@ -49,15 +49,15 @@ class WallClockTimer : public base::PowerObserver {
 
   ~WallClockTimer() override;
 
-  // Start the timer to run at the given |delay| from now. If the timer is
+  // Starts the timer to run at the given |desired_run_time|. If the timer is
   // already running, it will be replaced to call the given |user_task|.
   virtual void Start(const base::Location& posted_from,
                      base::Time desired_run_time,
                      base::OnceClosure user_task);
 
-  // Start the timer to run at the given |delay| from now. If the timer is
+  // Starts the timer to run at the given |desired_run_time|. If the timer is
   // already running, it will be replaced to call a task formed from
-  // |reviewer->*method|.
+  // |receiver|->*|method|.
   template <class Receiver>
   void Start(const base::Location& posted_from,
              base::Time desired_run_time,
@@ -67,8 +67,7 @@ class WallClockTimer : public base::PowerObserver {
           base::BindOnce(method, base::Unretained(receiver)));
   }
 
-  // Call this method to stop and cancle the timer. It is a no-op if the timer
-  // is not running.
+  // Stops the timer. It is a no-op if the timer is not running.
   void Stop();
 
   // Returns true if the timer is running.

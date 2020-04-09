@@ -158,8 +158,8 @@ TEST_F(DisplayMoveWindowUtilTest, FourDisplays) {
   // Layout:
   // [3][2]
   // [1][p]
-  display::DisplayIdList list = display::test::CreateDisplayIdListN(
-      4, primary_id, primary_id + 1, primary_id + 2, primary_id + 3);
+  display::DisplayIdList list =
+      display::test::CreateDisplayIdListN(primary_id, 4);
   display::DisplayLayoutBuilder builder(primary_id);
   builder.AddDisplayPlacement(list[1], primary_id,
                               display::DisplayPlacement::LEFT, 0);

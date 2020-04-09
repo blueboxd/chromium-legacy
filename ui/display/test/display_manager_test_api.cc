@@ -218,15 +218,17 @@ DisplayIdList CreateDisplayIdList2(int64_t id1, int64_t id2) {
   return list;
 }
 
-DisplayIdList CreateDisplayIdListN(size_t count, ...) {
+DisplayIdList CreateDisplayIdListN(int64_t start_id, size_t count) {
   DisplayIdList list;
-  va_list args;
-  va_start(args, count);
-  for (size_t i = 0; i < count; i++) {
-    int64_t id = va_arg(args, int64_t);
+  list.push_back(start_id);
+  int64_t id = start_id;
+  size_t N = count;
+  while (count-- > 1) {
+    id = display::GetNextSynthesizedDisplayId(id);
     list.push_back(id);
   }
   SortDisplayIdList(&list);
+  DCHECK_EQ(N, list.size());
   return list;
 }
 

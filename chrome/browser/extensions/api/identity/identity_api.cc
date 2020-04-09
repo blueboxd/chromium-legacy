@@ -260,7 +260,8 @@ IdentityAPI::RegisterOnShutdownCallback(const base::Closure& cb) {
 }
 
 bool IdentityAPI::AreExtensionsRestrictedToPrimaryAccount() {
-  return !AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_);
+  return !AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_) &&
+         !AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile_);
 }
 
 IdentityAPI::IdentityAPI(Profile* profile,

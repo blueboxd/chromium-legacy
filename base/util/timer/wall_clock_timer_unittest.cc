@@ -43,30 +43,47 @@ class WallClockTimerTest : public ::testing::Test {
 
   ~WallClockTimerTest() override { base::PowerMonitor::ShutdownForTesting(); }
 
+  // Fast-forwards virtual time by |delta|. If |with_power| is true, both
+  // |clock_| and |task_environment_| time will be fast-forwarded. Otherwise,
+  // only |clock_| time will be changed to mimic the behavior when machine is
+  // suspended.
+  // Power event will be triggered if |with_power| is set to false.
+  void FastForwardBy(base::TimeDelta delay, bool with_power = true) {
+    if (!with_power)
+      mock_power_monitor_source_->Suspend();
+
+    clock_.SetNow(clock_.Now() + delay);
+
+    if (with_power) {
+      task_environment_.FastForwardBy(delay);
+    } else {
+      mock_power_monitor_source_->Resume();
+      task_environment_.RunUntilIdle();
+    }
+  }
+
   // Owned by power_monitor_. Use this to simulate a power suspend and resume.
   StubPowerMonitorSource* mock_power_monitor_source_ = nullptr;
   base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+  base::SimpleTestClock clock_;
 };
 
 TEST_F(WallClockTimerTest, PowerResume) {
   ::testing::StrictMock<base::MockOnceClosure> callback;
-  base::SimpleTestClock clock;
   // Set up a WallClockTimer that will fire in one minute.
-  WallClockTimer wall_clock_timer(&clock, task_environment_.GetMockTickClock());
+  WallClockTimer wall_clock_timer(&clock_,
+                                  task_environment_.GetMockTickClock());
   constexpr auto delay = base::TimeDelta::FromMinutes(1);
   const auto start_time = base::Time::Now();
   const auto run_time = start_time + delay;
-  clock.SetNow(start_time);
+  clock_.SetNow(start_time);
   wall_clock_timer.Start(FROM_HERE, run_time, callback.Get());
   EXPECT_EQ(wall_clock_timer.desired_run_time(), start_time + delay);
 
-  mock_power_monitor_source_->Suspend();
   // Pretend that time jumps forward 30 seconds while the machine is suspended.
   constexpr auto past_time = base::TimeDelta::FromSeconds(30);
-  clock.SetNow(start_time + past_time);
-  mock_power_monitor_source_->Resume();
-  task_environment_.RunUntilIdle();
+  FastForwardBy(past_time, /*with_power=*/false);
   // Ensure that the timer has not yet fired.
   ::testing::Mock::VerifyAndClearExpectations(&callback);
   EXPECT_EQ(wall_clock_timer.desired_run_time(), start_time + delay);
@@ -75,10 +92,70 @@ TEST_F(WallClockTimerTest, PowerResume) {
   EXPECT_CALL(callback, Run());
   // Both Time::Now() and |task_environment_| MockTickClock::Now()
   // go forward by (|delay| - |past_time|):
-  clock.SetNow(start_time + delay);
-  task_environment_.FastForwardBy(delay - past_time);
+  FastForwardBy(delay - past_time);
   ::testing::Mock::VerifyAndClearExpectations(&callback);
   EXPECT_FALSE(wall_clock_timer.IsRunning());
+}
+
+TEST_F(WallClockTimerTest, UseTimerTwiceInRow) {
+  ::testing::StrictMock<base::MockOnceClosure> first_callback;
+  ::testing::StrictMock<base::MockOnceClosure> second_callback;
+  const auto start_time = base::Time::Now();
+  clock_.SetNow(start_time);
+
+  // Set up a WallClockTimer that will invoke |first_callback| in one minute.
+  // Once it's done, it will invoke |second_callback| after the other minute.
+  WallClockTimer wall_clock_timer(&clock_,
+                                  task_environment_.GetMockTickClock());
+  constexpr auto delay = base::TimeDelta::FromMinutes(1);
+  wall_clock_timer.Start(FROM_HERE, clock_.Now() + delay, first_callback.Get());
+  EXPECT_CALL(first_callback, Run())
+      .WillOnce(::testing::InvokeWithoutArgs(
+          [this, &wall_clock_timer, &second_callback, delay]() {
+            wall_clock_timer.Start(FROM_HERE, clock_.Now() + delay,
+                                   second_callback.Get());
+          }));
+
+  FastForwardBy(delay);
+  ::testing::Mock::VerifyAndClearExpectations(&first_callback);
+  ::testing::Mock::VerifyAndClearExpectations(&second_callback);
+
+  // When the |wall_clock_time| is used for the second time, it can still handle
+  // power suspension properly.
+  constexpr auto past_time = base::TimeDelta::FromSeconds(30);
+  FastForwardBy(past_time, /*with_power=*/false);
+  ::testing::Mock::VerifyAndClearExpectations(&second_callback);
+
+  EXPECT_CALL(second_callback, Run());
+  FastForwardBy(delay - past_time);
+  ::testing::Mock::VerifyAndClearExpectations(&second_callback);
+}
+
+TEST_F(WallClockTimerTest, Stop) {
+  ::testing::StrictMock<base::MockOnceClosure> callback;
+  const auto start_time = base::Time::Now();
+  clock_.SetNow(start_time);
+
+  // Set up a WallClockTimer.
+  WallClockTimer wall_clock_timer(&clock_,
+                                  task_environment_.GetMockTickClock());
+  constexpr auto delay = base::TimeDelta::FromMinutes(1);
+  wall_clock_timer.Start(FROM_HERE, clock_.Now() + delay, callback.Get());
+
+  // After 20 seconds, timer is stopped.
+  constexpr auto past_time = base::TimeDelta::FromSeconds(20);
+  FastForwardBy(past_time);
+  EXPECT_TRUE(wall_clock_timer.IsRunning());
+  wall_clock_timer.Stop();
+  EXPECT_FALSE(wall_clock_timer.IsRunning());
+
+  // When power is suspends and resumed, timer won't be resumed.
+  FastForwardBy(past_time, /*with_power=*/false);
+  EXPECT_FALSE(wall_clock_timer.IsRunning());
+
+  // Timer won't fire when desired run time is reached.
+  FastForwardBy(delay - past_time * 2);
+  ::testing::Mock::VerifyAndClearExpectations(&callback);
 }
 
 }  // namespace util

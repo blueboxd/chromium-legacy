@@ -33,6 +33,15 @@ ci.console_view(
 )
 
 ci.console_view(
+    name = 'chromium.chromiumos',
+    ordering = {
+        None: ['default'],
+        'default': ci.ordering(short_names=['ful', 'rel']),
+        'simple': ['release', 'debug'],
+    },
+)
+
+ci.console_view(
     name = 'chromium.linux',
     ordering = {
         None: ['release', 'debug'],
@@ -422,18 +431,34 @@ ci.chromium_builder(
 
 ci.chromiumos_builder(
     name = 'Linux ChromiumOS Full',
+    console_view_entry = ci.console_view_entry(
+        category = 'default',
+        short_name = 'ful',
+    ),
 )
 
 ci.chromiumos_builder(
     name = 'chromeos-amd64-generic-asan-rel',
+    console_view_entry = ci.console_view_entry(
+        category = 'simple|release|x64',
+        short_name = 'asn',
+    ),
 )
 
 ci.chromiumos_builder(
     name = 'chromeos-amd64-generic-cfi-thin-lto-rel',
+    console_view_entry = ci.console_view_entry(
+        category = 'simple|release|x64',
+        short_name = 'cfi',
+    ),
 )
 
 ci.chromiumos_builder(
     name = 'chromeos-arm-generic-dbg',
+    console_view_entry = ci.console_view_entry(
+        category = 'simple|debug',
+        short_name = 'arm',
+    ),
 )
 
 

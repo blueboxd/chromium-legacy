@@ -27,7 +27,7 @@ public class RedirectHandlerImpl implements RedirectHandler {
      * An invalid entry index.
      */
     public static final int INVALID_ENTRY_INDEX = -1;
-    private static final long INVALID_TIME = -1;
+    public static final long INVALID_TIME = -1;
 
     private static final int NAVIGATION_TYPE_NONE = 0;
     private static final int NAVIGATION_TYPE_FROM_INTENT = 1;

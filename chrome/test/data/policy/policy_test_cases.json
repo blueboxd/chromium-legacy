@@ -3665,6 +3665,18 @@
     ]
   },
 
+  "FloatingAccessibilityMenuEnabled": {
+    "os": ["chromeos"],
+    "pref_mappings": [
+      {
+        "pref": "settings.a11y.floating_menu",
+        "indicator_tests": [
+          { "policy": {"FloatingAccessibilityMenuEnabled": true}}
+        ]
+      }
+    ]
+  },
+
   "UserDisplayName": {
     "os": [
       "chromeos"

@@ -32,9 +32,9 @@ namespace payments {
 // callbacks from PaymentAppFactory to callbacks set by the caller.
 class PaymentAppServiceBridge : public PaymentAppFactory::Delegate {
  public:
-  // TODO(crbug.com/1063118): add more parameter to this callback to actually
-  // pass payment app data back to Java side.
-  using PaymentAppCreatedCallback = base::RepeatingCallback<void()>;
+  using PaymentAppsCreatedCallback = base::RepeatingCallback<void(
+      const content::PaymentAppProvider::PaymentApps&,
+      const payments::ServiceWorkerPaymentAppFinder::InstallablePaymentApps&)>;
   using PaymentAppCreationErrorCallback =
       base::RepeatingCallback<void(const std::string&)>;
 
@@ -48,7 +48,7 @@ class PaymentAppServiceBridge : public PaymentAppFactory::Delegate {
       std::vector<mojom::PaymentMethodDataPtr> request_method_data,
       scoped_refptr<PaymentManifestWebDataService> web_data_service,
       bool may_crawl_for_installable_payment_apps,
-      PaymentAppCreatedCallback payment_app_created_callback,
+      PaymentAppsCreatedCallback payment_apps_created_callback,
       PaymentAppCreationErrorCallback payment_app_creation_error_callback,
       base::OnceClosure done_creating_payment_apps_callback);
 
@@ -81,9 +81,9 @@ class PaymentAppServiceBridge : public PaymentAppFactory::Delegate {
   void OnPaymentAppCreationError(const std::string& error_message) override;
   bool SkipCreatingNativePaymentApps() const override;
   void OnCreatingNativePaymentAppsSkipped(
-      const content::PaymentAppProvider::PaymentApps& apps,
-      const ServiceWorkerPaymentAppFinder::InstallablePaymentApps&
-          installable_apps) override;
+      content::PaymentAppProvider::PaymentApps apps,
+      ServiceWorkerPaymentAppFinder::InstallablePaymentApps installable_apps)
+      override;
   void OnDoneCreatingPaymentApps() override;
 
  private:
@@ -95,7 +95,7 @@ class PaymentAppServiceBridge : public PaymentAppFactory::Delegate {
       std::vector<mojom::PaymentMethodDataPtr> request_method_data,
       scoped_refptr<PaymentManifestWebDataService> web_data_service,
       bool may_crawl_for_installable_payment_apps,
-      PaymentAppCreatedCallback payment_app_created_callback,
+      PaymentAppsCreatedCallback payment_apps_created_callback,
       PaymentAppCreationErrorCallback payment_app_creation_error_callback,
       base::OnceClosure done_creating_payment_apps_callback);
 
@@ -111,7 +111,7 @@ class PaymentAppServiceBridge : public PaymentAppFactory::Delegate {
   bool may_crawl_for_installable_payment_apps_;
   std::vector<autofill::AutofillProfile*> dummy_profiles_;
 
-  PaymentAppCreatedCallback payment_app_created_callback_;
+  PaymentAppsCreatedCallback payment_apps_created_callback_;
   PaymentAppCreationErrorCallback payment_app_creation_error_callback_;
   base::OnceClosure done_creating_payment_apps_callback_;
 

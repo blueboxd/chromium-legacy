@@ -665,6 +665,7 @@
         'DeviceLoginScreenScreenMagnifierType',
         'DeviceLoginScreenShowOptionsInSystemTrayMenu',
         'DeviceLoginScreenAccessibilityShortcutsEnabled',
+        'FloatingAccessibilityMenuEnabled',
       ],
     },
     {
@@ -9549,6 +9550,27 @@
       Disabling any of these features means that the user can't access it from the UI and will see it as "disabled by admin".
 
       If the policy is left not set, all <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> features will be enabled by default and the user can use any of them.''',
+    },
+    {
+      'name': 'FloatingAccessibilityMenuEnabled',
+      'owners': ['apotapchuk@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:84-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 691,
+      'future': True,
+      'caption': '''Enables the floating accessibility menu''',
+      'tags': [],
+      'desc': '''In kiosk mode, controls whether the floating accessibility menu is being shown.
+
+      If this policy is set to enabled, the floating accessibility menu will be always shown.
+
+      If this policy is set to disabled or left unset, the floating accessibility menu will never be shown.''',
     },
     {
       'name': 'UserDisplayName',
@@ -21302,6 +21324,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569, 578],
-  'highest_id_currently_used': 690,
+  'highest_id_currently_used': 691,
   'highest_atomic_group_id_currently_used': 38
 }

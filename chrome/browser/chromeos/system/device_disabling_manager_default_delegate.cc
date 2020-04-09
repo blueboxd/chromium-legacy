@@ -20,6 +20,10 @@ void DeviceDisablingManagerDefaultDelegate::RestartToLoginScreen() {
 }
 
 void DeviceDisablingManagerDefaultDelegate::ShowDeviceDisabledScreen() {
+  if (!LoginDisplayHost::default_host()) {
+    // LoginDisplayHost will check if the device is disabled on creation.
+    return;
+  }
   LoginDisplayHost::default_host()->StartWizard(
       DeviceDisabledScreenView::kScreenId);
 }

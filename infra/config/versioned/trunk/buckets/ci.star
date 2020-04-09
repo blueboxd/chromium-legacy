@@ -141,18 +141,34 @@ ci.android_builder(
 
 ci.chromiumos_builder(
     name = 'chromeos-amd64-generic-dbg',
+    console_view_entry = ci.console_view_entry(
+        category = 'simple|debug|x64',
+        short_name = 'dbg',
+    ),
 )
 
 ci.chromiumos_builder(
     name = 'chromeos-amd64-generic-rel',
+    console_view_entry = ci.console_view_entry(
+        category = 'simple|release|x64',
+        short_name = 'rel',
+    ),
 )
 
 ci.chromiumos_builder(
     name = 'chromeos-arm-generic-rel',
+    console_view_entry = ci.console_view_entry(
+        category = 'simple|release',
+        short_name = 'arm',
+    ),
 )
 
 ci.chromiumos_builder(
     name = 'chromeos-kevin-rel',
+    console_view_entry = ci.console_view_entry(
+        category = 'simple|release',
+        short_name = 'kvn',
+    ),
 )
 
 ci.fyi_builder(
@@ -161,10 +177,18 @@ ci.fyi_builder(
 
 ci.chromiumos_builder(
     name = 'linux-chromeos-dbg',
+    console_view_entry = ci.console_view_entry(
+        category = 'default',
+        short_name = 'dbg',
+    ),
 )
 
 ci.chromiumos_builder(
     name = 'linux-chromeos-rel',
+    console_view_entry = ci.console_view_entry(
+        category = 'default',
+        short_name = 'rel',
+    ),
 )
 
 

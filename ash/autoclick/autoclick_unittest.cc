@@ -829,12 +829,12 @@ TEST_F(AutoclickTest, DoesActionOnBubbleWhenInDifferentModes) {
   const struct {
     const std::string display_spec;
     float scale;
-    AutoclickMenuPosition position;
+    FloatingMenuPosition position;
   } kTestCases[] = {
-      {"800x600", 1.0f, AutoclickMenuPosition::kBottomRight},
-      {"1024x800*2.0", 2.0f, AutoclickMenuPosition::kBottomRight},
-      {"800x600", 1.0f, AutoclickMenuPosition::kTopLeft},
-      {"1024x800*2.0", 2.0f, AutoclickMenuPosition::kTopLeft},
+      {"800x600", 1.0f, FloatingMenuPosition::kBottomRight},
+      {"1024x800*2.0", 2.0f, FloatingMenuPosition::kBottomRight},
+      {"800x600", 1.0f, FloatingMenuPosition::kTopLeft},
+      {"1024x800*2.0", 2.0f, FloatingMenuPosition::kTopLeft},
   };
   for (const auto& test : kTestCases) {
     UpdateDisplay(test.display_spec);
@@ -916,7 +916,7 @@ TEST_F(AutoclickTest,
   GetAutoclickController()->SetAutoclickEventType(
       AutoclickEventType::kNoAction);
   Shell::Get()->accessibility_controller()->SetAutoclickMenuPosition(
-      AutoclickMenuPosition::kBottomRight);
+      FloatingMenuPosition::kBottomRight);
 
   int animation_delay = 5;
   int full_delay = UpdateAnimationDelayAndGetFullDelay(animation_delay);
@@ -987,7 +987,7 @@ TEST_F(AutoclickTest, BubbleMovesWithShelfPositionChange) {
   // Set up autoclick and the shelf.
   Shell::Get()->accessibility_controller()->SetAutoclickEnabled(true);
   Shell::Get()->accessibility_controller()->SetAutoclickMenuPosition(
-      AutoclickMenuPosition::kBottomRight);
+      FloatingMenuPosition::kBottomRight);
   Shelf* shelf = GetPrimaryShelf();
   shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kNever);
   EXPECT_EQ(shelf->GetVisibilityState(), SHELF_VISIBLE);
@@ -1039,7 +1039,7 @@ TEST_F(AutoclickTest, AvoidsShelfBubble) {
     // Set up autoclick and the shelf.
     Shell::Get()->accessibility_controller()->SetAutoclickEnabled(true);
     Shell::Get()->accessibility_controller()->SetAutoclickMenuPosition(
-        AutoclickMenuPosition::kBottomRight);
+        FloatingMenuPosition::kBottomRight);
     auto* unified_system_tray = GetPrimaryUnifiedSystemTray();
     EXPECT_FALSE(unified_system_tray->IsBubbleShown());
     AutoclickMenuView* menu = GetAutoclickMenuView();
@@ -1304,7 +1304,7 @@ TEST_F(AutoclickTest, ScrollMenuBubblePostioning) {
   GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
 
   Shell::Get()->accessibility_controller()->SetAutoclickMenuPosition(
-      AutoclickMenuPosition::kBottomRight);
+      FloatingMenuPosition::kBottomRight);
   GetAutoclickController()->SetAutoclickEventType(AutoclickEventType::kScroll);
 
   ASSERT_TRUE(GetAutoclickScrollView());
@@ -1321,21 +1321,21 @@ TEST_F(AutoclickTest, ScrollMenuBubblePostioning) {
 
   // Moving the autoclick menu around the screen moves the scroll bubble too.
   Shell::Get()->accessibility_controller()->SetAutoclickMenuPosition(
-      AutoclickMenuPosition::kBottomLeft);
+      FloatingMenuPosition::kBottomLeft);
   scroll_bounds = GetAutoclickScrollView()->GetBoundsInScreen();
   menu_bounds = GetAutoclickMenuView()->GetBoundsInScreen();
   EXPECT_LT(menu_bounds.ManhattanInternalDistance(scroll_bounds),
             kScrollToMenuBoundsBuffer);
 
   Shell::Get()->accessibility_controller()->SetAutoclickMenuPosition(
-      AutoclickMenuPosition::kTopLeft);
+      FloatingMenuPosition::kTopLeft);
   scroll_bounds = GetAutoclickScrollView()->GetBoundsInScreen();
   menu_bounds = GetAutoclickMenuView()->GetBoundsInScreen();
   EXPECT_LT(menu_bounds.ManhattanInternalDistance(scroll_bounds),
             kScrollToMenuBoundsBuffer);
 
   Shell::Get()->accessibility_controller()->SetAutoclickMenuPosition(
-      AutoclickMenuPosition::kTopRight);
+      FloatingMenuPosition::kTopRight);
   scroll_bounds = GetAutoclickScrollView()->GetBoundsInScreen();
   menu_bounds = GetAutoclickMenuView()->GetBoundsInScreen();
   EXPECT_LT(menu_bounds.ManhattanInternalDistance(scroll_bounds),
@@ -1355,7 +1355,7 @@ TEST_F(AutoclickTest, ScrollMenuBubblePostioning) {
   // Moving the bubble menu now does not change the scroll bubble's position,
   // it remains near its point.
   Shell::Get()->accessibility_controller()->SetAutoclickMenuPosition(
-      AutoclickMenuPosition::kBottomRight);
+      FloatingMenuPosition::kBottomRight);
   EXPECT_EQ(GetAutoclickScrollView()->GetBoundsInScreen(), scroll_bounds);
 }
 

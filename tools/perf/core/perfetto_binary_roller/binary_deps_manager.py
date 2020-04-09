@@ -27,16 +27,6 @@ def _GetHostPlatform():
   return os_name
 
 
-def _GetLatestPath(binary_name, platform):
-  with tempfile_ext.NamedTemporaryFile() as latest_file:
-    latest_file.close()
-    remote_path = posixpath.join(CS_FOLDER, binary_name, platform,
-                                 LATEST_FILENAME)
-    cloud_storage.Get(CS_BUCKET, remote_path, latest_file.name)
-    with open(latest_file.name) as latest:
-      return latest.read()
-
-
 def _CalculateHash(remote_path):
   with tempfile_ext.NamedTemporaryFile() as f:
     f.close()
@@ -72,7 +62,23 @@ def UploadHostBinary(binary_name, binary_path, version):
   _SetLatestPathForBinary(binary_name, platform, remote_path)
 
 
-def SwitchBinaryToLatestVersion(binary_name):
+def GetLatestPath(binary_name, platform):
+  with tempfile_ext.NamedTemporaryFile() as latest_file:
+    latest_file.close()
+    remote_path = posixpath.join(CS_FOLDER, binary_name, platform,
+                                 LATEST_FILENAME)
+    cloud_storage.Get(CS_BUCKET, remote_path, latest_file.name)
+    with open(latest_file.name) as latest:
+      return latest.read()
+
+
+def GetCurrentPath(binary_name, platform):
+  with open(CONFIG_PATH) as f:
+    config = json.load(f)
+  return config[binary_name][platform]['remote_path']
+
+
+def SwitchBinaryToNewPath(binary_name, platform, new_path):
   """Switch the binary version in use to the latest one.
 
   This function updates the config file to contain the path to the latest
@@ -81,10 +87,8 @@ def SwitchBinaryToLatestVersion(binary_name):
   """
   with open(CONFIG_PATH) as f:
     config = json.load(f)
-  for platform in config[binary_name]:
-    new_path = _GetLatestPath(binary_name, platform)
-    config[binary_name][platform]['remote_path'] = new_path
-    config[binary_name][platform]['hash'] = _CalculateHash(new_path)
+  config[binary_name][platform]['remote_path'] = new_path
+  config[binary_name][platform]['hash'] = _CalculateHash(new_path)
   with open(CONFIG_PATH, 'w') as f:
     json.dump(config, f, indent=4, separators=(',', ': '))
 

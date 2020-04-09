@@ -86,8 +86,10 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/tablet_mode.h"
+#include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #endif
 
 #if defined(OS_WIN)
@@ -272,6 +274,18 @@ void AppMenuModel::Init() {
   tab_strip_model->AddObserver(this);
   Observe(tab_strip_model->GetActiveWebContents());
   UpdateZoomControls();
+
+#if defined(OS_CHROMEOS)
+  PrefService* const local_state = g_browser_process->local_state();
+  if (local_state) {
+    local_state_pref_change_registrar_.Init(local_state);
+    local_state_pref_change_registrar_.Add(
+        policy::policy_prefs::kSystemFeaturesDisableList,
+        base::BindRepeating(&AppMenuModel::UpdateSettingsItemState,
+                            base::Unretained(this)));
+    UpdateSettingsItemState();
+  }
+#endif  // defined(OS_CHROMEOS)
 }
 
 bool AppMenuModel::DoesCommandIdDismissMenu(int command_id) const {
@@ -964,3 +978,23 @@ void AppMenuModel::OnZoomLevelChanged(
     const content::HostZoomMap::ZoomLevelChange& change) {
   UpdateZoomControls();
 }
+
+#if defined(OS_CHROMEOS)
+void AppMenuModel::UpdateSettingsItemState() {
+  const base::ListValue* system_features_disable_list_pref = nullptr;
+  PrefService* const local_state = g_browser_process->local_state();
+  if (local_state) {  // Sometimes it's not available in tests.
+    system_features_disable_list_pref =
+        local_state->GetList(policy::policy_prefs::kSystemFeaturesDisableList);
+  }
+
+  bool is_enabled = !system_features_disable_list_pref ||
+                    system_features_disable_list_pref->Find(
+                        base::Value(policy::SystemFeature::BROWSER_SETTINGS)) ==
+                        system_features_disable_list_pref->end();
+
+  int index = GetIndexOfCommandId(IDC_OPTIONS);
+  if (index != -1)
+    SetEnabledAt(index, is_enabled);
+}
+#endif  // defined(OS_CHROMEOS)

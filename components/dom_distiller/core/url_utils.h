@@ -61,8 +61,14 @@ std::string GetValueForKeyInUrlPathQuery(const std::string& path,
 // Returns whether it should be possible to distill the given |url|.
 bool IsUrlDistillable(const GURL& url);
 
-// Returns whether the given |url| is for a distilled page.
+// Returns whether the given |url| is for a distilled page. This means the
+// format of the URL is proper for a distilled page and that it encodes a
+// valid article URL.
 bool IsDistilledPage(const GURL& url);
+
+// Returns whether the given |url| is formatted as if it were for a distilled
+// page, i.e. it is valid and has a chrome-distiller:// scheme.
+bool IsUrlDistilledFormat(const GURL& url);
 
 }  // namespace url_utils
 

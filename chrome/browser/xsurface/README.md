@@ -6,6 +6,6 @@ highly performant and interactive page or part of a page that is also completely
 data driven.
 
 Note that this location defines mostly just the interfaces for this feature. The
-bulk of the actual implemnetation is provided by downstream. This means that
+bulk of the actual implementation is provided by downstream. This means that
 changes to these interfaces will likely cause downstream build failures. Please
 do not TBR changes through without engaging OWNERS.

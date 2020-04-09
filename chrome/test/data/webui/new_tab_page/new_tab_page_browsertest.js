@@ -59,8 +59,7 @@ var NewTabPageCustomizeDialogTest = class extends NewTabPageBrowserTest {
   }
 };
 
-// Disabled for flakiness, see https://crbug.com/1066459
-TEST_F('NewTabPageCustomizeDialogTest', 'DISABLED_All', function() {
+TEST_F('NewTabPageCustomizeDialogTest', 'All', function() {
   mocha.run();
 });
 

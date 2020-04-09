@@ -47,10 +47,10 @@ class MediaKeySystemAccessInitializerBase : public EncryptedMediaRequest,
   // Returns true if the ExecutionContext is valid, false otherwise.
   bool IsExecutionContextValid() const;
 
-  // For widevine key system, generate warning and report to UMA if
-  // |m_supportedConfigurations| contains any video capability with empty
-  // robustness string.
-  void CheckVideoCapabilityRobustness() const;
+  // For widevine key system, generate warning if |supported_configurations_|
+  // contains any video capability with empty robustness string. Also report
+  // UMA and UKM.
+  void GenerateWarningAndReportMetrics() const;
 
   Member<ScriptPromiseResolver> resolver_;
   const String key_system_;

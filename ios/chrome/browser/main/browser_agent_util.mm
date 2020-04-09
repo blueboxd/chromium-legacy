@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/main/browser_agent_util.h"
 
 #include "base/feature_list.h"
+#import "ios/chrome/browser/app_launcher/app_launcher_browser_agent.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_browser_agent.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/features.h"
@@ -36,6 +37,7 @@ void AttachBrowserAgents(Browser* browser) {
   WebUsageEnablerBrowserAgent::CreateForBrowser(browser);
   DeviceSharingBrowserAgent::CreateForBrowser(browser);
   UrlLoadingNotifierBrowserAgent::CreateForBrowser(browser);
+  AppLauncherBrowserAgent::CreateForBrowser(browser);
 
   // UrlLoadingBrowserAgent requires UrlLoadingNotifierBrowserAgent.
   UrlLoadingBrowserAgent::CreateForBrowser(browser);

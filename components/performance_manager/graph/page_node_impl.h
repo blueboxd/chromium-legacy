@@ -128,6 +128,7 @@ class PageNodeImpl
   const std::string& GetContentsMimeType() const override;
   base::TimeDelta GetTimeSinceLastNavigation() const override;
   const FrameNode* GetMainFrameNode() const override;
+  bool VisitMainFrameNodes(const FrameNodeVisitor& visitor) const override;
   const base::flat_set<const FrameNode*> GetMainFrameNodes() const override;
   const GURL& GetMainFrameUrl() const override;
   bool HadFormInteraction() const override;

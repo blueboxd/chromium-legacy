@@ -2965,6 +2965,8 @@ jumbo_static_library("browser") {
       "signin/identity_services_provider_android.cc",
       "signin/signin_manager_android_factory.cc",
       "signin/signin_manager_android_factory.h",
+      "ssl/chrome_security_state_client.cc",
+      "ssl/chrome_security_state_client.h",
       "ssl/chrome_security_state_model_delegate.cc",
       "ssl/chrome_security_state_model_delegate.h",
       "ssl/known_interception_disclosure_infobar.cc",

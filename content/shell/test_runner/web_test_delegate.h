@@ -44,12 +44,6 @@ class WebTestDelegate {
  public:
   virtual ~WebTestDelegate() = default;
 
-  // Set and clear the edit command to execute on the next call to
-  // WebViewClient::handleCurrentKeyboardEvent().
-  virtual void ClearEditCommand() = 0;
-  virtual void SetEditCommand(const std::string& name,
-                              const std::string& value) = 0;
-
   // Add a message to stderr (not saved to expected output files, for debugging
   // only).
   virtual void PrintMessageToStderr(const std::string& message) = 0;
@@ -83,18 +77,6 @@ class WebTestDelegate {
   virtual TestPreferences* Preferences() = 0;
   virtual void ApplyPreferences() = 0;
   virtual void SetPopupBlockingEnabled(bool block_popups) = 0;
-
-  // Enables or disables synchronous resize mode. When enabled, all
-  // window-sizing machinery is
-  // short-circuited inside the renderer. This mode is necessary for some tests
-  // that were written
-  // before browsers had multi-process architecture and rely on window resizes
-  // to happen synchronously.
-  // The function has "unfortunate" it its name because we must strive to remove
-  // all tests
-  // that rely on this... well, unfortunate behavior. See
-  // http://crbug.com/309760 for the plan.
-  virtual void UseUnfortunateSynchronousResizeMode(bool enable) = 0;
 
   // Controls auto resize mode.
   virtual void EnableAutoResizeMode(const blink::WebSize& min_size,

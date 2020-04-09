@@ -44,7 +44,7 @@ bool DumpHungProcessWithPtypeImpl(const base::Process& process,
                            MiniDumpWithFullMemoryInfo | MiniDumpWithThreadInfo;
 
   // Capture more detail for canary and dev channels. The prefix search caters
-  // for the legacy "-m" suffixed multi-install channels.
+  // for the soon to be outdated "-m" suffixed multi-install channels.
   std::string channel_name = annotations["channel"];
   if (channel_name.find("canary") == 0 || channel_name.find("dev") == 0)
     minidump_type |= MiniDumpWithIndirectlyReferencedMemory;

@@ -4430,8 +4430,6 @@ void RenderFrameImpl::DidClearWindowObject() {
   if (command_line.HasSwitch(switches::kEnableSkiaBenchmarking))
     SkiaBenchmarking::Install(frame_);
 
-  for (auto& observer : render_view_->observers())
-    observer.DidClearWindowObject(frame_);
   for (auto& observer : observers_)
     observer.DidClearWindowObject();
 }

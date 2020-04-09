@@ -36,7 +36,7 @@ const size_t kSettingPrefixSize = base::size(kSettingPrefix) - 1;
 
 constexpr char kSettingBackgroundColor[] =
     "/hterm/profiles/default/background-color";
-constexpr char kDefaultBackgroundColor[] = "#101010";
+constexpr char kDefaultBackgroundColor[] = "#202124";
 
 constexpr char kSettingPassCtrlW[] = "/hterm/profiles/default/pass-ctrl-w";
 constexpr bool kDefaultPassCtrlW = false;

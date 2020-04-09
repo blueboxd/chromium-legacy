@@ -2526,6 +2526,24 @@
   <message name="IDS_SETTINGS_APPS_LINK_TEXT" desc="The label for the button which links to the App Management page.">
     Manage your apps
   </message>
+  <message name="IDS_SETTINGS_ANDROID_APPS_TITLE" desc="The title of Google Play Store (Arc++ / Android Apps) section.">
+    Google Play Store
+  </message>
+  <message name="IDS_SETTINGS_ANDROID_SETTINGS_TITLE" desc="The title of Android settings section in case Play Store app is not available.">
+    Android settings
+  </message>
+  <message name="IDS_SETTINGS_ANDROID_APPS_SUBTEXT" desc="Description for the section for enabling and managing Google Play Store (Android) apps.">
+    Install apps and games from Google Play on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. &lt;a target="_blank" href="<ph name="URL">$2<ex>https://google.com/</ex></ph>"&gt;Learn more&lt;/a&gt;
+  </message>
+  <!-- TODO(jamescook): Use device type instead of "Chromebook", which may
+        require changing ArcPlayTermsOfServiceConsent resource id handling. -->
+  <message name="IDS_SETTINGS_ANDROID_APPS_DISABLE_DIALOG_MESSAGE" desc="Describes what will happen if the user opts out of android apps.">
+    Apps you’ve downloaded from Google Play will be deleted from this Chromebook.
+    <ph name="LINE_BREAKS1">&lt;br&gt;&lt;br&gt;</ph>
+    Content you’ve purchased such as movies, TV shows, music, books, or other in-app purchases may also be deleted.
+    <ph name="LINE_BREAKS2">&lt;br&gt;&lt;br&gt;</ph>
+    This doesn’t affect apps or content on other devices.
+  </message>
 
   <!-- Storage -->
   <message name="IDS_SETTINGS_STORAGE_TITLE" desc="In Device Settings, the title for storage management.">

@@ -16,6 +16,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/system/sys_info.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
@@ -109,6 +110,7 @@ void OpenBookmarkManagerForNode(Browser* browser, int64_t node_id) {
 #if defined(OS_CHROMEOS) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 const std::string BuildQueryString(Profile* profile) {
+  const std::string board_name = base::SysInfo::GetLsbReleaseBoard();
   std::string region;
   chromeos::system::StatisticsProvider::GetInstance()->GetMachineStatistic(
       "region", &region);
@@ -131,8 +133,8 @@ const std::string BuildQueryString(Profile* profile) {
   }
 
   const std::string query_string = base::StrCat(
-      {kChromeReleaseNotesURL, "?version=", milestone, "&tags=", region, ",",
-       language, ",", channel_name, ",", user_type});
+      {kChromeReleaseNotesURL, "?version=", milestone, "&tags=", board_name,
+       ",", region, ",", language, ",", channel_name, ",", user_type});
   return query_string;
 }
 

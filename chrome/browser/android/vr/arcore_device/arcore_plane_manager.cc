@@ -90,7 +90,7 @@ void ArCorePlaneManager::ForEachArCorePlane(ArTrackableList* arcore_planes,
     ArTrackable_getTrackingState(arcore_session_, trackable.get(),
                                  &tracking_state);
 
-    if (tracking_state != ArTrackingState::AR_TRACKING_STATE_TRACKING) {
+    if (tracking_state == ArTrackingState::AR_TRACKING_STATE_STOPPED) {
       // Skip all planes that are not currently tracked.
       continue;
     }
@@ -146,7 +146,7 @@ void ArCorePlaneManager::Update(ArFrame* ar_frame) {
         bool created;
         std::tie(plane_id, created) = CreateOrGetPlaneId(ar_plane);
 
-        DVLOG(3) << "Previously detected plane found, id=" << plane_id
+        DVLOG(3) << "Previously detected plane found, plane_id=" << plane_id
                  << ", created?=" << created
                  << ", tracking_state=" << tracking_state;
 
@@ -163,11 +163,10 @@ void ArCorePlaneManager::Update(ArFrame* ar_frame) {
 
   // Collect the objects of all currently tracked planes.
   // |ar_plane_address_to_id_| should *not* grow.
-  std::map<PlaneId, device::internal::ScopedArCoreObject<ArTrackable*>>
-      plane_id_to_plane_object;
+  std::map<PlaneId, PlaneInfo> new_plane_id_to_plane_info;
   ForEachArCorePlane(
       arcore_planes_.get(),
-      [this, &plane_id_to_plane_object](
+      [this, &new_plane_id_to_plane_info, &updated_plane_ids](
           internal::ScopedArCoreObject<ArTrackable*> trackable,
           ArPlane* ar_plane, ArTrackingState tracking_state) {
         // ID
@@ -176,32 +175,43 @@ void ArCorePlaneManager::Update(ArFrame* ar_frame) {
         std::tie(plane_id, created) = CreateOrGetPlaneId(ar_plane);
 
         DCHECK(!created)
-            << "Newly detected planes should already be handled - new plane id="
+            << "Newly detected planes should already be handled - new plane_id="
             << plane_id;
 
-        plane_id_to_plane_object[plane_id] = std::move(trackable);
+        // Inspect the tracking state of this plane in the previous frame. If it
+        // changed, mark the plane as updated.
+        if (base::Contains(plane_id_to_plane_info_, plane_id) &&
+            plane_id_to_plane_info_.at(plane_id).tracking_state !=
+                tracking_state) {
+          updated_plane_ids.insert(plane_id);
+        }
+
+        PlaneInfo new_plane_info =
+            PlaneInfo(std::move(trackable), tracking_state);
+
+        new_plane_id_to_plane_info.emplace(plane_id, std::move(new_plane_info));
       });
 
-  DVLOG(3) << __func__ << ": plane_id_to_plane_object.size()="
-           << plane_id_to_plane_object.size();
+  DVLOG(3) << __func__ << ": new_plane_id_to_plane_info.size()="
+           << new_plane_id_to_plane_info.size();
 
   // Shrink |ar_plane_address_to_id_|, removing all planes that are no longer
   // tracked or were subsumed - if they do not show up in
-  // |plane_id_to_plane_object| map, they are no longer tracked.
-  base::EraseIf(ar_plane_address_to_id_,
-                [&plane_id_to_plane_object](const auto& plane_address_and_id) {
-                  return !base::Contains(plane_id_to_plane_object,
-                                         plane_address_and_id.second);
-                });
-  plane_id_to_plane_object_.swap(plane_id_to_plane_object);
+  // |new_plane_id_to_plane_info| map, they are no longer tracked.
+  base::EraseIf(ar_plane_address_to_id_, [&new_plane_id_to_plane_info](
+                                             const auto& plane_address_and_id) {
+    return !base::Contains(new_plane_id_to_plane_info,
+                           plane_address_and_id.second);
+  });
+  plane_id_to_plane_info_.swap(new_plane_id_to_plane_info);
   updated_plane_ids_.swap(updated_plane_ids);
 }
 
 mojom::XRPlaneDetectionDataPtr ArCorePlaneManager::GetDetectedPlanesData()
     const {
   std::vector<uint64_t> all_plane_ids;
-  all_plane_ids.reserve(plane_id_to_plane_object_.size());
-  for (const auto& plane_id_and_object : plane_id_to_plane_object_) {
+  all_plane_ids.reserve(plane_id_to_plane_info_.size());
+  for (const auto& plane_id_and_object : plane_id_to_plane_info_) {
     all_plane_ids.push_back(plane_id_and_object.first.GetUnsafeValue());
   }
 
@@ -209,43 +219,54 @@ mojom::XRPlaneDetectionDataPtr ArCorePlaneManager::GetDetectedPlanesData()
   updated_planes.reserve(updated_plane_ids_.size());
   for (const auto& plane_id : updated_plane_ids_) {
     const device::internal::ScopedArCoreObject<ArTrackable*>& trackable =
-        plane_id_to_plane_object_.at(plane_id);
+        plane_id_to_plane_info_.at(plane_id).plane;
 
     const ArPlane* ar_plane = ArAsPlane(trackable.get());
 
-    // orientation
-    ArPlaneType plane_type;
-    ArPlane_getType(arcore_session_, ar_plane, &plane_type);
+    if (plane_id_to_plane_info_.at(plane_id).tracking_state ==
+        AR_TRACKING_STATE_TRACKING) {
+      // orientation
+      ArPlaneType plane_type;
+      ArPlane_getType(arcore_session_, ar_plane, &plane_type);
 
-    // pose
-    ArPlane_getCenterPose(arcore_session_, ar_plane, ar_pose_.get());
-    mojom::Pose pose = GetMojomPoseFromArPose(arcore_session_, ar_pose_.get());
+      // pose
+      ArPlane_getCenterPose(arcore_session_, ar_plane, ar_pose_.get());
+      mojom::Pose pose =
+          GetMojomPoseFromArPose(arcore_session_, ar_pose_.get());
 
-    // polygon
-    int32_t polygon_size;
-    ArPlane_getPolygonSize(arcore_session_, ar_plane, &polygon_size);
-    // We are supposed to get 2*N floats describing (x, z) cooridinates of N
-    // points.
-    DCHECK(polygon_size % 2 == 0);
+      // polygon
+      int32_t polygon_size;
+      ArPlane_getPolygonSize(arcore_session_, ar_plane, &polygon_size);
+      // We are supposed to get 2*N floats describing (x, z) cooridinates of N
+      // points.
+      DCHECK(polygon_size % 2 == 0);
 
-    std::unique_ptr<float[]> vertices_raw =
-        std::make_unique<float[]>(polygon_size);
-    ArPlane_getPolygon(arcore_session_, ar_plane, vertices_raw.get());
+      std::unique_ptr<float[]> vertices_raw =
+          std::make_unique<float[]>(polygon_size);
+      ArPlane_getPolygon(arcore_session_, ar_plane, vertices_raw.get());
 
-    std::vector<mojom::XRPlanePointDataPtr> vertices;
-    for (int i = 0; i < polygon_size; i += 2) {
-      vertices.push_back(
-          mojom::XRPlanePointData::New(vertices_raw[i], vertices_raw[i + 1]));
+      std::vector<mojom::XRPlanePointDataPtr> vertices;
+      for (int i = 0; i < polygon_size; i += 2) {
+        vertices.push_back(
+            mojom::XRPlanePointData::New(vertices_raw[i], vertices_raw[i + 1]));
+      }
+
+      DVLOG(3) << __func__ << ": plane_id: " << plane_id.GetUnsafeValue()
+               << ", position=" << pose.position.ToString()
+               << ", orientation=" << pose.orientation.ToString();
+
+      updated_planes.push_back(mojom::XRPlaneData::New(
+          plane_id.GetUnsafeValue(),
+          mojo::ConvertTo<device::mojom::XRPlaneOrientation>(plane_type),
+          device::mojom::Pose::New(pose), std::move(vertices)));
+    } else {
+      DVLOG(3) << __func__ << ": plane_id: " << plane_id.GetUnsafeValue()
+               << ", position=untracked, orientation=untracked";
+
+      updated_planes.push_back(mojom::XRPlaneData::New(
+          plane_id.GetUnsafeValue(), device::mojom::XRPlaneOrientation::UNKNOWN,
+          nullptr, std::vector<mojom::XRPlanePointDataPtr>{}));
     }
-
-    DVLOG(3) << __func__ << ": plane id: " << plane_id.GetUnsafeValue()
-             << ", position=" << pose.position.ToString()
-             << ", orientation=" << pose.orientation.ToString();
-
-    updated_planes.push_back(mojom::XRPlaneData::New(
-        plane_id.GetUnsafeValue(),
-        mojo::ConvertTo<device::mojom::XRPlaneOrientation>(plane_type),
-        device::mojom::Pose::New(pose), std::move(vertices)));
   }
 
   return mojom::XRPlaneDetectionData::New(std::move(all_plane_ids),
@@ -279,19 +300,19 @@ base::Optional<PlaneId> ArCorePlaneManager::GetPlaneId(
 }
 
 bool ArCorePlaneManager::PlaneExists(PlaneId id) const {
-  return base::Contains(plane_id_to_plane_object_, id);
+  return base::Contains(plane_id_to_plane_info_, id);
 }
 
 base::Optional<gfx::Transform> ArCorePlaneManager::GetMojoFromPlane(
     PlaneId id) const {
-  auto it = plane_id_to_plane_object_.find(id);
-  if (it == plane_id_to_plane_object_.end()) {
+  auto it = plane_id_to_plane_info_.find(id);
+  if (it == plane_id_to_plane_info_.end()) {
     return base::nullopt;
   }
 
-  const ArPlane* plane =
-      ArAsPlane(it->second.get());  // Naked pointer is fine here, ArAsPlane
-                                    // does not increase the internal refcount.
+  // Naked pointer is fine here, ArAsPlane does not increase the internal
+  // refcount:
+  const ArPlane* plane = ArAsPlane(it->second.plane.get());
 
   ArPlane_getCenterPose(arcore_session_, plane, ar_pose_.get());
   mojom::Pose mojo_pose =
@@ -304,8 +325,8 @@ device::internal::ScopedArCoreObject<ArAnchor*>
 ArCorePlaneManager::CreateAnchor(util::PassKey<ArCoreAnchorManager> pass_key,
                                  PlaneId id,
                                  const device::mojom::Pose& pose) const {
-  auto it = plane_id_to_plane_object_.find(id);
-  if (it == plane_id_to_plane_object_.end()) {
+  auto it = plane_id_to_plane_info_.find(id);
+  if (it == plane_id_to_plane_info_.end()) {
     return {};
   }
 
@@ -313,7 +334,7 @@ ArCorePlaneManager::CreateAnchor(util::PassKey<ArCoreAnchorManager> pass_key,
 
   device::internal::ScopedArCoreObject<ArAnchor*> ar_anchor;
   ArStatus status = ArTrackable_acquireNewAnchor(
-      arcore_session_, it->second.get(), ar_pose.get(),
+      arcore_session_, it->second.plane.get(), ar_pose.get(),
       device::internal::ScopedArCoreObject<ArAnchor*>::Receiver(ar_anchor)
           .get());
 
@@ -323,5 +344,13 @@ ArCorePlaneManager::CreateAnchor(util::PassKey<ArCoreAnchorManager> pass_key,
 
   return ar_anchor;
 }
+
+ArCorePlaneManager::PlaneInfo::PlaneInfo(
+    device::internal::ScopedArCoreObject<ArTrackable*> plane,
+    ArTrackingState tracking_state)
+    : plane(std::move(plane)), tracking_state(tracking_state) {}
+
+ArCorePlaneManager::PlaneInfo::PlaneInfo(PlaneInfo&& other) = default;
+ArCorePlaneManager::PlaneInfo::~PlaneInfo() = default;
 
 }  // namespace device

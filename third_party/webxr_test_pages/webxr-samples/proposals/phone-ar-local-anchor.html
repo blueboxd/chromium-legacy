@@ -261,8 +261,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           });
 
           tracked_anchors.forEach(anchor => {
-            anchor.context.sceneObject.matrix = frame.getPose(anchor.anchorSpace, xrRefSpace).transform.matrix;
-            anchor.context.sceneObject.visible = true;
+            const anchorPose = frame.getPose(anchor.anchorSpace, xrRefSpace);
+            if(anchorPose) {
+              anchor.context.sceneObject.matrix = anchorPose.transform.matrix;
+              anchor.context.sceneObject.visible = true;
+            } else {
+              anchor.context.sceneObject.visible = false;
+            }
           });
 
           all_previous_anchors = tracked_anchors;
@@ -274,25 +279,30 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           all_previous_anchors = new Set();
         }
 
-        if(xrAnchor) {
+        if (xrAnchor) {
           const anchorPose = frame.getPose(xrAnchor.anchorSpace, xrRefSpace);
-          const pos = anchorPose.transform.position;
-          const rot = anchorPose.transform.orientation;
+          if (anchorPose) {
+            const pos = anchorPose.transform.position;
+            const rot = anchorPose.transform.orientation;
 
-          const degs = getAngle(
-            quat.fromValues(rot.x, rot.y, rot.z, rot.w),
-            quat.create()
-          ) * 180 / Math.PI;
+            const degs = getAngle(
+              quat.fromValues(rot.x, rot.y, rot.z, rot.w),
+              quat.create()
+            ) * 180 / Math.PI;
 
-          anchorPoseElement.innerText = pos.x.toFixed(3) + "m,"
-                                      + pos.y.toFixed(3) + "m,"
-                                      + pos.z.toFixed(3) + "m,"
-                                      + degs.toFixed(3) + "deg";
+            anchorPoseElement.innerText = pos.x.toFixed(3) + "m,"
+                                        + pos.y.toFixed(3) + "m,"
+                                        + pos.z.toFixed(3) + "m,"
+                                        + degs.toFixed(3) + "deg";
 
-          const drift = Math.sqrt(pos.x * pos.x + pos.y * pos.y + pos.z * pos.z);
-          anchorDriftElement.innerText = drift.toFixed(3) + "m";
+            const drift = Math.sqrt(pos.x * pos.x + pos.y * pos.y + pos.z * pos.z);
+            anchorDriftElement.innerText = drift.toFixed(3) + "m";
 
-          console.debug(pos, rot, drift);
+            console.debug(pos, rot, drift);
+          } else {
+            anchorPoseElement.innerText = "Anchor pose null.";
+            anchorDriftElement.innerText  = "Anchor pose null.";
+          }
         } else if(anchorRemoved) {
           anchorPoseElement.innerText = "Anchor already gone.";
           anchorDriftElement.innerText  = "Anchor already gone.";

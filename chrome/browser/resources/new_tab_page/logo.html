@@ -26,8 +26,13 @@
     cursor: pointer;
     display: grid;
     height: 230px;
+    outline: none;
     position: relative;
     width: 500px;
+  }
+
+  :host-context(.focus-outline-visible) #imageContainer:focus {
+    box-shadow: 0 0 0 2px rgba(var(--google-blue-600-rgb), .4);
   }
 
   #imageContainer > * {
@@ -77,7 +82,7 @@
   </div>
   <div id="doodle">
     <div id="imageContainer" hidden="[[!doodle_.content.imageDoodle]]"
-        on-click="onImageClick_">
+        tabindex="1" on-click="onImageClick_" on-keydown="onImageKeydown_">
       <!-- The static image is always visible and the animated image is stacked
            on top of the static image so that there is no flicker when starting
            the animation. -->

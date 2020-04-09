@@ -61,8 +61,6 @@ int WebLayerMetricsServiceClient::GetSampleRatePerMille() {
   return kBetaDevCanarySampledInRatePerMille;
 }
 
-void WebLayerMetricsServiceClient::InitInternal() {}
-
 void WebLayerMetricsServiceClient::OnMetricsStart() {}
 
 int WebLayerMetricsServiceClient::GetPackageNameLimitRatePerMille() {

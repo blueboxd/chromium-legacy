@@ -17,6 +17,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
 #include "remoting/base/string_resources.h"
+#include "ui/base/cocoa/permissions_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -117,44 +118,8 @@ bool CanInjectInput() {
   return AXIsProcessTrusted();
 }
 
-// Heuristic to check screen capture permission. See http://crbug.com/993692
-// Screen capture is considered allowed if the name of at least one normal
-// or dock window running on another process is visible.
-// Copied from
-// chrome/browser/media/webrtc/system_media_capture_permissions_mac.mm
-// TODO(garykac) Move webrtc version where it can be shared.
 bool CanRecordScreen() {
-  if (@available(macOS 10.15, *)) {
-    base::ScopedCFTypeRef<CFArrayRef> window_list(
-        CGWindowListCopyWindowInfo(kCGWindowListOptionAll, kCGNullWindowID));
-    int current_pid = [[NSProcessInfo processInfo] processIdentifier];
-    for (NSDictionary* window in base::mac::CFToNSCast(window_list.get())) {
-      NSNumber* window_pid =
-          [window objectForKey:base::mac::CFToNSCast(kCGWindowOwnerPID)];
-      if (!window_pid || [window_pid integerValue] == current_pid)
-        continue;
-
-      NSString* window_name =
-          [window objectForKey:base::mac::CFToNSCast(kCGWindowName)];
-      if (!window_name)
-        continue;
-
-      NSNumber* layer =
-          [window objectForKey:base::mac::CFToNSCast(kCGWindowLayer)];
-      if (!layer)
-        continue;
-
-      NSInteger layer_integer = [layer integerValue];
-      if (layer_integer == CGWindowLevelForKey(kCGNormalWindowLevelKey) ||
-          layer_integer == CGWindowLevelForKey(kCGDockWindowLevelKey)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  // Screen capture is always allowed in older macOS versions.
-  return true;
+  return ui::IsScreenCaptureAllowed();
 }
 
 // MacOs 10.14+ requires an additional runtime permission for injecting input

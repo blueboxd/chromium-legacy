@@ -44,6 +44,7 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "cc/base/switches.h"
 #include "components/viz/common/features.h"
 #include "content/public/common/content_switches.h"
 #include "fuchsia/base/config_reader.h"
@@ -146,13 +147,13 @@ bool MaybeAddCommandLineArgsFromConfig(const base::Value& config,
     return true;
 
   static const base::StringPiece kAllowedArgs[] = {
+      cc::switches::kEnableGpuBenchmarking,
       switches::kAcceleratedCanvas2dMSAASampleCount,
       // TODO(crbug.com/1054589): Remove the "blink-settings" argument.
       switches::kBlinkSettings,
       switches::kDisableFeatures,
       switches::kDisableGpuWatchdog,
       switches::kEnableFeatures,
-      switches::kEnableFuchsiaAudioConsumer,
       switches::kEnableLowEndDeviceMode,
       switches::kForceGpuMemAvailableMb,
       switches::kForceGpuMemDiscardableLimitMb,
@@ -169,13 +170,16 @@ bool MaybeAddCommandLineArgsFromConfig(const base::Value& config,
       // experimenting with memory-related command-line options.
       continue;
     }
-    if (!arg.second.is_string()) {
+
+    DCHECK(!command_line->HasSwitch(arg.first));
+    if (arg.second.is_none()) {
+      command_line->AppendSwitch(arg.first);
+    } else if (arg.second.is_string()) {
+      command_line->AppendSwitchNative(arg.first, arg.second.GetString());
+    } else {
       LOG(ERROR) << "Config command-line arg must be a string: " << arg.first;
       return false;
     }
-
-    DCHECK(!command_line->HasSwitch(arg.first));
-    command_line->AppendSwitchNative(arg.first, arg.second.GetString());
 
     // TODO(https://crbug.com/1023012): enable-low-end-device-mode currently
     // fakes 512MB total physical memory, which triggers RGB4444 textures,

@@ -966,20 +966,7 @@ void ChromePasswordProtectionService::HandleUserActionOnPageInfo(
   const Origin origin = Origin::Create(url);
 
   if (action == WarningAction::CHANGE_PASSWORD) {
-    // Directly open enterprise change password page in a new tab for
-    // enterprise reuses.
-    if (password_type.account_type() ==
-        ReusedPasswordAccountType::NON_GAIA_ENTERPRISE) {
-      OpenUrl(web_contents, GetEnterpriseChangePasswordURL(),
-              content::Referrer(),
-              /*in_new_tab=*/true);
-      web_contents_with_unhandled_enterprise_reuses_.erase(web_contents);
-      return;
-    }
-
-    // For sync password reuse, open accounts.google.com page in a new tab.
-    OpenUrl(web_contents, GetDefaultChangePasswordURL(), content::Referrer(),
-            /*in_new_tab=*/true);
+    OpenChangePasswordUrl(web_contents, password_type);
     return;
   }
 

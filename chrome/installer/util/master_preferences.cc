@@ -164,6 +164,12 @@ void MasterPreferences::InitializeFromCommandLine(
     }
   }
 
+  // Strip multi-install from the dictionary, if present. This ensures that any
+  // code that probes the dictionary directly to check for multi-install
+  // receives false. The updated dictionary is not written back to disk.
+  master_dictionary_->Remove(
+      std::string(master_preferences::kDistroDict) + ".multi_install", nullptr);
+
   // Cache a pointer to the distribution dictionary. Ignore errors if any.
   master_dictionary_->GetDictionary(installer::master_preferences::kDistroDict,
                                     &distribution_);

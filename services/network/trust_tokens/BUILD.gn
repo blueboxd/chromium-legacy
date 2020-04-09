@@ -15,6 +15,8 @@ source_set("trust_tokens") {
   defines = [ "IS_NETWORK_SERVICE_IMPL" ]
 
   sources = [
+    "ed25519_trust_token_request_signer.cc",
+    "ed25519_trust_token_request_signer.h",
     "has_trust_tokens_answerer.cc",
     "has_trust_tokens_answerer.h",
     "in_memory_trust_token_persister.cc",
@@ -98,6 +100,7 @@ source_set("tests") {
   defines = [ "IS_NETWORK_SERVICE_IMPL" ]
 
   sources = [
+    "ed25519_trust_token_request_signer_unittest.cc",
     "has_trust_tokens_answerer_unittest.cc",
     "pending_trust_token_store_unittest.cc",
     "sqlite_trust_token_persister_unittest.cc",

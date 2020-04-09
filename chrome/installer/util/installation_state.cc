@@ -40,6 +40,7 @@ ProductState::ProductState()
       eula_accepted_(0),
       usagestats_(0),
       msi_(false),
+      multi_install_(false),
       has_eula_accepted_(false),
       has_oem_install_(false),
       has_usagestats_(false) {
@@ -113,6 +114,9 @@ bool ProductState::Initialize(bool system_install) {
     DWORD dw_value = 0;
     msi_ = (key.ReadValueDW(google_update::kRegMSIField,
                             &dw_value) == ERROR_SUCCESS) && (dw_value != 0);
+    // Multi-install is a legacy option that is read for the sole purpose of
+    // migrating clients away from it.
+    multi_install_ = uninstall_command_.HasSwitch("multi-install");
   }
 
   // Read from the ClientStateMedium key.  Values here override those in
@@ -162,6 +166,7 @@ ProductState& ProductState::CopyFrom(const ProductState& other) {
   eula_accepted_ = other.eula_accepted_;
   usagestats_ = other.usagestats_;
   msi_ = other.msi_;
+  multi_install_ = other.multi_install_;
   has_eula_accepted_ = other.has_eula_accepted_;
   has_oem_install_ = other.has_oem_install_;
   has_usagestats_ = other.has_usagestats_;
@@ -181,6 +186,7 @@ void ProductState::Clear() {
   eula_accepted_ = 0;
   usagestats_ = 0;
   msi_ = false;
+  multi_install_ = false;
   has_eula_accepted_ = false;
   has_oem_install_ = false;
   has_usagestats_ = false;

@@ -20,6 +20,8 @@ class WebViewWebClient : public web::WebClient {
 
   // WebClient implementation.
   std::unique_ptr<web::WebMainParts> CreateWebMainParts() override;
+  void AddAdditionalSchemes(Schemes* schemes) const override;
+  bool IsAppSpecificURL(const GURL& url) const override;
   std::string GetUserAgent(web::UserAgentType type) const override;
   base::StringPiece GetDataResource(
       int resource_id,

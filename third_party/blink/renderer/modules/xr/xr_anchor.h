@@ -44,12 +44,8 @@ class XRAnchor : public ScriptWrappable {
 
   Member<XRSession> session_;
 
-  // |mojo_from_anchor_| will be non-null in an XRAnchor after the anchor was
-  // updated for the first time - this *must* happen in the same frame in which
-  // the anchor was created for the anchor to be fully usable. It is currently
-  // ensured by XRSession - anchors that got created prior to receiving the
-  // result from mojo call to GetFrameData are not returned to the application
-  // until their poses are known.
+  // Anchor's pose in device (mojo) space. Nullptr if the pose of the anchor is
+  // unknown in the current frame.
   std::unique_ptr<TransformationMatrix> mojo_from_anchor_;
 
   // Cached anchor space - it will be created by `anchorSpace()` if it's not

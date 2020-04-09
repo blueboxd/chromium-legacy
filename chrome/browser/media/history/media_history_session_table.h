@@ -33,7 +33,7 @@ class MediaHistorySessionTable : public MediaHistoryTableBase {
   bool DeleteURL(const GURL& url) override;
 
  private:
-  friend class MediaHistoryStoreInternal;
+  friend class MediaHistoryStore;
 
   explicit MediaHistorySessionTable(
       scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner);

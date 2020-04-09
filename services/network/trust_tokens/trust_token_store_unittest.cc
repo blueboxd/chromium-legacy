@@ -13,6 +13,7 @@
 #include "services/network/trust_tokens/in_memory_trust_token_persister.h"
 #include "services/network/trust_tokens/proto/public.pb.h"
 #include "services/network/trust_tokens/proto/storage.pb.h"
+#include "services/network/trust_tokens/suitable_trust_token_origin.h"
 #include "services/network/trust_tokens/trust_token_parameterization.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,7 +42,8 @@ TEST(TrustTokenStoreTest, RecordsIssuances) {
   // recorded any issuances.
 
   TrustTokenStore my_store(std::make_unique<InMemoryTrustTokenPersister>());
-  url::Origin issuer = url::Origin::Create(GURL("https://issuer.com"));
+  SuitableTrustTokenOrigin issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com"));
   base::test::TaskEnvironment env(
       base::test::TaskEnvironment::TimeSource::MOCK_TIME);
 
@@ -62,7 +64,8 @@ TEST(TrustTokenStoreTest, DoesntReportMissingOrMalformedIssuanceTimestamps) {
   auto* raw_persister = my_persister.get();
 
   TrustTokenStore my_store(std::move(my_persister));
-  url::Origin issuer = url::Origin::Create(GURL("https://issuer.com"));
+  SuitableTrustTokenOrigin issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com"));
 
   auto issuer_config_with_no_time = std::make_unique<TrustTokenIssuerConfig>();
   raw_persister->SetIssuerConfig(issuer, std::move(issuer_config_with_no_time));
@@ -86,7 +89,8 @@ TEST(TrustTokenStoreTest, DoesntReportNegativeTimeSinceLastIssuance) {
       base::test::TaskEnvironment::TimeSource::MOCK_TIME);
 
   TrustTokenStore my_store(std::move(my_persister));
-  url::Origin issuer = url::Origin::Create(GURL("https://issuer.com"));
+  SuitableTrustTokenOrigin issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com"));
   base::Time later_than_now =
       base::Time::Now() + base::TimeDelta::FromSeconds(1);
 
@@ -107,8 +111,10 @@ TEST(TrustTokenStore, RecordsRedemptions) {
   // recorded any redemptions.
 
   TrustTokenStore my_store(std::make_unique<InMemoryTrustTokenPersister>());
-  url::Origin issuer = url::Origin::Create(GURL("https://issuer.com"));
-  url::Origin toplevel = url::Origin::Create(GURL("https://toplevel.com"));
+  SuitableTrustTokenOrigin issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com"));
+  SuitableTrustTokenOrigin toplevel =
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com"));
   base::test::TaskEnvironment env(
       base::test::TaskEnvironment::TimeSource::MOCK_TIME);
 
@@ -130,8 +136,10 @@ TEST(TrustTokenStoreTest, DoesntReportMissingOrMalformedRedemptionTimestamps) {
   auto* raw_persister = my_persister.get();
 
   TrustTokenStore my_store(std::move(my_persister));
-  url::Origin issuer = url::Origin::Create(GURL("https://issuer.com"));
-  url::Origin toplevel = url::Origin::Create(GURL("https://toplevel.com"));
+  SuitableTrustTokenOrigin issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com"));
+  SuitableTrustTokenOrigin toplevel =
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com"));
 
   auto config_with_no_time =
       std::make_unique<TrustTokenIssuerToplevelPairConfig>();
@@ -157,8 +165,10 @@ TEST(TrustTokenStoreTest, DoesntReportNegativeTimeSinceLastRedemption) {
   base::test::TaskEnvironment env(
       base::test::TaskEnvironment::TimeSource::MOCK_TIME);
 
-  url::Origin issuer = url::Origin::Create(GURL("https://issuer.com"));
-  url::Origin toplevel = url::Origin::Create(GURL("https://toplevel.com"));
+  SuitableTrustTokenOrigin issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com"));
+  SuitableTrustTokenOrigin toplevel =
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com"));
 
   base::Time later_than_now =
       base::Time::Now() + base::TimeDelta::FromSeconds(1);
@@ -181,8 +191,10 @@ TEST(TrustTokenStore, AssociatesToplevelsWithIssuers) {
   // any toplevels are associated with any issuers.
 
   TrustTokenStore my_store(std::make_unique<InMemoryTrustTokenPersister>());
-  url::Origin issuer = url::Origin::Create(GURL("https://issuer.com"));
-  url::Origin toplevel = url::Origin::Create(GURL("https://toplevel.com"));
+  SuitableTrustTokenOrigin issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com"));
+  SuitableTrustTokenOrigin toplevel =
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com"));
   EXPECT_FALSE(my_store.IsAssociated(issuer, toplevel));
 
   // After associating an issuer with a toplevel,
@@ -199,8 +211,10 @@ TEST(TrustTokenStore, AssociatesToplevelsWithIssuers) {
 TEST(TrustTokenStore, IssuerToplevelAssociationAtNumberOfAssociationsCap) {
   auto persister = std::make_unique<InMemoryTrustTokenPersister>();
 
-  url::Origin toplevel = url::Origin::Create(GURL("https://toplevel.com"));
-  url::Origin issuer = url::Origin::Create(GURL("https://issuer.com"));
+  SuitableTrustTokenOrigin toplevel =
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com"));
+  SuitableTrustTokenOrigin issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com"));
 
   auto config = std::make_unique<TrustTokenToplevelConfig>();
   for (int i = 0; i < kTrustTokenPerToplevelMaxNumberOfAssociatedIssuers - 1;
@@ -222,13 +236,15 @@ TEST(TrustTokenStore, IssuerToplevelAssociationAtNumberOfAssociationsCap) {
   // Since we're at the cap, SetAssociation for an issuer not already associated
   // with the top-level origin should fail.
   EXPECT_FALSE(my_store.SetAssociation(
-      url::Origin::Create(GURL("https://someotherissuer.com")), toplevel));
+      *SuitableTrustTokenOrigin::Create(GURL("https://someotherissuer.com")),
+      toplevel));
 }
 
 TEST(TrustTokenStore, AddingTokensRespectsCapacity) {
   TrustTokenStore my_store(std::make_unique<InMemoryTrustTokenPersister>());
 
-  url::Origin issuer = url::Origin::Create(GURL("https://issuer.com"));
+  SuitableTrustTokenOrigin issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com"));
 
   // Attempting to add many, many tokens corresponding to that key should be
   // successful, but the operation should only add a quantity of tokens equal to
@@ -244,7 +260,8 @@ TEST(TrustTokenStore, AddingTokensRespectsCapacity) {
 
 TEST(TrustTokenStore, CountsTokens) {
   TrustTokenStore my_store(std::make_unique<InMemoryTrustTokenPersister>());
-  url::Origin issuer = url::Origin::Create(GURL("https://issuer.com"));
+  SuitableTrustTokenOrigin issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com"));
 
   // A freshly initialized store should be storing zero tokens.
   EXPECT_EQ(my_store.CountTokens(issuer), 0);
@@ -265,7 +282,8 @@ TEST(TrustTokenStore, PrunesDataAssociatedWithRemovedKeyCommitments) {
   // correctly evicts all tokens except those associated with keys in the
   // provided set of commitments.
   TrustTokenStore my_store(std::make_unique<InMemoryTrustTokenPersister>());
-  url::Origin issuer = url::Origin::Create(GURL("https://issuer.com"));
+  SuitableTrustTokenOrigin issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com"));
 
   my_store.AddTokens(issuer, std::vector<std::string>{"some token body"},
                      "quite a secure key, this");
@@ -300,7 +318,8 @@ TEST(TrustTokenStore, AddsTrustTokens) {
   // any issuers have associated trust tokens.
 
   TrustTokenStore my_store(std::make_unique<InMemoryTrustTokenPersister>());
-  url::Origin issuer = url::Origin::Create(GURL("https://issuer.com"));
+  SuitableTrustTokenOrigin issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com"));
 
   auto match_all_keys =
       base::BindRepeating([](const std::string& t) { return true; });
@@ -330,7 +349,8 @@ TEST(TrustTokenStore, RetrievesTrustTokensRespectingNontrivialPredicate) {
   // the provided predicate.
 
   TrustTokenStore my_store(std::make_unique<InMemoryTrustTokenPersister>());
-  url::Origin issuer = url::Origin::Create(GURL("https://issuer.com"));
+  SuitableTrustTokenOrigin issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com"));
 
   const std::string kMatchingKey = "bbbbbb";
   const std::string kNonmatchingKey = "aaaaaa";
@@ -363,7 +383,8 @@ TEST(TrustTokenStore, RetrievesTrustTokensRespectingNontrivialPredicate) {
 
 TEST(TrustTokenStore, DeletesSingleToken) {
   TrustTokenStore my_store(std::make_unique<InMemoryTrustTokenPersister>());
-  url::Origin issuer = url::Origin::Create(GURL("https://issuer.com"));
+  SuitableTrustTokenOrigin issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com"));
   auto match_all_keys =
       base::BindRepeating([](const std::string& t) { return true; });
 
@@ -395,7 +416,8 @@ TEST(TrustTokenStore, DeletesSingleToken) {
 
 TEST(TrustTokenStore, DeleteTokenForMissingIssuer) {
   TrustTokenStore my_store(std::make_unique<InMemoryTrustTokenPersister>());
-  url::Origin issuer = url::Origin::Create(GURL("https://issuer.com"));
+  SuitableTrustTokenOrigin issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com"));
 
   // Deletes for issuers not present in the store should gracefully no-op.
 
@@ -407,8 +429,10 @@ TEST(TrustTokenStore, SetsAndRetrievesRedemptionRecord) {
   // it has any signed redemption records.
 
   TrustTokenStore my_store(std::make_unique<InMemoryTrustTokenPersister>());
-  url::Origin issuer = url::Origin::Create(GURL("https://issuer.com"));
-  url::Origin toplevel = url::Origin::Create(GURL("https://toplevel.com"));
+  SuitableTrustTokenOrigin issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com"));
+  SuitableTrustTokenOrigin toplevel =
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com"));
   base::test::TaskEnvironment env(
       base::test::TaskEnvironment::TimeSource::MOCK_TIME);
 
@@ -434,8 +458,10 @@ TEST(TrustTokenStore, RetrieveRedemptionRecordHandlesConfigWithNoRecord) {
   auto my_persister = std::make_unique<InMemoryTrustTokenPersister>();
   auto* raw_persister = my_persister.get();
   TrustTokenStore my_store(std::move(my_persister));
-  url::Origin issuer = url::Origin::Create(GURL("https://issuer.com"));
-  url::Origin toplevel = url::Origin::Create(GURL("https://toplevel.com"));
+  SuitableTrustTokenOrigin issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com"));
+  SuitableTrustTokenOrigin toplevel =
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com"));
 
   raw_persister->SetIssuerToplevelPairConfig(
       issuer, toplevel, std::make_unique<TrustTokenIssuerToplevelPairConfig>());
@@ -448,8 +474,10 @@ TEST(TrustTokenStore, SetRedemptionRecordOverwritesExisting) {
   // Subsequent redemption records should overwrite ones set earlier.
 
   TrustTokenStore my_store(std::make_unique<InMemoryTrustTokenPersister>());
-  url::Origin issuer = url::Origin::Create(GURL("https://issuer.com"));
-  url::Origin toplevel = url::Origin::Create(GURL("https://toplevel.com"));
+  SuitableTrustTokenOrigin issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com"));
+  SuitableTrustTokenOrigin toplevel =
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com"));
   base::test::TaskEnvironment env(
       base::test::TaskEnvironment::TimeSource::MOCK_TIME);
 
@@ -483,8 +511,10 @@ TEST(TrustTokenStore, DoesNotReturnStaleRedemptionRecord) {
   // be returned by retrieval queries.
   TrustTokenStore my_store(std::make_unique<InMemoryTrustTokenPersister>(),
                            std::make_unique<LetterAExpiringExpiryDelegate>());
-  url::Origin issuer = url::Origin::Create(GURL("https://issuer.com"));
-  url::Origin toplevel = url::Origin::Create(GURL("https://toplevel.com"));
+  SuitableTrustTokenOrigin issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com"));
+  SuitableTrustTokenOrigin toplevel =
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com"));
 
   SignedTrustTokenRedemptionRecord my_record;
   my_record.set_body("aLook at me! I'm an expired signed redemption record!");

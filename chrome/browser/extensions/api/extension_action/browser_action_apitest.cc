@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
@@ -179,6 +180,44 @@ class BrowserActionApiLazyTest : public BrowserActionApiTest,
     return LoadExtensionWithFlags(path, flags);
   }
 
+  void RunUpdateTest(base::StringPiece path, bool expect_failure) {
+    ExtensionTestMessageListener ready_listener("ready", true);
+    ASSERT_TRUE(embedded_test_server()->Start());
+    const Extension* extension =
+        LoadExtensionWithParamFlags(test_data_dir_.AppendASCII(path));
+    ASSERT_TRUE(extension) << message_;
+    // Test that there is a browser action in the toolbar.
+    ASSERT_EQ(1, GetBrowserActionsBar()->NumberOfBrowserActions());
+
+    ASSERT_TRUE(ready_listener.WaitUntilSatisfied());
+    ExtensionAction* action = GetBrowserAction(browser(), *extension);
+    EXPECT_EQ("This is the default title.",
+              action->GetTitle(ExtensionAction::kDefaultTabId));
+    EXPECT_EQ(
+        "", action->GetExplicitlySetBadgeText(ExtensionAction::kDefaultTabId));
+    EXPECT_EQ(SkColorSetARGB(0, 0, 0, 0),
+              action->GetBadgeBackgroundColor(ExtensionAction::kDefaultTabId));
+
+    // Tell the extension to update the browser action state and then
+    // catch the result.
+    ResultCatcher catcher;
+    ready_listener.Reply("update");
+
+    if (expect_failure) {
+      EXPECT_FALSE(catcher.GetNextResult());
+      EXPECT_EQ("The source image could not be decoded.", catcher.message());
+      return;
+    }
+
+    EXPECT_TRUE(catcher.GetNextResult());
+    // Test that we received the changes.
+    EXPECT_EQ("Modified", action->GetTitle(ExtensionAction::kDefaultTabId));
+    EXPECT_EQ("badge", action->GetExplicitlySetBadgeText(
+                           ExtensionAction::kDefaultTabId));
+    EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255),
+              action->GetBadgeBackgroundColor(ExtensionAction::kDefaultTabId));
+  }
+
  private:
   base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<extensions::ScopedWorkerBasedExtensionsChannel>
@@ -209,37 +248,18 @@ IN_PROC_BROWSER_TEST_P(BrowserActionApiLazyTest, Basic) {
   EXPECT_TRUE(catcher.GetNextResult());
 }
 
-using BrowserActionApiUpdateLazyTest = BrowserActionApiLazyTest;
-IN_PROC_BROWSER_TEST_P(BrowserActionApiUpdateLazyTest, Update) {
-  ExtensionTestMessageListener ready_listener("ready", true);
-  ASSERT_TRUE(embedded_test_server()->Start());
-  const Extension* extension = LoadExtensionWithParamFlags(
-      test_data_dir_.AppendASCII("browser_action/update"));
-  ASSERT_TRUE(extension) << message_;
-  // Test that there is a browser action in the toolbar.
-  ASSERT_EQ(1, GetBrowserActionsBar()->NumberOfBrowserActions());
+IN_PROC_BROWSER_TEST_P(BrowserActionApiLazyTest, Update) {
+  ASSERT_NO_FATAL_FAILURE(RunUpdateTest("browser_action/update", false))
+      << GetParam();
+}
 
-  ASSERT_TRUE(ready_listener.WaitUntilSatisfied());
-  ExtensionAction* action = GetBrowserAction(browser(), *extension);
-  EXPECT_EQ("This is the default title.",
-            action->GetTitle(ExtensionAction::kDefaultTabId));
-  EXPECT_EQ("",
-            action->GetExplicitlySetBadgeText(ExtensionAction::kDefaultTabId));
-  EXPECT_EQ(SkColorSetARGB(0, 0, 0, 0),
-            action->GetBadgeBackgroundColor(ExtensionAction::kDefaultTabId));
-
-  // Tell the extension to update the browser action state and then
-  // catch the result.
-  ResultCatcher catcher;
-  ready_listener.Reply("update");
-  ASSERT_TRUE(catcher.GetNextResult());
-
-  // Test that we received the changes.
-  EXPECT_EQ("Modified", action->GetTitle(ExtensionAction::kDefaultTabId));
-  EXPECT_EQ("badge",
-            action->GetExplicitlySetBadgeText(ExtensionAction::kDefaultTabId));
-  EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255),
-            action->GetBadgeBackgroundColor(ExtensionAction::kDefaultTabId));
+IN_PROC_BROWSER_TEST_P(BrowserActionApiLazyTest, UpdateSvg) {
+  // TODO(crbug.com/1064671): Service Workers currently don't support loading
+  // SVG images.
+  const bool expect_failure = GetParam() & kUseServiceWorker;
+  ASSERT_NO_FATAL_FAILURE(
+      RunUpdateTest("browser_action/update_svg", expect_failure))
+      << GetParam();
 }
 
 INSTANTIATE_TEST_SUITE_P(EventPageAndLegacyToolbar,
@@ -255,22 +275,6 @@ INSTANTIATE_TEST_SUITE_P(ServiceWorkerAndExtensionsMenu,
                          BrowserActionApiLazyTest,
                          ::testing::Values(kUseServiceWorker |
                                            kUseExtensionsMenuUi));
-
-INSTANTIATE_TEST_SUITE_P(EventPageAndLegacyToolbar,
-                         BrowserActionApiUpdateLazyTest,
-                         ::testing::Values(kNone));
-INSTANTIATE_TEST_SUITE_P(EventPageAndExtensionsMenu,
-                         BrowserActionApiUpdateLazyTest,
-                         ::testing::Values(kUseExtensionsMenuUi));
-// TODO(crbug.com/1015136): Enable these once setIcon works in Service worker
-// extensions. Also, combine this suite with BrowserActionApiLazyTest.
-// INSTANTIATE_TEST_SUITE_P(ServiceWorkerAndLegacyToolbar,
-//                          BrowserActionApiUpdateLazyTest,
-//                          ::testing::Values(kUseServiceWorker));
-// INSTANTIATE_TEST_SUITE_P(ServiceWorkerAndExtensionsMenu,
-//                          BrowserActionApiUpdateLazyTest,
-//                          ::testing::Values(kUseServiceWorker |
-//                                            kUseExtensionsMenuUi));
 
 IN_PROC_BROWSER_TEST_F(BrowserActionApiCanvasTest, DynamicBrowserAction) {
   ASSERT_TRUE(RunExtensionTest("browser_action/no_icon")) << message_;

@@ -171,7 +171,7 @@ Se "<ph name="SERVICE_SCRIPT_NAME" />" já estiver selecionado, desselecione-o e
 <translation id="8513093439376855948">Anfitrião de mensagens nativo para gestão de anfitrião remota</translation>
 <translation id="8525306231823319788">Ecrã inteiro</translation>
 <translation id="858006550102277544">Comentário</translation>
-<translation id="8743328882720071828">Pretende permitir que <ph name="CLIENT_USERNAME" /> veja e controle o seu computador?</translation>
+<translation id="8743328882720071828">Permitir que <ph name="CLIENT_USERNAME" /> veja e controle o seu computador?</translation>
 <translation id="8747048596626351634">Falha da sessão ou falha ao iniciar a sessão. Se ~/.chrome-remote-desktop-session existir no computador remoto, certifique-se de que inicia um processo em primeiro plano de longa execução, como um gestor de janelas ou um ambiente de trabalho.</translation>
 <translation id="8804164990146287819">Política de Privacidade</translation>
 <translation id="9111855907838866522">Está ligado ao seu dispositivo remoto. Para abrir o menu, toque no ecrã com quatro dedos.</translation>

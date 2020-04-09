@@ -1159,6 +1159,7 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
 <translation id="2592162121850992309">Jika kebijakan ini ditetapkan ke True atau tidak ditetapkan, akselerasi hardware akan diaktifkan kecuali jika fitur GPU tertentu termasuk dalam daftar tidak diizinkan.
 
       Jika kebijakan ini ditetapkan ke False, akselerasi hardware akan dinonaktifkan.</translation>
+<translation id="2593762551209145088">Safe Browsing tidak pernah aktif.</translation>
 <translation id="2596260130957832043">Mengontrol apakah NTLMv2 dinonaktifkan.
           
           Semua versi terbaru server Samba dan Windows mendukung NTLMv2.
@@ -1232,6 +1233,7 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
 
       Lihat https://developers.google.com/safe-browsing untuk mengetahui info selengkapnya tentang Safe Browsing.</translation>
 <translation id="2706708761587205154">Hanya izinkan pencetakan dengan PIN</translation>
+<translation id="2707873794476722903">Safe Browsing aktif dalam mode standar.</translation>
 <translation id="2710534340210290498">Jika kebijakan ini ditetapkan ke False, pengguna tidak akan dapat mengunci layar (hanya dapat logout dari sesi pengguna). Jika setelan ini ditetapkan ke True atau tidak ditetapkan, pengguna yang melakukan autentikasi dengan sandi dapat mengunci layar.</translation>
 <translation id="2731627323327011390">Menonaktifkan penggunaan sertifikat <ph name="PRODUCT_OS_NAME" /> untuk aplikasi ARC</translation>
 <translation id="2742843273354638707">Menyembunyikan aplikasi Chrome Webstore serta link footer dari Halaman Tab Baru dan peluncur aplikasi <ph name="PRODUCT_OS_NAME" />.
@@ -2333,6 +2335,19 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 <translation id="437791893267799639">Kebijakan tidak disetel, jangan izinkan migrasi data dan ARC</translation>
 <translation id="4389073105055031853">Izinkan pengguna mengelola semua sertifikat</translation>
 <translation id="4389091865841123886">Mengonfigurasi pengesahan jarak jauh dengan mekanisme TPM.</translation>
+<translation id="4401496838830169080">Memungkinkan Anda mengontrol apakah fitur Safe Browsing <ph name="PRODUCT_NAME" /> diaktifkan dan dalam mode apa fitur tersebut beroperasi.
+
+      Jika kebijakan ini ditetapkan ke 'NoProtection' (nilai 0), Safe Browsing tidak pernah aktif.
+
+      Jika kebijakan ini ditetapkan ke 'StandardProtection' (nilai 1, yang merupakan default), Safe Browsing selalu aktif dalam mode standar.
+
+      Jika kebijakan ini ditetapkan ke 'EnhancedProtection' (nilai 2), Safe Browsing selalu aktif dalam mode yang disempurnakan, yang memberikan keamanan lebih baik, tetapi perlu membagikan lebih banyak informasi penjelajahan kepada Google.
+
+      Jika Anda menetapkan kebijakan ini sebagai sesuatu yang wajib, pengguna tidak dapat mengubah atau mengganti setelan Safe Browsing di <ph name="PRODUCT_NAME" />.
+
+      Jika kebijakan ini tidak ditetapkan, Safe Browsing akan beroperasi dalam mode Perlindungan Standar tetapi pengguna dapat mengubah setelan ini.
+
+      Lihat https://developers.google.com/safe-browsing untuk mengetahui info selengkapnya tentang Safe Browsing.</translation>
 <translation id="4408428864159735559">Daftar berbagi file jaringan yang telah dikonfigurasikan sebelumnya.</translation>
 <translation id="4410236409016356088">Aktifkan pembatasan bandwidth jaringan</translation>
 <translation id="441217499641439905">Nonaktifkan Google Drive melalui koneksi seluler di aplikasi File <ph name="PRODUCT_OS_NAME" /></translation>
@@ -2911,7 +2926,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       Jika kebijakan ini ditetapkan ke "Aktifkan login browser", pengguna diizinkan untuk login ke browser, dan akan otomatis login ke browser saat mereka login ke layanan web Google seperti Gmail. Setelah login ke browser, informasi akun pengguna akan disimpan oleh browser. Namun, ini tidak berarti bahwa sinkronisasi Chrome akan diaktifkan secara default; pengguna harus secara khusus memilih untuk ikut serta menggunakan fitur ini. Jika kebijakan ini diaktifkan, pengguna tidak akan dapat menonaktifkan setelan yang mengizinkan login browser. Untuk mengontrol ketersediaan sinkronisasi Chrome, gunakan kebijakan "SyncDisabled".
 
-      Jika kebijakan ini ditetapkan ke "Paksa login ke browser", sebuah dialog untuk memilih akun akan ditampilkan dan pengguna harus memilih serta login ke salah satu akun agar dapat menggunakan browser. Hal ini memastikan bahwa, untuk akun terkelola, kebijakan yang terkait dengan akun tersebut diterapkan dan diberlakukan. Secara default, langkah ini mengaktifkan sinkronisasi Chrome untuk akun tersebut, kecuali jika sinkronisasi dinonaktifkan oleh admin domain atau melalui kebijakan "SyncDisabled". Nilai default BrowserGuestModeEnabled akan ditetapkan ke salah. Perlu diketahui bahwa profil yang ada serta belum ditandatangani akan dikunci dan tidak dapat diakses setelah kebijakan ini diaktifkan. Untuk mengetahui informasi selengkapnya, lihat artikel pusat bantuan: https://support.google.com/chrome/a/answer/7572556. Opsi ini tidak mendukung Linux dan Android, dan akan dikembalikan ke kebijakan "Aktifkan login browser" jika digunakan.
+      Jika kebijakan ini ditetapkan ke "Paksa login ke browser", sebuah dialog untuk memilih akun akan ditampilkan dan pengguna harus memilih serta login ke salah satu akun agar dapat menggunakan browser. Hal ini memastikan bahwa, untuk akun terkelola, kebijakan yang terkait dengan akun tersebut diterapkan dan diberlakukan. Secara default, langkah ini mengaktifkan sinkronisasi Chrome untuk akun tersebut, kecuali jika sinkronisasi dinonaktifkan oleh admin domain atau melalui kebijakan "SyncDisabled". Nilai default BrowserGuestModeEnabled akan ditetapkan ke Salah. Perlu diketahui bahwa profil yang ada serta belum ditandatangani akan dikunci dan tidak dapat diakses setelah kebijakan ini diaktifkan. Untuk mengetahui informasi selengkapnya, lihat artikel pusat bantuan: https://support.google.com/chrome/a/answer/7572556. Opsi ini tidak mendukung Linux dan Android, dan akan dikembalikan ke kebijakan "Aktifkan login browser" jika digunakan.
 
       Jika kebijakan ini tidak ditetapkan, pengguna dapat memutuskan apakah mereka ingin mengaktifkan opsi login browser dan menggunakannya jika dirasa sesuai.</translation>
 <translation id="532848608876725157">Aktifkan DNS-over-HTTPS dengan fallback yang tidak aman</translation>
@@ -3446,6 +3461,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="6111936128861357925">Izinkan Game Dinosaur Easter Egg</translation>
 <translation id="6114416803310251055">tak lagi digunakan</translation>
 <translation id="6133088669883929098">Izinkan semua situs menggunakan pembuatan kunci</translation>
+<translation id="6135398260575578389">Safe Browsing aktif dalam mode yang disempurnakan. Mode ini memberikan keamanan yang lebih baik, tetapi perlu membagikan lebih banyak informasi penjelajahan kepada Google.</translation>
 <translation id="6136537398661737682">Kebijakan ini mengontrol status awal layanan lokasi Google.
 
       Jika kebijakan ini tidak dikonfigurasi atau ditetapkan ke <ph name="GLS_DISABLED" />, status awal layanan lokasi Google adalah dinonaktifkan.
@@ -4404,6 +4420,23 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
 <translation id="7687943045976362719">Jika kebijakan ini ditetapkan, jenis konten yang ditentukan akan ditangani oleh <ph name="PRODUCT_FRAME_NAME" />.
 
           Jika kebijakan ini tidak ditetapkan, perender default akan digunakan untuk semua situs. (Kebijakan <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> dapat digunakan untuk mengonfigurasi perender default.)</translation>
+<translation id="7691028179743802462">Kebijakan ini tidak digunakan lagi di M83, gunakan SafeBrowsingProtectionLevel sebagai gantinya.
+
+      Mengaktifkan fitur Safe Browsing <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan ini.
+
+      Jika Anda mengaktifkan setelan ini, Safe Browsing akan selalu aktif.
+
+      Jika Anda menonaktifkan setelan ini, Safe Browsing tidak akan pernah aktif.
+
+      Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau mengganti setelan "Aktifkan perlindungan dari phishing dan malware" di <ph name="PRODUCT_NAME" />.
+
+      Jika tidak ditetapkan, kebijakan ini akan diaktifkan tetapi pengguna dapat mengubahnya.
+
+      Lihat https://developers.google.com/safe-browsing untuk mengetahui info selengkapnya tentang Safe Browsing.
+
+      Kebijakan ini hanya tersedia pada instance Windows yang dihubungkan ke domain <ph name="MS_AD_NAME" />, atau instance Windows 10 Pro atau Enterprise yang terdaftar untuk pengelolaan perangkat.
+
+      Jika kebijakan SafeBrowsingProtectionLevel ditetapkan, nilai kebijakan SafeBrowsingEnabled akan diabaikan.</translation>
 <translation id="7694245791806617022">Mengontrol apakah fitur 'Ingat sandi' diaktifkan di dialog autentikasi Kerberos. Sandi disimpan dan dienkripsi di disk, serta hanya dapat diakses oleh daemon sistem Kerberos dan selama sesi pengguna.
 
           Jika kebijakan ini diaktifkan atau tidak disetel, pengguna dapat menentukan apakah sandi Kerberos akan diingat, sehingga Anda tidak perlu memasukkannya lagi. Tiket Kerberos diambil secara otomatis, kecuali diperlukan autentikasi tambahan (autentikasi 2 langkah).
@@ -4984,6 +5017,7 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
 
           Untuk informasi mendetail tentang pola URL yang valid, lihat https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="8661297125441579970">Jangan izinkan migrasi data dan ARC.</translation>
+<translation id="8665314828727504286">Tingkat Perlindungan Safe Browsing</translation>
 <translation id="8672321184841719703">Versi Update Otomatis Target</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
 <translation id="8685024486845674965">Peringatan perlindungan sandi dipicu oleh penggunaan ulang sandi</translation>

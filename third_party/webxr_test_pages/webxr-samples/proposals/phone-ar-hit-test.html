@@ -431,8 +431,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             });
 
             tracked_anchors.forEach(anchor => {
-              anchor.context.sceneObject.matrix = frame.getPose(anchor.anchorSpace, xrRefSpace).transform.matrix;
-              anchor.context.sceneObject.visible = true;
+              const anchorPose = frame.getPose(anchor.anchorSpace, xrRefSpace);
+              if(anchorPose) {
+                anchor.context.sceneObject.matrix = anchorPose.transform.matrix;
+                anchor.context.sceneObject.visible = true;
+              } else {
+                anchor.context.sceneObject.visible = false;
+              }
             });
 
             all_previous_anchors = tracked_anchors;

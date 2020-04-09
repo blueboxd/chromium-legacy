@@ -2930,7 +2930,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/site_settings/CookieControlsServiceBridge.java",
     "java/src/org/chromium/chrome/browser/site_settings/WebsitePreferenceBridge.java",
     "java/src/org/chromium/chrome/browser/sms/SmsReceiverInfoBar.java",
-    "java/src/org/chromium/chrome/browser/ssl/ChromeSecurityStateModelDelegate.java",
     "java/src/org/chromium/chrome/browser/status_indicator/StatusIndicatorSceneLayer.java",
     "java/src/org/chromium/chrome/browser/suggestions/SuggestionsEventReporterBridge.java",
     "java/src/org/chromium/chrome/browser/suggestions/mostvisited/MostVisitedSites.java",

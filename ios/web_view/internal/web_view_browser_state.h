@@ -17,6 +17,10 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
+namespace web {
+class WebUIIOS;
+}  // namespace web
+
 namespace ios_web_view {
 
 class WebViewURLRequestContextGetter;
@@ -46,6 +50,8 @@ class WebViewBrowserState : public web::BrowserState {
   // Converts from web::BrowserState to WebViewBrowserState.
   static WebViewBrowserState* FromBrowserState(
       web::BrowserState* browser_state);
+
+  static WebViewBrowserState* FromWebUIIOS(web::WebUIIOS* web_ui);
 
  private:
   // Registers the preferences for this BrowserState.

@@ -55,7 +55,7 @@ class ActionTrackerTest : public DNRTestBase {
 
     // Create extension directory.
     ASSERT_TRUE(base::CreateDirectory(extension_dir));
-    TestRulesetInfo info = {kJSONRulesFilename, base::ListValue()};
+    TestRulesetInfo info(kJSONRulesFilename, base::ListValue());
     WriteManifestAndRuleset(
         extension_dir, info,
         std::vector<std::string>({URLPattern::kAllUrlsPattern}), flags);

@@ -133,7 +133,7 @@ android_resources("devui_resources") {
     "java/res_devui/layout/two_line_list_item.xml",
     "java/res_devui/layout/two_line_sublist_item.xml",
     "java/res_devui/menu/crashes_options_menu.xml",
-    "java/res_devui/menu/navigation_menu.xml",
+    "java/res_devui/menu/options_menu.xml",
     "java/res_devui/values-night/colors.xml",
     "java/res_devui/values-night/styles.xml",
     "java/res_devui/values/colors.xml",

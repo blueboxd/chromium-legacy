@@ -23,12 +23,8 @@ namespace net {
 // 2) They both have empty hostnames and equal schemes.
 // Invalid URLs are not first party to anything.
 //
-// TODO(morlovich): It may make sense to require scheme to match in case (1)
-// too, where the notion of matching makes http/https/ws/wss equivalent, but
-// all other schemes are distinct.
-//
-// This should wait until SiteForCookies type is used everywhere relevant, so
-// any changes are consistent.
+// TODO(crbug.com/1030938): For case 1 the schemes must be "https" & "wss",
+// "http" & "ws", or they must match exactly.
 class NET_EXPORT SiteForCookies {
  public:
   // Matches nothing.
@@ -50,6 +46,7 @@ class NET_EXPORT SiteForCookies {
   // did not lie, merely that they are well-formed.
   static bool FromWire(const std::string& scheme,
                        const std::string& registrable_domain,
+                       bool schemefully_same,
                        SiteForCookies* out);
 
   // If the origin is opaque, returns SiteForCookies that matches nothing.
@@ -71,6 +68,13 @@ class NET_EXPORT SiteForCookies {
   // as |this->IsFirstParty| (potentially none).
   bool IsEquivalent(const SiteForCookies& other) const;
 
+  // Clears the schemefully_same_ flag if |other|'s scheme is cross-scheme to
+  // |this|.
+  // Two schemes are considered the same (not cross-scheme) if they exactly
+  // match, they are both in ["https", "wss"], or they are both in ["http",
+  // "ws"]. All other cases are cross-scheme.
+  void MarkIfCrossScheme(const url::Origin& other);
+
   // Returns a URL that's first party to this SiteForCookies (an empty URL if
   // none) --- that is, it has the property that
   // site_for_cookies.IsEquivalent(
@@ -87,6 +91,10 @@ class NET_EXPORT SiteForCookies {
 
   const std::string& registrable_domain() const { return registrable_domain_; }
 
+  // Used for serialization/deserialization. This value is irrelevant if
+  // IsNull() is true.
+  bool schemefully_same() const { return schemefully_same_; }
+
   // Returns true if this SiteForCookies matches nothing.
   bool IsNull() const { return scheme_.empty(); }
 
@@ -102,6 +110,25 @@ class NET_EXPORT SiteForCookies {
   // just the bare hostname or IP, or an empty string if this represents
   // something like file:///
   std::string registrable_domain_;
+
+  // Used to indicate if the SiteForCookies would be the same if computed
+  // schemefully. A schemeful computation means to take the |scheme_| as well as
+  // the |registrable_domain_| into account when determining first-partyness.
+  // See MarkIfCrossScheme() for more information on scheme comparison.
+  //
+  // True means to treat |this| as-is while false means that |this| should be
+  // treated as if it matches nothing i.e. as if IsNull() returned true.
+  //
+  // This value is important in the case where the SiteForCookies is being used
+  // to assess the first-partyness of a sub-frame in a document.
+  //
+  // For a SiteForCookies with !scheme_.empty() this value starts as true and
+  // will only go false via MarkIfCrossScheme(), otherwise this value is
+  // irrelevant.
+  //
+  // TODO(https://crbug.com/1030938): Actually use this for decisions in other
+  // functions.
+  bool schemefully_same_;
 };
 
 }  // namespace net

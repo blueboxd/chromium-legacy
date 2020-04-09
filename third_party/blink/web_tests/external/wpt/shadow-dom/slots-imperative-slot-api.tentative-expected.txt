@@ -3,13 +3,16 @@ PASS attachShadow can take slotAssignment parameter.
 PASS Imperative slot API throws exception when not slotAssignment != 'manual'.
 PASS Imperative slot API throws exception when slotable parentNode != slot's host.
 PASS Imperative slot API can assign nodes in manual slot assignment.
-FAIL Order of slotables is preserved in manual slot assignment. assert_array_equals: expected property 0 to be Element node <div id="c2"></div> but got Element node <div id="c1"></div> (expected array [Element node <div id="c2"></div>, Element node <div id="c3"></div>, Element node <div id="c1"></div>] got [Element node <div id="c1"></div>, Element node <div id="c2"></div>, Element node <div id="c3"></div>])
-FAIL Previously assigned slotable is moved to new slot when it's reassigned. assert_array_equals: expected property 0 to be Element node <div id="c2"></div> but got Element node <div id="c1"></div> (expected array [Element node <div id="c2"></div>, Element node <div id="c3"></div>, Element node <div id="c1"></div>] got [Element node <div id="c1"></div>, Element node <div id="c2"></div>, Element node <div id="c3"></div>])
-FAIL Assigning invalid nodes causes exception and slot returns to its previous state. assert_array_equals: expected property 0 to be Element node <div id="c2"></div> but got Element node <div id="c1"></div> (expected array [Element node <div id="c2"></div>, Element node <div id="c3"></div>, Element node <div id="c1"></div>] got [Element node <div id="c1"></div>, Element node <div id="c2"></div>, Element node <div id="c3"></div>])
+PASS Order of slotables is preserved in manual slot assignment.
+PASS Previously assigned slotable is moved to new slot when it's reassigned.
+PASS Order and assignment of nodes are preserved during multiple assignment in a row.
+FAIL Assigning invalid nodes causes exception and slot returns to its previous state. assert_array_equals: lengths differ, expected array [] length 0, got [Element node <div id="c1"></div>, Element node <div id="c2"></div>] length 2
 PASS Moving a slot to a new host, the slot loses its previously assigned slotables.
-FAIL Moving a slot's tree order position within a shadow host has no impact on its assigned slotables. assert_array_equals: lengths differ, expected array [Element node <div id="c1"></div>, Element node <div id="c2"></div>, Element node <div id="c3"></div>] length 3, got [] length 0
-FAIL Appending slotable to different host, it loses slot assignment. It can be re-assigned within a new host. Failed to execute 'assign' on 'HTMLSlotElement': The object must have a callable @@iterator property.
-FAIL Assignment with the same node in parameters should be ignored, last one wins. assert_array_equals: expected property 0 to be Element node <div id="c2"></div> but got Element node <div id="c1"></div> (expected array [Element node <div id="c2"></div>, Element node <div id="c1"></div>] got [Element node <div id="c1"></div>, Element node <div id="c2"></div>])
+PASS Moving a slot's tree order position within a shadow host has no impact on its assigned slotables.
+PASS Appending slotable to different host, it loses slot assignment. It can be re-assigned within a new host.
+FAIL Previously assigned node should not be assigned if slot moved to a new shadow root. The slot remains empty when moved back, no trigger recalc. assert_array_equals: lengths differ, expected array [] length 0, got [Element node <div id="c1"></div>] length 1
+PASS Previously assigned node should not be assigned if slot moved to a new shadow root. The slot remains empty when moved back, trigger recalc.
+PASS Assignment with the same node in parameters should be ignored, last one wins.
 PASS Removing a slot from DOM resets its slotable's slot assignment.
 Harness: the test ran to completion.
 

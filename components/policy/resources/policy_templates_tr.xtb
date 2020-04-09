@@ -490,7 +490,7 @@ Bu politikayı devre dışı bırakırsanız web sayfasını URL yoluyla belirli
 
           Bu politika ayarlanmadan bırakılırsa genel varsayılan değer, tüm siteler için, ayarlanması halinde "DefaultImagesSetting" politikasından, aksi halde kullanıcının kişisel yapılandırmasından kullanılır.
 
-          Bu politikanın önceden Android'de hatalı bir şekilde etkinleştirildiğini, ancak bu işlevin hiçbir zaman Android'de tam olarak desteklenmediğini unutmayın.
+          Bu politikanın önceden Android'de hatalı bir şekilde etkinleştirildiğini, ancak bu işlevin Android'de hiçbir zaman tam olarak desteklenmediğini unutmayın.
 
           Geçerli URL kalıpları hakkında ayrıntılı bilgi için https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns adresine bakabilirsiniz.</translation>
 <translation id="1767673020408652620">Arama Kutusunun Sıfır Durumunda Uygulama Önerileri Politikasını Etkinleştir</translation>
@@ -926,7 +926,7 @@ Bu politikayı devre dışı bırakırsanız web sayfasını URL yoluyla belirli
 
           Bu politika ayarlanmadan bırakılırsa genel varsayılan değer, tüm siteler için, ayarlanması halinde "DefaultImagesSetting" politikasından, aksi halde kullanıcının kişisel yapılandırmasından kullanılır.
 
-          Bu politikanın önceden Android'de hatalı bir şekilde etkinleştirildiğini, ancak bu işlevin hiçbir zaman Android'de tam olarak desteklenmediğini unutmayın.
+          Bu politikanın önceden Android'de hatalı bir şekilde etkinleştirildiğini, ancak bu işlevin Android'de hiçbir zaman tam olarak desteklenmediğini unutmayın.
 
           Geçerli URL kalıpları hakkında ayrıntılı bilgi için https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns adresine bakabilirsiniz.</translation>
 <translation id="2411817661175306360">Şifre koruma uyarısı kapalı</translation>
@@ -1179,6 +1179,7 @@ Bu politika ayarlanmazsa <ph name="PRODUCT_NAME" /> varsayılan 10.000 milisaniy
 <translation id="2592162121850992309">Bu politika true (doğru) değerine ayarlanırsa veya ayarlanmadan bırakılırsa, belirli bir GPU özelliği kara listeye alınmadığı sürece donanım hızlandırma özelliği etkinleştirilir.
 
       Bu politika false (yanlış) değerine ayarlanırsa donanım hızlandırma özelliği devre dışı bırakılır.</translation>
+<translation id="2593762551209145088">Güvenli Tarama hiçbir zaman etkin değil.</translation>
 <translation id="2596260130957832043">NTLMv2'nin etkin olup olmadığını kontrol eder.
 
           Son Samba ve Windows sunucularının tamamı NTLMv2'yi desteklemektedir. Bu politika yalnızca geriye dönük uyumluluk için devre dışı bırakılmalıdır ve kimlik doğrulaması güvenliğini azaltmaktadır.
@@ -1256,6 +1257,7 @@ Bu politika ayarlanmazsa <ph name="PRODUCT_NAME" /> varsayılan 10.000 milisaniy
 
       Güvenli Tarama ile ilgili daha fazla bilgi edinmek için https://developers.google.com/safe-browsing sayfasına bakın.</translation>
 <translation id="2706708761587205154">Yalnızca PIN ile yazdırmaya izin ver</translation>
+<translation id="2707873794476722903">Güvenli Tarama standart modda etkin.</translation>
 <translation id="2710534340210290498">Bu politika false (yanlış) değerine ayarlanırsa kullanıcılar ekranı kilitleyemez (sadece kullanıcı oturumunu kapatmaları mümkün olur). Bu politika true (doğru) değerine ayarlanır veya ayarlanmadan bırakılırsa, şifreyle kimlik doğrulaması yapan kullanıcılar ekranı kilitleyebilir.</translation>
 <translation id="2731627323327011390">ARC uygulamalarına ilişkin <ph name="PRODUCT_OS_NAME" /> sertifikalarının kullanımını devre dışı bırak</translation>
 <translation id="2742843273354638707">Chrome Web Mağazası uygulamasını ve alt bilgi bağlantısını Yeni Sekme Sayfası'nda ve <ph name="PRODUCT_OS_NAME" /> uygulama başlatıcısında gizle.
@@ -2362,6 +2364,19 @@ politikayı geçersiz kılamaz.
 <translation id="437791893267799639">Politika ayarlanmadı, veri taşıma ve ARC'ye izin verme</translation>
 <translation id="4389073105055031853">Kullanıcıların tüm sertifikaları yönetmelerine izin ver</translation>
 <translation id="4389091865841123886">TPM mekanizmasıyla uzaktan doğrulamayı yapılandırın.</translation>
+<translation id="4401496838830169080"><ph name="PRODUCT_NAME" /> Güvenli Tarama özelliğinin etkin olup olmadığını ve hangi modda çalıştığını kontrol etmenize olanak tanır.
+
+      Bu politika "NoProtection" (0 değeri) olarak ayarlanırsa Güvenli Tarama hiçbir zaman etkin olmaz.
+
+      Bu politika "StandardProtection" (varsayılan değer olan 1 değeri) olarak ayarlanırsa Güvenli Tarama standart modda her zaman etkin olur.
+
+      Bu politika "EnhancedProtection" (2 değeri) olarak ayarlanırsa Güvenli Tarama gelişmiş modda her zaman etkin olur. Bu mod daha yüksek güvenlik sağlar, ancak Google ile daha fazla tarama bilgisi paylaşmayı gerektirir.
+
+      Bu politikayı zorunlu olarak ayarlarsanız kullanıcılar <ph name="PRODUCT_NAME" /> içindeki Güvenli Tarama ayarını değiştiremez veya geçersiz kılamaz.
+
+      Bu politika ayarlanmadan bırakılırsa Güvenli Tarama, Standart Koruma modunda çalışır, ancak kullanıcılar bu ayarı değiştirebilir.
+
+      Güvenli Tarama ile ilgili daha fazla bilgi edinmek için https://developers.google.com/safe-browsing sayfasına bakın.</translation>
 <translation id="4408428864159735559">Önceden yapılandırılmış ağ dosyası paylaşımlarının listesi.</translation>
 <translation id="4410236409016356088">Ağ bant genişliğini daraltmayı etkinleştir</translation>
 <translation id="441217499641439905"><ph name="PRODUCT_OS_NAME" />, Dosyalar uygulamasında hücresel bağlantılar üzerinden Google Drive erişimini devre dışı bırak</translation>
@@ -3500,6 +3515,7 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 <translation id="6111936128861357925">Dinozor Paskalya Yumurtası Oyununa İzin Verme</translation>
 <translation id="6114416803310251055">onaylanmadı</translation>
 <translation id="6133088669883929098">Tüm sitelerin anahtar oluşturma işlevini kullanmasına izin ver</translation>
+<translation id="6135398260575578389">Güvenli Tarama gelişmiş modda etkin. Bu mod daha yüksek güvenlik sağlar, ancak Google ile daha fazla tarama bilgisi paylaşmayı gerektirir.</translation>
 <translation id="6136537398661737682">Bu politika, Google konum hizmetlerinin ilk durumunu denetler.
 
       Bu politika yapılandırılmaz veya <ph name="GLS_DISABLED" /> seçeneğine ayarlanırsa, Google konum hizmetleri ilk başta devre dışı bırakılır.
@@ -4486,6 +4502,23 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="7687943045976362719">Bu politika ayarlanırsa, belirtilen içerik türleri <ph name="PRODUCT_FRAME_NAME" /> tarafından işlenir.
 
           Bu politika ayarlanmazsa, tüm siteler için varsayılan oluşturucu kullanılır. (<ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> politikası, varsayılan oluşturucuyu yapılandırmak için kullanılabilir.)</translation>
+<translation id="7691028179743802462">Bu politika M83 sürümüyle birlikte kullanımdan kaldırıldı. Bunun yerine lütfen SafeBrowsingProtectionLevel politikasını kullanın.
+
+      <ph name="PRODUCT_NAME" /> ürününün Güvenli Tarama özelliğini etkinleştirip kullanıcıların bu ayarı değiştirmelerini önler.
+
+      Bu ayarı etkinleştirirseniz Güvenli Tarama her zaman etkin olur.
+
+      Bu ayarı devre dışı bırakırsanız Güvenli Tarama hiçbir zaman etkin olmaz.
+
+      Bu ayarı etkinleştirir veya devre dışı bırakırsanız kullanıcılar <ph name="PRODUCT_NAME" /> içindeki "Kimlik avı ve kötü amaçlı yazılımlara karşı korumayı etkinleştir" ayarını değiştiremez veya geçersiz kılamaz.
+
+      Bu politika ayarlanmadan bırakılırsa etkinleştirilir, ancak kullanıcı ayarda değişiklik yapabilir.
+
+      Güvenli Tarama ile ilgili daha fazla bilgi edinmek için https://developers.google.com/safe-browsing sayfasına bakın.
+
+      Bu politika yalnızca bir <ph name="MS_AD_NAME" /> alan adına katılmış Windows örneklerinde veya cihaz yönetimine kaydolmuş Windows 10 Pro ya da Enterprise örneklerinde kullanılabilir.
+
+      SafeBrowsingProtectionLevel politikası ayarlanırsa SafeBrowsingEnabled politikasının değeri yoksayılır.</translation>
 <translation id="7694245791806617022">Kerberos kimlik doğrulama iletişim kutusunda "Şifreyi hatırla" özelliğinin etkinleştirilip etkinleştirilmediğini kontrol eder. Şifreler diskte şifrelenmiş olarak saklanır ve yalnızca Kerberos sistemi hayalet programı tarafından ve bir kullanıcı oturumu sırasında erişilebilir.
 
           Bu politika etkinleştirilir veya ayarlanırsa kullanıcılar, tekrar girmeleri gerekmesin diye Kerberos şifrelerinin hatırlanıp hatırlanmayacağına karar verebilirler. Ek bir kimlik doğrulama işlemi (iki faktörlü kimlik doğrulama) gerekmedikçe Kerberos biletleri otomatik olarak getirilir.
@@ -5071,6 +5104,7 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
 
           Geçerli URL kalıpları hakkında ayrıntılı bilgi için https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns adresine bakabilirsiniz.</translation>
 <translation id="8661297125441579970">Veri taşıma ve ARC'ye izin verme.</translation>
+<translation id="8665314828727504286">Güvenli Tarama Koruma Seviyesi</translation>
 <translation id="8672321184841719703">Hedef Otomatik Güncelleme Sürümü</translation>
 <translation id="867410340948518937">U2F (Evrensel İkinci Faktör)</translation>
 <translation id="8685024486845674965">Şifre koruma uyarısı, şifre yeniden kullanımıyla tetiklendi</translation>

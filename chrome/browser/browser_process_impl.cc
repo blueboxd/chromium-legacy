@@ -159,6 +159,7 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/component_updater/background_task_update_scheduler.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
+#include "chrome/browser/ssl/chrome_security_state_client.h"
 #else
 #include "chrome/browser/gcm/gcm_product_util.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
@@ -1192,6 +1193,10 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
   }
 
   CreateNetworkQualityObserver();
+
+#if defined(OS_ANDROID)
+  security_state::SetSecurityStateClient(new ChromeSecurityStateClient());
+#endif
 }
 
 void BrowserProcessImpl::CreateIconManager() {

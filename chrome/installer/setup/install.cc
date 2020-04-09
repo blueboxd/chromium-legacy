@@ -488,6 +488,13 @@ InstallStatus InstallOrUpdateProduct(const InstallationState& original_state,
   // TODO(robertshield): Everything below this line should instead be captured
   // by WorkItems.
   if (!InstallUtil::GetInstallReturnCode(result)) {
+    installer_state.SetStage(UPDATING_CHANNELS);
+
+    // Strip evidence of multi-install from the "ap" value.
+    // TODO(grt): Consider doing this earlier, prior to any other work, so that
+    // failed updates benefit from the stripping.
+    installer_state.UpdateChannels();
+
     installer_state.SetStage(COPYING_PREFERENCES_FILE);
 
     if (result == FIRST_INSTALL_SUCCESS && !prefs_path.empty())

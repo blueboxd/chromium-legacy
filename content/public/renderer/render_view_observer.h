@@ -12,12 +12,7 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 
-namespace blink {
-class WebLocalFrame;
-}
-
 namespace content {
-
 class RenderView;
 class RenderViewImpl;
 
@@ -32,7 +27,6 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
   virtual void OnDestruct() = 0;
 
   // These match the WebKit API notifications
-  virtual void DidClearWindowObject(blink::WebLocalFrame* frame) {}
   virtual void DidCommitCompositorFrame() {}
   virtual void DidUpdateMainFrameLayout() {}
 

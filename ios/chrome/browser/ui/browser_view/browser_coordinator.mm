@@ -22,7 +22,6 @@
 #import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/ui/alert_coordinator/repost_form_coordinator.h"
-#import "ios/chrome/browser/ui/app_launcher/app_launcher_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_all_password_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_injection_handler.h"
@@ -106,9 +105,6 @@
 // =================================================
 // Child Coordinators, listed in alphabetical order.
 // =================================================
-
-// Coordinator for UI related to launching external apps.
-@property(nonatomic, strong) AppLauncherCoordinator* appLauncherCoordinator;
 
 // Presents a QLPreviewController in order to display USDZ format 3D models.
 @property(nonatomic, strong) ARQuickLookCoordinator* ARQuickLookCoordinator;
@@ -334,11 +330,6 @@
   // coordinators.
   DCHECK(self.dispatcher);
 
-  self.appLauncherCoordinator = [[AppLauncherCoordinator alloc]
-      initWithBaseViewController:self.viewController
-                         browser:self.browser];
-  [self.appLauncherCoordinator start];
-
   self.ARQuickLookCoordinator = [[ARQuickLookCoordinator alloc]
       initWithBaseViewController:self.viewController
                          browser:self.browser];
@@ -423,9 +414,6 @@
 - (void)stopChildCoordinators {
   [self.allPasswordCoordinator stop];
   self.allPasswordCoordinator = nil;
-
-  [self.appLauncherCoordinator stop];
-  self.appLauncherCoordinator = nil;
 
   [self.ARQuickLookCoordinator stop];
   self.ARQuickLookCoordinator = nil;
@@ -956,10 +944,6 @@
 
 // Install delegates for |webState|.
 - (void)installDelegatesForWebState:(web::WebState*)webState {
-  AppLauncherTabHelper::CreateForWebState(
-      webState, [[AppLauncherAbuseDetector alloc] init],
-      self.appLauncherCoordinator);
-
   if (AutofillTabHelper::FromWebState(webState)) {
     AutofillTabHelper::FromWebState(webState)->SetBaseViewController(
         self.viewController);

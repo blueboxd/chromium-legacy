@@ -1170,6 +1170,7 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
 <translation id="2592162121850992309">Wenn diese Richtlinie auf "true" gesetzt oder nicht konfiguriert ist, wird die Hardwarebeschleunigung aktiviert, sofern eine bestimmte GPU-Funktion nicht auf die schwarze Liste gesetzt wurde.
 
       Wenn diese Richtlinie auf "false" gesetzt ist, wird die Hardwarebeschleunigung deaktiviert.</translation>
+<translation id="2593762551209145088">Safe Browsing ist nie aktiv.</translation>
 <translation id="2596260130957832043">Legt fest, ob NTLMv2 aktiviert ist.
 
           Alle aktuellen Versionen der Samba- und Windows-Server unterstützen NTLMv2. Eine Deaktivierung sollte nur zum Zweck der Rückwärtskompatibilität erfolgen und verringert die Sicherheit der Authentifizierung.
@@ -1241,6 +1242,7 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
 
       Weitere Informationen zu Safe Browsing finden Sie unter https://developers.google.com/safe-browsing.</translation>
 <translation id="2706708761587205154">Drucken nur mit PIN zulassen</translation>
+<translation id="2707873794476722903">Safe Browsing ist im Standardmodus aktiv.</translation>
 <translation id="2710534340210290498">Wenn diese Richtlinie auf "false" gesetzt ist, können Nutzer den Bildschirm nicht sperren, sondern sich lediglich von der Nutzersitzung abmelden. Ist diese Einstellung hingegen auf "true" gesetzt oder nicht konfiguriert, können Nutzer, die sich mit einem Passwort authentifiziert haben, den Bildschirm sperren.</translation>
 <translation id="2731627323327011390">Verwendung von <ph name="PRODUCT_OS_NAME" />-Zertifikaten für ARC-Apps deaktivieren</translation>
 <translation id="2742843273354638707">Hiermit werden die Chrome Web Store App und der zugehörige Fußzeilenlink auf der "Neuer Tab"-Seite und im App Launcher von <ph name="PRODUCT_OS_NAME" /> ausgeblendet.
@@ -2330,6 +2332,19 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 <translation id="437791893267799639">Richtlinie nicht konfiguriert, Datenmigration und ARC nicht zulassen</translation>
 <translation id="4389073105055031853">Nutzern erlauben, alle Zertifikate zu verwalten</translation>
 <translation id="4389091865841123886">Konfiguriert die Remote-Bestätigung mit TPM-Mechanismus</translation>
+<translation id="4401496838830169080">Mit dieser Richtlinie können Sie festlegen, ob die Safe Browsing-Funktion von <ph name="PRODUCT_NAME" /> aktiviert ist und in welchem Modus sie ausgeführt wird.
+
+      Wird die Richtlinie auf "NoProtection" (Wert 0) gesetzt, ist Safe Browsing nie aktiv.
+
+      Wird sie auf "StandardProtection" (Wert 1, die Standardeinstellung) gesetzt, ist Safe Browsing immer im Standardmodus aktiv.
+
+      Wird die Richtlinie auf "EnhancedProtection" (Wert 2), gesetzt, ist Safe Browsing immer im erweiterten Modus aktiv. Dieser bietet einen besseren Schutz. Es müssen jedoch mehr Browserdaten mit Google geteilt werden.
+
+      Wird diese Richtlinie als verbindlich konfiguriert, können Nutzer die Safe Browsing-Einstellung in <ph name="PRODUCT_NAME" /> nicht ändern oder überschreiben.
+
+      Wird sie nicht konfiguriert, ist Safe Browsing im Standard-Schutzmodus aktiv, Nutzer können diese Einstellung jedoch ändern.
+
+      Weitere Informationen zu Safe Browsing finden Sie unter https://developers.google.com/safe-browsing.</translation>
 <translation id="4408428864159735559">Liste der vorkonfigurierten Netzwerkfreigaben.</translation>
 <translation id="4410236409016356088">Begrenzung der Netzwerkbandbreite erlauben</translation>
 <translation id="441217499641439905">Synchronisierung zwischen Google Drive und der App "Dateien" von <ph name="PRODUCT_OS_NAME" /> per Mobilfunkverbindung deaktivieren</translation>
@@ -3440,6 +3455,7 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 <translation id="6111936128861357925">Easter Egg-Dinosaurierspiel zulassen</translation>
 <translation id="6114416803310251055">Veraltet</translation>
 <translation id="6133088669883929098">Schlüsselgenerierung für alle Websites zulassen</translation>
+<translation id="6135398260575578389">Safe Browsing ist im erweiterten Modus aktiv. Dieser bietet einen besseren Schutz. Es müssen jedoch mehr Browserdaten mit Google geteilt werden.</translation>
 <translation id="6136537398661737682">Mit dieser Richtlinie wird der Ausgangszustand der Standortdienste von Google festgelegt.
 
       Wenn die Richtlinie nicht konfiguriert oder auf "<ph name="GLS_DISABLED" />" festgelegt ist, sind die Standortdienste anfangs deaktiviert.
@@ -4407,6 +4423,23 @@ Die Richtlinienwerte sollten in % angegeben werden und zwischen 0 und 100 liegen
 <translation id="7687943045976362719">Wenn diese Richtlinie konfiguriert ist, wird für alle angegebenen Inhaltstypen <ph name="PRODUCT_FRAME_NAME" /> verwendet.
 
           Ist die Richtlinie nicht konfiguriert, kommt der Standardrenderer für alle Websites zum Einsatz. Anhand der Richtlinie "<ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" />" kann der Standardrenderer konfiguriert werden.</translation>
+<translation id="7691028179743802462">Diese Richtlinie wurde in M83 eingestellt. Verwenden Sie stattdessen "SafeBrowsingProtectionLevel".
+
+      Mit dieser Richtlinie können Sie die Safe Browsing-Funktion von <ph name="PRODUCT_NAME" /> aktivieren und verhindern, dass Nutzer diese Einstellung ändern können.
+
+      Wenn diese Einstellung aktiviert ist, ist Safe Browsing immer aktiv.
+
+      Wenn diese Einstellung deaktiviert ist, ist Safe Browsing nie aktiv.
+
+      Wird diese Einstellung aktiviert oder deaktiviert, können Nutzer die Einstellung "Phishing- und Malware-Schutz aktivieren" in <ph name="PRODUCT_NAME" /> nicht ändern oder überschreiben.
+
+      Ist die Richtlinie nicht konfiguriert, wird diese Einstellung aktiviert, kann jedoch vom Nutzer geändert werden.
+
+      Weitere Informationen zu Safe Browsing finden Sie unter https://developers.google.com/safe-browsing.
+
+      Diese Richtlinie steht nur bei Windows-Instanzen zur Verfügung, die Teil einer <ph name="MS_AD_NAME" />-Domain sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, die zur Geräteverwaltung angemeldet sind.
+
+      Ist die Richtlinie "SafeBrowsingProtectionLevel" konfiguriert, wird der Wert der Richtlinie "SafeBrowsingEnabled" ignoriert.</translation>
 <translation id="7694245791806617022">Diese Richtlinie legt fest, ob die Funktion zum Speichern von Passwörtern im Dialogfeld für die Kerberos-Authentifizierung aktiviert ist. Passwörter werden verschlüsselt auf dem Laufwerk gespeichert und sind nur für den Kerberos-System-Daemon während einer Nutzersitzung zugänglich.
 
           Ist die Richtlinie aktiviert oder nicht konfiguriert, können die Nutzer entscheiden, ob Kerberos-Passwörter gespeichert werden, sodass sie nicht wieder eingegeben werden müssen. Die Kerberos-Tickets werden automatisch abgerufen, sofern keine zusätzliche Authentifizierung erforderlich ist (Bestätigung in zwei Schritten).
@@ -4985,6 +5018,7 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 
           Genaue Informationen zu gültigen URL-Mustern finden Sie unter https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="8661297125441579970">Datenmigration und ARC nicht zulassen.</translation>
+<translation id="8665314828727504286">Schutzniveau für Safe Browsing</translation>
 <translation id="8672321184841719703">Automatische Aktualisierung auf Zielversion</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
 <translation id="8685024486845674965">Die Passwortschutzwarnung wird durch die Wiederverwendung eines Passworts ausgelöst</translation>

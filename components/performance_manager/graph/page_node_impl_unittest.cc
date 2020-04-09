@@ -23,6 +23,14 @@ using PageNodeImplTest = GraphTestHarness;
 const std::string kHtmlMimeType = "text/html";
 const std::string kPdfMimeType = "application/pdf";
 
+const PageNode* ToPublic(PageNodeImpl* page_node) {
+  return page_node;
+}
+
+const FrameNode* ToPublic(FrameNodeImpl* frame_node) {
+  return frame_node;
+}
+
 }  // namespace
 
 TEST_F(PageNodeImplTest, SafeDowncast) {
@@ -323,6 +331,48 @@ TEST_F(PageNodeImplTest, PublicInterface) {
   EXPECT_EQ(page_node->main_frame_url(), public_page_node->GetMainFrameUrl());
   EXPECT_EQ(page_node->contents_mime_type(),
             public_page_node->GetContentsMimeType());
+}
+
+TEST_F(PageNodeImplTest, GetMainFrameNodes) {
+  auto process = CreateNode<ProcessNodeImpl>();
+  auto page = CreateNode<PageNodeImpl>();
+  auto frame1 = CreateFrameNodeAutoId(process.get(), page.get());
+  auto frame2 = CreateFrameNodeAutoId(process.get(), page.get());
+
+  auto frames = ToPublic(page.get())->GetMainFrameNodes();
+  EXPECT_THAT(frames, testing::UnorderedElementsAre(ToPublic(frame1.get()),
+                                                    ToPublic(frame2.get())));
+}
+
+TEST_F(PageNodeImplTest, VisitMainFrameNodes) {
+  auto process = CreateNode<ProcessNodeImpl>();
+  auto page = CreateNode<PageNodeImpl>();
+  auto frame1 = CreateFrameNodeAutoId(process.get(), page.get());
+  auto frame2 = CreateFrameNodeAutoId(process.get(), page.get());
+
+  std::set<const FrameNode*> visited;
+  EXPECT_TRUE(
+      ToPublic(page.get())
+          ->VisitMainFrameNodes(base::BindRepeating(
+              [](std::set<const FrameNode*>* visited, const FrameNode* frame) {
+                EXPECT_TRUE(visited->insert(frame).second);
+                return true;
+              },
+              base::Unretained(&visited))));
+  EXPECT_THAT(visited, testing::UnorderedElementsAre(ToPublic(frame1.get()),
+                                                     ToPublic(frame2.get())));
+
+  // Do an aborted visit.
+  visited.clear();
+  EXPECT_FALSE(
+      ToPublic(page.get())
+          ->VisitMainFrameNodes(base::BindRepeating(
+              [](std::set<const FrameNode*>* visited, const FrameNode* frame) {
+                EXPECT_TRUE(visited->insert(frame).second);
+                return false;
+              },
+              base::Unretained(&visited))));
+  EXPECT_EQ(1u, visited.size());
 }
 
 }  // namespace performance_manager

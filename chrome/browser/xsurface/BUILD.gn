@@ -14,5 +14,5 @@ android_library("java") {
     "android/java/src/org/chromium/chrome/browser/xsurface/SurfaceDependencyProvider.java",
     "android/java/src/org/chromium/chrome/browser/xsurface/SurfaceRenderer.java",
   ]
-  deps = []
+  deps = [ "//third_party/android_deps:androidx_annotation_annotation_java" ]
 }

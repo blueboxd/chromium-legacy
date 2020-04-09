@@ -96,7 +96,9 @@ base::string16 LocationBarModelImpl::GetFormattedURL(
   // and Reader Mode has its own security chip. In addition virtual URLs would
   // add a lot of complexity around passing necessary URL parameters to the
   // Reader Mode pages.
-  if (url.SchemeIs(dom_distiller::kDomDistillerScheme)) {
+  // Note: if the URL begins with dom-distiller:// but is invalid we display it
+  // as-is because it cannot be transformed into an article URL.
+  if (dom_distiller::url_utils::IsDistilledPage(url)) {
     // Ensure that HTTPS and HTTP will be removed. Reader mode should not
     // display a scheme, and should only run on HTTP/HTTPS pages.
     format_types |= url_formatter::kFormatUrlOmitHTTP;

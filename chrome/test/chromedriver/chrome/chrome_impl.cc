@@ -162,31 +162,18 @@ Status ChromeImpl::GetWindow(const std::string& target_id, Window* window) {
   return ParseWindow(std::move(result), window);
 }
 
-Status ChromeImpl::GetWindowPosition(const std::string& target_id,
-                                     int* x,
-                                     int* y) {
+Status ChromeImpl::GetWindowRect(const std::string& target_id,
+                                 WindowRect* rect) {
   Window window;
   Status status = GetWindow(target_id, &window);
   if (status.IsError())
     return status;
 
-  *x = window.left;
-  *y = window.top;
+  rect->x = window.left;
+  rect->y = window.top;
+  rect->width = window.width;
+  rect->height = window.height;
   return Status(kOk);
-}
-
-Status ChromeImpl::SetWindowPosition(const std::string& target_id,
-                                            int x,
-                                            int y) {
-  Window window;
-  Status status = GetWindow(target_id, &window);
-  if (status.IsError())
-    return status;
-
-  auto bounds = std::make_unique<base::DictionaryValue>();
-  bounds->SetInteger("left", x);
-  bounds->SetInteger("top", y);
-  return SetWindowBounds(&window, target_id, std::move(bounds));
 }
 
 Status ChromeImpl::MaximizeWindow(const std::string& target_id) {
@@ -257,19 +244,6 @@ Status ChromeImpl::SetWindowRect(const std::string& target_id,
   }
 
   return SetWindowBounds(&window, target_id, std::move(bounds));
-}
-
-Status ChromeImpl::GetWindowSize(const std::string& target_id,
-                                 int* width,
-                                 int* height) {
-  Window window;
-  Status status = GetWindow(target_id, &window);
-  if (status.IsError())
-    return status;
-
-  *width = window.width;
-  *height = window.height;
-  return Status(kOk);
 }
 
 Status ChromeImpl::GetWindowBounds(int window_id, Window* window) {
@@ -383,21 +357,6 @@ Status ChromeImpl::SetWindowBounds(
     return Status(kUnknownError, "failed to change window state to " + state +
                                      ", current state is " + window->state);
   }
-}
-
-Status ChromeImpl::SetWindowSize(const std::string& target_id,
-                                        int width,
-                                        int height) {
-  Window window;
-
-  Status status = GetWindow(target_id, &window);
-  if (status.IsError())
-    return status;
-
-  auto bounds = std::make_unique<base::DictionaryValue>();
-  bounds->SetInteger("width", width);
-  bounds->SetInteger("height", height);
-  return SetWindowBounds(&window, target_id, std::move(bounds));
 }
 
 Status ChromeImpl::ParseWindow(std::unique_ptr<base::DictionaryValue> params,

@@ -107,7 +107,7 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
                                   public ShelfBackgroundAnimatorObserver,
                                   public HotseatTransitionAnimator::Observer {
  public:
-  explicit DelegateView(ShelfWidget* shelf);
+  DelegateView(ShelfWidget* shelf_widget, Shelf* shelf);
   ~DelegateView() override;
 
   void set_focus_cycler(FocusCycler* focus_cycler) {
@@ -211,7 +211,7 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   DISALLOW_COPY_AND_ASSIGN(DelegateView);
 };
 
-ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf_widget)
+ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf_widget, Shelf* shelf)
     : shelf_widget_(shelf_widget),
       focus_cycler_(nullptr),
       opaque_background_(std::make_unique<ui::Layer>(ui::LAYER_SOLID_COLOR)),
@@ -234,8 +234,8 @@ ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf_widget)
       AshColorProvider::Get()->GetRippleAttributes(
           ShelfConfig::Get()->GetDefaultShelfColor());
 
-  drag_handle_ =
-      AddChildView(std::make_unique<DragHandle>(kDragHandleCornerRadius));
+  drag_handle_ = AddChildView(
+      std::make_unique<DragHandle>(kDragHandleCornerRadius, shelf));
 
   animating_drag_handle_.SetColor(ripple_attributes.base_color);
   animating_drag_handle_.SetOpacity(ripple_attributes.inkdrop_opacity + 0.075);
@@ -582,7 +582,7 @@ ShelfWidget::ShelfWidget(Shelf* shelf)
     : shelf_(shelf),
       background_animator_(shelf_, Shell::Get()->wallpaper_controller()),
       shelf_layout_manager_(new ShelfLayoutManager(this, shelf)),
-      delegate_view_(new DelegateView(this)),
+      delegate_view_(new DelegateView(this, shelf_)),
       scoped_session_observer_(this) {
   DCHECK(shelf_);
 }

@@ -110,6 +110,7 @@ class TestCrosDisplayConfig : public ash::mojom::CrosDisplayConfigController {
                         ash::mojom::DisplayConfigOperation op,
                         ash::mojom::TouchCalibrationPtr calibration,
                         TouchCalibrationCallback callback) override {}
+  void HighlightDisplay(int64_t id) override {}
 
  private:
   mojo::Receiver<ash::mojom::CrosDisplayConfigController> receiver_;

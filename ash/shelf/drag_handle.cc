@@ -80,7 +80,8 @@ class HideNudgeObserver : public ui::ImplicitAnimationObserver {
 
 }  // namespace
 
-DragHandle::DragHandle(int drag_handle_corner_radius) {
+DragHandle::DragHandle(int drag_handle_corner_radius, Shelf* shelf)
+    : shelf_(shelf) {
   SetPaintToLayer(ui::LAYER_SOLID_COLOR);
   layer()->SetRoundedCornerRadius(
       {drag_handle_corner_radius, drag_handle_corner_radius,
@@ -116,8 +117,7 @@ bool DragHandle::MaybeShowDragHandleNudge() {
     return false;
   }
   show_nudge_animation_in_progress_ = true;
-  auto_hide_lock_ = std::make_unique<Shelf::ScopedAutoHideLock>(
-      ash::Shelf::ForWindow(GetWidget()->GetNativeWindow()));
+  auto_hide_lock_ = std::make_unique<Shelf::ScopedAutoHideLock>(shelf_);
 
   StopDragHandleNudgeShowTimer();
   ShowDragHandleNudge();

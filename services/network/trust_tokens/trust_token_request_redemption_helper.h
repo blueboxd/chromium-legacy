@@ -167,7 +167,7 @@ class TrustTokenRequestRedemptionHelper : public TrustTokenRequestHelper {
   // but, once initialized, it will never be empty over the course of the
   // operation's execution.
   base::Optional<SuitableTrustTokenOrigin> issuer_;
-  const url::Origin top_level_origin_;
+  const SuitableTrustTokenOrigin top_level_origin_;
   const mojom::TrustTokenRefreshPolicy refresh_policy_;
 
   // |signing_key_| and |verification_key_| are generated speculatively near the

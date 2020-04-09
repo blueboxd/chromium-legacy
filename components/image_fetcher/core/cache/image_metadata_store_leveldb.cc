@@ -105,9 +105,11 @@ void ImageMetadataStoreLevelDB::LoadImageMetadata(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void ImageMetadataStoreLevelDB::SaveImageMetadata(const std::string& key,
-                                                  const size_t data_size,
-                                                  bool needs_transcoding) {
+void ImageMetadataStoreLevelDB::SaveImageMetadata(
+    const std::string& key,
+    const size_t data_size,
+    bool needs_transcoding,
+    ExpirationInterval expiration_interval) {
   // If the database is not initialized yet, ignore the request.
   if (!IsInitialized()) {
     return;
@@ -121,6 +123,11 @@ void ImageMetadataStoreLevelDB::SaveImageMetadata(const std::string& key,
   metadata_proto.set_creation_time(current_time);
   metadata_proto.set_last_used_time(current_time);
   metadata_proto.set_needs_transcoding(needs_transcoding);
+  if (expiration_interval.has_value()) {
+    metadata_proto.set_cache_strategy(CacheStrategy::HOLD_UNTIL_EXPIRED);
+    metadata_proto.set_expiration_interval(
+        expiration_interval->InMicroseconds());
+  }
 
   auto entries_to_save = std::make_unique<MetadataKeyEntryVector>();
   entries_to_save->emplace_back(key, metadata_proto);

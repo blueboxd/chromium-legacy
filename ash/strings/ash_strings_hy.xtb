@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">Լրացուցիչ ընտրանքների համար սեղմեք</translation>
 <translation id="1570871743947603115">Միացնել/անջատել Bluetooth-ը: <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Դիտեք այս աշխատաշրջանում ձեր գործողությունների վիճակագրությունը</translation>
-<translation id="1608626060424371292">Հեռացնել այս պրոֆիլը</translation>
+<translation id="1632985212731562677">Switch Access-ն անջատելու համար անցեք Կարգավորումներ &gt; Հատուկ գործառույթներ։</translation>
 <translation id="1654477262762802994">Հնչեցնել հարցում</translation>
 <translation id="1658406695958299976">Ձեր գաղտնաբառը դեռ չի հաստատվել: Ուշադրություն․ եթե վերջերս փոխել եք ձեր գաղտնաբառը, դուրս գրումից հետո պետք է կիրառել նոր գաղտնաբառը: Օգտագործեք հին գաղտնաբառն այստեղ:</translation>
 <translation id="1677472565718498478">Մնացել է <ph name="TIME" /></translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">Այս սարքի ադմինիստրատորը կարող է տեսնել ձեր այցելությունների պատմությունը:</translation>
 <translation id="3181441307743005334">Վերագործարկման համար կարող է որոշ ժամանակ պահանջվել</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Միացված է մեկ սարքի}one{Միացված է # սարքի}other{Միացված է # սարքի}}</translation>
+<translation id="3203405173652969239">Switch Access-ը միացված է</translation>
 <translation id="3207953481422525583">Օգտատիրոջ կարգավորումներ</translation>
 <translation id="3217205077783620295">Ձայնը միացված է։ Անջատելու համար սեղմեք այս կոճակը։</translation>
 <translation id="3226991577105957773">Եվս <ph name="COUNT" /> ծանուցում</translation>
@@ -651,6 +652,7 @@
 <translation id="9211681782751733685">Մարտկոցի լրիվ լիցքավորման համար մնացել է <ph name="TIME_REMAINING" />։</translation>
 <translation id="9215934040295798075">Ընտրել պաստառ</translation>
 <translation id="921989828232331238">Ձեր ծնողը կողպել է սարքը մեկ օրով</translation>
+<translation id="9220525904950070496">Հեռացնել հաշիվը</translation>
 <translation id="923686485342484400">Դուրս գրվելու համար երկու անգամ սեղմեք Control Shift Q:</translation>
 <translation id="938963181863597773">Ի՞նչ ունեմ պլանավորած։</translation>
 <translation id="945522503751344254">Կարծիք հայտնել</translation>

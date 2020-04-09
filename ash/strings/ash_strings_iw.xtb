@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">לחץ לקבלת אפשרויות נוספות</translation>
 <translation id="1570871743947603115">‏הפעלה או השבתה של Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">גישה לכל הפעילות שלך בסשן הזה</translation>
-<translation id="1608626060424371292">הסר את המשתמש הזה</translation>
+<translation id="1632985212731562677">ניתן להשבית את התכונה 'גישה באמצעות מתג' דרך 'הגדרות' &gt; 'נגישות'.</translation>
 <translation id="1654477262762802994">הפעלה של שאילתה קולית</translation>
 <translation id="1658406695958299976">מצטערים, עדיין אי אפשר לאמת את הסיסמה שלך. חשוב לדעת: אם שינית לאחרונה את הסיסמה, הסיסמה החדשה תיכנס לתוקף רק אחרי יציאה מהחשבון. צריך להשתמש כאן בסיסמה הישנה.</translation>
 <translation id="1677472565718498478">זמן נותר - <ph name="TIME" /></translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">ייתכן שמנהל המכשיר עוקב אחרי פעילות הגלישה שלך.</translation>
 <translation id="3181441307743005334">ההפעלה מחדש עשויה להימשך זמן מה</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{מחובר למכשיר אחד}two{מחובר ל-# מכשירים}many{מחובר ל-# מכשירים}other{מחובר ל-# מכשירים}}</translation>
+<translation id="3203405173652969239">'גישה באמצעות מתג' מופעלת</translation>
 <translation id="3207953481422525583">הגדרות משתמש</translation>
 <translation id="3217205077783620295">לחצן עוצמת הקול מופעל. אם המצב יוחלף, האודיו יושתק.</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> נוספות</translation>
@@ -655,6 +656,7 @@
 <translation id="9211681782751733685"><ph name="TIME_REMAINING" /> עד לטעינה מלאה של הסוללה.</translation>
 <translation id="9215934040295798075">הגדר טפט</translation>
 <translation id="921989828232331238">הורה נעל את המכשיר שלך להיום</translation>
+<translation id="9220525904950070496">הסר חשבון</translation>
 <translation id="923686485342484400">‏הקש פעמיים על Control Shift Q כדי לצאת.</translation>
 <translation id="938963181863597773">אירועים קרובים ביומן שלי</translation>
 <translation id="945522503751344254"> שליחת משוב</translation>

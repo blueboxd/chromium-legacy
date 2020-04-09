@@ -11,8 +11,8 @@
 
 #include "services/network/trust_tokens/proto/public.pb.h"
 #include "services/network/trust_tokens/proto/storage.pb.h"
+#include "services/network/trust_tokens/suitable_trust_token_origin.h"
 #include "services/network/trust_tokens/trust_token_persister.h"
-#include "url/origin.h"
 
 namespace network {
 
@@ -26,29 +26,30 @@ class InMemoryTrustTokenPersister : public TrustTokenPersister {
 
   // TrustTokenPersister implementation:
   std::unique_ptr<TrustTokenIssuerConfig> GetIssuerConfig(
-      const url::Origin& issuer) override;
+      const SuitableTrustTokenOrigin& issuer) override;
   std::unique_ptr<TrustTokenToplevelConfig> GetToplevelConfig(
-      const url::Origin& toplevel) override;
+      const SuitableTrustTokenOrigin& toplevel) override;
   std::unique_ptr<TrustTokenIssuerToplevelPairConfig>
-  GetIssuerToplevelPairConfig(const url::Origin& issuer,
-                              const url::Origin& toplevel) override;
+  GetIssuerToplevelPairConfig(
+      const SuitableTrustTokenOrigin& issuer,
+      const SuitableTrustTokenOrigin& toplevel) override;
 
-  void SetIssuerConfig(const url::Origin& issuer,
+  void SetIssuerConfig(const SuitableTrustTokenOrigin& issuer,
                        std::unique_ptr<TrustTokenIssuerConfig> config) override;
   void SetToplevelConfig(
-      const url::Origin& toplevel,
+      const SuitableTrustTokenOrigin& toplevel,
       std::unique_ptr<TrustTokenToplevelConfig> config) override;
   void SetIssuerToplevelPairConfig(
-      const url::Origin& issuer,
-      const url::Origin& toplevel,
+      const SuitableTrustTokenOrigin& issuer,
+      const SuitableTrustTokenOrigin& toplevel,
       std::unique_ptr<TrustTokenIssuerToplevelPairConfig> config) override;
 
  private:
-  std::map<url::Origin, std::unique_ptr<TrustTokenToplevelConfig>>
+  std::map<SuitableTrustTokenOrigin, std::unique_ptr<TrustTokenToplevelConfig>>
       toplevel_configs_;
-  std::map<url::Origin, std::unique_ptr<TrustTokenIssuerConfig>>
+  std::map<SuitableTrustTokenOrigin, std::unique_ptr<TrustTokenIssuerConfig>>
       issuer_configs_;
-  std::map<std::pair<url::Origin, url::Origin>,
+  std::map<std::pair<SuitableTrustTokenOrigin, SuitableTrustTokenOrigin>,
            std::unique_ptr<TrustTokenIssuerToplevelPairConfig>>
       issuer_toplevel_pair_configs_;
 };

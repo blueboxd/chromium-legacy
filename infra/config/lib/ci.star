@@ -19,6 +19,8 @@ defaults = args.defaults(
     extends=builders.defaults,
     add_to_console_view = False,
     console_view = args.COMPUTE,
+    header = None,
+    repo = None,
 )
 
 
@@ -161,7 +163,12 @@ def console_view(*, name, ordering=None, **kwargs):
           details.
       2.  list of category components: Equivalent to a `ci.ordering`
           call that only specifies `categories` with the given list.
+    kwargs - Additional keyword arguments to forward on to
+      `luci.console_view`. The header and repo arguments support
+       module-level defaults.
   """
+  kwargs['header'] = defaults.get_value_from_kwargs('header', kwargs)
+  kwargs['repo'] = defaults.get_value_from_kwargs('repo', kwargs)
   luci.console_view(
       name = name,
       **kwargs

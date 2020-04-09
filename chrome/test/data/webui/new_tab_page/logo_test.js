@@ -5,7 +5,7 @@
 import 'chrome://new-tab-page/logo.js';
 
 import {BrowserProxy} from 'chrome://new-tab-page/browser_proxy.js';
-import {assertNotStyle, assertStyle, createTestProxy} from 'chrome://test/new_tab_page/test_support.js';
+import {assertNotStyle, assertStyle, createTestProxy, keydown} from 'chrome://test/new_tab_page/test_support.js';
 import {eventToPromise, flushTasks} from 'chrome://test/test_util.m.js';
 
 suite('NewTabPageLogoTest', () => {
@@ -216,6 +216,27 @@ suite('NewTabPageLogoTest', () => {
 
     // Assert.
     assertEquals(url, 'https://foo.com');
+  });
+
+  [' ', 'Enter'].forEach(key => {
+    test(`pressing ${key} on simple doodle opens link`, async () => {
+      // Arrange.
+      const logo = await createLogo({
+        content: {
+          imageDoodle: {
+            imageUrl: {url: 'data:foo'},
+            onClickUrl: {url: 'https://foo.com'},
+          }
+        }
+      });
+
+      // Act.
+      keydown(logo.$.image, key);
+      const url = await testProxy.whenCalled('open');
+
+      // Assert.
+      assertEquals(url, 'https://foo.com');
+    });
   });
 
   test('clicking image of animated doodle starts animation', async () => {

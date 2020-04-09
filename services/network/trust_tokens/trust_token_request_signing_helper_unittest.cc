@@ -54,8 +54,8 @@ using TrustTokenRequestSigningHelperTest = TrustTokenRequestHelperTest;
 // not verification.
 class FakeSigner : public TrustTokenRequestSigningHelper::Signer {
  public:
-  void Init(base::span<const uint8_t> key) override {}
   base::Optional<std::vector<uint8_t>> Sign(
+      base::span<const uint8_t> key,
       base::span<const uint8_t> data) override {
     return std::vector<uint8_t>{'s', 'i', 'g', 'n', 'e', 'd'};
   }
@@ -73,8 +73,8 @@ class FakeSigner : public TrustTokenRequestSigningHelper::Signer {
 // be signing over.
 class IdentitySigner : public TrustTokenRequestSigningHelper::Signer {
  public:
-  void Init(base::span<const uint8_t> key) override {}
   base::Optional<std::vector<uint8_t>> Sign(
+      base::span<const uint8_t> key,
       base::span<const uint8_t> data) override {
     return std::vector<uint8_t>(data.begin(), data.end());
   }
@@ -88,8 +88,8 @@ class IdentitySigner : public TrustTokenRequestSigningHelper::Signer {
 // FailingSigner always fails the Sign and Verify options.
 class FailingSigner : public TrustTokenRequestSigningHelper::Signer {
  public:
-  void Init(base::span<const uint8_t> key) override {}
   base::Optional<std::vector<uint8_t>> Sign(
+      base::span<const uint8_t> key,
       base::span<const uint8_t> data) override {
     return base::nullopt;
   }

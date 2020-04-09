@@ -41,8 +41,9 @@ interface ServiceWorkerResourceReader {
   // Reads the response head of the resource associated with this reader.
   ReadResponseHead() =>
       (int32 status, network.mojom.URLResponseHead response_head);
-  // TODO(crbug.com/1055677): Add ways to read the content and the metadata of
-  // the script.
+  // Reads the content of the resource associated with this reader.
+  ReadData(int64 size) => (handle<data_pipe_consumer> pipe);
+  // TODO(crbug.com/1055677): Add ways to read the metadata of the script.
 };
 
 // An interface that writes a service worker script (resource) to storage.

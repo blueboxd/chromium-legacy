@@ -36,7 +36,11 @@ constexpr int kControlButtonsShownReasonCount = 1 << 4;
 
 // When any edge of the primary display is less than or equal to this threshold,
 // dense shelf will be active.
-const int kDenseShelfScreenSizeThreshold = 600;
+constexpr int kDenseShelfScreenSizeThreshold = 600;
+
+// Drags on the shelf that are greater than this number times the shelf size
+// will trigger shelf visibility changes.
+constexpr float kDragHideRatioThreshold = 0.4f;
 
 // Records the histogram value tracking the reason shelf control buttons are
 // shown in tablet mode.
@@ -303,6 +307,10 @@ bool ShelfConfig::is_in_app() const {
     return false;
   return session->GetSessionState() == session_manager::SessionState::ACTIVE &&
          (!is_app_list_visible_ || is_virtual_keyboard_shown_);
+}
+
+float ShelfConfig::drag_hide_ratio_threshold() const {
+  return kDragHideRatioThreshold;
 }
 
 void ShelfConfig::UpdateConfig(bool app_list_visible) {

@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">انقر للحصول على المزيد من الخيارات</translation>
 <translation id="1570871743947603115">تبديل البلوتوث. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">الوصول إلى جميع أنشطتك في جلسة واحدة</translation>
-<translation id="1608626060424371292">إزالة هذا المستخدم</translation>
+<translation id="1632985212731562677">يمكن إيقاف ميزة "الوصول عبر مفتاح التحويل" في "الإعدادات" &gt; "أدوات تمكين الوصول".</translation>
 <translation id="1654477262762802994">بدء طلب بحث صوتي</translation>
 <translation id="1658406695958299976">عذرًا، لا يمكن التحقق من كلمة المرور حتى الآن. ملاحظة: في حال تغيير كلمة المرور مؤخرًا، سيتم تطبيق كلمة المرور الجديدة بعد تسجيل الخروج، يُرجى استخدام كلمة المرور القديمة هنا.</translation>
 <translation id="1677472565718498478">الوقت المتبقي <ph name="TIME" /></translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">قد يراقب مشرف الجهاز نشاط التصفح.</translation>
 <translation id="3181441307743005334">قد تستغرق إعادة التشغيل بعض الوقت</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{تم الاتصال بجهاز واحد}zero{تم الاتصال بـ # جهاز}two{تم الاتصال بجهازين (#)}few{تم الاتصال بـ # أجهزة}many{تم الاتصال بـ # جهازًا}other{تم الاتصال بـ # جهاز}}</translation>
+<translation id="3203405173652969239">تم تفعيل ميزة "الوصول عبر مفتاح التحويل".</translation>
 <translation id="3207953481422525583">إعدادات المستخدم</translation>
 <translation id="3217205077783620295">تم تفعيل الصوت، وسيؤدي التبديل إلى كتم الصوت</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> والمزيد</translation>
@@ -652,6 +653,7 @@
 <translation id="9211681782751733685">الوقت المتبقي حتى يتم شحن البطارية بالكامل<ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">تعيين خلفية</translation>
 <translation id="921989828232331238">قفّل أحد الوالدين جهازك لليوم</translation>
+<translation id="9220525904950070496">إزالة الحساب</translation>
 <translation id="923686485342484400">‏للخروج اضغط على Ctrl Shift Q مرتين.</translation>
 <translation id="938963181863597773">ماذا يتضمّن تقويمي؟</translation>
 <translation id="945522503751344254">إرسال تعليقات</translation>

@@ -579,13 +579,6 @@ void PageInfo::OpenSiteSettingsView() {
 void PageInfo::OnChangePasswordButtonPressed(
     content::WebContents* web_contents) {
 #if BUILDFLAG(FULL_SAFE_BROWSING)
-  DCHECK(safe_browsing_status_ ==
-             SAFE_BROWSING_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE ||
-         safe_browsing_status_ ==
-             SAFE_BROWSING_STATUS_SIGNED_IN_NON_SYNC_PASSWORD_REUSE ||
-         safe_browsing_status_ ==
-             SAFE_BROWSING_STATUS_ENTERPRISE_PASSWORD_REUSE);
-
   delegate_->OnUserActionOnPasswordUi(
       web_contents, safe_browsing::WarningAction::CHANGE_PASSWORD);
 #endif
@@ -594,13 +587,6 @@ void PageInfo::OnChangePasswordButtonPressed(
 void PageInfo::OnWhitelistPasswordReuseButtonPressed(
     content::WebContents* web_contents) {
 #if BUILDFLAG(FULL_SAFE_BROWSING)
-  DCHECK(safe_browsing_status_ ==
-             SAFE_BROWSING_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE ||
-         safe_browsing_status_ ==
-             SAFE_BROWSING_STATUS_SIGNED_IN_NON_SYNC_PASSWORD_REUSE ||
-         safe_browsing_status_ ==
-             SAFE_BROWSING_STATUS_ENTERPRISE_PASSWORD_REUSE);
-
   delegate_->OnUserActionOnPasswordUi(
       web_contents, safe_browsing::WarningAction::MARK_AS_LEGITIMATE);
 #endif
@@ -756,7 +742,9 @@ void PageInfo::ComputeUIInputs(const GURL& url) {
                  MALICIOUS_CONTENT_STATUS_SIGNED_IN_NON_SYNC_PASSWORD_REUSE ||
          visible_security_state.malicious_content_status ==
              security_state::
-                 MALICIOUS_CONTENT_STATUS_ENTERPRISE_PASSWORD_REUSE);
+                 MALICIOUS_CONTENT_STATUS_ENTERPRISE_PASSWORD_REUSE ||
+         visible_security_state.malicious_content_status ==
+             security_state::MALICIOUS_CONTENT_STATUS_SAVED_PASSWORD_REUSE);
 #if BUILDFLAG(FULL_SAFE_BROWSING)
     // Only record password reuse when adding the button, not on updates.
     if (show_change_password_buttons_ && !old_show_change_pw_buttons) {

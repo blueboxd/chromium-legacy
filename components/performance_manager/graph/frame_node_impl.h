@@ -9,9 +9,11 @@
 
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/unguessable_token.h"
 #include "components/performance_manager/graph/node_base.h"
 #include "components/performance_manager/public/graph/frame_node.h"
+#include "components/performance_manager/public/render_frame_host_proxy.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "url/gurl.h"
@@ -77,8 +79,9 @@ class FrameNodeImpl
   void SetIsAdFrame() override;
   void OnNonPersistentNotificationCreated() override;
   void SetHadFormInteraction() override;
+  const RenderFrameHostProxy& GetRenderFrameHostProxy() const override;
 
-  // Partial FrameNode implementation:
+  // Partial FrameNodbase::TimeDelta time_since_navigatione implementation:
   bool IsMainFrame() const override;
 
   // Getters for const properties. These can be called from any thread.
@@ -90,6 +93,7 @@ class FrameNodeImpl
   const base::UnguessableToken& dev_tools_token() const;
   int32_t browsing_instance_id() const;
   int32_t site_instance_id() const;
+  const RenderFrameHostProxy& render_frame_host_proxy() const;
 
   // Getters for non-const properties. These are not thread safe.
   const base::flat_set<FrameNodeImpl*>& child_frame_nodes() const;
@@ -121,6 +125,10 @@ class FrameNodeImpl
   // Invoked to set the frame priority, and the reason behind it.
   void SetPriorityAndReason(const PriorityAndReason& priority_and_reason);
 
+  base::WeakPtr<FrameNodeImpl> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
  private:
   friend class FramePriorityAccess;
   friend class PageNodeImpl;
@@ -135,6 +143,7 @@ class FrameNodeImpl
   const base::UnguessableToken& GetDevToolsToken() const override;
   int32_t GetBrowsingInstanceId() const override;
   int32_t GetSiteInstanceId() const override;
+  bool VisitChildFrameNodes(const FrameNodeVisitor& visitor) const override;
   const base::flat_set<const FrameNode*> GetChildFrameNodes() const override;
   LifecycleState GetLifecycleState() const override;
   InterventionPolicy GetOriginTrialFreezePolicy() const override;
@@ -220,6 +229,9 @@ class FrameNodeImpl
   // same SiteInstance may sychronously script each other. Frames with the
   // same |site_instance_id_| will also have the same |browsing_instance_id_|.
   const int32_t site_instance_id_;
+  // A proxy object that lets the underlying RFH be safely dereferenced on the
+  // UI thread.
+  const RenderFrameHostProxy render_frame_host_proxy_;
 
   base::flat_set<FrameNodeImpl*> child_frame_nodes_;
 
@@ -270,6 +282,8 @@ class FrameNodeImpl
 
   // Inline storage for FramePriorityDecorator data.
   frame_priority::AcceptedVote accepted_vote_;
+
+  base::WeakPtrFactory<FrameNodeImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameNodeImpl);
 };

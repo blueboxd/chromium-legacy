@@ -10,7 +10,6 @@ import android.app.PendingIntent;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.os.Build;
 import android.os.RemoteException;
@@ -42,22 +41,26 @@ import java.util.HashMap;
  */
 @JNINamespace("weblayer")
 public final class DownloadImpl extends IDownload.Stub {
+    private static final String DOWNLOADS_PREFIX = "org.chromium.weblayer.downloads";
+
     // These actions have to be synchronized with the receiver defined in AndroidManifest.xml.
-    static final String OPEN_INTENT = "org.chromium.weblayer.downloads.OPEN";
-    static final String DELETE_INTENT = "org.chromium.weblayer.downloads.DELETE";
-    static final String PAUSE_INTENT = "org.chromium.weblayer.downloads.PAUSE";
-    static final String RESUME_INTENT = "org.chromium.weblayer.downloads.RESUME";
-    static final String CANCEL_INTENT = "org.chromium.weblayer.downloads.CANCEL";
-    static final String EXTRA_NOTIFICATION_ID = "org.chromium.weblayer.downloads.NOTIFICATION_ID";
-    static final String EXTRA_NOTIFICATION_LOCATION =
-            "org.chromium.weblayer.downloads.NOTIFICATION_LOCATION";
-    static final String EXTRA_NOTIFICATION_MIME_TYPE =
-            "org.chromium.weblayer.downloads.NOTIFICATION_MIME_TYPE";
-    static final String EXTRA_NOTIFICATION_PROFILE =
-            "org.chromium.weblayer.downloads.NOTIFICATION_PROFILE";
-    static final String PREF_NEXT_NOTIFICATION_ID =
-            "org.chromium.weblayer.downloads.notification_next_id";
-    private static final String CHANNEL_ID = "org.chromium.weblayer.downloads.channel";
+    private static final String OPEN_INTENT = DOWNLOADS_PREFIX + ".OPEN";
+    private static final String DELETE_INTENT = DOWNLOADS_PREFIX + ".DELETE";
+    private static final String PAUSE_INTENT = DOWNLOADS_PREFIX + ".PAUSE";
+    private static final String RESUME_INTENT = DOWNLOADS_PREFIX + ".RESUME";
+    private static final String CANCEL_INTENT = DOWNLOADS_PREFIX + ".CANCEL";
+
+    private static final String EXTRA_NOTIFICATION_ID = DOWNLOADS_PREFIX + ".NOTIFICATION_ID";
+    private static final String EXTRA_NOTIFICATION_LOCATION =
+            DOWNLOADS_PREFIX + ".NOTIFICATION_LOCATION";
+    private static final String EXTRA_NOTIFICATION_MIME_TYPE =
+            DOWNLOADS_PREFIX + ".NOTIFICATION_MIME_TYPE";
+    private static final String EXTRA_NOTIFICATION_PROFILE =
+            DOWNLOADS_PREFIX + ".NOTIFICATION_PROFILE";
+    private static final String CHANNEL_ID = DOWNLOADS_PREFIX + ".channel";
+    // The intent prefix is used as the notification's tag since it's guaranteed not to conflict
+    // with intent prefixes used by other subsystems that display notifications.
+    private static final String NOTIFICATION_TAG = DOWNLOADS_PREFIX;
     private static final String TAG = "DownloadImpl";
 
     private final String mProfileName;
@@ -71,6 +74,13 @@ public final class DownloadImpl extends IDownload.Stub {
     private NotificationCompat.Builder mBuilder;
     private static boolean sCreatedChannel = false;
     private static final HashMap<Integer, DownloadImpl> sMap = new HashMap<Integer, DownloadImpl>();
+
+    /**
+     * @return a string that prefixes all intents that can be handled by {@link forwardIntent}.
+     */
+    public static String getIntentPrefix() {
+        return DOWNLOADS_PREFIX;
+    }
 
     public static void forwardIntent(
             Context context, Intent intent, ProfileManager profileManager) {
@@ -130,22 +140,6 @@ public final class DownloadImpl extends IDownload.Stub {
         } else if (intent.getAction().equals(DELETE_INTENT)) {
             sMap.remove(id);
         }
-    }
-
-    /**
-     * Need to return a unique id, even across crashes, to avoid notification intents with
-     * different data (e.g. notification GUID) getting dup'd.
-     */
-    private static int getNextNotificationId() {
-        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
-        int nextId = prefs.getInt(PREF_NEXT_NOTIFICATION_ID, -1);
-        // Reset the counter when it gets close to max value
-        if (nextId >= Integer.MAX_VALUE - 1) {
-            nextId = -1;
-        }
-        nextId++;
-        prefs.edit().putInt(PREF_NEXT_NOTIFICATION_ID, nextId).apply();
-        return nextId;
     }
 
     public DownloadImpl(
@@ -291,7 +285,7 @@ public final class DownloadImpl extends IDownload.Stub {
         if (mBuilder != null) {
             NotificationManagerCompat notificationManager = getNotificationManager();
             if (notificationManager != null) {
-                notificationManager.cancel(mNotificationId);
+                notificationManager.cancel(NOTIFICATION_TAG, mNotificationId);
             }
             mBuilder = null;
         }
@@ -389,7 +383,7 @@ public final class DownloadImpl extends IDownload.Stub {
         int state = getState();
         if (state == DownloadState.CANCELLED) {
             if (notificationManager != null) {
-                notificationManager.cancel(mNotificationId);
+                notificationManager.cancel(NOTIFICATION_TAG, mNotificationId);
             }
             mBuilder = null;
             return;
@@ -483,7 +477,7 @@ public final class DownloadImpl extends IDownload.Stub {
 
         if (notificationManager != null) {
             // mNotificationId is a unique int for each notification that you must define.
-            notificationManager.notify(mNotificationId, mBuilder.build());
+            notificationManager.notify(NOTIFICATION_TAG, mNotificationId, mBuilder.build());
         }
     }
 

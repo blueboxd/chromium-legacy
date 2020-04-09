@@ -100,8 +100,10 @@ suite('NewTabPageCustomizeDialogTest', () => {
       assertHidden(bottom);
     }
 
-    test('menu', () => testScrollBorders(customizeDialog.$.menuContainer));
-    test('pages', () => testScrollBorders(customizeDialog.$.pagesContainer));
+    // Disabled for flakiness, see https://crbug.com/1066459.
+    test.skip('menu', () => testScrollBorders(customizeDialog.$.menuContainer));
+    test.skip(
+        'pages', () => testScrollBorders(customizeDialog.$.pagesContainer));
   });
 
   suite('backgrounds', () => {

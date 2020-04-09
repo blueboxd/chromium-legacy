@@ -354,6 +354,8 @@ source_set("weblayer_lib_base") {
       "browser/top_controls_container_view.cc",
       "browser/top_controls_container_view.h",
       "browser/weblayer_impl_android.cc",
+      "browser/webrtc/media_stream_manager.cc",
+      "browser/webrtc/media_stream_manager.h",
       "common/crash_reporter/crash_keys.cc",
       "common/crash_reporter/crash_keys.h",
       "common/crash_reporter/crash_reporter_client.cc",

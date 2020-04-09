@@ -323,50 +323,89 @@ ci.gpu_thin_tester(
 
 ci.linux_builder(
     name = 'Cast Linux',
+    console_view_entry = ci.console_view_entry(
+        category = 'cast',
+        short_name = 'vid',
+    ),
     goma_jobs = goma.jobs.J50,
 )
 
 ci.linux_builder(
     name = 'Fuchsia ARM64',
+    console_view_entry = ci.console_view_entry(
+        category = 'fuchsia|a64',
+    ),
     notifies = ['cr-fuchsia'],
 )
 
 ci.linux_builder(
     name = 'Fuchsia x64',
+    console_view_entry = ci.console_view_entry(
+        category = 'fuchsia|x64',
+        short_name = 'rel',
+    ),
     notifies = ['cr-fuchsia'],
 )
 
 ci.linux_builder(
     name = 'Linux Builder',
+    console_view_entry = ci.console_view_entry(
+        category = 'release',
+        short_name = 'bld',
+    ),
 )
 
 ci.linux_builder(
     name = 'Linux Builder (dbg)',
+    console_view_entry = ci.console_view_entry(
+        category = 'debug|builder',
+        short_name = '64',
+    ),
 )
 
 ci.linux_builder(
     name = 'Linux Tests',
+    console_view_entry = ci.console_view_entry(
+        category = 'release',
+        short_name = 'tst',
+    ),
     goma_backend = None,
     triggered_by = [builder_name('Linux Builder')],
 )
 
 ci.linux_builder(
     name = 'Linux Tests (dbg)(1)',
+    console_view_entry = ci.console_view_entry(
+        category = 'debug|tester',
+        short_name = '64',
+    ),
     triggered_by = [builder_name('Linux Builder (dbg)')],
 )
 
 ci.linux_builder(
     name = 'fuchsia-arm64-cast',
+    console_view_entry = ci.console_view_entry(
+        category = 'fuchsia|cast',
+        short_name = 'a64',
+    ),
     notifies = ['cr-fuchsia'],
 )
 
 ci.linux_builder(
     name = 'fuchsia-x64-cast',
+    console_view_entry = ci.console_view_entry(
+        category = 'fuchsia|cast',
+        short_name = 'x64',
+    ),
     notifies = ['cr-fuchsia'],
 )
 
 ci.linux_builder(
     name = 'linux-ozone-rel',
+    console_view_entry = ci.console_view_entry(
+        category = 'release',
+        short_name = 'ozo',
+    ),
 )
 
 ci.linux_builder(
@@ -387,52 +426,88 @@ ci.linux_builder(
 
 ci.mac_builder(
     name = 'Mac Builder',
+    console_view_entry = ci.console_view_entry(
+        category = 'release',
+        short_name = 'bld',
+    ),
     os = os.MAC_10_14,
 )
 
 ci.mac_builder(
     name = 'Mac Builder (dbg)',
+    console_view_entry = ci.console_view_entry(
+        category = 'debug',
+        short_name = 'bld',
+    ),
     os = os.MAC_ANY,
 )
 
 # The build runs on 10.13, but triggers tests on 10.10 bots.
 ci.mac_builder(
     name = 'Mac10.10 Tests',
+    console_view_entry = ci.console_view_entry(
+        category = 'release',
+        short_name = '10',
+    ),
     triggered_by = [builder_name('Mac Builder')],
 )
 
 # The build runs on 10.13, but triggers tests on 10.11 bots.
 ci.mac_builder(
     name = 'Mac10.11 Tests',
+    console_view_entry = ci.console_view_entry(
+        category = 'release',
+        short_name = '11',
+    ),
     triggered_by = [builder_name('Mac Builder')],
 )
 
 ci.mac_builder(
     name = 'Mac10.12 Tests',
+    console_view_entry = ci.console_view_entry(
+        category = 'release',
+        short_name = '12',
+    ),
     os = os.MAC_10_12,
     triggered_by = [builder_name('Mac Builder')],
 )
 
 ci.mac_builder(
     name = 'Mac10.13 Tests',
+    console_view_entry = ci.console_view_entry(
+        category = 'release',
+        short_name = '13',
+    ),
     os = os.MAC_10_13,
     triggered_by = [builder_name('Mac Builder')],
 )
 
 ci.mac_builder(
     name = 'Mac10.14 Tests',
+    console_view_entry = ci.console_view_entry(
+        category = 'release',
+        short_name = '14',
+    ),
     os = os.MAC_10_14,
     triggered_by = [builder_name('Mac Builder')],
 )
 
 ci.mac_builder(
     name = 'Mac10.13 Tests (dbg)',
+    console_view_entry = ci.console_view_entry(
+        category = 'debug',
+        short_name = '13',
+    ),
     os = os.MAC_ANY,
     triggered_by = [builder_name('Mac Builder (dbg)')],
 )
 
 ci.mac_builder(
     name = 'WebKit Mac10.13 (retina)',
+    console_view_entry = ci.console_view_entry(
+        category = 'release',
+        short_name = 'ret',
+    ),
     os = os.MAC_10_13,
     triggered_by = [builder_name('Mac Builder')],
 )
@@ -440,6 +515,10 @@ ci.mac_builder(
 
 ci.mac_ios_builder(
     name = 'ios-simulator',
+    console_view_entry = ci.console_view_entry(
+        category = 'ios|default',
+        short_name = 'sim',
+    ),
     executable = 'recipe:chromium',
     properties = {
         'xcode_build_version': '11c29',
@@ -448,6 +527,10 @@ ci.mac_ios_builder(
 
 ci.mac_ios_builder(
     name = 'ios-simulator-full-configs',
+    console_view_entry = ci.console_view_entry(
+        category = 'ios|default',
+        short_name = 'ful',
+    ),
     executable = 'recipe:chromium',
 )
 

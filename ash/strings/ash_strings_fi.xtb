@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">Näet lisävaihtoehtoja klikkaamalla tätä.</translation>
 <translation id="1570871743947603115">Laita Bluetooth päälle tai pois päältä. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">nähdä kaikki tämän käyttökerran toimintosi</translation>
-<translation id="1608626060424371292">Poista tämä käyttäjä</translation>
+<translation id="1632985212731562677">Kytkimen käytön voi laittaa pois päältä kohdassa Asetukset &gt; Esteettömyys.</translation>
 <translation id="1654477262762802994">Aloita puhekysely</translation>
 <translation id="1658406695958299976">Salasanan vahvistaminen ei onnistunut vieläkään. Huom. Jos vaihdoit salasanasi äskettäin, uusi salasana otetaan käyttöön kirjauduttuasi ulos. Käytä tässä vanhaa salasanaasi.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> jäljellä</translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">Laitteen järjestelmänvalvoja saattaa seurata selaustoimintaasi.</translation>
 <translation id="3181441307743005334">Uudelleenkäynnistys voi kestää hetken</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Yhdistetty 1 laitteeseen}other{Yhdistetty # laitteeseen}}</translation>
+<translation id="3203405173652969239">Kytkimen käyttö päällä</translation>
 <translation id="3207953481422525583">Käyttäjäasetukset</translation>
 <translation id="3217205077783620295">Äänet ovat päällä. Mykistä ne kytkimellä.</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> muuta</translation>
@@ -653,6 +654,7 @@
 <translation id="9211681782751733685">Akku on ladattu täyteen <ph name="TIME_REMAINING" /> kuluttua.</translation>
 <translation id="9215934040295798075">Aseta taustakuva</translation>
 <translation id="921989828232331238">Vanhempasi lukitsi laitteen loppupäivän ajaksi</translation>
+<translation id="9220525904950070496">Poista tili</translation>
 <translation id="923686485342484400">Kirjaudu ulos painamalla Control Shift Q kahdesti.</translation>
 <translation id="938963181863597773">Mitä kalenterissani on?</translation>
 <translation id="945522503751344254">Lähetä palautetta</translation>

@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">Kliknite za više opcija</translation>
 <translation id="1570871743947603115">Uključite/isključite Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Pristupite svim aktivnostima u ovoj sesiji</translation>
-<translation id="1608626060424371292">Ukloni ovog korisnika</translation>
+<translation id="1632985212731562677">Pristup pomoću prekidača može da se onemogući u odeljku Podešavanja &gt; Pristupačnost.</translation>
 <translation id="1654477262762802994">Započnite glasovnu pretragu</translation>
 <translation id="1658406695958299976">Žao nam je, verifikacija lozinke još uvek nije uspela. Napomena: ako ste nedavno promenili lozinku, nova lozinka će se primeniti kada se odjavite. Ovde koristite staru lozinku.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> je preostalo</translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">Administrator uređaja može da prati aktivnosti pregledanja.</translation>
 <translation id="3181441307743005334">Restartovanje može da potraje</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Povezani ste sa jednim uređajem}one{Povezani ste sa # uređajem}few{Povezani ste sa # uređaja}other{Povezani ste sa # uređaja}}</translation>
+<translation id="3203405173652969239">Pristup pomoću prekidača je omogućen</translation>
 <translation id="3207953481422525583">Podešavanja korisnika</translation>
 <translation id="3217205077783620295">Zvuk je uključen. Možete da ga isključite pomeranjem prekidača.</translation>
 <translation id="3226991577105957773">i još <ph name="COUNT" /></translation>
@@ -651,6 +652,7 @@
 <translation id="9211681782751733685">Još <ph name="TIME_REMAINING" /> i baterija će se u potpunosti napuniti.</translation>
 <translation id="9215934040295798075">Podesi pozadinu</translation>
 <translation id="921989828232331238">Roditelj je zaključao ovaj uređaj za danas</translation>
+<translation id="9220525904950070496">Uklanjanje naloga</translation>
 <translation id="923686485342484400">Dvaput pritisnite Control Shift Q da biste se odjavili.</translation>
 <translation id="938963181863597773">Šta je u kalendaru?</translation>
 <translation id="945522503751344254">Pošalji povratne informacije</translation>

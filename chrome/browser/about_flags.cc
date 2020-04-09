@@ -4849,6 +4849,10 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
+    {"launcher-settings-search", flag_descriptions::kLauncherSettingsSearchName,
+     flag_descriptions::kLauncherSettingsSearchDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(app_list_features::kLauncherSettingsSearch)},
+
     {"enable-suggested-files", flag_descriptions::kEnableSuggestedFilesName,
      flag_descriptions::kEnableSuggestedFilesDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kEnableSuggestedFiles)},
@@ -5230,6 +5234,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNearbySharingDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kNearbySharing)},
 #endif  // !defined(OS_ANDROID)
+
+    {"autofill-enable-surfacing-server-card-nickname",
+     flag_descriptions::kAutofillEnableSurfacingServerCardNicknameName,
+     flag_descriptions::kAutofillEnableSurfacingServerCardNicknameDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillEnableSurfacingServerCardNickname)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

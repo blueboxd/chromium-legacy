@@ -13,7 +13,6 @@ import androidx.annotation.DrawableRes;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.ssl.ChromeSecurityStateModelDelegate;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndroid;
 import org.chromium.components.embedder_support.view.ContentView;
@@ -144,8 +143,7 @@ public class EphemeralTabMediator {
             @Override
             public void visibleSSLStateChanged() {
                 if (mSheetContent == null) return;
-                int securityLevel = SecurityStateModel.getSecurityLevelForWebContents(
-                        mWebContents, ChromeSecurityStateModelDelegate.getInstance());
+                int securityLevel = SecurityStateModel.getSecurityLevelForWebContents(mWebContents);
                 mSheetContent.setSecurityIcon(getSecurityIconResource(securityLevel));
                 mSheetContent.updateURL(mWebContents.getVisibleUrl());
             }

@@ -41,7 +41,6 @@ import org.chromium.chrome.browser.payments.ui.SectionInformation;
 import org.chromium.chrome.browser.payments.ui.ShoppingCart;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
-import org.chromium.chrome.browser.ssl.ChromeSecurityStateModelDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
@@ -896,8 +895,7 @@ public class PaymentRequestImpl
 
         mUI = new PaymentRequestUI(activity, this, mMerchantSupportsAutofillCards,
                 !PaymentPreferencesUtil.isPaymentCompleteOnce(), mMerchantName, mTopLevelOrigin,
-                SecurityStateModel.getSecurityLevelForWebContents(
-                        mWebContents, ChromeSecurityStateModelDelegate.getInstance()),
+                SecurityStateModel.getSecurityLevelForWebContents(mWebContents),
                 new ShippingStrings(mShippingType), mPaymentUisShowStateReconciler);
         activity.getLifecycleDispatcher().register(mUI);
 
@@ -2620,6 +2618,12 @@ public class PaymentRequestImpl
     @Override
     public String getTotalAmountCurrency() {
         return mRawTotal.amount.currency;
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
+    public boolean requestShippingOrPayerContact() {
+        return mRequestShipping || mRequestPayerName || mRequestPayerPhone || mRequestPayerEmail;
     }
 
     // PaymentAppFactoryDelegate implementation.

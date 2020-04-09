@@ -338,9 +338,19 @@ public class WebLayerShellActivity extends FragmentActivity {
 
             @Override
             public void showContextMenu(ContextMenuParams params) {
-                View weblayerView = getSupportFragmentManager().getFragments().get(0).getView();
-                weblayerView.setOnCreateContextMenuListener(new ContextMenuCreator(params));
-                weblayerView.showContextMenu();
+                View webLayerView = getSupportFragmentManager().getFragments().get(0).getView();
+                webLayerView.setOnCreateContextMenuListener(new ContextMenuCreator(params));
+                webLayerView.showContextMenu();
+            }
+
+            @Override
+            public void bringTabToFront() {
+                tab.getBrowser().setActiveTab(tab);
+
+                Context context = WebLayerShellActivity.this;
+                Intent intent = new Intent(context, WebLayerShellActivity.class);
+                intent.setAction(Intent.ACTION_MAIN);
+                context.getApplicationContext().startActivity(intent);
             }
         });
         tab.getNavigationController().registerNavigationCallback(new NavigationCallback() {

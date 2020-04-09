@@ -44,12 +44,6 @@ enum class FaviconFetchResult {
   COUNT = 3
 };
 
-void RecordFaviconFetchResult(FaviconFetchResult result) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "NewTabPage.ContentSuggestions.ArticleFaviconFetchResult", result,
-      FaviconFetchResult::COUNT);
-}
-
 }  // namespace
 
 ContentSuggestionsService::ContentSuggestionsService(
@@ -182,7 +176,6 @@ void ContentSuggestionsService::FetchSuggestionFavicon(
   if (!domain_with_favicon.is_valid() || !large_icon_service_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), gfx::Image()));
-    RecordFaviconFetchResult(FaviconFetchResult::FAILURE);
     return;
   }
 
@@ -244,11 +237,6 @@ void ContentSuggestionsService::OnGetFaviconFromCacheFinished(
     const favicon_base::LargeIconImageResult& result) {
   if (!result.image.IsEmpty()) {
     std::move(callback).Run(result.image);
-    // The icon is from cache if we haven't gone to Google server yet. The icon
-    // is freshly fetched, otherwise.
-    RecordFaviconFetchResult(continue_to_google_server
-                                 ? FaviconFetchResult::SUCCESS_CACHED
-                                 : FaviconFetchResult::SUCCESS_FETCHED);
     // Update the time when the icon was last requested - postpone thus the
     // automatic eviction of the favicon from the favicon database.
     large_icon_service_->TouchIconFromGoogleServer(result.icon_url);
@@ -262,7 +250,6 @@ void ContentSuggestionsService::OnGetFaviconFromCacheFinished(
     // cache (resulting in non-default background color) or if we already did
     // so.
     std::move(callback).Run(gfx::Image());
-    RecordFaviconFetchResult(FaviconFetchResult::FAILURE);
     return;
   }
 
@@ -308,7 +295,6 @@ void ContentSuggestionsService::OnGetFaviconFromGoogleServerFinished(
     favicon_base::GoogleFaviconServerRequestStatus status) {
   if (status != favicon_base::GoogleFaviconServerRequestStatus::SUCCESS) {
     std::move(callback).Run(gfx::Image());
-    RecordFaviconFetchResult(FaviconFetchResult::FAILURE);
     return;
   }
 

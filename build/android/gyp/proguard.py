@@ -165,9 +165,6 @@ def _ParseOptions():
       '--force-enable-assertions',
       action='store_true',
       help='Forcefully enable javac generated assertion code.')
-  parser.add_argument(
-      '--desugar', action='store_true', help='Enable R8 Desugaring')
-
 
   options = parser.parse_args(args)
 
@@ -237,9 +234,6 @@ def _OptimizeWithR8(options,
         '--pg-map-output',
         tmp_mapping_path,
     ]
-
-    if not options.desugar:
-      cmd += ['--no-desugaring']
 
     for lib in libraries:
       cmd += ['--lib', lib]

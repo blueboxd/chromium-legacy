@@ -53,6 +53,7 @@ class ASH_EXPORT CrosDisplayConfig : public mojom::CrosDisplayConfigController {
                         mojom::DisplayConfigOperation op,
                         mojom::TouchCalibrationPtr calibration,
                         TouchCalibrationCallback callback) override;
+  void HighlightDisplay(int64_t id) override;
 
   TouchCalibratorController* touch_calibrator_for_test() {
     return touch_calibrator_.get();

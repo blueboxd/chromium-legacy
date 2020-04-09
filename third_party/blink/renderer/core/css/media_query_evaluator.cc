@@ -32,6 +32,7 @@
 #include "third_party/blink/public/common/css/forced_colors.h"
 #include "third_party/blink/public/common/css/navigation_controls.h"
 #include "third_party/blink/public/common/css/preferred_color_scheme.h"
+#include "third_party/blink/public/common/css/screen_spanning.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/blink/public/platform/pointer_properties.h"
 #include "third_party/blink/public/platform/shape_properties.h"
@@ -899,6 +900,26 @@ static bool NavigationControlsMediaFeatureEval(
           value.id == CSSValueID::kNone) ||
          (navigation_controls == NavigationControls::kBackButton &&
           value.id == CSSValueID::kBackButton);
+}
+
+static bool ScreenSpanningMediaFeatureEval(const MediaQueryExpValue& value,
+                                           MediaFeaturePrefix,
+                                           const MediaValues& media_values) {
+  ScreenSpanning screen_spanning_mode = media_values.GetScreenSpanning();
+
+  if (!value.IsValid())
+    return screen_spanning_mode != ScreenSpanning::kNone;
+
+  // We should not have parsed a valid MediaQueryExpValue if the value is not
+  // an identifier.
+  DCHECK(value.is_id);
+
+  return (screen_spanning_mode == ScreenSpanning::kNone &&
+          value.id == CSSValueID::kNone) ||
+         (screen_spanning_mode == ScreenSpanning::kSingleFoldVertical &&
+          value.id == CSSValueID::kSingleFoldVertical) ||
+         (screen_spanning_mode == ScreenSpanning::kSingleFoldHorizontal &&
+          value.id == CSSValueID::kSingleFoldHorizontal);
 }
 
 void MediaQueryEvaluator::Init() {

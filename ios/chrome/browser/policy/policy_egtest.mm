@@ -8,6 +8,7 @@
 
 #include "base/json/json_string_value_serializer.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/policy/policy_constants.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/chrome_switches.h"
@@ -65,6 +66,25 @@ void SetPolicy(bool enabled, const std::string& policy_key) {
 //    - Deleting a policy value
 //    - Setting multiple policies at once
 
+// Verifies that a bool type policy sets the pref properly.
+void VerifyBoolPolicy(const std::string& policy_key,
+                      const std::string& pref_name) {
+  // Loading chrome://policy isn't necessary for the test to succeed, but it
+  // provides some visual feedback as the test runs.
+  [ChromeEarlGrey loadURL:GURL("chrome://policy")];
+  [ChromeEarlGrey waitForWebStateContainingText:l10n_util::GetStringUTF8(
+                                                    IDS_POLICY_SHOW_UNSET)];
+  // Force the preference off via policy.
+  SetPolicy(false, policy_key);
+  GREYAssertFalse([ChromeEarlGrey userBooleanPref:pref_name],
+                  @"Preference was unexpectedly true");
+
+  // Force the preference on via policy.
+  SetPolicy(true, policy_key);
+  GREYAssertTrue([ChromeEarlGrey userBooleanPref:pref_name],
+                 @"Preference was unexpectedly false");
+}
+
 }  // namespace
 
 // Test case to verify that enterprise policies are set and respected.
@@ -93,25 +113,14 @@ void SetPolicy(bool enabled, const std::string& policy_key) {
 
 // Tests for the SearchSuggestEnabled policy.
 - (void)testSearchSuggestEnabled {
-  // Loading chrome://policy isn't necessary for the test to succeed, but it
-  // provides some visual feedback as the test runs.
-  [ChromeEarlGrey loadURL:GURL("chrome://policy")];
-  [ChromeEarlGrey waitForWebStateContainingText:l10n_util::GetStringUTF8(
-                                                    IDS_POLICY_SHOW_UNSET)];
+  VerifyBoolPolicy(policy::key::kSearchSuggestEnabled,
+                   prefs::kSearchSuggestEnabled);
+}
 
-  // Verify that the unmanaged pref's default value is true.
-  GREYAssertTrue([ChromeEarlGrey userBooleanPref:prefs::kSearchSuggestEnabled],
-                 @"Unexpected default value");
-
-  // Force the preference off via policy.
-  SetPolicy(false, policy::key::kSearchSuggestEnabled);
-  GREYAssertFalse([ChromeEarlGrey userBooleanPref:prefs::kSearchSuggestEnabled],
-                  @"Search suggest preference was unexpectedly true");
-
-  // Force the preference on via policy.
-  SetPolicy(true, policy::key::kSearchSuggestEnabled);
-  GREYAssertTrue([ChromeEarlGrey userBooleanPref:prefs::kSearchSuggestEnabled],
-                 @"Search suggest preference was unexpectedly false");
+// Tests for the PasswordManagerEnabled policy.
+- (void)testPasswordManagerEnabled {
+  VerifyBoolPolicy(policy::key::kPasswordManagerEnabled,
+                   password_manager::prefs::kCredentialsEnableService);
 }
 
 @end

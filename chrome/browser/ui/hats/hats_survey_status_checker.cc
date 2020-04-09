@@ -9,6 +9,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "net/base/load_flags.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/site_for_cookies.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -71,8 +72,9 @@ void HatsSurveyStatusChecker::CheckSurveyStatus(
   auto request = std::make_unique<network::ResourceRequest>();
   std::string url_without_id(HatsSurveyURLWithoutId());
   request->url = GURL(url_without_id + site_id);
+  // Treat this request as same-site for the purposes of cookie inclusion.
+  request->site_for_cookies = net::SiteForCookies::FromUrl(request->url);
   // Send stored cookie along with the request, but don't save any cookie.
-  request->attach_same_site_cookies = true;
   request->load_flags = net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
                         net::LOAD_DO_NOT_SAVE_COOKIES;
   DCHECK(!url_loader_);

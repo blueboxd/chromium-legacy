@@ -15,5 +15,8 @@ interface ITestWebLayer {
   boolean isPermissionDialogShown() = 4;
 
   // Clicks a button on the permission dialog.
-  void clickPermissionDialogButton(in boolean allow) = 5;
+  void clickPermissionDialogButton(boolean allow) = 5;
+
+  // Forces the system location setting to enabled.
+  void setSystemLocationSettingEnabled(boolean enabled) = 6;
 }

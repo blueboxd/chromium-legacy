@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">Klõpsake lisavalikute nägemiseks</translation>
 <translation id="1570871743947603115">Lülitab Bluetoothi sisse või välja. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Juurdepääs kõigile teie tegevustele selle seansi ajal</translation>
-<translation id="1608626060424371292">Eemalda see kasutaja</translation>
+<translation id="1632985212731562677">Lülitiga juurdepääsu saab keelata menüüs Seaded &gt; Juurdepääsetavus.</translation>
 <translation id="1654477262762802994">Häälpäringu alustamine</translation>
 <translation id="1658406695958299976">Kahjuks ei saanud teie parooli kinnitada. Märkus: kui muutsite parooli hiljuti, rakendub uus parool pärast väljalogimist. Kasutage siin vana parooli.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> tühjenemiseni</translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">Seadme administraator võib jälgida teie sirvimistegevust.</translation>
 <translation id="3181441307743005334">Taaskäivitamine võib pisut aega võtta</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Ühendatud ühe seadmega}other{Ühendatud # seadmega}}</translation>
+<translation id="3203405173652969239">Lülitiga juurdepääs on lubatud</translation>
 <translation id="3207953481422525583">Kasutaja seaded</translation>
 <translation id="3217205077783620295">Helitugevus on sees, vahetamisel heli vaigistatakse.</translation>
 <translation id="3226991577105957773">ja veel <ph name="COUNT" /></translation>
@@ -652,6 +653,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="9211681782751733685">Aku täitumiseni on aega <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Taustapildi määramine</translation>
 <translation id="921989828232331238">Vanem lukustas sinu seadme päevaks</translation>
+<translation id="9220525904950070496">Konto eemaldamine</translation>
 <translation id="923686485342484400">Väljalogimiseks vajutage kaks korda klahvikombinatsiooni Ctrl + tõstuklahv + Q.</translation>
 <translation id="938963181863597773">Mis on minu kalendris?</translation>
 <translation id="945522503751344254">Saada tagasisidet</translation>

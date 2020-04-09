@@ -95,6 +95,10 @@ class CastDialogViewBrowserTest : public DialogBrowserTest {
           CreateConnectedSink(),
           CreateUnavailableSink(),
       });
+    } else if (name == "NoSinks") {
+      model = CreateModelWithSinks({});
+    } else {
+      NOTREACHED() << "Unexpected test name " << name;
     }
     media_router::CastDialogView* dialog =
         media_router::CastDialogView::GetInstance();

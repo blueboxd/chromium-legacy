@@ -50,7 +50,7 @@ class MediaHistoryFeedItemsTable : public MediaHistoryTableBase {
       delete;
 
  private:
-  friend class MediaHistoryStoreInternal;
+  friend class MediaHistoryStore;
 
   explicit MediaHistoryFeedItemsTable(
       scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner);

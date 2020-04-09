@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/optional.h"
-#include "build/build_config.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -36,10 +35,6 @@
 #include "extensions/common/extension_id.h"
 #include "extensions/common/extension_set.h"
 #include "url/gurl.h"
-
-#if defined(OS_MACOSX)
-#include "chrome/browser/web_applications/extensions/web_app_extension_shortcut_mac.h"
-#endif
 
 namespace extensions {
 
@@ -232,26 +227,6 @@ void BookmarkAppInstallFinalizer::UninstallExtension(
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), uninstalled));
-}
-
-bool BookmarkAppInstallFinalizer::CanRevealAppShim() const {
-#if defined(OS_MACOSX)
-  return true;
-#else   // defined(OS_MACOSX)
-  return false;
-#endif  // !defined(OS_MACOSX)
-}
-
-void BookmarkAppInstallFinalizer::RevealAppShim(const web_app::AppId& app_id) {
-  DCHECK(CanRevealAppShim());
-#if defined(OS_MACOSX)
-  const Extension* app = GetEnabledExtension(app_id);
-  DCHECK(app);
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kDisableHostedAppShimCreation)) {
-    web_app::RevealAppShimInFinderForApp(profile_, app);
-  }
-#endif  // defined(OS_MACOSX)
 }
 
 void BookmarkAppInstallFinalizer::SetCrxInstallerFactoryForTesting(

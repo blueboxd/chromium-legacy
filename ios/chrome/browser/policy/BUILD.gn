@@ -106,6 +106,7 @@ source_set("eg2_tests") {
 
   deps = [
     "//base",
+    "//components/password_manager/core/common",
     "//components/policy:generated",
     "//components/policy/core/common:common_constants",
     "//components/strings",

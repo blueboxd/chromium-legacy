@@ -13,6 +13,7 @@
 
 @protocol ApplicationCommands;
 class AudioSessionController;
+class Browser;
 class ChromeBrowserState;
 class VoiceSearchController;
 
@@ -33,9 +34,14 @@ class VoiceSearchProvider {
   // Returns the singleton audio session controller.
   virtual AudioSessionController* GetAudioSessionController() const;
 
-  // Creates a new VoiceSearchController object.
+  // Creates a new VoiceSearchController object. TODO(crbug.com/790886): Remove
+  // the ChromeBrowserState constructor when the implementation for the Browser
+  // constructor finishes and all calls use that constructor. This is a part of
+  // the Brower-scoped migration.
   virtual scoped_refptr<VoiceSearchController> CreateVoiceSearchController(
       ChromeBrowserState* browser_state) const;
+  virtual scoped_refptr<VoiceSearchController> CreateVoiceSearchController(
+      Browser* browser) const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VoiceSearchProvider);

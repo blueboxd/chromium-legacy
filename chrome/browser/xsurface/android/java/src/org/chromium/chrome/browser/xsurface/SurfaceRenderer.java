@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.xsurface;
 
 import android.view.View;
 
+import androidx.annotation.Nullable;
+
 import java.util.Map;
 
 /**
@@ -13,7 +15,7 @@ import java.util.Map;
  */
 public interface SurfaceRenderer {
     /** Update the card renderer with shared data bytes. */
-    void update(byte[] data);
+    default void update(byte[] data) {}
 
     /**
      * Turns a stream of externally-provided bytes into an Android View.
@@ -21,5 +23,8 @@ public interface SurfaceRenderer {
      * @param renderData externally-provided bytes to be rendered.
      * @param contextValues additional context to be incorporated into the view.
      */
-    View render(byte[] renderData, Map<String, Object> contextValues);
+    @Nullable
+    default View render(byte[] renderData, Map<String, Object> contextValues) {
+        return null;
+    }
 }

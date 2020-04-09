@@ -33,6 +33,10 @@ Running: dumpAfterStyles
     content: "AFTER";
 
 
+Running: dumpBeforeMarkerStyles
+
+Running: dumpAfterMarkerStyles
+
 Running: removeAfterMarker
 - <div id="container">
     - <div id="inspected">

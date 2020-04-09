@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "components/performance_manager/graph/graph_impl.h"
 #include "components/performance_manager/graph/page_node_impl.h"
 #include "components/performance_manager/graph/process_node_impl.h"
@@ -35,7 +36,11 @@ FrameNodeImpl::FrameNodeImpl(ProcessNodeImpl* process_node,
       render_frame_id_(render_frame_id),
       dev_tools_token_(dev_tools_token),
       browsing_instance_id_(browsing_instance_id),
-      site_instance_id_(site_instance_id) {
+      site_instance_id_(site_instance_id),
+      render_frame_host_proxy_(content::GlobalFrameRoutingId(
+          process_node->render_process_host_proxy().render_process_host_id(),
+          render_frame_id)),
+      weak_factory_(this) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(process_node);
   DCHECK(page_node);
@@ -93,6 +98,11 @@ void FrameNodeImpl::SetHadFormInteraction() {
   document_.had_form_interaction.SetAndMaybeNotify(this, true);
 }
 
+const RenderFrameHostProxy& FrameNodeImpl::GetRenderFrameHostProxy() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return render_frame_host_proxy();
+}
+
 bool FrameNodeImpl::IsMainFrame() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return !parent_frame_node_;
@@ -128,6 +138,10 @@ int32_t FrameNodeImpl::browsing_instance_id() const {
 
 int32_t FrameNodeImpl::site_instance_id() const {
   return site_instance_id_;
+}
+
+const RenderFrameHostProxy& FrameNodeImpl::render_frame_host_proxy() const {
+  return render_frame_host_proxy_;
 }
 
 const base::flat_set<FrameNodeImpl*>& FrameNodeImpl::child_frame_nodes() const {
@@ -321,6 +335,17 @@ int32_t FrameNodeImpl::GetBrowsingInstanceId() const {
 int32_t FrameNodeImpl::GetSiteInstanceId() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return site_instance_id();
+}
+
+bool FrameNodeImpl::VisitChildFrameNodes(
+    const FrameNodeVisitor& visitor) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  for (auto* frame_impl : child_frame_nodes()) {
+    const FrameNode* frame = frame_impl;
+    if (!visitor.Run(frame))
+      return false;
+  }
+  return true;
 }
 
 const base::flat_set<const FrameNode*> FrameNodeImpl::GetChildFrameNodes()

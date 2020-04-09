@@ -134,6 +134,28 @@ TEST(DomDistillerUrlUtilsTest, TestRejectInvalidURLs) {
       net::AppendOrReplaceQueryParameter(view_url, kUrlKey, url2);
   EXPECT_EQ(GURL(), GetOriginalUrlFromDistillerUrl(bad_view_url));
 }
+
+TEST(DomDistillerUrlUtilsTest, TestRejectInvalidDistilledURLs) {
+  EXPECT_FALSE(IsDistilledPage(GURL("chrome-distiller://any")));
+  EXPECT_FALSE(IsDistilledPage(GURL("chrome-distiller://any/invalid")));
+  EXPECT_FALSE(
+      IsDistilledPage(GURL("chrome-distiller://any/?time=123&url=abc")));
+
+  EXPECT_FALSE(IsDistilledPage(GetDistillerViewUrlFromUrl(
+      "not-distiller", GURL("http://example.com/"), "title")));
+  EXPECT_FALSE(IsDistilledPage(GetDistillerViewUrlFromUrl(
+      kDomDistillerScheme, GURL("not-http://example.com/"), "title")));
+
+  EXPECT_TRUE(IsDistilledPage(GetDistillerViewUrlFromUrl(
+      kDomDistillerScheme, GURL("http://example.com/"), "title")));
+  EXPECT_TRUE(IsDistilledPage(GetDistillerViewUrlFromUrl(
+      kDomDistillerScheme, GURL("http://www.example.com/page.html"), "title")));
+  EXPECT_TRUE(IsDistilledPage(GetDistillerViewUrlFromUrl(
+      kDomDistillerScheme,
+      GURL("http://www.example.com/page.html?cats=1&dogs=2"), "title")));
+  EXPECT_TRUE(IsDistilledPage(GetDistillerViewUrlFromUrl(
+      kDomDistillerScheme, GURL("https://example.com/?params=any"), "title")));
+}
 }  // namespace url_utils
 
 }  // namespace dom_distiller

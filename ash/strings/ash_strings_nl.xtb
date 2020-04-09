@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">Klik voor meer opties</translation>
 <translation id="1570871743947603115">Bluetooth schakelen. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Al je activiteit in deze sessie bekijken</translation>
-<translation id="1608626060424371292">Gebruiker verwijderen</translation>
+<translation id="1632985212731562677">Je kunt 'Toegang via schakelaar' uitschakelen via Instellingen &gt; Toegankelijkheid.</translation>
 <translation id="1654477262762802994">Een gesproken zoekopdracht starten</translation>
 <translation id="1658406695958299976">Je wachtwoord kan nog steeds niet worden geverifieerd. Opmerking: Als je je wachtwoord onlangs hebt gewijzigd, wordt je nieuwe wachtwoord doorgevoerd wanneer je uitlogt. Gebruik hier het oude wachtwoord.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> resterend</translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">De apparaatbeheerder kan je browseactiviteit controleren.</translation>
 <translation id="3181441307743005334">Opnieuw opstarten kan even duren</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Verbonden met een apparaat}other{Verbonden met # apparaten}}</translation>
+<translation id="3203405173652969239">'Toegang via schakelaar' ingeschakeld</translation>
 <translation id="3207953481422525583">Gebruikersinstellingen</translation>
 <translation id="3217205077783620295">Volume staat aan. Als je het uitzet, wordt de audio gedempt.</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> andere meldingen</translation>
@@ -651,6 +652,7 @@
 <translation id="9211681782751733685">Nog <ph name="TIME_REMAINING" /> totdat de batterij volledig is opgeladen.</translation>
 <translation id="9215934040295798075">Achtergrond instellen</translation>
 <translation id="921989828232331238">Je ouder heeft je apparaat de hele dag vergrendeld</translation>
+<translation id="9220525904950070496">Rekening verwijderen</translation>
 <translation id="923686485342484400">Druk twee keer op Control+Shift+Q om uit te loggen.</translation>
 <translation id="938963181863597773">Wat staat er in mijn agenda?</translation>
 <translation id="945522503751344254">Feedback sturen</translation>

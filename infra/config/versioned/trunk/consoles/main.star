@@ -41,16 +41,6 @@ luci.console_view(
             short_name = 'rel',
         ),
         luci.console_view_entry(
-            builder = builder_name('win32-archive-rel'),
-            category = 'chromium|win|rel',
-            short_name = '32',
-        ),
-        luci.console_view_entry(
-            builder = builder_name('win-archive-rel'),
-            category = 'chromium|win|rel',
-            short_name = '64',
-        ),
-        luci.console_view_entry(
             builder = builder_name('win32-archive-dbg'),
             category = 'chromium|win|dbg',
             short_name = '32',
@@ -58,6 +48,16 @@ luci.console_view(
         luci.console_view_entry(
             builder = builder_name('win-archive-dbg'),
             category = 'chromium|win|dbg',
+            short_name = '64',
+        ),
+        luci.console_view_entry(
+            builder = builder_name('win32-archive-rel'),
+            category = 'chromium|win|rel',
+            short_name = '32',
+        ),
+        luci.console_view_entry(
+            builder = builder_name('win-archive-rel'),
+            category = 'chromium|win|rel',
             short_name = '64',
         ),
         luci.console_view_entry(

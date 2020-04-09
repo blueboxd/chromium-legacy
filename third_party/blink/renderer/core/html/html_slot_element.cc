@@ -180,6 +180,8 @@ void HTMLSlotElement::assign(HeapVector<Member<Node>> nodes,
     return;
   }
 
+  ContainingShadowRoot()->GetSlotAssignment().ClearCandidateNodes(
+      assigned_nodes_candidates_);
   assigned_nodes_candidates_.clear();
   auto* host = OwnerShadowHost();
   bool has_invalid_node = false;
@@ -193,7 +195,11 @@ void HTMLSlotElement::assign(HeapVector<Member<Node>> nodes,
       has_invalid_node = true;
       break;
     }
-    assigned_nodes_candidates_.insert(node);
+
+    // Before assignment, see if this node belongs to another slot.
+    ContainingShadowRoot()->GetSlotAssignment().UpdateCandidateNodeAssignedSlot(
+        *node, *this);
+    assigned_nodes_candidates_.AppendOrMoveToLast(node);
   }
 
   if (!has_invalid_node)
@@ -203,6 +209,22 @@ void HTMLSlotElement::assign(HeapVector<Member<Node>> nodes,
 void HTMLSlotElement::AppendAssignedNode(Node& host_child) {
   DCHECK(host_child.IsSlotable());
   assigned_nodes_.push_back(&host_child);
+}
+
+void HTMLSlotElement::UpdateManuallyAssignedNodesOrdering() {
+  if (assigned_nodes_.IsEmpty() || assigned_nodes_candidates_.IsEmpty())
+    return;
+
+  // TODO: (crbug.com/1067153) Add perf benchmark test for large assigned list.
+  HeapHashSet<Member<Node>> prev_nodes;
+  for (auto& node : assigned_nodes_) {
+    prev_nodes.insert(node);
+  }
+  assigned_nodes_.clear();
+  for (auto& node : assigned_nodes_candidates_) {
+    if (prev_nodes.Contains(node))
+      assigned_nodes_.push_back(node);
+  }
 }
 
 void HTMLSlotElement::ClearAssignedNodes() {

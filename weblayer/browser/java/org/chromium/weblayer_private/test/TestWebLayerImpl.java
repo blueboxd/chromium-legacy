@@ -7,6 +7,7 @@ package org.chromium.weblayer_private.test;
 import android.os.IBinder;
 
 import org.chromium.base.annotations.UsedByReflection;
+import org.chromium.components.location.LocationUtils;
 import org.chromium.components.permissions.PermissionDialogController;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.device.geolocation.LocationProviderOverrider;
@@ -69,6 +70,20 @@ public final class TestWebLayerImpl extends ITestWebLayer.Stub {
             PermissionDialogController.getInstance().clickButtonForTest(allow
                             ? ModalDialogProperties.ButtonType.POSITIVE
                             : ModalDialogProperties.ButtonType.NEGATIVE);
+        });
+    }
+
+    @Override
+    public void setSystemLocationSettingEnabled(boolean enabled) {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            LocationUtils.setFactory(() -> {
+                return new LocationUtils() {
+                    @Override
+                    public boolean isSystemLocationSettingEnabled() {
+                        return enabled;
+                    }
+                };
+            });
         });
     }
 }

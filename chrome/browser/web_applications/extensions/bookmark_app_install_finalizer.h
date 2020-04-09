@@ -54,8 +54,6 @@ class BookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
                                   UninstallWebAppCallback callback) override;
   bool WasExternalAppUninstalledByUser(
       const web_app::AppId& app_id) const override;
-  bool CanRevealAppShim() const override;
-  void RevealAppShim(const web_app::AppId& app_id) override;
 
   using CrxInstallerFactory =
       base::RepeatingCallback<scoped_refptr<CrxInstaller>(Profile*)>;

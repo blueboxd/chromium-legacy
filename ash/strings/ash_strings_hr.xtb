@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">Kliknite za više opcija</translation>
 <translation id="1570871743947603115">Prebacivanje Bluetootha. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Pristup svim vašim aktivnostima u ovoj sesiji</translation>
-<translation id="1608626060424371292">Ukloni tog korisnika</translation>
+<translation id="1632985212731562677">Prekidač za pristup možete onemogućiti tako da otvorite Postavke &gt; Pristupačnost.</translation>
 <translation id="1654477262762802994">Pokrenite glasovni upit</translation>
 <translation id="1658406695958299976">Vaša zaporka i dalje nije mogla biti potvrđena. Napomena: ako ste nedavno promijenili zaporku, vaša nova zaporka primjenjivat će se nakon što se odjavite. Ovdje upotrijebite staru zaporku.</translation>
 <translation id="1677472565718498478">Još <ph name="TIME" /></translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">Administrator uređaja može nadzirati vašu aktivnost pregledavanja.</translation>
 <translation id="3181441307743005334">Ponovno pokretanje može potrajati neko vrijeme</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Povezano s jednim uređajem}one{Povezano s # uređajem}few{Povezano s # uređaja}other{Povezano s # uređaja}}</translation>
+<translation id="3203405173652969239">Omogućen je prekidač za pristup</translation>
 <translation id="3207953481422525583">Korisničke postavke</translation>
 <translation id="3217205077783620295">Zvuk je uključen, prebacivanjem će se isključiti.</translation>
 <translation id="3226991577105957773">Još <ph name="COUNT" /></translation>
@@ -651,6 +652,7 @@
 <translation id="9211681782751733685">Baterija će se napuniti za <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Postavi pozadinu</translation>
 <translation id="921989828232331238">Tvoj je roditelj zaključao ovaj uređaj za danas</translation>
+<translation id="9220525904950070496">Uklanjanje računa</translation>
 <translation id="923686485342484400">Pritisnite Ctrl, Shift i Q dvaput da biste se odjavili.</translation>
 <translation id="938963181863597773">Što je na mojem kalendaru?</translation>
 <translation id="945522503751344254">Slanje povratnih informacija</translation>

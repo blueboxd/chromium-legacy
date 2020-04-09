@@ -13,17 +13,14 @@ namespace blink {
 
 // SensorProviderProxy
 SensorProviderProxy::SensorProviderProxy(Document& document)
-    : Supplement<Document>(document),
-      sensor_provider_(document.ToExecutionContext()),
-      inspector_mode_(false) {}
+    : Supplement<Document>(document), inspector_mode_(false) {}
 
 void SensorProviderProxy::InitializeIfNeeded() {
   if (IsInitialized())
     return;
 
   GetSupplementable()->GetBrowserInterfaceBroker().GetInterface(
-      sensor_provider_.BindNewPipeAndPassReceiver(
-          GetSupplementable()->GetTaskRunner(TaskType::kSensor)));
+      sensor_provider_.BindNewPipeAndPassReceiver());
   sensor_provider_.set_disconnect_handler(
       WTF::Bind(&SensorProviderProxy::OnSensorProviderConnectionError,
                 WrapWeakPersistent(this)));
@@ -49,7 +46,6 @@ SensorProviderProxy::~SensorProviderProxy() = default;
 
 void SensorProviderProxy::Trace(Visitor* visitor) {
   visitor->Trace(sensor_proxies_);
-  visitor->Trace(sensor_provider_);
   Supplement<Document>::Trace(visitor);
 }
 

@@ -10,14 +10,18 @@
 #include <vector>
 
 #include "ash/public/cpp/shelf_item_delegate.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/time/time.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "url/gurl.h"
 
 namespace content {
 class WebContents;
 }
 
+class Browser;
 class ShelfContextMenu;
 
 // Item controller for an app shortcut.
@@ -28,16 +32,13 @@ class ShelfContextMenu;
 //
 // Non-platform app types do not use AppWindows. This delegate is not replaced
 // when browser windows are opened for those app types.
-class AppShortcutLauncherItemController : public ash::ShelfItemDelegate {
+class AppShortcutLauncherItemController : public ash::ShelfItemDelegate,
+                                          public BrowserListObserver {
  public:
   ~AppShortcutLauncherItemController() override;
 
   static std::unique_ptr<AppShortcutLauncherItemController> Create(
       const ash::ShelfID& shelf_id);
-
-  static std::vector<content::WebContents*> GetRunningApplications(
-      const std::string& app_id,
-      const GURL& refocus_url = GURL());
 
   // ash::ShelfItemDelegate overrides:
   void ItemSelected(std::unique_ptr<ui::Event> event,
@@ -53,28 +54,34 @@ class AppShortcutLauncherItemController : public ash::ShelfItemDelegate {
                       int64_t display_id) override;
   void Close() override;
 
-  std::vector<content::WebContents*> GetRunningApplications();
-
   // Get the refocus url pattern, which can be used to identify this application
   // from a URL link.
   const GURL& refocus_url() const { return refocus_url_; }
   // Set the refocus url pattern. Used by unit tests.
   void set_refocus_url(const GURL& refocus_url) { refocus_url_ = refocus_url; }
 
+  bool HasRunningApplications();
+
  protected:
   explicit AppShortcutLauncherItemController(const ash::ShelfID& shelf_id);
 
  private:
-  // Get the last running application.
-  content::WebContents* GetLRUApplication();
+  // BrowserListObserver:
+  void OnBrowserClosing(Browser* browser) override;
 
-  // Activate the browser with the given |content| and show the associated tab.
-  // Returns the action performed by activating the content.
-  ash::ShelfAction ActivateContent(content::WebContents* content);
+  std::vector<content::WebContents*> GetAppWebContents();
+  std::vector<Browser*> GetAppBrowsers();
 
-  // Advance to the next item if an owned item is already active. The function
-  // will return true if it has successfully advanced.
-  bool AdvanceToNextApp();
+  // Activate the browser with the given |content| and show the associated tab,
+  // or minimize the browser if it is already active. Returns the action
+  // performed by activating the content.
+  ash::ShelfAction ActivateContentOrMinimize(content::WebContents* content,
+                                             bool allow_minimize);
+
+  // If an owned item is already active, this function advances to the next item
+  // (or bounce the browser if there is only one item) and returns a shelf
+  // action. Otherwise, it returns nullopt.
+  base::Optional<ash::ShelfAction> AdvanceToNextApp();
 
   // Returns true if the application is a V2 app.
   bool IsV2App();
@@ -82,14 +89,23 @@ class AppShortcutLauncherItemController : public ash::ShelfItemDelegate {
   // Returns true if it is allowed to try starting a V2 app again.
   bool AllowNextLaunchAttempt();
 
+  bool IsWindowedWebApp();
+
+  size_t AppMenuSize();
+  void ClearAppMenu();
+
   GURL refocus_url_;
 
   // Since V2 applications can be undetectable after launching, this timer is
   // keeping track of the last launch attempt.
   base::Time last_launch_attempt_;
 
-  // The cached list of open app web contents shown in an application menu.
-  std::vector<content::WebContents*> app_menu_items_;
+  // The cached lists of open app shown in an application menu. We either cache
+  // by the web contents or by the browsers, and this is indicated by the value
+  // of |app_menu_cached_by_browsers_|.
+  std::vector<content::WebContents*> app_menu_web_contents_;
+  std::vector<Browser*> app_menu_browsers_;
+  bool app_menu_cached_by_browsers_ = false;
 
   std::unique_ptr<ShelfContextMenu> context_menu_;
 

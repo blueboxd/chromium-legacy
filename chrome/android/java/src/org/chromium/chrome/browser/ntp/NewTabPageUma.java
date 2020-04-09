@@ -182,29 +182,6 @@ public final class NewTabPageUma {
     }
 
     /**
-     * Records how content suggestions have been updated in the UI.
-     * @param result result key, one of {@link ContentSuggestionsUIUpdateResult}'s values.
-     */
-    public static void recordUIUpdateResult(
-            @ContentSuggestionsUIUpdateResult int result) {
-        RecordHistogram.recordEnumeratedHistogram("NewTabPage.ContentSuggestions.UIUpdateResult2",
-                result, ContentSuggestionsUIUpdateResult.NUM_ENTRIES);
-    }
-
-    /**
-     * Record how many content suggestions have been seen by the user in the UI section before the
-     * section was successfully updated.
-     * @param numberOfSuggestionsSeen The number of content suggestions seen so far in the section.
-     */
-    public static void recordNumberOfSuggestionsSeenBeforeUIUpdateSuccess(
-            int numberOfSuggestionsSeen) {
-        assert numberOfSuggestionsSeen >= 0;
-        RecordHistogram.recordCount100Histogram(
-                "NewTabPage.ContentSuggestions.UIUpdateSuccessNumberOfSuggestionsSeen",
-                numberOfSuggestionsSeen);
-    }
-
-    /**
      * Record a NTP impression (even potential ones to make informed product decisions). If the
      * impression type is {@link NewTabPageUma#NTP_IMPRESSION_REGULAR}, also records a user action.
      * @param impressionType Type of the impression from NewTabPageUma.java

@@ -237,6 +237,9 @@ class CreditCard : public AutofillDataModel {
   base::string16 ObfuscatedLastFourDigits() const;
   // A label for this card formatted as 'IssuerNetwork - ****2345'.
   base::string16 NetworkAndLastFourDigits() const;
+  // A label for this card formatted as 'Nickname - ****2345' if nickname is
+  // available and valid; otherwise, formatted as 'IssuerNetwork - ****2345'.
+  base::string16 NicknameOrNetworkAndLastFourDigits() const;
   // A label for this card formatted as
   // 'BankName/Netowrk' - ****2345, expires on MM/YY' if bank name
   // experiment turned on and bank name available; otherwise, formatted as
@@ -266,10 +269,13 @@ class CreditCard : public AutofillDataModel {
   // Returns whether the card has a cardholder name.
   bool HasNameOnCard() const;
 
+  // Returns whether the card has a valid nickname.
+  bool HasValidNickname() const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(CreditCardTest, SetExpirationDateFromString);
   FRIEND_TEST_ALL_PREFIXES(CreditCardTest, SetExpirationYearFromString);
-  FRIEND_TEST_ALL_PREFIXES(CreditCardTest, BankNameAndLastFourDigitsStrings);
+  FRIEND_TEST_ALL_PREFIXES(CreditCardTest, NicknameAndLastFourDigitsStrings);
 
   base::string16 Expiration2DigitYearAsString() const;
 
@@ -283,6 +289,10 @@ class CreditCard : public AutofillDataModel {
 
   // The issuer network of the card to fill in to the page, e.g. 'Mastercard'.
   base::string16 NetworkForFill() const;
+
+  // A label for this card formatted as 'Nickname - ****2345'. Always call
+  // HasValidNickname() before calling this.
+  base::string16 NicknameAndLastFourDigits() const;
 
   // Sets the name_on_card_ value based on the saved name parts.
   void SetNameOnCardFromSeparateParts();

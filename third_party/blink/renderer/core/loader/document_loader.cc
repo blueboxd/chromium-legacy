@@ -1649,6 +1649,9 @@ void DocumentLoader::InstallNewDocument(
     document->SetDeferredCompositorCommitIsAllowed(false);
   }
 
+  if (RuntimeEnabledFeatures::ForceLoadAtTopEnabled(document))
+    CountUse(WebFeature::kForceLoadAtTop);
+
   // Log if the document was blocked by CSP checks now that the new Document has
   // been created and console messages will be properly displayed.
   if (was_blocked_by_csp_) {

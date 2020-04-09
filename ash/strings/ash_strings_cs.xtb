@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">Kliknutím zobrazíte další možnosti</translation>
 <translation id="1570871743947603115">Přepnout Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Získat přístup k veškeré vaší aktivitě v této relaci</translation>
-<translation id="1608626060424371292">Odebrat tohoto uživatele</translation>
+<translation id="1632985212731562677">Přístup pomocí přepínačů lze vypnout v Nastavení &gt; Přístupnost.</translation>
 <translation id="1654477262762802994">Zahájit hlasový dotaz</translation>
 <translation id="1658406695958299976">Je nám líto, vaše heslo se stále nedaří ověřit. Poznámka: Pokud jste heslo nedávno změnili, bude nové heslo možné použít až po odhlášení. Zde použijte staré heslo.</translation>
 <translation id="1677472565718498478">zbývající čas: <ph name="TIME" /></translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">Správce zařízení může sledovat vaši aktivitu při procházení.</translation>
 <translation id="3181441307743005334">Restartování může chvíli trvat</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Připojeno k zařízení}few{Připojeno k # zařízením}many{Připojeno k # zařízení}other{Připojeno k # zařízením}}</translation>
+<translation id="3203405173652969239">Je zapnutý přístup pomocí přepínačů</translation>
 <translation id="3207953481422525583">Uživatelská nastavení</translation>
 <translation id="3217205077783620295">Zvuk je zapnutý. Přepnutím ho vypnete.</translation>
 <translation id="3226991577105957773">a ještě <ph name="COUNT" /></translation>
@@ -651,6 +652,7 @@
 <translation id="9211681782751733685">Doba zbývající do úplného nabití baterie: <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Nastavit tapetu</translation>
 <translation id="921989828232331238">Rodič zařízení na celý den uzamkl</translation>
+<translation id="9220525904950070496">Odebrat účet</translation>
 <translation id="923686485342484400">Odhlásíte se dvojitým stisknutím kombinace kláves Control Shift Q.</translation>
 <translation id="938963181863597773">Co mám v kalendáři?</translation>
 <translation id="945522503751344254">Odeslat zpětnou vazbu</translation>

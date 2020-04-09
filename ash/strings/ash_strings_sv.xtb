@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">Klicka här för fler alternativ</translation>
 <translation id="1570871743947603115">Aktivera och inaktivera Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Få tillgång till all aktivitet i sessionen</translation>
-<translation id="1608626060424371292">Ta bort denna användare</translation>
+<translation id="1632985212731562677">Brytarstyrning kan inaktiveras under Inställningar &gt; Tillgänglighet</translation>
 <translation id="1654477262762802994">Säg en sökfråga</translation>
 <translation id="1658406695958299976">Det gick inte att verifiera lösenordet. Obs! Om du nyligen har bytt lösenord börjar det nya lösenordet att gälla först när du loggar ut. Använd det gamla lösenordet här.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> kvar</translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">Enhetsadministratören kan övervaka din webbaktivitet.</translation>
 <translation id="3181441307743005334">Det kan ta en stund att starta om</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Ansluten till en enhet}other{Ansluten till # enheter}}</translation>
+<translation id="3203405173652969239">Brytarstyrning har aktiverats</translation>
 <translation id="3207953481422525583">Användarinställningar</translation>
 <translation id="3217205077783620295">Ljudet är på. Om du ändrar läge stängs ljudet av.</translation>
 <translation id="3226991577105957773">och <ph name="COUNT" /> till</translation>
@@ -651,6 +652,7 @@
 <translation id="9211681782751733685"><ph name="TIME_REMAINING" /> återstår tills batteriet är fulladdat.</translation>
 <translation id="9215934040295798075">Ange bakgrund</translation>
 <translation id="921989828232331238">Din förälder har låst enheten för dagen</translation>
+<translation id="9220525904950070496">Ta bort konto</translation>
 <translation id="923686485342484400">Tryck på Control + skift + Q två gånger om du vill logga ut.</translation>
 <translation id="938963181863597773">Vad står det i min kalender?</translation>
 <translation id="945522503751344254">Skicka synpunkter</translation>

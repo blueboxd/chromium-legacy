@@ -111,6 +111,9 @@ extern const char kAutofillEnableCompanyNameDescription[];
 extern const char kAutofillEnableLocalCardMigrationForNonSyncUserName[];
 extern const char kAutofillEnableLocalCardMigrationForNonSyncUserDescription[];
 
+extern const char kAutofillEnableSurfacingServerCardNicknameName[];
+extern const char kAutofillEnableSurfacingServerCardNicknameDescription[];
+
 extern const char kAutofillEnableToolbarStatusChipName[];
 extern const char kAutofillEnableToolbarStatusChipDescription[];
 
@@ -653,6 +656,9 @@ extern const char kJavascriptHarmonyDescription[];
 
 extern const char kJavascriptHarmonyShippingName[];
 extern const char kJavascriptHarmonyShippingDescription[];
+
+extern const char kLauncherSettingsSearchName[];
+extern const char kLauncherSettingsSearchDescription[];
 
 extern const char kLegacyTLSEnforcedName[];
 extern const char kLegacyTLSEnforcedDescription[];

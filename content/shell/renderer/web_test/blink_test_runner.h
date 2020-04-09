@@ -42,6 +42,9 @@ class AppBannerService;
 // This is the renderer side of the webkit test runner.
 // TODO(lukasza): Rename to WebTestRenderViewObserver for consistency with
 // WebTestRenderFrameObserver.
+// TODO(danakj): Remove RenderViewObserver, but we use the fact it's a
+// RenderViewObserver to access a keyed global map of RenderViews to
+// BlinkTestRunners.
 class BlinkTestRunner : public RenderViewObserver,
                         public RenderViewObserverTracker<BlinkTestRunner>,
                         public WebTestDelegate {
@@ -49,13 +52,7 @@ class BlinkTestRunner : public RenderViewObserver,
   explicit BlinkTestRunner(RenderView* render_view);
   ~BlinkTestRunner() override;
 
-  // RenderViewObserver implementation.
-  void DidClearWindowObject(blink::WebLocalFrame* frame) override;
-
   // WebTestDelegate implementation.
-  void ClearEditCommand() override;
-  void SetEditCommand(const std::string& name,
-                      const std::string& value) override;
   void PrintMessageToStderr(const std::string& message) override;
   void PrintMessage(const std::string& message) override;
   void PostTask(base::OnceClosure task) override;
@@ -70,7 +67,6 @@ class BlinkTestRunner : public RenderViewObserver,
   TestPreferences* Preferences() override;
   void ApplyPreferences() override;
   void SetPopupBlockingEnabled(bool block_popups) override;
-  void UseUnfortunateSynchronousResizeMode(bool enable) override;
   void EnableAutoResizeMode(const blink::WebSize& min_size,
                             const blink::WebSize& max_size) override;
   void DisableAutoResizeMode(const blink::WebSize& new_size) override;
@@ -136,13 +132,6 @@ class BlinkTestRunner : public RenderViewObserver,
   void RunIdleTasks(base::OnceClosure callback) override;
   void ForceTextInputStateUpdate(blink::WebLocalFrame* frame) override;
   void SetScreenOrientationChanged() override;
-
-  // Resets a RenderView to a known state for web tests. It is used both when
-  // a RenderView is created and when reusing an existing RenderView for the
-  // next test case.
-  // When reusing an existing RenderView, |for_new_test| should be true, which
-  // also resets additional state, like the main frame's name and opener.
-  void Reset(bool for_new_test);
 
   // Message handlers forwarded by WebTestRenderFrameObserver.
   void OnSetTestConfiguration(mojom::ShellTestConfigurationPtr params);

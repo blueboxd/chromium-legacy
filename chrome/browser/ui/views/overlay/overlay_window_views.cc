@@ -212,15 +212,6 @@ std::unique_ptr<content::OverlayWindow> OverlayWindowViews::Create(
   params.remove_standard_frame = true;
   params.name = "PictureInPictureWindow";
   params.layer_type = ui::LAYER_NOT_DRAWN;
-#if defined(OS_CHROMEOS)
-  // PIP windows are not activatable by default in ChromeOS. Although this can
-  // be configured in ash/wm/window_state.cc, this is still meaningful when
-  // window service is used, since the activatability isn't shared between
-  // the window server and the client (here). crbug.com/923049 will happen
-  // without this.
-  // TODO(mukai): allow synchronizing activatability and remove this.
-  params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
-#endif
   // Set WidgetDelegate for more control over |widget_|.
   params.delegate = new OverlayWindowWidgetDelegate(overlay_window.get());
 

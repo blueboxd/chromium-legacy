@@ -135,9 +135,6 @@ class AndroidMetricsServiceClient : public MetricsServiceClient,
   }
 
  protected:
-  // Called by Initialize() to allow embedder specific initialization.
-  virtual void InitInternal() = 0;
-
   // Called by MaybeStartMetrics() to allow embedder specific initialization.
   virtual void OnMetricsStart() = 0;
 

@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">Kliknutím zobrazíte ďalšie možnosti</translation>
 <translation id="1570871743947603115">Prepnúť Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Získajte prístup k všetkej svojej aktivite v tejto relácii</translation>
-<translation id="1608626060424371292">Odstrániť tohto používateľa</translation>
+<translation id="1632985212731562677">Ovládanie prepínačmi je možné deaktivovať v sekcii Nastavenia &gt; Dostupnosť.</translation>
 <translation id="1654477262762802994">Spustiť hlasový dopyt</translation>
 <translation id="1658406695958299976">Je nám to ľúto, ale vaše heslo sa stále nedarí overiť. Poznámka: Ak ste ho nedávno zmenili, nové heslo sa použije až po odhlásení. Tu použite staré heslo.</translation>
 <translation id="1677472565718498478">Zostávajúci čas: <ph name="TIME" /></translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">Správca zariadenia môže sledovať vašu aktivitu prehliadania.</translation>
 <translation id="3181441307743005334">Reštart môže chvíľu trvať</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Pripojené k zariadeniu}few{Pripojené k # zariadeniam}many{Connected to # devices}other{Pripojené k # zariadeniam}}</translation>
+<translation id="3203405173652969239">Ovládanie prepínačmi je aktivované</translation>
 <translation id="3207953481422525583">Nastavenia používateľa</translation>
 <translation id="3217205077783620295">Zvuk je zapnutý. Ak ho chcete vypnúť, prepnite tlačidlo.</translation>
 <translation id="3226991577105957773">a ďalšie (<ph name="COUNT" />)</translation>
@@ -651,6 +652,7 @@
 <translation id="9211681782751733685">Zostávajúci čas do úplného nabitia batérie: <ph name="TIME_REMAINING" /></translation>
 <translation id="9215934040295798075">Nastaviť tapetu</translation>
 <translation id="921989828232331238">Rodič na dnes toto zariadenie uzamkol</translation>
+<translation id="9220525904950070496">Odstrániť účet</translation>
 <translation id="923686485342484400">Ak sa chcete odhlásiť, stlačte dvakrát kombináciu klávesov Ctrl, Shift a Q.</translation>
 <translation id="938963181863597773">Čo mám v kalendári?</translation>
 <translation id="945522503751344254">Poslať spätnú väzbu</translation>

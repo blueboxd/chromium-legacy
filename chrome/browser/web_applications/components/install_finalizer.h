@@ -94,9 +94,6 @@ class InstallFinalizer {
                            bool shortcut_created,
                            content::WebContents* web_contents);
 
-  virtual bool CanRevealAppShim() const = 0;
-  virtual void RevealAppShim(const AppId& app_id) = 0;
-
   void SetSubsystems(AppRegistrar* registrar, WebAppUiManager* ui_manager);
 
   virtual ~InstallFinalizer() = default;

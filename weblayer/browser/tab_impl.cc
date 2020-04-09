@@ -60,6 +60,7 @@
 #include "weblayer/browser/java/jni/TabImpl_jni.h"
 #include "weblayer/browser/javascript_tab_modal_dialog_manager_delegate_android.h"
 #include "weblayer/browser/top_controls_container_view.h"
+#include "weblayer/browser/webrtc/media_stream_manager.h"
 #endif
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
@@ -553,17 +554,13 @@ void TabImpl::RequestMediaAccessPermission(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     content::MediaResponseCallback callback) {
-  webrtc::MediaStreamDevicesController::RequestPermissions(
-      request, nullptr,
-      base::BindOnce(
-          [](content::MediaResponseCallback callback,
-             const blink::MediaStreamDevices& devices,
-             blink::mojom::MediaStreamRequestResult result,
-             bool blocked_by_feature_policy, ContentSetting audio_setting,
-             ContentSetting video_setting) {
-            std::move(callback).Run(devices, result, {});
-          },
-          base::Passed(std::move(callback))));
+#if defined(OS_ANDROID)
+  MediaStreamManager::FromWebContents(web_contents)
+      ->RequestMediaAccessPermission(request, std::move(callback));
+#else
+  std::move(callback).Run(
+      {}, blink::mojom::MediaStreamRequestResult::NOT_SUPPORTED, nullptr);
+#endif
 }
 
 bool TabImpl::CheckMediaAccessPermission(

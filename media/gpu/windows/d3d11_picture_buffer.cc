@@ -22,11 +22,14 @@
 namespace media {
 
 D3D11PictureBuffer::D3D11PictureBuffer(
+    scoped_refptr<base::SequencedTaskRunner> delete_task_runner,
     ComD3D11Texture2D texture,
     std::unique_ptr<Texture2DWrapper> texture_wrapper,
     gfx::Size size,
     size_t level)
-    : texture_(std::move(texture)),
+    : RefCountedDeleteOnSequence<D3D11PictureBuffer>(
+          std::move(delete_task_runner)),
+      texture_(std::move(texture)),
       texture_wrapper_(std::move(texture_wrapper)),
       size_(size),
       level_(level) {}
@@ -34,16 +37,19 @@ D3D11PictureBuffer::D3D11PictureBuffer(
 D3D11PictureBuffer::~D3D11PictureBuffer() {
 }
 
-bool D3D11PictureBuffer::Init(GetCommandBufferHelperCB get_helper_cb,
-                              ComD3D11VideoDevice video_device,
-                              const GUID& decoder_guid,
-                              std::unique_ptr<MediaLog> media_log) {
+bool D3D11PictureBuffer::Init(
+    scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
+    GetCommandBufferHelperCB get_helper_cb,
+    ComD3D11VideoDevice video_device,
+    const GUID& decoder_guid,
+    std::unique_ptr<MediaLog> media_log) {
   D3D11_VIDEO_DECODER_OUTPUT_VIEW_DESC view_desc = {};
   view_desc.DecodeProfile = decoder_guid;
   view_desc.ViewDimension = D3D11_VDOV_DIMENSION_TEXTURE2D;
   view_desc.Texture2D.ArraySlice = (UINT)level_;
 
-  if (!texture_wrapper_->Init(std::move(get_helper_cb))) {
+  if (!texture_wrapper_->Init(std::move(gpu_task_runner),
+                              std::move(get_helper_cb))) {
     MEDIA_LOG(ERROR, media_log) << "Failed to Initialize the wrapper";
     return false;
   }

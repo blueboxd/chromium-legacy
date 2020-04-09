@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">Chofoza ukuze uthole izinketho eziningi</translation>
 <translation id="1570871743947603115">Shintsha i-Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Finyelela kuwo wonke umsebenzi wakho kule seshini</translation>
-<translation id="1608626060424371292">Susa lo msebenzisi</translation>
+<translation id="1632985212731562677">Ukushintsha ukufinyelela kungakhutshazwa kokuthi Izilungiselelo &gt; Ukufinyeleleka.</translation>
 <translation id="1654477262762802994">Qalisa umbuzo wezwi</translation>
 <translation id="1658406695958299976">Uxolo, iphasiwedi yakho namanje ayikwazanga ukuqinisekiswa. Yazi: Uma uguqule iphasiwedi kamuva nje, iphasiwedi yakho entsha izosetshenziswa ngemuva kokuthi uphume ngemvume, sicela usebenzise iphasiwedi endala lapha.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> esele</translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">Umlawuli wedivayisi angangamela umsebenzi wakho wokupheqa.</translation>
 <translation id="3181441307743005334">Ukuqala kabusha kungathatha isikhathi</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Kuxhunywe kudivayisi}one{Kuxhunywe kumadivayisi angu-#}other{Kuxhunywe kumadivayisi angu-#}}</translation>
+<translation id="3203405173652969239">Ukushintsha ukufinyelela kunikwe amandla</translation>
 <translation id="3207953481422525583">Izilungiselelo Zomsebenzisi</translation>
 <translation id="3217205077783620295">Ivolomu ivuliwe, ukushintsha kuzothulisa umsindo.</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> okuningi</translation>
@@ -651,6 +652,7 @@
 <translation id="9211681782751733685"><ph name="TIME_REMAINING" /> osele ibhethri lize lishajiwe ngokugcwele.</translation>
 <translation id="9215934040295798075">Setha isithombe sangemuva</translation>
 <translation id="921989828232331238">Umzali wakho ukhiyele idivayisi yakho usuku</translation>
+<translation id="9220525904950070496">Susa i-akhawunti</translation>
 <translation id="923686485342484400">Cindezela u-Control Shift Q kabili ukuze uphume ngemvume.</translation>
 <translation id="938963181863597773">Yini okukukhalenda yami?</translation>
 <translation id="945522503751344254">Thumela impendulo</translation>

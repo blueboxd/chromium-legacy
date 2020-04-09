@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_RESOURCE_OPS_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_RESOURCE_OPS_H_
 
+#include "base/memory/weak_ptr.h"
 #include "components/services/storage/public/mojom/service_worker_storage_control.mojom.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 
@@ -31,8 +32,16 @@ class ServiceWorkerResourceReaderImpl
  private:
   // storage::mojom::ServiceWorkerResourceReader implementations:
   void ReadResponseHead(ReadResponseHeadCallback callback) override;
+  void ReadData(int64_t size, ReadDataCallback callback) override;
+
+  void DidReadDataComplete();
 
   const std::unique_ptr<ServiceWorkerResponseReader> reader_;
+
+  class DataReader;
+  std::unique_ptr<DataReader> data_reader_;
+
+  base::WeakPtrFactory<ServiceWorkerResourceReaderImpl> weak_factory_{this};
 };
 
 // The implementation of storage::mojom::ServiceWorkerResourceWriter.

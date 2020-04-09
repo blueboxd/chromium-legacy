@@ -55,7 +55,6 @@
 <translation id="1550523713251050646">थप विकल्पहरूका लागि क्लिक गर्नुहोस्</translation>
 <translation id="1570871743947603115">ब्लुटुथ टगल गर्नुहोस्। <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">यो सत्रअन्तर्गतका आफ्ना सबै क्रियाकलापमाथि पहुँच राख्नुहोस्</translation>
-<translation id="1608626060424371292">यो प्रयोगकर्तालाई हटाउनुहोस्</translation>
 <translation id="1654477262762802994">आवाजमार्फत गरिने क्वेरी सुरु गर्नुहोस्</translation>
 <translation id="1658406695958299976">माफ गर्नुहोस्, तपाईंको पासवर्ड अझै प्रमाणित गर्न सकिएन। टिपोट: तपाईंले हालसालै आफ्नो पासवर्ड परिवर्तन गर्नुभएको खण्डमा तपाईं साइन आउट हुनेबित्तिकै तपाईंको नयाँ पासवर्ड लागू हुनेछ, कृपया यहाँ पुरानै पासवर्ड प्रयोग गर्नुहोस्।</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> बाँकी छ</translation>
@@ -105,6 +104,7 @@
 <translation id="2268813581635650749">सबैलाई साइन आउट गर्नुहोस्</translation>
 <translation id="2277103315734023688">अगाडि जानुहोस्</translation>
 <translation id="2292698582925480719">प्रदर्शनको अनुपात</translation>
+<translation id="2295777434187870477">माइक सक्रिय छ, टगल गर्नुले माइक म्युट गर्ने छ।</translation>
 <translation id="2298170939937364391">पूर्ण स्क्रिन म्याग्निफायर सक्षम पारियो। यसलाई निष्क्रिय पार्न फेरि Ctrl+Search+M थिच्नुहोस्।</translation>
 <translation id="2302092602801625023">यो खाता Family Link मार्फत व्यवस्थित गरिन्छ</translation>
 <translation id="2303600792989757991">सञ्झ्याल सिंहावलोकन टगल गर्नुहोस्</translation>
@@ -138,6 +138,7 @@
 <translation id="2658778018866295321">क्लिक गरेर ड्र्याग गर्नुहोस्</translation>
 <translation id="2700493154570097719">आफ्नो किबोर्ड सेट गर्नुहोस्‌</translation>
 <translation id="2704781753052663061">अन्य Wi-Fi नेटवर्कहरूमा सामेल हुनुहोस्</translation>
+<translation id="2705001408393684014">माइक टगल गर्नुहोस्। <ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">रात्रि प्रकाश</translation>
 <translation id="2727977024730340865">कम शक्ति भएको चार्जरमा प्लग इन गरिएको छ। ब्याट्री चार्जिङ भरपर्दो नहुन सक्छ।</translation>
 <translation id="2792498699870441125">Alt + खोज</translation>
@@ -296,6 +297,7 @@
 <translation id="4665114317261903604">बाधा नपुर्‍याउनुहोस् नामक मोड टगल गर्नुहोस्। <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">अभिभावकको कोडमार्फत यन्त्र अनलक गर्नुहोस्</translation>
 <translation id="4702647871202761252">गोपनीयताको स्क्रिन निष्क्रिय छ</translation>
+<translation id="4705716602320768426">प्रतिक्रिया दिनुहोस्</translation>
 <translation id="4710243778082831592">IME का सेटिङहरू</translation>
 <translation id="4731797938093519117">अभिभावकको पहुँच</translation>
 <translation id="4734965478015604180">तेर्सो</translation>
@@ -376,6 +378,7 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">खुल्ला</translation>
+<translation id="5920710855273935292">माइक म्युट गरिएको छ।</translation>
 <translation id="5947494881799873997">उल्टाउनुहोस्</translation>
 <translation id="595202126637698455">प्रदर्शन ट्रेसिङ सक्षम गरियो</translation>
 <translation id="5957083217255311415">मोबाइल डेटा निष्क्रिय पारिएको छ।</translation>
@@ -647,6 +650,7 @@
 <translation id="9211681782751733685">ब्याट्री पूर्ण रूपमा चार्ज हुन <ph name="TIME_REMAINING" /> बाँकी छ।</translation>
 <translation id="9215934040295798075">वालपेपर सेट गर्नुहोस्</translation>
 <translation id="921989828232331238">तपाईंका अभिभावकले आजका लागि तपाईंको यन्त्र लक गर्नुभयो</translation>
+<translation id="9220525904950070496">खाता हटाउनुहोस्</translation>
 <translation id="923686485342484400">साइन आउट गर्न दुई पटक Control Q थिच्नुहोस्।</translation>
 <translation id="938963181863597773">मेरो क्यालेन्डरमा के छ?</translation>
 <translation id="945522503751344254">पृष्ठपोषण पठाउनुहोस्</translation>

@@ -15,7 +15,6 @@
 <translation id="399130515869721714">Det gick inte att öppna inloggningsskärmen för Google på grund av ett problem med installationen av Chrome på den här enheten. Kontakta administratören.</translation>
 <translation id="4057329986137569701">Ett internt fel uppstod.</translation>
 <translation id="4267670563222825190">Ingen domänanvändare hittades för kontot. Kontakta administratören.</translation>
-<translation id="4706454071748629324">Det gick inte att lägga till en ny användare. Datorn tillåter bara att en användare skapas med ett jobbkonto.</translation>
 <translation id="4744575902940448763">Det gick inte att synkronisera lösenordet för jobbkontot till Windows-profilen eftersom lösenordsuppdateringar på enheten är begränsade till organisationen. Kontakta administratören om du behöver hjälp.</translation>
 <translation id="5186761973554910131">Ogiltigt datornamn angavs under försöket att byta lösenord. Kontakta administratören.</translation>
 <translation id="5265714013989877288">Det gick inte att fortsätta eftersom ett fel uppstod medan lösenordet för Windows ändrades. Kontakta administratören.</translation>

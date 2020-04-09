@@ -61,7 +61,6 @@ class MediaFeedsFetcherTest : public ChromeRenderViewHostTestHarness {
     task_environment()->RunUntilIdle();
 
     ASSERT_TRUE(GetCurrentRequest().url.is_valid());
-    EXPECT_TRUE(GetCurrentRequest().attach_same_site_cookies);
     EXPECT_TRUE(GetCurrentRequest().site_for_cookies.IsEquivalent(
         net::SiteForCookies::FromUrl(GURL(kTestUrl))));
     EXPECT_EQ(GetCurrentlyQueriedHeaderValue(net::HttpRequestHeaders::kAccept),
@@ -84,12 +83,8 @@ class MediaFeedsFetcherTest : public ChromeRenderViewHostTestHarness {
         url, value, base::Time::Now(), base::nullopt /* server_time */));
     EXPECT_TRUE(cc.get());
 
-    net::CookieOptions options;
-    options.set_include_httponly();
-    options.set_same_site_cookie_context(
-        net::CookieOptions::SameSiteCookieContext::MakeInclusive());
     cookie_manager->SetCanonicalCookie(
-        *cc.get(), url.scheme(), options,
+        *cc.get(), url.scheme(), net::CookieOptions::MakeAllInclusive(),
         base::BindOnce(
             [](bool* result, base::RunLoop* run_loop,
                net::CanonicalCookie::CookieInclusionStatus set_cookie_status) {

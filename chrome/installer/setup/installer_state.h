@@ -86,6 +86,10 @@ class InstallerState {
   // The ClientState key by which we interact with Google Update.
   const base::string16& state_key() const { return state_key_; }
 
+  // Returns true if this is an update of multi-install Chrome to
+  // single-install.
+  bool is_migrating_to_single() const { return is_migrating_to_single_; }
+
   // Returns the currently installed version in |target_path|, or NULL if no
   // products are installed. Ownership is passed to the caller.
   base::Version* GetCurrentVersion(
@@ -107,6 +111,9 @@ class InstallerState {
   // Sets the current stage of processing. This reports a progress value to
   // Google Update for presentation to a user.
   void SetStage(InstallerStage stage) const;
+
+  // Strips all evidence of multi-install from Chrome's "ap" value.
+  void UpdateChannels() const;
 
   // Sets installer result information in the registry for consumption by Google
   // Update. The InstallerResult value is set to 0 (SUCCESS) or 1
@@ -138,6 +145,7 @@ class InstallerState {
   HKEY root_key_;
   bool msi_;
   bool verbose_logging_;
+  bool is_migrating_to_single_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InstallerState);

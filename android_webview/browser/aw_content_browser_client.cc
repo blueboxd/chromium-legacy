@@ -267,6 +267,28 @@ void CreateMediaDrmStorage(
 }
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
 
+// Helper method that checks the RenderProcessHost is still alive before hopping
+// over to the IO thread.
+void MaybeCreateSafeBrowsing(
+    int rph_id,
+    content::ResourceContext* resource_context,
+    base::RepeatingCallback<scoped_refptr<safe_browsing::UrlCheckerDelegate>()>
+        get_checker_delegate,
+    mojo::PendingReceiver<safe_browsing::mojom::SafeBrowsing> receiver) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  content::RenderProcessHost* render_process_host =
+      content::RenderProcessHost::FromID(rph_id);
+  if (!render_process_host)
+    return;
+
+  base::PostTask(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&safe_browsing::MojoSafeBrowsingImpl::MaybeCreate, rph_id,
+                     resource_context, std::move(get_checker_delegate),
+                     std::move(receiver)));
+}
+
 }  // anonymous namespace
 
 std::string GetProduct() {
@@ -710,12 +732,12 @@ void AwContentBrowserClient::ExposeInterfacesToRenderer(
       render_process_host->GetBrowserContext()->GetResourceContext();
   registry->AddInterface(
       base::BindRepeating(
-          &safe_browsing::MojoSafeBrowsingImpl::MaybeCreate,
-          render_process_host->GetID(), resource_context,
+          &MaybeCreateSafeBrowsing, render_process_host->GetID(),
+          resource_context,
           base::BindRepeating(
               &AwContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate,
               base::Unretained(this))),
-      base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
+      base::CreateSingleThreadTaskRunner({BrowserThread::UI}));
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   auto create_spellcheck_host =

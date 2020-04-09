@@ -129,12 +129,12 @@ TEST_F(LocationBarModelImplTest, FormatsReaderModeUrls) {
   base::string16 originalFormattedFullUrl = model()->GetFormattedFullURL();
   // We expect that they don't start with "http://." We want the reader mode
   // URL shown to the user to be the same as this original URL.
-#ifdef OS_IOS
+#if defined(OS_IOS)
   EXPECT_EQ(base::ASCIIToUTF16("example.com/TestSuffix"), originalDisplayUrl);
-#else
+#else   // #!defined(OS_IOS)
   EXPECT_EQ(base::ASCIIToUTF16("example.com/article.html/TestSuffix"),
             originalDisplayUrl);
-#endif
+#endif  // #defined (OS_IOS)
   EXPECT_EQ(base::ASCIIToUTF16("www.example.com/article.html/TestSuffix"),
             originalFormattedFullUrl);
 
@@ -156,6 +156,21 @@ TEST_F(LocationBarModelImplTest, FormatsReaderModeUrls) {
   delegate()->SetURL(distilled);
   EXPECT_EQ(originalDisplayUrl, model()->GetURLForDisplay());
   EXPECT_EQ(originalFormattedFullUrl, model()->GetFormattedFullURL());
+
+  // Invalid dom-distiller:// URLs should be shown, because they do not
+  // correspond to any article.
+  delegate()->SetURL(GURL(("chrome-distiller://abc/?url=invalid")));
+#if defined(OS_IOS)
+  EXPECT_EQ(base::ASCIIToUTF16("chrome-distiller://abc/TestSuffix"),
+            model()->GetURLForDisplay());
+#else   // #!defined(OS_IOS)
+  EXPECT_EQ(
+      base::ASCIIToUTF16("chrome-distiller://abc/?url=invalid/TestSuffix"),
+      model()->GetURLForDisplay());
+#endif  // #defined (OS_IOS)
+  EXPECT_EQ(
+      base::ASCIIToUTF16("chrome-distiller://abc/?url=invalid/TestSuffix"),
+      model()->GetFormattedFullURL());
 }
 
 // TODO(https://crbug.com/1010418): Fix flakes on linux_chromium_asan_rel_ng and

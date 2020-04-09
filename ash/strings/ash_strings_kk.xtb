@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">Қосымша опциялар үшін басыңыз</translation>
 <translation id="1570871743947603115">Bluetooth функциясын қосу/өшіру. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Осы сеанстағы барлық әрекеттеріңізге кіріңіз</translation>
-<translation id="1608626060424371292">Бұл пайдаланушыны алып тастау</translation>
+<translation id="1632985212731562677">Switch Access функциясын "Параметрлер &gt; Accessibility" бөлімінен өшіруге болады.</translation>
 <translation id="1654477262762802994">Дауыстық сұрауды бастау</translation>
 <translation id="1658406695958299976">Өкінішке орай, құпия сөзіңіз расталмады. Ескерту: жақында құпия сөзіңізді өзгерткен болсаңыз, жаңа құпия сөзіңіз жүйеден шыққаннан кейін қолданылады, бұл жерде ескі құпия сөзіңізді пайдаланыңыз.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> қалды</translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">Құрылғы әкімшісі интернетті шолуыңызға қатысты ақпаратты көре алады.</translation>
 <translation id="3181441307743005334">Қайту іске қосуға біраз уақыт қажет болуы мүмкін</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Құрылғыға жалғанған}other{# құрылғыға жалғанған}}</translation>
+<translation id="3203405173652969239">Switch Access қосылды</translation>
 <translation id="3207953481422525583">Пайдаланушы параметрлері</translation>
 <translation id="3217205077783620295">Дыбыс деңгейі қосылып тұр. Түймені қайта бассаңыз, дауыс өшеді.</translation>
 <translation id="3226991577105957773">Тағы <ph name="COUNT" /></translation>
@@ -651,6 +652,7 @@
 <translation id="9211681782751733685"><ph name="TIME_REMAINING" /> өткен соң, батарея толық зарядталады.</translation>
 <translation id="9215934040295798075">Тұсқағазды орнату</translation>
 <translation id="921989828232331238">Ата-анаңыз құрылғыны бір күнге құлыптап қойды</translation>
+<translation id="9220525904950070496">Есептік жазбаны жою</translation>
 <translation id="923686485342484400">Шығу үшін Control + Shift + Q тіркесімін екі рет басыңыз.</translation>
 <translation id="938963181863597773">Күнтізбемде не бар?</translation>
 <translation id="945522503751344254">Пікір жіберу</translation>

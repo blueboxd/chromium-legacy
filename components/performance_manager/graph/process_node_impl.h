@@ -132,7 +132,7 @@ class ProcessNodeImpl
   const base::Process& GetProcess() const override;
   base::Time GetLaunchTime() const override;
   base::Optional<int32_t> GetExitStatus() const override;
-  void VisitFrameNodes(const FrameNodeVisitor& visitor) const override;
+  bool VisitFrameNodes(const FrameNodeVisitor& visitor) const override;
   base::flat_set<const FrameNode*> GetFrameNodes() const override;
   base::TimeDelta GetExpectedTaskQueueingDuration() const override;
   bool GetMainThreadTaskLoadIsLow() const override;

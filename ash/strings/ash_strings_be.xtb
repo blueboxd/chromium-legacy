@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">Націсніце, каб убачыць дадатковыя параметры</translation>
 <translation id="1570871743947603115">Уключыць або выключыць Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Атрымліваць доступ да ўсіх вашых дзеянняў у гэтым сеансе</translation>
-<translation id="1608626060424371292">Выдаліць карыстальніка</translation>
+<translation id="1632985212731562677">Доступ праз пераключальнікі можна выключыць у раздзеле "Налады &gt; Спецыяльныя магчымасці".</translation>
 <translation id="1654477262762802994">Пачаць галасавы запыт</translation>
 <translation id="1658406695958299976">Пароль зноў не ўдалося спраўдзіць. Заўвага: калі вы нядаўна змянілі пароль, новы пароль будзе прыменены пасля выхаду, таму выкарыстайце тут стары пароль.</translation>
 <translation id="1677472565718498478">Засталося <ph name="TIME" /></translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">Адміністратар прылады можа сачыць за вашымі дзеяннямі ў браўзеры.</translation>
 <translation id="3181441307743005334">Перазапуск можа заняць некаторы час</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Падключана да прылады}one{Падключана да # прылады}few{Падключана да # прылад}many{Падключана да # прылад}other{Падключана да # прылады}}</translation>
+<translation id="3203405173652969239">Доступ праз пераключальнікі ўключаны</translation>
 <translation id="3207953481422525583">Налады карыстальніка</translation>
 <translation id="3217205077783620295">Гук уключаны, выключыць яго можна з дапамогай гэтага пераключальніка.</translation>
 <translation id="3226991577105957773">+ яшчэ <ph name="COUNT" /></translation>
@@ -298,7 +299,7 @@
 <translation id="4665114317261903604">Уключэнне рэжыму "Не турбаваць". <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Разблакіруйце прыладу бацькоўскім кодам</translation>
 <translation id="4702647871202761252">Экран прыватнасці выключаны</translation>
-<translation id="4705716602320768426">Водгук па файле.</translation>
+<translation id="4705716602320768426">Пакінуць водгук</translation>
 <translation id="4710243778082831592">Налады IME</translation>
 <translation id="4731797938093519117">Бацькоўскі доступ</translation>
 <translation id="4734965478015604180">Гарызантальна</translation>
@@ -651,6 +652,7 @@
 <translation id="9211681782751733685">Засталося часу да поўнай зарадкі акумулятара: <ph name="TIME_REMAINING" /></translation>
 <translation id="9215934040295798075">Задаць шпалеры</translation>
 <translation id="921989828232331238">На сёння бацькі заблакіравалі гэту прыладу</translation>
+<translation id="9220525904950070496">Выдаліць уліковы запіс</translation>
 <translation id="923686485342484400">Каб выйсці з уліковага запісу, двойчы націсніце "Ctrl+Shift+Q".</translation>
 <translation id="938963181863597773">Што ў маім календары?</translation>
 <translation id="945522503751344254">Адправіць водгук</translation>

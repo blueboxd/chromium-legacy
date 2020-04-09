@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">Noklikšķiniet, lai skatītu citas iespējas.</translation>
 <translation id="1570871743947603115">Pārslēgt Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Piekļūt visām jūsu darbībām šīs sesijas laikā</translation>
-<translation id="1608626060424371292">Noņemt šo lietotāju</translation>
+<translation id="1632985212731562677">Slēdžu piekļuvi var atspējot sadaļā Iestatījumi &gt; Pieejamība.</translation>
 <translation id="1654477262762802994">Sākt balss vaicājumu</translation>
 <translation id="1658406695958299976">Diemžēl jūsu paroli joprojām nevarēja verificēt. Ņemiet vērā: ja nesen mainījāt paroli, jaunā parole tiks lietota pēc izrakstīšanās. Lūdzu, šeit izmantojiet iepriekšējo paroli.</translation>
 <translation id="1677472565718498478">Atlikušais laiks: <ph name="TIME" /></translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">Ierīces administrators var uzraudzīt jūsu pārlūkošanas darbības.</translation>
 <translation id="3181441307743005334">Restartēšana var ilgt kādu brīdi</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Savienots ar ierīci}zero{Savienots ar # ierīcēm}one{Savienots ar # ierīci}other{Savienots ar # ierīcēm}}</translation>
+<translation id="3203405173652969239">Iespējota slēdžu piekļuve</translation>
 <translation id="3207953481422525583">Lietotāja iestatījumi</translation>
 <translation id="3217205077783620295">Skaņa ir ieslēgta. Pārslēdzot tiks izslēgta skaņa.</translation>
 <translation id="3226991577105957773">vēl <ph name="COUNT" /></translation>
@@ -651,6 +652,7 @@
 <translation id="9211681782751733685">Līdz pilnīgai akumulatora uzlādei atlikušais laiks: <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Iestatīt fona tapeti</translation>
 <translation id="921989828232331238">Jūsu vecāki bloķēja jūsu ierīci šai dienai</translation>
+<translation id="9220525904950070496">Konta noņemšana</translation>
 <translation id="923686485342484400">Lai izrakstītos, divas reizes nospiediet taustiņu kombināciju Ctrl+Shift+Q.</translation>
 <translation id="938963181863597773">Kas ir atrodams manā kalendārā?</translation>
 <translation id="945522503751344254">Sūtīt atsauksmes</translation>

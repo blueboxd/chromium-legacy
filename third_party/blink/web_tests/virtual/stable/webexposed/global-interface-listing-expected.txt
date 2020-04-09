@@ -5603,8 +5603,16 @@ interface ResizeObserver
     method unobserve
 interface ResizeObserverEntry
     attribute @@toStringTag
+    getter borderBoxSize
+    getter contentBoxSize
     getter contentRect
+    getter devicePixelContentBoxSize
     getter target
+    method constructor
+interface ResizeObserverSize
+    attribute @@toStringTag
+    getter blockSize
+    getter inlineSize
     method constructor
 interface Response
     static method error

@@ -306,8 +306,8 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
                 (intent) -> mIntentHandler.shouldIgnoreIntent(intent);
 
         mIntentDataProvider = mWebappInfo.getProvider();
-        BaseCustomTabActivityModule baseCustomTabModule =
-                new BaseCustomTabActivityModule(mIntentDataProvider, intentIgnoringCriterion);
+        BaseCustomTabActivityModule baseCustomTabModule = new BaseCustomTabActivityModule(
+                mIntentDataProvider, mNightModeStateController, intentIgnoringCriterion);
         WebappActivityModule webappModule = new WebappActivityModule();
         WebappActivityComponent component =
                 ChromeApplication.getComponent().createWebappActivityComponent(

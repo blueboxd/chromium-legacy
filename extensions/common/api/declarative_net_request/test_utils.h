@@ -157,19 +157,28 @@ enum ConfigFlag {
 
 // Describes a single extension ruleset.
 struct TestRulesetInfo {
+  TestRulesetInfo(const std::string& relative_file_path,
+                  const base::Value& rules_value);
+  TestRulesetInfo(const TestRulesetInfo&);
+  TestRulesetInfo& operator=(const TestRulesetInfo&);
+
   // File path relative to the extension directory.
   std::string relative_file_path;
 
   // The base::Value corresponding to the rules in the ruleset.
   base::Value rules_value;
+
+  // Returns the corresponding value to be specified in the manifest for the
+  // ruleset.
+  std::unique_ptr<base::DictionaryValue> GetManifestValue() const;
 };
 
 // Helper to build an extension manifest which uses the
 // kDeclarativeNetRequestKey manifest key. |hosts| specifies the host
 // permissions to grant. |flags| is a bitmask of ConfigFlag to configure the
-// extension. Should be used when the extension has a single static ruleset.
+// extension. |ruleset_info| specifies the static rulesets for the extension.
 std::unique_ptr<base::DictionaryValue> CreateManifest(
-    const std::string& json_rules_filename,
+    const std::vector<TestRulesetInfo>& ruleset_info,
     const std::vector<std::string>& hosts = {},
     unsigned flags = ConfigFlag::kConfig_None);
 

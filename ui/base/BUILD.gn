@@ -266,6 +266,8 @@ jumbo_component("base") {
       "cocoa/focus_window_set.mm",
       "cocoa/menu_controller.h",
       "cocoa/menu_controller.mm",
+      "cocoa/permissions_utils.h",
+      "cocoa/permissions_utils.mm",
       "cocoa/quartz_util.h",
       "cocoa/quartz_util.mm",
       "cocoa/remote_accessibility_api.h",

@@ -116,6 +116,10 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // Returns whether we are within an app.
   bool is_in_app() const;
 
+  // The threshold relative to the size of the shelf that is used to determine
+  // if the shelf visibility should change during a drag.
+  float drag_hide_ratio_threshold() const;
+
   int app_icon_group_margin() const { return app_icon_group_margin_; }
   SkColor shelf_control_permanent_highlight_background() const {
     return shelf_control_permanent_highlight_background_;

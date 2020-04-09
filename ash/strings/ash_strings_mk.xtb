@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">Кликни за повеќе опции</translation>
 <translation id="1570871743947603115">Вклучи/исклучи Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Пристапете до целата ваша активност во сесијава</translation>
-<translation id="1608626060424371292">Отстрани го овој корисник</translation>
+<translation id="1632985212731562677">Пристапот со прекинувачи може да се оневозможи во „Поставки &gt; Пристапност“.</translation>
 <translation id="1654477262762802994">Започнете гласовно барање</translation>
 <translation id="1658406695958299976">За жал, вашата лозинка сепак не можеше да се потврди. Белешка: ако сте ја промениле лозинката неодамна, новата лозинка ќе се примени откако ќе се одјавите. Користете ја старата лозинка тука.</translation>
 <translation id="1677472565718498478">Уште <ph name="TIME" /></translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">Администраторот на уредот може да ви го следи прелистувањето.</translation>
 <translation id="3181441307743005334">Рестартирањето може да потрае</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Поврзан со уред}one{Поврзан со # уред}other{Поврзан со # уреди}}</translation>
+<translation id="3203405173652969239">„Пристапот со прекинувачи“ е овозможен</translation>
 <translation id="3207953481422525583">Поставки на корисникот</translation>
 <translation id="3217205077783620295">Јачината на звук е вклучена. Ако смените, ќе се исклучи звукот на аудиото.</translation>
 <translation id="3226991577105957773">и уште <ph name="COUNT" /></translation>
@@ -652,6 +653,7 @@
 <translation id="9211681782751733685">Уште <ph name="TIME_REMAINING" /> до целосно полнење на батеријата.</translation>
 <translation id="9215934040295798075">Постави тапет</translation>
 <translation id="921989828232331238">Вашиот родител го заклучи уредот за денес</translation>
+<translation id="9220525904950070496">Отстрани сметка</translation>
 <translation id="923686485342484400">Притиснете Control Shift Q двапати за да се одјавите.</translation>
 <translation id="938963181863597773">Што има во мојот календар?</translation>
 <translation id="945522503751344254">Испратете повратни информации</translation>

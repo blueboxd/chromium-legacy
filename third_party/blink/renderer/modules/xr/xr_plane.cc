@@ -24,11 +24,13 @@ XRPlane::XRPlane(uint64_t id,
               mojo::ConvertTo<HeapVector<Member<DOMPointReadOnly>>>(
                   plane_data.polygon),
               timestamp) {
-  // No need for else - if pose is not present, the default-constructed unique
-  // ptr is fine.
-  if (plane_data.pose) {
-    SetMojoFromPlane(
-        mojo::ConvertTo<blink::TransformationMatrix>(plane_data.pose));
+  // No need for else - if mojo_from_plane is not present, the
+  // default-constructed unique ptr is fine. It would signify that the plane
+  // exists and is tracked by the underlying system, but its current location is
+  // unknown.
+  if (plane_data.mojo_from_plane) {
+    SetMojoFromPlane(mojo::ConvertTo<blink::TransformationMatrix>(
+        plane_data.mojo_from_plane));
   }
 }
 
@@ -125,9 +127,9 @@ void XRPlane::Update(const device::mojom::blink::XRPlaneData& plane_data,
 
   orientation_ = mojo::ConvertTo<base::Optional<blink::XRPlane::Orientation>>(
       plane_data.orientation);
-  if (plane_data.pose) {
-    SetMojoFromPlane(
-        mojo::ConvertTo<blink::TransformationMatrix>(plane_data.pose));
+  if (plane_data.mojo_from_plane) {
+    SetMojoFromPlane(mojo::ConvertTo<blink::TransformationMatrix>(
+        plane_data.mojo_from_plane));
   } else {
     mojo_from_plane_ = nullptr;
   }

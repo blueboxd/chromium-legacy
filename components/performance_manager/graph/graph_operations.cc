@@ -55,9 +55,9 @@ std::vector<const FrameNode*> GraphOperations::GetFrameNodes(
 }
 
 // static
-void GraphOperations::VisitFrameTreePreOrder(const PageNode* page,
+bool GraphOperations::VisitFrameTreePreOrder(const PageNode* page,
                                              const FrameNodeVisitor& visitor) {
-  GraphImplOperations::VisitFrameTreePreOrder(
+  return GraphImplOperations::VisitFrameTreePreOrder(
       PageNodeImpl::FromNode(page),
       [&visitor](FrameNodeImpl* frame_impl) -> bool {
         const FrameNode* frame = frame_impl;
@@ -66,9 +66,9 @@ void GraphOperations::VisitFrameTreePreOrder(const PageNode* page,
 }
 
 // static
-void GraphOperations::VisitFrameTreePostOrder(const PageNode* page,
+bool GraphOperations::VisitFrameTreePostOrder(const PageNode* page,
                                               const FrameNodeVisitor& visitor) {
-  GraphImplOperations::VisitFrameTreePostOrder(
+  return GraphImplOperations::VisitFrameTreePostOrder(
       PageNodeImpl::FromNode(page),
       [&visitor](FrameNodeImpl* frame_impl) -> bool {
         const FrameNode* frame = frame_impl;

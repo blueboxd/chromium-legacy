@@ -78,7 +78,6 @@ void AndroidMetricsServiceClient::Initialize(PrefService* pref_service) {
 
   pref_service_ = pref_service;
 
-  InitInternal();
   metrics_state_manager_ =
       MetricsStateManager::Create(pref_service_, this, base::string16(),
                                   base::BindRepeating(&StoreClientInfo),

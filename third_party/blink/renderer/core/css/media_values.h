@@ -22,6 +22,7 @@ enum class ColorSpaceGamut;
 enum class PreferredColorScheme;
 enum class ForcedColors;
 enum class NavigationControls;
+enum class ScreenSpanning;
 
 PreferredColorScheme CSSValueIDToPreferredColorScheme(CSSValueID id);
 
@@ -86,6 +87,7 @@ class CORE_EXPORT MediaValues : public GarbageCollected<MediaValues> {
   virtual bool PrefersReducedMotion() const = 0;
   virtual ForcedColors GetForcedColors() const = 0;
   virtual NavigationControls GetNavigationControls() const = 0;
+  virtual ScreenSpanning GetScreenSpanning() const = 0;
 
  protected:
   static double CalculateViewportWidth(LocalFrame*);
@@ -111,6 +113,7 @@ class CORE_EXPORT MediaValues : public GarbageCollected<MediaValues> {
   static bool CalculatePrefersReducedMotion(LocalFrame*);
   static ForcedColors CalculateForcedColors();
   static NavigationControls CalculateNavigationControls(LocalFrame*);
+  static ScreenSpanning CalculateScreenSpanning(LocalFrame*);
 };
 
 }  // namespace blink

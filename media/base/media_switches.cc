@@ -76,9 +76,6 @@ const char kEnableProtectedVideoBuffers[] = "enable-protected-video-buffers";
 const char kForceProtectedVideoOutputBuffers[] =
     "force-protected-video-output-buffers";
 
-// Enables fuchsia.media.AudioConsumer to be used to render audio streams.
-const char kEnableFuchsiaAudioConsumer[] = "enable-fuchsia-audio-consumer";
-
 #endif  // defined(OS_FUCHSIA)
 
 #if defined(USE_CRAS)

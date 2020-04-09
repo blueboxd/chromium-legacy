@@ -96,7 +96,8 @@ class CachedImageFetcherTest : public testing::Test {
 
     // Use an initial request to start the cache up.
     image_cache_->SaveImage(ImageUrl().spec(), kImageData,
-                            /* needs_transcoding */ false);
+                            /* needs_transcoding */ false,
+                            /* expiration_interval */ base::nullopt);
     RunUntilIdle();
     db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
     image_cache_->DeleteImage(ImageUrl().spec());
@@ -169,7 +170,8 @@ MATCHER(NonEmptyString, "") {
 TEST_F(CachedImageFetcherTest, FetchImageFromCache) {
   // Save the image in the database.
   image_cache()->SaveImage(ImageUrl().spec(), kImageData,
-                           /* needs_transcoding */ false);
+                           /* needs_transcoding */ false,
+                           /* expiration_interval */ base::nullopt);
   RunUntilIdle();
 
   base::MockCallback<ImageDataFetcherCallback> data_callback;
@@ -193,7 +195,8 @@ TEST_F(CachedImageFetcherTest, FetchImageFromCache) {
 TEST_F(CachedImageFetcherTest, FetchImageFromCacheNeedsTranscoding) {
   // Save the image in the database.
   image_cache()->SaveImage(ImageUrl().spec(), kImageData,
-                           /* needs_transcoding */ true);
+                           /* needs_transcoding */ true,
+                           /* expiration_interval */ base::nullopt);
   RunUntilIdle();
 
   base::MockCallback<ImageDataFetcherCallback> data_callback;
@@ -219,7 +222,8 @@ TEST_F(CachedImageFetcherTest, FetchImageFromCacheReadOnly) {
   CreateCachedImageFetcher(/* read_only */ true);
   // Save the image in the database.
   image_cache()->SaveImage(ImageUrl().spec(), kImageData,
-                           /* needs_transcoding */ false);
+                           /* needs_transcoding */ false,
+                           /* expiration_interval */ base::nullopt);
   test_url_loader_factory()->AddResponse(ImageUrl().spec(), kImageData);
   RunUntilIdle();
   {
@@ -371,7 +375,8 @@ TEST_F(CachedImageFetcherTest, FetchImageWithoutTranscodingDoesNotDecode) {
 TEST_F(CachedImageFetcherTest, FetchImageWithSkipDiskCache) {
   // Save the image in the database.
   image_cache()->SaveImage(ImageUrl().spec(), kImageDataOther,
-                           /* needs_transcoding */ false);
+                           /* needs_transcoding */ false,
+                           /* expiration_interval */ base::nullopt);
   RunUntilIdle();
   test_url_loader_factory()->AddResponse(ImageUrl().spec(), kImageData);
 

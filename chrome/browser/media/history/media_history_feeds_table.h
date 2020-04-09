@@ -37,7 +37,7 @@ class MediaHistoryFeedsTable : public MediaHistoryTableBase {
   };
 
  private:
-  friend class MediaHistoryStoreInternal;
+  friend class MediaHistoryStore;
 
   explicit MediaHistoryFeedsTable(
       scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner);

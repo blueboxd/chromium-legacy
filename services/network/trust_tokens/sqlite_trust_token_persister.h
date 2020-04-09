@@ -57,28 +57,24 @@ class SQLiteTrustTokenPersister : public TrustTokenPersister {
 
   // TrustTokenPersister implementation:
 
-  // Preconditions:
-  // - All of these methods require that ther Origin inputs' schemes must be
-  // HTTP or HTTPS.
-  //
-  // Postconditions:
-  // - Each getter returns nullptr when the requested record was not found.
+  // Each getter returns nullptr when the requested record was not found.
   std::unique_ptr<TrustTokenIssuerConfig> GetIssuerConfig(
-      const url::Origin& issuer) override;
+      const SuitableTrustTokenOrigin& issuer) override;
   std::unique_ptr<TrustTokenToplevelConfig> GetToplevelConfig(
-      const url::Origin& toplevel) override;
+      const SuitableTrustTokenOrigin& toplevel) override;
   std::unique_ptr<TrustTokenIssuerToplevelPairConfig>
-  GetIssuerToplevelPairConfig(const url::Origin& issuer,
-                              const url::Origin& toplevel) override;
+  GetIssuerToplevelPairConfig(
+      const SuitableTrustTokenOrigin& issuer,
+      const SuitableTrustTokenOrigin& toplevel) override;
 
-  void SetIssuerConfig(const url::Origin& issuer,
+  void SetIssuerConfig(const SuitableTrustTokenOrigin& issuer,
                        std::unique_ptr<TrustTokenIssuerConfig> config) override;
   void SetToplevelConfig(
-      const url::Origin& toplevel,
+      const SuitableTrustTokenOrigin& toplevel,
       std::unique_ptr<TrustTokenToplevelConfig> config) override;
   void SetIssuerToplevelPairConfig(
-      const url::Origin& issuer,
-      const url::Origin& toplevel,
+      const SuitableTrustTokenOrigin& issuer,
+      const SuitableTrustTokenOrigin& toplevel,
       std::unique_ptr<TrustTokenIssuerToplevelPairConfig> config) override;
 
  private:

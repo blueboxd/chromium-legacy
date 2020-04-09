@@ -78,6 +78,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableFuzzyAppSearch;
 // Enables using exact string search for non latin locales.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableExactMatchForNonLatinLocale;
 
+// Enables launcher search results for OS settings.
+ASH_PUBLIC_EXPORT extern const base::Feature kLauncherSettingsSearch;
+
 // If enabled, app list will support separate configurations (for app list items
 // sizing and spacing) for smaller screens (instead of a single configuration
 // that optionally gets scaled down).
@@ -107,6 +110,7 @@ bool ASH_PUBLIC_EXPORT IsAggregatedMlAppRankingEnabled();
 bool ASH_PUBLIC_EXPORT IsScalableAppListEnabled();
 bool ASH_PUBLIC_EXPORT IsFuzzyAppSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsExactMatchForNonLatinLocaleEnabled();
+bool ASH_PUBLIC_EXPORT IsLauncherSettingsSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsAggregatedMlSearchRankingEnabled();
 
 std::string ASH_PUBLIC_EXPORT AnswerServerUrl();

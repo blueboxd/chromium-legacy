@@ -16,7 +16,8 @@ bool StructTraits<network::mojom::SiteForCookiesDataView, net::SiteForCookies>::
   if (!data.ReadRegistrableDomain(&registrable_domain))
     return false;
 
-  return net::SiteForCookies::FromWire(scheme, registrable_domain, out);
+  return net::SiteForCookies::FromWire(scheme, registrable_domain,
+                                       data.schemefully_same(), out);
 }
 
 }  // namespace mojo

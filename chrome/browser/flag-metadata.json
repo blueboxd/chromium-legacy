@@ -264,6 +264,11 @@
     "expiry_milestone": 83
   },
   {
+    "name": "autofill-enable-surfacing-server-card-nickname",
+    "owners": [ "sujiezhu@google.com", "jsaul@google.com" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "autofill-enable-toolbar-status-chip",
     "owners": [ "siyua" ],
     "expiry_milestone": 83
@@ -2685,6 +2690,11 @@
     // isolation policy, as well as for diagnosing problems when site isolation
     // only applies to some sites.
     "expiry_milestone": 90
+  },
+  {
+    "name": "launcher-settings-search",
+    "owners": [ "jiameng", "tby" ],
+    "expiry_milestone": 88
   },
   {
     "name": "legacy-tls-enforced",

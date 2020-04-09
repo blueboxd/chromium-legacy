@@ -66,11 +66,19 @@
     },
 
     function dumpBeforeStyles(next) {
-      selectNodeAndDumpStyles('inspected', 'before', next);
+      selectNodeAndDumpStyles('inspected', ['before'], next);
     },
 
     function dumpAfterStyles(next) {
-      selectNodeAndDumpStyles('inspected', 'after', next);
+      selectNodeAndDumpStyles('inspected', ['after'], next);
+    },
+
+    function dumpBeforeMarkerStyles(next) {
+      selectNodeAndDumpStyles('inspected', ['before', 'marker'], next);
+    },
+
+    function dumpAfterMarkerStyles(next) {
+      selectNodeAndDumpStyles('inspected', ['after', 'marker'], next);
     },
 
     function removeAfterMarker(next) {
@@ -137,11 +145,40 @@
     }
   }
 
-  function selectNodeAndDumpStyles(id, pseudoTypeName, callback) {
-    if (pseudoTypeName)
-      ElementsTestRunner.selectPseudoElementAndWaitForStyles('inspected', pseudoTypeName, stylesCallback);
-    else
-      ElementsTestRunner.selectNodeAndWaitForStyles('inspected', stylesCallback);
+  function selectPseudoElementAndWaitForStyles(parentId, pseudoTypes, callback) {
+    if (!pseudoTypes.length) {
+      ElementsTestRunner.selectNodeAndWaitForStyles(parentId, callback);
+      return;
+    }
+
+    pseudoTypes.reduce(async function(prev, pseudoType) {
+      let prevNode = await prev;
+      function isCurrentPseudoElement(node) {
+        if (node.pseudoType() !== pseudoType)
+          return false;
+        const {parentNode} = node;
+        if (!parentNode)
+          return false;
+        if (prevNode)
+          return parentNode === prevNode;
+        return parentNode.getAttribute('id') == parentId;
+      }
+      let stylesUpdated = new Promise((resolve) => {
+        waitForStylesRebuild(isCurrentPseudoElement, resolve, true);
+      });
+      let node = await new Promise((resolve) => {
+        ElementsTestRunner.findNode(isCurrentPseudoElement, resolve);
+      });
+      if (!node)
+        throw new Error("Can't find node");
+      Common.Revealer.reveal(node);
+      await stylesUpdated;
+      return node;
+    }, null).then(callback);
+  }
+
+  function selectNodeAndDumpStyles(id, pseudoTypeNames, callback) {
+    selectPseudoElementAndWaitForStyles(id, pseudoTypeNames, stylesCallback);
 
     async function stylesCallback() {
       await ElementsTestRunner.dumpSelectedElementStyles(true, false, false, true);

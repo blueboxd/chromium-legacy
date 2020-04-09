@@ -49,6 +49,7 @@
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/dom_distiller/core/url_utils.h"
 #include "components/page_info/page_info.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
@@ -149,7 +150,10 @@ class BubbleHeaderView : public views::View {
 
   void AddResetDecisionsLabel();
 
-  void AddPasswordReuseButtons();
+  // Adds the change password and mark site as legitimate buttons.
+  // If |is_saved_password|, adds a check password button instead of
+  // change password button.
+  void AddPasswordReuseButtons(bool is_saved_password);
 
  private:
   // The listener for the buttons in this view.
@@ -299,18 +303,31 @@ void BubbleHeaderView::AddResetDecisionsLabel() {
   InvalidateLayout();
 }
 
-void BubbleHeaderView::AddPasswordReuseButtons() {
+void BubbleHeaderView::AddPasswordReuseButtons(bool is_saved_password) {
   if (!password_reuse_button_container_->children().empty()) {
     // Ensure all old content is removed from the container before re-adding it.
     password_reuse_button_container_->RemoveAllChildViews(true /* delete */);
   }
 
-  auto change_password_button =
-      views::MdTextButton::CreateSecondaryUiBlueButton(
-          button_listener_,
-          l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_BUTTON));
-  change_password_button->SetID(
-      PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_CHANGE_PASSWORD);
+  int change_password_template = 0;
+  if (is_saved_password && !base::FeatureList::IsEnabled(
+                               password_manager::features::kPasswordCheck)) {
+    change_password_template = 0;
+  } else {
+    change_password_template =
+        is_saved_password && base::FeatureList::IsEnabled(
+                                 password_manager::features::kPasswordCheck)
+            ? IDS_PAGE_INFO_CHECK_PASSWORDS_BUTTON
+            : IDS_PAGE_INFO_CHANGE_PASSWORD_BUTTON;
+  }
+
+  std::unique_ptr<views::MdTextButton::LabelButton> change_password_button;
+  if (change_password_template) {
+    change_password_button = views::MdTextButton::CreateSecondaryUiBlueButton(
+        button_listener_, l10n_util::GetStringUTF16(change_password_template));
+    change_password_button->SetID(
+        PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_CHANGE_PASSWORD);
+  }
   auto whitelist_password_reuse_button =
       views::MdTextButton::CreateSecondaryUiButton(
           button_listener_, l10n_util::GetStringUTF16(
@@ -319,11 +336,15 @@ void BubbleHeaderView::AddPasswordReuseButtons() {
       PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_WHITELIST_PASSWORD_REUSE);
 
   int kSpacingBetweenButtons = 8;
+  int change_password_button_size =
+      change_password_button
+          ? 0
+          : change_password_button->CalculatePreferredSize().width();
 
   // If these two buttons cannot fit into a single line, stack them vertically.
   bool can_fit_in_one_line =
       (password_reuse_button_container_->width() - kSpacingBetweenButtons) >=
-      (change_password_button->CalculatePreferredSize().width() +
+      (change_password_button_size +
        whitelist_password_reuse_button->CalculatePreferredSize().width());
   auto layout = std::make_unique<views::BoxLayout>(
       can_fit_in_one_line ? views::BoxLayout::Orientation::kHorizontal
@@ -335,15 +356,19 @@ void BubbleHeaderView::AddPasswordReuseButtons() {
   password_reuse_button_container_->SetLayoutManager(std::move(layout));
 
 #if defined(OS_WIN) || defined(OS_CHROMEOS)
-  password_reuse_button_container_->AddChildView(
-      std::move(change_password_button));
+  if (change_password_button) {
+    password_reuse_button_container_->AddChildView(
+        std::move(change_password_button));
+  }
   password_reuse_button_container_->AddChildView(
       std::move(whitelist_password_reuse_button));
 #else
   password_reuse_button_container_->AddChildView(
       std::move(whitelist_password_reuse_button));
-  password_reuse_button_container_->AddChildView(
-      std::move(change_password_button));
+  if (change_password_button) {
+    password_reuse_button_container_->AddChildView(
+        std::move(change_password_button));
+  }
 #endif
 
   // Add padding at the top.
@@ -825,7 +850,10 @@ void PageInfoBubbleView::SetIdentityInfo(const IdentityInfo& identity_info) {
   }
 
   if (identity_info.show_change_password_buttons) {
-    header_->AddPasswordReuseButtons();
+    header_->AddPasswordReuseButtons(
+        identity_info.safe_browsing_status ==
+        PageInfo::SafeBrowsingStatus::
+            SAFE_BROWSING_STATUS_SAVED_PASSWORD_REUSE);
   }
   details_text_ = security_description->details;
   header_->SetDetails(security_description->details);

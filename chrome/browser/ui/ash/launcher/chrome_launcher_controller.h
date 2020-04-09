@@ -194,10 +194,6 @@ class ChromeLauncherController
   ash::ShelfItemDelegate::AppMenuItems GetAppMenuItemsForTesting(
       const ash::ShelfItem& item);
 
-  // Get the list of all tabs which belong to a certain application type.
-  std::vector<content::WebContents*> GetV1ApplicationsFromAppId(
-      const std::string& app_id);
-
   // Get the list of all ARC app windows.
   std::vector<aura::Window*> GetArcWindows();
 

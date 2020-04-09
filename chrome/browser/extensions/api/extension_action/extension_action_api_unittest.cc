@@ -9,9 +9,9 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_with_install.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
+#include "chrome/common/extensions/api/extension_action/action_info_test_util.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "extensions/common/features/feature_channel.h"
-#include "extensions/common/manifest_constants.h"
 #include "extensions/test/test_extension_dir.h"
 
 namespace extensions {
@@ -25,32 +25,6 @@ class ExtensionActionAPIUnitTest
       : current_channel_(
             extension_test_util::GetOverrideChannelForActionType(GetParam())) {}
   ~ExtensionActionAPIUnitTest() override {}
-
-  const char* GetManifestKey() {
-    switch (GetParam()) {
-      case ActionInfo::TYPE_BROWSER:
-        return manifest_keys::kBrowserAction;
-      case ActionInfo::TYPE_PAGE:
-        return manifest_keys::kPageAction;
-      case ActionInfo::TYPE_ACTION:
-        return manifest_keys::kAction;
-    }
-    NOTREACHED();
-    return nullptr;
-  }
-
-  const ActionInfo* GetActionInfo(const Extension& extension) {
-    switch (GetParam()) {
-      case ActionInfo::TYPE_BROWSER:
-        return ActionInfo::GetBrowserActionInfo(&extension);
-      case ActionInfo::TYPE_PAGE:
-        return ActionInfo::GetPageActionInfo(&extension);
-      case ActionInfo::TYPE_ACTION:
-        return ActionInfo::GetExtensionActionInfo(&extension);
-    }
-    NOTREACHED();
-    return nullptr;
-  }
 
  private:
   std::unique_ptr<ScopedCurrentChannel> current_channel_;
@@ -78,8 +52,8 @@ TEST_P(ExtensionActionAPIUnitTest, MultiIcons) {
          })";
 
   TestExtensionDir test_extension_dir;
-  test_extension_dir.WriteManifest(
-      base::StringPrintf(kManifestTemplate, GetManifestKey()));
+  test_extension_dir.WriteManifest(base::StringPrintf(
+      kManifestTemplate, GetManifestKeyForActionType(GetParam())));
 
   {
     std::string icon_file_content;
@@ -96,7 +70,7 @@ TEST_P(ExtensionActionAPIUnitTest, MultiIcons) {
   const Extension* extension =
       PackAndInstallCRX(test_extension_dir.UnpackedPath(), INSTALL_NEW);
   EXPECT_TRUE(extension->install_warnings().empty());
-  const ActionInfo* action_info = GetActionInfo(*extension);
+  const ActionInfo* action_info = GetActionInfoOfType(*extension, GetParam());
   ASSERT_TRUE(action_info);
 
   const ExtensionIconSet& icons = action_info->default_icon;

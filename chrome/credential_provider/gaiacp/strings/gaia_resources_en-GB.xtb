@@ -15,7 +15,6 @@
 <translation id="399130515869721714">Can’t open the Google sign-in screen because there’s an issue with the Chrome installation on this device. Contact your administrator.</translation>
 <translation id="4057329986137569701">An internal error occurred.</translation>
 <translation id="4267670563222825190">No domain user could be found for your account. Please contact your administrator.</translation>
-<translation id="4706454071748629324">Failed to add a new user. This computer only allows one user to be created using a work account.</translation>
 <translation id="4744575902940448763">Your work account password couldn't be synced to your Windows profile because password updates on your device are restricted by your organisation. Contact your administrator for help.</translation>
 <translation id="5186761973554910131">Invalid computer name provided during password change attempt. Please contact your administrator.</translation>
 <translation id="5265714013989877288">Can’t continue because there was an error while changing your Windows password. Please contact your administrator.</translation>

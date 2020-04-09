@@ -21,6 +21,10 @@ extern const char kAutofillCreditCardUploadDescription[];
 extern const char kAutofillEnableCompanyNameName[];
 extern const char kAutofillEnableCompanyNameDescription[];
 
+// Title and description for the flag to control surfacing server card nickname.
+extern const char kAutofillEnableSurfacingServerCardNicknameName[];
+extern const char kAutofillEnableSurfacingServerCardNicknameDescription[];
+
 // Enforcing restrictions to enable/disable autofill small form support.
 extern const char kAutofillEnforceMinRequiredFieldsForHeuristicsName[];
 extern const char kAutofillEnforceMinRequiredFieldsForHeuristicsDescription[];
@@ -240,10 +244,6 @@ extern const char kMarkHttpAsDescription[];
 // mobile mode by default.
 extern const char kMobileGoogleSRPName[];
 extern const char kMobileGoogleSRPDescription[];
-
-// Title and description for the flag to enable non-modal JavaScript dialogs.
-extern const char kNonModalDialogsName[];
-extern const char kNonModalDialogsDescription[];
 
 // Title and description for the flag to preserve the default match when an
 // async match updates.

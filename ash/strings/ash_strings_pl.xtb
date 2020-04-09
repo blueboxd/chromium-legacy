@@ -55,7 +55,6 @@
 <translation id="1550523713251050646">Kliknij, by wyświetlić więcej opcji</translation>
 <translation id="1570871743947603115">Włącz lub wyłącz Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">uzyskiwać dostęp do całej Twojej aktywności w tej sesji;</translation>
-<translation id="1608626060424371292">Usuń tego użytkownika</translation>
 <translation id="1632985212731562677">Funkcję Switch Access możesz wyłączyć, otwierając Ustawienia &gt; Ułatwienia dostępu.</translation>
 <translation id="1654477262762802994">Rozpocznij zapytanie głosowe</translation>
 <translation id="1658406695958299976">Nadal nie można zweryfikować Twojego hasła. Uwaga: jeśli ostatnio hasło było zmieniane, nowe hasło zostanie zastosowane, gdy się wylogujesz. Tu podaj stare hasło.</translation>
@@ -653,6 +652,7 @@
 <translation id="9211681782751733685">Czas pozostały do pełnego naładowania baterii: <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Ustaw tapetę</translation>
 <translation id="921989828232331238">Twój rodzic zablokował urządzenie na cały dzień</translation>
+<translation id="9220525904950070496">Usuń konto</translation>
 <translation id="923686485342484400">Naciśnij dwukrotnie Control Shift Q, by się wylogować.</translation>
 <translation id="938963181863597773">Co mam w kalendarzu?</translation>
 <translation id="945522503751344254">Wyślij zgłoszenie</translation>

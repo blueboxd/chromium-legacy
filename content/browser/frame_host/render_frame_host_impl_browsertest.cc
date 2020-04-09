@@ -3315,6 +3315,84 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   SetBrowserClientForTesting(old_client);
 }
 
+// Test that when ancestor iframes differ in scheme that the SiteForCookies
+// state is updated accordingly.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       ComputeSiteForCookiesSchemefulIsSameForAncestorFrames) {
+  https_server()->ServeFilesFromSourceDirectory(GetTestDataFilePath());
+  https_server()->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+  ASSERT_TRUE(https_server()->Start());
+
+  GURL url = https_server()->GetURL(
+      "a.test", "/cross_site_iframe_factory.html?a.test(a.test)");
+  GURL insecure_url = embedded_test_server()->GetURL(
+      "a.test", "/cross_site_iframe_factory.html?a.test(a.test(a.test))");
+  GURL other_url = https_server()->GetURL("c.test", "/");
+  EXPECT_TRUE(NavigateToURL(shell(), insecure_url));
+  {
+    WebContentsImpl* wc =
+        static_cast<WebContentsImpl*>(shell()->web_contents());
+    RenderFrameHostImpl* main_frame = wc->GetMainFrame();
+
+    EXPECT_EQ("a.test", main_frame->GetLastCommittedURL().host());
+    EXPECT_EQ("http", main_frame->frame_tree_node()->current_origin().scheme());
+    ASSERT_EQ(1u, main_frame->child_count());
+    FrameTreeNode* child = main_frame->child_at(0);
+    EXPECT_EQ("a.test", child->current_url().host());
+    EXPECT_EQ("http", child->current_origin().scheme());
+    ASSERT_EQ(1u, child->child_count());
+    FrameTreeNode* grandchild = child->child_at(0);
+    EXPECT_EQ("a.test", grandchild->current_url().host());
+
+    // Both the frames above grandchild are the same scheme, so
+    // SiteForCookies::schemefully_same() should indicate that.
+    EXPECT_TRUE(child->current_frame_host()
+                    ->ComputeSiteForCookiesForNavigation(other_url)
+                    .schemefully_same());
+    EXPECT_EQ("a.test", child->current_frame_host()
+                            ->ComputeSiteForCookiesForNavigation(other_url)
+                            .registrable_domain());
+
+    net::SiteForCookies grandchild_same_scheme =
+        grandchild->current_frame_host()->ComputeSiteForCookies();
+    EXPECT_TRUE(grandchild_same_scheme.schemefully_same());
+    EXPECT_EQ("a.test", grandchild_same_scheme.registrable_domain());
+
+    net::SiteForCookies grandchild_same_scheme_navigation =
+        grandchild->current_frame_host()->ComputeSiteForCookiesForNavigation(
+            other_url);
+    EXPECT_TRUE(grandchild_same_scheme_navigation.schemefully_same());
+    EXPECT_EQ("a.test", grandchild_same_scheme_navigation.registrable_domain());
+
+    // Navigate the middle child frame to https.
+    NavigateFrameToURL(child, url);
+    EXPECT_EQ("a.test", child->current_url().host());
+    EXPECT_EQ("https", child->current_origin().scheme());
+    EXPECT_EQ(1u, child->child_count());
+
+    grandchild = child->child_at(0);
+
+    // Now the frames above grandchild differ only in scheme. SiteForCookies
+    // should be the same except that schemefully_same() should be false.
+    net::SiteForCookies grandchild_cross_scheme =
+        grandchild->current_frame_host()->ComputeSiteForCookies();
+    EXPECT_FALSE(grandchild_cross_scheme.schemefully_same());
+    EXPECT_EQ("a.test", grandchild_cross_scheme.registrable_domain());
+
+    net::SiteForCookies grandchild_cross_scheme_navigation =
+        grandchild->current_frame_host()->ComputeSiteForCookiesForNavigation(
+            other_url);
+    EXPECT_FALSE(grandchild_cross_scheme_navigation.schemefully_same());
+    EXPECT_EQ("a.test",
+              grandchild_cross_scheme_navigation.registrable_domain());
+
+    // IsEquivalent() doesn't check schemefully_same.
+    EXPECT_TRUE(grandchild_cross_scheme.IsEquivalent(grandchild_same_scheme));
+    EXPECT_TRUE(grandchild_cross_scheme_navigation.IsEquivalent(
+        grandchild_same_scheme_navigation));
+  }
+}
+
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                        ComputeSiteForCookiesForNavigationSandbox) {
   // Test sandboxed subframe.

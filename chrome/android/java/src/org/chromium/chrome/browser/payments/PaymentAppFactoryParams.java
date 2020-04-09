@@ -95,4 +95,12 @@ public interface PaymentAppFactoryParams {
     default String getTotalAmountCurrency() {
         return null;
     }
+
+    /**
+     * @return Whether the PaymentRequest is requesting delegation of either shipping or payer
+     *         contact.
+     */
+    default boolean requestShippingOrPayerContact() {
+        return false;
+    }
 }

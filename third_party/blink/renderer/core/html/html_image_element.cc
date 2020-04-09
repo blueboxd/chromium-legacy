@@ -667,7 +667,8 @@ Image* HTMLImageElement::ImageContents() {
 }
 
 bool HTMLImageElement::IsInteractiveContent() const {
-  return FastHasAttribute(html_names::kUsemapAttr);
+  return FastHasAttribute(html_names::kUsemapAttr) ||
+         HTMLElement::IsInteractiveContent();
 }
 
 FloatSize HTMLImageElement::DefaultDestinationSize(

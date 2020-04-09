@@ -273,9 +273,6 @@ class SyncFaviconCacheTest : public testing::Test {
   size_t GetFaviconCount() const;
   size_t GetTaskCount() const;
 
-  testing::AssertionResult ExpectFaviconEquals(
-        const std::string& page_url,
-        const std::string& bytes) const;
   testing::AssertionResult VerifyLocalIcons(
       const std::vector<int>& expected_icons);
   testing::AssertionResult VerifyLocalCustomIcons(
@@ -341,23 +338,6 @@ size_t SyncFaviconCacheTest::GetFaviconCount() const {
 
 size_t SyncFaviconCacheTest::GetTaskCount() const {
   return cache_.NumTasksForTest();
-}
-
-testing::AssertionResult SyncFaviconCacheTest::ExpectFaviconEquals(
-    const std::string& page_url,
-    const std::string& bytes) const {
-  GURL gurl(page_url);
-  favicon_base::FaviconRawBitmapResult favicon =
-      cache_.GetSyncedFaviconForPageURL(gurl);
-  if (!favicon.is_valid())
-    return testing::AssertionFailure() << "Favicon is missing.";
-  if (favicon.bitmap_data->size() != bytes.size())
-    return testing::AssertionFailure() << "Favicon sizes don't match.";
-  for (size_t i = 0; i < favicon.bitmap_data->size(); ++i) {
-    if (bytes[i] != *(favicon.bitmap_data->front() + i))
-      return testing::AssertionFailure() << "Favicon data doesn't match.";
-  }
-  return testing::AssertionSuccess();
 }
 
 testing::AssertionResult SyncFaviconCacheTest::VerifyLocalIcons(
@@ -509,67 +489,6 @@ void SyncFaviconCacheTest::TriggerSyncFaviconReceived(
 // A freshly constructed cache should be empty.
 TEST_F(SyncFaviconCacheTest, Empty) {
   EXPECT_EQ(0U, GetFaviconCount());
-}
-
-TEST_F(SyncFaviconCacheTest, ReceiveSyncFavicon) {
-  std::string page_url = "http://www.google.com";
-  std::string fav_url = "http://www.google.com/favicon.ico";
-  std::string bytes = "bytes";
-  const base::Time visit_time = base::Time::Now();
-  EXPECT_EQ(0U, GetFaviconCount());
-  TriggerSyncFaviconReceived(GURL(page_url), GURL(fav_url), bytes, visit_time);
-  EXPECT_EQ(1U, GetFaviconCount());
-  EXPECT_TRUE(ExpectFaviconEquals(page_url, bytes));
-  EXPECT_EQ(visit_time, cache()->GetLastVisitTimeForTest(GURL(fav_url)));
-}
-
-TEST_F(SyncFaviconCacheTest, ReceiveEmptySyncFavicon) {
-  std::string page_url = "http://www.google.com";
-  std::string fav_url = "http://www.google.com/favicon.ico";
-  std::string bytes = "bytes";
-  EXPECT_EQ(0U, GetFaviconCount());
-  TriggerSyncFaviconReceived(GURL(page_url), GURL(fav_url), std::string());
-  EXPECT_EQ(0U, GetFaviconCount());
-  EXPECT_FALSE(ExpectFaviconEquals(page_url, std::string()));
-
-  // Then receive the actual favicon.
-  TriggerSyncFaviconReceived(GURL(page_url), GURL(fav_url), bytes);
-  EXPECT_EQ(1U, GetFaviconCount());
-  EXPECT_TRUE(ExpectFaviconEquals(page_url, bytes));
-}
-
-TEST_F(SyncFaviconCacheTest, ReceiveUpdatedSyncFavicon) {
-  std::string page_url = "http://www.google.com";
-  std::string fav_url = "http://www.google.com/favicon.ico";
-  std::string bytes = "bytes";
-  std::string bytes2 = "bytes2";
-  EXPECT_EQ(0U, GetFaviconCount());
-  TriggerSyncFaviconReceived(GURL(page_url), GURL(fav_url), bytes);
-  EXPECT_EQ(1U, GetFaviconCount());
-  EXPECT_TRUE(ExpectFaviconEquals(page_url, bytes));
-
-  // The cache should not update existing favicons from tab sync favicons
-  // (which can be reassociated several times).
-  TriggerSyncFaviconReceived(GURL(page_url), GURL(fav_url), bytes2);
-  EXPECT_EQ(1U, GetFaviconCount());
-  EXPECT_TRUE(ExpectFaviconEquals(page_url, bytes));
-  EXPECT_FALSE(ExpectFaviconEquals(page_url, bytes2));
-}
-
-TEST_F(SyncFaviconCacheTest, MultipleMappings) {
-  std::string page_url = "http://www.google.com";
-  std::string page2_url = "http://bla.google.com";
-  std::string fav_url = "http://www.google.com/favicon.ico";
-  std::string bytes = "bytes";
-  EXPECT_EQ(0U, GetFaviconCount());
-  TriggerSyncFaviconReceived(GURL(page_url), GURL(fav_url), bytes);
-  EXPECT_EQ(1U, GetFaviconCount());
-  EXPECT_TRUE(ExpectFaviconEquals(page_url, bytes));
-
-  // Map another page to the same favicon. They should share the same data.
-  TriggerSyncFaviconReceived(GURL(page2_url), GURL(fav_url), bytes);
-  EXPECT_EQ(1U, GetFaviconCount());
-  EXPECT_TRUE(ExpectFaviconEquals(page2_url, bytes));
 }
 
 TEST_F(SyncFaviconCacheTest, SyncEmpty) {

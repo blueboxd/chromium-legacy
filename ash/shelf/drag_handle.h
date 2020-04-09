@@ -28,7 +28,7 @@ class ASH_EXPORT DragHandle : public views::View,
                               public ShellObserver,
                               public ui::ImplicitAnimationObserver {
  public:
-  explicit DragHandle(int drag_handle_corner_radius);
+  DragHandle(int drag_handle_corner_radius, Shelf* shelf);
   DragHandle(const DragHandle&) = delete;
   ~DragHandle() override;
 
@@ -127,6 +127,9 @@ class ASH_EXPORT DragHandle : public views::View,
 
   // Stops the timer to show the drag handle nudge.
   void StopDragHandleNudgeShowTimer();
+
+  // Pointer to the shelf that owns the drag handle.
+  Shelf* const shelf_;
 
   // Timer to hide drag handle nudge if it has a timed life.
   base::OneShotTimer hide_drag_handle_nudge_timer_;

@@ -7,7 +7,7 @@ import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 import 'chrome://print-management/print_management.js';
 
 import {setMetadataProviderForTesting} from 'chrome://print-management/mojo_interface_provider.js';
-import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {flushTasks} from 'chrome://test/test_util.m.js';
 
 const CompletionStatus = {
   FAILED: 0,
@@ -84,7 +84,6 @@ function verifyPrintJobs(expected, actual) {
  * @return {!Array<!HTMLElement>}
  */
 function getPrintJobEntries(page) {
-  flush();
   const entryList = page.$$('#entryList');
   return Array.from(
       entryList.querySelectorAll('print-job-entry:not([hidden])'));
@@ -198,7 +197,7 @@ suite('PrintManagementTest', () => {
     mojoApi_.setPrintJobs(printJobs);
     page = document.createElement('print-management');
     document.body.appendChild(page);
-    flush();
+    return flushTasks();
   }
 
   test('PrintHistoryListIsSortedReverseChronologically', () => {
@@ -217,11 +216,13 @@ suite('PrintManagementTest', () => {
     // Initialize with a reversed array of |expectedArr|, since we expect the
     // app to sort the list when it first loads. Since reverse() mutates the
     // original array, use a copy array to prevent mutating |expectedArr|.
-    initializePrintManagementApp(expectedArr.slice().reverse());
-
-    mojoApi_.whenCalled('getPrintJobs').then(() => {
-      verifyPrintJobs(expectedArr, getPrintJobEntries(page));
-    });
+    initializePrintManagementApp(expectedArr.slice().reverse())
+        .then(() => {
+          return mojoApi_.whenCalled('getPrintJobs');
+        })
+        .then(() => {
+          verifyPrintJobs(expectedArr, getPrintJobEntries(page));
+        });
   });
 });
 

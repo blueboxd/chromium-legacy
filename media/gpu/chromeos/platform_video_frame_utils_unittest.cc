@@ -70,7 +70,7 @@ scoped_refptr<VideoFrame> CreateMockDmaBufVideoFrame(
 class FakeGpuMemoryBufferFactory : public gpu::GpuMemoryBufferFactory {
  public:
   FakeGpuMemoryBufferFactory() = default;
-  ~FakeGpuMemoryBufferFactory() {
+  ~FakeGpuMemoryBufferFactory() override {
     for (const auto& buffers : gpu_memory_buffers_) {
       if (!buffers.second.empty()) {
         LOG(ERROR) << "client_id=" << buffers.first

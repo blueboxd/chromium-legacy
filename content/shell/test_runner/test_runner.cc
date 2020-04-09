@@ -31,8 +31,10 @@
 #include "content/shell/test_runner/test_interfaces.h"
 #include "content/shell/test_runner/test_preferences.h"
 #include "content/shell/test_runner/test_runner_for_specific_view.h"
+#include "content/shell/test_runner/web_frame_test_proxy.h"
 #include "content/shell/test_runner/web_test_delegate.h"
 #include "content/shell/test_runner/web_view_test_proxy.h"
+#include "content/shell/test_runner/web_widget_test_proxy.h"
 #include "gin/arguments.h"
 #include "gin/array_buffer.h"
 #include "gin/handle.h"
@@ -1551,7 +1553,6 @@ void TestRunner::Reset() {
     delegate_->SetDeviceScaleFactor(GetDefaultDeviceScaleFactor());
     delegate_->SetBlockThirdPartyCookies(false);
     delegate_->SetLocale("");
-    delegate_->UseUnfortunateSynchronousResizeMode(false);
     delegate_->ResetAutoResizeMode();
     delegate_->DeleteAllCookies();
     delegate_->SetBluetoothManualChooser(false);
@@ -2128,7 +2129,22 @@ void TestRunner::SetTextSubpixelPositioning(bool value) {
 }
 
 void TestRunner::UseUnfortunateSynchronousResizeMode() {
-  delegate_->UseUnfortunateSynchronousResizeMode(true);
+  // Sets the resize mode on the main frame of each open window.
+  for (WebViewTestProxy* window : test_interfaces_->GetWindowList()) {
+    blink::WebFrame* main_frame = window->GetWebView()->MainFrame();
+    if (main_frame->IsWebLocalFrame()) {
+      // Lots of pointers to get to the local main frame's WebWidgetTestProxy.
+      // The local frame has a paired RenderFrame, which will be a
+      // WebFrameTestProxy in web tests. Each local root frame (including the
+      // main frame) has a RenderWidget, which is the WebWidgetTestProxy in
+      // web tests.
+      blink::WebLocalFrame* local_frame = main_frame->ToWebLocalFrame();
+      RenderFrame* render_frame = RenderFrame::FromWebFrame(local_frame);
+      auto* frame_proxy = static_cast<WebFrameTestProxy*>(render_frame);
+      auto* widget_proxy = frame_proxy->GetLocalRootWebWidgetTestProxy();
+      widget_proxy->UseSynchronousResizeModeForTesting(true);
+    }
+  }
 }
 
 void TestRunner::EnableAutoResizeMode(int min_width,

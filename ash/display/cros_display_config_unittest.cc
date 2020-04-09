@@ -4,8 +4,10 @@
 
 #include "ash/display/cros_display_config.h"
 
+#include "ash/display/display_highlight_controller.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/touch_calibrator_controller.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/mojom/cros_display_config.mojom.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -71,12 +73,16 @@ class TestObserver : public mojom::CrosDisplayConfigObserver {
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
 
+}  // namespace
+
 class CrosDisplayConfigTest : public AshTestBase {
  public:
   CrosDisplayConfigTest() {}
   ~CrosDisplayConfigTest() override {}
 
   void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(features::kDisplayIdentification);
+
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseFirstDisplayAsInternal);
     AshTestBase::SetUp();
@@ -193,15 +199,19 @@ class CrosDisplayConfigTest : public AshTestBase {
     return touch_calibrator && touch_calibrator->IsCalibrating();
   }
 
+  void HighlightDisplay(int64_t id) {
+    cros_display_config_->HighlightDisplay(id);
+  }
+
   CrosDisplayConfig* cros_display_config() { return cros_display_config_; }
 
  private:
   CrosDisplayConfig* cros_display_config_ = nullptr;
 
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(CrosDisplayConfigTest);
 };
-
-}  // namespace
 
 TEST_F(CrosDisplayConfigTest, OnDisplayConfigChanged) {
   TestObserver observer;
@@ -806,6 +816,30 @@ TEST_F(CrosDisplayConfigTest, TabletModeAutoRotation) {
   EXPECT_FALSE(tablet_mode_controller_test_api.IsInPhysicalTabletState());
   EXPECT_FALSE(tablet_mode_controller_test_api.IsTabletModeStarted());
   EXPECT_EQ(display::Display::ROTATE_0, display.rotation());
+}
+
+TEST_F(CrosDisplayConfigTest, HighlightDisplayValid) {
+  UpdateDisplay("500x400,500x400");
+
+  const display::Display& display = display_manager()->GetDisplayAt(0);
+  const int64_t display_id = display.id();
+
+  HighlightDisplay(display_id);
+
+  views::Widget* widget =
+      Shell::Get()->display_highlight_controller()->GetWidgetForTesting();
+  ASSERT_NE(widget, nullptr);
+  EXPECT_EQ(widget->GetNativeWindow()->GetRootWindow(),
+            Shell::GetRootWindowForDisplayId(display_id));
+}
+
+TEST_F(CrosDisplayConfigTest, HighlightDisplayInvalid) {
+  UpdateDisplay("500x400,500x400");
+
+  HighlightDisplay(display::kInvalidDisplayId);
+
+  EXPECT_EQ(Shell::Get()->display_highlight_controller()->GetWidgetForTesting(),
+            nullptr);
 }
 
 }  // namespace ash

@@ -273,9 +273,13 @@
               sub-option-mode="cookies-session-only">
           </category-default-setting>
           <settings-toggle-button
+              id="blockThirdPartyCookies"
               pref="{{prefs.profile.block_third_party_cookies}}"
               label="$i18n{thirdPartyCookie}"
-              sub-label="$i18n{thirdPartyCookieSublabel}">
+              sub-label="$i18n{thirdPartyCookieSublabel}"
+              on-settings-boolean-control-change=
+                  "onBlockThirdPartyCookiesToggleChange_"
+              no-set-pref>
           </settings-toggle-button>
           <cr-link-row id="site-data-trigger" class="hr"
               on-click="onSiteDataTap_" label="$i18n{siteSettingsCookieLink}">

@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">Cliquez pour obtenir plus d'options.</translation>
 <translation id="1570871743947603115">Activer/Désactiver le Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Accéder à toutes vos activités dans cette session</translation>
-<translation id="1608626060424371292">Supprimer cet utilisateur</translation>
+<translation id="1632985212731562677">Vous pouvez désactiver Switch Access en sélectionnant Paramètres &gt; Accessibilité.</translation>
 <translation id="1654477262762802994">Soumettre une requête vocale</translation>
 <translation id="1658406695958299976">Impossible de valider le mot de passe. Remarque : si vous l'avez modifié dernièrement, votre nouveau mot de passe ne sera appliqué qu'une fois que vous vous serez déconnecté. Veuillez donc utiliser votre ancien mot de passe.</translation>
 <translation id="1677472565718498478">Temps restant : <ph name="TIME" /></translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">L'administrateur de cet appareil peut contrôler votre activité de navigation.</translation>
 <translation id="3181441307743005334">Le redémarrage peut prendre du temps</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Connecté à un appareil}one{Connecté à # appareil}other{Connecté à # appareils}}</translation>
+<translation id="3203405173652969239">Switch Access activé</translation>
 <translation id="3207953481422525583">Paramètres utilisateur</translation>
 <translation id="3217205077783620295">Le son est activé et peut être coupé lorsque vous cliquez sur le bouton de volume.</translation>
 <translation id="3226991577105957773">+ <ph name="COUNT" /> autres</translation>
@@ -651,6 +652,7 @@
 <translation id="9211681782751733685">Temps restant avant que la batterie soit entièrement rechargée : <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Définir le fond d'écran</translation>
 <translation id="921989828232331238">Ton parent a verrouillé ton appareil pour la journée</translation>
+<translation id="9220525904950070496">Supprimer le compte</translation>
 <translation id="923686485342484400">Appuyez deux fois sur Contrôle + Maj + Q pour vous déconnecter.</translation>
 <translation id="938963181863597773">Qu'y a-t-il dans mon agenda ?</translation>
 <translation id="945522503751344254">Envoyer un commentaire</translation>

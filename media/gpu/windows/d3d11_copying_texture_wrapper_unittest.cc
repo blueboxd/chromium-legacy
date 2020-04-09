@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
+#include "base/test/task_environment.h"
 #include "media/gpu/windows/d3d11_copying_texture_wrapper.h"
 #include "media/gpu/windows/d3d11_texture_wrapper.h"
 #include "media/gpu/windows/d3d11_video_processor_proxy.h"
@@ -96,7 +97,9 @@ class MockTexture2DWrapper : public Texture2DWrapper {
     return MockProcessTexture();
   }
 
-  bool Init(GetCommandBufferHelperCB get_helper_cb) override {
+  bool Init(scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
+            GetCommandBufferHelperCB get_helper_cb) override {
+    gpu_task_runner_ = std::move(gpu_task_runner);
     return MockInit();
   }
 
@@ -105,6 +108,8 @@ class MockTexture2DWrapper : public Texture2DWrapper {
   MOCK_METHOD1(SetStreamHDRMetadata, void(const HDRMetadata& stream_metadata));
   MOCK_METHOD1(SetDisplayHDRMetadata,
                void(const DXGI_HDR_METADATA_HDR10& dxgi_display_metadata));
+
+  scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
 };
 
 CommandBufferHelperPtr UselessHelper() {
@@ -126,6 +131,10 @@ class D3D11CopyingTexture2DWrapperTest
   FIELD(bool, PassthroughColorSpace, 6)
 #undef FIELD
 
+  void SetUp() override {
+    gpu_task_runner_ = task_environment_.GetMainThreadTaskRunner();
+  }
+
   std::unique_ptr<MockVideoProcessorProxy> ExpectProcessorProxy() {
     auto result = std::make_unique<MockVideoProcessorProxy>();
     ON_CALL(*result.get(), MockInit(_, _))
@@ -143,7 +152,7 @@ class D3D11CopyingTexture2DWrapperTest
     return result;
   }
 
-  std::unique_ptr<Texture2DWrapper> ExpectTextureWrapper() {
+  std::unique_ptr<MockTexture2DWrapper> ExpectTextureWrapper() {
     auto result = std::make_unique<MockTexture2DWrapper>();
 
     ON_CALL(*result.get(), MockInit())
@@ -152,7 +161,7 @@ class D3D11CopyingTexture2DWrapperTest
     ON_CALL(*result.get(), MockProcessTexture())
         .WillByDefault(Return(GetProcessTexture()));
 
-    return std::move(result);
+    return result;
   }
 
   GetCommandBufferHelperCB CreateMockHelperCB() {
@@ -169,6 +178,9 @@ class D3D11CopyingTexture2DWrapperTest
            SUCCEEDED(GetCreateVideoProcessorInputView()) &&
            SUCCEEDED(GetVideoProcessorBlt());
   }
+
+  base::test::TaskEnvironment task_environment_;
+  scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
 };
 
 INSTANTIATE_TEST_CASE_P(CopyingTexture2DWrapperTest,
@@ -193,14 +205,22 @@ TEST_P(D3D11CopyingTexture2DWrapperTest,
   base::Optional<gfx::ColorSpace> copy_color_space;
   if (!GetPassthroughColorSpace())
     copy_color_space = gfx::ColorSpace::CreateDisplayP3D65();
+  auto texture_wrapper = ExpectTextureWrapper();
+  MockTexture2DWrapper* texture_wrapper_raw = texture_wrapper.get();
   auto wrapper = std::make_unique<CopyingTexture2DWrapper>(
-      size, ExpectTextureWrapper(), std::move(processor), nullptr,
+      size, std::move(texture_wrapper), std::move(processor), nullptr,
       copy_color_space);
+
+  // TODO: check |gpu_task_runner_|.
 
   MailboxHolderArray mailboxes;
   gfx::ColorSpace input_color_space = gfx::ColorSpace::CreateSCRGBLinear();
   gfx::ColorSpace output_color_space;
-  EXPECT_EQ(wrapper->Init(CreateMockHelperCB()), InitSucceeds());
+  EXPECT_EQ(wrapper->Init(gpu_task_runner_, CreateMockHelperCB()),
+            InitSucceeds());
+  task_environment_.RunUntilIdle();
+  if (GetProcessorProxyInit())
+    EXPECT_EQ(texture_wrapper_raw->gpu_task_runner_, gpu_task_runner_);
   EXPECT_EQ(wrapper->ProcessTexture(nullptr, 0, input_color_space, &mailboxes,
                                     &output_color_space),
             ProcessTextureSucceeds());

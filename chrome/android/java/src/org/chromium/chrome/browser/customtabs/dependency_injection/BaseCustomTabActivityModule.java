@@ -8,6 +8,7 @@ import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProv
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TwaIntentHandlingStrategy;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TwaVerifier;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier;
+import org.chromium.chrome.browser.customtabs.CustomTabNightModeStateController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler.IntentIgnoringCriterion;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandlingStrategy;
 import org.chromium.chrome.browser.customtabs.content.DefaultCustomTabIntentHandlingStrategy;
@@ -28,12 +29,15 @@ import dagger.Reusable;
 public class BaseCustomTabActivityModule {
     private final BrowserServicesIntentDataProvider mIntentDataProvider;
     private final @ActivityType int mActivityType;
+    private final CustomTabNightModeStateController mNightModeController;
     private final IntentIgnoringCriterion mIntentIgnoringCriterion;
 
     public BaseCustomTabActivityModule(BrowserServicesIntentDataProvider intentDataProvider,
+            CustomTabNightModeStateController nightModeController,
             IntentIgnoringCriterion intentIgnoringCriterion) {
         mIntentDataProvider = intentDataProvider;
         mActivityType = intentDataProvider.getActivityType();
+        mNightModeController = nightModeController;
         mIntentIgnoringCriterion = intentIgnoringCriterion;
     }
 
@@ -67,6 +71,11 @@ public class BaseCustomTabActivityModule {
     @Provides
     public IntentIgnoringCriterion provideIntentIgnoringCriterion() {
         return mIntentIgnoringCriterion;
+    }
+
+    @Provides
+    public CustomTabNightModeStateController provideNightModeController() {
+        return mNightModeController;
     }
 
     @Provides

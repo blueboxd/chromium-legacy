@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">Daha fazla seçenek için tıklayın</translation>
 <translation id="1570871743947603115">Bluetooth'u aç/kapat. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Bu oturumdaki tüm etkinliğinize erişme</translation>
-<translation id="1608626060424371292">Bu kullanıcıyı kaldır</translation>
+<translation id="1632985212731562677">Anahtar Erişimi, Ayarlar &gt; Erişilebilirlik'te devre dışı bırakılabilir.</translation>
 <translation id="1654477262762802994">Sesli sorgu başlat</translation>
 <translation id="1658406695958299976">Maalesef şifreniz hâlâ doğrulanamadı. Not: Şifrenizi yakın zamanda değiştirdiyseniz, yeni şifreniz oturumu kapatmanızdan sonra geçerli olacaktır. Lütfen burada eski şifrenizi kullanın.</translation>
 <translation id="1677472565718498478">Kalan süre: <ph name="TIME" /></translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">Cihaz yöneticisi göz atma etkinliğinizi izleyebilir.</translation>
 <translation id="3181441307743005334">Yeniden başlatmak biraz zaman alabilir</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Bir cihaza bağlı}other{# cihaza bağlı}}</translation>
+<translation id="3203405173652969239">Anahtar Erişimi etkinleştirildi</translation>
 <translation id="3207953481422525583">Kullanıcı Ayarları</translation>
 <translation id="3217205077783620295">Ses açık, düğmeye basılırsa ses kapatılacak.</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> öğe daha</translation>
@@ -652,6 +653,7 @@
 <translation id="9211681782751733685">Pilin tam olarak şarj olmasına <ph name="TIME_REMAINING" /> kaldı.</translation>
 <translation id="9215934040295798075">Duvar kağıdını ayarla</translation>
 <translation id="921989828232331238">Ebeveyniniz cihazınızı bugün için kilitledi</translation>
+<translation id="9220525904950070496">Hesabı kaldır</translation>
 <translation id="923686485342484400">Oturumu kapatmak için Control ÜstKrktr Q tuşlarına iki defa basın.</translation>
 <translation id="938963181863597773">Takvimimde ne var?</translation>
 <translation id="945522503751344254">Geri bildirim gönder</translation>

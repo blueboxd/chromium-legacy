@@ -39,7 +39,6 @@ import org.chromium.chrome.browser.previews.PreviewsUma;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.site_settings.ContentSettingValues;
 import org.chromium.chrome.browser.site_settings.CookieControlsBridge;
-import org.chromium.chrome.browser.ssl.ChromeSecurityStateModelDelegate;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.content_settings.CookieControlsEnforcement;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
@@ -576,8 +575,7 @@ public class PageInfoController implements ModalDialogProperties.Controller,
             assert false : "Invalid source passed";
         }
 
-        final int securityLevel = SecurityStateModel.getSecurityLevelForWebContents(
-                webContents, ChromeSecurityStateModelDelegate.getInstance());
+        final int securityLevel = SecurityStateModel.getSecurityLevelForWebContents(webContents);
 
         @PreviewPageState
         int previewPageState = PreviewPageState.NOT_PREVIEW;

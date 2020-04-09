@@ -12,6 +12,7 @@
 #include "base/task/post_task.h"
 #include "components/ssl_errors/error_info.h"
 #include "components/strings/grit/components_strings.h"
+#include "ios/components/webui/web_ui_url_constants.h"
 #include "ios/web/common/user_agent.h"
 #include "ios/web/public/security/ssl_status.h"
 #include "ios/web/public/thread/web_task_traits.h"
@@ -59,6 +60,15 @@ WebViewWebClient::~WebViewWebClient() = default;
 
 std::unique_ptr<web::WebMainParts> WebViewWebClient::CreateWebMainParts() {
   return std::make_unique<WebViewWebMainParts>();
+}
+
+void WebViewWebClient::AddAdditionalSchemes(Schemes* schemes) const {
+  schemes->standard_schemes.push_back(kChromeUIScheme);
+  schemes->secure_schemes.push_back(kChromeUIScheme);
+}
+
+bool WebViewWebClient::IsAppSpecificURL(const GURL& url) const {
+  return url.SchemeIs(kChromeUIScheme);
 }
 
 std::string WebViewWebClient::GetUserAgent(web::UserAgentType type) const {

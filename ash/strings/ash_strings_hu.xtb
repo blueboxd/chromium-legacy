@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">Kattintson további lehetőségekért</translation>
 <translation id="1570871743947603115">Bluetooth ki- és bekapcsolása. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Hozzáférés az Ön jelen munkamenetben végzett összes tevékenységéhez</translation>
-<translation id="1608626060424371292">Felhasználó eltávolítása</translation>
+<translation id="1632985212731562677">A Kapcsolóalapú hozzáférés a Beállítások Kisegítő lehetőségek pontjában kapcsolható ki.</translation>
 <translation id="1654477262762802994">Hangalapú lekérdezés indítása</translation>
 <translation id="1658406695958299976">Sajnos a jelszó ellenőrzése még mindig nem sikerült. Megjegyzés: ha a közelmúltban módosította jelszavát, az új jelszó beállítása a kijelentkezés után megy végbe, ezért itt a régi jelszót használja.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> van hátra</translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">Az eszköz rendszergazdája figyelheti a böngészési tevékenységét.</translation>
 <translation id="3181441307743005334">Az újraindítás eltarthat egy ideig</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Egy eszközhöz csatlakoztatva}other{# eszközhöz csatlakoztatva}}</translation>
+<translation id="3203405173652969239">Kapcsolóalapú hozzáférés bekapcsolva</translation>
 <translation id="3207953481422525583">Felhasználói beállítások</translation>
 <translation id="3217205077783620295">A hang be van kapcsolva, a gombra kattintva elnémítja.</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> további</translation>
@@ -652,6 +653,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="9211681782751733685">Akkumulátor teljes feltöltéséig hátralévő idő: <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Háttérkép beállítása</translation>
 <translation id="921989828232331238">A szülőd zárolta az eszközt mára</translation>
+<translation id="9220525904950070496">Fiók eltávolítása</translation>
 <translation id="923686485342484400">Nyomja meg a Ctrl Shift Q billentyűkombinációt kétszer a kijelentkezéshez.</translation>
 <translation id="938963181863597773">Mi van a naptáramban?</translation>
 <translation id="945522503751344254">Visszajelzés küldése</translation>

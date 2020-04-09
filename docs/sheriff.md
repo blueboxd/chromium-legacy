@@ -400,8 +400,9 @@ hours.
 ### Other Causes
 
 There are many other things that can go wrong, which are too individually rare
-and numerous to be listed here. Ask for help with diagnosis in Slack #sheriffing
-and hopefully someone else will be able to help you figure it out.
+and numerous to be listed here. Ask for help with diagnosis in
+[slack #sheriffing] and hopefully someone else will be able to help you figure
+it out.
 
 [CI console page]: https://ci.chromium.org/p/chromium/g/chromium/console
 [SlowTests]: https://cs.chromium.org/chromium/src/third_party/blink/web_tests/SlowTests

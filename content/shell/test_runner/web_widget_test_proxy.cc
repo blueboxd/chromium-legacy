@@ -160,6 +160,8 @@ WebViewTestProxy* WebWidgetTestProxy::GetWebViewTestProxy() {
 
 void WebWidgetTestProxy::Reset() {
   event_sender_.Reset();
+  ClearEditCommands();
+  UseSynchronousResizeModeForTesting(false);
 }
 
 void WebWidgetTestProxy::BindTo(blink::WebLocalFrame* frame) {

@@ -12,10 +12,12 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "ios/web/public/webui/web_ui_ios_controller_factory.h"
 #include "ios/web_view/internal/app/application_context.h"
 #import "ios/web_view/internal/cwv_flags_internal.h"
 #import "ios/web_view/internal/cwv_web_view_configuration_internal.h"
 #include "ios/web_view/internal/translate/web_view_translate_service.h"
+#include "ios/web_view/internal/webui/web_view_web_ui_ios_controller_factory.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -66,6 +68,9 @@ void WebViewWebMainParts::PreMainMessageLoopRun() {
 
   ContentSettingsPattern::SetNonWildcardDomainNonPortSchemes(
       /*schemes=*/nullptr, 0);
+
+  web::WebUIIOSControllerFactory::RegisterFactory(
+      WebViewWebUIIOSControllerFactory::GetInstance());
 }
 
 void WebViewWebMainParts::PostMainMessageLoopRun() {

@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">Klik vir meer opsies</translation>
 <translation id="1570871743947603115">Wissel Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Kry toegang tot al jou aktiwiteit in hierdie sessie</translation>
-<translation id="1608626060424371292">Verwyder hierdie gebruiker</translation>
+<translation id="1632985212731562677">Skakelaartoegang kan in Instellings &gt; Toeganklikheid gedeaktiveer word.</translation>
 <translation id="1654477262762802994">Begin 'n stemnavraag</translation>
 <translation id="1658406695958299976">Jammer, jou wagwoord kon steeds nie geverifieer word nie. Let wel: as jy jou wagwoord onlangs verander het, sal jou nuwe wagwoord toegepas word sodra jy afmeld. Gebruik die ou wagwoord hier.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> oor</translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">Die toesteladministrateur kan dalk jou blaai-aktiwiteit monitor.</translation>
 <translation id="3181441307743005334">Dit kan 'n rukkie neem om te herbegin</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Gekoppel aan 'n toestel}other{Gekoppel aan # toestelle}}</translation>
+<translation id="3203405173652969239">Skakelaartoegang is geaktiveer</translation>
 <translation id="3207953481422525583">Gebruikerinstellings</translation>
 <translation id="3217205077783620295">Volume is aan. Wissel om oudio te demp.</translation>
 <translation id="3226991577105957773">+nog <ph name="COUNT" /></translation>
@@ -652,6 +653,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="9211681782751733685"><ph name="TIME_REMAINING" /> oor totdat battery vol gelaai is.</translation>
 <translation id="9215934040295798075">Stel muurpapier</translation>
 <translation id="921989828232331238">Jou ouer het jou toestel vir die dag gesluit</translation>
+<translation id="9220525904950070496">Verwyder rekening</translation>
 <translation id="923686485342484400">Druk Ctrl Shift Q twee keer om af te meld.</translation>
 <translation id="938963181863597773">Wat is op my kalender?</translation>
 <translation id="945522503751344254">Stuur terugvoer</translation>

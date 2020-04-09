@@ -43,14 +43,16 @@ InstallerState::InstallerState()
       level_(UNKNOWN_LEVEL),
       root_key_(NULL),
       msi_(false),
-      verbose_logging_(false) {}
+      verbose_logging_(false),
+      is_migrating_to_single_(false) {}
 
 InstallerState::InstallerState(Level level)
     : operation_(UNINITIALIZED),
       level_(UNKNOWN_LEVEL),
       root_key_(NULL),
       msi_(false),
-      verbose_logging_(false) {
+      verbose_logging_(false),
+      is_migrating_to_single_(false) {
   // Use set_level() so that root_key_ is updated properly.
   set_level(level);
 }
@@ -87,7 +89,14 @@ void InstallerState::Initialize(const base::CommandLine& command_line,
 
   VLOG(1) << (is_uninstall ? "Uninstall Chrome" : "Install Chrome");
 
-  operation_ = is_uninstall ? UNINSTALL : SINGLE_INSTALL_OR_UPDATE;
+  if (is_uninstall) {
+    operation_ = UNINSTALL;
+  } else {
+    operation_ = SINGLE_INSTALL_OR_UPDATE;
+    // Is this a migration from multi-install to single-install?
+    const ProductState* state = machine_state.GetProductState(system_install());
+    is_migrating_to_single_ = state && state->is_multi_install();
+  }
 
   // Parse --critical-update-version=W.X.Y.Z
   std::string critical_version_value(
@@ -168,11 +177,46 @@ void InstallerState::Clear() {
   root_key_ = NULL;
   msi_ = false;
   verbose_logging_ = false;
+  is_migrating_to_single_ = false;
 }
 
 void InstallerState::SetStage(InstallerStage stage) const {
   GoogleUpdateSettings::SetProgress(system_install(), state_key_,
                                     progress_calculator_.Calculate(stage));
+}
+
+void InstallerState::UpdateChannels() const {
+  DCHECK_NE(UNINSTALL, operation_);
+  // Update the "ap" value for the product being installed/updated.  Use the
+  // current value in the registry since the InstallationState instance used by
+  // the bulk of the installer does not track changes made by UpdateStage.
+  // Create the app's ClientState key if it doesn't exist.
+  ChannelInfo channel_info;
+  base::win::RegKey state_key;
+  LONG result =
+      state_key.Create(root_key_,
+                       state_key_.c_str(),
+                       KEY_QUERY_VALUE | KEY_SET_VALUE | KEY_WOW64_32KEY);
+  if (result == ERROR_SUCCESS) {
+    channel_info.Initialize(state_key);
+
+    // Multi-install has been deprecated. All installs and updates are single.
+    bool modified = channel_info.SetMultiInstall(false);
+
+    // Remove all multi-install products from the channel name.
+    modified |= channel_info.SetChrome(false);
+    modified |= channel_info.SetChromeFrame(false);
+    modified |= channel_info.SetAppLauncher(false);
+
+    VLOG(1) << "ap: " << channel_info.value();
+
+    // Write the results if needed.
+    if (modified)
+      channel_info.Write(&state_key);
+  } else {
+    LOG(ERROR) << "Failed opening key " << state_key_
+               << " to update app channels; result: " << result;
+  }
 }
 
 void InstallerState::WriteInstallerResult(
@@ -189,6 +233,22 @@ void InstallerState::WriteInstallerResult(
   InstallUtil::AddInstallerResultItems(
       system_install, install_static::GetClientStateKeyPath(), status,
       string_resource_id, launch_cmd, install_list.get());
+  if (is_migrating_to_single() && InstallUtil::GetInstallReturnCode(status)) {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+    // Write to the binaries on error if this is a migration back to
+    // single-install for Google Chrome builds. Skip this for Chromium builds
+    // because they lump the "ClientState" and "Clients" keys into a single
+    // key. As a consequence, writing this value causes Software\Chromium to be
+    // re-created after it was deleted during the migration to single-install.
+    // Google Chrome builds don't suffer this since the two keys are distinct
+    // and have different lifetimes. The result is only written on failure since
+    // for success, the binaries have been uninstalled and therefore the result
+    // will not be read by Google Update.
+    InstallUtil::AddInstallerResultItems(
+        system_install, install_static::GetClientStateKeyPathForBinaries(),
+        status, string_resource_id, launch_cmd, install_list.get());
+#endif
+  }
   install_list->Do();
 }
 

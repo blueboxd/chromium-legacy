@@ -63,6 +63,8 @@
                 <action android:name="org.chromium.weblayer.downloads.PAUSE"/>
                 <action android:name="org.chromium.weblayer.downloads.RESUME"/>
                 <action android:name="org.chromium.weblayer.downloads.CANCEL"/>
+                <!-- this needs to be in sync with MediaStreamManager.java-->
+                <action android:name="org.chromium.weblayer.webrtc.ACTIVATE_TAB"/>
             </intent-filter>
         </receiver>
     </application>

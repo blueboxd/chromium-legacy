@@ -50,8 +50,6 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
   void UninstallExternalAppByUser(const AppId& app_id,
                                   UninstallWebAppCallback callback) override;
   bool WasExternalAppUninstalledByUser(const AppId& app_id) const override;
-  bool CanRevealAppShim() const override;
-  void RevealAppShim(const AppId& app_id) override;
 
  private:
   void UninstallWebApp(const AppId& app_id, UninstallWebAppCallback callback);

@@ -130,6 +130,15 @@ const CrosView = (function() {
   }
 
   /**
+   *  Set storing combined debug logs status.
+   *
+   *  @private
+   */
+  function setStoreFeedbackSystemLogsStatus_(status) {
+    $(CrosView.STORE_FEEDBACK_SYSTEM_LOGS_STATUS_ID).innerText = status;
+  }
+
+  /**
    *  Set status for current debug mode.
    *
    *  @private
@@ -176,6 +185,11 @@ const CrosView = (function() {
         .addEventListener('click', function(event) {
           $(CrosView.STORE_COMBINED_DEBUG_LOGS_STATUS_ID).innerText = '';
           g_browser.storeCombinedDebugLogs();
+        }, false);
+    $(CrosView.STORE_FEEDBACK_SYSTEM_LOGS_ID)
+        .addEventListener('click', function(event) {
+          $(CrosView.STORE_FEEDBACK_SYSTEM_LOGS_STATUS_ID).innerText = '';
+          g_browser.storeFeedbackSystemLogs();
         }, false);
 
     $(CrosView.DEBUG_WIFI_ID).addEventListener('click', function(event) {
@@ -245,6 +259,10 @@ const CrosView = (function() {
       'chromeos-view-store-combined-debug-logs';
   CrosView.STORE_COMBINED_DEBUG_LOGS_STATUS_ID =
       'chromeos-view-store-combined-debug-logs-status';
+  CrosView.STORE_FEEDBACK_SYSTEM_LOGS_ID =
+      'chromeos-view-store-feedback-system-logs';
+  CrosView.STORE_FEEDBACK_SYSTEM_LOGS_STATUS_ID =
+      'chromeos-view-store-feedback-system-logs-status';
   CrosView.DEBUG_WIFI_ID = 'chromeos-view-network-debugging-wifi';
   CrosView.DEBUG_ETHERNET_ID = 'chromeos-view-network-debugging-ethernet';
   CrosView.DEBUG_CELLULAR_ID = 'chromeos-view-network-debugging-cellular';
@@ -260,6 +278,7 @@ const CrosView = (function() {
     onONCFileParse: setParseStatus_,
     onStoreDebugLogs: setStoreDebugLogsStatus_,
     onStoreCombinedDebugLogs: setStoreCombinedDebugLogsStatus_,
+    onStoreFeedbackSystemLogs: setStoreFeedbackSystemLogsStatus_,
     onSetNetworkDebugMode: setNetworkDebugModeStatus_,
   };
 

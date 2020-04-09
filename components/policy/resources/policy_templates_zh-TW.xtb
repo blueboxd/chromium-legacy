@@ -1158,6 +1158,7 @@
 <translation id="2592162121850992309">如果將這項政策設為 True 或不設定，系統會啟用硬體加速功能 (惟特定 GPU 功能遭禁用時除外)。
 
       如果將這項政策設為 False，系統會停用硬體加速功能。</translation>
+<translation id="2593762551209145088">一律不啟用安全瀏覽功能。</translation>
 <translation id="2596260130957832043">控制是否啟用 NTLMv2。
 
           近期的所有 Samba 和 Windows 伺服器版本均支援 NTLMv2。除非是為了回溯相容性的緣故，否則請勿停用這項功能 (驗證功能的安全性會因此下降)。
@@ -1229,6 +1230,7 @@
 
       如要進一步瞭解安全瀏覽功能，請前往 https://developers.google.com/safe-browsing。</translation>
 <translation id="2706708761587205154">只在 PIN 碼啟用時允許列印</translation>
+<translation id="2707873794476722903">已啟用標準模式中的安全瀏覽功能。</translation>
 <translation id="2710534340210290498">如果將這項政策設為 False，使用者將無法鎖定螢幕，只能登出使用者工作階段。
 
       如果將這項設定設為 True 或不設定，則則使用密碼通過驗證的使用者可以鎖定螢幕。</translation>
@@ -2306,6 +2308,19 @@
 <translation id="437791893267799639">未設定政策，不允許資料遷移和 ARC</translation>
 <translation id="4389073105055031853">允許使用者管理所有憑證</translation>
 <translation id="4389091865841123886">使用 TPM 機制設定遠端證明。</translation>
+<translation id="4401496838830169080">可讓你控管是否要啟用 <ph name="PRODUCT_NAME" /> 的安全瀏覽功能，以及這項功能要在哪種模式下運作。
+
+      如果將這項政策設為「NoProtection」(值為 0)，系統一律不會啟用安全瀏覽功能。
+
+      如果將這項政策設為「StandardProtection」(值為 1，系統預設值)，系統一律會啟用標準模式中的安全瀏覽功能。
+
+      如果將這項政策設為「EnhancedProtection」(值為 2)，系統一律會啟用強化模式中的安全瀏覽功能，這個模式可提供更完善的安全防護機制，但使用者必須提供更多瀏覽資訊給 Google。
+
+      如果將這項政策設為強制套用，使用者即無法變更或覆寫 <ph name="PRODUCT_NAME" /> 中的安全瀏覽功能設定。
+
+      如果不設定這項政策，安全瀏覽功能會在標準防護模式中運作，但使用者可以變更這項設定。
+
+      如要進一步瞭解安全瀏覽功能，請前往 https://developers.google.com/safe-browsing。</translation>
 <translation id="4408428864159735559">預先設定的網路檔案共用清單。</translation>
 <translation id="4410236409016356088">允許節流網路頻寬</translation>
 <translation id="441217499641439905">連上行動網路時，禁止在 <ph name="PRODUCT_OS_NAME" />的「檔案」應用程式中使用 Google 雲端硬碟</translation>
@@ -3410,6 +3425,7 @@
 <translation id="6111936128861357925">允許 Dinosaur Easter Egg Game (恐龍復活節彩蛋遊戲)</translation>
 <translation id="6114416803310251055">淘汰的</translation>
 <translation id="6133088669883929098">允許所有網站使用金鑰產生功能</translation>
+<translation id="6135398260575578389">已啟用強化模式中的安全瀏覽功能。這個模式可提供更完善的安全防護機制，但使用者必須提供更多瀏覽資訊給 Google。</translation>
 <translation id="6136537398661737682">這項政策可控管 Google 定位服務的初始狀態。
 
       如果未設定這項政策或設為 <ph name="GLS_DISABLED" />，Google 定位服務的初始狀態為停用。
@@ -4364,6 +4380,23 @@
 <translation id="7687943045976362719">如果設定這項政策，指定的內容類型會由 <ph name="PRODUCT_FRAME_NAME" />處理。
 
           如果不設定這項政策，所有網站都會使用預設轉譯器。(你可透過 <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> 政策設定預設轉譯器)。</translation>
+<translation id="7691028179743802462">自 M83 版起，我們已淘汰這項政策，請改用 SafeBrowsingProtectionLevel。
+
+      啟用 <ph name="PRODUCT_NAME" /> 的安全瀏覽功能，並禁止使用者變更這項設定。
+
+      如果啟用這項設定，系統一律會啟用安全瀏覽功能。
+
+      如果停用這項設定，系統一律不會啟用安全瀏覽功能。
+
+      這項設定一經啟用或停用，使用者即無法變更或覆寫 <ph name="PRODUCT_NAME" /> 中的「啟用網路詐騙和惡意軟體防護功能」設定。
+
+      如果不設定這項政策，系統會啟用這項設定，但使用者可以自行變更。
+
+      如要進一步瞭解安全瀏覽功能，請前往 https://developers.google.com/safe-browsing。
+
+      這項政策僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體，或是已註冊裝置管理服務的 Windows 10 專業版或企業版執行個體。
+
+      如果設定 SafeBrowsingProtectionLevel 政策，系統會忽略 SafeBrowsingEnabled 政策的值。</translation>
 <translation id="7694245791806617022">控管是否在 Kerberos 驗證對話方塊中啟用「記住密碼」功能。密碼會加密儲存在磁碟上，且只能在使用者工作階段中透過 Kerberos 系統精靈存取。
 
           如果啟用或不設定這項政策，使用者可以決定系統是否要記住 Kerberos 密碼，這樣日後就不必再輸入密碼。除非使用者需要進行其他驗證 (雙重驗證)，否則系統會自動擷取 Kerberos 票證。
@@ -4949,6 +4982,7 @@
 
           如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="8661297125441579970">不允許資料遷移功能和 ARC。</translation>
+<translation id="8665314828727504286">安全瀏覽功能防護等級</translation>
 <translation id="8672321184841719703">指定目標的自動更新版本</translation>
 <translation id="867410340948518937">U2F (通用雙重驗證)</translation>
 <translation id="8685024486845674965">密碼遭到重複使用時，會觸發密碼保護警告</translation>

@@ -417,7 +417,6 @@
 <translation id="1566049601598938765">ওয়েবসাইট</translation>
 <translation id="15662109988763471">বেছে নেওয়া প্রিন্টারটি উপলভ্য নয় অথবা সেটি ঠিকভাবে ইনস্টল করা নেই। আপনার প্রিন্টার পরীক্ষা করুন অথবা অন্য একটি প্রিন্টার বেছে নিন।</translation>
 <translation id="1567387640189251553">আপনি যখন শেষবার পাসওয়ার্ডটি লিখেছিলেন তার পরে অন্য একটি কীবোর্ডে কানেক্ট করা হয়েছিল। এটি আপনার পাসওয়ার্ড চুরি করার চেষ্টা করতে পারে।</translation>
-<translation id="1567750922576943685">আপনার পরিচয় যাচাই করলে তা আপনার ব্যক্তিগত তথ্য রক্ষা করতে সহায়তা করে</translation>
 <translation id="1567993339577891801">JavaScript কনসোল</translation>
 <translation id="1568323446248056064">প্রদর্শন ডিভাইস সেটিংস খুলুন</translation>
 <translation id="1572139610531470719"><ph name="WINDOW_TITLE" /> (অতিথি)</translation>
@@ -519,7 +518,6 @@
 <translation id="1697150536837697295">শিল্পকলা</translation>
 <translation id="1697686431566694143">ফাইল এডিট করতে পারবে</translation>
 <translation id="1698122934742150150">শুধুমাত্র বর্তমান ছদ্মবেশী সেশন</translation>
-<translation id="1698650002254827833">সেই সমস্ত অ্যাপের তালিকা যা লোড করা যাবে না। আবার চেষ্টা করুন।</translation>
 <translation id="1700079447639026019">এমন সাইট যা কখনও কুকি ব্যবহার করে না</translation>
 <translation id="1701062906490865540">এই ব্যক্তিকে সরান</translation>
 <translation id="1703331064825191675">আপনার পাসওয়ার্ড সম্পর্কে কখনও চিন্তা করবেন না</translation>
@@ -826,6 +824,7 @@
 <translation id="2119349053129246860"><ph name="APP" /> এ খুলুন</translation>
 <translation id="2120297377148151361">অ্যাক্টিভিটি এবং ইন্টার‌্যাকশন</translation>
 <translation id="2120639962942052471"><ph name="PERMISSION" /> ব্লক করা হয়েছে</translation>
+<translation id="2121055421682309734">{COUNT,plural, =0{কুকি ব্লক করা আছে}=1{১টি ছাড়া বাকি সব সাইটের কুকি ব্লক করা আছে}one{{COUNT}টি ছাড়া বাকি সব সাইটের কুকি ব্লক করা আছে}other{{COUNT}টি ছাড়া বাকি সব সাইটের কুকি ব্লক করা আছে}}</translation>
 <translation id="2121825465123208577">ছোট বড় করুন</translation>
 <translation id="2122305276694332719">কোনও লুকানো নেটওয়ার্কে অটোমেটিক কানেক্ট করলে, অন্যরা আপনার ডিভাইস ও নেটওয়ার্কের কিছু সেটিংস দেখার সুযোগ পান। তাই, এটি সাজেস্ট করা হয় না।</translation>
 <translation id="2123766928840368256">অন্য কোনও ফাইল বেছে নিন</translation>
@@ -1079,7 +1078,6 @@
 <translation id="2442916515643169563">টেক্সট শ্যাডো</translation>
 <translation id="2445081178310039857">এক্সটেনশন রুট ডিরেক্টরি প্রয়োজন৷</translation>
 <translation id="2445484935443597917">একটি নতুন প্রোফাইল তৈরি করুন</translation>
-<translation id="2446585455334014596"><ph name="APP_NAME" /> আপনার পরিচয় যাচাই করতে চায়</translation>
 <translation id="2448312741937722512">প্রকার</translation>
 <translation id="2450223707519584812">Google এপিআই কীগুলি না থাকার কারণে আপনি ব্যবহারকারীদেরকে যোগ করতে পারবেন না। বিস্তারিত জানার জন্য <ph name="DETAILS_URL" /> দেখুন।</translation>
 <translation id="2450849356604136918">কোনও সক্রিয় ভিউ নেই</translation>
@@ -1683,7 +1681,6 @@
 <translation id="3246107497225150582">{0,plural, =1{এক দিনের মধ্যে ডিভাইস আপডেট করুন}one{# দিনের মধ্যে ডিভাইস আপডেট করুন}other{# দিনের মধ্যে ডিভাইস আপডেট করুন}}</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> - নেটওয়ার্ক ত্রুটি</translation>
 <translation id="3248902735035392926">নিরাপত্তা বজায় রাখা গুরুত্বপূর্ণ। একটু সময় নিয়ে <ph name="BEGIN_LINK" />এখনই আপনার এক্সটেনশন চেক করুন<ph name="END_LINK" /></translation>
-<translation id="3249950116250264636"><ph name="APP_NAME" /> (<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">&lt;শংসাপত্রের অংশ নয়&gt;</translation>
 <translation id="3253225298092156258">উপলভ্য নয়</translation>
 <translation id="3253448572569133955">অপরিচিত অ্যাকাউন্ট</translation>
@@ -2964,7 +2961,6 @@
 <translation id="4992473555164495036">আপনার অ্যাডমিনিস্ট্রেটর উপলভ্য ইনপুট পদ্ধতিগুলি সীমাবদ্ধ করেছেন।</translation>
 <translation id="4994474651455208930">সাইটগুলিকে প্রোটোকলের জন্য ডিফল্ট হ্যান্ডলার হওয়ার জন্য জিজ্ঞাসা করার অনুমতি দেয়</translation>
 <translation id="4994754230098574403">সেট-আপ করা হচ্ছে</translation>
-<translation id="4996978546172906250">এর মাধ্যমে শেয়ার করুন</translation>
 <translation id="4997086284911172121">কোনও ইন্টারনেট সংযোগ নেই।</translation>
 <translation id="4997384734315285248">Plugin VM আনইনস্টল করুন</translation>
 <translation id="4998430619171209993">চালু করা আছে</translation>
@@ -3064,7 +3060,6 @@
 <translation id="5135085122826131075">"হ্যালো Google" বলে আপনার Assistant-কে অ্যাক্সেস করুন।</translation>
 <translation id="5135533361271311778">বুকমার্ক আইটেম তৈরী করা যায়নি৷</translation>
 <translation id="5137501176474113045">এই আইটেমটি মুছে দিন</translation>
-<translation id="5138982052046316113">Linux ডিস্ক রিসাইজ করুন</translation>
 <translation id="5139112070765735680"><ph name="QUERY_NAME" />, <ph name="DEFAULT_SEARCH_ENGINE_NAME" /> সার্চ</translation>
 <translation id="5139823398361067371">আপনার 'নিরাপত্তা কী'-এর পিন লিখুন। পিন না জানা থাকলে, আপনাকে নিরাপত্তা কী রিসেট করতে হবে।</translation>
 <translation id="5139955368427980650">&amp;খুলুন</translation>
@@ -3930,7 +3925,6 @@
 <translation id="6291953229176937411">ফাইন্ডারে &amp;দেখান</translation>
 <translation id="6295158916970320988">সমস্ত সাইট</translation>
 <translation id="6295855836753816081">সংরক্ষণ করা হচ্ছে...</translation>
-<translation id="629730747756840877">অ্যাকাউন্ট</translation>
 <translation id="6298962879096096191">Android অ্যাপ ইনস্টল করতে Google Play ব্যবহার করুন</translation>
 <translation id="630065524203833229">ব&amp;ন্ধ</translation>
 <translation id="6300718114348072351"><ph name="PRINTER_NAME" /> অটোমেটিক কনফিগার করা যাচ্ছে না। প্রিন্টারের উন্নত বিবরণ উল্লেখ করুন। <ph name="LINK_BEGIN" />আরও জানুন<ph name="LINK_END" /></translation>
@@ -4336,7 +4330,6 @@
 <translation id="6865598234501509159">পৃষ্ঠাটি <ph name="LANGUAGE" /> ভাষায় নেই</translation>
 <translation id="6865708901122695652">WebRTC ইভেন্ট লগ (<ph name="WEBRTC_EVENT_LOG_COUNT" />)</translation>
 <translation id="686664946474413495">রঙের তাপমাত্রা</translation>
-<translation id="6870888490422746447">যে অ্যাপ্লিকেশানে শেয়ার করবেন সেটি বেছে নিন:</translation>
 <translation id="6871644448911473373">OCSP প্রতিক্রিয়াকারী: <ph name="LOCATION" /> </translation>
 <translation id="6872781471649843364">আপনার দেওয়া পাসওয়ার্ডটি সার্ভার থেকে প্রত্যাখ্যান করা হয়েছে।</translation>
 <translation id="6876155724392614295">সাইকেল</translation>
@@ -4977,7 +4970,6 @@
 <translation id="7744047395460924128">আপনার প্রিন্ট করার ইতিহাস দেখুন</translation>
 <translation id="7744192722284567281">ডেটার নিরাপত্তা লঙ্ঘন দেখা গেছে</translation>
 <translation id="7750228210027921155">ছবির-মধ্যে-ছবি</translation>
-<translation id="7751229152614300329">Safe Browsing আপ টু ডেট আছে এবং আপনাকে ক্ষতিকারক সাইট এবং ডাউনলোড থেকে রক্ষা করছে</translation>
 <translation id="7751260505918304024">সকল দেখান</translation>
 <translation id="7754704193130578113">প্রতিটি ফাইল ডাউনলোড করার আগে তা কোথায় সংরক্ষণ করতে হবে জিজ্ঞাসা করুন</translation>
 <translation id="7755287808199759310">আপনার পিতামাতা এটি আপনার জন্য অবরোধ মুক্ত করতে পারবেন</translation>

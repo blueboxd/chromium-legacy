@@ -14,22 +14,40 @@
   <div id="chromeos-view-parse-status" hidden>
   </div>
   <div id="chromeos-view-store-debug-logs-div">
-    <h4>Store Logs</h4>
+    <h4>Store system logs</h4>
     <div>
+      <p>This stores system_logs_{date}-{time}.txt.zip to the Downloads
+        directory. The archive contains a single file identical to the
+        system_logs file attached to Feedback reports.</p>
+      <p>Also writes a policies_{date}-{time}.json file for providing policy
+        configurations when that might be a factor.</p>
+      <p>Prefer this when uploading logs to issues or sending logs to developers
+        (unless otherwise requested).</p>
       <input type="button"
-             id="chromeos-view-store-debug-logs"
-             value="Store System Logs">
-      <label for="chromeos-view-store-debug-logs"
-             id="chromeos-view-store-debug-logs-status">
-      </label>
+          id="chromeos-view-store-feedback-system-logs"
+          value="Store Feedback Report System Logs">
+      <label id="chromeos-view-store-feedback-system-logs-status"></label>
+    </div>
+    <h4>Store debugd system logs</h4>
+    <div>
+      <p>This stores the logs collected by debugd as individual files in a
+        single archive file in the Downloads directory:
+        debug-logs_{date}-{time}.tgz.
+      </p>
+      <p>Also writes a policies_{date}-{time}.json file for providing policy
+        configurations when that might be a factor.</p>
+      <input type="button"
+          id="chromeos-view-store-debug-logs"
+          value="Store System Logs">
+      <label id="chromeos-view-store-debug-logs-status"></label>
     </div>
     <div>
+      <p>Identical to the above, but also incldes the Chrome user logs.
+        The output file is named combined-logs_{date}-{time}.tgz.</p>
       <input type="button"
-             id="chromeos-view-store-combined-debug-logs"
-             value="Store System and User Logs">
-      <label for="chromeos-view-store-combined-debug-logs"
-             id="chromeos-view-store-combined-debug-logs-status">
-      </label>
+          id="chromeos-view-store-combined-debug-logs"
+          value="Store System and User Logs">
+      <label id="chromeos-view-store-combined-debug-logs-status"></label>
     </div>
   </div>
   <div id="chromeos-view-network-debugging-div">

@@ -41,11 +41,6 @@ OpenTabsUIDelegateImpl::OpenTabsUIDelegateImpl(
 
 OpenTabsUIDelegateImpl::~OpenTabsUIDelegateImpl() {}
 
-favicon_base::FaviconRawBitmapResult
-OpenTabsUIDelegateImpl::GetSyncedFaviconForPageURL(const GURL& page_url) const {
-  return favicon_cache_->GetSyncedFaviconForPageURL(page_url);
-}
-
 bool OpenTabsUIDelegateImpl::GetAllForeignSessions(
     std::vector<const SyncedSession*>* sessions) {
   *sessions = session_tracker_->LookupAllForeignSessions(

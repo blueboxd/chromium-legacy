@@ -581,7 +581,7 @@ bool HTMLAnchorElement::WillRespondToMouseClickEvents() {
 }
 
 bool HTMLAnchorElement::IsInteractiveContent() const {
-  return IsLink();
+  return IsLink() || HTMLElement::IsInteractiveContent();
 }
 
 Node::InsertionNotificationRequest HTMLAnchorElement::InsertedInto(

@@ -44,6 +44,7 @@ using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
+using JobFinishedCallback = base::OnceCallback<void(void)>;
 
 namespace {
 
@@ -61,7 +62,102 @@ static jlong JNI_FaviconHelper_Init(JNIEnv* env) {
   return reinterpret_cast<intptr_t>(new FaviconHelper());
 }
 
-FaviconHelper::FaviconHelper() {
+// This is used by the FaviconHelper::GetComposedFaviconImageInternal, and it is
+// used to manage multiple FaviconService::GetRawFaviconForPageURL calls. The
+// number of calls is the size of the urls_. The Job is destroyed after the
+// number of calls have been reached, and the result_callback_ is finished.
+class FaviconHelper::Job {
+ public:
+  Job(FaviconHelper* favicon_helper,
+      favicon::FaviconService* favicon_service,
+      std::vector<std::string> urls,
+      int desire_size_in_pixel,
+      JobFinishedCallback job_finished_callback,
+      favicon_base::FaviconResultsCallback result_callback);
+
+  Job(const Job&) = delete;
+  Job& operator=(const Job&) = delete;
+
+  void Start();
+
+ private:
+  void OnFaviconAvailable(int favicon_index,
+                          const favicon_base::FaviconRawBitmapResult& result);
+  FaviconHelper* favicon_helper_;
+  favicon::FaviconService* favicon_service_;
+  std::vector<std::string> urls_;
+  int desire_size_in_pixel_;
+  JobFinishedCallback job_finished_callback_;
+  favicon_base::FaviconResultsCallback result_callback_;
+  int favicon_expected_count_;
+  std::vector<favicon_base::FaviconRawBitmapResult> favicon_raw_bitmap_results_;
+  int favicon_result_count_;
+
+  base::WeakPtrFactory<Job> weak_ptr_factory_{this};
+};
+
+FaviconHelper::Job::Job(FaviconHelper* favicon_helper,
+                        favicon::FaviconService* favicon_service,
+                        std::vector<std::string> urls,
+                        int desire_size_in_pixel,
+                        JobFinishedCallback job_finished_callback,
+                        favicon_base::FaviconResultsCallback result_callback)
+    : favicon_helper_(favicon_helper),
+      favicon_service_(favicon_service),
+      urls_(urls),
+      desire_size_in_pixel_(desire_size_in_pixel),
+      job_finished_callback_(std::move(job_finished_callback)),
+      result_callback_(std::move(result_callback)),
+      favicon_raw_bitmap_results_(4),
+      favicon_result_count_(0) {
+  favicon_expected_count_ = urls_.size();
+}
+
+void FaviconHelper::Job::Start() {
+  size_t urls_size = urls_.size();
+  DCHECK(urls_size > 1 && urls_size <= 4);
+  if (urls_size <= 1 || urls_size > 4)
+    return;
+
+  for (size_t i = 0; i < urls_size; i++) {
+    favicon_base::FaviconRawBitmapCallback callback =
+        base::BindOnce(&FaviconHelper::Job::OnFaviconAvailable,
+                       weak_ptr_factory_.GetWeakPtr(), i);
+
+    favicon_helper_->GetLocalFaviconImageForURLInternal(
+        favicon_service_, GURL(urls_.at(i)), desire_size_in_pixel_,
+        std::move(callback));
+  }
+}
+
+void FaviconHelper::Job::OnFaviconAvailable(
+    int favicon_index,
+    const favicon_base::FaviconRawBitmapResult& result) {
+  DCHECK(favicon_index >= 0 && favicon_index < 4);
+
+  if (result.is_valid()) {
+    favicon_raw_bitmap_results_.at(favicon_index) = result;
+    favicon_result_count_++;
+  } else {
+    favicon_expected_count_--;
+  }
+
+  if (favicon_result_count_ == favicon_expected_count_) {
+    size_t i = 0;
+    while (i < favicon_raw_bitmap_results_.size()) {
+      if (!favicon_raw_bitmap_results_[i].is_valid()) {
+        favicon_raw_bitmap_results_.erase(favicon_raw_bitmap_results_.begin() +
+                                          i);
+        continue;
+      }
+      i++;
+    }
+    std::move(result_callback_).Run(favicon_raw_bitmap_results_);
+    std::move(job_finished_callback_).Run();
+  }
+}
+
+FaviconHelper::FaviconHelper() : last_used_job_id_(0) {
   cancelable_task_tracker_.reset(new base::CancelableTaskTracker());
 }
 
@@ -75,12 +171,57 @@ jboolean FaviconHelper::GetComposedFaviconImage(
     const base::android::JavaParamRef<jobjectArray>& j_urls,
     jint j_desired_size_in_pixel,
     const base::android::JavaParamRef<jobject>& j_favicon_image_callback) {
-  // TODO(crbug.com/1064153): Real implementation.
-  ScopedJavaLocalRef<jobject> j_favicon_bitmap;
-  ScopedJavaLocalRef<jstring> j_icon_url;
-  Java_FaviconImageCallback_onFaviconAvailable(env, j_favicon_image_callback,
-                                               j_favicon_bitmap, j_icon_url);
+  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
+  DCHECK(profile);
+  if (!profile)
+    return false;
+
+  favicon::FaviconService* favicon_service =
+      FaviconServiceFactory::GetForProfile(profile,
+                                           ServiceAccessType::EXPLICIT_ACCESS);
+
+  DCHECK(favicon_service);
+  if (!favicon_service)
+    return false;
+
+  favicon_base::FaviconResultsCallback callback_runner =
+      base::BindOnce(&FaviconHelper::OnFaviconBitmapResultsAvailable,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     ScopedJavaGlobalRef<jobject>(j_favicon_image_callback));
+
+  std::vector<std::string> urls;
+  base::android::AppendJavaStringArrayToStringVector(env, j_urls, &urls);
+
+  GetComposedFaviconImageInternal(favicon_service, urls,
+                                  static_cast<int>(j_desired_size_in_pixel),
+                                  std::move(callback_runner));
+
   return true;
+}
+
+void FaviconHelper::GetComposedFaviconImageInternal(
+    favicon::FaviconService* favicon_service,
+    std::vector<std::string> urls,
+    int desired_size_in_pixel,
+    favicon_base::FaviconResultsCallback callback_runner) {
+  DCHECK(favicon_service);
+
+  JobFinishedCallback job_finished_callback =
+      base::BindOnce(&FaviconHelper::OnJobFinished,
+                     weak_ptr_factory_.GetWeakPtr(), ++last_used_job_id_);
+
+  auto job = std::make_unique<Job>(
+      this, favicon_service, urls, desired_size_in_pixel,
+      std::move(job_finished_callback), std::move(callback_runner));
+
+  id_to_job_[last_used_job_id_] = std::move(job);
+  id_to_job_[last_used_job_id_]->Start();
+}
+
+void ::FaviconHelper::OnJobFinished(int job_id) {
+  DCHECK(id_to_job_.count(job_id));
+
+  id_to_job_.erase(job_id);
 }
 
 jboolean FaviconHelper::GetLocalFaviconImageForURL(
@@ -106,6 +247,22 @@ jboolean FaviconHelper::GetLocalFaviconImageForURL(
                      weak_ptr_factory_.GetWeakPtr(),
                      ScopedJavaGlobalRef<jobject>(j_favicon_image_callback));
 
+  GetLocalFaviconImageForURLInternal(
+      favicon_service, GURL(ConvertJavaStringToUTF16(env, j_page_url)),
+      static_cast<int>(j_desired_size_in_pixel), std::move(callback_runner));
+
+  return true;
+}
+
+void FaviconHelper::GetLocalFaviconImageForURLInternal(
+    favicon::FaviconService* favicon_service,
+    GURL url,
+    int desired_size_in_pixel,
+    favicon_base::FaviconRawBitmapCallback callback_runner) {
+  DCHECK(favicon_service);
+  if (!favicon_service)
+    return;
+
   // |j_page_url| is an origin, and it may not have had a favicon associated
   // with it. A trickier case is when |j_page_url| only has domain-scoped
   // cookies, but visitors are redirected to HTTPS on visiting. Then
@@ -115,14 +272,12 @@ jboolean FaviconHelper::GetLocalFaviconImageForURL(
   // to matching only the hostname to have the best chance of finding a favicon.
   const bool fallback_to_host = true;
   favicon_service->GetRawFaviconForPageURL(
-      GURL(ConvertJavaStringToUTF16(env, j_page_url)),
+      url,
       {favicon_base::IconType::kFavicon, favicon_base::IconType::kTouchIcon,
        favicon_base::IconType::kTouchPrecomposedIcon,
        favicon_base::IconType::kWebManifestIcon},
-      static_cast<int>(j_desired_size_in_pixel), fallback_to_host,
-      std::move(callback_runner), cancelable_task_tracker_.get());
-
-  return true;
+      desired_size_in_pixel, fallback_to_host, std::move(callback_runner),
+      cancelable_task_tracker_.get());
 }
 
 jboolean FaviconHelper::GetForeignFaviconImageForURL(
@@ -299,6 +454,20 @@ void FaviconHelper::OnFaviconBitmapResultAvailable(
     if (!favicon_bitmap.isNull())
       j_favicon_bitmap = gfx::ConvertToJavaBitmap(&favicon_bitmap);
   }
+
+  // Call java side OnFaviconBitmapResultAvailable method.
+  Java_FaviconImageCallback_onFaviconAvailable(env, j_favicon_image_callback,
+                                               j_favicon_bitmap, j_icon_url);
+}
+
+void FaviconHelper::OnFaviconBitmapResultsAvailable(
+    const JavaRef<jobject>& j_favicon_image_callback,
+    const std::vector<favicon_base::FaviconRawBitmapResult>& results) {
+  JNIEnv* env = AttachCurrentThread();
+  // TODO(crbug.com/1064153): Integrate with ImageHelper to compose favicons.
+  // Convert favicon_image_result to java objects.
+  ScopedJavaLocalRef<jstring> j_icon_url;
+  ScopedJavaLocalRef<jobject> j_favicon_bitmap;
 
   // Call java side OnFaviconBitmapResultAvailable method.
   Java_FaviconImageCallback_onFaviconAvailable(env, j_favicon_image_callback,

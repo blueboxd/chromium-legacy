@@ -234,8 +234,9 @@ if (is_android || is_chromeos) {
     # For local development, it's nice to not fail builds on warnings.
     java_warnings_as_errors = !is_java_debug
 
-    # Desugar with D8 rather than Desugar tool.
-    desugar_with_d8 = is_java_debug
+    # Desugar lambdas and interfaces methods using Desugar.jar rather than
+    # D8/R8. D8/R8 will still be used for backported method desugaring.
+    enable_bazel_desugar = true
   }
 
   # Path to where selected build variables are written to.

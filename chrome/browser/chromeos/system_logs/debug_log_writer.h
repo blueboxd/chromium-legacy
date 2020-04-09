@@ -11,6 +11,9 @@
 
 namespace chromeos {
 
+// Class for writing logs collected from debugd to a specified location. Also
+// supports writing the Chrome user log. Currently used by
+// chrome://net-internals#chromeos.
 class DebugLogWriter {
  public:
   // Called once StoreDebugLogs is complete. Takes two parameters:

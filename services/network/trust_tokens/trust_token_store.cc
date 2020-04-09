@@ -51,9 +51,8 @@ std::unique_ptr<TrustTokenStore> TrustTokenStore::CreateInMemory() {
       std::make_unique<InMemoryTrustTokenPersister>());
 }
 
-void TrustTokenStore::RecordIssuance(const url::Origin& issuer) {
-  DCHECK(!issuer.opaque());
-  url::Origin issuer_origin = issuer;
+void TrustTokenStore::RecordIssuance(const SuitableTrustTokenOrigin& issuer) {
+  SuitableTrustTokenOrigin issuer_origin = issuer;
   std::unique_ptr<TrustTokenIssuerConfig> config =
       persister_->GetIssuerConfig(issuer);
   if (!config)
@@ -63,8 +62,7 @@ void TrustTokenStore::RecordIssuance(const url::Origin& issuer) {
 }
 
 base::Optional<base::TimeDelta> TrustTokenStore::TimeSinceLastIssuance(
-    const url::Origin& issuer) {
-  DCHECK(!issuer.opaque());
+    const SuitableTrustTokenOrigin& issuer) {
   std::unique_ptr<TrustTokenIssuerConfig> config =
       persister_->GetIssuerConfig(issuer);
   if (!config)
@@ -83,10 +81,9 @@ base::Optional<base::TimeDelta> TrustTokenStore::TimeSinceLastIssuance(
   return ret;
 }
 
-void TrustTokenStore::RecordRedemption(const url::Origin& issuer,
-                                       const url::Origin& top_level) {
-  DCHECK(!issuer.opaque());
-  DCHECK(!top_level.opaque());
+void TrustTokenStore::RecordRedemption(
+    const SuitableTrustTokenOrigin& issuer,
+    const SuitableTrustTokenOrigin& top_level) {
   std::unique_ptr<TrustTokenIssuerToplevelPairConfig> config =
       persister_->GetIssuerToplevelPairConfig(issuer, top_level);
   if (!config)
@@ -96,10 +93,8 @@ void TrustTokenStore::RecordRedemption(const url::Origin& issuer,
 }
 
 base::Optional<base::TimeDelta> TrustTokenStore::TimeSinceLastRedemption(
-    const url::Origin& issuer,
-    const url::Origin& top_level) {
-  DCHECK(!issuer.opaque());
-  DCHECK(!top_level.opaque());
+    const SuitableTrustTokenOrigin& issuer,
+    const SuitableTrustTokenOrigin& top_level) {
   auto config = persister_->GetIssuerToplevelPairConfig(issuer, top_level);
   if (!config)
     return base::nullopt;
@@ -118,10 +113,8 @@ base::Optional<base::TimeDelta> TrustTokenStore::TimeSinceLastRedemption(
   return ret;
 }
 
-bool TrustTokenStore::IsAssociated(const url::Origin& issuer,
-                                   const url::Origin& top_level) {
-  DCHECK(!issuer.opaque());
-  DCHECK(!top_level.opaque());
+bool TrustTokenStore::IsAssociated(const SuitableTrustTokenOrigin& issuer,
+                                   const SuitableTrustTokenOrigin& top_level) {
   std::unique_ptr<TrustTokenToplevelConfig> config =
       persister_->GetToplevelConfig(top_level);
   if (!config)
@@ -129,10 +122,9 @@ bool TrustTokenStore::IsAssociated(const url::Origin& issuer,
   return base::Contains(config->associated_issuers(), issuer.Serialize());
 }
 
-bool TrustTokenStore::SetAssociation(const url::Origin& issuer,
-                                     const url::Origin& top_level) {
-  DCHECK(!issuer.opaque());
-  DCHECK(!top_level.opaque());
+bool TrustTokenStore::SetAssociation(
+    const SuitableTrustTokenOrigin& issuer,
+    const SuitableTrustTokenOrigin& top_level) {
   std::unique_ptr<TrustTokenToplevelConfig> config =
       persister_->GetToplevelConfig(top_level);
   if (!config)
@@ -154,9 +146,8 @@ bool TrustTokenStore::SetAssociation(const url::Origin& issuer,
 }
 
 void TrustTokenStore::PruneStaleIssuerState(
-    const url::Origin& issuer,
+    const SuitableTrustTokenOrigin& issuer,
     const std::vector<mojom::TrustTokenVerificationKeyPtr>& keys) {
-  DCHECK(!issuer.opaque());
   DCHECK([&keys]() {
     std::set<base::StringPiece> unique_keys;
     for (const auto& key : keys)
@@ -183,10 +174,9 @@ void TrustTokenStore::PruneStaleIssuerState(
   persister_->SetIssuerConfig(issuer, std::move(config));
 }
 
-void TrustTokenStore::AddTokens(const url::Origin& issuer,
+void TrustTokenStore::AddTokens(const SuitableTrustTokenOrigin& issuer,
                                 base::span<const std::string> token_bodies,
                                 base::StringPiece issuing_key) {
-  DCHECK(!issuer.opaque());
   auto config = persister_->GetIssuerConfig(issuer);
   if (!config)
     config = std::make_unique<TrustTokenIssuerConfig>();
@@ -203,8 +193,7 @@ void TrustTokenStore::AddTokens(const url::Origin& issuer,
   persister_->SetIssuerConfig(issuer, std::move(config));
 }
 
-int TrustTokenStore::CountTokens(const url::Origin& issuer) {
-  DCHECK(!issuer.opaque());
+int TrustTokenStore::CountTokens(const SuitableTrustTokenOrigin& issuer) {
   auto config = persister_->GetIssuerConfig(issuer);
   if (!config)
     return 0;
@@ -212,9 +201,8 @@ int TrustTokenStore::CountTokens(const url::Origin& issuer) {
 }
 
 std::vector<TrustToken> TrustTokenStore::RetrieveMatchingTokens(
-    const url::Origin& issuer,
+    const SuitableTrustTokenOrigin& issuer,
     base::RepeatingCallback<bool(const std::string&)> key_matcher) {
-  DCHECK(!issuer.opaque());
   auto config = persister_->GetIssuerConfig(issuer);
   std::vector<TrustToken> matching_tokens;
   if (!config)
@@ -230,9 +218,8 @@ std::vector<TrustToken> TrustTokenStore::RetrieveMatchingTokens(
   return matching_tokens;
 }
 
-void TrustTokenStore::DeleteToken(const url::Origin& issuer,
+void TrustTokenStore::DeleteToken(const SuitableTrustTokenOrigin& issuer,
                                   const TrustToken& to_delete) {
-  DCHECK(!issuer.opaque());
   auto config = persister_->GetIssuerConfig(issuer);
   if (!config)
     return;
@@ -249,11 +236,9 @@ void TrustTokenStore::DeleteToken(const url::Origin& issuer,
 }
 
 void TrustTokenStore::SetRedemptionRecord(
-    const url::Origin& issuer,
-    const url::Origin& top_level,
+    const SuitableTrustTokenOrigin& issuer,
+    const SuitableTrustTokenOrigin& top_level,
     const SignedTrustTokenRedemptionRecord& record) {
-  DCHECK(!issuer.opaque());
-  DCHECK(!top_level.opaque());
   auto config = persister_->GetIssuerToplevelPairConfig(issuer, top_level);
   if (!config)
     config = std::make_unique<TrustTokenIssuerToplevelPairConfig>();
@@ -263,10 +248,8 @@ void TrustTokenStore::SetRedemptionRecord(
 
 base::Optional<SignedTrustTokenRedemptionRecord>
 TrustTokenStore::RetrieveNonstaleRedemptionRecord(
-    const url::Origin& issuer,
-    const url::Origin& top_level) {
-  DCHECK(!issuer.opaque());
-  DCHECK(!top_level.opaque());
+    const SuitableTrustTokenOrigin& issuer,
+    const SuitableTrustTokenOrigin& top_level) {
   auto config = persister_->GetIssuerToplevelPairConfig(issuer, top_level);
   if (!config)
     return base::nullopt;

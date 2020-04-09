@@ -391,8 +391,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -414,8 +414,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -438,8 +438,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -471,8 +471,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -501,8 +501,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -532,8 +532,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -562,8 +562,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -592,8 +592,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -626,8 +626,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -665,8 +665,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -704,8 +704,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -735,8 +735,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -765,8 +765,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -796,8 +796,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -826,8 +826,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -849,8 +849,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -873,8 +873,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -906,8 +906,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -936,8 +936,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -967,8 +967,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -997,8 +997,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -1027,8 +1027,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -1061,8 +1061,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -1100,8 +1100,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -1139,8 +1139,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -1170,8 +1170,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -1200,8 +1200,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -1231,8 +1231,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -1261,7 +1261,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1283,7 +1283,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1305,7 +1305,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1337,7 +1337,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -1366,7 +1366,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -1395,7 +1395,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -1424,7 +1424,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -1457,7 +1457,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -1495,7 +1495,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -1533,7 +1533,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -1563,7 +1563,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -1592,7 +1592,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -1622,7 +1622,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -1650,7 +1650,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1676,7 +1676,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1698,7 +1698,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1720,7 +1720,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1752,7 +1752,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -1781,7 +1781,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -1810,7 +1810,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -1839,7 +1839,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -1872,7 +1872,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -1910,7 +1910,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -1948,7 +1948,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -1972,7 +1972,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -2002,7 +2002,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -2031,7 +2031,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -2061,7 +2061,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -2090,7 +2090,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -2117,7 +2117,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -2140,7 +2140,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -2163,7 +2163,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -2196,7 +2196,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -2226,7 +2226,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -2256,7 +2256,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -2286,7 +2286,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -2320,7 +2320,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -2359,7 +2359,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -2398,7 +2398,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -2423,7 +2423,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -2454,7 +2454,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -2484,7 +2484,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -2515,7 +2515,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -2544,7 +2544,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -2568,7 +2568,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -2592,7 +2592,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -2626,7 +2626,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -2657,7 +2657,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -2688,7 +2688,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -2719,7 +2719,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -2754,7 +2754,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -2794,7 +2794,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -2834,7 +2834,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -2866,7 +2866,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -2897,7 +2897,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -2929,7 +2929,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -2959,7 +2959,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -2987,7 +2987,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -3011,7 +3011,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -3035,7 +3035,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -3069,7 +3069,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -3100,7 +3100,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -3131,7 +3131,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -3162,7 +3162,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -3197,7 +3197,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -3237,7 +3237,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -3277,7 +3277,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -3303,7 +3303,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -3335,7 +3335,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -3366,7 +3366,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -3398,7 +3398,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -3429,7 +3429,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -3458,7 +3458,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -3483,7 +3483,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -3508,7 +3508,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -3543,7 +3543,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -3575,7 +3575,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -3607,7 +3607,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -3639,7 +3639,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -3675,7 +3675,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -3716,7 +3716,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -3757,7 +3757,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -3784,7 +3784,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -3817,7 +3817,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -3849,7 +3849,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -3882,7 +3882,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "mac-amd-stable",
+              "os": "Mac-10.14.6",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -3910,7 +3910,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -3937,7 +3937,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -3960,7 +3960,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -3983,7 +3983,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -4007,7 +4007,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -4040,7 +4040,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -4070,7 +4070,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -4101,7 +4101,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -4131,7 +4131,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -4161,7 +4161,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -4195,7 +4195,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -4234,7 +4234,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -4273,7 +4273,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -4304,7 +4304,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -4334,7 +4334,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -4365,7 +4365,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -4394,7 +4394,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -4406,7 +4406,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
+            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -4430,7 +4430,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -4442,7 +4442,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
+            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -4462,7 +4462,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -4474,7 +4474,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
+            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -4494,7 +4494,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -4506,7 +4506,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
+            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -4527,7 +4527,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -4539,7 +4539,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
+            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -4569,7 +4569,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -4580,7 +4580,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
+            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -4608,7 +4608,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -4619,7 +4619,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
+            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -4648,7 +4648,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -4659,7 +4659,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
+            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -4687,7 +4687,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -4698,7 +4698,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
+            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -4726,7 +4726,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -4737,7 +4737,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
+            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -4769,7 +4769,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -4780,7 +4780,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
+            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -4817,7 +4817,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -4828,7 +4828,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
+            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -4865,7 +4865,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -4876,7 +4876,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
+            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -4901,7 +4901,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -4912,7 +4912,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
+            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -4941,7 +4941,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -4952,7 +4952,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
+            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -4980,7 +4980,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -4991,7 +4991,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
+            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -5020,7 +5020,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -5032,7 +5032,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
+            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -5059,7 +5059,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -5071,7 +5071,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
+            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -5096,7 +5096,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -5108,7 +5108,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
+            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -5129,7 +5129,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -5141,7 +5141,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
+            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -5162,7 +5162,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -5174,7 +5174,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
+            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -5196,7 +5196,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -5208,7 +5208,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
+            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -5239,7 +5239,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -5250,7 +5250,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
+            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -5279,7 +5279,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -5290,7 +5290,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
+            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -5320,7 +5320,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -5331,7 +5331,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
+            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -5360,7 +5360,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -5371,7 +5371,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
+            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -5400,7 +5400,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -5411,7 +5411,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
+            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -5444,7 +5444,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -5455,7 +5455,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
+            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -5493,7 +5493,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -5504,7 +5504,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
+            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -5542,7 +5542,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -5553,7 +5553,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
+            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -5583,7 +5583,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -5594,7 +5594,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
+            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -5623,7 +5623,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -5634,7 +5634,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
+            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -5664,7 +5664,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -5676,7 +5676,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
+            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],

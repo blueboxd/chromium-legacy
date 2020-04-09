@@ -86,7 +86,7 @@ void NavigateToUrlWithIExplore(const base::string16& url) {
 // its ClientState key if it is not present, resulting in the full installer
 // being returned from the next update check. If |archive_type| is
 // FULL_ARCHIVE_TYPE or |install_status| indicates a successful update, "-full"
-// is removed from the "ap" value. "-stage:*" values are
+// is removed from the "ap" value. "-multifail" and "-stage:*" values are
 // unconditionally removed from the "ap" value.
 void UpdateInstallStatus(installer::ArchiveType archive_type,
                          installer::InstallStatus install_status) {

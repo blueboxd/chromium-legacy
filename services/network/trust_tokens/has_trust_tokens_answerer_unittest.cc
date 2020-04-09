@@ -67,9 +67,9 @@ TEST(HasTrustTokensAnswerer, HandlesFailureToAssociateIssuer) {
   // writing, 2).
   for (int i = 0; i < kTrustTokenPerToplevelMaxNumberOfAssociatedIssuers; ++i) {
     ASSERT_TRUE(store->SetAssociation(
-        url::Origin::Create(
+        *SuitableTrustTokenOrigin::Create(
             GURL(base::StringPrintf("https://issuer%d.com", i))),
-        kToplevel.origin()));
+        kToplevel));
   }
 
   PendingTrustTokenStore pending_store;
@@ -97,7 +97,8 @@ TEST(HasTrustTokensAnswerer, SuccessWithNoTokens) {
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
   TrustTokenStore* raw_store = store.get();
 
-  const url::Origin kIssuer = url::Origin::Create(GURL("https://issuer.com"));
+  const SuitableTrustTokenOrigin kIssuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com"));
   const SuitableTrustTokenOrigin kToplevel =
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com"));
 
@@ -122,14 +123,15 @@ TEST(HasTrustTokensAnswerer, SuccessWithNoTokens) {
   EXPECT_FALSE(result->has_trust_tokens);
 
   // The query should have associated the issuer with the top-level origin.
-  EXPECT_TRUE(raw_store->IsAssociated(kIssuer, kToplevel.origin()));
+  EXPECT_TRUE(raw_store->IsAssociated(kIssuer, kToplevel));
 }
 
 TEST(HasTrustTokensAnswerer, SuccessWithTokens) {
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
   TrustTokenStore* raw_store = store.get();
 
-  const url::Origin kIssuer = url::Origin::Create(GURL("https://issuer.com"));
+  const SuitableTrustTokenOrigin kIssuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com"));
   const SuitableTrustTokenOrigin kToplevel =
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com"));
 

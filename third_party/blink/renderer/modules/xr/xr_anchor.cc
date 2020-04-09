@@ -14,18 +14,20 @@ XRAnchor::XRAnchor(uint64_t id,
                    XRSession* session,
                    const device::mojom::blink::XRAnchorData& anchor_data)
     : id_(id), session_(session) {
-  // No need for else - if pose is not present, the default-constructed unique
-  // ptr is fine.
-  if (anchor_data.pose) {
-    SetMojoFromAnchor(
-        mojo::ConvertTo<blink::TransformationMatrix>(anchor_data.pose));
+  // No need for else - if mojo_from_anchor is not present, the
+  // default-constructed unique ptr is fine. It would signify that the anchor
+  // exists and is tracked by the underlying system, but its current location is
+  // unknown.
+  if (anchor_data.mojo_from_anchor) {
+    SetMojoFromAnchor(mojo::ConvertTo<blink::TransformationMatrix>(
+        anchor_data.mojo_from_anchor));
   }
 }
 
 void XRAnchor::Update(const device::mojom::blink::XRAnchorData& anchor_data) {
-  if (anchor_data.pose) {
-    SetMojoFromAnchor(
-        mojo::ConvertTo<blink::TransformationMatrix>(anchor_data.pose));
+  if (anchor_data.mojo_from_anchor) {
+    SetMojoFromAnchor(mojo::ConvertTo<blink::TransformationMatrix>(
+        anchor_data.mojo_from_anchor));
   } else {
     mojo_from_anchor_ = nullptr;
   }
@@ -36,8 +38,6 @@ uint64_t XRAnchor::id() const {
 }
 
 XRSpace* XRAnchor::anchorSpace() const {
-  DCHECK(mojo_from_anchor_);
-
   if (!anchor_space_) {
     anchor_space_ =
         MakeGarbageCollected<XRObjectSpace<XRAnchor>>(session_, this);

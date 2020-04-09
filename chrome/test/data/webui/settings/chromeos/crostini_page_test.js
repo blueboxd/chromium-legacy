@@ -357,6 +357,7 @@ suite('CrostiniPageTests', function() {
       /** @type {?SettingsCrostiniPortForwarding} */
       let subpage;
       setup(async function() {
+        /*TODO(juwa): remove*/ console.log(`setting up ${this.test.title}`);
         setCrostiniPrefs(true, {
           forwardedPorts: [
             {
@@ -374,27 +375,47 @@ suite('CrostiniPageTests', function() {
           ]
         });
 
+        /*TODO(juwa): remove*/ console.log(
+            `before flushAsync ${this.test.title}`);
         await flushAsync();
+        /*TODO(juwa): remove*/ console.log(
+            `after flushAsync ${this.test.title}`);
         settings.Router.getInstance().navigateTo(
             settings.routes.CROSTINI_PORT_FORWARDING);
 
+        /*TODO(juwa): remove*/ console.log(
+            `before flushAsync ${this.test.title}`);
         await flushAsync();
+        /*TODO(juwa): remove*/ console.log(
+            `after flushAsync ${this.test.title}`);
         subpage = crostiniPage.$$('settings-crostini-port-forwarding');
         assertTrue(!!subpage);
+        /*TODO(juwa): remove*/ console.log(`setup ${this.test.title}`);
       });
 
       test('Forwarded ports are shown', function() {
+        /*TODO(juwa): remove*/ console.log(`running ${this.test.title}`);
         // Extra list item for the titles.
         assertEquals(
             3, subpage.shadowRoot.querySelectorAll('.list-item').length);
+        /*TODO(juwa): remove*/ console.log(`ran ${this.test.title}`);
       });
 
       test('AddPortSuccess', async function() {
+        /*TODO(juwa): remove*/ console.log(`running ${this.test.title}`);
+        /*TODO(juwa): remove*/ console.log(
+            `before flushAsync ${this.test.title}`);
         await flushAsync();
+        /*TODO(juwa): remove*/ console.log(
+            `after flushAsync ${this.test.title}`);
         subpage = crostiniPage.$$('settings-crostini-port-forwarding');
         subpage.$$('#addPort cr-button').click();
 
+        /*TODO(juwa): remove*/ console.log(
+            `before flushAsync ${this.test.title}`);
         await flushAsync();
+        /*TODO(juwa): remove*/ console.log(
+            `after flushAsync ${this.test.title}`);
         subpage = subpage.$$('settings-crostini-add-port-dialog');
         const portNumberInput = subpage.$$('#portNumberInput');
         portNumberInput.value = '5000';
@@ -403,14 +424,24 @@ suite('CrostiniPageTests', function() {
         subpage.$$('cr-dialog cr-button[id="continue"]').click();
         assertEquals(
             1, crostiniBrowserProxy.getCallCount('addCrostiniPortForward'));
+        /*TODO(juwa): remove*/ console.log(`ran ${this.test.title}`);
       });
 
       test('AddPortFail', async function() {
+        /*TODO(juwa): remove*/ console.log(`running ${this.test.title}`);
+        /*TODO(juwa): remove*/ console.log(
+            `before flushAsync ${this.test.title}`);
         await flushAsync();
+        /*TODO(juwa): remove*/ console.log(
+            `after flushAsync ${this.test.title}`);
         subpage = crostiniPage.$$('settings-crostini-port-forwarding');
         subpage.$$('#addPort cr-button').click();
 
+        /*TODO(juwa): remove*/ console.log(
+            `before flushAsync ${this.test.title}`);
         await flushAsync();
+        /*TODO(juwa): remove*/ console.log(
+            `after flushAsync ${this.test.title}`);
         subpage = subpage.$$('settings-crostini-add-port-dialog');
         const portNumberInput = subpage.$$('#portNumberInput');
         portNumberInput.value = 'INVALID_PORT_NUMBER';
@@ -427,21 +458,36 @@ suite('CrostiniPageTests', function() {
         subpage.$$('cr-dialog cr-button[id="continue"]').click();
         assertEquals(
             1, crostiniBrowserProxy.getCallCount('addCrostiniPortForward'));
+        /*TODO(juwa): remove*/ console.log(`ran ${this.test.title}`);
       });
 
       test('AddPortCancel', async function() {
+        /*TODO(juwa): remove*/ console.log(`running ${this.test.title}`);
+        /*TODO(juwa): remove*/ console.log(
+            `before flushAsync ${this.test.title}`);
         await flushAsync();
+        /*TODO(juwa): remove*/ console.log(
+            `after flushAsync ${this.test.title}`);
         subpage = crostiniPage.$$('settings-crostini-port-forwarding');
         subpage.$$('#addPort cr-button').click();
 
+        /*TODO(juwa): remove*/ console.log(
+            `before flushAsync ${this.test.title}`);
         await flushAsync();
+        /*TODO(juwa): remove*/ console.log(
+            `after flushAsync ${this.test.title}`);
         subpage = subpage.$$('settings-crostini-add-port-dialog');
         subpage.$$('cr-dialog cr-button[id="cancel"]').click();
 
 
+        /*TODO(juwa): remove*/ console.log(
+            `before flushAsync ${this.test.title}`);
         await flushAsync();
+        /*TODO(juwa): remove*/ console.log(
+            `after flushAsync ${this.test.title}`);
         subpage = crostiniPage.$$('settings-crostini-port-forwarding');
         assertTrue(!!subpage);
+        /*TODO(juwa): remove*/ console.log(`ran ${this.test.title}`);
       });
     });
 

@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">Kliko për opsione të tjera</translation>
 <translation id="1570871743947603115">Aktivizo/çaktivizo Bluetooth-in. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Qasu te të gjitha aktivitetet e tua në këtë sesion</translation>
-<translation id="1608626060424371292">Hiqe këtë përdorues</translation>
+<translation id="1632985212731562677">"Qasja me çelës" mund të çaktivizohet te Cilësimet &gt; Qasshmëria.</translation>
 <translation id="1654477262762802994">Nis një pyetje me zë</translation>
 <translation id="1658406695958299976">Na vjen keq, por fjalëkalimi sërish nuk mund të verifikohej. Shënim: Nëse ke ndryshuar fjalëkalimin së fundi, fjalëkalimi i ri do të zbatohet pasi të dalësh nga llogaria, prandaj përdor këtu fjalëkalimin e vjetër.</translation>
 <translation id="1677472565718498478">Koha e mbetur <ph name="TIME" /></translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">Administratori i pajisjes mund të monitorojë aktivitetin tënd të shfletimit.</translation>
 <translation id="3181441307743005334">Rindezja mund të zgjasë pak</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Lidhur me një pajisje}other{Lidhur me # pajisje}}</translation>
+<translation id="3203405173652969239">"Qasja me çelës" është aktivizuar</translation>
 <translation id="3207953481422525583">Cilësimet e përdoruesit</translation>
 <translation id="3217205077783620295">Volumi është aktiv. Ndërrimi do ta heqë audion.</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> më shumë</translation>
@@ -651,6 +652,7 @@
 <translation id="9211681782751733685"><ph name="TIME_REMAINING" /> të mbetura deri sa bateria të karikohet plotësisht.</translation>
 <translation id="9215934040295798075">Cakto imazhin e sfondit</translation>
 <translation id="921989828232331238">Prindi yt e kyçi pajisjen tënde për këtë ditë</translation>
+<translation id="9220525904950070496">Hiq llogarinë</translation>
 <translation id="923686485342484400">Shtyp dy herë Control, Shift, Q për të dalë.</translation>
 <translation id="938963181863597773">Çfarë ka në kalendarin tim?</translation>
 <translation id="945522503751344254">Dërgo komente</translation>

@@ -390,10 +390,10 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
     // If the omnibox is displaying a URL, set the hyperlink text to the URL's
     // spec. This undoes any URL elisions.
     if (!controller()->GetLocationBarModel()->GetDisplaySearchTerms(nullptr)) {
-      // Don't let users copy Reader Mode ("chrome-distiller://") URLs.
+      // Don't let users copy Reader Mode page URLs.
       // We display the original article's URL in the omnibox, so users will
       // expect that to be what is copied to the clipboard.
-      if (url_from_text->SchemeIs(dom_distiller::kDomDistillerScheme)) {
+      if (dom_distiller::url_utils::IsDistilledPage(*url_from_text)) {
         *url_from_text =
             dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(
                 *url_from_text);

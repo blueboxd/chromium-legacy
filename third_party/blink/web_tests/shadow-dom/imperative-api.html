@@ -29,37 +29,6 @@ See https://crbug.com/869308
 <script>
 test(() => {
   let n = createTestTree(test2);
-  assert_array_equals(n.s2.assignedElements(), []);
-  assert_equals(n.c1.assignedSlot, null);
-
-  n.s2.assign([n.c1]);
-
-  assert_array_equals(n.s2.assignedNodes(), [n.c1]);
-  assert_equals(n.c1.assignedSlot, n.s2);
-
-  n.s1.assign([n.c2,n.c1]);
-  assert_array_equals(n.s1.assignedNodes(), [n.c1,n.c2]);
-  assert_array_equals(n.s2.assignedNodes(), []);
-  assert_equals(n.c1.assignedSlot, n.s1);
-  assert_equals(n.c2.assignedSlot, n.s1);
-
-  n.s1.assign([n.c2]);
-  assert_array_equals(n.s1.assignedNodes(), [n.c2]);
-  assert_array_equals(n.s2.assignedNodes(), [n.c1]);
-}, 'assignedNodes/Slot can be used in manual slotting');
-
-test(() => {
-  let n = createTestTree(test2);
-  n.s1.assign([n.c1]);
-  n.s2.assign([n.c1]);
-  assert_array_equals(n.s2.assignedNodes(), []);
-
-  n.shadow_root.insertBefore(n.s2,n.s1);
-  assert_array_equals(n.s2.assignedNodes(), [n.c1]);
-}, 'A node should be assigned to a slot when the slot is inserted before the assigned slot');
-
-test(() => {
-  let n = createTestTree(test2);
   n.s1.assign([n.c1]);
   n.s2.assign([n.c1]);
   n.s3.assign([n.c1]);
@@ -71,19 +40,6 @@ test(() => {
   assert_array_equals(n.s1.assignedNodes(), []);
   assert_array_equals(n.s3.assignedNodes(), [n.c1]);
 }, 'A slot should be assigned to a node even after the slot is inserted after the assigned slot, and the assigned slot are removed')
-
-test(() => {
-  let n = createTestTree(test2);
-  n.s1.assign([n.c1]);
-  assert_array_equals(n.s1.assignedNodes(), [n.c1]);
-  n.shadow_root1.insertBefore(n.s1,n.s5);
-
-  assert_array_equals(n.s1.assignedNodes(), []);
-  n.s1.assign([]);
-  n.shadow_root.insertBefore(n.s1,n.s2);
-
-  assert_array_equals(n.s1.assignedNodes(), []);
-}, 'A slot should not be assigned to a node once after the slot is inserted in another shadow root, and assigned another slot.')
 
 test(() => {
   let n = createTestTree(test2);

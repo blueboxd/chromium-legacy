@@ -101,6 +101,7 @@ js2gtest("browser_tests_js_webui") {
     "settings/a11y/basic_a11y_test.js",
     "settings/a11y/edit_dictionary_a11y_test.js",
     "settings/a11y/passwords_a11y_test.js",
+    "settings/a11y/v3_a11y_browsertest.js",
     "settings/cr_settings_browsertest.js",
     "settings/cr_settings_v3_browsertest.js",
     "settings/help_page_browsertest.js",
@@ -115,6 +116,7 @@ js2gtest("browser_tests_js_webui") {
     "a11y/accessibility_test.js",
     "polymer_browser_test_base.js",
     "settings/a11y/settings_accessibility_test.js",
+    "settings/a11y/settings_accessibility_v3_test.js",
     "//third_party/axe-core/axe.js",
   ]
 

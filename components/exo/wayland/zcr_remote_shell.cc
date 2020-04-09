@@ -1318,9 +1318,9 @@ void bind_remote_shell(wl_client* client,
                        void* data,
                        uint32_t version,
                        uint32_t id) {
-  wl_resource* resource =
-      wl_resource_create(client, &zcr_remote_shell_v1_interface,
-                         std::min(version, kZcrRemoteShellVersion), id);
+  wl_resource* resource = wl_resource_create(
+      client, &zcr_remote_shell_v1_interface,
+      std::min<uint32_t>(version, zcr_remote_shell_v1_interface.version), id);
 
   SetImplementation(resource, &remote_shell_implementation,
                     std::make_unique<WaylandRemoteShell>(

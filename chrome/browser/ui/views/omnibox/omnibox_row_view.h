@@ -23,8 +23,7 @@ class OmniboxRowView : public views::View {
   explicit OmniboxRowView(std::unique_ptr<OmniboxResultView> result_view);
 
   // Sets the header that appears above this row. Also shows the header.
-  void ShowHeader(base::Optional<int> suggestion_group_id,
-                  const base::string16& header_text);
+  void ShowHeader(int suggestion_group_id, const base::string16& header_text);
 
   // Hides the header.
   void HideHeader();

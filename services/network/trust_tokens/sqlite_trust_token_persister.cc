@@ -16,10 +16,8 @@
 namespace network {
 
 namespace {
-std::string ToKey(const url::Origin& issuer, const url::Origin& toplevel) {
-  DCHECK(issuer.GetURL().SchemeIsHTTPOrHTTPS());
-  DCHECK(toplevel.GetURL().SchemeIsHTTPOrHTTPS());
-
+std::string ToKey(const SuitableTrustTokenOrigin& issuer,
+                  const SuitableTrustTokenOrigin& toplevel) {
   // U+0020 space is a character forbidden in schemes/hosts/ports, so it
   // shouldn't appear in the serialization of either origin, preventing
   // collisions.
@@ -60,9 +58,8 @@ void SQLiteTrustTokenPersister::CreateForFilePath(
 }
 
 std::unique_ptr<TrustTokenIssuerConfig>
-SQLiteTrustTokenPersister::GetIssuerConfig(const url::Origin& issuer) {
-  DCHECK(issuer.GetURL().SchemeIsHTTPOrHTTPS());
-
+SQLiteTrustTokenPersister::GetIssuerConfig(
+    const SuitableTrustTokenOrigin& issuer) {
   auto* data = database_owner_->IssuerData();
   CHECK(data);
 
@@ -72,9 +69,8 @@ SQLiteTrustTokenPersister::GetIssuerConfig(const url::Origin& issuer) {
 }
 
 std::unique_ptr<TrustTokenToplevelConfig>
-SQLiteTrustTokenPersister::GetToplevelConfig(const url::Origin& toplevel) {
-  DCHECK(toplevel.GetURL().SchemeIsHTTPOrHTTPS());
-
+SQLiteTrustTokenPersister::GetToplevelConfig(
+    const SuitableTrustTokenOrigin& toplevel) {
   auto* data = database_owner_->ToplevelData();
   CHECK(data);
 
@@ -85,11 +81,8 @@ SQLiteTrustTokenPersister::GetToplevelConfig(const url::Origin& toplevel) {
 
 std::unique_ptr<TrustTokenIssuerToplevelPairConfig>
 SQLiteTrustTokenPersister::GetIssuerToplevelPairConfig(
-    const url::Origin& issuer,
-    const url::Origin& toplevel) {
-  DCHECK(issuer.GetURL().SchemeIsHTTPOrHTTPS());
-  DCHECK(toplevel.GetURL().SchemeIsHTTPOrHTTPS());
-
+    const SuitableTrustTokenOrigin& issuer,
+    const SuitableTrustTokenOrigin& toplevel) {
   auto* data = database_owner_->IssuerToplevelPairData();
   CHECK(data);
 
@@ -99,10 +92,8 @@ SQLiteTrustTokenPersister::GetIssuerToplevelPairConfig(
 }
 
 void SQLiteTrustTokenPersister::SetIssuerConfig(
-    const url::Origin& issuer,
+    const SuitableTrustTokenOrigin& issuer,
     std::unique_ptr<TrustTokenIssuerConfig> config) {
-  DCHECK(issuer.GetURL().SchemeIsHTTPOrHTTPS());
-
   sqlite_proto::KeyValueData<TrustTokenIssuerConfig>* data =
       database_owner_->IssuerData();
   CHECK(data);
@@ -110,10 +101,8 @@ void SQLiteTrustTokenPersister::SetIssuerConfig(
 }
 
 void SQLiteTrustTokenPersister::SetToplevelConfig(
-    const url::Origin& toplevel,
+    const SuitableTrustTokenOrigin& toplevel,
     std::unique_ptr<TrustTokenToplevelConfig> config) {
-  DCHECK(toplevel.GetURL().SchemeIsHTTPOrHTTPS());
-
   sqlite_proto::KeyValueData<TrustTokenToplevelConfig>* data =
       database_owner_->ToplevelData();
   CHECK(data);
@@ -121,12 +110,9 @@ void SQLiteTrustTokenPersister::SetToplevelConfig(
 }
 
 void SQLiteTrustTokenPersister::SetIssuerToplevelPairConfig(
-    const url::Origin& issuer,
-    const url::Origin& toplevel,
+    const SuitableTrustTokenOrigin& issuer,
+    const SuitableTrustTokenOrigin& toplevel,
     std::unique_ptr<TrustTokenIssuerToplevelPairConfig> config) {
-  DCHECK(issuer.GetURL().SchemeIsHTTPOrHTTPS());
-  DCHECK(toplevel.GetURL().SchemeIsHTTPOrHTTPS());
-
   sqlite_proto::KeyValueData<TrustTokenIssuerToplevelPairConfig>* data =
       database_owner_->IssuerToplevelPairData();
   CHECK(data);

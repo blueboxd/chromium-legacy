@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.customtabs.dependency_injection;
 
 import org.chromium.chrome.browser.browserservices.BrowserServicesActivityTabController;
 import org.chromium.chrome.browser.browserservices.ClientAppDataRegister;
-import org.chromium.chrome.browser.customtabs.CustomTabNightModeStateController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
 import org.chromium.chrome.browser.init.StartupTabPreloader;
 
@@ -18,12 +17,9 @@ import dagger.Provides;
  */
 @Module
 public class CustomTabActivityModule {
-    private final CustomTabNightModeStateController mNightModeController;
     private final StartupTabPreloader mStartupTabPreloader;
 
-    public CustomTabActivityModule(CustomTabNightModeStateController nightModeController,
-            StartupTabPreloader startupTabPreloader) {
-        mNightModeController = nightModeController;
+    public CustomTabActivityModule(StartupTabPreloader startupTabPreloader) {
         mStartupTabPreloader = startupTabPreloader;
     }
 
@@ -36,11 +32,6 @@ public class CustomTabActivityModule {
     @Provides
     public ClientAppDataRegister provideClientAppDataRegister() {
         return new ClientAppDataRegister();
-    }
-
-    @Provides
-    public CustomTabNightModeStateController provideNightModeController() {
-        return mNightModeController;
     }
 
     @Provides

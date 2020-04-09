@@ -92,8 +92,6 @@ class OmniboxResultView : public views::View,
   void SetRichSuggestionImage(const gfx::ImageSkia& image);
 
   // views::ButtonListener:
-
-  // Called when tab switch button pressed, due to being a listener.
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Called to indicate tab switch button has been focused.

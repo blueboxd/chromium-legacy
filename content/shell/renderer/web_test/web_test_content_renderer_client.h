@@ -21,7 +21,6 @@ class WebTestContentRendererClient : public ShellContentRendererClient {
   // ShellContentRendererClient implementation.
   void RenderThreadStarted() override;
   void RenderFrameCreated(RenderFrame* render_frame) override;
-  void RenderViewCreated(RenderView* render_view) override;
   std::unique_ptr<content::WebSocketHandshakeThrottleProvider>
   CreateWebSocketHandshakeThrottleProvider() override;
   void DidInitializeWorkerContextOnWorkerThread(

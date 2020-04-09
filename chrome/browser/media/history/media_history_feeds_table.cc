@@ -9,6 +9,7 @@
 #include "base/updateable_sequenced_task_runner.h"
 #include "chrome/browser/media/feeds/media_feeds.pb.h"
 #include "chrome/browser/media/feeds/media_feeds_utils.h"
+#include "chrome/browser/media/history/media_history_origin_table.h"
 #include "chrome/browser/media/history/media_history_store.h"
 #include "services/media_session/public/cpp/media_image.h"
 #include "sql/statement.h"

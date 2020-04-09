@@ -50,6 +50,8 @@ const base::Feature kEnableSearchBoxSelection{"EnableSearchBoxSelection",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableAggregatedMlAppRanking{
     "EnableAggregatedMlAppRanking", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kLauncherSettingsSearch{"LauncherSettingsSearch",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kScalableAppList{"ScalableAppList",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableFuzzyAppSearch{"EnableFuzzyAppSearch",
@@ -125,6 +127,10 @@ bool IsSearchBoxSelectionEnabled() {
 
 bool IsAggregatedMlAppRankingEnabled() {
   return base::FeatureList::IsEnabled(kEnableAggregatedMlAppRanking);
+}
+
+bool IsLauncherSettingsSearchEnabled() {
+  return base::FeatureList::IsEnabled(kLauncherSettingsSearch);
 }
 
 bool IsScalableAppListEnabled() {

@@ -13,9 +13,11 @@
 #include "base/path_service.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "ios/components/webui/web_ui_url_constants.h"
 #import "ios/net/cookies/cookie_store_ios.h"
 #include "ios/web/public/browsing_data/system_cookie_store_util.h"
 #import "ios/web/public/web_client.h"
+#include "ios/web/webui/url_data_manager_ios_backend.h"
 #include "net/base/cache_type.h"
 #include "net/base/network_delegate_impl.h"
 #include "net/cert/cert_verifier.h"
@@ -56,6 +58,8 @@ WebViewURLRequestContextGetter::WebViewURLRequestContextGetter(
       proxy_config_service_(
           new net::ProxyConfigServiceIOS(NO_TRAFFIC_ANNOTATION_YET)),
       system_cookie_store_(web::CreateSystemCookieStore(browser_state)),
+      protocol_handler_(
+          web::URLDataManagerIOSBackend::CreateProtocolHandler(browser_state)),
       is_shutting_down_(false) {}
 
 WebViewURLRequestContextGetter::~WebViewURLRequestContextGetter() = default;
@@ -159,6 +163,8 @@ net::URLRequestContext* WebViewURLRequestContextGetter::GetURLRequestContext() {
 
     std::unique_ptr<net::URLRequestJobFactoryImpl> job_factory(
         new net::URLRequestJobFactoryImpl());
+    job_factory->SetProtocolHandler(kChromeUIScheme,
+                                    std::move(protocol_handler_));
 
     storage_->set_job_factory(std::move(job_factory));
   }

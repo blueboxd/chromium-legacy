@@ -73,15 +73,16 @@ ImageCache::~ImageCache() = default;
 
 void ImageCache::SaveImage(std::string url,
                            std::string image_data,
-                           bool needs_transcoding) {
+                           bool needs_transcoding,
+                           ExpirationInterval expiration_interval) {
   // If the image data is larger than the cache's max size, bail out.
   if (image_data.length() > kCacheMaxSize) {
     return;
   }
 
-  base::OnceClosure request =
-      base::BindOnce(&ImageCache::SaveImageImpl, weak_ptr_factory_.GetWeakPtr(),
-                     url, std::move(image_data), needs_transcoding);
+  base::OnceClosure request = base::BindOnce(
+      &ImageCache::SaveImageImpl, weak_ptr_factory_.GetWeakPtr(), url,
+      std::move(image_data), needs_transcoding, std::move(expiration_interval));
   QueueOrStartRequest(std::move(request));
 }
 
@@ -153,7 +154,8 @@ void ImageCache::OnDependencyInitialized() {
 
 void ImageCache::SaveImageImpl(const std::string& url,
                                std::string image_data,
-                               bool needs_transcoding) {
+                               bool needs_transcoding,
+                               ExpirationInterval expiration_interval) {
   std::string key = ImageCache::HashUrlToKey(url);
 
   // If the cache is full, evict some stuff.
@@ -161,7 +163,8 @@ void ImageCache::SaveImageImpl(const std::string& url,
 
   size_t length = image_data.length();
   data_store_->SaveImage(key, std::move(image_data), needs_transcoding);
-  metadata_store_->SaveImageMetadata(key, length, needs_transcoding);
+  metadata_store_->SaveImageMetadata(key, length, needs_transcoding,
+                                     std::move(expiration_interval));
 }
 
 void ImageCache::LoadImageImpl(bool read_only,

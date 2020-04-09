@@ -29,4 +29,7 @@ interface ITabClient {
 
   // Added in M83.
   void onTitleUpdated(in IObjectWrapper title) = 6;
+
+  // Added in M84.
+  void bringTabToFront() = 7;
 }

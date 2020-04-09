@@ -47,7 +47,6 @@ source_set("flags") {
     "//ios/chrome/browser/find_in_page:feature_flags",
     "//ios/chrome/browser/passwords:feature_flags",
     "//ios/chrome/browser/ui:feature_flags",
-    "//ios/chrome/browser/ui/dialogs:feature_flags",
     "//ios/chrome/browser/ui/download:features",
     "//ios/chrome/browser/ui/fullscreen:feature_flags",
     "//ios/chrome/browser/ui/infobars:feature_flags",

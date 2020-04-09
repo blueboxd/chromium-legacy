@@ -408,7 +408,8 @@ HTMLFormElement* HTMLObjectElement::formOwner() const {
 }
 
 bool HTMLObjectElement::IsInteractiveContent() const {
-  return FastHasAttribute(html_names::kUsemapAttr);
+  return FastHasAttribute(html_names::kUsemapAttr) ||
+         HTMLElement::IsInteractiveContent();
 }
 
 bool HTMLObjectElement::UseFallbackContent() const {

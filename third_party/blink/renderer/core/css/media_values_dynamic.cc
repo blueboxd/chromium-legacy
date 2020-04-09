@@ -160,6 +160,10 @@ NavigationControls MediaValuesDynamic::GetNavigationControls() const {
   return CalculateNavigationControls(frame_);
 }
 
+ScreenSpanning MediaValuesDynamic::GetScreenSpanning() const {
+  return CalculateScreenSpanning(frame_);
+}
+
 Document* MediaValuesDynamic::GetDocument() const {
   return frame_->GetDocument();
 }

@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
+#include "chrome/common/extensions/api/extension_action/action_info_test_util.h"
 #include "components/version_info/channel.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -91,43 +92,13 @@ class ExtensionActionManifestTest
              "%s": %s
            })";
 
-    const char* action_key = nullptr;
-    switch (GetParam()) {
-      case ActionInfo::TYPE_BROWSER:
-        action_key = manifest_keys::kBrowserAction;
-        break;
-      case ActionInfo::TYPE_PAGE:
-        action_key = manifest_keys::kPageAction;
-        break;
-      case ActionInfo::TYPE_ACTION:
-        action_key = manifest_keys::kAction;
-        break;
-    }
+    const char* action_key = GetManifestKeyForActionType(GetParam());
 
     base::Value manifest_value = base::test::ParseJson(
         base::StringPrintf(kManifestStub, action_key, action_spec));
     EXPECT_TRUE(manifest_value.is_dict());
     EXPECT_FALSE(manifest_value.is_none());
     return ManifestData(std::move(manifest_value), "test");
-  }
-
-  // Returns the ActionInfo for the given |extension| corresponding with the
-  // action key of the test param.
-  const ActionInfo* GetActionInfo(const Extension& extension) {
-    const ActionInfo* action_info = nullptr;
-    switch (GetParam()) {
-      case ActionInfo::TYPE_BROWSER:
-        action_info = ActionInfo::GetBrowserActionInfo(&extension);
-        break;
-      case ActionInfo::TYPE_PAGE:
-        action_info = ActionInfo::GetPageActionInfo(&extension);
-        break;
-      case ActionInfo::TYPE_ACTION:
-        action_info = ActionInfo::GetExtensionActionInfo(&extension);
-        break;
-    }
-
-    return action_info;
   }
 
  private:
@@ -149,7 +120,7 @@ TEST_P(ExtensionActionManifestTest, Basic) {
   scoped_refptr<const Extension> extension =
       LoadAndExpectSuccess(GetManifestData(kValidAllFields));
   ASSERT_TRUE(extension);
-  const ActionInfo* action_info = GetActionInfo(*extension);
+  const ActionInfo* action_info = GetActionInfoOfType(*extension, GetParam());
   ASSERT_TRUE(action_info);
 
   EXPECT_EQ(extension->GetResourceURL("popup.html"),
@@ -169,7 +140,7 @@ TEST_P(ExtensionActionManifestTest, TestEmptyAction) {
   scoped_refptr<const Extension> extension =
       LoadAndExpectSuccess(GetManifestData(kValidNoFields));
   ASSERT_TRUE(extension);
-  const ActionInfo* action_info = GetActionInfo(*extension);
+  const ActionInfo* action_info = GetActionInfoOfType(*extension, GetParam());
   ASSERT_TRUE(action_info);
 
   EXPECT_EQ(GURL(), action_info->default_popup_url);
@@ -193,7 +164,7 @@ TEST_P(ExtensionActionManifestTest, ValidIconDictionary) {
   scoped_refptr<const Extension> extension =
       LoadAndExpectSuccess(GetManifestData(kValidIconDictionary));
   ASSERT_TRUE(extension);
-  const ActionInfo* action_info = GetActionInfo(*extension);
+  const ActionInfo* action_info = GetActionInfoOfType(*extension, GetParam());
   ASSERT_TRUE(action_info);
 
   EXPECT_EQ(GURL(), action_info->default_popup_url);
@@ -283,7 +254,8 @@ TEST_P(ExtensionActionManifestTest, DefaultState) {
       scoped_refptr<const Extension> extension =
           LoadAndExpectSuccess(GetManifestData(test_case.spec));
       ASSERT_TRUE(extension);
-      const ActionInfo* action_info = GetActionInfo(*extension);
+      const ActionInfo* action_info =
+          GetActionInfoOfType(*extension, GetParam());
       ASSERT_TRUE(action_info);
       EXPECT_EQ(*test_case.expected_state, action_info->default_state);
     } else {

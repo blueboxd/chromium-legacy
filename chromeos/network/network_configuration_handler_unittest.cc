@@ -95,6 +95,11 @@ class TestNetworkConfigurationObserver : public NetworkConfigurationObserver {
   TestNetworkConfigurationObserver() = default;
 
   // NetworkConfigurationObserver
+  void OnConfigurationCreated(const std::string& service_path,
+                              const std::string& guid) override {
+    created_configurations_[service_path] = guid;
+  }
+
   void OnBeforeConfigurationRemoved(const std::string& service_path,
                                     const std::string& guid) override {
     ASSERT_EQ(before_remove_configurations_.end(),
@@ -115,6 +120,11 @@ class TestNetworkConfigurationObserver : public NetworkConfigurationObserver {
     updated_configurations_[service_path] = guid;
   }
 
+  bool HasCreatedConfiguration(const std::string& service_path) {
+    return created_configurations_.find(service_path) !=
+           created_configurations_.end();
+  }
+
   bool HasCalledBeforeRemoveConfiguration(const std::string& service_path) {
     return before_remove_configurations_.find(service_path) !=
            before_remove_configurations_.end();
@@ -131,6 +141,7 @@ class TestNetworkConfigurationObserver : public NetworkConfigurationObserver {
   }
 
  private:
+  std::map<std::string, std::string> created_configurations_;
   std::map<std::string, std::string> before_remove_configurations_;
   std::map<std::string, std::string> removed_configurations_;
   std::map<std::string, std::string> updated_configurations_;
@@ -669,6 +680,22 @@ TEST_F(NetworkConfigurationHandlerTest, StubCreateConfiguration) {
   EXPECT_TRUE(GetServiceStringProperty(
       create_service_path_, shill::kProfileProperty, &actual_profile));
   EXPECT_EQ(NetworkProfileHandler::GetSharedProfilePath(), actual_profile);
+}
+
+TEST_F(NetworkConfigurationHandlerTest, NetworkConfigurationObserver_Added) {
+  const std::string service_path("/service/test_wifi");
+
+  auto network_configuration_observer =
+      std::make_unique<TestNetworkConfigurationObserver>();
+  network_configuration_handler_->AddObserver(
+      network_configuration_observer.get());
+  CreateTestConfiguration(service_path, shill::kTypeWifi);
+
+  EXPECT_TRUE(network_configuration_observer->HasCreatedConfiguration(
+      create_service_path_));
+
+  network_configuration_handler_->RemoveObserver(
+      network_configuration_observer.get());
 }
 
 TEST_F(NetworkConfigurationHandlerTest, NetworkConfigurationObserver_Removed) {

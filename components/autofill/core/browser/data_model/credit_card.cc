@@ -33,6 +33,7 @@
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_regexes.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/grit/components_scaled_resources.h"
@@ -54,6 +55,8 @@ const base::char16 kMidlineEllipsis[] = {
 namespace {
 
 const base::char16 kCreditCardObfuscationSymbol = '*';
+
+const int kMaxNicknameLength = 25;
 
 base::string16 NetworkForFill(const std::string& network) {
   if (network == kAmericanExpressCard)
@@ -778,6 +781,15 @@ base::string16 CreditCard::NetworkAndLastFourDigits() const {
                          : network + ASCIIToUTF16("  ") + obfuscated_string;
 }
 
+base::string16 CreditCard::NicknameOrNetworkAndLastFourDigits() const {
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnableSurfacingServerCardNickname) &&
+      HasValidNickname()) {
+    return NicknameAndLastFourDigits();
+  }
+  return NetworkAndLastFourDigits();
+}
+
 base::string16
 CreditCard::NetworkOrBankNameLastFourDigitsAndDescriptiveExpiration(
     const std::string& app_locale) const {
@@ -831,6 +843,15 @@ bool CreditCard::HasNameOnCard() const {
   return !name_on_card_.empty();
 }
 
+bool CreditCard::HasValidNickname() const {
+  // Valid nickname: 1) Non-empty 2) Doesn't exceed max length 3) Doesn't
+  // contain newline or tab characters.
+  // TODO(crbug/1059087): Trim whitespaces/newlines when set nickname.
+  return !nickname_.empty() && nickname_.size() <= kMaxNicknameLength &&
+         nickname_.find('\n') == base::string16::npos &&
+         nickname_.find('\t') == base::string16::npos;
+}
+
 base::string16 CreditCard::Expiration2DigitYearAsString() const {
   return data_util::Expiration2DigitYearAsString(expiration_year_);
 }
@@ -879,6 +900,18 @@ bool CreditCard::SetInfoImpl(const AutofillType& type,
 
 base::string16 CreditCard::NetworkForFill() const {
   return ::autofill::NetworkForFill(network_);
+}
+
+base::string16 CreditCard::NicknameAndLastFourDigits() const {
+  // Should call HasValidNickname() to check valid nickname before calling this.
+  DCHECK(HasValidNickname());
+  const base::string16 digits = LastFourDigits();
+  // If digits are empty, return nickname.
+  if (digits.empty())
+    return nickname_;
+
+  return nickname_ + ASCIIToUTF16("  ") +
+         internal::GetObfuscatedStringForCardDigits(digits);
 }
 
 void CreditCard::SetNumber(const base::string16& number) {

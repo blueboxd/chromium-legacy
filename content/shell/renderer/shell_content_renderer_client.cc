@@ -16,7 +16,7 @@
 #include "content/public/test/test_service.mojom.h"
 #include "content/shell/common/power_monitor_test_impl.h"
 #include "content/shell/common/shell_switches.h"
-#include "content/shell/renderer/shell_render_view_observer.h"
+#include "content/shell/renderer/shell_render_frame_observer.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -137,8 +137,8 @@ void ShellContentRendererClient::ExposeInterfacesToBrowser(
                base::ThreadTaskRunnerHandle::Get());
 }
 
-void ShellContentRendererClient::RenderViewCreated(RenderView* render_view) {
-  new ShellRenderViewObserver(render_view);
+void ShellContentRendererClient::RenderFrameCreated(RenderFrame* render_frame) {
+  new ShellRenderFrameObserver(render_frame);
 }
 
 bool ShellContentRendererClient::HasErrorPage(int http_status_code) {

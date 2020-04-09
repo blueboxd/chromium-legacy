@@ -68,20 +68,6 @@ class Latch : public base::RefCountedThreadSafe<
 
 namespace web_app {
 
-void RevealAppShimInFinderForAppOnFileThread(
-    const base::FilePath& app_path,
-    const ShortcutInfo& shortcut_info) {
-  WebAppShortcutCreator shortcut_creator(app_path, &shortcut_info);
-  shortcut_creator.RevealAppShimInFinder();
-}
-
-void RevealAppShimInFinderForApp(Profile* profile,
-                                 const extensions::Extension* app) {
-  web_app::internals::PostShortcutIOTask(
-      base::BindOnce(&RevealAppShimInFinderForAppOnFileThread, app->path()),
-      ShortcutInfoForExtensionAndProfile(app, profile));
-}
-
 void RebuildAppAndLaunch(std::unique_ptr<ShortcutInfo> shortcut_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 

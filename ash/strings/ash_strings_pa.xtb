@@ -55,7 +55,6 @@
 <translation id="1550523713251050646">ਹੋਰ ਵਿਕਲਪਾਂ ਲਈ ਕਲਿੱਕ ਕਰੋ</translation>
 <translation id="1570871743947603115">ਬਲੂਟੁੱਥ ਟੌਗਲ ਕਰੋ। <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">ਇਸ ਸ਼ੈਸ਼ਨ ਦੀ ਆਪਣੀ ਸਾਰੀ ਸਰਗਰਮੀ ਤੱਕ ਪਹੁੰਚ ਕਰੋ</translation>
-<translation id="1608626060424371292">ਇਹ ਵਰਤੋਂਕਾਰ ਹਟਾਓ</translation>
 <translation id="1654477262762802994">ਅਵਾਜ਼ੀ ਪੁੱਛਗਿੱਛ ਸ਼ੁਰੂ ਕਰੋ</translation>
 <translation id="1658406695958299976">ਮਾਫ਼ ਕਰਨਾ, ਅਜੇ ਵੀ ਤੁਹਾਡੇ ਪਾਸਵਰਡ ਦੀ ਪੁਸ਼ਟੀ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕੀ। ਨੋਟ-ਕਥਨ: ਜੇਕਰ ਤੁਸੀਂ ਹਾਲ ਹੀ ਵਿੱਚ ਆਪਣਾ ਪਾਸਵਰਡ ਬਦਲਿਆ ਹੈ, ਤਾਂ ਤੁਹਾਡਾ ਨਵਾਂ ਪਾਸਵਰਡ ਤੁਹਾਡੇ ਸਾਈਨ-ਆਉਟ ਕਰਨ ਤੋਂ ਬਾਅਦ ਲਾਗੂ ਹੋਵੇਗਾ, ਕਿਰਪਾ ਕਰਕੇ ਇੱਥੇ ਪੁਰਾਣਾ ਪਾਸਵਰਡ ਵਰਤੋ।</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> ਬਾਕੀ</translation>
@@ -105,6 +104,7 @@
 <translation id="2268813581635650749">ਸਾਰਿਆਂ ਨੂੰ ਸਾਈਨ-ਆਊਟ ਕਰੋ</translation>
 <translation id="2277103315734023688">ਅੱਗੇ ਕਰੋ</translation>
 <translation id="2292698582925480719">ਡਿਸਪਲੇ ਸਕੇਲ</translation>
+<translation id="2295777434187870477">ਮਾਈਕ ਚਾਲੂ ਹੈ, ਟੌਗਲ ਕਰਨ 'ਤੇ ਇਨਪੁੱਟ ਮਿਊਟ ਹੋ ਜਾਵੇਗਾ।</translation>
 <translation id="2298170939937364391">ਪੂਰੀ-ਸਕ੍ਰੀਨ ਵੱਡਦਰਸ਼ੀ ਚਾਲੂ ਹੈ। ਉਸਨੂੰ ਬੰਦ ਕਰਨ ਲਈ Ctrl+Search+M ਦਬਾਓ।</translation>
 <translation id="2302092602801625023">ਇਸ ਖਾਤੇ ਦਾ ਪ੍ਰਬੰਧਨ Family Link ਵੱਲੋਂ ਕੀਤਾ ਜਾਂਦਾ ਹੈ</translation>
 <translation id="2303600792989757991">ਵਿੰਡੋ ਰੂਪ-ਰੇਖਾ ਨੂੰ ਟੌਗਲ ਕਰੋ</translation>
@@ -138,6 +138,7 @@
 <translation id="2658778018866295321">ਕਲਿੱਕ ਕਰਕੇ ਘਸੀਟੋ</translation>
 <translation id="2700493154570097719">ਆਪਣਾ ਕੀ-ਬੋਰਡ ਸੈੱਟ ਕਰੋ</translation>
 <translation id="2704781753052663061">ਦੂਜੇ ਵਾਈ-ਫਾਈ ਨੈੱਟਵਰਕਾਂ ਵਿੱਚ ਸ਼ਾਮਲ ਹੋਵੋ</translation>
+<translation id="2705001408393684014">ਮਾਈਕ ਨੂੰ ਟੌਗਲ ਕਰੋ। <ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">ਰਾਤ ਦੀ ਰੋਸ਼ਨੀ</translation>
 <translation id="2727977024730340865">ਇੱਕ ਘੱਟ-ਪਾਵਰ ਦੇ ਚਾਰਜਰ ਨਾਲ ਪਲੱਗ-ਇਨ ਕੀਤਾ ਗਿਆ। ਬੈਟਰੀ ਚਾਰਜਿੰਗ ਭਰੋਸੇਯੋਗ ਨਹੀਂ ਵੀ ਹੋ ਸਕਦੀ।</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
@@ -296,6 +297,7 @@
 <translation id="4665114317261903604">'ਪਰੇਸ਼ਾਨ ਨਾ ਕਰੋ' ਨੂੰ ਟੌਗਲ ਕਰੋ। <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">ਮਾਂ-ਪਿਓ ਦੇ ਕੋਡ ਨਾਲ ਡੀਵਾਈਸ ਅਣਲਾਕ ਕਰੋ</translation>
 <translation id="4702647871202761252">ਪਰਦੇਦਾਰੀ ਸਕ੍ਰੀਨ ਬੰਦ ਹੈ</translation>
+<translation id="4705716602320768426">ਫ਼ਾਈਲ ਬਾਰੇ ਵਿਚਾਰ</translation>
 <translation id="4710243778082831592">IME ਸੈਟਿੰਗਾਂ</translation>
 <translation id="4731797938093519117">ਮਾਂ-ਪਿਓ ਲਈ ਪਹੁੰਚ</translation>
 <translation id="4734965478015604180">ਲੇਟਵਾਂ</translation>
@@ -376,6 +378,7 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">ਤੇ</translation>
+<translation id="5920710855273935292">ਮਾਈਕ ਨੂੰ ਮਿਊਟ ਕੀਤਾ ਹੋਇਆ ਹੈ।</translation>
 <translation id="5947494881799873997">ਵਾਪਸ ਲਿਆਓ</translation>
 <translation id="595202126637698455">ਪ੍ਰਦਰਸ਼ਨ ਟ੍ਰੇਸਿੰਗ ਸਮਰਥਿਤ</translation>
 <translation id="5957083217255311415">ਮੋਬਾਈਲ  ਡਾਟਾ  ਬੰਦ ਕੀਤਾ ਹੋਇਆ ਹੈ।</translation>
@@ -647,6 +650,7 @@
 <translation id="9211681782751733685">ਬੈਟਰੀ ਦੇ ਪੂਰਾ ਚਾਰਜ ਹੋਣ ਵਿੱਚ <ph name="TIME_REMAINING" /> ਬਾਕੀ।</translation>
 <translation id="9215934040295798075">ਵਾਲਪੇਪਰ ਸੈੱਟ ਕਰੋ</translation>
 <translation id="921989828232331238">ਤੁਹਾਡੇ ਮਾਂ-ਪਿਓ ਨੇ ਅੱਜ ਦੇ ਦਿਨ ਲਈ ਤੁਹਾਡਾ ਡੀਵਾਈਸ ਲਾਕ ਕਰ ਦਿੱਤਾ ਹੈ</translation>
+<translation id="9220525904950070496">ਖਾਤਾ ਹਟਾਓ</translation>
 <translation id="923686485342484400">ਸਾਈਨ-ਆਊਟ ਕਰਨ ਲਈ ਦੋ ਵਾਰ Control Shift Q ਦਬਾਓ।</translation>
 <translation id="938963181863597773">ਮੇਰੇ ਕੈਲੰਡਰ 'ਤੇ ਕੀ ਹੈ?</translation>
 <translation id="945522503751344254">ਪ੍ਰਤੀਕਰਮ ਭੇਜੋ</translation>

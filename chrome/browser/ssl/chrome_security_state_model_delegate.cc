@@ -4,16 +4,9 @@
 
 #include "chrome/browser/ssl/chrome_security_state_model_delegate.h"
 
-#include "chrome/android/chrome_jni_headers/ChromeSecurityStateModelDelegate_jni.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/browser/web_contents.h"
-
-static jlong
-JNI_ChromeSecurityStateModelDelegate_CreateSecurityStateModelDelegate(
-    JNIEnv* env) {
-  return reinterpret_cast<intptr_t>(new ChromeSecurityStateModelDelegate());
-}
 
 security_state::SecurityLevel
 ChromeSecurityStateModelDelegate::GetSecurityLevel(

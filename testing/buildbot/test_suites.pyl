@@ -3234,6 +3234,24 @@
     },
 
     'site_isolation_android_fyi_gtests': {
+      'site_per_process_android_browsertests': {
+        'args': [
+          '--site-per-process',
+        ],
+        'swarming': {
+          'shards': 1,
+        },
+        'test': 'android_browsertests',
+      },
+      'site_per_process_chrome_public_test_apk': {
+        'args': [
+          '--site-per-process',
+        ],
+        'swarming': {
+          'shards': 20,
+        },
+        'test': 'chrome_public_test_apk',
+      },
       'site_per_process_components_browsertests': {
         'args': [
           '--site-per-process',
@@ -3259,6 +3277,15 @@
           'shards': 10,
         },
         'test': 'content_browsertests',
+      },
+      'site_per_process_content_shell_test_apk': {
+        'args': [
+          '--site-per-process',
+        ],
+        'swarming': {
+          'shards': 3,
+        },
+        'test': 'content_shell_test_apk',
       },
       'site_per_process_content_unittests': {
         'args': [

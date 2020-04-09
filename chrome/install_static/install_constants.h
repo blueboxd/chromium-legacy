@@ -130,6 +130,9 @@ struct InstallConstants {
   // following updates.
   bool supports_retention_experiments;
 
+  // True if this mode supported the now-deprecated multi-install.
+  bool supported_multi_install;
+
   // The index of this mode's main application icon in the main executable.
   int app_icon_resource_index;
 

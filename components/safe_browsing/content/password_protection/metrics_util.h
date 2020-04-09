@@ -23,6 +23,7 @@ extern const char kEnterprisePasswordEntryVerdictHistogram[];
 extern const char kEnterprisePasswordInterstitialHistogram[];
 extern const char kEnterprisePasswordPageInfoHistogram[];
 extern const char kEnterprisePasswordWarningDialogHistogram[];
+extern const char kSavedPasswordPageInfoHistogram[];
 extern const char kGmailNonSyncPasswordInterstitialHistogram[];
 extern const char kGmailSyncPasswordPageInfoHistogram[];
 extern const char kGmailNonSyncPasswordPageInfoHistogram[];

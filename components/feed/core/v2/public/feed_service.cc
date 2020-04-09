@@ -11,6 +11,7 @@
 #include "components/feed/core/v2/feed_network_impl.h"
 #include "components/feed/core/v2/feed_store.h"
 #include "components/feed/core/v2/feed_stream.h"
+#include "components/feed/core/v2/metrics_reporter.h"
 #include "components/feed/core/v2/refresh_task_scheduler.h"
 #include "net/base/network_change_notifier.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -88,17 +89,18 @@ FeedService::FeedService(
       refresh_task_scheduler_(std::move(refresh_task_scheduler)) {
   stream_delegate_ = std::make_unique<StreamDelegateImpl>(local_state);
   network_delegate_ = std::make_unique<NetworkDelegateImpl>(delegate_.get());
+  metrics_reporter_ =
+      std::make_unique<MetricsReporter>(base::DefaultTickClock::GetInstance());
   feed_network_ = std::make_unique<FeedNetworkImpl>(
       network_delegate_.get(), identity_manager, api_key, url_loader_factory,
       base::DefaultTickClock::GetInstance(), profile_prefs);
   store_ = std::make_unique<FeedStore>(std::move(database));
 
   stream_ = std::make_unique<FeedStream>(
-      refresh_task_scheduler_.get(),
-      nullptr,  // TODO(harringtond): Implement EventObserver.
-      stream_delegate_.get(), profile_prefs, feed_network_.get(), store_.get(),
-      base::DefaultClock::GetInstance(), base::DefaultTickClock::GetInstance(),
-      chrome_info);
+      refresh_task_scheduler_.get(), metrics_reporter_.get(),
+      metrics_reporter_.get(), stream_delegate_.get(), profile_prefs,
+      feed_network_.get(), store_.get(), base::DefaultClock::GetInstance(),
+      base::DefaultTickClock::GetInstance(), chrome_info);
 
   stream_delegate_->Initialize(static_cast<FeedStream*>(stream_.get()));
 

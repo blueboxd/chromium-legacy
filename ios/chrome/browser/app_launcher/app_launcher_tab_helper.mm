@@ -10,13 +10,11 @@
 #include "base/metrics/histogram_macros.h"
 #import "base/strings/sys_string_conversions.h"
 #include "components/reading_list/core/reading_list_model.h"
-#import "ios/chrome/browser/app_launcher/app_launcher_abuse_detector.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper_delegate.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/chrome_url_util.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/u2f/u2f_tab_helper.h"
-#import "ios/chrome/browser/ui/dialogs/dialog_features.h"
 #import "ios/web/common/url_scheme_util.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
@@ -71,27 +69,26 @@ enum class ExternalURLRequestStatus {
 
 }  // namespace
 
+// static
 void AppLauncherTabHelper::CreateForWebState(
     web::WebState* web_state,
-    AppLauncherAbuseDetector* abuse_detector,
-    id<AppLauncherTabHelperDelegate> delegate) {
-  DCHECK(web_state);
-  if (!FromWebState(web_state)) {
-    web_state->SetUserData(UserDataKey(),
-                           base::WrapUnique(new AppLauncherTabHelper(
-                               web_state, abuse_detector, delegate)));
-  }
+    AppLauncherAbuseDetector* abuse_detector) {
+  if (FromWebState(web_state))
+    return;
+
+  web_state->SetUserData(
+      UserDataKey(),
+      base::WrapUnique(new AppLauncherTabHelper(web_state, abuse_detector)));
 }
 
 AppLauncherTabHelper::AppLauncherTabHelper(
     web::WebState* web_state,
-    AppLauncherAbuseDetector* abuse_detector,
-    id<AppLauncherTabHelperDelegate> delegate)
+    AppLauncherAbuseDetector* abuse_detector)
     : web::WebStatePolicyDecider(web_state),
       web_state_(web_state),
-      abuse_detector_(abuse_detector),
-      delegate_(delegate),
-      weak_factory_(this) {}
+      abuse_detector_(abuse_detector) {
+  DCHECK(abuse_detector_);
+}
 
 AppLauncherTabHelper::~AppLauncherTabHelper() = default;
 
@@ -103,18 +100,22 @@ bool AppLauncherTabHelper::IsAppUrl(const GURL& url) {
            url.SchemeIs(url::kBlobScheme));
 }
 
-bool AppLauncherTabHelper::RequestToLaunchApp(const GURL& url,
+void AppLauncherTabHelper::SetDelegate(AppLauncherTabHelperDelegate* delegate) {
+  delegate_ = delegate;
+}
+
+void AppLauncherTabHelper::RequestToLaunchApp(const GURL& url,
                                               const GURL& source_page_url,
                                               bool link_transition) {
   // Don't open external application if chrome is not active.
   if ([[UIApplication sharedApplication] applicationState] !=
       UIApplicationStateActive) {
-    return false;
+    return;
   }
 
   // Don't try to open external application if a prompt is already active.
   if (is_prompt_active_)
-    return false;
+    return;
 
   [abuse_detector_ didRequestLaunchExternalAppURL:url
                                 fromSourcePageURL:source_page_url];
@@ -123,12 +124,12 @@ bool AppLauncherTabHelper::RequestToLaunchApp(const GURL& url,
                         fromSourcePageURL:source_page_url];
   switch (policy) {
     case ExternalAppLaunchPolicyBlock: {
-      return false;
+      return;
     }
     case ExternalAppLaunchPolicyAllow: {
-      return [delegate_ appLauncherTabHelper:this
-                            launchAppWithURL:url
-                              linkTransition:link_transition];
+      if (delegate_)
+        delegate_->LaunchAppForTabHelper(this, url, link_transition);
+      return;
     }
     case ExternalAppLaunchPolicyPrompt: {
       is_prompt_active_ = true;
@@ -136,29 +137,22 @@ bool AppLauncherTabHelper::RequestToLaunchApp(const GURL& url,
           weak_factory_.GetWeakPtr();
       GURL copied_url = url;
       GURL copied_source_page_url = source_page_url;
-      [delegate_ appLauncherTabHelper:this
-          showAlertOfRepeatedLaunchesWithCompletionHandler:^(
-              BOOL user_allowed) {
+      if (!delegate_)
+        return;
+      delegate_->ShowRepeatedAppLaunchAlert(
+          this, base::BindOnce(^(BOOL user_allowed) {
             if (!weak_this.get())
               return;
-            if (user_allowed) {
+            if (user_allowed && weak_this->delegate()) {
               // By confirming that user wants to launch the application, there
               // is no need to check for |link_tapped|.
-              [delegate_ appLauncherTabHelper:weak_this.get()
-                             launchAppWithURL:copied_url
-                               linkTransition:YES];
-            } else {
-              if (!base::FeatureList::IsEnabled(dialogs::kNonModalDialogs)) {
-                // Only block app launches if the app launch alert is being
-                // displayed modally since DOS attacks are not possible when the
-                // app launch alert is presented non-modally.
-                [abuse_detector_ blockLaunchingAppURL:copied_url
-                                    fromSourcePageURL:copied_source_page_url];
-              }
+              weak_this->delegate()->LaunchAppForTabHelper(
+                  this, copied_url,
+                  /*link_transition=*/true);
             }
             is_prompt_active_ = false;
-          }];
-      return true;
+          }));
+      return;
     }
   }
 }

@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">按一下即可查看更多選項</translation>
 <translation id="1570871743947603115">切換藍牙設定。<ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">存取你在這個工作階段內的所有活動</translation>
-<translation id="1608626060424371292">移除這位使用者</translation>
+<translation id="1632985212731562677">你可以依序點選 [設定] &gt; [無障礙設定] 來停用開關功能。</translation>
 <translation id="1654477262762802994">啟動語音查詢</translation>
 <translation id="1658406695958299976">很抱歉，系統仍然無法驗證你的密碼。注意：如果你的密碼最近有所異動，新密碼會在你登出後立即生效，目前請在這裡使用舊密碼。</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> 後用盡</translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">裝置管理員可能會監控你的瀏覽活動。</translation>
 <translation id="3181441307743005334">重新啟動中，請稍候</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{已連線至一部裝置}other{已連線至 # 部裝置}}</translation>
+<translation id="3203405173652969239">已啟用開關功能</translation>
 <translation id="3207953481422525583">使用者設定</translation>
 <translation id="3217205077783620295">音量已開啟；使用切換按鈕可設為靜音。</translation>
 <translation id="3226991577105957773">還有 <ph name="COUNT" /> 則</translation>
@@ -651,6 +652,7 @@
 <translation id="9211681782751733685">電池剩餘充電時間：<ph name="TIME_REMAINING" />。</translation>
 <translation id="9215934040295798075">設定桌布</translation>
 <translation id="921989828232331238">你的家長今天已鎖定這部裝置</translation>
+<translation id="9220525904950070496">移除帳戶</translation>
 <translation id="923686485342484400">按兩下 Ctrl+Shift+Q 鍵即可登出。</translation>
 <translation id="938963181863597773">我的日曆上有什麼活動？</translation>
 <translation id="945522503751344254">提供意見</translation>

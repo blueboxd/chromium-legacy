@@ -866,7 +866,7 @@ if (enable_java_templates) {
       _cache_dir = "$root_build_dir/android_lint_cache"
       _result_path = "$target_out_dir/$target_name/result.xml"
       _config_path = "$target_out_dir/$target_name/config.xml"
-      _stamp_path = "$target_out_dir/$target_name/build.stamp"
+      _stamp_path = "$target_out_dir/$target_name/build.lint.stamp"
       _suppressions_file = lint_suppressions_file
       _platform_xml_path =
           "${android_sdk_root}/platform-tools/api/api-versions.xml"
@@ -1084,10 +1084,6 @@ if (enable_java_templates) {
         args += [ "--force-enable-assertions" ]
       }
 
-      if (desugar_with_d8) {
-        args += [ "--desugar" ]
-      }
-
       if (defined(invoker.args)) {
         args += invoker.args
       }
@@ -1158,16 +1154,18 @@ if (enable_java_templates) {
     _enable_multidex =
         !defined(invoker.enable_multidex) || invoker.enable_multidex
     _enable_main_dex_list = _enable_multidex && _min_sdk_version < 21
+    _enable_desugar = !defined(invoker.enable_desugar) || invoker.enable_desugar
+    _desugar_needs_classpath = _enable_desugar && !enable_bazel_desugar
+
     if (!_enable_main_dex_list) {
       if (defined(invoker.negative_main_dex_globs)) {
         not_needed(invoker, [ "negative_main_dex_globs" ])
       }
     }
 
-    # When using d8 to desugar, the dex merge step must not be set to a higher
-    # minSdkVersion than the libraries in order for the proper backported
-    # methods to be included.
-    if (invoker.enable_desugar && defined(invoker.input_dex_filearg)) {
+    # For D8's backported method desugaring to work properly, the dex merge step
+    # must not be set to a higher minSdkVersion than it was for the libraries.
+    if (_enable_desugar && defined(invoker.input_dex_filearg)) {
       _min_sdk_version = default_min_sdk_version
     }
 
@@ -1183,7 +1181,7 @@ if (enable_java_templates) {
       _main_dex_rules = "//build/android/main_dex_classes.flags"
     }
 
-    if (invoker.enable_desugar || _proguard_enabled) {
+    if (_desugar_needs_classpath || _proguard_enabled) {
       _rebased_build_config = rebase_path(invoker.build_config, root_build_dir)
     }
 
@@ -1445,9 +1443,11 @@ if (enable_java_templates) {
           args += [ "--release" ]
         }
 
-        if (invoker.enable_desugar) {
+        if (_enable_desugar) {
+          args += [ "--desugar" ]
+        }
+        if (_desugar_needs_classpath) {
           args += [
-            "--desugar",
             "--bootclasspath=@FileArg($_rebased_build_config:android:sdk_jars)",
             "--classpath=@FileArg($_rebased_build_config:deps_info:javac_full_interface_classpath)",
           ]
@@ -1606,7 +1606,7 @@ if (enable_java_templates) {
     if (!_skip_jetify) {
       _jetify_target = "${target_name}__jetify"
       _jetify_input_jar = _previous_output_jar
-      _jetify_output_jar = "$target_out_dir/$target_name-jetified.jar"
+      _jetify_output_jar = "$target_out_dir/$target_name.jetified.jar"
 
       action_with_pydeps(_jetify_target) {
         script = "//build/android/gyp/jetify_jar.py"
@@ -1645,7 +1645,7 @@ if (enable_java_templates) {
       _java_bytecode_rewriter_target = "${target_name}__bytecode_rewrite"
       _java_bytecode_rewriter_input_jar = _previous_output_jar
       _java_bytecode_rewriter_output_jar =
-          "$target_out_dir/$target_name-bytecode-rewritten.jar"
+          "$target_out_dir/$target_name.bytecode-rewritten.jar"
 
       action_with_pydeps(_java_bytecode_rewriter_target) {
         script = "//build/android/gyp/bytecode_processor.py"
@@ -1699,7 +1699,7 @@ if (enable_java_templates) {
     if (invoker.enable_desugar) {
       _desugar_target = "${target_name}__desugar"
       _desugar_input_jar = _previous_output_jar
-      _desugar_output_jar = "$target_out_dir/$target_name-desugar.jar"
+      _desugar_output_jar = "$target_out_dir/$target_name.desugar.jar"
 
       action_with_pydeps(_desugar_target) {
         script = "//build/android/gyp/desugar.py"
@@ -1741,7 +1741,7 @@ if (enable_java_templates) {
     if (_filter_jar) {
       _filter_target = "${target_name}__filter"
       _filter_input_jar = _previous_output_jar
-      _filter_output_jar = "$target_out_dir/$target_name-filtered.jar"
+      _filter_output_jar = "$target_out_dir/$target_name.filtered.jar"
 
       action_with_pydeps(_filter_target) {
         script = "//build/android/gyp/filter_zip.py"
@@ -1776,7 +1776,7 @@ if (enable_java_templates) {
       # Jacoco must run after desugar (or else desugar sometimes fails).
       _jacoco_target = "${target_name}__jacoco"
       _jacoco_input_jar = _previous_output_jar
-      _jacoco_output_jar = "$target_out_dir/$target_name-instrumented.jar"
+      _jacoco_output_jar = "$target_out_dir/$target_name.instrumented.jar"
 
       jacoco_instr(_jacoco_target) {
         deps = _deps
@@ -3322,7 +3322,7 @@ if (enable_java_templates) {
       _accumulated_deps += [ _sdk_java_dep ]
     }
     _jetified_jar_path =
-        "$target_out_dir/${target_name}__process_prebuilt-jetified.jar"
+        "$target_out_dir/${target_name}__process_prebuilt.jetified.jar"
 
     # Define build_config_deps which will be a list of targets required to
     # build the _build_config.
@@ -3630,7 +3630,7 @@ if (enable_java_templates) {
                                    "jar_included_patterns",
                                    "skip_jetify",
                                  ])
-          enable_desugar = _enable_desugar && !desugar_with_d8
+          enable_desugar = _enable_desugar && enable_bazel_desugar
           is_prebuilt = _is_prebuilt
           enable_build_hooks_android = _enable_build_hooks_android
           build_config = _build_config
@@ -3666,7 +3666,7 @@ if (enable_java_templates) {
           dex("${target_name}__dex") {
             input_class_jars = [ _final_jar_path ]
 
-            enable_desugar = _enable_desugar && desugar_with_d8
+            enable_desugar = _enable_desugar
 
             # There's no value in per-class dexing prebuilts since they never
             # change just one class at a time.
@@ -3674,7 +3674,7 @@ if (enable_java_templates) {
             output = _dex_path
             deps = [ ":$_process_prebuilt_target_name" ]
 
-            if (enable_desugar) {
+            if (enable_desugar && !enable_bazel_desugar) {
               build_config = _build_config
               final_ijar_path = _final_ijar_path
               deps += _java_header_deps + [ ":$_header_target_name" ]

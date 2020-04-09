@@ -70,13 +70,6 @@ std::unique_ptr<blink::WebInputEvent> TransformScreenToWidgetCoordinates(
 void SetDeviceColorSpace(RenderView* render_view,
                          const gfx::ColorSpace& color_space);
 
-// Enables or disables synchronous resize mode. When enabled, all window-sizing
-// machinery is short-circuited inside the renderer. This mode is necessary for
-// some tests that were written before browsers had multi-process architecture
-// and rely on window resizes to happen synchronously.
-// See http://crbug.com/309760 for details.
-void UseSynchronousResizeMode(RenderView* render_view, bool enable);
-
 // Control auto resize mode.
 void EnableAutoResizeMode(RenderView* render_view,
                           const blink::WebSize& min_size,

@@ -115,13 +115,9 @@ class TrustTokenRequestSigningHelper : public TrustTokenRequestHelper {
    public:
     virtual ~Signer() = default;
 
-    // Initializes signer state with the given key. Must be called at least once
-    // before the first call to |Sign|.
-    virtual void Init(base::span<const uint8_t> key) = 0;
-
-    // Returns a one-shot signature over the given data, or an error. |Init|
-    // must have been called before the first call to |Sign|.
+    // Returns a one-shot signature over the given data, or an error.
     virtual base::Optional<std::vector<uint8_t>> Sign(
+        base::span<const uint8_t> key,
         base::span<const uint8_t> data) = 0;
 
     // Verifies the given signature. Does not depend on the current state of the

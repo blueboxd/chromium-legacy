@@ -36,7 +36,8 @@ class ImageMetadataStore {
   // the existing metadata.
   virtual void SaveImageMetadata(const std::string& key,
                                  const size_t data_size,
-                                 bool needs_transcoding) = 0;
+                                 bool needs_transcoding,
+                                 ExpirationInterval expiration_interval) = 0;
 
   // Deletes the image metadata for the |key|.
   virtual void DeleteImageMetadata(const std::string& key) = 0;

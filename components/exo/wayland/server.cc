@@ -163,14 +163,15 @@ Server::Server(Display* display)
   wl_global_create(wl_display_.get(), &zcr_gaming_input_v2_interface, 1,
                    display_, bind_gaming_input);
   wl_global_create(wl_display_.get(), &zcr_keyboard_configuration_v1_interface,
-                   kZcrKeyboardConfigurationVersion, display_,
+                   zcr_keyboard_configuration_v1_interface.version, display_,
                    bind_keyboard_configuration);
   wl_global_create(wl_display_.get(), &zcr_keyboard_extension_v1_interface, 1,
                    display_, bind_keyboard_extension);
   wl_global_create(wl_display_.get(), &zcr_notification_shell_v1_interface, 1,
                    display_, bind_notification_shell);
   wl_global_create(wl_display_.get(), &zcr_remote_shell_v1_interface,
-                   kZcrRemoteShellVersion, display_, bind_remote_shell);
+                   zcr_remote_shell_v1_interface.version, display_,
+                   bind_remote_shell);
   wl_global_create(wl_display_.get(), &zcr_stylus_tools_v1_interface, 1,
                    display_, bind_stylus_tools);
   wl_global_create(wl_display_.get(),

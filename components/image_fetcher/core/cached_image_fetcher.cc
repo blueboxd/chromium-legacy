@@ -326,7 +326,8 @@ void CachedImageFetcher::StoreData(bool cache_result_needs_transcoding,
     bool needs_transcoding = !is_image_data_transcoded &&
                              request.params.allow_needs_transcoding_file();
     image_cache_->SaveImage(std::move(url), std::move(image_data),
-                            /* needs_transcoding */ needs_transcoding);
+                            /* needs_transcoding */ needs_transcoding,
+                            request.params.expiration_interval());
   }
 }
 

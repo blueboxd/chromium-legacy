@@ -29,6 +29,7 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/page_info/page_info.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/safe_browsing/content/password_protection/metrics_util.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/strings/grit/components_strings.h"
@@ -128,7 +129,10 @@ const GURL OpenSiteSettingsForUrl(Browser* browser, const GURL& url) {
 
 class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
  public:
-  PageInfoBubbleViewBrowserTest() {}
+  PageInfoBubbleViewBrowserTest() {
+    feature_list_.InitAndEnableFeature(
+        password_manager::features::kPasswordCheck);
+  }
 
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
@@ -150,6 +154,7 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
     constexpr char kSignInSyncPasswordReuse[] = "SignInSyncPasswordReuse";
     constexpr char kSignInNonSyncPasswordReuse[] = "SignInNonSyncPasswordReuse";
     constexpr char kEnterprisePasswordReuse[] = "EnterprisePasswordReuse";
+    constexpr char kSavedPasswordReuse[] = "SavedPasswordReuse";
     constexpr char kMalwareAndBadCert[] = "MalwareAndBadCert";
     constexpr char kMixedContentForm[] = "MixedContentForm";
     constexpr char kMixedContent[] = "MixedContent";
@@ -226,6 +231,9 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
     } else if (name == kEnterprisePasswordReuse) {
       identity.safe_browsing_status =
           PageInfo::SAFE_BROWSING_STATUS_ENTERPRISE_PASSWORD_REUSE;
+    } else if (name == kSavedPasswordReuse) {
+      identity.safe_browsing_status =
+          PageInfo::SAFE_BROWSING_STATUS_SAVED_PASSWORD_REUSE;
     } else if (name == kMalwareAndBadCert) {
       identity.identity_status = PageInfo::SITE_IDENTITY_STATUS_ERROR;
       identity.certificate = net::ImportCertFromFile(
@@ -382,6 +390,7 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
 
  private:
   std::vector<PageInfoBubbleView::PageInfoBubbleViewID> expected_identifiers_;
+  base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(PageInfoBubbleViewBrowserTest);
 };
@@ -528,6 +537,80 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
   EXPECT_THAT(
       histograms.GetAllSamples(
           safe_browsing::kEnterprisePasswordPageInfoHistogram),
+      testing::ElementsAre(
+          base::Bucket(static_cast<int>(safe_browsing::WarningAction::SHOWN),
+                       1),
+          base::Bucket(
+              static_cast<int>(safe_browsing::WarningAction::CHANGE_PASSWORD),
+              1),
+          base::Bucket(static_cast<int>(
+                           safe_browsing::WarningAction::MARK_AS_LEGITIMATE),
+                       1)));
+  // Security state will change after whitelisting.
+  visible_security_state = helper->GetVisibleSecurityState();
+  EXPECT_EQ(security_state::MALICIOUS_CONTENT_STATUS_NONE,
+            visible_security_state->malicious_content_status);
+}
+
+// Test opening page info bubble that matches
+// SB_THREAT_TYPE_SAVED_PASSWORD_REUSE threat type.
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
+                       VerifySavedPasswordReusePageInfoBubble) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  base::HistogramTester histograms;
+  ui_test_utils::NavigateToURL(browser(), embedded_test_server()->GetURL("/"));
+
+  // Update security state of the current page to match
+  // SB_THREAT_TYPE_SAVED_PASSWORD_REUSE.
+  safe_browsing::ChromePasswordProtectionService* service =
+      safe_browsing::ChromePasswordProtectionService::
+          GetPasswordProtectionService(browser()->profile());
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  safe_browsing::ReusedPasswordAccountType reused_password_account_type;
+  reused_password_account_type.set_account_type(
+      safe_browsing::ReusedPasswordAccountType::SAVED_PASSWORD);
+  service->set_reused_password_account_type_for_last_shown_warning(
+      reused_password_account_type);
+
+  service->ShowModalWarning(
+      contents, safe_browsing::RequestOutcome::UNKNOWN,
+      safe_browsing::LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
+      "unused_token", reused_password_account_type);
+
+  OpenPageInfoBubble(browser());
+  views::View* change_password_button = GetView(
+      browser(), PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_CHANGE_PASSWORD);
+  views::View* whitelist_password_reuse_button = GetView(
+      browser(),
+      PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_WHITELIST_PASSWORD_REUSE);
+
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(contents);
+  std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
+      helper->GetVisibleSecurityState();
+  ASSERT_EQ(security_state::MALICIOUS_CONTENT_STATUS_SAVED_PASSWORD_REUSE,
+            visible_security_state->malicious_content_status);
+
+  // Verify these two buttons are showing.
+  EXPECT_TRUE(change_password_button->GetVisible());
+  EXPECT_TRUE(whitelist_password_reuse_button->GetVisible());
+
+  // Verify clicking on button will increment corresponding bucket of
+  // PasswordProtection.PageInfoAction.NonGaiaEnterprisePasswordEntry histogram.
+  PerformMouseClickOnView(change_password_button);
+  EXPECT_THAT(
+      histograms.GetAllSamples(safe_browsing::kSavedPasswordPageInfoHistogram),
+      testing::ElementsAre(
+          base::Bucket(static_cast<int>(safe_browsing::WarningAction::SHOWN),
+                       1),
+          base::Bucket(
+              static_cast<int>(safe_browsing::WarningAction::CHANGE_PASSWORD),
+              1)));
+
+  PerformMouseClickOnView(whitelist_password_reuse_button);
+  EXPECT_THAT(
+      histograms.GetAllSamples(safe_browsing::kSavedPasswordPageInfoHistogram),
       testing::ElementsAre(
           base::Bucket(static_cast<int>(safe_browsing::WarningAction::SHOWN),
                        1),

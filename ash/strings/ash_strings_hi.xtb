@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">ज़्यादा विकल्पों के लिए क्लिक करें</translation>
 <translation id="1570871743947603115">ब्लूटूथ टॉगल करें. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">इस सत्र में अपनी सभी गतिविधि ऐक्सेस करें</translation>
-<translation id="1608626060424371292">इस उपयोगकर्ता को हटाएं</translation>
+<translation id="1632985212731562677">ऐक्सेस करने का तरीका बदलने की सुविधा को सेटिंग &gt; सुलभता में जाकर, बंद किया जा सकता है.</translation>
 <translation id="1654477262762802994">बोलकर खोजना शुरू करें</translation>
 <translation id="1658406695958299976">माफ़ करें, आपके पासवर्ड की अब भी पुष्टि नहीं हो पाई है. नोट: अगर आपने हाल ही में अपना पासवर्ड बदला है, तो आपके साइन आउट होते ही आपका नया पासवर्ड लागू हो जाएगा, कृपया यहां पुराने पासवर्ड का इस्तेमाल करें.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> बाकी</translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">डिवाइस व्यवस्थापक आपकी ब्राउज़िंग गतिविधि की निगरानी कर सकता है.</translation>
 <translation id="3181441307743005334">रीस्टार्ट होने में कुछ समय लगेगा</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{किसी डिवाइस से कनेक्ट है}one{# डिवाइस से कनेक्ट है}other{# डिवाइस से कनेक्ट है}}</translation>
+<translation id="3203405173652969239">ऐक्सेस करने का तरीका बदलने की सुविधा चालू है</translation>
 <translation id="3207953481422525583">उपयोगकर्ता सेटिंग</translation>
 <translation id="3217205077783620295">आवाज़ चालू है, टॉगल करने से ऑडियो बंद हो जाएगा.</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> और</translation>
@@ -652,6 +653,7 @@
 <translation id="9211681782751733685">बैटरी के पूरी तरह से चार्ज होने में<ph name="TIME_REMAINING" /> का समय बाकी है.</translation>
 <translation id="9215934040295798075">वॉलपेपर सेट करें</translation>
 <translation id="921989828232331238">आपके अभिभावक ने आज के लिए यह डिवाइस लॉक कर दिया है</translation>
+<translation id="9220525904950070496">खाता हटाएं</translation>
 <translation id="923686485342484400">साइन आउट करने के लिए दो बार Control Shift Q दबाएं.</translation>
 <translation id="938963181863597773">मेरे कैलेंडर पर आज के लिए क्या काम हैं?</translation>
 <translation id="945522503751344254">सुझाव भेजें</translation>

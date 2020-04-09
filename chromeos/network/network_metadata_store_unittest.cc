@@ -137,6 +137,14 @@ TEST_F(NetworkMetadataStoreTest, FirstConnect) {
   ASSERT_TRUE(metadata_observer()->HasConnected(kGuid));
 }
 
+TEST_F(NetworkMetadataStoreTest, ConfigurationCreated) {
+  std::string service_path = ConfigureService(kConfigWifi0Connectable);
+  metadata_store()->OnConfigurationCreated(service_path, kGuid);
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_TRUE(metadata_store()->GetIsCreatedByUser(kGuid));
+}
+
 TEST_F(NetworkMetadataStoreTest, ConfigurationUpdated) {
   std::string service_path = ConfigureService(kConfigWifi0Connectable);
   network_connection_handler()->ConnectToNetwork(

@@ -31,6 +31,7 @@ class IdentityManager;
 
 namespace feed {
 class RefreshTaskScheduler;
+class MetricsReporter;
 class FeedNetwork;
 class FeedStore;
 
@@ -74,6 +75,7 @@ class FeedService : public KeyedService {
   // be null if |FeedStreamApi| is created externally.
   std::unique_ptr<Delegate> delegate_;
   std::unique_ptr<StreamDelegateImpl> stream_delegate_;
+  std::unique_ptr<MetricsReporter> metrics_reporter_;
   std::unique_ptr<NetworkDelegateImpl> network_delegate_;
   std::unique_ptr<FeedNetwork> feed_network_;
   std::unique_ptr<FeedStore> store_;

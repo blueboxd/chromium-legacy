@@ -28,6 +28,12 @@ const char kAutofillEnableCompanyNameName[] =
 const char kAutofillEnableCompanyNameDescription[] =
     "When enabled, Company Name fields will be auto filled";
 
+const char kAutofillEnableSurfacingServerCardNicknameName[] =
+    "Enable surfacing masked server card nicknames";
+const char kAutofillEnableSurfacingServerCardNicknameDescription[] =
+    "When enabled, if Google Payments cards were given nicknames in a Google "
+    "Pay app, Autofill will surface these nicknames in suggestions.";
+
 const char kAutofillEnforceMinRequiredFieldsForHeuristicsName[] =
     "Autofill Enforce Min Required Fields For Heuristics";
 const char kAutofillEnforceMinRequiredFieldsForHeuristicsDescription[] =
@@ -279,11 +285,6 @@ const char kMobileGoogleSRPName[] = "Mobile version of Google SRP by default";
 const char kMobileGoogleSRPDescription[] =
     "Request the Mobile version of Google SRP by default when the desktop mode "
     "is requested by default.";
-
-const char kNonModalDialogsName[] = "Use non-modal JavaScript dialogs";
-const char kNonModalDialogsDescription[] =
-    "Presents JavaScript dialogs non-modally so that the user can change tabs "
-    "while a dialog is displayed.";
 
 const char kOmniboxPreserveDefaultMatchAgainstAsyncUpdateName[] =
     "Omnibox Preserve Default Match Against Async Update";

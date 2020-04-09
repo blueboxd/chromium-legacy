@@ -415,7 +415,6 @@
 <translation id="1566049601598938765">वेबसाइट</translation>
 <translation id="15662109988763471">चयन गरिएको प्रिन्टर उपलब्ध छैन वा त्यसलाई राम्ररी स्थापना गरिएको छैन। आफ्नो प्रिन्टर जाँच्नुहोस् वा अर्को प्रिन्टर चयन गरी हेर्नुहोस्।</translation>
 <translation id="1567387640189251553">तपाईंले पछिल्लो पटक आफ्नो पासवर्ड प्रविष्ट गर्नुभएपछि एउटा भिन्न किबोर्ड जडान गरिएको छ। यसले तपाईंका किस्ट्रोकहरू चोर्न खोजिरहेको हुन सक्छ।</translation>
-<translation id="1567750922576943685">तपाईंको पहिचानको पुष्टि गर्नुले तपाईंको व्यक्तिगत जानकारी सुरक्षित राख्न मद्दत गर्छ</translation>
 <translation id="1567993339577891801">JavaScript कन्सोल</translation>
 <translation id="1568323446248056064">प्रदर्शन सम्बन्धी यन्त्रको सेटिङ खोल्नुहोस्</translation>
 <translation id="1572139610531470719"><ph name="WINDOW_TITLE" /> (अतिथि)</translation>
@@ -515,7 +514,6 @@
 <translation id="1697150536837697295">कला</translation>
 <translation id="1697686431566694143">फाइल सम्पादन गर्नुहोस्</translation>
 <translation id="1698122934742150150">हालको गुप्त सत्र मात्र</translation>
-<translation id="1698650002254827833">अनुप्रयोगहरूको सूची लोड गर्न सकिएन। कृपया पुनः प्रयास गर्नुहोस्।</translation>
 <translation id="1700079447639026019">कुकीहरू कदापि प्रयोग गर्न नपाउने साइटहरू</translation>
 <translation id="1701062906490865540">यो व्यक्तिलाई हटाउनुहोस्</translation>
 <translation id="1703331064825191675">आफ्ना पासवर्डका बारेमा कहिल्यै चिन्ता नगर्नुहोस्</translation>
@@ -822,6 +820,7 @@
 <translation id="2119349053129246860"><ph name="APP" /> मा खोल्नुहोस्</translation>
 <translation id="2120297377148151361">क्रियाकलाप तथा अन्तर्क्रियाहरू</translation>
 <translation id="2120639962942052471"><ph name="PERMISSION" /> माथि रोक लगाइएको छ</translation>
+<translation id="2121055421682309734">{COUNT,plural, =0{कुकीहरूलाई रोक लगाइएको छ}=1{कुकीहरूलाई रोक लगाइएको छ, १ वटा बाहेक}other{कुकीहरूलाई रोक लगाइएको छ, {COUNT} वटा बाहेक}}</translation>
 <translation id="2121825465123208577">पुनःआकार मिलाउनुहोस्</translation>
 <translation id="2122305276694332719">कुनै लुकाइएको नेटवर्कमा स्वतः जोड्नुले तपाईंको यन्त्र र नेटवर्कसम्बन्धी केही सेटिङ अरूले देख्न सक्ने हुनाले यसो गर्न सिफारिस गरिँदैन।</translation>
 <translation id="2123766928840368256">कुनै अर्को फाइल छनौट गर्नुहोस्</translation>
@@ -1076,7 +1075,6 @@
 <translation id="2442916515643169563">पाठको छायाँ</translation>
 <translation id="2445081178310039857">एक्सटेन्सन मूल डाइरेक्टरी आवश्यक छ।</translation>
 <translation id="2445484935443597917">नयाँ प्रोफाइल बनाउनुहोस्</translation>
-<translation id="2446585455334014596"><ph name="APP_NAME" /> ले तपाईंको पहिचान पुष्टि गर्न चाहन्छ</translation>
 <translation id="2448312741937722512">प्रकार</translation>
 <translation id="2450223707519584812">Google API कुञ्जीहरू छुटेको कारण तपाईं प्रयोगकर्ताहरू थप गर्न सक्षम हुनु हुने छैन। विवरणहरूको लागि <ph name="DETAILS_URL" /> हेर्नुहोस्।</translation>
 <translation id="2450849356604136918">कुनै सक्रीय दृश्य छैन</translation>
@@ -1681,7 +1679,6 @@
 <translation id="3246107497225150582">{0,plural, =1{एक दिनभित्र यन्त्र अद्यावधिक गर्नुहोस्}other{# एक दिनभित्र यन्त्र अद्यावधिक गर्नुहोस्}}</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> - नेटवर्क सम्बन्धी त्रुटि</translation>
 <translation id="3248902735035392926">सुरक्षासम्बन्धी विषयहरू केही क्षण निकालेर <ph name="BEGIN_LINK" />अहिले नै आफ्ना एक्स्टेन्सनहरू जाँच्नुहोस्<ph name="END_LINK" /></translation>
-<translation id="3249950116250264636"><ph name="APP_NAME" /> (<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">&lt;प्रमाणपत्रको भाग होइन&gt;</translation>
 <translation id="3253225298092156258">उपलब्ध छैन</translation>
 <translation id="3253448572569133955">अज्ञात खाता</translation>
@@ -2962,7 +2959,6 @@
 <translation id="4992473555164495036">तपाईंको प्रशासकले उपलब्ध इनपुट विधिहरूलाई सीमित गर्नुभएको छ।</translation>
 <translation id="4994474651455208930">साइटहरूलाई प्रोटोकलहरूका पूर्वनिर्धारित ह्यान्डलरहरू बन्ने अनुरोध गर्न अनुमति दिनुहोस्</translation>
 <translation id="4994754230098574403">सेटअप गरिँदैछ</translation>
-<translation id="4996978546172906250">मार्फत साझा गर्नुहोस्</translation>
 <translation id="4997086284911172121">कुनै पनि इन्टरनेट जडान छैन।</translation>
 <translation id="4997384734315285248">Plugin VM को स्थापना रद्द गर्नुहोस्</translation>
 <translation id="4998430619171209993">सक्रिय छ</translation>
@@ -3062,7 +3058,6 @@
 <translation id="5135085122826131075">"Ok Google" भनेर आफ्नो सहायकमाथि पहुँच राख्नुहोस्।</translation>
 <translation id="5135533361271311778">बुकमार्क वस्तु सिर्जना गर्न सकिएन।</translation>
 <translation id="5137501176474113045">यस वस्तुलाई हटाउनुहोस्</translation>
-<translation id="5138982052046316113">Linux को डिस्कको आकार बदल्नुहोस्</translation>
 <translation id="5139112070765735680"><ph name="QUERY_NAME" />, <ph name="DEFAULT_SEARCH_ENGINE_NAME" /> खोज</translation>
 <translation id="5139823398361067371">आफ्नो सुरक्षा साँचोको PIN प्रविष्टि गर्नुहोस् तपाईंलाई PIN थाहा छैन भने तपाईंले आफ्नो सुरक्षा साँचो रिसेट गर्नु पर्ने छ।</translation>
 <translation id="5139955368427980650">&amp;खोल्नुहोस्</translation>
@@ -3925,7 +3920,6 @@
 <translation id="6291953229176937411">&amp;फोल्डरमा देखाउनुहोस्</translation>
 <translation id="6295158916970320988">सबै साइटहरू</translation>
 <translation id="6295855836753816081">सुरक्षित गर्दै...</translation>
-<translation id="629730747756840877">खाता</translation>
 <translation id="6298962879096096191">Android का अनुप्रयोगहरूको स्थापना गर्न Google Play को प्रयोग गर्नुहोस्</translation>
 <translation id="630065524203833229">बा&amp;हिर निस्कनुहोस्</translation>
 <translation id="6300718114348072351"><ph name="PRINTER_NAME" /> स्वतः कन्फिगर गर्न सकिएन। कृपया प्रिन्टरका उन्नत विवरणहरू तोक्नुहोस्। <ph name="LINK_BEGIN" />थप जान्नुहोस्<ph name="LINK_END" /></translation>
@@ -4331,7 +4325,6 @@
 <translation id="6865598234501509159">पृष्ठ <ph name="LANGUAGE" /> भाषामा उपलब्ध छैन</translation>
 <translation id="6865708901122695652">WebRTC कार्यक्रमका लगहरू (<ph name="WEBRTC_EVENT_LOG_COUNT" />)</translation>
 <translation id="686664946474413495">रङको तापमान</translation>
-<translation id="6870888490422746447">निम्नसँग आदान प्रदान गर्नुपर्ने अनुप्रयोग छनौट गर्नुहोस्:</translation>
 <translation id="6871644448911473373">OCSP रेस्पोन्डर: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">तपाईंले प्रविष्ट गर्नुभएको पासवर्ड सर्भरद्वारा अस्वीकार गरियो।</translation>
 <translation id="6876155724392614295">साइकल</translation>
@@ -4972,7 +4965,6 @@
 <translation id="7744047395460924128">आफ्नो छपाइसम्बन्धी इतिहास हेर्नुहोस्</translation>
 <translation id="7744192722284567281">डेटा चोरीको घटनामा फेला परेको</translation>
 <translation id="7750228210027921155">Picture in picture</translation>
-<translation id="7751229152614300329">सुरक्षित ब्राउजिङ सेवा अद्यावधिक छ र यसले हानिकारक साइट र डाउनलोडहरूबाट तपाईंलाई सुरक्षित राख्दै छ</translation>
 <translation id="7751260505918304024">सबै देखाउनुहोस्</translation>
 <translation id="7754704193130578113">डाउनलोड गर्नुभन्दा पहिले प्रत्येक फाइललाई कहाँ बचत गर्ने भनेर सोध्नुहोस्</translation>
 <translation id="7755287808199759310">तपाईंको अभिभावकले तपाईंको रोक हटाउन सक्नुहुन्छ</translation>
@@ -5727,7 +5719,7 @@
 <translation id="8720200012906404956">मोबाइल नेटवर्कको खोजी गर्दै। <ph name="BEGIN_LINK" />थप जान्नुहोस्<ph name="END_LINK" /></translation>
 <translation id="8720816553731218127">स्थापना समयका विशेषताहरू सुरुवात हुने समयावधि सकिएको छ।</translation>
 <translation id="8722912030556880711">प्रयोग तथा निदानसम्बन्धी डेटा पठाउनुहोस्। यो यन्त्रले हाल निदान, यन्त्र र अनुप्रयोगको उपयोगसम्बन्धी डेटा स्वतः Google मा पठाइरहेको छ। यसले प्रणाली तथा अनुप्रयोगको स्थिरता र थप कुराहरू सुधार गर्न मद्दत गर्ने छ। केही एकीकृत डेटाले Google का अनुप्रयोग तथा Android का विकासकर्ता जस्ता साझेदारहरूलाई पनि मद्दत गर्ने छ। तपाईंको खातामा वेब तथा अनुप्रयोगसम्बन्धी अतिरिक्त क्रियाकलापको सेटिङ सक्रिय गरिएको छ भने यो डेटा तपाईंको Google खातामा सुरक्षित गरिन सक्छ। <ph name="BEGIN_LINK2" />थप जान्नुहोस्<ph name="END_LINK2" /></translation>
-<translation id="8724405322205516354">तपाईंले यस आइकनलाई देख्नुहुँदा पहिचान गर्न वा खरिदहरूको अनुमोदन गर्न आफ्नो फिंगरप्रिन्ट प्रयोग गर्नुहोस्‌।</translation>
+<translation id="8724405322205516354">यो आइकन देख्दा आफ्नो पहिचान दिन वा खरिदहरूको अनुमोदन गर्न आफ्नो फिंगरप्रिन्ट प्रयोग गर्नुहोस्‌</translation>
 <translation id="8724409975248965964">फिंगरप्रिन्ट थपियो</translation>
 <translation id="8724859055372736596">&amp;फोल्डरमा देखाउनुहोस्</translation>
 <translation id="8725066075913043281">पुन: प्रयास गर्नुहोस्</translation>

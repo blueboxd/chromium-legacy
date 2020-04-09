@@ -31,10 +31,11 @@ class TickClock;
 }  // namespace base
 
 namespace feed {
-class FeedStore;
-class StreamModel;
 class FeedNetwork;
+class FeedStore;
+class MetricsReporter;
 class RefreshTaskScheduler;
+class StreamModel;
 struct StreamModelUpdateRequest;
 
 // Implements FeedStreamApi. |FeedStream| additionally exposes functionality
@@ -77,6 +78,7 @@ class FeedStream : public FeedStreamApi,
 
   FeedStream(RefreshTaskScheduler* refresh_task_scheduler,
              EventObserver* stream_event_observer,
+             MetricsReporter* metrics_reporter,
              Delegate* delegate,
              PrefService* profile_prefs,
              FeedNetwork* feed_network,
@@ -104,6 +106,14 @@ class FeedStream : public FeedStreamApi,
       std::vector<feedstore::DataOperation> operations) override;
   bool CommitEphemeralChange(EphemeralChangeId id) override;
   bool RejectEphemeralChange(EphemeralChangeId id) override;
+
+  void ReportNavigationStarted() override;
+  void ReportNavigationDone() override;
+  void ReportContentRemoved() override;
+  void ReportNotInterestedIn() override;
+  void ReportManageInterests() override;
+  void ReportContextMenuOpened() override;
+  void ReportStreamScrolled(int distance_dp) override;
 
   // offline_pages::TaskQueue::Delegate.
   void OnTaskQueueIsIdle() override;
@@ -190,6 +200,7 @@ class FeedStream : public FeedStreamApi,
 
   RefreshTaskScheduler* refresh_task_scheduler_;
   EventObserver* stream_event_observer_;
+  MetricsReporter* metrics_reporter_;
   Delegate* delegate_;
   PrefService* profile_prefs_;
   FeedNetwork* feed_network_;

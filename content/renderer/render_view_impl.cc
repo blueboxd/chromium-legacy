@@ -1621,25 +1621,6 @@ bool RenderViewImpl::CanUpdateLayout() {
   return true;
 }
 
-void RenderViewImpl::SetEditCommandForNextKeyEvent(const std::string& name,
-                                                   const std::string& value) {
-  // This is test-only code. Only propagate the command if there is a main
-  // render frame.
-  if (main_render_frame_) {
-    RenderWidget* widget = main_render_frame_->GetLocalRootRenderWidget();
-    widget->SetEditCommandForNextKeyEvent(name, value);
-  }
-}
-
-void RenderViewImpl::ClearEditCommands() {
-  // This is test-only code. Only propagate the command if there is a main
-  // render frame.
-  if (main_render_frame_) {
-    RenderWidget* widget = main_render_frame_->GetLocalRootRenderWidget();
-    widget->ClearEditCommands();
-  }
-}
-
 const std::string& RenderViewImpl::GetAcceptLanguages() {
   return renderer_preferences_.accept_languages;
 }

@@ -79,11 +79,34 @@ int PowerSourceToDisplayId(
 
 }  // namespace
 
+PowerHandler::IdleBehaviorInfo::IdleBehaviorInfo() = default;
+PowerHandler::IdleBehaviorInfo::~IdleBehaviorInfo() = default;
+
+PowerHandler::IdleBehaviorInfo::IdleBehaviorInfo(
+    const std::set<PowerHandler::IdleBehavior>& possible_behaviors,
+    const PowerHandler::IdleBehavior& current_behavior,
+    const bool is_managed)
+    : possible_behaviors(possible_behaviors),
+      current_behavior(current_behavior),
+      is_managed(is_managed) {}
+
+PowerHandler::IdleBehaviorInfo::IdleBehaviorInfo(const IdleBehaviorInfo& o) =
+    default;
+
 const char PowerHandler::kPowerManagementSettingsChangedName[] =
     "power-management-settings-changed";
-const char PowerHandler::kIdleBehaviorKey[] = "idleBehavior";
-const char PowerHandler::kIdleControlledKey[] = "idleControlled";
+
+const char PowerHandler::kPossibleAcIdleBehaviorsKey[] =
+    "possibleAcIdleBehaviors";
+const char PowerHandler::kPossibleBatteryIdleBehaviorsKey[] =
+    "possibleBatteryIdleBehaviors";
+const char PowerHandler::kCurrentAcIdleBehaviorKey[] = "currentAcIdleBehavior";
+const char PowerHandler::kCurrentBatteryIdleBehaviorKey[] =
+    "currentBatteryIdleBehavior";
 const char PowerHandler::kLidClosedBehaviorKey[] = "lidClosedBehavior";
+const char PowerHandler::kAcIdleManagedKey[] = "acIdleManaged";
+const char PowerHandler::kBatteryIdleManagedKey[] = "batteryIdleManaged";
+
 const char PowerHandler::kLidClosedControlledKey[] = "lidClosedControlled";
 const char PowerHandler::kHasLidKey[] = "hasLid";
 
@@ -96,9 +119,11 @@ void PowerHandler::TestAPI::RequestPowerManagementSettings() {
   handler_->HandleRequestPowerManagementSettings(&args);
 }
 
-void PowerHandler::TestAPI::SetIdleBehavior(IdleBehavior behavior) {
+void PowerHandler::TestAPI::SetIdleBehavior(IdleBehavior behavior,
+                                            bool when_on_ac) {
   base::ListValue args;
   args.AppendInteger(static_cast<int>(behavior));
+  args.AppendBoolean(when_on_ac);
   handler_->HandleSetIdleBehavior(&args);
 }
 
@@ -205,49 +230,48 @@ void PowerHandler::HandleSetIdleBehavior(const base::ListValue* args) {
   AllowJavascript();
 
   int value = 0;
+  bool when_on_ac = true;
   CHECK(args->GetInteger(0, &value));
+  CHECK(args->GetBoolean(1, &when_on_ac));
+
+  const char* idle_pref = when_on_ac ? ash::prefs::kPowerAcIdleAction
+                                     : ash::prefs::kPowerBatteryIdleAction;
+  const char* screen_dim_delay_pref =
+      when_on_ac ? ash::prefs::kPowerAcScreenDimDelayMs
+                 : ash::prefs::kPowerBatteryScreenDimDelayMs;
+  const char* screen_off_delay_pref =
+      when_on_ac ? ash::prefs::kPowerAcScreenOffDelayMs
+                 : ash::prefs::kPowerBatteryScreenOffDelayMs;
+  const char* screen_lock_delay_pref =
+      when_on_ac ? ash::prefs::kPowerAcScreenLockDelayMs
+                 : ash::prefs::kPowerBatteryScreenLockDelayMs;
+
   switch (static_cast<IdleBehavior>(value)) {
     case IdleBehavior::DISPLAY_OFF_SLEEP:
-      // The default behavior is to turn the display off and sleep. Clear the
-      // prefs so we use the default delays.
-      prefs_->ClearPref(ash::prefs::kPowerAcIdleAction);
-      prefs_->ClearPref(ash::prefs::kPowerAcScreenDimDelayMs);
-      prefs_->ClearPref(ash::prefs::kPowerAcScreenOffDelayMs);
-      prefs_->ClearPref(ash::prefs::kPowerAcScreenLockDelayMs);
-      prefs_->ClearPref(ash::prefs::kPowerBatteryIdleAction);
-      prefs_->ClearPref(ash::prefs::kPowerBatteryScreenDimDelayMs);
-      prefs_->ClearPref(ash::prefs::kPowerBatteryScreenOffDelayMs);
-      prefs_->ClearPref(ash::prefs::kPowerBatteryScreenLockDelayMs);
+      // The default behavior is to turn the display off and sleep.
+      // Clear the prefs so we use the default delays.
+      prefs_->ClearPref(idle_pref);
+      prefs_->ClearPref(screen_dim_delay_pref);
+      prefs_->ClearPref(screen_off_delay_pref);
+      prefs_->ClearPref(screen_lock_delay_pref);
       break;
     case IdleBehavior::DISPLAY_OFF:
-      // Override idle actions to keep the system awake, but use the default
-      // screen delays.
-      prefs_->SetInteger(ash::prefs::kPowerAcIdleAction,
-                         PowerPolicyController::ACTION_DO_NOTHING);
-      prefs_->ClearPref(ash::prefs::kPowerAcScreenDimDelayMs);
-      prefs_->ClearPref(ash::prefs::kPowerAcScreenOffDelayMs);
-      prefs_->ClearPref(ash::prefs::kPowerAcScreenLockDelayMs);
-      prefs_->SetInteger(ash::prefs::kPowerBatteryIdleAction,
-                         PowerPolicyController::ACTION_DO_NOTHING);
-      prefs_->ClearPref(ash::prefs::kPowerBatteryScreenDimDelayMs);
-      prefs_->ClearPref(ash::prefs::kPowerBatteryScreenOffDelayMs);
-      prefs_->ClearPref(ash::prefs::kPowerBatteryScreenLockDelayMs);
+      // Override idle actions to keep the system awake, but use the
+      // default screen delays.
+      prefs_->SetInteger(idle_pref, PowerPolicyController::ACTION_DO_NOTHING);
+      prefs_->ClearPref(screen_dim_delay_pref);
+      prefs_->ClearPref(screen_off_delay_pref);
+      prefs_->ClearPref(screen_lock_delay_pref);
       break;
     case IdleBehavior::DISPLAY_ON:
-      // Override idle actions and set screen delays to 0 in order to disable
-      // them (i.e. keep the screen on).
-      prefs_->SetInteger(ash::prefs::kPowerAcIdleAction,
-                         PowerPolicyController::ACTION_DO_NOTHING);
-      prefs_->SetInteger(ash::prefs::kPowerAcScreenDimDelayMs, 0);
-      prefs_->SetInteger(ash::prefs::kPowerAcScreenOffDelayMs, 0);
-      prefs_->SetInteger(ash::prefs::kPowerAcScreenLockDelayMs, 0);
-      prefs_->SetInteger(ash::prefs::kPowerBatteryIdleAction,
-                         PowerPolicyController::ACTION_DO_NOTHING);
-      prefs_->SetInteger(ash::prefs::kPowerBatteryScreenDimDelayMs, 0);
-      prefs_->SetInteger(ash::prefs::kPowerBatteryScreenOffDelayMs, 0);
-      prefs_->SetInteger(ash::prefs::kPowerBatteryScreenLockDelayMs, 0);
+      // Override idle actions and set screen delays to 0 in order to
+      // disable them (i.e. keep the screen on).
+      prefs_->SetInteger(idle_pref, PowerPolicyController::ACTION_DO_NOTHING);
+      prefs_->SetInteger(screen_dim_delay_pref, 0);
+      prefs_->SetInteger(screen_off_delay_pref, 0);
+      prefs_->SetInteger(screen_lock_delay_pref, 0);
       break;
-    default:
+    case IdleBehavior::OTHER:
       NOTREACHED() << "Invalid idle behavior " << value;
   }
 }
@@ -336,32 +360,10 @@ void PowerHandler::SendPowerSources() {
 }
 
 void PowerHandler::SendPowerManagementSettings(bool force) {
-  // Infer the idle behavior based on the idle action (determining whether we'll
-  // sleep eventually or not) and the AC screen-off delay. Policy can request
-  // more-nuanced combinations of AC/battery actions and delays, but we wouldn't
-  // be able to display something meaningful in the UI in those cases anyway.
-  const PowerPolicyController::Action idle_action =
-      static_cast<PowerPolicyController::Action>(
-          prefs_->GetInteger(ash::prefs::kPowerAcIdleAction));
-  IdleBehavior idle_behavior = IdleBehavior::OTHER;
-  if (idle_action == PowerPolicyController::ACTION_SUSPEND) {
-    idle_behavior = IdleBehavior::DISPLAY_OFF_SLEEP;
-  } else if (idle_action == PowerPolicyController::ACTION_DO_NOTHING) {
-    idle_behavior =
-        (prefs_->GetInteger(ash::prefs::kPowerAcScreenOffDelayMs) > 0
-             ? IdleBehavior::DISPLAY_OFF
-             : IdleBehavior::DISPLAY_ON);
-  }
-
-  const bool idle_controlled =
-      prefs_->IsManagedPreference(ash::prefs::kPowerAcIdleAction) ||
-      prefs_->IsManagedPreference(ash::prefs::kPowerAcScreenDimDelayMs) ||
-      prefs_->IsManagedPreference(ash::prefs::kPowerAcScreenOffDelayMs) ||
-      prefs_->IsManagedPreference(ash::prefs::kPowerAcScreenLockDelayMs) ||
-      prefs_->IsManagedPreference(ash::prefs::kPowerBatteryIdleAction) ||
-      prefs_->IsManagedPreference(ash::prefs::kPowerBatteryScreenDimDelayMs) ||
-      prefs_->IsManagedPreference(ash::prefs::kPowerBatteryScreenOffDelayMs) ||
-      prefs_->IsManagedPreference(ash::prefs::kPowerBatteryScreenLockDelayMs);
+  const PowerHandler::IdleBehaviorInfo ac_idle_info =
+      GetAllowedIdleBehaviors(PowerSource::kAc);
+  const PowerHandler::IdleBehaviorInfo battery_idle_info =
+      GetAllowedIdleBehaviors(PowerSource::kBattery);
 
   const PowerPolicyController::Action lid_closed_behavior =
       static_cast<PowerPolicyController::Action>(
@@ -371,23 +373,37 @@ void PowerHandler::SendPowerManagementSettings(bool force) {
   const bool has_lid = lid_state_ != PowerManagerClient::LidState::NOT_PRESENT;
 
   // Don't notify the UI if nothing changed.
-  if (!force && idle_behavior == last_idle_behavior_ &&
-      idle_controlled == last_idle_controlled_ &&
+  if (!force && ac_idle_info == last_ac_idle_info_ &&
+      battery_idle_info == last_battery_idle_info_ &&
       lid_closed_behavior == last_lid_closed_behavior_ &&
       lid_closed_controlled == last_lid_closed_controlled_ &&
-      has_lid == last_has_lid_)
+      has_lid == last_has_lid_) {
     return;
+  }
 
   base::DictionaryValue dict;
-  dict.SetInteger(kIdleBehaviorKey, static_cast<int>(idle_behavior));
-  dict.SetBoolean(kIdleControlledKey, idle_controlled);
+  base::Value* list = dict.SetKey(kPossibleAcIdleBehaviorsKey,
+                                  base::Value(base::Value::Type::LIST));
+  for (auto idle_behavior : ac_idle_info.possible_behaviors)
+    list->Append(static_cast<int>(idle_behavior));
+
+  list = dict.SetKey(kPossibleBatteryIdleBehaviorsKey,
+                     base::Value(base::Value::Type::LIST));
+  for (auto idle_behavior : battery_idle_info.possible_behaviors)
+    list->Append(static_cast<int>(idle_behavior));
+  dict.SetInteger(kCurrentAcIdleBehaviorKey,
+                  static_cast<int>(ac_idle_info.current_behavior));
+  dict.SetInteger(kCurrentBatteryIdleBehaviorKey,
+                  static_cast<int>(battery_idle_info.current_behavior));
   dict.SetInteger(kLidClosedBehaviorKey, lid_closed_behavior);
+  dict.SetBoolean(kAcIdleManagedKey, ac_idle_info.is_managed);
+  dict.SetBoolean(kBatteryIdleManagedKey, battery_idle_info.is_managed);
   dict.SetBoolean(kLidClosedControlledKey, lid_closed_controlled);
   dict.SetBoolean(kHasLidKey, has_lid);
   FireWebUIListener(kPowerManagementSettingsChangedName, dict);
 
-  last_idle_behavior_ = idle_behavior;
-  last_idle_controlled_ = idle_controlled;
+  last_ac_idle_info_ = ac_idle_info;
+  last_battery_idle_info_ = battery_idle_info;
   last_lid_closed_behavior_ = lid_closed_behavior;
   last_lid_closed_controlled_ = lid_closed_controlled;
   last_has_lid_ = has_lid;
@@ -399,6 +415,160 @@ void PowerHandler::OnGotSwitchStates(
     return;
   lid_state_ = result->lid_state;
   SendPowerManagementSettings(false /* force */);
+}
+
+PowerHandler::IdleBehaviorInfo PowerHandler::GetAllowedIdleBehaviors(
+    PowerSource power_source) {
+  const char* idle_pref = power_source == PowerSource::kAc
+                              ? ash::prefs::kPowerAcIdleAction
+                              : ash::prefs::kPowerBatteryIdleAction;
+  const char* screen_off_delay_pref =
+      power_source == PowerSource::kAc
+          ? ash::prefs::kPowerAcScreenOffDelayMs
+          : ash::prefs::kPowerBatteryScreenOffDelayMs;
+
+  std::set<IdleBehavior> possible_behaviors;
+  IdleBehavior current_idle_behavior;
+
+  // If idle action is managed and set to suspend, only possible idle
+  // behaviour is sleep with display off.
+  if (prefs_->IsManagedPreference(idle_pref) &&
+      prefs_->GetInteger(idle_pref) == PowerPolicyController::ACTION_SUSPEND) {
+    current_idle_behavior = IdleBehavior::DISPLAY_OFF_SLEEP;
+    possible_behaviors.insert(IdleBehavior::DISPLAY_OFF_SLEEP);
+    return IdleBehaviorInfo(possible_behaviors, current_idle_behavior,
+                            IsIdleManaged(power_source));
+  }
+
+  // If idle action is managed and set to SHUT_DOWN/STOP_SESSION, only
+  // possible idle behaviour is other.
+  if (prefs_->IsManagedPreference(idle_pref) &&
+      (prefs_->GetInteger(idle_pref) ==
+           PowerPolicyController::ACTION_STOP_SESSION ||
+       prefs_->GetInteger(idle_pref) ==
+           PowerPolicyController::ACTION_SHUT_DOWN)) {
+    current_idle_behavior = IdleBehavior::OTHER;
+    possible_behaviors.insert(IdleBehavior::OTHER);
+    return IdleBehaviorInfo(possible_behaviors, current_idle_behavior,
+                            IsIdleManaged(power_source));
+  }
+
+  // Note that after this point |idle_pref| should either be:
+  //    1. Not managed.
+  //    2. Or managed and set to
+  //    PowerPolicyController::ACTION_DO_NOTHING.
+  DCHECK(!prefs_->IsManagedPreference(idle_pref) ||
+         (prefs_->GetInteger(idle_pref) ==
+          PowerPolicyController::ACTION_DO_NOTHING));
+
+  // If screen off delay is managed and set to a value greater than 0
+  // and
+  //   1. If idle action is managed and set to DO_NOTHING, only
+  //      possible idle behavior is DISPLAY_OFF.
+  //   2. If idle action is not managed then possible idle options
+  //      are DiSPLAY_OFF and DISPLAY_OFF_SLEEP
+  if (prefs_->IsManagedPreference(screen_off_delay_pref) &&
+      prefs_->GetInteger(screen_off_delay_pref) > 0) {
+    if (prefs_->IsManagedPreference(idle_pref) &&
+        prefs_->GetInteger(idle_pref) ==
+            PowerPolicyController::ACTION_DO_NOTHING) {
+      current_idle_behavior = IdleBehavior::DISPLAY_OFF;
+      possible_behaviors.insert(IdleBehavior::DISPLAY_OFF);
+      return IdleBehaviorInfo(possible_behaviors, current_idle_behavior,
+                              IsIdleManaged(power_source));
+    }
+
+    possible_behaviors.insert(IdleBehavior::DISPLAY_OFF);
+    possible_behaviors.insert(IdleBehavior::DISPLAY_OFF_SLEEP);
+    // Set the current default option based on the current idle action.
+    const PowerPolicyController::Action idle_action =
+        static_cast<PowerPolicyController::Action>(
+            prefs_->GetInteger(idle_pref));
+
+    if (idle_action == PowerPolicyController::ACTION_SUSPEND)
+      current_idle_behavior = IdleBehavior::DISPLAY_OFF_SLEEP;
+    else
+      current_idle_behavior = IdleBehavior::DISPLAY_OFF;
+    return IdleBehaviorInfo(possible_behaviors, current_idle_behavior,
+                            IsIdleManaged(power_source));
+  }
+
+  // If idle action is managed and set to DO_NOTHING, and
+  //   1. If screen off delay is also managed (and set to 0), only
+  //   possible idle
+  //      action is DISPLAY_ON.
+  //   2. If AC screen off delay is not managed, possible idle actions
+  //      are DISPLAY_ON && DISPLAY_OFF.
+  if (prefs_->IsManagedPreference(idle_pref) &&
+      prefs_->GetInteger(idle_pref) ==
+          PowerPolicyController::ACTION_DO_NOTHING) {
+    if (prefs_->IsManagedPreference(screen_off_delay_pref)) {
+      // Note that we reach here only when screen off delays are
+      // set by enterprise policy to 0 to prevent display from turning
+      // off.
+      DCHECK(prefs_->GetInteger(screen_off_delay_pref) == 0);
+      current_idle_behavior = IdleBehavior::DISPLAY_ON;
+      possible_behaviors.insert(IdleBehavior::DISPLAY_ON);
+      return IdleBehaviorInfo(possible_behaviors, current_idle_behavior,
+                              IsIdleManaged(power_source));
+    }
+    possible_behaviors.insert(IdleBehavior::DISPLAY_ON);
+    possible_behaviors.insert(IdleBehavior::DISPLAY_OFF);
+    // Set the current default option based on the current screen off
+    // delay.
+    current_idle_behavior = prefs_->GetInteger(screen_off_delay_pref) > 0
+                                ? IdleBehavior::DISPLAY_OFF
+                                : IdleBehavior::DISPLAY_ON;
+    return IdleBehaviorInfo(possible_behaviors, current_idle_behavior,
+                            IsIdleManaged(power_source));
+  }
+
+  // Looks like we did not find enterprise policy restricitng the idle
+  // options. So add all three idle options to what user can select
+  // from.
+  possible_behaviors.insert(IdleBehavior::DISPLAY_ON);
+  possible_behaviors.insert(IdleBehavior::DISPLAY_OFF);
+  possible_behaviors.insert(IdleBehavior::DISPLAY_OFF_SLEEP);
+
+  // Infer the idle behavior based on the current idle action
+  // (determining whether we'll sleep eventually or not) and the AC
+  // screen-off delay.
+  const PowerPolicyController::Action idle_action =
+      static_cast<PowerPolicyController::Action>(prefs_->GetInteger(idle_pref));
+
+  if (idle_action == PowerPolicyController::ACTION_SUSPEND) {
+    current_idle_behavior = IdleBehavior::DISPLAY_OFF_SLEEP;
+  } else if (idle_action == PowerPolicyController::ACTION_DO_NOTHING) {
+    current_idle_behavior = (prefs_->GetInteger(screen_off_delay_pref) > 0
+                                 ? IdleBehavior::DISPLAY_OFF
+                                 : IdleBehavior::DISPLAY_ON);
+  } else {
+    current_idle_behavior = IdleBehavior::OTHER;
+    possible_behaviors.insert(IdleBehavior::OTHER);
+  }
+
+  return IdleBehaviorInfo(possible_behaviors, current_idle_behavior,
+                          IsIdleManaged(power_source));
+}
+
+bool PowerHandler::IsIdleManaged(PowerSource power_source) {
+  switch (power_source) {
+    case PowerSource::kAc:
+      return prefs_->IsManagedPreference(ash::prefs::kPowerAcIdleAction) ||
+             prefs_->IsManagedPreference(
+                 ash::prefs::kPowerAcScreenDimDelayMs) ||
+             prefs_->IsManagedPreference(
+                 ash::prefs::kPowerAcScreenOffDelayMs) ||
+             prefs_->IsManagedPreference(ash::prefs::kPowerAcScreenLockDelayMs);
+    case PowerSource::kBattery:
+      return prefs_->IsManagedPreference(ash::prefs::kPowerBatteryIdleAction) ||
+             prefs_->IsManagedPreference(
+                 ash::prefs::kPowerBatteryScreenDimDelayMs) ||
+             prefs_->IsManagedPreference(
+                 ash::prefs::kPowerBatteryScreenOffDelayMs) ||
+             prefs_->IsManagedPreference(
+                 ash::prefs::kPowerBatteryScreenLockDelayMs);
+  }
 }
 
 }  // namespace settings

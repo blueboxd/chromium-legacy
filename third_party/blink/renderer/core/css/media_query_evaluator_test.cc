@@ -7,6 +7,7 @@
 #include <memory>
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/css/forced_colors.h"
+#include "third_party/blink/public/common/css/screen_spanning.h"
 #include "third_party/blink/renderer/core/css/media_list.h"
 #include "third_party/blink/renderer/core/css/media_values_cached.h"
 #include "third_party/blink/renderer/core/css/media_values_initial_viewport.h"
@@ -199,6 +200,32 @@ MediaQueryEvaluatorTestCase g_navigationcontrols_none_cases[] = {
     {nullptr, 0}  // Do not remove the terminator line.
 };
 
+MediaQueryEvaluatorTestCase g_screen_spanning_none_cases[] = {
+    {"(screen-spanning)", 0},
+    {"(screen-spanning: single-fold-vertical)", 0},
+    {"(screen-spanning: single-fold-horizontal)", 0},
+    {"(screen-spanning: none)", 1},
+    {"(screen-spanning: 1px)", 0},
+    {"(screen-spanning: 16/9)", 0},
+    {nullptr, 0}  // Do not remove the terminator line.
+};
+
+MediaQueryEvaluatorTestCase g_screen_spanning_single_fold_vertical_cases[] = {
+    {"(screen-spanning)", 1},
+    {"(screen-spanning: single-fold-vertical)", 1},
+    {"(screen-spanning: single-fold-horizontal)", 0},
+    {"(screen-spanning: none)", 0},
+    {nullptr, 0}  // Do not remove the terminator line.
+};
+
+MediaQueryEvaluatorTestCase g_screen_spanning_single_fold_horizontal_cases[] = {
+    {"(screen-spanning)", 1},
+    {"(screen-spanning: single-fold-vertical)", 0},
+    {"(screen-spanning: single-fold-horizontal)", 1},
+    {"(screen-spanning: none)", 0},
+    {nullptr, 0}  // Do not remove the terminator line.
+};
+
 void TestMQEvaluator(MediaQueryEvaluatorTestCase* test_cases,
                      const MediaQueryEvaluator& media_query_evaluator,
                      CSSParserMode mode) {
@@ -370,6 +397,35 @@ TEST(MediaQueryEvaluatorTest, CachedForcedColors) {
     MediaValues* media_values = MakeGarbageCollected<MediaValuesCached>(data);
     MediaQueryEvaluator media_query_evaluator(*media_values);
     TestMQEvaluator(g_forcedcolors_active_cases, media_query_evaluator);
+  }
+}
+
+TEST(MediaQueryEvaluatorTest, CachedScreenSpanning) {
+  ScopedCSSFoldablesForTest scoped_feature(true);
+
+  MediaValuesCached::MediaValuesCachedData data;
+  {
+    data.screen_spanning = ScreenSpanning::kNone;
+    MediaValues* media_values = MakeGarbageCollected<MediaValuesCached>(data);
+
+    MediaQueryEvaluator media_query_evaluator(*media_values);
+    TestMQEvaluator(g_screen_spanning_none_cases, media_query_evaluator);
+  }
+
+  {
+    data.screen_spanning = ScreenSpanning::kSingleFoldVertical;
+    MediaValues* media_values = MakeGarbageCollected<MediaValuesCached>(data);
+    MediaQueryEvaluator media_query_evaluator(*media_values);
+    TestMQEvaluator(g_screen_spanning_single_fold_vertical_cases,
+                    media_query_evaluator);
+  }
+
+  {
+    data.screen_spanning = ScreenSpanning::kSingleFoldHorizontal;
+    MediaValues* media_values = MakeGarbageCollected<MediaValuesCached>(data);
+    MediaQueryEvaluator media_query_evaluator(*media_values);
+    TestMQEvaluator(g_screen_spanning_single_fold_horizontal_cases,
+                    media_query_evaluator);
   }
 }
 

@@ -13,8 +13,14 @@ namespace blink {
 class XRSession;
 
 // Helper class that returns an XRSpace that tracks the position of object of
-// type T (for example XRPlane, XRAnchor). The type T has to have a poseMatrix()
-// method.
+// type T (for example XRPlane, XRAnchor). The type T has to have a
+// MojoFromObject() method, returning a base::Optional<TransformationMatrix>.
+//
+// If the object's MojoFromObject() method returns a base::nullopt, it means
+// that the object is not localizable in the current frame (i.e. its pose is
+// unknown) - the `frame.getPose(objectSpace, otherSpace)` will return null.
+// That does not necessarily mean that object tracking is lost - it may be that
+// the object's location will become known in subsequent frames.
 template <typename T>
 class XRObjectSpace : public XRSpace {
  public:

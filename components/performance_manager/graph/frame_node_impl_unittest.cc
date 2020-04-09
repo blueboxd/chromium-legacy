@@ -17,6 +17,10 @@ namespace {
 
 using FrameNodeImplTest = GraphTestHarness;
 
+const FrameNode* ToPublic(FrameNodeImpl* frame_node) {
+  return frame_node;
+}
+
 }  // namespace
 
 TEST_F(FrameNodeImplTest, SafeDowncast) {
@@ -382,6 +386,38 @@ TEST_F(FrameNodeImplTest, PublicInterface) {
             public_frame_node->IsHoldingIndexedDBLock());
   EXPECT_EQ(frame_node->had_form_interaction(),
             public_frame_node->HadFormInteraction());
+}
+
+TEST_F(FrameNodeImplTest, VisitChildFrameNodes) {
+  auto process = CreateNode<ProcessNodeImpl>();
+  auto page = CreateNode<PageNodeImpl>();
+  auto frame1 = CreateFrameNodeAutoId(process.get(), page.get());
+  auto frame2 = CreateFrameNodeAutoId(process.get(), page.get(), frame1.get());
+  auto frame3 = CreateFrameNodeAutoId(process.get(), page.get(), frame1.get());
+
+  std::set<const FrameNode*> visited;
+  EXPECT_TRUE(
+      ToPublic(frame1.get())
+          ->VisitChildFrameNodes(base::BindRepeating(
+              [](std::set<const FrameNode*>* visited, const FrameNode* frame) {
+                EXPECT_TRUE(visited->insert(frame).second);
+                return true;
+              },
+              base::Unretained(&visited))));
+  EXPECT_THAT(visited, testing::UnorderedElementsAre(ToPublic(frame2.get()),
+                                                     ToPublic(frame3.get())));
+
+  // Do an aborted visit.
+  visited.clear();
+  EXPECT_FALSE(
+      ToPublic(frame1.get())
+          ->VisitChildFrameNodes(base::BindRepeating(
+              [](std::set<const FrameNode*>* visited, const FrameNode* frame) {
+                EXPECT_TRUE(visited->insert(frame).second);
+                return false;
+              },
+              base::Unretained(&visited))));
+  EXPECT_EQ(1u, visited.size());
 }
 
 }  // namespace performance_manager

@@ -326,16 +326,6 @@
       }
     }
   },
-  'linux_intel_hd_630': {
-    'swarming': {
-      'dimensions': {
-        # Defined in bot_config.py in internal infradata/config workspace
-        'gpu': 'intel-hd-630-ubuntu-stable',
-        'os': 'linux-intel-stable',
-        'pool': 'chromium.tests.gpu.template',
-      }
-    }
-  },
   'linux_intel_hd_630_experimental': {
     # Similar to stable, but with a newer Mesa version.
     'swarming': {
@@ -346,11 +336,19 @@
       },
     },
   },
-  'linux_intel_uhd_630': {
+  'linux_intel_hd_630_stable': {
     'swarming': {
       'dimensions': {
-        # Defined in bot_config.py in internal infradata/config workspace
-        'gpu': 'intel-uhd-630-ubuntu-stable',
+        'gpu': '8086:5912-19.0.2',
+        'os': 'Ubuntu-19.04',
+        'pool': 'chromium.tests.gpu.template',
+      }
+    }
+  },
+  'linux_intel_uhd_630_stable': {
+    'swarming': {
+      'dimensions': {
+        'gpu': '8086:3e92-19.0.8',
         'os': 'Ubuntu-19.04',
         'pool': 'chromium.tests.gpu.template',
       },
@@ -358,16 +356,6 @@
       # TODO(https://crbug.com/986939): Remove this when more devices
       # are added.
       'expiration': 14400,
-    }
-  },
-  'linux_nvidia_quadro_p400': {
-    'swarming': {
-      'dimensions': {
-        # Defined in bot_config.py in internal infradata/config workspace
-        'gpu': 'nvidia-quadro-p400-ubuntu-stable',
-        'os': 'linux-nvidia-stable',
-        'pool': 'chromium.tests.gpu.template',
-      }
     }
   },
   'linux_nvidia_quadro_p400_experimental': {
@@ -378,6 +366,15 @@
         'pool': 'chromium.tests.gpu.template',
       },
     },
+  },
+  'linux_nvidia_quadro_p400_stable': {
+    'swarming': {
+      'dimensions': {
+        'gpu': '10de:1cb3-418.56',
+        'os': 'Ubuntu-19.04',
+        'pool': 'chromium.tests.gpu.template',
+      }
+    }
   },
   'lollipop': {
     'swarming': {
@@ -441,14 +438,6 @@
       },
     },
   },
-  'mac_mini_intel_gpu': {
-    'swarming': {
-      'dimensions': {
-        'gpu': '8086:0a2e',
-        'os': 'mac-intel-stable',
-      },
-    },
-  },
   'mac_mini_intel_gpu_experimental': {
     'swarming': {
       'dimensions': {
@@ -457,21 +446,19 @@
       },
     },
   },
+  'mac_mini_intel_gpu_stable': {
+    'swarming': {
+      'dimensions': {
+        'gpu': '8086:0a2e',
+        'os': 'Mac-10.14.6',
+      },
+    },
+  },
   'mac_pro_amd_gpu': {
     'swarming': {
       'dimensions': {
         'gpu': '1002:679e',
         'os': 'Mac-10.12.6',
-        'pool': 'chromium.tests.gpu.template',
-      },
-    },
-  },
-  'mac_retina_amd_gpu': {
-    'swarming': {
-      'dimensions': {
-        'gpu': '1002:6821',
-        'hidpi': '1',
-        'os': 'mac-amd-stable',
         'pool': 'chromium.tests.gpu.template',
       },
     },
@@ -487,18 +474,28 @@
       },
     },
   },
-  'mac_retina_nvidia_gpu': {
+  'mac_retina_amd_gpu_stable': {
     'swarming': {
       'dimensions': {
-        'gpu': '10de:0fe9',
+        'gpu': '1002:6821',
         'hidpi': '1',
-        'os': 'mac-nvidia-stable',
+        'os': 'Mac-10.14.6',
         'pool': 'chromium.tests.gpu.template',
       },
     },
   },
   'mac_retina_nvidia_gpu_experimental': {
     # Currently the same as the stable version.
+    'swarming': {
+      'dimensions': {
+        'gpu': '10de:0fe9',
+        'hidpi': '1',
+        'os': 'Mac-10.14.6',
+        'pool': 'chromium.tests.gpu.template',
+      },
+    },
+  },
+  'mac_retina_nvidia_gpu_stable': {
     'swarming': {
       'dimensions': {
         'gpu': '10de:0fe9',
@@ -697,8 +694,7 @@
   'win10_intel_hd_630_stable': {
     'swarming': {
       'dimensions': {
-        # Defined in bot_config.py in internal infradata/config workspace
-        'gpu': 'intel-hd-630-win10-stable',
+        'gpu': '8086:5912-24.20.100.6286',
         'os': 'Windows-10',
         'pool': 'chromium.tests.gpu.template',
       },
@@ -707,8 +703,7 @@
   'win10_intel_uhd_630_stable': {
     'swarming': {
       'dimensions': {
-        # Defined in bot_config.py in internal infradata/config workspace
-        'gpu': 'intel-uhd-630-win10-stable',
+        'gpu': '8086:3e92-24.20.100.6286',
         'os': 'Windows-10',
         'pool': 'chromium.tests.gpu.template',
       },
@@ -741,8 +736,7 @@
   'win10_nvidia_quadro_p400_stable': {
     'swarming': {
       'dimensions': {
-        # Defined in bot_config.py in internal infradata/config workspace
-        'gpu': 'nvidia-quadro-p400-win10-stable',
+        'gpu': '10de:1cb3-26.21.14.3102',
         'os': 'Windows-10',
         'pool': 'chromium.tests.gpu.template',
       },
@@ -795,6 +789,12 @@
     },
   },
   'xcode_11c29': {
+    '$mixin_append': {
+      'args': [
+        '--xcode-build-version',
+        '11c29'
+      ],
+    },
     'swarming': {
       'named_caches': [
         {

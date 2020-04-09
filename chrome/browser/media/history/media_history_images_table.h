@@ -24,7 +24,7 @@ class MediaHistoryImagesTable : public MediaHistoryTableBase {
   static const char kTableName[];
 
  private:
-  friend class MediaHistoryStoreInternal;
+  friend class MediaHistoryStore;
 
   explicit MediaHistoryImagesTable(
       scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner);

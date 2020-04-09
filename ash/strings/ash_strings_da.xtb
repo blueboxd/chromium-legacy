@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">Klik for at se flere muligheder</translation>
 <translation id="1570871743947603115">Slå Bluetooth til eller fra. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Få adgang til al din aktivitet i denne session</translation>
-<translation id="1608626060424371292">Fjern denne bruger</translation>
+<translation id="1632985212731562677">Kontaktadgang kan deaktiveres under Indstillinger &gt; Hjælpefunktioner.</translation>
 <translation id="1654477262762802994">Start en stemmeforespørgsel</translation>
 <translation id="1658406695958299976">Din adgangskode kunne stadig ikke bekræftes. Bemærk! Hvis du har ændret din adgangskode for nylig, anvendes din nye adgangskode først, når du har logget ud. Du skal bruge den gamle adgangskode her.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> tilbage</translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">Administratoren af enheden kan overvåge din browseraktivitet.</translation>
 <translation id="3181441307743005334">Genstarten kan tage lidt tid</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Forbundet til en enhed}one{Forbundet til # enhed}other{Forbundet til # enheder}}</translation>
+<translation id="3203405173652969239">Kontaktadgang blev aktiveret</translation>
 <translation id="3207953481422525583">Brugerindstillinger</translation>
 <translation id="3217205077783620295">Lydstyrken er slået til. Tryk på knappen for at sætte på lydløs.</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> andre</translation>
@@ -652,6 +653,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="9211681782751733685"><ph name="TIME_REMAINING" /> til batteriet er fuldt opladet.</translation>
 <translation id="9215934040295798075">Vælg baggrund</translation>
 <translation id="921989828232331238">Din forælder har låst din enhed resten af dagen</translation>
+<translation id="9220525904950070496">Fjern konto</translation>
 <translation id="923686485342484400">Tryk på Control+Shift+Q to gange for at logge ud.</translation>
 <translation id="938963181863597773">Hvad har jeg i kalenderen?</translation>
 <translation id="945522503751344254">Send feedback</translation>

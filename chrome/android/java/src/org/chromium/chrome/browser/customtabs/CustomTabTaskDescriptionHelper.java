@@ -24,7 +24,6 @@ import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.ssl.ChromeSecurityStateModelDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelper;
@@ -180,8 +179,8 @@ public class CustomTabTaskDescriptionHelper implements NativeInitObserver, Destr
                 }
 
                 private boolean hasSecurityWarningOrError(Tab tab) {
-                    boolean isContentDangerous = SecurityStateModel.isContentDangerous(
-                            tab.getWebContents(), ChromeSecurityStateModelDelegate.getInstance());
+                    boolean isContentDangerous =
+                            SecurityStateModel.isContentDangerous(tab.getWebContents());
                     return isContentDangerous;
                 }
             };

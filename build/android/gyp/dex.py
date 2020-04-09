@@ -24,7 +24,12 @@ import convert_dex_profile
 
 _IGNORE_WARNINGS = (
     # A play services library triggers this.
-    'Type `libcore.io.Memory` was not found', )
+    r'Type `libcore.io.Memory` was not found',
+    # Filter out warnings caused by our fake main dex list used to enable
+    # multidex on library targets.
+    # Warning: Application does not contain `Foo` as referenced in main-dex-list
+    r'does not contain `Foo`',
+)
 
 
 def _ParseArgs(args):
@@ -114,11 +119,6 @@ def _ParseArgs(args):
   if options.main_dex_list_path and not options.multi_dex:
     parser.error('--main-dex-list-path is unused if multidex is not enabled')
 
-  if options.desugar and options.classpath is None:
-    parser.error('--classpath required with use of --desugar')
-  if options.desugar and options.bootclasspath is None:
-    parser.error('--bootclasspath required with use of --desugar')
-
   options.class_inputs = build_utils.ParseGnList(options.class_inputs)
   options.class_inputs_filearg = build_utils.ParseGnList(
       options.class_inputs_filearg)
@@ -135,12 +135,18 @@ def _RunD8(dex_cmd, input_paths, output_path):
   dex_cmd = dex_cmd + ['--output', output_path] + input_paths
 
   def stderr_filter(output):
-    # Filter out warnings caused by our fake main dex list used to enable
-    # multidex on library targets.
-    # Warning: Application does not contain `Foo` as referenced in main-dex-list
-    pattern = r'does not contain `Foo`'
-    pattern += '|' + '|'.join(re.escape(p) for p in _IGNORE_WARNINGS)
-    output = build_utils.FilterLines(output, pattern)
+    patterns = _IGNORE_WARNINGS
+    # No classpath means we are using Bazel's Desugar tool to desugar lambdas
+    # and interface methods, in which case we intentionally do not pass a
+    # classpath to D8.
+    # Not having a classpath makes incremental dexing much more effective.
+    # D8 will still be used for backported method desugaring.
+    # We still use D8 for backported method desugaring.
+    if '--classpath' not in dex_cmd:
+      patterns = list(patterns) + ['default or static interface methods']
+
+    combined_pattern = '|'.join(re.escape(p) for p in patterns)
+    output = build_utils.FilterLines(output, combined_pattern)
 
     # Each warning has a prefix line of tthe file it's from. If we've filtered
     # out the warning, then also filter out the file header.
@@ -478,7 +484,10 @@ def main(args):
   if options.min_api:
     dex_cmd += ['--min-api', options.min_api]
 
-  if options.desugar:
+  if not options.desugar:
+    dex_cmd += ['--no-desugaring']
+  elif options.classpath:
+    # Don't pass classpath when Desugar.jar is doing interface desugaring.
     dex_cmd += ['--lib', build_utils.JAVA_HOME]
     for path in options.bootclasspath:
       dex_cmd += ['--lib', path]
@@ -488,8 +497,6 @@ def main(args):
     depfile_deps += options.bootclasspath
     input_paths += options.classpath
     input_paths += options.bootclasspath
-  else:
-    dex_cmd += ['--no-desugaring']
 
   if options.force_enable_assertions:
     dex_cmd += ['--force-enable-assertions']

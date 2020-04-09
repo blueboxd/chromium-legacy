@@ -93,28 +93,46 @@ TEST_F(GraphImplOperationsTest, VisitFrameTree) {
   auto frame_nodes = GraphImplOperations::GetFrameNodes(page1_.get());
 
   std::vector<FrameNodeImpl*> visited;
-  GraphImplOperations::VisitFrameTreePreOrder(
+  EXPECT_TRUE(GraphImplOperations::VisitFrameTreePreOrder(
       page1_.get(), [&visited](FrameNodeImpl* frame_node) -> bool {
         visited.push_back(frame_node);
         return true;
-      });
+      }));
   EXPECT_THAT(visited,
               testing::UnorderedElementsAre(
                   mainframe1_.get(), childframe1a_.get(), childframe1b_.get()));
   // In pre-order the main frame is first.
   EXPECT_EQ(mainframe1_.get(), visited[0]);
 
+  // Do an aborted visit pre-order visit.
   visited.clear();
-  GraphImplOperations::VisitFrameTreePostOrder(
+  EXPECT_FALSE(GraphImplOperations::VisitFrameTreePreOrder(
+      page1_.get(), [&visited](FrameNodeImpl* frame_node) -> bool {
+        visited.push_back(frame_node);
+        return false;
+      }));
+  EXPECT_EQ(1u, visited.size());
+
+  visited.clear();
+  EXPECT_TRUE(GraphImplOperations::VisitFrameTreePostOrder(
       page1_.get(), [&visited](FrameNodeImpl* frame_node) -> bool {
         visited.push_back(frame_node);
         return true;
-      });
+      }));
   EXPECT_THAT(visited,
               testing::UnorderedElementsAre(
                   mainframe1_.get(), childframe1a_.get(), childframe1b_.get()));
   // In post-order the main frame is last.
   EXPECT_EQ(mainframe1_.get(), visited[2]);
+
+  // Do an aborted post-order visit.
+  visited.clear();
+  EXPECT_FALSE(GraphImplOperations::VisitFrameTreePostOrder(
+      page1_.get(), [&visited](FrameNodeImpl* frame_node) -> bool {
+        visited.push_back(frame_node);
+        return false;
+      }));
+  EXPECT_EQ(1u, visited.size());
 }
 
 TEST_F(GraphImplOperationsTest, HasFrame) {

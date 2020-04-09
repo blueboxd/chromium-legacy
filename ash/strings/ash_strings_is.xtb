@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">Smelltu til að sjá fleiri valkosti</translation>
 <translation id="1570871743947603115">Kveikja/slökkva á Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Fengið aðgang að öllum aðgerðum þínum í þessari lotu</translation>
-<translation id="1608626060424371292">Fjarlægja þennan notanda</translation>
+<translation id="1632985212731562677">Hægt er að slökkva á rofaaðgangi í Stillingar &gt; Aðgengi.</translation>
 <translation id="1654477262762802994">Hefja raddfyrirspurn</translation>
 <translation id="1658406695958299976">Því miður hefur ekki enn tekist að staðfesta aðgangsorðið þitt. Hafðu í huga að ef þú hefur breytt aðgangsorðinu nýlega tekur nýja aðgangsorðið gildi eftir útskráningu. Notaðu gamla aðgangsorðið hér.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> eftir</translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">Stjórnandi tækisins gæti fylgst með vafravirkni þinni.</translation>
 <translation id="3181441307743005334">Endurræsing gæti tekið nokkurn tíma</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Tengdist við tæki}one{Tengdist við # tæki}other{Tengdist við # tæki}}</translation>
+<translation id="3203405173652969239">Kveikt á rofaaðgangi</translation>
 <translation id="3207953481422525583">Notandastillingar</translation>
 <translation id="3217205077783620295">Kveikt er á hljóði; slökkt verður á því ef hnappurinn er valinn.</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> í viðbót</translation>
@@ -651,6 +652,7 @@
 <translation id="9211681782751733685"><ph name="TIME_REMAINING" /> eftir þar til rafhlaðan er fullhlaðin.</translation>
 <translation id="9215934040295798075">Velja veggfóður</translation>
 <translation id="921989828232331238">Foreldri þitt læsti tækinu þínu fyrir daginn</translation>
+<translation id="9220525904950070496">Fjarlægja reikning</translation>
 <translation id="923686485342484400">Ýttu tvisvar á Control, Shift og Q til að skrá þig út.</translation>
 <translation id="938963181863597773">Hvað er á dagskránni hjá mér?</translation>
 <translation id="945522503751344254">Senda ábendingu</translation>

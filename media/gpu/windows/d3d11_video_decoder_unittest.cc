@@ -40,15 +40,14 @@ namespace media {
 
 class MockD3D11VideoDecoderImpl : public D3D11VideoDecoderImpl {
  public:
-  MockD3D11VideoDecoderImpl()
+  MockD3D11VideoDecoderImpl(MockD3D11VideoDecoderImpl** thiz)
       : D3D11VideoDecoderImpl(
             nullptr,
-            base::RepeatingCallback<scoped_refptr<CommandBufferHelper>()>()) {}
-
-  void Initialize(InitCB init_cb,
-                  ReturnPictureBufferCB return_picture_buffer_cb) override {
-    MockInitialize();
+            base::RepeatingCallback<scoped_refptr<CommandBufferHelper>()>()) {
+    *thiz = this;
   }
+
+  void Initialize(InitCB init_cb) override { MockInitialize(); }
 
   MOCK_METHOD0(MockInitialize, void());
 };
@@ -65,6 +64,7 @@ class D3D11VideoDecoderTest : public ::testing::Test {
     gpu_preferences_.enable_zero_copy_dxgi_video = true;
     gpu_preferences_.use_passthrough_cmd_decoder = false;
     gpu_workarounds_.disable_dxgi_zero_copy_video = false;
+    gpu_task_runner_ = task_environment_.GetMainThreadTaskRunner();
 
     // Create a mock D3D11 device that supports 11.0.  Note that if you change
     // this, then you probably also want VideoDevice1 and friends, below.
@@ -189,11 +189,9 @@ class D3D11VideoDecoderTest : public ::testing::Test {
       supported_configs = D3D11VideoDecoder::GetSupportedVideoDecoderConfigs(
           gpu_preferences_, gpu_workarounds_, get_device_cb);
     }
-    std::unique_ptr<MockD3D11VideoDecoderImpl> impl =
-        std::make_unique<NiceMock<MockD3D11VideoDecoderImpl>>();
-    impl_ = impl.get();
-
-    gpu_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+    base::SequenceBound<MockD3D11VideoDecoderImpl> impl(gpu_task_runner_,
+                                                        &impl_);
+    task_environment_.RunUntilIdle();
 
     // We store it in a std::unique_ptr<VideoDecoder> so that the default
     // deleter works.  The dtor is protected.
@@ -202,7 +200,7 @@ class D3D11VideoDecoderTest : public ::testing::Test {
             gpu_task_runner_, std::make_unique<NullMediaLog>(),
             gpu_preferences_, gpu_workarounds_, std::move(impl),
             base::RepeatingCallback<scoped_refptr<CommandBufferHelper>()>(),
-            get_device_cb, *supported_configs));
+            get_device_cb, *supported_configs, is_hdr_supported_));
   }
 
   void InitializeDecoder(const VideoDecoderConfig& config,
@@ -231,7 +229,7 @@ class D3D11VideoDecoderTest : public ::testing::Test {
 
   MOCK_METHOD1(MockInitCB, void(Status));
 
-  base::test::TaskEnvironment env_;
+  base::test::TaskEnvironment task_environment_;
 
   scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
 
@@ -248,6 +246,9 @@ class D3D11VideoDecoderTest : public ::testing::Test {
   Microsoft::WRL::ComPtr<D3D11VideoContextMock> mock_d3d11_video_context_;
   Microsoft::WRL::ComPtr<DXGIDeviceMock> mock_dxgi_device_;
   Microsoft::WRL::ComPtr<DXGIAdapterMock> mock_dxgi_adapter_;
+
+  // Used by CreateDecoder() to tell D3D11VideoDecoder about HDR support.
+  bool is_hdr_supported_ = true;
 
   DXGI_ADAPTER_DESC mock_adapter_desc_;
 

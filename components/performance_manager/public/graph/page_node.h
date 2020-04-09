@@ -27,6 +27,7 @@ class PageNodeObserver;
 // Extensions.
 class PageNode : public Node {
  public:
+  using FrameNodeVisitor = base::RepeatingCallback<bool(const FrameNode*)>;
   using InterventionPolicy = mojom::InterventionPolicy;
   using LifecycleState = mojom::LifecycleState;
   using Observer = PageNodeObserver;
@@ -97,8 +98,15 @@ class PageNode : public Node {
   // are no main frames at the moment, returns nullptr.
   virtual const FrameNode* GetMainFrameNode() const = 0;
 
+  // Visits the main frame nodes associated with this page. The iteration is
+  // halted if the visitor returns false. Returns true if every call to the
+  // visitor returned true, false otherwise.
+  virtual bool VisitMainFrameNodes(const FrameNodeVisitor& visitor) const = 0;
+
   // Returns all of the main frame nodes, both current and otherwise. If there
-  // are no main frames at the moment, returns the empty set.
+  // are no main frames at the moment, returns the empty set. Note that this
+  // incurs a full container copy of all main frame nodes. Please use
+  // VisitMainFrameNodes when that makes sense.
   virtual const base::flat_set<const FrameNode*> GetMainFrameNodes() const = 0;
 
   // Returns the URL the main frame last committed a navigation to, or the

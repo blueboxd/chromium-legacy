@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/feed/v2/feed_stream_surface.h"
 
+#include <vector>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "chrome/android/chrome_jni_headers/FeedStreamSurface_jni.h"
@@ -93,37 +95,44 @@ void FeedStreamSurface::ReportNavigationStarted(
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& url,
     jboolean in_new_tab) {
-  // TODO(harringtond): Implement this.
+  feed_stream_api_->ReportNavigationStarted();
 }
 
 void FeedStreamSurface::ReportNavigationDone(JNIEnv* env,
                                              const JavaParamRef<jobject>& obj,
                                              const JavaParamRef<jstring>& url,
                                              jboolean in_new_tab) {
-  // TODO(harringtond): Implement this.
+  feed_stream_api_->ReportNavigationDone();
 }
 
 void FeedStreamSurface::ReportContentRemoved(JNIEnv* env,
                                              const JavaParamRef<jobject>& obj) {
-  // TODO(harringtond): Implement this.
+  feed_stream_api_->ReportContentRemoved();
 }
 
 void FeedStreamSurface::ReportNotInterestedIn(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  // TODO(harringtond): Implement this.
+  feed_stream_api_->ReportNotInterestedIn();
 }
 
 void FeedStreamSurface::ReportManageInterests(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  // TODO(harringtond): Implement this.
+  feed_stream_api_->ReportManageInterests();
 }
 
 void FeedStreamSurface::ReportContextMenuOpened(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  // TODO(harringtond): Implement this.
+  feed_stream_api_->ReportContextMenuOpened();
+}
+
+void FeedStreamSurface::ReportStreamScrolled(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    int distance_dp) {
+  feed_stream_api_->ReportStreamScrolled(distance_dp);
 }
 
 }  // namespace feed

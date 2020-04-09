@@ -10,6 +10,10 @@ namespace chromeos {
 
 NetworkConfigurationObserver::~NetworkConfigurationObserver() = default;
 
+void NetworkConfigurationObserver::OnConfigurationCreated(
+    const std::string& service_path,
+    const std::string& guid) {}
+
 void NetworkConfigurationObserver::OnConfigurationModified(
     const std::string& service_path,
     const std::string& guid,

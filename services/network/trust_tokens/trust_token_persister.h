@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "url/origin.h"
+#include "services/network/trust_tokens/suitable_trust_token_origin.h"
 
 namespace network {
 
@@ -28,22 +28,22 @@ class TrustTokenPersister {
   TrustTokenPersister& operator=(const TrustTokenPersister&) = delete;
 
   virtual std::unique_ptr<TrustTokenIssuerConfig> GetIssuerConfig(
-      const url::Origin& issuer) = 0;
+      const SuitableTrustTokenOrigin& issuer) = 0;
   virtual std::unique_ptr<TrustTokenToplevelConfig> GetToplevelConfig(
-      const url::Origin& toplevel) = 0;
+      const SuitableTrustTokenOrigin& toplevel) = 0;
   virtual std::unique_ptr<TrustTokenIssuerToplevelPairConfig>
-  GetIssuerToplevelPairConfig(const url::Origin& issuer,
-                              const url::Origin& toplevel) = 0;
+  GetIssuerToplevelPairConfig(const SuitableTrustTokenOrigin& issuer,
+                              const SuitableTrustTokenOrigin& toplevel) = 0;
 
   virtual void SetIssuerConfig(
-      const url::Origin& issuer,
+      const SuitableTrustTokenOrigin& issuer,
       std::unique_ptr<TrustTokenIssuerConfig> config) = 0;
   virtual void SetToplevelConfig(
-      const url::Origin& toplevel,
+      const SuitableTrustTokenOrigin& toplevel,
       std::unique_ptr<TrustTokenToplevelConfig> config) = 0;
   virtual void SetIssuerToplevelPairConfig(
-      const url::Origin& issuer,
-      const url::Origin& toplevel,
+      const SuitableTrustTokenOrigin& issuer,
+      const SuitableTrustTokenOrigin& toplevel,
       std::unique_ptr<TrustTokenIssuerToplevelPairConfig> config) = 0;
 };
 

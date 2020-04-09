@@ -787,7 +787,6 @@ TEST_F(WebAppInstallTaskTest, FinalizerMethodsCalled) {
 
   EXPECT_EQ(1u, test_shortcut_manager().num_create_shortcuts_calls());
   EXPECT_EQ(1, test_install_finalizer().num_reparent_tab_calls());
-  EXPECT_EQ(1, test_install_finalizer().num_reveal_appshim_calls());
 
 #if defined(OS_CHROMEOS)
   const int expected_num_add_app_to_quick_launch_bar_calls = 0;
@@ -811,7 +810,6 @@ TEST_F(WebAppInstallTaskTest, FinalizerMethodsNotCalled) {
 
   EXPECT_EQ(0u, test_shortcut_manager().num_create_shortcuts_calls());
   EXPECT_EQ(0, test_install_finalizer().num_reparent_tab_calls());
-  EXPECT_EQ(0, test_install_finalizer().num_reveal_appshim_calls());
   EXPECT_EQ(0,
             test_install_finalizer().num_add_app_to_quick_launch_bar_calls());
 }

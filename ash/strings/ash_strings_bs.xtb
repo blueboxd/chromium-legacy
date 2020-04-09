@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">Kliznite za više opcija</translation>
 <translation id="1570871743947603115">Uključivanje/isključivanje Bluetootha. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Pristupiti svim aktivnostima u ovoj sesiji</translation>
-<translation id="1608626060424371292">Ukloni tog korisnika</translation>
+<translation id="1632985212731562677">Prekidač za pristup se može onemogućiti u meniju Postavke &gt; Pristupačnost.</translation>
 <translation id="1654477262762802994">Započni glasovni upit</translation>
 <translation id="1658406695958299976">Nažalost, vaša lozinka još uvijek nije potvrđena. Napomena: Ako ste nedavno promijenili lozinku, vaša nova lozinka će se primijeniti nakon što se odjavite. Ovdje koristite staru lozinku.</translation>
 <translation id="1677472565718498478">Još <ph name="TIME" /></translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">Administrator uređaja može nadzirati vašu aktivnost pregledanja.</translation>
 <translation id="3181441307743005334">Ponovno pokretanje može potrajati</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Povezano s uređajem}one{Povezano s # uređajem}few{Povezano s # uređaja}other{Povezano s # uređaja}}</translation>
+<translation id="3203405173652969239">Prekidač za pristup je omogućen</translation>
 <translation id="3207953481422525583">Korisničke postavke</translation>
 <translation id="3217205077783620295">Zvuk je uključen. Deaktiviranjem će se isključiti zvuk.</translation>
 <translation id="3226991577105957773">i još <ph name="COUNT" /></translation>
@@ -651,6 +652,7 @@
 <translation id="9211681782751733685">Baterija će se napuniti za <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Postavi pozadinsku sliku</translation>
 <translation id="921989828232331238">Roditelj je zaključao uređaj za danas</translation>
+<translation id="9220525904950070496">Ukloni račun</translation>
 <translation id="923686485342484400">Dvaput pritisnite Control Shift Q da se odjavite.</translation>
 <translation id="938963181863597773">Šta ima u mom kalendaru?</translation>
 <translation id="945522503751344254">Slanje povratnih informacija</translation>

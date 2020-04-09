@@ -80,19 +80,9 @@ class FaviconCache : public syncer::SyncableService,
       const base::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
 
-  // If a valid favicon for the icon at |favicon_url| is found, returns a
-  // pointer to the png-encoded image. Otherwise, returns nullptr.
-  favicon_base::FaviconRawBitmapResult GetSyncedFaviconForFaviconURL(
-      const GURL& favicon_url) const;
-
   // Returns the value associated with |page_url| in |page_favicon_map_| if one
   // exists, otherwise returns an empty URL.
   GURL GetIconUrlForPageUrl(const GURL& page_url) const;
-
-  // If a valid favicon for the icon associated with |page_url| is found,
-  // returns a pointer to the png-encoded image. Otherwise, returns nullptr.
-  favicon_base::FaviconRawBitmapResult GetSyncedFaviconForPageURL(
-      const GURL& page_url) const;
 
   // Load the favicon for |page_url|. Will create a new sync node or update
   // an existing one as necessary, and update the last visit time with |mtime|,

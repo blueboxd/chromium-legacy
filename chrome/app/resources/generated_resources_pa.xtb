@@ -417,7 +417,6 @@
 <translation id="1566049601598938765">ਵੈੱਬਸਾਈਟ</translation>
 <translation id="15662109988763471">ਚੁਣਿਆ ਗਿਆ ਪ੍ਰਿੰਟਰ ਉਪਲਬਧ ਨਹੀਂ ਹੈ ਜਾਂ ਸਹੀ ਢੰਗ ਨਾਲ ਸਥਾਪਤ ਨਹੀਂ ਕੀਤਾ ਗਿਆ ਹੈ। ਆਪਣੇ ਪ੍ਰਿੰਟਰ ਦੀ ਜਾਂਚ ਕਰੋ ਜਾਂ ਕੋਈ ਹੋਰ ਪ੍ਰਿੰਟਰ ਚੁਣਕੇ ਦੇਖੋ।</translation>
 <translation id="1567387640189251553">ਤੁਹਾਡੇ ਵੱਲੋਂ ਪਿਛਲੀ ਵਾਰ ਆਪਣਾ ਪਾਸਵਰਡ ਦਾਖਲ ਕਰਨ ਤੋਂ ਬਾਅਦ ਕੋਈ ਵੱਖਰਾ ਕੀ-ਬੋਰਡ ਕਨੈਕਟ ਕੀਤਾ ਗਿਆ ਹੈ। ਹੋ ਸਕਦਾ ਹੈ ਕਿ ਇਹ ਤੁਹਾਡੇ ਕੀਸਟ੍ਰੋਕ ਚੋਰੀ ਕਰਨ ਦੀ ਕੋਸ਼ਿਸ਼ ਕਰ ਰਿਹਾ ਹੋਵੇ।</translation>
-<translation id="1567750922576943685">ਤੁਹਾਡੀ ਪਛਾਣ ਦੀ ਪੁਸ਼ਟੀ ਕਰਨ ਨਾਲ ਤੁਹਾਡੀ ਨਿੱਜੀ ਜਾਣਕਾਰੀ ਦੀ ਸੁਰੱਖਿਆ ਕਰਨ ਵਿੱਚ ਮਦਦ ਮਿਲਦੀ ਹੈ</translation>
 <translation id="1567993339577891801">JavaScript Console</translation>
 <translation id="1568323446248056064">ਡਿਸਪਲੇ ਡੀਵਾਈਸ ਸੈਟਿੰਗਾਂ ਖੋਲ੍ਹੋ</translation>
 <translation id="1572139610531470719"><ph name="WINDOW_TITLE" /> (ਮਹਿਮਾਨ)</translation>
@@ -519,7 +518,6 @@
 <translation id="1697150536837697295">ਕਲਾ</translation>
 <translation id="1697686431566694143">ਫ਼ਾਈਲ ਦਾ ਸੰਪਾਦਨ ਕਰੋ</translation>
 <translation id="1698122934742150150">ਸਿਰਫ਼ ਵਰਤਮਾਨ ਇਨਕੋਗਨਿਟੋ ਸੈਸ਼ਨ</translation>
-<translation id="1698650002254827833">ਐਪਾਂ ਦੀ ਸੂਚੀ ਲੋਡ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕਦੀ। ਕਿਰਪਾ ਕਰਕੇ ਮੁੜ-ਕੋਸ਼ਿਸ਼ ਕਰੋ।</translation>
 <translation id="1700079447639026019">ਉਹ ਸਾਈਟਾਂ ਜੋ ਕਦੇ ਵੀ ਕੁਕੀਜ਼ ਦੀ ਵਰਤੋਂ ਨਹੀਂ ਕਰ ਸਕਦੀਆਂ</translation>
 <translation id="1701062906490865540">ਇਹ ਵਿਅਕਤੀ ਹਟਾਓ</translation>
 <translation id="1703331064825191675">ਕਦੇ ਆਪਣੇ ਪਾਸਵਰਡਾਂ ਦਾ ਫ਼ਿਕਰ ਨਾ ਕਰੋ</translation>
@@ -826,6 +824,7 @@
 <translation id="2119349053129246860"><ph name="APP" /> ਵਿੱਚ ਖੋਲ੍ਹੋ</translation>
 <translation id="2120297377148151361">ਸਰਗਰਮੀ ਅਤੇ ਅੰਤਰਕਿਰਿਆਵਾਂ</translation>
 <translation id="2120639962942052471">ਬਲਾਕ ਕੀਤੀ ਗਈ <ph name="PERMISSION" /></translation>
+<translation id="2121055421682309734">{COUNT,plural, =0{ਕੁਕੀਜ਼ ਬਲਾਕ ਕੀਤੀਆਂ ਗਈਆਂ ਹਨ}=1{ਕੁਕੀਜ਼ ਬਲਾਕ ਕੀਤੀਆਂ ਗਈਆਂ ਹਨ, 1 ਅਪਵਾਦ}other{ਕੁਕੀਜ਼ ਬਲਾਕ ਕੀਤੀਆਂ ਗਈਆਂ ਹਨ, {COUNT} ਅਪਵਾਦ}}</translation>
 <translation id="2121825465123208577">ਆਕਾਰ ਬਦਲੋ</translation>
 <translation id="2122305276694332719">ਸਵੈਚਲਿਤ ਤੌਰ 'ਤੇ ਕਿਸੇ ਲੁਕਵੇਂ ਨੈੱਟਵਰਕ ਨਾਲ ਕਨੈਕਟ ਕਰਨਾ ਹੋਰਾਂ ਨੂੰ ਤੁਹਾਡਾ ਡੀਵਾਈਸ ਅਤੇ ਕੁਝ ਨੈੱਟਵਰਕ ਸੈਟਿੰਗਾਂ ਦੇਖਣ ਦਿੰਦਾ ਹੈ ਅਤੇ ਇਸਦੀ ਸਿਫ਼ਾਰਸ਼ ਨਹੀਂ ਕੀਤੀ ਜਾਂਦੀ ਹੈ।</translation>
 <translation id="2123766928840368256">ਕੋਈ ਵੱਖਰੀ ਫ਼ਾਈਲ ਚੁਣੋ</translation>
@@ -1079,7 +1078,6 @@
 <translation id="2442916515643169563">ਲਿਖਤ ਸ਼ੈਡੋ</translation>
 <translation id="2445081178310039857">ਐਕਸਟੈਂਸ਼ਨ ਰੂਟ ਡਾਇਰੈਕਟਰੀ ਲੋੜੀਂਦੀ ਹੈ।</translation>
 <translation id="2445484935443597917">ਇੱਕ ਨਵਾਂ ਪ੍ਰੋਫਾਈਲ ਬਣਾਓ</translation>
-<translation id="2446585455334014596"><ph name="APP_NAME" /> ਦੀ ਤੁਹਾਡੀ ਪਛਾਣ ਕਰਨ ਦੀ ਇੱਛਾ ਹੈ</translation>
 <translation id="2448312741937722512">ਟਾਈਪ ਕਰੋ</translation>
 <translation id="2450223707519584812">ਤੁਸੀਂ ਵਰਤੋਂਕਾਰਾਂ ਨੂੰ ਨਹੀਂ ਸ਼ਾਮਲ ਕਰ ਸਕੋਗੇ ਕਿਉਂਕਿ Google API ਕੁੰਜੀਆਂ ਮੌਜੂਦ ਨਹੀਂ ਹਨ। ਵੇਰਵੇ ਲਈ <ph name="DETAILS_URL" /> ਦੇਖੋ।</translation>
 <translation id="2450849356604136918">ਕੋਈ ਕਿਰਿਆਸ਼ੀਲ ਝਾਕੇ ਨਹੀਂ</translation>
@@ -1682,7 +1680,6 @@
 <translation id="3246107497225150582">{0,plural, =1{ਡੀਵਾਈਸ ਨੂੰ ਇੱਕ ਦਿਨ ਦੇ ਅੰਦਰ ਅੱਪਡੇਟ ਕਰੋ}one{ਡੀਵਾਈਸ ਨੂੰ # ਦਿਨ ਦੇ ਅੰਦਰ ਅੱਪਡੇਟ ਕਰੋ}other{ਡੀਵਾਈਸ ਨੂੰ # ਦਿਨਾਂ ਦੇ ਅੰਦਰ ਅੱਪਡੇਟ ਕਰੋ}}</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> - ਨੈੱਟਵਰਕ ਗੜਬੜ</translation>
 <translation id="3248902735035392926">ਸੁਰੱਖਿਆ ਮਾਈਨੇ ਰੱਖਦੀ ਹੈ। <ph name="BEGIN_LINK" />ਹੁਣੇ ਆਪਣੀਆਂ ਐਕਸਟੈਂਸ਼ਨਾਂ ਦੀ ਜਾਂਚ ਕਰਨ ਲਈ<ph name="END_LINK" /> ਲਈ ਸਮਾਂ ਕੱਢੋ</translation>
-<translation id="3249950116250264636"><ph name="APP_NAME" /> (<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">&lt;ਸਰਟੀਫਿਕੇਟ ਦਾ ਭਾਗ ਨਹੀਂ&gt;</translation>
 <translation id="3253225298092156258">ਉਪਲਬਧ ਨਹੀਂ</translation>
 <translation id="3253448572569133955">ਅਗਿਆਤ ਖਾਤਾ</translation>
@@ -2964,7 +2961,6 @@
 <translation id="4992473555164495036">ਤੁਹਾਡੇ ਪ੍ਰਸ਼ਾਸਕ ਨੇ ਉਪਲਬਧ ਇਨਪੁੱਟ ਵਿਧੀਆਂ ਨੂੰ ਸੀਮਤ ਕਰ ਦਿੱਤਾ ਹੈ।</translation>
 <translation id="4994474651455208930">ਸਾਈਟਾਂ ਨੂੰ ਪ੍ਰੋਟੋਕੋਲਾਂ ਲਈ ਪੂਰਵ-ਨਿਰਧਾਰਤ ਹੈਂਡਲਰ ਬਣਨ ਲਈ ਪੁੱਛਣ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ</translation>
 <translation id="4994754230098574403">ਸਥਾਪਤ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ</translation>
-<translation id="4996978546172906250">ਰਾਹੀਂ ਸ਼ੇਅਰ ਕਰੋ</translation>
 <translation id="4997086284911172121">ਕੋਈ ਇੰਟਰਨੈੱਟ ਕਨੈਕਸ਼ਨ ਨਹੀਂ ਹੈ।</translation>
 <translation id="4997384734315285248">Plugin VM ਨੂੰ ਅਣਸਥਾਪਤ ਕਰੋ</translation>
 <translation id="4998430619171209993">ਚਾਲੂ</translation>
@@ -3064,7 +3060,6 @@
 <translation id="5135085122826131075">"Ok Google" ਕਹਿ ਕੇ ਆਪਣੀ 'ਅਸਿਸਟੈਂਟ' ਤੱਕ ਪਹੁੰਚ ਕਰੋ।</translation>
 <translation id="5135533361271311778">ਬੁੱਕਮਾਰਕ ਆਈਟਮ ਨਹੀਂ ਬਣਾ ਸਕਿਆ।</translation>
 <translation id="5137501176474113045">ਇਸ ਆਈਟਮ ਨੂੰ ਮਿਟਾਓ</translation>
-<translation id="5138982052046316113">Linux ਡਿਸਕ ਦਾ ਆਕਾਰ ਬਦਲੋ</translation>
 <translation id="5139112070765735680"><ph name="QUERY_NAME" />, <ph name="DEFAULT_SEARCH_ENGINE_NAME" /> ਖੋਜ</translation>
 <translation id="5139823398361067371">ਆਪਣੀ ਸੁਰੱਖਿਆ ਕੁੰਜੀ ਦਾ ਪਿੰਨ ਦਾਖਲ ਕਰੋ। ਜੇ ਤੁਹਾਨੂੰ ਪਿੰਨ ਨਹੀਂ ਪਤਾ, ਤਾਂ ਤੁਹਾਨੂੰ ਸੁਰੱਖਿਆ ਕੁੰਜੀ ਨੂੰ ਰੀਸੈੱਟ ਕਰਨਾ ਪਵੇਗਾ।</translation>
 <translation id="5139955368427980650">&amp;ਖੋਲ੍ਹੋ</translation>
@@ -3928,7 +3923,6 @@
 <translation id="6291953229176937411">&amp;ਫਾਈਂਡਰ ਵਿੱਚ ਦਿਖਾਓ</translation>
 <translation id="6295158916970320988">ਸਾਰੀਆਂ ਸਾਈਟਾਂ</translation>
 <translation id="6295855836753816081">ਰੱਖਿਅਤ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ...</translation>
-<translation id="629730747756840877">ਖਾਤਾ</translation>
 <translation id="6298962879096096191">Android ਐਪਾਂ ਸਥਾਪਤ ਕਰਨ ਲਈ Google Play ਦੀ ਵਰਤੋਂ ਕਰੋ</translation>
 <translation id="630065524203833229">ਬਾ&amp;ਹਰ ਜਾਓ</translation>
 <translation id="6300718114348072351"><ph name="PRINTER_NAME" /> ਦਾ ਸਵੈਚਲਿਤ ਤੌਰ 'ਤੇ ਸੰਰੂਪਣ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ। ਕਿਰਪਾ ਕਰਕੇ ਉੱਨਤ ਪ੍ਰਿੰਟਰ ਵੇਰਵੇ ਨਿਰਧਾਰਤ ਕਰੋ। <ph name="LINK_BEGIN" />ਹੋਰ ਜਾਣੋ<ph name="LINK_END" /></translation>
@@ -4334,7 +4328,6 @@
 <translation id="6865598234501509159">ਪੰਨਾ <ph name="LANGUAGE" /> ਭਾਸ਼ਾ ਵਿੱਚ ਨਹੀਂ ਹੈ</translation>
 <translation id="6865708901122695652">WebRTC ਇਵੈਂਟ ਲੌਗ (<ph name="WEBRTC_EVENT_LOG_COUNT" />)</translation>
 <translation id="686664946474413495">ਰੰਗ ਤਾਪਮਾਨ</translation>
-<translation id="6870888490422746447">ਇਸ ਨਾਲ ਸਾਂਝਾ ਕਰਨ ਲਈ ਇੱਕ ਐਪ ਚੁਣੋ:</translation>
 <translation id="6871644448911473373">OCSP ਉੱਤਰਦਾਤਾ: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">ਤੁਹਾਡੇ ਵੱਲੋਂ ਦਾਖਲ ਕੀਤੇ ਪਾਸਵਰਡ ਨੂੰ ਸਰਵਰ ਨੇ ਅਸਵੀਕਾਰ ਕੀਤਾ।</translation>
 <translation id="6876155724392614295">ਸਾਈਕਲ</translation>
@@ -4975,7 +4968,6 @@
 <translation id="7744047395460924128">ਆਪਣਾ ਪ੍ਰਿੰਟ ਕਰਨ ਦਾ ਇਤਿਹਾਸ ਦੇਖੋ</translation>
 <translation id="7744192722284567281">ਡਾਟਾ ਉਲੰਘਣਾ ਵਿੱਚ ਮਿਲਿਆ</translation>
 <translation id="7750228210027921155">ਤਸਵੀਰ-ਵਿੱਚ-ਤਸਵੀਰ</translation>
-<translation id="7751229152614300329">ਸੁਰੱਖਿਅਤ ਬ੍ਰਾਊਜ਼ਿੰਗ ਅੱਪ-ਟੂ-ਡੇਟ ਹੈ ਅਤੇ ਤੁਹਾਨੂੰ ਨੁਕਸਾਨਦੇਹ ਸਾਈਟਾਂ ਅਤੇ ਡਾਊਨਲੋਡਾਂ ਤੋਂ ਸੁਰੱਖਿਅਤ ਰੱਖ ਰਹੀ ਹੈ</translation>
 <translation id="7751260505918304024">ਸਾਰੇ  ਦਿਖਾਓ </translation>
 <translation id="7754704193130578113">ਪੁੱਛੋ ਕਿ ਹਰੇਕ ਫ਼ਾਈਲ ਨੂੰ ਡਾਊਨਲੋਡ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ ਕਿੱਥੇ ਰੱਖਿਅਤ ਕਰਨਾ ਹੈ</translation>
 <translation id="7755287808199759310">ਤੁਹਾਡਾ ਮਾਤਾ-ਪਿਤਾ ਇਸ ਨੂੰ ਤੁਹਾਡੇ ਲਈ ਅਣਬਲੌਕ ਕਰ ਸਕਦਾ ਹੈ</translation>

@@ -2,11 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
+#include <stdint.h>
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "base/bind.h"
+#include "base/callback.h"
+#include "base/logging.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/login/login_handler.h"
@@ -18,12 +28,26 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/system/data_pipe.h"
+#include "net/base/network_isolation_key.h"
+#include "net/cookies/site_for_cookies.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
+#include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/websocket.mojom.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace {
 
@@ -352,6 +376,173 @@ IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, WebSocketAppliesHSTS) {
   ui_test_utils::NavigateToURL(browser(), http_url);
 
   EXPECT_EQ("PASS", WaitAndGetTitle());
+}
+
+// An implementation of WebSocketClient that expects the mojo connection to be
+// disconnected due to invalid UTF-8.
+class ExpectInvalidUtf8Client : public network::mojom::WebSocketClient {
+ public:
+  ExpectInvalidUtf8Client(base::OnceClosure success_closure,
+                          base::RepeatingClosure fail_closure)
+      : success_closure_(std::move(success_closure)),
+        fail_closure_(fail_closure) {}
+
+  ~ExpectInvalidUtf8Client() override = default;
+
+  ExpectInvalidUtf8Client(const ExpectInvalidUtf8Client&) = delete;
+  ExpectInvalidUtf8Client& operator=(ExpectInvalidUtf8Client&) = delete;
+
+  void Bind(mojo::PendingReceiver<network::mojom::WebSocketClient> receiver) {
+    client_receiver_.Bind(std::move(receiver));
+    // This use of base::Unretained is safe because the disconnect handler will
+    // not be called after |client_receiver_| is destroyed.
+    client_receiver_.set_disconnect_with_reason_handler(base::BindRepeating(
+        &ExpectInvalidUtf8Client::OnDisconnect, base::Unretained(this)));
+  }
+
+  // Implementation of WebSocketClient
+  void OnDataFrame(bool fin,
+                   network::mojom::WebSocketMessageType,
+                   uint64_t data_length) override {
+    NOTREACHED();
+  }
+
+  void AddSendFlowControlQuota(int64_t quota) override {}
+
+  void OnDropChannel(bool was_clean,
+                     uint16_t code,
+                     const std::string& reason) override {
+    NOTREACHED();
+  }
+
+  void OnClosingHandshake() override { NOTREACHED(); }
+
+ private:
+  void OnDisconnect(uint32_t reason, const std::string& message) {
+    if (reason == network::mojom::WebSocket::kInternalFailure &&
+        message == "Browser sent a text frame containing invalid UTF-8") {
+      std::move(success_closure_).Run();
+    } else {
+      ADD_FAILURE() << "Unexpected disconnect: reason=" << reason
+                    << " message=\"" << message << '"';
+      fail_closure_.Run();
+    }
+  }
+
+  base::OnceClosure success_closure_;
+  const base::RepeatingClosure fail_closure_;
+
+  mojo::Receiver<network::mojom::WebSocketClient> client_receiver_{this};
+};
+
+// An implementation of WebSocketHandshakeClient that sends a text message
+// containing invalid UTF-8 when the connection is established.
+class InvalidUtf8HandshakeClient
+    : public network::mojom::WebSocketHandshakeClient {
+ public:
+  InvalidUtf8HandshakeClient(std::unique_ptr<ExpectInvalidUtf8Client> client,
+                             base::RepeatingClosure fail_closure)
+      : client_(std::move(client)), fail_closure_(fail_closure) {}
+  ~InvalidUtf8HandshakeClient() override = default;
+
+  InvalidUtf8HandshakeClient(const InvalidUtf8HandshakeClient&) = delete;
+  InvalidUtf8HandshakeClient& operator=(const InvalidUtf8HandshakeClient&) =
+      delete;
+
+  mojo::PendingRemote<network::mojom::WebSocketHandshakeClient> Bind() {
+    auto pending_remote = handshake_client_receiver_.BindNewPipeAndPassRemote();
+    // This use of base::Unretained is safe because the disconnect handler will
+    // not be called after |handshake_client_receiver_| is destroyed.
+    handshake_client_receiver_.set_disconnect_handler(
+        base::BindOnce(&InvalidUtf8HandshakeClient::FailIfNotConnected,
+                       base::Unretained(this)));
+    return pending_remote;
+  }
+
+  // Implementation of WebSocketHandshakeClient
+  void OnOpeningHandshakeStarted(
+      network::mojom::WebSocketHandshakeRequestPtr) override {}
+
+  void OnConnectionEstablished(
+      mojo::PendingRemote<network::mojom::WebSocket> websocket,
+      mojo::PendingReceiver<network::mojom::WebSocketClient> client_receiver,
+      network::mojom::WebSocketHandshakeResponsePtr,
+      mojo::ScopedDataPipeConsumerHandle readable,
+      mojo::ScopedDataPipeProducerHandle writable) override {
+    client_->Bind(std::move(client_receiver));
+    websocket_.Bind(std::move(websocket));
+
+    // Invalid UTF-8.
+    static const uint32_t message[] = {0xff};
+    uint32_t size = static_cast<uint32_t>(sizeof(message));
+
+    websocket_->SendMessage(network::mojom::WebSocketMessageType::TEXT, size);
+
+    EXPECT_EQ(writable->WriteData(message, &size, MOJO_WRITE_DATA_FLAG_NONE),
+              MOJO_RESULT_OK);
+    EXPECT_EQ(size, sizeof(message));
+
+    connected_ = true;
+  }
+
+ private:
+  void FailIfNotConnected() {
+    if (!connected_) {
+      fail_closure_.Run();
+    }
+  }
+
+  const std::unique_ptr<ExpectInvalidUtf8Client> client_;
+  const base::RepeatingClosure fail_closure_;
+  bool connected_ = false;
+
+  mojo::Receiver<network::mojom::WebSocketHandshakeClient>
+      handshake_client_receiver_{this};
+  mojo::Remote<network::mojom::WebSocket> websocket_;
+};
+
+IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, SendBadUtf8) {
+  ASSERT_TRUE(ws_server_.Start());
+
+  base::RunLoop run_loop;
+
+  bool failed = false;
+
+  // This is a repeating closure for convenience so that we can use it in two
+  // places.
+  const base::RepeatingClosure fail_closure = base::BindLambdaForTesting([&]() {
+    failed = true;
+    run_loop.Quit();
+  });
+
+  auto client = std::make_unique<ExpectInvalidUtf8Client>(
+      run_loop.QuitClosure(), fail_closure);
+
+  content::RenderFrameHost* const frame =
+      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
+  content::RenderProcessHost* const process = frame->GetProcess();
+
+  const GURL url = ws_server_.GetURL("close");
+  const std::vector<std::string> requested_protocols;
+  const net::SiteForCookies site_for_cookies;
+  const net::NetworkIsolationKey network_isolation_key;
+  std::vector<network::mojom::HttpHeaderPtr> additional_headers;
+  const url::Origin origin;
+  auto handshake_client = std::make_unique<InvalidUtf8HandshakeClient>(
+      std::move(client), fail_closure);
+  mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
+      handshake_client_remote = handshake_client->Bind();
+
+  process->GetStoragePartition()->GetNetworkContext()->CreateWebSocket(
+      url, requested_protocols, site_for_cookies, network_isolation_key,
+      std::move(additional_headers), process->GetID(), frame->GetRoutingID(),
+      origin, network::mojom::kWebSocketOptionNone,
+      std::move(handshake_client_remote), mojo::NullRemote(),
+      mojo::NullRemote());
+
+  run_loop.Run();
+
+  EXPECT_FALSE(failed);
 }
 
 }  // namespace

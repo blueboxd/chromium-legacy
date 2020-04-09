@@ -10,7 +10,8 @@ InMemoryTrustTokenPersister::InMemoryTrustTokenPersister() = default;
 InMemoryTrustTokenPersister::~InMemoryTrustTokenPersister() = default;
 
 std::unique_ptr<TrustTokenToplevelConfig>
-InMemoryTrustTokenPersister::GetToplevelConfig(const url::Origin& toplevel) {
+InMemoryTrustTokenPersister::GetToplevelConfig(
+    const SuitableTrustTokenOrigin& toplevel) {
   auto it = toplevel_configs_.find(toplevel);
   if (it == toplevel_configs_.end())
     return nullptr;
@@ -18,7 +19,8 @@ InMemoryTrustTokenPersister::GetToplevelConfig(const url::Origin& toplevel) {
 }
 
 std::unique_ptr<TrustTokenIssuerConfig>
-InMemoryTrustTokenPersister::GetIssuerConfig(const url::Origin& issuer) {
+InMemoryTrustTokenPersister::GetIssuerConfig(
+    const SuitableTrustTokenOrigin& issuer) {
   auto it = issuer_configs_.find(issuer);
   if (it == issuer_configs_.end())
     return nullptr;
@@ -27,8 +29,8 @@ InMemoryTrustTokenPersister::GetIssuerConfig(const url::Origin& issuer) {
 
 std::unique_ptr<TrustTokenIssuerToplevelPairConfig>
 InMemoryTrustTokenPersister::GetIssuerToplevelPairConfig(
-    const url::Origin& issuer,
-    const url::Origin& toplevel) {
+    const SuitableTrustTokenOrigin& issuer,
+    const SuitableTrustTokenOrigin& toplevel) {
   auto it =
       issuer_toplevel_pair_configs_.find(std::make_pair(issuer, toplevel));
   if (it == issuer_toplevel_pair_configs_.end())
@@ -37,20 +39,20 @@ InMemoryTrustTokenPersister::GetIssuerToplevelPairConfig(
 }
 
 void InMemoryTrustTokenPersister::SetToplevelConfig(
-    const url::Origin& toplevel,
+    const SuitableTrustTokenOrigin& toplevel,
     std::unique_ptr<TrustTokenToplevelConfig> config) {
   toplevel_configs_[toplevel] = std::move(config);
 }
 
 void InMemoryTrustTokenPersister::SetIssuerConfig(
-    const url::Origin& issuer,
+    const SuitableTrustTokenOrigin& issuer,
     std::unique_ptr<TrustTokenIssuerConfig> config) {
   issuer_configs_[issuer] = std::move(config);
 }
 
 void InMemoryTrustTokenPersister::SetIssuerToplevelPairConfig(
-    const url::Origin& issuer,
-    const url::Origin& toplevel,
+    const SuitableTrustTokenOrigin& issuer,
+    const SuitableTrustTokenOrigin& toplevel,
     std::unique_ptr<TrustTokenIssuerToplevelPairConfig> config) {
   issuer_toplevel_pair_configs_[std::make_pair(issuer, toplevel)] =
       std::move(config);

@@ -50,7 +50,9 @@ import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Implementation of ITab.
@@ -58,6 +60,8 @@ import java.util.List;
 @JNINamespace("weblayer")
 public final class TabImpl extends ITab.Stub {
     private static int sNextId = 1;
+    // Map from id to TabImpl.
+    private static final Map<Integer, TabImpl> sTabMap = new HashMap<Integer, TabImpl>();
     private long mNativeTab;
 
     private ProfileImpl mProfile;
@@ -75,6 +79,7 @@ public final class TabImpl extends ITab.Stub {
      * updateFromBrowser() is invoked.
      */
     private AutofillProvider mAutofillProvider;
+    private MediaStreamManager mMediaStreamManager;
     private NewTabCallbackProxy mNewTabCallbackProxy;
     private ITabClient mClient;
     private final int mId;
@@ -112,6 +117,10 @@ public final class TabImpl extends ITab.Stub {
 
         @Override
         public void onScrollChanged(int lPix, int tPix, int oldlPix, int oldtPix) {}
+    }
+
+    public static TabImpl getTabById(int tabId) {
+        return sTabMap.get(tabId);
     }
 
     public TabImpl(ProfileImpl profile, WindowAndroid windowAndroid) {
@@ -156,6 +165,8 @@ public final class TabImpl extends ITab.Stub {
         };
         mWebContents.addObserver(mWebContentsObserver);
 
+        mMediaStreamManager = new MediaStreamManager(this);
+
         mBrowserControlsDelegates = new ArrayList<BrowserControlsVisibilityDelegate>();
         mBrowserControlsVisibility = new ComposedBrowserControlsVisibilityDelegate();
         for (int i = 0; i < ImplControlsVisibilityReason.REASON_COUNT; ++i) {
@@ -168,6 +179,8 @@ public final class TabImpl extends ITab.Stub {
         mBrowserControlsVisibility.addObserver(mConstraintsUpdatedCallback);
 
         mInterceptNavigationDelegate = new InterceptNavigationDelegateImpl(this);
+
+        sTabMap.put(mId, this);
     }
 
     public ProfileImpl getProfile() {
@@ -535,6 +548,11 @@ public final class TabImpl extends ITab.Stub {
 
         mInterceptNavigationDelegate.onTabDestroyed();
         mInterceptNavigationDelegate = null;
+
+        mMediaStreamManager.destroy();
+        mMediaStreamManager = null;
+
+        sTabMap.remove(mId);
 
         // ObservableSupplierImpl.addObserver() posts a task to notify the observer, ensure the
         // callback isn't run after destroy() is called (otherwise we'll get crashes as the native

@@ -16,20 +16,6 @@ source_set("dialogs") {
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
-source_set("feature_flags") {
-  sources = [
-    "dialog_features.h",
-    "dialog_features.mm",
-  ]
-
-  configs += [ "//build/config/compiler:enable_arc" ]
-
-  deps = [
-    "//base",
-    "//components/flags_ui",
-  ]
-}
-
 source_set("unit_tests") {
   testonly = true
 
@@ -56,12 +42,8 @@ source_set("constants") {
 source_set("dialogs_internal") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "dialog_presenter.h",
-    "dialog_presenter.mm",
     "java_script_dialog_metrics.cc",
     "java_script_dialog_metrics.h",
-    "java_script_dialog_presenter_impl.h",
-    "java_script_dialog_presenter_impl.mm",
     "nsurl_protection_space_util.h",
     "nsurl_protection_space_util.mm",
     "overlay_java_script_dialog_presenter.h",
@@ -101,8 +83,6 @@ source_set("unit_tests_internal") {
   testonly = true
   sources = [
     "completion_block_util_unittest.mm",
-    "dialog_presenter_unittest.mm",
-    "java_script_dialog_presenter_impl_unittest.mm",
     "nsurl_protection_space_util_unittest.mm",
     "overlay_java_script_dialog_presenter_unittest.mm",
   ]
@@ -130,7 +110,6 @@ source_set("eg_tests") {
   sources = [ "javascript_dialog_egtest.mm" ]
   deps = [
     ":constants",
-    ":feature_flags",
     "//base",
     "//base/test:test_support",
     "//components/strings",
@@ -167,7 +146,6 @@ source_set("eg2_tests") {
   sources = [ "javascript_dialog_egtest.mm" ]
   deps = [
     ":constants",
-    ":feature_flags",
     "//base",
     "//base/test:test_support",
     "//components/strings",

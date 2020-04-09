@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">ለተጨማሪ አማራጮች ጠቅ ያድርጉ</translation>
 <translation id="1570871743947603115">ብሉቱዝን አብራ ወይም አጥፋ። <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">በዚህ ክፍለ-ጊዜ ውስጥ ያለው ሁሉንም እንቅስቃሴዎን ይድረሱ</translation>
-<translation id="1608626060424371292">ይህን ተጠቃሚ አስወግድ</translation>
+<translation id="1632985212731562677">የመዳረሻ መቀየሪያ በቅንብሮች &gt; ተደራሽነት ውስጥ ሊሰናከል ይችላል።</translation>
 <translation id="1654477262762802994">የድምጽ መጠይቅ ይጀምሩ</translation>
 <translation id="1658406695958299976">ይቅርታ፣ የይለፍ ቃልዎ አሁንም ሊረጋገጥ አልቻለም። ማሳሰቢያ፦ የይለፍ ቃልዎን በቅርብ ጊዜ ቀይረው ከሆነ አዲስ የይለፍ ቃልዎ የሚተገበረው ሲወጡ ነው፣ እባክዎ የድሮውን ይለፍ ቃል እዚህ ይጠቀሙ።</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> ቀርቷል</translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">የመሣሪያው አስተዳዳሪ የአሰሳ እንቅስቃሴዎን ሊከታተል ይችላል።</translation>
 <translation id="3181441307743005334">ዳግም ማስነሳት ትንሽ ጊዜ ሊወስድ ይችላል</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{ከአንድ መሣሪያ ጋር ተገናኝቷል}one{ከ# መሣሪያዎች ጋር ተገናኝቷል}other{ከ# መሣሪያዎች ጋር ተገናኝቷል}}</translation>
+<translation id="3203405173652969239">የመዳረሻ መቀየሪያ ነቅቷል</translation>
 <translation id="3207953481422525583">የተጠቃሚ ቅንብሮች</translation>
 <translation id="3217205077783620295">ድምፅ መጠን በርቷል፣ መቀያየር ኦዲዮን ድምፀ ከል ያደርገዋል።</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> ተጨማሪ</translation>
@@ -651,6 +652,7 @@
 <translation id="9211681782751733685">ባትሪ ሙሉ በሙሉ ኃይል እስኪሞላ ድረስ <ph name="TIME_REMAINING" /> ይቀራል።</translation>
 <translation id="9215934040295798075">ልጣፍ ያዘጋጁ</translation>
 <translation id="921989828232331238">የእርስዎ ወላጅ ለቀኑ መሣሪያውን ቆልፈውታል</translation>
+<translation id="9220525904950070496">መለያ ያስወግዱ</translation>
 <translation id="923686485342484400">ዘግተው ለመውጣት Ctrl Shift Qን ሁለቴ ይጫኑ።</translation>
 <translation id="938963181863597773">የቀን መቁጠሪያዬ ላይ ምን አለ?</translation>
 <translation id="945522503751344254">ግብረ መልስ ላክ</translation>

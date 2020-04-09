@@ -2832,6 +2832,7 @@
         'chrome.*:8-',
         'chrome_os:11-',
         'android:30-',
+        'ios:84-',
       ],
       'features': {
         'can_be_recommended': True,

@@ -30,7 +30,7 @@ class MediaHistorySessionImagesTable : public MediaHistoryTableBase {
   static const char kTableName[];
 
  private:
-  friend class MediaHistoryStoreInternal;
+  friend class MediaHistoryStore;
 
   explicit MediaHistorySessionImagesTable(
       scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner);

@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">ຄລິກສຳລັບຕົວເລືອກເພີ່ມເຕີມ</translation>
 <translation id="1570871743947603115">ປິດເປີດ Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">ເຂົ້າເຖິງທຸກການເຄື່ອນໄຫວຂອງທ່ານໃນເຊດຊັນນີ້</translation>
-<translation id="1608626060424371292">ເອົາ​ຜູ້​ໃຊ້​ນີ້ອອກໄປ</translation>
+<translation id="1632985212731562677">ປິດການນຳໃຊ້ການເຂົ້າເຖິງດ້ວຍປຸ່ມກົດໄດ້ໃນການຕັ້ງຄ່າ &gt; ການຊ່ວຍເຂົ້າເຖິງ.</translation>
 <translation id="1654477262762802994">ເລີ່ມຄຳຊອກຫາດ້ວຍສຽງ</translation>
 <translation id="1658406695958299976">ຂໍອະໄພ, ຍັງບໍ່ສາມາດພິສູດຢືນຢັນລະຫັດຜ່ານຂອງທ່ານໄດ້. ໝາຍເຫດ: ຖ້າທ່ານປ່ຽນລະຫັດຜ່ານຂອງທ່ານເມື່ອບໍ່ດົນມານີ້, ຈະນຳໃຊ້ລະຫັດຜ່ານໃໝ່ຂອງທ່ານເມື່ອທ່ານອອກຈາກລະບົບແລ້ວ, ກະລຸນາໃຊ້ລະຫັດເກົ່າຢູ່ບ່ອນນີ້.</translation>
 <translation id="1677472565718498478">ຍັງເຫຼືອ <ph name="TIME" /></translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">ຜູ້ເບິ່ງແຍງລະບົບອາດຈະຕິດຕາມເບິ່ງການເຄື່ອນໄຫວທ່ອງເວັບຂອງທ່ານ.</translation>
 <translation id="3181441307743005334">ການຣິສະຕາດອາດຈະໃຊ້ເວລາຄາວໜຶ່ງ</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{ເຊື່ອມຕໍ່ກັບໜຶ່ງອຸປະກອນແລ້ວ}other{ເຊື່ອມຕໍ່ກັບ # ອຸປະກອນແລ້ວ}}</translation>
+<translation id="3203405173652969239">ເປີດການນຳໃຊ້ການເຂົ້າເຖິງດ້ວຍປຸ່ມກົດ</translation>
 <translation id="3207953481422525583">ຕັ້ງຄ່າຜູ້ໃຊ້</translation>
 <translation id="3217205077783620295">ລະດັບສຽງເປີດຢູ່, ການສະຫຼັບຈະປິດສຽງ.</translation>
 <translation id="3226991577105957773">ອີກ +<ph name="COUNT" /></translation>
@@ -651,6 +652,7 @@
 <translation id="9211681782751733685">ຍັງເຫຼືອ <ph name="TIME_REMAINING" /> ຈົນກວ່າແບັດເຕີຣີຈະສາກເຕັມ.</translation>
 <translation id="9215934040295798075">ຕັ້ງພາບພື້ນຫຼັງ</translation>
 <translation id="921989828232331238">ພໍ່ແມ່ຂອງທ່ານໄດ້ລັອກອຸປະກອນຂອງທ່ານໄວ້ແລ້ວສຳລັບມື້ນີ້</translation>
+<translation id="9220525904950070496">ລົບບັນ​ຊີອອກ</translation>
 <translation id="923686485342484400">ກົດ Control Shift Q ສອງຄັ້ງເພື່ອອອກຈາກລະບົບ.</translation>
 <translation id="938963181863597773">ມີຫຍັງໃນປະຕິທິນຂອງຂ້ອຍ?</translation>
 <translation id="945522503751344254">ສົ່ງ​ຄໍາ​ຄິດ​​ເຫັນ</translation>

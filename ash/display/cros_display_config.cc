@@ -4,16 +4,17 @@
 
 #include "ash/display/cros_display_config.h"
 
-#include <memory>
 #include <utility>
 
 #include "ash/display/display_configuration_controller.h"
+#include "ash/display/display_highlight_controller.h"
 #include "ash/display/display_prefs.h"
 #include "ash/display/overscan_calibrator.h"
 #include "ash/display/resolution_notification_controller.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/touch_calibrator_controller.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/public/mojom/cros_display_config.mojom.h"
 #include "ash/shell.h"
@@ -997,6 +998,12 @@ OverscanCalibrator* CrosDisplayConfig::GetOverscanCalibrator(
     const std::string& id) {
   auto iter = overscan_calibrators_.find(id);
   return iter == overscan_calibrators_.end() ? nullptr : iter->second.get();
+}
+
+void CrosDisplayConfig::HighlightDisplay(int64_t id) {
+  DCHECK(base::FeatureList::IsEnabled(features::kDisplayIdentification));
+
+  Shell::Get()->display_highlight_controller()->SetHighlightedDisplay(id);
 }
 
 }  // namespace ash

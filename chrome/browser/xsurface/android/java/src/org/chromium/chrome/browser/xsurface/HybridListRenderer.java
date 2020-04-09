@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.xsurface;
 
 import android.view.View;
 
+import androidx.annotation.Nullable;
+
 /**
  * A renderer that can handle mixing externally-provided views with native Android views
  * in a RecyclerView.
@@ -16,17 +18,20 @@ public interface HybridListRenderer {
      * @return a View that the HybridListRenderer is managing, which can then be
      * attached to other view
      */
-    View bind(ListContentManager manager);
+    @Nullable
+    default View bind(ListContentManager manager) {
+        return null;
+    }
 
     /**
      * Unbinds a previously attached recyclerview and contentmanager.
      *
      * Does nothing if nothing was previously bound.
      */
-    void unbind();
+    default void unbind() {}
 
     /**
      * Updates the renderer with templates and initializing data.
      */
-    void update(byte[] data);
+    default void update(byte[] data) {}
 }

@@ -539,17 +539,14 @@ MediaFactory::CreateRendererFactorySelector(
 #endif  // BUILDFLAG(ENABLE_MOJO_RENDERER)
 
 #if defined(OS_FUCHSIA)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableFuchsiaAudioConsumer)) {
-    use_default_renderer_factory = false;
-    factory_selector->AddBaseFactory(
-        FactoryType::kFuchsia,
-        std::make_unique<FuchsiaRendererFactory>(
-            media_log, decoder_factory,
-            base::BindRepeating(&RenderThreadImpl::GetGpuFactories,
-                                base::Unretained(render_thread)),
-            render_frame_->GetBrowserInterfaceBroker()));
-  }
+  use_default_renderer_factory = false;
+  factory_selector->AddBaseFactory(
+      FactoryType::kFuchsia,
+      std::make_unique<FuchsiaRendererFactory>(
+          media_log, decoder_factory,
+          base::BindRepeating(&RenderThreadImpl::GetGpuFactories,
+                              base::Unretained(render_thread)),
+          render_frame_->GetBrowserInterfaceBroker()));
 #endif  // defined(OS_FUCHSIA)
 
   if (use_default_renderer_factory) {

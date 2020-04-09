@@ -10,10 +10,8 @@ import android.content.pm.PackageManager;
 
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 
@@ -60,28 +58,6 @@ public class AwMetricsServiceClient {
     @VisibleForTesting
     public static void setUploadIntervalForTesting(long uploadIntervalMs) {
         AwMetricsServiceClientJni.get().setUploadIntervalForTesting(uploadIntervalMs);
-    }
-
-    /**
-     * Gets a long representing the install time of the embedder application. Units are in seconds,
-     * as this is the resolution used by the metrics service. Returns {@code -1} upon failure.
-     */
-    // TODO(https://crbug.com/1012025): remove this when the kInstallDate pref has been persisted
-    // for one or two milestones.
-    @CalledByNative
-    private static long getAppInstallTime() {
-        try {
-            Context ctx = ContextUtils.getApplicationContext();
-            long installTimeMs = ctx.getPackageManager()
-                                         .getPackageInfo(ctx.getPackageName(), 0 /* flags */)
-                                         .firstInstallTime;
-            long installTimeSec = installTimeMs / 1000;
-            return installTimeSec;
-        } catch (PackageManager.NameNotFoundException e) {
-            // This should never happen.
-            Log.e(TAG, "App could not find itself by package name!");
-            return -1;
-        }
     }
 
     @NativeMethods

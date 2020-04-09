@@ -15,6 +15,9 @@
 #include "chromecast/browser/webview/proto/webview.grpc.pb.h"
 #include "components/exo/wayland/clients/client_base.h"
 #include "third_party/grpc/src/include/grpcpp/grpcpp.h"
+#include "ui/events/event_constants.h"
+#include "ui/events/types/event_type.h"
+#include "ui/gfx/geometry/point.h"
 
 namespace chromecast {
 namespace client {
@@ -50,17 +53,42 @@ class WebviewClient : public exo::wayland::clients::ClientBase {
   void AllocateBuffers(const InitParams& params);
   void CreateWebview(const std::vector<std::string>& tokens);
   void DestroyWebview(const std::vector<std::string>& tokens);
+  void HandleDown(void* data,
+                  struct wl_touch* wl_touch,
+                  uint32_t serial,
+                  uint32_t time,
+                  struct wl_surface* surface,
+                  int32_t id,
+                  wl_fixed_t x,
+                  wl_fixed_t y) override;
   void HandleMode(void* data,
                   struct wl_output* wl_output,
                   uint32_t flags,
                   int32_t width,
                   int32_t height,
                   int32_t refresh) override;
+  void HandleMotion(void* data,
+                    struct wl_touch* wl_touch,
+                    uint32_t time,
+                    int32_t id,
+                    wl_fixed_t x,
+                    wl_fixed_t y) override;
+  void HandleUp(void* data,
+                struct wl_touch* wl_touch,
+                uint32_t serial,
+                uint32_t time,
+                int32_t id) override;
   void InputCallback();
   void ListActiveWebviews();
   void Paint();
   void SendNavigationRequest(const std::vector<std::string>& tokens);
   void SendResizeRequest(const std::vector<std::string>& tokens);
+  void SendTouchInput(const Webview* webview,
+                      int x,
+                      int y,
+                      ui::EventType event_type,
+                      uint32_t time,
+                      int32_t id);
   void SetPosition(const std::vector<std::string>& tokens);
   void TakeExclusiveAccess();
   void WlDisplayCallback();
@@ -68,7 +96,9 @@ class WebviewClient : public exo::wayland::clients::ClientBase {
   int32_t drm_format_ = 0;
   int32_t bo_usage_ = 0;
 
+  const Webview* focused_webview_;
   std::map<int, std::unique_ptr<Webview>> webviews_;
+  std::map<int32_t, gfx::Point> points_;
 
   std::unique_ptr<wl_callback> frame_callback_;
   std::vector<std::unique_ptr<BufferCallback>> buffer_callbacks_;

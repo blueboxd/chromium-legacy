@@ -2107,31 +2107,21 @@ Status ExecuteTakeHeapSnapshot(Session* session,
   return web_view->TakeHeapSnapshot(value);
 }
 
-// TODO(johnchen): There is no public method in Chrome or ChromeDesktopImpl to
-// get both size and position in one call. What we're doing now is kind of
-// wasteful, since both GetWindowPosition and GetWindowSize end up getting both
-// position and size, and then discard one of the two pieces.
 Status ExecuteGetWindowRect(Session* session,
                             WebView* web_view,
                             const base::DictionaryValue& params,
                             std::unique_ptr<base::Value>* value,
                             Timeout* timeout) {
-  int x, y;
-  int width, height;
-
-  Status status = session->chrome->GetWindowPosition(session->window, &x, &y);
-  if (status.IsError())
-    return status;
-  status = session->chrome->GetWindowSize(session->window, &width, &height);
-
+  Chrome::WindowRect windowRect;
+  Status status = session->chrome->GetWindowRect(session->window, &windowRect);
   if (status.IsError())
     return status;
 
   base::DictionaryValue rect;
-  rect.SetInteger("x", x);
-  rect.SetInteger("y", y);
-  rect.SetInteger("width", width);
-  rect.SetInteger("height", height);
+  rect.SetInteger("x", windowRect.x);
+  rect.SetInteger("y", windowRect.y);
+  rect.SetInteger("width", windowRect.width);
+  rect.SetInteger("height", windowRect.height);
   value->reset(rect.DeepCopy());
   return Status(kOk);
 }

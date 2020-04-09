@@ -460,7 +460,6 @@
               "http/tests/inspector-protocol/request-mixed-content-status-none.js",
               "http/tests/inspector-protocol/request-mixed-content-status-optionally-blockable.js",
               "http/tests/loading/bad-server-subframe.html",
-              "http/tests/local/drag-over-remote-content.html",
               "http/tests/media/autoplay/document-user-activation-feature-policy-iframe-no-gesture.html",
               "http/tests/media/autoplay/webaudio-autoplay-iframe-with-gesture.html",
               "http/tests/misc/iframe-script-modify-attr.html",

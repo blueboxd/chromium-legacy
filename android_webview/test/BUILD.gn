@@ -400,7 +400,6 @@ test("android_webview_unittests") {
     "../browser/gfx/test/rendering_test.h",
     "../browser/input_stream_unittest.cc",
     "../browser/lifecycle/aw_contents_lifecycle_notifier_unittest.cc",
-    "../browser/metrics/aw_metrics_service_client_unittest.cc",
     "../browser/metrics/aw_stability_metrics_provider_unittest.cc",
     "../browser/network_service/android_stream_reader_url_loader_unittest.cc",
     "../browser/network_service/input_stream_reader_unittest.cc",

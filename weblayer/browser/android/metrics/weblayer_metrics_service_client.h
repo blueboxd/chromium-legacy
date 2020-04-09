@@ -36,7 +36,6 @@ class WebLayerMetricsServiceClient
 
   // metrics::AndroidMetricsServiceClient:
   int GetSampleRatePerMille() override;
-  void InitInternal() override;
   void OnMetricsStart() override;
   int GetPackageNameLimitRatePerMille() override;
   bool ShouldWakeMetricsService() override;

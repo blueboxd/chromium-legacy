@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">Klik untuk mendapatkan lagi pilihan</translation>
 <translation id="1570871743947603115">Togol Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Akses semua aktiviti anda dalam sesi ini</translation>
-<translation id="1608626060424371292">Alih keluar pengguna ini</translation>
+<translation id="1632985212731562677">Akses Suis boleh dilumpuhkan dalam Tetapan &gt; Kebolehaksesan.</translation>
 <translation id="1654477262762802994">Mulakan pertanyaan suara</translation>
 <translation id="1658406695958299976">Maaf, kata laluan anda masih tidak dapat disahkan. Perhatian: jika anda menukar kata laluan anda baru-baru ini, kata laluan baharu anda akan digunakan apabila anda log keluar, sila gunakan kata laluan yang lama di sini.</translation>
 <translation id="1677472565718498478">Berbaki <ph name="TIME" /></translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">Pentadbir peranti boleh memantau aktiviti penyemakan imbas anda.</translation>
 <translation id="3181441307743005334">Proses mula semula mungkin mengambil sedikit masa</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Disambungkan ke peranti}other{Disambungkan ke # peranti}}</translation>
+<translation id="3203405173652969239">Akses Suis didayakan</translation>
 <translation id="3207953481422525583">Tetapan Pengguna</translation>
 <translation id="3217205077783620295">Kelantangan dihidupkan. Tindakan menogol akan meredamkan audio.</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> lagi</translation>
@@ -652,6 +653,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="9211681782751733685">Tinggal <ph name="TIME_REMAINING" /> sehingga bateri dicas sepenuhnya.</translation>
 <translation id="9215934040295798075">Tetapkan kertas dinding</translation>
 <translation id="921989828232331238">Ibu/bapa anda mengunci peranti untuk hari ini</translation>
+<translation id="9220525904950070496">Alih keluar akaun</translation>
 <translation id="923686485342484400">Tekan Tekan Shift Q dua kali untuk keluar.</translation>
 <translation id="938963181863597773">Apakah acara dalam kalendar saya?</translation>
 <translation id="945522503751344254">Hantar maklum balas</translation>

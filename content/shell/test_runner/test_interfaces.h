@@ -43,6 +43,12 @@ class TestInterfaces {
 
   TestRunner* GetTestRunner();
   WebTestDelegate* GetDelegate();
+  // TODO(danakj): This is a list of all RenderViews not of all windows. There
+  // will be a RenderView for each frame tree fragment in the process, not just
+  // one per window. We should only return the RenderViews with a local main
+  // frame.
+  // TODO(danakj): Some clients want a list of the main frames (maybe most/all?)
+  // so can we add a GetMainFrameList() or something?
   const std::vector<WebViewTestProxy*>& GetWindowList();
 
  private:

@@ -339,7 +339,7 @@
       },
       'linux-layout-tests-edit-ng': {
         'args': [
-          '--additional-driver-flag=--enable-blink-features=EditingNGruntime',
+          '--additional-driver-flag=--enable-blink-features=EditingNG',
         ],
       },
       'linux-layout-tests-fragment-item': {

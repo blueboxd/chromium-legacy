@@ -368,8 +368,8 @@ static_library("content_shell_lib") {
     "gpu/shell_content_gpu_client.h",
     "renderer/shell_content_renderer_client.cc",
     "renderer/shell_content_renderer_client.h",
-    "renderer/shell_render_view_observer.cc",
-    "renderer/shell_render_view_observer.h",
+    "renderer/shell_render_frame_observer.cc",
+    "renderer/shell_render_frame_observer.h",
     "utility/shell_content_utility_client.cc",
     "utility/shell_content_utility_client.h",
   ]
@@ -778,6 +778,7 @@ if (is_android) {
       testonly = true
       binary = ":content_shell"
       package_name_override = "content_shell"
+      manifest = "fuchsia/content_shell.cmx"
     }
 
     fuchsia_package_runner("content_shell_fuchsia") {

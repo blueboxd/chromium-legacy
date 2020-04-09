@@ -1195,6 +1195,7 @@ Cette règle n'est disponible que sur les instances Windows qui sont associées 
 <translation id="2592162121850992309">Si cette règle est définie sur "True" ou n'est pas configurée, l'accélération matérielle est activée, sauf si une certaine fonctionnalité GPU figure sur la liste noire.
 
       Si cette règle est définie sur "False", l'accélération matérielle est désactivée.</translation>
+<translation id="2593762551209145088">La navigation sécurisée n'est jamais active.</translation>
 <translation id="2596260130957832043">Contrôle si l'authentification NTLMv2 est activée.
 
           Toutes les versions récentes des serveurs Samba et Windows incluent l'authentification NTLMv2. La désactivation de cette fonctionnalité, qui réduit la sécurité de l'authentification, n'est conseillée qu'à des fins de rétrocompatibilité.
@@ -1272,6 +1273,7 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
 
       Pour en savoir plus sur la navigation privée, consultez la page https://developers.google.com/safe-browsing.</translation>
 <translation id="2706708761587205154">Autoriser l'impression avec code uniquement</translation>
+<translation id="2707873794476722903">La navigation sécurisée est active et en mode de protection standard.</translation>
 <translation id="2710534340210290498">Si cette règle est définie sur "False", les utilisateurs ne peuvent pas verrouiller l'écran (seule la déconnexion de la session de l'utilisateur est possible). Si ce paramètre est défini sur "True", ou s'il n'est pas configuré, les utilisateurs ayant procédé à l'authentification avec un mot de passe peuvent verrouiller l'écran.</translation>
 <translation id="2731627323327011390">Désactiver l'utilisation de certificats <ph name="PRODUCT_OS_NAME" /> pour les applications ARC</translation>
 <translation id="2742843273354638707">Masque l'application Chrome Web Store et le lien de bas de page sur la page Nouvel onglet et dans le lanceur d'applications de <ph name="PRODUCT_OS_NAME" />.
@@ -2378,6 +2380,19 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
 <translation id="437791893267799639">Règle non définie, interdire la migration de données et ARC</translation>
 <translation id="4389073105055031853">Autoriser les utilisateurs à gérer tous les certificats</translation>
 <translation id="4389091865841123886">Configurer l'attestation à distance avec le mécanisme TPM</translation>
+<translation id="4401496838830169080">Permet de contrôler si la fonctionnalité de navigation sécurisée de <ph name="PRODUCT_NAME" /> est activée ou non, ainsi que le mode dans lequel elle est définie.
+
+      Si cette règle est définie sur "NoProtection" (valeur 0), la navigation sécurisée n'est jamais active.
+
+      Si cette règle est définie sur "StandardProtection" (valeur 1, qui correspond à la valeur par défaut), la navigation sécurisée est toujours active et en mode de protection standard.
+
+      Si cette règle est définie sur "EnhancedProtection" (valeur 2), la navigation sécurisée est toujours active et en mode de protection renforcée. Ce mode offre une meilleure sécurité, mais nécessite de partager plus d'informations de navigation avec Google.
+
+      Si vous définissez cette règle comme obligatoire, les utilisateurs ne peuvent pas modifier ni ignorer le paramètre de navigation sécurisée dans <ph name="PRODUCT_NAME" />.
+
+      Si cette règle n'est pas configurée, la navigation sécurisée est en mode de protection standard. Toutefois, les utilisateurs peuvent modifier ce paramètre.
+
+      Pour en savoir plus sur la navigation sécurisée, consultez la page https://developers.google.com/safe-browsing.</translation>
 <translation id="4408428864159735559">Liste de partages de fichiers sur le réseau préconfigurés.</translation>
 <translation id="4410236409016356088">Activer la limitation de la bande passante réseau</translation>
 <translation id="441217499641439905">Désactiver Google Drive en cas de connexion au réseau mobile dans l'application "Fichiers" de <ph name="PRODUCT_OS_NAME" /></translation>
@@ -3518,6 +3533,7 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 <translation id="6111936128861357925">Autoriser le jeu Easter Egg du dinosaure</translation>
 <translation id="6114416803310251055">obsolète</translation>
 <translation id="6133088669883929098">Autoriser tous les sites à utiliser la génération de clé</translation>
+<translation id="6135398260575578389">La navigation sécurisée est active et en mode de protection renforcée. Ce mode offre une meilleure sécurité, mais nécessite de partager plus d'informations de navigation avec Google.</translation>
 <translation id="6136537398661737682">Cette règle permet de contrôler l'état initial des services de localisation Google.
 
       Si cette règle n'est pas configurée ou si elle est définie sur <ph name="GLS_DISABLED" />, ces services sont initialement désactivés.
@@ -4512,6 +4528,23 @@ Si ce paramètre est désactivé ou s'il n'est pas configuré, <ph name="PRODUCT
 
 
 Dans le cas contraire, le moteur de rendu par défaut sera utilisé pour tous les sites. (La règle <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> peut être utilisée pour configurer le moteur de rendu par défaut.)</translation>
+<translation id="7691028179743802462">Cette règle étant obsolète dans la version M83, veuillez utiliser la règle "SafeBrowsingProtectionLevel" à la place.
+
+      Permet d'activer la fonctionnalité de navigation sécurisée de <ph name="PRODUCT_NAME" /> et d'empêcher les utilisateurs de modifier ce paramètre.
+
+      Si vous activez ce paramètre, la navigation sécurisée est active en permanence.
+
+      Si vous le désactivez, la navigation sécurisée n'est jamais active.
+
+      Si vous activez ou désactivez ce paramètre, les utilisateurs ne peuvent pas modifier ni ignorer le paramètre "Activer la protection contre l'hameçonnage et les logiciels malveillants" dans <ph name="PRODUCT_NAME" />.
+
+      Si cette règle n'est pas configurée, ce paramètre sera activé, mais les utilisateurs pourront le modifier.
+
+      Pour en savoir plus sur la navigation sécurisée, consultez la page https://developers.google.com/safe-browsing.
+
+      Cette règle n'est disponible que sur les instances Windows qui sont associées à un domaine <ph name="MS_AD_NAME" />, ou sur les instances Windows 10 Pro ou Windows Enterprise qui sont enregistrées pour bénéficier de la gestion des appareils.
+
+      Si la règle "SafeBrowsingProtectionLevel" est configurée, la valeur de la règle "SafeBrowsingEnabled" est ignorée.</translation>
 <translation id="7694245791806617022">Permet de contrôler si la fonctionnalité "Mémoriser le mot de passe" est activée ou non dans la boîte de dialogue d'authentification Kerberos. Les mots de passe sont stockés chiffrés sur le disque, et ne sont accessibles qu'au démon du système Kerberos et pendant une session utilisateur.
 
           Si cette règle est activée ou si elle n'est pas définie, les utilisateurs peuvent décider de mémoriser les mots de passe Kerberos afin de ne pas avoir à les saisir de nouveau. Les tickets Kerberos sont récupérés automatiquement, sauf si une authentification supplémentaire est requise (authentification à deux facteurs).
@@ -5101,6 +5134,7 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 
           Pour en savoir plus sur les formats d'URL valides, consultez cette page : https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="8661297125441579970">Interdire la migration de données et ARC.</translation>
+<translation id="8665314828727504286">Mode de protection de la navigation sécurisée</translation>
 <translation id="8672321184841719703">Cibler une version pour les mises à jour automatiques</translation>
 <translation id="867410340948518937">U2F (Deuxième facteur universel)</translation>
 <translation id="8685024486845674965">L'avertissement de protection par mot de passe est déclenché en cas de réutilisation du mot de passe</translation>

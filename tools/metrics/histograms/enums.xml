@@ -26925,6 +26925,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3200" label="CoopAndCoepIsolated"/>
   <int value="3201" label="WrongBaselineOfButtonElement"/>
   <int value="3202" label="V8Document_HasTrustToken_Method"/>
+  <int value="3203" label="ForceLoadAtTop"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -34651,8 +34652,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="47" label="INVALID_STATE_FOR_OPTION"/>
   <int value="49" label="PATCH_INVALID_ARGUMENTS"/>
   <int value="50" label="DIFF_PATCH_SOURCE_MISSING"/>
-  <int value="51" label="UNUSED_BINARIES (removed in M84)"/>
-  <int value="52" label="UNUSED_BINARIES_UNINSTALLED (removed in M84)"/>
+  <int value="51" label="UNUSED_BINARIES"/>
+  <int value="52" label="UNUSED_BINARIES_UNINSTALLED"/>
   <int value="53" label="UNSUPPORTED_OPTION"/>
   <int value="54" label="CPU_NOT_SUPPORTED"/>
   <int value="55" label="REENABLE_UPDATES_SUCCEEDED"/>
@@ -37670,6 +37671,7 @@ from previous Chrome versions.
   <int value="-1940806558" label="enable-syncfs-directory-operation"/>
   <int value="-1940377152" label="MacRTL:enabled"/>
   <int value="-1940291343" label="SpeculativeResourcePrefetching:enabled"/>
+  <int value="-1939533266" label="LauncherSettingsSearch:enabled"/>
   <int value="-1939016096"
       label="OmniboxUIExperimentHideSuggestionUrlTrivialSubdomains:enabled"/>
   <int value="-1939003674" label="NetworkServiceInProcess:disabled"/>
@@ -37983,6 +37985,7 @@ from previous Chrome versions.
   <int value="-1571841513" label="enable-devtools-experiments"/>
   <int value="-1568559155" label="WebSocketHandshakeReuseConnection:enabled"/>
   <int value="-1567727398" label="DesktopPWAsWithoutExtensions:disabled"/>
+  <int value="-1561360053" label="LauncherSettingsSearch:disabled"/>
   <int value="-1561252720" label="AutofillCreditCardUploadFeedback:disabled"/>
   <int value="-1560729847" label="AutofillCacheQueryResponses:enabled"/>
   <int value="-1560650271" label="WasmCodeCache:disabled"/>
@@ -38397,6 +38400,8 @@ from previous Chrome versions.
   <int value="-1134307340" label="stop-loading-in-background:enabled"/>
   <int value="-1132704128" label="AndroidPaymentAppsFilter:disabled"/>
   <int value="-1128912963" label="MediaControlsExpandGesture:disabled"/>
+  <int value="-1128221789"
+      label="AutofillEnableSurfacingServerCardNickname:enabled"/>
   <int value="-1127996427" label="enable-files-details-panel"/>
   <int value="-1127963300" label="CrostiniUsername:enabled"/>
   <int value="-1126217973" label="IdleTimeSpellChecking:disabled"/>
@@ -41016,6 +41021,8 @@ from previous Chrome versions.
       label="LinkManagedNoticeToChromeUIManagementURL:enabled"/>
   <int value="1990670943"
       label="AutofillEnableLocalCardMigrationForNonSyncUser:disabled"/>
+  <int value="1990873642"
+      label="AutofillEnableSurfacingServerCardNickname:disabled"/>
   <int value="1991771852" label="LeftToRightUrls:enabled"/>
   <int value="1991912338" label="ModuleScriptsDynamicImport:enabled"/>
   <int value="1992466116" label="enable-passive-event-listeners-due-to-fling"/>
@@ -59987,8 +59994,8 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
       label="No previous version archive found for differential update."/>
   <int value="51"
       label="No multi-install products to update. The binaries will be
-             uninstalled if they are not in use. (Removed in M84.)"/>
-  <int value="52" label="The binaries were uninstalled. (Removed in M84.)"/>
+             uninstalled if they are not in use."/>
+  <int value="52" label="The binaries were uninstalled."/>
   <int value="53" label="An unsupported legacy option was given."/>
   <int value="54" label="Current CPU not supported."/>
   <int value="55" label="Autoupdates are now enabled."/>

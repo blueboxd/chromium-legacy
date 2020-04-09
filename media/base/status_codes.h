@@ -49,6 +49,9 @@ enum class StatusCode : StatusCodeType {
   kCantMakeContextCurrent = 0x00000301,
   kCantPostTexture = 0x00000302,
   kCantPostAcquireStream = 0x00000303,
+  kCantCreateEglStream = 0x00000304,
+  kCantCreateEglStreamConsumer = 0x00000305,
+  kCantCreateEglStreamProducer = 0x00000306,
 
   // MojoDecoder Errors: 0x04
   kMojoDecoderNoWrappedDecoder = 0x00000401,

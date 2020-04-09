@@ -147,7 +147,6 @@ void WebEngineContentBrowserClient::AppendExtraCommandLineSwitches(
   constexpr char const* kSwitchesToCopy[] = {
       switches::kContentDirectories,
       switches::kDisableSoftwareVideoDecoders,
-      switches::kEnableFuchsiaAudioConsumer,
       switches::kEnableProtectedVideoBuffers,
       switches::kEnableWidevine,
       switches::kForceProtectedVideoOutputBuffers,

@@ -49,9 +49,20 @@ class ArCoreAnchorManager {
   void DetachAnchor(AnchorId anchor_id);
 
  private:
+  struct AnchorInfo {
+    device::internal::ScopedArCoreObject<ArAnchor*> anchor;
+    ArTrackingState tracking_state;
+
+    AnchorInfo(device::internal::ScopedArCoreObject<ArAnchor*> anchor,
+               ArTrackingState tracking_state);
+    AnchorInfo(AnchorInfo&& other);
+    ~AnchorInfo();
+  };
+
   // Executes |fn| for each still tracked, anchor present in |arcore_anchors|.
   // |fn| will receive a `device::internal::ScopedArCoreObject<ArAnchor*>` that
-  // can be stored, as well as ArTrackingState of the passed in anchor.
+  // can be stored, as well as ArTrackingState of the passed in anchor. An
+  // anchor is tracked if its state is not AR_TRACKING_STATE_STOPPED.
   template <typename FunctionType>
   void ForEachArCoreAnchor(ArAnchorList* arcore_anchors, FunctionType fn);
 
@@ -72,10 +83,9 @@ class ArCoreAnchorManager {
   // Mapping from anchor address to anchor ID. It should be modified only during
   // calls to |Update()| and anchor creation.
   std::map<void*, AnchorId> ar_anchor_address_to_id_;
-  // Mapping from anchor ID to ARCore anchor object. It should be modified only
-  // during calls to |Update()|.
-  std::map<AnchorId, device::internal::ScopedArCoreObject<ArAnchor*>>
-      anchor_id_to_anchor_object_;
+  // Mapping from anchor ID to ARCore anchor information. It should be modified
+  // only during calls to |Update()|.
+  std::map<AnchorId, AnchorInfo> anchor_id_to_anchor_info_;
   // Set containing IDs of anchors updated in the last frame. It should be
   // modified only during calls to |Update()|.
   std::set<AnchorId> updated_anchor_ids_;

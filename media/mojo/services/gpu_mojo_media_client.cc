@@ -42,6 +42,7 @@
 
 #if defined(OS_WIN)
 #include "media/gpu/windows/d3d11_video_decoder.h"
+#include "ui/gl/direct_composition_surface_win.h"
 #include "ui/gl/gl_angle_util_win.h"
 #endif  // defined(OS_WIN)
 
@@ -309,7 +310,8 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
                                 media_gpu_channel_manager_,
                                 command_buffer_id->channel_token,
                                 command_buffer_id->route_id),
-            GetD3D11DeviceCallback(), *d3d11_supported_configs_);
+            GetD3D11DeviceCallback(), *d3d11_supported_configs_,
+            gl::DirectCompositionSurfaceWin::IsHDRSupported());
       }
 #endif  // defined(OS_WIN)
   break;

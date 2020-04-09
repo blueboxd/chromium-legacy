@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_context.h"
@@ -33,7 +34,6 @@
 #include "media/gpu/windows/display_helper.h"
 #include "media/gpu/windows/supported_profile_helpers.h"
 #include "media/media_buildflags.h"
-#include "ui/gl/direct_composition_surface_win.h"
 #include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_switches.h"
 
@@ -83,7 +83,8 @@ std::unique_ptr<VideoDecoder> D3D11VideoDecoder::Create(
     const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
     base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb,
     D3D11VideoDecoder::GetD3D11DeviceCB get_d3d11_device_cb,
-    SupportedConfigs supported_configs) {
+    SupportedConfigs supported_configs,
+    bool is_hdr_supported) {
   // We create |impl_| on the wrong thread, but we never use it here.
   // Note that the output callback will hop to our thread, post the video
   // frame, and along with a callback that will hop back to the impl thread
@@ -95,13 +96,12 @@ std::unique_ptr<VideoDecoder> D3D11VideoDecoder::Create(
       base::BindRepeating(CreateCommandBufferHelper, std::move(get_stub_cb),
                           scoped_refptr<CommandBufferHelperHolder>(
                               new CommandBufferHelperHolder(gpu_task_runner)));
-  return base::WrapUnique<VideoDecoder>(
-      new D3D11VideoDecoder(std::move(gpu_task_runner), std::move(media_log),
-                            gpu_preferences, gpu_workarounds,
-                            std::make_unique<D3D11VideoDecoderImpl>(
-                                std::move(cloned_media_log), get_helper_cb),
-                            get_helper_cb, std::move(get_d3d11_device_cb),
-                            std::move(supported_configs)));
+  return base::WrapUnique<VideoDecoder>(new D3D11VideoDecoder(
+      gpu_task_runner, std::move(media_log), gpu_preferences, gpu_workarounds,
+      base::SequenceBound<D3D11VideoDecoderImpl>(
+          gpu_task_runner, std::move(cloned_media_log), get_helper_cb),
+      get_helper_cb, std::move(get_d3d11_device_cb),
+      std::move(supported_configs), is_hdr_supported));
 }
 
 D3D11VideoDecoder::D3D11VideoDecoder(
@@ -109,23 +109,24 @@ D3D11VideoDecoder::D3D11VideoDecoder(
     std::unique_ptr<MediaLog> media_log,
     const gpu::GpuPreferences& gpu_preferences,
     const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
-    std::unique_ptr<D3D11VideoDecoderImpl> impl,
+    base::SequenceBound<D3D11VideoDecoderImpl> impl,
     base::RepeatingCallback<scoped_refptr<CommandBufferHelper>()> get_helper_cb,
     GetD3D11DeviceCB get_d3d11_device_cb,
-    SupportedConfigs supported_configs)
+    SupportedConfigs supported_configs,
+    bool is_hdr_supported)
     : media_log_(std::move(media_log)),
       impl_(std::move(impl)),
-      impl_task_runner_(std::move(gpu_task_runner)),
+      gpu_task_runner_(std::move(gpu_task_runner)),
+      decoder_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       already_initialized_(false),
       gpu_preferences_(gpu_preferences),
       gpu_workarounds_(gpu_workarounds),
       get_d3d11_device_cb_(std::move(get_d3d11_device_cb)),
       get_helper_cb_(std::move(get_helper_cb)),
-      supported_configs_(std::move(supported_configs)) {
+      supported_configs_(std::move(supported_configs)),
+      is_hdr_supported_(is_hdr_supported) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(media_log_);
-
-  impl_weak_ = impl_->GetWeakPtr();
 }
 
 D3D11VideoDecoder::~D3D11VideoDecoder() {
@@ -134,10 +135,7 @@ D3D11VideoDecoder::~D3D11VideoDecoder() {
   // from |impl_| will be cancelled by |weak_factory_| when we return.
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (impl_task_runner_->RunsTasksInCurrentSequence())
-    impl_.reset();
-  else
-    impl_task_runner_->DeleteSoon(FROM_HERE, std::move(impl_));
+  impl_.Reset();
 
   // Explicitly destroy the decoder, since it can reference picture buffers.
   accelerated_video_decoder_.reset();
@@ -241,6 +239,9 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
   // it's been specifically configured via switch to avoid d3d11.
   //
   // TODO(liberato): On re-init, we can probably re-use the device.
+  // TODO(liberato): This isn't allowed off the main thread, since the callback
+  // does who-knows-what.  Either we should be given the angle device, or we
+  // should thread-hop to get it.
   device_ = get_d3d11_device_cb_.Run();
   if (!device_) {
     // This happens if, for example, if chrome is configured to use
@@ -289,13 +290,12 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   // Use IsHDRSupported to guess whether the compositor can output HDR textures.
   // See TextureSelector for notes about why the decoder should not care.
-  texture_selector_ =
-      TextureSelector::Create(gpu_preferences_, gpu_workarounds_,
-                              decoder_configurator_->TextureFormat(),
-                              gl::DirectCompositionSurfaceWin::IsHDRSupported()
-                                  ? TextureSelector::HDRMode::kSDROrHDR
-                                  : TextureSelector::HDRMode::kSDROnly,
-                              &format_checker, media_log_.get());
+  texture_selector_ = TextureSelector::Create(
+      gpu_preferences_, gpu_workarounds_,
+      decoder_configurator_->TextureFormat(),
+      is_hdr_supported_ ? TextureSelector::HDRMode::kSDROrHDR
+                        : TextureSelector::HDRMode::kSDROnly,
+      &format_checker, media_log_.get());
   if (!texture_selector_) {
     NotifyError("D3DD11: Cannot get TextureSelector for format");
     return;
@@ -413,25 +413,14 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   AddLifetimeProgressionStage(D3D11LifetimeProgression::kInitializeSucceeded);
 
-  // Initialize the gpu side.  We wait until everything else is initialized,
-  // since we allow it to call us back re-entrantly to reduce latency.  Note
-  // that if we're not on the same thread, then we should probably post the
-  // call earlier, since re-entrancy won't be an issue.
-  if (impl_task_runner_->RunsTasksInCurrentSequence()) {
-    impl_->Initialize(std::move(impl_init_cb),
-                      std::move(get_picture_buffer_cb));
-    return;
-  }
-
+  // Initialize the gpu side.  It would be nice if we could ask SB<> to elide
+  // the post if we're already on that thread, but it can't.
   // Bind our own init / output cb that hop to this thread, so we don't call
   // the originals on some other thread.
   // Important but subtle note: base::Bind will copy |config_| since it's a
   // const ref.
-  impl_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&D3D11VideoDecoderImpl::Initialize, impl_weak_,
-                     BindToCurrentLoop(std::move(impl_init_cb)),
-                     BindToCurrentLoop(std::move(get_picture_buffer_cb))));
+  impl_.Post(FROM_HERE, &D3D11VideoDecoderImpl::Initialize,
+             BindToCurrentLoop(std::move(impl_init_cb)));
 }
 
 void D3D11VideoDecoder::AddLifetimeProgressionStage(
@@ -456,7 +445,9 @@ void D3D11VideoDecoder::ReceivePictureBufferFromClient(
   DoDecode();
 }
 
-void D3D11VideoDecoder::OnGpuInitComplete(bool success) {
+void D3D11VideoDecoder::OnGpuInitComplete(
+    bool success,
+    D3D11VideoDecoderImpl::ReleaseMailboxCB release_mailbox_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   TRACE_EVENT0("gpu", "D3D11VideoDecoder::OnGpuInitComplete");
 
@@ -472,6 +463,8 @@ void D3D11VideoDecoder::OnGpuInitComplete(bool success) {
     NotifyError("Gpu init failed");
     return;
   }
+
+  release_mailbox_cb_ = std::move(release_mailbox_cb);
 
   state_ = State::kRunning;
   std::move(init_cb_).Run(OkStatus());
@@ -710,11 +703,11 @@ void D3D11VideoDecoder::CreatePictureBuffers() {
       return;
     }
 
-    picture_buffers_.push_back(
-        new D3D11PictureBuffer(in_texture, std::move(tex_wrapper), size, i));
-    if (!picture_buffers_[i]->Init(get_helper_cb_, video_device_,
-                                   decoder_configurator_->DecoderGuid(),
-                                   media_log_->Clone())) {
+    picture_buffers_.push_back(new D3D11PictureBuffer(
+        decoder_task_runner_, in_texture, std::move(tex_wrapper), size, i));
+    if (!picture_buffers_[i]->Init(
+            gpu_task_runner_, get_helper_cb_, video_device_,
+            decoder_configurator_->DecoderGuid(), media_log_->Clone())) {
       NotifyError("Unable to allocate PictureBuffer");
       return;
     }
@@ -788,10 +781,16 @@ bool D3D11VideoDecoder::OutputResult(const CodecPicture* picture,
     return false;
   }
 
-  // TODO(liberato): bind this to the gpu main thread.
-  frame->SetReleaseMailboxCB(media::BindToCurrentLoop(
-      base::BindOnce(&D3D11VideoDecoderImpl::OnMailboxReleased, impl_weak_,
-                     scoped_refptr<D3D11PictureBuffer>(picture_buffer))));
+  // Remember that this will likely thread-hop to the GPU main thread.  Note
+  // that |picture_buffer| will delete on sequence, so it's okay even if
+  // |wait_complete_cb| doesn't ever run.
+  auto wait_complete_cb = BindToCurrentLoop(
+      base::BindOnce(&D3D11VideoDecoder::ReceivePictureBufferFromClient,
+                     weak_factory_.GetWeakPtr(),
+                     scoped_refptr<D3D11PictureBuffer>(picture_buffer)));
+  frame->SetReleaseMailboxCB(
+      base::BindOnce(release_mailbox_cb_, std::move(wait_complete_cb)));
+
   frame->metadata()->SetBoolean(VideoFrameMetadata::POWER_EFFICIENT, true);
   // For NV12, overlay is allowed by default. If the decoder is going to support
   // non-NV12 textures, then this may have to be conditionally set. Also note

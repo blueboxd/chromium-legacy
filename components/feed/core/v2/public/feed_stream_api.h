@@ -52,6 +52,16 @@ class FeedStreamApi {
   virtual bool CommitEphemeralChange(EphemeralChangeId id) = 0;
   // Rejects a change. Returns false if the change does not exist.
   virtual bool RejectEphemeralChange(EphemeralChangeId id) = 0;
+
+  // User interaction reporting. These should have no side-effects other than
+  // reporting metrics.
+  virtual void ReportNavigationStarted() = 0;
+  virtual void ReportNavigationDone() = 0;
+  virtual void ReportContentRemoved() = 0;
+  virtual void ReportNotInterestedIn() = 0;
+  virtual void ReportManageInterests() = 0;
+  virtual void ReportContextMenuOpened() = 0;
+  virtual void ReportStreamScrolled(int distance_dp) = 0;
 };
 
 }  // namespace feed

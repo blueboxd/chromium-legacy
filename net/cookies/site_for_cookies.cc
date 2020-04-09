@@ -20,7 +20,7 @@ std::string RegistrableDomainOrHost(const std::string& host) {
 
 }  // namespace
 
-SiteForCookies::SiteForCookies() = default;
+SiteForCookies::SiteForCookies() : schemefully_same_(false) {}
 
 SiteForCookies::SiteForCookies(const SiteForCookies& other) = default;
 SiteForCookies::SiteForCookies(SiteForCookies&& other) = default;
@@ -35,6 +35,7 @@ SiteForCookies& SiteForCookies::operator=(SiteForCookies&& site_for_cookies) =
 // static
 bool SiteForCookies::FromWire(const std::string& scheme,
                               const std::string& registrable_domain,
+                              bool schemefully_same,
                               SiteForCookies* out) {
   // Make sure scheme meets precondition of methods like
   // GURL::SchemeIsCryptographic.
@@ -45,6 +46,8 @@ bool SiteForCookies::FromWire(const std::string& scheme,
   SiteForCookies candidate(scheme, registrable_domain);
   if (registrable_domain != candidate.registrable_domain_)
     return false;
+
+  candidate.schemefully_same_ = schemefully_same;
 
   *out = std::move(candidate);
   return true;
@@ -65,8 +68,10 @@ SiteForCookies SiteForCookies::FromUrl(const GURL& url) {
 }
 
 std::string SiteForCookies::ToDebugString() const {
+  std::string same_scheme_string = schemefully_same_ ? "true" : "false";
   return base::StrCat({"SiteForCookies: {scheme=", scheme_,
-                       "; registrable_domain=", registrable_domain_, "}"});
+                       "; registrable_domain=", registrable_domain_,
+                       "; schemefully_same=", same_scheme_string, "}"});
 }
 
 bool SiteForCookies::IsFirstParty(const GURL& url) const {
@@ -91,6 +96,40 @@ bool SiteForCookies::IsEquivalent(const SiteForCookies& other) const {
   return registrable_domain_ == other.registrable_domain_;
 }
 
+void SiteForCookies::MarkIfCrossScheme(const url::Origin& other) {
+  // If |this| is IsNull() then |this| doesn't match anything which means that
+  // the scheme check is pointless. Also exit early if schemefully_same_ is
+  // already false.
+  if (IsNull() || !schemefully_same_)
+    return;
+
+  // Mark and return early if |other| is opaque. Opaque origins shouldn't match.
+  if (other.opaque()) {
+    schemefully_same_ = false;
+    return;
+  }
+  const std::string& other_scheme = other.scheme();
+
+  // Exact match case.
+  if (scheme_ == other_scheme)
+    return;
+
+  // ["https", "wss"] case.
+  if ((scheme_ == url::kHttpsScheme || scheme_ == url::kWssScheme) &&
+      (other_scheme == url::kHttpsScheme || other_scheme == url::kWssScheme)) {
+    return;
+  }
+
+  // ["http", "ws"] case.
+  if ((scheme_ == url::kHttpScheme || scheme_ == url::kWsScheme) &&
+      (other_scheme == url::kHttpScheme || other_scheme == url::kWsScheme)) {
+    return;
+  }
+
+  // The two are cross-scheme to each other.
+  schemefully_same_ = false;
+}
+
 GURL SiteForCookies::RepresentativeUrl() const {
   if (IsNull())
     return GURL();
@@ -101,6 +140,8 @@ GURL SiteForCookies::RepresentativeUrl() const {
 
 SiteForCookies::SiteForCookies(const std::string& scheme,
                                const std::string& host)
-    : scheme_(scheme), registrable_domain_(RegistrableDomainOrHost(host)) {}
+    : scheme_(scheme),
+      registrable_domain_(RegistrableDomainOrHost(host)),
+      schemefully_same_(!scheme.empty()) {}
 
 }  // namespace net

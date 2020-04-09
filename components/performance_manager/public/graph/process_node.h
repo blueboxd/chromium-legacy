@@ -66,8 +66,9 @@ class ProcessNode : public Node {
   virtual base::Optional<int32_t> GetExitStatus() const = 0;
 
   // Visits the frame nodes that are hosted in this process. The iteration is
-  // halted if the visitor returns false.
-  virtual void VisitFrameNodes(const FrameNodeVisitor& visitor) const = 0;
+  // halted if the visitor returns false. Returns true if every call to the
+  // visitor returned true, false otherwise.
+  virtual bool VisitFrameNodes(const FrameNodeVisitor& visitor) const = 0;
 
   // Returns the set of frame nodes that are hosted in this process. Note that
   // calling this causes the set of nodes to be generated.

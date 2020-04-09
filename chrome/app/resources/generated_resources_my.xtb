@@ -420,7 +420,6 @@
 <translation id="1566049601598938765">ဝဘ်ဆိုက်</translation>
 <translation id="15662109988763471">ရွေးထားသည့် ပုံနှိပ်စက်ကို အသုံးပြု၍မရပါ (သို့) မှန်ကန်စွာ ထည့်သွင်းမထားပါ။ သင်၏ ပုံနှိပ်စက်ကို စစ်ဆေးပါ (သို့) နောက်တစ်ခုကို ရွေးကြည့်ပါ။</translation>
 <translation id="1567387640189251553">သင်၏ စကားဝှက်ကို နောက်ဆုံးထည့်သွင်းခဲ့သည့် အချိန်နောက်ပိုင်းတွင် မတူညီသည့်ကီးဘုတ်တစ်ခုကို ချိတ်ဆက်ထားသည်။ ၎င်းသည် သင်၏ ခလုတ်နှိပ်ချက်များကို ခိုးယူရန် ကြိုးစားနိုင်သည်။</translation>
-<translation id="1567750922576943685">သင့်အထောက်အထားကို အတည်ပြုခြင်းဖြင့် သင်၏ ကိုယ်​ရေးကိုယ်တာအချက်အလက်များကို ကာကွယ်ရာတွင် အထောက်အကူ ဖြစ်စေပါသည်</translation>
 <translation id="1567993339577891801">JavaScript ခလုတ်ခုံ</translation>
 <translation id="1568323446248056064">မျက်နှာပြင်ပြသမှုကိရိယာ ဆက်တင်များကို ဖွင့်ပါ</translation>
 <translation id="1572139610531470719"><ph name="WINDOW_TITLE" /> (ဧည့်သည်)</translation>
@@ -523,7 +522,6 @@
 <translation id="1697150536837697295">အနုပညာ</translation>
 <translation id="1697686431566694143">ဖိုင်တည်းဖြတ်ရန်</translation>
 <translation id="1698122934742150150">လက်ရှိ လျှို့ဝှက်သုံး သတ်မှတ်ချိန်သာ</translation>
-<translation id="1698650002254827833">အက်ပ်စာရင်းကို ဖွင့်၍မရပါ။ ထပ်စမ်းကြည့်ပါ။</translation>
 <translation id="1700079447639026019">ကွတ်ကီးများကို ဘယ်တော့မှ အသုံးမပြုနိုင်သည့် ဝဘ်ဆိုက်များ</translation>
 <translation id="1701062906490865540">ဒီလူကို ဖယ်ထုတ်ရန်</translation>
 <translation id="1703331064825191675">သင့်စကားဝှက်များနှင့် ပတ်သက်ပြီး မည်သည့်အခါမှ စိတ်ပူစရာမလိုခြင်း</translation>
@@ -1086,7 +1084,6 @@
 <translation id="2442916515643169563">စာသားအရိပ်</translation>
 <translation id="2445081178310039857">တိုးချဲ့ ရင်းမြစ် ဒါရိုက်ထရီ လိုအပ်သည်။</translation>
 <translation id="2445484935443597917">ပရိုဖိုင်အသစ် ပြုလုပ်ရန်</translation>
-<translation id="2446585455334014596"><ph name="APP_NAME" /> သည် သင်မည်သူမည်ဝါဖြစ်ကြောင်း အတည်ပြုလိုသည်</translation>
 <translation id="2448312741937722512">ပုံစံ</translation>
 <translation id="2450223707519584812">Google API သော့များ မရှိသောကြောင့် သင်သည် အသုံးပြုသူများကို ထည့်မပေးနိုင်ပါ။ အသေးစိတ်များကို <ph name="DETAILS_URL" />မှာ ကြည့်ရှုပါ။</translation>
 <translation id="2450849356604136918">လက်ရှိ ပြသမှုများ မရှိပါ</translation>
@@ -1693,7 +1690,6 @@
 <translation id="3246107497225150582">{0,plural, =1{စက်ကို တစ်ရက်အတွင်း အပ်ဒိတ်လုပ်ပါ}other{စက်ကို # ရက်အတွင်း အပ်ဒိတ်လုပ်ပါ}}</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> - ကွန်ရက်အမှားအယွင်း</translation>
 <translation id="3248902735035392926">လုံခြုံမှုက အရေးကြီးပါသည်။ အချိန်ခဏပေး၍ <ph name="BEGIN_LINK" />ယခုပင် သင်၏နောက်ဆက်တွဲများကို စစ်ဆေးပါ<ph name="END_LINK" /></translation>
-<translation id="3249950116250264636"><ph name="APP_NAME" /> (<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">&lt;လက်မှတ် ထဲက အပိုင်း မဟုတ်ပါ&gt;</translation>
 <translation id="3253225298092156258">မရနိုင်ပါ</translation>
 <translation id="3253448572569133955">အမျိုးအမည်မသိ အကောင့်</translation>
@@ -2984,7 +2980,6 @@
 <translation id="4992473555164495036">စီမံခန့်ခွဲသူက ရရှိနိုင်သော လက်ကွက်များကို ကန့်သတ်ထားသည်။</translation>
 <translation id="4994474651455208930">လုပ်ထုံးလုပ်နည်းများအား မူရင်းစီမံသူများအဖြစ် ဆိုက်များကို တောင်းဆိုခွင့်ပြုပါ</translation>
 <translation id="4994754230098574403">စနစ်ထည့်သွင်းနေပါသည်</translation>
-<translation id="4996978546172906250">မှတစ်ဆင့် မျှဝေရန်</translation>
 <translation id="4997086284911172121">အင်တာနက် ချိတ်ဆက်မှု မရှိပါ။</translation>
 <translation id="4997384734315285248">Plugin VM ကို ဖယ်ရှားရန်</translation>
 <translation id="4998430619171209993">ဖွင့်ထားသည်</translation>
@@ -3084,7 +3079,6 @@
 <translation id="5135085122826131075">"Ok Google" ဟုပြောသည့်အခါ သင်၏ Assistant ကို အသုံးပြုနိုင်သည်။</translation>
 <translation id="5135533361271311778">စာညှပ် အရာကို ဖန်တီး မပေးနိုင်ခဲ့ပါ။</translation>
 <translation id="5137501176474113045">ဒီအရာကို ဖျက်ရန်</translation>
-<translation id="5138982052046316113">Linux ဒစ်ခ်ကို အရွယ်အစားပြန်ပြင်ခြင်း</translation>
 <translation id="5139112070765735680"><ph name="QUERY_NAME" />၊ <ph name="DEFAULT_SEARCH_ENGINE_NAME" /> Search</translation>
 <translation id="5139823398361067371">သင်၏လုံခြုံရေးကီးအတွက် ပင်နံပါတ် ထည့်ပါ။ ပင်နံပါတ်မသိပါက လုံခြုံရေးကီးကို ပြင်ဆင်သတ်မှတ်ရပါမည်။</translation>
 <translation id="5139955368427980650">&amp;ဖွင့်</translation>
@@ -3949,7 +3943,6 @@
 <translation id="6291953229176937411">&amp;တွေ့ရှိချက် ထဲမှာ ပြရန်</translation>
 <translation id="6295158916970320988">ဆိုဒ်များအားလုံး</translation>
 <translation id="6295855836753816081">သိမ်းဆည်းနေသည်...</translation>
-<translation id="629730747756840877">အကောင့်</translation>
 <translation id="6298962879096096191">Android အက်ပ်များကို ထည့်သွင်းရန် Google Play ကို အသုံးပြုပါ</translation>
 <translation id="630065524203833229">ထွက်</translation>
 <translation id="6300718114348072351"><ph name="PRINTER_NAME" /> ကို အလိုအလျောက် စီစဉ်သတ်မှတ်၍မရပါ။ ပုံနှိပ်စက်ဆိုင်ရာ အဆင့်မြင့် အသေးစိတ်အချက်များကို သတ်မှတ်ပါ။ <ph name="LINK_BEGIN" />ပိုမိုလေ့လာရန်<ph name="LINK_END" /></translation>
@@ -4353,7 +4346,6 @@
 <translation id="6865598234501509159">စာမျက်နှာသည် <ph name="LANGUAGE" /> ဘာသာဖြင့် မဟုတ်ပါ</translation>
 <translation id="6865708901122695652">WebRTC ဖြစ်စဉ်မှတ်တမ်းများ (<ph name="WEBRTC_EVENT_LOG_COUNT" />)</translation>
 <translation id="686664946474413495">အရောင်အပူချိန်</translation>
-<translation id="6870888490422746447">မျှဝေရန် အက်ပ်တစ်ခုရွေးချယ်ပါ−</translation>
 <translation id="6871644448911473373">OCSP တုံ့ပြန်သူ: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">သင်ထည့်ထားသော စကားဝှက်ကို ဆာဗာမှ ငြင်းဆိုလိုက်သည်။</translation>
 <translation id="6876155724392614295">စက်ဘီး</translation>
@@ -4997,7 +4989,6 @@
 <translation id="7744047395460924128">သင်၏ပုံနှိပ်မှတ်တမ်းကို ကြည့်ပါ</translation>
 <translation id="7744192722284567281">ဒေတာကျိုးပေါက်မှုတွင် တွေ့ထားသည်</translation>
 <translation id="7750228210027921155">တစ်ခုပေါ်တစ်ခုထပ်၍ ဖွင့်ရန်</translation>
-<translation id="7751229152614300329">'လုံခြုံစွာ ကြည့်ရှုခြင်း' အပ်ဒိတ်ဖြစ်နေပြီး အန္တရာယ်ရှိသော ဝဘ်ဆိုက်နှင့် ဒေါင်းလုဒ်များမှ သင့်ကို ကာကွယ်ပေးနေသည်</translation>
 <translation id="7751260505918304024">အားလုံးပြပါ</translation>
 <translation id="7754704193130578113">ဒေါင်းလုဒ်မလုပ်မီ ဖိုင်တိုင်းကို မည်သည့်နေရာတွင် သိမ်းမည်ကို မေးပါ</translation>
 <translation id="7755287808199759310">သင့်မိဘသည် ၎င်းကို သင့်အတွက် ဖွင့်ပေးနိုင်ပါသည်</translation>

@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">Feu clic per veure més opcions</translation>
 <translation id="1570871743947603115">Activa o desactiva el Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Accedir a tota la teva activitat d'aquesta sessió.</translation>
-<translation id="1608626060424371292">Suprimeix aquest usuari</translation>
+<translation id="1632985212731562677">L'accés amb interruptors es pot desactivar a Configuració &gt; Accessibilitat.</translation>
 <translation id="1654477262762802994">Inicia una consulta per veu</translation>
 <translation id="1658406695958299976">Encara no s'ha pogut verificar la contrasenya. Nota: si fa poc que has canviat la contrasenya, la nova s'aplicarà un cop hagis tancat la sessió. Fes servir la contrasenya anterior aquí.</translation>
 <translation id="1677472565718498478">Temps restant: <ph name="TIME" /></translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">És possible que l'administrador del dispositiu supervisi l'activitat de navegació.</translation>
 <translation id="3181441307743005334">Pot tardar una estona a reiniciar-se</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Connectat a un dispositiu}other{Connectat a # dispositius}}</translation>
+<translation id="3203405173652969239">L'accés amb interruptors s'ha activat</translation>
 <translation id="3207953481422525583">Configuració d'usuari</translation>
 <translation id="3217205077783620295">El volum està activat. En commutar-lo, se silenciarà l'àudio.</translation>
 <translation id="3226991577105957773"><ph name="COUNT" /> més</translation>
@@ -651,6 +652,7 @@
 <translation id="9211681782751733685">Temps restant perquè es carregui totalment la bateria: <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Estableix el fons de pantalla</translation>
 <translation id="921989828232331238">El teu pare o la teva mare han bloquejat el dispositiu per a tot el dia</translation>
+<translation id="9220525904950070496">Suprimir el compte</translation>
 <translation id="923686485342484400">Premeu Control+Maj+Q dues vegades per tancar la sessió.</translation>
 <translation id="938963181863597773">Què tinc programat al calendari?</translation>
 <translation id="945522503751344254">Envia suggeriments</translation>

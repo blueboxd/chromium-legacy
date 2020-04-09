@@ -82,14 +82,6 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   // false, but set to true by some tests.
   virtual bool GetContentStateImmediately() = 0;
 
-  // Inject edit commands to be used for the next keyboard event.
-  // TODO(alexmos): Currently, these are used only by BlinkTestRunner.  They
-  // should be removed from RenderView and instead be plumbed through the
-  // target frame and WebFrameTestProxy.
-  virtual void SetEditCommandForNextKeyEvent(const std::string& name,
-                                             const std::string& value) = 0;
-  virtual void ClearEditCommands() = 0;
-
   // Returns |renderer_preferences_.accept_languages| value.
   virtual const std::string& GetAcceptLanguages() = 0;
 

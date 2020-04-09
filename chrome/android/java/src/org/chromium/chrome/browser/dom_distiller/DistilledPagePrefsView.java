@@ -70,8 +70,12 @@ public class DistilledPagePrefsView extends LinearLayout
      */
     public DistilledPagePrefsView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mDistilledPagePrefs = DomDistillerServiceFactory.getForProfile(
-                Profile.getLastUsedProfile()).getDistilledPagePrefs();
+        // TODO (https://crbug.com/1048632): Use the current profile (i.e., regular profile or
+        // incognito profile) instead of always using regular profile. It works correctly now, but
+        // it is not safe.
+        mDistilledPagePrefs =
+                DomDistillerServiceFactory.getForProfile(Profile.getLastUsedRegularProfile())
+                        .getDistilledPagePrefs();
         mColorModeButtons = new HashMap<Integer /* Theme */, RadioButton>();
         mPercentageFormatter = NumberFormat.getPercentInstance(Locale.getDefault());
     }

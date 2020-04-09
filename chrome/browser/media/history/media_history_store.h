@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_MEDIA_HISTORY_MEDIA_HISTORY_STORE_H_
 #define CHROME_BROWSER_MEDIA_HISTORY_MEDIA_HISTORY_STORE_H_
 
-#include <memory>
 #include <set>
 #include <vector>
 
@@ -16,13 +15,9 @@
 #include "base/updateable_sequenced_task_runner.h"
 #include "chrome/browser/media/feeds/media_feeds_store.mojom.h"
 #include "chrome/browser/media/history/media_history_keyed_service.h"
-#include "chrome/browser/media/history/media_history_origin_table.h"
-#include "chrome/browser/media/history/media_history_playback_table.h"
 #include "chrome/browser/media/history/media_history_store.mojom.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/media_player_watch_time.h"
-#include "services/media_session/public/cpp/media_metadata.h"
-#include "sql/database.h"
 #include "sql/init_status.h"
 #include "sql/meta_table.h"
 
@@ -42,14 +37,22 @@ class Origin;
 
 namespace media_history {
 
-class MediaHistoryStoreInternal;
+class MediaHistoryOriginTable;
+class MediaHistoryPlaybackTable;
+class MediaHistorySessionTable;
+class MediaHistorySessionImagesTable;
+class MediaHistoryImagesTable;
+class MediaHistoryFeedsTable;
+class MediaHistoryFeedItemsTable;
 
-class MediaHistoryStore {
+// Refcounted as it is created, initialized and destroyed on a different thread
+// from the DB sequence provided to the constructor of this class that is
+// required for all methods performing database access.
+class MediaHistoryStore : public base::RefCountedThreadSafe<MediaHistoryStore> {
  public:
   MediaHistoryStore(
       Profile* profile,
       scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner);
-  ~MediaHistoryStore();
   MediaHistoryStore(const MediaHistoryStore& t) = delete;
   MediaHistoryStore& operator=(const MediaHistoryStore&) = delete;
 
@@ -100,48 +103,46 @@ class MediaHistoryStore {
  protected:
   friend class MediaHistoryKeyedService;
 
-  // Saves a playback from a single player in the media history store.
+  // Opens the database file from the |db_path|. Separated from the
+  // constructor to ease construction/destruction of this object on one thread
+  // and database access on the DB sequence of |db_task_runner_|.
+  void Initialize();
+
+  sql::InitStatus CreateOrUpgradeIfNeeded();
+  sql::InitStatus InitializeTables();
+  sql::Database* DB();
+
+  // Returns a flag indicating whether the origin id was created successfully.
+  bool CreateOriginId(const url::Origin& origin);
+
   void SavePlayback(const content::MediaPlayerWatchTime& watch_time);
 
-  void GetMediaHistoryStats(
-      base::OnceCallback<void(mojom::MediaHistoryStatsPtr)> callback);
+  mojom::MediaHistoryStatsPtr GetMediaHistoryStats();
+  int GetTableRowCount(const std::string& table_name);
 
-  // Returns all the rows in the origin table. This should only be used for
-  // debugging because it is very slow.
-  void GetOriginRowsForDebug(
-      base::OnceCallback<void(std::vector<mojom::MediaHistoryOriginRowPtr>)>
-          callback);
+  std::vector<mojom::MediaHistoryOriginRowPtr> GetOriginRowsForDebug();
 
-  // Returns all the rows in the playback table. This is only used for
-  // debugging because it loads all rows in the table.
-  void GetMediaHistoryPlaybackRowsForDebug(
-      base::OnceCallback<void(std::vector<mojom::MediaHistoryPlaybackRowPtr>)>
-          callback);
+  std::vector<mojom::MediaHistoryPlaybackRowPtr>
+  GetMediaHistoryPlaybackRowsForDebug();
 
-  // Returns all the rows in the media feeds table.  This is only used for
-  // debugging because it loads all rows in the table.
-  void GetMediaFeedsForDebug(
-      base::OnceCallback<void(std::vector<media_feeds::mojom::MediaFeedPtr>)>
-          callback);
+  std::vector<media_feeds::mojom::MediaFeedPtr> GetMediaFeedsForDebug();
 
-  // Gets the playback sessions from the media history store. The results will
-  // be ordered by most recent first and be limited to the first |num_sessions|.
-  // For each session it calls |filter| and if that returns |true| then that
-  // session will be included in the results.
-  void GetPlaybackSessions(
-      base::Optional<unsigned int> num_sessions,
-      base::Optional<GetPlaybackSessionsFilter> filter,
-      base::OnceCallback<void(
-          std::vector<mojom::MediaHistoryPlaybackSessionRowPtr>)> callback);
-
-  // Saves a playback session in the media history store.
   void SavePlaybackSession(
       const GURL& url,
       const media_session::MediaMetadata& metadata,
       const base::Optional<media_session::MediaPosition>& position,
       const std::vector<media_session::MediaImage>& artwork);
 
-  // Saves a newly discovered media feed in the media history store.
+  std::vector<mojom::MediaHistoryPlaybackSessionRowPtr> GetPlaybackSessions(
+      base::Optional<unsigned int> num_sessions,
+      base::Optional<MediaHistoryStore::GetPlaybackSessionsFilter> filter);
+
+  void RazeAndClose();
+  void DeleteAllOriginData(const std::set<url::Origin>& origins);
+  void DeleteAllURLData(const std::set<GURL>& urls);
+
+  std::set<GURL> GetURLsInTableForTest(const std::string& table);
+
   void DiscoverMediaFeed(const GURL& url);
 
   void StoreMediaFeedFetchResult(
@@ -152,33 +153,32 @@ class MediaHistoryStore {
       const std::vector<media_session::MediaImage>& logos,
       const std::string& display_name);
 
-  // Gets all the feed items for |feed_id|.
-  void GetItemsForMediaFeedForDebug(
-      const int64_t feed_id,
-      base::OnceCallback<
-          void(std::vector<media_feeds::mojom::MediaFeedItemPtr>)> callback);
+  std::vector<media_feeds::mojom::MediaFeedItemPtr>
+  GetItemsForMediaFeedForDebug(const int64_t feed_id);
 
-  void GetPendingSafeSearchCheckMediaFeedItems(
-      base::OnceCallback<
-          void(MediaHistoryKeyedService::PendingSafeSearchCheckList)> callback);
+  MediaHistoryKeyedService::PendingSafeSearchCheckList
+  GetPendingSafeSearchCheckMediaFeedItems();
 
   void StoreMediaFeedItemSafeSearchResults(
       std::map<int64_t, media_feeds::mojom::SafeSearchResult> results);
 
-  scoped_refptr<base::UpdateableSequencedTaskRunner> GetDBTaskRunnerForTest();
-
-  void GetURLsInTableForTest(const std::string& table,
-                             base::OnceCallback<void(std::set<GURL>)> callback);
-
-  void PostTaskToDBForTest(base::OnceClosure callback);
-  void EraseDatabaseAndCreateNew();
-  void DeleteAllOriginData(const std::set<url::Origin>& origins);
-  void DeleteAllURLData(const std::set<GURL>& urls);
-
  private:
-  scoped_refptr<MediaHistoryStoreInternal> db_;
+  friend class base::RefCountedThreadSafe<MediaHistoryStore>;
 
-  Profile* const profile_;
+  ~MediaHistoryStore();
+
+  scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner_;
+  const base::FilePath db_path_;
+  std::unique_ptr<sql::Database> db_;
+  sql::MetaTable meta_table_;
+  scoped_refptr<MediaHistoryOriginTable> origin_table_;
+  scoped_refptr<MediaHistoryPlaybackTable> playback_table_;
+  scoped_refptr<MediaHistorySessionTable> session_table_;
+  scoped_refptr<MediaHistorySessionImagesTable> session_images_table_;
+  scoped_refptr<MediaHistoryImagesTable> images_table_;
+  scoped_refptr<MediaHistoryFeedsTable> feeds_table_;
+  scoped_refptr<MediaHistoryFeedItemsTable> feed_items_table_;
+  bool initialization_successful_;
 };
 
 }  // namespace media_history

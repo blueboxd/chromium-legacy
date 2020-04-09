@@ -446,17 +446,6 @@ void WebAppInstallFinalizer::OnFallbackInstallFinalized(
   std::move(callback).Run(installed_app_id, code);
 }
 
-bool WebAppInstallFinalizer::CanRevealAppShim() const {
-  // TODO(loyso): Implement it.
-  NOTIMPLEMENTED();
-  return false;
-}
-
-void WebAppInstallFinalizer::RevealAppShim(const AppId& app_id) {
-  // TODO(loyso): Implement it.
-  NOTIMPLEMENTED();
-}
-
 WebAppRegistrar& WebAppInstallFinalizer::GetWebAppRegistrar() const {
   WebAppRegistrar* web_app_registrar = registrar().AsWebAppRegistrar();
   DCHECK(web_app_registrar);

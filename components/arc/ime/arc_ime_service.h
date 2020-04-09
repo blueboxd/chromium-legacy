@@ -170,6 +170,10 @@ class ArcImeService : public KeyedService,
   // updates |cursor_rect_|. Returns whether or not the stored value changed.
   bool UpdateCursorRect(const gfx::Rect& rect, bool is_screen_coordinates);
 
+  // Returns true if this TextInputClient is active and incoming input state
+  // from Android is valid.
+  bool ShouldSendUpdateToInputMethod() const;
+
   std::unique_ptr<ArcImeBridge> ime_bridge_;
   std::unique_ptr<ArcWindowDelegate> arc_window_delegate_;
   ui::TextInputType ime_type_;

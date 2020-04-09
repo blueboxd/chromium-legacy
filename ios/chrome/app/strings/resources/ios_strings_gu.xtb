@@ -168,6 +168,7 @@
 <translation id="3112556859945124369">ચિહ્નિત કરો…</translation>
 <translation id="3153862085237805241">કાર્ડ સાચવો</translation>
 <translation id="3157684681743766797">તમામને આ રીતે ચિહ્નિત કરો…</translation>
+<translation id="3161291298470460782">આમ કરવાથી તમને સાઇન આઉટ કરવામાં આવશે, સિંક કરવાનું બંધ થશે અને આ ડિવાઇસમાંથી બધો Chrome ડેટા સાફ કરવામાં આવશે. તમારો સિંક કરેલો ડેટા તમારા Google એકાઉન્ટમાં રહેશે.</translation>
 <translation id="3175081911749765310">વેબ સેવાઓ</translation>
 <translation id="3178650076442119961">આજે સક્રિય છે</translation>
 <translation id="3207960819495026254">બુકમાર્ક કરેલ</translation>
@@ -200,6 +201,7 @@
 <translation id="3494788280727468875">બ્રાઉઝિંગ ડેટા સાફ કરવાની પુષ્ટિ કરો</translation>
 <translation id="35083190962747987">${url} ખોલો</translation>
 <translation id="3519193562722059437">વેબ બ્રાઉઝ કરવા ટેબ ખોલો.</translation>
+<translation id="3523473570015918798">સાઇન આઉટ કરવાથી તમારા બુકમાર્ક, ઇતિહાસ, પાસવર્ડ અને અન્ય Chrome ડેટા હવેથી તમારા Google એકાઉન્ટ પર સિંક થશે નહીં.</translation>
 <translation id="3527085408025491307">ફોલ્ડર</translation>
 <translation id="3529024052484145543">સુરક્ષિત નથી</translation>
 <translation id="3533202363250687977">બધાં છૂપા ટૅબ બંધ કરો</translation>
@@ -333,6 +335,7 @@
 <translation id="54401264925851789">પૃષ્ઠ સુરક્ષા માહિતી</translation>
 <translation id="5443952882982198570">ક્રેડિટ કાર્ડ</translation>
 <translation id="5457907402803865181">પાસવર્ડ સિંક કરવામાં ભૂલ આવી.</translation>
+<translation id="5508435575041083207">સાઇન આઉટ કરો અને આ ડિવાઇસમાંથી ડેટા સાફ કરો</translation>
 <translation id="5525269841082836315">પાસફ્રેઝ બનાવો</translation>
 <translation id="5548760955356983418">હેન્ડઓફ તમને આ ડિવાઇસ પર વેબસાઇટ બ્રાઉઝ કરવાનું શરૂ કરવા અને પછી તમારા Mac પર સરળતાથી ચાલુ રાખવા દે છે. વર્તમાનમાં ખુલ્લી છે તે વેબસાઇટ તમારા Mac ના ડૉક પર દેખાશે.
 
@@ -506,6 +509,9 @@
 <translation id="766891008101699113">વેબને ખાનગી રીતે બ્રાઉઝ કરવા માટે, નવી ટૅબ ઉમેરો.</translation>
 <translation id="7671141431838911305">ઇન્સ્ટોલ કરો</translation>
 <translation id="7765158879357617694">સ્થાન</translation>
+<translation id="7771470029643830783">સાઇન આઉટ કરવાથી તમારા બુકમાર્ક, ઇતિહાસ, પાસવર્ડ અને અન્ય Chrome ડેટા હવેથી તમારા Google એકાઉન્ટ પર સિંક થશે નહીં.
+
+તમારું એકાઉન્ટ <ph name="HOSTED_DOMAIN" /> દ્વારા મેનેજ કરવામાં આવતું હોવાથી, સાઇન આઉટ કરતી વખતે તમારો Chrome ડેટા આ ડિવાઇસમાંથી સાફ કરવામાં આવશે. તમારો સિંક કરેલો ડેટા તમારા Google એકાઉન્ટમાં રહેશે.</translation>
 <translation id="7772032839648071052">પાસફ્રેઝની પુષ્ટિ કરો</translation>
 <translation id="7781011649027948662">પેજનો અનુવાદ કરીએ?</translation>
 <translation id="7781829728241885113">ગઈ કાલે</translation>
@@ -555,6 +561,7 @@
 <translation id="8490978609246021741">ફેરફારો સાચવો</translation>
 <translation id="8503813439785031346">વપરાશકર્તાનામ</translation>
 <translation id="850600235656508448">છુપામાં ખોલો</translation>
+<translation id="8510057420705599706">આમ કરવાથી તમને સાઇન આઉટ કરવામાં આવશે અને સિંક કરવાનું બંધ થશે પણ તમારા બુકમાર્ક, ઇતિહાસ, પાસવર્ડ અને અન્ય Chrome ડેટા આ ડિવાઇસમાં જ રહેશે.</translation>
 <translation id="8517375800490286174">ઓપન સોર્સ લાઇસન્સ</translation>
 <translation id="8524799873541103884"><ph name="NUMBER_OF_OPEN_TABS" /> ના  <ph name="FIRST_VISIBLE_TAB" /> થી <ph name="LAST_VISIBLE_TAB" /> સુધી <ph name="INCOGNITO" /> ટેબ્સ</translation>
 <translation id="8529767659511976195">નવી</translation>
@@ -597,6 +604,7 @@
 <translation id="9094033019050270033">પાસવર્ડ અપડેટ કરો</translation>
 <translation id="9100610230175265781">પાસફ્રેઝ આવશ્યક છે</translation>
 <translation id="9148126808321036104">ફરીથી સાઇન ઇન કરો </translation>
+<translation id="9152539721251340337">QR કોડ બનાવો</translation>
 <translation id="9157836665414082580">સંવાદો નાબૂદ કરો</translation>
 <translation id="9188680907066685419">સંચાલિત એકાઉન્ટમાંથી સાઇન આઉટ કરો</translation>
 <translation id="9203116392574189331">હેન્ડઓફ</translation>

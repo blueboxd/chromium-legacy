@@ -19,6 +19,10 @@ namespace chromeos {
 // Observer class for network configuration events (remove only).
 class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConfigurationObserver {
  public:
+  // Called after a new network configuration is created successfully.
+  virtual void OnConfigurationCreated(const std::string& service_path,
+                                      const std::string& guid);
+
   // Called whenever properties on a network configuration are modified.
   virtual void OnConfigurationModified(const std::string& service_path,
                                        const std::string& guid,

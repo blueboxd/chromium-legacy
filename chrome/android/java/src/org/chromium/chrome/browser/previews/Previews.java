@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.previews;
 
-import org.chromium.chrome.browser.ssl.ChromeSecurityStateModelDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.security_state.SecurityStateModel;
 import org.chromium.content_public.browser.WebContents;
@@ -21,8 +20,7 @@ public final class Previews {
         if (tab == null || tab.isNativePage()) return false;
         WebContents webContents = tab.getWebContents();
         boolean isPreview = webContents != null && !webContents.isShowingInterstitialPage()
-                && !SecurityStateModel.isContentDangerous(
-                        webContents, ChromeSecurityStateModelDelegate.getInstance())
+                && !SecurityStateModel.isContentDangerous(webContents)
                 && PreviewsAndroidBridge.getInstance().shouldShowPreviewUI(webContents);
         return isPreview;
     }

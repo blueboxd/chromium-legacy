@@ -39209,7 +39209,9 @@
           "--version",
           "13.3",
           "--out-dir",
-          "${ISOLATED_OUTDIR}"
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11c29"
         ],
         "isolate_name": "base_unittests",
         "merge": {
@@ -39248,7 +39250,9 @@
           "--version",
           "13.3",
           "--out-dir",
-          "${ISOLATED_OUTDIR}"
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11c29"
         ],
         "isolate_name": "boringssl_crypto_tests",
         "merge": {
@@ -39287,7 +39291,9 @@
           "--version",
           "13.3",
           "--out-dir",
-          "${ISOLATED_OUTDIR}"
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11c29"
         ],
         "isolate_name": "boringssl_ssl_tests",
         "merge": {
@@ -39326,7 +39332,9 @@
           "--version",
           "13.3",
           "--out-dir",
-          "${ISOLATED_OUTDIR}"
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11c29"
         ],
         "isolate_name": "components_unittests",
         "merge": {
@@ -39365,7 +39373,9 @@
           "--version",
           "13.3",
           "--out-dir",
-          "${ISOLATED_OUTDIR}"
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11c29"
         ],
         "isolate_name": "crypto_unittests",
         "merge": {
@@ -39404,7 +39414,9 @@
           "--version",
           "13.3",
           "--out-dir",
-          "${ISOLATED_OUTDIR}"
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11c29"
         ],
         "isolate_name": "gfx_unittests",
         "merge": {
@@ -39443,7 +39455,9 @@
           "--version",
           "13.3",
           "--out-dir",
-          "${ISOLATED_OUTDIR}"
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11c29"
         ],
         "isolate_name": "google_apis_unittests",
         "merge": {
@@ -39482,7 +39496,9 @@
           "--version",
           "13.3",
           "--out-dir",
-          "${ISOLATED_OUTDIR}"
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11c29"
         ],
         "isolate_name": "ios_chrome_unittests",
         "merge": {
@@ -39521,7 +39537,9 @@
           "--version",
           "13.3",
           "--out-dir",
-          "${ISOLATED_OUTDIR}"
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11c29"
         ],
         "isolate_name": "ios_net_unittests",
         "merge": {
@@ -39560,7 +39578,9 @@
           "--version",
           "13.3",
           "--out-dir",
-          "${ISOLATED_OUTDIR}"
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11c29"
         ],
         "isolate_name": "ios_web_inttests",
         "merge": {
@@ -39599,7 +39619,9 @@
           "--version",
           "13.3",
           "--out-dir",
-          "${ISOLATED_OUTDIR}"
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11c29"
         ],
         "isolate_name": "ios_web_unittests",
         "merge": {
@@ -39638,7 +39660,9 @@
           "--version",
           "13.3",
           "--out-dir",
-          "${ISOLATED_OUTDIR}"
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11c29"
         ],
         "isolate_name": "ios_web_view_inttests",
         "merge": {
@@ -39677,7 +39701,9 @@
           "--version",
           "13.3",
           "--out-dir",
-          "${ISOLATED_OUTDIR}"
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11c29"
         ],
         "isolate_name": "net_unittests",
         "merge": {
@@ -39716,7 +39742,9 @@
           "--version",
           "13.3",
           "--out-dir",
-          "${ISOLATED_OUTDIR}"
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11c29"
         ],
         "isolate_name": "skia_unittests",
         "merge": {
@@ -39755,7 +39783,9 @@
           "--version",
           "13.3",
           "--out-dir",
-          "${ISOLATED_OUTDIR}"
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11c29"
         ],
         "isolate_name": "sql_unittests",
         "merge": {
@@ -39794,7 +39824,9 @@
           "--version",
           "13.3",
           "--out-dir",
-          "${ISOLATED_OUTDIR}"
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11c29"
         ],
         "isolate_name": "ui_base_unittests",
         "merge": {
@@ -39833,7 +39865,9 @@
           "--version",
           "13.3",
           "--out-dir",
-          "${ISOLATED_OUTDIR}"
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11c29"
         ],
         "isolate_name": "url_unittests",
         "merge": {
@@ -39891,7 +39925,9 @@
       {
         "args": [
           "--out-dir",
-          "${ISOLATED_OUTDIR}"
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11c29"
         ],
         "isolate_name": "base_unittests",
         "merge": {
@@ -39927,7 +39963,9 @@
       {
         "args": [
           "--out-dir",
-          "${ISOLATED_OUTDIR}"
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11c29"
         ],
         "isolate_name": "boringssl_crypto_tests",
         "merge": {
@@ -39963,7 +40001,9 @@
       {
         "args": [
           "--out-dir",
-          "${ISOLATED_OUTDIR}"
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11c29"
         ],
         "isolate_name": "boringssl_ssl_tests",
         "merge": {
@@ -39999,7 +40039,9 @@
       {
         "args": [
           "--out-dir",
-          "${ISOLATED_OUTDIR}"
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11c29"
         ],
         "isolate_name": "components_unittests",
         "merge": {
@@ -40035,7 +40077,9 @@
       {
         "args": [
           "--out-dir",
-          "${ISOLATED_OUTDIR}"
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11c29"
         ],
         "isolate_name": "crypto_unittests",
         "merge": {
@@ -40071,7 +40115,9 @@
       {
         "args": [
           "--out-dir",
-          "${ISOLATED_OUTDIR}"
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11c29"
         ],
         "isolate_name": "gfx_unittests",
         "merge": {
@@ -40107,7 +40153,9 @@
       {
         "args": [
           "--out-dir",
-          "${ISOLATED_OUTDIR}"
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11c29"
         ],
         "isolate_name": "google_apis_unittests",
         "merge": {
@@ -40143,7 +40191,9 @@
       {
         "args": [
           "--out-dir",
-          "${ISOLATED_OUTDIR}"
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11c29"
         ],
         "isolate_name": "ios_chrome_unittests",
         "merge": {
@@ -40179,7 +40229,9 @@
       {
         "args": [
           "--out-dir",
-          "${ISOLATED_OUTDIR}"
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11c29"
         ],
         "isolate_name": "ios_net_unittests",
         "merge": {
@@ -40215,7 +40267,9 @@
       {
         "args": [
           "--out-dir",
-          "${ISOLATED_OUTDIR}"
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11c29"
         ],
         "isolate_name": "ios_web_inttests",
         "merge": {
@@ -40251,7 +40305,9 @@
       {
         "args": [
           "--out-dir",
-          "${ISOLATED_OUTDIR}"
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11c29"
         ],
         "isolate_name": "ios_web_unittests",
         "merge": {
@@ -40287,7 +40343,9 @@
       {
         "args": [
           "--out-dir",
-          "${ISOLATED_OUTDIR}"
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11c29"
         ],
         "isolate_name": "ios_web_view_inttests",
         "merge": {
@@ -40323,7 +40381,9 @@
       {
         "args": [
           "--out-dir",
-          "${ISOLATED_OUTDIR}"
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11c29"
         ],
         "isolate_name": "net_unittests",
         "merge": {
@@ -40359,7 +40419,9 @@
       {
         "args": [
           "--out-dir",
-          "${ISOLATED_OUTDIR}"
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11c29"
         ],
         "isolate_name": "skia_unittests",
         "merge": {
@@ -40395,7 +40457,9 @@
       {
         "args": [
           "--out-dir",
-          "${ISOLATED_OUTDIR}"
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11c29"
         ],
         "isolate_name": "sql_unittests",
         "merge": {
@@ -40431,7 +40495,9 @@
       {
         "args": [
           "--out-dir",
-          "${ISOLATED_OUTDIR}"
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11c29"
         ],
         "isolate_name": "ui_base_unittests",
         "merge": {
@@ -40467,7 +40533,9 @@
       {
         "args": [
           "--out-dir",
-          "${ISOLATED_OUTDIR}"
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11c29"
         ],
         "isolate_name": "url_unittests",
         "merge": {

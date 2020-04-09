@@ -52,6 +52,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/crostini_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/cups_printers_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/date_time_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/device_display_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_keyboard_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_pointer_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_power_handler.h"
@@ -319,6 +320,11 @@ void OSSettingsUI::InitOSWebUIHandlers(content::WebUIDataSource* html_source) {
   if (kerberos_accounts_handler) {
     // Note that the UI is enabled only if Kerberos is enabled.
     web_ui()->AddMessageHandler(std::move(kerberos_accounts_handler));
+  }
+
+  if (ash::features::IsDisplayIdentificationEnabled()) {
+    web_ui()->AddMessageHandler(
+        std::make_unique<chromeos::settings::DisplayHandler>());
   }
 
   web_ui()->AddMessageHandler(

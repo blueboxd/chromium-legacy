@@ -512,7 +512,7 @@ void ChromeLauncherController::ActivateApp(const std::string& app_id,
 
   std::unique_ptr<AppShortcutLauncherItemController> item_delegate =
       AppShortcutLauncherItemController::Create(shelf_id);
-  if (!item_delegate->GetRunningApplications().empty()) {
+  if (item_delegate->HasRunningApplications()) {
     SelectItemWithSource(item_delegate.get(), source, display_id);
   } else {
     LaunchApp(shelf_id, source, event_flags, display_id);
@@ -691,20 +691,6 @@ ChromeLauncherController::GetAppMenuItemsForTesting(
   ash::ShelfItemDelegate* delegate = model_->GetShelfItemDelegate(item.id);
   return delegate ? delegate->GetAppMenuItems(ui::EF_NONE)
                   : ash::ShelfItemDelegate::AppMenuItems();
-}
-
-std::vector<content::WebContents*>
-ChromeLauncherController::GetV1ApplicationsFromAppId(
-    const std::string& app_id) {
-  // Use the app's shelf item to find that app's windows.
-  const ash::ShelfItem* item = GetItem(ash::ShelfID(app_id));
-  if (!item)
-    return std::vector<content::WebContents*>();
-
-  // This should only be called for apps.
-  DCHECK(item->type == ash::TYPE_APP || item->type == ash::TYPE_PINNED_APP);
-
-  return AppShortcutLauncherItemController::GetRunningApplications(app_id);
 }
 
 std::vector<aura::Window*> ChromeLauncherController::GetArcWindows() {

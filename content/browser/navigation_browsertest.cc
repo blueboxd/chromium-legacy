@@ -3490,4 +3490,86 @@ IN_PROC_BROWSER_TEST_F(DocumentPolicyBrowserTest,
   EXPECT_FALSE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
 }
 
+class ForceLoadAtTopBrowserTest : public NavigationBrowserTest {
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    NavigationBaseBrowserTest::SetUpCommandLine(command_line);
+
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                    "ForceLoadAtTop");
+  }
+};
+
+// Test that scroll restoration is disabled with ForceLoadAtTop
+IN_PROC_BROWSER_TEST_F(ForceLoadAtTopBrowserTest, ScrollRestorationDisabled) {
+  GURL url(
+      embedded_test_server()->GetURL("/scrollable_page_with_content.html"));
+  WebContents* main_contents = shell()->web_contents();
+  RenderFrameSubmissionObserver frame_observer(main_contents);
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  EXPECT_TRUE(WaitForRenderFrameReady(main_contents->GetMainFrame()));
+
+  // Scroll down the page a bit
+  EXPECT_TRUE(ExecuteScript(main_contents, "window.scrollTo(0, 1000)"));
+  frame_observer.WaitForScrollOffsetAtTop(false);
+
+  // Navigate away
+  EXPECT_TRUE(ExecuteScript(main_contents, "window.location = 'about:blank'"));
+  EXPECT_TRUE(WaitForLoadStop(main_contents));
+  EXPECT_TRUE(WaitForRenderFrameReady(main_contents->GetMainFrame()));
+
+  // Navigate back
+  EXPECT_TRUE(ExecuteScript(main_contents, "history.back()"));
+  EXPECT_TRUE(WaitForLoadStop(main_contents));
+  EXPECT_TRUE(WaitForRenderFrameReady(main_contents->GetMainFrame()));
+
+  // Wait a short amount of time to ensure the page does not scroll.
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+  run_loop.Run();
+  RunUntilInputProcessed(RenderWidgetHostImpl::From(
+      main_contents->GetRenderViewHost()->GetWidget()));
+  EXPECT_TRUE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
+}
+
+// Test that element fragment anchor scrolling is disabled with ForceLoadAtTop
+IN_PROC_BROWSER_TEST_F(ForceLoadAtTopBrowserTest, FragmentAnchorDisabled) {
+  GURL url(embedded_test_server()->GetURL(
+      "/scrollable_page_with_content.html#text"));
+  WebContents* main_contents = shell()->web_contents();
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  EXPECT_TRUE(WaitForRenderFrameReady(main_contents->GetMainFrame()));
+
+  // Wait a short amount of time to ensure the page does not scroll.
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+  run_loop.Run();
+  RunUntilInputProcessed(RenderWidgetHostImpl::From(
+      main_contents->GetRenderViewHost()->GetWidget()));
+  EXPECT_TRUE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
+}
+
+IN_PROC_BROWSER_TEST_F(ForceLoadAtTopBrowserTest, TextFragmentAnchorDisabled) {
+  GURL url(embedded_test_server()->GetURL(
+      "/scrollable_page_with_content.html#:~:text=text"));
+  WebContents* main_contents = shell()->web_contents();
+  RenderFrameSubmissionObserver frame_observer(main_contents);
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  EXPECT_TRUE(WaitForRenderFrameReady(main_contents->GetMainFrame()));
+
+  // Wait a short amount of time to ensure the page does not scroll.
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+  run_loop.Run();
+  RunUntilInputProcessed(RenderWidgetHostImpl::From(
+      main_contents->GetRenderViewHost()->GetWidget()));
+  EXPECT_TRUE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
+}
+
 }  // namespace content

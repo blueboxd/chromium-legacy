@@ -37,7 +37,8 @@ class MEDIA_GPU_EXPORT CopyingTexture2DWrapper : public Texture2DWrapper {
                       MailboxHolderArray* mailbox_dest,
                       gfx::ColorSpace* output_color_space) override;
 
-  bool Init(GetCommandBufferHelperCB get_helper_cb) override;
+  bool Init(scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
+            GetCommandBufferHelperCB get_helper_cb) override;
 
   void SetStreamHDRMetadata(const HDRMetadata& stream_metadata) override;
   void SetDisplayHDRMetadata(

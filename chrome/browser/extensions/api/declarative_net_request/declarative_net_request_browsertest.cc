@@ -420,9 +420,9 @@ class DeclarativeNetRequestBrowserTest
   void LoadExtensionWithRules(const std::vector<TestRule>& rules,
                               const std::string& directory,
                               const std::vector<std::string>& hosts) {
-    std::vector<TestRulesetInfo> rulesets;
-    rulesets.push_back({kJSONRulesFilename, std::move(*ToListValue(rules))});
-    LoadExtensionWithRulesets(rulesets, directory, hosts, rules.size());
+    LoadExtensionWithRulesets(
+        {TestRulesetInfo(kJSONRulesFilename, *ToListValue(rules))}, directory,
+        hosts, rules.size());
   }
 
   // Returns a url with |filter| as a substring.
@@ -1716,10 +1716,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, MultipleRulesets) {
 
     expected_blocked_urls.push_back(GetURLForFilter(id));
 
-    TestRulesetInfo info;
-    info.relative_file_path = id;
-    info.rules_value = std::move(*ToListValue(rules));
-    rulesets.push_back(std::move(info));
+    rulesets.emplace_back(id, *ToListValue(rules));
   }
 
   // Set-up an observer for RulesetMatcher to monitor the number of extension
@@ -2166,10 +2163,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
 
     urls_for_indices.push_back(GetURLForFilter(id));
 
-    TestRulesetInfo info;
-    info.relative_file_path = id;
-    info.rules_value = std::move(*ToListValue(rules));
-    rulesets.push_back(std::move(info));
+    rulesets.emplace_back(id, *ToListValue(rules));
   }
 
   // Set-up an observer for RulesetMatcher to monitor the number of extension
@@ -2182,7 +2176,6 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   ruleset_count_waiter.WaitForRulesetCount(1);
 
   const ExtensionId extension_id = last_loaded_extension_id();
-
   EXPECT_TRUE(ruleset_manager()->GetMatcherForExtension(extension_id));
 
   const Extension* extension = extension_registry()->GetExtensionById(
@@ -2268,12 +2261,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
 
   const int kNumStaticRulesets = 4;
   std::vector<TestRulesetInfo> rulesets;
-  for (int i = 0; i < kNumStaticRulesets; ++i) {
-    TestRulesetInfo info;
-    info.relative_file_path = base::NumberToString(i);
-    info.rules_value = std::move(*ToListValue({rule}));
-    rulesets.push_back(std::move(info));
-  }
+  for (int i = 0; i < kNumStaticRulesets; ++i)
+    rulesets.emplace_back(base::NumberToString(i), *ToListValue({rule}));
 
   ASSERT_NO_FATAL_FAILURE(
       LoadExtensionWithRulesets(rulesets, "extension_directory", {} /* hosts */,

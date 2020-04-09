@@ -48,4 +48,10 @@ public abstract class TabCallback {
      * @since 83
      */
     public void onTitleUpdated(@NonNull String title) {}
+
+    /**
+     * Called when user attention should be brought to this tab. This should cause the tab, its
+     * containing Activity, and the task to be foregrounded.
+     */
+    public void bringTabToFront() {}
 }

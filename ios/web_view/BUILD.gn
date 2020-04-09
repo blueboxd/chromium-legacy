@@ -240,6 +240,9 @@ source_set("web_view_sources") {
     "internal/web_view_web_state_policy_decider.mm",
     "internal/webdata_services/web_view_web_data_service_wrapper_factory.h",
     "internal/webdata_services/web_view_web_data_service_wrapper_factory.mm",
+    "internal/webui/web_view_web_ui_ios_controller_factory.h",
+    "internal/webui/web_view_web_ui_ios_controller_factory.mm",
+    "internal/webui/web_view_web_ui_provider.mm",
   ]
 
   public_deps = [
@@ -294,6 +297,9 @@ source_set("web_view_sources") {
     "//components/webdata_services",
     "//google_apis",
     "//ios/components/io_thread",
+    "//ios/components/webui:provider",
+    "//ios/components/webui:url_constants",
+    "//ios/components/webui/sync_internals",
     "//ios/net",
     "//ios/web",
     "//ios/web/common",
@@ -304,6 +310,7 @@ source_set("web_view_sources") {
     "//ios/web/public/js_messaging",
     "//ios/web/public/security",
     "//ios/web/public/web_view_only",
+    "//ios/web/public/webui",
     "//net",
     "//net:extras",
     "//services/metrics/public/cpp:metrics_cpp",
@@ -481,11 +488,15 @@ repack_locales("repack_locales") {
   source_patterns = [
     "${root_gen_dir}/components/strings/components_strings_",
     "${root_gen_dir}/components/strings/components_locale_settings_",
+    "${root_gen_dir}/ui/strings/app_locale_settings_",
+    "${root_gen_dir}/ui/strings/ui_strings_",
   ]
 
   deps = [
     "//components/strings:components_locale_settings",
     "//components/strings:components_strings",
+    "//ui/strings:app_locale_settings",
+    "//ui/strings:ui_strings",
   ]
   input_locales = ios_packed_locales
   output_locales = ios_packed_locales_as_mac_outputs
@@ -496,11 +507,15 @@ repack("repack_resources") {
   visibility = [ ":web_view_resources" ]
   deps = [
     "//components/resources:components_resources",
+    "//components/sync/driver:resources",
     "//ios/web:resources",
+    "//ui/resources",
   ]
   sources = [
     "$root_gen_dir/components/components_resources.pak",
+    "$root_gen_dir/components/sync_driver_resources.pak",
     "$root_gen_dir/ios/web/ios_web_resources.pak",
+    "$root_gen_dir/ui/resources/webui_resources.pak",
   ]
   output = "$target_gen_dir/web_view_resources.pak"
   copy_data_to_bundle = true

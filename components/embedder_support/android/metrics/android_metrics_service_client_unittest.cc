@@ -71,8 +71,6 @@ class TestClient : public AndroidMetricsServiceClient {
   using AndroidMetricsServiceClient::IsInSample;
 
  protected:
-  void InitInternal() override {}
-
   void OnMetricsStart() override {}
 
   int GetSampleBucketValue() override { return sample_bucket_value_; }

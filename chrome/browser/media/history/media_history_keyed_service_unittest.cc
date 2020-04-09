@@ -20,6 +20,8 @@
 #include "chrome/browser/media/history/media_history_feed_items_table.h"
 #include "chrome/browser/media/history/media_history_feeds_table.h"
 #include "chrome/browser/media/history/media_history_images_table.h"
+#include "chrome/browser/media/history/media_history_origin_table.h"
+#include "chrome/browser/media/history/media_history_playback_table.h"
 #include "chrome/browser/media/history/media_history_session_images_table.h"
 #include "chrome/browser/media/history/media_history_session_table.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"

@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">Kliknite za več možnosti</translation>
 <translation id="1570871743947603115">Preklop Bluetootha. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">dostop do vse dejavnosti v seji;</translation>
-<translation id="1608626060424371292">Odstrani tega uporabnika</translation>
+<translation id="1632985212731562677">Stikalni dostop lahko onemogočite v »Nastavitve &gt; Dostopnost«.</translation>
 <translation id="1654477262762802994">Začetek glasovne poizvedbe</translation>
 <translation id="1658406695958299976">Vašega gesla še ni bilo mogoče preveriti. Opomba: če ste nedavno spremenili geslo, bo novo geslo začelo veljati, ko se odjavite. Tu uporabite starega.</translation>
 <translation id="1677472565718498478">Še <ph name="TIME" /></translation>
@@ -105,7 +105,7 @@
 <translation id="2268813581635650749">Odjava vseh</translation>
 <translation id="2277103315734023688">Išči naprej</translation>
 <translation id="2292698582925480719">Zaslonsko razmerje</translation>
-<translation id="2295777434187870477">Mikrofon je vklopljen; če ga preklopite bo izklopljen vhodni zvok.</translation>
+<translation id="2295777434187870477">Mikrofon je vklopljen; če ga preklopite, bo izklopljen vhodni zvok.</translation>
 <translation id="2298170939937364391">Celozaslonska lupa je omogočena. Če jo želite izklopiti, znova pritisnite Ctrl + tipko za iskanje + M.</translation>
 <translation id="2302092602801625023">Ta račun upravlja Family Link</translation>
 <translation id="2303600792989757991">Preklop pregleda okna</translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">Skrbnik naprave morda nadzira vašo dejavnost brskanja.</translation>
 <translation id="3181441307743005334">Vnovičen zagon lahko traja nekaj časa</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Vzpostavljena je povezava z eno napravo}one{Vzpostavljena je povezava z # napravo}two{Vzpostavljena je povezava z # napravama}few{Vzpostavljena je povezava s # napravami}other{Vzpostavljena je povezava s # napravami}}</translation>
+<translation id="3203405173652969239">Stikalni dostop je omogočen</translation>
 <translation id="3207953481422525583">Uporabniške nastavitve</translation>
 <translation id="3217205077783620295">Glasnost je vklopljena: če to preklopite, bo zvok izklopljen.</translation>
 <translation id="3226991577105957773">in še <ph name="COUNT" /></translation>
@@ -651,6 +652,7 @@
 <translation id="9211681782751733685">Še <ph name="TIME_REMAINING" />, da bo akumulator povsem napolnjen.</translation>
 <translation id="9215934040295798075">Nastavi sliko za ozadje</translation>
 <translation id="921989828232331238">Tvoj starš je zaklenil napravo za ves dan</translation>
+<translation id="9220525904950070496">Odstranitev računa</translation>
 <translation id="923686485342484400">Dvakrat pritisnite Control Shift Q, če se želite odjaviti.</translation>
 <translation id="938963181863597773">Kaj je v mojem koledarju?</translation>
 <translation id="945522503751344254">Pošlji povratne informacije</translation>

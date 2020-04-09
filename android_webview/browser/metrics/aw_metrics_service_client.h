@@ -106,7 +106,6 @@ class AwMetricsServiceClient : public ::metrics::AndroidMetricsServiceClient,
   void OnAppStateChanged(WebViewAppStateObserver::State state) override;
 
   // metrics::AndroidMetricsServiceClient:
-  void InitInternal() override;
   void OnMetricsStart() override;
   int GetSampleRatePerMille() override;
   int GetPackageNameLimitRatePerMille() override;

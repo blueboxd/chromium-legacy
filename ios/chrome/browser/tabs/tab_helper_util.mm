@@ -17,6 +17,7 @@
 #include "components/safe_browsing/core/features.h"
 #import "components/security_state/ios/insecure_input_tab_helper.h"
 #import "components/ukm/ios/ukm_url_recorder.h"
+#import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
 #import "ios/chrome/browser/autofill/autofill_tab_helper.h"
 #import "ios/chrome/browser/autofill/form_suggestion_tab_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -97,6 +98,7 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   LoadTimingTabHelper::CreateForWebState(web_state);
   OverscrollActionsTabHelper::CreateForWebState(web_state);
   IOSTaskTabHelper::CreateForWebState(web_state);
+  AppLauncherTabHelper::CreateForWebState(web_state);
 
   if (base::FeatureList::IsEnabled(kInfobarOverlayUI)) {
     InfobarOverlayRequestInserter::CreateForWebState(web_state);

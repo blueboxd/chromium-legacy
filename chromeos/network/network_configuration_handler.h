@@ -151,6 +151,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConfigurationHandler
   // state (NetworkStateHandler) to update before triggering the callback.
   void ConfigurationCompleted(
       const std::string& profile_path,
+      const std::string& guid,
       std::unique_ptr<base::DictionaryValue> configure_properties,
       const network_handler::ServiceResultCallback& callback,
       const dbus::ObjectPath& service_path);

@@ -659,7 +659,8 @@ installer::InstallStatus InstallProducts(
   installer::InstallStatus install_status = installer::UNKNOWN_STATUS;
   installer::ArchiveType archive_type = installer::UNKNOWN_ARCHIVE_TYPE;
   installer_state->SetStage(installer::PRECONDITIONS);
-  // Remove any legacy "-stage:*" values from the product's "ap" value.
+  // Remove any legacy "-multifail" or "-stage:*" values from the product's
+  // "ap" value.
   installer::UpdateInstallStatus(archive_type, install_status);
 
   // Drop to background processing mode if the process was started below the
@@ -1330,6 +1331,9 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
 
   InstallerState installer_state;
   installer_state.Initialize(cmd_line, prefs, original_state);
+
+  VLOG(1) << "is_migrating_to_single is "
+          << installer_state.is_migrating_to_single();
 
   persistent_histogram_storage.set_storage_base_dir(
       installer_state.target_path());

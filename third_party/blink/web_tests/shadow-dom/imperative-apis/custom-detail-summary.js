@@ -27,11 +27,13 @@ customElements.define("my-detail", class extends HTMLElement {
         slot2.style.display = "block";
         child2.innerHTML = "&dtrif; ";
         child1.innerText = "";
+        slot2.assign(target.childNodes);
       });
       child2.addEventListener('click', (e) => {
         slot2.style.display = "none";
         child1.innerHTML = "&rtrif; ";
         child2.innerText = "";
+        slot1.assign([child1,child2, target.querySelector(':scope > my-summary')]);
       });
       const shadowRoot = target.shadowRoot;
       shadowRoot.appendChild(slot1);
@@ -45,8 +47,6 @@ customElements.define("my-detail", class extends HTMLElement {
         } else {
           slot1.assign([child1,child2]);
         }
-        slot2.assign(target.childNodes);
-        slot2.style.display = "none";
       });
     observer.observe(this, {childList: true});
     }

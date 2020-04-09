@@ -417,6 +417,12 @@ class ServiceWorkerUpdateCheckTestUtils {
                                    const std::string& expected_body);
 };
 
+// Reads all data from the given |handle| and returns data as a string.
+// This is similar to mojo::BlockingCopyToString() but a bit different. This
+// doesn't wait synchronously but keep posting a task when |handle| returns
+// MOJO_RESULT_SHOULD_WAIT.
+std::string ReadDataPipe(mojo::ScopedDataPipeConsumerHandle handle);
+
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_TEST_UTILS_H_

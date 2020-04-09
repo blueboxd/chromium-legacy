@@ -50,7 +50,7 @@ class WebAppShortcutCreatorMock : public WebAppShortcutCreator {
       : WebAppShortcutCreator(app_data_dir, shortcut_info) {}
 
   MOCK_CONST_METHOD0(GetAppBundlesByIdUnsorted, std::vector<base::FilePath>());
-  MOCK_CONST_METHOD0(RevealAppShimInFinder, void());
+  MOCK_CONST_METHOD1(RevealAppShimInFinder, void(const base::FilePath&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebAppShortcutCreatorMock);
@@ -551,11 +551,11 @@ TEST_F(WebAppShortcutCreatorTest, UpdateIcon) {
 TEST_F(WebAppShortcutCreatorTest, RevealAppShimInFinder) {
   WebAppShortcutCreatorMock shortcut_creator(app_data_dir_, info_.get());
 
-  EXPECT_CALL(shortcut_creator, RevealAppShimInFinder()).Times(0);
+  EXPECT_CALL(shortcut_creator, RevealAppShimInFinder(_)).Times(0);
   EXPECT_TRUE(shortcut_creator.CreateShortcuts(SHORTCUT_CREATION_AUTOMATED,
                                                ShortcutLocations()));
 
-  EXPECT_CALL(shortcut_creator, RevealAppShimInFinder());
+  EXPECT_CALL(shortcut_creator, RevealAppShimInFinder(_));
   EXPECT_TRUE(shortcut_creator.CreateShortcuts(SHORTCUT_CREATION_BY_USER,
                                                ShortcutLocations()));
 }

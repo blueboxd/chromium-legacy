@@ -6451,7 +6451,8 @@ TEST_F(NetworkContextTestWithMockTime, EnableTrustTokensWithStoreOnDisk) {
     network_context->trust_token_store()->ExecuteOrEnqueue(
         base::BindLambdaForTesting([&](TrustTokenStore* store) {
           DCHECK(store);
-          store->AddTokens(url::Origin::Create(GURL("https://trusttoken.com/")),
+          store->AddTokens(*SuitableTrustTokenOrigin::Create(
+                               GURL("https://trusttoken.com/")),
                            std::vector<std::string>{"token"}, "issuing key");
           run_loop.Quit();
         }));
@@ -6478,8 +6479,9 @@ TEST_F(NetworkContextTestWithMockTime, EnableTrustTokensWithStoreOnDisk) {
         base::BindLambdaForTesting(
             [&obtained_num_tokens, &run_loop](TrustTokenStore* store) {
               DCHECK(store);
-              obtained_num_tokens = store->CountTokens(
-                  url::Origin::Create(GURL("https://trusttoken.com/")));
+              obtained_num_tokens =
+                  store->CountTokens(*SuitableTrustTokenOrigin::Create(
+                      GURL("https://trusttoken.com/")));
               run_loop.Quit();
             }));
 

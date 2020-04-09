@@ -7,6 +7,7 @@
 #include "third_party/blink/public/common/css/forced_colors.h"
 #include "third_party/blink/public/common/css/navigation_controls.h"
 #include "third_party/blink/public/common/css/preferred_color_scheme.h"
+#include "third_party/blink/public/common/css/screen_spanning.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -37,7 +38,8 @@ MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData()
       preferred_color_scheme(PreferredColorScheme::kNoPreference),
       prefers_reduced_motion(false),
       forced_colors(ForcedColors::kNone),
-      navigation_controls(NavigationControls::kNone) {}
+      navigation_controls(NavigationControls::kNone),
+      screen_spanning(ScreenSpanning::kNone) {}
 
 MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData(
     Document& document)
@@ -80,6 +82,7 @@ MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData(
     prefers_reduced_motion = MediaValues::CalculatePrefersReducedMotion(frame);
     forced_colors = MediaValues::CalculateForcedColors();
     navigation_controls = MediaValues::CalculateNavigationControls(frame);
+    screen_spanning = MediaValues::CalculateScreenSpanning(frame);
   }
 }
 
@@ -208,6 +211,10 @@ ForcedColors MediaValuesCached::GetForcedColors() const {
 
 NavigationControls MediaValuesCached::GetNavigationControls() const {
   return data_.navigation_controls;
+}
+
+ScreenSpanning MediaValuesCached::GetScreenSpanning() const {
+  return data_.screen_spanning;
 }
 
 }  // namespace blink

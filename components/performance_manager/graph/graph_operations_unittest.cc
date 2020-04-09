@@ -99,14 +99,14 @@ TEST_F(GraphOperationsTest, VisitFrameTree) {
   auto frame_nodes = GraphOperations::GetFrameNodes(page1_.get());
 
   std::vector<const FrameNode*> visited;
-  GraphOperations::VisitFrameTreePreOrder(
+  EXPECT_TRUE(GraphOperations::VisitFrameTreePreOrder(
       page1_.get(), base::BindRepeating(
                         [](std::vector<const FrameNode*>* visited,
                            const FrameNode* frame_node) -> bool {
                           visited->push_back(frame_node);
                           return true;
                         },
-                        base::Unretained(&visited)));
+                        base::Unretained(&visited))));
   EXPECT_THAT(visited,
               testing::UnorderedElementsAre(ToPublic(mainframe1_.get()),
                                             ToPublic(childframe1a_.get()),
@@ -114,21 +114,45 @@ TEST_F(GraphOperationsTest, VisitFrameTree) {
   // In pre-order the main frame is first.
   EXPECT_EQ(ToPublic(mainframe1_.get()), visited[0]);
 
+  // Do an aborted pre-order visit.
   visited.clear();
-  GraphOperations::VisitFrameTreePostOrder(
+  EXPECT_FALSE(GraphOperations::VisitFrameTreePreOrder(
+      page1_.get(), base::BindRepeating(
+                        [](std::vector<const FrameNode*>* visited,
+                           const FrameNode* frame_node) -> bool {
+                          visited->push_back(frame_node);
+                          return false;
+                        },
+                        base::Unretained(&visited))));
+  EXPECT_EQ(1u, visited.size());
+
+  visited.clear();
+  EXPECT_TRUE(GraphOperations::VisitFrameTreePostOrder(
       page1_.get(), base::BindRepeating(
                         [](std::vector<const FrameNode*>* visited,
                            const FrameNode* frame_node) -> bool {
                           visited->push_back(frame_node);
                           return true;
                         },
-                        base::Unretained(&visited)));
+                        base::Unretained(&visited))));
   EXPECT_THAT(visited,
               testing::UnorderedElementsAre(ToPublic(mainframe1_.get()),
                                             ToPublic(childframe1a_.get()),
                                             ToPublic(childframe1b_.get())));
   // In post-order the main frame is last.
   EXPECT_EQ(mainframe1_.get(), visited[2]);
+
+  // Do an aborted post-order visit.
+  visited.clear();
+  EXPECT_FALSE(GraphOperations::VisitFrameTreePostOrder(
+      page1_.get(), base::BindRepeating(
+                        [](std::vector<const FrameNode*>* visited,
+                           const FrameNode* frame_node) -> bool {
+                          visited->push_back(frame_node);
+                          return false;
+                        },
+                        base::Unretained(&visited))));
+  EXPECT_EQ(1u, visited.size());
 }
 
 TEST_F(GraphOperationsTest, HasFrame) {

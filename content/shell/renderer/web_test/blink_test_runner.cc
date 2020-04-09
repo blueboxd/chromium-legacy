@@ -39,7 +39,6 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
-#include "content/public/renderer/render_view_visitor.h"
 #include "content/public/test/web_test_support_renderer.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/web_test/blink_test_helpers.h"
@@ -84,7 +83,6 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/public/web/web_script_source.h"
-#include "third_party/blink/public/web/web_testing_support.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/icc_profile.h"
@@ -99,7 +97,6 @@ using blink::WebRect;
 using blink::WebScriptSource;
 using blink::WebSize;
 using blink::WebString;
-using blink::WebTestingSupport;
 using blink::WebURL;
 using blink::WebURLError;
 using blink::WebURLRequest;
@@ -109,20 +106,6 @@ using blink::WebView;
 namespace content {
 
 namespace {
-
-class UseSynchronousResizeModeVisitor : public RenderViewVisitor {
- public:
-  explicit UseSynchronousResizeModeVisitor(bool enable) : enable_(enable) {}
-  ~UseSynchronousResizeModeVisitor() override {}
-
-  bool Visit(RenderView* render_view) override {
-    UseSynchronousResizeMode(render_view, enable_);
-    return true;
-  }
-
- private:
-  bool enable_;
-};
 
 class MockVideoCapturerSource : public media::VideoCapturerSource {
  public:
@@ -172,15 +155,6 @@ BlinkTestRunner::BlinkTestRunner(RenderView* render_view)
 BlinkTestRunner::~BlinkTestRunner() {}
 
 // WebTestDelegate  -----------------------------------------------------------
-
-void BlinkTestRunner::ClearEditCommand() {
-  render_view()->ClearEditCommands();
-}
-
-void BlinkTestRunner::SetEditCommand(const std::string& name,
-                                     const std::string& value) {
-  render_view()->SetEditCommandForNextKeyEvent(name, value);
-}
 
 void BlinkTestRunner::PrintMessageToStderr(const std::string& message) {
   GetBlinkTestClientRemote()->PrintMessageToStderr(message);
@@ -246,11 +220,6 @@ void BlinkTestRunner::ApplyPreferences() {
 
 void BlinkTestRunner::SetPopupBlockingEnabled(bool block_popups) {
   GetBlinkTestClientRemote()->SetPopupBlockingEnabled(block_popups);
-}
-
-void BlinkTestRunner::UseUnfortunateSynchronousResizeMode(bool enable) {
-  UseSynchronousResizeModeVisitor visitor(enable);
-  RenderView::ForEach(&visitor);
 }
 
 void BlinkTestRunner::EnableAutoResizeMode(const WebSize& min_size,
@@ -658,31 +627,7 @@ void BlinkTestRunner::SetScreenOrientationChanged() {
   GetBlinkTestClientRemote()->SetScreenOrientationChanged();
 }
 
-// RenderViewObserver  --------------------------------------------------------
-
-void BlinkTestRunner::DidClearWindowObject(WebLocalFrame* frame) {
-  WebTestingSupport::InjectInternalsObject(frame);
-}
-
 // Public methods - -----------------------------------------------------------
-
-void BlinkTestRunner::Reset(bool for_new_test) {
-  prefs_.Reset();
-  waiting_for_reset_ = false;
-
-  // TODO(danakj): Does any of this need to happen when for_new_test = false?
-  // If not, move to WebViewTestProxy::Reset() and WebFrameTestProxy::Reset().
-
-  render_view()->ClearEditCommands();
-
-  // Resetting the internals object also overrides the WebPreferences, so we
-  // have to sync them to WebKit again.
-  WebFrame* main_frame = render_view()->GetWebView()->MainFrame();
-  if (main_frame->IsWebLocalFrame()) {
-    WebTestingSupport::ResetInternalsObject(main_frame->ToWebLocalFrame());
-    render_view()->SetWebkitPreferences(render_view()->GetWebkitPreferences());
-  }
-}
 
 void BlinkTestRunner::CaptureDump(
     mojom::BlinkTestControl::CaptureDumpCallback callback) {
@@ -806,12 +751,11 @@ void BlinkTestRunner::OnSetTestConfiguration(
 
 void BlinkTestRunner::OnReset() {
   // BlinkTestMsg_Reset should always be sent to the *current* view.
-  DCHECK(render_view()->GetWebView()->MainFrame()->IsWebLocalFrame());
-  WebLocalFrame* main_frame =
-      render_view()->GetWebView()->MainFrame()->ToWebLocalFrame();
+  DCHECK(render_view()->GetMainRenderFrame());
 
+  prefs_.Reset();
   WebTestRenderThreadObserver::GetInstance()->test_interfaces()->ResetAll();
-  Reset(true /* for_new_test */);
+
   // Navigating to about:blank will make sure that no new loads are initiated
   // by the renderer.
   waiting_for_reset_ = true;
@@ -821,7 +765,7 @@ void BlinkTestRunner::OnReset() {
   request.SetRedirectMode(network::mojom::RedirectMode::kManual);
   request.SetRequestContext(blink::mojom::RequestContextType::INTERNAL);
   request.SetRequestorOrigin(blink::WebSecurityOrigin::CreateUniqueOpaque());
-  main_frame->StartNavigation(request);
+  render_view()->GetMainRenderFrame()->GetWebFrame()->StartNavigation(request);
 }
 
 void BlinkTestRunner::OnTestFinishedInSecondaryRenderer() {

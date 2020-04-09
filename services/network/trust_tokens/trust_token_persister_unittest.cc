@@ -98,7 +98,7 @@ TYPED_TEST(TrustTokenPersisterTest, NegativeResults) {
   env.RunUntilIdle();  // Give implementations with asynchronous initialization
                        // time to initialize.
 
-  auto origin = url::Origin::Create(GURL("https://a.com/"));
+  auto origin = *SuitableTrustTokenOrigin::Create(GURL("https://a.com/"));
   EXPECT_THAT(persister->GetIssuerConfig(origin), IsNull());
   EXPECT_THAT(persister->GetToplevelConfig(origin), IsNull());
   EXPECT_THAT(persister->GetIssuerToplevelPairConfig(origin, origin), IsNull());
@@ -122,7 +122,7 @@ TYPED_TEST(TrustTokenPersisterTest, StoresIssuerConfigs) {
   *config.add_tokens() = my_token;
 
   auto config_to_store = std::make_unique<TrustTokenIssuerConfig>(config);
-  auto origin = url::Origin::Create(GURL("https://a.com/"));
+  auto origin = *SuitableTrustTokenOrigin::Create(GURL("https://a.com/"));
   persister->SetIssuerConfig(origin, std::move(config_to_store));
 
   env.RunUntilIdle();  // Give implementations with asynchronous write
@@ -149,7 +149,7 @@ TYPED_TEST(TrustTokenPersisterTest, StoresToplevelConfigs) {
   *config.add_associated_issuers() = "an issuer";
 
   auto config_to_store = std::make_unique<TrustTokenToplevelConfig>(config);
-  auto origin = url::Origin::Create(GURL("https://a.com/"));
+  auto origin = *SuitableTrustTokenOrigin::Create(GURL("https://a.com/"));
   persister->SetToplevelConfig(origin, std::move(config_to_store));
   env.RunUntilIdle();  // Give implementations with asynchronous write
                        // operations time to complete the operation.
@@ -176,8 +176,8 @@ TYPED_TEST(TrustTokenPersisterTest, StoresIssuerToplevelPairConfigs) {
 
   auto config_to_store =
       std::make_unique<TrustTokenIssuerToplevelPairConfig>(config);
-  auto toplevel = url::Origin::Create(GURL("https://a.com/"));
-  auto issuer = url::Origin::Create(GURL("https://issuer.com/"));
+  auto toplevel = *SuitableTrustTokenOrigin::Create(GURL("https://a.com/"));
+  auto issuer = *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/"));
   persister->SetIssuerToplevelPairConfig(issuer, toplevel,
                                          std::move(config_to_store));
   env.RunUntilIdle();  // Give implementations with asynchronous write

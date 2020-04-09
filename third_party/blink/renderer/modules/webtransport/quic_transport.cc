@@ -101,7 +101,7 @@ class QuicTransport::DatagramUnderlyingSink final : public UnderlyingSinkBase {
 
  private:
   ScriptPromise SendDatagram(base::span<const uint8_t> data) {
-    if (!quic_transport_->quic_transport_) {
+    if (!quic_transport_->quic_transport_.is_bound()) {
       // Silently drop the datagram if we are not connected.
       // TODO(ricea): Change the behaviour if the standard changes. See
       // https://github.com/WICG/web-transport/issues/93.
@@ -242,15 +242,23 @@ QuicTransport* QuicTransport::Create(ScriptState* script_state,
 QuicTransport::QuicTransport(PassKey,
                              ScriptState* script_state,
                              const String& url)
-    : ExecutionContextLifecycleObserver(ExecutionContext::From(script_state)),
+    : QuicTransport(script_state, url, ExecutionContext::From(script_state)) {}
+
+QuicTransport::QuicTransport(ScriptState* script_state,
+                             const String& url,
+                             ExecutionContext* context)
+    : ExecutionContextLifecycleObserver(context),
       script_state_(script_state),
-      url_(NullURL(), url) {}
+      url_(NullURL(), url),
+      quic_transport_(context),
+      handshake_client_receiver_(this, context),
+      client_receiver_(this, context) {}
 
 ScriptPromise QuicTransport::createSendStream(ScriptState* script_state,
                                               ExceptionState& exception_state) {
   DVLOG(1) << "QuicTransport::createSendStream() this=" << this;
 
-  if (!quic_transport_) {
+  if (!quic_transport_.is_bound()) {
     // TODO(ricea): Should we wait if we're still connecting?
     exception_state.ThrowDOMException(DOMExceptionCode::kNetworkError,
                                       "No connection.");
@@ -335,7 +343,7 @@ void QuicTransport::OnConnectionEstablished(
   client_receiver_.set_disconnect_handler(
       WTF::Bind(&QuicTransport::OnConnectionError, WrapWeakPersistent(this)));
 
-  DCHECK(!quic_transport_);
+  DCHECK(!quic_transport_.is_bound());
   quic_transport_.Bind(std::move(quic_transport), task_runner);
 
   received_streams_underlying_source_->NotifyOpened();
@@ -411,6 +419,9 @@ void QuicTransport::Trace(Visitor* visitor) {
   visitor->Trace(outgoing_datagrams_);
   visitor->Trace(script_state_);
   visitor->Trace(create_send_stream_resolvers_);
+  visitor->Trace(quic_transport_);
+  visitor->Trace(handshake_client_receiver_);
+  visitor->Trace(client_receiver_);
   visitor->Trace(ready_resolver_);
   visitor->Trace(ready_);
   visitor->Trace(closed_resolver_);

@@ -126,14 +126,6 @@ void TestInstallFinalizer::ReparentTab(const AppId& app_id,
   ++num_reparent_tab_calls_;
 }
 
-bool TestInstallFinalizer::CanRevealAppShim() const {
-  return true;
-}
-
-void TestInstallFinalizer::RevealAppShim(const AppId& app_id) {
-  ++num_reveal_appshim_calls_;
-}
-
 void TestInstallFinalizer::SetNextFinalizeInstallResult(
     const AppId& app_id,
     InstallResultCode code) {

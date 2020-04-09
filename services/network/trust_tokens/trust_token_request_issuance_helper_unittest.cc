@@ -82,7 +82,7 @@ class MockCryptographer
 TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfTooManyIssuers) {
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
 
-  auto issuer = url::Origin::Create(GURL("https://issuer.com/"));
+  auto issuer = *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/"));
   auto toplevel =
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/"));
 
@@ -91,7 +91,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfTooManyIssuers) {
   // requirements of the Trust Tokens protocol.)
   for (int i = 0; i < kTrustTokenPerToplevelMaxNumberOfAssociatedIssuers; ++i) {
     ASSERT_TRUE(store->SetAssociation(
-        url::Origin::Create(
+        *SuitableTrustTokenOrigin::Create(
             GURL(base::StringPrintf("https://issuer%d.com/", i))),
         toplevel));
   }
@@ -111,7 +111,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfTooManyIssuers) {
 TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfAtCapacity) {
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
 
-  auto issuer = url::Origin::Create(GURL("https://issuer.com/"));
+  auto issuer = *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/"));
 
   // Fill up the store with tokens; issuance should fail the tokens for |issuer|
   // are at capacity.
@@ -134,7 +134,8 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfAtCapacity) {
 TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfKeyCommitmentFails) {
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
 
-  url::Origin issuer = url::Origin::Create(GURL("https://issuer.com/"));
+  SuitableTrustTokenOrigin issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/"));
 
   // Have the key commitment getter return nullptr, denoting that the key
   // commitment fetch failed.
@@ -144,7 +145,8 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfKeyCommitmentFails) {
       std::make_unique<MockCryptographer>());
 
   auto request = MakeURLRequest("https://issuer.com/");
-  request->set_initiator(url::Origin::Create(GURL("https://issuer.com/")));
+  request->set_initiator(
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/")));
 
   EXPECT_EQ(ExecuteBeginOperationAndWaitForResult(&helper, request.get()),
             mojom::TrustTokenOperationStatus::kFailedPrecondition);
@@ -154,7 +156,8 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfKeyCommitmentFails) {
 TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfAddingKeyFails) {
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
 
-  url::Origin issuer = url::Origin::Create(GURL("https://issuer.com/"));
+  SuitableTrustTokenOrigin issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/"));
 
   auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
   key_commitment_result->keys.push_back(
@@ -181,7 +184,8 @@ TEST_F(TrustTokenRequestIssuanceHelperTest,
        RejectsIfGettingBlindedTokensFails) {
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
 
-  url::Origin issuer = url::Origin::Create(GURL("https://issuer.com/"));
+  SuitableTrustTokenOrigin issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/"));
 
   auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
   key_commitment_result->keys.push_back(
@@ -214,7 +218,8 @@ TEST_F(TrustTokenRequestIssuanceHelperTest,
 TEST_F(TrustTokenRequestIssuanceHelperTest, SetsRequestHeader) {
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
 
-  url::Origin issuer = url::Origin::Create(GURL("https://issuer.com/"));
+  SuitableTrustTokenOrigin issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/"));
 
   auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
   key_commitment_result->keys.push_back(
@@ -251,7 +256,8 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, SetsRequestHeader) {
 TEST_F(TrustTokenRequestIssuanceHelperTest, SetsLoadFlag) {
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
 
-  url::Origin issuer = url::Origin::Create(GURL("https://issuer.com/"));
+  SuitableTrustTokenOrigin issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/"));
 
   auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
   key_commitment_result->keys.push_back(
@@ -284,7 +290,8 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, SetsLoadFlag) {
 TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfResponseOmitsHeader) {
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
 
-  url::Origin issuer = url::Origin::Create(GURL("https://issuer.com/"));
+  SuitableTrustTokenOrigin issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/"));
 
   auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
   key_commitment_result->keys.push_back(
@@ -320,7 +327,8 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfResponseOmitsHeader) {
 TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfResponseIsUnusable) {
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
 
-  url::Origin issuer = url::Origin::Create(GURL("https://issuer.com/"));
+  SuitableTrustTokenOrigin issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/"));
 
   auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
   key_commitment_result->keys.push_back(
@@ -367,7 +375,8 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfResponseIsUnusable) {
 TEST_F(TrustTokenRequestIssuanceHelperTest, Success) {
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
 
-  url::Origin issuer = url::Origin::Create(GURL("https://issuer.com/"));
+  SuitableTrustTokenOrigin issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/"));
 
   auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
   key_commitment_result->keys.push_back(
@@ -413,7 +422,8 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, Success) {
 TEST_F(TrustTokenRequestIssuanceHelperTest, AssociatesIssuerWithToplevel) {
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
 
-  url::Origin issuer = url::Origin::Create(GURL("https://issuer.com/"));
+  SuitableTrustTokenOrigin issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/"));
 
   auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
   key_commitment_result->keys.push_back(
@@ -448,7 +458,8 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, AssociatesIssuerWithToplevel) {
 TEST_F(TrustTokenRequestIssuanceHelperTest, StoresObtainedTokens) {
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
 
-  url::Origin issuer = url::Origin::Create(GURL("https://issuer.com/"));
+  SuitableTrustTokenOrigin issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/"));
 
   auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
   key_commitment_result->keys.push_back(mojom::TrustTokenVerificationKey::New(

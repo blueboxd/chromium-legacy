@@ -17,6 +17,8 @@ class PaymentRequestRowView
     : public views::Button,
       public base::SupportsWeakPtr<PaymentRequestRowView> {
  public:
+  static constexpr char kClassName[] = "PaymentRequestRowView";
+
   // Creates a row view. If |clickable| is true, the row will be shaded on hover
   // and handle click events. |insets| are used as padding around the content.
   PaymentRequestRowView(views::ButtonListener* listener,
@@ -27,6 +29,9 @@ class PaymentRequestRowView
   void set_previous_row(base::WeakPtr<PaymentRequestRowView> previous_row) {
     previous_row_ = previous_row;
   }
+
+  // views::View:
+  const char* GetClassName() const override;
 
  protected:
   bool clickable() { return clickable_; }

@@ -1716,12 +1716,11 @@ void EventSender::KeyDown(const std::string& code_str,
 
   // In the browser, if a keyboard event corresponds to an editor command,
   // the command will be dispatched to the renderer just before dispatching
-  // the keyboard event, and then it will be executed in the
-  // RenderView::handleCurrentKeyboardEvent() method.
-  // We just simulate the same behavior here.
+  // the keyboard event, and stored in RenderWidget. We just simulate the same
+  // behavior here.
   std::string edit_command;
   if (GetEditCommand(event_down, &edit_command))
-    delegate()->SetEditCommand(edit_command, "");
+    web_widget_test_proxy_->SetEditCommandForNextKeyEvent(edit_command, "");
 
   HandleInputEventOnViewOrPopup(event_down);
 
@@ -1736,7 +1735,7 @@ void EventSender::KeyDown(const std::string& code_str,
     FinishDragAndDrop(event, blink::kWebDragOperationNone);
   }
 
-  delegate()->ClearEditCommand();
+  web_widget_test_proxy_->ClearEditCommands();
 
   if (generate_char) {
     WebKeyboardEvent event_char = event_up;

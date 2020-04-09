@@ -145,7 +145,7 @@ bool FallbackCrashHandler::GenerateCrashDump(const std::string& product,
                            MiniDumpWithThreadInfo;
 
   // Capture more detail for canary and dev channels. The prefix search caters
-  // for the legacy "-m" suffixed multi-install channels.
+  // for the soon to be outdated "-m" suffixed multi-install channels.
   if (channel.find("canary") == 0 || channel.find("dev") == 0)
     minidump_type |= MiniDumpWithIndirectlyReferencedMemory;
 

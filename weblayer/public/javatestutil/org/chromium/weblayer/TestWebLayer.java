@@ -71,4 +71,8 @@ public final class TestWebLayer {
     public void clickPermissionDialogButton(boolean allow) throws RemoteException {
         mITestWebLayer.clickPermissionDialogButton(allow);
     }
+
+    public void setSystemLocationSettingEnabled(boolean enabled) throws RemoteException {
+        mITestWebLayer.setSystemLocationSettingEnabled(enabled);
+    }
 }

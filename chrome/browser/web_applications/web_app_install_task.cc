@@ -845,10 +845,6 @@ void WebAppInstallTask::OnShortcutsCreated(
 
     if (can_reparent_tab && web_app_info->open_as_window)
       install_finalizer_->ReparentTab(app_id, shortcut_created, web_contents());
-
-    // TODO(loyso): Make revealing app shim independent from CanReparentTab.
-    if (can_reparent_tab && install_finalizer_->CanRevealAppShim())
-      install_finalizer_->RevealAppShim(app_id);
   }
 
   // Enable file handlers, if the app is locally installed.

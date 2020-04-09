@@ -12,6 +12,7 @@
 #include "content/shell/test_runner/web_test_delegate.h"
 #include "content/shell/test_runner/web_view_test_proxy.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_testing_support.h"
 
 namespace content {
 
@@ -136,6 +137,11 @@ void WebFrameTestProxy::Reset() {
   if (IsMainFrame()) {
     GetWebFrame()->SetName(blink::WebString());
     GetWebFrame()->ClearOpener();
+
+    blink::WebTestingSupport::ResetInternalsObject(GetWebFrame());
+    // Resetting the internals object also overrides the WebPreferences, so we
+    // have to sync them to WebKit again.
+    render_view()->SetWebkitPreferences(render_view()->GetWebkitPreferences());
   }
   if (IsLocalRoot()) {
     GetLocalRootWebWidgetTestProxy()->Reset();
@@ -260,6 +266,8 @@ void WebFrameTestProxy::CheckIfAudioSinkExistsAndIsAuthorized(
 
 void WebFrameTestProxy::DidClearWindowObject() {
   test_client_->DidClearWindowObject();
+  blink::WebTestingSupport::InjectInternalsObject(GetWebFrame());
+
   RenderFrameImpl::DidClearWindowObject();
 }
 

@@ -5,7 +5,6 @@
 package org.chromium.weblayer.test;
 
 import android.net.Uri;
-import android.os.Bundle;
 import android.support.test.filters.MediumTest;
 
 import org.junit.After;
@@ -67,14 +66,11 @@ public final class GeolocationTest {
 
     @Before
     public void setUp() throws Throwable {
-        Bundle extras = new Bundle();
-        // TODO(crbug.com/1064500): If this prevents flakes figure out why preferences are getting
-        // persisted across test runs for non-incognito profiles.
-        extras.putString(InstrumentationActivity.EXTRA_PROFILE_NAME, null);
-        mActivity = mActivityTestRule.launchShellWithUrl("about:blank", extras);
+        mActivity = mActivityTestRule.launchShellWithUrl("about:blank");
         Assert.assertNotNull(mActivity);
 
         mTestWebLayer = TestWebLayer.getTestWebLayer(mActivity.getApplicationContext());
+        mTestWebLayer.setSystemLocationSettingEnabled(true);
         mTestWebLayer.setMockLocationProvider(true /* enable */);
 
         mTestServer = TestWebServer.start();

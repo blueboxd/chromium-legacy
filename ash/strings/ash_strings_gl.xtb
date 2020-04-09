@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">Fai clic para ver máis opcións</translation>
 <translation id="1570871743947603115">Activar/desactivar o Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Acceder a toda a túa actividade nesta sesión</translation>
-<translation id="1608626060424371292">Eliminar este usuario</translation>
+<translation id="1632985212731562677">A función Acceso con interruptores pódese desactivar en Configuración &gt; Accesibilidade.</translation>
 <translation id="1654477262762802994">Iniciar unha consulta de voz</translation>
 <translation id="1658406695958299976">Aínda non se puido verificar o teu contrasinal. Nota: Se cambiaches o teu contrasinal recentemente, o contrasinal novo aplicarase en canto peches sesión. Utiliza aquí o contrasinal antigo.</translation>
 <translation id="1677472565718498478">Tempo restante: <ph name="TIME" /></translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">O administrador do dispositivo pode supervisar a actividade de navegación.</translation>
 <translation id="3181441307743005334">O reinicio pode tardar uns intres</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Conectado a un dispositivo}other{Conectado a # dispositivos}}</translation>
+<translation id="3203405173652969239">Activouse o Acceso con interruptores</translation>
 <translation id="3207953481422525583">Configuración do usuario</translation>
 <translation id="3217205077783620295">O volume está activado. Utiliza o botón para silencialo.</translation>
 <translation id="3226991577105957773"><ph name="COUNT" /> máis</translation>
@@ -652,6 +653,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="9211681782751733685">Tempo restante para que se cargue a batería por completo: <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Definir fondo de pantalla</translation>
 <translation id="921989828232331238">O teu pai ou nai bloqueou o dispositivo para todo o día</translation>
+<translation id="9220525904950070496">Quitar conta</translation>
 <translation id="923686485342484400">Preme Control, maiúsculas e Q dúas veces para pechar sesión.</translation>
 <translation id="938963181863597773">Que hai no meu calendario?</translation>
 <translation id="945522503751344254">Enviar comentarios</translation>

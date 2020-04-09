@@ -37,7 +37,7 @@ TEST(SQLiteTrustTokenPersister, PutReinitializeAndGet) {
                        base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   ASSERT_TRUE(temp_file.IsValid());
 
-  auto origin = url::Origin::Create(GURL("https://a.com/"));
+  auto origin = *SuitableTrustTokenOrigin::Create(GURL("https://a.com/"));
   {
     std::unique_ptr<SQLiteTrustTokenPersister> persister;
     SQLiteTrustTokenPersister::CreateForFilePath(

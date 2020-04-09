@@ -625,15 +625,16 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
             content_size_suggestion = MinMaxSizesFunc().min_size;
           } else {
             LayoutUnit intrinsic_block_size;
-            if (child.HasAspectRatio()) {
+            if (child.IsReplaced()) {
               base::Optional<LayoutUnit> computed_inline_size;
               base::Optional<LayoutUnit> computed_block_size;
               child.IntrinsicSize(&computed_inline_size, &computed_block_size);
 
-              // The 150 is for elements that have an aspect ratio but no size,
-              // which SVG can have (maybe others?).
+              // The 150 is for replaced elements that have no size, which SVG
+              // can have (maybe others?).
               intrinsic_block_size =
-                  computed_block_size.value_or(LayoutUnit(150));
+                  computed_block_size.value_or(LayoutUnit(150)) +
+                  border_padding_in_child_writing_mode.BlockSum();
             } else {
               intrinsic_block_size = IntrinsicBlockSizeFunc();
             }

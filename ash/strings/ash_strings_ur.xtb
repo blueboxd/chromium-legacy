@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">مزید اختیارات کیلئے کلک کریں</translation>
 <translation id="1570871743947603115">بلوٹوتھ ٹوگل کریں۔ <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">اس سیشن کی اپنی ہر سرگرمی تک رسائی حاصل کریں</translation>
-<translation id="1608626060424371292">اس صارف کو ہٹائیں</translation>
+<translation id="1632985212731562677">سوئچ رسائی کو ترتیبات &gt; ایکسیسبیلٹی میں غیر فعال کیا جا سکتا ہے۔</translation>
 <translation id="1654477262762802994">صوتی استفسار شروع کریں</translation>
 <translation id="1658406695958299976">معذرت، آپ کے پاس ورڈ کی اب بھی توثیق نہیں کی جا سکی۔ نوٹ: اگر آپ نے اپنا پاس ورڈ حال ہی میں تبدیل کیا ہے تو آپ کا نیا پاس ورڈ آپ کے سائن آؤٹ کرنے پر لاگو ہو جائے گا، براہ کرم یہاں پرانا پاس ورڈ استعمال کریں۔</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> باقی</translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">آلہ کا منتظم آپ کی براؤزنگ سرگرمی کو مانیٹر کر سکتا ہے۔</translation>
 <translation id="3181441307743005334">ری سٹارٹ کرنے میں کچھ وقت لگ سکتا ہے</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{ایک آلہ سے منسلک ہے}other{# آلات سے منسلک ہے}}</translation>
+<translation id="3203405173652969239">سوئچ رسائی فعال ہو گئی</translation>
 <translation id="3207953481422525583">صارف کی ترتیبات</translation>
 <translation id="3217205077783620295">والیوم آن ہے۔ ٹوگل کرنے سے آڈیو خاموش ہو جائے گی۔</translation>
 <translation id="3226991577105957773">‏‎<ph name="COUNT" />+‎ مزید</translation>
@@ -651,6 +652,7 @@
 <translation id="9211681782751733685">بیٹری کے مکمل طور پر چارج ہونے میں <ph name="TIME_REMAINING" /> باقی ہے۔</translation>
 <translation id="9215934040295798075">وال پیپر سیٹ کریں</translation>
 <translation id="921989828232331238">آپ کے والد/والدہ نے آپ کے آلے کو دن بھر کے لئے مقفل کر دیا</translation>
+<translation id="9220525904950070496">اکاؤنٹ ہٹائیں</translation>
 <translation id="923686485342484400">‏سائن آؤٹ کرنے کیلئے Control Shift Q کو دو بار دبائیں۔</translation>
 <translation id="938963181863597773">میرے کیلینڈر میں کیا ہے؟</translation>
 <translation id="945522503751344254">تاثرات بھیجیں</translation>

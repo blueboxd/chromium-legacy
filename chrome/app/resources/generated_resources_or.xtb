@@ -413,7 +413,6 @@
 <translation id="1566049601598938765">ୱେବ୍‍ସାଇଟ୍</translation>
 <translation id="15662109988763471">ଚୟନ କରାଯାଇଥିବା ପ୍ରିଣ୍ଟର୍ ଉପଲବ୍ଧ ନାହିଁ କିମ୍ବା ଠିକ୍ ଭାବେ ଇନ୍‍ଷ୍ଟଲ୍ କରାଯାଇନାହିଁ। ଆପଣଙ୍କର ପ୍ରିଣ୍ଟର୍ ଯାଞ୍ଚ କରନ୍ତୁ କିମ୍ବା ଅନ୍ୟ ଏକ ପ୍ରିଣ୍ଟର୍ ଚୟନ କରି ଦେଖନ୍ତୁ।</translation>
 <translation id="1567387640189251553">ଯେବେଠାରୁ ଆପଣ ଶେଷଥର ନିଜର ପାସ୍‌ୱର୍ଡ ଲେଖିଥିଲେ, ସେବେଠାରୁ ଏକ ଅଲଗା କୀବୋର୍ଡ ସଂଯୋଗ କରାଯାଇଛି। ଏହା ଆପଣଙ୍କର କୀ'ଷ୍ଟ୍ରୋକ୍‌କୁ ଚୋରି କରିବାକୁ ପ୍ରଚେଷ୍ଟା କରୁଥାଇପାରେ।</translation>
-<translation id="1567750922576943685">ଆପଣଙ୍କର ପରିଚୟ ଯାଞ୍ଚ କରାଇବା ଦ୍ୱାରା ଆପଣଙ୍କ ବ୍ୟକ୍ତିଗତ ସୂଚନା ସୁରକ୍ଷା କରିବାରେ ସାହାଯ୍ୟ ମିଳେ</translation>
 <translation id="1567993339577891801">&amp;JavaScript କନ୍‌ସୋଲ୍</translation>
 <translation id="1568323446248056064">ଡିସ୍‌ପ୍ଲେ ଡିଭାଇସ୍ ସେଟିଂସ୍ ଖୋଲନ୍ତୁ</translation>
 <translation id="1572139610531470719"><ph name="WINDOW_TITLE" /> (ଅତିଥି)</translation>
@@ -515,7 +514,6 @@
 <translation id="1697150536837697295">କଳା</translation>
 <translation id="1697686431566694143">ଫାଇଲ୍ ଏଡିଟ୍ କରନ୍ତୁ</translation>
 <translation id="1698122934742150150">କେବଳ ବର୍ତ୍ତମାନର ଇନ୍‌କଗ୍ନିଟୋ ସମୟ ଅବଧି</translation>
-<translation id="1698650002254827833">ଆପ୍ସର ତାଲିକା ଲୋଡ୍ କରାଯାଇପାରିବ ନାହିଁ। ଦୟାକରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।</translation>
 <translation id="1700079447639026019">କୁକୀଗୁଡ଼ିକୁ କେବେ ବି ବ୍ୟବହାର କରିପାରୁନଥିବା ସାଇଟଗୁଡ଼ିକ</translation>
 <translation id="1701062906490865540">ଏହି ବ୍ୟକ୍ତିଙ୍କୁ ବାହାର କରନ୍ତୁ</translation>
 <translation id="1703331064825191675">ଆପଣଙ୍କର ପାସ୍‍ୱାର୍ଡଗୁଡ଼ିକ ବିଷୟରେ କେବେ ବି ଚିନ୍ତା କରନ୍ତୁ ନାହିଁ</translation>
@@ -822,6 +820,7 @@
 <translation id="2119349053129246860"><ph name="APP" />ରେ ଖୋଲନ୍ତୁ</translation>
 <translation id="2120297377148151361">ଗତିବିଧି ଏବଂ ବାର୍ତ୍ତାଳାପଗୁଡ଼ିକ</translation>
 <translation id="2120639962942052471"><ph name="PERMISSION" /> ବ୍ଲକ୍ କରାଯାଇଛି</translation>
+<translation id="2121055421682309734">{COUNT,plural, =0{କୁକୀଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରାଯାଇଛି}=1{କୁକୀଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରାଯାଇଛି, 1ଟି ବ୍ୟତିକ୍ରମ}other{କୁକୀଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରାଯାଇଛି, {COUNT}ଟି ବ୍ୟତିକ୍ରମ}}</translation>
 <translation id="2121825465123208577">ଆକାର ବଦଳାନ୍ତୁ</translation>
 <translation id="2122305276694332719">ଏକ ଗୋପନୀୟ ଥିବା ନେଟ୍‌ୱାର୍କ ସହିତ ସ୍ୱଚାଳିତ ଭାବରେ ସଂଯୋଗ କଲେ ଅନ୍ୟ ଲୋକମାନେ ଆପଣଙ୍କ ଡିଭାଇସ୍ ଆଉ କିଛି ନେଟ୍‌ୱାର୍କ ସେଟିଂସ୍‌କୁ ଦେଖିପାରିବେ ଏବଂ ଏହା ସୁପାରିଶ କରାଯାଏ ନାହିଁ।</translation>
 <translation id="2123766928840368256">ଏକ ଭିନ୍ନ ଫାଇଲ୍ ବାଛନ୍ତୁ</translation>
@@ -1075,7 +1074,6 @@
 <translation id="2442916515643169563">ଟେକ୍ସଟ ଶାଡୋ</translation>
 <translation id="2445081178310039857">ଏକ୍ସଟେନ୍‍ସନ୍‍ ମୂଳ ଡିରେକ୍ଟୋରୀ ଆବଶ୍ୟକ ଅଟେ।</translation>
 <translation id="2445484935443597917">ଗୋଟିଏ ନୂତନ ପ୍ରୋଫାଇଲ୍ ତିଆରି କରନ୍ତୁ</translation>
-<translation id="2446585455334014596"><ph name="APP_NAME" /> ଆପଣଙ୍କର ପରିଚୟ ଯାଞ୍ଚ କରିବାକୁ ଚାହୁଁଛି</translation>
 <translation id="2448312741937722512">ପ୍ରକାର</translation>
 <translation id="2450223707519584812">ଆପଣ ଉପଯୋଗକର୍ତ୍ତାଙ୍କୁ ଯୋଗ କରିବାରେ ସକ୍ଷମ ହେବେ ନାହିଁ, କାରଣ Google API କୀଗୁଡ଼ିକ ମିଳୁନାହିଁ। ସବିଶେଷ ବିବରଣୀ ପାଇଁ <ph name="DETAILS_URL" /> ଦେଖନ୍ତୁ।</translation>
 <translation id="2450849356604136918">କୌଣସି ସକ୍ରିୟ ଭ୍ୟୁ ନାହିଁ</translation>
@@ -1679,7 +1677,6 @@
 <translation id="3246107497225150582">{0,plural, =1{ଗୋଟିଏ ଦିନ ଭିତରେ ଡିଭାଇସ୍ ଅପଡେଟ୍ କରନ୍ତୁ}other{# ଦିନ ଭିତରେ ଡିଭାଇସ୍ ଅପଡେଟ୍ କରନ୍ତୁ}}</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> - ନେଟ୍‌ୱର୍କ ତ୍ରୁଟି</translation>
 <translation id="3248902735035392926">ସୁରକ୍ଷା ଗୁରୁତ୍ୱପୂର୍ଣ୍ଣ ଅଟେ। କିଛି ସମୟ ନିଅନ୍ତୁ ଏବଂ <ph name="BEGIN_LINK" />ବର୍ତ୍ତମାନ ଆପଣଙ୍କ ଏକ୍ସଟେନ୍‍ସନ୍‍ଗୁଡ଼ିକର ଯାଞ୍ଚ କରନ୍ତୁ<ph name="END_LINK" /></translation>
-<translation id="3249950116250264636"><ph name="APP_NAME" /> (<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">&lt;ସାର୍ଟିଫିକେଟ୍‍ର ଅଂଶ ନୁହେଁ&gt;</translation>
 <translation id="3253225298092156258">ଉପଲବ୍ଧ ନାହିଁ</translation>
 <translation id="3253448572569133955">ଅଜଣା ଆକାଉଣ୍ଟ</translation>
@@ -2960,7 +2957,6 @@
 <translation id="4992473555164495036">ଆପଣଙ୍କର ବ୍ୟବସ୍ଥାପକ ଉପଲବ୍ଧ ଇନ୍‌ପୁଟ୍ ପଦ୍ଧତିଗୁଡ଼ିକୁ ସୀମିତ କରିଛନ୍ତି।</translation>
 <translation id="4994474651455208930">ସାଇଟ୍‍ଗୁଡ଼ିକୁ ପ୍ରୋଟୋକଲ୍ ପାଇଁ ଡିଫଲ୍ଟ ହ୍ୟାଣ୍ଡଲର୍ ହେବା ପାଇଁ ପଚାରିବାକୁ ଅନୁମତି ଦିଅନ୍ତୁ</translation>
 <translation id="4994754230098574403">ସେଟ‍ଅପ୍ ହେଉଛି</translation>
-<translation id="4996978546172906250">ଏହା ମାଧ୍ୟମରେ ସେୟାର୍ କରନ୍ତୁ</translation>
 <translation id="4997086284911172121">କୌଣସି ଇଣ୍ଟର୍ନେଟ୍ ସଂଯୋଗ ନାହିଁ</translation>
 <translation id="4997384734315285248">Plugin VM ଅନଇନଷ୍ଟଲ୍ କରନ୍ତୁ</translation>
 <translation id="4998430619171209993">ଚାଲୁ ଅଛି</translation>
@@ -3060,7 +3056,6 @@
 <translation id="5135085122826131075">"Ok Google" କହି ଆପଣଙ୍କର Assistantକୁ ଆକ୍ସେସ୍ କରନ୍ତୁ।</translation>
 <translation id="5135533361271311778">ବୁକ୍‍ମାର୍କ ଆଇଟମ୍ ତିଆରି କରିହେଲା ନାହିଁ।</translation>
 <translation id="5137501176474113045">ଏହି ଆଇଟମ୍‍ ଡିଲିଟ୍‍ କରନ୍ତୁ</translation>
-<translation id="5138982052046316113">Linux ଡିସ୍କର ଆକାର ପରିବର୍ତ୍ତନ କରନ୍ତୁ</translation>
 <translation id="5139112070765735680"><ph name="QUERY_NAME" />, <ph name="DEFAULT_SEARCH_ENGINE_NAME" /> ସନ୍ଧାନ</translation>
 <translation id="5139823398361067371">ଆପଣଙ୍କର ସୁରକ୍ଷା କୀ ପାଇଁ PIN ଲେଖନ୍ତୁ। ଯଦି ଆପଣ PIN ଜାଣି ନାହାଁନ୍ତି, ତେବେ ଆପଣ ସୁରକ୍ଷା କୀ ରିସେଟ୍ କରିବାକୁ ଆବଶ୍ୟକ କରିବେ।</translation>
 <translation id="5139955368427980650">&amp;ଖୋଲନ୍ତୁ</translation>
@@ -3924,7 +3919,6 @@
 <translation id="6291953229176937411">&amp;ଫାଇଣ୍ଡର୍‌ରେ ଦେଖାନ୍ତୁ</translation>
 <translation id="6295158916970320988">ସମସ୍ତ ସାଇଟ୍‍ଗୁଡ଼ିକ</translation>
 <translation id="6295855836753816081">ସେଭ୍ ହେଉଛି…</translation>
-<translation id="629730747756840877">ଆକାଉଣ୍ଟ</translation>
 <translation id="6298962879096096191">Android ଆପ୍ସ ଇନ୍‌ଷ୍ଟଲ୍‌ କରିବାକୁ Google Play ବ୍ୟବହାର କରନ୍ତୁ</translation>
 <translation id="630065524203833229">&amp;ପ୍ରସ୍ଥାନ କରନ୍ତୁ</translation>
 <translation id="6300718114348072351"><ph name="PRINTER_NAME" />କୁ ସ୍ୱଚାଳିତ ଭାବେ କନ୍‌ଫିଗର୍ କରାଯାଇପାରିଲା ନାହିଁ। ଦୟାକରି ଉନ୍ନତ ପ୍ରିଣ୍ଟର୍ ବିବରଣୀ ନିର୍ଦ୍ଦିଷ୍ଟ କରନ୍ତୁ। <ph name="LINK_BEGIN" />ଅଧିକ ଜାଣନ୍ତୁ<ph name="LINK_END" /></translation>
@@ -4332,7 +4326,6 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="6865598234501509159">ପୃଷ୍ଠାଟି <ph name="LANGUAGE" />ରେ ନାହିଁ</translation>
 <translation id="6865708901122695652">WebRTC ଇଭେଣ୍ଟ ଲଗ୍‌ (<ph name="WEBRTC_EVENT_LOG_COUNT" />)</translation>
 <translation id="686664946474413495">ରଙ୍ଗର ତାପମାତ୍ରା</translation>
-<translation id="6870888490422746447">ସେୟାର୍ କରିବା ପାଇଁ ଏକ ଆପ୍ ବାଛନ୍ତୁ:</translation>
 <translation id="6871644448911473373">OCSP ପ୍ରତିକ୍ରିୟାଦାତା: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">ଆପଣ ଲେଖିଥିବା ପାସ୍‌ୱର୍ଡ, ସର୍ଭର୍‌ ଦ୍ୱାରା ଅଗ୍ରାହ୍ୟ କରାଯାଇଛି।</translation>
 <translation id="6876155724392614295">ବାଇକ୍</translation>
@@ -4973,7 +4966,6 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="7744047395460924128">ଆପଣଙ୍କର ପ୍ରିଣ୍ଟିଂ ଇତିହାସ ଦେଖନ୍ତୁ</translation>
 <translation id="7744192722284567281">ଡାଟା ଚୋରିରେ ପାସୱାର୍ଡ ମିଳିଛି</translation>
 <translation id="7750228210027921155">ଛବି ମଧ୍ୟରେ ଛବି</translation>
-<translation id="7751229152614300329">ସେଫ୍ ବ୍ରାଉଜିଂ ଅପ୍ ଟୁ ଡେଟ୍ ଅଛି ଏବଂ ଏହା ଆପଣଙ୍କୁ କ୍ଷତିକାରକ ସାଇଟ୍ ଏବଂ ଡାଉନଲୋଡଗୁଡ଼ିକରୁ ସୁରକ୍ଷିତ ରଖିଥାଏ</translation>
 <translation id="7751260505918304024">ସବୁ ଦେଖାନ୍ତୁ</translation>
 <translation id="7754704193130578113">ଡାଉନଲୋଡିଙ୍ଗ୍ କରିବା ପୂର୍ବରୁ ପ୍ରତ୍ୟେକ ଫାଇଲ୍ କେଉଁଠି ସଞ୍ଚୟ ହେବ ପଚାରନ୍ତୁ</translation>
 <translation id="7755287808199759310">ଆପଣଙ୍କ ଅଭିଭାବକ ଆପଣଙ୍କ ପାଇଁ ଏହାର ଅବରୋଧ ହଟାଇପାରିବେ</translation>

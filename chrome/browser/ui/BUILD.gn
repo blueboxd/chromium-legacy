@@ -423,7 +423,6 @@ jumbo_static_library("ui") {
     "//chrome/services/qrcode_generator/public/cpp",
     "//chrome/services/qrcode_generator/public/mojom",
     "//components/about_ui",
-    "//components/client_hints/browser",
     "//components/account_id",
     "//components/autofill/content/browser:risk_proto",
     "//components/autofill/core/browser",
@@ -434,6 +433,7 @@ jumbo_static_library("ui") {
     "//components/browsing_data/core",
     "//components/captive_portal/content",
     "//components/captive_portal/core:buildflags",
+    "//components/client_hints/browser",
     "//components/consent_auditor/",
     "//components/content_settings/core/browser",
     "//components/country_codes",
@@ -624,6 +624,7 @@ jumbo_static_library("ui") {
       "//chrome/browser/ui/webui/explore_sites_internals:mojo_bindings",
       "//chrome/browser/ui/webui/snippets_internals:mojo_bindings",
       "//components/browser_ui/util/android",
+      "//components/security_state/content/android",
     ]
     if (enable_feed_in_chrome) {
       deps += [ "//chrome/browser/ui/webui/feed_internals:mojo_bindings" ]
@@ -1998,6 +1999,8 @@ jumbo_static_library("ui") {
       "webui/settings/chromeos/cups_printers_handler.h",
       "webui/settings/chromeos/date_time_handler.cc",
       "webui/settings/chromeos/date_time_handler.h",
+      "webui/settings/chromeos/device_display_handler.cc",
+      "webui/settings/chromeos/device_display_handler.h",
       "webui/settings/chromeos/device_keyboard_handler.cc",
       "webui/settings/chromeos/device_keyboard_handler.h",
       "webui/settings/chromeos/device_pointer_handler.cc",

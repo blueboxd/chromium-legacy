@@ -11,8 +11,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/memory/ref_counted.h"
-
+#include "base/memory/ref_counted_delete_on_sequence.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/ipc/service/command_buffer_stub.h"
@@ -44,17 +43,20 @@ class Texture2DWrapper;
 // GpuResources have to be retained until the mailbox is used, but we just
 // retain the whole thing.
 class MEDIA_GPU_EXPORT D3D11PictureBuffer
-    : public base::RefCountedThreadSafe<D3D11PictureBuffer> {
+    : public base::RefCountedDeleteOnSequence<D3D11PictureBuffer> {
  public:
   // |texture_wrapper| is responsible for controlling mailbox access to
   // the ID3D11Texture2D,
   // |level| is the picturebuffer index inside the Array-type ID3D11Texture2D.
-  D3D11PictureBuffer(ComD3D11Texture2D texture,
-                     std::unique_ptr<Texture2DWrapper> texture_wrapper,
-                     gfx::Size size,
-                     size_t level);
+  D3D11PictureBuffer(
+      scoped_refptr<base::SequencedTaskRunner> delete_task_runner,
+      ComD3D11Texture2D texture,
+      std::unique_ptr<Texture2DWrapper> texture_wrapper,
+      gfx::Size size,
+      size_t level);
 
-  bool Init(GetCommandBufferHelperCB get_helper_cb,
+  bool Init(scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
+            GetCommandBufferHelperCB get_helper_cb,
             ComD3D11VideoDevice video_device,
             const GUID& decoder_guid,
             std::unique_ptr<MediaLog> media_log);
@@ -91,7 +93,8 @@ class MEDIA_GPU_EXPORT D3D11PictureBuffer
 
  private:
   ~D3D11PictureBuffer();
-  friend class base::RefCountedThreadSafe<D3D11PictureBuffer>;
+  friend class base::RefCountedDeleteOnSequence<D3D11PictureBuffer>;
+  friend class base::DeleteHelper<D3D11PictureBuffer>;
 
   ComD3D11Texture2D texture_;
   std::unique_ptr<Texture2DWrapper> texture_wrapper_;

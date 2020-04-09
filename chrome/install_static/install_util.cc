@@ -387,6 +387,14 @@ std::wstring GetClientStateMediumKeyPath() {
   return GetClientStateMediumKeyPath(GetAppGuid());
 }
 
+std::wstring GetClientStateKeyPathForBinaries() {
+  return GetBinariesClientStateKeyPath();
+}
+
+std::wstring GetClientStateMediumKeyPathForBinaries() {
+  return GetBinariesClientStateMediumKeyPath();
+}
+
 std::wstring GetUninstallRegistryPath() {
   std::wstring result(
       L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\");
@@ -920,13 +928,16 @@ bool RecursiveDirectoryCreate(const std::wstring& full_path) {
 // InstallDetails instance since it is used to bootstrap InstallDetails.
 std::wstring DetermineChannel(const InstallConstants& mode,
                               bool system_level,
+                              bool from_binaries,
                               std::wstring* update_ap,
                               std::wstring* update_cohort_name) {
 #if !BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
   return std::wstring();
 #else
   // Read the "ap" value and cache it if requested.
-  std::wstring client_state(GetClientStateKeyPath(mode.app_guid));
+  std::wstring client_state(from_binaries
+                                ? GetBinariesClientStateKeyPath()
+                                : GetClientStateKeyPath(mode.app_guid));
   std::wstring ap_value;
   // An empty |ap_value| is used in case of error.
   nt::QueryRegValueSZ(system_level ? nt::HKLM : nt::HKCU, nt::WOW6432,

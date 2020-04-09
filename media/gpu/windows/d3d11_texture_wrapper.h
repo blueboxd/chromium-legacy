@@ -10,6 +10,9 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
+#include "base/optional.h"
+#include "base/threading/sequence_bound.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "media/base/hdr_metadata.h"
@@ -42,7 +45,8 @@ class MEDIA_GPU_EXPORT Texture2DWrapper {
   virtual ~Texture2DWrapper();
 
   // Initialize the wrapper.
-  virtual bool Init(GetCommandBufferHelperCB get_helper_cb) = 0;
+  virtual bool Init(scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
+                    GetCommandBufferHelperCB get_helper_cb) = 0;
 
   // Import |texture|, |array_slice| and return the mailbox(es) that can be
   // used to refer to it.
@@ -63,12 +67,16 @@ class MEDIA_GPU_EXPORT Texture2DWrapper {
 // instance for each concurrently outstanding texture.
 class MEDIA_GPU_EXPORT DefaultTexture2DWrapper : public Texture2DWrapper {
  public:
+  // Error callback for GpuResource to notify us of errors.
+  using OnErrorCB = base::OnceCallback<void(Status)>;
+
   // While the specific texture instance can change on every call to
   // ProcessTexture, the dxgi format must be the same for all of them.
   DefaultTexture2DWrapper(const gfx::Size& size, DXGI_FORMAT dxgi_format);
   ~DefaultTexture2DWrapper() override;
 
-  bool Init(GetCommandBufferHelperCB get_helper_cb) override;
+  bool Init(scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
+            GetCommandBufferHelperCB get_helper_cb) override;
 
   bool ProcessTexture(ComD3D11Texture2D texture,
                       size_t array_slice,
@@ -87,21 +95,27 @@ class MEDIA_GPU_EXPORT DefaultTexture2DWrapper : public Texture2DWrapper {
   // can use the mailbox.
   class GpuResources {
    public:
-    GpuResources();
+    GpuResources(OnErrorCB on_error_cb);
     ~GpuResources();
 
-    bool Init(GetCommandBufferHelperCB get_helper_cb,
+    void Init(GetCommandBufferHelperCB get_helper_cb,
               const std::vector<gpu::Mailbox> mailboxes,
               GLenum target,
               gfx::Size size,
               int textures_per_picture);
 
     // Push a new |texture|, |array_slice| to |gl_image_|.
-    Status PushNewTexture(ComD3D11Texture2D texture, size_t array_slice);
+    void PushNewTexture(ComD3D11Texture2D texture, size_t array_slice);
 
     std::vector<uint32_t> service_ids_;
 
    private:
+    // Notify our wrapper about |status|, if we haven't before.
+    void NotifyError(Status status);
+
+    // May be empty if we've already sent an error.
+    OnErrorCB on_error_cb_;
+
     scoped_refptr<CommandBufferHelper> helper_;
     scoped_refptr<gl::GLImageDXGI> gl_image_;
     EGLStreamKHR stream_;
@@ -109,10 +123,18 @@ class MEDIA_GPU_EXPORT DefaultTexture2DWrapper : public Texture2DWrapper {
     DISALLOW_COPY_AND_ASSIGN(GpuResources);
   };
 
+  // Receive an error from |gpu_resources_| and store it in |received_error_|.
+  void OnError(Status status);
+
+  // The first error status that we've received from |gpu_resources_|, if any.
+  base::Optional<Status> received_error_;
+
   gfx::Size size_;
-  std::unique_ptr<GpuResources> gpu_resources_;
+  base::SequenceBound<GpuResources> gpu_resources_;
   MailboxHolderArray mailbox_holders_;
   DXGI_FORMAT dxgi_format_;
+
+  base::WeakPtrFactory<DefaultTexture2DWrapper> weak_factory_{this};
 };
 
 }  // namespace media

@@ -98,6 +98,12 @@ class CorbAndCorsExtensionTestBase : public ExtensionBrowserTest {
  public:
   CorbAndCorsExtensionTestBase() = default;
 
+  bool AllowFileAccessFromFiles() override {
+    // This is important to 1) test what we ship and 2) make sure that
+    // file->file XHRs are blocked by CORS (without extensions in the picture).
+    return false;
+  }
+
   void SetUpOnMainThread() override {
     ExtensionBrowserTest::SetUpOnMainThread();
 
@@ -986,28 +992,66 @@ IN_PROC_BROWSER_TEST_P(
   ui_test_utils::NavigateToURL(browser(), page_url);
   ASSERT_EQ(page_url,
             active_web_contents()->GetMainFrame()->GetLastCommittedURL());
+  const char kScriptTemplate[] = R"(
+      const url = $1;
+      const xhr = new XMLHttpRequest();
+      xhr.onload = () => domAutomationController.send(xhr.responseText);
+      xhr.onerror = () => domAutomationController.send('XHR ERROR');
+      xhr.open("GET", url);
+      xhr.send()
+  )";
+  std::string script = content::JsReplace(kScriptTemplate, same_dir_resource);
 
-  // Inject a content script that performs a cross-origin fetch from another
-  // file: URL (all file: URLs are treated as an opaque origin, so all such
-  // fetches would be considered cross-origin).
+  // Sanity check: file: -> file: XHR (no extensions involved) should be blocked
+  // by CORS equivalent inside FileURLLoaderFactory.  (All file: URLs are
+  // treated as an opaque origin, so all such XHRs would be considered
+  // cross-origin.)
+  {
+    base::HistogramTester histograms;
+    content::DOMMessageQueue queue;
+    ExecuteScriptAsync(active_web_contents(), script);
+    std::string xhr_result = PopString(&queue);
+
+    // Verify that the XHR was blocked by CORS-equivalent in
+    // FileURLLoaderFactory.
+    EXPECT_EQ("XHR ERROR", xhr_result);
+
+    // CORB is not used from FileURLLoaderFactory - verify that no CORB UMAs
+    // have been logged.
+    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+    EXPECT_EQ(
+        0u,
+        histograms.GetTotalCountsForPrefix("SiteIsolation.XSD.Browser").size());
+  }
+
+  // Inject a content script that performs a cross-origin XHR from another file:
+  // URL (all file: URLs are treated as an opaque origin, so all such XHRs would
+  // be considered cross-origin).
   //
   // The ability to inject content scripts into file: URLs comes from a
   // combination of <all_urls> and granting file access to the extension.
-  base::HistogramTester histograms;
-  std::string fetch_result =
-      FetchViaContentScript(same_dir_resource, active_web_contents());
+  //
+  // The script below uses the XMLHttpRequest API, rather than fetch API,
+  // because the fetch API doesn't support file: requests currently
+  // (see https://crbug.com/1051594#c9 and https://crbug.com/1051597#c19).
+  {
+    base::HistogramTester histograms;
+    content::DOMMessageQueue queue;
+    ExecuteContentScript(active_web_contents(), script);
+    std::string xhr_result = PopString(&queue);
 
-  // Verify that the fetch was blocked by CORS-equivalent in
-  // FileURLLoaderFactory (even though the extension has <all_urls> permission
-  // and was granted file access).
-  EXPECT_EQ(kCorsErrorWhenFetching, fetch_result);
+    // Verify that the XHR was blocked by CORS-equivalent in
+    // FileURLLoaderFactory (even though the extension has <all_urls> permission
+    // and was granted file access).
+    EXPECT_EQ("XHR ERROR", xhr_result);
 
-  // CORB is not used from FileURLLoaderFactory - verify that no CORB UMAs have
-  // been logged.
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-  EXPECT_EQ(
-      0u,
-      histograms.GetTotalCountsForPrefix("SiteIsolation.XSD.Browser").size());
+    // CORB is not used from FileURLLoaderFactory - verify that no CORB UMAs
+    // have been logged.
+    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+    EXPECT_EQ(
+        0u,
+        histograms.GetTotalCountsForPrefix("SiteIsolation.XSD.Browser").size());
+  }
 }
 
 // Coverage of *.subdomain.com extension permissions for CORB-eligible fetches

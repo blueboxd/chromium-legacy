@@ -56,6 +56,7 @@ source_set("tabs_internal") {
     "//components/security_state/ios",
     "//components/strings",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/app_launcher",
     "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/autofill:autofill_internal",
     "//ios/chrome/browser/browser_state",

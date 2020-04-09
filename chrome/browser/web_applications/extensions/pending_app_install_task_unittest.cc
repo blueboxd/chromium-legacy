@@ -137,7 +137,6 @@ class TestPendingAppInstallFinalizer : public InstallFinalizer {
     return num_add_app_to_quick_launch_bar_calls_;
   }
   size_t num_reparent_tab_calls() { return num_reparent_tab_calls_; }
-  size_t num_reveal_appshim_calls() { return num_reveal_appshim_calls_; }
 
   // InstallFinalizer
   void FinalizeInstall(const WebApplicationInfo& web_app_info,
@@ -257,12 +256,6 @@ class TestPendingAppInstallFinalizer : public InstallFinalizer {
     ++num_reparent_tab_calls_;
   }
 
-  bool CanRevealAppShim() const override { return true; }
-
-  void RevealAppShim(const AppId& app_id) override {
-    ++num_reveal_appshim_calls_;
-  }
-
  private:
   TestAppRegistrar* registrar_ = nullptr;
 
@@ -272,7 +265,6 @@ class TestPendingAppInstallFinalizer : public InstallFinalizer {
 
   size_t num_add_app_to_quick_launch_bar_calls_ = 0;
   size_t num_reparent_tab_calls_ = 0;
-  size_t num_reveal_appshim_calls_ = 0;
 
   std::map<GURL, std::pair<AppId, InstallResultCode>>
       next_finalize_install_results_;
@@ -422,7 +414,6 @@ TEST_F(PendingAppInstallTaskTest,
 
         EXPECT_EQ(1u, finalizer()->num_add_app_to_quick_launch_bar_calls());
         EXPECT_EQ(0u, finalizer()->num_reparent_tab_calls());
-        EXPECT_EQ(0u, finalizer()->num_reveal_appshim_calls());
 
         EXPECT_FALSE(web_app_info().open_as_window);
         EXPECT_EQ(WebappInstallSource::INTERNAL_DEFAULT,
@@ -482,7 +473,6 @@ TEST_F(PendingAppInstallTaskTest,
 
         EXPECT_EQ(1u, finalizer()->num_add_app_to_quick_launch_bar_calls());
         EXPECT_EQ(0u, finalizer()->num_reparent_tab_calls());
-        EXPECT_EQ(0u, finalizer()->num_reveal_appshim_calls());
 
         run_loop.Quit();
       }));
@@ -510,7 +500,6 @@ TEST_F(PendingAppInstallTaskTest,
 
         EXPECT_EQ(0u, finalizer()->num_add_app_to_quick_launch_bar_calls());
         EXPECT_EQ(0u, finalizer()->num_reparent_tab_calls());
-        EXPECT_EQ(0u, finalizer()->num_reveal_appshim_calls());
 
         run_loop.Quit();
       }));
@@ -540,7 +529,6 @@ TEST_F(
 
         EXPECT_EQ(0u, finalizer()->num_add_app_to_quick_launch_bar_calls());
         EXPECT_EQ(0u, finalizer()->num_reparent_tab_calls());
-        EXPECT_EQ(0u, finalizer()->num_reveal_appshim_calls());
 
         run_loop.Quit();
       }));

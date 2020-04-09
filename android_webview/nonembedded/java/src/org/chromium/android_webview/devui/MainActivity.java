@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -156,16 +157,26 @@ public class MainActivity extends FragmentActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            getMenuInflater().inflate(R.menu.navigation_menu, menu);
+            getMenuInflater().inflate(R.menu.options_menu, menu);
         }
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.nav_menu_switch_provider
+        if (item.getItemId() == R.id.options_menu_switch_provider
                 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             startActivity(new Intent(Settings.ACTION_WEBVIEW_SETTINGS));
+            return true;
+        } else if (item.getItemId() == R.id.options_menu_report_bug) {
+            Uri reportUri = new Uri.Builder()
+                                    .scheme("https")
+                                    .authority("bugs.chromium.org")
+                                    .path("/p/chromium/issues/entry")
+                                    .appendQueryParameter("template", "Webview+Bugs")
+                                    .appendQueryParameter("labels", "Via-WebView-DevTools")
+                                    .build();
+            startActivity(new Intent(Intent.ACTION_VIEW, reportUri));
             return true;
         }
         return super.onOptionsItemSelected(item);

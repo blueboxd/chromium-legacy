@@ -162,6 +162,12 @@ const char kAutofillEnableLocalCardMigrationForNonSyncUserDescription[] =
     "When enabled, the local card migration flow will be enabled for users who "
     "have signed in but not enabled Chrome Sync.";
 
+const char kAutofillEnableSurfacingServerCardNicknameName[] =
+    "Enable surfacing masked server card nicknames";
+const char kAutofillEnableSurfacingServerCardNicknameDescription[] =
+    "When enabled, if Google Payments cards were given nicknames in a Google "
+    "Pay app, Autofill will surface these nicknames in suggestions.";
+
 const char kAutofillEnableToolbarStatusChipName[] =
     "Move Autofill omnibox icons next to the profile avatar icon";
 const char kAutofillEnableToolbarStatusChipDescription[] =
@@ -1098,6 +1104,10 @@ const char kJavascriptHarmonyShippingDescription[] =
     "Some web pages use legacy or non-standard JavaScript extensions that may "
     "conflict with the latest JavaScript features. This flag allows disabling "
     "support of those features for compatibility with such pages.";
+
+const char kLauncherSettingsSearchName[] = "Launcher settings search";
+const char kLauncherSettingsSearchDescription[] =
+    "Enable search results for OS settings in the launcher.";
 
 const char kLegacyTLSEnforcedName[] =
     "Enforce deprecation of legacy TLS versions";

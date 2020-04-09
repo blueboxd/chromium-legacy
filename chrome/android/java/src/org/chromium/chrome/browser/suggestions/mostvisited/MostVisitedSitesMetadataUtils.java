@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.suggestions.mostvisited;
 
 import android.content.Context;
 
+import androidx.annotation.VisibleForTesting;
 import androidx.core.util.AtomicFile;
 
 import org.chromium.base.ContextUtils;
@@ -208,5 +209,10 @@ public class MostVisitedSitesMetadataUtils {
             }
             return sStateDirectory;
         }
+    }
+
+    @VisibleForTesting
+    protected static File getStateDirectoryForTesting() {
+        return sStateDirectory;
     }
 }

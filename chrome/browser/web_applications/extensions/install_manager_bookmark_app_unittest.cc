@@ -108,7 +108,6 @@ class BookmarkAppInstallFinalizerInstallOnly
   void ReparentTab(const web_app::AppId& app_id,
                    bool shortcut_created,
                    content::WebContents* web_contents) override {}
-  void RevealAppShim(const web_app::AppId& app_id) override {}
 };
 
 }  // namespace

@@ -11,7 +11,6 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
-import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
@@ -385,16 +384,7 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
         mOfflineModelObserver.updateAllSuggestionsOfflineAvailability(
                 reportPrefetchedSuggestionsCount);
 
-        if (!keepSectionSize) {
-            NewTabPageUma.recordUIUpdateResult(
-                    NewTabPageUma.ContentSuggestionsUIUpdateResult.SUCCESS_APPENDED);
-            mHasAppended = true;
-        } else {
-            NewTabPageUma.recordNumberOfSuggestionsSeenBeforeUIUpdateSuccess(
-                    numberOfSuggestionsExposed);
-            NewTabPageUma.recordUIUpdateResult(
-                    NewTabPageUma.ContentSuggestionsUIUpdateResult.SUCCESS_REPLACED);
-        }
+        if (!keepSectionSize) mHasAppended = true;
     }
 
     /**
@@ -423,8 +413,6 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
 
         if (CardsVariationParameters.ignoreUpdatesForExistingSuggestions()) {
             Log.d(TAG, "updateModels: replacing existing suggestion disabled");
-            NewTabPageUma.recordUIUpdateResult(
-                    NewTabPageUma.ContentSuggestionsUIUpdateResult.FAIL_DISABLED);
             return false;
         }
 
@@ -432,8 +420,6 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
             // In case that suggestions got removed, we assume they already were seen. This might
             // be over-simplifying things, but given the rare occurences it should be good enough.
             Log.d(TAG, "updateModels: replacing existing suggestion not possible, all seen");
-            NewTabPageUma.recordUIUpdateResult(
-                    NewTabPageUma.ContentSuggestionsUIUpdateResult.FAIL_ALL_SEEN);
             return false;
         }
 

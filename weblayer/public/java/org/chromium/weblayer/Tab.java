@@ -371,6 +371,14 @@ public class Tab {
                 callback.onTitleUpdated(titleString);
             }
         }
+
+        @Override
+        public void bringTabToFront() {
+            StrictModeWorkaround.apply();
+            for (TabCallback callback : mCallbacks) {
+                callback.bringTabToFront();
+            }
+        }
     }
 
     private static final class ErrorPageCallbackClientImpl extends IErrorPageCallbackClient.Stub {

@@ -18,6 +18,15 @@
 
 namespace system_logs {
 
+// Reads the file at |path| into |contents| and returns true on success and
+// false on error. For security reasons a |path| containing path traversal
+// components ('..') is treated as a read error and |contents| is not changed.
+// When the file exceeds |max_size| function returns true with the last
+// |max_size| bytes from the file.
+bool ReadEndOfFile(const base::FilePath& path,
+                   std::string* contents,
+                   size_t max_size);
+
 // Gathers log data from Debug Daemon.
 class DebugDaemonLogSource : public SystemLogsSource {
  public:

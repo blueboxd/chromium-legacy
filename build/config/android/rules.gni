@@ -1674,7 +1674,6 @@ if (enable_java_templates) {
       deps = _deps
       build_config = _build_config
       proguard_enabled = true
-      enable_desugar = desugar_with_d8
       forward_variables_from(invoker,
                              [
                                "proguard_configs",
@@ -2921,7 +2920,6 @@ if (enable_java_templates) {
                                  "disable_r8_outlining",
                                  "dexlayout_profile",
                                ])
-        enable_desugar = desugar_with_d8
         min_sdk_version = _min_sdk_version
         proguard_enabled = _proguard_enabled
         build_config = _build_config
@@ -3284,7 +3282,7 @@ if (enable_java_templates) {
         _generated_script = "$root_build_dir/bin/${invoker.target_name}"
         script = "//build/android/gyp/create_apk_operations_script.py"
         outputs = [ _generated_script ]
-        if (_proguard_enabled) {
+        if (_proguard_enabled && !_incremental_apk) {
           # Required by logcat command.
           data_deps = [ "//build/android/stacktrace:java_deobfuscate" ]
           data = [ "$_final_apk_path.mapping" ]
@@ -4636,7 +4634,6 @@ if (enable_java_templates) {
                                    "min_sdk_version",
                                  ])
           enable_multidex = _enable_multidex
-          enable_desugar = desugar_with_d8
           proguard_enabled = true
           proguard_mapping_path = _proguard_mapping_path
           proguard_sourcefile_suffix = "$android_channel-$_version_code"

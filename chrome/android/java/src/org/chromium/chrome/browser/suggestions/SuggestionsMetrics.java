@@ -11,7 +11,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.cards.ActionItem.State;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
-import org.chromium.chrome.browser.ntp.snippets.FaviconFetchResult;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.Pref;
@@ -105,17 +104,6 @@ public abstract class SuggestionsMetrics {
     public static void recordArticleFaviconFetchTime(long fetchTime) {
         RecordHistogram.recordMediumTimesHistogram(
                 "NewTabPage.ContentSuggestions.ArticleFaviconFetchTime", fetchTime);
-    }
-
-    /**
-     * Records the result from a favicon fetch for an article.
-     *
-     * @param result {@link FaviconFetchResult} The result from the fetch.
-     */
-    public static void recordArticleFaviconFetchResult(@FaviconFetchResult int result) {
-        RecordHistogram.recordEnumeratedHistogram(
-                "NewTabPage.ContentSuggestions.ArticleFaviconFetchResult", result,
-                FaviconFetchResult.COUNT);
     }
 
     /**

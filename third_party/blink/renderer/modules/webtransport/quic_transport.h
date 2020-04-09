@@ -11,8 +11,6 @@
 #include "base/util/type_safety/pass_key.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/mojom/quic_transport.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
@@ -21,6 +19,8 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
@@ -98,6 +98,8 @@ class MODULES_EXPORT QuicTransport final
   class DatagramUnderlyingSource;
   class ReceivedStreamsUnderlyingSource;
 
+  QuicTransport(ScriptState*, const String& url, ExecutionContext* context);
+
   void Init(const String& url, ExceptionState&);
 
   // Reset the QuicTransport object and all associated streams.
@@ -132,11 +134,12 @@ class MODULES_EXPORT QuicTransport final
               WTF::UnsignedWithZeroKeyHashTraits<uint32_t>>
       stream_map_;
 
-  mojo::Remote<network::mojom::blink::QuicTransport> quic_transport_;
-  mojo::Receiver<network::mojom::blink::QuicTransportHandshakeClient>
-      handshake_client_receiver_{this};
-  mojo::Receiver<network::mojom::blink::QuicTransportClient> client_receiver_{
-      this};
+  HeapMojoRemote<network::mojom::blink::QuicTransport> quic_transport_;
+  HeapMojoReceiver<network::mojom::blink::QuicTransportHandshakeClient,
+                   QuicTransport>
+      handshake_client_receiver_;
+  HeapMojoReceiver<network::mojom::blink::QuicTransportClient, QuicTransport>
+      client_receiver_;
   Member<ScriptPromiseResolver> ready_resolver_;
   ScriptPromise ready_;
   Member<ScriptPromiseResolver> closed_resolver_;

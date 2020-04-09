@@ -25,7 +25,7 @@ class MediaHistoryOriginTable : public MediaHistoryTableBase {
   static std::string GetOriginForStorage(const url::Origin& origin);
 
  private:
-  friend class MediaHistoryStoreInternal;
+  friend class MediaHistoryStore;
 
   explicit MediaHistoryOriginTable(
       scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner);

@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "net/url_request/url_request_job_factory.h"
 
 namespace net {
 class NetLog;
@@ -67,6 +68,8 @@ class WebViewURLRequestContextGetter : public net::URLRequestContextGetter {
   // created in constructor and cleared in GetURLRequestContext() where
   // net::URLRequestContextStorage is lazily created.
   std::unique_ptr<net::SystemCookieStore> system_cookie_store_;
+  // Protocol handler for web ui.
+  std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler> protocol_handler_;
 
   // Used to ensure GetURLRequestContext() returns nullptr during shut down.
   bool is_shutting_down_;

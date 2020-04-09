@@ -9,8 +9,10 @@
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/service_worker/service_worker_storage.h"
+#include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
+#include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_util.h"
 #include "net/test/cert_test_util.h"
@@ -38,6 +40,21 @@ int ReadResponseHead(storage::mojom::ServiceWorkerResourceReader* reader,
       }));
   loop.Run();
   return return_value;
+}
+
+std::string ReadResponseData(
+    storage::mojom::ServiceWorkerResourceReader* reader,
+    int data_size) {
+  mojo::ScopedDataPipeConsumerHandle data_consumer;
+  base::RunLoop loop;
+  reader->ReadData(data_size, base::BindLambdaForTesting(
+                                  [&](mojo::ScopedDataPipeConsumerHandle pipe) {
+                                    data_consumer = std::move(pipe);
+                                    loop.Quit();
+                                  }));
+  loop.Run();
+
+  return ReadDataPipe(std::move(data_consumer));
 }
 
 int WriteResponseHead(storage::mojom::ServiceWorkerResourceWriter* writer,
@@ -446,6 +463,7 @@ TEST_F(ServiceWorkerStorageControlImplTest, WriteAndReadResource) {
   // Write content.
   {
     mojo_base::BigBuffer data(base::as_bytes(base::make_span(kData)));
+    int data_size = data.size();
 
     int result = WriteResponseData(writer.get(), std::move(data));
     ASSERT_EQ(data_size, result);
@@ -454,7 +472,7 @@ TEST_F(ServiceWorkerStorageControlImplTest, WriteAndReadResource) {
   mojo::Remote<storage::mojom::ServiceWorkerResourceReader> reader =
       CreateResourceReader(resource_id);
 
-  // Read the response head.
+  // Read the response head and the content.
   {
     network::mojom::URLResponseHeadPtr response_head;
     int result = ReadResponseHead(reader.get(), response_head);
@@ -465,9 +483,12 @@ TEST_F(ServiceWorkerStorageControlImplTest, WriteAndReadResource) {
     EXPECT_TRUE(response_head->ssl_info->is_valid());
     EXPECT_EQ(response_head->ssl_info->cert->serial_number(),
               ssl_info.cert->serial_number());
+
+    std::string data = ReadResponseData(reader.get(), data_size);
+    EXPECT_EQ(data, kData);
   }
 
-  // TODO(crbug.com/1055677): Read and check the content of the resource.
+  // TODO(crbug.com/1055677): Write metadata, read it then check the metadata.
 }
 
 }  // namespace content

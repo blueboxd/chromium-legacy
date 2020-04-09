@@ -181,15 +181,6 @@ void SetDeviceColorSpace(RenderView* render_view,
   render_widget->SetDeviceColorSpaceForTesting(color_space);
 }
 
-void UseSynchronousResizeMode(RenderView* render_view, bool enable) {
-  RenderViewImpl* render_view_impl = static_cast<RenderViewImpl*>(render_view);
-  RenderFrameImpl* main_frame = render_view_impl->GetMainRenderFrame();
-  if (!main_frame)
-    return;
-  RenderWidget* render_widget = main_frame->GetLocalRootRenderWidget();
-  render_widget->UseSynchronousResizeModeForTesting(enable);
-}
-
 void EnableAutoResizeMode(RenderView* render_view,
                           const blink::WebSize& min_size,
                           const blink::WebSize& max_size) {

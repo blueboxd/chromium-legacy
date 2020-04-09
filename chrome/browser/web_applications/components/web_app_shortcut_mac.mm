@@ -934,7 +934,7 @@ bool WebAppShortcutCreator::CreateShortcuts(
   if (!UpdateShortcuts(true /* create_if_needed */, &updated_app_paths))
     return false;
   if (creation_reason == SHORTCUT_CREATION_BY_USER)
-    RevealAppShimInFinder();
+    RevealAppShimInFinder(updated_app_paths[0]);
   return true;
 }
 
@@ -1198,33 +1198,13 @@ bool WebAppShortcutCreator::IsMultiProfile() const {
   return info_->url.is_valid();
 }
 
-void WebAppShortcutCreator::RevealAppShimInFinder() const {
-  // Note that RevealAppShimInFinder is called immediately after requesting to
-  // build the app shim. This almost always happens before the app shim has
-  // completed building (and so we just open the Chrome apps folder).
-
-  // Check if the app shim exists.
-  auto app_paths = GetAppBundlesById();
-  if (!app_paths.empty()) {
-    base::FilePath app_path = app_paths.front();
-    // Use selectFile to show the contents of parent directory with the app
-    // shim selected.
-    [[NSWorkspace sharedWorkspace]
-                      selectFile:base::mac::FilePathToNSString(app_path)
-        inFileViewerRootedAtPath:@""];
-    return;
-  }
-
-  // Otherwise, open the Chrome apps folder, in the hopes that the app shim is
-  // being asynchronously created there.
-  base::FilePath apps_path = GetChromeAppsFolder();
-  if (!base::PathExists(apps_path))
-    return;
-
-  // Since |app_path| is a directory, use openFile to show the contents of
-  // that directory in Finder.
+void WebAppShortcutCreator::RevealAppShimInFinder(
+    const base::FilePath& app_path) const {
+  // Use selectFile to show the contents of parent directory with the app
+  // shim selected.
   [[NSWorkspace sharedWorkspace]
-      openFile:base::mac::FilePathToNSString(apps_path)];
+                    selectFile:base::mac::FilePathToNSString(app_path)
+      inFileViewerRootedAtPath:@""];
 }
 
 void LaunchShim(LaunchShimUpdateBehavior update_behavior,

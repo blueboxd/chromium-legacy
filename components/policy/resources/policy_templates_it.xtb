@@ -2306,15 +2306,15 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="4389091865841123886">Configura l'attestazione da remoto con meccanismo TPM.</translation>
 <translation id="4401496838830169080">Consente di controllare se la funzionalità Navigazione sicura di <ph name="PRODUCT_NAME" /> è attiva e la relativa modalità.
 
-      Se questo criterio viene impostato su "NoProtection" (valore 0), la Navigazione sicura non è mai attiva.
+      Se questo criterio viene impostato su "NoProtection" (valore 0), Navigazione sicura non è mai attiva.
 
-      Se questo criterio viene impostato su "StandardProtection" (valore 1, predefinito), la Navigazione sicura è sempre attiva in modalità standard.
+      Se questo criterio viene impostato su "StandardProtection" (valore 1, predefinito), Navigazione sicura è sempre attiva in modalità standard.
 
-      Se questo criterio viene impostato su "EnhancedProtection" (valore 2), la Navigazione sicura è sempre attiva in modalità avanzata e fornisce maggior sicurezza, ma non richiede la condivisione di ulteriori dati di navigazione con Google.
+      Se questo criterio viene impostato su "EnhancedProtection" (valore 2), Navigazione sicura è sempre attiva in modalità avanzata e fornisce maggior sicurezza, ma non richiede la condivisione di ulteriori dati di navigazione con Google.
 
       Se imposti questo criterio come obbligatorio, gli utenti non potranno modificare o ignorare l'impostazione Navigazione sicura in <ph name="PRODUCT_NAME" />.
 
-      Se questo criterio non viene impostato, la Navigazione sicura sarà attiva in modalità di protezione standard, ma gli utenti potranno modificare questa impostazione.
+      Se questo criterio non viene impostato, Navigazione sicura sarà attiva in modalità di protezione standard, ma gli utenti potranno modificare questa impostazione.
 
       Visita il sito https://developers.google.com/safe-browsing per ulteriori informazioni sulla funzionalità Navigazione sicura.</translation>
 <translation id="4408428864159735559">Elenco di condivisioni di file di rete preconfigurate.</translation>
@@ -3421,7 +3421,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="6111936128861357925">Attiva il gioco del dinosauro</translation>
 <translation id="6114416803310251055">obsoleto</translation>
 <translation id="6133088669883929098">Consenti a tutti i siti di utilizzare la generazione di chiavi</translation>
-<translation id="6135398260575578389">Navigazione sicura è attiva in modalità avanzata. Questa modalità fornisce maggior sicurezza, ma non richiede la condivisione di ulteriori dati di navigazione con Google.</translation>
+<translation id="6135398260575578389">Navigazione sicura è attiva in modalità potenziata. Questa modalità fornisce maggior sicurezza, ma non richiede la condivisione di ulteriori dati di navigazione con Google.</translation>
 <translation id="6136537398661737682">Questo criterio consente di controllare lo stato iniziale dei Servizi di geolocalizzazione di Google.
 
       Se questo criterio non viene configurato o viene impostato su <ph name="GLS_DISABLED" />, i Servizi di geolocalizzazione di Google sono inizialmente disattivati.
@@ -4403,13 +4403,13 @@ Se questa norma non viene impostata, verranno utilizzate le dimensioni predefini
 
       Consente di attivare la funzionalità Navigazione sicura di <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificare questa impostazione.
 
-      Se attivi questa impostazione, la Navigazione sicura è sempre attiva.
+      Se attivi questa impostazione, Navigazione sicura è sempre attiva.
 
-      Se la disattivi, la Navigazione sicura non è mai attiva.
+      Se la disattivi, Navigazione sicura non è mai attiva.
 
       Se attivi questa impostazione o la disattivi, gli utenti non potranno modificare o ignorare l'impostazione "Attiva protezione contro phishing e malware" in <ph name="PRODUCT_NAME" />.
 
-      Se questo criterio non viene impostato, l'impostazione verrà attivata ma gli utenti non potranno modificarla.
+      Se questo criterio non viene impostato, l'impostazione verrà attivata, ma gli utenti non potranno modificarla.
 
       Visita il sito https://developers.google.com/safe-browsing per ulteriori informazioni sulla funzionalità Navigazione sicura.
 

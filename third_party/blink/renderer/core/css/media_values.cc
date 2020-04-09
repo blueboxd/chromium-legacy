@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/css/media_values.h"
 
+#include "third_party/blink/public/common/css/screen_spanning.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/public/platform/web_theme_engine.h"
@@ -225,6 +226,12 @@ NavigationControls MediaValues::CalculateNavigationControls(LocalFrame* frame) {
   DCHECK(frame);
   DCHECK(frame->GetSettings());
   return frame->GetSettings()->GetNavigationControls();
+}
+
+ScreenSpanning MediaValues::CalculateScreenSpanning(LocalFrame* frame) {
+  // TODO(dlibby): Retrieve info propagated from the host as to our]
+  // screen-spanning state.
+  return ScreenSpanning::kNone;
 }
 
 bool MediaValues::ComputeLengthImpl(double value,

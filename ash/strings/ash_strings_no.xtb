@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">Klikk for å se flere alternativer</translation>
 <translation id="1570871743947603115">Slå av/på Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">se all aktiviteten din i denne økten</translation>
-<translation id="1608626060424371292">Fjern denne brukeren</translation>
+<translation id="1632985212731562677">Brytertilgang kan slås av i Innstillinger &gt; Tilgjengelighet.</translation>
 <translation id="1654477262762802994">Start et talesøk</translation>
 <translation id="1658406695958299976">Beklager, men passordet ditt kunne fremdeles ikke bekreftes. Merk: Hvis du endret passordet ditt nylig, trer det nye passordet ditt i kraft så snart du logger av. Bruk det gamle passordet ditt her.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> igjen</translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">Enhetsadministratoren kan overvåke surfeaktiviteten din.</translation>
 <translation id="3181441307743005334">Det kan ta en stund å starte på nytt</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Koblet til en enhet}other{Koblet til # enheter}}</translation>
+<translation id="3203405173652969239">Brytertilgang er slått på</translation>
 <translation id="3207953481422525583">Brukerinnstillinger</translation>
 <translation id="3217205077783620295">Volumet er på. Hvis du slår det av, kuttes lyden.</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> til</translation>
@@ -651,6 +652,7 @@
 <translation id="9211681782751733685"><ph name="TIME_REMAINING" /> gjenstår til batteriet er fulladet.</translation>
 <translation id="9215934040295798075">Velg bakgrunn</translation>
 <translation id="921989828232331238">Forelderen din har låst enheten din for dagen</translation>
+<translation id="9220525904950070496">Fjern konto</translation>
 <translation id="923686485342484400">Trykk på Control+Shift+Q to ganger for å logge av.</translation>
 <translation id="938963181863597773">Hva er i kalenderen min?</translation>
 <translation id="945522503751344254">Gi tilbakemelding</translation>

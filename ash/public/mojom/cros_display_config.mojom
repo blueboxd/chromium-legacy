@@ -298,6 +298,10 @@ interface CrosDisplayConfigController {
                    DisplayConfigOperation op,
                    TouchCalibration? calibration) =>
     (DisplayConfigResult result);
+
+  // Sets |id| of display to render identification highlight on. Invalid |id|
+  // turns identification highlight off.
+  HighlightDisplay(int64 id);
 };
 
 // Interface for clients needing to be informed when the display configuration

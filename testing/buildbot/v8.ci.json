@@ -1496,8 +1496,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -1525,8 +1525,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -1554,8 +1554,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -1583,8 +1583,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -1621,8 +1621,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -1659,8 +1659,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -1689,8 +1689,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -1718,8 +1718,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -1749,8 +1749,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -1780,8 +1780,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -1814,8 +1814,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -1843,8 +1843,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -1872,8 +1872,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -1901,8 +1901,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -1939,8 +1939,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -1977,8 +1977,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -2007,8 +2007,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -2036,8 +2036,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -2067,8 +2067,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -2098,8 +2098,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu.template"
             }
           ],
@@ -2133,7 +2133,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -2161,7 +2161,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -2189,7 +2189,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -2217,7 +2217,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -2254,7 +2254,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -2291,7 +2291,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -2320,7 +2320,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -2348,7 +2348,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -2378,7 +2378,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -2408,7 +2408,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
+              "os": "Mac-10.14.6"
             }
           ],
           "idempotent": false,
@@ -2788,7 +2788,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -2817,7 +2817,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -2846,7 +2846,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -2875,7 +2875,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -2913,7 +2913,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -2951,7 +2951,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -2981,7 +2981,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -3010,7 +3010,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -3041,7 +3041,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
@@ -3072,7 +3072,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }

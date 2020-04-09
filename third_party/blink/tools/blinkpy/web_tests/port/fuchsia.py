@@ -311,9 +311,18 @@ class ChromiumFuchsiaDriver(driver.Driver):
             port, worker_number, no_timeout)
 
     def _base_cmd_line(self):
-        return ['run',
-                'fuchsia-pkg://fuchsia.com/content_shell#meta/content_shell.cmx',
-                '--ozone-platform=headless']
+        cmd = ['run', 'fuchsia-pkg://fuchsia.com/content_shell#meta/content_shell.cmx']
+        if self._port._target_device == 'qemu':
+            cmd.append('--ozone-platform=headless')
+        # Use Scenic on AEMU
+        elif self._port._target_device == 'aemu':
+            cmd.extend([
+                '--ozone-platform=scenic',
+                '--enable-oop-rasterization',
+                '--use-gl=stub',
+                '--enable-features=UseSkiaRenderer,Vulkan'
+            ])
+        return cmd
 
     def _command_from_driver_input(self, driver_input):
         command = super(ChromiumFuchsiaDriver, self)._command_from_driver_input(

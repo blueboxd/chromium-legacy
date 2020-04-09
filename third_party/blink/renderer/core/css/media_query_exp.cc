@@ -101,6 +101,14 @@ static inline bool FeatureWithValidIdent(const String& media_feature,
     }
   }
 
+  if (RuntimeEnabledFeatures::CSSFoldablesEnabled()) {
+    if (media_feature == media_feature_names::kScreenSpanningMediaFeature) {
+      return ident == CSSValueID::kNone ||
+             ident == CSSValueID::kSingleFoldVertical ||
+             ident == CSSValueID::kSingleFoldHorizontal;
+    }
+  }
+
   return false;
 }
 
@@ -224,7 +232,9 @@ static inline bool FeatureWithoutValue(
           RuntimeEnabledFeatures::MediaQueryNavigationControlsEnabled()) ||
          (media_feature == media_feature_names::kOriginTrialTestMediaFeature &&
           RuntimeEnabledFeatures::OriginTrialsSampleAPIEnabled(
-              execution_context));
+              execution_context)) ||
+         (media_feature == media_feature_names::kScreenSpanningMediaFeature &&
+          RuntimeEnabledFeatures::CSSFoldablesEnabled());
 }
 
 bool MediaQueryExp::IsViewportDependent() const {

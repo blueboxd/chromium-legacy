@@ -55,7 +55,6 @@
 <translation id="1550523713251050646">మరిన్ని ఎంపికల కోసం క్లిక్ చేయండి</translation>
 <translation id="1570871743947603115">బ్లూటూత్‌ను టోగుల్ చేయండి. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">ఈ సెషన్‌లో మీ మొత్తం కార్యకలాపాన్ని యాక్సెస్ చేయండి</translation>
-<translation id="1608626060424371292">ఈ వినియోగదారును తీసివేయండి</translation>
 <translation id="1654477262762802994">వాయిస్ ప్రశ్నను ప్రారంభించు</translation>
 <translation id="1658406695958299976">క్షమించండి, మీ పాస్‌వర్డ్ ఇప్పటికీ ధృవీకరించబడలేదు. గమనిక: మీరు మీ పాస్‌వర్డ్‌ను ఇటీవల మార్చి ఉంటే, మీరు సైన్ అవుట్ చేసిన తర్వాత మీ కొత్త పాస్‌వర్డ్ వర్తించబడుతుంది, దయచేసి పాత పాస్‌వర్డ్‌ను ఇక్కడ ఉపయోగించండి.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> మిగిలి ఉంది</translation>
@@ -105,6 +104,7 @@
 <translation id="2268813581635650749">అందరినీ సైన్ అవుట్ చేయి</translation>
 <translation id="2277103315734023688">ముందుకు జరుపు</translation>
 <translation id="2292698582925480719">ప్రదర్శన ప్రమాణం</translation>
+<translation id="2295777434187870477">మైక్ ఆన్లో ఉంది, టోగుల్ చేయడం వలన ఇన్‌పుట్ మ్యూట్ అవుతుంది.</translation>
 <translation id="2298170939937364391">పూర్తి-స్క్రీన్ మాగ్నిఫైయర్ ఎనేబుల్ చేయబడింది. దాన్ని ఆఫ్‌కు టోగుల్ చేయడానికి మళ్లీ Ctrl+Search+Mని నొక్కండి.</translation>
 <translation id="2302092602801625023">ఈ ఖాతా Family Link ద్వారా నిర్వహించబడుతుంది</translation>
 <translation id="2303600792989757991">విండో స్థూలదృష్టిని టోగుల్ చేయి</translation>
@@ -138,6 +138,7 @@
 <translation id="2658778018866295321">క్లిక్ చేసి, లాగండి</translation>
 <translation id="2700493154570097719">మీ కీబోర్డ్‌ని సెట్ చేయండి</translation>
 <translation id="2704781753052663061">ఇతర Wi-Fi నెట్‌వర్క్‌లలో చేరండి</translation>
+<translation id="2705001408393684014">మైక్‌ను టోగుల్ చేయండి. <ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">రాత్రి కాంతి</translation>
 <translation id="2727977024730340865">తక్కువ-పవర్ గల ఛార్జర్‌కు ప్లగిన్ చేయబడింది. బ్యాటరీ ఛార్జింగ్ విశ్వసనీయంగా ఉండకపోవచ్చు.</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
@@ -297,6 +298,7 @@
 <translation id="4665114317261903604">'అంతరాయం కలిగించవద్దు' ఎంపికను టోగుల్ చేయండి. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">తల్లి/తండ్రి కోడ్‌తో పరికరాన్ని అన్‌లాక్ చేయండి</translation>
 <translation id="4702647871202761252">గోప్యతా స్క్రీన్ ఆఫ్‌లో ఉంది</translation>
+<translation id="4705716602320768426">ఫైల్ ఫీడ్‌బ్యాక్</translation>
 <translation id="4710243778082831592">IME సెట్టింగ్‌లు</translation>
 <translation id="4731797938093519117">తల్లి/తండ్రి యాక్సెస్</translation>
 <translation id="4734965478015604180">అడ్డంగా ఉంది</translation>
@@ -377,6 +379,7 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">ఆన్ చేయి</translation>
+<translation id="5920710855273935292">మైక్ మ్యూట్ చేయబడింది.</translation>
 <translation id="5947494881799873997">తిరిగి పూర్వ స్థితికి మార్చు</translation>
 <translation id="595202126637698455">పనితీరుని గుర్తించడం ప్రారంభించబడింది</translation>
 <translation id="5957083217255311415">మొబైల్ డేటా ఆఫ్‌లో ఉంది.</translation>
@@ -648,6 +651,7 @@
 <translation id="9211681782751733685">బ్యాటరీ పూర్తిగా ఛార్జ్ కావడానికి పట్టే సమయం, <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">వాల్‌పేపర్‌ను సెట్ చేయండి</translation>
 <translation id="921989828232331238">మీ తల్లి/తండ్రి ఈ రోజుకి మీ పరికరాన్ని లాక్ చేసి ఉంచారు</translation>
+<translation id="9220525904950070496">ఖాతాను తీసివేయండి</translation>
 <translation id="923686485342484400">సైన్ అవుట్ చేయడానికి Control Shift Qను రెండుసార్లు నొక్కండి.</translation>
 <translation id="938963181863597773">నా క్యాలెండర్‌లో ఏమి ఉన్నాయి?</translation>
 <translation id="945522503751344254">అభిప్రాయాన్ని పంపండి</translation>

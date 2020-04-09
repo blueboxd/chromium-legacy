@@ -517,7 +517,7 @@ Nếu bạn tắt chính sách này, thì việc cuộn trang web đến các ph
 <translation id="1802205074307397126">Trì hoãn tải tệp lên cho đến khi biết kết quả quét</translation>
 <translation id="1803646570632580723">Danh sách các ứng dụng được ghim sẽ hiển thị trong trình chạy</translation>
 <translation id="1808715480127969042">Chặn cookie trên các trang web này</translation>
-<translation id="1810261428246410396">Cho phép sử dụng tính năng Chia sẻ kết nối tức thì.</translation>
+<translation id="1810261428246410396">Cho phép sử dụng tính năng Chia sẻ Internet tức thì.</translation>
 <translation id="1817685358399181673">Chính sách này chỉ định hình ảnh <ph name="PLUGIN_VM_NAME" /> cho người dùng. Bạn có thể đặt chính sách này bằng cách chỉ định URL mà từ đó thiết bị có thể tải hình ảnh xuống và một hàm băm SHA-256 dùng để xác minh tính toàn vẹn của nội dung tải xuống.
 
       Chính sách này phải được chỉ định dưới dạng một chuỗi biểu thị URL và hàm băm ở định dạng JSON.</translation>
@@ -1184,6 +1184,7 @@ Nếu bạn không đặt chính sách này, thì màn hình bảo vệ quyền 
 <translation id="2592162121850992309">Nếu bạn không đặt chính sách này hoặc đặt thành true, tính năng tăng tốc phần cứng sẽ được bật trừ khi bạn đưa một tính năng GPU (Đơn vị xử lý đồ họa) nhất định vào danh sách cấm.
 
       Nếu bạn đặt chính sách này thành false, tính năng tăng tốc phần cứng sẽ bị tắt.</translation>
+<translation id="2593762551209145088">Tính năng Duyệt web an toàn sẽ không bao giờ hoạt động.</translation>
 <translation id="2596260130957832043">Kiểm soát xem NTLMv2 có được bật hay không.
 
           Tất cả phiên bản gần đây của máy chủ Samba và Windows đều hỗ trợ NTLMv2. Chỉ nên tắt cài đặt này trong trường hợp muốn có khả năng tương thích ngược và giảm tính bảo mật của quá trình xác thực.
@@ -1261,6 +1262,7 @@ Nếu bạn không đặt chính sách này, thì màn hình bảo vệ quyền 
 
       Để biết thêm thông tin về dịch vụ Duyệt web an toàn, vui lòng truy cập vào https://developers.google.com/safe-browsing.</translation>
 <translation id="2706708761587205154">Chỉ cho phép in khi có mã PIN</translation>
+<translation id="2707873794476722903">Tính năng Duyệt web an toàn đang hoạt động ở chế độ chuẩn.</translation>
 <translation id="2710534340210290498">Nếu bạn đặt chính sách này thành false, người dùng sẽ không thể khóa màn hình (chỉ có thể đăng xuất khỏi phiên người dùng). Nếu bạn không đặt tùy chọn cài đặt này hoặc đặt thành true, người dùng đã xác thực bằng mật khẩu có thể khóa màn hình.</translation>
 <translation id="2731627323327011390">Tắt sử dụng chứng chỉ <ph name="PRODUCT_OS_NAME" /> đối với ứng dụng ARC</translation>
 <translation id="2742843273354638707">Ẩn ứng dụng Cửa hàng Chrome trực tuyến và liên kết chân trang khỏi Trang tab mới và trình chạy ứng dụng <ph name="PRODUCT_OS_NAME" />.
@@ -2371,6 +2373,19 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="437791893267799639">Chưa đặt chính sách, không cho phép di chuyển dữ liệu và ARC</translation>
 <translation id="4389073105055031853">Cho phép người dùng quản lý tất cả chứng chỉ</translation>
 <translation id="4389091865841123886">Định cấu hình chứng thực từ xa với cơ chế TPM.</translation>
+<translation id="4401496838830169080">Cho phép bạn kiểm soát xem có bật tính năng Duyệt web an toàn của <ph name="PRODUCT_NAME" /> không và tính năng này sẽ hoạt động ở chế độ nào.
+
+      Nếu bạn đặt chính sách này thành "NoProtection" (giá trị là 0), thì tính năng Duyệt web an toàn sẽ không bao giờ hoạt động.
+
+      Nếu bạn đặt chính sách này thành "StandardProtection" (giá trị mặc định là 1), thì tính năng Duyệt web an toàn sẽ luôn hoạt động ở chế độ chuẩn.
+
+      Nếu bạn đặt chính sách này thành "EnhancedProtection" (giá trị là 2), thì tính năng Duyệt web an toàn sẽ luôn hoạt động ở chế độ nâng cao. Chế độ này bảo mật tốt hơn nhưng bạn sẽ phải chia sẻ thêm thông tin duyệt web với Google.
+
+      Nếu bạn đặt chính sách này thành bắt buộc, thì người dùng sẽ không thể thay đổi hoặc ghi đè tùy chọn cài đặt Duyệt web an toàn trong <ph name="PRODUCT_NAME" />.
+
+      Nếu bạn không đặt chính sách này, thì tính năng Duyệt web an toàn sẽ hoạt động ở chế độ Bảo vệ thông thường nhưng người dùng có thể thay đổi tùy chọn cài đặt này.
+
+      Để biết thêm thông tin về tính năng Duyệt web an toàn, vui lòng truy cập vào https://developers.google.com/safe-browsing.</translation>
 <translation id="4408428864159735559">Danh sách các mục chia sẻ tệp trong mạng đã định cấu hình sẵn.</translation>
 <translation id="4410236409016356088">Cho phép điều chỉnh băng thông mạng</translation>
 <translation id="441217499641439905">Tắt Google Drive qua các kết nối di động trong ứng dụng Tệp dành cho <ph name="PRODUCT_OS_NAME" /></translation>
@@ -3219,9 +3234,9 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
         Nếu bạn đặt chính sách này thành false, thì người dùng không thể gửi ý kiến phản hồi cho Google.
 
         Nếu bạn không đặt chính sách này hoặc đặt chính sách thành true, thì người dùng có thể gửi ý kiến phản hồi cho Google qua Menu-&gt;Trợ giúp-&gt;Báo cáo vấn đề hoặc tổ hợp phím.</translation>
-<translation id="5583806683960333345">Nếu bạn bật tùy chọn cài đặt này, người dùng sẽ được phép sử dụng tính năng Chia sẻ kết nối tức thì, điều này cho phép họ chia sẻ dữ liệu di động từ điện thoại Google với thiết bị của họ.
+<translation id="5583806683960333345">Nếu bạn bật tùy chọn cài đặt này, người dùng sẽ được phép sử dụng tính năng Chia sẻ Internet tức thì, điều này cho phép họ chia sẻ dữ liệu di động từ điện thoại Google với thiết bị của họ.
 
-      Nếu bạn tắt tùy chọn cài đặt này, người dùng sẽ không được phép sử dụng tính năng Chia sẻ kết nối tức thì.
+      Nếu bạn tắt tùy chọn cài đặt này, người dùng sẽ không được phép sử dụng tính năng Chia sẻ Internet tức thì.
 
       Nếu bạn không đặt chính sách này, tùy chọn cài đặt mặc định sẽ là không được phép đối với người dùng do doanh nghiệp quản lý và được phép đối với người dùng không được quản lý.</translation>
 <translation id="5584132346604748282">Kiểm soát các dịch vụ vị trí của Google trên thiết bị Android</translation>
@@ -3518,6 +3533,7 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="6111936128861357925">Cho phép trò chơi trứng khủng long Phục sinh</translation>
 <translation id="6114416803310251055">không được chấp thuận</translation>
 <translation id="6133088669883929098">Cho phép tất cả các trang web sử dụng tạo khóa</translation>
+<translation id="6135398260575578389">Tính năng Duyệt web an toàn đang hoạt động ở chế độ nâng cao. Chế độ này bảo mật tốt hơn nhưng bạn sẽ phải chia sẻ thêm thông tin duyệt web với Google.</translation>
 <translation id="6136537398661737682">Chính sách này kiểm soát trạng thái ban đầu của Dịch vụ vị trí của Google.
 
       Khi bạn không định cấu hình chính sách này hoặc đặt chính sách thành <ph name="GLS_DISABLED" />, Dịch vụ vị trí của Google sẽ tắt ngay từ đầu.
@@ -4516,6 +4532,23 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="7687943045976362719">Nếu bạn đặt chính sách này, <ph name="PRODUCT_FRAME_NAME" /> sẽ xử lý các loại nội dung được chỉ định.
 
           Nếu bạn không đặt chính sách này, trình kết xuất mặc định sẽ được sử dụng cho tất cả các trang web. (Chính sách <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> có thể dùng để định cấu hình trình kết xuất mặc định).</translation>
+<translation id="7691028179743802462">Chính sách này không còn dùng trong M83, vui lòng sử dụng SafeBrowsingProtectionLevel.
+
+      Bật tính năng Duyệt web an toàn của <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi tùy chọn cài đặt này.
+
+      Nếu bạn bật tùy chọn cài đặt này, thì tính năng Duyệt web an toàn sẽ luôn hoạt động.
+
+      Nếu bạn tắt tùy chọn cài đặt này, thì tính năng Duyệt web an toàn sẽ không bao giờ hoạt động.
+
+      Nếu bạn bật hoặc tắt tùy chọn cài đặt này, thì người dùng không thể thay đổi hoặc ghi đè tùy chọn cài đặt "Bảo vệ khỏi lừa đảo và phần mềm độc hại" trong <ph name="PRODUCT_NAME" />.
+
+      Nếu bạn không đặt chính sách này, thì tính năng Duyệt web an toàn sẽ bật nhưng người dùng có thể tắt tính năng này.
+
+      Để biết thêm thông tin về tính năng Duyệt web an toàn, vui lòng truy cập vào https://developers.google.com/safe-browsing.
+
+      Chính sách này chỉ có trên các phiên bản Windows liên kết với miền <ph name="MS_AD_NAME" /> hoặc phiên bản Windows 10 Pro hay Enterprise đã đăng ký tính năng quản lý thiết bị.
+
+      Nếu bạn đặt chính sách SafeBrowsingProtectionLevel, thì giá trị của chính sách SafeBrowsingEnabled sẽ bị bỏ qua.</translation>
 <translation id="7694245791806617022">Kiểm soát việc có bật tính năng 'Nhớ mật khẩu' trong hộp thoại xác thực Kerberos hay không. Các mật khẩu được lưu trữ dưới dạng mã hóa trên ổ đĩa. Chỉ có daemon hệ thống Kerberos mới có thể truy cập vào những mật khẩu này trong phiên người dùng.
 
           Nếu bạn bật hoặc không đặt chính sách này, thì người dùng có thể quyết định xem có ghi nhớ các mật khẩu Kerberos để không phải nhập lại hay không. Hệ thống sẽ tự động tìm nạp các phiếu Kerberos trừ khi cần có bước xác thực bổ sung (xác thực hai yếu tố).
@@ -5110,6 +5143,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 
           Để biết thông tin chi tiết về mẫu URL hợp lệ, vui lòng xem tại https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="8661297125441579970">Không cho phép di chuyển dữ liệu và App Runtime for Chrome (ARC).</translation>
+<translation id="8665314828727504286">Mức độ bảo vệ của tính năng Duyệt web an toàn</translation>
 <translation id="8672321184841719703">Phiên bản cập nhật tự động đích</translation>
 <translation id="867410340948518937">U2F (Hai yếu tố chung)</translation>
 <translation id="8685024486845674965">Cảnh báo bảo vệ mật khẩu được kích hoạt bằng cách sử dụng lại mật khẩu</translation>

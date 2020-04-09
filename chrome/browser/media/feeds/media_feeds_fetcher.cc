@@ -62,9 +62,9 @@ void MediaFeedsFetcher::FetchFeed(const GURL& url, MediaFeedCallback callback) {
   resource_request->headers.SetHeader(net::HttpRequestHeaders::kAccept,
                                       "application/ld+json");
   resource_request->redirect_mode = ::network::mojom::RedirectMode::kError;
-  resource_request->attach_same_site_cookies = true;
-  resource_request->site_for_cookies = net::SiteForCookies::FromUrl(url);
   url::Origin origin = url::Origin::Create(url);
+  // Treat this request as same-site for the purposes of cookie inclusion.
+  resource_request->site_for_cookies = net::SiteForCookies::FromOrigin(origin);
   resource_request->trusted_params = network::ResourceRequest::TrustedParams();
   resource_request->trusted_params->network_isolation_key =
       net::NetworkIsolationKey(origin, origin);

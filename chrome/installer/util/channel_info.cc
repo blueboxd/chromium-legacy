@@ -16,19 +16,43 @@ using base::win::RegKey;
 
 namespace {
 
+const wchar_t kModChrome[] = L"-chrome";
+const wchar_t kModChromeFrame[] = L"-chromeframe";
+const wchar_t kModAppHostDeprecated[] = L"-apphost";
+const wchar_t kModAppLauncherDeprecated[] = L"-applauncher";
+const wchar_t kModMultiInstall[] = L"-multi";
+const wchar_t kModReadyMode[] = L"-readymode";
 const wchar_t kModStage[] = L"-stage:";
 const wchar_t kModStatsDefault[] = L"-statsdef_";
 const wchar_t kSfxFull[] = L"-full";
+const wchar_t kSfxMigrating[] = L"-migrating";
+const wchar_t kSfxMultiFail[] = L"-multifail";
 
 const wchar_t* const kModifiers[] = {
     kModStatsDefault,
     kModStage,
+    kModMultiInstall,
+    kModChrome,
+    kModChromeFrame,
+    kModAppHostDeprecated,
+    kModAppLauncherDeprecated,
+    kModReadyMode,
+    kSfxMultiFail,
+    kSfxMigrating,
     kSfxFull,
 };
 
 enum ModifierIndex {
   MOD_STATS_DEFAULT,
   MOD_STAGE,
+  MOD_MULTI_INSTALL,
+  MOD_CHROME,
+  MOD_CHROME_FRAME,
+  MOD_APP_HOST_DEPRECATED,
+  MOD_APP_LAUNCHER_DEPRECATED,
+  MOD_READY_MODE,
+  SFX_MULTI_FAIL,
+  SFX_MIGRATING,
   SFX_FULL,
   NUM_MODIFIERS
 };
@@ -153,6 +177,51 @@ bool ChannelInfo::Write(RegKey* key) const {
   return true;
 }
 
+bool ChannelInfo::IsChrome() const {
+  return HasModifier(MOD_CHROME, value_);
+}
+
+bool ChannelInfo::SetChrome(bool value) {
+  return SetModifier(MOD_CHROME, value, &value_);
+}
+
+bool ChannelInfo::IsChromeFrame() const {
+  return HasModifier(MOD_CHROME_FRAME, value_);
+}
+
+bool ChannelInfo::SetChromeFrame(bool value) {
+  return SetModifier(MOD_CHROME_FRAME, value, &value_);
+}
+
+bool ChannelInfo::IsAppLauncher() const {
+  return HasModifier(MOD_APP_LAUNCHER_DEPRECATED, value_);
+}
+
+bool ChannelInfo::SetAppLauncher(bool value) {
+  // Unconditionally remove -apphost since it has been long deprecated.
+  bool changed_app_host = SetModifier(MOD_APP_HOST_DEPRECATED, false, &value_);
+  // Set value for -applauncher, relying on caller for policy.
+  bool changed_app_launcher =
+      SetModifier(MOD_APP_LAUNCHER_DEPRECATED, value, &value_);
+  return changed_app_host || changed_app_launcher;
+}
+
+bool ChannelInfo::IsMultiInstall() const {
+  return HasModifier(MOD_MULTI_INSTALL, value_);
+}
+
+bool ChannelInfo::SetMultiInstall(bool value) {
+  return SetModifier(MOD_MULTI_INSTALL, value, &value_);
+}
+
+bool ChannelInfo::IsReadyMode() const {
+  return HasModifier(MOD_READY_MODE, value_);
+}
+
+bool ChannelInfo::SetReadyMode(bool value) {
+  return SetModifier(MOD_READY_MODE, value, &value_);
+}
+
 bool ChannelInfo::ClearStage() {
   base::string16::size_type position;
   base::string16::size_type length;
@@ -173,6 +242,33 @@ bool ChannelInfo::HasFullSuffix() const {
 
 bool ChannelInfo::SetFullSuffix(bool value) {
   return SetModifier(SFX_FULL, value, &value_);
+}
+
+bool ChannelInfo::HasMultiFailSuffix() const {
+  return HasModifier(SFX_MULTI_FAIL, value_);
+}
+
+bool ChannelInfo::SetMultiFailSuffix(bool value) {
+  return SetModifier(SFX_MULTI_FAIL, value, &value_);
+}
+
+bool ChannelInfo::SetMigratingSuffix(bool value) {
+  return SetModifier(SFX_MIGRATING, value, &value_);
+}
+
+bool ChannelInfo::HasMigratingSuffix() const {
+  return HasModifier(SFX_MIGRATING, value_);
+}
+
+bool ChannelInfo::RemoveAllModifiersAndSuffixes() {
+  bool modified = false;
+
+  for (int scan = 0; scan < NUM_MODIFIERS; ++scan) {
+    ModifierIndex index = static_cast<ModifierIndex>(scan);
+    modified = SetModifier(index, false, &value_) || modified;
+  }
+
+  return modified;
 }
 
 }  // namespace installer

@@ -13,10 +13,10 @@ public interface SurfaceActionsHandler {
     /**
      * Navigates the current tab to a particular URL.
      */
-    void navigateTab(String url);
+    default void navigateTab(String url) {}
 
     /**
      * Navigates a new tab to a particular URL.
      */
-    void navigateNewTab(String url);
+    default void navigateNewTab(String url) {}
 }

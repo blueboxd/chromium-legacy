@@ -61,14 +61,22 @@ struct Context {
 };
 
 // TODO(grt): Frame this in terms of whether or not the brand supports
-// integration with Omaha, where Google Update is the Google-specific fork of
+// integation with Omaha, where Google Update is the Google-specific fork of
 // the open-source Omaha project.
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-// Opens the Google Update ClientState key for the current install mode.
-bool OpenInstallStateKey(const Configuration& configuration, RegKey* key) {
+// Opens the Google Update ClientState key. If |binaries| is false, opens the
+// key for Google Chrome or Chrome SxS (canary). If |binaries| is true and an
+// existing multi-install Chrome is being updated, opens the key for the
+// multi-install binaries; otherwise, returns false.
+bool OpenInstallStateKey(const Configuration& configuration,
+                         bool binaries,
+                         RegKey* key) {
+  if (binaries && !configuration.is_updating_multi_chrome())
+    return false;
   const HKEY root_key =
       configuration.is_system_level() ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-  const wchar_t* app_guid = configuration.chrome_app_guid();
+  const wchar_t* app_guid = binaries ? google_update::kMultiInstallAppGuid
+                                     : configuration.chrome_app_guid();
   const REGSAM key_access = KEY_QUERY_VALUE | KEY_SET_VALUE;
 
   return OpenClientStateKey(root_key, app_guid, key_access, key) ==
@@ -85,18 +93,22 @@ void WriteInstallResults(const Configuration& configuration,
   if (result.IsSuccess())
     return;
 
-  // Write the value in Chrome ClientState key.
-  RegKey key;
-  DWORD value;
-  if (OpenInstallStateKey(configuration, &key)) {
-    if (key.ReadDWValue(kInstallerResultRegistryValue, &value) !=
-            ERROR_SUCCESS ||
-        value == 0) {
-      key.WriteDWValue(kInstallerResultRegistryValue,
-                       result.exit_code ? 1 /* FAILED_CUSTOM_ERROR */
-                                        : 0 /* SUCCESS */);
-      key.WriteDWValue(kInstallerErrorRegistryValue, result.exit_code);
-      key.WriteDWValue(kInstallerExtraCode1RegistryValue, result.windows_error);
+  // Write the value in Chrome ClientState key and in the binaries' if an
+  // existing multi-install Chrome is being updated.
+  for (bool binaries : {false, true}) {
+    RegKey key;
+    DWORD value;
+    if (OpenInstallStateKey(configuration, binaries, &key)) {
+      if (key.ReadDWValue(kInstallerResultRegistryValue, &value) !=
+              ERROR_SUCCESS ||
+          value == 0) {
+        key.WriteDWValue(kInstallerResultRegistryValue,
+                         result.exit_code ? 1 /* FAILED_CUSTOM_ERROR */
+                                          : 0 /* SUCCESS */);
+        key.WriteDWValue(kInstallerErrorRegistryValue, result.exit_code);
+        key.WriteDWValue(kInstallerExtraCode1RegistryValue,
+                         result.windows_error);
+      }
     }
   }
 }
@@ -107,27 +119,26 @@ void WriteInstallResults(const Configuration& configuration,
 void SetInstallerFlags(const Configuration& configuration) {
   StackString<128> value;
 
-  RegKey key;
-  if (!OpenInstallStateKey(configuration, &key))
-    return;
+  for (bool binaries : {false, true}) {
+    RegKey key;
+    if (!OpenInstallStateKey(configuration, binaries, &key))
+      continue;
 
-  // TODO(grt): Trim legacy modifiers (chrome,chromeframe,apphost,applauncher,
-  // multi,readymode,stage,migrating,multifail) from the ap value.
+    LONG ret = key.ReadSZValue(kApRegistryValue, value.get(), value.capacity());
 
-  LONG ret = key.ReadSZValue(kApRegistryValue, value.get(), value.capacity());
+    // The conditions below are handling two cases:
+    // 1. When ap value is present, we want to add the required tag only if it
+    //    is not present.
+    // 2. When ap value is missing, we are going to create it with the required
+    //    tag.
+    if ((ret == ERROR_SUCCESS) || (ret == ERROR_FILE_NOT_FOUND)) {
+      if (ret == ERROR_FILE_NOT_FOUND)
+        value.clear();
 
-  // The conditions below are handling two cases:
-  // 1. When ap value is present, we want to add the required tag only if it
-  //    is not present.
-  // 2. When ap value is missing, we are going to create it with the required
-  //    tag.
-  if ((ret == ERROR_SUCCESS) || (ret == ERROR_FILE_NOT_FOUND)) {
-    if (ret == ERROR_FILE_NOT_FOUND)
-      value.clear();
-
-    if (!StrEndsWith(value.get(), kFullInstallerSuffix) &&
-        value.append(kFullInstallerSuffix)) {
-      key.WriteSZValue(kApRegistryValue, value.get());
+      if (!StrEndsWith(value.get(), kFullInstallerSuffix) &&
+          value.append(kFullInstallerSuffix)) {
+        key.WriteSZValue(kApRegistryValue, value.get());
+      }
     }
   }
 }
@@ -173,11 +184,24 @@ ProcessExitResult GetSetupExePathForAppGuid(bool system_level,
 ProcessExitResult GetPreviousSetupExePath(const Configuration& configuration,
                                           wchar_t* path,
                                           size_t size) {
+  bool system_level = configuration.is_system_level();
+  const wchar_t* previous_version = configuration.previous_version();
+  ProcessExitResult exit_code = ProcessExitResult(GENERIC_ERROR);
+
   // Check Chrome's ClientState key for the path to setup.exe. This will have
   // the correct path for all well-functioning installs.
-  return GetSetupExePathForAppGuid(
-      configuration.is_system_level(), configuration.chrome_app_guid(),
-      configuration.previous_version(), path, size);
+  exit_code =
+      GetSetupExePathForAppGuid(system_level, configuration.chrome_app_guid(),
+                                previous_version, path, size);
+
+  // Failing that, check the binaries if updating multi-install Chrome.
+  if (!exit_code.IsSuccess() && configuration.is_updating_multi_chrome()) {
+    exit_code = GetSetupExePathForAppGuid(system_level,
+                                          google_update::kMultiInstallAppGuid,
+                                          previous_version, path, size);
+  }
+
+  return exit_code;
 }
 
 // Calls CreateProcess with good default parameters and waits for the process to

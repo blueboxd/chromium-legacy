@@ -100,6 +100,27 @@ TEST_F(DragHandleContextualNudgeTest, HideDragHandleNudgeHiddenOnMinimize) {
       GetShelfWidget()->GetDragHandle()->gesture_nudge_target_visibility());
 }
 
+// Tests that the drag handle nudge nudge is hidden when closing the widget and
+// setting the ShelfBackgroundType to kHomeLauncher.
+TEST_F(DragHandleContextualNudgeTest, DragHandleNudgeHiddenOnClose) {
+  // Creates a widget to put shelf into in-app state.
+  views::Widget* widget = CreateTestWidget();
+  widget->Maximize();
+  TabletModeControllerTestApi().EnterTabletMode();
+  EXPECT_EQ(ShelfBackgroundType::kInApp, GetShelfWidget()->GetBackgroundType());
+
+  DragHandle* const drag_handle = GetShelfWidget()->GetDragHandle();
+
+  ASSERT_TRUE(drag_handle->has_show_drag_handle_timer_for_testing());
+  drag_handle->fire_show_drag_handle_timer_for_testing();
+  EXPECT_TRUE(drag_handle->gesture_nudge_target_visibility());
+
+  // Close the widget.
+  widget->CloseWithReason(views::Widget::ClosedReason::kCloseButtonClicked);
+  EXPECT_FALSE(drag_handle->GetVisible());
+  EXPECT_FALSE(drag_handle->gesture_nudge_target_visibility());
+}
+
 // Checks that the shelf cannot be auto hidden while animating shelf drag handle
 // nudge.
 TEST_F(DragHandleContextualNudgeTest,

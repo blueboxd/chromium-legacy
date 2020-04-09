@@ -318,7 +318,7 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
       const AutocompleteMatch& match = GetMatchAtIndex(i);
       if (match.suggestion_group_id.has_value() &&
           match.suggestion_group_id != previous_row_group_id) {
-        row_view->ShowHeader(match.suggestion_group_id,
+        row_view->ShowHeader(match.suggestion_group_id.value(),
                              model_->result().GetHeaderForGroupId(
                                  match.suggestion_group_id.value()));
       } else {

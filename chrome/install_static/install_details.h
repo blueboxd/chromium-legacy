@@ -132,6 +132,13 @@ class InstallDetails {
     return payload_->mode->supports_system_level;
   }
 
+  // True if the mode once supported multi-install, a legacy mode of
+  // installation. This exists to provide migration and cleanup for older
+  // installs.
+  bool supported_multi_install() const {
+    return payload_->mode->supported_multi_install;
+  }
+
   // Returns the resource id of this mode's main application icon.
   int32_t app_icon_resource_id() const {
     return payload_->mode->app_icon_resource_id;

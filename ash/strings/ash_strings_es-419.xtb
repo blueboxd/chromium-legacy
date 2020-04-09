@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">Haz clic para obtener más opciones</translation>
 <translation id="1570871743947603115">Activar o desactivar Bluetooth: <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Accede a toda tu actividad en esta sesión</translation>
-<translation id="1608626060424371292">Eliminar este usuario</translation>
+<translation id="1632985212731562677">La accesibilidad mejorada se puede inhabilitar en Configuración &gt; Accesibilidad.</translation>
 <translation id="1654477262762802994">Iniciar una búsqueda por voz</translation>
 <translation id="1658406695958299976">Todavía no se pudo verificar tu contraseña. Ten en cuenta que, si cambiaste tu contraseña recientemente, podrás usar la nueva cuando salgas. Aquí deberás usar la contraseña anterior.</translation>
 <translation id="1677472565718498478">Tiempo restante <ph name="TIME" /></translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">Es posible que el administrador de dispositivos supervise tu actividad de navegación.</translation>
 <translation id="3181441307743005334">El reinicio puede tardar unos minutos</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Conectado a un dispositivo}other{Conectado a # dispositivos}}</translation>
+<translation id="3203405173652969239">Se habilitó la accesibilidad mejorada</translation>
 <translation id="3207953481422525583">Configuración del usuario</translation>
 <translation id="3217205077783620295">El volumen está activado. Si lo desactivas, se silenciará.</translation>
 <translation id="3226991577105957773"><ph name="COUNT" /> más</translation>
@@ -652,6 +653,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="9211681782751733685">Tiempo restante hasta que se cargue por completo la batería: <ph name="TIME_REMAINING" /></translation>
 <translation id="9215934040295798075">Fondo de pantalla</translation>
 <translation id="921989828232331238">Tus padres bloquearon el dispositivo por el día</translation>
+<translation id="9220525904950070496">Eliminar cuenta</translation>
 <translation id="923686485342484400">Presiona Control Mayús Q dos veces para salir.</translation>
 <translation id="938963181863597773">¿Qué eventos tengo en mi calendario?</translation>
 <translation id="945522503751344254">Enviar comentarios</translation>

@@ -414,7 +414,6 @@
 <translation id="1566049601598938765">વેબસાઇટ</translation>
 <translation id="15662109988763471">પસંદ કરેલું પ્રિન્ટર ઉપલબ્ધ નથી અથવા યોગ્ય રીતે ઇન્સ્ટૉલ કરેલું નથી. તમારું પ્રિન્ટર ચેક કરો અથવા બીજું પ્રિન્ટર પસંદ કરી જુઓ.</translation>
 <translation id="1567387640189251553">તમે છેલ્લે પાસવર્ડ દાખલ કર્યો, ત્યાર પછી એક અલગ કીબોર્ડ કનેક્ટ કરવામાં આવ્યું છે. તે તમારા કીસ્ટ્રોકની ચોરી કરવાનો પ્રયાસ કરતું હોઈ શકે છે.</translation>
-<translation id="1567750922576943685">તમારી ઓળખની ચકાસણી કરવાથી તમારી વ્યક્તિગત માહિતીનું રક્ષણ કરવામાં સહાય મળી રહે છે</translation>
 <translation id="1567993339577891801">JavaScript કન્સોલ</translation>
 <translation id="1568323446248056064">ડિસ્પ્લે ડિવાઇસ સેટિંગ ખોલો</translation>
 <translation id="1572139610531470719"><ph name="WINDOW_TITLE" /> (અતિથિ)</translation>
@@ -515,7 +514,6 @@
 <translation id="1697150536837697295">કળા</translation>
 <translation id="1697686431566694143">ફાઇલમાં ફેરફાર કરો</translation>
 <translation id="1698122934742150150">ફક્ત વર્તમાન છૂપું સત્ર</translation>
-<translation id="1698650002254827833">ઍપની સૂચિ લોડ કરી શકાતી નથી. કૃપા કરીને ફરી પ્રયાસ કરો.</translation>
 <translation id="1700079447639026019">કુકીનો ક્યારેય ઉપયોગ કરી શકતી નથી એવી સાઇટ</translation>
 <translation id="1701062906490865540">આ વ્યક્તિને દૂર કરો</translation>
 <translation id="1703331064825191675">તમારા પાસવર્ડ વિશે ક્યારેય ચિંતા કરશો નહીં</translation>
@@ -822,6 +820,7 @@
 <translation id="2119349053129246860"><ph name="APP" />માં ખોલો</translation>
 <translation id="2120297377148151361">પ્રવૃત્તિ અને ક્રિયાપ્રતિક્રિયાઓ</translation>
 <translation id="2120639962942052471"><ph name="PERMISSION" />ને બ્લૉક કરેલી છે</translation>
+<translation id="2121055421682309734">{COUNT,plural, =0{કુકી બ્લૉક કરેલી છે}=1{કુકી બ્લૉક કરેલી છે, જેમાં 1 અપવાદ છે}one{કુકી બ્લૉક કરેલી છે, જેમાં {COUNT} અપવાદ છે}other{કુકી બ્લૉક કરેલી છે, જેમાં {COUNT} અપવાદ છે}}</translation>
 <translation id="2121825465123208577">આકાર બદલો</translation>
 <translation id="2122305276694332719">છુપાવેલા નેટવર્ક સાથે ઑટોમૅટિક રીતે કનેક્ટ કરવાથી અન્ય લોકો તમારું ડિવાઇસ અને અન્ય નેટવર્ક સેટિંગ જોઈ શકે છે અને તે માટે સુઝાવ આપેલો નથી.</translation>
 <translation id="2123766928840368256">કોઈ અલગ ફાઇલ પસંદ કરો</translation>
@@ -1076,7 +1075,6 @@
 <translation id="2442916515643169563">ટેક્સ્ટ શૅડો</translation>
 <translation id="2445081178310039857">એક્સ્ટેંશન રૂટ ડિરેક્ટરી જરૂરી છે.</translation>
 <translation id="2445484935443597917">એક નવી પ્રોફાઇલ બનાવો</translation>
-<translation id="2446585455334014596"><ph name="APP_NAME" />ને તમારી ઓળખ ચકાસવી છે</translation>
 <translation id="2448312741937722512">પ્રકાર</translation>
 <translation id="2450223707519584812">તમે વપરાશકર્તાઓને ઉમેરવામાં સમર્થ થશો નહીં કારણ કે Google API કીઝ ખૂટે છે. વિગતો માટે <ph name="DETAILS_URL" /> જુઓ.</translation>
 <translation id="2450849356604136918">કોઈ દૃશ્ય નથી</translation>
@@ -1680,7 +1678,6 @@
 <translation id="3246107497225150582">{0,plural, =1{એક દિવસની અંદર ડિવાઇસ અપડેટ કરો}one{# દિવસની અંદર ડિવાઇસ અપડેટ કરો}other{# દિવસની અંદર ડિવાઇસ અપડેટ કરો}}</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> - નેટવર્ક ભૂલ</translation>
 <translation id="3248902735035392926">સલામતી મહત્ત્વપૂર્ણ છે. થોડી ક્ષણ ફાળવીને <ph name="BEGIN_LINK" />હમણાં જ તમારા એક્સ્ટેંશન ચેક કરો<ph name="END_LINK" /></translation>
-<translation id="3249950116250264636"><ph name="APP_NAME" /> (<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">&lt;પ્રમાણપત્રનો ભાગ નથી&gt;</translation>
 <translation id="3253225298092156258">ઉપલબ્ધ નથી</translation>
 <translation id="3253448572569133955">અજાણ એકાઉન્ટ</translation>
@@ -2962,7 +2959,6 @@
 <translation id="4992473555164495036">તમારા વ્યવસ્થાપકે ઉપલબ્ધ ઇનપુટ પદ્ધતિઓને મર્યાદિત કરેલ છે.</translation>
 <translation id="4994474651455208930">પ્રોટોકૉલ્સ માટે ડિફૉલ્ટ હેન્ડલર્સ બનવા માટે સાઇટને પૂછવાની મંજૂરી આપો</translation>
 <translation id="4994754230098574403">સેટ કરી રહ્યા છીએ</translation>
-<translation id="4996978546172906250">આનાથી શેર કરો</translation>
 <translation id="4997086284911172121">કોઈ ઇન્ટરનેટ કનેક્શન નથી.</translation>
 <translation id="4997384734315285248">Plugin VMને અનઇન્સ્ટૉલ કરો</translation>
 <translation id="4998430619171209993">ચાલુ</translation>
@@ -3062,7 +3058,6 @@
 <translation id="5135085122826131075">તમે "ઓકે Google" બોલીને તમારા આસિસ્ટંટને ઍક્સેસ કરો.</translation>
 <translation id="5135533361271311778">બુકમાર્ક આઇટમ બનાવી શકાઈ નથી.</translation>
 <translation id="5137501176474113045">આ આઇટમ ડિલીટ કરો</translation>
-<translation id="5138982052046316113">Linux ડિસ્કનું કદ બદલો</translation>
 <translation id="5139112070765735680"><ph name="QUERY_NAME" />, <ph name="DEFAULT_SEARCH_ENGINE_NAME" /> શોધો</translation>
 <translation id="5139823398361067371">તમારી સિક્યુરિટી કી માટેનો પિન દાખલ કરો. જો તમને તમારો પિન યાદ ન હોય, તો તમારે સિક્યુરિટી કી રીસેટ કરવી પડશે.</translation>
 <translation id="5139955368427980650">&amp;ખોલો</translation>
@@ -3928,7 +3923,6 @@ USB ડિવાઇસ</translation>
 <translation id="6291953229176937411">ફાઇન્ડર માં &amp;બતાવો</translation>
 <translation id="6295158916970320988">બધી સાઇટ્સ</translation>
 <translation id="6295855836753816081">સાચવી રહ્યું છે...</translation>
-<translation id="629730747756840877">એકાઉન્ટ</translation>
 <translation id="6298962879096096191">Android ઍપ્લિકેશનોને ઇન્સ્ટૉલ કરવા માટે Google Play નો ઉપયોગ કરો</translation>
 <translation id="630065524203833229">&amp;બહાર નીકળો</translation>
 <translation id="6300718114348072351"><ph name="PRINTER_NAME" />ને ઑટોમૅટિક રીતે ગોઠવી શકાતું નથી. કૃપા કરીને વિગતવાર પ્રિન્ટરની વિગતો જણાવો. <ph name="LINK_BEGIN" />વધુ જાણો<ph name="LINK_END" /></translation>
@@ -4334,7 +4328,6 @@ USB ડિવાઇસ</translation>
 <translation id="6865598234501509159">પેજ <ph name="LANGUAGE" />માં નથી</translation>
 <translation id="6865708901122695652">WebRTC ઇવેન્ટ લૉગ (<ph name="WEBRTC_EVENT_LOG_COUNT" />)</translation>
 <translation id="686664946474413495">રંગ તાપમાન</translation>
-<translation id="6870888490422746447">આના પર શેર કરવા માટે એક ઍપ્લિકેશન પસંદ કરો:</translation>
 <translation id="6871644448911473373">OCSP પ્રતિસાદકર્તા: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">તમે દાખલ કરેલ પાસવર્ડ સર્વર દ્વારા નકારવામાં આવ્યો હતો.</translation>
 <translation id="6876155724392614295">બાઇક</translation>
@@ -4975,7 +4968,6 @@ USB ડિવાઇસ</translation>
 <translation id="7744047395460924128">તમારો પ્રિન્ટીંગનો ઇતિહાસ જુઓ</translation>
 <translation id="7744192722284567281">ડેટા ઉલ્લંઘનમાં મળ્યો</translation>
 <translation id="7750228210027921155">ચિત્રમાં ચિત્ર</translation>
-<translation id="7751229152614300329">Safe Browsing અપ ટૂ ડેટ છે અને હાનિકારક સાઇટ તથા ડાઉનલોડથી તમારું રક્ષણ કરે છે</translation>
 <translation id="7751260505918304024">બધું બતાવો</translation>
 <translation id="7754704193130578113">ડાઉનલોડ કરતાં પહેલાં પ્રત્યેક ફાઇલને ક્યાં સાચવવી છે તે જણાવો</translation>
 <translation id="7755287808199759310">તમારા માટે તમારા માતાપિતા તેને અનાવરોધિત કરી શકે છે</translation>

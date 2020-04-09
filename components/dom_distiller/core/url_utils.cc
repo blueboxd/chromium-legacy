@@ -54,7 +54,7 @@ const GURL GetDistillerViewUrlFromUrl(const std::string& scheme,
 }
 
 const GURL GetOriginalUrlFromDistillerUrl(const GURL& url) {
-  if (!IsDistilledPage(url))
+  if (!IsUrlDistilledFormat(url))
     return url;
 
   std::string original_url_str;
@@ -127,6 +127,11 @@ bool IsUrlDistillable(const GURL& url) {
 }
 
 bool IsDistilledPage(const GURL& url) {
+  return IsUrlDistilledFormat(url) &&
+         GetOriginalUrlFromDistillerUrl(url).is_valid();
+}
+
+bool IsUrlDistilledFormat(const GURL& url) {
   return url.is_valid() && url.scheme() == kDomDistillerScheme;
 }
 

@@ -367,6 +367,15 @@ TEST_F(WebDocumentFirstPartyTest, NestedOriginA) {
       OriginsEqual(g_nested_origin_a, NestedDocument()->TopFrameOrigin()));
 }
 
+TEST_F(WebDocumentFirstPartyTest, NestedOriginASchemefulSiteForCookies) {
+  Load(g_nested_origin_a);
+
+  // TopDocument is same scheme with itself so expect true.
+  ASSERT_TRUE(TopDocument()->SiteForCookies().schemefully_same());
+  // NestedDocument is same scheme with TopDocument so expect true.
+  ASSERT_TRUE(NestedDocument()->SiteForCookies().schemefully_same());
+}
+
 TEST_F(WebDocumentFirstPartyTest, NestedOriginSubA) {
   Load(g_nested_origin_sub_a);
 
@@ -393,6 +402,17 @@ TEST_F(WebDocumentFirstPartyTest, NestedOriginSecureA) {
       OriginsEqual(g_nested_origin_secure_a, TopDocument()->TopFrameOrigin()));
   ASSERT_TRUE(OriginsEqual(g_nested_origin_secure_a,
                            NestedDocument()->TopFrameOrigin()));
+}
+
+TEST_F(WebDocumentFirstPartyTest, NestedOriginSecureASchemefulSiteForCookies) {
+  Load(g_nested_origin_secure_a);
+
+  // TopDocument is same scheme with itself so expect true.
+  ASSERT_TRUE(TopDocument()->SiteForCookies().schemefully_same());
+
+  // Since NestedDocument is secure, and the parent is insecure, the scheme will
+  // differ.
+  ASSERT_FALSE(NestedDocument()->SiteForCookies().schemefully_same());
 }
 
 TEST_F(WebDocumentFirstPartyTest, NestedOriginAInOriginA) {

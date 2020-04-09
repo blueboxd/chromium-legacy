@@ -414,7 +414,6 @@
 <translation id="1566049601598938765">Website</translation>
 <translation id="15662109988763471">Der ausgewählte Drucker ist entweder nicht verfügbar oder nicht ordnungsgemäß installiert. Überprüfen Sie den Drucker oder wählen Sie einen anderen Drucker aus.</translation>
 <translation id="1567387640189251553">Seit der letzten Eingabe Ihres Passwortes wurde eine andere Tastatur angeschlossen. Möglicherweise versucht jemand, darüber Ihre Tastatureingaben zu erfassen.</translation>
-<translation id="1567750922576943685">Wenn Ihre Identität überprüft werden kann, hilft dies, Ihre personenbezogenen Daten zu schützen</translation>
 <translation id="1567993339577891801">JavaScript-Konsole</translation>
 <translation id="1568323446248056064">Einstellungen für Anzeigegerät öffnen</translation>
 <translation id="1572139610531470719"><ph name="WINDOW_TITLE" /> (Gast)</translation>
@@ -516,7 +515,6 @@
 <translation id="1697150536837697295">Kunst</translation>
 <translation id="1697686431566694143">Datei bearbeiten</translation>
 <translation id="1698122934742150150">Nur aktuelle Inkognitositzung</translation>
-<translation id="1698650002254827833">Die App-Liste kann nicht geladen werden. Bitte versuchen Sie es noch einmal.</translation>
 <translation id="1700079447639026019">Websites, die nie Cookies verwenden dürfen</translation>
 <translation id="1701062906490865540">Diese Person entfernen</translation>
 <translation id="1703331064825191675">Sie müssen sich keine Sorgen mehr um Ihre Passwörter machen</translation>
@@ -1077,7 +1075,6 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="2442916515643169563">Textschatten</translation>
 <translation id="2445081178310039857">Stammverzeichnis der Erweiterung ist erforderlich.</translation>
 <translation id="2445484935443597917">Neues Profil erstellen</translation>
-<translation id="2446585455334014596"><ph name="APP_NAME" /> möchte Ihre Identität überprüfen</translation>
 <translation id="2448312741937722512">Art</translation>
 <translation id="2450223707519584812">Sie können keine Nutzer hinzufügen, da Google API-Schlüssel fehlen. Weitere Informationen erhalten Sie unter <ph name="DETAILS_URL" />.</translation>
 <translation id="2450849356604136918">Keine aktiven Ansichten</translation>
@@ -1681,7 +1678,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3246107497225150582">{0,plural, =1{Gerät innerhalb eines Tages neu starten}other{Gerät innerhalb von # Tagen neu starten}}</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> – Netzwerkfehler</translation>
 <translation id="3248902735035392926">Sicherheit ist wichtig. Nehmen Sie sich einen Moment Zeit, um Ihre <ph name="BEGIN_LINK" />Erweiterungen zu prüfen<ph name="END_LINK" /></translation>
-<translation id="3249950116250264636"><ph name="APP_NAME" /> (<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">&lt;Gehört nicht zum Zertifikat&gt;</translation>
 <translation id="3253225298092156258">Nicht verfügbar</translation>
 <translation id="3253448572569133955">Unbekanntes Konto</translation>
@@ -2224,7 +2220,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3927787410750478258">Dieses Gerät (<ph name="DEVICE_TYPE" />) wird von <ph name="DOMAIN" /> verwaltet.</translation>
 <translation id="3927932062596804919">Ablehnen</translation>
 <translation id="3928570707778085600">Änderungen an "<ph name="FILE_OR_FOLDER_NAME" />" speichern?</translation>
-<translation id="3929426037718431833">Diese Erweiterungen können Daten dieser Website aufrufen und ändern.</translation>
+<translation id="3929426037718431833">Diese Erweiterungen können Daten dieser Website abrufen und verändern.</translation>
 <translation id="3930155420525972941">Gruppe in ein neues Fenster verschieben</translation>
 <translation id="3930737994424905957">Suche nach Geräten läuft</translation>
 <translation id="3930968231047618417">Hintergrundfarbe</translation>
@@ -2317,7 +2313,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{Seite verlassen}other{Seiten verlassen}}</translation>
 <translation id="4044612648082411741">Sie müssen Ihr Zertifikatspasswort eingeben</translation>
 <translation id="404493185430269859">Standardsuchmaschine</translation>
-<translation id="4046013316139505482">Diese Erweiterungen müssen Daten dieser Website nicht aufrufen und ändern.</translation>
+<translation id="4046013316139505482">Diese Erweiterungen funktionieren, ohne Daten dieser Website abzurufen oder zu verändern.</translation>
 <translation id="4046123991198612571">Nächster Titel</translation>
 <translation id="4047726037116394521">Zur Startseite</translation>
 <translation id="4050225813016893843">Authentifizierungsmethode</translation>
@@ -2963,7 +2959,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4992473555164495036">Ihr Administrator hat die verfügbaren Eingabemethoden eingeschränkt.</translation>
 <translation id="4994474651455208930">Registrierung von Websites als Standard-Handler für Protokolle zulassen</translation>
 <translation id="4994754230098574403">Wird eingerichtet</translation>
-<translation id="4996978546172906250">Teilen über</translation>
 <translation id="4997086284911172121">Keine Internetverbindung.</translation>
 <translation id="4997384734315285248">Plugin VM deinstallieren</translation>
 <translation id="4998430619171209993">An</translation>
@@ -3063,7 +3058,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5135085122826131075">Mit "Ok Google" können Sie auf Ihren Assistant zugreifen.</translation>
 <translation id="5135533361271311778">Lesezeichenelement konnte nicht erstellt werden.</translation>
 <translation id="5137501176474113045">Diesen Eintrag löschen</translation>
-<translation id="5138982052046316113">Größe des Linux-Laufwerks anpassen</translation>
 <translation id="5139112070765735680"><ph name="QUERY_NAME" />, <ph name="DEFAULT_SEARCH_ENGINE_NAME" />-Suche</translation>
 <translation id="5139823398361067371">Geben Sie die PIN für Ihren Sicherheitsschlüssel ein. Falls Sie sie nicht kennen, müssen Sie den Sicherheitsschlüssel zurücksetzen.</translation>
 <translation id="5139955368427980650">Ö&amp;ffnen</translation>
@@ -3927,7 +3921,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6291953229176937411">Im Finder &amp;zeigen</translation>
 <translation id="6295158916970320988">Alle Websites</translation>
 <translation id="6295855836753816081">Wird gespeichert...</translation>
-<translation id="629730747756840877">Konto</translation>
 <translation id="6298962879096096191">Google Play verwenden, um Android-Apps zu installieren</translation>
 <translation id="630065524203833229">&amp;Beenden</translation>
 <translation id="6300718114348072351"><ph name="PRINTER_NAME" /> konnte nicht automatisch konfiguriert werden. Bitte legen Sie erweiterte Einstellungen für den Drucker fest. <ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" /></translation>
@@ -4333,7 +4326,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6865598234501509159">Diese Seite ist nicht auf <ph name="LANGUAGE" /></translation>
 <translation id="6865708901122695652">WebRTC-Ereignisprotokolle (<ph name="WEBRTC_EVENT_LOG_COUNT" />)</translation>
 <translation id="686664946474413495">Farbtemperatur</translation>
-<translation id="6870888490422746447">App wählen, um sie zu teilen über:</translation>
 <translation id="6871644448911473373">OCSP-Antwortdienst: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">Das eingegebene Passwort wurde vom Server zurückgewiesen.</translation>
 <translation id="6876155724392614295">Fahrrad</translation>
@@ -4974,7 +4966,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7744047395460924128">Druckverlauf anzeigen</translation>
 <translation id="7744192722284567281">Bei Datenpanne entdeckt</translation>
 <translation id="7750228210027921155">Bild-in-Bild</translation>
-<translation id="7751229152614300329">Safe Browsing ist auf dem neuesten Stand und schützt Sie gegen schädliche Websites und Downloads</translation>
 <translation id="7751260505918304024">Alle anzeigen</translation>
 <translation id="7754704193130578113">Vor dem Download von Dateien nach dem Speicherort fragen</translation>
 <translation id="7755287808199759310">Deine Eltern können die Blockierung aufheben</translation>

@@ -737,16 +737,17 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
 }
 
 - (BOOL)textFieldShouldReturn:(UITextField*)field {
-  NSString* enteredText = field.text;
-  if (![enteredText hasPrefix:@"http"]) {
+  NSURL* URL = [NSURL URLWithString:field.text];
+  if (URL.scheme.length == 0) {
+    NSString* enteredText = field.text;
     enteredText =
         [enteredText stringByAddingPercentEncodingWithAllowedCharacters:
                          [NSCharacterSet URLQueryAllowedCharacterSet]];
     enteredText = [NSString
         stringWithFormat:@"https://www.google.com/search?q=%@", enteredText];
+    URL = [NSURL URLWithString:enteredText];
   }
-  NSURLRequest* request =
-      [NSURLRequest requestWithURL:[NSURL URLWithString:enteredText]];
+  NSURLRequest* request = [NSURLRequest requestWithURL:URL];
   [_webView loadRequest:request];
   [field resignFirstResponder];
   [self updateToolbar];

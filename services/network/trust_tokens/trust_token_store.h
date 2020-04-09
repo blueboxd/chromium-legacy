@@ -16,9 +16,9 @@
 #include "base/time/time.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/trust_tokens/proto/public.pb.h"
+#include "services/network/trust_tokens/suitable_trust_token_origin.h"
 #include "services/network/trust_tokens/trust_token_persister.h"
 #include "services/network/trust_tokens/types.h"
-#include "url/origin.h"
 
 namespace network {
 
@@ -80,9 +80,7 @@ class TrustTokenStore {
   //// Methods related to ratelimits:
 
   // Updates the given issuer's last issuance time to now.
-  //
-  // |issuer| must not be opaque.
-  virtual void RecordIssuance(const url::Origin& issuer);
+  virtual void RecordIssuance(const SuitableTrustTokenOrigin& issuer);
 
   // Returns the time since the last call to RecordIssuance for
   // issuer |issuer|, or nullopt in the following two cases:
@@ -93,14 +91,12 @@ class TrustTokenStore {
   //
   // |issuer| must not be opaque.
   WARN_UNUSED_RESULT virtual base::Optional<base::TimeDelta>
-  TimeSinceLastIssuance(const url::Origin& issuer);
+  TimeSinceLastIssuance(const SuitableTrustTokenOrigin& issuer);
 
   // Updates the given (issuer, top-level) origin pair's last redemption time
   // to now.
-  //
-  // |issuer| and |top_level| must not be opaque.
-  virtual void RecordRedemption(const url::Origin& issuer,
-                                const url::Origin& top_level);
+  virtual void RecordRedemption(const SuitableTrustTokenOrigin& issuer,
+                                const SuitableTrustTokenOrigin& top_level);
 
   // Returns the time elapsed since the last redemption recorded by
   // RecordRedemption for issuer |issuer| and top level |top_level|,
@@ -109,17 +105,14 @@ class TrustTokenStore {
   // top-level origin) pair.
   // 2. the time since the last redepmption is negative (because
   // of, for instance, corruption or clock skew).
-  //
-  // |issuer| and |top_level| must not be opaque.
   WARN_UNUSED_RESULT virtual base::Optional<base::TimeDelta>
-  TimeSinceLastRedemption(const url::Origin& issuer,
-                          const url::Origin& top_level);
+  TimeSinceLastRedemption(const SuitableTrustTokenOrigin& issuer,
+                          const SuitableTrustTokenOrigin& top_level);
 
   // Returns whether |issuer| is associated with |top_level|.
-  //
-  // |issuer| and |top_level| must not be opaque.
-  WARN_UNUSED_RESULT virtual bool IsAssociated(const url::Origin& issuer,
-                                               const url::Origin& top_level);
+  WARN_UNUSED_RESULT virtual bool IsAssociated(
+      const SuitableTrustTokenOrigin& issuer,
+      const SuitableTrustTokenOrigin& top_level);
 
   // If associating |issuer| with |top_level| would exceed the cap on the number
   // of issuers allowed to be associated with a given top-level origin, returns
@@ -129,10 +122,9 @@ class TrustTokenStore {
   // issuers, it'd be good to make these associations expire after some
   // reasonably long amount of time, so that top-level origins can change their
   // minds about their associated issuers.
-  //
-  // |issuer| and |top_level| must not be opaque.
-  WARN_UNUSED_RESULT virtual bool SetAssociation(const url::Origin& issuer,
-                                                 const url::Origin& top_level);
+  WARN_UNUSED_RESULT virtual bool SetAssociation(
+      const SuitableTrustTokenOrigin& issuer,
+      const SuitableTrustTokenOrigin& top_level);
 
   //// Methods related to reading and writing issuer values configured via key
   //// commitment queries, such as key commitments and batch sizes:
@@ -143,10 +135,9 @@ class TrustTokenStore {
   // - removes all stored signed tokens for |issuer| that were signed with
   // keys not in |keys|
   //
-  // |issuer| must not be opaque, and the commitments in |keys| must have
-  // distinct keys.
+  // The commitments in |keys| must have distinct keys.
   virtual void PruneStaleIssuerState(
-      const url::Origin& issuer,
+      const SuitableTrustTokenOrigin& issuer,
       const std::vector<mojom::TrustTokenVerificationKeyPtr>& keys);
 
   //// Methods related to reading and writing signed tokens:
@@ -159,51 +150,41 @@ class TrustTokenStore {
   // Note: This method makes no assumption about tokens matching an issuer's
   // current key commitments; it's the caller's responsibility to avoid using
   // tokens issued against non-current keys.
-  //
-  // |issuer| must not be opaque.
-  virtual void AddTokens(const url::Origin& issuer,
+  virtual void AddTokens(const SuitableTrustTokenOrigin& issuer,
                          base::span<const std::string> token_bodies,
                          base::StringPiece issuing_key);
 
   // Returns the number of tokens stored for |issuer|.
-  //
-  // |issuer| must not be opaque.
-  WARN_UNUSED_RESULT virtual int CountTokens(const url::Origin& issuer);
+  WARN_UNUSED_RESULT virtual int CountTokens(
+      const SuitableTrustTokenOrigin& issuer);
 
   // Returns all signed tokens from |issuer| signed by keys matching
   // the given predicate.
-  //
-  // |issuer| must not be opaque.
   WARN_UNUSED_RESULT virtual std::vector<TrustToken> RetrieveMatchingTokens(
-      const url::Origin& issuer,
+      const SuitableTrustTokenOrigin& issuer,
       base::RepeatingCallback<bool(const std::string&)> key_matcher);
 
   // If |to_delete| is a currently stored token issued by |issuer|, deletes the
   // token.
-  //
-  // |issuer| must not be opaque.
-  void DeleteToken(const url::Origin& issuer, const TrustToken& to_delete);
+  void DeleteToken(const SuitableTrustTokenOrigin& issuer,
+                   const TrustToken& to_delete);
 
   //// Methods concerning Signed Redemption Records (SRRs)
 
   // Sets the cached SRR corresponding to the pair (issuer, top_level)
   // to |record|. Overwrites any existing record.
-  //
-  // |issuer| and |top_level| must not be opaque.
   virtual void SetRedemptionRecord(
-      const url::Origin& issuer,
-      const url::Origin& top_level,
+      const SuitableTrustTokenOrigin& issuer,
+      const SuitableTrustTokenOrigin& top_level,
       const SignedTrustTokenRedemptionRecord& record);
 
   // Attempts to retrieve the stored SRR for the given pair of (issuer,
   // top-level) origins.
   // - If the pair has a current (i.e., non-expired) SRR, returns that SRR.
   // - Otherwise, returns nullopt.
-  //
-  // |issuer| and |top_level| must not be opaque.
   WARN_UNUSED_RESULT virtual base::Optional<SignedTrustTokenRedemptionRecord>
-  RetrieveNonstaleRedemptionRecord(const url::Origin& issuer,
-                                   const url::Origin& top_level);
+  RetrieveNonstaleRedemptionRecord(const SuitableTrustTokenOrigin& issuer,
+                                   const SuitableTrustTokenOrigin& top_level);
 
  private:
   std::unique_ptr<TrustTokenPersister> persister_;

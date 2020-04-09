@@ -351,9 +351,9 @@ TrustTokenRequestSigningHelper::GetSignature(
   signing_data.insert(signing_data.end(), maybe_request_in_cbor->begin(),
                       maybe_request_in_cbor->end());
 
-  signer_->Init(
-      base::as_bytes(base::make_span(redemption_record.signing_key())));
-  return signer_->Sign(base::make_span(signing_data));
+  base::span<const uint8_t> key_bytes =
+      base::as_bytes(base::make_span(redemption_record.signing_key()));
+  return signer_->Sign(key_bytes, base::make_span(signing_data));
 }
 
 }  // namespace network

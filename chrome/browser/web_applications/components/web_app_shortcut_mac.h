@@ -106,7 +106,7 @@ class WebAppShortcutCreator {
                        std::vector<base::FilePath>* updated_paths);
 
   // Show the bundle we just generated in the Finder.
-  virtual void RevealAppShimInFinder() const;
+  virtual void RevealAppShimInFinder(const base::FilePath& app_path) const;
 
  protected:
   virtual std::vector<base::FilePath> GetAppBundlesByIdUnsorted() const;

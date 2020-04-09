@@ -52,6 +52,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkMetadataStore
   void ConnectSucceeded(const std::string& service_path) override;
 
   // NetworkConfigurationObserver::
+  void OnConfigurationCreated(const std::string& service_path,
+                              const std::string& guid) override;
   void OnConfigurationModified(const std::string& service_path,
                                const std::string& guid,
                                base::DictionaryValue* set_properties) override;
@@ -67,6 +69,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkMetadataStore
 
   // Networks which were added directly from sync data will return true.
   bool GetIsConfiguredBySync(const std::string& network_guid);
+
+  // Networks which were created by the logged in user will return true.
+  bool GetIsCreatedByUser(const std::string& network_guid);
 
   // Manage observers.
   void AddObserver(NetworkMetadataObserver* observer);

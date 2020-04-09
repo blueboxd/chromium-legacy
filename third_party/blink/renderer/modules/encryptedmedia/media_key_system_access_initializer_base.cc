@@ -10,6 +10,7 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_key_system_media_capability.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/encryptedmedia/encrypted_media_utils.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -133,7 +134,7 @@ MediaKeySystemAccessInitializerBase::MediaKeySystemAccessInitializerBase(
     supported_configurations_[i] = web_config;
   }
 
-  CheckVideoCapabilityRobustness();
+  GenerateWarningAndReportMetrics();
 }
 
 const SecurityOrigin* MediaKeySystemAccessInitializerBase::GetSecurityOrigin()
@@ -160,7 +161,7 @@ bool MediaKeySystemAccessInitializerBase::IsExecutionContextValid() const {
   return context && !context->IsContextDestroyed();
 }
 
-void MediaKeySystemAccessInitializerBase::CheckVideoCapabilityRobustness()
+void MediaKeySystemAccessInitializerBase::GenerateWarningAndReportMetrics()
     const {
   const char kWidevineKeySystem[] = "com.widevine.alpha";
   const char kWidevineHwSecureAllRobustness[] = "HW_SECURE_ALL";
@@ -219,13 +220,18 @@ void MediaKeySystemAccessInitializerBase::CheckVideoCapabilityRobustness()
   if (!IsExecutionContextValid())
     return;
 
-  Document* document = Document::From(GetExecutionContext());
-  if (!document)
+  Document* document = GetDocument();
+  LocalFrame* frame = GetFrame();
+  if (!document || !frame)
     return;
 
   ukm::builders::Media_EME_RequestMediaKeySystemAccess builder(
       document->UkmSourceID());
   builder.SetKeySystem(KeySystemForUkm::kWidevine);
+  builder.SetIsAdFrame(
+      static_cast<int>(frame->IsAdRoot() || frame->IsAdSubframe()));
+  builder.SetIsCrossOrigin(static_cast<int>(frame->IsCrossOriginToMainFrame()));
+  builder.SetIsTopFrame(static_cast<int>(frame->IsMainFrame()));
   builder.SetVideoCapabilities(static_cast<int>(has_video_capabilities));
   builder.SetVideoCapabilities_HasEmptyRobustness(
       static_cast<int>(has_empty_robustness));

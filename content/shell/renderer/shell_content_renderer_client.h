@@ -27,7 +27,7 @@ class ShellContentRendererClient : public ContentRendererClient {
   // ContentRendererClient implementation.
   void RenderThreadStarted() override;
   void ExposeInterfacesToBrowser(mojo::BinderMap* binders) override;
-  void RenderViewCreated(RenderView* render_view) override;
+  void RenderFrameCreated(RenderFrame* render_frame) override;
   bool HasErrorPage(int http_status_code) override;
   void PrepareErrorPage(RenderFrame* render_frame,
                         const blink::WebURLError& error,

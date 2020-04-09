@@ -53,7 +53,8 @@ class ImageMetadataStoreLevelDB : public ImageMetadataStore {
                          ImageMetadataCallback callback) override;
   void SaveImageMetadata(const std::string& key,
                          const size_t data_size,
-                         bool needs_transcoding) override;
+                         bool needs_transcoding,
+                         ExpirationInterval expiration_interval) override;
   void DeleteImageMetadata(const std::string& key) override;
   void UpdateImageMetadata(const std::string& key) override;
   void GetAllKeys(KeysCallback callback) override;

@@ -63,10 +63,21 @@ class ArCorePlaneManager {
       const device::mojom::Pose& pose) const;
 
  private:
+  struct PlaneInfo {
+    device::internal::ScopedArCoreObject<ArTrackable*> plane;
+    ArTrackingState tracking_state;
+
+    PlaneInfo(device::internal::ScopedArCoreObject<ArTrackable*> plane,
+              ArTrackingState tracking_state);
+    PlaneInfo(PlaneInfo&& other);
+    ~PlaneInfo();
+  };
+
   // Executes |fn| for each still tracked, non-subsumed plane present in
   // |arcore_planes|. |fn| will receive 3 parameters - a
   // `ScopedArCoreObject<ArAnchor*>` that can be stored, the non-owning ArPlane*
-  // typecast from the first parameter, and ArTrackingState.
+  // typecast from the first parameter, and ArTrackingState. A plane is tracked
+  // if its state is not AR_TRACKING_STATE_STOPPED.
   template <typename FunctionType>
   void ForEachArCorePlane(ArTrackableList* arcore_planes, FunctionType fn);
 
@@ -89,10 +100,9 @@ class ArCorePlaneManager {
   // Mapping from plane address to plane ID. It should be modified only during
   // calls to |Update()|.
   std::map<void*, PlaneId> ar_plane_address_to_id_;
-  // Mapping from plane ID to ARCore plane object. It should be modified only
-  // during calls to |Update()|.
-  std::map<PlaneId, device::internal::ScopedArCoreObject<ArTrackable*>>
-      plane_id_to_plane_object_;
+  // Mapping from plane ID to ARCore plane information. It should be modified
+  // only during calls to |Update()|.
+  std::map<PlaneId, PlaneInfo> plane_id_to_plane_info_;
   // Set containing IDs of planes updated in the last frame. It should be
   // modified only during calls to |Update()|.
   std::set<PlaneId> updated_plane_ids_;

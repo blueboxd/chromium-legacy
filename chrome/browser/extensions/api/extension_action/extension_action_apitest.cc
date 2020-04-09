@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/extension_action_test_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/extensions/api/extension_action/action_info_test_util.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/sessions/content/session_tab_helper.h"
@@ -34,7 +35,6 @@
 #include "extensions/browser/state_store.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/features/feature_channel.h"
-#include "extensions/common/manifest_constants.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "extensions/test/test_extension_dir.h"
@@ -181,19 +181,6 @@ class ExtensionActionAPITest : public ExtensionApiTest {
  public:
   ExtensionActionAPITest() {}
   ~ExtensionActionAPITest() override {}
-
-  const char* GetManifestKey(ActionInfo::Type action_type) {
-    switch (action_type) {
-      case ActionInfo::TYPE_ACTION:
-        return manifest_keys::kAction;
-      case ActionInfo::TYPE_BROWSER:
-        return manifest_keys::kBrowserAction;
-      case ActionInfo::TYPE_PAGE:
-        return manifest_keys::kPageAction;
-    }
-    NOTREACHED();
-    return nullptr;
-  }
 
   const char* GetAPIName(ActionInfo::Type action_type) {
     switch (action_type) {
@@ -369,8 +356,8 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest,
            "%s": {}
          })";
 
-  test_dir.WriteManifest(
-      base::StringPrintf(kManifestTemplate, GetManifestKey(GetParam())));
+  test_dir.WriteManifest(base::StringPrintf(
+      kManifestTemplate, GetManifestKeyForActionType(GetParam())));
   const Extension* extension = LoadExtension(test_dir.UnpackedPath());
   ASSERT_TRUE(extension);
 
@@ -426,8 +413,8 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, TitleLocalization) {
            }
          })";
 
-  test_dir.WriteManifest(
-      base::StringPrintf(kManifestTemplate, GetManifestKey(GetParam())));
+  test_dir.WriteManifest(base::StringPrintf(
+      kManifestTemplate, GetManifestKeyForActionType(GetParam())));
   const Extension* extension = LoadExtension(test_dir.UnpackedPath());
   ASSERT_TRUE(extension);
 
@@ -467,8 +454,8 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, OnClickedDispatching) {
          });)";
 
   TestExtensionDir test_dir;
-  test_dir.WriteManifest(
-      base::StringPrintf(kManifestTemplate, GetManifestKey(GetParam())));
+  test_dir.WriteManifest(base::StringPrintf(
+      kManifestTemplate, GetManifestKeyForActionType(GetParam())));
   test_dir.WriteFile(
       FILE_PATH_LITERAL("background.js"),
       base::StringPrintf(kBackgroundJsTemplate, GetAPIName(GetParam())));
@@ -518,8 +505,8 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, PopupCreation) {
       "window.onload = function() { chrome.test.notifyPass(); };";
 
   TestExtensionDir test_dir;
-  test_dir.WriteManifest(
-      base::StringPrintf(kManifestTemplate, GetManifestKey(GetParam())));
+  test_dir.WriteManifest(base::StringPrintf(
+      kManifestTemplate, GetManifestKeyForActionType(GetParam())));
   test_dir.WriteFile(FILE_PATH_LITERAL("popup.html"), kPopupHtml);
   test_dir.WriteFile(FILE_PATH_LITERAL("popup.js"), kPopupJs);
 
@@ -592,8 +579,8 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPICanvasTest, DynamicSetIcon) {
   }
 
   TestExtensionDir test_dir;
-  test_dir.WriteManifest(
-      base::StringPrintf(kManifestTemplate, GetManifestKey(GetParam())));
+  test_dir.WriteManifest(base::StringPrintf(
+      kManifestTemplate, GetManifestKeyForActionType(GetParam())));
   test_dir.WriteFile(
       FILE_PATH_LITERAL("background.js"),
       base::StringPrintf(kBackgroundJsTemplate, GetAPIName(GetParam())));
@@ -710,8 +697,8 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, GettersAndSetters) {
       "<!doctype html><html><body>Blank</body></html>";
 
   TestExtensionDir test_dir;
-  test_dir.WriteManifest(
-      base::StringPrintf(kManifestTemplate, GetManifestKey(GetParam())));
+  test_dir.WriteManifest(base::StringPrintf(
+      kManifestTemplate, GetManifestKeyForActionType(GetParam())));
   test_dir.WriteFile(FILE_PATH_LITERAL("background.js"), kBackgroundJs);
   test_dir.WriteFile(FILE_PATH_LITERAL("default_popup.html"), kPopupHtml);
   test_dir.WriteFile(FILE_PATH_LITERAL("custom_popup1.html"), kPopupHtml);
@@ -896,8 +883,8 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, EnableAndDisable) {
          })";
 
   TestExtensionDir test_dir;
-  test_dir.WriteManifest(
-      base::StringPrintf(kManifestTemplate, GetManifestKey(GetParam())));
+  test_dir.WriteManifest(base::StringPrintf(
+      kManifestTemplate, GetManifestKeyForActionType(GetParam())));
   test_dir.WriteFile(FILE_PATH_LITERAL("background.js"),
                      "// This space left blank.");
   const Extension* extension = LoadExtension(test_dir.UnpackedPath());

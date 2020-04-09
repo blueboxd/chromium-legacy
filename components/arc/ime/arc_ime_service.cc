@@ -299,11 +299,7 @@ void ArcImeService::OnTextInputTypeChanged(
     ui::TextInputType type,
     bool is_personalized_learning_allowed,
     int flags) {
-  // The focus is on a non-ARC window. This method can be called even When a
-  // text input on a non-ARC window is focused because there is a dummy input
-  // view in Android side which is synchronized with the text input on the
-  // non-ARC window.
-  if (focused_arc_window_ == nullptr)
+  if (!ShouldSendUpdateToInputMethod())
     return;
 
   if (ime_type_ == type &&
@@ -332,11 +328,7 @@ void ArcImeService::OnTextInputTypeChanged(
 
 void ArcImeService::OnCursorRectChanged(const gfx::Rect& rect,
                                         bool is_screen_coordinates) {
-  // The focus is on a non-ARC window. This method can be called even when a
-  // text input on a non-ARC window is focused because there is a dummy input
-  // view in Android side which is synchronized with the text input on the
-  // non-ARC window.
-  if (focused_arc_window_ == nullptr)
+  if (!ShouldSendUpdateToInputMethod())
     return;
 
   InvalidateSurroundingTextAndSelectionRange();
@@ -349,11 +341,7 @@ void ArcImeService::OnCursorRectChanged(const gfx::Rect& rect,
 }
 
 void ArcImeService::OnCancelComposition() {
-  // The focus is on a non-ARC window. This method can be called even when a
-  // text input on a non-ARC window is focused because there is a dummy input
-  // view in Android side which is synchronized with the text input on the
-  // non-ARC window.
-  if (focused_arc_window_ == nullptr)
+  if (!ShouldSendUpdateToInputMethod())
     return;
 
   InvalidateSurroundingTextAndSelectionRange();
@@ -363,11 +351,7 @@ void ArcImeService::OnCancelComposition() {
 }
 
 void ArcImeService::ShowVirtualKeyboardIfEnabled() {
-  // The focus is on a non-ARC window. This method can be called even when a
-  // text input on a non-ARC window is focused because there is a dummy input
-  // view in Android side which is synchronized with the text input on the
-  // non-ARC window.
-  if (focused_arc_window_ == nullptr)
+  if (!ShouldSendUpdateToInputMethod())
     return;
 
   ui::InputMethod* const input_method = GetInputMethod();
@@ -382,11 +366,7 @@ void ArcImeService::OnCursorRectChangedWithSurroundingText(
     const base::string16& text_in_range,
     const gfx::Range& selection_range,
     bool is_screen_coordinates) {
-  // The focus is on a non-ARC window. This method can be called even when a
-  // text input on a non-ARC window is focused because there is a dummy input
-  // view in Android side which is synchronized with the text input on the
-  // non-ARC window.
-  if (focused_arc_window_ == nullptr)
+  if (!ShouldSendUpdateToInputMethod())
     return;
 
   text_range_ = text_range;
@@ -673,6 +653,14 @@ bool ArcImeService::UpdateCursorRect(const gfx::Rect& rect,
     return false;
   cursor_rect_ = converted;
   return true;
+}
+
+bool ArcImeService::ShouldSendUpdateToInputMethod() const {
+  // New text input state received from Android should not be sent to
+  // InputMethod when the focus is on a non-ARC window. Text input state updates
+  // can be sent from Android anytime because there is a dummy input view in
+  // Android which is synchronized with the text input on a non-ARC window.
+  return focused_arc_window_ != nullptr;
 }
 
 }  // namespace arc

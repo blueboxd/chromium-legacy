@@ -1295,6 +1295,21 @@
   <message name="IDS_CHROMEOS_NETWORK_ERROR_CERTIFICATES_NOT_LOADED" desc="Network error details in notifications: Certificates not loaded">
     Certificates not loaded
   </message>
+  <message name="IDS_NETWORK_ERROR_CANNOT_CHANGE_SHARED_CONFIG" desc="Network error message shown when attempting to change a shared network configuration if the operation is not allowed">
+    Changing shared network configurations is not allowed
+  </message>
+  <message name="IDS_NETWORK_ERROR_NO_USER_CERT" desc="In the network connect dialog, when creating a VPN or enterprise Wi-Fi connection, error message to display when no user certificates are installed.">
+    Please install a user certificate.
+  </message>
+  <message name="IDS_NETWORK_ERROR_POLICY_CONTROLLED" desc="Network error message shown when attempting to remove or illegally modify a policy controlled network">
+    Network is policy controlled
+  </message>
+  <message name="IDS_NETWORK_ERROR_PASSPHRASE_REQUIRED" desc="Network error message shown when a passphrase is required to connect to a network but was not supplied.">
+    Passphrase required
+  </message>
+  <message name="IDS_NETWORK_ERROR_UNKNOWN" desc="Network error message shown for an unknown or unexpected network configuration error">
+    Error configuring network
+  </message>
 
   <!-- Sync/sign-in error messages -->
   <message name="IDS_SIGNIN_ERROR_SECONDARY_ACCOUNT_BUBBLE_VIEW_TITLE" desc="Title in the sign-in error bubble view/notification for Chrome OS Secondary Accounts.">
@@ -1433,6 +1448,266 @@
   </message>
   <message name="IDS_NETWORK_IP_ADDRESS_NA" desc="IP address value to be shown in network configuration section in network details page when the IP address is not available.">
     Not available
+  </message>
+
+  <!-- Open Network (ONC)-->
+  <message name="IDS_ONC_IPV4_ADDRESS" desc="ONC Property label for ipv4-IPAddress">
+    IP address
+  </message>
+  <message name="IDS_ONC_IPV4_GATEWAY" desc="ONC Property label for ipv4-Gateway">
+    Gateway
+  </message>
+  <message name="IDS_ONC_IPV4_ROUTING_PREFIX" desc="ONC Property label for ipv4-RoutingPrefix">
+    Routing prefix
+  </message>
+  <message name="IDS_ONC_IPV6_ADDRESS" desc="ONC Property label for ipv6-Address">
+    IPv6 address
+  </message>
+  <message name="IDS_ONC_CELLULAR_ACTIVATION_STATE" desc="ONC Property label for Cellular.ActivationState">
+    Activation status
+  </message>
+  <message name="IDS_ONC_CELLULAR_ACTIVATION_STATE_ACTIVATED" desc="ONC Property value when Cellular.ActivationState = Activated">
+    Activated
+  </message>
+  <message name="IDS_ONC_CELLULAR_ACTIVATION_STATE_ACTIVATING" desc="ONC Property value when Cellular.ActivationState = Activating">
+    Activating
+  </message>
+  <message name="IDS_ONC_CELLULAR_ACTIVATION_STATE_NOT_ACTIVATED" desc="ONC Property value when Cellular.ActivationStat = NotActivated">
+    Not activated
+  </message>
+  <message name="IDS_ONC_CELLULAR_ACTIVATION_STATE_PARTIALLY_ACTIVATED" desc="ONC Property value when Cellular.ActivationState = PartiallyActivated">
+    Partially activated
+  </message>
+  <message name="IDS_ONC_CELLULAR_ACTIVATION_STATE_NO_SERVICE" desc="ONC Property value when Cellular.ActivationState = NoService">
+    No service
+  </message>
+  <message name="IDS_ONC_CELLULAR_APN_ACCESS_POINT_NAME" desc="ONC Property label for APN-AccessPointName">
+    Access point name
+  </message>
+  <message name="IDS_ONC_CELLULAR_APN_ACCESS_POINT_NAME_NONE" desc="ONC Property label for APN-AccessPointName = none (or empty)">
+    None
+  </message>
+  <message name="IDS_ONC_CELLULAR_APN_USERNAME" desc="ONC Property label for APN-Username">
+    Username
+  </message>
+  <message name="IDS_ONC_CELLULAR_APN_PASSWORD" desc="ONC Property label for APN-Password">
+    Password
+  </message>
+  <message name="IDS_ONC_CELLULAR_APN_AUTHENTICATION" desc="ONC Property label for APN-Authentication">
+    Authentication
+  </message>
+  <message name="IDS_ONC_CELLULAR_FAMILY" desc="ONC Property label for Cellular.Family">
+    Family
+  </message>
+  <message name="IDS_ONC_CELLULAR_FIRMWARE_REVISION" desc="ONC Property label for Cellular.FirmwareRevision">
+    Firmware revision
+  </message>
+  <message name="IDS_ONC_CELLULAR_HARDWARE_REVISION" desc="ONC Property label for Cellular.HardwareRevision">
+    Hardware revision
+  </message>
+  <message name="IDS_ONC_CELLULAR_HOME_PROVIDER_CODE" desc="ONC Property label for Cellular.HomeProvider.Code">
+    Home provider code
+  </message>
+  <message name="IDS_ONC_CELLULAR_HOME_PROVIDER_COUNTRY" desc="ONC Property label for Cellular.HomeProvider.Country">
+    Home provider country
+  </message>
+  <message name="IDS_ONC_CELLULAR_HOME_PROVIDER_NAME" desc="ONC Property label for Cellular.HomeProvider.Name">
+    Home provider name
+  </message>
+  <message name="IDS_ONC_CELLULAR_MANUFACTURER" desc="ONC Property label for Cellular.Manufacturer">
+    Manufacturer
+  </message>
+  <message name="IDS_ONC_CELLULAR_MODEL_ID" desc="ONC Property label for Cellular.ModelID">
+    Model ID
+  </message>
+  <message name="IDS_ONC_CELLULAR_NETWORK_TECHNOLOGY" desc="ONC Property label for Cellular.NetworkTechnology">
+    Technology
+  </message>
+  <message name="IDS_ONC_CELLULAR_ROAMING_STATE" desc="ONC Property label for Cellular.RoamingState">
+    Roaming status
+  </message>
+  <message name="IDS_ONC_CELLULAR_ROAMING_STATE_HOME" desc="ONC Property value when OncCellular.RoamingState = Home">
+    Home network, not roaming
+  </message>
+  <message name="IDS_ONC_CELLULAR_ROAMING_STATE_ROAMING" desc="ONC Property value when OncCellular.RoamingState = Roaming">
+    Roaming
+  </message>
+  <message name="IDS_ONC_CELLULAR_SERVING_OPERATOR_CODE" desc="ONC Property label for Cellular.ServingOperator.Code">
+    Operator code
+  </message>
+  <message name="IDS_ONC_CELLULAR_SERVING_OPERATOR_NAME" desc="ONC Property label for Cellular.ServingOperator.Name">
+    Operator
+  </message>
+  <message name="IDS_ONC_CONNECTED" desc="Settings > Internet, text in network summary when a network is connected.">
+    Connected
+  </message>
+  <message name="IDS_ONC_CONNECTING" desc="Settings > Internet, text in network summary when a network is connecting.">
+    Connecting
+  </message>
+  <message name="IDS_ONC_EAP_ANONYMOUS_IDENTITY" desc="ONC Property label for EAP.AnonymousIdentity">
+    Anonymous Identity
+  </message>
+  <message name="IDS_ONC_EAP_IDENTITY" desc="ONC Property label for EAP.Identity">
+    Identity
+  </message>
+  <message name="IDS_ONC_EAP_INNER" desc="ONC Property label for EAP.Inner (Phase 2 authentication)">
+    EAP Phase 2 authentication
+  </message>
+  <message name="IDS_ONC_EAP_INNER_AUTOMATIC" desc="ONC Property value for EAP.Inner = Automatic">
+    Automatic
+  </message>
+  <message name="IDS_ONC_EAP_INNER_MD5" desc="ONC Property value for EAP.Inner = MD5">
+    EAP-MD5
+  </message>
+  <message name="IDS_ONC_EAP_INNER_MSCHAP" desc="ONC Property value for EAP.Inner = MSCHAP">
+    MSCHAP
+  </message>
+  <message name="IDS_ONC_EAP_INNER_MSCHAPV2" desc="ONC Property value for EAP.Inner = MSCHAPv2">
+    MSCHAPv2
+  </message>
+  <message name="IDS_ONC_EAP_INNER_PAP" desc="ONC Property value for EAP.Inner = PAP">
+    PAP
+  </message>
+  <message name="IDS_ONC_EAP_INNER_CHAP" desc="ONC Property value for EAP.Inner = CHAP">
+    CHAP
+  </message>
+  <message name="IDS_ONC_EAP_INNER_GTC" desc="ONC Property value for EAP.Inner = GTC">
+    GTC
+  </message>
+  <message name="IDS_ONC_EAP_OUTER" desc="ONC Property label for EAP.Outer (Method)">
+    EAP method
+  </message>
+  <message name="IDS_ONC_EAP_OUTER_LEAP" desc="ONC Property value for EAP.Outer = LEAP">
+    LEAP
+  </message>
+  <message name="IDS_ONC_EAP_OUTER_PEAP" desc="ONC Property value for EAP.Outer = PEAP">
+    PEAP
+  </message>
+  <message name="IDS_ONC_EAP_OUTER_TLS" desc="ONC Property value for EAP.Outer = TLS">
+    EAP-TLS
+  </message>
+  <message name="IDS_ONC_EAP_OUTER_TTLS" desc="ONC Property value for EAP.Outer = TTLS">
+    EAP-TTLS
+  </message>
+  <message name="IDS_ONC_EAP_SERVER_CA" desc="ONC Property label for EAP Server CA Certificate">
+    Server CA certificate
+  </message>
+  <message name="IDS_ONC_EAP_SUBJECT_MATCH" desc="ONC Property label for EAP.SubjectMatch">
+    Subject match
+  </message>
+  <message name="IDS_ONC_EAP_USER_CERT" desc="ONC Property label for EAP User Certs">
+    User certificate
+  </message>
+  <message name="IDS_ONC_NOT_CONNECTED" desc="Settings > Internet, text in network summary when a network is not connecting or connected.">
+    Not Connected
+  </message>
+  <message name="IDS_ONC_MAC_ADDRESS" desc="ONC Property label for MacAddress">
+    MAC address
+  </message>
+  <message name="IDS_ONC_NAME" desc="ONC Property label for the network Name (displayed when configuring a VPN service name)">
+    Service name
+  </message>
+  <message name="IDS_ONC_RESTRICTED_CONNECTIVITY" desc="ONC Property label for RestrictedConnectivity">
+    Restricted IP
+  </message>
+  <message name="IDS_ONC_TETHER_BATTERY_PERCENTAGE" desc="Settings > Internet > Title of section which displays the battery percentage of another device which provides a tether hotspot for the current device to connect to.">
+    Battery
+  </message>
+  <message name="IDS_ONC_TETHER_BATTERY_PERCENTAGE_VALUE" desc="Settings > Internet > Text contents of section which displays the battery percentage of another device which provides a tether hotspot for the current device to connect to.">
+    <ph name="BATTERY_PERCENTAGE">$1<ex>100</ex></ph>%
+  </message>
+  <message name="IDS_ONC_TETHER_SIGNAL_STRENGTH" desc="Settings > Internet > Title of section which displays the cellular signal strength of another device which provides a tether hotspot for the current device to connect to. The signal strength is displayed as a string (e.g., Strong)">
+    Signal strength
+  </message>
+  <message name="IDS_ONC_TETHER_SIGNAL_STRENGTH_WEAK" desc="Settings > Internet > Label used to describe the signal strength of a device's cellular connection when the signal is weak. The strength value is 1 on a scale from 1 (min) to 5 (max).">
+    Weak
+  </message>
+  <message name="IDS_ONC_TETHER_SIGNAL_STRENGTH_OKAY" desc="Settings > Internet > Label used to describe the signal strength of a device's cellular connection when the signal is okay. The strength value is 2 on a scale from 1 (min) to 5 (max).">
+    Okay
+  </message>
+  <message name="IDS_ONC_TETHER_SIGNAL_STRENGTH_GOOD" desc="Settings > Internet > Label used to describe the signal strength of a device's cellular connection when the signal is good. The strength value is 3 on a scale from 1 (min) to 5 (max).">
+    Fine
+  </message>
+  <message name="IDS_ONC_TETHER_SIGNAL_STRENGTH_STRONG" desc="Settings > Internet > Label used to describe the signal strength of a device's cellular connection when the signal is strong. The strength value is 4 on a scale from 1 (min) to 5 (max).">
+    Strong
+  </message>
+  <message name="IDS_ONC_TETHER_SIGNAL_STRENGTH_VERY_STRONG" desc="Settings > Internet > Label used to describe the signal strength of a device's cellular connection when the signal is very strong. The strength value is 5 on a scale from 1 (min) to 5 (max).">
+    Very strong
+  </message>
+  <message name="IDS_ONC_TETHER_CARRIER" desc="Settings > Internet > Title of section which displays the name of the cellular provider (e.g., Verizon) of another device which provides a tether hotspot for the current device to connect to. To be clear, the current device does not have cellular service; instead, another device has it and can provide data to the current device via a Wi-Fi hotspot.">
+    Cellular provider
+  </message>
+  <message name="IDS_ONC_TETHER_CARRIER_UNKNOWN" desc="Settings > Internet > Text displayed in the settings UI in place of a cellular provider when the actual name of the provider is unknown. In this context, the cellular provider refers to the carrier which provides mobile data service to another device which can start a tether hotspot to provide a data connection to the current device.">
+    Unknown carrier
+  </message>
+  <message name="IDS_ONC_VPN_HOST" desc="ONC Property label for VPN.Host">
+    Server hostname
+  </message>
+  <message name="IDS_ONC_VPN_IPSEC_GROUP" desc="ONC Property label for VPN.IPSec.Group">
+    Group name
+  </message>
+  <message name="IDS_ONC_VPN_IPSEC_PSK" desc="ONC Property label for VPN.IPSec.PSK">
+    Pre-shared key
+  </message>
+  <message name="IDS_ONC_VPN_OPENVPN_EXTRA_HOSTS" desc="ONC Property label for VPN.OpenVPN.ExtraHosts">
+    Extra hosts
+  </message>
+  <message name="IDS_ONC_VPN_OPENVPN_OTP" desc="ONC Property label for VPN.OpenVPN.OTP">
+    OTP
+  </message>
+  <message name="IDS_ONC_VPN_PASSWORD" desc="ONC Property label for VPN.OpenVPN.Password or VPN.L2TP.Password">
+    Password
+  </message>
+  <message name="IDS_ONC_VPN_USERNAME" desc="ONC Property label for VPN.OpenVPN.Username or VPN.L2TP.Username">
+    Username
+  </message>
+  <message name="IDS_ONC_VPN_THIRD_PARTY_VPN_PROVIDER_NAME" desc="ONC Property label for VPN.ThirdPartyVPN.ProviderName">
+    Provider name
+  </message>
+  <message name="IDS_ONC_VPN_TYPE" desc="ONC Property label for VPN.Type">
+    Provider type
+  </message>
+  <message name="IDS_ONC_VPN_TYPE_L2TP_IPSEC" desc="ONC Property label for VPN.Type.L2TP-IPSec">
+    L2TP/IPsec
+  </message>
+  <message name="IDS_ONC_VPN_TYPE_L2TP_IPSEC_PSK" desc="ONC Property label for configuring VPN.Type.L2TP-IPSec with AuthenticationType = PSK">
+    L2TP/IPsec + pre-shared key
+  </message>
+  <message name="IDS_ONC_VPN_TYPE_L2TP_IPSEC_CERT" desc="ONC Property label for configuring VPN.Type.L2TP-IPSec  with AuthenticationType = Cert">
+    L2TP/IPsec + user certificate
+  </message>
+  <message name="IDS_ONC_VPN_TYPE_OPENVPN" desc="ONC Property label for VPN.Type.OpenVPN">
+    Open VPN
+  </message>
+  <message name="IDS_ONC_VPN_TYPE_ARCVPN" desc="ONC Property label for VPN.Type.ARCVPN">
+    Android VPN
+  </message>
+  <message name="IDS_ONC_WIFI_FREQUENCY" desc="ONC Property label for WiFi.Frequency">
+    Frequency
+  </message>
+  <message name="IDS_ONC_WIFI_PASSWORD" desc="ONC Property label for WiFi.Password">
+    Password
+  </message>
+  <message name="IDS_ONC_WIFI_SECURITY" desc="ONC Property label for WiFi.Security">
+    Security
+  </message>
+  <message name="IDS_ONC_WIFI_SECURITY_NONE" desc="In settings > Internet, a string specifying security type = none.">
+    None
+  </message>
+  <message name="IDS_ONC_WIFI_SECURITY_WEP" desc="In settings > Internet, a string specifying security type = WEP.">
+    WEP
+  </message>
+  <message name="IDS_ONC_WIFI_SECURITY_PSK" desc="In settings > Internet, a string specifying security type = PSK (either WPA-PSK or RSN-PSK).">
+    PSK (WPA or RSN)
+  </message>
+  <message name="IDS_ONC_WIFI_SECURITY_EAP" desc="In settings > Internet, a string specifying security type = EAP (802.1X).">
+    EAP
+  </message>
+  <message name="IDS_ONC_WIFI_SIGNAL_STRENGTH" desc="ONC Property label for WiFi.SignalStrength">
+    Signal strength
+  </message>
+  <message name="IDS_ONC_WIFI_SSID" desc="ONC Property label for WiFi.SSID">
+    SSID
   </message>
 
   <!-- Strings shown within Tether notifications -->
@@ -4376,6 +4651,35 @@
   </message>
   <message name="IDS_SMB_SHARES_CREDENTIALS_PASSWORD" desc="Title for the input that lets users specify their password for an SMB Share. This field is optional.">
     Password (optional)
+  </message>
+
+  <!-- SMB File Shares -->
+  <message name="IDS_SETTINGS_DOWNLOADS_ADD_SHARE_URL" desc="Title for the input that lets users specify the name of an SMB URL.">
+    File share URL
+  </message>
+  <message name="IDS_SETTINGS_DOWNLOADS_ADD_SHARE_NAME" desc="Title for the input that lets users specify the display name of an SMB mount.">
+    Display name (optional)
+  </message>
+  <message name="IDS_SETTINGS_DOWNLOADS_ADD_SHARE_USERNAME" desc="Title for the input that lets users specify their username for an SMB share.">
+    Username (optional)
+  </message>
+  <message name="IDS_SETTINGS_DOWNLOADS_ADD_SHARE_PASSWORD" desc="Title for the input that lets users specify their password for an SMB Share.">
+    Password (optional)
+  </message>
+  <message name="IDS_SETTINGS_DOWNLOADS_ADD_SHARE_SAVE_CREDENTIALS" desc="Label for the checkbox input that lets users have the username/password for an SMB share saved for the next login.">
+    Remember sign-in info
+  </message>
+  <message name="IDS_SETTINGS_DOWNLOADS_ADD_SHARE_AUTHENTICATION_METHOD" desc="Title for the input that lets users specify their authentication method for an SMB Share.">
+    Authentication method
+  </message>
+  <message name="IDS_SETTINGS_DOWNLOADS_ADD_SHARE_STANDARD_AUTHENTICATION" desc="Authentication method option indicating that fields for username and password should be shown to the user.">
+    Standard
+  </message>
+  <message name="IDS_SETTINGS_DOWNLOADS_ADD_SHARE_KERBEROS_AUTHENTICATION" desc="Authentication method option to use a users Kerberos ticket to authenticate. Only availible for Active Directory users.">
+    SSO
+  </message>
+  <message name="IDS_SETTINGS_DOWNLOADS_ADD_SHARE_DISCOVERY_MESSAGE" desc="The message shown next to the loading spinner shown when searching for SMB shares.">
+    Looking for file shares
   </message>
 
   <!-- Strings for Plugin VM -->

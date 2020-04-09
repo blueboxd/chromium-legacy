@@ -20,7 +20,7 @@
 #include "content/public/test/web_test_support_renderer.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/common/web_test/web_test_switches.h"
-#include "content/shell/renderer/shell_render_view_observer.h"
+#include "content/shell/renderer/shell_render_frame_observer.h"
 #include "content/shell/renderer/web_test/blink_test_helpers.h"
 #include "content/shell/renderer/web_test/blink_test_runner.h"
 #include "content/shell/renderer/web_test/test_websocket_handshake_throttle_provider.h"
@@ -91,14 +91,9 @@ void WebTestContentRendererClient::RenderThreadStarted() {
 
 void WebTestContentRendererClient::RenderFrameCreated(
     RenderFrame* render_frame) {
+  // Intentionally doesn't call the base class, as we only use web test
+  // observers.
   new WebTestRenderFrameObserver(render_frame);
-}
-
-void WebTestContentRendererClient::RenderViewCreated(RenderView* render_view) {
-  new ShellRenderViewObserver(render_view);
-
-  BlinkTestRunner* test_runner = BlinkTestRunner::Get(render_view);
-  test_runner->Reset(false /* for_new_test */);
 }
 
 std::unique_ptr<content::WebSocketHandshakeThrottleProvider>

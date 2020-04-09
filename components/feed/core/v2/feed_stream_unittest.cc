@@ -22,6 +22,7 @@
 #include "components/feed/core/proto/v2/wire/request.pb.h"
 #include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/feed/core/v2/feed_network.h"
+#include "components/feed/core/v2/metrics_reporter.h"
 #include "components/feed/core/v2/refresh_task_scheduler.h"
 #include "components/feed/core/v2/scheduling.h"
 #include "components/feed/core/v2/stream_model.h"
@@ -296,9 +297,10 @@ class FeedStreamTest : public testing::Test, public FeedStream::Delegate {
     chrome_info.channel = version_info::Channel::STABLE;
     chrome_info.version = base::Version({99, 1, 9911, 2});
     stream_ = std::make_unique<FeedStream>(
-        &refresh_scheduler_, &event_observer_, this, &profile_prefs_, &network_,
-        store_.get(), task_environment_.GetMockClock(),
-        task_environment_.GetMockTickClock(), chrome_info);
+        &refresh_scheduler_, &event_observer_, &metrics_reporter_, this,
+        &profile_prefs_, &network_, store_.get(),
+        task_environment_.GetMockClock(), task_environment_.GetMockTickClock(),
+        chrome_info);
 
     // Set the user classifier.
     auto user_classifier = std::make_unique<TestUserClassifier>(
@@ -351,6 +353,7 @@ class FeedStreamTest : public testing::Test, public FeedStream::Delegate {
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   TestUserClassifier* user_classifier_;
   TestEventObserver event_observer_;
+  MetricsReporter metrics_reporter_{task_environment_.GetMockTickClock()};
   TestingPrefServiceSimple profile_prefs_;
   TestFeedNetwork network_;
   TestWireResponseTranslator response_translator_;

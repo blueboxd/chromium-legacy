@@ -18,7 +18,7 @@ import "ui/gfx/mojom/transform.mojom";
 //
 
 // Note on terminology: unless otherwise noted, all poses passed across mojo are
-// expressed in device space, aka mojo space.
+// expressed in device space, aka mojo space, aka world space.
 
 // TODO(https://crbug.com/966099): Use EnableIf to only define values on
 // platforms that have implementations.
@@ -376,7 +376,9 @@ struct XRPlaneData {
   // Pose of the plane's center. Defines new coordinate space.
   // Y axis of the coordinate space describes plane's normal, the rotation of
   // X and Z around the Y axis is arbitrary.
-  Pose pose;
+  // Null if the device does not know where the plane is located in the world
+  // space (tracking loss), but the tracking can still be recovered.
+  Pose? mojo_from_plane;
 
   // Vertices of 2D convex polygon approximating the plane.
   array<XRPlanePointData> polygon;
@@ -405,8 +407,10 @@ struct XRAnchorData {
   // Unique (within a session) identifier of the anchor.
   uint64 id;
 
-  // Pose of the anchor.
-  Pose pose;
+  // Pose of the anchor. Null if the device does not know where the anchor is
+  // located in the world space (tracking loss), but the tracking can still be
+  // recovered.
+  Pose? mojo_from_anchor;
 };
 
 // Struct containing information about all tracked & updated anchors in a given

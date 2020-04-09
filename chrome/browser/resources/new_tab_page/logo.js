@@ -166,6 +166,16 @@ class LogoElement extends PolymerElement {
   }
 
   /**
+   * @param {!Event} e
+   * @private
+   */
+  onImageKeydown_(e) {
+    if ([' ', 'Enter'].includes(e.key)) {
+      this.onImageClick_();
+    }
+  }
+
+  /**
    * @return {string}
    * @private
    */

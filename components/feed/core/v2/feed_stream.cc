@@ -19,6 +19,7 @@
 #include "components/feed/core/v2/enums.h"
 #include "components/feed/core/v2/feed_network.h"
 #include "components/feed/core/v2/feed_store.h"
+#include "components/feed/core/v2/metrics_reporter.h"
 #include "components/feed/core/v2/refresh_task_scheduler.h"
 #include "components/feed/core/v2/scheduling.h"
 #include "components/feed/core/v2/stream_model.h"
@@ -203,6 +204,7 @@ FeedStream::WireResponseTranslator::TranslateWireResponse(
 
 FeedStream::FeedStream(RefreshTaskScheduler* refresh_task_scheduler,
                        EventObserver* stream_event_observer,
+                       MetricsReporter* metrics_reporter,
                        Delegate* delegate,
                        PrefService* profile_prefs,
                        FeedNetwork* feed_network,
@@ -212,6 +214,7 @@ FeedStream::FeedStream(RefreshTaskScheduler* refresh_task_scheduler,
                        const ChromeInfo& chrome_info)
     : refresh_task_scheduler_(refresh_task_scheduler),
       stream_event_observer_(stream_event_observer),
+      metrics_reporter_(metrics_reporter),
       delegate_(delegate),
       profile_prefs_(profile_prefs),
       feed_network_(feed_network),
@@ -458,6 +461,28 @@ void FeedStream::UnloadModel() {
     return;
   surface_updater_->SetModel(nullptr);
   model_.reset();
+}
+
+void FeedStream::ReportNavigationStarted() {
+  metrics_reporter_->NavigationStarted();
+}
+void FeedStream::ReportNavigationDone() {
+  metrics_reporter_->NavigationDone();
+}
+void FeedStream::ReportContentRemoved() {
+  metrics_reporter_->ContentRemoved();
+}
+void FeedStream::ReportNotInterestedIn() {
+  metrics_reporter_->NotInterestedIn();
+}
+void FeedStream::ReportManageInterests() {
+  metrics_reporter_->ManageInterests();
+}
+void FeedStream::ReportContextMenuOpened() {
+  metrics_reporter_->ContextMenuOpened();
+}
+void FeedStream::ReportStreamScrolled(int distance_dp) {
+  metrics_reporter_->StreamScrolled(distance_dp);
 }
 
 }  // namespace feed

@@ -30,6 +30,8 @@
 #include "components/translate/core/browser/translate_prefs.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
+#import "ios/web/public/web_state.h"
+#include "ios/web/public/webui/web_ui_ios.h"
 #include "ios/web_view/internal/app/application_context.h"
 #import "ios/web_view/internal/autofill/web_view_autofill_log_router_factory.h"
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
@@ -49,6 +51,7 @@
 #include "ios/web_view/internal/web_view_download_manager.h"
 #include "ios/web_view/internal/web_view_url_request_context_getter.h"
 #include "ios/web_view/internal/webdata_services/web_view_web_data_service_wrapper_factory.h"
+#include "ios/web_view/internal/webui/web_view_web_ui_ios_controller_factory.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -139,6 +142,11 @@ WebViewBrowserState* WebViewBrowserState::FromBrowserState(
   return static_cast<WebViewBrowserState*>(browser_state);
 }
 
+// static
+WebViewBrowserState* WebViewBrowserState::FromWebUIIOS(web::WebUIIOS* web_ui) {
+  return FromBrowserState(web_ui->GetWebState()->GetBrowserState());
+}
+
 bool WebViewBrowserState::IsOffTheRecord() const {
   return off_the_record_;
 }
@@ -169,6 +177,7 @@ void WebViewBrowserState::RegisterPrefs(
   WebViewTranslateRankerFactory::GetInstance();
   WebViewUrlLanguageHistogramFactory::GetInstance();
   WebViewTranslateAcceptLanguagesFactory::GetInstance();
+  WebViewWebUIIOSControllerFactory::GetInstance();
   autofill::WebViewAutofillLogRouterFactory::GetInstance();
   WebViewPersonalDataManagerFactory::GetInstance();
   WebViewWebDataServiceWrapperFactory::GetInstance();

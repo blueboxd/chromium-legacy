@@ -46,15 +46,14 @@ void HasTrustTokensAnswerer::AnswerQueryWithStore(
     TrustTokenStore* trust_token_store) {
   DCHECK(trust_token_store);
 
-  if (!trust_token_store->SetAssociation(issuer.origin(),
-                                         top_frame_origin_.origin())) {
+  if (!trust_token_store->SetAssociation(issuer, top_frame_origin_)) {
     std::move(callback).Run(mojom::HasTrustTokensResult::New(
         mojom::TrustTokenOperationStatus::kResourceExhausted,
         /*has_trust_tokens=*/false));
     return;
   }
 
-  bool has_trust_tokens = trust_token_store->CountTokens(issuer.origin());
+  bool has_trust_tokens = trust_token_store->CountTokens(issuer);
   std::move(callback).Run(mojom::HasTrustTokensResult::New(
       mojom::TrustTokenOperationStatus::kOk, has_trust_tokens));
 }

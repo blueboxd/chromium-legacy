@@ -35,6 +35,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "media/base/media_switches.h"
+#include "ui/base/cocoa/permissions_utils.h"
 
 namespace system_media_permissions {
 
@@ -175,37 +176,9 @@ bool IsScreenCaptureAllowed() {
             features::kMacSystemScreenCapturePermissionCheck)) {
       return true;
     }
-
-    base::ScopedCFTypeRef<CFArrayRef> window_list(
-        CGWindowListCopyWindowInfo(kCGWindowListOptionAll, kCGNullWindowID));
-    int current_pid = [[NSProcessInfo processInfo] processIdentifier];
-    for (NSDictionary* window in base::mac::CFToNSCast(window_list.get())) {
-      NSNumber* window_pid =
-          [window objectForKey:base::mac::CFToNSCast(kCGWindowOwnerPID)];
-      if (!window_pid || [window_pid integerValue] == current_pid)
-        continue;
-
-      NSString* window_name =
-          [window objectForKey:base::mac::CFToNSCast(kCGWindowName)];
-      if (!window_name)
-        continue;
-
-      NSNumber* layer =
-          [window objectForKey:base::mac::CFToNSCast(kCGWindowLayer)];
-      if (!layer)
-        continue;
-
-      NSInteger layer_integer = [layer integerValue];
-      if (layer_integer == CGWindowLevelForKey(kCGNormalWindowLevelKey) ||
-          layer_integer == CGWindowLevelForKey(kCGDockWindowLevelKey)) {
-        return true;
-      }
-    }
-    return false;
   }
 
-  // Screen capture is always allowed in older macOS versions.
-  return true;
+  return ui::IsScreenCaptureAllowed();
 }
 
 }  // namespace

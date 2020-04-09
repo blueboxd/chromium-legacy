@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">더 많은 옵션을 확인하려면 클릭하세요.</translation>
 <translation id="1570871743947603115">블루투스를 전환합니다. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">이 세션의 모든 활동에 액세스</translation>
-<translation id="1608626060424371292">이 사용자 삭제</translation>
+<translation id="1632985212731562677">설정 &gt; 접근성에서 스위치 제어를 사용 중지할 수 있습니다.</translation>
 <translation id="1654477262762802994">음성 검색 시작</translation>
 <translation id="1658406695958299976">비밀번호를 여전히 확인할 수 없습니다. 참고: 최근에 비밀번호를 변경한 경우 로그아웃해야 새로운 비밀번호가 적용됩니다. 이전 비밀번호를 사용해 보세요.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> 남음</translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">기기 관리자가 탐색 활동을 모니터링할 수 있습니다.</translation>
 <translation id="3181441307743005334">다시 시작하는 데 시간이 다소 걸릴 수 있습니다</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{기기 1개에 연결됨}other{기기 #개에 연결됨}}</translation>
+<translation id="3203405173652969239">스위치 제어 사용 중</translation>
 <translation id="3207953481422525583">사용자 설정</translation>
 <translation id="3217205077783620295">볼륨이 켜져 있으며 전환하면 오디오가 꺼집니다.</translation>
 <translation id="3226991577105957773">외 <ph name="COUNT" />개</translation>
@@ -651,6 +652,7 @@
 <translation id="9211681782751733685">배터리 충전이 완료될 때까지 남은 시간은 <ph name="TIME_REMAINING" />입니다.</translation>
 <translation id="9215934040295798075">배경화면 설정</translation>
 <translation id="921989828232331238">부모님이 오늘 하루 동안 기기를 잠갔습니다.</translation>
+<translation id="9220525904950070496">계정 삭제</translation>
 <translation id="923686485342484400">로그아웃하려면 Ctrl+Shift+Q를 두 번 누릅니다.</translation>
 <translation id="938963181863597773">오늘 내 일정이 어떻게 돼?</translation>
 <translation id="945522503751344254">의견 보내기</translation>

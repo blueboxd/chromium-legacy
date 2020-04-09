@@ -124,8 +124,6 @@ public class ImageFetcher {
                 PUBLISHER_FAVICON_DESIRED_SIZE_PX, new Callback<Bitmap>() {
                     @Override
                     public void onResult(Bitmap image) {
-                        SuggestionsMetrics.recordArticleFaviconFetchTime(
-                                SystemClock.elapsedRealtime() - faviconFetchStartTimeMs);
                         if (image == null) return;
                         faviconCallback.onResult(image);
                     }

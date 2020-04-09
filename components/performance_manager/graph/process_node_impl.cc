@@ -162,13 +162,14 @@ base::Optional<int32_t> ProcessNodeImpl::GetExitStatus() const {
   return exit_status();
 }
 
-void ProcessNodeImpl::VisitFrameNodes(const FrameNodeVisitor& visitor) const {
+bool ProcessNodeImpl::VisitFrameNodes(const FrameNodeVisitor& visitor) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto* frame_impl : frame_nodes()) {
     const FrameNode* frame = frame_impl;
     if (!visitor.Run(frame))
-      return;
+      return false;
   }
+  return true;
 }
 
 base::flat_set<const FrameNode*> ProcessNodeImpl::GetFrameNodes() const {

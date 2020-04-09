@@ -154,16 +154,11 @@ class BlockedAppApiTest : public AppApiTest {
 
 // Tests that hosted apps with the background permission get a process-per-app
 // model, since all pages need to be able to script the background page.
-// http://crbug.com/172750
-IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_AppProcess) {
-  LOG(INFO) << "Start of test.";
-
+IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
   extensions::ProcessMap* process_map =
       extensions::ProcessMap::Get(browser()->profile());
 
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("app_process")));
-
-  LOG(INFO) << "Loaded extension.";
 
   // Open two tabs in the app, one outside it.
   GURL base_url = GetTestBaseURL("app_process");
@@ -182,7 +177,6 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_AppProcess) {
                                         ->GetProcess()
                                         ->GetID()));
   EXPECT_FALSE(browser()->tab_strip_model()->GetWebContentsAt(1)->GetWebUI());
-  LOG(INFO) << "Nav 1.";
 
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), base_url.Resolve("path2/empty.html"),
@@ -195,14 +189,11 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_AppProcess) {
                                         ->GetProcess()
                                         ->GetID()));
   EXPECT_FALSE(browser()->tab_strip_model()->GetWebContentsAt(2)->GetWebUI());
-  LOG(INFO) << "Nav 2.";
 
   ui_test_utils::TabAddedWaiter tab_add(browser());
   chrome::NewTab(browser());
   tab_add.Wait();
-  LOG(INFO) << "New tab.";
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path3/empty.html"));
-  LOG(INFO) << "Nav 3.";
   EXPECT_FALSE(process_map->Contains(browser()
                                          ->tab_strip_model()
                                          ->GetWebContentsAt(3)
@@ -232,16 +223,13 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_AppProcess) {
   // Now let's do the same using window.open. The same should happen.
   ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
   OpenWindow(tab, base_url.Resolve("path1/empty.html"), true, true, NULL);
-  LOG(INFO) << "WindowOpenHelper 1.";
   OpenWindow(tab, base_url.Resolve("path2/empty.html"), true, true, NULL);
-  LOG(INFO) << "WindowOpenHelper 2.";
   // TODO(creis): This should open in a new process (i.e., false for the last
   // argument), but we temporarily avoid swapping processes away from a hosted
   // app if it has an opener, because some OAuth providers make script calls
   // between non-app popups and non-app iframes in the app process.
   // See crbug.com/59285.
   OpenWindow(tab, base_url.Resolve("path3/empty.html"), true, true, NULL);
-  LOG(INFO) << "WindowOpenHelper 3.";
 
   // Now let's have these pages navigate, into or out of the extension web
   // extent. They should switch processes.
@@ -249,10 +237,8 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_AppProcess) {
   const GURL& non_app_url(base_url.Resolve("path3/empty.html"));
   NavigateInRenderer(browser()->tab_strip_model()->GetWebContentsAt(2),
                      non_app_url);
-  LOG(INFO) << "NavigateTabHelper 1.";
   NavigateInRenderer(browser()->tab_strip_model()->GetWebContentsAt(3),
                      app_url);
-  LOG(INFO) << "NavigateTabHelper 2.";
   EXPECT_NE(tab->GetMainFrame()->GetProcess(), browser()
                                                    ->tab_strip_model()
                                                    ->GetWebContentsAt(2)
@@ -268,7 +254,6 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_AppProcess) {
   // be valid.
   NavigateInRenderer(browser()->tab_strip_model()->GetWebContentsAt(6),
                      app_url);
-  LOG(INFO) << "NavigateTabHelper 3.";
   EXPECT_EQ(tab->GetMainFrame()->GetProcess(), browser()
                                                    ->tab_strip_model()
                                                    ->GetWebContentsAt(6)
@@ -280,8 +265,6 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_AppProcess) {
       "window.domAutomationController.send(window.opener != null)",
       &windowOpenerValid));
   ASSERT_TRUE(windowOpenerValid);
-
-  LOG(INFO) << "End of test.";
 }
 
 // Test that hosted apps without the background permission use a process per app

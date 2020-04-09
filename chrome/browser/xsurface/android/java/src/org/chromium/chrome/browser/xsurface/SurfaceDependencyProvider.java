@@ -6,16 +6,21 @@ package org.chromium.chrome.browser.xsurface;
 
 import android.content.Context;
 
+import androidx.annotation.Nullable;
+
 /**
  * Provides logging and context for an external surface.
  */
 public interface SurfaceDependencyProvider {
     /** @return the context associated with the application. */
-    Context getContext();
+    @Nullable
+    default Context getContext() {
+        return null;
+    }
 
     /** @see {Log.e} */
-    void logError(String tag, String messageTemplate, Object... args);
+    default void logError(String tag, String messageTemplate, Object... args) {}
 
     /** @see {Log.w} */
-    void logWarning(String tag, String messageTemplate, Object... args);
+    default void logWarning(String tag, String messageTemplate, Object... args) {}
 }

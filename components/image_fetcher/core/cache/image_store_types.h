@@ -38,6 +38,9 @@ using ImageMetadataCallback =
 // Returns a vector of keys.
 using KeysCallback = base::OnceCallback<void(std::vector<std::string>)>;
 
+// The expiration interval for CacheStrategy::HOLD_UNTIL_EXPIRED.
+using ExpirationInterval = base::Optional<base::TimeDelta>;
+
 }  // namespace image_fetcher
 
 #endif  // COMPONENTS_IMAGE_FETCHER_CORE_CACHE_IMAGE_STORE_TYPES_H_

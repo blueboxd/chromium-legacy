@@ -85,9 +85,6 @@
 #import "ios/chrome/browser/ui/commands/text_zoom_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
-#import "ios/chrome/browser/ui/dialogs/dialog_features.h"
-#import "ios/chrome/browser/ui/dialogs/dialog_presenter.h"
-#import "ios/chrome/browser/ui/dialogs/java_script_dialog_presenter_impl.h"
 #import "ios/chrome/browser/ui/download/download_manager_coordinator.h"
 #import "ios/chrome/browser/ui/elements/activity_overlay_coordinator.h"
 #import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view_controller.h"
@@ -331,7 +328,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                      CaptivePortalDetectorTabHelperDelegate,
                                      CRWWebStateDelegate,
                                      CRWWebStateObserver,
-                                     DialogPresenterDelegate,
                                      FullscreenUIElement,
                                      InfobarPositioner,
                                      KeyCommandsPlumbing,
@@ -370,9 +366,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Handles displaying the context menu for all form factors.
   ContextMenuCoordinator* _contextMenuCoordinator;
-
-  // Backing object for property of the same name.
-  DialogPresenter* _dialogPresenter;
 
   // Handles presentation of JavaScript dialogs.
   std::unique_ptr<web::JavaScriptDialogPresenter> _javaScriptDialogPresenter;
@@ -479,8 +472,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 @property(nonatomic, weak) CommandDispatcher* commandDispatcher;
 // The browser's side swipe controller.  Lazily instantiated on the first call.
 @property(nonatomic, strong, readonly) SideSwipeController* sideSwipeController;
-// The dialog presenter for this BVC's tab model.
-@property(nonatomic, strong, readonly) DialogPresenter* dialogPresenter;
 // The object that manages keyboard commands on behalf of the BVC.
 @property(nonatomic, strong, readonly) KeyCommandsProvider* keyCommandsProvider;
 // Whether the controller's view is currently available.
@@ -638,9 +629,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Starts or stops broadcasting the toolbar UI and main content UI depending on
 // whether the BVC is visible and active.
 - (void)updateBroadcastState;
-// Updates |dialogPresenter|'s |active| property to account for the BVC's
-// |active|, |visible|, and |inNewTabAnimation| properties.
-- (void)updateDialogPresenterActiveState;
 // Dismisses popups and modal dialogs that are displayed above the BVC upon size
 // changes (e.g. rotation, resizing,…) or when the accessibility escape gesture
 // is performed.
@@ -741,12 +729,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
           [[VerticalAnimationContainer alloc] init];
     }
 
-    if (!base::FeatureList::IsEnabled(dialogs::kNonModalDialogs)) {
-      _dialogPresenter = [[DialogPresenter alloc] initWithDelegate:self
-                                          presentingViewController:self];
-      _javaScriptDialogPresenter =
-          std::make_unique<JavaScriptDialogPresenterImpl>(_dialogPresenter);
-    }
     _webStateDelegate.reset(new web::WebStateDelegateBridge(self));
     _inNewTabAnimation = NO;
 
@@ -865,10 +847,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   return _sideSwipeController;
 }
 
-- (DialogPresenter*)dialogPresenter {
-  return _dialogPresenter;
-}
-
 - (KeyCommandsProvider*)keyCommandsProvider {
   if (!_keyCommandsProvider) {
     _keyCommandsProvider = [_dependencyFactory newKeyCommandsProvider];
@@ -904,7 +882,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     return;
   _viewVisible = viewVisible;
   self.visible = viewVisible;
-  [self updateDialogPresenterActiveState];
   [self updateBroadcastState];
 }
 
@@ -976,7 +953,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (_inNewTabAnimation == inNewTabAnimation)
     return;
   _inNewTabAnimation = inNewTabAnimation;
-  [self updateDialogPresenterActiveState];
   [self updateBroadcastState];
 }
 
@@ -1063,10 +1039,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (void)setPrimary:(BOOL)primary {
   [self.tabModel setPrimary:primary];
   if (primary) {
-    [self updateDialogPresenterActiveState];
     [self updateBroadcastState];
-  } else {
-    self.dialogPresenter.active = false;
   }
 }
 
@@ -1199,7 +1172,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
 
   self.webUsageEnabled = active;
-  [self updateDialogPresenterActiveState];
   [self updateBroadcastState];
 
   // Stop the NTP on web usage toggle. This happens when clearing browser
@@ -1222,8 +1194,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     }
     if (self.currentWebState)
       [self displayWebState:self.currentWebState];
-  } else {
-    [_dialogPresenter cancelAllDialogs];
   }
 
   [self setNeedsStatusBarAppearanceUpdate];
@@ -1237,7 +1207,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (dismissOmnibox) {
     [self.omniboxHandler cancelOmniboxEdit];
   }
-  [_dialogPresenter cancelAllDialogs];
   [self.helpHandler hideAllHelpBubbles];
   if (_voiceSearchController)
     _voiceSearchController->DismissMicPermissionsHelp();
@@ -1499,7 +1468,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (void)viewDidAppear:(BOOL)animated {
   [super viewDidAppear:animated];
   self.viewVisible = YES;
-  [self updateDialogPresenterActiveState];
   [self updateBroadcastState];
   [_toolbarUIUpdater updateState];
   [self.infobarContainerCoordinator baseViewDidAppear];
@@ -1542,7 +1510,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (void)viewWillDisappear:(BOOL)animated {
   self.viewVisible = NO;
-  [self updateDialogPresenterActiveState];
   [self updateBroadcastState];
   web::WebState* activeWebState =
       self.browser ? self.browser->GetWebStateList()->GetActiveWebState()
@@ -1709,7 +1676,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                               strongSelf.dismissingModal = NO;
                               if (completion)
                                 completion();
-                              [strongSelf.dialogPresenter tryToPresent];
                             }];
 }
 
@@ -2445,11 +2411,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (void)updateBroadcastState {
   self.broadcasting = self.active && self.viewVisible;
-}
-
-- (void)updateDialogPresenterActiveState {
-  self.dialogPresenter.active =
-      self.active && self.viewVisible && !self.inNewTabAnimation;
 }
 
 - (void)dismissPopups {
@@ -3243,12 +3204,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (web::JavaScriptDialogPresenter*)javaScriptDialogPresenterForWebState:
     (web::WebState*)webState {
-  if (base::FeatureList::IsEnabled(dialogs::kNonModalDialogs)) {
-    return WebStateDelegateTabHelper::FromWebState(webState)
-        ->GetJavaScriptDialogPresenter(webState);
-  }
-  DCHECK(_javaScriptDialogPresenter.get());
-  return _javaScriptDialogPresenter.get();
+  return WebStateDelegateTabHelper::FromWebState(webState)
+      ->GetJavaScriptDialogPresenter(webState);
 }
 
 - (void)webState:(web::WebState*)webState
@@ -3257,19 +3214,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                        completionHandler:(void (^)(NSString* username,
                                                    NSString* password))handler {
   DCHECK(handler);
-  if (base::FeatureList::IsEnabled(dialogs::kNonModalDialogs)) {
-    web::WebStateDelegate::AuthCallback callback =
-        base::BindRepeating(^(NSString* user, NSString* password) {
-          handler(user, password);
-        });
-    WebStateDelegateTabHelper::FromWebState(webState)->OnAuthRequired(
-        webState, protectionSpace, proposedCredential, callback);
-  } else {
-    [self.dialogPresenter runAuthDialogForProtectionSpace:protectionSpace
-                                       proposedCredential:proposedCredential
-                                                 webState:webState
-                                        completionHandler:handler];
-  }
+  web::WebStateDelegate::AuthCallback callback =
+      base::BindRepeating(^(NSString* user, NSString* password) {
+        handler(user, password);
+      });
+  WebStateDelegateTabHelper::FromWebState(webState)->OnAuthRequired(
+      webState, protectionSpace, proposedCredential, callback);
 }
 
 - (BOOL)webState:(web::WebState*)webState
@@ -3542,28 +3492,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (FullscreenController*)fullscreenControllerForOverscrollActionsController:
     (OverscrollActionsController*)controller {
   return self.fullscreenController;
-}
-
-#pragma mark - DialogPresenterDelegate methods
-
-- (void)dialogPresenter:(DialogPresenter*)presenter
-    willShowDialogForWebState:(web::WebState*)webState {
-  WebStateList* webStateList = self.browser->GetWebStateList();
-  int indexOfWebState = webStateList->GetIndexOfWebState(webState);
-  if (indexOfWebState != WebStateList::kInvalidIndex) {
-    webStateList->ActivateWebStateAt(indexOfWebState);
-    DCHECK([webState->GetView() isDescendantOfView:self.contentArea]);
-  }
-}
-
-- (BOOL)shouldDialogPresenterPresentDialog:(DialogPresenter*)presenter {
-  if (self.presentedViewController)
-    return NO;
-  for (UIViewController* childViewController in self.childViewControllers) {
-    if (childViewController.presentedViewController)
-      return NO;
-  }
-  return YES;
 }
 
 #pragma mark - ToolbarHeightProviderForFullscreen
@@ -4194,9 +4122,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   [self uninstallDelegatesForWebState:webState];
 
-  // Cancel dialogs for |webState|.
-  [self.dialogPresenter cancelDialogForWebState:webState];
-
   // Ignore changes while the tab grid is visible (or while suspended).
   // The display will be refreshed when this view becomes active again.
   if (!self.visible || !self.webUsageEnabled)
@@ -4586,7 +4511,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (void)activityServiceDidEndPresenting {
-  [self.dialogPresenter tryToPresent];
 }
 
 - (void)showActivityServiceErrorAlertWithStringTitle:(NSString*)title

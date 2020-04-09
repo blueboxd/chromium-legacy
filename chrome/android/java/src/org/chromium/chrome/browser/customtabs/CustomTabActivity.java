@@ -47,10 +47,7 @@ import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsMod
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
-import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
-import org.chromium.chrome.browser.night_mode.PowerSavingModeMonitor;
-import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.previews.Previews;
@@ -71,7 +68,6 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
 
     private final CustomTabsConnection mConnection = CustomTabsConnection.getInstance();
 
-    private CustomTabNightModeStateController mNightModeStateController;
 
     private CustomTabActivityTabProvider.Observer mTabChangeObserver =
             new CustomTabActivityTabProvider.Observer() {
@@ -150,20 +146,6 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
         ApiCompatibilityUtils.setTaskDescription(this, null, null,
                 mIntentDataProvider.getToolbarColor());
         getComponent().resolveBottomBarDelegate().showBottomBarIfNecessary();
-    }
-
-    @Override
-    protected NightModeStateProvider createNightModeStateProvider() {
-        // This is called before Dagger component is created, so using getInstance() directly.
-        mNightModeStateController = new CustomTabNightModeStateController(getLifecycleDispatcher(),
-                SystemNightModeMonitor.getInstance(),
-                PowerSavingModeMonitor.getInstance());
-        return mNightModeStateController;
-    }
-
-    @Override
-    protected void initializeNightModeStateProvider() {
-        mNightModeStateController.initialize(getDelegate(), getIntent());
     }
 
     @Override
@@ -353,10 +335,10 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
         IntentIgnoringCriterion intentIgnoringCriterion =
                 (intent) -> mIntentHandler.shouldIgnoreIntent(intent);
 
-        BaseCustomTabActivityModule baseCustomTabsModule =
-                new BaseCustomTabActivityModule(mIntentDataProvider, intentIgnoringCriterion);
+        BaseCustomTabActivityModule baseCustomTabsModule = new BaseCustomTabActivityModule(
+                mIntentDataProvider, mNightModeStateController, intentIgnoringCriterion);
         CustomTabActivityModule customTabsModule =
-                new CustomTabActivityModule(mNightModeStateController, getStartupTabPreloader());
+                new CustomTabActivityModule(getStartupTabPreloader());
 
         CustomTabActivityComponent component =
                 ChromeApplication.getComponent().createCustomTabActivityComponent(

@@ -30,7 +30,6 @@ source_set("ui") {
 
   deps = [
     "//base",
-    "//ios/chrome/browser/ui/dialogs:feature_flags",
     "//ios/chrome/browser/ui/util",
   ]
 }

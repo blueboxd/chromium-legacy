@@ -21,17 +21,13 @@ public class SecurityStateModel {
      *
      * @see ConnectionSecurityLevel
      */
-    public static int getSecurityLevelForWebContents(
-            WebContents webContents, SecurityStateModelDelegate delegate) {
+    public static int getSecurityLevelForWebContents(WebContents webContents) {
         if (webContents == null) return ConnectionSecurityLevel.NONE;
-        return SecurityStateModelJni.get().getSecurityLevelForWebContents(
-                webContents, delegate.getNativePtr());
+        return SecurityStateModelJni.get().getSecurityLevelForWebContents(webContents);
     }
 
-    public static boolean isContentDangerous(
-            WebContents webContents, SecurityStateModelDelegate delegate) {
-        return getSecurityLevelForWebContents(webContents, delegate)
-                == ConnectionSecurityLevel.DANGEROUS;
+    public static boolean isContentDangerous(WebContents webContents) {
+        return getSecurityLevelForWebContents(webContents) == ConnectionSecurityLevel.DANGEROUS;
     }
 
     /**
@@ -50,7 +46,7 @@ public class SecurityStateModel {
     @NativeMethods
     @VisibleForTesting
     public interface Natives {
-        int getSecurityLevelForWebContents(WebContents webContents, long delegate);
+        int getSecurityLevelForWebContents(WebContents webContents);
         boolean shouldShowDangerTriangleForWarningLevel();
     }
 }

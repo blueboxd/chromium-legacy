@@ -408,9 +408,7 @@ TEST_F(WebEngineIntegrationTest, ContentDirectoryProvider) {
 }
 
 TEST_F(WebEngineIntegrationTest, PlayAudio) {
-  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  command_line.AppendSwitch(switches::kEnableFuchsiaAudioConsumer);
-  StartWebEngine(std::move(command_line));
+  StartWebEngine();
 
   // Use a FilteredServiceDirectory in order to inject a fake AudioConsumer
   // service.

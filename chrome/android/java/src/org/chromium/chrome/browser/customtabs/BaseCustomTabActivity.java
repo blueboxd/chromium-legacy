@@ -27,6 +27,9 @@ import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTab
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarColorController;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.flags.ActivityType;
+import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
+import org.chromium.chrome.browser.night_mode.PowerSavingModeMonitor;
+import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
@@ -51,6 +54,7 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
     protected CustomTabStatusBarColorProvider mStatusBarColorProvider;
     protected CustomTabActivityTabFactory mTabFactory;
     protected CustomTabIntentHandler mCustomTabIntentHandler;
+    protected CustomTabNightModeStateController mNightModeStateController;
     protected @Nullable WebappActivityCoordinator mWebappActivityCoordinator;
 
     // This is to give the right package name while using the client's resources during an
@@ -71,6 +75,19 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
     public static boolean isWindowInitiallyTranslucent(Activity activity) {
         return activity instanceof TranslucentCustomTabActivity
                 || activity instanceof SameTaskWebApkActivity;
+    }
+
+    @Override
+    protected NightModeStateProvider createNightModeStateProvider() {
+        // This is called before Dagger component is created, so using getInstance() directly.
+        mNightModeStateController = new CustomTabNightModeStateController(getLifecycleDispatcher(),
+                SystemNightModeMonitor.getInstance(), PowerSavingModeMonitor.getInstance());
+        return mNightModeStateController;
+    }
+
+    @Override
+    protected void initializeNightModeStateProvider() {
+        mNightModeStateController.initialize(getDelegate(), getIntent());
     }
 
     @Override

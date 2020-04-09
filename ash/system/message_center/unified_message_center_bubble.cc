@@ -85,18 +85,6 @@ UnifiedMessageCenterBubble::UnifiedMessageCenterBubble(UnifiedSystemTray* tray)
       bubble_view_->AddChildView(std::make_unique<UnifiedMessageCenterView>(
           nullptr /* parent */, tray->model(), this));
 
-  // Check if the message center bubble should be collapsed or expanded
-  // when it is initially opened.
-  if (CalculateAvailableHeight() < kMessageCenterCollapseThreshold &&
-      message_center_view_->GetPreferredSize().height()) {
-    if (tray_->IsQuickSettingsExplicitlyExpanded()) {
-      message_center_view_->SetCollapsed(false /*animate*/);
-    } else {
-      message_center_view_->SetExpanded();
-      tray_->EnsureQuickSettingsCollapsed(false /*animate*/);
-    }
-  }
-
   message_center_view_->AddObserver(this);
 }
 
@@ -115,6 +103,18 @@ void UnifiedMessageCenterBubble::ShowBubble() {
   widget_layer->Add(border_->layer());
 
   bubble_view_->InitializeAndShowBubble();
+
+  // Check if the message center bubble should be collapsed or expanded
+  // when it is initially opened.
+  if (CalculateAvailableHeight() < kMessageCenterCollapseThreshold &&
+      message_center_view_->GetPreferredSize().height()) {
+    if (tray_->IsQuickSettingsExplicitlyExpanded()) {
+      message_center_view_->SetCollapsed(false /*animate*/);
+    } else {
+      message_center_view_->SetExpanded();
+      tray_->EnsureQuickSettingsCollapsed(false /*animate*/);
+    }
+  }
 
   UpdatePosition();
 }

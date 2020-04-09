@@ -383,6 +383,52 @@ bool AddAclToPath(const base::FilePath& path,
   return AddAclToPath(path, converted_trustees, access_mask, ace_flags);
 }
 
+// Migrates consent for the collection of usage statistics from the binaries to
+// Chrome when migrating multi-install Chrome to single-install.
+void AddMigrateUsageStatsWorkItems(const InstallerState& installer_state,
+                                   WorkItemList* install_list) {
+  // This operation only applies to modes that once supported multi-install.
+  if (install_static::InstallDetails::Get().supported_multi_install())
+    return;
+
+  // Bail out if an existing multi-install Chrome is not being migrated to
+  // single-install.
+  if (!installer_state.is_migrating_to_single())
+    return;
+
+  // Nothing to do if the binaries aren't actually installed.
+  if (!AreBinariesInstalled(installer_state))
+    return;
+
+  // Delete any stale value in Chrome's ClientStateMedium key. A new value, if
+  // found, will be written to the ClientState key below.
+  if (installer_state.system_install()) {
+    install_list->AddDeleteRegValueWorkItem(
+        installer_state.root_key(),
+        install_static::GetClientStateMediumKeyPath(), KEY_WOW64_64KEY,
+        google_update::kRegUsageStatsField);
+  }
+
+  google_update::Tristate consent =
+      GoogleUpdateSettings::GetCollectStatsConsentForBinaries();
+  if (consent == google_update::TRISTATE_NONE) {
+    VLOG(1) << "No consent value found to migrate to single-install.";
+    // Delete any stale value in Chrome's ClientState key.
+    install_list->AddDeleteRegValueWorkItem(
+        installer_state.root_key(), install_static::GetClientStateKeyPath(),
+        KEY_WOW64_64KEY, google_update::kRegUsageStatsField);
+    return;
+  }
+
+  VLOG(1) << "Migrating usage stats consent from multi- to single-install.";
+
+  // Write consent to Chrome's ClientState key.
+  install_list->AddSetRegValueWorkItem(
+      installer_state.root_key(), install_static::GetClientStateKeyPath(),
+      KEY_WOW64_32KEY, google_update::kRegUsageStatsField,
+      static_cast<DWORD>(consent), true);
+}
+
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 // Adds work items to register the Elevation Service with Windows. Only for
 // system level installs.
@@ -949,6 +995,9 @@ void AddInstallWorkItems(const InstallationState& original_state,
 
   InstallUtil::AddUpdateDowngradeVersionItem(
       installer_state.root_key(), current_version, new_version, install_list);
+
+  // Migrate usagestats back to Chrome.
+  AddMigrateUsageStatsWorkItems(installer_state, install_list);
 
   AddUpdateBrandCodeWorkItem(installer_state, install_list);
 

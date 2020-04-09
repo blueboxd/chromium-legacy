@@ -56,9 +56,9 @@ namespace extensions {
 namespace {
 
 // Returns true if the given |item| is of the given |type|.
-bool MenuItemMatchesAction(ExtensionContextMenuModel::ActionType type,
+bool MenuItemMatchesAction(const base::Optional<ActionInfo::Type> action_type,
                            const MenuItem* item) {
-  if (type == ExtensionContextMenuModel::NO_ACTION)
+  if (!action_type)
     return false;
 
   const MenuItem::ContextList& contexts = item->contexts();
@@ -66,11 +66,15 @@ bool MenuItemMatchesAction(ExtensionContextMenuModel::ActionType type,
   if (contexts.Contains(MenuItem::ALL))
     return true;
   if (contexts.Contains(MenuItem::PAGE_ACTION) &&
-      (type == ExtensionContextMenuModel::PAGE_ACTION))
+      (*action_type == ActionInfo::TYPE_PAGE)) {
     return true;
+  }
   if (contexts.Contains(MenuItem::BROWSER_ACTION) &&
-      (type == ExtensionContextMenuModel::BROWSER_ACTION))
+      (*action_type == ActionInfo::TYPE_BROWSER)) {
     return true;
+  }
+
+  // TODO(devlin): Add support for ActionInfo::TYPE_ACTION here.
 
   return false;
 }
@@ -200,7 +204,6 @@ ExtensionContextMenuModel::ExtensionContextMenuModel(
       browser_(browser),
       profile_(browser->profile()),
       delegate_(delegate),
-      action_type_(NO_ACTION),
       button_visibility_(button_visibility),
       can_show_icon_in_toolbar_(can_show_icon_in_toolbar) {
   InitMenu(extension, button_visibility);
@@ -377,16 +380,15 @@ void ExtensionContextMenuModel::InitMenu(const Extension* extension,
                                          ButtonVisibility button_visibility) {
   DCHECK(extension);
 
+  base::Optional<ActionInfo::Type> action_type;
   extension_action_ =
       ExtensionActionManager::Get(profile_)->GetExtensionAction(*extension);
-  if (extension_action_) {
-    action_type_ = extension_action_->action_type() == ActionInfo::TYPE_PAGE
-                       ? PAGE_ACTION
-                       : BROWSER_ACTION;
-  }
+  if (extension_action_)
+    action_type = extension_action_->action_type();
 
   extension_items_.reset(new ContextMenuMatcher(
-      profile_, this, this, base::Bind(MenuItemMatchesAction, action_type_)));
+      profile_, this, this,
+      base::BindRepeating(MenuItemMatchesAction, action_type)));
 
   std::string extension_name = extension->name();
   // Ampersands need to be escaped to avoid being treated like

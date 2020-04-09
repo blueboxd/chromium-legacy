@@ -11,7 +11,6 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.UserData;
 import org.chromium.chrome.browser.previews.Previews;
-import org.chromium.chrome.browser.ssl.ChromeSecurityStateModelDelegate;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.components.security_state.SecurityStateModel;
@@ -155,8 +154,8 @@ public class TabThemeColorHelper extends EmptyTabObserver implements UserData {
      */
     private boolean checkThemingAllowed() {
         // Do not apply the theme color if there are any security issues on the page.
-        final int securityLevel = SecurityStateModel.getSecurityLevelForWebContents(
-                mTab.getWebContents(), ChromeSecurityStateModelDelegate.getInstance());
+        final int securityLevel =
+                SecurityStateModel.getSecurityLevelForWebContents(mTab.getWebContents());
         return securityLevel != ConnectionSecurityLevel.DANGEROUS
                 && securityLevel != ConnectionSecurityLevel.SECURE_WITH_POLICY_INSTALLED_CERT
                 && (mTab.getActivity() == null || !mTab.getActivity().isTablet())

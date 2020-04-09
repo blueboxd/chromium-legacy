@@ -420,7 +420,6 @@
 <translation id="1566049601598938765">Strona internetowa</translation>
 <translation id="15662109988763471">Wybrana drukarka jest niedostępna lub nieprawidłowo zainstalowana. Sprawdź ją lub wybierz inną.</translation>
 <translation id="1567387640189251553">Do urządzenia jest podłączona inna klawiatura niż przy ostatnim wpisywaniu hasła. Może ona próbować przechwycić naciskane klawisze.</translation>
-<translation id="1567750922576943685">Weryfikacja tożsamości pomaga chronić Twoje dane osobowe</translation>
 <translation id="1567993339577891801">Konsola JavaScript</translation>
 <translation id="1568323446248056064">Otwórz ustawienia wyświetlacza</translation>
 <translation id="1572139610531470719"><ph name="WINDOW_TITLE" /> (gość)</translation>
@@ -522,7 +521,6 @@
 <translation id="1697150536837697295">Sztuka</translation>
 <translation id="1697686431566694143">Edytuj plik</translation>
 <translation id="1698122934742150150">Tylko w bieżącej sesji incognito</translation>
-<translation id="1698650002254827833">Nie można załadować listy aplikacji. Spróbuj ponownie.</translation>
 <translation id="1700079447639026019">Strony, które nigdy nie mogą używać plików cookie</translation>
 <translation id="1701062906490865540">Usuń tę osobę</translation>
 <translation id="1703331064825191675">Nie musisz się już martwić o bezpieczeństwo swoich haseł</translation>
@@ -1085,7 +1083,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="2442916515643169563">Cień tekstu</translation>
 <translation id="2445081178310039857">Wymagany jest główny katalog rozszerzenia.</translation>
 <translation id="2445484935443597917">Utwórz nowy profil</translation>
-<translation id="2446585455334014596">Aplikacja <ph name="APP_NAME" /> chce zweryfikować Twoją tożsamość</translation>
 <translation id="2448312741937722512">Typ</translation>
 <translation id="2450223707519584812">Nie będzie można dodawać użytkowników, ponieważ brakuje kluczy Google API. Więcej szczegółów znajdziesz na <ph name="DETAILS_URL" />.</translation>
 <translation id="2450849356604136918">Brak aktywnych widoków</translation>
@@ -1692,7 +1689,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="3246107497225150582">{0,plural, =1{Aktualizacja urządzenia nastąpi w ciągu 1 dnia}few{Aktualizacja urządzenia nastąpi w ciągu # dni}many{Aktualizacja urządzenia nastąpi w ciągu # dni}other{Aktualizacja urządzenia nastąpi w ciągu # dnia}}</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> – błąd sieci</translation>
 <translation id="3248902735035392926">Dbaj o bezpieczeństwo. Poświęć chwilę na <ph name="BEGIN_LINK" />sprawdzenie swoich rozszerzeń<ph name="END_LINK" /></translation>
-<translation id="3249950116250264636"><ph name="APP_NAME" /> (<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">&lt;brak w certyfikacie&gt;</translation>
 <translation id="3253225298092156258">Niedostępna</translation>
 <translation id="3253448572569133955">Nieznane konto</translation>
@@ -2984,7 +2980,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="4992473555164495036">Administrator ograniczył dostępne metody wprowadzania.</translation>
 <translation id="4994474651455208930">Zezwól, by strony prosiły użytkownika o ustawienie ich jako domyślnego modułu obsługi protokołu</translation>
 <translation id="4994754230098574403">Konfiguruję</translation>
-<translation id="4996978546172906250">Udostępnij przez</translation>
 <translation id="4997086284911172121">Brak połączenia z internetem.</translation>
 <translation id="4997384734315285248">Odinstaluj Plugin VM</translation>
 <translation id="4998430619171209993">Włączono</translation>
@@ -3084,7 +3079,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="5135085122826131075">Uruchamiaj Asystenta, mówiąc „OK Google”.</translation>
 <translation id="5135533361271311778">Nie można utworzyć zakładki.</translation>
 <translation id="5137501176474113045">Usuń ten element</translation>
-<translation id="5138982052046316113">Zmień rozmiar dysku Linuksa</translation>
 <translation id="5139112070765735680"><ph name="QUERY_NAME" />, szukaj w: <ph name="DEFAULT_SEARCH_ENGINE_NAME" /></translation>
 <translation id="5139823398361067371">Wpisz kod PIN klucza bezpieczeństwa. Jeśli go nie znasz, musisz zresetować klucz.</translation>
 <translation id="5139955368427980650">&amp;Otwórz</translation>
@@ -3949,7 +3943,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="6291953229176937411">&amp;Pokaż w Finderze</translation>
 <translation id="6295158916970320988">Wszystkie witryny</translation>
 <translation id="6295855836753816081">Zapisuję…</translation>
-<translation id="629730747756840877">Konto</translation>
 <translation id="6298962879096096191">Użyj Google Play, by zainstalować aplikacje na Androida</translation>
 <translation id="630065524203833229">Z&amp;akończ</translation>
 <translation id="6300718114348072351">Nie udało się automatycznie skonfigurować drukarki <ph name="PRINTER_NAME" />. Określ zaawansowane ustawienia drukarki. <ph name="LINK_BEGIN" />Więcej informacji<ph name="LINK_END" /></translation>
@@ -4355,7 +4348,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="6865598234501509159">Język tej strony to nie <ph name="LANGUAGE" /></translation>
 <translation id="6865708901122695652">Logi zdarzeń WebRTC (<ph name="WEBRTC_EVENT_LOG_COUNT" />)</translation>
 <translation id="686664946474413495">Temperatura kolorów</translation>
-<translation id="6870888490422746447">Wybierz aplikację docelową udostępniania:</translation>
 <translation id="6871644448911473373">Obiekt odpowiadający protokołu OCSP: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">Podane hasło zostało odrzucone przez serwer.</translation>
 <translation id="6876155724392614295">Rower</translation>
@@ -4999,7 +4991,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="7744047395460924128">Zobacz swoją historię drukowania</translation>
 <translation id="7744192722284567281">Doszło do naruszenia bezpieczeństwa danych</translation>
 <translation id="7750228210027921155">Obraz w obrazie</translation>
-<translation id="7751229152614300329">Ustawienia Bezpiecznego przeglądania są aktualne i chronią Cię przed szkodliwymi witrynami i plikami.</translation>
 <translation id="7751260505918304024">Pokaż wszystkie</translation>
 <translation id="7754704193130578113">Pytaj przed pobraniem, gdzie zapisać każdy plik</translation>
 <translation id="7755287808199759310">Może ją dla Ciebie odblokować Twój rodzic</translation>

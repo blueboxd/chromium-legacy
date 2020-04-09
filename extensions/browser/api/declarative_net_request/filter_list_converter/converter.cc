@@ -492,8 +492,7 @@ class DNRJsonRuleOutputStream : public subresource_filter::RuleOutputStream {
   bool Finish() override {
     switch (write_type_) {
       case filter_list_converter::kExtension: {
-        TestRulesetInfo info = {kJSONRulesFilename,
-                                std::move(output_rules_list_)};
+        TestRulesetInfo info(kJSONRulesFilename, output_rules_list_);
         WriteManifestAndRuleset(output_path_, info, {} /* hosts */);
         break;
       }

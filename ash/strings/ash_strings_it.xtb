@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">Fai clic per visualizzare altre opzioni</translation>
 <translation id="1570871743947603115">Attiva/disattiva Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Accedere a tutte le tue attività in questa sessione.</translation>
-<translation id="1608626060424371292">Rimuovi questo utente</translation>
+<translation id="1632985212731562677">È possibile disattivare Switch Access in Impostazioni &gt; Accessibilità.</translation>
 <translation id="1654477262762802994">Avvia una query vocale</translation>
 <translation id="1658406695958299976">Non è stato ancora possibile verificare la password. Nota: se l'hai modificata di recente, la nuova password verrà applicata quando esci dall'account. Utilizza qui la tua vecchia password.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> rimanenti</translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">L'amministratore del dispositivo potrebbe monitorare l'attività di navigazione.</translation>
 <translation id="3181441307743005334">Il riavvio potrebbe richiedere un po' di tempo</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Connesso a un dispositivo}other{Connesso a # dispositivi}}</translation>
+<translation id="3203405173652969239">Funzionalità Switch Access attiva</translation>
 <translation id="3207953481422525583">Impostazioni utente</translation>
 <translation id="3217205077783620295">Il volume è attivo. Selezionalo per disattivarlo.</translation>
 <translation id="3226991577105957773">+ altre <ph name="COUNT" /></translation>
@@ -652,6 +653,7 @@
 <translation id="9211681782751733685">Tempo rimanente al caricamento completo della batteria: <ph name="TIME_REMAINING" /></translation>
 <translation id="9215934040295798075">Imposta sfondo</translation>
 <translation id="921989828232331238">Uno dei tuoi genitori ha bloccato il tuo dispositivo per tutto il giorno</translation>
+<translation id="9220525904950070496">Rimuovi account</translation>
 <translation id="923686485342484400">Premi due volte Control Maiusc Q per uscire.</translation>
 <translation id="938963181863597773">Cosa è segnato sul mio calendario?</translation>
 <translation id="945522503751344254">Invia feedback</translation>

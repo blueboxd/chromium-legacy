@@ -14,6 +14,7 @@
 #include "chrome/browser/media/history/media_history_images_table.h"
 #include "chrome/browser/media/history/media_history_keyed_service.h"
 #include "chrome/browser/media/history/media_history_keyed_service_factory.h"
+#include "chrome/browser/media/history/media_history_origin_table.h"
 #include "chrome/browser/media/history/media_history_session_images_table.h"
 #include "chrome/browser/media/history/media_history_session_table.h"
 #include "chrome/browser/profiles/profile.h"

@@ -40,6 +40,7 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
     bool prefers_reduced_motion;
     ForcedColors forced_colors;
     NavigationControls navigation_controls;
+    ScreenSpanning screen_spanning;
 
     MediaValuesCachedData();
     explicit MediaValuesCachedData(Document&);
@@ -69,6 +70,7 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
       data.prefers_reduced_motion = prefers_reduced_motion;
       data.forced_colors = forced_colors;
       data.navigation_controls = navigation_controls;
+      data.screen_spanning = screen_spanning;
       return data;
     }
   };
@@ -109,6 +111,7 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
   bool PrefersReducedMotion() const override;
   ForcedColors GetForcedColors() const override;
   NavigationControls GetNavigationControls() const override;
+  ScreenSpanning GetScreenSpanning() const override;
 
   void OverrideViewportDimensions(double width, double height) override;
 

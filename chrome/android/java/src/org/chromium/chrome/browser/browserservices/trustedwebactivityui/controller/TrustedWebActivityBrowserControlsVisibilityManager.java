@@ -14,7 +14,6 @@ import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar.CustomTabTabObserver;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
-import org.chromium.chrome.browser.ssl.ChromeSecurityStateModelDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.webapps.WebDisplayMode;
 import org.chromium.chrome.browser.webapps.WebappExtras;
@@ -144,8 +143,7 @@ public class TrustedWebActivityBrowserControlsVisibilityManager {
     @ConnectionSecurityLevel
     @VisibleForTesting
     int getSecurityLevel(Tab tab) {
-        int securityLevel = SecurityStateModel.getSecurityLevelForWebContents(
-                tab.getWebContents(), ChromeSecurityStateModelDelegate.getInstance());
+        int securityLevel = SecurityStateModel.getSecurityLevelForWebContents(tab.getWebContents());
         return securityLevel;
     }
 }

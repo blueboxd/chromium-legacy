@@ -80,6 +80,7 @@ source_set("core_unit_tests") {
     "feed_network_impl_unittest.cc",
     "feed_store_unittest.cc",
     "feed_stream_unittest.cc",
+    "metrics_reporter_unittest.cc",
     "proto_util_unittest.cc",
     "request_throttler_unittest.cc",
     "stream_model_unittest.cc",

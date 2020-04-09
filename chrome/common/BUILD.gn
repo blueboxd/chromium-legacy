@@ -671,6 +671,8 @@ static_library("test_support") {
 
   if (enable_extensions) {
     sources += [
+      "extensions/api/extension_action/action_info_test_util.cc",
+      "extensions/api/extension_action/action_info_test_util.h",
       "extensions/extension_test_util.cc",
       "extensions/extension_test_util.h",
     ]

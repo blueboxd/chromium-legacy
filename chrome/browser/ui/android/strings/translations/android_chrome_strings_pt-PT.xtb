@@ -725,7 +725,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6337234675334993532">Encriptação</translation>
 <translation id="6341580099087024258">Perguntar onde guardar os ficheiros</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
-<translation id="6364438453358674297">Pretende remover a sugestão do histórico?</translation>
+<translation id="6364438453358674297">Remover a sugestão do histórico?</translation>
 <translation id="6369229450655021117">A partir daqui, pode pesquisar na Web, partilhar com amigos e ver as páginas abertas.</translation>
 <translation id="6378173571450987352">Detalhes: ordenado por quantidade de dados utilizados</translation>
 <translation id="6379829913050047669">A app <ph name="APP_NAME" /> vai abrir no Chrome. Ao continuar, aceita os <ph name="BEGIN_LINK1" />Termos de Utilização do Google<ph name="END_LINK1" /> e os <ph name="BEGIN_LINK2" />Termos de Utilização Adicionais do Google Chrome e Chrome OS<ph name="END_LINK2" />.</translation>
@@ -1062,7 +1062,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8922289737868596582">Transfira páginas através do botão Mais opções para as utilizar offline.</translation>
 <translation id="8926666909099850184">O NFC está desativado para este dispositivo. Ative-o nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
-<translation id="8937772741022875483">Pretende remover a sua atividade do Chrome do Bem-estar digital?</translation>
+<translation id="8937772741022875483">Remover a sua atividade do Chrome do Bem-estar digital?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Abrir noutra janela</translation>
 <translation id="8951232171465285730">O Chrome permitiu-lhe poupar <ph name="MEGABYTES" /> MB</translation>

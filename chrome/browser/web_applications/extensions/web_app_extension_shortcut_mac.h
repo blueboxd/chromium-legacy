@@ -11,26 +11,14 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 
-class Profile;
-
 namespace base {
 class CommandLine;
-}
-
-namespace extensions {
-class Extension;
 }
 
 namespace web_app {
 
 // Rebuild the shortcut and relaunch it.
 bool MaybeRebuildShortcut(const base::CommandLine& command_line);
-
-// Reveals app shim in Finder given a profile and app.
-// Calls RevealAppShimInFinderForAppOnFileThread and schedules it
-// on the FILE thread.
-void RevealAppShimInFinderForApp(Profile* profile,
-                                 const extensions::Extension* app);
 
 }  // namespace web_app
 

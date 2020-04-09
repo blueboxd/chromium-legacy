@@ -437,6 +437,8 @@ class VP9ConfigChangeDetector : public ConfigChangeDetector {
   // Returns false on failure.
   bool DetectConfig(const uint8_t* stream, unsigned int size) override {
     parser_.SetStream(stream, size, nullptr);
+    config_changed_ = false;
+
     Vp9FrameHeader fhdr;
     gfx::Size allocate_size;
     std::unique_ptr<DecryptConfig> null_config;
@@ -494,11 +496,17 @@ class VP8ConfigChangeDetector : public ConfigChangeDetector {
   // Detects stream configuration changes.
   // Returns false on failure.
   bool DetectConfig(const uint8_t* stream, unsigned int size) override {
+    config_changed_ = false;
+
     Vp8FrameHeader fhdr;
     if (!parser_.ParseFrame(stream, size, &fhdr))
       return false;
 
-    if (fhdr.IsKeyframe() && fhdr.is_full_range) {
+    // VP8 parser only return resolution and range fields on key frames.
+    if (!fhdr.IsKeyframe())
+      return true;
+
+    if (fhdr.is_full_range) {
       // VP8 has no color space information, only the range. We will always
       // prefer the config color space if set, but indicate JPEG when the full
       // range flag is set on the frame header.
@@ -507,22 +515,12 @@ class VP8ConfigChangeDetector : public ConfigChangeDetector {
 
     // Does VP8 need a separate visible rect?
     gfx::Size new_size(fhdr.width, fhdr.height);
-    if (!size_.IsEmpty() && !pending_config_changed_ && !config_changed_ &&
-        size_ != new_size) {
-      pending_config_changed_ = true;
+    if (!size_.IsEmpty() && size_ != new_size) {
+      config_changed_ = true;
       DVLOG(1) << "Configuration changed from " << size_.ToString() << " to "
                << new_size.ToString();
     }
     size_ = new_size;
-
-    // Resolution changes can happen on any frame technically, so wait for a
-    // keyframe before signaling the config change.
-    if (fhdr.IsKeyframe() && pending_config_changed_) {
-      config_changed_ = true;
-      pending_config_changed_ = false;
-    }
-    if (pending_config_changed_)
-      DVLOG(3) << "Deferring config change until next keyframe...";
     return true;
   }
 
@@ -539,7 +537,6 @@ class VP8ConfigChangeDetector : public ConfigChangeDetector {
 
  private:
   gfx::Size size_;
-  bool pending_config_changed_ = false;
   VideoColorSpace color_space_;
   Vp8Parser parser_;
 };

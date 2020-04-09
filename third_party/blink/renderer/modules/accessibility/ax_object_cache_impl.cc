@@ -96,12 +96,12 @@
 // both documents.
 // clang-format off
 #if DCHECK_IS_ON()
-#define SCOPED_DISALLOW_LIFECYCLE_TRANSITION(doc)                           \
-  DocumentLifecycle::DisallowTransitionScope scoped1((doc).Lifecycle());     \
+#define SCOPED_DISALLOW_LIFECYCLE_TRANSITION(document)                        \
+  DocumentLifecycle::DisallowTransitionScope scoped1((document).Lifecycle()); \
   DocumentLifecycle::DisallowTransitionScope scoped2(document_->Lifecycle())
 #else
-#define SCOPED_DISALLOW_LIFECYCLE_TRANSITION(doc)
-#endif
+#define SCOPED_DISALLOW_LIFECYCLE_TRANSITION(document)
+#endif  // DCHECK_IS_ON()
 // clang-format on
 
 namespace blink {
@@ -1162,7 +1162,7 @@ void AXObjectCacheImpl::FireAXEventImmediately(
   }
 
   SCOPED_DISALLOW_LIFECYCLE_TRANSITION(*obj->GetDocument());
-#endif
+#endif  // DCHECK_IS_ON()
 
   PostPlatformNotification(obj, event_type, event_from);
 
@@ -1739,7 +1739,7 @@ void AXObjectCacheImpl::HandleFocusedUIElementChanged(
   Document& focused_doc =
       new_focused_element ? new_focused_element->GetDocument() : *document_;
   SCOPED_DISALLOW_LIFECYCLE_TRANSITION(focused_doc);
-#endif
+#endif  // DCHECK_IS_ON()
 
   RemoveValidationMessageObject();
 

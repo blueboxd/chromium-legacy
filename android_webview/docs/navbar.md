@@ -9,6 +9,7 @@
 * [WebView Shell](/android_webview/docs/webview-shell.md)
 * [Commandline flags](/android_webview/docs/commandline-flags.md)
 * [Net debugging](/android_webview/docs/net-debugging.md)
+* [WebView DevTools](/android_webview/docs/developer-ui.md)
 * [FAQ (for users)](/android_webview/docs/faq.md)
 * [AOSP system integration](/android_webview/docs/aosp-system-integration.md)
 * [Threading](/android_webview/docs/threading.md)

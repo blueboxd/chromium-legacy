@@ -6,9 +6,11 @@
 
 #include "base/guid.h"
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
@@ -20,6 +22,7 @@
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/grit/components_scaled_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -53,6 +56,21 @@ const char* const kInvalidNumbers[] = {
     "41111111111111111115", /* too long */
     "4111-1111-1111-1110",  /* wrong Luhn checksum */
     "3056 9309 0259 04aa",  /* non-digit characters */
+};
+
+const char* const kValidNicknames[] = {
+    "Grocery Card", "2% Cashback online",
+    "Mastercard \\ud83d\\udcb3", /* Nickname with UTF encoded emoji */
+};
+
+const char* const kInvalidNicknames[] = {
+    "",                                      /* empty */
+    "Nickname length exceeds 25 characters", /* too long */
+    "\n Grocery Card",                       /* Leading newline */
+    "Grocery Card \n",                       /* Newline in the end */
+    "Grocery \n Card",                       /* Newline within text */
+    "Grocery Card \t",                       /* Contains tab */
+    "Grocery \t\n Card",                     /* Newline and tab */
 };
 
 // Time moves on. Today is yesterday's tomorrow. Tests don't like time moving
@@ -155,6 +173,74 @@ TEST(CreditCardTest, PreviewSummaryAndNetworkAndLastFourDigitsStrings) {
   EXPECT_EQ(UTF8ToUTF16(std::string("Card  ") +
                         test::ObfuscatedCardDigitsAsUTF8("5100")),
             obfuscated5);
+}
+
+TEST(CreditCardTest, NicknameAndLastFourDigitsStrings) {
+  base::string16 valid_nickname = ASCIIToUTF16("My Visa Card");
+
+  // Case 1: No credit card number but has nickname. Only return nickname.
+  CreditCard credit_card1(base::GenerateGUID(), "https://www.example.com/");
+  test::SetCreditCardInfo(&credit_card1, "John Dillinger", "", "01", "2020",
+                          "1");
+  credit_card1.set_nickname(valid_nickname);
+  EXPECT_EQ(valid_nickname, credit_card1.NicknameAndLastFourDigits());
+
+  // Case 2: Have everything.
+  CreditCard credit_card2(base::GenerateGUID(), "https://www.example.com/");
+  test::SetCreditCardInfo(&credit_card2, "John Dillinger",
+                          "5105 1051 0510 5100", "01", "2020", "1");
+  credit_card2.set_nickname(valid_nickname);
+  EXPECT_EQ(
+      valid_nickname + UTF8ToUTF16(std::string("  ") +
+                                   test::ObfuscatedCardDigitsAsUTF8("5100")),
+      credit_card2.NicknameAndLastFourDigits());
+}
+
+TEST(CreditCardTest, NicknameOrNetworkAndLastFourDigitsStrings) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  base::string16 valid_nickname = ASCIIToUTF16("My Visa Card");
+  base::string16 invalid_nickname = ASCIIToUTF16("My Visa\n Card");
+  // Enable the flag.
+  scoped_feature_list.InitAndEnableFeature(
+      features::kAutofillEnableSurfacingServerCardNickname);
+
+  // Case 1: Nickname name is invalid -> show network name.
+  CreditCard credit_card1(base::GenerateGUID(), "https://www.example.com/");
+  test::SetCreditCardInfo(&credit_card1, "John Dillinger",
+                          "5105 1051 0510 5100" /* Mastercard */, "01", "2020",
+                          "1");
+  credit_card1.set_nickname(invalid_nickname);
+  EXPECT_FALSE(credit_card1.HasValidNickname());
+  EXPECT_EQ(UTF8ToUTF16(std::string("Mastercard  ") +
+                        test::ObfuscatedCardDigitsAsUTF8("5100")),
+            credit_card1.NicknameOrNetworkAndLastFourDigits());
+
+  // Case 2: Experiment is on and nickname is valid -> show nickname.
+  CreditCard credit_card2(base::GenerateGUID(), "https://www.example.com/");
+  test::SetCreditCardInfo(&credit_card2, "John Dillinger",
+                          "5105 1051 0510 5100" /* Mastercard */, "01", "2020",
+                          "1");
+  credit_card2.set_nickname(valid_nickname);
+  EXPECT_TRUE(credit_card2.HasValidNickname());
+  EXPECT_EQ(
+      valid_nickname + UTF8ToUTF16(std::string("  ") +
+                                   test::ObfuscatedCardDigitsAsUTF8("5100")),
+      credit_card2.NicknameOrNetworkAndLastFourDigits());
+
+  // Case 3: Experiment off -> show network name.
+  // Reset and disable the feature flag.
+  scoped_feature_list.Reset();
+  scoped_feature_list.InitAndDisableFeature(
+      features::kAutofillEnableSurfacingServerCardNickname);
+  CreditCard credit_card3(base::GenerateGUID(), "https://www.example.com/");
+  test::SetCreditCardInfo(&credit_card3, "John Dillinger",
+                          "5105 1051 0510 5100" /* Mastercard */, "01", "2020",
+                          "1");
+  credit_card3.set_nickname(valid_nickname);
+  EXPECT_TRUE(credit_card3.HasValidNickname());
+  EXPECT_EQ(UTF8ToUTF16(std::string("Mastercard  ") +
+                        test::ObfuscatedCardDigitsAsUTF8("5100")),
+            credit_card3.NicknameOrNetworkAndLastFourDigits());
 }
 
 TEST(CreditCardTest, AssignmentOperator) {
@@ -968,6 +1054,23 @@ TEST(CreditCardTest, IsValidCardNumberAndExpiryDate) {
     EXPECT_FALSE(card.IsValid());
     EXPECT_TRUE(card.HasValidExpirationDate());
     EXPECT_FALSE(card.HasValidCardNumber());
+  }
+}
+
+TEST(CreditCardTest, HasValidNickname) {
+  CreditCard card(base::GenerateGUID(), "https://www.example.com/");
+  test::SetCreditCardInfo(&card, "John Dillinger", "5105 1051 0510 5100", "01",
+                          "2020", "1");
+
+  for (const char* valid_nickname : kValidNicknames) {
+    SCOPED_TRACE(valid_nickname);
+    card.set_nickname(UTF8ToUTF16(valid_nickname));
+    EXPECT_TRUE(card.HasValidNickname());
+  }
+  for (const char* invalid_nickname : kInvalidNicknames) {
+    SCOPED_TRACE(invalid_nickname);
+    card.set_nickname(UTF8ToUTF16(invalid_nickname));
+    EXPECT_FALSE(card.HasValidNickname());
   }
 }
 

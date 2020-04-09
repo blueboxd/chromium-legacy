@@ -70,8 +70,9 @@ TEST(SiteForCookiesTest, Default) {
       SiteForCookies::FromOrigin(url::Origin())));
 
   EXPECT_EQ("", should_match_none.scheme());
-  EXPECT_EQ("SiteForCookies: {scheme=; registrable_domain=}",
-            should_match_none.ToDebugString());
+  EXPECT_EQ(
+      "SiteForCookies: {scheme=; registrable_domain=; schemefully_same=false}",
+      should_match_none.ToDebugString());
 }
 
 TEST(SiteForCookiesTest, Basic) {
@@ -134,8 +135,10 @@ TEST(SiteForCookiesTest, Blob) {
 
   EXPECT_TRUE(from_blob.IsFirstParty(GURL("http://sub.example.org/resource")));
   EXPECT_EQ("https", from_blob.scheme());
-  EXPECT_EQ("SiteForCookies: {scheme=https; registrable_domain=example.org}",
-            from_blob.ToDebugString());
+  EXPECT_EQ(
+      "SiteForCookies: {scheme=https; registrable_domain=example.org; "
+      "schemefully_same=true}",
+      from_blob.ToDebugString());
   EXPECT_EQ("https://example.org/", from_blob.RepresentativeUrl().spec());
   EXPECT_TRUE(from_blob.IsEquivalent(
       SiteForCookies::FromUrl(GURL("http://www.example.org:631"))));
@@ -145,28 +148,116 @@ TEST(SiteForCookiesTest, Wire) {
   SiteForCookies out;
 
   // Empty one.
-  EXPECT_TRUE(SiteForCookies::FromWire("", "", &out));
+  EXPECT_TRUE(SiteForCookies::FromWire("", "", false, &out));
+  EXPECT_TRUE(out.IsNull());
+
+  EXPECT_TRUE(SiteForCookies::FromWire("", "", true, &out));
   EXPECT_TRUE(out.IsNull());
 
   // Not a valid scheme.
-  EXPECT_FALSE(SiteForCookies::FromWire("aH", "example.com", &out));
+  EXPECT_FALSE(SiteForCookies::FromWire("aH", "example.com", false, &out));
   EXPECT_TRUE(out.IsNull());
 
   // Not a eTLD + 1 (or something hosty).
-  EXPECT_FALSE(SiteForCookies::FromWire("http", "sub.example.com", &out));
+  EXPECT_FALSE(
+      SiteForCookies::FromWire("http", "sub.example.com", false, &out));
   EXPECT_TRUE(out.IsNull());
 
   // This is fine, though.
-  EXPECT_TRUE(SiteForCookies::FromWire("https", "127.0.0.1", &out));
+  EXPECT_TRUE(SiteForCookies::FromWire("https", "127.0.0.1", true, &out));
   EXPECT_FALSE(out.IsNull());
-  EXPECT_EQ("SiteForCookies: {scheme=https; registrable_domain=127.0.0.1}",
-            out.ToDebugString());
+  EXPECT_EQ(
+      "SiteForCookies: {scheme=https; registrable_domain=127.0.0.1; "
+      "schemefully_same=true}",
+      out.ToDebugString());
+
+  EXPECT_TRUE(SiteForCookies::FromWire("https", "127.0.0.1", false, &out));
+  EXPECT_FALSE(out.IsNull());
+  EXPECT_EQ(
+      "SiteForCookies: {scheme=https; registrable_domain=127.0.0.1; "
+      "schemefully_same=false}",
+      out.ToDebugString());
 
   // As is actual eTLD+1.
-  EXPECT_TRUE(SiteForCookies::FromWire("wss", "example.com", &out));
+  EXPECT_TRUE(SiteForCookies::FromWire("wss", "example.com", true, &out));
   EXPECT_FALSE(out.IsNull());
-  EXPECT_EQ("SiteForCookies: {scheme=wss; registrable_domain=example.com}",
-            out.ToDebugString());
+  EXPECT_EQ(
+      "SiteForCookies: {scheme=wss; registrable_domain=example.com; "
+      "schemefully_same=true}",
+      out.ToDebugString());
+}
+
+TEST(SiteForCookiesTest, SameScheme) {
+  struct TestCase {
+    const char* first;
+    const char* second;
+    bool expected_value;
+  };
+
+  const TestCase kTestCases[] = {
+      {"http://a.com", "http://a.com", true},
+      {"https://a.com", "https://a.com", true},
+      {"ws://a.com", "ws://a.com", true},
+      {"wss://a.com", "wss://a.com", true},
+      {"https://a.com", "wss://a.com", true},
+      {"wss://a.com", "https://a.com", true},
+      {"http://a.com", "ws://a.com", true},
+      {"ws://a.com", "http://a.com", true},
+      {"file://a.com", "file://a.com", true},
+      {"file://folder1/folder2/file.txt", "file://folder1/folder2/file.txt",
+       true},
+      {"ftp://a.com", "ftp://a.com", true},
+      {"http://a.com", "file://a.com", false},
+      {"ws://a.com", "wss://a.com", false},
+      {"wss://a.com", "ws://a.com", false},
+      {"https://a.com", "http://a.com", false},
+      {"file://a.com", "https://a.com", false},
+      {"https://a.com", "file://a.com", false},
+      {"file://a.com", "ftp://a.com", false},
+      {"ftp://a.com", "file://a.com", false},
+  };
+
+  for (const TestCase& t : kTestCases) {
+    SiteForCookies first = SiteForCookies::FromUrl(GURL(t.first));
+    url::Origin second = url::Origin::Create(GURL(t.second));
+    EXPECT_FALSE(first.IsNull());
+    first.MarkIfCrossScheme(second);
+    EXPECT_EQ(first.schemefully_same(), t.expected_value);
+  }
+}
+
+TEST(SiteForCookiesTest, SameSchemeOpaque) {
+  url::Origin not_opaque_secure =
+      url::Origin::Create(GURL("https://site.example"));
+  url::Origin not_opaque_nonsecure =
+      url::Origin::Create(GURL("http://site.example"));
+  // Check an opaque origin made from a triple origin and one from the default
+  // constructor.
+  const url::Origin kOpaqueOrigins[] = {
+      not_opaque_secure.DeriveNewOpaqueOrigin(),
+      not_opaque_nonsecure.DeriveNewOpaqueOrigin(), url::Origin()};
+
+  for (const url::Origin& origin : kOpaqueOrigins) {
+    SiteForCookies secure_sfc = SiteForCookies::FromOrigin(not_opaque_secure);
+    EXPECT_FALSE(secure_sfc.IsNull());
+    SiteForCookies nonsecure_sfc =
+        SiteForCookies::FromOrigin(not_opaque_nonsecure);
+    EXPECT_FALSE(nonsecure_sfc.IsNull());
+
+    EXPECT_TRUE(secure_sfc.schemefully_same());
+    secure_sfc.MarkIfCrossScheme(origin);
+    EXPECT_FALSE(secure_sfc.schemefully_same());
+
+    EXPECT_TRUE(nonsecure_sfc.schemefully_same());
+    nonsecure_sfc.MarkIfCrossScheme(origin);
+    EXPECT_FALSE(nonsecure_sfc.schemefully_same());
+
+    SiteForCookies opaque_sfc = SiteForCookies::FromOrigin(origin);
+    EXPECT_TRUE(opaque_sfc.IsNull());
+    // Slightly implementation detail specific as the value isn't relevant for
+    // null SFCs.
+    EXPECT_FALSE(nonsecure_sfc.schemefully_same());
+  }
 }
 
 }  // namespace

@@ -23,6 +23,7 @@ namespace performance_manager {
 class FrameNodeObserver;
 class PageNode;
 class ProcessNode;
+class RenderFrameHostProxy;
 class WorkerNode;
 
 // Frame nodes form a tree structure, each FrameNode at most has one parent that
@@ -52,8 +53,9 @@ class WorkerNode;
 // it.
 class FrameNode : public Node {
  public:
-  using LifecycleState = mojom::LifecycleState;
+  using FrameNodeVisitor = base::RepeatingCallback<bool(const FrameNode*)>;
   using InterventionPolicy = mojom::InterventionPolicy;
+  using LifecycleState = mojom::LifecycleState;
   using Observer = FrameNodeObserver;
   using PriorityAndReason = frame_priority::PriorityAndReason;
 
@@ -98,9 +100,14 @@ class FrameNode : public Node {
   // called from any thread.
   virtual bool IsMainFrame() const = 0;
 
+  // Visits the frame nodes that are children of this frame. The iteration is
+  // halted if the visitor returns false. Returns true if every call to the
+  // visitor returned true, false otherwise.
+  virtual bool VisitChildFrameNodes(const FrameNodeVisitor& visitor) const = 0;
+
   // Returns the set of child frame associated with this frame. Note that this
-  // incurs a full container copy of all child nodes. Please use ForEach when
-  // that makes sense.
+  // incurs a full container copy of all child nodes. Please use
+  // VisitChildFrameNodes when that makes sense.
   virtual const base::flat_set<const FrameNode*> GetChildFrameNodes() const = 0;
 
   // Returns the current lifecycle state of this frame. See
@@ -152,6 +159,10 @@ class FrameNode : public Node {
 
   // Returns true if at least one form of the frame has been interacted with.
   virtual bool HadFormInteraction() const = 0;
+
+  // Returns a proxy to the RenderFrameHost associated with this node. The
+  // proxy may only be dereferenced on the UI thread.
+  virtual const RenderFrameHostProxy& GetRenderFrameHostProxy() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FrameNode);
@@ -246,12 +257,12 @@ class FrameNode::ObserverDefaultImpl : public FrameNodeObserver {
   void OnFrameIsHoldingWebLockChanged(const FrameNode* frame_node) override {}
   void OnFrameIsHoldingIndexedDBLockChanged(
       const FrameNode* frame_node) override {}
-  void OnNonPersistentNotificationCreated(
-      const FrameNode* frame_node) override {}
   void OnPriorityAndReasonChanged(
       const FrameNode* frame_node,
       const PriorityAndReason& previous_value) override {}
   void OnHadFormInteractionChanged(const FrameNode* frame_node) override {}
+  void OnNonPersistentNotificationCreated(
+      const FrameNode* frame_node) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ObserverDefaultImpl);

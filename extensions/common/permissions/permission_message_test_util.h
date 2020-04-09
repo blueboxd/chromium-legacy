@@ -19,18 +19,11 @@ class PermissionSet;
 
 testing::AssertionResult VerifyHasPermissionMessage(
     const PermissionsData* permissions_data,
-    const std::string& expected_message);
-testing::AssertionResult VerifyHasPermissionMessage(
-    const PermissionsData* permissions_data,
     const base::string16& expected_message);
 testing::AssertionResult VerifyHasPermissionMessage(
     const PermissionSet& permissions,
     Manifest::Type extension_type,
     const std::string& expected_message);
-testing::AssertionResult VerifyHasPermissionMessage(
-    const PermissionSet& permissions,
-    Manifest::Type extension_type,
-    const base::string16& expected_message);
 
 testing::AssertionResult VerifyNoPermissionMessages(
     const PermissionsData* permissions_data);
@@ -50,20 +43,11 @@ testing::AssertionResult VerifyOnePermissionMessageWithSubmessages(
     const PermissionsData* permissions_data,
     const std::string& expected_message,
     const std::vector<std::string>& expected_submessages);
-testing::AssertionResult VerifyOnePermissionMessageWithSubmessages(
-    const PermissionsData* permissions_data,
-    const base::string16& expected_message,
-    const std::vector<base::string16>& expected_submessages);
 
 testing::AssertionResult VerifyTwoPermissionMessages(
     const PermissionsData* permissions_data,
     const std::string& expected_message_1,
     const std::string& expected_message_2,
-    bool check_order);
-testing::AssertionResult VerifyTwoPermissionMessages(
-    const PermissionsData* permissions_data,
-    const base::string16& expected_message_1,
-    const base::string16& expected_message_2,
     bool check_order);
 
 testing::AssertionResult VerifyPermissionMessages(

@@ -58,7 +58,6 @@
 #include "ios/chrome/browser/flags/ios_chrome_flag_descriptions.h"
 #include "ios/chrome/browser/passwords/password_manager_features.h"
 #include "ios/chrome/browser/system_flags.h"
-#import "ios/chrome/browser/ui/dialogs/dialog_features.h"
 #import "ios/chrome/browser/ui/download/features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
@@ -391,9 +390,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
          omnibox::kUIExperimentMaxAutocompleteMatches,
          kOmniboxUIMaxAutocompleteMatchesVariations,
          "OmniboxUIMaxAutocompleteVariations")},
-    {"non-modal-dialogs", flag_descriptions::kNonModalDialogsName,
-     flag_descriptions::kNonModalDialogsDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(dialogs::kNonModalDialogs)},
     {"infobar-ui-reboot", flag_descriptions::kInfobarUIRebootName,
      flag_descriptions::kInfobarUIRebootDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kIOSInfobarUIReboot)},
@@ -590,6 +586,12 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"qr-code-generation", flag_descriptions::kQRCodeGenerationName,
      flag_descriptions::kQRCodeGenerationDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kQRCodeGeneration)},
+    {"autofill-enable-surfacing-server-card-nickname",
+     flag_descriptions::kAutofillEnableSurfacingServerCardNicknameName,
+     flag_descriptions::kAutofillEnableSurfacingServerCardNicknameDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillEnableSurfacingServerCardNickname)},
 };
 
 // Add all switches from experimental flags to |command_line|.

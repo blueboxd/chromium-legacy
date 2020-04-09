@@ -72,7 +72,7 @@ class RulesetManagerTest : public DNRTestBase {
                            ? ConfigFlag::kConfig_HasBackgroundScript
                            : ConfigFlag::kConfig_None;
 
-    TestRulesetInfo info = {kJSONRulesFilename, std::move(*ToListValue(rules))};
+    TestRulesetInfo info(kJSONRulesFilename, *ToListValue(rules));
     WriteManifestAndRuleset(extension_dir, info, host_permissions, flags);
 
     last_loaded_extension_ =

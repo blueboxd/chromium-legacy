@@ -872,4 +872,50 @@ bool ServiceWorkerUpdateCheckTestUtils::VerifyStoredResponse(
   return true;
 }
 
+void ReadDataPipeInternal(mojo::DataPipeConsumerHandle handle,
+                          std::string* result,
+                          base::OnceClosure quit_closure) {
+  while (true) {
+    uint32_t num_bytes;
+    const void* buffer = nullptr;
+    MojoResult rv =
+        handle.BeginReadData(&buffer, &num_bytes, MOJO_READ_DATA_FLAG_NONE);
+    switch (rv) {
+      case MOJO_RESULT_BUSY:
+      case MOJO_RESULT_INVALID_ARGUMENT:
+        NOTREACHED();
+        return;
+      case MOJO_RESULT_FAILED_PRECONDITION:
+        std::move(quit_closure).Run();
+        return;
+      case MOJO_RESULT_SHOULD_WAIT:
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE, base::BindOnce(&ReadDataPipeInternal, handle, result,
+                                      std::move(quit_closure)));
+        return;
+      case MOJO_RESULT_OK:
+        EXPECT_NE(nullptr, buffer);
+        EXPECT_GT(num_bytes, 0u);
+        uint32_t before_size = result->size();
+        result->append(static_cast<const char*>(buffer), num_bytes);
+        uint32_t read_size = result->size() - before_size;
+        EXPECT_EQ(num_bytes, read_size);
+        rv = handle.EndReadData(read_size);
+        EXPECT_EQ(MOJO_RESULT_OK, rv);
+        break;
+    }
+  }
+  NOTREACHED();
+  return;
+}
+
+std::string ReadDataPipe(mojo::ScopedDataPipeConsumerHandle handle) {
+  EXPECT_TRUE(handle.is_valid());
+  std::string result;
+  base::RunLoop loop;
+  ReadDataPipeInternal(handle.get(), &result, loop.QuitClosure());
+  loop.Run();
+  return result;
+}
+
 }  // namespace content

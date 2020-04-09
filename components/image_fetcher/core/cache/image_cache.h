@@ -46,7 +46,8 @@ class ImageCache : public base::RefCounted<ImageCache> {
   // initialized yet, the call is queued.
   void SaveImage(std::string url,
                  std::string image_data,
-                 bool needs_transcoding);
+                 bool needs_transcoding,
+                 ExpirationInterval expiration_interval);
 
   // Loads the image data for the |url| and passes it to |callback|. If there's
   // no image in the cache, then an empty string is returned. If |read_only|
@@ -73,7 +74,8 @@ class ImageCache : public base::RefCounted<ImageCache> {
   // Saves the |image_data| for |url|.
   void SaveImageImpl(const std::string& url,
                      std::string image_data,
-                     bool needs_transcoding);
+                     bool needs_transcoding,
+                     ExpirationInterval expiration_interval);
   // Loads the data for |url|, calls the user back before updating metadata.
   void LoadImageImpl(bool read_only,
                      const std::string& url,

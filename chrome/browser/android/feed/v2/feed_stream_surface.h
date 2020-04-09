@@ -85,6 +85,11 @@ class FeedStreamSurface : public FeedStreamApi::SurfaceInterface {
   void ReportContextMenuOpened(JNIEnv* env,
                                const base::android::JavaParamRef<jobject>& obj);
 
+  // The user scrolled the feed by |distance_dp| and then stopped.
+  void ReportStreamScrolled(JNIEnv* env,
+                            const base::android::JavaParamRef<jobject>& obj,
+                            int distance_dp);
+
  private:
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
   FeedStreamApi* feed_stream_api_;

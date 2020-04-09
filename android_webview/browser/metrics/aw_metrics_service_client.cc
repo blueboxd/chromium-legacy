@@ -45,60 +45,6 @@ const int kBetaDevCanarySampledInRatePerMille = 990;
 // consulting with the privacy team.
 const int kPackageNameLimitRatePerMille = 100;
 
-// Normally kMetricsReportingEnabledTimestamp would be set by the
-// MetricsStateManager. However, it assumes kMetricsClientID and
-// kMetricsReportingEnabledTimestamp are always set together. Because WebView
-// previously persisted kMetricsClientID but not
-// kMetricsReportingEnabledTimestamp, we violated this invariant, and need to
-// manually set this pref to correct things.
-//
-// TODO(https://crbug.com/995544): remove this (and its call site) when the
-// kMetricsReportingEnabledTimestamp pref has been persisted for one or two
-// milestones.
-void SetReportingEnabledDateIfNotSet(PrefService* prefs) {
-  if (prefs->HasPrefPath(metrics::prefs::kMetricsReportingEnabledTimestamp))
-    return;
-  // Arbitrarily, backfill the date with 2014-01-01 00:00:00.000 UTC. This date
-  // is within the range of dates the backend will accept.
-  base::Time backfill_date =
-      base::Time::FromDeltaSinceWindowsEpoch(base::TimeDelta::FromDays(150845));
-  prefs->SetInt64(metrics::prefs::kMetricsReportingEnabledTimestamp,
-                  backfill_date.ToTimeT());
-}
-
-// Queries the system for the app's first install time and uses this in the
-// kInstallDate pref. Must be called before created a MetricsStateManager.
-// TODO(https://crbug.com/1012025): remove this when the kInstallDate pref has
-// been persisted for one or two milestones.
-void PopulateSystemInstallDateIfNecessary(PrefService* prefs) {
-  int64_t install_date = prefs->GetInt64(metrics::prefs::kInstallDate);
-  if (install_date > 0) {
-    // kInstallDate appears to be valid (common case). Finish early as an
-    // optimization to avoid a JNI call below.
-    base::UmaHistogramEnumeration("Android.WebView.Metrics.BackfillInstallDate",
-                                  BackfillInstallDate::kValidInstallDatePref);
-    return;
-  }
-
-  JNIEnv* env = base::android::AttachCurrentThread();
-  int64_t system_install_date =
-      Java_AwMetricsServiceClient_getAppInstallTime(env);
-  if (system_install_date < 0) {
-    // Could not figure out install date from the system. Let the
-    // MetricsStateManager set this pref to its best guess for a reasonable
-    // time.
-    base::UmaHistogramEnumeration(
-        "Android.WebView.Metrics.BackfillInstallDate",
-        BackfillInstallDate::kCouldNotGetPackageManagerInstallDate);
-    return;
-  }
-
-  base::UmaHistogramEnumeration(
-      "Android.WebView.Metrics.BackfillInstallDate",
-      BackfillInstallDate::kPersistedPackageManagerInstallDate);
-  prefs->SetInt64(metrics::prefs::kInstallDate, system_install_date);
-}
-
 }  // namespace
 
 // static
@@ -126,13 +72,8 @@ int AwMetricsServiceClient::GetSampleRatePerMille() {
   return kBetaDevCanarySampledInRatePerMille;
 }
 
-void AwMetricsServiceClient::InitInternal() {
-  PopulateSystemInstallDateIfNecessary(pref_service());
-}
-
 void AwMetricsServiceClient::OnMetricsStart() {
   AwContentsLifecycleNotifier::GetInstance().AddObserver(this);
-  SetReportingEnabledDateIfNotSet(pref_service());
 }
 
 int AwMetricsServiceClient::GetPackageNameLimitRatePerMille() {

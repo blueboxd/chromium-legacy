@@ -5,6 +5,9 @@
 #include "content/browser/service_worker/service_worker_resource_ops.h"
 
 #include "content/browser/service_worker/service_worker_loader_helpers.h"
+#include "mojo/public/cpp/system/data_pipe.h"
+#include "services/network/public/cpp/net_adapters.h"
+#include "third_party/blink/public/common/blob/blob_utils.h"
 
 namespace content {
 
@@ -75,6 +78,103 @@ void DidReadInfo(
 
 }  // namespace
 
+class ServiceWorkerResourceReaderImpl::DataReader {
+ public:
+  DataReader(base::WeakPtr<ServiceWorkerResourceReaderImpl> owner,
+             size_t total_bytes_to_read,
+             mojo::ScopedDataPipeProducerHandle producer_handle)
+      : owner_(std::move(owner)),
+        total_bytes_to_read_(total_bytes_to_read),
+        producer_handle_(std::move(producer_handle)),
+        watcher_(FROM_HERE,
+                 mojo::SimpleWatcher::ArmingPolicy::MANUAL,
+                 base::SequencedTaskRunnerHandle::Get()) {
+    watcher_.Watch(producer_handle_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
+                   base::BindRepeating(&DataReader::OnWritable,
+                                       weak_factory_.GetWeakPtr()));
+    watcher_.ArmOrNotify();
+  }
+  ~DataReader() = default;
+
+  DataReader(const DataReader&) = delete;
+  DataReader operator=(const DataReader&) = delete;
+
+ private:
+  void OnWritable(MojoResult) {
+    DCHECK(producer_handle_.is_valid());
+    DCHECK(!pending_buffer_);
+
+    if (!owner_) {
+      Complete(net::ERR_ABORTED);
+      return;
+    }
+
+    uint32_t num_bytes = 0;
+    MojoResult rv = network::NetToMojoPendingBuffer::BeginWrite(
+        &producer_handle_, &pending_buffer_, &num_bytes);
+    switch (rv) {
+      case MOJO_RESULT_INVALID_ARGUMENT:
+      case MOJO_RESULT_BUSY:
+        NOTREACHED();
+        return;
+      case MOJO_RESULT_FAILED_PRECONDITION:
+        Complete(net::ERR_ABORTED);
+        return;
+      case MOJO_RESULT_SHOULD_WAIT:
+        watcher_.ArmOrNotify();
+        return;
+      case MOJO_RESULT_OK:
+        // |producer__handle_| must have been taken by |pending_buffer_|.
+        DCHECK(pending_buffer_);
+        DCHECK(!producer_handle_.is_valid());
+        break;
+    }
+
+    num_bytes = std::min(num_bytes, blink::BlobUtils::GetDataPipeChunkSize());
+    auto buffer =
+        base::MakeRefCounted<network::NetToMojoIOBuffer>(pending_buffer_.get());
+    owner_->reader_->ReadData(
+        buffer.get(), num_bytes,
+        base::BindOnce(&DataReader::DidReadData, weak_factory_.GetWeakPtr()));
+  }
+
+  void DidReadData(int read_bytes) {
+    if (read_bytes < 0) {
+      Complete(read_bytes);
+      return;
+    }
+
+    producer_handle_ = pending_buffer_->Complete(read_bytes);
+    DCHECK(producer_handle_.is_valid());
+    pending_buffer_.reset();
+    current_bytes_read_ += read_bytes;
+
+    if (read_bytes == 0 || current_bytes_read_ == total_bytes_to_read_) {
+      // All data has been read.
+      Complete(current_bytes_read_);
+      return;
+    }
+    watcher_.ArmOrNotify();
+  }
+
+  void Complete(int status) {
+    watcher_.Cancel();
+    producer_handle_.reset();
+    if (owner_) {
+      owner_->DidReadDataComplete();
+    }
+  }
+
+  base::WeakPtr<ServiceWorkerResourceReaderImpl> owner_;
+  const size_t total_bytes_to_read_;
+  size_t current_bytes_read_ = 0;
+  mojo::ScopedDataPipeProducerHandle producer_handle_;
+  mojo::SimpleWatcher watcher_;
+  scoped_refptr<network::NetToMojoPendingBuffer> pending_buffer_;
+
+  base::WeakPtrFactory<DataReader> weak_factory_{this};
+};
+
 ServiceWorkerResourceReaderImpl::ServiceWorkerResourceReaderImpl(
     std::unique_ptr<ServiceWorkerResponseReader> reader)
     : reader_(std::move(reader)) {
@@ -89,6 +189,33 @@ void ServiceWorkerResourceReaderImpl::ReadResponseHead(
   HttpResponseInfoIOBuffer* raw_buffer = buffer.get();
   reader_->ReadInfo(raw_buffer, base::BindOnce(&DidReadInfo, std::move(buffer),
                                                std::move(callback)));
+}
+
+void ServiceWorkerResourceReaderImpl::ReadData(int64_t size,
+                                               ReadDataCallback callback) {
+  MojoCreateDataPipeOptions options;
+  options.struct_size = sizeof(MojoCreateDataPipeOptions);
+  options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
+  options.element_num_bytes = 1;
+  options.capacity_num_bytes = blink::BlobUtils::GetDataPipeCapacity(size);
+
+  mojo::ScopedDataPipeConsumerHandle consumer_handle;
+  mojo::ScopedDataPipeProducerHandle producer_handle;
+  MojoResult rv =
+      mojo::CreateDataPipe(&options, &producer_handle, &consumer_handle);
+  if (rv != MOJO_RESULT_OK) {
+    std::move(callback).Run(mojo::ScopedDataPipeConsumerHandle());
+    return;
+  }
+
+  data_reader_ = std::make_unique<DataReader>(weak_factory_.GetWeakPtr(), size,
+                                              std::move(producer_handle));
+  std::move(callback).Run(std::move(consumer_handle));
+}
+
+void ServiceWorkerResourceReaderImpl::DidReadDataComplete() {
+  DCHECK(data_reader_);
+  data_reader_.reset();
 }
 
 ServiceWorkerResourceWriterImpl::ServiceWorkerResourceWriterImpl(

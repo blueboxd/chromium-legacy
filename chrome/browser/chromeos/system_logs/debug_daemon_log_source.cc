@@ -32,6 +32,7 @@ namespace {
 constexpr char kNotAvailable[] = "<not available>";
 constexpr char kRoutesKeyName[] = "routes";
 constexpr char kNetworkStatusKeyName[] = "network-status";
+constexpr char kLogTruncated[] = "<earlier logs truncated>\n";
 
 // List of user log files that Chrome reads directly as these logs are generated
 // by Chrome itself.
@@ -49,6 +50,68 @@ constexpr struct UserLogs {
     {"logout-times", "logout-times"},
 };
 
+// Buffer size for user logs in bytes. Given that maximum feedback report size
+// is ~7M and that majority of log files are under 1M, we set a per-file limit
+// of 1MiB.
+const int64_t kMaxLogSize = 1024 * 1024;
+
+}  // namespace
+
+bool ReadEndOfFile(const base::FilePath& path,
+                   std::string* contents,
+                   size_t max_size) {
+  if (!contents) {
+    LOG(ERROR) << "contents buffer is null.";
+    return false;
+  }
+
+  if (path.ReferencesParent()) {
+    LOG(ERROR) << "ReadEndOfFile can't be called on file paths with parent "
+                  "references.";
+    return false;
+  }
+
+  base::ScopedFILE fp(base::OpenFile(path, "r"));
+  if (!fp) {
+    PLOG(ERROR) << "Failed to open file " << path.value();
+    return false;
+  }
+
+  std::unique_ptr<char[]> chunk(new char[max_size]);
+  std::unique_ptr<char[]> last_chunk(new char[max_size]);
+  chunk[0] = '\0';
+  last_chunk[0] = '\0';
+
+  size_t bytes_read = 0;
+
+  // Since most logs are not seekable, read until the end keeping tracking of
+  // last two chunks.
+  while ((bytes_read = fread(chunk.get(), 1, max_size, fp.get())) == max_size) {
+    last_chunk.swap(chunk);
+    chunk[0] = '\0';
+  }
+
+  if (last_chunk[0] == '\0') {
+    // File is smaller than max_size
+    contents->assign(chunk.get(), bytes_read);
+  } else if (bytes_read == 0) {
+    // File is exactly max_size or a multiple of max_size
+    contents->assign(last_chunk.get(), max_size);
+  } else {
+    // Number of bytes to keep from last_chunk
+    size_t bytes_from_last = max_size - bytes_read;
+
+    // Shift left last_chunk by size of chunk and fit it in the back of
+    // last_chunk.
+    memmove(last_chunk.get(), last_chunk.get() + bytes_read, bytes_from_last);
+    memcpy(last_chunk.get() + bytes_from_last, chunk.get(), bytes_read);
+
+    contents->assign(last_chunk.get(), max_size);
+  }
+
+  return true;
+}
+
 // Reads the contents of the user log files listed in |kUserLogs| and adds them
 // to the |response| parameter.
 void ReadUserLogFiles(const std::vector<base::FilePath>& profile_dirs,
@@ -57,8 +120,16 @@ void ReadUserLogFiles(const std::vector<base::FilePath>& profile_dirs,
     std::string profile_prefix = "Profile[" + base::NumberToString(i) + "] ";
     for (const auto& log : kUserLogs) {
       std::string value;
-      const bool read_success = base::ReadFileToString(
-          profile_dirs[i].Append(log.log_file_relative_path), &value);
+      const bool read_success =
+          ReadEndOfFile(profile_dirs[i].Append(log.log_file_relative_path),
+                        &value, kMaxLogSize);
+
+      if (read_success && value.length() == kMaxLogSize) {
+        value.replace(0, strlen(kLogTruncated), kLogTruncated);
+
+        LOG(WARNING) << "Large log file was likely truncated: "
+                     << log.log_file_relative_path;
+      }
 
       response->emplace(
           profile_prefix + log.log_key,
@@ -66,8 +137,6 @@ void ReadUserLogFiles(const std::vector<base::FilePath>& profile_dirs,
     }
   }
 }
-
-}  // namespace
 
 DebugDaemonLogSource::DebugDaemonLogSource(bool scrub)
     : SystemLogsSource("DebugDemon"),

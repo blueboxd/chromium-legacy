@@ -23,6 +23,7 @@ namespace {
 const char kNetworkMetadataPref[] = "network_metadata";
 const char kLastConnectedTimestampPref[] = "last_connected_timestamp";
 const char kIsFromSync[] = "is_from_sync";
+const char kIsCreatedByUser[] = "is_created_by_user";
 
 std::string GetPath(const std::string& guid, const std::string& subkey) {
   return base::StringPrintf("%s.%s", guid.c_str(), subkey.c_str());
@@ -81,6 +82,12 @@ void NetworkMetadataStore::ConnectSucceeded(const std::string& service_path) {
       observer.OnFirstConnectionToNetwork(network->guid());
     }
   }
+}
+
+void NetworkMetadataStore::OnConfigurationCreated(
+    const std::string& service_path,
+    const std::string& guid) {
+  SetPref(guid, kIsCreatedByUser, base::Value(true));
 }
 
 void NetworkMetadataStore::OnConfigurationModified(
@@ -160,6 +167,16 @@ bool NetworkMetadataStore::GetIsConfiguredBySync(
   }
 
   return is_from_sync->GetBool();
+}
+
+bool NetworkMetadataStore::GetIsCreatedByUser(const std::string& network_guid) {
+  const base::Value* is_created_by_user =
+      GetPref(network_guid, kIsCreatedByUser);
+  if (!is_created_by_user) {
+    return false;
+  }
+
+  return is_created_by_user->GetBool();
 }
 
 void NetworkMetadataStore::SetPref(const std::string& network_guid,

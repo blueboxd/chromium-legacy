@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">Nhấp để xem các tùy chọn khác</translation>
 <translation id="1570871743947603115">Bật/tắt Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Truy cập vào tất cả hoạt động của bạn trong phiên này</translation>
-<translation id="1608626060424371292">Xóa người dùng này</translation>
+<translation id="1632985212731562677">Bạn có thể tắt tính năng Tiếp cận bằng công tắc trong phần Cài đặt &gt; Hỗ trợ tiếp cận.</translation>
 <translation id="1654477262762802994">Bắt đầu đặt câu hỏi bằng giọng nói</translation>
 <translation id="1658406695958299976">Rất tiếc, chúng tôi vẫn không thể xác minh được mật khẩu của bạn. Lưu ý: nếu gần đây bạn đã đổi mật khẩu thì mật khẩu mới của bạn sẽ được áp dụng sau khi bạn đăng xuất. Vui lòng sử dụng mật khẩu cũ của bạn tại đây.</translation>
 <translation id="1677472565718498478">Còn <ph name="TIME" /></translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">Quản trị viên thiết bị có thể theo dõi hoạt động duyệt web của bạn.</translation>
 <translation id="3181441307743005334">Quá trình khởi động có thể mất một chút thời gian</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Đã kết nối với một thiết bị}other{Đã kết nối với # thiết bị}}</translation>
+<translation id="3203405173652969239">Đã bật tùy chọn Tiếp cận bằng công tắc</translation>
 <translation id="3207953481422525583">Cài đặt người dùng</translation>
 <translation id="3217205077783620295">Âm lượng đang bật. Nếu bạn chuyển đổi, âm thanh sẽ bị tắt.</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> mục khác</translation>
@@ -341,7 +342,7 @@
 <translation id="5379115545237091094">Quá nhiều lần thử</translation>
 <translation id="5397578532367286026">Người quản lý (<ph name="MANAGER_EMAIL" />) trên chrome.com có thể xem lại mức sử dụng và lịch sử của người dùng này.</translation>
 <translation id="5400461572260843123">Cài đặt nhanh, Nhấn vào phím tìm kiếm + mũi tên trái để truy cập vào trung tâm thông báo.</translation>
-<translation id="5430931332414098647">Chia sẻ kết nối tức thì</translation>
+<translation id="5430931332414098647">Chia sẻ Internet tức thì</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Tất cả người dùng hiện có mặt đã được thêm vào phiên này.</translation>
 <translation id="54609108002486618">Được quản lý</translation>
@@ -651,6 +652,7 @@
 <translation id="9211681782751733685">Còn <ph name="TIME_REMAINING" /> nữa là sạc đầy pin.</translation>
 <translation id="9215934040295798075">Đặt hình nền</translation>
 <translation id="921989828232331238">Cha mẹ đã khóa thiết bị của bạn cả ngày</translation>
+<translation id="9220525904950070496">Xóa tài khoản</translation>
 <translation id="923686485342484400">Nhấn Control Shift Q hai lần để đăng xuất.</translation>
 <translation id="938963181863597773">Trên lịch của tôi có sự kiện gì?</translation>
 <translation id="945522503751344254">Gửi phản hồi</translation>

@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">Əlavə seçimlər üçün klikləyin</translation>
 <translation id="1570871743947603115">Bluetooth'u aktiv edin. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Sessiyadakı bütün fəaliyyətlərə daxil olun</translation>
-<translation id="1608626060424371292">Bu istifadəçini silin</translation>
+<translation id="1632985212731562677">Dəyişdirici Girişini Ayarlar &gt; Əlçatımlıq bölməsində deaktiv edə bilərsiniz.</translation>
 <translation id="1654477262762802994">Səsli sorğuya başlayın</translation>
 <translation id="1658406695958299976">Parolunuz hələ də doğrulanmayıb. Qeyd: əgər parolunuzu son vaxtlar dəyişmisinizsə, hesabdan çıxan kimi yeni parolunuz tətbiq olunacaq, köhnə parolu burada işlədin.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> qaldı</translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">Cihaz admini axtarış fəaliyyətinizi izləyə bilər.</translation>
 <translation id="3181441307743005334">Yenidən başlatmaq bir qədər vaxt apara bilər</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Cihaza qoşuldunuz}other{# cihaza qoşuldunuz}}</translation>
+<translation id="3203405173652969239">Dəyişdirici Girişi aktivdir</translation>
 <translation id="3207953481422525583">İstifadəçi ayarları</translation>
 <translation id="3217205077783620295">Səs səviyyəsi aktivdir, keçirdikdə audio səssiz ediləcək.</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /></translation>
@@ -651,6 +652,7 @@
 <translation id="9211681782751733685">Batareyanın tam dolmağına <ph name="TIME_REMAINING" /> qalır.</translation>
 <translation id="9215934040295798075">Divar kağızı ayarlayın</translation>
 <translation id="921989828232331238">Valideyniniz cihazı bugün üçün kilidləyib</translation>
+<translation id="9220525904950070496">Hesabı silin</translation>
 <translation id="923686485342484400">Hesabdan çıxmaq üçün iki dəfə Control Shift Q basın</translation>
 <translation id="938963181863597773">Təqvimdə nə var?</translation>
 <translation id="945522503751344254">Geri əlaqə göndərin</translation>

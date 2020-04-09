@@ -35,6 +35,8 @@ public class PaintPreviewDemoManager implements Destroyable {
     }
 
     public void showPaintPreviewDemo() {
+        if (isShowingPaintPreviewDemo()) return;
+
         if (mPaintPreviewDemoService == null) {
             mPaintPreviewDemoService = PaintPreviewDemoServiceFactory.getServiceInstance();
         }

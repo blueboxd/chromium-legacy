@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">Чтобы изменить источник питания, нажмите здесь.</translation>
 <translation id="1570871743947603115">Изменить настройки Bluetooth. <ph name="STATE_TEXT" />.</translation>
 <translation id="1589090746204042747">Получать доступ к данным о ваших действиях во время этого сеанса.</translation>
-<translation id="1608626060424371292">Удалить профиль</translation>
+<translation id="1632985212731562677">Функцию Switch Access можно отключить в разделе "Настройки &gt; Специальные возможности".</translation>
 <translation id="1654477262762802994">Произнесите запрос</translation>
 <translation id="1658406695958299976">Неверный пароль. Обратите внимание! Если вы недавно изменили пароль, но не выходили из системы, значит, новый пароль ещё не вступил в силу и необходимо указать старый.</translation>
 <translation id="1677472565718498478">Ещё <ph name="TIME" /></translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">Администратору устройства доступна информация о том, какие страницы вы просматриваете в браузере.</translation>
 <translation id="3181441307743005334">Перезапуск может занять несколько минут</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Подключено одно устройство}one{Подключено # устройство}few{Подключено # устройства}many{Подключено # устройств}other{Подключено # устройства}}</translation>
+<translation id="3203405173652969239">Функция Switch Access включена</translation>
 <translation id="3207953481422525583">Пользовательские настройки</translation>
 <translation id="3217205077783620295">Звук включен. Нажмите эту кнопку, чтобы отключить его.</translation>
 <translation id="3226991577105957773">Ещё <ph name="COUNT" /></translation>
@@ -651,6 +652,7 @@
 <translation id="9211681782751733685">Оставшееся время до полной зарядки батареи: <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Выбрать обои</translation>
 <translation id="921989828232331238">Ваш родитель заблокировал это устройство на целый день.</translation>
+<translation id="9220525904950070496">Удалить аккаунт</translation>
 <translation id="923686485342484400">Чтобы выйти, дважды нажмите Control+Shift+Q.</translation>
 <translation id="938963181863597773">Что у меня запланировано?</translation>
 <translation id="945522503751344254">Отправить отзыв</translation>

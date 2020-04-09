@@ -36,6 +36,8 @@ public class LauncherShortcutActivity extends Activity {
     @VisibleForTesting
     static final String DYNAMIC_OPEN_NEW_INCOGNITO_TAB_ID = "dynamic-new-incognito-tab-shortcut";
 
+    private static String sLabelForTesting;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,7 +77,10 @@ public class LauncherShortcutActivity extends Activity {
         boolean incognitoShortcutAdded =
                 preferences.readBoolean(ChromePreferenceKeys.INCOGNITO_SHORTCUT_ADDED, false);
 
-        if (incognitoEnabled && !incognitoShortcutAdded) {
+        // Add the shortcut regardless of whether it was previously added in case the locale has
+        // changed since the last addition.
+        // TODO(https://crbug.com/1068847): Investigate better locale change handling.
+        if (incognitoEnabled) {
             boolean success = LauncherShortcutActivity.addIncognitoLauncherShortcut(context);
 
             // Save a shared preference indicating the incognito shortcut has been added.
@@ -104,8 +109,10 @@ public class LauncherShortcutActivity extends Activity {
                 new ShortcutInfo.Builder(context, DYNAMIC_OPEN_NEW_INCOGNITO_TAB_ID)
                         .setShortLabel(context.getResources().getString(
                                 R.string.accessibility_tabstrip_incognito_identifier))
-                        .setLongLabel(
-                                context.getResources().getString(R.string.menu_new_incognito_tab))
+                        .setLongLabel(sLabelForTesting != null
+                                        ? sLabelForTesting
+                                        : context.getResources().getString(
+                                                R.string.menu_new_incognito_tab))
                         .setIcon(Icon.createWithResource(context, R.drawable.shortcut_incognito))
                         .setIntent(intent)
                         .build();
@@ -141,5 +148,10 @@ public class LauncherShortcutActivity extends Activity {
         newIntent.putExtra(IntentHandler.EXTRA_INVOKED_FROM_SHORTCUT, true);
 
         return newIntent;
+    }
+
+    @VisibleForTesting
+    public static void setDynamicShortcutStringForTesting(String label) {
+        sLabelForTesting = label;
     }
 }

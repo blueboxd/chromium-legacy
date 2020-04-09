@@ -167,6 +167,14 @@ cr.define('settings', function() {
      * @param {function(Array<!settings.ExternalStorage>):void} callback
      */
     setExternalStoragesUpdatedCallback(callback) {}
+
+    /**
+     * Sets |id| of display to render identification highlight on. Invalid |id|
+     * turns identification highlight off. Handles any invalid input string as
+     * invalid id.
+     * @param {string} id Display id of selected display.
+     */
+    highlightDisplay(id) {}
   }
 
   /**
@@ -256,6 +264,11 @@ cr.define('settings', function() {
     /** @override */
     setExternalStoragesUpdatedCallback(callback) {
       cr.addWebUIListener('onExternalStoragesUpdated', callback);
+    }
+
+    /** @override */
+    highlightDisplay(id) {
+      chrome.send('highlightDisplay', [id]);
     }
   }
 

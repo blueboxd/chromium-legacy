@@ -77,7 +77,8 @@ class FakeInputMethod : public ui::DummyInputMethod {
         count_show_ime_if_needed_(0),
         count_cancel_composition_(0),
         count_set_focused_text_input_client_(0),
-        count_on_text_input_type_changed_(0) {}
+        count_on_text_input_type_changed_(0),
+        count_on_caret_bounds_changed_(0) {}
 
   void SetFocusedTextInputClient(ui::TextInputClient* client) override {
     count_set_focused_text_input_client_++;
@@ -104,6 +105,10 @@ class FakeInputMethod : public ui::DummyInputMethod {
     count_on_text_input_type_changed_++;
   }
 
+  void OnCaretBoundsChanged(const ui::TextInputClient* client) override {
+    count_on_caret_bounds_changed_++;
+  }
+
   int count_show_ime_if_needed() const {
     return count_show_ime_if_needed_;
   }
@@ -120,12 +125,17 @@ class FakeInputMethod : public ui::DummyInputMethod {
     return count_on_text_input_type_changed_;
   }
 
+  int count_on_caret_bounds_changed() const {
+    return count_on_caret_bounds_changed_;
+  }
+
  private:
   ui::TextInputClient* client_;
   int count_show_ime_if_needed_;
   int count_cancel_composition_;
   int count_set_focused_text_input_client_;
   int count_on_text_input_type_changed_;
+  int count_on_caret_bounds_changed_;
 };
 
 // Helper class for testing the window focus tracking feature of ArcImeService,
@@ -476,6 +486,26 @@ TEST_F(ArcImeServiceTest, ShouldDoLearning) {
                                     mojom::TEXT_INPUT_FLAG_NONE);
   EXPECT_FALSE(instance_->ShouldDoLearning());
   EXPECT_EQ(3, fake_input_method_->count_on_text_input_type_changed());
+}
+
+TEST_F(ArcImeServiceTest, DoNothingIfArcWindowIsNotFocused) {
+  ASSERT_EQ(0, fake_input_method_->count_show_ime_if_needed());
+  ASSERT_EQ(0, fake_input_method_->count_on_text_input_type_changed());
+  ASSERT_EQ(0, fake_input_method_->count_on_caret_bounds_changed());
+  ASSERT_EQ(0, fake_input_method_->count_cancel_composition());
+
+  instance_->OnWindowFocused(nullptr, nullptr);
+
+  const gfx::Rect cursor_rect(10, 20, 30, 40);
+  instance_->OnTextInputTypeChanged(ui::TEXT_INPUT_TYPE_TEXT, true,
+                                    mojom::TEXT_INPUT_FLAG_NONE);
+  instance_->OnCursorRectChanged(cursor_rect, true);
+  instance_->OnCancelComposition();
+
+  EXPECT_EQ(0, fake_input_method_->count_show_ime_if_needed());
+  EXPECT_EQ(0, fake_input_method_->count_on_text_input_type_changed());
+  EXPECT_EQ(0, fake_input_method_->count_on_caret_bounds_changed());
+  EXPECT_EQ(0, fake_input_method_->count_cancel_composition());
 }
 
 }  // namespace arc

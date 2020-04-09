@@ -6,3 +6,7 @@
 #chromeos-view-parse-status {
   margin-top: 20px;
 }
+
+input + label {
+  margin-inline-start: 10px;
+}

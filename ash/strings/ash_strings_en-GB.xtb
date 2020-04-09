@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">Click for more options</translation>
 <translation id="1570871743947603115">Toggle Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Access all your activity in this session</translation>
-<translation id="1608626060424371292">Remove this user</translation>
+<translation id="1632985212731562677">Switch access can be disabled in Settings &gt; Accessibility.</translation>
 <translation id="1654477262762802994">Start a voice query</translation>
 <translation id="1658406695958299976">Sorry, your password still couldn't be verified. Note: If you changed your password recently, your new password will be applied once you sign out. Please use the old password here.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> left</translation>
@@ -182,6 +182,7 @@
 <translation id="3154351730702813399">The device admin may monitor your browsing activity.</translation>
 <translation id="3181441307743005334">Restart may take a while</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Connected to a device}other{Connected to # devices}}</translation>
+<translation id="3203405173652969239">Switch access enabled</translation>
 <translation id="3207953481422525583">User settings</translation>
 <translation id="3217205077783620295">Volume is on; toggling will mute audio.</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> more</translation>
@@ -651,6 +652,7 @@
 <translation id="9211681782751733685"><ph name="TIME_REMAINING" /> remaining until battery is fully charged.</translation>
 <translation id="9215934040295798075">Set wallpaper</translation>
 <translation id="921989828232331238">Your parent locked your device for the day</translation>
+<translation id="9220525904950070496">Remove account</translation>
 <translation id="923686485342484400">Press Control Shift Q twice to sign out.</translation>
 <translation id="938963181863597773">What's on my calendar?</translation>
 <translation id="945522503751344254">Send feedback</translation>

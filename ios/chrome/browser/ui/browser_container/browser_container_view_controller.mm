@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/browser_container/browser_container_view_controller.h"
 
 #include "base/logging.h"
-#import "ios/chrome/browser/ui/dialogs/dialog_features.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -19,9 +18,6 @@
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-
-  self.definesPresentationContext =
-      base::FeatureList::IsEnabled(dialogs::kNonModalDialogs);
   self.view.autoresizingMask =
       UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 }

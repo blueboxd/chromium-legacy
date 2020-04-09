@@ -12,7 +12,6 @@ import androidx.annotation.DrawableRes;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.page_info.PageInfoController;
-import org.chromium.chrome.browser.ssl.ChromeSecurityStateModelDelegate;
 import org.chromium.components.omnibox.SecurityStatusIcon;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.components.security_state.SecurityStateModel;
@@ -123,8 +122,7 @@ import org.chromium.ui.modelutil.PropertyModel;
 
     @Override
     public void didChangeVisibleSecurityState() {
-        int securityLevel = SecurityStateModel.getSecurityLevelForWebContents(
-                mWebContentsRef, ChromeSecurityStateModelDelegate.getInstance());
+        int securityLevel = SecurityStateModel.getSecurityLevelForWebContents(mWebContentsRef);
         mModel.set(PaymentHandlerToolbarProperties.SECURITY_ICON,
                 getSecurityIconResource(securityLevel));
     }

@@ -30,6 +30,11 @@ class MetricsReporterTest : public testing::Test {
   base::HistogramTester histogram_;
 };
 
+TEST_F(MetricsReporterTest, SliceViewedReportsSuggestionShown) {
+  reporter_.ContentSliceViewed(5);
+  histogram_.ExpectUniqueSample("NewTabPage.ContentSuggestions.Shown", 5, 1);
+}
+
 TEST_F(MetricsReporterTest, ScrollingSmall) {
   reporter_.StreamScrolled(100);
 
@@ -63,7 +68,7 @@ TEST_F(MetricsReporterTest, OpeningContentIsInteracting) {
 }
 
 TEST_F(MetricsReporterTest, RemovingContentIsInteracting) {
-  reporter_.ContentRemoved();
+  reporter_.RemoveAction();
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedEngaged, 1},
@@ -74,7 +79,7 @@ TEST_F(MetricsReporterTest, RemovingContentIsInteracting) {
 }
 
 TEST_F(MetricsReporterTest, NotInterestedInIsInteracting) {
-  reporter_.NotInterestedIn();
+  reporter_.NotInterestedInAction();
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedEngaged, 1},
@@ -85,7 +90,7 @@ TEST_F(MetricsReporterTest, NotInterestedInIsInteracting) {
 }
 
 TEST_F(MetricsReporterTest, ManageInterestsInIsInteracting) {
-  reporter_.ManageInterests();
+  reporter_.ManageInterestsAction();
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedEngaged, 1},

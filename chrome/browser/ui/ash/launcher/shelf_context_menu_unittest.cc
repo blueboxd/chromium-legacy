@@ -570,11 +570,8 @@ TEST_F(ShelfContextMenuTest, CrostiniTerminalApp) {
       GetContextMenu(item_delegate, primary_id);
 
   // Check that every menu item has an icon
-  for (int i = 0; i < menu->GetItemCount(); ++i) {
-    const gfx::VectorIcon* icon = menu->GetVectorIconAt(i);
-    ASSERT_TRUE(icon);
-    EXPECT_FALSE(icon->is_empty());
-  }
+  for (int i = 0; i < menu->GetItemCount(); ++i)
+    EXPECT_FALSE(menu->GetIconAt(i).IsEmpty());
 
   // When crostini is running, the terminal should have an option to kill the
   // vm.
@@ -612,11 +609,8 @@ TEST_F(ShelfContextMenuTest, CrostiniNormalApp) {
       GetContextMenu(item_delegate, primary_id);
 
   // Check that every menu item has an icon
-  for (int i = 0; i < menu->GetItemCount(); ++i) {
-    const gfx::VectorIcon* icon = menu->GetVectorIconAt(i);
-    ASSERT_TRUE(icon);
-    EXPECT_FALSE(icon->is_empty());
-  }
+  for (int i = 0; i < menu->GetItemCount(); ++i)
+    EXPECT_FALSE(menu->GetIconAt(i).IsEmpty());
 
   // Precisely which density option is shown is not important to us, we only
   // care that one is shown.

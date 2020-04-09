@@ -41,6 +41,45 @@ ChromeVoxPortalsTest = class extends ChromeVoxNextE2ETest {
       CommandHandler.onCommand(cmd);
     };
   }
+
+  /**
+   * Waits for |portal|'s tree to be ready.
+   * @param {chrome.automation.AutomationNode} portal
+   * @return {Promise}
+   */
+  async waitForPortal(portal) {
+    const waitForChildren = () => new Promise(r => {
+      const hasChildren = () => portal.children.length > 0;
+      if (hasChildren()) {
+        r();
+        return;
+      }
+      const onChildrenChanged = () => {
+        portal.removeEventListener(
+            EventType.CHILDREN_CHANGED, onChildrenChanged, true);
+        r();
+      };
+      portal.addEventListener(
+          EventType.CHILDREN_CHANGED, onChildrenChanged, true);
+    });
+
+    const waitForLoaded = () => new Promise(r => {
+      const hasLoaded = () => portal.children[0].docLoaded;
+      if (hasLoaded()) {
+        r();
+        return;
+      }
+      const onLoadComplete = () => {
+        portal.removeEventListener(
+            EventType.LOAD_COMPLETE, onLoadComplete, true);
+        r();
+      };
+      portal.addEventListener(EventType.LOAD_COMPLETE, onLoadComplete, true);
+    });
+
+    await waitForChildren();
+    await waitForLoaded();
+  }
 };
 
 TEST_F('ChromeVoxPortalsTest', 'ShouldFocusPortal', function() {
@@ -62,23 +101,24 @@ TEST_F('ChromeVoxPortalsTest', 'ShouldFocusPortal', function() {
           doCmd('nextObject')();
         });
 
-        const onChildrenChanged = evt => {
-          if (portal.children.length) {
-            portal.removeEventListener(
-                EventType.CHILDREN_CHANGED, onChildrenChanged, true);
-            afterPortalIsReady();
-          }
-        };
-
         button.focus();
-        button.addEventListener(EventType.FOCUS, this.newCallback(function() {
-          if (!portal.children.length) {
-            portal.addEventListener(
-                EventType.CHILDREN_CHANGED, onChildrenChanged, true);
-            return;
-          }
-          afterPortalIsReady();
-        }));
+        button.addEventListener(
+            EventType.FOCUS,
+            () => this.waitForPortal(portal).then(afterPortalIsReady));
       }.bind(this),
       `${testRunnerParams.testServerBaseUrl}portal/portal-and-button.html`);
+});
+
+TEST_F('ChromeVoxPortalsTest', 'PortalName', function() {
+  this.runWithLoadedTree(
+      undefined,
+      function(root) {
+        const portal = root.find({role: RoleType.PORTAL});
+        assertEquals(RoleType.PORTAL, portal.role);
+        this.waitForPortal(portal).then(this.newCallback(() => {
+          assertTrue(portal.firstChild.docLoaded);
+          assertEquals(portal.name, 'some text');
+        }));
+      }.bind(this),
+      `${testRunnerParams.testServerBaseUrl}portal/portal-with-text.html`);
 });

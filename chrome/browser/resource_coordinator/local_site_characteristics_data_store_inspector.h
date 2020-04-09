@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "base/optional.h"
 #include "base/supports_user_data.h"
-#include "chrome/browser/performance_manager/persistence/site_data/site_data.pb.h"
+#include "components/performance_manager/persistence/site_data/site_data.pb.h"
 #include "url/origin.h"
 
 class Profile;

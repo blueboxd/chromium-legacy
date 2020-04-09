@@ -15,11 +15,6 @@ class CORE_EXPORT FeaturePolicyViolationReportBody : public LocationReportBody {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  FeaturePolicyViolationReportBody(const String& feature_id,
-                                   const String& message,
-                                   const String& disposition)
-      : feature_id_(feature_id), message_(message), disposition_(disposition) {}
-
   FeaturePolicyViolationReportBody(
       const String& feature_id,
       const String& message,

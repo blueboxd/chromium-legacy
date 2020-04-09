@@ -4,6 +4,7 @@
 
 #include "apps/browser_context_keyed_service_factories.h"
 
+#include "apps/app_lifetime_monitor_factory.h"
 #include "apps/app_restore_service.h"
 #include "apps/app_restore_service_factory.h"
 #include "apps/saved_files_service.h"
@@ -13,6 +14,7 @@
 namespace apps {
 
 void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
+  AppLifetimeMonitorFactory::GetInstance();
   AppRestoreServiceFactory::GetInstance();
 }
 

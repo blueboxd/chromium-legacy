@@ -8,10 +8,10 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/browser/performance_manager/persistence/site_data/tab_visibility.h"
 #include "chrome/browser/resource_coordinator/site_characteristics_data_reader.h"
 #include "chrome/browser/resource_coordinator/site_characteristics_data_writer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/performance_manager/persistence/site_data/tab_visibility.h"
 #include "url/origin.h"
 
 namespace resource_coordinator {

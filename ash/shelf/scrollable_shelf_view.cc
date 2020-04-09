@@ -1428,12 +1428,17 @@ gfx::Insets ScrollableShelfView::CalculatePaddingForDisplayCentering(
   const gfx::Rect screen_bounds =
       use_target_bounds ? GetShelf()->hotseat_widget()->GetTargetBounds()
                         : GetBoundsInScreen();
-  int before_padding = gap - GetShelf()->PrimaryAxisValue(
-                                 screen_bounds.x() - display_bounds.x(),
-                                 screen_bounds.y() - display_bounds.y());
+  int before_padding =
+      gap - GetShelf()->PrimaryAxisValue(
+                ShouldAdaptToRTL()
+                    ? display_bounds.right() - screen_bounds.right()
+                    : screen_bounds.x() - display_bounds.x(),
+                screen_bounds.y() - display_bounds.y());
   int after_padding =
       gap - GetShelf()->PrimaryAxisValue(
-                display_bounds.right() - screen_bounds.right(),
+                ShouldAdaptToRTL()
+                    ? screen_bounds.x() - display_bounds.x()
+                    : display_bounds.right() - screen_bounds.right(),
                 display_bounds.bottom() - screen_bounds.bottom());
 
   before_padding -= base_padding_;

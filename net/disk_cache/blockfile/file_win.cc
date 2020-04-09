@@ -40,7 +40,7 @@ static_assert(offsetof(MyOverlapped, context_) == 0,
 class CompletionHandler : public base::MessagePumpForIO::IOHandler,
                           public base::RefCounted<CompletionHandler> {
  public:
-  CompletionHandler() = default;
+  CompletionHandler() : base::MessagePumpForIO::IOHandler(FROM_HERE) {}
   static CompletionHandler* Get();
 
  private:

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_FEED_CORE_V2_PUBLIC_FEED_STREAM_API_H_
 #define COMPONENTS_FEED_CORE_V2_PUBLIC_FEED_STREAM_API_H_
 
+#include <string>
 #include <vector>
 
 #include "base/observer_list_types.h"
@@ -55,12 +56,21 @@ class FeedStreamApi {
 
   // User interaction reporting. These should have no side-effects other than
   // reporting metrics.
+
+  // A slice was viewed (2/3rds of it is in the viewport). Should be called
+  // once for each viewed slice in the stream.
+  virtual void ReportSliceViewed(const std::string& slice_id) = 0;
   virtual void ReportNavigationStarted() = 0;
   virtual void ReportNavigationDone() = 0;
-  virtual void ReportContentRemoved() = 0;
-  virtual void ReportNotInterestedIn() = 0;
-  virtual void ReportManageInterests() = 0;
+  // A piece of content was removed or dismissed explicitly by the user.
+  virtual void ReportRemoveAction() = 0;
+  // The 'Not Interested In' menu item was selected.
+  virtual void ReportNotInterestedInAction() = 0;
+  // The 'Manage Interests' menu item was selected.
+  virtual void ReportManageInterestsAction() = 0;
+  // The user opened the context menu (three dot, or long press).
   virtual void ReportContextMenuOpened() = 0;
+  // The user scrolled the feed by |distance_dp| and then stopped.
   virtual void ReportStreamScrolled(int distance_dp) = 0;
 };
 

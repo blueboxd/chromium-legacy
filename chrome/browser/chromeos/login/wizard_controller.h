@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/login/screens/enable_adb_sideloading_screen.h"
 #include "chrome/browser/chromeos/login/screens/enable_debugging_screen.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
+#include "chrome/browser/chromeos/login/screens/gesture_navigation_screen.h"
 #include "chrome/browser/chromeos/login/screens/kiosk_autolaunch_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
 #include "chrome/browser/chromeos/login/screens/packaged_license_screen.h"
@@ -248,7 +249,7 @@ class WizardController {
   void OnAppDownloadingScreenExit();
   void OnAssistantOptInFlowScreenExit();
   void OnMultiDeviceSetupScreenExit();
-  void OnGestureNavigationScreenExit();
+  void OnGestureNavigationScreenExit(GestureNavigationScreen::Result result);
   void OnMarketingOptInScreenExit();
   void OnResetScreenExit();
   void OnDeviceModificationCanceled();
@@ -313,7 +314,9 @@ class WizardController {
 
   OobeScreenId first_screen() const { return first_screen_; }
 
-  // Called when network is UP.
+  // Starts a network request to resolve the timezone. Skips the request
+  // completely when the timezone is overridden through the command line.
+  void StartNetworkTimezoneResolve();
   void StartTimezoneResolve();
 
   // Creates provider on demand.

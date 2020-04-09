@@ -16,7 +16,6 @@
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
-#include "ui/base/default_theme_provider.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/event_source.h"
 #include "ui/gfx/geometry/rect.h"
@@ -1049,9 +1048,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // WARNING: RootView's destructor calls into the FocusManager. As such, this
   // must be destroyed AFTER root_view_. This is enforced in DestroyRootView().
   std::unique_ptr<FocusManager> focus_manager_;
-
-  // A theme provider to use when no other theme provider is specified.
-  const ui::DefaultThemeProvider default_theme_provider_;
 
   // Valid for the lifetime of RunShellDrag(), indicates the view the drag
   // started from.

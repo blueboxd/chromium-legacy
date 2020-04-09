@@ -57,7 +57,11 @@ class FeedStreamSurface : public FeedStreamApi::SurfaceInterface {
                      const base::android::JavaParamRef<jobject>& obj);
 
   // Event reporting functions. These have no side-effect beyond recording
-  // metrics.
+  // metrics. See FeedStreamApi for definitions.
+
+  void ReportSliceViewed(JNIEnv* env,
+                         const base::android::JavaParamRef<jobject>& obj,
+                         const base::android::JavaParamRef<jstring>& slice_id);
 
   void ReportNavigationStarted(JNIEnv* env,
                                const base::android::JavaParamRef<jobject>& obj,
@@ -69,23 +73,20 @@ class FeedStreamSurface : public FeedStreamApi::SurfaceInterface {
                             const base::android::JavaParamRef<jstring>& url,
                             jboolean in_new_tab);
 
-  // A piece of content was removed or dismissed explicitly by the user.
-  void ReportContentRemoved(JNIEnv* env,
-                            const base::android::JavaParamRef<jobject>& obj);
+  void ReportRemoveAction(JNIEnv* env,
+                          const base::android::JavaParamRef<jobject>& obj);
 
-  // The 'Not Interested In' menu item was selected.
-  void ReportNotInterestedIn(JNIEnv* env,
-                             const base::android::JavaParamRef<jobject>& obj);
+  void ReportNotInterestedInAction(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
-  // The 'Manage Interests' menu item was selected.
-  void ReportManageInterests(JNIEnv* env,
-                             const base::android::JavaParamRef<jobject>& obj);
+  void ReportManageInterestsAction(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
-  // The user opened the context menu (three dot, or long press).
   void ReportContextMenuOpened(JNIEnv* env,
                                const base::android::JavaParamRef<jobject>& obj);
 
-  // The user scrolled the feed by |distance_dp| and then stopped.
   void ReportStreamScrolled(JNIEnv* env,
                             const base::android::JavaParamRef<jobject>& obj,
                             int distance_dp);

@@ -120,3 +120,19 @@ test("ukm_unittests") {
     "//components/test:run_all_unittests",
   ]
 }
+
+static_library("ukm_test_helper") {
+  testonly = true
+  sources = [
+    "ukm_test_helper.cc",
+    "ukm_test_helper.h",
+  ]
+  deps = [
+    ":ukm",
+    "//base",
+    "//components/metrics",
+    "//services/metrics/public/cpp:metrics_cpp",
+    "//third_party/metrics_proto",
+    "//third_party/zlib/google:compression_utils",
+  ]
+}

@@ -20,7 +20,7 @@ using chrome_test_util::GetMainController;
 
 namespace {
 
-// This decider blocks all navigation.
+// This decider cancels all navigation.
 class NavigationBlockerDecider
     : public web::WebStatePolicyDecider,
       public web::WebStateUserData<NavigationBlockerDecider> {
@@ -28,9 +28,9 @@ class NavigationBlockerDecider
   NavigationBlockerDecider(web::WebState* web_state)
       : web::WebStatePolicyDecider(web_state) {}
 
-  bool ShouldAllowRequest(NSURLRequest* request,
-                          const RequestInfo& request_info) override {
-    return false;
+  PolicyDecision ShouldAllowRequest(NSURLRequest* request,
+                                    const RequestInfo& request_info) override {
+    return PolicyDecision::Cancel();
   }
 
   WEB_STATE_USER_DATA_KEY_DECL();

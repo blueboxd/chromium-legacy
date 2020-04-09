@@ -54,7 +54,7 @@ Nëse "<ph name="SERVICE_SCRIPT_NAME" />" është e zgjedhur tashmë, anulo zgje
 <translation id="369442766917958684">Jashtë linje.</translation>
 <translation id="3695446226812920698">Mëso se si</translation>
 <translation id="3776024066357219166">Sesioni yt i "Desktopit në distancë të Chrome" ka përfunduar.</translation>
-<translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3870154837782082782">Google LLC</translation>
 <translation id="3897092660631435901">Menyja</translation>
 <translation id="3905196214175737742">Domen i pavlefshëm i zotëruesit të strehimit.</translation>
 <translation id="3931191050278863510">Strehuesi ndaloi.</translation>
@@ -118,7 +118,7 @@ Nëse "<ph name="SERVICE_SCRIPT_NAME" />" është e zgjedhur tashmë, anulo zgje
 <translation id="6583902294974160967">Mbështetja</translation>
 <translation id="6612717000975622067">Dërgo Ctrl-Alt-Del</translation>
 <translation id="6654753848497929428">Ndaj</translation>
-<translation id="6681800064886881394">Të drejtat e autorit 2013 të Google Inc. Të gjitha të drejtat janë të rezervuara.</translation>
+<translation id="6681800064886881394">Të drejtat e autorit 2013 të Google LLC Të gjitha të drejtat janë të rezervuara.</translation>
 <translation id="677755392401385740">Strehuesi u nis për përdoruesin: <ph name="HOST_USERNAME" />.</translation>
 <translation id="6939719207673461467">Shfaq/fshih tastierën.</translation>
 <translation id="6963936880795878952">Lidhjet me kompjuterin në largësi janë të bllokuara përkohësisht sepse dikush po përpiqej të lidhej me të nëpërmjet një kodi PIN të pavlefshëm. Provo përsëri më vonë.</translation>

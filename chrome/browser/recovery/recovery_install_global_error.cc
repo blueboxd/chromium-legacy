@@ -19,8 +19,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/image/image.h"
-#include "ui/gfx/paint_vector_icon.h"
+#include "ui/base/models/image_model.h"
 #include "ui/native_theme/native_theme.h"
 
 RecoveryInstallGlobalError::RecoveryInstallGlobalError(Profile* profile)
@@ -68,11 +67,9 @@ base::string16 RecoveryInstallGlobalError::MenuItemLabel() {
   return l10n_util::GetStringUTF16(IDS_UPDATE_NOW);
 }
 
-gfx::Image RecoveryInstallGlobalError::MenuItemIcon() {
-  return gfx::Image(gfx::CreateVectorIcon(
-      kBrowserToolsUpdateIcon,
-      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
-          ui::NativeTheme::kColorId_AlertSeverityHigh)));
+ui::ImageModel RecoveryInstallGlobalError::MenuItemIcon() {
+  return ui::ImageModel::FromVectorIcon(
+      kBrowserToolsUpdateIcon, ui::NativeTheme::kColorId_AlertSeverityHigh);
 }
 
 void RecoveryInstallGlobalError::ExecuteMenuItem(Browser* browser) {

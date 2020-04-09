@@ -4004,7 +4004,7 @@ Only you can see what your camera is looking at. The site can't see your camera'
       </message>
 
       <message name="IDS_QR_CODE_PERMISSION_DESCRIPTION" desc="Text on QR code sharing tab indicating that permissions need to be given.">
-        Please enable your camera to scan a QR code
+        To scan a QR code, let Chrome use your camera
       </message>
 
       <message name="IDS_QR_CODE_OPEN_SETTINGS_DESCRIPTION" desc="Text on QR code sharing tab indicating that user needs to open settings to give camera permission.">

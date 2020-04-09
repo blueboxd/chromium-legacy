@@ -791,6 +791,15 @@ void BrowserView::Show() {
   browser()->OnWindowDidShow();
 
   MaybeShowInvertBubbleView(this);
+
+  // The fullscreen transition clears out focus, but there are some cases (for
+  // example, new window in Mac fullscreen with toolbar showing) where we need
+  // restore it.
+  if (frame_->IsFullscreen() &&
+      !frame_->GetFrameView()->ShouldHideTopUIForFullscreen() &&
+      GetFocusManager() && !GetFocusManager()->GetFocusedView()) {
+    SetFocusToLocationBar(false);
+  }
 }
 
 void BrowserView::ShowInactive() {

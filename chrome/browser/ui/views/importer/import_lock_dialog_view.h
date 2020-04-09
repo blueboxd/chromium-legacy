@@ -26,8 +26,6 @@ class ImportLockDialogView : public views::DialogDelegateView {
 
   // views::DialogDelegate:
   base::string16 GetWindowTitle() const override;
-  bool Accept() override;
-  bool Cancel() override;
 
   // views::WidgetDelegate:
   bool ShouldShowCloseButton() const override;

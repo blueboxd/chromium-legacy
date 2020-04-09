@@ -120,7 +120,6 @@
 <translation id="1153636665119721804">Avancerat skydd från Google</translation>
 <translation id="1161575384898972166">Logga in på <ph name="TOKEN_NAME" /> om du vill exportera klientcertifikatet.</translation>
 <translation id="1163931534039071049">&amp;Visa ramkälla</translation>
-<translation id="1164674268730883318">Vill du inaktivera Smart Lock för <ph name="DEVICE_TYPE" />?</translation>
 <translation id="1164891049599601209">Har angetts på en bedräglig webbplats</translation>
 <translation id="1164899421101904659">Ange upplåsningskod för pinkod</translation>
 <translation id="1165039591588034296">Fel</translation>
@@ -774,7 +773,6 @@ Annars loggar du ut nu så att ändringarna i det här kontot reflekteras på en
 
 Du kan hantera inställningarna för det här kontot genom att installera Family Link-appen på din enhet.  Vi har skickat ett e-postmeddelanden med anvisningar till dig.</translation>
 <translation id="2040460856718599782">Hoppsan! Något gick fel när du försökte verifiera dig. Dubbelkolla dina inloggningsuppgifter och försök igen.</translation>
-<translation id="2043818754674261542"><ph name="DEVICE_TYPE" />-enheten låses upp när mobilen kommer inom följande avstånd</translation>
 <translation id="204497730941176055">Namn på Microsoft-certifikatmall</translation>
 <translation id="2045117674524495717">Hjälp med kortkommandon</translation>
 <translation id="2045969484888636535">Fortsätt att blockera cookies</translation>
@@ -1147,7 +1145,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2518024842978892609">Använda dina klientcertifikat</translation>
 <translation id="2520644704042891903">Väntar på tillgänglig plats ...</translation>
 <translation id="252219247728877310">Komponenten har inte uppdaterats</translation>
-<translation id="2522791476825452208">Mycket nära</translation>
 <translation id="2523184218357549926">Skickar webbadresserna till sidor du besöker till Google</translation>
 <translation id="2526277209479171883">Installera och fortsätt</translation>
 <translation id="2526590354069164005">Skrivbord</translation>
@@ -1756,7 +1753,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="3333190335304955291">Du kan inaktivera den här tjänsten i Inställningar.</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> – video spelas upp bild-i-bild-läge</translation>
 <translation id="3335947283844343239">Öppna stängd flik igen</translation>
-<translation id="3336664756920573711">Lås upp <ph name="DEVICE_TYPE" /> med Android-mobilen</translation>
 <translation id="3340620525920140773">Nedladdningen är klar: <ph name="FILE_NAME" />.</translation>
 <translation id="3341699307020049241">Fel pinkod. Du har <ph name="RETRIES" /> försök kvar.</translation>
 <translation id="3341703758641437857">Tillåt åtkomst till webbadresser i filen</translation>
@@ -2779,7 +2775,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4697551882387947560">När surfningen avslutas</translation>
 <translation id="4699172675775169585">Cachade bilder och filer</translation>
 <translation id="4699357559218762027">(startas automatiskt)</translation>
-<translation id="470074695271471509">Vill du logga ut och slutföra konverteringen?</translation>
 <translation id="4701025263201366865">Föräldrainloggning</translation>
 <translation id="4707302005824653064">Den ansvariga (<ph name="CUSTODIAN_EMAIL" />) kan se användning och historik på chrome.com.</translation>
 <translation id="4707579418881001319">L2TP/IPSec + användarcertifikat</translation>
@@ -2802,7 +2797,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="473546211690256853">Detta konto hanteras av <ph name="DOMAIN" /></translation>
 <translation id="4735803855089279419">Det gick inte att fastställa enhets-id för den här enheten.</translation>
 <translation id="4736292055110123391">Synkronisera bokmärken, lösenord, historik med mera på alla dina enheter</translation>
-<translation id="4737715515457435632">Anslut till ett nätverk</translation>
 <translation id="473775607612524610">Uppdatera</translation>
 <translation id="4739639199548674512">Biljetter</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Läs mer om hur du uppdaterar appar<ph name="END_LINK" /></translation>
@@ -3280,7 +3274,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5423829801105537712">Grundläggande stavningskontroll</translation>
 <translation id="5423849171846380976">Aktiverat</translation>
 <translation id="5425042808445046667">Fortsätt nedladdning</translation>
-<translation id="5425722269016440406">Du måste vara online för att kunna inaktivera Smart Lock eftersom den här inställningen är synkroniserad med din mobil och andra enheter. Anslut först till ett nätverk.</translation>
 <translation id="5425863515030416387">Logga in enkelt på flera enheter</translation>
 <translation id="5427278936122846523">Översätt alltid</translation>
 <translation id="5427459444770871191">Rotera &amp;medurs</translation>
@@ -3422,7 +3415,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="558918721941304263">Läser in appar …</translation>
 <translation id="5592595402373377407">Det finns inte tillräckligt mycket data ännu.</translation>
 <translation id="5593357315997824387">Synkronisera mina filer</translation>
-<translation id="5595152862129936745">Mycket långt</translation>
 <translation id="5595485650161345191">Redigera adress</translation>
 <translation id="5595727715083333657">Det går inte att ändra storlek på den här behållaren. Om du vill justera hur mycket utrymme som ska förhandstilldelas Linux (beta) säkerhetskopierar du behållaren och återställer den till en ny behållare.</translation>
 <translation id="5596627076506792578">Fler alternativ</translation>
@@ -3535,7 +3527,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5747552184818312860">Upphör att gälla</translation>
 <translation id="5747785204778348146">Utvecklare – instabil</translation>
 <translation id="5747809636523347288">Kli&amp;stra in och besök <ph name="URL" /></translation>
-<translation id="5750324801516359607">Långt</translation>
 <translation id="5751887393582880060">Uppladdningen strider mot organisationens säkerhetspolicy. Vill du fortsätta ändå?</translation>
 <translation id="5756163054456765343">Hjälpc&amp;enter</translation>
 <translation id="5759728514498647443">Dokument som du skickar till utskrift via <ph name="APP_NAME" /> kan läsas av <ph name="APP_NAME" />.</translation>
@@ -4085,7 +4076,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="6490471652906364588">USB-C-enhet (höger port)</translation>
 <translation id="6491376743066338510">Auktoriseringen misslyckades</translation>
 <translation id="6494445798847293442">Inte från certifikatutfärdare</translation>
-<translation id="649454645705377674">Stäng</translation>
 <translation id="6495925982925244349">Nätverk <ph name="NETWORK_INDEX" /> av <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, signalstyrka <ph name="SIGNAL_STRENGTH" /> %, hanteras av administratören, information</translation>
 <translation id="6498249116389603658">&amp;Alla dina språk</translation>
 <translation id="6499143127267478107">Slår upp adress i proxyscript</translation>
@@ -4153,7 +4143,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="6590458744723262880">Byt namn på mapp</translation>
 <translation id="6592267180249644460">WebRTC-logg registrerades <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">Ditt fingeravtryck har registrerats</translation>
-<translation id="6594883168703494535">Logga in på ditt Google-konto med Smart Lock</translation>
 <translation id="6596325263575161958">Krypteringsalternativ</translation>
 <translation id="6596816719288285829">IP-adress</translation>
 <translation id="6597017209724497268">Stickprov</translation>
@@ -4687,7 +4676,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="7328867076235380839">Ogiltig kombination</translation>
 <translation id="7329154610228416156">Inloggningen misslyckades eftersom den har konfigurerats att använda en webbadress som inte är säker (<ph name="BLOCKED_URL" />). Kontakta administratören.</translation>
 <translation id="7332053360324989309">Dedicated Worker: <ph name="SCRIPT_URL" /></translation>
-<translation id="7334190995941642545">Smart Lock är för närvarande inte tillgängligt. Försök igen senare.</translation>
 <translation id="7334274148831027933">Aktivera dockad skärmförstoring</translation>
 <translation id="7335974957018254119">Använd stavningskontroll för</translation>
 <translation id="7336799713063880535">Aviseringar stoppas.</translation>
@@ -5232,11 +5220,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8017679124341497925">Genvägen har ändrats</translation>
 <translation id="8018313076035239964">Styr vilken information som webbplatser kan ta del av och vilket innehåll de kan visa</translation>
 <translation id="8023801379949507775">Uppdatera tillägg nu</translation>
-<translation id="8024483450737722621">Appar som du har laddat ned från Google Play tas bort från Chromebook.
-      <ph name="LINE_BREAKS1" />
-      Innehåll du har köpt, t.ex. filmer, TV-program, musik, böcker eller andra köp i appar, kan också tas bort.
-      <ph name="LINE_BREAKS2" />
-      Detta påverkar inte appar eller innehåll på andra enheter.</translation>
 <translation id="8026334261755873520">Rensa webbinformation</translation>
 <translation id="8028060951694135607">Microsofts nyckelåterställning</translation>
 <translation id="8028803902702117856">Laddar ned <ph name="SIZE" />, <ph name="FILE_NAME" /></translation>
@@ -5552,7 +5535,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8455026683977728932">Kunde inte aktivera illustration med adb</translation>
 <translation id="845702320058262034">Det gick inte att ansluta. Kontrollera att Bluetooth har aktiverats på mobilen.</translation>
 <translation id="8457451314607652708">Importera bokmärken</translation>
-<translation id="8460336040822756677">Om du inaktiverar Smart Lock för <ph name="DEVICE_TYPE" /> kan du inte låsa upp dina Chrome-enheter med mobilen. Du måste ange ditt lösenord.</translation>
 <translation id="8461329675984532579">Hemleverantörens namn</translation>
 <translation id="84613761564611563">Nätverkskonfigurering av användargränssnitt har begärts. Vänta en stund …</translation>
 <translation id="8461914792118322307">Proxy</translation>
@@ -5778,7 +5760,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8743864605301774756">Uppdaterad för en timme sedan</translation>
 <translation id="8746654918629346731">Du har redan begärt <ph name="EXTENSION_NAME" /></translation>
 <translation id="874689135111202667">{0,plural, =1{Vill du ladda upp en fil på webbplatsen?}other{Vill du ladda upp # filer på webbplatsen?}}</translation>
-<translation id="8748384418490037181">Alternativ för Smart Lock</translation>
 <translation id="8749863574775030885">Komma åt USB-enheter från en okänd leverantör</translation>
 <translation id="8750133148106010815">För att kunna starta Google Play kräver <ph name="ORGANIZATION_NAME" /> att du säkerhetskopierar din data och återställer Chromebook-enheten till standardinställningarna.</translation>
 <translation id="8750155211039279868"><ph name="ORIGIN" /> vill ansluta till en serieport</translation>
@@ -5901,7 +5882,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8881020143150461183">Försök igen. Kontakta <ph name="CARRIER_NAME" /> om du behöver teknisk support.</translation>
 <translation id="8883273463630735858">Aktivera styrplatteacceleration</translation>
 <translation id="8884570509232205463">Nu låses enheten klockan <ph name="UNLOCK_TIME" />.</translation>
-<translation id="8885197664446363138">Smart Lock är inte tillgängligt</translation>
 <translation id="8888253246822647887">Appen öppnas när uppgraderingen är klar. Uppgraderingen kan ta några minuter.</translation>
 <translation id="8888432776533519951">Färg:</translation>
 <translation id="8889651696183044030"><ph name="ORIGIN" /> har redigeringsbehörighet till följande filer och mappar</translation>

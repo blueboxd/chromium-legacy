@@ -31,7 +31,7 @@ import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 import org.chromium.chrome.browser.suggestions.SuggestionsConfig.TileStyle;
 import org.chromium.chrome.browser.ui.favicon.IconType;
 import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
-import org.chromium.chrome.browser.ui.favicon.RoundedIconGenerator;
+import org.chromium.components.favicon.FaviconFallbackGenerator;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.ui.base.ViewUtils;
@@ -49,7 +49,7 @@ public class TileRenderer {
 
     private final Resources mResources;
     private final ImageFetcher mImageFetcher;
-    private final RoundedIconGenerator mIconGenerator;
+    private final FaviconFallbackGenerator mIconGenerator;
     private final Resources.Theme mTheme;
 
     @TileStyle
@@ -86,7 +86,7 @@ public class TileRenderer {
         int iconColor = ApiCompatibilityUtils.getColor(
                 mResources, R.color.default_favicon_background_color);
         int iconTextSize = mResources.getDimensionPixelSize(R.dimen.tile_view_icon_text_size);
-        mIconGenerator = new RoundedIconGenerator(
+        mIconGenerator = new FaviconFallbackGenerator(
                 mDesiredIconSize, mDesiredIconSize, mDesiredIconSize / 2, iconColor, iconTextSize);
     }
 

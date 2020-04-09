@@ -14,6 +14,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/schema_org/common/improved_metadata.mojom.h"
+#include "components/schema_org/common/time.h"
 #include "components/schema_org/schema_org_entity_names.h"
 #include "components/schema_org/schema_org_property_configurations.h"
 
@@ -51,6 +52,18 @@ using improved::mojom::Values;
 using improved::mojom::ValuesPtr;
 
 void ExtractEntity(const base::DictionaryValue&, Entity*, int recursion_level);
+
+// Returns true if a property can be of the Duration class type.
+bool HasDuration(const property::PropertyConfiguration& config) {
+  for (const auto& thing : config.thing_types) {
+    GURL thing_url = GURL(thing);
+    DCHECK(thing_url.is_valid() && !thing_url.path().empty());
+    std::string thing_name = thing_url.path().substr(1);
+    if (thing_name == schema_org::entity::kDuration)
+      return true;
+  }
+  return false;
+}
 
 // Parses a string into a property value. The string may be parsed as a
 // double, date, or time, depending on the types that the property supports.
@@ -110,6 +123,13 @@ bool ParseStringValue(const std::string& property_type,
     if (value == "https://schema.org/False" ||
         value == "http://schema.org/False" || value == "false") {
       values->bool_values.push_back(false);
+      return true;
+    }
+  }
+  if (HasDuration(prop_config)) {
+    auto time = ParseISO8601Duration(value.as_string());
+    if (time.has_value()) {
+      values->time_values.push_back(time.value());
       return true;
     }
   }

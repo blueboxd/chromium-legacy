@@ -1052,6 +1052,7 @@ jumbo_source_set("unit_tests") {
     "css/css_test_helpers.h",
     "css/css_uri_value_test.cc",
     "css/css_value_test_helper.h",
+    "css/font_display_auto_lcp_align_test.cc",
     "css/mock_css_paint_image_generator.h",
     "display_lock/display_lock_context_test.cc",
     "display_lock/display_lock_utilities_test.cc",

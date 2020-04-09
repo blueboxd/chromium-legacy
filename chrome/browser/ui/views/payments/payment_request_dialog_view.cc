@@ -65,6 +65,9 @@ PaymentRequestDialogView::PaymentRequestDialogView(
 
   DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
 
+  DialogDelegate::SetCloseCallback(base::BindOnce(
+      &PaymentRequestDialogView::OnDialogClosed, base::Unretained(this)));
+
   request->spec()->AddObserver(this);
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
@@ -112,7 +115,7 @@ views::View* PaymentRequestDialogView::GetInitiallyFocusedView() {
   return view_stack_.get();
 }
 
-bool PaymentRequestDialogView::Cancel() {
+void PaymentRequestDialogView::OnDialogClosed() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // Called when the widget is about to close. We send a message to the
   // PaymentRequest object to signal user cancellation.
@@ -128,7 +131,6 @@ bool PaymentRequestDialogView::Cancel() {
   view_stack_.reset();
   controller_map_.clear();
   request_->UserCancelled();
-  return true;
 }
 
 bool PaymentRequestDialogView::ShouldShowCloseButton() const {

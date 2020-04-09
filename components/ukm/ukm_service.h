@@ -30,12 +30,12 @@ FORWARD_DECLARE_TEST(IOSChromeMetricsServiceClientTest,
 namespace metrics {
 class MetricsServiceClient;
 class UkmBrowserTestBase;
-class UkmEGTestHelper;
 class UkmDemographicMetricsProvider;
 }
 
 namespace ukm {
 class Report;
+class UkmTestHelper;
 
 namespace debug {
 class UkmDebugDataExtractor;
@@ -110,7 +110,7 @@ class UkmService : public UkmRecorderImpl {
 
  private:
   friend ::metrics::UkmBrowserTestBase;
-  friend ::metrics::UkmEGTestHelper;
+  friend ::ukm::UkmTestHelper;
   friend ::ukm::debug::UkmDebugDataExtractor;
   friend ::ukm::UkmUtilsForTest;
   FRIEND_TEST_ALL_PREFIXES(::ChromeMetricsServiceClientTest,

@@ -339,6 +339,7 @@ android_library("chrome_java") {
     "//components/embedder_support/android:util_java",
     "//components/embedder_support/android:web_contents_delegate_java",
     "//components/external_intents/android:java",
+    "//components/favicon/android:java",
     "//components/feature_engagement:feature_engagement_java",
     "//components/feed/core/proto:proto_java",
     "//components/feed/core/proto:proto_java_v2",
@@ -885,6 +886,7 @@ android_library("chrome_test_java") {
     "//components/embedder_support/android:web_contents_delegate_javatests",
     "//components/external_intents/android:java",
     "//components/external_intents/android:javatests",
+    "//components/favicon/android:javatests",
     "//components/feature_engagement:feature_engagement_java",
     "//components/gcm_driver/android:gcm_driver_java",
     "//components/gcm_driver/instance_id/android:instance_id_driver_java",
@@ -2149,7 +2151,6 @@ chrome_test_apk_tmpl("chrome_public_test_apk") {
     "//chrome/browser/subresource_filter:subresource_filter_javatests",
     "//chrome/browser/touch_to_fill/android:test_java",
     "//chrome/browser/ui/android/appmenu/internal:javatests",
-    "//chrome/browser/ui/android/favicon:javatests",
     "//chrome/browser/ui/messages/android:javatests",
     "//chrome/browser/util:javatests",
   ]

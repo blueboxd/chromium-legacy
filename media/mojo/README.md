@@ -318,11 +318,6 @@ local media components get services from content layer through the `MediaClient`
 interface. In `MediaService` and `CdmService`, remote media components get
 services from the through **secure auxiliary services**.
 
-Note that as a `service_manager::Service`, `MediaService` and `CdmService` can
-always connect to other `service_manager::Service` hosted by the service_manager
-through the `Connector` interface. However, these are generic services that
-doesn’t belong to any individual `RenderFrame`, or even user profile.
-
 Some services do require `RenderFrame` or user profile identity, e.g. file
 system. Since media components all belong to a given `RenderFrame`, we must
 maintain the frame identity when accessing these services for security reasons.
@@ -330,10 +325,12 @@ These services are called secure auxiliary services. `FrameServiceBase` is a
 base class for all secure auxiliary services to help manage the lifetime of
 these services (e.g. to handle navigation).
 
-In `MediaInterfaceProxy`, when we request `media::mojom::InterfaceFactory` in
-the `MediaService` or `CdmService`, we call `GetFrameServices()` to configure
-which secure auxiliary services are exposed to the remote components over the
-separate `blink::mojom::BrowserInterfaceBroker`.
+When a `MediaInterfaceProxy` is created, in addition to providing the
+`media::mojom::InterfaceFactory`, the `RenderFrame` is provisioned with a
+`media::mojom::FrameInterfaceFactory` that exposes these secure auxiliary
+services on a per-frame basis. The `FrameInterfaceFactory` directly provides
+services from //content, and it provides a way for //content embedders to
+register additional auxiliary services via the `BindEmbedderReceiver()` method.
 
 Currently only the remote CDM needs secure auxiliary services. This is a list of
 currently supported services:

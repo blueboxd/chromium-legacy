@@ -31,16 +31,16 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
-import org.chromium.chrome.browser.ui.favicon.RoundedIconGenerator;
 import org.chromium.components.embedder_support.util.UrlUtilities;
+import org.chromium.components.favicon.FaviconFallbackGenerator;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 
 /**
  * Instrumentation unit tests for StandardNotificationBuilder.
  *
  * Extends NativeLibraryTestBase so that {@link UrlUtilities#getDomainAndRegistry} can access
- * native GetDomainAndRegistry, when called by {@link RoundedIconGenerator#getIconTextForUrl} during
- * notification construction.
+ * native GetDomainAndRegistry, when called by {@link FaviconFallbackGenerator#getIconTextForUrl}
+ * during notification construction.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
 public class StandardNotificationBuilderTest {

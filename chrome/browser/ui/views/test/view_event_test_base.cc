@@ -121,9 +121,8 @@ void ViewEventTestBase::SetUp() {
 
   test_views_delegate()->set_use_desktop_native_widgets(true);
 
-  window_ = views::Widget::CreateWindowWithContext(
-      new TestBaseWidgetDelegate(this),  // Owns itself.
-      GetContext());
+  window_ = AllocateTestWidget().release();
+  window_->Init(CreateParams(views::Widget::InitParams::TYPE_WINDOW));
   window_->Show();
 }
 
@@ -134,6 +133,13 @@ void ViewEventTestBase::TearDown() {
   }
 
   ChromeViewsTestBase::TearDown();
+}
+
+views::Widget::InitParams ViewEventTestBase::CreateParams(
+    views::Widget::InitParams::Type type) {
+  views::Widget::InitParams params = ChromeViewsTestBase::CreateParams(type);
+  params.delegate = new TestBaseWidgetDelegate(this);  // Owns itself.
+  return params;
 }
 
 gfx::Size ViewEventTestBase::GetPreferredSizeForContents() const {

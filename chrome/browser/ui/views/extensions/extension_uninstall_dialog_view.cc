@@ -90,8 +90,6 @@ class ExtensionUninstallDialogDelegateView
   const char* GetClassName() const override;
 
   // views::DialogDelegateView:
-  bool Accept() override;
-  bool Cancel() override;
   gfx::Size CalculatePreferredSize() const override;
 
   // views::WidgetDelegate:
@@ -211,6 +209,21 @@ ExtensionUninstallDialogDelegateView::ExtensionUninstallDialogDelegateView(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON));
 
+  DialogDelegate::SetAcceptCallback(base::BindOnce(
+      [](ExtensionUninstallDialogDelegateView* view) {
+        if (view->dialog_) {
+          view->dialog_->DialogAccepted(view->checkbox_ &&
+                                        view->checkbox_->GetChecked());
+        }
+      },
+      base::Unretained(this)));
+  DialogDelegate::SetCancelCallback(base::BindOnce(
+      [](ExtensionUninstallDialogDelegateView* view) {
+        if (view->dialog_)
+          view->dialog_->DialogCanceled();
+      },
+      base::Unretained(this)));
+
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
@@ -269,18 +282,6 @@ ExtensionUninstallDialogDelegateView::~ExtensionUninstallDialogDelegateView() {
 
 const char* ExtensionUninstallDialogDelegateView::GetClassName() const {
   return "ExtensionUninstallDialogDelegateView";
-}
-
-bool ExtensionUninstallDialogDelegateView::Accept() {
-  if (dialog_)
-    dialog_->DialogAccepted(checkbox_ && checkbox_->GetChecked());
-  return true;
-}
-
-bool ExtensionUninstallDialogDelegateView::Cancel() {
-  if (dialog_)
-    dialog_->DialogCanceled();
-  return true;
 }
 
 gfx::Size ExtensionUninstallDialogDelegateView::CalculatePreferredSize() const {

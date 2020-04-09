@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "components/bookmarks/browser/bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_node.h"
+#include "components/sync_bookmarks/synced_bookmark_tracker.h"
 #include "url/gurl.h"
 
 namespace syncer {
@@ -18,8 +19,6 @@ class UniquePosition;
 }
 
 namespace sync_bookmarks {
-
-class SyncedBookmarkTracker;
 
 // Class for listening to local changes in the bookmark model and updating
 // metadata in SyncedBookmarkTracker, such that ultimately the processor exposes
@@ -71,6 +70,12 @@ class BookmarkModelObserverImpl : public bookmarks::BookmarkModelObserver {
   syncer::UniquePosition ComputePosition(const bookmarks::BookmarkNode& parent,
                                          size_t index,
                                          const std::string& sync_id);
+
+  // Process a modification of a local node and updates |bookmark_tracker_|
+  // accordingly. No-op if the commit can be optimized away, i.e. if |specifics|
+  // are identical to the previously-known specifics (in hashed form).
+  void ProcessUpdate(const SyncedBookmarkTracker::Entity* entity,
+                     const sync_pb::EntitySpecifics& specifics);
 
   // Processes the deletion of a bookmake node and updates the
   // |bookmark_tracker_| accordingly. If |node| is a bookmark, it gets marked

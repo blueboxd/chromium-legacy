@@ -165,7 +165,7 @@ class ImageResource::ImageResourceFactory : public NonTextResourceFactory {
                    const ResourceLoaderOptions& options) const override {
     return MakeGarbageCollected<ImageResource>(
         request, options, ImageResourceContent::CreateNotStarted(),
-        fetch_params_->GetImageRequestOptimization() ==
+        fetch_params_->GetImageRequestBehavior() ==
             FetchParameters::kAllowPlaceholder);
   }
 
@@ -197,8 +197,7 @@ Resource::MatchStatus ImageResource::CanReuse(
     const FetchParameters& params) const {
   // If the image is a placeholder, but this fetch doesn't allow a
   // placeholder, then do not reuse this resource.
-  if (params.GetImageRequestOptimization() !=
-          FetchParameters::kAllowPlaceholder &&
+  if (params.GetImageRequestBehavior() != FetchParameters::kAllowPlaceholder &&
       placeholder_option_ != PlaceholderOption::kDoNotReloadPlaceholder) {
     return MatchStatus::kImagePlaceholder;
   }

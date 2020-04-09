@@ -11,6 +11,7 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/platform_accelerator_cocoa.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/models/simple_menu_model.h"
 #import "ui/events/event_utils.h"
 #include "ui/gfx/font_list.h"
@@ -191,9 +192,9 @@ bool MenuHasVisibleItems(const ui::MenuModel* model) {
       keyEquivalent:@""]);
 
   // If the menu item has an icon, set it.
-  gfx::Image icon;
-  if (model->GetIconAt(index, &icon) && !icon.IsEmpty())
-    [item setImage:icon.ToNSImage()];
+  ui::ImageModel icon = model->GetIconAt(index);
+  if (icon.IsImage())
+    [item setImage:icon.GetImage().ToNSImage()];
 
   ui::MenuModel::ItemType type = model->GetTypeAt(index);
   if (type == ui::MenuModel::TYPE_SUBMENU && model->IsVisibleAt(index)) {
@@ -263,9 +264,8 @@ bool MenuHasVisibleItems(const ui::MenuModel* model) {
         l10n_util::FixUpWindowsStyleLabel(model->GetLabelAt(modelIndex));
     [(id)item setTitle:label];
 
-    gfx::Image icon;
-    model->GetIconAt(modelIndex, &icon);
-    [(id)item setImage:icon.IsEmpty() ? nil : icon.ToNSImage()];
+    ui::ImageModel icon = model->GetIconAt(modelIndex);
+    [(id)item setImage:icon.IsImage() ? icon.GetImage().ToNSImage() : nil];
   }
   const gfx::FontList* font_list = model->GetLabelFontListAt(modelIndex);
   if (font_list) {

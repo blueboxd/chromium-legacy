@@ -105,7 +105,7 @@
 <translation id="2268813581635650749">Барлығын шығару</translation>
 <translation id="2277103315734023688">Алға</translation>
 <translation id="2292698582925480719">Дисплей масштабы</translation>
-<translation id="2295777434187870477">Микрофон қосулы. Егер басқасына ауыссаңыз, кіріс дыбыс өшеді.</translation>
+<translation id="2295777434187870477">Микрофон қосулы. Егер түймені бассаңыз, кіріс дыбыс өшеді.</translation>
 <translation id="2298170939937364391">Толық экран ұлғайтқышы қосулы. Оны өшіру үшін Ctrl+Search+M пернелер тіркесімін қайта басыңыз.</translation>
 <translation id="2302092602801625023">Бұл есептік жазба Family Link арқылы басқарылады</translation>
 <translation id="2303600792989757991">Терезеде шолу режимін ауыстыру</translation>
@@ -139,7 +139,7 @@
 <translation id="2658778018866295321">Басу және сүйреу</translation>
 <translation id="2700493154570097719">Пернетақтаны орнатыңыз</translation>
 <translation id="2704781753052663061">Басқа Wi-Fi желілеріне қосылу</translation>
-<translation id="2705001408393684014">Басқа микрофонға ауысыңыз. <ph name="STATE_TEXT" /></translation>
+<translation id="2705001408393684014">Микрофонды қосу/өшіру түймесі. <ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">Түнгі жарық</translation>
 <translation id="2727977024730340865">Төмен қуатты зарядтағышқа жалғанған. Батареяны зарядтау кезінде қиындықтар болуы мүмкін.</translation>
 <translation id="2792498699870441125">Alt+Іздеу</translation>

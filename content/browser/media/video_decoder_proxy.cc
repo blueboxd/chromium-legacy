@@ -94,7 +94,7 @@ void VideoDecoderProxy::ConnectToMediaService() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!interface_factory_remote_);
 
-  mojo::PendingRemote<service_manager::mojom::InterfaceProvider> interfaces;
+  mojo::PendingRemote<media::mojom::FrameInterfaceFactory> interfaces;
   ignore_result(interfaces.InitWithNewPipeAndPassReceiver());
 
   GetMediaService().CreateInterfaceFactory(

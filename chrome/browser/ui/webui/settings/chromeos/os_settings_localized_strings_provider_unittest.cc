@@ -8,8 +8,8 @@
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_concept.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/services/local_search_service/index_impl.h"
 #include "chrome/services/local_search_service/local_search_service_impl.h"
-#include "chrome/services/local_search_service/public/mojom/local_search_service.mojom-test-utils.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -37,9 +37,8 @@ class OsSettingsLocalizedStringsProviderTest : public testing::Test {
         profile_manager_.CreateTestingProfile("TestingProfile"),
         &local_search_service_);
 
-    local_search_service_.GetIndex(
-        local_search_service::mojom::LocalSearchService::IndexId::CROS_SETTINGS,
-        index_remote_.BindNewPipeAndPassReceiver());
+    index_ = local_search_service_.GetIndexImpl(
+        local_search_service::IndexId::kCrosSettings);
 
     // Allow asynchronous networking code to complete (networking functionality
     // is tested below).
@@ -49,7 +48,7 @@ class OsSettingsLocalizedStringsProviderTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager profile_manager_;
   chromeos::network_config::CrosNetworkConfigTestHelper network_config_helper_;
-  mojo::Remote<local_search_service::mojom::Index> index_remote_;
+  local_search_service::IndexImpl* index_;
   local_search_service::LocalSearchServiceImpl local_search_service_;
   std::unique_ptr<OsSettingsLocalizedStringsProvider> provider_;
 };
@@ -58,9 +57,7 @@ class OsSettingsLocalizedStringsProviderTest : public testing::Test {
 // verifies that when the provider starts up, it adds *some* strings without
 // checking the exact number. It also checks one specific canonical tag.
 TEST_F(OsSettingsLocalizedStringsProviderTest, WifiTags) {
-  uint64_t initial_num_items = 0;
-  local_search_service::mojom::IndexAsyncWaiter(index_remote_.get())
-      .GetSize(&initial_num_items);
+  uint64_t initial_num_items = index_->GetSize();
   EXPECT_GT(initial_num_items, 0u);
 
   const SearchConcept* network_settings_concept =
@@ -82,9 +79,7 @@ TEST_F(OsSettingsLocalizedStringsProviderTest, WifiTags) {
       "/device/stub_eth_device", shill::kTypeEthernet, "stub_eth_device");
   base::RunLoop().RunUntilIdle();
 
-  uint64_t num_items_after_adding_ethernet = 0;
-  local_search_service::mojom::IndexAsyncWaiter(index_remote_.get())
-      .GetSize(&num_items_after_adding_ethernet);
+  uint64_t num_items_after_adding_ethernet = index_->GetSize();
   EXPECT_GT(num_items_after_adding_ethernet, initial_num_items);
 
   ethernet_settings_concept =

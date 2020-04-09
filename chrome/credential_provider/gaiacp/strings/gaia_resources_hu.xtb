@@ -18,6 +18,7 @@
 <translation id="4744575902940448763">Nem tudtuk szinkronizálni munkahelyi fiókjának jelszavát Windows-profiljával, mert szervezete korlátozza a jelszófrissítés lehetőségét ezen az eszközön. Segítségért forduljon a rendszergazdához.</translation>
 <translation id="5186761973554910131">A jelszómódosítási kísérlet során megadott számítógépnév érvénytelen. Forduljon az adminisztrátorhoz.</translation>
 <translation id="5265714013989877288">A művelet nem folytatható, mert hiba történt a Windows-jelszó módosítása során. Forduljon a rendszergazdájához.</translation>
+<translation id="5581861273642234526">Ehhez az eszközhöz már másik munkahelyi fiókot társítottak. Jelentkezzen be Windows-fiókjával.</translation>
 <translation id="6033715878377252112">A Windows rendszerhez készült Google Credential Provider segítője</translation>
 <translation id="6149399665202317746">Google Credential Provider Windows rendszerhez</translation>
 <translation id="6243062314475217481">A munkahelyi fiókjához tartozó jelszó nem felel meg a Windows bonyolultsági követelményeinek. Segítségért forduljon a rendszergazdához.</translation>

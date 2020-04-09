@@ -9,6 +9,7 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/test/scoped_feature_list.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/sms/sms_provider.h"
 #include "content/browser/sms/sms_provider_gms_user_consent.h"
 #include "content/public/common/content_features.h"
@@ -49,7 +50,7 @@ class SmsProviderGmsUserConsentTest : public RenderViewHostTestHarness {
   void SetUp() {
     RenderViewHostTestHarness::SetUp();
     provider_ = std::make_unique<SmsProviderGmsUserConsent>(
-        web_contents()->GetMainFrame());
+        static_cast<RenderFrameHostImpl*>(main_rfh())->GetWeakPtr());
     j_fake_sms_retriever_client_.Reset(
         Java_FakeSmsUserConsentRetrieverClient_create(AttachCurrentThread()));
     Java_SmsUserConsentFakes_setUserConsentClientForTesting(

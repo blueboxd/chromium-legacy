@@ -12,6 +12,7 @@
 #include <memory>
 
 #include "base/base_export.h"
+#include "base/location.h"
 #include "base/message_loop/message_pump.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
@@ -198,7 +199,7 @@ class BASE_EXPORT MessagePumpForIO : public MessagePumpWin {
   //
   // Typical use #1:
   //   class MyFile : public IOHandler {
-  //     MyFile() {
+  //     MyFile() : IOHandler(FROM_HERE) {
   //       ...
   //       message_pump->RegisterIOHandler(file_, this);
   //     }
@@ -228,9 +229,14 @@ class BASE_EXPORT MessagePumpForIO : public MessagePumpWin {
   //         message_pump->WaitForIOCompletion(INFINITE, this);
   //     }
   //
-  class IOHandler {
+  class BASE_EXPORT IOHandler {
    public:
-    virtual ~IOHandler() {}
+    explicit IOHandler(const Location& from_here);
+    virtual ~IOHandler();
+
+    IOHandler(const IOHandler&) = delete;
+    IOHandler& operator=(const IOHandler&) = delete;
+
     // This will be called once the pending IO operation associated with
     // |context| completes. |error| is the Win32 error code of the IO operation
     // (ERROR_SUCCESS if there was no error). |bytes_transfered| will be zero
@@ -238,6 +244,11 @@ class BASE_EXPORT MessagePumpForIO : public MessagePumpWin {
     virtual void OnIOCompleted(IOContext* context,
                                DWORD bytes_transfered,
                                DWORD error) = 0;
+
+    const Location& io_handler_location() { return io_handler_location_; }
+
+   private:
+    const Location io_handler_location_;
   };
 
   MessagePumpForIO();

@@ -45,7 +45,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -246,8 +245,6 @@ public class InstantStartTest {
     @Feature({"RenderTest"})
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION})
-    // TODO(crbug/1065314): make showOverview() work with START_SURFACE_ANDROID.
-    @DisableFeatures({ChromeFeatureList.START_SURFACE_ANDROID})
     public void renderTabSwitcher_NoStateFile() throws IOException {
         showOverview();
 
@@ -260,8 +257,6 @@ public class InstantStartTest {
     @Feature({"RenderTest"})
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION})
-    // TODO(crbug/1065314): make showOverview() work with START_SURFACE_ANDROID.
-    @DisableFeatures({ChromeFeatureList.START_SURFACE_ANDROID})
     public void renderTabSwitcher_CorruptedStateFile() throws IOException {
         createCorruptedTabStateFile();
         showOverview();
@@ -290,8 +285,6 @@ public class InstantStartTest {
     @Feature({"RenderTest"})
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION})
-    // TODO(crbug/1065314): make showOverview() work with START_SURFACE_ANDROID.
-    @DisableFeatures({ChromeFeatureList.START_SURFACE_ANDROID})
     public void renderTabSwitcher() throws IOException {
         createTabStateFile(new int[] {0, 1, 2});
         createThumbnailBitmapAndWriteToFile(0);
@@ -317,8 +310,6 @@ public class InstantStartTest {
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION})
     @EnableFeatures(ChromeFeatureList.TAB_GROUPS_ANDROID)
-    // TODO(crbug/1065314): make showOverview() work with START_SURFACE_ANDROID.
-    @DisableFeatures({ChromeFeatureList.START_SURFACE_ANDROID})
     public void renderTabGroups() throws IOException {
         createTabStateFile(new int[] {0, 1, 2, 3, 4});
         createThumbnailBitmapAndWriteToFile(0);

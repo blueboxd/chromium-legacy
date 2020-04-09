@@ -8,15 +8,18 @@
     <style include="settings-shared"></style>
 <if expr="_google_chrome">
     <settings-toggle-button pref="{{prefs.cros.metrics.reportingEnabled}}"
+        class="hr"
         label="$i18n{enableLogging}"
         sub-label="$i18n{enableLoggingDesc}">
     </settings-toggle-button>
 </if>
     <settings-toggle-button
+        class="hr"
         pref="{{prefs.cros.device.attestation_for_content_protection_enabled}}"
         label="$i18n{enableContentProtectionAttestation}">
     </settings-toggle-button>
     <settings-toggle-button
+        class="hr"
         pref="{{prefs.settings.internet.wake_on_wifi_darkconnect}}"
         label="$i18n{wakeOnWifi}">
     </settings-toggle-button>

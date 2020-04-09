@@ -28,6 +28,7 @@ enum class FeedEngagementType {
 }  // namespace internal
 
 // Reports UMA metrics for feed.
+// Note this is inherited only for testing.
 class MetricsReporter : public FeedStream::EventObserver {
  public:
   explicit MetricsReporter(const base::TickClock* clock);
@@ -37,11 +38,12 @@ class MetricsReporter : public FeedStream::EventObserver {
 
   // User interactions.
 
+  virtual void ContentSliceViewed(int index_in_stream);
   void NavigationStarted();
   void NavigationDone();
-  void ContentRemoved();
-  void NotInterestedIn();
-  void ManageInterests();
+  void RemoveAction();
+  void NotInterestedInAction();
+  void ManageInterestsAction();
   void ContextMenuOpened();
   // Indicates the user scrolled the feed by |distance_dp| and then stopped
   // scrolling.

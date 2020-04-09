@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/events/event.h"
+#include "ui/gfx/image/image_skia.h"
 
 class AppWindowLauncherItemController;
 

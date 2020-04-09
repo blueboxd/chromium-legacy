@@ -62,7 +62,7 @@ CSSImageValue::~CSSImageValue() = default;
 
 StyleImage* CSSImageValue::CacheImage(
     const Document& document,
-    FetchParameters::ImageRequestOptimization image_request_optimization,
+    FetchParameters::ImageRequestBehavior image_request_behavior,
     CrossOriginAttributeValue cross_origin) {
   if (!cached_image_) {
     if (absolute_url_.IsEmpty())
@@ -83,7 +83,7 @@ StyleImage* CSSImageValue::CacheImage(
     }
 
     bool is_lazily_loaded =
-        image_request_optimization == FetchParameters::kDeferImageLoad &&
+        image_request_behavior == FetchParameters::kDeferImageLoad &&
         // Only http/https images are eligible to be lazily loaded.
         params.Url().ProtocolIsInHTTPFamily();
     if (is_lazily_loaded) {

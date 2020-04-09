@@ -440,14 +440,17 @@ void WebStateImpl::SetContentsMimeType(const std::string& mime_type) {
   mime_type_ = mime_type;
 }
 
-bool WebStateImpl::ShouldAllowRequest(
+WebStatePolicyDecider::PolicyDecision WebStateImpl::ShouldAllowRequest(
     NSURLRequest* request,
     const WebStatePolicyDecider::RequestInfo& request_info) {
   for (auto& policy_decider : policy_deciders_) {
-    if (!policy_decider.ShouldAllowRequest(request, request_info))
-      return false;
+    WebStatePolicyDecider::PolicyDecision result =
+        policy_decider.ShouldAllowRequest(request, request_info);
+    if (result.ShouldCancelNavigation()) {
+      return result;
+    }
   }
-  return true;
+  return WebStatePolicyDecider::PolicyDecision::Allow();
 }
 
 bool WebStateImpl::ShouldAllowResponse(NSURLResponse* response,

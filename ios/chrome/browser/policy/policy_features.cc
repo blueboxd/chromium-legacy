@@ -9,6 +9,9 @@
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/common/channel_info.h"
 
+const base::Feature kManagedBookmarksIOS{"ManagedBookmarksIOS",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 namespace {
 
 // Returns true if the current command line contains the
@@ -31,4 +34,17 @@ bool IsEnterprisePolicyEnabled() {
 
 bool ShouldInstallEnterprisePolicyHandlers() {
   return IsEnableEnterprisePolicySwitchPresent();
+}
+
+bool ShouldInstallManagedBookmarksPolicyHandler() {
+  // This feature is controlled via the command line because policy must be
+  // initialized before about:flags or field trials. Using a command line flag
+  // is the only way to control this feature at runtime.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  return command_line->HasSwitch(switches::kInstallManagedBookmarksHandler);
+}
+
+bool IsManagedBookmarksEnabled() {
+  return ShouldInstallManagedBookmarksPolicyHandler() &&
+         base::FeatureList::IsEnabled(kManagedBookmarksIOS);
 }

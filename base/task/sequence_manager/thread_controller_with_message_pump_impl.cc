@@ -139,8 +139,8 @@ void ThreadControllerWithMessagePumpImpl::SetNextDelayedDoWork(
   main_thread_only().next_delayed_do_work = run_time;
   run_time = CapAtOneDay(run_time, lazy_now);
 
-  // It's very rare for PostDelayedTask to be called outside of a Do(Some)Work
-  // in production, so most of the time this does nothing.
+  // It's very rare for PostDelayedTask to be called outside of a DoWork in
+  // production, so most of the time this does nothing.
   if (work_deduplicator_.OnDelayedWorkRequested() ==
       ShouldScheduleWork::kScheduleImmediate) {
     // |pump_| can't be null as all postTasks are cross-thread before binding,
@@ -242,10 +242,8 @@ ThreadControllerWithMessagePumpImpl::DoWork() {
   }
 
   work_deduplicator_.OnWorkStarted();
-  bool ran_task = false;  // Unused.
   LazyNow continuation_lazy_now(time_source_);
-  TimeDelta delay_till_next_task =
-      DoWorkImpl(&continuation_lazy_now, &ran_task);
+  TimeDelta delay_till_next_task = DoWorkImpl(&continuation_lazy_now);
   // Schedule a continuation.
   WorkDeduplicator::NextTask next_task =
       delay_till_next_task.is_zero() ? WorkDeduplicator::NextTask::kIsImmediate
@@ -287,8 +285,7 @@ ThreadControllerWithMessagePumpImpl::DoWork() {
 }
 
 TimeDelta ThreadControllerWithMessagePumpImpl::DoWorkImpl(
-    LazyNow* continuation_lazy_now,
-    bool* ran_task) {
+    LazyNow* continuation_lazy_now) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
                "ThreadControllerImpl::DoWork");
 
@@ -332,7 +329,6 @@ TimeDelta ThreadControllerWithMessagePumpImpl::DoWorkImpl(
     }
 #endif
 
-    *ran_task = true;
     main_thread_only().task_execution_allowed = true;
     main_thread_only().task_source->DidRunTask();
 
@@ -446,7 +442,7 @@ void ThreadControllerWithMessagePumpImpl::Run(bool application_tasks_allowed,
 void ThreadControllerWithMessagePumpImpl::OnBeginNestedRunLoop() {
   // We don't need to ScheduleWork here! That's because the call to pump_->Run()
   // above, which is always called for RunLoop().Run(), guarantees a call to
-  // Do(Some)Work on all platforms.
+  // DoWork on all platforms.
   if (main_thread_only().nesting_observer)
     main_thread_only().nesting_observer->OnBeginNestedRunLoop();
 }
@@ -476,7 +472,7 @@ void ThreadControllerWithMessagePumpImpl::SetTaskExecutionAllowed(
   if (allowed) {
     // We need to schedule work unconditionally because we might be about to
     // enter an OS level nested message loop. Unlike a RunLoop().Run() we don't
-    // get a call to Do(Some)Work on entering for free.
+    // get a call to DoWork on entering for free.
     work_deduplicator_.OnWorkRequested();  // Set the pending DoWork flag.
     pump_->ScheduleWork();
   } else {

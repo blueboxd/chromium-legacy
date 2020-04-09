@@ -388,6 +388,7 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
 <translation id="1561424797596341174">La política anula las compilaciones de depuración del host de acceso remoto.</translation>
 <translation id="1561967320164410511">U2F y extensiones de confirmación individual</translation>
 <translation id="1583248206450240930">Utilizar <ph name="PRODUCT_FRAME_NAME" /> de forma predeterminada</translation>
+<translation id="1588240398285670601">Configuración del navegador</translation>
 <translation id="1599424828227887013">Habilitar el aislamiento de sitios web específicos en dispositivos Android</translation>
 <translation id="1608755754295374538">URLs a las que se concederá acceso a dispositivos de captura de audio sin confirmación</translation>
 <translation id="1615221548356595305">Permitir la fusión de conexiones HTTP/2 para estos hosts aunque se utilicen certificados de cliente</translation>
@@ -1376,6 +1377,7 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
 <translation id="2872961005593481000">Apagar</translation>
 <translation id="2873651257716068683">Anula el tamaño de impresión de página predeterminado. Si el tamaño de la página no está disponible, se ignora la política.</translation>
 <translation id="2874209944580848064">Nota para los dispositivos <ph name="PRODUCT_OS_NAME" /> compatibles con las aplicaciones de Android:</translation>
+<translation id="2874901846804525128">Evitar que el usuario utilice aplicaciones Android de fuentes que no son de confianza.</translation>
 <translation id="2875192972412983412">Permite especificar el subconjunto de servidores de impresión a los que se solicitará información sobre impresoras del servidor.
 
       Si se usa esta política, solo las impresoras del servidor cuyos ID coincidan con los valores incluidos en esta política estarán disponibles para el usuario.
@@ -2034,7 +2036,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si no estableces esta política, <ph name="PRODUCT_NAME" /> utilizará el directorio predeterminado habitual (específico de la plataforma).
 
       Accede a la página https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para consultar una lista de las variables que se pueden utilizar.</translation>
-<translation id="3898795800259311780">Permitir o denegar captura de pantalla</translation>
+<translation id="3898795800259311780">Permitir o denegar capturas de pantalla</translation>
 <translation id="3911737181201537215">Esta política no afecta al registro realizado por Android.</translation>
 <translation id="3912092044353890761">Habilita la función de accesibilidad de teclado virtual en la pantalla de inicio de sesión.
 
@@ -3022,6 +3024,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
           Si se establece el valor "true" o no se configura la política, el usuario podrá crear y administrar usuarios supervisados.</translation>
 <translation id="5369937289900051171">Solo impresión en color</translation>
 <translation id="5370279767682621504">Habilitar la compatibilidad con HTTP/0.9 en puertos no utilizados de forma predeterminada</translation>
+<translation id="5377606826822211923">Controlar el uso de aplicaciones Android de fuentes que no son de confianza para el usuario</translation>
 <translation id="5378985487213287085">Permite establecer si los sitios web pueden mostrar notificaciones de escritorio. Se puede permitir o denegar que se muestren notificaciones de escritorio de forma predeterminada o se puede establecer que los sitios web pidan permiso al usuario cada vez que quieran mostrar notificaciones de escritorio.
 
           Si no se establece esta política, se usará la política AskNotifications y el usuario podrá modificarla.</translation>
@@ -3841,6 +3844,7 @@ Si la política está establecida en False, no se informará sobre los usuarios.
       Ten en cuenta que EnabledPlugins y DisabledPluginsExceptions pueden anular esta política.
 
       Si no se asigna ningún valor a esta política, el usuario puede utilizar cualquier complemento que esté instalado en el sistema, excepto complementos incompatibles preprogramados, obsoletos o peligrosos.</translation>
+<translation id="6571871508154591774">Inhabilitar la cámara, la configuración del navegador y los ajustes del sistema operativo</translation>
 <translation id="6573305661369899995">Establecer una fuente externa de restricciones de URL</translation>
 <translation id="6583851521569686409">Configura una lista de impresoras.
 
@@ -3917,6 +3921,7 @@ Si la política está establecida en False, no se informará sobre los usuarios.
 <translation id="6731757988219967594">Filtrar contenido para adultos de sitios web de nivel superior (y no de los iframes insertados)</translation>
 <translation id="6734521799274931721">Controlar si el uso compartido de archivos del sistema estará disponible en Chrome OS</translation>
 <translation id="6735701345096330595">Forzar que se habilite el corrector ortográfico de idiomas</translation>
+<translation id="6737677282967014160">Permitir al usuario utilizar aplicaciones Android de fuentes que no son de confianza.</translation>
 <translation id="6757613329154374267">Copia de seguridad y restauración habilitada</translation>
 <translation id="6758659208493449452">Esta política controla si los usuarios registrados en el Programa de Protección Avanzada tienen acceso a funciones de protección adicionales. Puede que algunas de estas funciones impliquen compartir datos con Google (por ejemplo, los usuarios de Protección Avanzada podrán enviar sus descargas a Google para que realice un análisis de software malicioso). Si se asigna el valor "True" a esta política o no se le asigna ningún valor, los usuarios registrados tendrán acceso a funciones de protección adicionales. Si se le asigna el valor "False", los usuarios de Protección Avanzada solo tendrán acceso a las funciones estándar.</translation>
 <translation id="6762235610019366960">Permite controlar la presentación de contenido promocional y educativo que ocupe toda la pestaña en <ph name="PRODUCT_NAME" />.
@@ -4457,6 +4462,13 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
       Los patrones de URL deben seguir el mismo formato que en la política "URLBlacklist", tal y como se indica en la página https://www.chromium.org/administrators/url-blacklist-filter-format.
       </translation>
 <translation id="7566878661979235378">Tipo de autenticación de inicio de sesión con SAML</translation>
+<translation id="7567373982693549834">Esta política controla el uso de aplicaciones Android de fuentes que no son de confianza (distintas a Google Play Store) por parte de cada usuario.
+
+      Si no se asigna ningún valor a esta política, se considerará que no se permite la función.
+
+      Si el dispositivo del usuario está administrado, la disponibilidad de esta función dependerá también de la política de dispositivos correspondiente.
+
+      Si el dispositivo del usuario no está administrado, la disponibilidad de esta función dependerá también de si el usuario es el propietario del dispositivo.</translation>
 <translation id="757395965347379751">Si se habilita esta opción, <ph name="PRODUCT_NAME" /> permitirá los certificados SHA-1 firmados siempre que se validen correctamente y se vinculen a certificados de CA instalados localmente.
 
       Ten en cuenta que esta política depende de la pila de verificación de certificados del sistema operativo que permite las firmas SHA-1. Si una actualización del sistema operativo cambia la forma en que este gestiona los certificados SHA-1, es posible que la política deje de estar efectiva. Además, el objetivo de esta política es proporcionar a las empresas una solución temporal para que tengan más tiempo para abandonar los certificados SHA-1. Esta política se retirará sobre el 1 de enero de 2019.
@@ -4650,6 +4662,7 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 
           Nota: <ph name="DEVICE_LOGIN_SCREEN_HIGH_CONTRAST_ENABLED_POLICY_NAME" /> anula esta política si se especifica la anterior.</translation>
 <translation id="7846952520291088817">URLs cuyas IP locales se exponen en candidatos ICE WebRTC</translation>
+<translation id="7848641140449742406">Ajustes del sistema operativo</translation>
 <translation id="7858404742201086014">Si habilitas esta opción, los complementos obsoletos se utilizarán como complementos normales.
 
       Si inhabilitas esta opción, no se utilizarán los complementos obsoletos y no se pedirá permiso a los usuarios para ejecutarlos.

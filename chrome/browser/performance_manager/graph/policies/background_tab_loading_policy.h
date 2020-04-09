@@ -43,11 +43,19 @@ class BackgroundTabLoadingPolicy : public GraphOwned,
 
   void SetMockLoaderForTesting(std::unique_ptr<mechanism::PageLoader> loader);
   void SetMaxSimultaneousLoadsForTesting(size_t loading_slots);
+  void SetFreeMemoryForTesting(size_t free_memory_mb);
+  void ResetPolicyForTesting();
 
   // Returns the instance of BackgroundTabLoadingPolicy within the graph.
   static BackgroundTabLoadingPolicy* GetInstance();
 
  private:
+  // Determines whether or not the given PageNode should be loaded. If this
+  // returns false, then the policy no longer attempts to load |page_node| and
+  // removes it from the policy's internal state. This is called immediately
+  // prior to trying to load the PageNode.
+  bool ShouldLoad(const PageNode* page_node);
+
   // Move the PageNode from |page_nodes_to_load_| to
   // |page_nodes_load_initiated_| and make the call to load the PageNode.
   void InitiateLoad(const PageNode* page_node);
@@ -69,6 +77,9 @@ class BackgroundTabLoadingPolicy : public GraphOwned,
   // simultaneously loading tabs is exceeded.
   void LoadNextTab();
 
+  // Compute the amount of free memory on the system.
+  size_t GetFreePhysicalMemoryMib() const;
+
   // The mechanism used to load the pages.
   std::unique_ptr<performance_manager::mechanism::PageLoader> page_loader_;
 
@@ -87,6 +98,44 @@ class BackgroundTabLoadingPolicy : public GraphOwned,
   // The number of simultaneous tab loads that are permitted by policy. This
   // is computed based on the number of cores on the machine.
   size_t max_simultaneous_tab_loads_;
+
+  // The number of tab loads that have started. Every call to InitiateLoad
+  // increments this value.
+  size_t tab_loads_started_ = 0;
+
+  // Used to overwrite the amount of free memory available on the system.
+  size_t free_memory_mb_for_testing_ = 0;
+
+  // The minimum total number of restored tabs to load.
+  static constexpr uint32_t kMinTabsToLoad = 4;
+
+  // The maximum total number of restored tabs to load.
+  static constexpr uint32_t kMaxTabsToLoad = 20;
+
+  // The minimum amount of memory to keep free.
+  static constexpr uint32_t kDesiredAmountOfFreeMemoryMb = 150;
+
+  // The maximum time since last use of a tab in order for it to be loaded.
+  static constexpr base::TimeDelta kMaxTimeSinceLastUseToLoad =
+      base::TimeDelta::FromDays(30);
+
+  // Lower bound for the maximum number of tabs to load simultaneously.
+  static constexpr uint32_t kMinSimultaneousTabLoads = 1;
+
+  // Upper bound for the maximum number of tabs to load simultaneously.
+  static constexpr uint32_t kMaxSimultaneousTabLoads = 4;
+
+  // The number of CPU cores required per permitted simultaneous tab
+  // load.
+  static constexpr uint32_t kCoresPerSimultaneousTabLoad = 2;
+
+  FRIEND_TEST_ALL_PREFIXES(BackgroundTabLoadingPolicyTest,
+                           ShouldLoad_MaxTabsToRestore);
+  FRIEND_TEST_ALL_PREFIXES(BackgroundTabLoadingPolicyTest,
+                           ShouldLoad_MinTabsToRestore);
+  FRIEND_TEST_ALL_PREFIXES(BackgroundTabLoadingPolicyTest,
+                           ShouldLoad_FreeMemory);
+  FRIEND_TEST_ALL_PREFIXES(BackgroundTabLoadingPolicyTest, ShouldLoad_OldTab);
 };
 
 }  // namespace policies

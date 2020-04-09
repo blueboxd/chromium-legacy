@@ -102,6 +102,8 @@ class MockMutatorHost : public MutatorHost {
   MOCK_CONST_METHOD0(HasCustomPropertyAnimations, bool());
   MOCK_CONST_METHOD0(CurrentFrameHadRAF, bool());
   MOCK_CONST_METHOD0(NextFrameHasPendingRAF, bool());
+  MOCK_METHOD0(TakePendingThroughputTrackerInfos,
+               PendingThroughputTrackerInfos());
 };
 
 }  // namespace cc

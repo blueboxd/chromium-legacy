@@ -11,12 +11,9 @@
   <template>
     <style include="settings-shared iron-flex">
       :host {
-        @apply --cr-section;
-      }
-
-      :host(.first),
-      :host(.continuation) {
-        border-top: none;
+        align-items: center;
+        display: flex;
+        padding: 0 var(--cr-section-padding);
       }
 
       :host([elide-label]),
@@ -43,7 +40,7 @@
       }
 
       #labelWrapper {
-        padding: 12px 0;
+        padding: var(--cr-section-vertical-padding) 0;
       }
 
       #labelWrapper,

@@ -74,8 +74,7 @@ UnifiedMessageCenterBubble::UnifiedMessageCenterBubble(UnifiedSystemTray* tray)
   // Anchor within the overlay container.
   init_params.parent_window = tray->GetBubbleWindowContainer();
   init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
-  init_params.min_width = kTrayMenuWidth;
-  init_params.max_width = kTrayMenuWidth;
+  init_params.preferred_width = kTrayMenuWidth;
   init_params.has_shadow = false;
   init_params.close_on_deactivate = false;
 

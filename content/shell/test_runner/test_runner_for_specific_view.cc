@@ -49,6 +49,7 @@
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_input_element.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_manifest_manager.h"
 #include "third_party/blink/public/web/web_render_theme.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_security_policy.h"
@@ -317,6 +318,8 @@ void TestRunnerForSpecificView::CopyImageAtAndCapturePixelsAsyncThen(
 
 void TestRunnerForSpecificView::GetManifestThen(
     v8::Local<v8::Function> callback) {
+  // TODO(danakj): Move GetManifestThen method to per-frame TestRunnerBindings,
+  // instead of per-view bindings. Then we don't need to find a (main) frame.
   if (!web_view()->MainFrame()->IsWebLocalFrame()) {
     CHECK(false) << "This function cannot be called if the main frame is not a "
                     "local frame.";
@@ -325,8 +328,8 @@ void TestRunnerForSpecificView::GetManifestThen(
   v8::UniquePersistent<v8::Function> persistent_callback(
       blink::MainThreadIsolate(), callback);
 
-  delegate()->FetchManifest(
-      web_view(),
+  blink::WebManifestManager::RequestManifestForTesting(
+      web_view()->MainFrame()->ToWebLocalFrame(),
       base::BindOnce(&TestRunnerForSpecificView::GetManifestCallback,
                      weak_factory_.GetWeakPtr(),
                      std::move(persistent_callback)));

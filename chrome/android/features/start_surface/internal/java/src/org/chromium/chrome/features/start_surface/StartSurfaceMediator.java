@@ -264,6 +264,10 @@ class StartSurfaceMediator
             // Note that isVoiceSearchEnabled will return false in incognito mode.
             mPropertyModel.set(IS_VOICE_RECOGNITION_BUTTON_VISIBLE,
                     mFakeboxDelegate.getVoiceRecognitionHandler().isVoiceSearchEnabled());
+
+            if (mController.overviewVisible()) {
+                mFakeboxDelegate.addUrlFocusChangeListener(mUrlFocusChangeListener);
+            }
         }
     }
 
@@ -450,7 +454,9 @@ class StartSurfaceMediator
             mPropertyModel.set(TOP_BAR_HEIGHT, mFullScreenManager.getTopControlsHeight());
 
             mPropertyModel.set(IS_SHOWING_OVERVIEW, true);
-            mFakeboxDelegate.addUrlFocusChangeListener(mUrlFocusChangeListener);
+            if (mFakeboxDelegate != null) {
+                mFakeboxDelegate.addUrlFocusChangeListener(mUrlFocusChangeListener);
+            }
         }
 
         mController.showOverview(animate);
@@ -501,7 +507,9 @@ class StartSurfaceMediator
     @Override
     public void startedHiding() {
         if (mPropertyModel != null) {
-            mFakeboxDelegate.removeUrlFocusChangeListener(mUrlFocusChangeListener);
+            if (mFakeboxDelegate != null) {
+                mFakeboxDelegate.removeUrlFocusChangeListener(mUrlFocusChangeListener);
+            }
             mPropertyModel.set(IS_SHOWING_OVERVIEW, false);
 
             destroyFeedSurfaceCoordinator();
@@ -659,8 +667,10 @@ class StartSurfaceMediator
         // earlier than the VoiceRecognitionHandler, so isVoiceSearchEnabled returns
         // incorrect state if check synchronously.
         ThreadUtils.postOnUiThread(() -> {
-            mPropertyModel.set(IS_VOICE_RECOGNITION_BUTTON_VISIBLE,
-                    mFakeboxDelegate.getVoiceRecognitionHandler().isVoiceSearchEnabled());
+            if (mFakeboxDelegate != null && mFakeboxDelegate.getVoiceRecognitionHandler() != null) {
+                mPropertyModel.set(IS_VOICE_RECOGNITION_BUTTON_VISIBLE,
+                        mFakeboxDelegate.getVoiceRecognitionHandler().isVoiceSearchEnabled());
+            }
         });
     }
 

@@ -176,7 +176,6 @@
 #include "media/learning/common/value.h"
 #include "media/media_buildflags.h"
 #include "media/mojo/mojom/remoting.mojom.h"
-#include "media/mojo/services/media_interface_provider.h"
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -6966,7 +6965,8 @@ void RenderFrameHostImpl::BindSmsReceiverReceiver(
     mojo::ReportBadMessage("Must have the same origin as the top-level frame.");
     return;
   }
-  auto* fetcher = SmsFetcher::Get(GetProcess()->GetBrowserContext(), this);
+  auto* fetcher = SmsFetcher::Get(GetProcess()->GetBrowserContext(),
+                                  weak_ptr_factory_.GetWeakPtr());
   SmsService::Create(fetcher, this, std::move(receiver));
 }
 

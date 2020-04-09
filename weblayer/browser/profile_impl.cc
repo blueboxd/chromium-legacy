@@ -11,10 +11,6 @@
 
 #include "base/bind.h"
 #include "base/callback_forward.h"
-#include "base/files/file_enumerator.h"
-#include "base/files/file_util.h"
-#include "base/path_service.h"
-#include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -32,7 +28,6 @@
 #include "weblayer/browser/browser_context_impl.h"
 #include "weblayer/browser/cookie_manager_impl.h"
 #include "weblayer/browser/tab_impl.h"
-#include "weblayer/common/weblayer_paths.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/callback_android.h"
@@ -54,85 +49,14 @@ namespace weblayer {
 
 namespace {
 
-bool IsNameValid(const std::string& name) {
-  for (size_t i = 0; i < name.size(); ++i) {
-    char c = name[i];
-    if (!(base::IsAsciiDigit(c) || base::IsAsciiAlpha(c) || c == '_')) {
-      return false;
-    }
-  }
-  return true;
-}
-
-// Return the data path directory to profiles.
-base::FilePath GetProfileRootDataDir() {
-  base::FilePath path;
-  CHECK(base::PathService::Get(DIR_USER_DATA, &path));
-  return path.AppendASCII("profiles");
-}
-
-#if defined(OS_POSIX)
-base::FilePath ComputeCachePath(const std::string& profile_name) {
-  base::FilePath path;
-  CHECK(base::PathService::Get(base::DIR_CACHE, &path));
-  return path.AppendASCII("profiles").AppendASCII(profile_name.c_str());
-}
-#endif  // OS_POSIX
-
-base::FilePath ComputeBrowserPersisterDataBaseDir(
-    const base::FilePath& data_path) {
-  base::FilePath base_path;
-  if (data_path.empty()) {
-    CHECK(base::PathService::Get(DIR_USER_DATA, &base_path));
-    base_path = base_path.AppendASCII("Incognito Restore Data");
-  } else {
-    base_path = data_path.AppendASCII("Restore Data");
-  }
-  return base_path;
-}
-
-void NukeProfileFromDisk(const std::string& profile_name,
-                         const base::FilePath& data_path) {
-  if (data_path.empty()) {
-    // Incognito. Just delete session data.
-    base::DeleteFileRecursively(ComputeBrowserPersisterDataBaseDir(data_path));
-    return;
-  }
-
-  base::DeleteFileRecursively(data_path);
-#if defined(OS_POSIX)
-  base::DeleteFileRecursively(ComputeCachePath(profile_name));
-#endif
-}
-
 #if defined(OS_ANDROID)
-// Returned path only contains the directory name.
-// Invalid profile names are ignored.
-std::vector<base::FilePath> ListProfileNames() {
-  base::FilePath root_dir = GetProfileRootDataDir();
-  std::vector<base::FilePath> profile_names;
-  base::FileEnumerator enumerator(root_dir, /*recursive=*/false,
-                                  base::FileEnumerator::DIRECTORIES);
-  for (base::FilePath path = enumerator.Next(); !path.empty();
-       path = enumerator.Next()) {
-    base::FilePath name = enumerator.GetInfo().GetName();
-    if (IsNameValid(name.MaybeAsASCII())) {
-      profile_names.push_back(name);
-    }
-  }
-  return profile_names;
-}
 
 void PassFilePathsToJavaCallback(
     const base::android::ScopedJavaGlobalRef<jobject>& callback,
-    const std::vector<base::FilePath>& file_paths) {
-  std::vector<std::string> strings;
-  for (const auto& path : file_paths) {
-    strings.push_back(path.value());
-  }
+    const std::vector<std::string>& file_paths) {
   base::android::RunObjectCallbackAndroid(
       callback, base::android::ToJavaArrayOfStrings(
-                    base::android::AttachCurrentThread(), strings));
+                    base::android::AttachCurrentThread(), file_paths));
 }
 #endif  // OS_ANDROID
 
@@ -171,33 +95,15 @@ class ProfileImpl::DataClearer : public content::BrowsingDataRemover::Observer {
 base::FilePath ProfileImpl::GetCachePath(content::BrowserContext* context) {
   DCHECK(context);
   ProfileImpl* profile = FromBrowserContext(context);
-#if defined(OS_POSIX)
-  base::FilePath path = ComputeCachePath(profile->name_);
-  {
-    base::ScopedAllowBlocking allow_blocking;
-    if (!base::PathExists(path))
-      base::CreateDirectory(path);
-  }
-  return path;
-#else
-  return profile->data_path_;
-#endif
+  return profile->info_.cache_path;
 }
 
 ProfileImpl::ProfileImpl(const std::string& name)
-    : name_(name),
-      download_directory_(BrowserContextImpl::GetDefaultDownloadDirectory()) {
-  if (!name.empty()) {
-    CHECK(IsNameValid(name));
-    {
-      base::ScopedAllowBlocking allow_blocking;
-      data_path_ = GetProfileRootDataDir().AppendASCII(name.c_str());
-
-      if (!base::PathExists(data_path_))
-        base::CreateDirectory(data_path_);
-    }
+    : download_directory_(BrowserContextImpl::GetDefaultDownloadDirectory()) {
+  {
+    base::ScopedAllowBlocking allow_blocking;
+    info_ = CreateProfileInfo(name);
   }
-
   // Ensure WebCacheManager is created so that it starts observing
   // OnRenderProcessHostCreated events.
   web_cache::WebCacheManager::GetInstance();
@@ -218,7 +124,8 @@ content::BrowserContext* ProfileImpl::GetBrowserContext() {
   if (browser_context_)
     return browser_context_.get();
 
-  browser_context_ = std::make_unique<BrowserContextImpl>(this, data_path_);
+  browser_context_ =
+      std::make_unique<BrowserContextImpl>(this, info_.data_path);
   locale_change_subscription_ =
       i18n::RegisterLocaleChangeCallback(base::BindRepeating(
           &ProfileImpl::OnLocaleChanged, base::Unretained(this)));
@@ -290,16 +197,14 @@ void ProfileImpl::NukeDataAfterRemovingData(
 // static
 void ProfileImpl::DoNukeData(std::unique_ptr<ProfileImpl> profile,
                              base::OnceClosure done_callback) {
-  std::string name = profile->name_;
-  base::FilePath data_path = profile->data_path_;
+  ProfileInfo info = profile->info_;
 
   profile.reset();
   base::ThreadPool::PostTaskAndReply(
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::BindOnce(&NukeProfileFromDisk, name, data_path),
-      std::move(done_callback));
+      base::BindOnce(&NukeProfileFromDisk, info), std::move(done_callback));
 }
 
 void ProfileImpl::ClearRendererCache() {
@@ -463,7 +368,7 @@ void ProfileImpl::DecrementBrowserImplCount() {
 }
 
 base::FilePath ProfileImpl::GetBrowserPersisterDataBaseDir() const {
-  return ComputeBrowserPersisterDataBaseDir(data_path_);
+  return ComputeBrowserPersisterDataBaseDir(info_);
 }
 
 }  // namespace weblayer

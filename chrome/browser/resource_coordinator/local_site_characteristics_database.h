@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "chrome/browser/performance_manager/persistence/site_data/site_data.pb.h"
+#include "components/performance_manager/persistence/site_data/site_data.pb.h"
 #include "url/origin.h"
 
 namespace resource_coordinator {

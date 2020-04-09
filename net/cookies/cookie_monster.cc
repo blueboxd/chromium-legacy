@@ -303,7 +303,8 @@ bool IsHttpSameSiteContextAtLeast(
     const CookieOptions& options,
     CookieOptions::SameSiteCookieContext::ContextType same_site_requirement) {
   return !options.exclude_httponly() &&
-         options.same_site_cookie_context().context >= same_site_requirement;
+         options.same_site_cookie_context().GetContextForCookieInclusion() >=
+             same_site_requirement;
 }
 
 }  // namespace

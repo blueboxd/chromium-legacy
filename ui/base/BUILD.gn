@@ -123,6 +123,8 @@ jumbo_component("base") {
     "models/combobox_model.cc",
     "models/combobox_model.h",
     "models/combobox_model_observer.h",
+    "models/image_model.cc",
+    "models/image_model.h",
     "models/list_model.h",
     "models/list_model_observer.h",
     "models/list_selection_model.cc",
@@ -334,8 +336,6 @@ jumbo_component("base") {
       "base_window.h",
       "cursor/cursor_util.cc",
       "cursor/cursor_util.h",
-      "default_theme_provider.cc",
-      "default_theme_provider.h",
       "emoji/emoji_panel_helper.h",
       "pointer/pointer_device.h",
       "pointer/pointer_device_util.cc",
@@ -631,7 +631,6 @@ jumbo_component("base") {
     libs += [ "jnigraphics" ]
 
     sources -= [
-      "default_theme_provider.cc",
       "l10n/l10n_font_util.cc",
       "models/button_menu_item_model.cc",
       "pointer/touch_editing_controller.cc",
@@ -895,6 +894,7 @@ test("ui_base_unittests") {
     "l10n/l10n_util_unittest.cc",
     "l10n/time_format_unittest.cc",
     "layout_unittest.cc",
+    "models/image_model_unittest.cc",
     "models/simple_menu_model_unittest.cc",
     "models/tree_node_iterator_unittest.cc",
     "pointer/touch_ui_controller_unittest.cc",

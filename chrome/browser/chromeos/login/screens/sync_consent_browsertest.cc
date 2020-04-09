@@ -24,8 +24,10 @@
 #include "chrome/browser/ui/webui/chromeos/login/assistant_optin_flow_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/base/pref_names.h"
 #include "content/public/test/test_utils.h"
@@ -433,6 +435,25 @@ IN_PROC_BROWSER_TEST_F(SyncConsentSplitSyncConsentTest, MAYBE_UserCanDisable) {
   // OS sync is off.
   PrefService* prefs = ProfileManager::GetPrimaryUserProfile()->GetPrefs();
   EXPECT_FALSE(prefs->GetBoolean(syncer::prefs::kOsSyncFeatureEnabled));
+}
+
+// Tests that the SyncConsent screen performs a timezone request so that
+// subsequent screens can have a timezone to work with, and that the timezone
+// is properly stored in a preference.
+class SyncConsentTimezoneOverride : public SyncConsentTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitchASCII(switches::kOobeTimezoneOverrideForTests,
+                                    "TimezeonPropagationTest");
+    SyncConsentTest::SetUpCommandLine(command_line);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(SyncConsentTimezoneOverride, MakesTimezoneRequest) {
+  LoginToSyncConsentScreen();
+  EXPECT_EQ("TimezeonPropagationTest",
+            g_browser_process->local_state()->GetString(
+                prefs::kSigninScreenTimezone));
 }
 
 }  // namespace

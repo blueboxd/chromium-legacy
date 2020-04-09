@@ -120,7 +120,6 @@
 <translation id="1153636665119721804">‏برنامه محافظت پیشرفته Google</translation>
 <translation id="1161575384898972166">لطفاً برای صدور مجوز سرویس گیرنده، به <ph name="TOKEN_NAME" /> وارد شوید.</translation>
 <translation id="1163931534039071049">&amp;نمای منبع قاب</translation>
-<translation id="1164674268730883318">‏Smart Lock برای <ph name="DEVICE_TYPE" /> خاموش شود؟</translation>
 <translation id="1164891049599601209">در سایت فریب‌دهنده وارد شده است</translation>
 <translation id="1164899421101904659">کلید باز کردن قفل پین را وارد کنید</translation>
 <translation id="1165039591588034296">خطا</translation>
@@ -771,7 +770,6 @@
 
 با نصب برنامه Family Link در دستگاهتان می‌توانید تنظیمات این حساب را مدیریت کنید.  دستورالعمل‌ها در قالب ایمیل برایتان ارسال کردیم.</translation>
 <translation id="2040460856718599782">وای! هنگام احراز هویت شما مشکلی پیش آمد. لطفاً اطلاعات کاربری ورود به سیستمتان را دوباره بررسی کرده و دوباره امتحان نمایید.</translation>
-<translation id="2043818754674261542">برای باز کردن قفل این <ph name="DEVICE_TYPE" />، باید تلفن از آن فاصله بگیرد</translation>
 <translation id="204497730941176055">‏نام الگوی گواهی Microsoft</translation>
 <translation id="2045117674524495717">راهنمای میان‌بر صفحه‌کلید</translation>
 <translation id="2045969484888636535">ادامه مسدود کردن کوکی‌ها</translation>
@@ -1144,7 +1142,6 @@
 <translation id="2518024842978892609">استفاده از گواهی‌های کلاینت شما</translation>
 <translation id="2520644704042891903">در انتظار برای سوکت موجود...</translation>
 <translation id="252219247728877310">مؤلفه به‌روز نشده است</translation>
-<translation id="2522791476825452208">خیلی نزدیک</translation>
 <translation id="2523184218357549926">‏نشانی وب صفحه‌هایی را که بازدید می‌کنید برای Google ارسال می‌کند</translation>
 <translation id="2526277209479171883">نصب کردن و ادامه دادن</translation>
 <translation id="2526590354069164005">دسک تاپ</translation>
@@ -1753,7 +1750,6 @@
 <translation id="3333190335304955291">می‌توانید این سرویس را در تنظیمات خاموش کنید.</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> - پخش ویدیو در حالت تصویردرتصویر</translation>
 <translation id="3335947283844343239">باز کردن مجدد برگه بسته شده</translation>
-<translation id="3336664756920573711">‏باز کردن قفل <ph name="DEVICE_TYPE" /> با تلفن Android</translation>
 <translation id="3340620525920140773">بارگیری کامل شد: <ph name="FILE_NAME" />.</translation>
 <translation id="3341699307020049241">پین اشتباه است. <ph name="RETRIES" /> بار دیگر می‌توانید امتحان کنید.</translation>
 <translation id="3341703758641437857">اجازهٔ دسترسی به نشانی‌های وب فایل</translation>
@@ -2776,7 +2772,6 @@
 <translation id="4697551882387947560">هنگام پایان جلسه مرور</translation>
 <translation id="4699172675775169585">تصاویر و فایل‌های قرار گرفته در حافظه پنهان</translation>
 <translation id="4699357559218762027">(اجرای خودکار)</translation>
-<translation id="470074695271471509">برای پایان این فرآیند، از سیستم خارج می‌شوید؟</translation>
 <translation id="4701025263201366865">ورود ولی به سیستم</translation>
 <translation id="4707302005824653064">‏استفاده و سابقه می‌تواند توسط مدیر (<ph name="CUSTODIAN_EMAIL" />) در chrome.com بازدید شود.</translation>
 <translation id="4707579418881001319">‏L2TP/IPSec + گواهی کاربر</translation>
@@ -2799,7 +2794,6 @@
 <translation id="473546211690256853"><ph name="DOMAIN" />، این حساب را مدیریت می‌کند</translation>
 <translation id="4735803855089279419">سیستم نتوانست شناسه‌های دستگاه را برای این دستگاه تعیین کند.</translation>
 <translation id="4736292055110123391">همگام‌سازی نشانک‌ها، سابقه، و موارد دیگر در همه دستگاه‌ها</translation>
-<translation id="4737715515457435632">لطفاً به شبکه وصل شوید.</translation>
 <translation id="473775607612524610">به‌روزرسانی</translation>
 <translation id="4739639199548674512">بلیت‌ها</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />با نحوه به‌روزرسانی برنامه‌ها آشنا شوید<ph name="END_LINK" /></translation>
@@ -3277,7 +3271,6 @@
 <translation id="5423829801105537712">غلط‌گیر املایی پایه</translation>
 <translation id="5423849171846380976">فعال شد</translation>
 <translation id="5425042808445046667">ادامه بارگیری</translation>
-<translation id="5425722269016440406">‏برای خاموش کردن Smart Lock باید آنلاین باشید زیرا این تنظیم با تلفن و سایر دستگاه‌های شما همگام‌سازی می‌شود. لطفاً اول به شبکه متصل شوید.</translation>
 <translation id="5425863515030416387">ورود به سیستم آسان در همه دستگاه‌ها</translation>
 <translation id="5427278936122846523">همیشه ترجمه شود</translation>
 <translation id="5427459444770871191">چرخاندن در جهت &amp;عقربه‌های ساعت</translation>
@@ -3419,7 +3412,6 @@
 <translation id="558918721941304263">درحال بار کردن برنامه...</translation>
 <translation id="5592595402373377407">هنوز داده کافی در دسترس نیست.</translation>
 <translation id="5593357315997824387">همگام‌سازی فایل‌های من</translation>
-<translation id="5595152862129936745">خیلی دور</translation>
 <translation id="5595485650161345191">ویرایش آدرس</translation>
 <translation id="5595727715083333657">‏محتوی شما از تغییر اندازه پشتیبانی نمی‌کند. برای تنظیم مقدار فضایی که ازقبل به Linux (بتا) اختصاص می‌یابد، پشتیبان‌گیری کنید و سپس در محتوی جدیدی بازیابی کنید.</translation>
 <translation id="5596627076506792578">گزینه‌های بیشتر</translation>
@@ -3532,7 +3524,6 @@
 <translation id="5747552184818312860">تاریخ انقضا</translation>
 <translation id="5747785204778348146">برنامه‌نویس - ناپایدار</translation>
 <translation id="5747809636523347288">جای‌گذاری و رفتن به <ph name="URL" /></translation>
-<translation id="5750324801516359607">دور</translation>
 <translation id="5751887393582880060">این بارگذاریْ خط‌مشی‌های امنیتی سازمانتان را نقض می‌کند. درهرصورت ادامه می‌دهید؟</translation>
 <translation id="5756163054456765343">مرکز را&amp;هنمایی</translation>
 <translation id="5759728514498647443">اسنادی که از طریق <ph name="APP_NAME" /> برای چاپ ارسال می‌کنید، می‌توانند توسط <ph name="APP_NAME" /> خوانده شوند.</translation>
@@ -4082,7 +4073,6 @@
 <translation id="6490471652906364588">‏دستگاه USB-C (درگاه سمت راست)</translation>
 <translation id="6491376743066338510">مجوز صادر نشد</translation>
 <translation id="6494445798847293442">یک ارائه‌دهنده مجوز نیست</translation>
-<translation id="649454645705377674">بستن</translation>
 <translation id="6495925982925244349">شبکه <ph name="NETWORK_INDEX" /> از <ph name="NETWORK_COUNT" />، <ph name="NETWORK_NAME" />، <ph name="SECURITY_STATUS" />، <ph name="CONNECTION_STATUS" />، قدرت سیگنال <ph name="SIGNAL_STRENGTH" />٪، تحت‌مدیریت سرپرست، جزئیات</translation>
 <translation id="6498249116389603658">&amp;همه زبان‌های شما</translation>
 <translation id="6499143127267478107">تعیین میزبان در اسکریپت پروکسی...</translation>
@@ -4150,7 +4140,6 @@
 <translation id="6590458744723262880">تغییر نام پوشه</translation>
 <translation id="6592267180249644460">‏زمان ثبت گزارش WebRTC ‏<ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">اثرانگشت ثبت شد</translation>
-<translation id="6594883168703494535">‏استفاده از Smart Lock‌ برای ورود به سیستم حساب Google</translation>
 <translation id="6596325263575161958">گزینه‌های رمزگذاری</translation>
 <translation id="6596816719288285829">‏نشانی IP</translation>
 <translation id="6597017209724497268">نمونه‌ها</translation>
@@ -4684,7 +4673,6 @@
 <translation id="7328867076235380839">ترکیب نامعتبر</translation>
 <translation id="7329154610228416156">ورود به سیستم ناموفق بود، زیرا برای استفاده از یک نشانی وب غیرامن (<ph name="BLOCKED_URL" />) پیکربندی شده بود. لطفاً با سرپرستتان تماس بگیرید.</translation>
 <translation id="7332053360324989309">Dedicated Worker: <ph name="SCRIPT_URL" /></translation>
-<translation id="7334190995941642545">‏در حال حاضر Smart Lock در دسترس نیست. لطفاً بعداً دوباره امتحان کنید.</translation>
 <translation id="7334274148831027933">فعال کردن ذره‌بین متصل</translation>
 <translation id="7335974957018254119">استفاده از غلط‌گیر املا برای</translation>
 <translation id="7336799713063880535">اعلان‌ها مسدود شدند.</translation>
@@ -5229,11 +5217,6 @@
 <translation id="8017679124341497925">میان‌بر ویرایش شد</translation>
 <translation id="8018313076035239964">اطلاعاتی را که وب‌سایت‌ها می‌توانند استفاده کنند و محتوایی را که می‌توانند به شما نشان دهند کنترل کنید</translation>
 <translation id="8023801379949507775">اکنون افزونه‌ها به‌روز شوند</translation>
-<translation id="8024483450737722621">‏برنامه‌هایی که از Google Play بارگیری کرده‌اید از این Chromebook حذف می‌شوند.
-      <ph name="LINE_BREAKS1" />
-      محتوایی که خریده‌اید مثل فیلم، نمایش تلویزیونی، موسیقی، کتاب یا سایر خریدهای درون‌برنامه نیز ممکن است حذف شوند.
-      <ph name="LINE_BREAKS2" />
-      این تنظیم بر برنامه‌ها یا محتوای موجود در دستگاه‌های دیگر تأثیری ندارد.</translation>
 <translation id="8026334261755873520">پاک کردن داده‌های مرور</translation>
 <translation id="8028060951694135607">‏بازیابی کلید Microsot</translation>
 <translation id="8028803902702117856">درحال بارگیری <ph name="SIZE" />، <ph name="FILE_NAME" /></translation>
@@ -5549,7 +5532,6 @@
 <translation id="8455026683977728932">‏مصورسازی ADB فعال نشد</translation>
 <translation id="845702320058262034">اتصال برقرار نشد. مطمئن شوید که بلوتوث تلفن روشن است.</translation>
 <translation id="8457451314607652708">وارد کردن نشانک‌ها</translation>
-<translation id="8460336040822756677">‏اگر Smart Lock را برای <ph name="DEVICE_TYPE" /> خاموش کنید، نمی‌توانید قفل دستگاه‌های Chrome خود را با استفاده از تلفنتان باز کنید. باید گذرواژه‌تان را تایپ کنید.</translation>
 <translation id="8461329675984532579">نام ارائه‌دهنده اصلی</translation>
 <translation id="84613761564611563">رابط کاربری پیکربندی شبکه درخواست شد، لطفاً صبر کنید…</translation>
 <translation id="8461914792118322307">پراکسی</translation>
@@ -5775,7 +5757,6 @@
 <translation id="8743864605301774756">۱ ساعت قبل به‌روز‌رسانی شد</translation>
 <translation id="8746654918629346731">قبلاً «<ph name="EXTENSION_NAME" />» را درخواست کرده‌اید</translation>
 <translation id="874689135111202667">{0,plural, =1{یک فایل در این سایت بارگذاری شود؟}one{# فایل در این سایت بارگذاری شود؟}other{# فایل در این سایت بارگذاری شود؟}}</translation>
-<translation id="8748384418490037181">‏گزینه‌های Smart Lock</translation>
 <translation id="8749863574775030885">‏دسترسی به دستگاه‌های USB از ارائه‌دهنده ناشناس</translation>
 <translation id="8750133148106010815">‏برای راه‌اندازی Google Play، <ph name="ORGANIZATION_NAME" /> از شما می‌خواهد از داده‌هایتان پشتیبان بگیرید و این Chromebook را به تنظیمات کارخانه بازنشانی کنید.</translation>
 <translation id="8750155211039279868"><ph name="ORIGIN" /> می‌خواهد به درگاه سریالی متصل شود</translation>
@@ -5898,7 +5879,6 @@
 <translation id="8881020143150461183">لطفاً دوباره امتحان کنید. برای پشتیبانی فنی، با <ph name="CARRIER_NAME" /> تماس بگیرید.</translation>
 <translation id="8883273463630735858">فعال کردن شتاب‌دهنده صفحه لمسی</translation>
 <translation id="8884570509232205463">اکنون دستگاهتان ساعت <ph name="UNLOCK_TIME" /> قفل می‌شود.</translation>
-<translation id="8885197664446363138">‏Smart Lock در دسترس نیست</translation>
 <translation id="8888253246822647887">وقتی ارتقا به پایان برسد، برنامه‌تان باز خواهد شد. ارتقا ممکن است چند دقیقه طول بکشد.</translation>
 <translation id="8888432776533519951">رنگ:</translation>
 <translation id="8889651696183044030"><ph name="ORIGIN" /> می‌تواند این فایل‌ها و پوشه‌ها را ویرایش کند:</translation>

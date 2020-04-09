@@ -31,6 +31,7 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/base/accelerators/menu_label_accelerator_util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/text_elider.h"
@@ -126,17 +127,18 @@ int BackForwardMenuModel::GetGroupIdAt(int index) const {
   return false;
 }
 
-bool BackForwardMenuModel::GetIconAt(int index, gfx::Image* icon) const {
+ui::ImageModel BackForwardMenuModel::GetIconAt(int index) const {
   if (!ItemHasIcon(index))
-    return false;
+    return ui::ImageModel();
 
   if (index == GetItemCount() - 1) {
-    *icon = ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-        IDR_HISTORY_FAVICON);
+    return ui::ImageModel::FromImage(
+        ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+            IDR_HISTORY_FAVICON));
   } else {
     NavigationEntry* entry = GetNavigationEntry(index);
-    *icon = entry->GetFavicon().image;
-    if (!entry->GetFavicon().valid && menu_model_delegate()) {
+    content::FaviconStatus fav_icon = entry->GetFavicon();
+    if (!fav_icon.valid && menu_model_delegate()) {
       // FetchFavicon is not const because it caches the result, but GetIconAt
       // is const because it is not be apparent to outside observers that an
       // internal change is taking place. Compared to spreading const in
@@ -145,9 +147,8 @@ bool BackForwardMenuModel::GetIconAt(int index, gfx::Image* icon) const {
       // this const_cast is the lesser evil.
       const_cast<BackForwardMenuModel*>(this)->FetchFavicon(entry);
     }
+    return ui::ImageModel::FromImage(fav_icon.image);
   }
-
-  return true;
 }
 
 ui::ButtonMenuItemModel* BackForwardMenuModel::GetButtonMenuItemAt(

@@ -36,8 +36,6 @@ class AppModalDialogViewViews : public AppModalDialogView,
   // views::DialogDelegate:
   base::string16 GetWindowTitle() const override;
   void DeleteDelegate() override;
-  bool Cancel() override;
-  bool Accept() override;
   ui::ModalType GetModalType() const override;
   views::View* GetContentsView() override;
   views::View* GetInitiallyFocusedView() override;

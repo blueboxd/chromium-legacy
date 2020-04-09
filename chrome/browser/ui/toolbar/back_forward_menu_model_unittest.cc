@@ -29,6 +29,7 @@
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/models/image_model.h"
 #include "ui/gfx/codec/png_codec.h"
 
 using base::ASCIIToUTF16;
@@ -526,8 +527,7 @@ TEST_F(BackFwdMenuModelTest, FaviconLoadTest) {
 
   // Will return the current icon (default) but start an anync call
   // to retrieve the favicon from the favicon service.
-  gfx::Image default_icon;
-  back_model.GetIconAt(0, &default_icon);
+  ui::ImageModel default_icon = back_model.GetIconAt(0);
 
   // Make the favicon service run GetFavIconForURL,
   // FaviconDelegate.OnIconChanged will be called.
@@ -537,12 +537,11 @@ TEST_F(BackFwdMenuModelTest, FaviconLoadTest) {
   EXPECT_TRUE(favicon_delegate.was_called());
 
   // Verify the bitmaps match.
-  gfx::Image valid_icon;
   // This time we will get the new favicon returned.
-  back_model.GetIconAt(0, &valid_icon);
+  ui::ImageModel valid_icon = back_model.GetIconAt(0);
 
-  SkBitmap default_icon_bitmap = *default_icon.ToSkBitmap();
-  SkBitmap valid_icon_bitmap = *valid_icon.ToSkBitmap();
+  SkBitmap default_icon_bitmap = *default_icon.GetImage().ToSkBitmap();
+  SkBitmap valid_icon_bitmap = *valid_icon.GetImage().ToSkBitmap();
 
   // Verify we did not get the default favicon.
   EXPECT_NE(

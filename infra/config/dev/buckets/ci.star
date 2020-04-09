@@ -49,6 +49,9 @@ def ci_builder(*, name, **kwargs):
   return builder(
       name = name,
       triggered_by = ['master-gitiles-trigger'],
+      resultdb_settings = resultdb.settings(
+          enable = True,
+      ),
       **kwargs
   )
 

@@ -64,6 +64,13 @@ class CORE_EXPORT FontFaceSetDocument final : public FontFaceSet,
   void NotifyLoaded(FontFace*) override;
   void NotifyError(FontFace*) override;
 
+  // After flipping the flag to true, all 'font-display: auto' fonts that
+  // haven't finished loading will enter the failure period immediately (except
+  // for those already in the memory cache), so that they don't cause a bad
+  // Largest Contentful Paint (https://wicg.github.io/largest-contentful-paint/)
+  bool HasReachedLCPLimit() const { return has_reached_lcp_limit_; }
+  void LCPLimitReached(TimerBase*);
+
   size_t ApproximateBlankCharacterCount() const;
 
   static FontFaceSetDocument* From(Document&);
@@ -87,6 +94,8 @@ class CORE_EXPORT FontFaceSetDocument final : public FontFaceSet,
   const HeapLinkedHashSet<Member<FontFace>>& CSSConnectedFontFaceList()
       const override;
 
+  void StartLCPLimitTimerIfNeeded();
+
   class FontLoadHistogram {
     DISALLOW_NEW();
 
@@ -100,6 +109,11 @@ class CORE_EXPORT FontFaceSetDocument final : public FontFaceSet,
     Status status_;
   };
   FontLoadHistogram histogram_;
+
+  TaskRunnerTimer<FontFaceSetDocument> lcp_limit_timer_;
+
+  bool has_reached_lcp_limit_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(FontFaceSetDocument);
 };
 

@@ -16,6 +16,7 @@
 #include "media/mojo/mojom/audio_decoder.mojom.h"
 #include "media/mojo/mojom/content_decryption_module.mojom.h"
 #include "media/mojo/mojom/decryptor.mojom.h"
+#include "media/mojo/mojom/frame_interface_factory.mojom.h"
 #include "media/mojo/mojom/interface_factory.mojom.h"
 #include "media/mojo/mojom/renderer.mojom.h"
 #include "media/mojo/mojom/video_decoder.mojom.h"
@@ -26,7 +27,6 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
-#include "services/service_manager/public/mojom/interface_provider.mojom.h"
 
 #if BUILDFLAG(ENABLE_CDM_PROXY)
 #include "media/mojo/mojom/cdm_proxy.mojom.h"
@@ -40,8 +40,7 @@ class MojoMediaClient;
 class InterfaceFactoryImpl : public DeferredDestroy<mojom::InterfaceFactory> {
  public:
   InterfaceFactoryImpl(
-      mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
-          host_interfaces,
+      mojo::PendingRemote<mojom::FrameInterfaceFactory> frame_interfaces,
       MojoMediaClient* mojo_media_client);
   ~InterfaceFactoryImpl() final;
 
@@ -124,7 +123,7 @@ class InterfaceFactoryImpl : public DeferredDestroy<mojom::InterfaceFactory> {
   mojo::UniqueReceiverSet<mojom::CdmProxy> cdm_proxy_receivers_;
 #endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 
-  mojo::Remote<service_manager::mojom::InterfaceProvider> host_interfaces_;
+  mojo::Remote<mojom::FrameInterfaceFactory> frame_interfaces_;
 
   mojo::UniqueReceiverSet<mojom::Decryptor> decryptor_receivers_;
 

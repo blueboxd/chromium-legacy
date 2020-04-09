@@ -56,7 +56,7 @@ void TestMojoMediaClient::Initialize() {
 }
 
 std::unique_ptr<Renderer> TestMojoMediaClient::CreateRenderer(
-    service_manager::mojom::InterfaceProvider* host_interfaces,
+    mojom::FrameInterfaceFactory* frame_interfaces,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     MediaLog* media_log,
     const std::string& /* audio_device_id */) {
@@ -98,16 +98,17 @@ std::unique_ptr<Renderer> TestMojoMediaClient::CreateRenderer(
 
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
 std::unique_ptr<Renderer> TestMojoMediaClient::CreateCastRenderer(
-    service_manager::mojom::InterfaceProvider* host_interfaces,
+    mojom::FrameInterfaceFactory* frame_interfaces,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     MediaLog* media_log,
     const base::UnguessableToken& /* overlay_plane_id */) {
-  return CreateRenderer(host_interfaces, task_runner, media_log, std::string());
+  return CreateRenderer(frame_interfaces, task_runner, media_log,
+                        std::string());
 }
 #endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
 
 std::unique_ptr<CdmFactory> TestMojoMediaClient::CreateCdmFactory(
-    service_manager::mojom::InterfaceProvider* /* host_interfaces */) {
+    mojom::FrameInterfaceFactory* /* frame_interfaces */) {
   DVLOG(1) << __func__;
   return std::make_unique<DefaultCdmFactory>();
 }

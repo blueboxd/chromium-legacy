@@ -13,6 +13,19 @@
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/flex_layout.h"
+#include "ui/views/layout/flex_layout_types.h"
+#include "ui/views/layout/layout_types.h"
+#include "ui/views/view_class_properties.h"
+
+namespace {
+// Formatting constants
+static constexpr int kLineHeightDip = 18;
+static constexpr int kMaxHeightDip = kLineHeightDip * 2;
+static constexpr int kCornerRadiusDip = 8;
+static constexpr double kPreferredAnchorWidthPercentage = 0.8;
+// Dark grey at 80% opacity.
+static constexpr SkColor kCaptionBubbleColor = SkColorSetARGB(204, 30, 30, 30);
 
 // CaptionBubble implementation of BubbleFrameView.
 class CaptionBubbleFrameView : public views::BubbleFrameView {
@@ -39,6 +52,7 @@ class CaptionBubbleFrameView : public views::BubbleFrameView {
  private:
   DISALLOW_COPY_AND_ASSIGN(CaptionBubbleFrameView);
 };
+}  // namespace
 
 namespace captions {
 
@@ -55,33 +69,31 @@ CaptionBubble::CaptionBubble(views::View* anchor,
 CaptionBubble::~CaptionBubble() = default;
 
 void CaptionBubble::Init() {
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical, gfx::Insets(10)));
-  set_color(SK_ColorGRAY);
+  auto* layout = SetLayoutManager(std::make_unique<views::FlexLayout>());
+  layout->SetOrientation(views::LayoutOrientation::kVertical);
+  layout->SetMainAxisAlignment(views::LayoutAlignment::kEnd);
+  layout->SetDefault(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
+                               views::MaximumFlexSizeRule::kPreferred,
+                               /*adjust_height_for_width*/ true));
+
+  set_color(kCaptionBubbleColor);
   set_close_on_deactivate(false);
 
   label_.SetMultiLine(true);
-  label_.SetMaxLines(2);
-  int max_width = GetAnchorView()->width() * 0.8;
+  int max_width = GetAnchorView()->width() * kPreferredAnchorWidthPercentage;
   label_.SetMaximumWidth(max_width);
   label_.SetEnabledColor(SK_ColorWHITE);
   label_.SetBackgroundColor(SK_ColorTRANSPARENT);
   label_.SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
-  label_.SetLineHeight(18);
+  label_.SetLineHeight(kLineHeightDip);
 
   std::vector<std::string> font_names = {"Arial", "Helvetica"};
-  gfx::FontList* font_list = new gfx::FontList(
-      font_names, gfx::Font::FontStyle::NORMAL, 14, gfx::Font::Weight::NORMAL);
-  label_.SetFontList(*font_list);
+  label_.SetFontList(gfx::FontList(font_names, gfx::Font::FontStyle::NORMAL, 14,
+                                   gfx::Font::Weight::NORMAL));
 
-  // Add some dummy text while this is in development.
-  std::string text =
-      "Taylor Alison Swift (born December 13, 1989) is an American "
-      "singer-songwriter. She is known for narrative songs about her personal "
-      "life, which have received widespread media coverage. At age 14, Swift "
-      "became the youngest artist signed by the Sony/ATV Music publishing "
-      "house and, at age 15, she signed her first record deal.";
-  label_.SetText(base::ASCIIToUTF16(text));
+  SetPreferredSize(gfx::Size(max_width, kMaxHeightDip));
 
   AddChildView(&label_);
 }
@@ -96,7 +108,7 @@ views::NonClientFrameView* CaptionBubble::CreateNonClientFrameView(
   auto border = std::make_unique<views::BubbleBorder>(
       views::BubbleBorder::FLOAT, views::BubbleBorder::NO_SHADOW,
       gfx::kPlaceholderColor);
-  border->SetCornerRadius(2);
+  border->SetCornerRadius(kCornerRadiusDip);
   frame->SetBubbleBorder(std::move(border));
   return frame;
 }

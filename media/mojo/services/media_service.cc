@@ -25,14 +25,13 @@ MediaService::~MediaService() = default;
 
 void MediaService::CreateInterfaceFactory(
     mojo::PendingReceiver<mojom::InterfaceFactory> receiver,
-    mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
-        host_interfaces) {
+    mojo::PendingRemote<mojom::FrameInterfaceFactory> frame_interfaces) {
   // Ignore request if service has already stopped.
   if (!mojo_media_client_)
     return;
 
   interface_factory_receivers_.Add(
-      std::make_unique<InterfaceFactoryImpl>(std::move(host_interfaces),
+      std::make_unique<InterfaceFactoryImpl>(std::move(frame_interfaces),
                                              mojo_media_client_.get()),
       std::move(receiver));
 }

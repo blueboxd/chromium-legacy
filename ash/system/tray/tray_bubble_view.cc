@@ -211,7 +211,7 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
       params_(init_params),
       layout_(nullptr),
       delegate_(init_params.delegate),
-      preferred_width_(init_params.min_width),
+      preferred_width_(init_params.preferred_width),
       bubble_border_(new BubbleBorder(
           arrow(),
           // Note: for legacy reasons, a shadow is rendered even if |has_shadow|
@@ -317,8 +317,7 @@ void TrayBubbleView::SetBottomPadding(int padding) {
   layout_->set_inside_border_insets(gfx::Insets(0, 0, padding, 0));
 }
 
-void TrayBubbleView::SetWidth(int width) {
-  width = base::ClampToRange(width, params_.min_width, params_.max_width);
+void TrayBubbleView::SetPreferredWidth(int width) {
   if (preferred_width_ == width)
     return;
   preferred_width_ = width;
@@ -426,7 +425,6 @@ base::string16 TrayBubbleView::GetAccessibleWindowTitle() const {
 }
 
 gfx::Size TrayBubbleView::CalculatePreferredSize() const {
-  DCHECK_LE(preferred_width_, params_.max_width);
   return gfx::Size(preferred_width_, GetHeightForWidth(preferred_width_));
 }
 

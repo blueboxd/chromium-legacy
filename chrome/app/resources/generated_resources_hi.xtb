@@ -120,7 +120,6 @@
 <translation id="1153636665119721804">Google बेहतर सुरक्षा कार्यक्रम</translation>
 <translation id="1161575384898972166">क्लाइंट प्रमाणपत्र निर्यात करने के लिए, कृपया <ph name="TOKEN_NAME" /> में साइन इन करें.</translation>
 <translation id="1163931534039071049">फ़्रेम का स्रोत &amp;देखें</translation>
-<translation id="1164674268730883318"><ph name="DEVICE_TYPE" /> के लिए Smart Lock बंद करें?</translation>
 <translation id="1164891049599601209">यह पासवर्ड धोखाधड़ी वाली साइट पर डाला गया था</translation>
 <translation id="1164899421101904659">पिन अनलॉक कुंजी डालें</translation>
 <translation id="1165039591588034296">गड़बड़ी</translation>
@@ -774,7 +773,6 @@
 
 आप अपने डिवाइस पर Family Link ऐप्लिकेशन इंस्टॉल करके इस खाते की सेटिंग प्रबंधित कर सकते हैं.  हमने आपको ईमेल से निर्देश भेज दिए हैं.</translation>
 <translation id="2040460856718599782">ओह!  आपको प्रमाणित करने की कोशिश करते समय कुछ गड़बड़ी हो गई. कृपया अपने साइन इन क्रेडेंशियल दोबारा जाँचें और फिर से कोशिश करें.</translation>
-<translation id="2043818754674261542">इस <ph name="DEVICE_TYPE" /> को अनलॉक करने के लिए फ़ोन का दूर होना ज़रूरी है</translation>
 <translation id="204497730941176055">माइक्रोसॉफ्ट प्रमाणपत्र टेम्पलेट नाम</translation>
 <translation id="2045117674524495717">कीबोर्ड शॉर्टकट सहायक</translation>
 <translation id="2045969484888636535">कुकी अवरोधित करना जारी रखें</translation>
@@ -1147,7 +1145,6 @@
 <translation id="2518024842978892609">अपने क्‍लाइंट प्रमाणपत्रों का उपयोग करें</translation>
 <translation id="2520644704042891903">उपलब्ध सॉकेट की प्रतीक्षा की जा रही है...</translation>
 <translation id="252219247728877310">घटक अपडेट नहीं किया गया</translation>
-<translation id="2522791476825452208">बहुत पास है</translation>
 <translation id="2523184218357549926">आप जिन पेजों पर जाते हैं उनके यूआरएल Google को भेजती है</translation>
 <translation id="2526277209479171883">इंस्टॉल करें और जारी रखें</translation>
 <translation id="2526590354069164005">डेस्कटॉप</translation>
@@ -1756,7 +1753,6 @@
 <translation id="3333190335304955291">सेटिंग में जाकर आप यह सेवा बंद कर सकते हैं</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> - वीडियो 'पिक्चर में पिक्चर' मोड में चल रहा है</translation>
 <translation id="3335947283844343239">बंद किए गए टैब फिर से खोलें</translation>
-<translation id="3336664756920573711">अपने <ph name="DEVICE_TYPE" /> को अपने Android फ़ोन से अनलॉक करें</translation>
 <translation id="3340620525920140773">फ़ाइल डाउनलोड हो गई: <ph name="FILE_NAME" />.</translation>
 <translation id="3341699307020049241">गलत पिन. आप <ph name="RETRIES" /> बार और कोशिश कर सकते हैं.</translation>
 <translation id="3341703758641437857">फ़ाइल के यूआरएल तक एक्सेस दें</translation>
@@ -2343,7 +2339,7 @@
 <translation id="4068506536726151626">इस पेज पर आपके स्थान की जानकारी रखने वाली निम्न साइटों की कुछ चीजें मौजूद हैं:</translation>
 <translation id="4068776064906523561">सहेजे गए फ़िंगरप्रिंट</translation>
 <translation id="407173827865827707">क्लिक करने पर</translation>
-<translation id="4073520450811433493">सेटिंग सिंक करें</translation>
+<translation id="4073520450811433493">सेटिंग सिंक करना</translation>
 <translation id="4074900173531346617">ईमेल हस्ताक्षरकर्ता प्रमाणपत्र</translation>
 <translation id="407520071244661467">स्केल</translation>
 <translation id="4075639477629295004"><ph name="FILE_NAME" /> कास्ट नहीं हो पा रहा है.</translation>
@@ -2620,7 +2616,7 @@
 <translation id="4476659815936224889">इस कोड को स्कैन करने के लिए, आप अपने फ़ोन पर क्यूआर स्कैनर या कुछ कैमरा ऐप्लिकेशन का इस्तेमाल कर सकते हैं.</translation>
 <translation id="4477015793815781985">Ctrl, Alt या ⌘ को शामिल करें</translation>
 <translation id="4478664379124702289">लिंक को इस रूप में सेव करें...</translation>
-<translation id="4478777936860197922">सेव किया हुआ कोई भी पासवर्ड नहीं है. <ph name="IDS_SHORT_PRODUCT_NAME" /> आपके पासवर्ड की जांच तब ही कर सकता है, जब वे पहले से सेव हाेते हैं.</translation>
+<translation id="4478777936860197922">कोई भी पासवर्ड सेव नहीं किया गया है. <ph name="IDS_SHORT_PRODUCT_NAME" /> आपके पासवर्ड की जांच तब ही कर सकता है, जब वे पहले से सेव हाेते हैं.</translation>
 <translation id="4479424953165245642">कियोस्क ऐप्स  प्रबंधित करें</translation>
 <translation id="4479639480957787382">इथरनेट</translation>
 <translation id="4479877282574735775">वर्चुअल मशीन कॉन्फ़िगर हो रही है. इसमें कुछ मिनट लग सकते हैं.</translation>
@@ -2778,7 +2774,6 @@
 <translation id="4697551882387947560">ब्राउज़िंग सत्र के खत्म होने पर</translation>
 <translation id="4699172675775169585">कैश इमेज और फ़ाइलें</translation>
 <translation id="4699357559218762027">(अपने-आप-लॉन्च किया गया)</translation>
-<translation id="470074695271471509">प्रक्रिया पूरी करने के लिए साइन आउट करें?</translation>
 <translation id="4701025263201366865">माता-पिता साइन इन करें</translation>
 <translation id="4707302005824653064">प्रबंधक (<ph name="CUSTODIAN_EMAIL" />) द्वारा chrome.com पर उपयोग और इतिहास की समीक्षा की जा सकती है.</translation>
 <translation id="4707579418881001319">L2TP/IPsec + उपयोगकर्ता प्रमाणपत्र</translation>
@@ -2801,7 +2796,6 @@
 <translation id="473546211690256853">यह खाता <ph name="DOMAIN" /> द्वारा प्रबंधित किया जाता है</translation>
 <translation id="4735803855089279419">सिस्‍टम इस डिवाइस के लिए डिवाइस पहचानकर्ताओं को तय नहीं कर सका.</translation>
 <translation id="4736292055110123391">अपने बुकमार्क, पासवर्ड, इतिहास, और दूसरी कई चीज़ें अपने सभी डिवाइस पर सिंक करना</translation>
-<translation id="4737715515457435632">कृपया किसी नेटवर्क से कनेक्ट करें</translation>
 <translation id="473775607612524610">अपडेट करें</translation>
 <translation id="4739639199548674512">टिकट</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />ऐप्लिकेशन अपडेट करने का तरीका जानें<ph name="END_LINK" /></translation>
@@ -2868,7 +2862,7 @@
 <translation id="4849517651082200438">इंस्‍टॉल न करें</translation>
 <translation id="4850669014075537160">स्क्रॉल करना</translation>
 <translation id="4850886885716139402">देखें</translation>
-<translation id="485197095346966382">जब आप किसी हैक या चोरी हो चुके पासवर्ड से साइन इन करेंगे, तो <ph name="IDS_SHORT_PRODUCT_NAME" /> आपको इसकी सूचना देगा</translation>
+<translation id="485197095346966382">जब आप किसी हैक हो चुके या चोरी हो चुके पासवर्ड से साइन इन करेंगे, तो <ph name="IDS_SHORT_PRODUCT_NAME" /> आपको इसकी सूचना देगा</translation>
 <translation id="4853020600495124913">&amp;नई विंडो में खोलें</translation>
 <translation id="4854317507773910281">मंज़ूरी के लिए माता-पिता का खाता चुनें</translation>
 <translation id="485480310608090163">ज़्यादा सेटिंग और अनुमतियां</translation>
@@ -3279,7 +3273,6 @@
 <translation id="5423829801105537712">वर्तनी जांचने वाली बुनियादी सुविधा</translation>
 <translation id="5423849171846380976">सक्रिय हुआ</translation>
 <translation id="5425042808445046667">डाउनलोड करना जारी रखें</translation>
-<translation id="5425722269016440406">Smart Lock बंद करने के लिए आपको ऑनलाइन होना होगा क्‍योंकि यह सेटिंग आपके फ़ोन और अन्‍य डिवाइस से समन्‍वयित की जाती है. कृपया पहले किसी नेटवर्क से कनेक्‍ट करें.</translation>
 <translation id="5425863515030416387">सभी डिवाइस में आसानी से साइन इन करें</translation>
 <translation id="5427278936122846523">हमेशा अनुवाद करें</translation>
 <translation id="5427459444770871191">&amp;घड़ी की दिशा में घुमाएं</translation>
@@ -3421,7 +3414,6 @@
 <translation id="558918721941304263">ऐप्लिकेशन लोड हो रहे हैं...</translation>
 <translation id="5592595402373377407">अभी काफ़ी डेटा उपलब्ध नहीं है.</translation>
 <translation id="5593357315997824387">मेरी फ़ाइलों को सिंक करें</translation>
-<translation id="5595152862129936745">बहुत दूर</translation>
 <translation id="5595485650161345191">पते में बदलाव करें</translation>
 <translation id="5595727715083333657">आपके कंटेनर में साइज़ बदलने की सुविधा नहीं है. Linux (बीटा वर्शन) के लिए पहले से तय की गई जगह में बदलाव करने के लिए, उसका बैक अप लें. इसके बाद, उसे नए कंटेनर में फिर से सेव करें.</translation>
 <translation id="5596627076506792578">ज़्यादा विकल्प</translation>
@@ -3534,7 +3526,6 @@
 <translation id="5747552184818312860">समय सीमा समाप्ति तारीख</translation>
 <translation id="5747785204778348146">डेवलपर - अस्थिर</translation>
 <translation id="5747809636523347288"><ph name="URL" /> चिपकाएं और इस पर जाएं</translation>
-<translation id="5750324801516359607">दूर</translation>
 <translation id="5751887393582880060">यह अपलोड आपके संगठन की सुरक्षा नीतियों का उल्लंघन करता है. क्या आप फिर भी आगे बढ़ना चाहते हैं?</translation>
 <translation id="5756163054456765343">&amp;सहायता केंद्र</translation>
 <translation id="5759728514498647443">  <ph name="APP_NAME" /> के माध्‍यम से प्रिंट करने के लिए भेजे जाने वाले दस्‍तावेज़ <ph name="APP_NAME" /> द्वारा पढ़े जा सकते हैं.</translation>
@@ -4084,7 +4075,6 @@
 <translation id="6490471652906364588">USB-C डिवाइस (दायां पोर्ट)</translation>
 <translation id="6491376743066338510">अनुमति नहीं दी जा सकी</translation>
 <translation id="6494445798847293442">यह प्रमाणन प्राधिकरण नहीं हैै</translation>
-<translation id="649454645705377674">बंद करें</translation>
 <translation id="6495925982925244349"><ph name="NETWORK_COUNT" /> में से <ph name="NETWORK_INDEX" /> नेटवर्क, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, सिग्नल की क्षमता <ph name="SIGNAL_STRENGTH" />%, आपका एडमिन प्रबंधित करता है, जानकारी</translation>
 <translation id="6498249116389603658">&amp;आपकी सभी भाषाएं</translation>
 <translation id="6499143127267478107">प्रॉक्‍सी स्‍क्रिप्‍ट में होस्‍ट का समाधान किया जा रहा है...</translation>
@@ -4152,7 +4142,6 @@
 <translation id="6590458744723262880">फ़ोल्‍डर का नाम बदलें</translation>
 <translation id="6592267180249644460">WebRTC लॉग कैप्चर किया गया <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">आपका फ़िंगरप्रिंट कैप्चर कर लिया गया</translation>
-<translation id="6594883168703494535">अपने 'Google खाते' में साइन इन करने के लिए Smart Lock का इस्तेमाल करें</translation>
 <translation id="6596325263575161958">सुरक्षित करने के तरीकों के विकल्प</translation>
 <translation id="6596816719288285829">आईपी पता</translation>
 <translation id="6597017209724497268">नमूने</translation>
@@ -4686,7 +4675,6 @@
 <translation id="7328867076235380839">गलत संयोजन</translation>
 <translation id="7329154610228416156">साइन इन नहीं हो पाया क्‍योंकि उसे गैर-सुरक्षित URL (<ph name="BLOCKED_URL" />) का इस्तेमाल करने के लिए कॉन्‍फ़िगर किया गया था. कृपया अपने एडमिन से संपर्क करें.</translation>
 <translation id="7332053360324989309">खास तौर पर इसके लिए काम करने वाला वर्कर: <ph name="SCRIPT_URL" /></translation>
-<translation id="7334190995941642545">Smart Lock वर्तमान में अनुपलब्‍ध है. कृपया बाद में फिर से प्रयास करें.</translation>
 <translation id="7334274148831027933">सामग्री को बड़ा दिखाने की डॉक की गई सुविधा चालू करें</translation>
 <translation id="7335974957018254119">इसके लिए वर्तनी जांचने वाली सुविधा का इस्तेमाल करें</translation>
 <translation id="7336799713063880535">सूचनाएं ब्लॉक हैं.</translation>
@@ -5230,11 +5218,6 @@
 <translation id="8017679124341497925">शॉर्टकट में बदलाव किया गया</translation>
 <translation id="8018313076035239964">यह नियंत्रित करें कि वेबसाइटें किस जानकारी का उपयोग कर सकती हैं और वे आपको क्या दिखा सकती हैं</translation>
 <translation id="8023801379949507775">एक्सटेंशन अभी अपडेट करें</translation>
-<translation id="8024483450737722621">ऐसे ऐप्लिकेशन इस Chromebook से हटा दिए जाएंगे जिन्हें आपने Google Play से डाउनलोड किया है.
-      <ph name="LINE_BREAKS1" />
-      आपकी खरीदी गई सामग्री जैसे कि फ़िल्में, टीवी शो, संगीत, पुस्तकें या ऐप्लिकेशन के अंदर की अन्य खरीदारियां भी हटाई जा सकती हैं.
-      <ph name="LINE_BREAKS2" />
-      इससे दूसरे डिवाइस के ऐप्लिकेशन या सामग्री प्रभावित नहीं होते हैं.</translation>
 <translation id="8026334261755873520">ब्राउज़िंग डेटा साफ़ करें</translation>
 <translation id="8028060951694135607">Microsoft Key Recovery</translation>
 <translation id="8028803902702117856">डाउनलोड हो रही है <ph name="SIZE" />, <ph name="FILE_NAME" /></translation>
@@ -5550,7 +5533,6 @@
 <translation id="8455026683977728932">ADB इलस्ट्रेशन चालू नहीं किया जा सका</translation>
 <translation id="845702320058262034">कनेक्ट नहीं किया जा सकता. देखें कि आपके फ़ोन का ब्लूटूथ चालू है या नहीं.</translation>
 <translation id="8457451314607652708">बुकमार्क आयात करें</translation>
-<translation id="8460336040822756677">अगर आप <ph name="DEVICE_TYPE" /> के लिए Smart Lock बंद कर देते हैं, तो आप अपने फ़ोन का उपयोग करके अपने Chrome डिवाइस अनलॉक नहीं कर सकेंगे. आपको अपना पासवर्ड लिखना होगा.</translation>
 <translation id="8461329675984532579">'होम' पर सेवाएं देने वाली कंपनी का नाम</translation>
 <translation id="84613761564611563">नेटवर्क कॉन्फ़िगर यूज़र इंटरफ़ेस (यूआई) का अनुरोध किया गया, कृृपया प्रतीक्षा करें...</translation>
 <translation id="8461914792118322307">प्रॉक्सी</translation>
@@ -5592,7 +5574,7 @@
 <translation id="851263357009351303"><ph name="HOST" /> को हमेशा चित्र दिखाने की अनुमति दें</translation>
 <translation id="8513108775083588393">स्क्रीन का अपने आप दिशा बदलना (ऑटो-रोटेट)</translation>
 <translation id="8514746246728959655">कोई दूसरी सुरक्षा कुंजी आज़माकर देखें</translation>
-<translation id="851960115758509829">आपके ऐप्लिकेशन, सेटिंग, और दूसरे कस्टमाइज़ेशन (पसंद के मुताबिक बनाई गई चीज़ें) उन सभी Chrome OS डिवाइस में सिंक हो जाएंगे जिनमें आपने अपने Google खाते से साइन किया है.</translation>
+<translation id="851960115758509829">आपके ऐप्लिकेशन, सेटिंग, और दूसरे कस्टमाइज़ेशन (पसंद के मुताबिक बनाई गई चीज़ें), उन सभी Chrome OS डिवाइस में सिंक हो जाएंगे जिनमें आपने अपने Google खाते से साइन किया है.</translation>
 <translation id="8521475323816527629">अपने ऐप्लिकेशन तक तेज़ी से पहुंचें</translation>
 <translation id="8523493869875972733">बदलावों को बनाए रखें</translation>
 <translation id="8523849605371521713">पॉलिसी द्वारा जोड़ा गया</translation>
@@ -5776,7 +5758,6 @@
 <translation id="8743864605301774756">1 घंटे पहले अपडेट किया गया</translation>
 <translation id="8746654918629346731">आपने "<ph name="EXTENSION_NAME" />" का अनुरोध किया हुआ है</translation>
 <translation id="874689135111202667">{0,plural, =1{इस साइट पर एक फ़ाइल अपलोड करें?}one{इस साइट पर # फ़ाइलें अपलोड करें?}other{इस साइट पर # फ़ाइलें अपलोड करें?}}</translation>
-<translation id="8748384418490037181">Smart Lock के विकल्प</translation>
 <translation id="8749863574775030885">ऐसा वेंडर जिसकी जानकारी नहीं है, उसके USB डिवाइस को ऐक्‍सेस करें</translation>
 <translation id="8750133148106010815">Google Play शुरू करने के लिए, <ph name="ORGANIZATION_NAME" /> चाहता है कि आप अपने डेटा का बैक अप ले लें. साथ ही, इस Chromebook को फ़ैक्ट्री सेटिंग पर रीसेट कर लें.</translation>
 <translation id="8750155211039279868"><ph name="ORIGIN" /> सीरियल पोर्ट से कनेक्ट करना चाहता है</translation>
@@ -5899,7 +5880,6 @@
 <translation id="8881020143150461183">कृपया फिर से कोशिश करें. तकनीकी सहायता के लिए <ph name="CARRIER_NAME" /> से संपर्क करें.</translation>
 <translation id="8883273463630735858">टचपैड की रफ़्तार बढ़ाने की सुविधा चालू करें</translation>
 <translation id="8884570509232205463">आपका डिवाइस अब <ph name="UNLOCK_TIME" /> बजे अनलॉक होगा.</translation>
-<translation id="8885197664446363138">Smart Lock अनुपलब्‍ध है</translation>
 <translation id="8888253246822647887">अपग्रेड पूरा होने पर आपका ऐप्लिकेशन खुल जाएगा. अपग्रेड में कुछ समय लग सकता है.</translation>
 <translation id="8888432776533519951">रंग:</translation>
 <translation id="8889651696183044030"><ph name="ORIGIN" /> नीचे दी गई फ़ाइलों और फ़ोल्डर में बदलाव कर सकती है</translation>

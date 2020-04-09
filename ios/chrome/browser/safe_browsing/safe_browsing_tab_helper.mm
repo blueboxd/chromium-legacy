@@ -75,11 +75,12 @@ SafeBrowsingTabHelper::PolicyDecider::PolicyDecider(
     : web::WebStatePolicyDecider(web_state),
       database_client_(database_client) {}
 
-bool SafeBrowsingTabHelper::PolicyDecider::ShouldAllowRequest(
+web::WebStatePolicyDecider::PolicyDecision
+SafeBrowsingTabHelper::PolicyDecider::ShouldAllowRequest(
     NSURLRequest* request,
     const web::WebStatePolicyDecider::RequestInfo& request_info) {
   if (!database_client_)
-    return true;
+    return web::WebStatePolicyDecider::PolicyDecision::Allow();
 
   GURL request_url = net::GURLWithNSURL(request.URL);
   base::PostTask(
@@ -87,5 +88,5 @@ bool SafeBrowsingTabHelper::PolicyDecider::ShouldAllowRequest(
       base::BindOnce(&SafeBrowsingTabHelper::DatabaseClient::CheckUrl,
                      base::Unretained(database_client_), request_url));
 
-  return true;
+  return web::WebStatePolicyDecider::PolicyDecision::Allow();
 }

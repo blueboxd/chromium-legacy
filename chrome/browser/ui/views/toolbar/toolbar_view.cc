@@ -422,9 +422,9 @@ void ToolbarView::ShowBookmarkBubble(
   // ChromeOS does not show the signin promo.
   delegate.reset(new BookmarkBubbleSignInDelegate(browser_));
 #endif
-  BookmarkBubbleView::ShowBubble(anchor_view, bookmark_star_icon, gfx::Rect(),
-                                 nullptr, observer, std::move(delegate),
-                                 browser_->profile(), url, already_bookmarked);
+  BookmarkBubbleView::ShowBubble(anchor_view, bookmark_star_icon, observer,
+                                 std::move(delegate), browser_->profile(), url,
+                                 already_bookmarked);
 }
 
 ExtensionsToolbarButton* ToolbarView::GetExtensionsButton() const {

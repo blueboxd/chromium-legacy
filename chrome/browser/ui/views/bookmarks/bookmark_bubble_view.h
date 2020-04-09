@@ -42,8 +42,6 @@ class BookmarkBubbleView : public LocationBarBubbleDelegateView,
   static views::Widget* ShowBubble(
       views::View* anchor_view,
       views::Button* highlighted_button,
-      const gfx::Rect& anchor_rect,
-      gfx::NativeView parent_window,
       bookmarks::BookmarkBubbleObserver* observer,
       std::unique_ptr<BubbleSyncPromoDelegate> delegate,
       Profile* profile,

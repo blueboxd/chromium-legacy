@@ -120,7 +120,6 @@
 <translation id="1153636665119721804">Google-programmet Avanceret beskyttelse</translation>
 <translation id="1161575384898972166">Log ind på <ph name="TOKEN_NAME" /> for at eksportere klientcertifikatet.</translation>
 <translation id="1163931534039071049">&amp;Vis rammens kildetekst</translation>
-<translation id="1164674268730883318">Vil du slå Smart Lock fra for <ph name="DEVICE_TYPE" />?</translation>
 <translation id="1164891049599601209">Angivet på vildledende website</translation>
 <translation id="1164899421101904659">Angiv nøgle til oplåsning af pinkode</translation>
 <translation id="1165039591588034296">Fejl</translation>
@@ -774,7 +773,6 @@ Ellers skal du logge ud nu, så ændringerne på denne konto afspejles på enhed
 
 Du kan administrere indstillingerne for denne konto ved at installere Family Link-appen på din enhed.  Vi har sendt en mail med vejledning.</translation>
 <translation id="2040460856718599782">Ups! Der opstod en fejl under forsøget på at godkende dig. Kontrollér dine loginoplysninger, og prøv igen.</translation>
-<translation id="2043818754674261542">Nødvendig afstand for, at telefonen kan låse denne <ph name="DEVICE_TYPE" /> op</translation>
 <translation id="204497730941176055">Navn på skabelon til Microsoft-certifikat</translation>
 <translation id="2045117674524495717">Hjælp til tastaturgenveje</translation>
 <translation id="2045969484888636535">Fortsæt med at blokere cookies</translation>
@@ -1147,7 +1145,6 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2518024842978892609">Brug dine klientcertifikater</translation>
 <translation id="2520644704042891903">Venter på tilgængelig socket...</translation>
 <translation id="252219247728877310">Komponenten er ikke opdateret</translation>
-<translation id="2522791476825452208">Meget tæt på</translation>
 <translation id="2523184218357549926">Sender webadresser på de sider, du besøger, til Google</translation>
 <translation id="2526277209479171883">Installer og fortsæt</translation>
 <translation id="2526590354069164005">Skrivebord</translation>
@@ -1756,7 +1753,6 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="3333190335304955291">Du kan deaktivere denne tjeneste i Indstillinger.</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> – afspiller video i tilstanden med integreret billede</translation>
 <translation id="3335947283844343239">Åbn lukket fane igen</translation>
-<translation id="3336664756920573711">Lås din <ph name="DEVICE_TYPE" /> op med din Android-telefon.</translation>
 <translation id="3340620525920140773">Downloaden er fuldført: <ph name="FILE_NAME" />.</translation>
 <translation id="3341699307020049241">Pinkoden er forkert. Du har <ph name="RETRIES" /> forsøg tilbage.</translation>
 <translation id="3341703758641437857">Tillad adgang til webadresser på filer</translation>
@@ -2779,7 +2775,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4697551882387947560">Når browsersessionen afsluttes</translation>
 <translation id="4699172675775169585">Billeder og filer, der er gemt i cache</translation>
 <translation id="4699357559218762027">(automatisk opstart)</translation>
-<translation id="470074695271471509">Vil du logge ud for at afslutte?</translation>
 <translation id="4701025263201366865">Forældrelogin</translation>
 <translation id="4707302005824653064">Forbrug og historik kan gennemgås af administratoren (<ph name="CUSTODIAN_EMAIL" />) på chrome.com.</translation>
 <translation id="4707579418881001319">L2TP/IPSec + brugercertifikat</translation>
@@ -2802,7 +2797,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="473546211690256853">Denne konto administreres af <ph name="DOMAIN" /></translation>
 <translation id="4735803855089279419">Systemet kunne ikke fastslå enheds-id'erne for denne enhed.</translation>
 <translation id="4736292055110123391">Synkroniser dine bogmærker, dine adgangskoder, din historik og meget mere på alle dine enheder</translation>
-<translation id="4737715515457435632">Opret forbindelse til et netværk</translation>
 <translation id="473775607612524610">Opdater</translation>
 <translation id="4739639199548674512">Billetter</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Se, hvordan du opdaterer apps<ph name="END_LINK" /></translation>
@@ -3280,7 +3274,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5423829801105537712">Grundlæggende stavekontrol</translation>
 <translation id="5423849171846380976">Aktiveret</translation>
 <translation id="5425042808445046667">Fortsæt download</translation>
-<translation id="5425722269016440406">Du skal være online for at kunne deaktivere Smart Lock, da denne indstilling er synkroniseret med din telefon og andre enheder. Opret forbindelse til et netværk først.</translation>
 <translation id="5425863515030416387">Du kan nemt logge ind på alle enheder</translation>
 <translation id="5427278936122846523">Oversæt altid</translation>
 <translation id="5427459444770871191">Roter med &amp;uret</translation>
@@ -3422,7 +3415,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="558918721941304263">Indlæser apps...</translation>
 <translation id="5592595402373377407">Der er ikke nok data til rådighed endnu.</translation>
 <translation id="5593357315997824387">Synkroniser mine filer</translation>
-<translation id="5595152862129936745">Meget langt væk</translation>
 <translation id="5595485650161345191">Rediger adresse</translation>
 <translation id="5595727715083333657">Din container understøtter ikke størrelsesjusteringer. Du kan justere den mængde plads, der er forudallokeret til Linux (beta), ved at sikkerhedskopiere og derefter gendanne i en ny container.</translation>
 <translation id="5596627076506792578">Flere valgmuligheder</translation>
@@ -3535,7 +3527,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5747552184818312860">Udløber</translation>
 <translation id="5747785204778348146">Udvikler – ustabil</translation>
 <translation id="5747809636523347288">Ind&amp;sæt, og gå til <ph name="URL" /></translation>
-<translation id="5750324801516359607">Langt væk</translation>
 <translation id="5751887393582880060">Denne upload overtræder din organisations sikkerhedspolitikker. Vil du fortsætte alligevel?</translation>
 <translation id="5756163054456765343">H&amp;jælp</translation>
 <translation id="5759728514498647443">De dokumenter, du sender til udskrift via <ph name="APP_NAME" />, kan læses af <ph name="APP_NAME" />.</translation>
@@ -4086,7 +4077,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6490471652906364588">USB-C-enhed (højre port)</translation>
 <translation id="6491376743066338510">Godkendelse mislykkedes</translation>
 <translation id="6494445798847293442">Ikke et nøglecenter</translation>
-<translation id="649454645705377674">Luk</translation>
 <translation id="6495925982925244349">Netværk <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, signalstyrke <ph name="SIGNAL_STRENGTH" /> %, administreret af din administrator, info</translation>
 <translation id="6498249116389603658">&amp;Alle dine sprog</translation>
 <translation id="6499143127267478107">Værtsløsning i proxyscript...</translation>
@@ -4154,7 +4144,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6590458744723262880">Omdøb mappe</translation>
 <translation id="6592267180249644460">WebRTC-logfil blev registreret <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">Dit fingeraftryk blev registreret</translation>
-<translation id="6594883168703494535">Brug Smart Lock til at logge ind på din Google-konto</translation>
 <translation id="6596325263575161958">Krypteringsmuligheder</translation>
 <translation id="6596816719288285829">IP-adresse</translation>
 <translation id="6597017209724497268">Prøver</translation>
@@ -4688,7 +4677,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7328867076235380839">Ugyldig kombination</translation>
 <translation id="7329154610228416156">Login mislykkedes, da det er konfigureret til at anvende en webadresse, der ikke er sikker (<ph name="BLOCKED_URL" />). Kontakt din administrator.</translation>
 <translation id="7332053360324989309">Dedicated Worker: <ph name="SCRIPT_URL" /></translation>
-<translation id="7334190995941642545">Smart Lock er ikke tilgængelig i øjeblikket. Prøv igen senere.</translation>
 <translation id="7334274148831027933">Aktivér fastgjort lupvindue</translation>
 <translation id="7335974957018254119">Brug stavekontrol for</translation>
 <translation id="7336799713063880535">Notifikationer blokeres.</translation>
@@ -5232,11 +5220,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8017679124341497925">Genvejen blev redigeret</translation>
 <translation id="8018313076035239964">Kontrollér, hvilke oplysninger websites kan bruge, og hvilket indhold de kan vise dig</translation>
 <translation id="8023801379949507775">Opdater udvidelser nu</translation>
-<translation id="8024483450737722621">Apps du har downloadet i Google Play, slettes fra denne Chromebook.
-      <ph name="LINE_BREAKS1" />
-      Indhold, du har købt, f.eks. film, tv-serier, musik, bøger eller andre køb i apps, slettes muligvis også.
-      <ph name="LINE_BREAKS2" />
-      Dette påvirker ikke apps eller indhold på andre enheder.</translation>
 <translation id="8026334261755873520">Ryd browserdata</translation>
 <translation id="8028060951694135607">Microsoft-nøglegenoprettelse</translation>
 <translation id="8028803902702117856">Downloader <ph name="SIZE" /> – <ph name="FILE_NAME" /></translation>
@@ -5552,7 +5535,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8455026683977728932">Illustration, der viser, at ADB kunne ikke aktiveres</translation>
 <translation id="845702320058262034">Der kan ikke oprettes forbindelse. Sørg for, at Bluetooth er aktiveret på din telefon.</translation>
 <translation id="8457451314607652708">Importér bogmærker</translation>
-<translation id="8460336040822756677">Hvis du slår Smart Lock fra for <ph name="DEVICE_TYPE" />, kan du ikke låse dine Chrome-enheder op via din telefon. Du bliver nødt til at indtaste din adgangskode.</translation>
 <translation id="8461329675984532579">Navn på udbyder til hjem</translation>
 <translation id="84613761564611563">Der er anmodet om grænseflade for netværkskonfiguration. Vent...</translation>
 <translation id="8461914792118322307">Proxy</translation>
@@ -5778,7 +5760,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8743864605301774756">Opdateret for én time siden</translation>
 <translation id="8746654918629346731">Du har allerede anmodet om "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="874689135111202667">{0,plural, =1{Vil du uploade én fil til dette website?}one{Vil du uploade # fil til dette website?}other{Vil du uploade # filer til dette website?}}</translation>
-<translation id="8748384418490037181">Valgmuligheder for Smart Lock</translation>
 <translation id="8749863574775030885">Få adgang til USB-enheder fra en ukendt leverandør</translation>
 <translation id="8750133148106010815"><ph name="ORGANIZATION_NAME" /> kræver, at du sikkerhedskopierer dine data og gendanner fabriksindstillingerne på denne Chromebook, før du kan starte Google Play.</translation>
 <translation id="8750155211039279868"><ph name="ORIGIN" /> anmoder om at oprette forbindelse til en seriel port</translation>
@@ -5902,7 +5883,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8881020143150461183">Prøv igen. Kontakt <ph name="CARRIER_NAME" /> for at få teknisk support.</translation>
 <translation id="8883273463630735858">Aktivér acceleration af touchplade</translation>
 <translation id="8884570509232205463">Din enhed låses nu kl. <ph name="UNLOCK_TIME" />.</translation>
-<translation id="8885197664446363138">Smart Lock er ikke tilgængelig</translation>
 <translation id="8888253246822647887">Din app åbner, når opgraderingen er fuldført. Opgraderinger kan tage et par minutter.</translation>
 <translation id="8888432776533519951">Farve:</translation>
 <translation id="8889651696183044030"><ph name="ORIGIN" /> kan redigere følgende filer og mapper</translation>

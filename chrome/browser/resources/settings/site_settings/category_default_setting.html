@@ -18,12 +18,12 @@
       }
     </style>
     <settings-toggle-button id="toggle"
-        class="first" pref="{{controlParams_}}"
+        pref="{{controlParams_}}"
         label="[[optionLabel_]]" sub-label="[[optionDescription_]]"
         disabled$="[[isToggleDisabled_(category)]]">
     </settings-toggle-button>
     <template is="dom-if" if="[[showCookiesSubOption_(subOptionMode)]]">
-      <settings-toggle-button id="subOptionCookiesToggle"
+      <settings-toggle-button id="subOptionCookiesToggle" class="hr"
           pref="{{subControlParams_}}" label="[[subOptionLabel]]"
           sub-label="[[subOptionDescription]]"
           disabled$="[[!controlParams_.value]]">
@@ -31,7 +31,7 @@
     </template>
     <template is="dom-if" if="[[showPrefSubOption_(subOptionMode)]]">
       <settings-toggle-button id="subOptionPrefToggle"
-          class="continuation indented"
+          class="indented"
           hidden="[[!controlParams_.value]]" pref="{{subOptionPref}}"
           label="[[subOptionLabel]]" sub-label="[[subOptionDescription]]">
       </settings-toggle-button>

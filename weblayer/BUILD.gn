@@ -150,6 +150,8 @@ source_set("weblayer_lib_base") {
     "browser/persistence/browser_persister.h",
     "browser/persistence/minimal_browser_persister.cc",
     "browser/persistence/minimal_browser_persister.h",
+    "browser/profile_disk_operations.cc",
+    "browser/profile_disk_operations.h",
     "browser/profile_impl.cc",
     "browser/profile_impl.h",
     "browser/ssl_error_controller_client.cc",

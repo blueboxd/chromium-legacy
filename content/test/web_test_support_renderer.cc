@@ -29,7 +29,6 @@
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_rect.h"
-#include "third_party/blink/public/web/web_manifest_manager.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/blink/blink_event_util.h"
@@ -85,12 +84,6 @@ void EnableWebTestProxyCreation() {
   RenderViewImpl::InstallCreateHook(CreateWebViewTestProxy);
   RenderWidget::InstallCreateForFrameHook(CreateRenderWidgetForFrame);
   RenderFrameImpl::InstallCreateHook(CreateWebFrameTestProxy);
-}
-
-void FetchManifest(blink::WebView* view, FetchManifestCallback callback) {
-  blink::WebManifestManager::RequestManifestForTesting(
-      RenderFrameImpl::FromWebFrame(view->MainFrame())->GetWebFrame(),
-      std::move(callback));
 }
 
 void SetWorkerRewriteURLFunction(RewriteURLFunction rewrite_url_function) {

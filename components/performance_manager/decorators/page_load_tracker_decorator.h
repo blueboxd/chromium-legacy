@@ -9,6 +9,7 @@
 #include "base/timer/timer.h"
 #include "components/performance_manager/public/graph/frame_node.h"
 #include "components/performance_manager/public/graph/graph.h"
+#include "components/performance_manager/public/graph/node_data_describer.h"
 #include "components/performance_manager/public/graph/page_node.h"
 #include "components/performance_manager/public/graph/process_node.h"
 
@@ -25,6 +26,7 @@ class ProcessNodeImpl;
 // absolute timeout. This state is then updated on PageNodes in a graph.
 class PageLoadTrackerDecorator : public FrameNode::ObserverDefaultImpl,
                                  public GraphOwnedDefaultImpl,
+                                 public NodeDataDescriberDefaultImpl,
                                  public ProcessNode::ObserverDefaultImpl {
  public:
   class Data;
@@ -38,6 +40,9 @@ class PageLoadTrackerDecorator : public FrameNode::ObserverDefaultImpl,
   // GraphOwned implementation:
   void OnPassedToGraph(Graph* graph) override;
   void OnTakenFromGraph(Graph* graph) override;
+
+  // NodeDataDescriber implementation:
+  base::Value DescribePageNodeData(const PageNode* node) const override;
 
   // ProcessNodeObserver implementation:
   void OnMainThreadTaskLoadIsLow(const ProcessNode* process_node) override;

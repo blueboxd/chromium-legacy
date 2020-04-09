@@ -68,8 +68,10 @@ class ViewsTestBase : public PlatformTest {
 
   void RunPendingMessages();
 
-  // Creates a widget of |type| with any platform specific data for use in
-  // cross-platform tests.
+  // Returns CreateParams for a widget of type |type|.  This is used by
+  // CreateParamsForTestWidget() and thus by CreateTestWidget(), and may also be
+  // used directly.  The default implementation sets the context to
+  // GetContext().
   virtual Widget::InitParams CreateParams(Widget::InitParams::Type type);
 
   virtual std::unique_ptr<Widget> CreateTestWidget(
@@ -111,8 +113,7 @@ class ViewsTestBase : public PlatformTest {
   }
 #endif
 
-  // Returns a context view. In aura builds, this will be the
-  // RootWindow. Everywhere else, NULL.
+  // Returns a context view. In aura builds, this will be the RootWindow.
   gfx::NativeWindow GetContext();
 
   // Factory for creating the native widget when |native_widget_type_| is set to
@@ -121,6 +122,12 @@ class ViewsTestBase : public PlatformTest {
       const Widget::InitParams& init_params,
       internal::NativeWidgetDelegate* delegate);
 
+  // Instantiates a Widget for CreateTestWidget(), but does no other
+  // initialization.  Overriding this allows subclasses to customize the Widget
+  // subclass returned from CreateTestWidget().
+  virtual std::unique_ptr<Widget> AllocateTestWidget();
+
+  // Constructs the params for CreateTestWidget().
   Widget::InitParams CreateParamsForTestWidget(
       Widget::InitParams::Type type =
           Widget::InitParams::TYPE_WINDOW_FRAMELESS);

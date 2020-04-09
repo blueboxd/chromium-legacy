@@ -7,14 +7,18 @@
 #include "chrome/browser/chromeos/account_manager/account_manager_migrator.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_service_factory.h"
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge.h"
+#include "chrome/browser/chromeos/authpolicy/authpolicy_credentials_manager.h"
 #include "chrome/browser/chromeos/bluetooth/debug_logs_manager_factory.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router_factory.h"
 #include "chrome/browser/chromeos/extensions/input_method_api.h"
 #include "chrome/browser/chromeos/extensions/login_screen/login_state/session_state_changed_event_dispatcher.h"
 #include "chrome/browser/chromeos/extensions/media_player_api.h"
 #include "chrome/browser/chromeos/extensions/printing_metrics/print_job_finished_event_dispatcher.h"
+#include "chrome/browser/chromeos/file_manager/volume_manager_factory.h"
+#include "chrome/browser/chromeos/file_system_provider/service_factory.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/chromeos/kerberos/kerberos_credentials_manager_factory.h"
+#include "chrome/browser/chromeos/launcher_search_provider/launcher_search_provider_service_factory.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_factory.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_engagement_metrics_service.h"
@@ -39,6 +43,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   AccountManagerMigratorFactory::GetInstance();
   android_sms::AndroidSmsServiceFactory::GetInstance();
   arc::ArcAccessibilityHelperBridge::CreateFactory();
+  AuthPolicyCredentialsManagerFactory::GetInstance();
   bluetooth::DebugLogsManagerFactory::GetInstance();
 #if defined(USE_CUPS)
   CupsProxyServiceManagerFactory::GetInstance();
@@ -54,8 +59,11 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::PrintJobFinishedEventDispatcher::GetFactoryInstance();
   extensions::SessionStateChangedEventDispatcher::GetFactoryInstance();
   file_manager::EventRouterFactory::GetInstance();
+  file_manager::VolumeManagerFactory::GetInstance();
+  file_system_provider::ServiceFactory::GetInstance();
   guest_os::GuestOsRegistryServiceFactory::GetInstance();
   KerberosCredentialsManagerFactory::GetInstance();
+  launcher_search_provider::ServiceFactory::GetInstance();
   OwnerSettingsServiceChromeOSFactory::GetInstance();
   plugin_vm::PluginVmEngagementMetricsService::Factory::GetInstance();
   policy::PolicyCertServiceFactory::GetInstance();

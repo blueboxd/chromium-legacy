@@ -14,9 +14,10 @@
 @optional
 
 // Invoked by |WebStatePolicyDeciderBridge::ShouldAllowRequest|.
-- (BOOL)shouldAllowRequest:(NSURLRequest*)request
-               requestInfo:
-                   (const web::WebStatePolicyDecider::RequestInfo&)requestInfo;
+- (web::WebStatePolicyDecider::PolicyDecision)
+    shouldAllowRequest:(NSURLRequest*)request
+           requestInfo:
+               (const web::WebStatePolicyDecider::RequestInfo&)requestInfo;
 
 // Invoked by |WebStatePolicyDeciderBridge::ShouldAllowResponse|.
 - (BOOL)shouldAllowResponse:(NSURLResponse*)response
@@ -34,8 +35,8 @@ class WebStatePolicyDeciderBridge : public web::WebStatePolicyDecider {
   ~WebStatePolicyDeciderBridge() override;
 
   // web::WebStatePolicyDecider methods.
-  bool ShouldAllowRequest(NSURLRequest* request,
-                          const RequestInfo& request_info) override;
+  PolicyDecision ShouldAllowRequest(NSURLRequest* request,
+                                    const RequestInfo& request_info) override;
 
   bool ShouldAllowResponse(NSURLResponse* response,
                            bool for_main_frame) override;

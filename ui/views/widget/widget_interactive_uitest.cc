@@ -29,6 +29,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_test_api.h"
 #include "ui/views/focus/focus_manager.h"
@@ -378,6 +379,39 @@ TEST_F(DesktopWidgetTestInteractive,
 
   widget2->CloseNow();
   widget1->CloseNow();
+}
+
+// Verifies bubbles result in a focus lost when shown.
+TEST_F(DesktopWidgetTestInteractive, FocusChangesOnBubble) {
+  Widget* widget = CreateWidget();
+  View* focusable_view =
+      widget->GetContentsView()->AddChildView(std::make_unique<View>());
+  focusable_view->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+  widget->Show();
+  focusable_view->RequestFocus();
+  EXPECT_TRUE(focusable_view->HasFocus());
+
+  // Show a bubble.
+  auto owned_bubble_delegate_view =
+      std::make_unique<views::BubbleDialogDelegateView>(focusable_view,
+                                                        BubbleBorder::NONE);
+  owned_bubble_delegate_view->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+  BubbleDialogDelegateView* bubble_delegate_view =
+      owned_bubble_delegate_view.get();
+  BubbleDialogDelegateView::CreateBubble(owned_bubble_delegate_view.release())
+      ->Show();
+  bubble_delegate_view->RequestFocus();
+
+  // |focusable_view| should no longer have focus.
+  EXPECT_FALSE(focusable_view->HasFocus());
+  EXPECT_TRUE(bubble_delegate_view->HasFocus());
+
+  bubble_delegate_view->GetWidget()->CloseNow();
+
+  // Closing the bubble should result in focus going back to the contents view.
+  EXPECT_TRUE(focusable_view->HasFocus());
+
+  widget->CloseNow();
 }
 
 class TouchEventHandler : public ui::EventHandler {

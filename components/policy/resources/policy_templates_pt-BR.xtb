@@ -388,6 +388,7 @@ Se você desativar a política, essa rolagem será desativada.</translation>
 <translation id="1561424797596341174">A política modifica as versões de depuração do host de acesso remoto</translation>
 <translation id="1561967320164410511">U2F e extensões para declaração individual</translation>
 <translation id="1583248206450240930">Usar o <ph name="PRODUCT_FRAME_NAME" /> por padrão</translation>
+<translation id="1588240398285670601">Configurações do navegador</translation>
 <translation id="1599424828227887013">Ativa o isolamento de sites para origens específicas em dispositivos Android</translation>
 <translation id="1608755754295374538">URLs que terão acesso a dispositivos de captura de áudio sem solicitação</translation>
 <translation id="1615221548356595305">Permitir a união de conexões HTTP/2 para esses hosts mesmo quando certificados do cliente são utilizados</translation>
@@ -1343,6 +1344,7 @@ Se esta política não for definida, a tela de privacidade ficará desativada in
 <translation id="2872961005593481000">Desligar</translation>
 <translation id="2873651257716068683">Modifica o tamanho da página de impressão padrão. Se o tamanho da página não estiver disponível, esta política será ignorada.</translation>
 <translation id="2874209944580848064">Observação para dispositivos <ph name="PRODUCT_OS_NAME" /> compatíveis com apps Android:</translation>
+<translation id="2874901846804525128">Impede o usuário de usar apps para Android de fontes não confiáveis.</translation>
 <translation id="2875192972412983412">Especifica o subconjunto de servidores de impressão que serão consultados para impressoras de servidor.
 
       Se esta política for usada, somente as impressoras de servidor com códigos correspondentes aos valores desta política estarão disponíveis para o usuário.
@@ -2930,6 +2932,7 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
           Se definida como verdadeira ou não configurada, este usuário poderá criar e gerenciar usuários supervisionados.</translation>
 <translation id="5369937289900051171">Apenas impressão colorida</translation>
 <translation id="5370279767682621504">Ativar suporte a HTTP/0.9 em portas não padrão</translation>
+<translation id="5377606826822211923">Controla o uso de apps para Android de fontes em que o usuário não confia</translation>
 <translation id="5378985487213287085">Permite que você defina se os websites são autorizados a exibir notificações na área de trabalho. A exibição de notificações na área de trabalho pode ser autorizada ou recusada por padrão ou o usuário pode ser solicitado a autorizar todas as vezes em que um website quiser exibir notificações na área de trabalho. Se esta política for deixada sem definição, a política "AskNotifications" será utilizada, podendo ser modificada pelo usuário.</translation>
 <translation id="5380329473151894945">Definir o estado padrão do recurso de acessibilidade de cursor grande na tela de login.
 
@@ -3727,6 +3730,7 @@ Se esta configuração estiver desativada ou se nenhum valor for definido, o Mod
       Observe que a política pode ser substituída por EnabledPlugins e DisabledPluginsExceptions.
 
       Quando esta política não for definida, o usuário poderá usar qualquer plug-in instalado no sistema, a não ser plug-ins codificados incompatíveis, obsoletos ou perigosos.</translation>
+<translation id="6571871508154591774">Define os recursos da câmera, das configurações do navegador e das configurações do SO que serão desativadas</translation>
 <translation id="6573305661369899995">Definir uma fonte externa de restrições de URL</translation>
 <translation id="6583851521569686409">Configura uma lista de impressoras.
 
@@ -3802,6 +3806,7 @@ Se esta configuração estiver desativada ou se nenhum valor for definido, o Mod
 <translation id="6731757988219967594">Filtrar sites de nível superior (exceto iframes incorporados) com conteúdo adulto</translation>
 <translation id="6734521799274931721">Controla o compartilhamento de arquivos de rede para disponibilidade do Chrome OS</translation>
 <translation id="6735701345096330595">Forçar a ativação da correção ortográfica de idiomas</translation>
+<translation id="6737677282967014160">Permite que o usuário use apps para Android de fontes não confiáveis.</translation>
 <translation id="6757613329154374267">Backup e restauração ativados</translation>
 <translation id="6758659208493449452">Esta política controla se os usuários inscritos no Programa Proteção Avançada recebem segurança extra. Alguns desses recursos podem envolver o compartilhamento de dados com o Google. Por exemplo, usuários do Proteção Avançada poderão enviar os downloads ao Google para verificação de malware. Se a política for definida como "verdadeira" ou não for configurada, os usuários inscritos receberão proteções extras. Se for definida como "falsa", os usuários do Proteção Avançada receberão apenas os recursos padrão do consumidor.</translation>
 <translation id="6762235610019366960">Permite que você controle a apresentação de conteúdo promocional e/ou educativo em guia cheia no <ph name="PRODUCT_NAME" />.
@@ -4329,6 +4334,13 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
       Os padrões do URL têm o mesmo formato que a política "URLBlacklist", documentada em https://www.chromium.org/administrators/url-blacklist-filter-format (em inglês).
       </translation>
 <translation id="7566878661979235378">Tipo de autenticação de login SAML</translation>
+<translation id="7567373982693549834">Esta política controla o uso de apps para Android de fontes em que o usuário não confia (diferentes do Google Play).
+
+      Se o valor da política não for definido, a funcionalidade será tratada como não permitida.
+
+      Se o dispositivo do usuário for gerenciado, a disponibilidade da funcionalidade será dependente também da política do dispositivo correspondente.
+
+      Se o dispositivo do usuário não for gerenciado, a disponibilidade da funcionalidade será dependente também da possibilidade de o usuário não ser proprietário do dispositivo.</translation>
 <translation id="757395965347379751">Quando esta configuração está ativada, o <ph name="PRODUCT_NAME" /> permite certificados SHA-1 assinados, desde que eles sejam validados e estejam vinculados a certificados de CA instalados localmente.
 
       Esta política depende da permissão de assinaturas SHA-1 pela pilha de verificação de certificados do sistema operacional. Se a atualização de um SO alterar o modo como esse sistema lida com certificados SHA-1, talvez esta política deixe de ter efeito. Além disso, esta política é usada como alternativa temporária para dar às empresas mais tempo para deixar de usar SHA-1. Esta política será removida no dia 1 de janeiro de 2019 ou em uma data próxima a essa.
@@ -4518,6 +4530,7 @@ Se esta política não for definida, o renderizador padrão será usado para tod
 
           Observação: se <ph name="DEVICE_LOGIN_SCREEN_HIGH_CONTRAST_ENABLED_POLICY_NAME" /> for especificada, ela substituirá esta política.</translation>
 <translation id="7846952520291088817">URLs para os quais IPs locais são expostos em candidatos ICE do WebRTC</translation>
+<translation id="7848641140449742406">Configurações do SO</translation>
 <translation id="7858404742201086014">Se você ativar esta configuração, plug-ins desatualizados serão utilizados como plug-ins normais.
 
       Se você desativar esta configuração, plug-ins desatualizados não serão utilizados, e não será solicitada a permissão dos usuários para executá-los.

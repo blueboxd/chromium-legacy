@@ -120,7 +120,6 @@
 <translation id="1153636665119721804">កម្មវិធី​ការពារ​កម្រិតខ្ពស់​របស់ Google</translation>
 <translation id="1161575384898972166">សូមចូលទៅ <ph name="TOKEN_NAME" /> ដើម្បីនាំចេញវិញ្ញាបនប័ត្រអតិថិជន។</translation>
 <translation id="1163931534039071049">មើលប្រភពហ្វ្រេម</translation>
-<translation id="1164674268730883318">បិទ Smart Lock សម្រាប់ <ph name="DEVICE_TYPE" /> ដែរទេ?</translation>
 <translation id="1164891049599601209">បានបញ្ចូលនៅលើគេហទំព័របោកប្រាស់</translation>
 <translation id="1164899421101904659">បញ្ចូលកូដ PIN ដោះសោ</translation>
 <translation id="1165039591588034296">កំហុសឆ្គង</translation>
@@ -774,7 +773,6 @@
 
 អ្នក​អាច​គ្រប់គ្រង​ការកំណត់​របស់គណនី​នេះ​ដោយដំឡើង​កម្មវិធី Family Link នៅលើ​ឧបករណ៍របស់អ្នក។  យើង​បានផ្ញើ​ការណែនាំទៅអ្នក​តាមរយៈអ៊ីមែល។</translation>
 <translation id="2040460856718599782">អូ! មានបញ្ហាអ្វីមួយកើតឡើង នៅពេលកំពុងព្យាយាមសម្គាល់អត្តសញ្ញាណរបស់អ្នក។  សូមពិនិត្យភាពត្រឹមត្រូវនៃការចូលរបស់អ្នកដោយប្រុងប្រយ័ត្ន ហើយព្យាយាមម្តងទៀត។</translation>
-<translation id="2043818754674261542">ចម្ងាយដែល​អនុញ្ញាត​ឲ្យ​ទូរសព្ទ​អាចដោះសោ <ph name="DEVICE_TYPE" /> នេះបាន</translation>
 <translation id="204497730941176055">ឈ្មោះពុម្ពវិញ្ញាបនប័ត្រ Microsoft</translation>
 <translation id="2045117674524495717">ឧបករណ៍ជំនួយ​ផ្លូវកាត់​ក្ដារចុច</translation>
 <translation id="2045969484888636535">បន្តរារាំងខុកឃី</translation>
@@ -1147,7 +1145,6 @@
 <translation id="2518024842978892609">ប្រើវិញ្ញាបនបត្រម៉ាស៊ីនកូនរបស់អ្នក</translation>
 <translation id="2520644704042891903">កំពុងរង់ចាំរន្ធភ្ជាប់ដែលមាន...</translation>
 <translation id="252219247728877310">សមាសភាគមិនត្រូវបានធ្វើបច្ចុប្បន្នភាពទេ។</translation>
-<translation id="2522791476825452208">កៀកខ្លាំងណាស់</translation>
 <translation id="2523184218357549926">ផ្ញើ​ URL នៃ​ទំព័រ​ដែលអ្នក​ចូល​មើលទៅ Google</translation>
 <translation id="2526277209479171883">ដំឡើង រួច​បន្ត</translation>
 <translation id="2526590354069164005">ដេស៍ថប</translation>
@@ -1756,7 +1753,6 @@
 <translation id="3333190335304955291">អ្នកអាច​បិទសេវាកម្មនេះ​នៅក្នុងការកំណត់។</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> - វីដេអូ​កំពុងចាក់​ក្នុងមុខងារ​រូបក្នុងរូប</translation>
 <translation id="3335947283844343239">បើកផ្ទាំងដែលបានបិទឡើងវិញ</translation>
-<translation id="3336664756920573711">ដោះសោ <ph name="DEVICE_TYPE" /> ដោយ​ប្រើ​ទូរសព្ទ Android របស់អ្នក</translation>
 <translation id="3340620525920140773">ការទាញយក​បានបញ្ចប់៖ <ph name="FILE_NAME" /> ។</translation>
 <translation id="3341699307020049241">កូដ PIN មិនត្រឹមត្រូវទេ។ អ្នកអាចបញ្ចូលបាន <ph name="RETRIES" /> ដងទៀត។</translation>
 <translation id="3341703758641437857">អនុញ្ញាតឲ្យចូលប្រើឯកសារ URLs</translation>
@@ -2779,7 +2775,6 @@
 <translation id="4697551882387947560">នៅពេលវេនរុករកបញ្ចប់</translation>
 <translation id="4699172675775169585">រូបភាព និងឯកសារដែលផ្ទុកក្នុងឃ្លាំងសម្ងាត់</translation>
 <translation id="4699357559218762027">(បានបើកដំណើរស្វ័យប្រវត្តិ)</translation>
-<translation id="470074695271471509">ចេញពីគណនី​ដើម្បី​បញ្ចប់?</translation>
 <translation id="4701025263201366865">ការចូលគណនីដោយមាតាបិតា</translation>
 <translation id="4707302005824653064">ការប្រើប្រាស់ និងប្រវត្តិអាចត្រូវបានពិនិត្យមើលដោយអ្នកគ្រប់គ្រង (<ph name="CUSTODIAN_EMAIL" />) នៅលើ chrome.com។</translation>
 <translation id="4707579418881001319">L2TP/IPsec + វិញ្ញាបនប័ត្រអ្នកប្រើ</translation>
@@ -2802,7 +2797,6 @@
 <translation id="473546211690256853">គណនីនេះត្រូវបានគ្រប់គ្រងដោយ <ph name="DOMAIN" /></translation>
 <translation id="4735803855089279419">ប្រព័ន្ធមិន​អាច​កំណត់ព័ត៌មានសម្គាល់​ឧបករណ៍​សម្រាប់​ឧបករណ៍នេះបានទេ។</translation>
 <translation id="4736292055110123391">ធ្វើ​សម​កាល​កម្មចំណាំ ពាក្យសម្ងាត់ ប្រវត្តិរបស់អ្នក និង​មុខងារ​ជាច្រើនទៀត​នៅលើ​ឧបករណ៍​ទាំងអស់​របស់អ្នក</translation>
-<translation id="4737715515457435632">សូមភ្ជាប់ទៅបណ្តាញ</translation>
 <translation id="473775607612524610">ធ្វើបច្ចុប្បន្នភាព</translation>
 <translation id="4739639199548674512">សំបុត្រ</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />ស្វែងយល់​អំពី​របៀប​ដំឡើង​ជំនាន់​កម្មវិធី<ph name="END_LINK" /></translation>
@@ -3280,7 +3274,6 @@
 <translation id="5423829801105537712">ការពិនិត្យ​អក្ខរាវិរុទ្ធ​ធម្មតា</translation>
 <translation id="5423849171846380976">បានធ្វើសកម្មភាព</translation>
 <translation id="5425042808445046667">បន្ត​ការទាញយក</translation>
-<translation id="5425722269016440406">អ្នកត្រូវមានអ៊ីនធឺណិតដើម្បីបើក សោឆ្លាតវៃ ពីព្រោះការកំណត់នេះត្រូវបានធ្វើសមកម្មទៅទូរស័ព្ទរបស់អ្នក និងឧបករណ៍ផ្សេងទៀត។ សូមភ្ជាប់ទៅបណ្តាញជាមុនសិន។</translation>
 <translation id="5425863515030416387">ចូលនៅលើឧបករណ៍នានាបានយ៉ាងស្រួល</translation>
 <translation id="5427278936122846523">បកប្រែជានិច្ច</translation>
 <translation id="5427459444770871191">បង្វិលបញ្ច្រាសទ្រនិចនាឡិកា</translation>
@@ -3422,7 +3415,6 @@
 <translation id="558918721941304263">កំពុង​ផ្ទុក​កម្មវិធី...</translation>
 <translation id="5592595402373377407">មិនមានទិន្នន័យគ្រប់គ្រាន់នៅឡើយទេ។</translation>
 <translation id="5593357315997824387">ធ្វើសមកាលកម្ម​ឯកសារ​របស់ខ្ញុំ</translation>
-<translation id="5595152862129936745">ឆ្ងាយខ្លាំងណាស់</translation>
 <translation id="5595485650161345191">កែសម្រួលអាសយដ្ឋាន</translation>
 <translation id="5595727715083333657">ទម្រង់ផ្ទុក​របស់អ្នក​មិនអាច​ប្ដូរទំហំ​បានទេ​។ ដើម្បី​កែតម្រូវ​ទំហំផ្ទុក ដែលត្រូវបានកំណត់ជាមុន​សម្រាប់ Linux (បេតា) សូម​បម្រុងទុក បន្ទាប់មក​ស្ដារ​ទៅក្នុង​ទម្រង់ផ្ទុក​ថ្មី​។</translation>
 <translation id="5596627076506792578">ជម្រើសច្រើនទៀត</translation>
@@ -3536,7 +3528,6 @@
 <translation id="5747552184818312860">ផុតកំណត់</translation>
 <translation id="5747785204778348146">អ្នកអភិវឌ្ឍន៍ - មិនថេរ</translation>
 <translation id="5747809636523347288">ដាក់ចូល ហើយចូលទៅកាន់ <ph name="URL" /></translation>
-<translation id="5750324801516359607">ឆ្ងាយ</translation>
 <translation id="5751887393582880060">ការបង្ហោះនេះ​បំពានគោលការណ៍​សុវត្ថិភាពរបស់ស្ថាប័នអ្នក។ តើអ្នកចង់បន្តទោះបីជាមានការបំពានដែរទេ?</translation>
 <translation id="5756163054456765343">មជ្ឈមណ្ឌលជំនួយ</translation>
 <translation id="5759728514498647443">ឯកសារដែលអ្នកផ្ញើដើម្បីបោះពុម្ពតាមរយៈ <ph name="APP_NAME" /> អាចត្រូវបានអានដោយ <ph name="APP_NAME" />។</translation>
@@ -4086,7 +4077,6 @@
 <translation id="6490471652906364588">ឧបករណ៍ USB-C (រន្ធខាងស្តាំ)</translation>
 <translation id="6491376743066338510">ការផ្ទៀងផ្ទាត់បានបរាជ័យ</translation>
 <translation id="6494445798847293442">មិនមែន​ជា​អាជ្ញាធរ​វិញ្ញាបនបត្រ​ទេ</translation>
-<translation id="649454645705377674">បិទ</translation>
 <translation id="6495925982925244349">បណ្ដាញ <ph name="NETWORK_INDEX" /> នៃ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, កម្លាំងរលកសញ្ញា <ph name="SIGNAL_STRENGTH" />%, គ្រប់គ្រងដោយ​អ្នកគ្រប់គ្រង​របស់អ្នក, ព័ត៌មាន​លម្អិត</translation>
 <translation id="6498249116389603658">&amp;ភាសារបស់អ្នកទាំងអស់</translation>
 <translation id="6499143127267478107">ការដោះស្រាយឧបករណ៍ចែករំលែកនៅក្នុងស្គ្រីបប្រូកស៊ី...</translation>
@@ -4154,7 +4144,6 @@
 <translation id="6590458744723262880">ប្ដូរ​ឈ្មោះ​ថត</translation>
 <translation id="6592267180249644460">កំណត់ត្រា WebRTC បានចាប់យក <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">បានថត​ស្នាមម្រាមដៃ​របស់អ្នក​ហើយ</translation>
-<translation id="6594883168703494535">ប្រើ Smart Lock ដើម្បី​ចូលគណនី Google របស់អ្នក</translation>
 <translation id="6596325263575161958">ជម្រើសការអ៊ីនគ្រីប</translation>
 <translation id="6596816719288285829">អាសយដ្ឋាន IP</translation>
 <translation id="6597017209724497268">គំរូ</translation>
@@ -4688,7 +4677,6 @@
 <translation id="7328867076235380839">ការបន្សំ​មិនត្រឹមត្រូវ</translation>
 <translation id="7329154610228416156">បានបរាជ័យក្នុងការចូលពីព្រោះវាត្រូវបានកំណត់រចនាសម្ព័ន្ធមិនឲ្យប្រើ URL ដែលមានសុវត្ថិភាព(<ph name="BLOCKED_URL" />)។ សូមទាក់ទងអ្នកគ្រប់គ្រងរបស់អ្នក។</translation>
 <translation id="7332053360324989309">Dedicated Worker: <ph name="SCRIPT_URL" /></translation>
-<translation id="7334190995941642545">មិនមាន Smart Lock ទេបច្ចុប្បន្ននេះ។ សូមព្យាយាមម្តងទៀតពេលក្រោយ។</translation>
 <translation id="7334274148831027933">បើក​កែវ​ពង្រីក​ដាក់​ខាង​លើ​បំផុត</translation>
 <translation id="7335974957018254119">ប្រើ​ការពិនិត្យអក្ខរាវិរុទ្ធ​សម្រាប់</translation>
 <translation id="7336799713063880535">បានទប់ស្កាត់ការជូនដំណឹង។</translation>
@@ -5232,11 +5220,6 @@
 <translation id="8017679124341497925">បាន​កែសម្រួល​ផ្លូវកាត់</translation>
 <translation id="8018313076035239964">គ្រប់គ្រង​ព័ត៌មាន និង​មាតិកាអ្វីខ្លះ ដែល​គេហទំព័រ​អាច​ប្រើប្រាស់ និង​បង្ហាញ​ដល់​អ្នក</translation>
 <translation id="8023801379949507775">ធ្វើបច្ចុប្បន្នភាពកម្មវិធីបន្ថែមឥឡូវនេះ</translation>
-<translation id="8024483450737722621">កម្មវិធី​ដែល​អ្នក​បាន​ទាញយក​ពី Google Play នឹង​ត្រូវ​បាន​លុប​ពី Chromebook នេះ។
-      <ph name="LINE_BREAKS1" />
-      មាតិកា​ដែល​អ្នក​បាន​ទិញ​ដូចជា៖ ភាពយន្ត​ កម្មវិធីទូរទស្សន៍​ តន្ត្រី​ សៀវភៅ​ ឬការ​ទិញ​ក្នុង​កម្មវិធី​ផ្សេងទៀត​ អាច​នឹង​ត្រូវ​បាន​លុបផងដែរ។
-      <ph name="LINE_BREAKS2" />
-      វា​មិន​ប៉ះពាល់​ដល់​កម្មវិធី​ ឬមាតិកា​នៅលើ​ឧបករណ៍​ផ្សេងទៀត​ឡើយ។</translation>
 <translation id="8026334261755873520">ជម្រះទិន្នន័យរុករក</translation>
 <translation id="8028060951694135607">ការសង្គ្រោះសោ Microsoft</translation>
 <translation id="8028803902702117856">កំពុង​ទាញយក <ph name="SIZE" />, <ph name="FILE_NAME" /></translation>
@@ -5552,7 +5535,6 @@
 <translation id="8455026683977728932">មិនអាចបើក​រូបភាព ADB បានទេ</translation>
 <translation id="845702320058262034">មិនអាចភ្ជាប់​បានទេ។ សូមប្រាកដ​ថាបាន​បើកប៊្លូធូស​ទូរសព្ទ​របស់​អ្នក។</translation>
 <translation id="8457451314607652708">នាំចូលចំណាំ</translation>
-<translation id="8460336040822756677">ប្រសិនបើអ្នកបិទ Smart Lock សម្រាប់ <ph name="DEVICE_TYPE" /> អ្នកនឹងមិនអាចដោះសោឧបករណ៍ Chrome របស់អ្នកដោយប្រើទូរស័ព្ទរបស់អ្នកបានទេ។ អ្នកត្រូវវាយបញ្ចូលពាក្យសម្ងាត់របស់អ្នក។</translation>
 <translation id="8461329675984532579">ឈ្មោះអ្នកផ្តល់សេវាកម្មនៅផ្ទះ</translation>
 <translation id="84613761564611563">បានស្នើ UI សម្រាប់កំណត់រចនាសម្ព័ន្ធបណ្តាញ សូមរង់ចាំ...</translation>
 <translation id="8461914792118322307">ប្រូកស៊ី</translation>
@@ -5778,7 +5760,6 @@
 <translation id="8743864605301774756">បាន​ធ្វើបច្ចុប្បន្នភាពកាលពី 1 ម៉ោងមុន</translation>
 <translation id="8746654918629346731">អ្នកបានស្នើសុំ "<ph name="EXTENSION_NAME" />" រួចហើយ</translation>
 <translation id="874689135111202667">{0,plural, =1{បង្ហោះឯកសារ​មួយ​ទៅ​ទំព័រ​នេះ​?}other{បង្ហោះឯកសារ​ # ​ទៅ​ទំព័រ​នេះ​?}}</translation>
-<translation id="8748384418490037181">ជម្រើស Smart Lock</translation>
 <translation id="8749863574775030885">ចូលប្រើឧបករណ៍ USB ពីអ្នកលក់មិនស្គាល់</translation>
 <translation id="8750133148106010815">ដើម្បីចាប់ផ្ដើម Google Play, <ph name="ORGANIZATION_NAME" /> តម្រូវឱ្យអ្នកបម្រុងទុក​ទិន្នន័យរបស់អ្នក និងកំណត់​ Chromebook នេះទៅការកំណត់​​ដូច​ចេញ​ពី​រោងចក្រឡើងវិញ។</translation>
 <translation id="8750155211039279868"><ph name="ORIGIN" /> ចង់ភ្ជាប់​ទៅរន្ធស៊េរី</translation>
@@ -5901,7 +5882,6 @@
 <translation id="8881020143150461183">សូមព្យាយាមម្ដងទៀត។ ដើម្បី​ទទួលបាន​ជំនួយបច្ចេកទេស សូមទាក់ទង <ph name="CARRIER_NAME" /> ។</translation>
 <translation id="8883273463630735858">បើក​ការបង្កើន​ល្បឿនផ្ទាំងប៉ះ</translation>
 <translation id="8884570509232205463">ឥឡូវនេះ ឧបករណ៍របស់​អ្នកត្រូវបានកំណត់ឱ្យចាក់សោនៅម៉ោង <ph name="UNLOCK_TIME" />។</translation>
-<translation id="8885197664446363138">សោឆ្លាតវៃ មិនមានទេ</translation>
 <translation id="8888253246822647887">កម្មវិធី​របស់អ្នក​នឹងបើក នៅពេល​ការដំឡើងកំណែ​បញ្ចប់។ ការដំឡើងកំណែ​អាចចំណាយពេល​ពីរ ឬបីនាទី។</translation>
 <translation id="8888432776533519951">ពណ៌៖</translation>
 <translation id="8889651696183044030"><ph name="ORIGIN" /> អាចកែថត និងឯកសារ​ខាងក្រោម</translation>

@@ -21,18 +21,12 @@
 
 namespace net {
 
-FileStream::Context::Context(const scoped_refptr<base::TaskRunner>& task_runner)
-    : async_in_progress_(false),
-      orphaned_(false),
-      task_runner_(task_runner) {
-}
+FileStream::Context::Context(scoped_refptr<base::TaskRunner> task_runner)
+    : Context(base::File(), std::move(task_runner)) {}
 
 FileStream::Context::Context(base::File file,
-                             const scoped_refptr<base::TaskRunner>& task_runner)
-    : file_(std::move(file)),
-      async_in_progress_(false),
-      orphaned_(false),
-      task_runner_(task_runner) {}
+                             scoped_refptr<base::TaskRunner> task_runner)
+    : file_(std::move(file)), task_runner_(std::move(task_runner)) {}
 
 FileStream::Context::~Context() = default;
 

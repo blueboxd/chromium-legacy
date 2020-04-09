@@ -120,7 +120,6 @@
 <translation id="1153636665119721804">Програма на Google за разширена защита</translation>
 <translation id="1161575384898972166">Моля, влезте в/ъв <ph name="TOKEN_NAME" />, за да експортирате сертификата за клиентската програма.</translation>
 <translation id="1163931534039071049">&amp;Преглед на изходния код на рамката</translation>
-<translation id="1164674268730883318">Да се изключи ли Smart Lock за <ph name="DEVICE_TYPE" />?</translation>
 <translation id="1164891049599601209">Въведена в измамнически сайт</translation>
 <translation id="1164899421101904659">Въведете PUK кода</translation>
 <translation id="1165039591588034296">Грешка</translation>
@@ -771,7 +770,6 @@
 
 Можете да управлявате настройките на профила, като инсталирате приложението Family Link на устройството си.  Изпратихме ви имейл с инструкции.</translation>
 <translation id="2040460856718599782">Ами сега! При опита да ви удостоверим нещо се обърка. Моля, проверете идентификационните си данни за вход и опитайте отново.</translation>
-<translation id="2043818754674261542">Разстояние, от което телефонът може да отключи този <ph name="DEVICE_TYPE" /></translation>
 <translation id="204497730941176055">Име на шаблон за сертификат от Microsoft</translation>
 <translation id="2045117674524495717">Помощ за клавишните комбинации</translation>
 <translation id="2045969484888636535">Блокирането на „бисквитките“ да продължи</translation>
@@ -1144,7 +1142,6 @@
 <translation id="2518024842978892609">Използване на клиентските сертификати</translation>
 <translation id="2520644704042891903">Изчаква се свободен сокет...</translation>
 <translation id="252219247728877310">Компонентът не е актуализиран</translation>
-<translation id="2522791476825452208">Много близо</translation>
 <translation id="2523184218357549926">Изпраща до Google URL адресите на страниците, които посещавате</translation>
 <translation id="2526277209479171883">Инсталиране и продължаване</translation>
 <translation id="2526590354069164005">Работен плот</translation>
@@ -1753,7 +1750,6 @@
 <translation id="3333190335304955291">Можете да изключите тази услуга от настройките.</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> – видеоклипът се възпроизвежда в режим „Картина в картината“</translation>
 <translation id="3335947283844343239">Повторно отваряне на затворения раздел</translation>
-<translation id="3336664756920573711">Отключвайте устройството си <ph name="DEVICE_TYPE" /> с телефона си с Android</translation>
 <translation id="3340620525920140773">Изтеглянето завърши: <ph name="FILE_NAME" />.</translation>
 <translation id="3341699307020049241">Неправилен ПИН код. Остават ви <ph name="RETRIES" /> опита.</translation>
 <translation id="3341703758641437857">Да се разреши достъп до URL адресите на файловете</translation>
@@ -2778,7 +2774,6 @@
 <translation id="4697551882387947560">При приключване на сесията на сърфиране</translation>
 <translation id="4699172675775169585">Кеширани изображения и файлове</translation>
 <translation id="4699357559218762027">(автоматично стартирано)</translation>
-<translation id="470074695271471509">Искате ли да излезете от профила, за да завършите процеса?</translation>
 <translation id="4701025263201366865">Влизане в профила на родител</translation>
 <translation id="4707302005824653064">Мениджърът (<ph name="CUSTODIAN_EMAIL" />) може да преглежда данните за употребата и историята на адрес chrome.com.</translation>
 <translation id="4707579418881001319">L2TP/IPsec с потребителски сертификат</translation>
@@ -2801,7 +2796,6 @@
 <translation id="473546211690256853">Този профил се управлява от <ph name="DOMAIN" /></translation>
 <translation id="4735803855089279419">Системата не успя да определи идентификаторите за това устройство.</translation>
 <translation id="4736292055110123391">Синхронизиране на вашите отметки, пароли, история и др. на всичките ви устройства</translation>
-<translation id="4737715515457435632">Моля, установете връзка с мрежа</translation>
 <translation id="473775607612524610">Актуализиране</translation>
 <translation id="4739639199548674512">Пропуски</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Научете как да актуализирате приложения<ph name="END_LINK" /></translation>
@@ -3279,7 +3273,6 @@
 <translation id="5423829801105537712">Основна проверка на правописа</translation>
 <translation id="5423849171846380976">Активиран</translation>
 <translation id="5425042808445046667">Продължаване на изтеглянето</translation>
-<translation id="5425722269016440406">Трябва да сте онлайн, за да изключите Smart Lock, защото тази настройка се синхронизира с телефона и другите ви устройства. Моля, първо се свържете с мрежа.</translation>
 <translation id="5425863515030416387">Лесно влизане във всички устройства</translation>
 <translation id="5427278936122846523">Винаги да се превежда</translation>
 <translation id="5427459444770871191">Завъртане &amp;по часовниковата стрелка</translation>
@@ -3421,7 +3414,6 @@
 <translation id="558918721941304263">Приложенията се зареждат...</translation>
 <translation id="5592595402373377407">Още не са налице достатъчно данни.</translation>
 <translation id="5593357315997824387">Синхронизиране на файловете ми</translation>
-<translation id="5595152862129936745">Много далеч</translation>
 <translation id="5595485650161345191">Редактиране на адреса</translation>
 <translation id="5595727715083333657">Контейнерът ви не поддържа преоразмеряване. За да промените обема на пространството, предварително заделено за Linux (бета), създайте резервно копие и след това възстановете в нов контейнер.</translation>
 <translation id="5596627076506792578">Още опции</translation>
@@ -3535,7 +3527,6 @@
 <translation id="5747552184818312860">Изтича на</translation>
 <translation id="5747785204778348146">За програмисти – нестабилен</translation>
 <translation id="5747809636523347288">Пост&amp;авяне и отваряне на <ph name="URL" /></translation>
-<translation id="5750324801516359607">Далеч</translation>
 <translation id="5751887393582880060">Този качен файл нарушава правилата за сигурност на организацията ви. Искате ли да продължите въпреки това?</translation>
 <translation id="5756163054456765343">П&amp;омощен център</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" /> може да чете документите, които изпращате за отпечатване чрез <ph name="APP_NAME" />.</translation>
@@ -4085,7 +4076,6 @@
 <translation id="6490471652906364588">USB-C устройство (десният порт)</translation>
 <translation id="6491376743066338510">Упълномощаването не бе успешно</translation>
 <translation id="6494445798847293442">Не е сертифициращ орган</translation>
-<translation id="649454645705377674">Затваряне</translation>
 <translation id="6495925982925244349">Мрежа <ph name="NETWORK_INDEX" /> от <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, сила на сигнала <ph name="SIGNAL_STRENGTH" />%, управлява се от администратора ви, подробности</translation>
 <translation id="6498249116389603658">&amp;Всичките ви езици</translation>
 <translation id="6499143127267478107">Получава се разрешение от хоста в скрипта за прокси сървъра...</translation>
@@ -4153,7 +4143,6 @@
 <translation id="6590458744723262880">Преименуване на папка</translation>
 <translation id="6592267180249644460">Записан е регистрационен файл за WebRTC: <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">Отпечатъкът ви бе записан</translation>
-<translation id="6594883168703494535">Използване на Smart Lock за влизане в профила ви в Google</translation>
 <translation id="6596325263575161958">Опции за шифроване</translation>
 <translation id="6596816719288285829">IP адрес</translation>
 <translation id="6597017209724497268">Извадки</translation>
@@ -4687,7 +4676,6 @@
 <translation id="7328867076235380839">Невалидна комбинация</translation>
 <translation id="7329154610228416156">Влизането не бе успешно, тъй като е конфигурирано да се извършва през незащитен URL адрес (<ph name="BLOCKED_URL" />). Моля, свържете се с администратора си.</translation>
 <translation id="7332053360324989309">Специализиран изпълнител: <ph name="SCRIPT_URL" /></translation>
-<translation id="7334190995941642545">Функцията Smart Lock не е налице в момента. Моля, опитайте отново по-късно.</translation>
 <translation id="7334274148831027933">Активиране на лупата в прикрепен режим</translation>
 <translation id="7335974957018254119">Проверка на правописа за</translation>
 <translation id="7336799713063880535">Известия – блокирани</translation>
@@ -5232,11 +5220,6 @@
 <translation id="8017679124341497925">Прекият път бе редактиран</translation>
 <translation id="8018313076035239964">Управлявайте каква информация могат да използват уебсайтовете и какво съдържание могат да ви показват</translation>
 <translation id="8023801379949507775">Актуализирайте разширенията сега</translation>
-<translation id="8024483450737722621">Приложенията, които сте изтеглили от Google Play, ще бъдат изтрити от този Chromebook.
-<ph name="LINE_BREAKS1" />
-Купеното от вас съдържание, като например филми, телевизионни предавания, музика, книги или други покупки в приложения, може също да бъде изтрито.
-<ph name="LINE_BREAKS2" />
-Това действие няма ефект върху приложения или съдържание на други устройства.</translation>
 <translation id="8026334261755873520">Изчистване на данните за сърфирането</translation>
 <translation id="8028060951694135607">Възстановяване на ключ от Microsoft</translation>
 <translation id="8028803902702117856">Изтеглят се <ph name="SIZE" />, <ph name="FILE_NAME" /></translation>
@@ -5552,7 +5535,6 @@
 <translation id="8455026683977728932">Илюстрация за неуспешно активиране на ADB</translation>
 <translation id="845702320058262034">Не може да бъде установена връзка. Уверете се, че функцията за Bluetooth на телефона ви е включена.</translation>
 <translation id="8457451314607652708">Импортиране на отметки</translation>
-<translation id="8460336040822756677">Ако изключите Smart Lock за <ph name="DEVICE_TYPE" />, няма да можете да отключвате устройствата си с Chrome чрез телефона си. Ще трябва да въвеждате паролата си.</translation>
 <translation id="8461329675984532579">Име на собствения доставчик</translation>
 <translation id="84613761564611563">Заявен е ПИ за конфигуриране на мрежата. Моля, изчакайте...</translation>
 <translation id="8461914792118322307">Прокси сървър</translation>
@@ -5778,7 +5760,6 @@
 <translation id="8743864605301774756">Актуализирано преди 1 ч</translation>
 <translation id="8746654918629346731">Вече заявихте <ph name="EXTENSION_NAME" /></translation>
 <translation id="874689135111202667">{0,plural, =1{Искате ли да качите един файл на този сайт?}other{Искате ли да качите # файла на този сайт?}}</translation>
-<translation id="8748384418490037181">Опции за Smart Lock</translation>
 <translation id="8749863574775030885">Достъп до USB устройства от неизвестен доставчик</translation>
 <translation id="8750133148106010815">За да стартирате Google Play, <ph name="ORGANIZATION_NAME" /> изисква да създадете резервно копие на данните си и да възстановите фабричните настройки на този Chromebook.</translation>
 <translation id="8750155211039279868"><ph name="ORIGIN" /> иска да се свърже със сериен порт</translation>
@@ -5901,7 +5882,6 @@
 <translation id="8881020143150461183">Моля, опитайте отново. За техническа поддръжка се обърнете към <ph name="CARRIER_NAME" />.</translation>
 <translation id="8883273463630735858">Активиране на ускоряването на сензорния панел</translation>
 <translation id="8884570509232205463">Устройството ви вече ще се заключи в <ph name="UNLOCK_TIME" />.</translation>
-<translation id="8885197664446363138">Няма достъп до Smart Lock</translation>
 <translation id="8888253246822647887">Приложението ще се отвори, щом надстройването завърши. Това може да отнеме няколко минути.</translation>
 <translation id="8888432776533519951">Цвят:</translation>
 <translation id="8889651696183044030"><ph name="ORIGIN" /> може да редактира следните файлове и папки</translation>

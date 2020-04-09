@@ -38,6 +38,7 @@ class MockMediaNotificationContainerObserver
   // MediaNotificationContainerObserver implementation.
   MOCK_METHOD1(OnContainerExpanded, void(bool expanded));
   MOCK_METHOD0(OnContainerMetadataChanged, void());
+  MOCK_METHOD0(OnContainerActionsChanged, void());
   MOCK_METHOD1(OnContainerClicked, void(const std::string& id));
   MOCK_METHOD1(OnContainerDismissed, void(const std::string& id));
   MOCK_METHOD1(OnContainerDestroyed, void(const std::string& id));

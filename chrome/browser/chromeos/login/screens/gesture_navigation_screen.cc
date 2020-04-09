@@ -28,9 +28,19 @@ constexpr const char kGestureBackPage[] = "gestureBack";
 
 }  // namespace
 
+// static
+std::string GestureNavigationScreen::GetResultString(Result result) {
+  switch (result) {
+    case Result::NEXT:
+      return "Next";
+    case Result::NOT_APPLICABLE:
+      return BaseScreen::kNotApplicable;
+  }
+}
+
 GestureNavigationScreen::GestureNavigationScreen(
     GestureNavigationScreenView* view,
-    const base::RepeatingClosure& exit_callback)
+    const ScreenExitCallback& exit_callback)
     : BaseScreen(GestureNavigationScreenView::kScreenId,
                  OobeScreenPriority::DEFAULT),
       view_(view),
@@ -50,7 +60,7 @@ void GestureNavigationScreen::GesturePageChange(const std::string& new_page) {
   current_page_ = new_page;
 }
 
-void GestureNavigationScreen::ShowImpl() {
+bool GestureNavigationScreen::MaybeSkip() {
   AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
   if (chrome_user_manager_util::IsPublicSessionOrEphemeralLogin() ||
       !ash::features::IsHideShelfControlsInTabletModeEnabled() ||
@@ -59,18 +69,21 @@ void GestureNavigationScreen::ShowImpl() {
       accessibility_manager->IsSpokenFeedbackEnabled() ||
       accessibility_manager->IsAutoclickEnabled() ||
       accessibility_manager->IsSwitchAccessEnabled()) {
-    exit_callback_.Run();
-    return;
+    exit_callback_.Run(Result::NOT_APPLICABLE);
+    return true;
   }
 
   // Skip the screen if the device is not in tablet mode, unless tablet mode
   // first user run is forced on the device.
   if (!ash::TabletMode::Get()->InTabletMode() &&
       !chromeos::switches::ShouldOobeUseTabletModeFirstRun()) {
-    exit_callback_.Run();
-    return;
+    exit_callback_.Run(Result::NOT_APPLICABLE);
+    return true;
   }
+  return false;
+}
 
+void GestureNavigationScreen::ShowImpl() {
   // Begin keeping track of current page and start time for the page shown time
   // metrics.
   current_page_ = kGestureIntroPage;
@@ -91,7 +104,7 @@ void GestureNavigationScreen::OnUserAction(const std::string& action_id) {
         ash::prefs::kGestureEducationNotificationShown, true);
 
     RecordPageShownTimeMetrics();
-    exit_callback_.Run();
+    exit_callback_.Run(Result::NEXT);
   } else {
     BaseScreen::OnUserAction(action_id);
   }

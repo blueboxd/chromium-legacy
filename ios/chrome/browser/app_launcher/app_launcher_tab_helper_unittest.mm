@@ -116,8 +116,9 @@ class AppLauncherTabHelperTest : public PlatformTest {
     NSURL* url = [NSURL URLWithString:url_string];
     web::WebStatePolicyDecider::RequestInfo request_info(
         transition_type, target_frame_is_main, has_user_gesture);
-    return tab_helper_->ShouldAllowRequest([NSURLRequest requestWithURL:url],
-                                           request_info);
+    return tab_helper_
+        ->ShouldAllowRequest([NSURLRequest requestWithURL:url], request_info)
+        .ShouldAllowNavigation();
   }
 
   // Initialize reading list model and its required tab helpers.
@@ -163,8 +164,10 @@ class AppLauncherTabHelperTest : public PlatformTest {
     web::WebStatePolicyDecider::RequestInfo request_info(
         transition_type,
         /*target_frame_is_main=*/true, /*has_user_gesture=*/true);
-    EXPECT_FALSE(tab_helper_->ShouldAllowRequest(
-        [NSURLRequest requestWithURL:url], request_info));
+    EXPECT_TRUE(tab_helper_
+                    ->ShouldAllowRequest([NSURLRequest requestWithURL:url],
+                                         request_info)
+                    .ShouldCancelNavigation());
 
     const ReadingListEntry* entry = model->GetEntryByURL(pending_url);
     return entry->IsRead() == expected_read_status;

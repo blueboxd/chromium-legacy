@@ -343,79 +343,6 @@ class OwnershipTestWidget : public Widget {
 
 // TODO(sky): add coverage of ownership for the desktop variants.
 
-// Widget owns its NativeWidget, part 1: NativeWidget is a platform-native
-// widget.
-TEST_F(WidgetOwnershipTest, Ownership_WidgetOwnsPlatformNativeWidget) {
-  OwnershipTestState state;
-
-  auto widget = std::make_unique<OwnershipTestWidget>(&state);
-  Widget::InitParams params = CreateParamsForTestWidget();
-  params.native_widget = CreatePlatformNativeWidgetImpl(
-      params, widget.get(), kStubCapture, &state.native_widget_deleted);
-  widget->Init(std::move(params));
-
-  // Now delete the Widget, which should delete the NativeWidget.
-  widget.reset();
-
-  EXPECT_TRUE(state.widget_deleted);
-  EXPECT_TRUE(state.native_widget_deleted);
-
-  // TODO(beng): write test for this ownership scenario and the NativeWidget
-  //             being deleted out from under the Widget.
-}
-
-// Widget owns its NativeWidget, part 2: NativeWidget is a NativeWidget.
-TEST_F(WidgetOwnershipTest, Ownership_WidgetOwnsViewsNativeWidget) {
-  OwnershipTestState state;
-
-  auto widget = std::make_unique<OwnershipTestWidget>(&state);
-  Widget::InitParams params = CreateParamsForTestWidget();
-  params.native_widget = CreatePlatformNativeWidgetImpl(
-      params, widget.get(), kStubCapture, &state.native_widget_deleted);
-  widget->Init(std::move(params));
-
-  // Now delete the Widget, which should delete the NativeWidget.
-  widget.reset();
-
-  EXPECT_TRUE(state.widget_deleted);
-  EXPECT_TRUE(state.native_widget_deleted);
-
-  // TODO(beng): write test for this ownership scenario and the NativeWidget
-  //             being deleted out from under the Widget.
-}
-
-// Widget owns its NativeWidget, part 3: NativeWidget is a NativeWidget,
-// destroy the parent view.
-TEST_F(WidgetOwnershipTest,
-       Ownership_WidgetOwnsViewsNativeWidget_DestroyParentView) {
-  OwnershipTestState state;
-
-  Widget* toplevel = CreateTopLevelPlatformWidget();
-
-  auto widget = std::make_unique<OwnershipTestWidget>(&state);
-  Widget::InitParams params = CreateParamsForTestWidget();
-  params.parent = toplevel->GetNativeView();
-  params.native_widget = CreatePlatformNativeWidgetImpl(
-      params, widget.get(), kStubCapture, &state.native_widget_deleted);
-  widget->Init(std::move(params));
-
-  // Now close the toplevel, which deletes the view hierarchy.
-  toplevel->CloseNow();
-
-  RunPendingMessages();
-
-  // This shouldn't delete the widget because it shouldn't be deleted
-  // from the native side.
-  EXPECT_FALSE(state.widget_deleted);
-  EXPECT_FALSE(state.native_widget_deleted);
-
-  // Now delete it explicitly.
-  widget.reset();
-
-  EXPECT_TRUE(state.widget_deleted);
-  EXPECT_TRUE(state.native_widget_deleted);
-}
-
 // NativeWidget owns its Widget, part 1: NativeWidget is a platform-native
 // widget.
 TEST_F(WidgetOwnershipTest, Ownership_PlatformNativeWidgetOwnsWidget) {
@@ -529,26 +456,72 @@ TEST_F(WidgetOwnershipTest, Ownership_ViewsNativeWidgetOwnsWidget_Close) {
   EXPECT_TRUE(state.native_widget_deleted);
 }
 
-// Widget owns its NativeWidget and has a WidgetDelegateView as its contents.
-TEST_F(WidgetOwnershipTest,
-       Ownership_WidgetOwnsNativeWidgetWithWithWidgetDelegateView) {
-  OwnershipTestState state;
+class WidgetOwnsNativeWidgetTest : public WidgetOwnershipTest {
+ public:
+  WidgetOwnsNativeWidgetTest() = default;
+  ~WidgetOwnsNativeWidgetTest() override = default;
 
-  WidgetDelegateView* delegate_view = new WidgetDelegateView;
+  void TearDown() override {
+    EXPECT_TRUE(state_.widget_deleted);
+    EXPECT_TRUE(state_.native_widget_deleted);
 
-  auto widget = std::make_unique<OwnershipTestWidget>(&state);
+    WidgetOwnershipTest::TearDown();
+  }
+
+  OwnershipTestState* state() { return &state_; }
+
+ private:
+  OwnershipTestState state_;
+};
+
+// Widget owns its NativeWidget, part 1.
+TEST_F(WidgetOwnsNativeWidgetTest, Ownership) {
+  auto widget = std::make_unique<OwnershipTestWidget>(state());
   Widget::InitParams params = CreateParamsForTestWidget();
   params.native_widget = CreatePlatformNativeWidgetImpl(
-      params, widget.get(), kStubCapture, &state.native_widget_deleted);
-  params.delegate = delegate_view;
+      params, widget.get(), kStubCapture, &state()->native_widget_deleted);
   widget->Init(std::move(params));
-  widget->SetContentsView(delegate_view);
 
-  // Now delete the Widget. There should be no crash or use-after-free.
+  // Now delete the Widget, which should delete the NativeWidget.
   widget.reset();
 
-  EXPECT_TRUE(state.widget_deleted);
-  EXPECT_TRUE(state.native_widget_deleted);
+  // TODO(beng): write test for this ownership scenario and the NativeWidget
+  //             being deleted out from under the Widget.
+}
+
+// Widget owns its NativeWidget, part 2: destroy the parent view.
+TEST_F(WidgetOwnsNativeWidgetTest, DestroyParentView) {
+  Widget* toplevel = CreateTopLevelPlatformWidget();
+
+  auto widget = std::make_unique<OwnershipTestWidget>(state());
+  Widget::InitParams params = CreateParamsForTestWidget();
+  params.parent = toplevel->GetNativeView();
+  params.native_widget = CreatePlatformNativeWidgetImpl(
+      params, widget.get(), kStubCapture, &state()->native_widget_deleted);
+  widget->Init(std::move(params));
+
+  // Now close the toplevel, which deletes the view hierarchy.
+  toplevel->CloseNow();
+
+  RunPendingMessages();
+
+  // This shouldn't delete the widget because it shouldn't be deleted
+  // from the native side.
+  EXPECT_FALSE(state()->widget_deleted);
+  EXPECT_FALSE(state()->native_widget_deleted);
+}
+
+// Widget owns its NativeWidget, part 3: has a WidgetDelegateView as contents.
+TEST_F(WidgetOwnsNativeWidgetTest, WidgetDelegateView) {
+  auto widget = std::make_unique<OwnershipTestWidget>(state());
+  Widget::InitParams params = CreateParamsForTestWidget();
+  params.native_widget = CreatePlatformNativeWidgetImpl(
+      params, widget.get(), kStubCapture, &state()->native_widget_deleted);
+  params.delegate = new WidgetDelegateView();
+  widget->Init(std::move(params));
+
+  // Allow the Widget to go out of scope. There should be no crash or
+  // use-after-free.
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1259,37 +1232,6 @@ TEST_F(WidgetTest, KeyboardInputEvent) {
   EXPECT_FALSE(backspace_r.handled());
 }
 
-// Verifies bubbles result in a focus lost when shown.
-// TODO(msw): this tests relies on focus, it needs to be in
-// interactive_ui_tests.
-TEST_F(DesktopWidgetTest, DISABLED_FocusChangesOnBubble) {
-  // Create a widget, show and activate it and focus the contents view.
-  View* contents_view = new View;
-  contents_view->SetFocusBehavior(View::FocusBehavior::ALWAYS);
-  std::unique_ptr<Widget> widget = CreateTestWidget();
-  widget->SetContentsView(contents_view);
-  widget->Show();
-  widget->Activate();
-  contents_view->RequestFocus();
-  EXPECT_TRUE(contents_view->HasFocus());
-
-  // Show a bubble.
-  BubbleDialogDelegateView* bubble_delegate_view =
-      new TestBubbleDialogDelegateView(contents_view);
-  bubble_delegate_view->SetFocusBehavior(View::FocusBehavior::ALWAYS);
-  BubbleDialogDelegateView::CreateBubble(bubble_delegate_view)->Show();
-  bubble_delegate_view->RequestFocus();
-
-  // |contents_view_| should no longer have focus.
-  EXPECT_FALSE(contents_view->HasFocus());
-  EXPECT_TRUE(bubble_delegate_view->HasFocus());
-
-  bubble_delegate_view->GetWidget()->CloseNow();
-
-  // Closing the bubble should result in focus going back to the contents view.
-  EXPECT_TRUE(contents_view->HasFocus());
-}
-
 TEST_F(WidgetTest, BubbleControlsResetOnInit) {
   WidgetAutoclosePtr anchor(CreateTopLevelPlatformWidget());
   anchor->Show();
@@ -1332,8 +1274,10 @@ TEST_F(DesktopWidgetTest, TestViewWidthAfterMinimizingWidget) {
 // paints are expected.
 class DesktopAuraTestValidPaintWidget : public Widget, public WidgetObserver {
  public:
-  DesktopAuraTestValidPaintWidget() { observer_.Add(this); }
-
+  explicit DesktopAuraTestValidPaintWidget(Widget::InitParams init_params)
+      : Widget(std::move(init_params)) {
+    observer_.Add(this);
+  }
   ~DesktopAuraTestValidPaintWidget() override = default;
 
   bool ReadReceivedPaintAndReset() {
@@ -1385,12 +1329,11 @@ class DesktopAuraPaintWidgetTest : public DesktopWidgetTest {
   std::unique_ptr<views::Widget> CreateTestWidget(
       views::Widget::InitParams::Type type =
           views::Widget::InitParams::TYPE_WINDOW_FRAMELESS) override {
-    Widget::InitParams params = CreateParamsForTestWidget(type);
-    auto widget = std::make_unique<DesktopAuraTestValidPaintWidget>();
+    auto widget = std::make_unique<DesktopAuraTestValidPaintWidget>(
+        CreateParamsForTestWidget(type));
     paint_widget_ = widget.get();
-    widget->Init(std::move(params));
 
-    View* contents_view = new View;
+    View* contents_view = new View();
     contents_view->SetFocusBehavior(View::FocusBehavior::ALWAYS);
     widget->SetContentsView(contents_view);
 
@@ -3874,48 +3817,31 @@ class ModalDialogDelegate : public DialogDelegateView {
 // remaining top-level windows should be re-enabled.
 TEST_F(DesktopWidgetTest, WindowModalOwnerDestroyedEnabledTest) {
   // top_level_widget owns owner_dialog_widget which owns owned_dialog_widget.
-
-  // Create the top level widget.
   std::unique_ptr<Widget> top_level_widget = CreateTestWidget();
   top_level_widget->Show();
 
   // Create the owner modal dialog.
-  // owner_dialog_delegate instance will be destroyed when the dialog
-  // is destroyed.
-  ModalDialogDelegate* owner_dialog_delegate =
-      new ModalDialogDelegate(ui::MODAL_TYPE_WINDOW);
-
-  Widget owner_dialog_widget;
-  Widget::InitParams init_params =
-      CreateParamsForTestWidget(Widget::InitParams::TYPE_WINDOW);
-  init_params.delegate = owner_dialog_delegate;
-  init_params.parent = top_level_widget->GetNativeView();
-  init_params.native_widget =
-      new test::TestPlatformNativeWidget<DesktopNativeWidgetAura>(
-          &owner_dialog_widget, false, nullptr);
-  owner_dialog_widget.Init(std::move(init_params));
-
+  const auto create_params = [this](Widget* widget, gfx::NativeView parent) {
+    Widget::InitParams init_params =
+        CreateParamsForTestWidget(Widget::InitParams::TYPE_WINDOW);
+    init_params.delegate = new ModalDialogDelegate(ui::MODAL_TYPE_WINDOW);
+    init_params.parent = parent;
+    init_params.native_widget =
+        new test::TestPlatformNativeWidget<DesktopNativeWidgetAura>(
+            widget, false, nullptr);
+    return init_params;
+  };
+  Widget owner_dialog_widget(
+      create_params(&owner_dialog_widget, top_level_widget->GetNativeView()));
+  owner_dialog_widget.Show();
   HWND owner_hwnd = HWNDForWidget(&owner_dialog_widget);
 
-  owner_dialog_widget.Show();
-
   // Create the owned modal dialog.
-  // As above, the owned_dialog_instance instance will be destroyed
-  // when the dialog is destroyed.
-  ModalDialogDelegate* owned_dialog_delegate =
-      new ModalDialogDelegate(ui::MODAL_TYPE_WINDOW);
-
-  Widget owned_dialog_widget;
-  init_params.delegate = owned_dialog_delegate;
-  init_params.parent = owner_dialog_widget.GetNativeView();
-  init_params.native_widget =
-      new test::TestPlatformNativeWidget<DesktopNativeWidgetAura>(
-          &owned_dialog_widget, false, nullptr);
-  owned_dialog_widget.Init(std::move(init_params));
-
+  Widget owned_dialog_widget(
+      create_params(&owned_dialog_widget, owner_dialog_widget.GetNativeView()));
+  owned_dialog_widget.Show();
   HWND owned_hwnd = HWNDForWidget(&owned_dialog_widget);
 
-  owned_dialog_widget.Show();
   RunPendingMessages();
 
   HWND top_hwnd = HWNDForWidget(top_level_widget.get());

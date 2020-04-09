@@ -2067,27 +2067,29 @@ std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
       } else if (credit_card->number().empty()) {
+        // TODO(crbug/1059087): Update suggestion label with nickname for
+        // empty-number local cards when nickname is supported for local card.
         if (type.GetStorableType() != CREDIT_CARD_NAME_FULL) {
           suggestion->label = credit_card->GetInfo(
               AutofillType(CREDIT_CARD_NAME_FULL), app_locale_);
         }
       } else {
 #if defined(OS_ANDROID)
-        // On Android devices, the label is formatted as "Visa  ••••1234" when
-        // the keyboard accessory experiment is disabled and as "••••1234" when
-        // it's enabled.
+        // On Android devices, the label is formatted as
+        // "Nickname/Network  ••••1234" when the keyboard accessory experiment
+        // is disabled and as "••••1234" when it's enabled.
         suggestion->label =
             base::FeatureList::IsEnabled(features::kAutofillKeyboardAccessory)
                 ? credit_card->ObfuscatedLastFourDigits()
-                : credit_card->NetworkAndLastFourDigits();
+                : credit_card->NicknameOrNetworkAndLastFourDigits();
 #elif defined(OS_IOS)
         // E.g. "••••1234"".
         suggestion->label = credit_card->ObfuscatedLastFourDigits();
 #else
-        // E.g. "Visa  ••••1234, expires on 01/25".
+        // E.g. "Nickname/Network  ••••1234, expires on 01/25".
         suggestion->label =
             credit_card
-                ->NetworkOrBankNameLastFourDigitsAndDescriptiveExpiration(
+                ->NicknameOrNetworkLastFourDigitsAndDescriptiveExpiration(
                     app_locale_);
 #endif
       }

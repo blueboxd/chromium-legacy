@@ -85,8 +85,7 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
     gfx::Rect anchor_rect;
     bool is_anchored_to_status_area = true;
     ShelfAlignment shelf_alignment = ShelfAlignment::kBottom;
-    int min_width = 0;
-    int max_width = 0;
+    int preferred_width = 0;
     int max_height = 0;
     bool close_on_deactivate = true;
     // Indicates whether tray bubble view is shown by click on the tray view.
@@ -120,7 +119,7 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
   void SetBottomPadding(int padding);
 
   // Sets the bubble width.
-  void SetWidth(int width);
+  void SetPreferredWidth(int width);
 
   // Returns the border insets. Called by TrayEventFilter.
   gfx::Insets GetBorderInsets() const;

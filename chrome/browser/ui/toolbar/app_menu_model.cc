@@ -72,6 +72,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/models/button_menu_item_model.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
@@ -193,7 +194,7 @@ class HelpMenuModel : public ui::SimpleMenuModel {
     if (browser_defaults::kShowHelpMenuItemIcon) {
       ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
       SetIcon(GetIndexOfCommandId(IDC_HELP_PAGE_VIA_MENU),
-              rb.GetNativeImageNamed(IDR_HELP_MENU));
+              ui::ImageModel::FromImage(rb.GetNativeImageNamed(IDR_HELP_MENU)));
     }
     if (browser->profile()->GetPrefs()->GetBoolean(prefs::kUserFeedbackAllowed))
       AddItemWithStringId(IDC_FEEDBACK, IDS_FEEDBACK);
@@ -876,13 +877,13 @@ void AppMenuModel::Build() {
   if (chrome::ShouldDisplayManagedUi(browser_->profile())) {
     AddSeparator(ui::LOWER_SEPARATOR);
     const int kIconSize = 18;
-    SkColor color = ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
-        ui::NativeTheme::kColorId_HighlightedMenuItemForegroundColor);
-    const auto icon =
-        gfx::CreateVectorIcon(vector_icons::kBusinessIcon, kIconSize, color);
     AddHighlightedItemWithIcon(
         IDC_SHOW_MANAGEMENT_PAGE,
-        chrome::GetManagedUiMenuItemLabel(browser_->profile()), icon);
+        chrome::GetManagedUiMenuItemLabel(browser_->profile()),
+        ui::ImageModel::FromVectorIcon(
+            vector_icons::kBusinessIcon,
+            ui::NativeTheme::kColorId_HighlightedMenuItemForegroundColor,
+            kIconSize));
   }
 #endif  // !defined(OS_CHROMEOS)
 

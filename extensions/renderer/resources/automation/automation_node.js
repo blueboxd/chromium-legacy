@@ -264,6 +264,13 @@ var GetLineStartOffsets = requireNative(
 
 /**
  * @param {string} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of the node.
+ * @return {?string} The computed name of this node.
+ */
+var GetName = natives.GetName;
+
+/**
+ * @param {string} axTreeID The id of the accessibility tree.
  * @param {number} nodeID The id of a node.
  * @param {string} attr The name of a string attribute.
  * @return {?string} The value of this attribute, or undefined if the tree,
@@ -700,6 +707,9 @@ AutomationNodeImpl.prototype = {
     return GetNameFrom(this.treeID, this.id);
   },
 
+  get name() {
+    return GetName(this.treeID, this.id);
+  },
 
   get descriptionFrom() {
     return GetDescriptionFrom(this.treeID, this.id);
@@ -1036,7 +1046,7 @@ AutomationNodeImpl.prototype = {
       var childID = GetChildIDAtIndex(this.treeID, this.id, i).nodeId;
       $Array.push(childIDs, childID);
     }
-    var name = GetStringAttribute(this.treeID, this.id, 'name');
+    var name = GetName(this.treeID, this.id);
 
     var result = 'node id=' + this.id +
         ' role=' + this.role +
@@ -1231,7 +1241,6 @@ var stringAttributes = [
     'language',
     'liveRelevant',
     'liveStatus',
-    'name',
     'placeholder',
     'roleDescription',
     'textInputType',
@@ -1240,8 +1249,9 @@ var stringAttributes = [
     'value'];
 
 var boolAttributes = [
-  'busy', 'clickable', 'containerLiveAtomic', 'containerLiveBusy', 'liveAtomic',
-  'modal', 'scrollable', 'selected', 'supportsTextLocation'
+  'busy', 'clickable', 'containerLiveAtomic', 'containerLiveBusy',
+  'editableRoot', 'liveAtomic', 'modal', 'scrollable', 'selected',
+  'supportsTextLocation'
 ];
 
 var intAttributes = [
@@ -1814,6 +1824,7 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
         'lineThrough',
         'location',
         'markers',
+        'name',
         'nameFrom',
         'nextSibling',
         'nonInlineTextWordEnds',

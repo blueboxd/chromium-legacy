@@ -154,7 +154,7 @@
         </settings-collapse-radio-button>
       </cr-radio-group>
     </div>
-    <settings-toggle-button id="clearOnExit"  no-set-pref
+    <settings-toggle-button id="clearOnExit" class="hr" no-set-pref
         pref="{{clearOnExitPref_}}" label="$i18n{deleteDataPostSession}"
         disabled$="[[clearOnExitDisabled_]]"
         on-settings-boolean-control-change="onClearOnExitChange_">
@@ -163,6 +163,7 @@
         prefs="{{prefs}}">
     </settings-do-not-track-toggle>
     <settings-toggle-button id="networkPrediction"
+        class="hr"
         hidden="[[!pageVisibility.networkPrediction]]"
         label="$i18n{networkPredictionEnabled}"
         sub-label="$i18n{networkPredictionEnabledDescCookiesPage}"

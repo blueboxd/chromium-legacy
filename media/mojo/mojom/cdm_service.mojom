@@ -5,6 +5,7 @@
 module media.mojom;
 
 import "media/mojo/mojom/content_decryption_module.mojom";
+import "media/mojo/mojom/frame_interface_factory.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
 import "services/service_manager/public/mojom/interface_provider.mojom";
 
@@ -28,11 +29,12 @@ interface CdmService {
           [EnableIf=is_mac]
           pending_remote<SeatbeltExtensionTokenProvider>? token_provider);
 
-  // Requests an CdmFactory. |host_interfaces| can optionally be used to provide
-  // interfaces hosted by the caller to the remote CdmFactory implementation.
+  // Requests an CdmFactory. |frame_interfaces| can optionally be used to
+  // provide interfaces hosted by the caller to the remote CdmFactory
+  // implementation.
   CreateCdmFactory(
       pending_receiver<CdmFactory> factory,
-      pending_remote<service_manager.mojom.InterfaceProvider> host_interfaces);
+      pending_remote<FrameInterfaceFactory> frame_interfaces);
 };
 
 // An interface to provide a sandbox seatbelt extension token synchronously.

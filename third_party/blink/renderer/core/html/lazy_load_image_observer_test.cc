@@ -512,12 +512,15 @@ TEST_P(LazyLoadImagesParamsTest, NearViewport) {
   EXPECT_FALSE(ConsoleMessages().Contains("main body onload"));
   EXPECT_TRUE(ConsoleMessages().Contains("eager onload"));
   EXPECT_FALSE(ConsoleMessages().Contains("lazy onload"));
+  // When automatic lazy image loading is enabled, images that are not
+  // explicitly `loading=lazy` will still block the window load event.
+  // Therefore, the following two images are either:
+  //   a.) Fetched eagerly, when automatic lazy image loading is disabled
+  //       - And therefore block the window load event
+  //   b.) Fetched lazily, when automatic lazy image loading is enabled
+  //       - And still block the window load event, if fetched before it fires.
   EXPECT_FALSE(ConsoleMessages().Contains("auto onload"));
   EXPECT_FALSE(ConsoleMessages().Contains("unset onload"));
-
-  lazy_resource->Complete(full_image);
-  ExpectResourceIsFullImage(GetDocument().Fetcher()->CachedResource(
-      KURL("https://example.com/lazy.png")));
 
   auto_resource->Complete(full_image);
   ExpectResourceIsFullImage(GetDocument().Fetcher()->CachedResource(
@@ -526,6 +529,23 @@ TEST_P(LazyLoadImagesParamsTest, NearViewport) {
   unset_resource->Complete(full_image);
   ExpectResourceIsFullImage(GetDocument().Fetcher()->CachedResource(
       KURL("https://example.com/unset.png")));
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  // The explicitly `loading=lazy` image never blocks the window load event.
+  if (RuntimeEnabledFeatures::LazyImageLoadingEnabled())
+    EXPECT_TRUE(ConsoleMessages().Contains("main body onload"));
+  else
+    EXPECT_FALSE(ConsoleMessages().Contains("main body onload"));
+  EXPECT_TRUE(ConsoleMessages().Contains("eager onload"));
+  EXPECT_FALSE(ConsoleMessages().Contains("lazy onload"));
+  EXPECT_TRUE(ConsoleMessages().Contains("auto onload"));
+  EXPECT_TRUE(ConsoleMessages().Contains("unset onload"));
+
+  lazy_resource->Complete(full_image);
+  ExpectResourceIsFullImage(GetDocument().Fetcher()->CachedResource(
+      KURL("https://example.com/lazy.png")));
 
   Compositor().BeginFrame();
   test::RunPendingTasks();

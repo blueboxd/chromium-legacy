@@ -97,7 +97,7 @@ void ChromeStabilityMetricsProvider::Observe(
       }
 #endif
       helper_.LogRendererCrash(was_extension_process, process_info->status,
-                               process_info->exit_code, process_info->uptime);
+                               process_info->exit_code);
       break;
     }
 

@@ -57,8 +57,6 @@ std::unique_ptr<views::View> CreateEditButton(views::ButtonListener* listener) {
 views::Widget* BookmarkBubbleView::ShowBubble(
     views::View* anchor_view,
     views::Button* highlighted_button,
-    const gfx::Rect& anchor_rect,
-    gfx::NativeView parent_window,
     bookmarks::BookmarkBubbleObserver* observer,
     std::unique_ptr<BubbleSyncPromoDelegate> delegate,
     Profile* profile,
@@ -70,14 +68,6 @@ views::Widget* BookmarkBubbleView::ShowBubble(
   bookmark_bubble_ =
       new BookmarkBubbleView(anchor_view, observer, std::move(delegate),
                              profile, url, !already_bookmarked);
-  // Bookmark bubble should always anchor TOP_RIGHT, but the
-  // LocationBarBubbleDelegateView does not know that and may use different
-  // arrow anchoring.
-  bookmark_bubble_->SetArrow(views::BubbleBorder::TOP_RIGHT);
-  if (!anchor_view) {
-    bookmark_bubble_->SetAnchorRect(anchor_rect);
-    bookmark_bubble_->set_parent_window(parent_window);
-  }
   if (highlighted_button)
     bookmark_bubble_->SetHighlightedButton(highlighted_button);
   views::Widget* bubble_widget =
@@ -229,6 +219,9 @@ BookmarkBubbleView::BookmarkBubbleView(
       profile_(profile),
       url_(url),
       newly_bookmarked_(newly_bookmarked) {
+  DCHECK(anchor_view);
+
+  SetArrow(views::BubbleBorder::TOP_RIGHT);
   DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
                                    l10n_util::GetStringUTF16(IDS_DONE));
   DialogDelegate::SetButtonLabel(

@@ -80,14 +80,14 @@ void NetworkTestHelper::SetUp() {
 std::string NetworkTestHelper::ConfigureWiFiNetwork(const std::string& ssid,
                                                     bool is_secured,
                                                     bool in_profile,
-                                                    bool has_connected) {
+                                                    bool has_connected,
+                                                    bool owned_by_user) {
   std::string security_entry =
       is_secured ? R"("SecurityClass": "psk", "Passphrase": "secretsauce", )"
                  : R"("SecurityClass": "none", )";
-  std::string profile_entry =
-      in_profile ? base::StringPrintf(R"("Profile": "%s", )",
-                                      network_state_helper_->UserHash())
-                 : std::string();
+  std::string profile_entry = base::StringPrintf(
+      R"("Profile": "%s", )",
+      in_profile ? network_state_helper_->UserHash() : "/profile/default");
   std::string guid = base::StringPrintf("%s_guid", ssid.c_str());
   std::string service_path =
       network_state_helper_->ConfigureService(base::StringPrintf(
@@ -98,6 +98,11 @@ std::string NetworkTestHelper::ConfigureWiFiNetwork(const std::string& ssid,
           profile_entry.c_str()));
 
   base::RunLoop().RunUntilIdle();
+
+  if (owned_by_user) {
+    NetworkHandler::Get()->network_metadata_store()->OnConfigurationCreated(
+        service_path, guid);
+  }
 
   if (has_connected) {
     NetworkHandler::Get()->network_metadata_store()->ConnectSucceeded(

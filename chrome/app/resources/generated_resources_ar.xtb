@@ -120,7 +120,6 @@
 <translation id="1153636665119721804">‏برنامج الحماية المتقدّمة من Google</translation>
 <translation id="1161575384898972166">يُرجى تسجيل الدخول إلى <ph name="TOKEN_NAME" /> لتصدير شهادة العميل.</translation>
 <translation id="1163931534039071049">عرض م&amp;صدر الإطار</translation>
-<translation id="1164674268730883318">‏هل تريد إيقاف Smart Lock لـ <ph name="DEVICE_TYPE" />؟</translation>
 <translation id="1164891049599601209">تم إدخالها على موقع إلكتروني مريب.</translation>
 <translation id="1164899421101904659">إدخال مفتاح فتح قفل رقم التعريف الشخصي</translation>
 <translation id="1165039591588034296">خطأ</translation>
@@ -774,7 +773,6 @@
 
 يمكنك إدارة إعدادات هذا الحساب من خلال تثبيت تطبيق Family Link على جهازك.  ولقد أرسلنا لك التعليمات في رسالة إلكترونية.</translation>
 <translation id="2040460856718599782">عفوًا، حدث خطأ ما أثناء محاولة مصادقتك. يُرجى التحقق جيدًا من بيانات اعتماد تسجيل الدخول وإعادة المحاولة.</translation>
-<translation id="2043818754674261542">المسافة المطلوبة للهاتف لإلغاء قفل جهاز <ph name="DEVICE_TYPE" /> هذا</translation>
 <translation id="204497730941176055">‏اسم قالب الشهادات لـ Microsoft</translation>
 <translation id="2045117674524495717">مساعد اختصارات لوحة المفاتيح</translation>
 <translation id="2045969484888636535">متابعة حظر تشغيل ملفات تعريف الارتباط</translation>
@@ -1147,7 +1145,6 @@
 <translation id="2518024842978892609">استخدام شهادات العملاء لديك</translation>
 <translation id="2520644704042891903">في انتظار توفر منفذ...</translation>
 <translation id="252219247728877310">لم يتم تحديث المُكوّن</translation>
-<translation id="2522791476825452208">قريب جدًا</translation>
 <translation id="2523184218357549926">‏يتم إرسال عناوين URL للصفحات التي تزورها إلى Google.</translation>
 <translation id="2526277209479171883">التثبيت والمتابعة</translation>
 <translation id="2526590354069164005">سطح المكتب</translation>
@@ -1756,7 +1753,6 @@
 <translation id="3333190335304955291">يمكنك إيقاف هذه الخدمة من خلال الإعدادات.</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> - جارٍ تشغيل الفيديو في وضع "نافذة ضمن نافذة"</translation>
 <translation id="3335947283844343239">إعادة فتح علامة التبويب المغلقة</translation>
-<translation id="3336664756920573711">‏فتح قفل <ph name="DEVICE_TYPE" /> باستخدام هاتفك الذي يعمل بنظام التشغيل Android</translation>
 <translation id="3340620525920140773">اكتمل التنزيل: <ph name="FILE_NAME" />.</translation>
 <translation id="3341699307020049241">رقم التعريف الشخصي غير صحيح. عدد المحاولات المتبقية لديك هو <ph name="RETRIES" /></translation>
 <translation id="3341703758641437857">‏السماح بالدخول إلى عناوين URL للملفات</translation>
@@ -2776,7 +2772,6 @@
 <translation id="4697551882387947560">عند انتهاء جلسة التصفح</translation>
 <translation id="4699172675775169585">الصور والملفات المخزنة مؤقتًا</translation>
 <translation id="4699357559218762027">(يتم تشغيله تلقائيًا)</translation>
-<translation id="470074695271471509">هل تريد تسجيل الخروج لإتمام العملية؟</translation>
 <translation id="4701025263201366865">تسجيل دخول أحد الوالدَين</translation>
 <translation id="4707302005824653064">‏يمكن للمدير مراجعة الاستخدام والسجل (<ph name="CUSTODIAN_EMAIL" />) على chrome.com.</translation>
 <translation id="4707579418881001319">‏L2TP/IPSec + شهادة المستخدم</translation>
@@ -2799,7 +2794,6 @@
 <translation id="473546211690256853">تتم إدارة هذا الحساب من خلال <ph name="DOMAIN" /></translation>
 <translation id="4735803855089279419">تعذَّر على النظام تحديد معرِّفات هذا الجهاز.</translation>
 <translation id="4736292055110123391">مزامنة الإشارات المرجعية وكلمات المرور والسجلّ وغيرها على جميع أجهزتك</translation>
-<translation id="4737715515457435632">يُرجى الاتصال بشبكة.</translation>
 <translation id="473775607612524610">تحديث</translation>
 <translation id="4739639199548674512">التذاكر</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />التعرّف على كيفية تحديث التطبيقات<ph name="END_LINK" /></translation>
@@ -3277,7 +3271,6 @@
 <translation id="5423829801105537712">التدقيق الإملائي الأساسي</translation>
 <translation id="5423849171846380976">نشطة</translation>
 <translation id="5425042808445046667">متابعة التنزيل</translation>
-<translation id="5425722269016440406">‏يجب أن تكون متصلاً بالإنترنت لإيقاف Smart Lock لأن هذا الإعداد متزامن مع هاتفك وأجهزة أخرى. يُرجى الاتصال بإحدى الشبكات أولاً.</translation>
 <translation id="5425863515030416387">تسجيل الدخول بسهولة على جميع الأجهزة</translation>
 <translation id="5427278936122846523">الترجمة دومًا</translation>
 <translation id="5427459444770871191">تدوير &amp;في اتجاه عقارب الساعة</translation>
@@ -3420,7 +3413,6 @@
 <translation id="558918721941304263">جارٍ تحميل التطبيقات...</translation>
 <translation id="5592595402373377407">لم تتوفر بيانات كافية بعد.</translation>
 <translation id="5593357315997824387">مزامنة ملفاتي</translation>
-<translation id="5595152862129936745">بعيد جدًا</translation>
 <translation id="5595485650161345191">تعديل العنوان</translation>
 <translation id="5595727715083333657">‏لا يُسمح بتغيير حجم الحاوية الخاصة بك. لضبط مقدار المساحة التي تم تخصيصها مسبقًا لنظام Linux (إصدار تجريبي)، يُرجى الاحتفاظ بنسخة احتياطية ثم استعادتها في حاوية جديدة.</translation>
 <translation id="5596627076506792578">خيارات إضافية</translation>
@@ -3533,7 +3525,6 @@
 <translation id="5747552184818312860">تاريخ انتهاء الصلاحية</translation>
 <translation id="5747785204778348146">المطوّر - غير ثابت</translation>
 <translation id="5747809636523347288">ل&amp;صق والانتقال إلى <ph name="URL" /></translation>
-<translation id="5750324801516359607">بعيد</translation>
 <translation id="5751887393582880060">تنتهك عملية التحميل هذه سياسات أمان مؤسستك. هل تريد المتابعة على أيّ حال؟</translation>
 <translation id="5756163054456765343">مركز المساعدة</translation>
 <translation id="5759728514498647443">يمكن قراءة المستندات التي ترسلها إلى الطباعة عبر <ph name="APP_NAME" /> بواسطة <ph name="APP_NAME" />.</translation>
@@ -4084,7 +4075,6 @@
 <translation id="6490471652906364588">‏جهاز USB-C (المنفذ الأيمن)</translation>
 <translation id="6491376743066338510">تعذّر التفويض</translation>
 <translation id="6494445798847293442">ليست مرجعًا مصدقًا</translation>
-<translation id="649454645705377674">إغلاق</translation>
 <translation id="6495925982925244349">الشبكة <ph name="NETWORK_INDEX" /> من <ph name="NETWORK_COUNT" />، الشبكة <ph name="NETWORK_NAME" />، حالة الأمان <ph name="SECURITY_STATUS" />، حالة الاتصال <ph name="CONNECTION_STATUS" />، قوة الإشارة <ph name="SIGNAL_STRENGTH" />%، يديرها المشرف، التفاصيل</translation>
 <translation id="6498249116389603658">&amp;جميع اللغات</translation>
 <translation id="6499143127267478107">حل المضيف في النص البرمجي للخادم الوكيل...</translation>
@@ -4152,7 +4142,6 @@
 <translation id="6590458744723262880">إعادة تسمية المجلد</translation>
 <translation id="6592267180249644460">‏تم التقاط سجلات WebRTC في <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">تم حِفظ بصمة الإصبع.</translation>
-<translation id="6594883168703494535">‏استخدام Smart Lock لتسجيل الدخول إلى حسابك على Google</translation>
 <translation id="6596325263575161958">خيارات التشفير</translation>
 <translation id="6596816719288285829">‏عنوان IP</translation>
 <translation id="6597017209724497268">نماذج</translation>
@@ -4686,7 +4675,6 @@
 <translation id="7328867076235380839">مجموعة غير صالحة</translation>
 <translation id="7329154610228416156">‏فشل تسجيل الدخول نظرًا لأنه قد تم ضبطه على استخدام عنوان URL غير آمن <ph name="BLOCKED_URL" />. يُرجى الاتصال بالمسؤول.</translation>
 <translation id="7332053360324989309">عامل مُخصّص: <ph name="SCRIPT_URL" /></translation>
-<translation id="7334190995941642545">‏Smart Lock غير متاح حاليًا. يُرجى المحاولة مرة أخرى في وقت لاحق.</translation>
 <translation id="7334274148831027933">تفعيل المكبّر الذي تم إرساؤه</translation>
 <translation id="7335974957018254119">استخدام التدقيق الإملائي للّغة</translation>
 <translation id="7336799713063880535">تم حظر الإشعارات.</translation>
@@ -4948,7 +4936,7 @@
 <translation id="7690294790491645610">تأكيد كلمة المرور الجديدة</translation>
 <translation id="7690378713476594306">اختيار من القائمة</translation>
 <translation id="7690853182226561458">إضافة &amp;مجلد...</translation>
-<translation id="7691073721729883399">‏تعذّر تثبيت cryptohome لتطبيق Kiosk.</translation>
+<translation id="7691073721729883399">‏تعذّر تثبيت دليل الصفحة الرئيسية المرمّز حسب المستخدم (cryptohome) لتطبيق Kiosk.</translation>
 <translation id="7691077781194517083">تعذّرت إعادة ضبط مفتاح الأمان هذا. الخطأ <ph name="ERROR_CODE" />.</translation>
 <translation id="7696063401938172191">على '<ph name="PHONE_NAME" />':</translation>
 <translation id="7698408911093959127">{COUNT,plural, =1{يوجد عنصر (واحد) في قائمة الإشارات المرجعية}zero{يوجد # عنصر في قائمة الإشارات المرجعية}two{يوجد عنصران (#) في قائمة الإشارات المرجعية}few{يوجد # عناصر في قائمة الإشارات المرجعية}many{يوجد # عنصرًا في قائمة الإشارات المرجعية}other{يوجد # عنصر في قائمة الإشارات المرجعية}}</translation>
@@ -5231,11 +5219,6 @@
 <translation id="8017679124341497925">تمّ تعديل الاختصار</translation>
 <translation id="8018313076035239964">تتحكّم هذه الإعدادات في المعلومات التي يمكن أن تستخدمها مواقع الويب والمحتوى الذي يمكن أن تعرضه لك</translation>
 <translation id="8023801379949507775">تحديث الإضافات الآن</translation>
-<translation id="8024483450737722621">‏سيتم حذف التطبيقات التي نزلتها من Google Play من جهاز Chromebook هذا.
-      <ph name="LINE_BREAKS1" />
-      قد يتم أيضًا حذف المحتوى الذي اشتريته مثل الأفلام، أو العروض التليفزيونية، أو الموسيقى، أو الكتب، أو المشتريات الأخرى داخل التطبيق.
-      <ph name="LINE_BREAKS2" />
-      لن يؤثر هذا في التطبيقات أو المحتوى على الأجهزة الأخرى.</translation>
 <translation id="8026334261755873520">محو بيانات التصفُّح</translation>
 <translation id="8028060951694135607">‏استرداد مفتاح Microsoft</translation>
 <translation id="8028803902702117856">جارٍ تنزيل <ph name="SIZE" />، <ph name="FILE_NAME" /></translation>
@@ -5551,7 +5534,6 @@
 <translation id="8455026683977728932">‏يتعذّر تفعيل رسم ADB التوضيحي</translation>
 <translation id="845702320058262034">يتعذَّر الاتصال. يُرجى التأكّد من تفعيل البلوتوث في هاتفك.</translation>
 <translation id="8457451314607652708">استيراد الإشارات المرجعية</translation>
-<translation id="8460336040822756677">‏إذا أوقفت تفعيل Smart Lock لـ <ph name="DEVICE_TYPE" />، فلن تكون قادرًا على فتح قفل أجهزة Chrome باستخدام هاتفك. وستحتاج إلى كتابة كلمة المرور.</translation>
 <translation id="8461329675984532579">اسم مقدم الخدمة الرئيسي</translation>
 <translation id="84613761564611563">تم طلب واجهة المستخدم لتهيئة الشبكة، يُرجى الانتظار...</translation>
 <translation id="8461914792118322307">الخادم الوكيل</translation>
@@ -5777,7 +5759,6 @@
 <translation id="8743864605301774756">تم التحديث قبل ساعة واحدة</translation>
 <translation id="8746654918629346731">لقد سبق أن طلبت "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="874689135111202667">{0,plural, =1{هل تريد تحميل ملف واحد إلى هذا الموقع؟}zero{هل تريد تحميل # ملف إلى هذا الموقع؟}two{هل تريد تحميل ملفين (#) إلى هذا الموقع؟}few{هل تريد تحميل # ملفات إلى هذا الموقع؟}many{هل تريد تحميل # ملفًا إلى هذا الموقع؟}other{هل تريد تحميل # ملف إلى هذا الموقع؟}}</translation>
-<translation id="8748384418490037181">‏خيارات Smart Lock</translation>
 <translation id="8749863574775030885">‏الدخول إلى أجهزة USB من مورد غير معروف</translation>
 <translation id="8750133148106010815">‏لبدء تشغيل Google Play، تتطلّب مؤسسة <ph name="ORGANIZATION_NAME" /> منك الاحتفاظ بنسخة احتياطية من بياناتك وإعادة ضبط جهاز Chromebook هذا على الإعدادات الأصلية.</translation>
 <translation id="8750155211039279868">يجب ربط <ph name="ORIGIN" /> بمنفذ تسلسلي</translation>
@@ -5900,7 +5881,6 @@
 <translation id="8881020143150461183">يُرجى إعادة المحاولة. للحصول على الدعم الفني، يُرجى التواصل مع <ph name="CARRIER_NAME" />.</translation>
 <translation id="8883273463630735858">تفعيل تسريع لوحة اللمس</translation>
 <translation id="8884570509232205463">يتم قفل جهازك الآن في <ph name="UNLOCK_TIME" />.</translation>
-<translation id="8885197664446363138">‏Smart Lock غير متاح</translation>
 <translation id="8888253246822647887">سيتم فتح التطبيق عند انتهاء الترقية. قد تستغرق عمليات الترقية بضع دقائق.</translation>
 <translation id="8888432776533519951">اللون:</translation>
 <translation id="8889651696183044030">بإمكان <ph name="ORIGIN" /> تعديل الملفات والمجلدات التالية:</translation>

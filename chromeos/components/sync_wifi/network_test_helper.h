@@ -34,7 +34,8 @@ class NetworkTestHelper : public network_config::CrosNetworkConfigTestHelper {
   std::string ConfigureWiFiNetwork(const std::string& ssid,
                                    bool is_secured,
                                    bool in_profile,
-                                   bool has_connected);
+                                   bool has_connected,
+                                   bool owned_by_user = true);
 
   NetworkStateTestHelper* network_state_test_helper();
 

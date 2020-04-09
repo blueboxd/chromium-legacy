@@ -979,6 +979,11 @@ class CONTENT_EXPORT ContentBrowserClient {
       blink::AssociatedInterfaceRegistry* associated_registry,
       RenderProcessHost* render_process_host) {}
 
+  // Called to bind additional frame-bound media interfaces to the renderer.
+  virtual void BindMediaServiceReceiver(RenderFrameHost* render_frame_host,
+                                        mojo::GenericPendingReceiver receiver) {
+  }
+
   // Called when RenderFrameHostImpl connects to the Media service. Expose
   // interfaces to the service using |registry|.
   virtual void ExposeInterfacesToMediaService(

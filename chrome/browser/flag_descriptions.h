@@ -654,6 +654,9 @@ extern const char kImpulseScrollAnimationsDescription[];
 extern const char kInProductHelpDemoModeChoiceName[];
 extern const char kInProductHelpDemoModeChoiceDescription[];
 
+extern const char kInstalledAppsInCbdName[];
+extern const char kInstalledAppsInCbdDescription[];
+
 extern const char kJavascriptHarmonyName[];
 extern const char kJavascriptHarmonyDescription[];
 

@@ -8,7 +8,6 @@
 
 #include "build/build_config.h"
 #include "build/buildflag.h"
-#include "chrome/browser/ui/bubble_anchor_util.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
@@ -24,13 +23,9 @@ class SessionCrashedBubbleViewTest : public DialogBrowserTest {
   ~SessionCrashedBubbleViewTest() override {}
 
   void ShowUi(const std::string& name) override {
-    gfx::Rect anchor_rect = gfx::Rect();
-    views::View* anchor_view = nullptr;
-    if (anchor_rect == gfx::Rect()) {
-      anchor_view = BrowserView::GetBrowserViewForBrowser(browser())
-                        ->toolbar_button_provider()
-                        ->GetAppMenuButton();
-    }
+    views::View* anchor_view = BrowserView::GetBrowserViewForBrowser(browser())
+                                   ->toolbar_button_provider()
+                                   ->GetAppMenuButton();
     crash_bubble_ = new SessionCrashedBubbleView(
         anchor_view, browser(), name == "SessionCrashedBubbleOfferUma");
     views::BubbleDialogDelegateView::CreateBubble(crash_bubble_)->Show();

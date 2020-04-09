@@ -1151,6 +1151,25 @@ void AutomationInternalCustomBindings::AddRoutes() {
                                            v8::NewStringType::kNormal)
                        .ToLocalChecked());
       });
+  RouteNodeIDFunction("GetName", [this](v8::Isolate* isolate,
+                                        v8::ReturnValue<v8::Value> result,
+                                        AutomationAXTreeWrapper* tree_wrapper,
+                                        ui::AXNode* node) {
+    const ui::AXNodeData& node_data = node->data();
+    const char* name =
+        node_data.GetStringAttribute(ax::mojom::StringAttribute::kName).c_str();
+    if (node_data.role == ax::mojom::Role::kPortal &&
+        node_data.GetNameFrom() == ax::mojom::NameFrom::kNone) {
+      if (GetRootOfChildTree(&node, &tree_wrapper)) {
+        name = node->data()
+                   .GetStringAttribute(ax::mojom::StringAttribute::kName)
+                   .c_str();
+      }
+    }
+    result.Set(
+        v8::String::NewFromUtf8(isolate, name, v8::NewStringType::kNormal)
+            .ToLocalChecked());
+  });
   RouteNodeIDFunction(
       "GetDescriptionFrom",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,

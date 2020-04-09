@@ -1159,7 +1159,7 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
 <translation id="2592162121850992309">Jika kebijakan ini ditetapkan ke True atau tidak ditetapkan, akselerasi hardware akan diaktifkan kecuali jika fitur GPU tertentu termasuk dalam daftar tidak diizinkan.
 
       Jika kebijakan ini ditetapkan ke False, akselerasi hardware akan dinonaktifkan.</translation>
-<translation id="2593762551209145088">Safe Browsing tidak pernah aktif.</translation>
+<translation id="2593762551209145088">Safe Browsing selalu tidak aktif.</translation>
 <translation id="2596260130957832043">Mengontrol apakah NTLMv2 dinonaktifkan.
           
           Semua versi terbaru server Samba dan Windows mendukung NTLMv2.
@@ -2337,7 +2337,7 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 <translation id="4389091865841123886">Mengonfigurasi pengesahan jarak jauh dengan mekanisme TPM.</translation>
 <translation id="4401496838830169080">Memungkinkan Anda mengontrol apakah fitur Safe Browsing <ph name="PRODUCT_NAME" /> diaktifkan dan dalam mode apa fitur tersebut beroperasi.
 
-      Jika kebijakan ini ditetapkan ke 'NoProtection' (nilai 0), Safe Browsing tidak pernah aktif.
+      Jika kebijakan ini ditetapkan ke 'NoProtection' (nilai 0), Safe Browsing selalu tidak aktif.
 
       Jika kebijakan ini ditetapkan ke 'StandardProtection' (nilai 1, yang merupakan default), Safe Browsing selalu aktif dalam mode standar.
 
@@ -4426,7 +4426,7 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
 
       Jika Anda mengaktifkan setelan ini, Safe Browsing akan selalu aktif.
 
-      Jika Anda menonaktifkan setelan ini, Safe Browsing tidak akan pernah aktif.
+      Jika Anda menonaktifkan setelan ini, Safe Browsing akan selalu tidak pernah aktif.
 
       Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau mengganti setelan "Aktifkan perlindungan dari phishing dan malware" di <ph name="PRODUCT_NAME" />.
 

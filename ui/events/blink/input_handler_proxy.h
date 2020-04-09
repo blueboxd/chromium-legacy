@@ -210,14 +210,16 @@ class InputHandlerProxy : public cc::InputHandlerClient,
   std::unique_ptr<InputScrollElasticityController>
       scroll_elasticity_controller_;
 
-  // The merged result of the last touch event with previous touch events.
-  // This value will get returned for subsequent TouchMove events to allow
-  // passive events not to block scrolling.
-  int32_t touch_result_;
+  // The merged result of the last touch event with previous touch events
+  // within a single touch sequence. This value will get returned for
+  // subsequent TouchMove events to allow passive events not to block
+  // scrolling.
+  base::Optional<EventDisposition> touch_result_;
 
-  // The result of the last mouse wheel event. This value is used to determine
-  // whether the next wheel scroll is blocked on the Main thread or not.
-  int32_t mouse_wheel_result_;
+  // The result of the last mouse wheel event in a wheel phase sequence. This
+  // value is used to determine whether the next wheel scroll is blocked on the
+  // Main thread or not.
+  base::Optional<EventDisposition> mouse_wheel_result_;
 
   // Used to record overscroll notifications while an event is being
   // dispatched.  If the event causes overscroll, the overscroll metadata is

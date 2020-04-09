@@ -13,6 +13,28 @@
 
 namespace web {
 
+// static
+WebStatePolicyDecider::PolicyDecision
+WebStatePolicyDecider::PolicyDecision::Allow() {
+  return WebStatePolicyDecider::PolicyDecision(
+      WebStatePolicyDecider::PolicyDecision::Decision::kAllow);
+}
+
+// static
+WebStatePolicyDecider::PolicyDecision
+WebStatePolicyDecider::PolicyDecision::Cancel() {
+  return WebStatePolicyDecider::PolicyDecision(
+      WebStatePolicyDecider::PolicyDecision::Decision::kCancel);
+}
+
+bool WebStatePolicyDecider::PolicyDecision::ShouldAllowNavigation() const {
+  return decision == WebStatePolicyDecider::PolicyDecision::Decision::kAllow;
+}
+
+bool WebStatePolicyDecider::PolicyDecision::ShouldCancelNavigation() const {
+  return !ShouldAllowNavigation();
+}
+
 WebStatePolicyDecider::WebStatePolicyDecider(WebState* web_state)
     : web_state_(web_state) {
   DCHECK(web_state_);
@@ -25,10 +47,10 @@ WebStatePolicyDecider::~WebStatePolicyDecider() {
   }
 }
 
-bool WebStatePolicyDecider::ShouldAllowRequest(
+WebStatePolicyDecider::PolicyDecision WebStatePolicyDecider::ShouldAllowRequest(
     NSURLRequest* request,
     const WebStatePolicyDecider::RequestInfo& request_info) {
-  return true;
+  return WebStatePolicyDecider::PolicyDecision::Allow();
 }
 
 bool WebStatePolicyDecider::ShouldAllowResponse(NSURLResponse* response,

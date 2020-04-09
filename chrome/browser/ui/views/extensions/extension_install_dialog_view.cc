@@ -200,7 +200,6 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
       prompt_(std::move(prompt)),
       title_(prompt_->GetDialogTitle()),
       scroll_view_(nullptr),
-      handled_result_(false),
       install_button_enabled_(false),
       withhold_permissions_checkbox_(nullptr) {
   DCHECK(prompt_->extension());
@@ -223,6 +222,10 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
 
   DialogDelegate::SetDefaultButton(default_button);
   DialogDelegate::SetButtons(buttons);
+  DialogDelegate::SetAcceptCallback(base::BindOnce(
+      &ExtensionInstallDialogView::OnDialogAccepted, base::Unretained(this)));
+  DialogDelegate::SetCancelCallback(base::BindOnce(
+      &ExtensionInstallDialogView::OnDialogCanceled, base::Unretained(this)));
   DialogDelegate::set_draggable(true);
   if (prompt_->has_webstore_data()) {
     auto store_link = std::make_unique<views::Link>(
@@ -249,10 +252,8 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
 }
 
 ExtensionInstallDialogView::~ExtensionInstallDialogView() {
-  if (!handled_result_ && !done_callback_.is_null()) {
-    std::move(done_callback_)
-        .Run(ExtensionInstallPrompt::Result::USER_CANCELED);
-  }
+  if (done_callback_)
+    OnDialogCanceled();
 }
 
 void ExtensionInstallDialogView::SetInstallButtonDelayForTesting(
@@ -366,20 +367,16 @@ void ExtensionInstallDialogView::AddedToWidget() {
   GetBubbleFrameView()->SetTitleView(std::move(title_container));
 }
 
-bool ExtensionInstallDialogView::Cancel() {
-  if (handled_result_)
-    return true;
+void ExtensionInstallDialogView::OnDialogCanceled() {
+  DCHECK(done_callback_);
 
-  handled_result_ = true;
   UpdateInstallResultHistogram(false);
   std::move(done_callback_).Run(ExtensionInstallPrompt::Result::USER_CANCELED);
-  return true;
 }
 
-bool ExtensionInstallDialogView::Accept() {
-  DCHECK(!handled_result_);
+void ExtensionInstallDialogView::OnDialogAccepted() {
+  DCHECK(done_callback_);
 
-  handled_result_ = true;
   UpdateInstallResultHistogram(true);
   // If the prompt had a checkbox element and it was checked we send that along
   // as the result, otherwise we just send a normal accepted result.
@@ -389,7 +386,6 @@ bool ExtensionInstallDialogView::Accept() {
           ? ExtensionInstallPrompt::Result::ACCEPTED_AND_OPTION_CHECKED
           : ExtensionInstallPrompt::Result::ACCEPTED;
   std::move(done_callback_).Run(result);
-  return true;
 }
 
 bool ExtensionInstallDialogView::IsDialogButtonEnabled(

@@ -500,9 +500,9 @@ NSString* SerializedPref(const PrefService::Preference* pref) {
   chrome_test_util::TriggerSyncCycle(type);
 }
 
-+ (void)addUserDemographicsToSyncServerWithBirthYear:(int)birthYear
++ (void)addUserDemographicsToSyncServerWithBirthYear:(int)rawBirthYear
                                               gender:(int)gender {
-  chrome_test_util::AddUserDemographicsToSyncServer(birthYear, gender);
+  chrome_test_util::AddUserDemographicsToSyncServer(rawBirthYear, gender);
 }
 
 + (void)clearAutofillProfileWithGUID:(NSString*)GUID {

@@ -305,6 +305,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     // the WidgetDelegate provides |bb_view_| as the contents view and adds it
     // to the hierarchy.
     ViewEventTestBase::SetUp();
+    ASSERT_TRUE(bb_view_);
 
     // Verify the layout triggered by the initial size preserves the overflow
     // state calculated in GetPreferredSizeForContents().

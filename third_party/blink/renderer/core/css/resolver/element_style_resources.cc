@@ -149,11 +149,11 @@ static bool BackgroundLayerMayBeSprite(const FillLayer& background_layer) {
 StyleImage* ElementStyleResources::LoadPendingImage(
     ComputedStyle* style,
     StylePendingImage* pending_image,
-    FetchParameters::ImageRequestOptimization image_request_optimization,
+    FetchParameters::ImageRequestBehavior image_request_behavior,
     CrossOriginAttributeValue cross_origin) {
   if (CSSImageValue* image_value = pending_image->CssImageValue()) {
     return image_value->CacheImage(element_->GetDocument(),
-                                   image_request_optimization, cross_origin);
+                                   image_request_behavior, cross_origin);
   }
 
   if (CSSPaintValue* paint_value = pending_image->CssPaintValue()) {
@@ -169,9 +169,9 @@ StyleImage* ElementStyleResources::LoadPendingImage(
   }
 
   if (CSSImageSetValue* image_set_value = pending_image->CssImageSetValue()) {
-    return image_set_value->CacheImage(
-        element_->GetDocument(), device_scale_factor_,
-        image_request_optimization, cross_origin);
+    return image_set_value->CacheImage(element_->GetDocument(),
+                                       device_scale_factor_,
+                                       image_request_behavior, cross_origin);
   }
 
   NOTREACHED();
@@ -204,21 +204,21 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
              background_layer; background_layer = background_layer->Next()) {
           StyleImage* background_image = background_layer->GetImage();
           if (background_image && background_image->IsPendingImage()) {
-            FetchParameters::ImageRequestOptimization
-                image_request_optimization = FetchParameters::kNone;
+            FetchParameters::ImageRequestBehavior image_request_behavior =
+                FetchParameters::kNone;
             if (!BackgroundLayerMayBeSprite(*background_layer)) {
               if (element_->GetDocument()
                       .GetFrame()
                       ->GetLazyLoadImageSetting() ==
                   LocalFrame::LazyLoadImageSetting::kEnabledAutomatic) {
-                image_request_optimization = FetchParameters::kDeferImageLoad;
+                image_request_behavior = FetchParameters::kDeferImageLoad;
               } else {
-                image_request_optimization = FetchParameters::kAllowPlaceholder;
+                image_request_behavior = FetchParameters::kAllowPlaceholder;
               }
             }
             StyleImage* new_image =
                 LoadPendingImage(style, To<StylePendingImage>(background_image),
-                                 image_request_optimization);
+                                 image_request_behavior);
             if (new_image && new_image->IsLazyloadPossiblyDeferred()) {
               LazyImageHelper::StartMonitoring(pseudo_element_ ? pseudo_element_
                                                                : element_);

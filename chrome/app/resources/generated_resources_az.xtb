@@ -118,7 +118,6 @@
 <translation id="1153636665119721804">Google Qabaqcıl Qoruma Proqramı</translation>
 <translation id="1161575384898972166">Klient sertifikatını eksport etmək üçün <ph name="TOKEN_NAME" /> üzərinə daxil olun.</translation>
 <translation id="1163931534039071049">&amp;Çərçivə mənbəsinə baxın</translation>
-<translation id="1164674268730883318"><ph name="DEVICE_TYPE" /> üçün Smart Kilid söndürülsün?</translation>
 <translation id="1164891049599601209">Aldadıcı saytda daxil edilib</translation>
 <translation id="1164899421101904659">PIN Kilid açma açarını daxil edin</translation>
 <translation id="1165039591588034296">Xəta</translation>
@@ -770,7 +769,6 @@
 
 Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə edə bilərsiniz.  Təlimatları e-məktubla göndərdik.</translation>
 <translation id="2040460856718599782">Sizi doğrulayan zaman xəta oldu. Giriş kredensiallarınızı yoxlayın və yenidən cəhd edin.</translation>
-<translation id="2043818754674261542"><ph name="DEVICE_TYPE" /> cihazını kiliddən çıxarmaq üçün məsafə tələb olunur</translation>
 <translation id="204497730941176055">Microsoft Sertifikat Şablon adı</translation>
 <translation id="2045117674524495717">Klaviatura Qısayol Yardımı</translation>
 <translation id="2045969484888636535">Kukiləri blok etməyə davam edin</translation>
@@ -1142,7 +1140,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="2518024842978892609">Müştəri sertifikatlarınızı istifadə edin</translation>
 <translation id="2520644704042891903">Əlçatan soket gözlənir...</translation>
 <translation id="252219247728877310">Komponent güncəlləşməyib</translation>
-<translation id="2522791476825452208">Çox yaxın</translation>
 <translation id="2523184218357549926">Daxil olduğunuz səhifələrin linkləri Google'a göndərilir</translation>
 <translation id="2526277209479171883">Quraşdırın və davam edin</translation>
 <translation id="2526590354069164005">Masaüstü</translation>
@@ -1751,7 +1748,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="3333190335304955291">Bu xidməti Ayarlarda söndürə bilərsiniz.</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> - Video Şəkil içində Şəkil rejimində oxudulur</translation>
 <translation id="3335947283844343239">Bağlanmış Paneli yenidən açın</translation>
-<translation id="3336664756920573711"><ph name="DEVICE_TYPE" /> cihazınızın kilidini Android telefonu ilə açın</translation>
 <translation id="3340620525920140773">Endirmə tamamlandı: <ph name="FILE_NAME" />.</translation>
 <translation id="3341699307020049241">Yanlış PIN. <ph name="RETRIES" /> cəhdiniz qalır.</translation>
 <translation id="3341703758641437857">Fayl URL-lərinə girişə icazə verin</translation>
@@ -2772,7 +2768,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="4697551882387947560">Baxış sessiyası bitəndə</translation>
 <translation id="4699172675775169585">Keşlənmiş şəkillər və fayllar</translation>
 <translation id="4699357559218762027">(avto-başlatma)</translation>
-<translation id="470074695271471509">Tamamlamaq üçün hesabdan çıxılsın?</translation>
 <translation id="4701025263201366865">Valideyn girişi</translation>
 <translation id="4707302005824653064">İstifadə və tarixçə (<ph name="CUSTODIAN_EMAIL" />) on chrome.com saytındakı menecer tərəfindən nəzərdən keçirilə bilər.</translation>
 <translation id="4707579418881001319">L2TP/IPsec + istifadəçi sertifikatı</translation>
@@ -2795,7 +2790,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="473546211690256853">Bu hesab <ph name="DOMAIN" /> tərəfindən idarə olunur</translation>
 <translation id="4735803855089279419">Sistem bu cihazda cihaz identifikatorları aşkarlamadı.</translation>
 <translation id="4736292055110123391">Bütün cihazlardakı əlfəcin, parol, tarixçə və daha çoxunu sinxronizasiya edin</translation>
-<translation id="4737715515457435632">Lütfən, şəbəkəyə qoşulun</translation>
 <translation id="473775607612524610">Güncəlləşdirin</translation>
 <translation id="4739639199548674512">Biletlər</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Tətbiqləri necə güncəlləmək lazım olduğunu öyrənin<ph name="END_LINK" /></translation>
@@ -3273,7 +3267,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="5423829801105537712">Təməl orfoqrafiya yoxlanışı</translation>
 <translation id="5423849171846380976">Aktivləşdirildi</translation>
 <translation id="5425042808445046667">Endirməyə davam edin</translation>
-<translation id="5425722269016440406">Smart Kilidi deaktiv etmək üçün onlayn olmalısınız. İlk öncə şəbəkəyə qoşulun.</translation>
 <translation id="5425863515030416387">Cihazlarınızdan asanlıqla daxil olun</translation>
 <translation id="5427278936122846523">Həmişə Tərcümə Edin</translation>
 <translation id="5427459444770871191">Saat istiqamətində fırladın</translation>
@@ -3415,7 +3408,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="558918721941304263">Tətbiqlər yüklənir...</translation>
 <translation id="5592595402373377407">Kifayət qədər əlçatan məlumat hələ yoxdur.</translation>
 <translation id="5593357315997824387">Fayllarımı sinxronizasiya edin</translation>
-<translation id="5595152862129936745">Çox uzaq</translation>
 <translation id="5595485650161345191">Ünvana düzəliş edin</translation>
 <translation id="5595727715083333657">Konteyneriniz ölçüsünün dəyişilməsini dəstəkləmir. Linux (Beta) üçün əvvəlcədən ayrılmış boş yerin həcmini tənzimləmək üçün ehtiyat nüsxəsini çıxarın və sonra yeni bir konteynerə bərpa edin.</translation>
 <translation id="5596627076506792578">Əlavə seçimlər</translation>
@@ -3528,7 +3520,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="5747552184818312860">Vaxtı bitir</translation>
 <translation id="5747785204778348146">Developer - qeyri-stabil</translation>
 <translation id="5747809636523347288"><ph name="URL" /> yerləşdirib daxil olun</translation>
-<translation id="5750324801516359607">Uzaq</translation>
 <translation id="5751887393582880060">Bu yükləmə təşkilatınızın təhlükəsizlik siyasətlərini pozur. İstənilən halda davam etmək istəyirsiniz?</translation>
 <translation id="5756163054456765343">Yardım mərkəzi</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" /> vasitəsilə çapa göndərdiyiniz sənədlər <ph name="APP_NAME" /> tərəfindən oxuna bilər.</translation>
@@ -4076,7 +4067,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="6490471652906364588">USB-C cihazı (sağ port)</translation>
 <translation id="6491376743066338510">Doğrulama uğursuz oldu</translation>
 <translation id="6494445798847293442">Sertifikatlaşdırma Təşkilatı deyil</translation>
-<translation id="649454645705377674">Bağlayın</translation>
 <translation id="6495925982925244349"><ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> şəbəkə, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Siqnal Gücü <ph name="SIGNAL_STRENGTH" />%, Administratorunuz tərəfindən idarə olunur, Detallar</translation>
 <translation id="6498249116389603658">&amp;Bütün dilləriniz</translation>
 <translation id="6499143127267478107">Proksi skriptdə host həll olunur...</translation>
@@ -4144,7 +4134,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="6590458744723262880">Qovluq adını dəyişin</translation>
 <translation id="6592267180249644460">WebRTC <ph name="WEBRTC_LOG_CAPTURE_TIME" /> çəkdi</translation>
 <translation id="6592808042417736307">Barmaq iziniz qeydə alınıb</translation>
-<translation id="6594883168703494535">Google Hesabınıza daxil olmaq üçün Smart Lock istifadə edin</translation>
 <translation id="6596325263575161958">Şifrələmə variantları</translation>
 <translation id="6596816719288285829">IP Ünvanı</translation>
 <translation id="6597017209724497268">Nümunələr</translation>
@@ -4678,7 +4667,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="7328867076235380839">Yanlış kombinasiya</translation>
 <translation id="7329154610228416156">Qeydiyyat-in uğursuz qeyri-təhlükəsiz URL istifadə üçün yapılandırılmış çünki ( <ph name="BLOCKED_URL" /> ). Administratora müraciət edin.</translation>
 <translation id="7332053360324989309">Xüsusi İşçi: <ph name="SCRIPT_URL" /></translation>
-<translation id="7334190995941642545">Smart Lock hazırda əlçatmazdır. Lütfən, daha sonra yenidən cəhd edin.</translation>
 <translation id="7334274148831027933">Daxili miqyası aktiv edin</translation>
 <translation id="7335974957018254119">Bu dillər üçün orfoqrafik yoxlanışdan istifadə edin:</translation>
 <translation id="7336799713063880535">Bildirişlər blok edilib.</translation>
@@ -5222,11 +5210,6 @@ Açar faylınızı güvənli yerdə saxlayın.</translation>
 <translation id="8017679124341497925">Qısayol redaktə edildi</translation>
 <translation id="8018313076035239964">Veb saytların istifadə etdiyi məlumatlara və sizə hansı kontenti göstərə biləcəklərinə nəzarət edin</translation>
 <translation id="8023801379949507775">Artırmaları indi güncəlləşdirin</translation>
-<translation id="8024483450737722621">Google Play'dən endirdiyiniz tətbiqlər Chromebook'dan silinəcək.
-      <ph name="LINE_BREAKS1" />
-      Ödəniş etdiyiniz kino, TV şou, musiqi, kitab və digər tətbiqdaxili alqı-satqılar kimi məzmunlar da silinə bilər.
-      <ph name="LINE_BREAKS2" />
-      Bu, digər cihazlardakı tətbiq və dataya təsir etməyəcək.</translation>
 <translation id="8026334261755873520">Brauzinq datasını təmizləyin</translation>
 <translation id="8028060951694135607">Microsoft Açar Bərpası</translation>
 <translation id="8028803902702117856"><ph name="SIZE" />, <ph name="FILE_NAME" /> endirilir</translation>
@@ -5541,7 +5524,6 @@ Bu saytın blok edilməsini düşünmürəm!</translation>
 <translation id="8455026683977728932">ADB illüstrasiyasını aktiv etmək alınmadı</translation>
 <translation id="845702320058262034">Qoşulmaq mümkün deyil. Telefonda Bluetooth'u aktiv edin.</translation>
 <translation id="8457451314607652708">Əlfəcinləri import edin</translation>
-<translation id="8460336040822756677"><ph name="DEVICE_TYPE" /> cihazı üçün olan Smart Lock'u deaktiv etsəniz, telefonunuzu istifadə edərək Chrome cihazlarınızı kiliddən çıxara bilməyəcəksiniz. Parolunuzu daxil etməlisiniz.</translation>
 <translation id="8461329675984532579">Əsas səhifə provayder adı</translation>
 <translation id="84613761564611563">Şəbəkə konfiqurasiyası UI tələb edilir, xahiş edirik gözləyin...</translation>
 <translation id="8461914792118322307">Proksi</translation>
@@ -5767,7 +5749,6 @@ Bu saytın blok edilməsini düşünmürəm!</translation>
 <translation id="8743864605301774756">1 saat əvvəl yenilənib</translation>
 <translation id="8746654918629346731">Artıq "<ph name="EXTENSION_NAME" />" üçün sorğu göndərmisiniz</translation>
 <translation id="874689135111202667">{0,plural, =1{Bir fayl sayta yüklənsin?}other{# fayl sayta yüklənsin?}}</translation>
-<translation id="8748384418490037181">Smart Lock seçimləri</translation>
 <translation id="8749863574775030885">Naməlum vendordan USB cihazlara giriş</translation>
 <translation id="8750133148106010815">Google Play'i işə salmaq üçün <ph name="ORGANIZATION_NAME" /> sizdən datanızın ehtiyat nüsxəsini çıxarmağınızı və bu Chromebook'u zavod ayarlarına sıfırlamağınızı tələb edir.</translation>
 <translation id="8750155211039279868"><ph name="ORIGIN" /> silsilə porta qoşulmaq istəyir</translation>
@@ -5888,7 +5869,6 @@ Bu saytın blok edilməsini düşünmürəm!</translation>
 <translation id="8881020143150461183">Yenidən cəhd edin. Texniki dəstək üçün <ph name="CARRIER_NAME" /> ilə əlaqə saxlayın.</translation>
 <translation id="8883273463630735858">Kursor sürətini aktiv edin</translation>
 <translation id="8884570509232205463">Cihazınız artıq <ph name="UNLOCK_TIME" /> olduqda kilidlənir.</translation>
-<translation id="8885197664446363138">Smart Kilid əlçatmazdır</translation>
 <translation id="8888253246822647887">Tətbiq güncəlləmə tamamlandıqdan sonra açılacaq. Güncəlləmə bir neçə dəqiqə çəkə bilər.</translation>
 <translation id="8888432776533519951">Rəng:</translation>
 <translation id="8889651696183044030"><ph name="ORIGIN" /> aşağıdakı fayl və qovluqları redaktə edə bilər</translation>

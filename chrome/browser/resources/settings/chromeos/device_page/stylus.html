@@ -39,7 +39,6 @@
     </style>
 
     <settings-toggle-button id="enableStylusToolsToggle"
-        class="continuation"
         pref="{{prefs.settings.enable_stylus_tools}}"
         label="$i18n{stylusEnableStylusTools}">
     </settings-toggle-button>
@@ -47,6 +46,7 @@
     <template is="dom-if" if="[[hasInternalStylus_]]">
       <settings-toggle-button
           id ="launchPaletteOnEjectEventToggle"
+          class="hr"
           pref="{{prefs.settings.launch_palette_on_eject_event}}"
           label="$i18n{stylusAutoOpenStylusTools}"
           disabled="[[!prefs.settings.enable_stylus_tools.value]]">
@@ -112,6 +112,7 @@
 
         <template is="dom-if" if="[[lockScreenSupportEnabled_(selectedApp_)]]">
           <settings-toggle-button id="keep-last-note-on-lock-screen-toggle"
+              class="hr"
               pref="{{prefs.settings.restore_last_lock_screen_note}}"
               label="$i18n{stylusNoteTakingAppKeepsLastNoteOnLockScreen}">
           </settings-toggle-button>

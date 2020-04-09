@@ -240,7 +240,7 @@
       <template is="dom-if" if="[[showAmbientColorSetting_(
           ambientColorAvailable_, selectedDisplay)]]">
         <settings-toggle-button id="ambientColor"
-            class="indented"
+            class="indented hr"
             pref="{{prefs.ash.ambient_color.enabled}}"
             label="$i18n{displayAmbientColorTitle}"
             sub-label="$i18n{displayAmbientColorSubtitle}">
@@ -270,6 +270,7 @@
     <!-- Night Light Settings -->
     <settings-toggle-button
         id="nightLightToggleButton"
+        class="hr"
         label="$i18n{displayNightLightLabel}"
         pref="{{prefs.ash.night_light.enabled}}"
         sub-label="$i18n{displayNightLightText}">

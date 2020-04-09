@@ -155,10 +155,10 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Stops the sync server. The server should be running when calling this.
 - (void)stopSync;
 
-// Injects user demographics into the fake sync server. The year is the
-// un-noised birth year, and the gender corresponds to the options in
+// Injects user demographics into the fake sync server. |rawBirthYear| is the
+// true birth year, pre-noise, and the gender corresponds to the proto enum
 // UserDemographicsProto::Gender.
-- (void)addUserDemographicsToSyncServerWithBirthYear:(int)birthYear
+- (void)addUserDemographicsToSyncServerWithBirthYear:(int)rawBirthYear
                                               gender:(int)gender;
 
 // Clears the autofill profile for the given |GUID|.

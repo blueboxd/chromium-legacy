@@ -47,10 +47,10 @@ const base::Feature kDelayedWarnings{"SafeBrowsingDelayedWarnings",
 const base::Feature kDownloadRequestWithToken{
     "SafeBrowsingDownloadRequestWithToken", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kMalwareScanEnabled{"SafeBrowsingMalwareScanEnabled",
+const base::Feature kEnhancedProtection{"SafeBrowsingEnhancedProtection",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kEnhancedProtection{"SafeBrowsingEnhancedProtection",
+const base::Feature kMalwareScanEnabled{"SafeBrowsingMalwareScanEnabled",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable saved password protection by default only on desktop.
@@ -142,10 +142,11 @@ constexpr struct {
     {&kAdSamplerTriggerFeature, false},
     {&kCaptureInlineJavascriptForGoogleAds, true},
     {&kCaptureSafetyNetId, true},
-    {&kDelayedWarnings, true},
     {&kCommittedSBInterstitials, true},
     {&kContentComplianceEnabled, true},
+    {&kDelayedWarnings, true},
     {&kDownloadRequestWithToken, true},
+    {&kEnhancedProtection, true},
     {&kMalwareScanEnabled, true},
     {&kPasswordProtectionForSavedPasswords, true},
     {&kPasswordProtectionShowDomainsForSavedPasswords, true},

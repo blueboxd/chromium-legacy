@@ -31,7 +31,7 @@ rootWebArea
 ++++++++++++listBoxOption ignored name='3' selected=false
 ++++++genericContainer ignored
 ++++++++checkBox name='Test 5: Flash the screen two times.' checkedState=false
-++++++++comboBoxMenuButton name='two'
+++++++++comboBoxMenuButton value='two'
 ++++++++++listBox ignored
 ++++++++++++listBoxOption ignored name='1' selected=false
 ++++++++++++listBoxOption ignored name='two' selected=true

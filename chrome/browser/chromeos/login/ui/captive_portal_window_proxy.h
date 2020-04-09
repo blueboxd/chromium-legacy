@@ -7,11 +7,10 @@
 
 #include <memory>
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace content {
@@ -33,7 +32,7 @@ class CaptivePortalWindowProxyDelegate {
   virtual void OnPortalDetected() = 0;
 
  protected:
-  virtual ~CaptivePortalWindowProxyDelegate() {}
+  virtual ~CaptivePortalWindowProxyDelegate() = default;
 };
 
 // Proxy which manages showing of the window for CaptivePortal sign-in.
@@ -44,18 +43,19 @@ class CaptivePortalWindowProxy : public views::WidgetObserver {
   class Observer : public base::CheckedObserver {
    public:
     Observer() = default;
+    Observer(const Observer&) = delete;
+    Observer& operator=(const Observer&) = delete;
     ~Observer() override = default;
     virtual void OnBeforeCaptivePortalShown() {}
     virtual void OnAfterCaptivePortalHidden() {}
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Observer);
   };
 
-  typedef CaptivePortalWindowProxyDelegate Delegate;
+  using Delegate = CaptivePortalWindowProxyDelegate;
 
   CaptivePortalWindowProxy(Delegate* delegate,
                            content::WebContents* web_contents);
+  CaptivePortalWindowProxy(const CaptivePortalWindowProxy&) = delete;
+  CaptivePortalWindowProxy& operator=(const CaptivePortalWindowProxy&) = delete;
   ~CaptivePortalWindowProxy() override;
 
   // Shows captive portal window only after a redirection has happened. So it is
@@ -121,22 +121,16 @@ class CaptivePortalWindowProxy : public views::WidgetObserver {
     return captive_portal_view_for_testing_;
   }
 
-  // Not owned by this class.
+  Profile* profile_ = ProfileHelper::GetSigninProfile();
   Delegate* delegate_;
-  // Not owned by this class.
-  views::Widget* widget_;
-  std::unique_ptr<CaptivePortalView> captive_portal_view_;
-
-  // Not owned by this class.
   content::WebContents* web_contents_;
+  views::Widget* widget_ = nullptr;
 
-  CaptivePortalView* captive_portal_view_for_testing_;
+  std::unique_ptr<CaptivePortalView> captive_portal_view_;
+  CaptivePortalView* captive_portal_view_for_testing_ = nullptr;
 
   base::Time started_loading_at_;
-
   base::ObserverList<Observer> observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(CaptivePortalWindowProxy);
 };
 
 }  // namespace chromeos

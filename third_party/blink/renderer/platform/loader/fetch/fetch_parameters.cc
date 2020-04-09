@@ -38,7 +38,7 @@ FetchParameters::FetchParameters(ResourceRequest resource_request)
       decoder_options_(TextResourceDecoderOptions::kPlainTextContent),
       speculative_preload_type_(SpeculativePreloadType::kNotSpeculative),
       defer_(kNoDefer),
-      image_request_optimization_(kNone) {}
+      image_request_behavior_(kNone) {}
 
 FetchParameters::FetchParameters(ResourceRequest resource_request,
                                  const ResourceLoaderOptions& options)
@@ -47,7 +47,7 @@ FetchParameters::FetchParameters(ResourceRequest resource_request,
       options_(options),
       speculative_preload_type_(SpeculativePreloadType::kNotSpeculative),
       defer_(kNoDefer),
-      image_request_optimization_(kNone) {}
+      image_request_behavior_(kNone) {}
 
 FetchParameters::FetchParameters(FetchParameters&&) = default;
 
@@ -114,12 +114,16 @@ void FetchParameters::MakeSynchronous() {
 void FetchParameters::SetLazyImageDeferred() {
   resource_request_.SetPreviewsState(resource_request_.GetPreviewsState() |
                                      WebURLRequest::kLazyImageLoadDeferred);
-  DCHECK_EQ(kNone, image_request_optimization_);
-  image_request_optimization_ = kDeferImageLoad;
+  DCHECK_EQ(kNone, image_request_behavior_);
+  image_request_behavior_ = kDeferImageLoad;
+}
+
+void FetchParameters::SetLazyImageNonBlocking() {
+  image_request_behavior_ = kNonBlockingImage;
 }
 
 void FetchParameters::SetAllowImagePlaceholder() {
-  DCHECK_EQ(kNone, image_request_optimization_);
+  DCHECK_EQ(kNone, image_request_behavior_);
   if (!resource_request_.Url().ProtocolIsInHTTPFamily() ||
       resource_request_.HttpMethod() != "GET" ||
       !resource_request_.HttpHeaderField("range").IsNull()) {
@@ -131,7 +135,7 @@ void FetchParameters::SetAllowImagePlaceholder() {
     return;
   }
 
-  image_request_optimization_ = kAllowPlaceholder;
+  image_request_behavior_ = kAllowPlaceholder;
 
   // Fetch the first few bytes of the image. This number is tuned to both (a)
   // likely capture the entire image for small images and (b) likely contain

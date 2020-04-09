@@ -51,8 +51,8 @@ bool UpdateStyleAndLayoutForRangeIfNeeded(const EphemeralRangeInFlatTree& range,
                                                                    reason)) {
       DCHECK(locked_activatable_ancestor->GetDisplayLockContext());
       DCHECK(locked_activatable_ancestor->GetDisplayLockContext()->IsLocked());
-      if (locked_activatable_ancestor->GetDisplayLockContext()->UpdateForced())
-        break;
+      DCHECK(!locked_activatable_ancestor->GetDisplayLockContext()
+                  ->UpdateForced());
       scoped_forced_update_list_.push_back(
           locked_activatable_ancestor->GetDisplayLockContext()
               ->GetScopedForcedUpdate());
@@ -213,8 +213,7 @@ DisplayLockUtilities::ScopedChainForcedUpdate::ScopedChainForcedUpdate(
     if (!ancestor_node)
       continue;
     if (auto* context = ancestor_node->GetDisplayLockContext()) {
-      if (context->UpdateForced())
-        break;
+      DCHECK(!context->UpdateForced());
       scoped_update_forced_list_.push_back(context->GetScopedForcedUpdate());
     }
   }
@@ -223,10 +222,8 @@ DisplayLockUtilities::ScopedChainForcedUpdate::ScopedChainForcedUpdate(
 void DisplayLockUtilities::ScopedChainForcedUpdate::
     CreateParentFrameScopeIfNeeded(const Node* node) {
   auto* owner_node = GetFrameOwnerNode(node);
-  if (owner_node) {
-    parent_frame_scope_ =
-        std::make_unique<ScopedChainForcedUpdate>(owner_node, true);
-  }
+  if (owner_node)
+    parent_frame_scope_.reset(new ScopedChainForcedUpdate(owner_node, true));
 }
 
 const Element* DisplayLockUtilities::NearestLockedInclusiveAncestor(

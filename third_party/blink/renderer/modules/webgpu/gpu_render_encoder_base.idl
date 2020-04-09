@@ -14,13 +14,15 @@
                          GPUBuffer buffer,
                          optional GPUBufferSize offset = 0);
 
-    void draw(unsigned long vertexCount, unsigned long instanceCount,
-              unsigned long firstVertex,
-              unsigned long firstInstance);
-    void drawIndexed(unsigned long indexCount, unsigned long instanceCount,
-                     unsigned long firstIndex,
-                     long baseVertex,
-                     unsigned long firstInstance);
+    void draw(unsigned long vertexCount,
+              optional unsigned long instanceCount = 1,
+              optional unsigned long firstVertex = 0,
+              optional unsigned long firstInstance = 0);
+    void drawIndexed(unsigned long indexCount,
+                     optional unsigned long instanceCount = 1,
+                     optional unsigned long firstIndex = 0,
+                     optional long baseVertex = 0,
+                     optional unsigned long firstInstance = 0);
 
     void drawIndirect(GPUBuffer indirectBuffer,
                       GPUBufferSize indirectOffset);

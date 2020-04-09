@@ -406,11 +406,6 @@ bool SyncEncryptionHandlerImpl::Init() {
                               MIGRATION_STATE_SIZE);
   }
 
-  if (!IsNigoriMigratedToKeystore(node.GetNigoriSpecifics())) {
-    UMA_HISTOGRAM_BOOLEAN("Sync.NigoriMigrationAttemptedBeforeNotMigrated",
-                          migration_attempted_);
-  }
-
   // Always trigger an encrypted types and cryptographer state change event at
   // init time so observers get the initial values.
   for (auto& observer : observers_) {
@@ -1691,8 +1686,6 @@ bool SyncEncryptionHandlerImpl::AttemptToMigrateNigoriToKeystore(
   if (migration_reason == NigoriMigrationReason::kNoReason)
     return false;
 
-  UMA_HISTOGRAM_ENUMERATION("Sync.NigoriMigrationReason", migration_reason);
-  UMA_HISTOGRAM_ENUMERATION("Sync.NigoriMigrationTrigger", migration_trigger);
   migration_attempted_ = true;
 
   DVLOG(1) << "Starting nigori migration to keystore support.";
@@ -1871,12 +1864,6 @@ bool SyncEncryptionHandlerImpl::AttemptToMigrateNigoriToKeystore(
       NOTREACHED();
       break;
   }
-  UMA_HISTOGRAM_BOOLEAN("Sync.IsNigoriMigratedAfterMigration",
-                        IsNigoriMigratedToKeystore(migrated_nigori));
-  UMA_HISTOGRAM_BOOLEAN(
-      "Sync.ShouldTriggerMigrationAfterMigration",
-      GetMigrationReason(migrated_nigori, *cryptographer, *passphrase_type) !=
-          NigoriMigrationReason::kNoReason);
   return true;
 }
 

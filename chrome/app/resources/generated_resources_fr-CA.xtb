@@ -120,7 +120,6 @@
 <translation id="1153636665119721804">Programme de protection avancée de Google</translation>
 <translation id="1161575384898972166">Veuillez vous connecter à <ph name="TOKEN_NAME" /> pour exporter le certificat de client.</translation>
 <translation id="1163931534039071049">&amp;Afficher le code source du cadre</translation>
-<translation id="1164674268730883318">Désactiver Smart Lock pour <ph name="DEVICE_TYPE" />?</translation>
 <translation id="1164891049599601209">Entré sur un site trompeur</translation>
 <translation id="1164899421101904659">Entrer la clé de déverrouillage du NIP</translation>
 <translation id="1165039591588034296">Erreur</translation>
@@ -774,7 +773,6 @@ Sinon, déconnectez-vous maintenant pour que les changements apportés à ce com
 
 Vous pouvez gérer les paramètres de ce compte en installant l'application Family Link sur votre appareil.  Nous vous avons envoyé des instructions à ce sujet dans un courriel.</translation>
 <translation id="2040460856718599782">Oups... Nous n'avons pas réussi à vous authentifier. Veuillez vérifier vos identifiants de connexion puis réessayer.</translation>
-<translation id="2043818754674261542">Distance nécessaire au téléphone pour déverrouiller ce <ph name="DEVICE_TYPE" /></translation>
 <translation id="204497730941176055">Nom du modèle de certificat Microsoft</translation>
 <translation id="2045117674524495717">Aide des raccourcis-clavier</translation>
 <translation id="2045969484888636535">Continuer à bloquer les témoins</translation>
@@ -1147,7 +1145,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2518024842978892609">Utiliser vos certificats clients</translation>
 <translation id="2520644704042891903">En attente d'une interface de connexion disponible…</translation>
 <translation id="252219247728877310">Composant non mis à jour</translation>
-<translation id="2522791476825452208">Très proche</translation>
 <translation id="2523184218357549926">Envoie les URL des pages que vous consultez à Google</translation>
 <translation id="2526277209479171883">Installer et continuer</translation>
 <translation id="2526590354069164005">Ordinateur de bureau</translation>
@@ -1757,7 +1754,6 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="3333190335304955291">Vous pouvez désactiver ce service dans le menu Paramètres.</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> – Lecture de la vidéo en mode d'incrustation d'image en cours…</translation>
 <translation id="3335947283844343239">Rouvrir l'onglet fermé</translation>
-<translation id="3336664756920573711">Déverrouillez votre <ph name="DEVICE_TYPE" /> avec votre téléphone Android</translation>
 <translation id="3340620525920140773">Téléchargement terminé : <ph name="FILE_NAME" />.</translation>
 <translation id="3341699307020049241">NIP incorrect. Il vous reste <ph name="RETRIES" /> tentatives.</translation>
 <translation id="3341703758641437857">Autoriser l'accès aux URL de fichier</translation>
@@ -2780,7 +2776,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4697551882387947560">Lorsque la session de navigation se termine</translation>
 <translation id="4699172675775169585">Images et fichiers dans la mémoire cache</translation>
 <translation id="4699357559218762027">(lancement automatique)</translation>
-<translation id="470074695271471509">Se déconnecter pour terminer?</translation>
 <translation id="4701025263201366865">Connexion d'un parent</translation>
 <translation id="4707302005824653064">L'utilisation et l'historique peuvent être consultés par le gestionnaire (<ph name="CUSTODIAN_EMAIL" />) sur chrome.com.</translation>
 <translation id="4707579418881001319">L2TP/IPSec et certificat utilisateur</translation>
@@ -2803,7 +2798,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="473546211690256853">Ce compte est géré par <ph name="DOMAIN" /></translation>
 <translation id="4735803855089279419">Impossible de déterminer quels sont les identifiants de cet appareil.</translation>
 <translation id="4736292055110123391">Synchronisez vos favoris, vos mots de passe, votre historique et plus encore sur tous vos appareils</translation>
-<translation id="4737715515457435632">Veuillez vous connecter à un réseau</translation>
 <translation id="473775607612524610">Mise à jour</translation>
 <translation id="4739639199548674512">Tickets</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Découvrir comment mettre à jour des applications<ph name="END_LINK" /></translation>
@@ -3281,7 +3275,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5423829801105537712">Correcteur orthographique de base</translation>
 <translation id="5423849171846380976">Activé</translation>
 <translation id="5425042808445046667">Poursuivre le téléchargement</translation>
-<translation id="5425722269016440406">Vous devez être connecté(e) pour désactiver la fonctionnalité Smart Lock, car ce paramètre est synchronisé avec votre téléphone et d'autres appareils. Veuillez d'abord vous connecter à un réseau.</translation>
 <translation id="5425863515030416387">Connectez-vous facilement sur tous les appareils</translation>
 <translation id="5427278936122846523">Toujours traduire</translation>
 <translation id="5427459444770871191">Rotation dans le sens &amp;horaire</translation>
@@ -3423,7 +3416,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="558918721941304263">Chargement des applications en cours…</translation>
 <translation id="5592595402373377407">Données insuffisantes pour l'instant.</translation>
 <translation id="5593357315997824387">Synchroniser mes fichiers</translation>
-<translation id="5595152862129936745">Très loin</translation>
 <translation id="5595485650161345191">Modifier l'adresse</translation>
 <translation id="5595727715083333657">Votre conteneur ne prend pas en charge le redimensionnement. Pour modifier la quantité d'espace allouée à Linux (fonctionnalité bêta), sauvegardez votre disque et restaurez-le dans un nouveau conteneur.</translation>
 <translation id="5596627076506792578">Autres options</translation>
@@ -3536,7 +3528,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5747552184818312860">Date d'expiration</translation>
 <translation id="5747785204778348146">Développeur (instable)</translation>
 <translation id="5747809636523347288">Coller et a&amp;ccéder à l'adresse <ph name="URL" /></translation>
-<translation id="5750324801516359607">Loin</translation>
 <translation id="5751887393582880060">Ce téléversement viole les politiques de sécurité de votre organisation. Souhaitez-vous poursuivre quand même?</translation>
 <translation id="5756163054456765343">Centre d'aide</translation>
 <translation id="5759728514498647443">Les documents que vous envoyez à l'impression au moyen de <ph name="APP_NAME" /> peuvent être lus par <ph name="APP_NAME" />.</translation>
@@ -4086,7 +4077,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6490471652906364588">Appareil USB-C (port de droite)</translation>
 <translation id="6491376743066338510">Échec de l'autorisation</translation>
 <translation id="6494445798847293442">N'est pas une autorité de certification</translation>
-<translation id="649454645705377674">Fermer</translation>
 <translation id="6495925982925244349">Réseau <ph name="NETWORK_INDEX" /> sur <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, force du signal : <ph name="SIGNAL_STRENGTH" /> %, géré par votre administrateur, détails</translation>
 <translation id="6498249116389603658">&amp;Toutes vos langues</translation>
 <translation id="6499143127267478107">Résolution de l'hôte dans le script de mandataire en cours...</translation>
@@ -4154,7 +4144,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6590458744723262880">Renommer le dossier</translation>
 <translation id="6592267180249644460">Date de création du journal WebRTC : <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">Votre empreinte digitale a été capturée</translation>
-<translation id="6594883168703494535">Utilisez Smart Lock pour vous connecter à votre compte Google</translation>
 <translation id="6596325263575161958">Options de chiffrement</translation>
 <translation id="6596816719288285829">Adresse IP</translation>
 <translation id="6597017209724497268">Échantillons</translation>
@@ -4688,7 +4677,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7328867076235380839">Combinaison incorrecte</translation>
 <translation id="7329154610228416156">La connexion a échoué, car elle a été configurée pour utiliser une adresse URL non sécurisée (<ph name="BLOCKED_URL" />). Veuillez communiquer avec votre administrateur.</translation>
 <translation id="7332053360324989309">Traitement dédié : <ph name="SCRIPT_URL" /></translation>
-<translation id="7334190995941642545">Le système de verrouillage intelligent Smart Lock est actuellement indisponible. Veuillez réessayer plus tard.</translation>
 <translation id="7334274148831027933">Activer la loupe en mode ancré</translation>
 <translation id="7335974957018254119">Utiliser le correcteur orthographique pour</translation>
 <translation id="7336799713063880535">Notificat. bloquées.</translation>
@@ -5232,11 +5220,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8017679124341497925">Raccourci modifié</translation>
 <translation id="8018313076035239964">Contrôlez les renseignements que les sites Web peuvent utiliser et le contenu qu'ils peuvent vous montrer</translation>
 <translation id="8023801379949507775">Mettre à jour les extensions maintenant</translation>
-<translation id="8024483450737722621">Les applications que vous avez téléchargées à partir de Google Play seront supprimées de ce Chromebook.
-      <ph name="LINE_BREAKS1" />
-      Les contenus que vous avez achetés, comme les films, les émissions de télévision, la musique, les livres ou d'autres achats au moyen de l'application, peuvent également être supprimés.
-      <ph name="LINE_BREAKS2" />
-      Cela ne concerne pas les applications ou les contenus des autres appareils.</translation>
 <translation id="8026334261755873520">Effacer les données de navigation</translation>
 <translation id="8028060951694135607">Récupération de clé Microsoft</translation>
 <translation id="8028803902702117856">Téléchargement en cours : <ph name="SIZE" />, <ph name="FILE_NAME" /></translation>
@@ -5552,7 +5535,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8455026683977728932">Impossible d'activer l'illustration PDA</translation>
 <translation id="845702320058262034">Connexion impossible. Assurez-vous que la connectivité Bluetooth est activée sur votre téléphone.</translation>
 <translation id="8457451314607652708">Importer les favoris</translation>
-<translation id="8460336040822756677">Si vous désactivez le système de verrouillage intelligent Smart Lock pour <ph name="DEVICE_TYPE" />, vous ne pourrez pas déverrouiller vos appareils Chrome avec votre téléphone. Vous devrez taper votre mot de passe.</translation>
 <translation id="8461329675984532579">Nom du propriétaire</translation>
 <translation id="84613761564611563">IU de configuration du réseau nécessaire. Veuillez patienter…</translation>
 <translation id="8461914792118322307">Mandataire</translation>
@@ -5778,7 +5760,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8743864605301774756">Mise à jour il y a 1 heure</translation>
 <translation id="8746654918629346731">Vous avez déjà demandé « <ph name="EXTENSION_NAME" /> »</translation>
 <translation id="874689135111202667">{0,plural, =1{Téléverser un fichier sur ce site?}one{Téléverser # fichier sur ce site?}other{Téléverser # fichiers sur ce site?}}</translation>
-<translation id="8748384418490037181">Options Smart Lock</translation>
 <translation id="8749863574775030885">Accéder aux appareils USB d’un fournisseur inconnu</translation>
 <translation id="8750133148106010815">Pour démarrer Google Play, <ph name="ORGANIZATION_NAME" /> vous demande de sauvegarder vos données et de réinitialiser ce Chromebook à ses paramètres par défaut.</translation>
 <translation id="8750155211039279868"><ph name="ORIGIN" /> veut se connecter à un port de série</translation>
@@ -5901,7 +5882,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8881020143150461183">Veuillez réessayer. Pour obtenir de l'assistance technique, communiquez avec <ph name="CARRIER_NAME" />.</translation>
 <translation id="8883273463630735858">Activer l'accélération du pavé tactile</translation>
 <translation id="8884570509232205463">Votre appareil se verrouillera maintenant à <ph name="UNLOCK_TIME" />.</translation>
-<translation id="8885197664446363138">La fonctionnalité Smart Lock n'est pas disponible</translation>
 <translation id="8888253246822647887">L'application s'ouvrira quand la mise à niveau sera terminée. Les mises à niveau peuvent prendre quelques minutes.</translation>
 <translation id="8888432776533519951">Couleur :</translation>
 <translation id="8889651696183044030"><ph name="ORIGIN" /> peut modifier les fichiers et les dossiers suivants</translation>

@@ -39,8 +39,8 @@ import org.chromium.chrome.browser.ui.favicon.FaviconUtils;
 import org.chromium.chrome.browser.ui.favicon.IconType;
 import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.ui.favicon.LargeIconBridge.LargeIconCallback;
-import org.chromium.chrome.browser.ui.favicon.RoundedIconGenerator;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.components.favicon.FaviconFallbackGenerator;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.ArrayList;
@@ -170,7 +170,7 @@ public class BookmarkWidgetService extends RemoteViewsService {
         private BookmarkFolder mFolder;
         private BookmarkModel mBookmarkModel;
         private LargeIconBridge mLargeIconBridge;
-        private RoundedIconGenerator mIconGenerator;
+        private FaviconFallbackGenerator mIconGenerator;
         private int mMinIconSizeDp;
         private int mDisplayedIconSize;
         private int mRemainingTaskCount;

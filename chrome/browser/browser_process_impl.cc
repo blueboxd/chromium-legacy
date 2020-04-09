@@ -1195,6 +1195,8 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
   CreateNetworkQualityObserver();
 
 #if defined(OS_ANDROID)
+  // This needs to be here so that SecurityStateClient is non-null when
+  // SecurityStateModel code is called.
   security_state::SetSecurityStateClient(new ChromeSecurityStateClient());
 #endif
 }

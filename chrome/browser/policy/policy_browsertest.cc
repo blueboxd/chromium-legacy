@@ -1211,7 +1211,13 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, AllowedDomainsForApps) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, Disable3DAPIs) {
+// This test is flaky on Windows 10: https://crbug.com/1069558
+#if defined(OS_WIN)
+#define MAYBE_Disable3DAPIs DISABLED_Disable3DAPIs
+#else
+#define MAYBE_Disable3DAPIs Disable3DAPIs
+#endif
+IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_Disable3DAPIs) {
   // This test assumes Gpu access.
   if (!content::GpuDataManager::GetInstance()->HardwareAccelerationEnabled())
     return;

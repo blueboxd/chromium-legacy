@@ -1,0 +1,13 @@
+rootWebArea
+++genericContainer ignored
+++++genericContainer ignored
+++++++genericContainer
+++++++++staticText name='Choose a fruit, with text content'
+++++++++++inlineTextBox name='Choose a fruit, with text content'
+++++++comboBoxMenuButton collapsed name='Choose a fruit, with text content' value='Apple' haspopup=listbox controlsIds=listBox
+++++++++staticText name='Apple'
+++++++++++inlineTextBox name='Apple'
+++++++listBox
+++++++++listBoxOption name='Apple' selected=true
+++++++++listBoxOption name='Banana' selected=false
+++++++++listBoxOption name='Cherry' selected=false

@@ -24,13 +24,13 @@
 
 namespace metrics {
 class UkmBrowserTestBase;
-class UkmEGTestHelper;
 }
 
 namespace ukm {
 class Report;
 class UkmRecorderImplTest;
 class UkmSource;
+class UkmTestHelper;
 class UkmUtilsForTest;
 
 namespace debug {
@@ -129,9 +129,9 @@ class UkmRecorderImpl : public UkmRecorder {
 
  private:
   friend ::metrics::UkmBrowserTestBase;
-  friend ::metrics::UkmEGTestHelper;
   friend ::ukm::debug::UkmDebugDataExtractor;
   friend ::ukm::UkmRecorderImplTest;
+  friend ::ukm::UkmTestHelper;
   friend ::ukm::UkmUtilsForTest;
   FRIEND_TEST_ALL_PREFIXES(UkmRecorderImplTest, IsSampledIn);
   FRIEND_TEST_ALL_PREFIXES(UkmRecorderImplTest, PurgeExtensionRecordings);

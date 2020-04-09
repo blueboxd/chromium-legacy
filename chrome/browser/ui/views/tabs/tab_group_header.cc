@@ -152,7 +152,7 @@ bool TabGroupHeader::OnMouseDragged(const ui::MouseEvent& event) {
 }
 
 void TabGroupHeader::OnMouseReleased(const ui::MouseEvent& event) {
-  if (!dragging()) {
+  if (!dragging() && !editor_bubble_tracker_.is_open()) {
     editor_bubble_tracker_.Opened(TabGroupEditorBubbleView::Show(
         tab_strip_->controller()->GetBrowser(), group().value(), this));
   }
@@ -234,9 +234,36 @@ void TabGroupHeader::ShowContextMenuForViewImpl(
   if (editor_bubble_tracker_.is_open())
     return;
 
+  // When the context menu is triggered via keyboard, the keyboard event
+  // propagates to the textfield inside the Editor Bubble. In those cases, we
+  // want to tell the Editor Bubble to stop the event by setting
+  // stop_context_menu_propagation to true.
+  //
+  // However, when the context menu is triggered via mouse, the same event
+  // sequence doesn't happen. Stopping the context menu propagation in that case
+  // would artificially hide the textfield's context menu the first time the
+  // user tried to access it. So we don't want to stop the context menu
+  // propagation if this call is reached via mouse.
+  //
+  // Notably, event behavior with a mouse is inconsistent depending on
+  // OS. When not on Mac, the OnMouseReleased() event happens first and opens
+  // the Editor Bubble early, preempting the Show() call below. On Mac, the
+  // ShowContextMenu() event happens first and the Show() call is made here.
+  //
+  // So, because of the event order on non-Mac, and because there is no native
+  // way to open a context menu via keyboard on Mac, we assume that we've
+  // reached this function via mouse if and only if the current OS is Mac.
+  // Therefore, we don't stop the menu propagation in that case.
+  constexpr bool kStopContextMenuPropagation =
+#if defined(OS_MACOSX)
+      false;
+#else
+      true;
+#endif
+
   editor_bubble_tracker_.Opened(TabGroupEditorBubbleView::Show(
       tab_strip_->controller()->GetBrowser(), group().value(), this,
-      base::nullopt, nullptr, true));
+      base::nullopt, nullptr, kStopContextMenuPropagation));
 }
 
 int TabGroupHeader::CalculateWidth() const {

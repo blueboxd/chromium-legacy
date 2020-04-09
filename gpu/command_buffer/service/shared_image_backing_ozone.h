@@ -73,6 +73,10 @@ class SharedImageBackingOzone final : public ClearTrackingSharedImageBacking {
       VaapiDependenciesFactory* dep_factory) override;
 
  private:
+  friend class SharedImageRepresentationGLOzone;
+  friend class SharedImageRepresentationDawnOzone;
+  class SharedImageRepresentationVaapiOzone;
+
   SharedImageBackingOzone(
       const Mailbox& mailbox,
       viz::ResourceFormat format,
@@ -83,6 +87,10 @@ class SharedImageBackingOzone final : public ClearTrackingSharedImageBacking {
       scoped_refptr<gfx::NativePixmap> pixmap,
       scoped_refptr<base::RefCountedData<DawnProcTable>> dawn_procs);
 
+  bool VaSync();
+
+  // Indicates if this backing produced a VASurface that may have pending work.
+  bool has_pending_va_writes_ = false;
   std::unique_ptr<VaapiDependencies> vaapi_deps_;
   scoped_refptr<gfx::NativePixmap> pixmap_;
   scoped_refptr<base::RefCountedData<DawnProcTable>> dawn_procs_;

@@ -13,6 +13,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import androidx.annotation.VisibleForTesting;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceViewHolder;
 
@@ -57,6 +58,14 @@ public class SpinnerPreference extends Preference {
         mAdapter = new ArrayAdapter<>(getContext(), itemLayout, options);
         mAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mSelectedIndex = selectedIndex;
+    }
+
+    /**
+     * Returns the Spinner instance for introspection during tests.
+     */
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    public Spinner getSpinnerForTesting() {
+        return mSpinner;
     }
 
     /**

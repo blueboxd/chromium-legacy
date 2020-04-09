@@ -1227,6 +1227,18 @@ bool BookmarksTitleChecker::IsExitConditionSatisfied(std::ostream* os) {
   return expected_count_ == actual_count;
 }
 
+BookmarkFaviconLoadedChecker::BookmarkFaviconLoadedChecker(int profile_index,
+                                                           const GURL& page_url)
+    : SingleBookmarkModelStatusChangeChecker(profile_index),
+      bookmark_node_(GetUniqueNodeByURL(profile_index, page_url)) {
+  DCHECK_NE(nullptr, bookmark_node_);
+}
+
+bool BookmarkFaviconLoadedChecker::IsExitConditionSatisfied(std::ostream* os) {
+  *os << "Waiting for the favicon to be loaded for " << bookmark_node_->url();
+  return bookmark_node_->is_favicon_loaded();
+}
+
 ServerBookmarksEqualityChecker::ServerBookmarksEqualityChecker(
     syncer::ProfileSyncService* service,
     fake_server::FakeServer* fake_server,

@@ -416,17 +416,18 @@ class PreloadJavaScriptDialogPresenter : public web::JavaScriptDialogPresenter {
 
 #pragma mark - CRWWebStatePolicyDecider
 
-- (BOOL)shouldAllowRequest:(NSURLRequest*)request
-               requestInfo:(const WebStatePolicyDecider::RequestInfo&)info {
+- (WebStatePolicyDecider::PolicyDecision)
+    shouldAllowRequest:(NSURLRequest*)request
+           requestInfo:(const WebStatePolicyDecider::RequestInfo&)info {
   GURL requestURL = net::GURLWithNSURL(request.URL);
   // Don't allow preloading for requests that are handled by opening another
   // application or by presenting a native UI.
   if (AppLauncherTabHelper::IsAppUrl(requestURL) ||
       ITunesUrlsHandlerTabHelper::CanHandleUrl(requestURL)) {
     [self schedulePrerenderCancel];
-    return NO;
+    return WebStatePolicyDecider::PolicyDecision::Cancel();
   }
-  return YES;
+  return WebStatePolicyDecider::PolicyDecision::Allow();
 }
 
 #pragma mark - ManageAccountsDelegate

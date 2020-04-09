@@ -59,6 +59,7 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
@@ -1862,7 +1863,8 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
           send_tab_to_self_sub_menu_model_.get());
     }
 #if !defined(OS_MACOSX)
-    menu_contents->SetIcon(index, kSendTabToSelfIcon);
+    menu_contents->SetIcon(index,
+                           ui::ImageModel::FromVectorIcon(kSendTabToSelfIcon));
 #endif
     menu_contents->InsertSeparatorAt(++index, ui::NORMAL_SEPARATOR);
   }

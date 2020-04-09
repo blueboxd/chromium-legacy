@@ -132,10 +132,10 @@ class PLATFORM_EXPORT ResourceFetcher
     resource_load_observer_ = observer;
   }
 
-  // Triggers a fetch based on the given FetchParameters (if there isn't a
-  // suitable Resource already cached) and registers the given ResourceClient
-  // with the Resource. Guaranteed to return a non-null Resource of the subtype
-  // specified by ResourceFactory::GetType().
+  // Triggers or defers a fetch based on the given FetchParameters (if there
+  // isn't a suitable Resource already cached) and registers the given
+  // ResourceClient with the Resource. Guaranteed to return a non-null Resource
+  // of the subtype specified by ResourceFactory::GetType().
   Resource* RequestResource(FetchParameters&,
                             const ResourceFactory&,
                             ResourceClient*);
@@ -163,13 +163,18 @@ class PLATFORM_EXPORT ResourceFetcher
     return cached_resources_map_;
   }
 
+  enum class LoadBlockingPolicy {
+    kDefault,
+    kForceNonBlockingLoad,
+  };
+
   // Binds the given Resource instance to this ResourceFetcher instance to
   // start loading the Resource actually.
   // Usually, RequestResource() calls this method internally, but needs to
   // call this method explicitly on cases such as ResourceNeedsLoad() returning
   // false.
   bool StartLoad(Resource*);
-  bool StartLoad(Resource*, ResourceRequestBody);
+  bool StartLoad(Resource*, ResourceRequestBody, LoadBlockingPolicy);
 
   void SetAutoLoadImages(bool);
   void SetImagesEnabled(bool);

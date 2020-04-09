@@ -70,6 +70,10 @@ class CORE_EXPORT CSSFontFaceSource
   virtual bool IsInBlockPeriod() const { return false; }
   virtual bool IsInFailurePeriod() const { return false; }
 
+  // Recalculate the font loading timeline period for the font face.
+  // https://drafts.csswg.org/css-fonts-4/#font-display-timeline
+  virtual void UpdatePeriod() {}
+
   // For UMA reporting
   virtual bool HadBlankText() { return false; }
   virtual void PaintRequested() {}

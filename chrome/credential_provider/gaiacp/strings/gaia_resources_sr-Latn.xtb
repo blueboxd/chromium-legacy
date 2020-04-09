@@ -18,6 +18,7 @@
 <translation id="4744575902940448763">Sinhronizovanje lozinke za poslovni nalog sa Windows profilom nije uspelo zato što vaša organizacija ograničava ažuriranja lozinke na uređaju. Obratite se administratoru da biste dobili pomoć.</translation>
 <translation id="5186761973554910131">Naveden je nevažeći naziv računara pri pokušaju promene lozinke. Obratite se administratoru.</translation>
 <translation id="5265714013989877288">Ne možete da nastavite zato što je došlo do greške pri promeni lozinke za Windows. Obratite se administratoru.</translation>
+<translation id="5581861273642234526">Drugi poslovni nalog je već povezan sa ovim uređajem. Prijavite se pomoću Windows naloga.</translation>
 <translation id="6033715878377252112">Pomoć za Google dobavljač akreditiva za Windows</translation>
 <translation id="6149399665202317746">Google dobavljač akreditiva za Windows</translation>
 <translation id="6243062314475217481">Lozinka za poslovni nalog ne ispunjava uslove za složenost za Windows. Obratite se administratoru da biste dobili pomoć.</translation>

@@ -101,9 +101,10 @@
     </template>
     <template is="dom-if" if="[[showCrostiniMic_]]">
       <settings-toggle-button id="crostini-mic-sharing"
-        on-change="onMicSharingChange_"
-        pref="{{prefs.crostini.mic_sharing}}"
-        label="$i18n{crostiniMicTitle}">
+          class="hr"
+          on-change="onMicSharingChange_"
+          pref="{{prefs.crostini.mic_sharing}}"
+          label="$i18n{crostiniMicTitle}">
       </settings-toggle-button>
     </template>
     <template is="dom-if" if="[[!hideCrostiniUninstall_]]">

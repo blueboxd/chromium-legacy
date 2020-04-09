@@ -540,45 +540,53 @@ int64_t CrossSchemeWarningToContextInt64(
   switch (reason) {
     case net::CanonicalCookie::CookieInclusionStatus::
         WARN_SAMESITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_SECURE_URL:
-      same_site_context.context = net::CookieOptions::SameSiteCookieContext::
-          ContextType::SAME_SITE_LAX_METHOD_UNSAFE;
-      same_site_context.cross_schemeness = net::CookieOptions::
-          SameSiteCookieContext::CrossSchemeness::INSECURE_SECURE;
+      same_site_context.set_context(
+          net::CookieOptions::SameSiteCookieContext::ContextType::
+              SAME_SITE_LAX_METHOD_UNSAFE);
+      same_site_context.set_cross_schemeness(
+          net::CookieOptions::SameSiteCookieContext::CrossSchemeness::
+              INSECURE_SECURE);
       return same_site_context.ConvertToMetricsValue();
     case net::CanonicalCookie::CookieInclusionStatus::
         WARN_SAMESITE_LAX_CROSS_SCHEME_SECURE_URL:
-      same_site_context.context =
-          net::CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX;
-      same_site_context.cross_schemeness = net::CookieOptions::
-          SameSiteCookieContext::CrossSchemeness::INSECURE_SECURE;
+      same_site_context.set_context(net::CookieOptions::SameSiteCookieContext::
+                                        ContextType::SAME_SITE_LAX);
+      same_site_context.set_cross_schemeness(
+          net::CookieOptions::SameSiteCookieContext::CrossSchemeness::
+              INSECURE_SECURE);
       return same_site_context.ConvertToMetricsValue();
     case net::CanonicalCookie::CookieInclusionStatus::
         WARN_SAMESITE_STRICT_CROSS_SCHEME_SECURE_URL:
-      same_site_context.context = net::CookieOptions::SameSiteCookieContext::
-          ContextType::SAME_SITE_STRICT;
-      same_site_context.cross_schemeness = net::CookieOptions::
-          SameSiteCookieContext::CrossSchemeness::INSECURE_SECURE;
+      same_site_context.set_context(net::CookieOptions::SameSiteCookieContext::
+                                        ContextType::SAME_SITE_STRICT);
+      same_site_context.set_cross_schemeness(
+          net::CookieOptions::SameSiteCookieContext::CrossSchemeness::
+              INSECURE_SECURE);
       return same_site_context.ConvertToMetricsValue();
     case net::CanonicalCookie::CookieInclusionStatus::
         WARN_SAMESITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_INSECURE_URL:
-      same_site_context.context = net::CookieOptions::SameSiteCookieContext::
-          ContextType::SAME_SITE_LAX_METHOD_UNSAFE;
-      same_site_context.cross_schemeness = net::CookieOptions::
-          SameSiteCookieContext::CrossSchemeness::SECURE_INSECURE;
+      same_site_context.set_context(
+          net::CookieOptions::SameSiteCookieContext::ContextType::
+              SAME_SITE_LAX_METHOD_UNSAFE);
+      same_site_context.set_cross_schemeness(
+          net::CookieOptions::SameSiteCookieContext::CrossSchemeness::
+              SECURE_INSECURE);
       return same_site_context.ConvertToMetricsValue();
     case net::CanonicalCookie::CookieInclusionStatus::
         WARN_SAMESITE_LAX_CROSS_SCHEME_INSECURE_URL:
-      same_site_context.context =
-          net::CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX;
-      same_site_context.cross_schemeness = net::CookieOptions::
-          SameSiteCookieContext::CrossSchemeness::SECURE_INSECURE;
+      same_site_context.set_context(net::CookieOptions::SameSiteCookieContext::
+                                        ContextType::SAME_SITE_LAX);
+      same_site_context.set_cross_schemeness(
+          net::CookieOptions::SameSiteCookieContext::CrossSchemeness::
+              SECURE_INSECURE);
       return same_site_context.ConvertToMetricsValue();
     case net::CanonicalCookie::CookieInclusionStatus::
         WARN_SAMESITE_STRICT_CROSS_SCHEME_INSECURE_URL:
-      same_site_context.context = net::CookieOptions::SameSiteCookieContext::
-          ContextType::SAME_SITE_STRICT;
-      same_site_context.cross_schemeness = net::CookieOptions::
-          SameSiteCookieContext::CrossSchemeness::SECURE_INSECURE;
+      same_site_context.set_context(net::CookieOptions::SameSiteCookieContext::
+                                        ContextType::SAME_SITE_STRICT);
+      same_site_context.set_cross_schemeness(
+          net::CookieOptions::SameSiteCookieContext::CrossSchemeness::
+              SECURE_INSECURE);
       return same_site_context.ConvertToMetricsValue();
     default:
       // Return invalid value if there is no cross-scheme warning.

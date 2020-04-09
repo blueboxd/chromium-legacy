@@ -19,7 +19,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 import org.chromium.chrome.browser.ui.favicon.IconType;
 import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
-import org.chromium.chrome.browser.ui.favicon.RoundedIconGenerator;
+import org.chromium.components.favicon.FaviconFallbackGenerator;
 import org.chromium.url.GURL;
 
 import java.io.File;
@@ -37,7 +37,7 @@ public class MostVisitedSitesFaviconHelper {
     private final int mMinIconSize;
     private final int mDesiredIconSize;
     private final LargeIconBridge mLargeIconBridge;
-    private final RoundedIconGenerator mIconGenerator;
+    private final FaviconFallbackGenerator mIconGenerator;
 
     public MostVisitedSitesFaviconHelper(Context context, LargeIconBridge largeIconBridge) {
         mLargeIconBridge = largeIconBridge;
@@ -51,7 +51,7 @@ public class MostVisitedSitesFaviconHelper {
         int iconColor =
                 ApiCompatibilityUtils.getColor(resources, R.color.default_favicon_background_color);
         int iconTextSize = resources.getDimensionPixelSize(R.dimen.tile_view_icon_text_size);
-        mIconGenerator = new RoundedIconGenerator(
+        mIconGenerator = new FaviconFallbackGenerator(
                 mDesiredIconSize, mDesiredIconSize, mDesiredIconSize / 2, iconColor, iconTextSize);
     }
 

@@ -4200,8 +4200,8 @@ void Element::focus(const FocusParams& params) {
       frame_owner_element->contentDocument()->UnloadStarted())
     return;
 
-  DisplayLockUtilities::ScopedChainForcedUpdate scoped_update_forced(this);
-  GetDocument().UpdateStyleAndLayoutTree();
+  // Ensure we have clean style (including forced display locks).
+  GetDocument().UpdateStyleAndLayoutTreeForNode(this);
 
   // https://html.spec.whatwg.org/C/#focusing-steps
   //

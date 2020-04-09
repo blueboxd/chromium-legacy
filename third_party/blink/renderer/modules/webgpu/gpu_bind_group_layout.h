@@ -9,6 +9,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class GPUBindGroupLayoutDescriptor;
 
 class GPUBindGroupLayout : public DawnObject<WGPUBindGroupLayout> {
@@ -17,7 +18,8 @@ class GPUBindGroupLayout : public DawnObject<WGPUBindGroupLayout> {
  public:
   static GPUBindGroupLayout* Create(
       GPUDevice* device,
-      const GPUBindGroupLayoutDescriptor* webgpu_desc);
+      const GPUBindGroupLayoutDescriptor* webgpu_desc,
+      ExceptionState& exception_state);
   explicit GPUBindGroupLayout(GPUDevice* device,
                               WGPUBindGroupLayout bind_group_layout);
   ~GPUBindGroupLayout() override;

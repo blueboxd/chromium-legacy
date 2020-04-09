@@ -609,6 +609,15 @@ class VisualColorPicker extends HTMLElement {
       document.documentElement
           .addEventListener('mousemove', this.onMouseMove_);
       document.documentElement.addEventListener('mouseup', this.onMouseUp_);
+      this.colorWell_
+          .addEventListener('touchstart', this.onColorWellTouchStart_);
+      this.hueSlider_
+          .addEventListener('touchstart', this.onHueSliderTouchStart_);
+      document.documentElement
+          .addEventListener('touchstart', this.onTouchStart_);
+      document.documentElement
+          .addEventListener('touchmove', this.onTouchMove_);
+      document.documentElement.addEventListener('touchend', this.onTouchEnd_);
       document.documentElement.addEventListener('keydown', this.onKeyDown_);
 
       this.dispatchEvent(new CustomEvent('visual-color-picker-initialized'));
@@ -633,7 +642,7 @@ class VisualColorPicker extends HTMLElement {
     event.preventDefault();
     event.stopPropagation();
     this.hueSlider_.focused = false;
-    this.colorWell_.mouseDown(new Point(event.clientX, event.clientY));
+    this.colorWell_.pointerDown(new Point(event.clientX, event.clientY));
   }
 
   /**
@@ -643,7 +652,7 @@ class VisualColorPicker extends HTMLElement {
     event.preventDefault();
     event.stopPropagation();
     this.colorWell_.focused = false;
-    this.hueSlider_.mouseDown(new Point(event.clientX, event.clientY));
+    this.hueSlider_.pointerDown(new Point(event.clientX, event.clientY));
   }
 
   onMouseDown_ = () => {
@@ -656,13 +665,52 @@ class VisualColorPicker extends HTMLElement {
    */
   onMouseMove_ = (event) => {
     var point = new Point(event.clientX, event.clientY);
-    this.colorWell_.mouseMove(point);
-    this.hueSlider_.mouseMove(point);
+    this.colorWell_.pointerMove(point);
+    this.hueSlider_.pointerMove(point);
   }
 
   onMouseUp_ = () => {
-    this.colorWell_.mouseUp();
-    this.hueSlider_.mouseUp();
+    this.colorWell_.pointerUp();
+    this.hueSlider_.pointerUp();
+  }
+
+    /**
+   * @param {!Event} event
+   */
+  onColorWellTouchStart_ = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    this.hueSlider_.focused = false;
+    this.colorWell_.pointerDown(new Point(event.touches[0].clientX, event.touches[0].clientY));
+  }
+
+  /**
+   * @param {!Event} event
+   */
+  onHueSliderTouchStart_ = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    this.colorWell_.focused = false;
+    this.hueSlider_.pointerDown(new Point(event.touches[0].clientX, event.touches[0].clientY));
+  }
+
+  onTouchStart_ = () => {
+    this.colorWell_.focused = false;
+    this.hueSlider_.focused = false;
+  }
+
+  /**
+   * @param {!Event} event
+   */
+  onTouchMove_ = (event) => {
+    var point = new Point(event.touches[0].clientX, event.touches[0].clientY);
+    this.colorWell_.pointerMove(point);
+    this.hueSlider_.pointerMove(point);
+  }
+
+  onTouchEnd_ = () => {
+    this.colorWell_.pointerUp();
+    this.hueSlider_.pointerUp();
   }
 
   /**
@@ -854,7 +902,7 @@ class ColorSelectionArea extends HTMLElement {
   /**
    * @param {!Point} point
    */
-  mouseDown(point) {
+  pointerDown(point) {
     this.colorSelectionRing_.focus({preventScroll: true});
     this.colorSelectionRing_.drag = true;
     this.moveColorSelectionRingTo_(point);
@@ -863,13 +911,13 @@ class ColorSelectionArea extends HTMLElement {
   /**
    * @param {!Point} point
    */
-  mouseMove(point) {
+  pointerMove(point) {
     if (this.colorSelectionRing_.drag) {
       this.moveColorSelectionRingTo_(point);
     }
   }
 
-  mouseUp() {
+  pointerUp() {
     this.colorSelectionRing_.drag = false;
   }
 
@@ -1836,6 +1884,7 @@ class FormatToggler extends HTMLElement {
     this.addEventListener('click', this.onClick_);
     this.addEventListener('keydown', this.onKeyDown_);
     this.addEventListener('mousedown', (event) => event.preventDefault());
+    this.addEventListener('touchstart', (event) => event.preventDefault());
   }
 
   /**

@@ -131,6 +131,11 @@ void MediaDialogView::OnContainerMetadataChanged() {
     observer.OnMediaSessionMetadataUpdated();
 }
 
+void MediaDialogView::OnContainerActionsChanged() {
+  for (auto& observer : observers_)
+    observer.OnMediaSessionActionsChanged();
+}
+
 void MediaDialogView::OnContainerDestroyed(const std::string& id) {
   auto iter = observed_containers_.find(id);
   DCHECK(iter != observed_containers_.end());

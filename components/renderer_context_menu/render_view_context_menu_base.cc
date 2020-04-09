@@ -18,6 +18,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/menu_item.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "ui/base/models/image_model.h"
 
 using blink::WebString;
 using blink::WebURL;
@@ -207,14 +208,16 @@ void RenderViewContextMenuBase::AddMenuItemWithIcon(
     int command_id,
     const base::string16& title,
     const gfx::ImageSkia& image) {
-  menu_model_.AddItemWithIcon(command_id, title, image);
+  menu_model_.AddItemWithIcon(command_id, title,
+                              ui::ImageModel::FromImageSkia(image));
 }
 
 void RenderViewContextMenuBase::AddMenuItemWithIcon(
     int command_id,
     const base::string16& title,
     const gfx::VectorIcon& icon) {
-  menu_model_.AddItemWithIcon(command_id, title, icon);
+  menu_model_.AddItemWithIcon(command_id, title,
+                              ui::ImageModel::FromVectorIcon(icon));
 }
 
 void RenderViewContextMenuBase::AddCheckItem(int command_id,
@@ -237,8 +240,8 @@ void RenderViewContextMenuBase::AddSubMenuWithStringIdAndIcon(
     int message_id,
     ui::MenuModel* model,
     const gfx::ImageSkia& image) {
-  menu_model_.AddSubMenuWithStringIdAndIcon(command_id, message_id, model,
-                                            image);
+  menu_model_.AddSubMenuWithStringIdAndIcon(
+      command_id, message_id, model, ui::ImageModel::FromImageSkia(image));
 }
 
 void RenderViewContextMenuBase::AddSubMenuWithStringIdAndIcon(
@@ -246,8 +249,8 @@ void RenderViewContextMenuBase::AddSubMenuWithStringIdAndIcon(
     int message_id,
     ui::MenuModel* model,
     const gfx::VectorIcon& icon) {
-  menu_model_.AddSubMenuWithStringIdAndIcon(command_id, message_id, model,
-                                            icon);
+  menu_model_.AddSubMenuWithStringIdAndIcon(
+      command_id, message_id, model, ui::ImageModel::FromVectorIcon(icon));
 }
 
 void RenderViewContextMenuBase::UpdateMenuItem(int command_id,
@@ -271,7 +274,7 @@ void RenderViewContextMenuBase::UpdateMenuIcon(int command_id,
   if (index == -1)
     return;
 
-  menu_model_.SetIcon(index, image);
+  menu_model_.SetIcon(index, ui::ImageModel::FromImage(image));
 #if defined(OS_CHROMEOS)
   if (toolkit_delegate_)
     toolkit_delegate_->RebuildMenu();

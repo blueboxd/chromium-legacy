@@ -20,11 +20,14 @@
       </cr-icon-button>
     </div>
     <settings-toggle-button id="plugin-vm-printer-access"
-         label="$i18n{pluginVmPrinterAccess}"
-         pref="{{prefs.plugin_vm.printers_allowed}}">
+        class="hr"
+        label="$i18n{pluginVmPrinterAccess}"
+        pref="{{prefs.plugin_vm.printers_allowed}}">
     </settings-toggle-button>
     <template is="dom-if" if="[[showPluginVmCamera_]]">
-      <settings-toggle-button label="$i18n{pluginVmCameraAccessTitle}"
+      <settings-toggle-button
+          class="hr"
+          label="$i18n{pluginVmCameraAccessTitle}"
           pref="{{prefs.plugin_vm.camera_sharing}}">
       </settings-toggle-button>
     </template>

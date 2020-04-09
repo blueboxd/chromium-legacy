@@ -20,18 +20,17 @@ namespace {
 // Pointer to the instance of itself.
 BackgroundTabLoadingPolicy* g_background_tab_loading_policy = nullptr;
 
-// Lower bound for the maximum number of tabs to load simultaneously.
-uint32_t kMinSimultaneousTabLoads = 1;
-
-// Upper bound for the maximum number of tabs to load simultaneously.
-// Setting to zero means no upper bound is applied.
-uint32_t kMaxSimultaneousTabLoads = 4;
-
-// The number of CPU cores required per permitted simultaneous tab
-// load. Setting to zero means no CPU core limit applies.
-uint32_t kCoresPerSimultaneousTabLoad = 2;
-
 }  // namespace
+
+// static
+constexpr uint32_t BackgroundTabLoadingPolicy::kMinTabsToLoad;
+constexpr uint32_t BackgroundTabLoadingPolicy::kMaxTabsToLoad;
+constexpr uint32_t BackgroundTabLoadingPolicy::kDesiredAmountOfFreeMemoryMb;
+constexpr base::TimeDelta
+    BackgroundTabLoadingPolicy::kMaxTimeSinceLastUseToLoad;
+constexpr uint32_t BackgroundTabLoadingPolicy::kMinSimultaneousTabLoads;
+constexpr uint32_t BackgroundTabLoadingPolicy::kMaxSimultaneousTabLoads;
+constexpr uint32_t BackgroundTabLoadingPolicy::kCoresPerSimultaneousTabLoad;
 
 void ScheduleLoadForRestoredTabs(
     std::vector<content::WebContents*> web_contents_vector) {
@@ -136,8 +135,40 @@ void BackgroundTabLoadingPolicy::SetMaxSimultaneousLoadsForTesting(
   max_simultaneous_tab_loads_ = loading_slots;
 }
 
+void BackgroundTabLoadingPolicy::SetFreeMemoryForTesting(
+    size_t free_memory_mb) {
+  free_memory_mb_for_testing_ = free_memory_mb;
+}
+
+void BackgroundTabLoadingPolicy::ResetPolicyForTesting() {
+  tab_loads_started_ = 0;
+}
+
 BackgroundTabLoadingPolicy* BackgroundTabLoadingPolicy::GetInstance() {
   return g_background_tab_loading_policy;
+}
+
+bool BackgroundTabLoadingPolicy::ShouldLoad(const PageNode* page_node) {
+  if (tab_loads_started_ < kMinTabsToLoad)
+    return true;
+
+  if (tab_loads_started_ >= kMaxTabsToLoad)
+    return false;
+
+  // If there is a free memory constraint then enforce it.
+  size_t free_memory_mb = GetFreePhysicalMemoryMib();
+  if (free_memory_mb < kDesiredAmountOfFreeMemoryMb)
+    return false;
+
+  // Enforce a max time since last use.
+  if (page_node->GetTimeSinceLastVisibilityChange() >
+      kMaxTimeSinceLastUseToLoad) {
+    return false;
+  }
+
+  // TODO: Enforce the site engagement score for tabs that don't make use of
+  // background communication mechanisms.
+  return true;
 }
 
 void BackgroundTabLoadingPolicy::InitiateLoad(const PageNode* page_node) {
@@ -146,6 +177,7 @@ void BackgroundTabLoadingPolicy::InitiateLoad(const PageNode* page_node) {
   size_t num_removed = base::Erase(page_nodes_to_load_, page_node);
   DCHECK_EQ(num_removed, 1U);
   page_nodes_load_initiated_.push_back(page_node);
+  tab_loads_started_++;
 
   // Make the call to load |page_node|.
   page_loader_->LoadPageNode(page_node);
@@ -190,9 +222,27 @@ void BackgroundTabLoadingPolicy::LoadNextTab() {
   DCHECK(!page_nodes_to_load_.empty());
 
   // Find the next PageNode to load.
-  const PageNode* page_node = page_nodes_to_load_.front();
+  while (!page_nodes_to_load_.empty()) {
+    const PageNode* page_node = page_nodes_to_load_.front();
+    if (ShouldLoad(page_node)) {
+      InitiateLoad(page_node);
+      return;
+    }
 
-  InitiateLoad(page_node);
+    // |page_node| should not be loaded at this time. Remove |page_node| from
+    // the policy.
+    base::Erase(page_nodes_to_load_, page_node);
+  }
+}
+
+size_t BackgroundTabLoadingPolicy::GetFreePhysicalMemoryMib() const {
+  if (free_memory_mb_for_testing_ != 0)
+    return free_memory_mb_for_testing_;
+  constexpr int64_t kMibibytesInBytes = 1 << 20;
+  int64_t free_mem =
+      base::SysInfo::AmountOfAvailablePhysicalMemory() / kMibibytesInBytes;
+  DCHECK_GE(free_mem, 0);
+  return free_mem;
 }
 
 }  // namespace policies

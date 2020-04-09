@@ -26,6 +26,7 @@ import org.chromium.ui.widget.ButtonCompat;
  */
 class QrCodeScanView {
     public interface PermissionPrompter { void promptForCameraPermission(); }
+
     public interface PermissionPromptAllowedChecker { Boolean canPromptForPermission(); }
 
     private final Context mContext;
@@ -114,8 +115,8 @@ class QrCodeScanView {
     }
 
     /**
-     * Creates a view that opens the settings page for the app and allows the user to
-     * to update permissions including give the app camera permission.
+     * Creates a view that opens the settings page for the app and allows the user to to update
+     * permissions including give the app camera permission.
      */
     private View createOpenSettingsView(Context context) {
         View openSettingsView = (View) LayoutInflater.from(context).inflate(
@@ -151,10 +152,8 @@ class QrCodeScanView {
     }
 
     /**
-     * Update the view based on the latest environment:
-     * - app is in the foreground
-     * - user has given camera permission
-     * - user can be prompted for camera permission
+     * Update the view based on the latest environment: - app is in the foreground - user has given
+     * camera permission - user can be prompted for camera permission
      */
     private void updateView() {
         // The scan tab is not in the foreground so don't do any rendering.
@@ -179,7 +178,7 @@ class QrCodeScanView {
      * to let the user know if the permission has been permanently denied.
      *
      * @param canPromptForPermission Indicates whether the user can be prompted for camera
-     * permission
+     *            permission
      */
     public void canPromptForPermissionChanged(Boolean canPromptForPermission) {
         mCanPromptForPermission = canPromptForPermission;

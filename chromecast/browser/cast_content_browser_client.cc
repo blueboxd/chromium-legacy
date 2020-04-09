@@ -284,7 +284,7 @@ bool CastContentBrowserClient::OverridesAudioManager() {
 }
 
 std::unique_ptr<::media::CdmFactory> CastContentBrowserClient::CreateCdmFactory(
-    service_manager::mojom::InterfaceProvider* host_interfaces) {
+    ::media::mojom::FrameInterfaceFactory* frame_interfaces) {
   return std::make_unique<media::CastCdmFactory>(GetMediaTaskRunner(),
                                                  media_resource_tracker());
 }
@@ -930,7 +930,7 @@ void CastContentBrowserClient::BindMediaRenderer(
       std::make_unique<media::CastRenderer>(
           GetCmaBackendFactory(), std::move(media_task_runner),
           GetVideoModeSwitcher(), GetVideoResolutionPolicy(),
-          base::UnguessableToken::Create(), nullptr /* host_interfaces */),
+          base::UnguessableToken::Create(), nullptr /* frame_interfaces */),
       std::move(receiver));
 }
 

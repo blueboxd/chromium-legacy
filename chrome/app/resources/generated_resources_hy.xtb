@@ -120,7 +120,6 @@
 <translation id="1153636665119721804">Google-ի անվտանգության լրացուցիչ կարգավորումների ծրագիր</translation>
 <translation id="1161575384898972166">Սպասառուի վկայագիրը արտահանելու համար մուտք գործեք <ph name="TOKEN_NAME" />:</translation>
 <translation id="1163931534039071049">&amp;Դիտել շրջանակի սկզբնաղբյուրը</translation>
-<translation id="1164674268730883318">Անջատե՞լ Smart Lock գործառույթը <ph name="DEVICE_TYPE" />-ի համար</translation>
 <translation id="1164891049599601209">Մուտքագրել եք կասկածելի կայքում</translation>
 <translation id="1164899421101904659">Մուտքագրեք PUK կոդը</translation>
 <translation id="1165039591588034296">Սխալ</translation>
@@ -774,7 +773,6 @@
 
 Այս հաշվի կարգավորումները կառավարելու համար կարող եք սարքում տեղադրել Family Link հավելվածը:  Մենք հրահանգներ ենք ուղարկել ձեր էլ. հասցեին:</translation>
 <translation id="2040460856718599782">Իսկորոշման ընթացքում սխալ տեղի ունեցավ: Եվս մեկ անգամ ստուգեք ձեր մուտքի հավատարմագրերը և նորից փորձեք:</translation>
-<translation id="2043818754674261542">Հեռավորությունը հեռախոսից, որն անհրաժեշտ է <ph name="DEVICE_TYPE" /> սարքն ապակողպելու համար</translation>
 <translation id="204497730941176055">Microsoft-ի վկայագրի ձևանմուշի անունը</translation>
 <translation id="2045117674524495717">Ստեղնային դյուրանցումների օգնական</translation>
 <translation id="2045969484888636535">Շարունակել քուքիների արգելափակումը</translation>
@@ -1147,7 +1145,6 @@
 <translation id="2518024842978892609">Օգտագործել ձեր սպասառուի վկայականները</translation>
 <translation id="2520644704042891903">Հասանելի վարդակի սպասում…</translation>
 <translation id="252219247728877310">Բաղադրիչը թարմացված չէ</translation>
-<translation id="2522791476825452208">Շատ մոտ</translation>
 <translation id="2523184218357549926">Ձեր այցելած էջերի URL-ներն ուղարկում է Google-ին</translation>
 <translation id="2526277209479171883">Տեղադրել և շարունակել</translation>
 <translation id="2526590354069164005">Աշխատասեղան</translation>
@@ -1756,7 +1753,6 @@
 <translation id="3333190335304955291">Այս ծառայությունը կարող եք անջատել կարգավորումներում։</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> – «Նկար նկարի մեջ» ռեժիմում նվագարկվող տեսանյութ</translation>
 <translation id="3335947283844343239">Նորից բացել փակված ներդիրը</translation>
-<translation id="3336664756920573711">Ապակողպեք ձեր <ph name="DEVICE_TYPE" /> սարքը Android հեռախոսի օգնությամբ</translation>
 <translation id="3340620525920140773">Ներբեռնումն ավարտվեց՝ <ph name="FILE_NAME" />:</translation>
 <translation id="3341699307020049241">PIN կոդը սխալ է: Դուք ունեք ևս <ph name="RETRIES" /> փորձ:</translation>
 <translation id="3341703758641437857">Թույլատրել ֆայլերի բացումը հղումներով</translation>
@@ -2779,7 +2775,6 @@
 <translation id="4697551882387947560">Երբ ավարտվում է դիտարկման աշխատաշրջանը</translation>
 <translation id="4699172675775169585">Քեշավորված պատկերներ և ֆայլեր</translation>
 <translation id="4699357559218762027">(ինքնագործարկում)</translation>
-<translation id="470074695271471509">Դուրս գա՞լ հաշվից՝ ավարտելու համար</translation>
 <translation id="4701025263201366865">Մուտք ծնողի համար</translation>
 <translation id="4707302005824653064">Կառավարիչը (<ph name="CUSTODIAN_EMAIL" />) կարող է վերահսկել օգտագործումն ու պատմությունը chrome.com-ում:</translation>
 <translation id="4707579418881001319">L2TP/IPsec + օգտատիրոջ վկայագիր</translation>
@@ -2802,7 +2797,6 @@
 <translation id="473546211690256853">Այս հաշիվը կառավարում է <ph name="DOMAIN" /> տիրույթը</translation>
 <translation id="4735803855089279419">Չհաջողվեց ճանաչել սարքի նույնացուցիչները:</translation>
 <translation id="4736292055110123391">Համաժամացրեք ձեր էջանիշները, պատմությունը, գաղտնաբառերն ու մյուս կարգավորումները ձեր բոլոր սարքերում</translation>
-<translation id="4737715515457435632">Միացեք ցանցին</translation>
 <translation id="473775607612524610">Թարմացնել</translation>
 <translation id="4739639199548674512">Տոմսեր</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Ինչպես թարմացնել հավելվածները<ph name="END_LINK" /></translation>
@@ -3283,7 +3277,6 @@
 <translation id="5423829801105537712">Ուղղագրության սովորական ստուգում</translation>
 <translation id="5423849171846380976">Ակտիվացված է</translation>
 <translation id="5425042808445046667">Շարունակել ներբեռնումը</translation>
-<translation id="5425722269016440406">Smart Lock-ն անջատելու համար պետք է լինեք առցանց, քանի որ այս կարգավորումը համաժամացվում է ձեր հեռախոսի և այլ սարքերի հետ: Նախ միացեք ցանցին:</translation>
 <translation id="5425863515030416387">Հեշտությամբ մուտք գործեք բոլոր սարքերով</translation>
 <translation id="5427278936122846523">Միշտ թարգմանել</translation>
 <translation id="5427459444770871191">Պտտել &amp;ժամացույցի սլաքի ուղղությամբ</translation>
@@ -3425,7 +3418,6 @@
 <translation id="558918721941304263">Հավելվածների բեռնում…</translation>
 <translation id="5592595402373377407">Բավարար քանակությամբ տվյալներ չկան:</translation>
 <translation id="5593357315997824387">Համաժամացնել իմ ֆայլերը</translation>
-<translation id="5595152862129936745">Շատ հեռու է</translation>
 <translation id="5595485650161345191">Փոխել հասցեն</translation>
 <translation id="5595727715083333657">Ձեր կոնտեյները չի աջակցում սկավառակի չափի փոխումը։ Լինուքսին (բետա) նախապես հատկացվող տարածքի ծավալը փոխելու համար պահուստավորեք սկավառակը և վերականգնեք այն նոր կոնտեյներում։</translation>
 <translation id="5596627076506792578">Լրացուցիչ ընտրանքներ</translation>
@@ -3538,7 +3530,6 @@
 <translation id="5747552184818312860">Սպառվում է</translation>
 <translation id="5747785204778348146">Մշակողների վարկած - անկայուն</translation>
 <translation id="5747809636523347288">Տեղադրել և անցնել <ph name="URL" /> կայք</translation>
-<translation id="5750324801516359607">Հեռու է</translation>
 <translation id="5751887393582880060">Այս վերբեռնումը խախտում է ձեր կազմակերպության անվտանգության կանոնները։ Ուզո՞ւմ եք շարունակել։</translation>
 <translation id="5756163054456765343">Օ&amp;գնության կենտրոն</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" />-ի միջոցով ուղարկված փաստաթղթերը հնարավոր է կարդալ <ph name="APP_NAME" /> հավելվածով:</translation>
@@ -4088,7 +4079,6 @@
 <translation id="6490471652906364588">USB-C սարք (աջ միացք)</translation>
 <translation id="6491376743066338510">Լիազորումը ձախողվեց</translation>
 <translation id="6494445798847293442">Հավաստագրման կենտրոն չէ</translation>
-<translation id="649454645705377674">Փակել</translation>
 <translation id="6495925982925244349">Ցանց <ph name="NETWORK_INDEX" />՝ <ph name="NETWORK_COUNT" />-ից, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, ազդանշանի ուժգնությունը՝ <ph name="SIGNAL_STRENGTH" />%, կառավարվում է ձեր ադմինիստրատորի կողմից, մանրամասներ</translation>
 <translation id="6498249116389603658">&amp;Ձեր բոլոր լեզուները</translation>
 <translation id="6499143127267478107">Խնամորդի լուծում պրոքսի-սերվերի սկրիպտում…</translation>
@@ -4156,7 +4146,6 @@
 <translation id="6590458744723262880">Պանակի վերանվանում</translation>
 <translation id="6592267180249644460">WebRTC-ի մատյանի պահման ժամանակը՝ <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">Մատնահետքն ավելացվեց</translation>
-<translation id="6594883168703494535">Մտնել Google հաշիվ Smart Lock-ի օգնությամբ</translation>
 <translation id="6596325263575161958">Գաղտնագրման ընտրանքներ</translation>
 <translation id="6596816719288285829">IP հասցե</translation>
 <translation id="6597017209724497268">Նմուշներ</translation>
@@ -4690,7 +4679,6 @@
 <translation id="7328867076235380839">Սխալ համադրություն</translation>
 <translation id="7329154610228416156">Մուտքը չհաջողվեց, քանի որ դրա կազմաձևումը թույլ է տալիս օգտագործել ոչ ապահով URL (<ph name="BLOCKED_URL" />): Կապվեք ձեր ադմինիստրատորի հետ:</translation>
 <translation id="7332053360324989309">Dedicated Worker` <ph name="SCRIPT_URL" /></translation>
-<translation id="7334190995941642545">Smart Lock-ն այս պահին անհասանելի է: Փորձեք ավելի ուշ:</translation>
 <translation id="7334274148831027933">Միացնել ամրացված խոշորացույցը</translation>
 <translation id="7335974957018254119">Օգտագործել ուղղագրության ստուգումը հետևյալ լեզուների համար՝</translation>
 <translation id="7336799713063880535">Ծանուցումներն արգելափակված են։</translation>
@@ -5233,11 +5221,6 @@
 <translation id="8017679124341497925">Դյուրանցումը փոխվեց</translation>
 <translation id="8018313076035239964">Վերահսկեք, թե ձեր մասին ինչ տեղեկություններ հասանելի կլինեն կայքերին և ինչ են ցուցադրելու ձեզ կայքերը։</translation>
 <translation id="8023801379949507775">Թարմացնել ընդլայնումները հիմա</translation>
-<translation id="8024483450737722621">Google Play-ից ներբեռնված հավելվածները կհեռացվեն այս Chromebook-ից:
-      <ph name="LINE_BREAKS1" />
-      Գնված բովանդակությունը, ինչպես օրինակ՝ ֆիլմերը, հաղորդումները, երգերը, գրքերը կամ հավելվածներից կատարած այլ գնումները ևս կարող են ջնջվել:
-      <ph name="LINE_BREAKS2" />
-      Այլ սարքերի հավելվածներն ու բովանդակությունը կպահպանվեն:</translation>
 <translation id="8026334261755873520">Դիտարկումների տվյալների մաքրում</translation>
 <translation id="8028060951694135607">Microsoft-ի բանալիների վերականգնում</translation>
 <translation id="8028803902702117856">Ներբեռնվում է <ph name="SIZE" />, <ph name="FILE_NAME" /></translation>
@@ -5553,7 +5536,6 @@
 <translation id="8455026683977728932">Չհաջողվեց միացնել ADB պատկերը</translation>
 <translation id="845702320058262034">Կապ չկա։ Համոզվեք, որ հեռախոսի Bluetooth-ը միացված է։</translation>
 <translation id="8457451314607652708">Ներմուծել էջանիշներ</translation>
-<translation id="8460336040822756677">Եթե անջատեք Smart Lock <ph name="DEVICE_TYPE" />-ի համար գործառույթը, դուք չեք կարողանա ապակողպել ձեր Chrome-ի սարքերը հեռախոսի միջոցով: Պետք է մուտքագրեք ձեր գաղտնաբառը:</translation>
 <translation id="8461329675984532579">Տան ծառայությունների մատակարարի անունը</translation>
 <translation id="84613761564611563">Ցանցի կարգավորման միջերեսի սպասում...</translation>
 <translation id="8461914792118322307">Պրոքսի-սերվեր</translation>
@@ -5779,7 +5761,6 @@
 <translation id="8743864605301774756">Թարմացվել է 1 ժամ առաջ</translation>
 <translation id="8746654918629346731">Դուք «<ph name="EXTENSION_NAME" />» ընդլայնումը տեղադրելու հայտ արդեն ուղարկել եք</translation>
 <translation id="874689135111202667">{0,plural, =1{Վերբեռնե՞լ մեկ ֆայլ այս կայք}one{Վերբեռնե՞լ # ֆայլ այս կայք}other{Վերբեռնե՞լ # ֆայլ այս կայք}}</translation>
-<translation id="8748384418490037181">Smart Lock-ի կարգավորումներ</translation>
 <translation id="8749863574775030885">Մտնել անհայտ վաճառողի USB սարքեր</translation>
 <translation id="8750133148106010815">Google Play-ի համար <ph name="ORGANIZATION_NAME" />-ին անհրաժեշտ է, որ պահուստավորեք ձեր տվյալներն ու վերակայեք այս Chromebook-ի գործարանային կարգավորումները։</translation>
 <translation id="8750155211039279868"><ph name="ORIGIN" /> կայքն ուզում է միանալ հերթական միացքին</translation>
@@ -5902,7 +5883,6 @@
 <translation id="8881020143150461183">Նորից փորձեք: Տեխնիկական աջակցման համար կապվեք <ph name="CARRIER_NAME" />-ի հետ։</translation>
 <translation id="8883273463630735858">Միացնել հպահարթակի արագացումը</translation>
 <translation id="8884570509232205463">Ձեր սարքն այսուհետ կկողպվի <ph name="UNLOCK_TIME" />-ին:</translation>
-<translation id="8885197664446363138">Smart Lock-ն անհասանելի է</translation>
 <translation id="8888253246822647887">Հավելվածը կբացվի նորացումն ավարտելուց հետո: Դա կարող է մի քանի րոպե տևել:</translation>
 <translation id="8888432776533519951">Գույն՝</translation>
 <translation id="8889651696183044030"><ph name="ORIGIN" /> կայքը կարող է փոփոխել հետևյալ ֆայլերն ու պանակները</translation>

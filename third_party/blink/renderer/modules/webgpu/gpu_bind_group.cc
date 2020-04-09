@@ -12,11 +12,12 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_sampler.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_texture_view.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
 
-WGPUBindGroupBinding AsDawnType(const GPUBindGroupEntry* webgpu_binding) {
-  WGPUBindGroupBinding dawn_binding = {};
+WGPUBindGroupEntry AsDawnType(const GPUBindGroupEntry* webgpu_binding) {
+  WGPUBindGroupEntry dawn_binding = {};
 
   dawn_binding.binding = webgpu_binding->binding();
 
@@ -45,21 +46,36 @@ WGPUBindGroupBinding AsDawnType(const GPUBindGroupEntry* webgpu_binding) {
 
 // static
 GPUBindGroup* GPUBindGroup::Create(GPUDevice* device,
-                                   const GPUBindGroupDescriptor* webgpu_desc) {
+                                   const GPUBindGroupDescriptor* webgpu_desc,
+                                   ExceptionState& exception_state) {
   DCHECK(device);
   DCHECK(webgpu_desc);
 
-  uint32_t binding_count =
-      static_cast<uint32_t>(webgpu_desc->bindings().size());
+  if (webgpu_desc->hasBindings()) {
+    device->AddConsoleWarning(
+        "GPUBindGroupDescriptor.bindings is deprecated: renamed to entries");
+  }
 
-  std::unique_ptr<WGPUBindGroupBinding[]> bindings =
-      binding_count != 0 ? AsDawnType(webgpu_desc->bindings()) : nullptr;
+  uint32_t entry_count = 0;
+  std::unique_ptr<WGPUBindGroupEntry[]> entries;
+  if (webgpu_desc->hasEntries()) {
+    entry_count = static_cast<uint32_t>(webgpu_desc->entries().size());
+    entries = entry_count != 0 ? AsDawnType(webgpu_desc->entries()) : nullptr;
+  } else {
+    if (!webgpu_desc->hasBindings()) {
+      exception_state.ThrowTypeError("required member entries is undefined.");
+      return nullptr;
+    }
+
+    entry_count = static_cast<uint32_t>(webgpu_desc->bindings().size());
+    entries = entry_count != 0 ? AsDawnType(webgpu_desc->bindings()) : nullptr;
+  }
 
   WGPUBindGroupDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
   dawn_desc.layout = AsDawnType(webgpu_desc->layout());
-  dawn_desc.bindingCount = binding_count;
-  dawn_desc.bindings = bindings.get();
+  dawn_desc.bindingCount = entry_count;
+  dawn_desc.bindings = entries.get();
   if (webgpu_desc->hasLabel()) {
     dawn_desc.label = webgpu_desc->label().Utf8().data();
   }

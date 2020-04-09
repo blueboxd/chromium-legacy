@@ -46,7 +46,7 @@ class AppLauncherTabHelper
                           bool link_transition);
 
   // web::WebStatePolicyDecider implementation
-  bool ShouldAllowRequest(
+  web::WebStatePolicyDecider::PolicyDecision ShouldAllowRequest(
       NSURLRequest* request,
       const web::WebStatePolicyDecider::RequestInfo& request_info) override;
 

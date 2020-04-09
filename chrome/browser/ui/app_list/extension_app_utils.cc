@@ -12,6 +12,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/menu/menu_config.h"
@@ -53,7 +54,8 @@ void AddMenuItemIconsForSystemApps(const std::string& app_id,
     const int index = start_index + i;
     if (menu_model->GetLabelAt(index) ==
         l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW)) {
-      menu_model->SetIcon(index, views::kNewWindowIcon);
+      menu_model->SetIcon(
+          index, ui::ImageModel::FromVectorIcon(views::kNewWindowIcon));
     }
   }
 }

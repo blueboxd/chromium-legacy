@@ -18,14 +18,15 @@ group("webkit") {
 }
 
 if (_build_custom_webkit) {
-  # WebKit is built from source using xcodebuild (invoked via the build_webkit.py wrapper
-  # script).  The WebKit build places its output in a sub-directory named
-  # "Debug-iphonesimulator" for iOS builds and "Debug" for macOS builds.
+  # WebKit is built from source using xcodebuild (invoked via the
+  # build_webkit.py wrapper script).  The WebKit build places its output in a
+  # sub-directory named "Debug-iphonesimulator" for debug iOS builds and
+  # "Release" for release macOS builds.
   _webkit_ios_out_base_dir = "$target_out_dir/iOS"
   _webkit_mac_out_base_dir = "$target_out_dir/macOS"
 
   _webkit_ios_xcodebuild_out_dir_name = "Debug-iphonesimulator"
-  _webkit_mac_xcodebuild_out_dir_name = "Debug"
+  _webkit_mac_xcodebuild_out_dir_name = "Release"
 
   _webkit_ios_out_product_dir =
       "$_webkit_ios_out_base_dir/$_webkit_ios_xcodebuild_out_dir_name"
@@ -134,9 +135,24 @@ if (_build_custom_webkit) {
         [ "{{bundle_contents_dir}}/WebKitFrameworks/{{source_file_part}}" ]
   }
 
-  copy("copy_webkit_mac_minibrowser") {
-    sources = [ "$_webkit_mac_out_product_dir" ]
+  action("copy_webkit_mac_minibrowser") {
+    script = "copy_webkit_for_clusterfuzz.py"
+
+    sources = [
+      "$_webkit_mac_out_product_dir",
+      "run-clusterfuzz.sh",
+    ]
     outputs = [ "$root_out_dir/WebKitMacOS" ]
+
+    args = [
+      "--output",
+      rebase_path(outputs[0], root_build_dir),
+      "--webkit_build",
+      rebase_path(sources[0], root_build_dir),
+      "--clusterfuzz_script",
+      rebase_path(sources[1], root_build_dir),
+    ]
+
     public_deps = [ ":compile_webkit_mac_minibrowser" ]
   }
 }

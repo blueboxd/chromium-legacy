@@ -4,6 +4,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#import "ios/chrome/browser/ui/settings/settings_app_interface.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -25,6 +26,8 @@ const char kPageURL[] = "/";
 const char kOpenSearch[] = "/opensearch.xml";
 const char kSearchURL[] = "/search?q=";
 const char kCustomSearchEngineName[] = "Custom Search Engine";
+const char kGoogleURL[] = "google";
+const char kYahooURL[] = "yahoo";
 
 NSString* GetCustomeSearchEngineLabel() {
   return [NSString stringWithFormat:@"%s, 127.0.0.1", kCustomSearchEngineName];
@@ -32,6 +35,21 @@ NSString* GetCustomeSearchEngineLabel() {
 
 std::string GetSearchExample() {
   return std::string(kSearchURL) + "example";
+}
+
+// Responses for different search engine. The name of the search engine is
+// displayed on the page.
+std::unique_ptr<net::test_server::HttpResponse> SearchResponse(
+    const net::test_server::HttpRequest& request) {
+  std::unique_ptr<net::test_server::BasicHttpResponse> http_response =
+      std::make_unique<net::test_server::BasicHttpResponse>();
+  http_response->set_code(net::HTTP_OK);
+  if (request.GetURL().path().find(kGoogleURL) != std::string::npos) {
+    http_response->set_content("<body>" + std::string(kGoogleURL) + "</body>");
+  } else if (request.GetURL().path().find(kYahooURL) != std::string::npos) {
+    http_response->set_content("<body>" + std::string(kYahooURL) + "</body>");
+  }
+  return std::move(http_response);
 }
 
 // Responses for the test http server. |server_url| is the URL of the server,
@@ -82,6 +100,69 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 @end
 
 @implementation SearchEngineSettingsTestCase
+
+- (void)setUp {
+  [super setUp];
+  [SettingsAppInterface resetSearchEngine];
+}
+
+- (void)tearDown {
+  [SettingsAppInterface resetSearchEngine];
+}
+
+// Tests that when changing the default search engine, the URL used for the
+// search is updated.
+- (void)testChangeSearchEngine {
+  self.testServer->RegisterRequestHandler(base::Bind(&SearchResponse));
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
+
+  GURL url = self.testServer->GetURL(kPageURL);
+  NSString* port = base::SysUTF8ToNSString(url.port());
+
+  NSArray<NSString*>* hosts = @[
+    base::SysUTF8ToNSString(kGoogleURL), base::SysUTF8ToNSString(kYahooURL)
+  ];
+
+  [SettingsAppInterface addURLRewriterForHosts:hosts onPort:port];
+
+  // Search on Google.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
+      performAction:grey_tap()];
+  [ChromeEarlGrey
+      waitForSufficientlyVisibleElementWithMatcher:chrome_test_util::Omnibox()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      performAction:grey_typeText([@"test" stringByAppendingString:@"\n"])];
+
+  [ChromeEarlGrey waitForWebStateContainingText:kGoogleURL];
+
+  // Change default search engine to Yahoo.
+  [ChromeEarlGreyUI openSettingsMenu];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::SettingsSearchEngineButton()]
+      performAction:grey_tap()];
+
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Yahoo!")]
+      performAction:grey_tap()];
+
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::SettingsMenuBackButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsDoneButton()]
+      performAction:grey_tap()];
+
+  [SettingsAppInterface addURLRewriterForHosts:hosts onPort:port];
+
+  // Search on Yahoo.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::DefocusedLocationView()]
+      performAction:grey_tap()];
+  [ChromeEarlGrey
+      waitForSufficientlyVisibleElementWithMatcher:chrome_test_util::Omnibox()];
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      performAction:grey_typeText([@"test" stringByAppendingString:@"\n"])];
+
+  [ChromeEarlGrey waitForWebStateContainingText:kYahooURL];
+}
 
 // Deletes a custom search engine by swiping and tapping on the "Delete" button.
 - (void)testDeleteCustomSearchEngineSwipeAndTap {

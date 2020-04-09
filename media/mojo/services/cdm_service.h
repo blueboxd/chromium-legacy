@@ -12,12 +12,12 @@
 #include "media/media_buildflags.h"
 #include "media/mojo/mojom/cdm_service.mojom.h"
 #include "media/mojo/mojom/content_decryption_module.mojom.h"
+#include "media/mojo/mojom/frame_interface_factory.mojom.h"
 #include "media/mojo/services/deferred_destroy_unique_receiver_set.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "services/service_manager/public/mojom/interface_provider.mojom.h"
 
 #if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 #include "media/cdm/cdm_host_file.h"
@@ -37,11 +37,11 @@ class MEDIA_MOJO_EXPORT CdmService : public mojom::CdmService {
     // be a no-op if the process is already sandboxed.
     virtual void EnsureSandboxed() = 0;
 
-    // Returns the CdmFactory to be used by MojoCdmService. |host_interfaces|
+    // Returns the CdmFactory to be used by MojoCdmService. |frame_interfaces|
     // can be used to request interfaces provided remotely by the host. It may
     // be a nullptr if the host chose not to bind the InterfacePtr.
     virtual std::unique_ptr<CdmFactory> CreateCdmFactory(
-        service_manager::mojom::InterfaceProvider* host_interfaces) = 0;
+        mojom::FrameInterfaceFactory* frame_interfaces) = 0;
 
 #if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
     // Gets a list of CDM host file paths and put them in |cdm_host_file_paths|.
@@ -73,8 +73,7 @@ class MEDIA_MOJO_EXPORT CdmService : public mojom::CdmService {
 #endif  // defined(OS_MACOSX)
   void CreateCdmFactory(
       mojo::PendingReceiver<mojom::CdmFactory> receiver,
-      mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
-          host_interfaces) final;
+      mojo::PendingRemote<mojom::FrameInterfaceFactory> frame_interfaces) final;
 
   mojo::Receiver<mojom::CdmService> receiver_;
   std::unique_ptr<Client> client_;

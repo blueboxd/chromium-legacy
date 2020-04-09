@@ -99,6 +99,8 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
   // Returns whether the translucent background is visible, for tests.
   bool GetIsTranslucentBackgroundVisibleForTest() const;
 
+  ui::AnimationMetricsReporter* GetTranslucentBackgroundMetricsReporter();
+
   void SetState(HotseatState state);
   HotseatState state() const { return state_; }
 

@@ -36,6 +36,10 @@ const char kEnableSpotlightActions[] = "enable-spotlight-actions";
 const char kEnableThirdPartyKeyboardWorkaround[] =
     "enable-third-party-keyboard-workaround";
 
+// Installs the managed bookmarks policy handler.
+const char kInstallManagedBookmarksHandler[] =
+    "install-managed-bookmarks-handler";
+
 // A string used to override the default user agent with a custom one.
 const char kUserAgent[] = "user-agent";
 

@@ -435,7 +435,7 @@ CreditCard GetMaskedServerCardWithNickname() {
   test::SetCreditCardInfo(&credit_card, "Test user", "1111" /* Visa */, "9",
                           "2050", "1");
   credit_card.SetNetworkForMaskedCard(kVisaCard);
-  credit_card.set_nickname(ASCIIToUTF16("Test nickname"));
+  credit_card.SetNickname(ASCIIToUTF16("Test nickname"));
   return credit_card;
 }
 

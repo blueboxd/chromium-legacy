@@ -85,6 +85,7 @@ class ChannelWin : public Channel,
              HandlePolicy handle_policy,
              scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
       : Channel(delegate, handle_policy),
+        base::MessagePumpForIO::IOHandler(FROM_HERE),
         self_(this),
         io_task_runner_(io_task_runner) {
     if (connection_params.server_endpoint().is_valid()) {

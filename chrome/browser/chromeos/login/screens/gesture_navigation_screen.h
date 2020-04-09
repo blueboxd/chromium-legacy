@@ -17,20 +17,31 @@ namespace chromeos {
 // The OOBE screen dedicated to gesture navigation education.
 class GestureNavigationScreen : public BaseScreen {
  public:
+  enum class Result { NEXT, NOT_APPLICABLE };
+
+  static std::string GetResultString(Result result);
+
+  using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
   GestureNavigationScreen(GestureNavigationScreenView* view,
-                          const base::RepeatingClosure& exit_callback);
+                          const ScreenExitCallback& exit_callback);
   ~GestureNavigationScreen() override;
 
   GestureNavigationScreen(const GestureNavigationScreen&) = delete;
   GestureNavigationScreen operator=(const GestureNavigationScreen&) = delete;
 
-  void set_exit_callback_for_testing(
-      const base::RepeatingClosure& exit_callback) {
+  void set_exit_callback_for_testing(const ScreenExitCallback& exit_callback) {
     exit_callback_ = exit_callback;
+  }
+
+  const ScreenExitCallback& get_exit_callback_for_testing() {
+    return exit_callback_;
   }
 
   // Called when the currently shown page is changed.
   void GesturePageChange(const std::string& new_page);
+
+  // BaseScreen:
+  bool MaybeSkip() override;
 
  protected:
   // BaseScreen:
@@ -43,7 +54,7 @@ class GestureNavigationScreen : public BaseScreen {
   void RecordPageShownTimeMetrics();
 
   GestureNavigationScreenView* view_;
-  base::RepeatingClosure exit_callback_;
+  ScreenExitCallback exit_callback_;
 
   // Used to keep track of the current elapsed time that each page has been
   // shown for.

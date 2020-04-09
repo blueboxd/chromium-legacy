@@ -157,14 +157,15 @@ void AppLauncherTabHelper::RequestToLaunchApp(const GURL& url,
   }
 }
 
-bool AppLauncherTabHelper::ShouldAllowRequest(
+web::WebStatePolicyDecider::PolicyDecision
+AppLauncherTabHelper::ShouldAllowRequest(
     NSURLRequest* request,
     const web::WebStatePolicyDecider::RequestInfo& request_info) {
   GURL request_url = net::GURLWithNSURL(request.URL);
   if (!IsAppUrl(request_url)) {
     // This URL can be handled by the WebState and doesn't require App launcher
     // handling.
-    return true;
+    return web::WebStatePolicyDecider::PolicyDecision::Allow();
   }
 
   ExternalURLRequestStatus request_status =
@@ -183,11 +184,10 @@ bool AppLauncherTabHelper::ShouldAllowRequest(
                             request_status, ExternalURLRequestStatus::kCount);
   // Request is blocked.
   if (request_status == ExternalURLRequestStatus::kSubFrameRequestBlocked)
-    return false;
+    return web::WebStatePolicyDecider::PolicyDecision::Cancel();
 
   if (!IsValidAppUrl(request_url))
-    return false;
-
+    return web::WebStatePolicyDecider::PolicyDecision::Cancel();
 
   // If this is a Universal 2nd Factor (U2F) call, the origin needs to be
   // checked to make sure it's secure and then update the |request_url| with
@@ -201,7 +201,7 @@ bool AppLauncherTabHelper::ShouldAllowRequest(
     request_url = u2f_helper->GetXCallbackUrl(request_url, origin);
     // If the URL was rejected by the U2F handler, |request_url| will be empty.
     if (!request_url.is_valid())
-      return false;
+      return web::WebStatePolicyDecider::PolicyDecision::Cancel();
   }
 
   GURL last_committed_url = web_state_->GetLastCommittedURL();
@@ -230,7 +230,7 @@ bool AppLauncherTabHelper::ShouldAllowRequest(
     // tab.
     RequestToLaunchApp(request_url, last_committed_url, is_link_transition);
   }
-  return false;
+  return web::WebStatePolicyDecider::PolicyDecision::Cancel();
 }
 
 WEB_STATE_USER_DATA_KEY_IMPL(AppLauncherTabHelper)

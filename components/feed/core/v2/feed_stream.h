@@ -6,6 +6,7 @@
 #define COMPONENTS_FEED_CORE_V2_FEED_STREAM_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/memory/scoped_refptr.h"
@@ -107,11 +108,12 @@ class FeedStream : public FeedStreamApi,
   bool CommitEphemeralChange(EphemeralChangeId id) override;
   bool RejectEphemeralChange(EphemeralChangeId id) override;
 
+  void ReportSliceViewed(const std::string& slice_id) override;
   void ReportNavigationStarted() override;
   void ReportNavigationDone() override;
-  void ReportContentRemoved() override;
-  void ReportNotInterestedIn() override;
-  void ReportManageInterests() override;
+  void ReportRemoveAction() override;
+  void ReportNotInterestedInAction() override;
+  void ReportManageInterestsAction() override;
   void ReportContextMenuOpened() override;
   void ReportStreamScrolled(int distance_dp) override;
 

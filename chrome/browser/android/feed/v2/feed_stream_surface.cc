@@ -8,6 +8,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
+#include "base/android/jni_string.h"
 #include "chrome/android/chrome_jni_headers/FeedStreamSurface_jni.h"
 #include "chrome/browser/android/feed/v2/feed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -90,6 +91,14 @@ void FeedStreamSurface::SurfaceOpened(JNIEnv* env,
 void FeedStreamSurface::SurfaceClosed(JNIEnv* env,
                                       const JavaParamRef<jobject>& obj) {}
 
+void FeedStreamSurface::ReportSliceViewed(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& slice_id) {
+  feed_stream_api_->ReportSliceViewed(
+      base::android::ConvertJavaStringToUTF8(env, slice_id));
+}
+
 void FeedStreamSurface::ReportNavigationStarted(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -105,21 +114,21 @@ void FeedStreamSurface::ReportNavigationDone(JNIEnv* env,
   feed_stream_api_->ReportNavigationDone();
 }
 
-void FeedStreamSurface::ReportContentRemoved(JNIEnv* env,
-                                             const JavaParamRef<jobject>& obj) {
-  feed_stream_api_->ReportContentRemoved();
+void FeedStreamSurface::ReportRemoveAction(JNIEnv* env,
+                                           const JavaParamRef<jobject>& obj) {
+  feed_stream_api_->ReportRemoveAction();
 }
 
-void FeedStreamSurface::ReportNotInterestedIn(
+void FeedStreamSurface::ReportNotInterestedInAction(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  feed_stream_api_->ReportNotInterestedIn();
+  feed_stream_api_->ReportNotInterestedInAction();
 }
 
-void FeedStreamSurface::ReportManageInterests(
+void FeedStreamSurface::ReportManageInterestsAction(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  feed_stream_api_->ReportManageInterests();
+  feed_stream_api_->ReportManageInterestsAction();
 }
 
 void FeedStreamSurface::ReportContextMenuOpened(
@@ -128,10 +137,9 @@ void FeedStreamSurface::ReportContextMenuOpened(
   feed_stream_api_->ReportContextMenuOpened();
 }
 
-void FeedStreamSurface::ReportStreamScrolled(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
-    int distance_dp) {
+void FeedStreamSurface::ReportStreamScrolled(JNIEnv* env,
+                                             const JavaParamRef<jobject>& obj,
+                                             int distance_dp) {
   feed_stream_api_->ReportStreamScrolled(distance_dp);
 }
 

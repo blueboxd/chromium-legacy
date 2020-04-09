@@ -2286,17 +2286,17 @@
 <translation id="437791893267799639">政策未设置，禁止数据迁移和 ARC</translation>
 <translation id="4389073105055031853">允许用户管理所有证书</translation>
 <translation id="4389091865841123886">通过 TPM 机制配置远程认证。</translation>
-<translation id="4401496838830169080">允许您控制是否开启 <ph name="PRODUCT_NAME" /> 的“安全浏览”功能以及要在哪种模式下运行此功能。
+<translation id="4401496838830169080">让您能够控制是否开启 <ph name="PRODUCT_NAME" /> 的“安全浏览”功能以及要在哪种模式下运行此功能。
 
       如果此政策设为“NoProtection”（值为 0），“安全浏览”功能会一直处于关闭状态。
 
       如果此政策设为“StandardProtection”（值为 1，即默认值），“安全浏览”功能会一直处于开启状态且会在标准模式下运行。
 
-      如果此政策设为“EnhancedProtection”（值为 2），“安全浏览”功能会一直处于开启状态且会在增强模式下运行。这种模式可提供更高的安全性，但需与 Google 分享更多浏览信息。
+      如果此政策设为“EnhancedProtection”（值为 2），“安全浏览”功能会一直处于开启状态且会在增强模式下运行。这种模式可提高安全性，但需与 Google 分享更多浏览信息。
 
       如果您将此政策设为强制性要求，用户便无法更改或覆盖 <ph name="PRODUCT_NAME" /> 中的“安全浏览”设置。
 
-      如果未设置此政策，“安全浏览”功能将会在标准保护模式下运行，但用户将能够自行更改。
+      如果未设置此政策，“安全浏览”功能将会在标准保护模式下运行，但用户可以自行更改此设置。
 
       要详细了解“安全浏览”功能，请访问 https://developers.google.com/safe-browsing。</translation>
 <translation id="4408428864159735559">预先配置的网络文件共享列表。</translation>
@@ -3393,7 +3393,7 @@
 <translation id="6111936128861357925">允许用户玩恐龙复活节彩蛋游戏</translation>
 <translation id="6114416803310251055">已弃用</translation>
 <translation id="6133088669883929098">允许所有网站使用密钥生成功能</translation>
-<translation id="6135398260575578389">“安全浏览”功能会处于开启状态且会在增强模式下运行。此模式可提供更高的安全性，但需与 Google 分享更多浏览信息。</translation>
+<translation id="6135398260575578389">“安全浏览”功能会处于开启状态且会在增强模式下运行。此模式可提高安全性，但需与 Google 分享更多浏览信息。</translation>
 <translation id="6136537398661737682">此政策用于控制 Google 位置信息服务的初始状态。
 
       如果此政策设为 <ph name="GLS_DISABLED" /> 或未配置，则 Google 位置信息服务的初始状态为已停用。
@@ -4366,7 +4366,7 @@
 
       如果您启用或停用了此设置，用户将无法更改或覆盖 <ph name="PRODUCT_NAME" /> 中的“启用针对网上诱骗和恶意软件的防护功能”设置。
 
-      如果未设置此政策，“安全浏览”功能将会处于开启状态，但用户将能够自行更改。
+      如果未设置此政策，“安全浏览”功能将会处于开启状态，但用户可以自行更改此设置。
 
       要详细了解“安全浏览”功能，请访问 https://developers.google.com/safe-browsing。
 

@@ -16,7 +16,6 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/testing/earl_grey/app_launch_configuration.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
-#include "third_party/metrics_proto/user_demographics.pb.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -33,7 +32,6 @@ const int kTestGender = 1;
 }  // namespace
 
 @interface DemographicsTestCase : ChromeTestCase
-
 @end
 
 @implementation DemographicsTestCase
@@ -51,25 +49,18 @@ const int kTestGender = 1;
   // Set a network time so that SyncPrefs::GetUserNoisedBirthYearAndGender
   // does not return a UserDemographicsResult for the kCannotGetTime status.
   [MetricsAppInterface setNetworkTimeForTesting];
-
-  // Record a source in the UKM service so that there is data with which to
-  // generate a UKM Report.
-  [self addDummyUKMSource];
-
-  [MetricsAppInterface buildAndStoreUKMLog];
-  GREYAssertTrue([MetricsAppInterface hasUnsentLogs],
-                 @"The UKM service should have unsent logs.");
 }
 
 - (void)tearDown {
+  [ChromeEarlGrey clearSyncServerData];
   [MetricsAppInterface stopOverridingMetricsAndCrashReportingForTesting];
   GREYAssertNil([MetricsAppInterface releaseHistogramTester],
                 @"Failed to release histogram tester.");
   [super tearDown];
 }
 
+#if defined(CHROME_EARL_GREY_2)
 - (AppLaunchConfiguration)appConfigurationForTestCase {
-  NSString* testName = [self getTestName];
   AppLaunchConfiguration config;
 
   // Features are enabled or disabled based on the name of the test that is
@@ -80,40 +71,54 @@ const int kTestGender = 1;
   // Note that in the if statements, @selector(testSomething) is used rather
   // than @"testSomething" because the former checks that the testSomething
   // method exists somewhere--but not necessarily in this class.
-  if ([testName isEqual:NSStringFromSelector(@selector(
-                            testSyncAndRecordUserDemographicsEnabled))]) {
+  if ([self isRunningTest:@selector
+            (testUKMDemographicsReportingWithFeatureEnabled)]) {
     config.features_enabled.push_back(
         metrics::DemographicMetricsProvider::kDemographicMetricsReporting);
     config.features_enabled.push_back(
         ukm::UkmService::kReportUserNoisedUserBirthYearAndGender);
-  } else if ([testName
-                 isEqual:NSStringFromSelector(@selector(
-                             testSyncAndRecordUserDemographicsDisabled))]) {
+  } else if ([self isRunningTest:@selector
+                   (testUKMDemographicsReportingWithFeatureDisabled)]) {
     config.features_disabled.push_back(
         metrics::DemographicMetricsProvider::kDemographicMetricsReporting);
     config.features_disabled.push_back(
         ukm::UkmService::kReportUserNoisedUserBirthYearAndGender);
+  } else if ([self isRunningTest:@selector
+                   (testUMADemographicsReportingWithFeatureEnabled)]) {
+    config.features_enabled.push_back(
+        metrics::DemographicMetricsProvider::kDemographicMetricsReporting);
+  } else if ([self isRunningTest:@selector
+                   (testUMADemographicsReportingWithFeatureDisabled)]) {
+    config.features_disabled.push_back(
+        metrics::DemographicMetricsProvider::kDemographicMetricsReporting);
   }
   return config;
 }
+#endif  // defined(CHROME_EARL_GREY_2)
 
 #pragma mark - Helpers
 
+// Returns YES if the test method name extracted from |selector| matches the
+// name of the currently running test method.
+- (BOOL)isRunningTest:(SEL)selector {
+  return [[self curentTestMethodName] isEqual:NSStringFromSelector(selector)];
+}
+
 // Adds user demographics, which are ModelType::PRIORITY_PREFERENCES, to the
-// fake sync server. The year is the un-noised birth year, and the gender
-// corresponds to the options in UserDemographicsProto::Gender.
+// fake sync server. |rawBirthYear| is the true birth year, pre-noise, and the
+// gender corresponds to the options in UserDemographicsProto::Gender.
 //
 // Also, verifies (A) that before adding the demographics, the server has no
 // priority preferences and (B) that after adding the demographics, the server
 // has one priority preference.
-- (void)addUserDemographicsToSyncServerWithBirthYear:(int)year
+- (void)addUserDemographicsToSyncServerWithBirthYear:(int)rawBirthYear
                                               gender:(int)gender {
   GREYAssertEqual(
       [ChromeEarlGrey
           numberOfSyncEntitiesWithType:syncer::PRIORITY_PREFERENCES],
       0, @"The fake sync server should have no priority preferences.");
 
-  [ChromeEarlGrey addUserDemographicsToSyncServerWithBirthYear:year
+  [ChromeEarlGrey addUserDemographicsToSyncServerWithBirthYear:rawBirthYear
                                                         gender:gender];
 
   GREYAssertEqual(
@@ -157,31 +162,40 @@ const int kTestGender = 1;
                      @"Client ID should be non-zero.");
 }
 
-// Returns the short test name, e.g. "testSomething" of the test that is
-// currently running. The short test name is extracted from the string for the
-// test's name property, e.g. "-[DemographicsTestCase testSomething]".
-- (NSString*)getTestName {
+// Returns the method name, e.g. "testSomething" of the test that is currently
+// running. The name is extracted from the string for the test's name property,
+// e.g. "-[DemographicsTestCase testSomething]".
+- (NSString*)curentTestMethodName {
   int testNameStart = [self.name rangeOfString:@"test"].location;
   return [self.name
       substringWithRange:NSMakeRange(testNameStart,
                                      self.name.length - testNameStart - 1)];
 }
 
+// Adds dummy data,  stores it in the UKM service's UnsentLogStore, and verifies
+// that the UnsentLogStore has an unsent log.
+- (void)buildAndStoreUKMLog {
+  // Record a source in the UKM service so that there is data with which to
+  // generate a UKM Report.
+  [self addDummyUKMSource];
+  [MetricsAppInterface buildAndStoreUKMLog];
+  GREYAssertTrue([MetricsAppInterface hasUnsentUKMLogs],
+                 @"The UKM service should have unsent logs.");
+}
+
 #pragma mark - Tests
 
 // The tests in this file should correspond to the demographics-related tests in
-// //chrome/browser/metrics/ukm_browsertest.cc.
+// //chrome/browser/metrics/ukm_browsertest.cc and
+// //chrome/browser/metrics/metrics_service_user_demographics_browsertest.cc.
 
 // Tests that user demographics are synced, recorded by UKM, and logged in
 // histograms.
 //
 // Corresponds to AddSyncedUserBirthYearAndGenderToProtoData in
 // //chrome/browser/metrics/ukm_browsertest.cc with features enabled.
-- (void)testSyncAndRecordUserDemographicsEnabled {
-#if defined(CHROME_EARL_GREY_1)
-  EARL_GREY_TEST_DISABLED(@"This test relies on EG2 utilities.");
-#endif
-
+#if defined(CHROME_EARL_GREY_2)
+- (void)testUKMDemographicsReportingWithFeatureEnabled {
   // See |appConfigurationForTestCase| for feature set-up. The kUkmFeature is
   // enabled by default.
   GREYAssertTrue([ChromeEarlGrey isDemographicMetricsReportingEnabled] &&
@@ -190,28 +204,29 @@ const int kTestGender = 1;
                      [ChromeEarlGrey isUKMEnabled],
                  @"Failed to enable the requisite features.");
 
+  [self buildAndStoreUKMLog];
+
   GREYAssertTrue([MetricsAppInterface UKMReportHasBirthYear:kTestBirthYear
                                                      gender:kTestGender],
                  @"The report should contain the specified user demographics");
 
-  int successBucket = 0;  // 0 denotes UserDemographicsStatus::kSuccess.
+  const int success =
+      static_cast<int>(syncer::UserDemographicsStatus::kSuccess);
   GREYAssertNil([MetricsAppInterface
                     expectUniqueSampleWithCount:1
-                                      forBucket:successBucket
+                                      forBucket:success
                                    forHistogram:@"UKM.UserDemographics.Status"],
                 @"Unexpected histogram contents");
 }
+#endif  // defined(CHROME_EARL_GREY_2)
 
 // Tests that user demographics are neither recorded by UKM nor logged in
 // histograms when sync is turned on.
 //
 // Corresponds to AddSyncedUserBirthYearAndGenderToProtoData in
 // //chrome/browser/metrics/ukm_browsertest.cc with features disabled.
-- (void)testSyncAndRecordUserDemographicsDisabled {
-#if defined(CHROME_EARL_GREY_1)
-  EARL_GREY_TEST_DISABLED(@"This test relies on EG2 utilities.");
-#endif
-
+#if defined(CHROME_EARL_GREY_2)
+- (void)testUKMDemographicsReportingWithFeatureDisabled {
   // See |appConfigurationForTestCase| for feature set-up. The kUkmFeature is
   // enabled by default.
   GREYAssertFalse([ChromeEarlGrey isDemographicMetricsReportingEnabled],
@@ -222,11 +237,67 @@ const int kTestGender = 1;
   GREYAssertTrue([ChromeEarlGrey isUKMEnabled],
                  @"Failed to enable kUkmFeature.");
 
+  [self buildAndStoreUKMLog];
+
   GREYAssertFalse([MetricsAppInterface UKMReportHasUserDemographics],
                   @"The report should not contain user demographics.");
   GREYAssertNil([MetricsAppInterface expectSum:0
                                   forHistogram:@"UKM.UserDemographics.Status"],
                 @"Unexpected histogram contents.");
 }
+#endif  // defined(CHROME_EARL_GREY_2)
+
+// Tests that user demographics are synced, recorded by UMA, and logged in
+// histograms.
+//
+// Corresponds to AddSyncedUserBirthYearAndGenderToProtoData in
+// //chrome/browser/metrics/metrics_service_user_demographics_browsertest.cc
+// with features enabled.
+#if defined(CHROME_EARL_GREY_2)
+- (void)testUMADemographicsReportingWithFeatureEnabled {
+  // See |appConfigurationForTestCase| for feature set-up. The kUkmFeature is
+  // enabled by default.
+  GREYAssertTrue([ChromeEarlGrey isDemographicMetricsReportingEnabled],
+                 @"Failed to enable kDemographicMetricsReporting.");
+
+  [MetricsAppInterface buildAndStoreUMALog];
+  GREYAssertTrue([MetricsAppInterface hasUnsentUMALogs],
+                 @"The UKM service should have unsent logs.");
+
+  GREYAssertTrue([MetricsAppInterface UMALogHasBirthYear:kTestBirthYear
+                                                  gender:kTestGender],
+                 @"The report should contain the specified user demographics");
+
+  const int success =
+      static_cast<int>(syncer::UserDemographicsStatus::kSuccess);
+  GREYAssertNil([MetricsAppInterface
+                    expectUniqueSampleWithCount:1
+                                      forBucket:success
+                                   forHistogram:@"UMA.UserDemographics.Status"],
+                @"Unexpected histogram contents");
+}
+#endif  // defined(CHROME_EARL_GREY_2)
+
+// Tests that user demographics are neither recorded by UMA nor logged in
+// histograms when sync is turned on.
+//
+// Corresponds to AddSyncedUserBirthYearAndGenderToProtoData in
+// //chrome/browser/metrics/metrics_service_user_demographics_browsertest.cc
+// with features disabled.
+#if defined(CHROME_EARL_GREY_2)
+- (void)testUMADemographicsReportingWithFeatureDisabled {
+  // See |appConfigurationForTestCase| for feature set-up.
+  GREYAssertFalse([ChromeEarlGrey isDemographicMetricsReportingEnabled],
+                  @"Failed to disable kDemographicMetricsReporting.");
+
+  [MetricsAppInterface buildAndStoreUMALog];
+  GREYAssertTrue([MetricsAppInterface hasUnsentUMALogs],
+                 @"The UKM service should have unsent logs.");
+
+  GREYAssertNil([MetricsAppInterface expectSum:0
+                                  forHistogram:@"UMA.UserDemographics.Status"],
+                @"Unexpected histogram contents.");
+}
+#endif  // defined(CHROME_EARL_GREY_2)
 
 @end

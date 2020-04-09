@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -28,8 +29,8 @@ namespace {
 
 class CompositorTest : public testing::Test {
  public:
-  CompositorTest() {}
-  ~CompositorTest() override {}
+  CompositorTest() = default;
+  ~CompositorTest() override = default;
 
   void SetUp() override {
     context_factories_ = std::make_unique<TestContextFactories>(false);
@@ -162,6 +163,71 @@ TEST_F(CompositorTestWithMockedTime,
             compositor()->ReleaseAcceleratedWidget());
   compositor()->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
   compositor()->SetVisible(true);
+}
+
+TEST_F(CompositorTestWithMessageLoop, MoveThroughputTracker) {
+  // Move a not started instance.
+  {
+    auto tracker = compositor()->RequestNewThroughputTracker();
+    auto moved_tracker = std::move(tracker);
+  }
+
+  // Move a started instance.
+  {
+    auto tracker = compositor()->RequestNewThroughputTracker();
+    tracker.Start(base::BindLambdaForTesting(
+        [&](cc::FrameSequenceMetrics::ThroughputData throughput) {
+          // This should not be called since the tracking is auto canceled.
+          ADD_FAILURE();
+        }));
+    auto moved_tracker = std::move(tracker);
+  }
+
+  // Move a started instance and stop.
+  {
+    auto tracker = compositor()->RequestNewThroughputTracker();
+    tracker.Start(base::BindLambdaForTesting(
+        [&](cc::FrameSequenceMetrics::ThroughputData throughput) {
+          // May be called since Stop() is called.
+        }));
+    auto moved_tracker = std::move(tracker);
+    moved_tracker.Stop();
+  }
+
+  // Move a started instance and cancel.
+  {
+    auto tracker = compositor()->RequestNewThroughputTracker();
+    tracker.Start(base::BindLambdaForTesting(
+        [&](cc::FrameSequenceMetrics::ThroughputData throughput) {
+          // This should not be called since Cancel() is called.
+          ADD_FAILURE();
+        }));
+    auto moved_tracker = std::move(tracker);
+    moved_tracker.Cancel();
+  }
+
+  // Move a stopped instance.
+  {
+    auto tracker = compositor()->RequestNewThroughputTracker();
+    tracker.Start(base::BindLambdaForTesting(
+        [&](cc::FrameSequenceMetrics::ThroughputData throughput) {
+          // May be called since Stop() is called.
+        }));
+    tracker.Stop();
+    auto moved_tracker = std::move(tracker);
+  }
+
+  // Move a canceled instance.
+  {
+    auto tracker = compositor()->RequestNewThroughputTracker();
+    tracker.Start(base::BindLambdaForTesting(
+        [&](cc::FrameSequenceMetrics::ThroughputData throughput) {
+          // This should not be called since Cancel() is called.
+          ADD_FAILURE();
+        }));
+    tracker.Cancel();
+    auto moved_tracker = std::move(tracker);
+  }
 }
 
 #if defined(OS_WIN)

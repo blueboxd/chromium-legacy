@@ -1158,7 +1158,8 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
   }
 
   // Expose slider value.
-  if (GetData().IsRangeValueSupported()) {
+  if (GetData().IsRangeValueSupported() ||
+      GetData().role == ax::mojom::Role::kComboBoxMenuButton) {
     std::string value = base::UTF16ToUTF8(GetRangeValueText());
     if (!value.empty())
       AddAttributeToList("valuetext", value, attributes);

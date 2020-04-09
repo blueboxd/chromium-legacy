@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "components/bookmarks/managed/managed_bookmarks_policy_handler.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
 #include "components/policy/core/browser/configuration_policy_handler_list.h"
@@ -50,6 +51,12 @@ std::unique_ptr<policy::ConfigurationPolicyHandlerList> BuildPolicyHandlerList(
       handlers->AddHandler(std::make_unique<SimplePolicyHandler>(
           kSimplePolicyMap[i].policy_name, kSimplePolicyMap[i].preference_path,
           kSimplePolicyMap[i].value_type));
+    }
+
+    if (ShouldInstallManagedBookmarksPolicyHandler()) {
+      handlers->AddHandler(
+          std::make_unique<bookmarks::ManagedBookmarksPolicyHandler>(
+              chrome_schema));
     }
   }
 

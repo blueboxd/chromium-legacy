@@ -48,6 +48,10 @@ Polymer({
     mirroringDestinationIds_: Array,
   },
 
+  /** @private {boolean} */
+  allowDisplayIdentificationApi_:
+      loadTimeData.getBoolean('allowDisplayIdentificationApi'),
+
   /** @private {!{left: number, top: number}} */
   visualOffset_: {left: 0, top: 0},
 
@@ -203,6 +207,12 @@ Polymer({
    * @private
    */
   getDisplayName_(mirroring, displayName, mirroringName) {
+    // TODO(https://crbug.com/1064125): Remove call to getDisplayName_() in
+    // display_layout.html.
+    if (this.allowDisplayIdentificationApi_) {
+      return '';
+    }
+
     return mirroring ? mirroringName : displayName;
   },
 

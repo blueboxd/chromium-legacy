@@ -30,6 +30,8 @@ cr.define('device_page_tests', function() {
     this.noteTakingApps_ = [];
     this.setPreferredAppCount_ = 0;
     this.setAppOnLockScreenCount_ = 0;
+
+    this.lastHighlightedDisplayId_ = '-1';
   }
 
   TestDevicePageBrowserProxy.prototype = {
@@ -140,6 +142,11 @@ cr.define('device_page_tests', function() {
       });
 
       this.scheduleLockScreenAppsUpdated_();
+    },
+
+    /** @override */
+    highlightDisplay: function(id) {
+      this.lastHighlightedDisplayId_ = id;
     },
 
     // Test interface:
@@ -774,6 +781,7 @@ cr.define('device_page_tests', function() {
 
     test(assert(TestNames.Display), function() {
       let displayPage;
+      const browserProxy = settings.DevicePageBrowserProxyImpl.getInstance();
       return Promise
           .all([
             // Get the display sub-page.
@@ -792,6 +800,9 @@ cr.define('device_page_tests', function() {
                       true, true, displayPage.displays));
                   expectFalse(displayPage.showUnifiedDesktop_(
                       false, false, displayPage.displays));
+                  expectEquals(
+                      displayPage.invalidDisplayId_,
+                      browserProxy.lastHighlightedDisplayId_);
                 }),
             // Wait for the initial call to getInfo.
             fakeSystemDisplay.getInfoCalled.promise,
@@ -858,6 +869,12 @@ cr.define('device_page_tests', function() {
             expectTrue(displayPage.showMirror_(false, displayPage.displays));
             expectFalse(displayPage.isMirrored_(displayPage.displays));
 
+            // Set display identification highlights for the selected display as
+            // there are now multiple displays.
+            expectEquals(
+                displayPage.displays[0].id,
+                browserProxy.lastHighlightedDisplayId_);
+
             // Verify unified desktop only shown when enabled.
             expectTrue(displayPage.showUnifiedDesktop_(
                 true, true, displayPage.displays));
@@ -910,6 +927,12 @@ cr.define('device_page_tests', function() {
                 displayPage.displays[1].id, displayPage.primaryDisplayId);
             expectEquals(90, displayPage.displays[1].rotation);
 
+            // Change the display that display identification highlight renders
+            // on to the newly selected display.
+            expectEquals(
+                displayPage.displays[1].id,
+                browserProxy.lastHighlightedDisplayId_);
+
             // Mirror the displays.
             displayPage.onMirroredTap_({target: {blur: function() {}}});
             fakeSystemDisplay.onDisplayChanged.callListeners();
@@ -932,6 +955,12 @@ cr.define('device_page_tests', function() {
             expectTrue(displayPage.showMirror_(false, displayPage.displays));
             expectTrue(displayPage.isMirrored_(displayPage.displays));
 
+            // setSelectedDisplay is called on a new display id even though no
+            // display identification highlight is generated in mirrored mode.
+            expectEquals(
+                displayPage.displays[0].id,
+                browserProxy.lastHighlightedDisplayId_);
+
             // Verify that the arrangement section is shown while mirroring.
             expectTrue(!!displayPage.$$('#arrangement-section'));
 
@@ -953,6 +982,26 @@ cr.define('device_page_tests', function() {
             expectEquals(1, displayPage.selectedZoomPref_.value);
             pointerEvent('pointerup', 0);
             expectEquals(1.25, displayPage.selectedZoomPref_.value);
+
+            // Navigate out of the display page.
+            return showAndGetDeviceSubpage('power', settings.routes.POWER);
+          })
+          .then(function() {
+            // Moving out of the display page should set selected display to
+            // invalid.
+            expectEquals(
+                displayPage.invalidDisplayId_,
+                browserProxy.lastHighlightedDisplayId_);
+
+            // Navigate back to the display page.
+            return showAndGetDeviceSubpage('display', settings.routes.DISPLAY);
+          })
+          .then(function() {
+            // Moving back into the display page should call setSelectedDisplay
+            // with selectedDisplay_.
+            expectEquals(
+                displayPage.selectedDisplay.id,
+                browserProxy.lastHighlightedDisplayId_);
           });
     });
 

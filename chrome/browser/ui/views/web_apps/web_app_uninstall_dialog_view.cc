@@ -68,6 +68,12 @@ WebAppUninstallDialogDelegateView::WebAppUninstallDialogDelegateView(
   DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON));
+  DialogDelegate::SetAcceptCallback(
+      base::BindOnce(&WebAppUninstallDialogDelegateView::OnDialogAccepted,
+                     base::Unretained(this)));
+  DialogDelegate::SetCancelCallback(
+      base::BindOnce(&WebAppUninstallDialogDelegateView::OnDialogCanceled,
+                     base::Unretained(this)));
 
   ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -100,25 +106,20 @@ WebAppUninstallDialogDelegateView::~WebAppUninstallDialogDelegateView() {
     dialog_->CallCallback(/*uninstalled=*/false);
 }
 
-bool WebAppUninstallDialogDelegateView::Accept() {
+void WebAppUninstallDialogDelegateView::OnDialogAccepted() {
   if (!dialog_)
-    return true;
+    return;
 
   bool uninstalled = Uninstall();
   if (checkbox_->GetChecked())
     ClearWebAppSiteData();
 
-  dialog_->CallCallback(uninstalled);
-  dialog_ = nullptr;
-  return true;
+  std::exchange(dialog_, nullptr)->CallCallback(uninstalled);
 }
 
-bool WebAppUninstallDialogDelegateView::Cancel() {
-  if (dialog_) {
-    dialog_->CallCallback(/*uninstalled=*/false);
-    dialog_ = nullptr;
-  }
-  return true;
+void WebAppUninstallDialogDelegateView::OnDialogCanceled() {
+  if (dialog_)
+    std::exchange(dialog_, nullptr)->CallCallback(/*uninstalled=*/false);
 }
 
 gfx::Size WebAppUninstallDialogDelegateView::CalculatePreferredSize() const {

@@ -49,9 +49,9 @@ void MarketingOptInScreenHandler::DeclareLocalizedValues(
   builder->AddF("marketingOptInScreenSubtitleWithDeviceName",
                 IDS_LOGIN_MARKETING_OPT_IN_SCREEN_SUBTITLE_WITH_DEVICE_NAME,
                 ui::GetChromeOSDeviceName());
-  builder->AddF("marketingOptInGetChromebookUpdates",
-                IDS_LOGIN_MARKETING_OPT_IN_SCREEN_GET_CHROMEBOOK_UPDATES,
-                ui::GetChromeOSDeviceName());
+  builder->Add(
+      "marketingOptInGetChromebookUpdates",
+      IDS_LOGIN_MARKETING_OPT_IN_SCREEN_GET_CHROMEBOOK_UPDATES_SIGN_ME_UP);
   builder->Add("marketingOptInScreenAllSet",
                IDS_LOGIN_MARKETING_OPT_IN_SCREEN_ALL_SET);
   builder->Add("marketingOptInA11yButtonLabel",
@@ -84,6 +84,14 @@ void MarketingOptInScreenHandler::UpdateA11yShelfNavigationButtonToggle(
     bool enabled) {
   CallJS("login.MarketingOptInScreen.updateA11yNavigationButtonToggle",
          enabled);
+}
+
+void MarketingOptInScreenHandler::SetOptInVisibility(bool visible) {
+  CallJS("login.MarketingOptInScreen.setOptInVisibility", visible);
+}
+
+void MarketingOptInScreenHandler::SetEmailToggleState(bool checked) {
+  CallJS("login.MarketingOptInScreen.setEmailToggleState", checked);
 }
 
 void MarketingOptInScreenHandler::Initialize() {}

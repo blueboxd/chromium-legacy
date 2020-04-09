@@ -13,8 +13,6 @@
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -66,36 +64,30 @@ class MockCdmStorage : public mojom::CdmStorage {
   mojo::AssociatedReceiver<mojom::CdmFile> client_receiver_{&cdm_file_};
 };
 
-void CreateCdmStorage(mojo::PendingReceiver<mojom::CdmStorage> receiver) {
-  mojo::MakeSelfOwnedReceiver(std::make_unique<MockCdmStorage>(),
-                              std::move(receiver));
-}
-
-class TestInterfaceProvider : public service_manager::mojom::InterfaceProvider {
+class TestFrameInterfaceFactory : public mojom::FrameInterfaceFactory {
  public:
-  TestInterfaceProvider() {
-    registry_.AddInterface(base::Bind(&CreateCdmStorage));
+  void CreateProvisionFetcher(
+      mojo::PendingReceiver<mojom::ProvisionFetcher>) override {}
+  void CreateCdmStorage(
+      mojo::PendingReceiver<mojom::CdmStorage> receiver) override {
+    mojo::MakeSelfOwnedReceiver(std::make_unique<MockCdmStorage>(),
+                                std::move(receiver));
   }
-  ~TestInterfaceProvider() override = default;
-
-  void GetInterface(const std::string& interface_name,
-                    mojo::ScopedMessagePipeHandle handle) override {
-    registry_.BindInterface(interface_name, std::move(handle));
-  }
-
- private:
-  service_manager::BinderRegistry registry_;
+#if BUILDFLAG(ENABLE_CDM_PROXY)
+  void CreateCdmProxy(mojo::PendingReceiver<mojom::CdmProxy>) override {}
+#endif
+  void BindEmbedderReceiver(mojo::GenericPendingReceiver) override {}
 };
 
 }  // namespace
 
 class MojoCdmHelperTest : public testing::Test {
  protected:
-  MojoCdmHelperTest() : helper_(&test_interface_provider_) {}
+  MojoCdmHelperTest() : helper_(&frame_interfaces_) {}
   ~MojoCdmHelperTest() override = default;
 
   base::test::TaskEnvironment task_environment_;
-  TestInterfaceProvider test_interface_provider_;
+  TestFrameInterfaceFactory frame_interfaces_;
   MockFileIOClient file_io_client_;
   MojoCdmHelper helper_;
 };

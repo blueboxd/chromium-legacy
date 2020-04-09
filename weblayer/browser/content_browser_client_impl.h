@@ -80,9 +80,8 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
       service_manager::BinderRegistry* registry,
       blink::AssociatedInterfaceRegistry* associated_registry,
       content::RenderProcessHost* render_process_host) override;
-  void ExposeInterfacesToMediaService(
-      service_manager::BinderRegistry* registry,
-      content::RenderFrameHost* render_frame_host) override;
+  void BindMediaServiceReceiver(content::RenderFrameHost* render_frame_host,
+                                mojo::GenericPendingReceiver receiver) override;
   void RegisterBrowserInterfaceBindersForFrame(
       content::RenderFrameHost* render_frame_host,
       service_manager::BinderMapWithContext<content::RenderFrameHost*>* map)

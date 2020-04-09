@@ -25,6 +25,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/context_menu_params.h"
 #include "extensions/browser/extension_prefs.h"
+#include "ui/base/models/image_model.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/paint_vector_icon.h"
 
@@ -227,7 +228,8 @@ void ExtensionShelfContextMenu::CreateOpenNewSubmenu(
   menu_model->AddActionableSubmenuWithStringIdAndIcon(
       ash::MENU_OPEN_NEW, GetLaunchTypeStringId(),
       open_new_submenu_model_.get(),
-      GetCommandIdVectorIcon(ash::MENU_OPEN_NEW, GetLaunchTypeStringId()));
+      ui::ImageModel::FromVectorIcon(
+          GetCommandIdVectorIcon(ash::MENU_OPEN_NEW, GetLaunchTypeStringId())));
 }
 
 extensions::LaunchType ExtensionShelfContextMenu::GetLaunchType() const {

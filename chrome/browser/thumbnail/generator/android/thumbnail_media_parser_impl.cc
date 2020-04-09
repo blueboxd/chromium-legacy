@@ -20,7 +20,6 @@
 #include "media/base/video_thumbnail_decoder.h"
 #include "media/mojo/clients/mojo_video_decoder.h"
 #include "media/mojo/mojom/media_service.mojom.h"
-#include "media/mojo/services/media_interface_provider.h"
 #include "media/renderers/paint_canvas_video_renderer.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -267,9 +266,11 @@ void ThumbnailMediaParserImpl::RenderVideoFrame(
 media::mojom::InterfaceFactory*
 ThumbnailMediaParserImpl::GetMediaInterfaceFactory() {
   if (!media_interface_factory_) {
-    mojo::PendingRemote<service_manager::mojom::InterfaceProvider> interfaces;
-    media_interface_provider_ = std::make_unique<media::MediaInterfaceProvider>(
-        interfaces.InitWithNewPipeAndPassReceiver());
+    // No need to provide any remote services to the media service because the
+    // ThumbnailMediaParser does not use them, but the Mojo argument is
+    // currently marked as required so pass a remote but drop the other end.
+    mojo::PendingRemote<media::mojom::FrameInterfaceFactory> interfaces;
+    ignore_result(interfaces.InitWithNewPipeAndPassReceiver());
     content::GetMediaService().CreateInterfaceFactory(
         media_interface_factory_.BindNewPipeAndPassReceiver(),
         std::move(interfaces));

@@ -22,6 +22,7 @@ class ChromeViewsTestBase : public views::ViewsTestBase {
 #if defined(OS_CHROMEOS)
   void TearDown() override;
 #endif
+  std::unique_ptr<views::Widget> AllocateTestWidget() override;
 };
 
 #endif  // CHROME_TEST_VIEWS_CHROME_VIEWS_TEST_BASE_H_

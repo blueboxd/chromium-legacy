@@ -2157,6 +2157,12 @@ String AXNodeObject::StringValue() const {
     }
   }
 
+  // ARIA combobox can get value from inner contents.
+  if (AriaRoleAttribute() == ax::mojom::Role::kComboBoxMenuButton) {
+    AXObjectSet visited;
+    return TextFromDescendants(visited, false);
+  }
+
   return String();
 }
 

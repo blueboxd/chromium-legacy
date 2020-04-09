@@ -73,6 +73,12 @@ void MetricsReporter::StreamScrolled(int distance_dp) {
   }
 }
 
+void MetricsReporter::ContentSliceViewed(int index_in_stream) {
+  const int kMaxSuggestionsTotal = 50;
+  UMA_HISTOGRAM_EXACT_LINEAR("NewTabPage.ContentSuggestions.Shown",
+                             index_in_stream, kMaxSuggestionsTotal);
+}
+
 void MetricsReporter::NavigationStarted() {
   // TODO(harringtond): Add user actions.
   // Report Feed_OpeningContent
@@ -83,19 +89,19 @@ void MetricsReporter::NavigationDone() {
   // TODO(harringtond): Use this or remove it.
 }
 
-void MetricsReporter::ContentRemoved() {
+void MetricsReporter::RemoveAction() {
   // TODO(harringtond): Add user actions.
   // Report Feed_RemovedContent
   RecordInteraction();
 }
 
-void MetricsReporter::NotInterestedIn() {
+void MetricsReporter::NotInterestedInAction() {
   // TODO(harringtond): Add user actions.
   // Report Feed_NotInterestedIn
   RecordInteraction();
 }
 
-void MetricsReporter::ManageInterests() {
+void MetricsReporter::ManageInterestsAction() {
   // TODO(harringtond): Add user actions.
   // Report Feed_ManageInterests
   RecordInteraction();

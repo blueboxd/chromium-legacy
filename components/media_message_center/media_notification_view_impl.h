@@ -86,6 +86,10 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewImpl
 
   const views::Label* artist_label_for_testing() const { return artist_label_; }
 
+  const views::Button* picture_in_picture_button_for_testing() const {
+    return picture_in_picture_button_;
+  }
+
   views::Button* GetHeaderRowForTesting() const;
   base::string16 GetSourceTitleForTesting() const;
 

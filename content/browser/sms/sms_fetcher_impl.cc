@@ -38,12 +38,13 @@ SmsFetcher* SmsFetcher::Get(BrowserContext* context) {
       context->GetUserData(kSmsFetcherImplKeyName));
 }
 
-SmsFetcher* SmsFetcher::Get(BrowserContext* context, RenderFrameHost* rfh) {
+SmsFetcher* SmsFetcher::Get(BrowserContext* context,
+                            base::WeakPtr<RenderFrameHost> rfh) {
   auto* stored_fetcher = static_cast<SmsFetcherImpl*>(
       context->GetUserData(kSmsFetcherImplKeyName));
   if (!stored_fetcher || !stored_fetcher->CanReceiveSms()) {
-    auto fetcher =
-        std::make_unique<SmsFetcherImpl>(context, SmsProvider::Create(rfh));
+    auto fetcher = std::make_unique<SmsFetcherImpl>(
+        context, SmsProvider::Create(std::move(rfh)));
     context->SetUserData(kSmsFetcherImplKeyName, std::move(fetcher));
   }
   return static_cast<SmsFetcherImpl*>(

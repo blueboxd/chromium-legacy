@@ -37,13 +37,14 @@ FakeShouldAllowRequestInfo::~FakeShouldAllowRequestInfo() = default;
 
 #pragma mark CRWWebStatePolicyDecider methods -
 
-- (BOOL)shouldAllowRequest:(NSURLRequest*)request
-               requestInfo:
-                   (const web::WebStatePolicyDecider::RequestInfo&)requestInfo {
+- (web::WebStatePolicyDecider::PolicyDecision)
+    shouldAllowRequest:(NSURLRequest*)request
+           requestInfo:
+               (const web::WebStatePolicyDecider::RequestInfo&)requestInfo {
   _shouldAllowRequestInfo = std::make_unique<web::FakeShouldAllowRequestInfo>();
   _shouldAllowRequestInfo->request = request;
   _shouldAllowRequestInfo->request_info = requestInfo;
-  return YES;
+  return web::WebStatePolicyDecider::PolicyDecision::Allow();
 }
 
 - (BOOL)shouldAllowResponse:(NSURLResponse*)response

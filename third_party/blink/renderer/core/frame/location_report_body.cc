@@ -6,6 +6,24 @@
 
 namespace blink {
 
+// static
+LocationReportBody::ReportLocation LocationReportBody::CreateReportLocation(
+    const String& file,
+    base::Optional<uint32_t> line_number,
+    base::Optional<uint32_t> column_number) {
+  return file.IsEmpty() ? CreateReportLocation(SourceLocation::Capture())
+                        : ReportLocation{file, line_number, column_number};
+}
+
+// static
+LocationReportBody::ReportLocation LocationReportBody::CreateReportLocation(
+    std::unique_ptr<SourceLocation> location) {
+  return location->IsUnknown()
+             ? ReportLocation{}
+             : ReportLocation{location->Url(), location->LineNumber(),
+                              location->ColumnNumber()};
+}
+
 void LocationReportBody::BuildJSONValue(V8ObjectBuilder& builder) const {
   builder.AddStringOrNull("sourceFile", sourceFile());
   bool is_null = false;

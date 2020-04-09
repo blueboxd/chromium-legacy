@@ -15,6 +15,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/image_model.h"
 #include "url/gurl.h"
 
 constexpr int WebAppMenuModel::kUninstallAppCommandId;
@@ -37,7 +38,8 @@ void WebAppMenuModel::Build() {
                                        ->GetActiveWebContents()
                                        ->GetVisibleURL()));
   SetMinorIcon(app_info_index,
-               browser()->location_bar_model()->GetVectorIcon());
+               ui::ImageModel::FromVectorIcon(
+                   browser()->location_bar_model()->GetVectorIcon()));
 
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(IDC_COPY_URL, IDS_COPY_URL);

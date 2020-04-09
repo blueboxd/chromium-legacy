@@ -12,7 +12,17 @@
 
 namespace printing {
 
+namespace {
+
 base::LazyInstance<std::string>::Leaky g_user_agent;
+
+base::Optional<ColorModel> ColorModeToColorModel(int color_mode) {
+  if (color_mode < UNKNOWN_COLOR_MODEL || color_mode > COLOR_MODEL_LAST)
+    return base::nullopt;
+  return static_cast<ColorModel>(color_mode);
+}
+
+}  // namespace
 
 void SetAgent(const std::string& user_agent) {
   g_user_agent.Get() = user_agent;
@@ -49,7 +59,17 @@ void GetColorModelForMode(int color_mode,
 #endif  // defined(OS_MACOSX)
 
   color_setting_name->assign(kCUPSColorModel);
-  switch (color_mode) {
+
+  base::Optional<ColorModel> color_model = ColorModeToColorModel(color_mode);
+  if (!color_model.has_value()) {
+    NOTREACHED();
+    return;
+  }
+
+  switch (color_model.value()) {
+    case UNKNOWN_COLOR_MODEL:
+      color_value->assign(kGrayscale);
+      break;
     case GRAY:
       color_value->assign(kGray);
       break;
@@ -159,21 +179,20 @@ void GetColorModelForMode(int color_mode,
       color_setting_name->assign(kCUPSXeroxXRXColor);
       color_value->assign(kXeroxBW);
       break;
-    default:
-      color_value->assign(kGrayscale);
-      break;
   }
+  // The default case is excluded from the above switch statement to ensure that
+  // all ColorModel values are determinantly handled.
 }
 #endif  // defined(USE_CUPS)
 
 base::Optional<bool> IsColorModelSelected(int color_mode) {
-  if (color_mode <= UNKNOWN_COLOR_MODEL || color_mode > COLOR_MODEL_LAST) {
+  base::Optional<ColorModel> color_model = ColorModeToColorModel(color_mode);
+  if (!color_model.has_value()) {
     NOTREACHED();
     return base::nullopt;
   }
 
-  ColorModel color_model = static_cast<ColorModel>(color_mode);
-  switch (color_model) {
+  switch (color_model.value()) {
     case COLOR:
     case CMYK:
     case CMY:
@@ -207,11 +226,11 @@ base::Optional<bool> IsColorModelSelected(int color_mode) {
     case XEROX_XRXCOLOR_BW:
       return false;
     case UNKNOWN_COLOR_MODEL:
-      // The default case is excluded from this switch statement to ensure that
-      // all ColorModel values are determinantly handled.
       NOTREACHED();
       return base::nullopt;
   }
+  // The default case is excluded from the above switch statement to ensure that
+  // all ColorModel values are determinantly handled.
 }
 
 // Global SequenceNumber used for generating unique cookie values.

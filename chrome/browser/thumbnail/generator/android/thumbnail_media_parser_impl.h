@@ -26,7 +26,6 @@
 
 namespace media {
 class GpuVideoAcceleratorFactories;
-class MediaInterfaceProvider;
 class MojoVideoDecoder;
 class VideoDecoderConfig;
 class VideoThumbnailDecoder;
@@ -115,7 +114,6 @@ class ThumbnailMediaParserImpl : public ThumbnailMediaParser,
   media::VideoDecoderConfig config_;
   std::unique_ptr<media::VideoThumbnailDecoder> decoder_;
   mojo::Remote<media::mojom::InterfaceFactory> media_interface_factory_;
-  std::unique_ptr<media::MediaInterfaceProvider> media_interface_provider_;
   std::unique_ptr<media::GpuVideoAcceleratorFactories> gpu_factories_;
   bool decode_done_;
 

@@ -66,11 +66,7 @@ const char* const kValidNicknames[] = {
 const char* const kInvalidNicknames[] = {
     "",                                      /* empty */
     "Nickname length exceeds 25 characters", /* too long */
-    "\n Grocery Card",                       /* Leading newline */
-    "Grocery Card \n",                       /* Newline in the end */
-    "Grocery \n Card",                       /* Newline within text */
-    "Grocery Card \t",                       /* Contains tab */
-    "Grocery \t\n Card",                     /* Newline and tab */
+    "\t\r\n  ",                              /* empty after SetNickname */
 };
 
 // Time moves on. Today is yesterday's tomorrow. Tests don't like time moving
@@ -182,14 +178,14 @@ TEST(CreditCardTest, NicknameAndLastFourDigitsStrings) {
   CreditCard credit_card1(base::GenerateGUID(), "https://www.example.com/");
   test::SetCreditCardInfo(&credit_card1, "John Dillinger", "", "01", "2020",
                           "1");
-  credit_card1.set_nickname(valid_nickname);
+  credit_card1.SetNickname(valid_nickname);
   EXPECT_EQ(valid_nickname, credit_card1.NicknameAndLastFourDigits());
 
   // Case 2: Have everything.
   CreditCard credit_card2(base::GenerateGUID(), "https://www.example.com/");
   test::SetCreditCardInfo(&credit_card2, "John Dillinger",
                           "5105 1051 0510 5100", "01", "2020", "1");
-  credit_card2.set_nickname(valid_nickname);
+  credit_card2.SetNickname(valid_nickname);
   EXPECT_EQ(
       valid_nickname + UTF8ToUTF16(std::string("  ") +
                                    test::ObfuscatedCardDigitsAsUTF8("5100")),
@@ -199,7 +195,8 @@ TEST(CreditCardTest, NicknameAndLastFourDigitsStrings) {
 TEST(CreditCardTest, NicknameOrNetworkAndLastFourDigitsStrings) {
   base::test::ScopedFeatureList scoped_feature_list;
   base::string16 valid_nickname = ASCIIToUTF16("My Visa Card");
-  base::string16 invalid_nickname = ASCIIToUTF16("My Visa\n Card");
+  base::string16 invalid_nickname =
+      ASCIIToUTF16("Nickname length exceeds 25 characters");
   // Enable the flag.
   scoped_feature_list.InitAndEnableFeature(
       features::kAutofillEnableSurfacingServerCardNickname);
@@ -209,7 +206,7 @@ TEST(CreditCardTest, NicknameOrNetworkAndLastFourDigitsStrings) {
   test::SetCreditCardInfo(&credit_card1, "John Dillinger",
                           "5105 1051 0510 5100" /* Mastercard */, "01", "2020",
                           "1");
-  credit_card1.set_nickname(invalid_nickname);
+  credit_card1.SetNickname(invalid_nickname);
   EXPECT_FALSE(credit_card1.HasValidNickname());
   EXPECT_EQ(UTF8ToUTF16(std::string("Mastercard  ") +
                         test::ObfuscatedCardDigitsAsUTF8("5100")),
@@ -220,7 +217,7 @@ TEST(CreditCardTest, NicknameOrNetworkAndLastFourDigitsStrings) {
   test::SetCreditCardInfo(&credit_card2, "John Dillinger",
                           "5105 1051 0510 5100" /* Mastercard */, "01", "2020",
                           "1");
-  credit_card2.set_nickname(valid_nickname);
+  credit_card2.SetNickname(valid_nickname);
   EXPECT_TRUE(credit_card2.HasValidNickname());
   EXPECT_EQ(
       valid_nickname + UTF8ToUTF16(std::string("  ") +
@@ -236,7 +233,7 @@ TEST(CreditCardTest, NicknameOrNetworkAndLastFourDigitsStrings) {
   test::SetCreditCardInfo(&credit_card3, "John Dillinger",
                           "5105 1051 0510 5100" /* Mastercard */, "01", "2020",
                           "1");
-  credit_card3.set_nickname(valid_nickname);
+  credit_card3.SetNickname(valid_nickname);
   EXPECT_TRUE(credit_card3.HasValidNickname());
   EXPECT_EQ(UTF8ToUTF16(std::string("Mastercard  ") +
                         test::ObfuscatedCardDigitsAsUTF8("5100")),
@@ -663,12 +660,12 @@ TEST(CreditCardTest, Compare) {
   EXPECT_EQ(0, a.Compare(b));
 
   // Difference in nickname counts.
-  a.set_nickname(ASCIIToUTF16("My Visa Card"));
-  b.set_nickname(ASCIIToUTF16("Grocery Cashback Card"));
+  a.SetNickname(ASCIIToUTF16("My Visa Card"));
+  b.SetNickname(ASCIIToUTF16("Grocery Cashback Card"));
   EXPECT_LT(0, a.Compare(b));
   // Reset the nickname to empty, empty nickname cards are the same.
-  a.set_nickname(ASCIIToUTF16(""));
-  b.set_nickname(ASCIIToUTF16(""));
+  a.SetNickname(ASCIIToUTF16(""));
+  b.SetNickname(ASCIIToUTF16(""));
   EXPECT_EQ(0, a.Compare(b));
 
   // Local is different from server.
@@ -1064,12 +1061,12 @@ TEST(CreditCardTest, HasValidNickname) {
 
   for (const char* valid_nickname : kValidNicknames) {
     SCOPED_TRACE(valid_nickname);
-    card.set_nickname(UTF8ToUTF16(valid_nickname));
+    card.SetNickname(UTF8ToUTF16(valid_nickname));
     EXPECT_TRUE(card.HasValidNickname());
   }
   for (const char* invalid_nickname : kInvalidNicknames) {
     SCOPED_TRACE(invalid_nickname);
-    card.set_nickname(UTF8ToUTF16(invalid_nickname));
+    card.SetNickname(UTF8ToUTF16(invalid_nickname));
     EXPECT_FALSE(card.HasValidNickname());
   }
 }
@@ -1115,6 +1112,32 @@ TEST(CreditCardTest, SetExpirationMonth) {
                "fr-FR");
   EXPECT_EQ(ASCIIToUTF16("02"), card.GetRawInfo(CREDIT_CARD_EXP_MONTH));
   EXPECT_EQ(2, card.expiration_month());
+}
+
+// Verify that we set nickname with the processed string. We replace all tabs
+// and newlines with whitespace, and trim leading/trailing whitespace.
+TEST(CreditCardTest, SetNickname) {
+  CreditCard card(base::GenerateGUID(), "https://www.example.com/");
+
+  // Normal input nickname.
+  card.SetNickname(ASCIIToUTF16("Grocery card"));
+  EXPECT_EQ(ASCIIToUTF16("Grocery card"), card.nickname());
+
+  // Input nickname has leading and trailing whitespaces.
+  card.SetNickname(ASCIIToUTF16("  Grocery card  "));
+  EXPECT_EQ(ASCIIToUTF16("Grocery card"), card.nickname());
+
+  // Input nickname has newlines.
+  card.SetNickname(ASCIIToUTF16("\r\n Grocery\ncard \r\n"));
+  EXPECT_EQ(ASCIIToUTF16("Grocery card"), card.nickname());
+
+  // Input nickname has tabs.
+  card.SetNickname(ASCIIToUTF16(" \tGrocery\t card\t "));
+  EXPECT_EQ(ASCIIToUTF16("Grocery  card"), card.nickname());
+
+  // Input nickname has newlines & whitespaces & tabs.
+  card.SetNickname(ASCIIToUTF16("\n\t Grocery \tcard \n \r\n"));
+  EXPECT_EQ(ASCIIToUTF16("Grocery  card"), card.nickname());
 }
 
 TEST(CreditCardTest, CreditCardType) {

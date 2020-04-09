@@ -40,7 +40,6 @@
       }
     </style>
     <settings-toggle-button id="autofillCreditCardToggle"
-        class="settings-box first"
         aria-label="$i18n{creditCards}" no-extension-indicator
         label="$i18n{enableCreditCardsLabel}"
         sub-label="$i18n{enableCreditCardsSublabel}"
@@ -48,7 +47,6 @@
     </settings-toggle-button>
     <template is="dom-if" if="[[privacySettingsRedesignEnabled_]]">
       <settings-toggle-button id="canMakePaymentToggle"
-          class="settings-box first"
           aria-label="$i18n{canMakePaymentToggleLabel}"
           label="$i18n{canMakePaymentToggleLabel}"
           pref="{{prefs.payments.can_make_payment_enabled}}"
@@ -60,7 +58,6 @@
             prefs.autofill.credit_card_enabled.value,
             userIsFidoVerifiable_)]]">
       <settings-toggle-button
-          class="settings-box first"
           id="autofillCreditCardFIDOAuthToggle"
           aria-label="$i18n{creditCards}" no-extension-indicator
           label="$i18n{enableCreditCardFIDOAuthLabel}"

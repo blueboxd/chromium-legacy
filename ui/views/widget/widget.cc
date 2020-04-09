@@ -769,7 +769,7 @@ bool Widget::IsVisible() const {
 const ui::ThemeProvider* Widget::GetThemeProvider() const {
   const Widget* root_widget = GetTopLevelWidget();
   return (root_widget && root_widget != this) ? root_widget->GetThemeProvider()
-                                              : &default_theme_provider_;
+                                              : nullptr;
 }
 
 FocusManager* Widget::GetFocusManager() {

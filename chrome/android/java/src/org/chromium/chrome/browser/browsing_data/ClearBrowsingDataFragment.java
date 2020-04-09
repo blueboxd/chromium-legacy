@@ -129,7 +129,8 @@ public abstract class ClearBrowsingDataFragment extends PreferenceFragmentCompat
     /**
      * An option to be shown in the time period spiner.
      */
-    protected static class TimePeriodSpinnerOption {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    static class TimePeriodSpinnerOption {
         private @TimePeriod int mTimePeriod;
         private String mTitle;
 
@@ -156,11 +157,8 @@ public abstract class ClearBrowsingDataFragment extends PreferenceFragmentCompat
         }
     }
 
-    @VisibleForTesting
-    public static final String PREF_GOOGLE_SUMMARY = "google_summary";
-    @VisibleForTesting
-    public static final String PREF_GENERAL_SUMMARY = "general_summary";
-    private static final String PREF_TIME_RANGE = "time_period_spinner";
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    static final String PREF_TIME_RANGE = "time_period_spinner";
 
     /** The "Clear" button preference. */
     @VisibleForTesting

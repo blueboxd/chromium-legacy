@@ -27,7 +27,6 @@
 #include "media/mojo/mojom/interface_factory.mojom.h"
 #include "media/mojo/mojom/media_service.mojom.h"
 #include "media/mojo/mojom/renderer.mojom.h"
-#include "media/mojo/services/media_interface_provider.h"
 #include "media/mojo/services/media_service_factory.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
@@ -137,10 +136,8 @@ class MediaServiceTest : public testing::Test {
   ~MediaServiceTest() override = default;
 
   void SetUp() override {
-    mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
-        host_interfaces;
-    auto provider = std::make_unique<MediaInterfaceProvider>(
-        host_interfaces.InitWithNewPipeAndPassReceiver());
+    mojo::PendingRemote<mojom::FrameInterfaceFactory> frame_interfaces;
+    ignore_result(frame_interfaces.InitWithNewPipeAndPassReceiver());
 
     media_service_impl_ = CreateMediaServiceForTesting(
         media_service_.BindNewPipeAndPassReceiver());
@@ -150,7 +147,7 @@ class MediaServiceTest : public testing::Test {
                             base::Unretained(this)));
     media_service_->CreateInterfaceFactory(
         interface_factory_.BindNewPipeAndPassReceiver(),
-        std::move(host_interfaces));
+        std::move(frame_interfaces));
   }
 
   MOCK_METHOD3(OnCdmInitialized,

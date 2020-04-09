@@ -48,6 +48,9 @@ void UsbDeviceWin::Open(OpenCallback callback) {
   else if (base::EqualsCaseInsensitiveASCII(driver_name_, L"usbccgp"))
     device_handle = new UsbDeviceHandleWin(this, /*composite=*/true);
 
+  if (device_handle)
+    handles().push_back(device_handle.get());
+
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), device_handle));
 }
@@ -70,6 +73,18 @@ void UsbDeviceWin::ReadDescriptors(base::OnceCallback<void(bool)> callback) {
   ReadUsbDescriptors(device_handle,
                      base::BindOnce(&UsbDeviceWin::OnReadDescriptors, this,
                                     std::move(callback), device_handle));
+}
+
+void UsbDeviceWin::UpdateFunctionPath(int interface_number,
+                                      const base::string16& function_path) {
+  function_paths_.insert({interface_number, function_path});
+
+  for (UsbDeviceHandle* handle : handles()) {
+    // This is safe because only this class only adds instance of
+    // UsbDeviceHandleWin to handles().
+    static_cast<UsbDeviceHandleWin*>(handle)->UpdateFunctionPath(
+        interface_number, function_path);
+  }
 }
 
 void UsbDeviceWin::OnReadDescriptors(

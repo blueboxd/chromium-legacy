@@ -81,7 +81,7 @@ class StatusIconWin : public StatusIcon {
   base::win::ScopedHICON balloon_icon_;
 
   // Not owned.
-  ui::MenuModel* menu_model_;
+  ui::MenuModel* menu_model_ = nullptr;
 
   // Context menu associated with this icon (if any).
   std::unique_ptr<views::MenuRunner> menu_runner_;

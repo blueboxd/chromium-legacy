@@ -42,7 +42,6 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.ui.favicon.RoundedIconGenerator;
 import org.chromium.chrome.browser.webapps.WebDisplayMode;
 import org.chromium.chrome.browser.webapps.WebappActivity;
 import org.chromium.chrome.browser.webapps.WebappAuthenticator;
@@ -50,6 +49,7 @@ import org.chromium.chrome.browser.webapps.WebappDataStorage;
 import org.chromium.chrome.browser.webapps.WebappInfo;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
+import org.chromium.components.favicon.FaviconFallbackGenerator;
 import org.chromium.content_public.common.ScreenOrientationConstants;
 import org.chromium.ui.base.ViewUtils;
 import org.chromium.ui.widget.Toast;
@@ -560,8 +560,8 @@ public class ShortcutHelper {
         int cornerRadius = Math.round(ICON_CORNER_RADIUS_RATIO * outerSize);
         int fontSize = Math.round(GENERATED_ICON_FONT_SIZE_RATIO * outerSize);
         int color = Color.rgb(red, green, blue);
-        RoundedIconGenerator generator = new RoundedIconGenerator(
-                innerSize, innerSize, cornerRadius, color, fontSize);
+        FaviconFallbackGenerator generator =
+                new FaviconFallbackGenerator(innerSize, innerSize, cornerRadius, color, fontSize);
         Bitmap icon = generator.generateIconForUrl(url);
         if (icon == null) return null; // Bookmark URL does not have a domain.
         canvas.drawBitmap(icon, padding, padding, null);

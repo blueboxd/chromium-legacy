@@ -466,8 +466,9 @@ class VideoCaptureDeviceTest
   std::unique_ptr<VideoCaptureDeviceFactory> video_capture_device_factory_;
 };
 
+// Causes a flaky crash on Chrome OS. https://crbug.com/1069608
 // Cause hangs on Windows Debug. http://crbug.com/417824
-#if defined(OS_WIN) && !defined(NDEBUG)
+#if defined(OS_CHROMEOS) || (defined(OS_WIN) && !defined(NDEBUG))
 #define MAYBE_OpenInvalidDevice DISABLED_OpenInvalidDevice
 #else
 #define MAYBE_OpenInvalidDevice OpenInvalidDevice

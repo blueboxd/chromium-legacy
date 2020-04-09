@@ -273,6 +273,11 @@ const base::Feature kInputPredictorTypeChoice{
 const base::Feature kInstalledAppProvider{"InstalledAppProvider",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Show warning about clearing data from installed apps in the clear browsing
+// data flow. The warning will be shown in a second dialog.
+const base::Feature kInstalledAppsInCbd{"InstalledAppsInCbd",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Alternative to switches::kIsolateOrigins, for turning on origin isolation.
 // List of origins to isolate has to be specified via
 // kIsolateOriginsFieldTrialParamName.

@@ -34,6 +34,8 @@ struct Data {
 
   // Data item will be matched between its search tags and query term.
   std::vector<base::string16> search_tags;
+
+  Data(const std::string& id, const std::vector<base::string16>& search_tags);
   Data();
   Data(const Data& data);
   ~Data();

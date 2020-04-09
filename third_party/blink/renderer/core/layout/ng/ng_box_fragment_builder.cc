@@ -176,8 +176,7 @@ void NGBoxFragmentBuilder::AddBreakBeforeChild(
 }
 
 void NGBoxFragmentBuilder::AddResult(const NGLayoutResult& child_layout_result,
-                                     const LogicalOffset offset,
-                                     const LayoutInline* inline_container) {
+                                     const LogicalOffset offset) {
   const auto& fragment = child_layout_result.PhysicalFragment();
   if (items_builder_) {
     if (const NGPhysicalLineBoxFragment* line =
@@ -187,7 +186,7 @@ void NGBoxFragmentBuilder::AddResult(const NGLayoutResult& child_layout_result,
       // maybe OOF objects. Investigate how to handle them.
     }
   }
-  AddChild(fragment, offset, inline_container);
+  AddChild(fragment, offset);
   if (fragment.IsBox())
     PropagateBreak(child_layout_result);
 }

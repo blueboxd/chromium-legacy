@@ -62,7 +62,9 @@ source_set("unit_tests") {
     "//components/prefs:test_support",
     "//components/sync:test_support",
     "//components/undo",
+    "//skia",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/gfx",
   ]
 }

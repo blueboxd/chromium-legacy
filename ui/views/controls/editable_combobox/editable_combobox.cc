@@ -226,7 +226,9 @@ class EditableCombobox::EditableComboboxMenuModel
 
   int GetGroupIdAt(int index) const override { return -1; }
 
-  bool GetIconAt(int index, gfx::Image* icon) const override { return false; }
+  ui::ImageModel GetIconAt(int index) const override {
+    return ui::ImageModel();
+  }
 
   ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const override {
     return nullptr;

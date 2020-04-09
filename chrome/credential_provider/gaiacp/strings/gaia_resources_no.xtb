@@ -18,6 +18,7 @@
 <translation id="4744575902940448763">Passordet for jobbkontoen kunne ikke synkroniseres med Windows-profilen din, ettersom organisasjonen din har lagt restriksjoner på passordoppdateringer på enheten. Kontakt administratoren din for å få hjelp.</translation>
 <translation id="5186761973554910131">Ugyldig datamaskinnavn ble oppgitt under forsøk på endring av passord. Kontakt administratoren din.</translation>
 <translation id="5265714013989877288">Kan ikke fortsette. Det oppsto en feil under endring av Windows-passordet. Kontakt administratoren din.</translation>
+<translation id="5581861273642234526">En annen jobbkonto er allerede tilknyttet denne enheten. Logg på med Windows-kontoen din.</translation>
 <translation id="6033715878377252112">Hjelpebruker for Google-legitimasjonsleverandøren for Windows</translation>
 <translation id="6149399665202317746">Google-legitimasjonsleverandør for Windows</translation>
 <translation id="6243062314475217481">Passordet for jobbkontoen din oppfyller ikke kompleksitetskravene for Windows. Kontakt administratoren din for å få hjelp.</translation>

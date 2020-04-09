@@ -181,18 +181,26 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
   }
 }
 
-void ChromeContentBrowserClient::ExposeInterfacesToMediaService(
-    service_manager::BinderRegistry* registry,
-    content::RenderFrameHost* render_frame_host) {
+void ChromeContentBrowserClient::BindMediaServiceReceiver(
+    content::RenderFrameHost* render_frame_host,
+    mojo::GenericPendingReceiver receiver) {
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  registry->AddInterface(
-      base::Bind(&OutputProtectionImpl::Create, render_frame_host));
-  registry->AddInterface(
-      base::Bind(&PlatformVerificationImpl::Create, render_frame_host));
+  if (auto r = receiver.As<media::mojom::OutputProtection>()) {
+    OutputProtectionImpl::Create(render_frame_host, std::move(r));
+    return;
+  }
+
+  if (auto r = receiver.As<media::mojom::PlatformVerification>()) {
+    PlatformVerificationImpl::Create(render_frame_host, std::move(r));
+    return;
+  }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 #if BUILDFLAG(ENABLE_MOJO_CDM) && defined(OS_ANDROID)
-  registry->AddInterface(base::Bind(&CreateMediaDrmStorage, render_frame_host));
+  if (auto r = receiver.As<media::mojom::MediaDrmStorage>()) {
+    CreateMediaDrmStorage(render_frame_host, std::move(r));
+    return;
+  }
 #endif
 }
 

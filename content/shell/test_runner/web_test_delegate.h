@@ -26,7 +26,6 @@ class DictionaryValue;
 }  // namespace base
 
 namespace blink {
-struct Manifest;
 class WebInputEvent;
 class WebLocalFrame;
 class WebPlugin;
@@ -194,12 +193,6 @@ class WebTestDelegate {
 
   // Returns true if resource requests to external URLs should be permitted.
   virtual bool AllowExternalPages() = 0;
-
-  // Fetch the manifest for a given WebView from the given url.
-  virtual void FetchManifest(
-      blink::WebView* view,
-      base::OnceCallback<void(const blink::WebURL&, const blink::Manifest&)>
-          callback) = 0;
 
   // Sends a message to the WebTestPermissionManager in order for it to
   // update its database.

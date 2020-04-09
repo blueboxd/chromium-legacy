@@ -25,7 +25,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.ui.favicon.RoundedIconGenerator;
+import org.chromium.components.favicon.FaviconFallbackGenerator;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -120,7 +120,7 @@ public abstract class NotificationBuilderBase {
 
     private final int mLargeIconWidthPx;
     private final int mLargeIconHeightPx;
-    private final RoundedIconGenerator mIconGenerator;
+    private final FaviconFallbackGenerator mIconGenerator;
 
     protected CharSequence mTitle;
     protected CharSequence mBody;
@@ -624,14 +624,14 @@ public abstract class NotificationBuilderBase {
     }
 
     @VisibleForTesting
-    static RoundedIconGenerator createIconGenerator(Resources resources) {
+    static FaviconFallbackGenerator createIconGenerator(Resources resources) {
         int largeIconWidthPx =
                 resources.getDimensionPixelSize(android.R.dimen.notification_large_icon_width);
         int largeIconHeightPx =
                 resources.getDimensionPixelSize(android.R.dimen.notification_large_icon_height);
         float density = resources.getDisplayMetrics().density;
         int cornerRadiusPx = Math.min(largeIconWidthPx, largeIconHeightPx) / 2;
-        return new RoundedIconGenerator(largeIconWidthPx, largeIconHeightPx, cornerRadiusPx,
+        return new FaviconFallbackGenerator(largeIconWidthPx, largeIconHeightPx, cornerRadiusPx,
                 NOTIFICATION_ICON_BG_COLOR, NOTIFICATION_ICON_TEXT_SIZE_DP * density);
     }
 }

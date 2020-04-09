@@ -117,8 +117,9 @@ class MockWebStatePolicyDecider : public WebStatePolicyDecider {
   virtual ~MockWebStatePolicyDecider() {}
 
   MOCK_METHOD2(ShouldAllowRequest,
-               bool(NSURLRequest* request,
-                    const WebStatePolicyDecider::RequestInfo& request_info));
+               WebStatePolicyDecider::PolicyDecision(
+                   NSURLRequest* request,
+                   const WebStatePolicyDecider::RequestInfo& request_info));
   MOCK_METHOD2(ShouldAllowResponse,
                bool(NSURLResponse* response, bool for_main_frame));
   MOCK_METHOD0(WebStateDestroyed, void());
@@ -582,33 +583,37 @@ TEST_F(WebStateImplTest, PolicyDeciderTest) {
   EXPECT_CALL(decider, ShouldAllowRequest(
                            request, RequestInfoMatch(request_info_main_frame)))
       .Times(1)
-      .WillOnce(Return(true));
+      .WillOnce(Return(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(decider2, ShouldAllowRequest(
                             request, RequestInfoMatch(request_info_main_frame)))
       .Times(1)
-      .WillOnce(Return(true));
+      .WillOnce(Return(WebStatePolicyDecider::PolicyDecision::Allow()));
 
-  EXPECT_TRUE(web_state_->ShouldAllowRequest(request, request_info_main_frame));
+  WebStatePolicyDecider::PolicyDecision policy_decision =
+      web_state_->ShouldAllowRequest(request, request_info_main_frame);
+  EXPECT_TRUE(policy_decision.ShouldAllowNavigation());
+  EXPECT_FALSE(policy_decision.ShouldCancelNavigation());
 
   WebStatePolicyDecider::RequestInfo request_info_iframe(
       ui::PageTransition::PAGE_TRANSITION_LINK,
       /*target_main_frame=*/false,
       /*has_user_gesture=*/false);
-
   EXPECT_CALL(decider, ShouldAllowRequest(
                            request, RequestInfoMatch(request_info_iframe)))
       .Times(1)
-      .WillOnce(Return(true));
+      .WillOnce(Return(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(decider2, ShouldAllowRequest(
                             request, RequestInfoMatch(request_info_iframe)))
-
       .Times(1)
-      .WillOnce(Return(true));
+      .WillOnce(Return(WebStatePolicyDecider::PolicyDecision::Allow()));
 
-  EXPECT_TRUE(web_state_->ShouldAllowRequest(request, request_info_iframe));
+  policy_decision =
+      web_state_->ShouldAllowRequest(request, request_info_iframe);
+  EXPECT_TRUE(policy_decision.ShouldAllowNavigation());
+  EXPECT_FALSE(policy_decision.ShouldCancelNavigation());
 
   // Test that ShouldAllowRequest() is stopping on negative answer. Only one
-  // one the decider should be called.
+  // of the deciders should be called.
   {
     bool decider_called = false;
     bool decider2_called = false;
@@ -616,15 +621,21 @@ TEST_F(WebStateImplTest, PolicyDeciderTest) {
         decider,
         ShouldAllowRequest(request, RequestInfoMatch(request_info_main_frame)))
         .Times(AtMost(1))
-        .WillOnce(DoAll(Assign(&decider_called, true), Return(false)));
+        .WillOnce(
+            DoAll(Assign(&decider_called, true),
+                  Return(WebStatePolicyDecider::PolicyDecision::Cancel())));
     EXPECT_CALL(
         decider2,
         ShouldAllowRequest(request, RequestInfoMatch(request_info_main_frame)))
         .Times(AtMost(1))
-        .WillOnce(DoAll(Assign(&decider2_called, true), Return(false)));
+        .WillOnce(
+            DoAll(Assign(&decider2_called, true),
+                  Return(WebStatePolicyDecider::PolicyDecision::Cancel())));
 
-    EXPECT_FALSE(
-        web_state_->ShouldAllowRequest(request, request_info_main_frame));
+    WebStatePolicyDecider::PolicyDecision policy_decision =
+        web_state_->ShouldAllowRequest(request, request_info_main_frame);
+    EXPECT_FALSE(policy_decision.ShouldAllowNavigation());
+    EXPECT_TRUE(policy_decision.ShouldCancelNavigation());
     EXPECT_FALSE(decider_called && decider2_called);
   }
 
@@ -638,7 +649,7 @@ TEST_F(WebStateImplTest, PolicyDeciderTest) {
   EXPECT_TRUE(web_state_->ShouldAllowResponse(response, true));
 
   // Test that ShouldAllowResponse() is stopping on negative answer. Only one
-  // one the decider should be called.
+  // of the deciders should be called.
   {
     bool decider_called = false;
     bool decider2_called = false;

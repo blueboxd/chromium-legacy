@@ -18,6 +18,7 @@
 <translation id="4744575902940448763">Your work account password couldn't be synced to your Windows profile because password updates on your device are restricted by your organisation. Contact your administrator for help.</translation>
 <translation id="5186761973554910131">Invalid computer name provided during password change attempt. Please contact your administrator.</translation>
 <translation id="5265714013989877288">Can’t continue because there was an error while changing your Windows password. Please contact your administrator.</translation>
+<translation id="5581861273642234526">Another work account is already associated with this device. Sign in with your Windows account.</translation>
 <translation id="6033715878377252112">Google Credential Provider for Windows helper</translation>
 <translation id="6149399665202317746">Google Credential Provider for Windows</translation>
 <translation id="6243062314475217481">Your work account password doesn’t match the complexity requirements for Windows. Contact your administrator for help.</translation>

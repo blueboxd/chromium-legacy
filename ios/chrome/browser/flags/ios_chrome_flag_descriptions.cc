@@ -278,6 +278,11 @@ const char kLockBottomToolbarDescription[] =
     "When enabled, the bottom toolbar will not get collapsed when scrolling "
     "into fullscreen mode.";
 
+const char kManagedBookmarksIOSName[] = "Managed Bookmarks IOS";
+const char kManagedBookmarksIOSDescription[] =
+    "When enabled, managed bookmarks set by an enterprise policy can be shown "
+    "in the bookmarks UI on iOS";
+
 const char kMarkHttpAsName[] = "Mark non-secure origins as non-secure";
 const char kMarkHttpAsDescription[] = "Change the UI treatment for HTTP pages";
 

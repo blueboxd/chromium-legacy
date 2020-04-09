@@ -54,10 +54,10 @@ class GestureNavigationScreenTest
         static_cast<GestureNavigationScreen*>(
             WizardController::default_controller()->screen_manager()->GetScreen(
                 GestureNavigationScreenView::kScreenId));
+    original_callback_ = gesture_screen->get_exit_callback_for_testing();
     gesture_screen->set_exit_callback_for_testing(
         base::BindRepeating(&GestureNavigationScreenTest::HandleScreenExit,
                             base::Unretained(this)));
-
     OobeBaseTest::SetUpOnMainThread();
   }
 
@@ -106,14 +106,19 @@ class GestureNavigationScreenTest
     run_loop.Run();
   }
 
+  base::Optional<GestureNavigationScreen::Result> screen_result_;
+  base::HistogramTester histogram_tester_;
+
  private:
-  void HandleScreenExit() {
+  void HandleScreenExit(GestureNavigationScreen::Result result) {
     ASSERT_FALSE(screen_exited_);
     screen_exited_ = true;
+    screen_result_ = result;
+    original_callback_.Run(result);
     if (screen_exit_callback_)
       std::move(screen_exit_callback_).Run();
   }
-
+  GestureNavigationScreen::ScreenExitCallback original_callback_;
   bool screen_exited_ = false;
   base::RepeatingClosure screen_exit_callback_;
   base::test::ScopedFeatureList feature_list_;
@@ -166,6 +171,11 @@ IN_PROC_BROWSER_TEST_P(GestureNavigationScreenTest, FlowTest) {
   test::OobeJS().TapOnPath({"gesture-navigation", "gesture-back-next-button"});
 
   WaitForScreenExit();
+  EXPECT_EQ(screen_result_.value(), GestureNavigationScreen::Result::NEXT);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Gesture-navigation.Next", 1);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTime.Gesture-navigation", 1);
 }
 
 // Ensure the flow is skipped when in clamshell mode.
@@ -176,6 +186,8 @@ IN_PROC_BROWSER_TEST_P(GestureNavigationScreenTest, ScreenSkippedInClamshell) {
 
   if (ShouldBeSkippedInClamshell()) {
     WaitForScreenExit();
+    EXPECT_EQ(screen_result_.value(),
+              GestureNavigationScreen::Result::NOT_APPLICABLE);
   } else {
     OobeScreenWaiter(GestureNavigationScreenView::kScreenId).Wait();
   }
@@ -189,6 +201,12 @@ IN_PROC_BROWSER_TEST_P(GestureNavigationScreenTest,
   ShowGestureNavigationScreen();
 
   WaitForScreenExit();
+  EXPECT_EQ(screen_result_.value(),
+            GestureNavigationScreen::Result::NOT_APPLICABLE);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Gesture-navigation.Next", 0);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTime.Gesture-navigation", 0);
 }
 
 // Ensure the flow is skipped when autoclick is enabled.
@@ -199,6 +217,12 @@ IN_PROC_BROWSER_TEST_P(GestureNavigationScreenTest,
   ShowGestureNavigationScreen();
 
   WaitForScreenExit();
+  EXPECT_EQ(screen_result_.value(),
+            GestureNavigationScreen::Result::NOT_APPLICABLE);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Gesture-navigation.Next", 0);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTime.Gesture-navigation", 0);
 }
 
 // Ensure the flow is skipped when switch access is enabled.
@@ -209,6 +233,12 @@ IN_PROC_BROWSER_TEST_P(GestureNavigationScreenTest,
   ShowGestureNavigationScreen();
 
   WaitForScreenExit();
+  EXPECT_EQ(screen_result_.value(),
+            GestureNavigationScreen::Result::NOT_APPLICABLE);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Gesture-navigation.Next", 0);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTime.Gesture-navigation", 0);
 }
 
 // Ensure the flow is skipped when shelf navigation buttons are enabled.
@@ -220,13 +250,17 @@ IN_PROC_BROWSER_TEST_P(GestureNavigationScreenTest,
   ShowGestureNavigationScreen();
 
   WaitForScreenExit();
+  EXPECT_EQ(screen_result_.value(),
+            GestureNavigationScreen::Result::NOT_APPLICABLE);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Gesture-navigation.Next", 0);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTime.Gesture-navigation", 0);
 }
 
 // Ensure the page shown time metrics are being recorded during the gesture
 // navigation screen flow
 IN_PROC_BROWSER_TEST_P(GestureNavigationScreenTest, PageShownMetricsTest) {
-  base::HistogramTester histogram_tester_;
-
   ShowGestureNavigationScreen();
   OobeScreenWaiter(GestureNavigationScreenView::kScreenId).Wait();
 
@@ -244,6 +278,7 @@ IN_PROC_BROWSER_TEST_P(GestureNavigationScreenTest, PageShownMetricsTest) {
   test::OobeJS().TapOnPath({"gesture-navigation", "gesture-back-next-button"});
 
   WaitForScreenExit();
+  EXPECT_EQ(screen_result_.value(), GestureNavigationScreen::Result::NEXT);
 
   histogram_tester_.ExpectTotalCount(
       "OOBE.GestureNavigationScreen.PageShownTime.Intro", 1);
@@ -253,6 +288,10 @@ IN_PROC_BROWSER_TEST_P(GestureNavigationScreenTest, PageShownMetricsTest) {
       "OOBE.GestureNavigationScreen.PageShownTime.Overview", 1);
   histogram_tester_.ExpectTotalCount(
       "OOBE.GestureNavigationScreen.PageShownTime.Back", 1);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Gesture-navigation.Next", 1);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTime.Gesture-navigation", 1);
 }
 
 }  // namespace chromeos

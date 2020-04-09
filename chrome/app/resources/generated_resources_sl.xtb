@@ -120,7 +120,6 @@
 <translation id="1153636665119721804">Googlov program dodatne zaščite</translation>
 <translation id="1161575384898972166">Prijavite se v <ph name="TOKEN_NAME" />, da izvozite potrdilo odjemalca.</translation>
 <translation id="1163931534039071049">&amp;Ogled vira okvirja</translation>
-<translation id="1164674268730883318">Želite izklopiti Smart Lock za napravo <ph name="DEVICE_TYPE" />?</translation>
 <translation id="1164891049599601209">Vneseno na zavajajočem spletnem mestu</translation>
 <translation id="1164899421101904659">Vnos kode za odklepanje kode PIN</translation>
 <translation id="1165039591588034296">Napaka</translation>
@@ -774,7 +773,6 @@ V nasprotnem primeru se odjavite, da bodo spremembe tega računa vidne v tej nap
 
 Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family Link v napravi.  Po e-pošti smo vam poslali navodila.</translation>
 <translation id="2040460856718599782">Pri preverjanju pristnosti je prišlo do težav. Še enkrat preverite poverilnice za prijavo in poskusite znova.</translation>
-<translation id="2043818754674261542">Razdalja, ki je potrebna, da telefon odklene to napravo <ph name="DEVICE_TYPE" /></translation>
 <translation id="204497730941176055">Microsoftovo ime predloge potrdila</translation>
 <translation id="2045117674524495717">Pomočnik za bližnjične tipke</translation>
 <translation id="2045969484888636535">Še naprej blokiraj piškotke</translation>
@@ -1147,7 +1145,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="2518024842978892609">Uporaba potrdil odjemalca</translation>
 <translation id="2520644704042891903">Čakanje na razpoložljivo vtičnico ...</translation>
 <translation id="252219247728877310">Komponenta ni posodobljena</translation>
-<translation id="2522791476825452208">Zelo blizu</translation>
 <translation id="2523184218357549926">Googlu pošlje URL-je strani, ki jih obiščete</translation>
 <translation id="2526277209479171883">Namesti in nadaljuj</translation>
 <translation id="2526590354069164005">Namizje</translation>
@@ -1756,7 +1753,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="3333190335304955291">To storitev lahko izklopite v nastavitvah.</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> – videoposnetek se predvaja v načinu slike v sliki</translation>
 <translation id="3335947283844343239">Znova odpri zaprt zavihek</translation>
-<translation id="3336664756920573711">Odklenite napravo <ph name="DEVICE_TYPE" /> s telefonom Android.</translation>
 <translation id="3340620525920140773">Prenos je končan: <ph name="FILE_NAME" />.</translation>
 <translation id="3341699307020049241">Napačna koda PIN. Imate še toliko poskusov: <ph name="RETRIES" />.</translation>
 <translation id="3341703758641437857">Dovoli dostop do URL-jev datoteke</translation>
@@ -2779,7 +2775,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="4697551882387947560">Ko se seja brskanja konča</translation>
 <translation id="4699172675775169585">Predpomnjene slike in datoteke</translation>
 <translation id="4699357559218762027">(samodejno zagnana)</translation>
-<translation id="470074695271471509">Se želite odjaviti in dokončati?</translation>
 <translation id="4701025263201366865">Prijava starša</translation>
 <translation id="4707302005824653064">Upravitelj (<ph name="CUSTODIAN_EMAIL" />) lahko na chrome.com pregleduje uporabo in zgodovino.</translation>
 <translation id="4707579418881001319">L2TP/IPsec + uporabniško potrdilo</translation>
@@ -2802,7 +2797,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="473546211690256853">Ta račun upravlja domena <ph name="DOMAIN" /></translation>
 <translation id="4735803855089279419">Sistemu ni uspelo določiti identifikatorjev naprave za to napravo.</translation>
 <translation id="4736292055110123391">Sinhronizirajte zaznamke, gesla, zgodovino in druge podatke v vseh vaših napravah</translation>
-<translation id="4737715515457435632">Povežite se z omrežjem</translation>
 <translation id="473775607612524610">Posodobi</translation>
 <translation id="4739639199548674512">Kartončki</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Preberite, kako posodobite aplikacije<ph name="END_LINK" /></translation>
@@ -3280,7 +3274,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="5423829801105537712">Osnovno preverjanje črkovanja</translation>
 <translation id="5423849171846380976">Aktivirano</translation>
 <translation id="5425042808445046667">Nadaljuj prenašanje</translation>
-<translation id="5425722269016440406">Če želite izklopiti Smart Lock, morate imeti internetno povezavo, ker je ta nastavitev sinhronizirana z vašim telefonom in drugimi napravami. Najprej se povežite z omrežjem.</translation>
 <translation id="5425863515030416387">Preprosta prijava v napravah</translation>
 <translation id="5427278936122846523">Vedno prevedi</translation>
 <translation id="5427459444770871191">&amp;Zasukaj v smeri urinega kazalca</translation>
@@ -3423,7 +3416,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="558918721941304263">Nalaganje aplikacij ...</translation>
 <translation id="5592595402373377407">Na voljo še ni dovolj podatkov.</translation>
 <translation id="5593357315997824387">Sinhroniziraj moje datoteke</translation>
-<translation id="5595152862129936745">Zelo daleč</translation>
 <translation id="5595485650161345191">Uredi naslov</translation>
 <translation id="5595727715083333657">Vsebnik ne podpira spreminjanja velikosti. Če želite prilagoditi količino prostora, ki je vnaprej dodeljen Linuxu (Beta), ustvarite varnostno kopijo in jo nato obnovite v novem vsebniku.</translation>
 <translation id="5596627076506792578">Več možnosti</translation>
@@ -3537,7 +3529,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="5747552184818312860">Poteče</translation>
 <translation id="5747785204778348146">Razvijalska različica – ni stabilna</translation>
 <translation id="5747809636523347288">&amp;Prilepi in pojdi na <ph name="URL" /></translation>
-<translation id="5750324801516359607">Daleč</translation>
 <translation id="5751887393582880060">To nalaganje krši varnostne pravilnike organizacije. Želite kljub temu nadaljevati?</translation>
 <translation id="5756163054456765343">Center za pomoč</translation>
 <translation id="5759728514498647443">Dokumente, ki jih pošljete v tiskanje v aplikaciji <ph name="APP_NAME" />, lahko prebere aplikacija <ph name="APP_NAME" />.</translation>
@@ -4087,7 +4078,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6490471652906364588">Naprava USB-C (desna vrata)</translation>
 <translation id="6491376743066338510">Odobritev ni uspela</translation>
 <translation id="6494445798847293442">Ni overitelj potrdil</translation>
-<translation id="649454645705377674">Zapri</translation>
 <translation id="6495925982925244349">Omrežje <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, moč signala je <ph name="SIGNAL_STRENGTH" /> %, upravlja ga vaš skrbnik, podrobnosti</translation>
 <translation id="6498249116389603658">&amp;Vsi jeziki</translation>
 <translation id="6499143127267478107">Razreševanje gostitelja v skriptu proxy ...</translation>
@@ -4155,7 +4145,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6590458744723262880">Preimenovanje mape</translation>
 <translation id="6592267180249644460">Dnevnik za WebRTC zajet <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">Prstni odtis je bil zabeležen</translation>
-<translation id="6594883168703494535">Prijava v Google Račun s funkcijo Smart Lock</translation>
 <translation id="6596325263575161958">Možnosti šifriranja</translation>
 <translation id="6596816719288285829">Naslov IP</translation>
 <translation id="6597017209724497268">Vzorci</translation>
@@ -4689,7 +4678,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7328867076235380839">Neveljavna kombinacija</translation>
 <translation id="7329154610228416156">Prijava ni uspela, ker je konfigurirana za uporabo URL-ja, ki ni varen (<ph name="BLOCKED_URL" />). Obrnite se na skrbnika.</translation>
 <translation id="7332053360324989309">Namenski proces: <ph name="SCRIPT_URL" /></translation>
-<translation id="7334190995941642545">Funkcija Smart Lock trenutno ni na voljo. Poskusite znova pozneje.</translation>
 <translation id="7334274148831027933">Omogoči zasidrano lupo</translation>
 <translation id="7335974957018254119">Uporaba preverjanja črkovanja za:</translation>
 <translation id="7336799713063880535">Obvestila so blokir.</translation>
@@ -5234,11 +5222,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8017679124341497925">Bližnjica je bila urejena</translation>
 <translation id="8018313076035239964">Nadzirajte, katere podatke lahko uporabijo spletna mesta in katero vsebino vam lahko pokažejo</translation>
 <translation id="8023801379949507775">Posodobi razširitve</translation>
-<translation id="8024483450737722621">Aplikacije, ki ste jih prenesli iz Googla Play, bodo izbrisane iz tega Chromebooka.
-      <ph name="LINE_BREAKS1" />
-      Kupljena vsebina, na primer filmi, TV-oddaje, glasba, knjige ali drugi nakupi v aplikacijah, bo morda tudi izbrisana.
-      <ph name="LINE_BREAKS2" />
-      To ne vpliva na aplikacije ali vsebino v drugih napravah.</translation>
 <translation id="8026334261755873520">Izbriši podatke brskanja</translation>
 <translation id="8028060951694135607">Microsoftova obnovitev ključa</translation>
 <translation id="8028803902702117856">Prenašanje <ph name="SIZE" />, <ph name="FILE_NAME" /></translation>
@@ -5554,7 +5537,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8455026683977728932">Omogočanje ilustracije orodja ADB ni uspelo</translation>
 <translation id="845702320058262034">Povezave ni mogoče vzpostaviti. Bluetooth v telefonu mora biti vklopljen.</translation>
 <translation id="8457451314607652708">Uvozi zaznamke</translation>
-<translation id="8460336040822756677">Če izklopite Smart Lock za napravo <ph name="DEVICE_TYPE" />, naprav Chrome ne boste mogli odkleniti s telefonom. Vnesti boste morali geslo.</translation>
 <translation id="8461329675984532579">Ime domačega ponudnika</translation>
 <translation id="84613761564611563">Zahtevan je uporabniški vmesnik za konfiguriranje omrežja, počakajte ...</translation>
 <translation id="8461914792118322307">Proxy</translation>
@@ -5780,7 +5762,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8743864605301774756">Posodobljeno pred 1 uro</translation>
 <translation id="8746654918629346731">Razširitev »<ph name="EXTENSION_NAME" />« ste že zahtevali</translation>
 <translation id="874689135111202667">{0,plural, =1{Ali želite naložiti eno datoteko na to spletno mesto?}one{Ali želite naložiti # datoteko na to spletno mesto?}two{Ali želite naložiti # datoteki na to spletno mesto?}few{Ali želite naložiti # datoteke na to spletno mesto?}other{Ali želite naložiti # datotek na to spletno mesto?}}</translation>
-<translation id="8748384418490037181">Možnosti funkcije Smart Lock</translation>
 <translation id="8749863574775030885">Dostop do naprav USB neznanega prodajalca</translation>
 <translation id="8750133148106010815">Če želite zagnati Google Play, <ph name="ORGANIZATION_NAME" /> zahteva, da varnostno kopirate podatke in ta Chromebook ponastavite na tovarniške nastavitve.</translation>
 <translation id="8750155211039279868"><ph name="ORIGIN" /> se želi povezati z zaporednimi vrati</translation>
@@ -5903,7 +5884,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8881020143150461183">Poskusite znova. Če potrebujete tehnično podporo, se obrnite na operaterja <ph name="CARRIER_NAME" />.</translation>
 <translation id="8883273463630735858">Omogočanje pospeševanja sledilne ploščice</translation>
 <translation id="8884570509232205463">Tvoja naprava se zdaj zaklene ob <ph name="UNLOCK_TIME" />.</translation>
-<translation id="8885197664446363138">Smart Lock ni na voljo</translation>
 <translation id="8888253246822647887">Aplikacija se bo odprla, ko bo nadgradnja dokončana. Nadgradnje lahko trajajo nekaj minut.</translation>
 <translation id="8888432776533519951">Barva:</translation>
 <translation id="8889651696183044030">Spletno mesto <ph name="ORIGIN" /> lahko ureja naslednje datoteke in mape</translation>

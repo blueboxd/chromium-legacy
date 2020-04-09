@@ -42,8 +42,7 @@ void PrivacyScreenToastController::ShowToast() {
 
   TrayBubbleView::InitParams init_params;
   init_params.shelf_alignment = tray_->shelf()->alignment();
-  init_params.min_width = kPrivacyScreenToastMinWidth;
-  init_params.max_width = kPrivacyScreenToastMaxWidth;
+  init_params.preferred_width = kPrivacyScreenToastMinWidth;
   init_params.delegate = this;
   init_params.parent_window = tray_->GetBubbleWindowContainer();
   init_params.anchor_view = nullptr;
@@ -136,7 +135,10 @@ void PrivacyScreenToastController::UpdateToastView() {
     toast_view_->SetPrivacyScreenEnabled(
         /*enabled=*/privacy_screen_controller->GetEnabled(),
         /*managed=*/privacy_screen_controller->IsManaged());
-    bubble_view_->SetWidth(toast_view_->GetPreferredSize().width());
+    int width = base::ClampToRange(toast_view_->GetPreferredSize().width(),
+                                   kPrivacyScreenToastMinWidth,
+                                   kPrivacyScreenToastMaxWidth);
+    bubble_view_->SetPreferredWidth(width);
   }
 }
 

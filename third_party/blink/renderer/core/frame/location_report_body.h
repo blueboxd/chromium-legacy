@@ -15,25 +15,38 @@
 namespace blink {
 
 class CORE_EXPORT LocationReportBody : public ReportBody {
- public:
+ private:
+  struct ReportLocation {
+    String file;
+    base::Optional<uint32_t> line_number;
+    base::Optional<uint32_t> column_number;
+  };
+
+  static ReportLocation CreateReportLocation(
+      const String& file,
+      base::Optional<uint32_t> line_number,
+      base::Optional<uint32_t> column_number);
+
+  static ReportLocation CreateReportLocation(
+      std::unique_ptr<SourceLocation> location);
+
+  explicit LocationReportBody(const ReportLocation& location)
+      : source_file_(location.file),
+        line_number_(location.line_number),
+        column_number_(location.column_number) {}
+
+ protected:
   explicit LocationReportBody(std::unique_ptr<SourceLocation> location)
-      : source_file_(location->Url()),
-        line_number_(location->IsUnknown()
-                         ? base::nullopt
-                         : base::make_optional(location->LineNumber())),
-        column_number_(location->IsUnknown()
-                           ? base::nullopt
-                           : base::make_optional(location->ColumnNumber())) {}
+      : LocationReportBody(CreateReportLocation(std::move(location))) {}
 
-  LocationReportBody() : LocationReportBody(SourceLocation::Capture()) {}
+  explicit LocationReportBody(
+      const String& source_file = g_empty_string,
+      base::Optional<uint32_t> line_number = base::nullopt,
+      base::Optional<uint32_t> column_number = base::nullopt)
+      : LocationReportBody(
+            CreateReportLocation(source_file, line_number, column_number)) {}
 
-  LocationReportBody(const String& source_file,
-                     base::Optional<uint32_t> line_number = base::nullopt,
-                     base::Optional<uint32_t> column_number = base::nullopt)
-      : source_file_(source_file),
-        line_number_(line_number),
-        column_number_(column_number) {}
-
+ public:
   ~LocationReportBody() override = default;
 
   const String& sourceFile() const { return source_file_; }

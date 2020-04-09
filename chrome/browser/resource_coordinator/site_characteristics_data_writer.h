@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_RESOURCE_COORDINATOR_SITE_CHARACTERISTICS_DATA_WRITER_H_
 
 #include "base/time/time.h"
-#include "chrome/browser/performance_manager/persistence/site_data/tab_visibility.h"
+#include "components/performance_manager/persistence/site_data/tab_visibility.h"
 
 namespace resource_coordinator {
 

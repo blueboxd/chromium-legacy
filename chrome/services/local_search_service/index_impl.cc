@@ -73,6 +73,9 @@ bool CompareResults(const local_search_service::Result& r1,
 
 }  // namespace
 
+local_search_service::Data::Data(const std::string& id,
+                                 const std::vector<base::string16>& search_tags)
+    : id(id), search_tags(search_tags) {}
 local_search_service::Data::Data() = default;
 local_search_service::Data::Data(const Data& data) = default;
 local_search_service::Data::~Data() = default;

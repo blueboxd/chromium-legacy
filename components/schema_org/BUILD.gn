@@ -86,6 +86,7 @@ static_library("extractor") {
     "//components/schema_org:generate_schema_org_code",
     "//components/schema_org:schema_org",
     "//components/schema_org:schema_org_properties",
+    "//components/schema_org/common",
     "//components/schema_org/common:improved_mojom",
   ]
 }

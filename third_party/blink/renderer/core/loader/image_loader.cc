@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/cross_origin_attribute.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
+#include "third_party/blink/renderer/core/html/loading_attribute.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
@@ -170,6 +171,7 @@ ImageLoader::ImageLoader(Element* element)
     : element_(element),
       image_complete_(true),
       suppress_error_events_(false),
+      was_deferred_explicitly_(false),
       lazy_image_load_state_(LazyImageLoadState::kNone) {
   RESOURCE_LOADING_DVLOG(1) << "new ImageLoader " << this;
 }
@@ -519,10 +521,14 @@ void ImageLoader::DoUpdateFromElement(
         lazy_image_load_state_ == LazyImageLoadState::kNone) {
       const auto* frame = document.GetFrame();
       if (auto* html_image = DynamicTo<HTMLImageElement>(GetElement())) {
+        LoadingAttributeValue loading_attr = GetLoadingAttributeValue(
+            html_image->FastGetAttribute(html_names::kLoadingAttr));
         switch (LazyImageHelper::DetermineEligibilityAndTrackVisibilityMetrics(
             *frame, html_image, params.Url())) {
           case LazyImageHelper::Eligibility::kEnabledFullyDeferred:
             lazy_image_load_state_ = LazyImageLoadState::kDeferred;
+            was_deferred_explicitly_ =
+                (loading_attr == LoadingAttributeValue::kLazy);
             params.SetLazyImageDeferred();
             if (frame->Client()) {
               frame->Client()->DidObserveLazyLoadBehavior(
@@ -533,6 +539,13 @@ void ImageLoader::DoUpdateFromElement(
             break;
         }
       }
+    }
+
+    // If we're now loading in a once-deferred image, make sure it doesn't block
+    // the load event.
+    if (was_deferred_explicitly_ &&
+        lazy_image_load_state_ == LazyImageLoadState::kFullImage) {
+      params.SetLazyImageNonBlocking();
     }
 
     // Enable subresource redirect for <img> elements created by parser when

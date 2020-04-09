@@ -50,6 +50,9 @@ WGPUTexture SharedImageRepresentationDawnOzone::BeginAccess(
   if (texture_) {
     return nullptr;
   }
+  if (!ozone_backing()->VaSync()) {
+    return nullptr;
+  }
   DCHECK(pixmap_->GetNumberOfPlanes() == 1)
       << "Multi-plane formats are not supported.";
   // TODO(hob): Synchronize access to the dma-buf by waiting on all semaphores

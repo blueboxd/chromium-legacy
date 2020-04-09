@@ -128,6 +128,9 @@ SecurityStateTabHelper::SecurityStateTabHelper(
 SecurityStateTabHelper::~SecurityStateTabHelper() {}
 
 security_state::SecurityLevel SecurityStateTabHelper::GetSecurityLevel() {
+  if (get_security_level_callback_for_tests_) {
+    std::move(get_security_level_callback_for_tests_).Run();
+  }
   return security_state::GetSecurityLevel(*GetVisibleSecurityState(),
                                           UsedPolicyInstalledCertificate());
 }

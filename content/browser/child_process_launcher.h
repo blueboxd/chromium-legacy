@@ -14,7 +14,6 @@
 #include "base/process/kill.h"
 #include "base/process/process.h"
 #include "base/sequence_checker.h"
-#include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/child_process_launcher_helper.h"
 #include "content/common/content_export.h"
@@ -235,7 +234,6 @@ class CONTENT_EXPORT ChildProcessLauncher {
 
   ChildProcessTerminationInfo termination_info_;
   bool starting_;
-  base::TimeTicks start_time_;
 
   // Controls whether the child process should be terminated on browser
   // shutdown. Default behavior is to terminate the child.

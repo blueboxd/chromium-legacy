@@ -47,6 +47,7 @@ Polymer({
   behaviors: [
     I18nBehavior,
     PrefsBehavior,
+    settings.RouteObserverBehavior,
   ],
 
   properties: {
@@ -216,6 +217,26 @@ Polymer({
    */
   displayChangedListener_: undefined,
 
+  /** @private {?settings.DevicePageBrowserProxy} */
+  browserProxy_: null,
+
+  /** @private {boolean} */
+  allowDisplayIdentificationApi_:
+      loadTimeData.getBoolean('allowDisplayIdentificationApi'),
+
+  /** @private {string} */
+  invalidDisplayId_: loadTimeData.getString('invalidDisplayId'),
+
+  /** @private {!settings.Route|undefined} */
+  currentRoute_: undefined,
+
+  /** @override */
+  created() {
+    if (this.allowDisplayIdentificationApi_) {
+      this.browserProxy_ = settings.DevicePageBrowserProxyImpl.getInstance();
+    }
+  },
+
   /** @override */
   attached() {
     this.displayChangedListener_ =
@@ -233,6 +254,32 @@ Polymer({
         assert(this.displayChangedListener_));
 
     this.currentSelectedModeIndex_ = -1;
+  },
+
+  /**
+   * @param {!settings.Route|undefined} opt_newRoute
+   * @param {!settings.Route|undefined} opt_oldRoute
+   */
+  currentRouteChanged(opt_newRoute, opt_oldRoute) {
+    if (!this.allowDisplayIdentificationApi_) {
+      return;
+    }
+
+    this.currentRoute_ = opt_newRoute;
+
+    // When navigating away from the page, deselect any selected display.
+    if (opt_newRoute != settings.routes.DISPLAY &&
+        opt_oldRoute == settings.routes.DISPLAY) {
+      this.browserProxy_.highlightDisplay(this.invalidDisplayId_);
+      return;
+    }
+
+    // When navigating back into the display page, re-select a display.
+    if (this.selectedDisplay && opt_newRoute == settings.routes.DISPLAY &&
+        opt_oldRoute != settings.routes.DISPLAY) {
+      // setSelectedDisplay_ doesn't trigger again if it is not reattaching.
+      this.browserProxy_.highlightDisplay(this.selectedDisplay.id);
+    }
   },
 
   /**
@@ -469,6 +516,12 @@ Polymer({
     this.set(
         'selectedZoomPref_.value',
         this.getSelectedDisplayZoom_(selectedDisplay));
+
+    if (this.allowDisplayIdentificationApi_ &&
+        this.selectedDisplay != selectedDisplay &&
+        this.currentRoute_ == settings.routes.DISPLAY) {
+      this.browserProxy_.highlightDisplay(selectedDisplay.id);
+    }
 
     this.displayModeList_ = this.getDisplayModeOptionList_(selectedDisplay);
     // Set |selectedDisplay| first since only the resolution slider depends

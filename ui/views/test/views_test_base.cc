@@ -131,9 +131,8 @@ Widget::InitParams ViewsTestBase::CreateParams(Widget::InitParams::Type type) {
 
 std::unique_ptr<Widget> ViewsTestBase::CreateTestWidget(
     Widget::InitParams::Type type) {
-  Widget::InitParams params = CreateParamsForTestWidget(type);
-  auto widget = std::make_unique<Widget>();
-  widget->Init(std::move(params));
+  std::unique_ptr<Widget> widget = AllocateTestWidget();
+  widget->Init(CreateParamsForTestWidget(type));
   return widget;
 }
 
@@ -181,6 +180,10 @@ NativeWidget* ViewsTestBase::CreateNativeWidgetForTest(
   NOTREACHED();
   return nullptr;
 #endif
+}
+
+std::unique_ptr<Widget> ViewsTestBase::AllocateTestWidget() {
+  return std::make_unique<Widget>();
 }
 
 Widget::InitParams ViewsTestBase::CreateParamsForTestWidget(

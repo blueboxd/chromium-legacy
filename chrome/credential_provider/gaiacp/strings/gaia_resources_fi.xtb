@@ -18,6 +18,7 @@
 <translation id="4744575902940448763">Työtilisi salasanaa ei voitu synkronoida Windows-profiiliisi, koska organisaatiosi rajoittaa laitteellasi tehtäviä salasanapäivityksiä. Pyydä apua järjestelmänvalvojaltasi.</translation>
 <translation id="5186761973554910131">Salasanan vaihtoyrityksen yhteydessä annettiin väärä tietokoneen nimi. Ota yhteyttä järjestelmänvalvojaasi.</translation>
 <translation id="5265714013989877288">Ei voi jatkaa, koska Windows-salasanaasi vaihdettaessa tapahtui virhe. Ota yhteyttä järjestelmänvalvojaasi.</translation>
+<translation id="5581861273642234526">Toinen työtili on jo yhdistetty tähän laitteeseen. Kirjaudu sisään Windows-tililläsi.</translation>
 <translation id="6033715878377252112">Googlen tunnistuspalvelu Windowsille ‑apuri</translation>
 <translation id="6149399665202317746">Googlen tunnistuspalvelu Windowsille</translation>
 <translation id="6243062314475217481">Työtilisi salasana ei vastaa Windowsin monimutkaisuusvaatimuksia. Pyydä apua järjestelmänvalvojaltasi.</translation>

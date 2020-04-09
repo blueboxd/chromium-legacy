@@ -43,10 +43,10 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.site_settings.ContentSettingValues;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.ui.favicon.RoundedIconGenerator;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.TabTitleObserver;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy.NotificationEntry;
+import org.chromium.components.favicon.FaviconFallbackGenerator;
 import org.chromium.components.permissions.PermissionDialogController;
 import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
@@ -633,7 +633,7 @@ public class NotificationPlatformBridgeTest {
 
         // Create a second rounded icon for the test's origin, and compare its dimensions against
         // those of the icon associated to the notification itself.
-        RoundedIconGenerator generator =
+        FaviconFallbackGenerator generator =
                 NotificationBuilderBase.createIconGenerator(context.getResources());
 
         Bitmap generatedIcon = generator.generateIconForUrl(mPermissionTestRule.getOrigin());

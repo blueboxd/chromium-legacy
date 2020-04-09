@@ -565,13 +565,6 @@ bool BlinkTestRunner::AllowExternalPages() {
   return test_config_->allow_external_pages;
 }
 
-void BlinkTestRunner::FetchManifest(
-    blink::WebView* view,
-    base::OnceCallback<void(const blink::WebURL&, const blink::Manifest&)>
-        callback) {
-  ::content::FetchManifest(view, std::move(callback));
-}
-
 void BlinkTestRunner::SetPermission(const std::string& name,
                                     const std::string& value,
                                     const GURL& origin,

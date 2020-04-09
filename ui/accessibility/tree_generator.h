@@ -2,7 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef UI_ACCESSIBILITY_TREE_GENERATOR_H_
+#define UI_ACCESSIBILITY_TREE_GENERATOR_H_
+
 #include <vector>
+
+#include "ui/accessibility/ax_tree_update_forward.h"
 
 namespace ui {
 
@@ -45,13 +50,23 @@ class TreeGenerator {
   TreeGenerator(int max_node_count, bool permutations);
   ~TreeGenerator();
 
+  // Build all unique trees (no nodes ignored).
   int UniqueTreeCount() const;
-
   void BuildUniqueTree(int tree_index, AXTree* out_tree) const;
 
+  // Support for returning every permutation of ignored nodes
+  // (other than the root, which is never ignored) per unique tree.
+  int IgnoredPermutationCountPerUniqueTree(int tree_index) const;
+  void BuildUniqueTreeWithIgnoredNodes(int tree_index,
+                                       int ignored_index,
+                                       AXTree* out_tree) const;
+
  private:
-  void BuildUniqueTreeWithSize(
-      int node_count, int tree_index, AXTree* out_tree) const;
+  void BuildUniqueTreeUpdate(int tree_index,
+                             AXTreeUpdate* out_tree_update) const;
+  void BuildUniqueTreeUpdateWithSize(int node_count,
+                                     int tree_index,
+                                     AXTreeUpdate* out_tree_update) const;
 
   int max_node_count_;
   bool permutations_;
@@ -60,3 +75,5 @@ class TreeGenerator {
 };
 
 }  // namespace ui
+
+#endif  // UI_ACCESSIBILITY_TREE_GENERATOR_H_

@@ -101,7 +101,7 @@ StyleImage* CSSImageSetValue::CachedImage(float device_scale_factor) const {
 StyleImage* CSSImageSetValue::CacheImage(
     const Document& document,
     float device_scale_factor,
-    FetchParameters::ImageRequestOptimization image_request_optimization,
+    FetchParameters::ImageRequestBehavior image_request_behavior,
     CrossOriginAttributeValue cross_origin) {
   if (!images_in_set_.size())
     FillImageSet();

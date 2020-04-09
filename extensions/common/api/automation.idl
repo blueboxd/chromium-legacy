@@ -1005,6 +1005,9 @@ enum MarkerType {
     // Indicates the font family.
     DOMString fontFamily;
 
+    // Indicates whether this is a root of an editable subtree.
+    boolean editableRoot;
+
     //
     // Walking the tree.
     //

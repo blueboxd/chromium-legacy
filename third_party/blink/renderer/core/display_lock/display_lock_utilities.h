@@ -23,13 +23,27 @@ class CORE_EXPORT DisplayLockUtilities {
     DISALLOW_COPY_AND_ASSIGN(ScopedChainForcedUpdate);
 
    public:
+    ~ScopedChainForcedUpdate() = default;
+
+   private:
+    // It is important not to create multiple ScopedChainForcedUpdate scopes.
+    // The following functions update some combination of Style, Layout, Paint
+    // information after forcing the display locks. It should be enough to use
+    // one of the following functions instead of forcing the scope manually.
+    friend void Document::UpdateStyleAndLayoutForNode(
+        const Node* node,
+        DocumentUpdateReason reason);
+    friend void Document::UpdateStyleAndLayoutTreeForNode(const Node*);
+    friend void Document::UpdateStyleAndLayoutTreeForSubtree(const Node* node);
+    friend void Document::EnsurePaintLocationDataValidForNode(
+        const Node* node,
+        DocumentUpdateReason reason);
+
     explicit ScopedChainForcedUpdate(const Node* node,
                                      bool include_self = false);
-    ~ScopedChainForcedUpdate() = default;
 
     void CreateParentFrameScopeIfNeeded(const Node* node);
 
-   private:
     Vector<DisplayLockContext::ScopedForcedUpdate> scoped_update_forced_list_;
     std::unique_ptr<ScopedChainForcedUpdate> parent_frame_scope_;
   };

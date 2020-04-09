@@ -7,9 +7,9 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
-#include "chrome/browser/performance_manager/persistence/site_data/feature_usage.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_impl.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
+#include "components/performance_manager/persistence/site_data/feature_usage.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

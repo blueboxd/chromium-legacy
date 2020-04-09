@@ -161,6 +161,7 @@ constexpr device::mojom::XRSessionFeature kARCoreDeviceFeatures[] = {
     device::mojom::XRSessionFeature::REF_SPACE_LOCAL,
     device::mojom::XRSessionFeature::REF_SPACE_LOCAL_FLOOR,
     device::mojom::XRSessionFeature::REF_SPACE_UNBOUNDED,
+    device::mojom::XRSessionFeature::DOM_OVERLAY,
 };
 
 #if BUILDFLAG(ENABLE_OPENVR)
@@ -257,11 +258,6 @@ bool BrowserXRRuntimeImpl::SupportsFeature(
     case device::mojom::XRDeviceId::FAKE_DEVICE_ID:
       return true;
     case device::mojom::XRDeviceId::ARCORE_DEVICE_ID:
-      // Only support DOM overlay if the feature flag is enabled.
-      if (feature == device::mojom::XRSessionFeature::DOM_OVERLAY) {
-        return base::FeatureList::IsEnabled(features::kWebXrIncubations);
-      }
-
       // Only support hit test if the feature flag is enabled.
       if (feature == device::mojom::XRSessionFeature::HIT_TEST) {
         return base::FeatureList::IsEnabled(features::kWebXrHitTest);

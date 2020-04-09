@@ -110,6 +110,8 @@ CommandHandler.onCommand = function(command) {
       } else {
         chrome.accessibilityPrivate.setKeyboardListener(true, false);
       }
+      CommandHandler.smartStickyMode_.onStickyModeCommand(
+          ChromeVoxState.instance.currentRange);
       return false;
     case 'passThroughMode':
       ChromeVox.passThroughMode = true;

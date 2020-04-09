@@ -27,10 +27,6 @@ class NavigationEntry;
 class WebContents;
 }
 
-namespace gfx {
-class Image;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 // BackForwardMenuModel
@@ -62,7 +58,7 @@ class BackForwardMenuModel : public ui::MenuModel {
   bool GetAcceleratorAt(int index, ui::Accelerator* accelerator) const override;
   bool IsItemCheckedAt(int index) const override;
   int GetGroupIdAt(int index) const override;
-  bool GetIconAt(int index, gfx::Image* icon) const override;
+  ui::ImageModel GetIconAt(int index) const override;
   ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const override;
   bool IsEnabledAt(int index) const override;
   MenuModel* GetSubmenuModelAt(int index) const override;

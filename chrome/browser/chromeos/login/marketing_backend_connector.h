@@ -9,6 +9,8 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "chrome/browser/profiles/profile.h"
@@ -30,30 +32,32 @@ class MarketingBackendConnector
   // A fire and forget method to be called on the marketing opt-in screen.
   // It will create an instance of  MarketingBackendConnectorthat calls the
   // backend to update the user preferences.
-  static void UpdateChromebookEmailPreferences();
+  static void UpdateEmailPreferences(Profile* profile,
+                                     const std::string& country_code);
 
-  enum class UmaEvent {
-    // Differentiate between users who have a default opt-in vs default opt-out
-    USER_OPTED_IN_WHEN_DEFAULT_IS_OPT_IN,
-    USER_OPTED_IN_WHEN_DEFAULT_IS_OPT_OUT,
-    USER_OPTED_OUT_WHEN_DEFAULT_IS_OPT_IN,
-    USER_OPTED_OUT_WHEN_DEFAULT_IS_OPT_OUT,
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused. Must coincide with the enum
+  // MarketingOptInBackendConnectorEvent on enums.xml
+  enum class BackendConnectorEvent {
     // Successfully set the user preference on the server
-    SUCCESS,
+    kSuccess = 0,
     // Possible errors to keep track of.
-    ERROR_SERVER_INTERNAL,
-    ERROR_REQUEST_TIMEOUT,
-    ERROR_AUTH,
-    ERROR_OTHER
+    kErrorServerInternal = 1,
+    kErrorRequestTimeout = 2,
+    kErrorAuth = 3,
+    kErrorOther = 4,
+    kMaxValue = kErrorOther,
   };
 
  private:
-  explicit MarketingBackendConnector(Profile* user_profile);
+  friend class ScopedRequestCallbackSetter;
+  friend class base::RefCountedThreadSafe<MarketingBackendConnector>;
 
+  explicit MarketingBackendConnector(Profile* user_profile);
   virtual ~MarketingBackendConnector();
 
   // Sends a request to the server to subscribe the user to all campaigns.
-  void PerformRequest();
+  void PerformRequest(const std::string& country_code);
 
   // Starts the token fetch process.
   void StartTokenFetch();
@@ -81,7 +85,22 @@ class MarketingBackendConnector
   std::string access_token_;
   Profile* profile_ = nullptr;
 
-  friend class base::RefCountedThreadSafe<MarketingBackendConnector>;
+  static base::RepeatingCallback<void(std::string)>*
+      request_finished_for_tests_;
+
+  // Country code to be used in the request.
+  std::string country_code_;
+};
+
+// Scoped callback setter for the MarketingBackendConnector
+class ScopedRequestCallbackSetter {
+ public:
+  ScopedRequestCallbackSetter(
+      std::unique_ptr<base::RepeatingCallback<void(std::string)>> callback);
+  ~ScopedRequestCallbackSetter();
+
+ private:
+  std::unique_ptr<base::RepeatingCallback<void(std::string)>> callback_;
 };
 
 }  // namespace chromeos

@@ -47,17 +47,6 @@ void RemoveEvent(std::set<AXEventGenerator::EventParams>* node_events,
   }
 }
 
-bool HasOtherLiveRegionEvent(
-    const std::set<AXEventGenerator::EventParams>& events) {
-  auto is_live_region_event = [](const AXEventGenerator::EventParams& params) {
-    return params.event == AXEventGenerator::Event::ALERT ||
-           params.event == AXEventGenerator::Event::LIVE_REGION_CREATED;
-  };
-
-  return std::find_if(events.begin(), events.end(), is_live_region_event) !=
-         events.end();
-}
-
 }  // namespace
 
 AXEventGenerator::EventParams::EventParams(Event event,
@@ -149,31 +138,6 @@ void AXEventGenerator::AddEvent(AXNode* node, AXEventGenerator::Event event) {
     return;
 
   std::set<EventParams>& node_events = tree_events_[node];
-
-  // A newly created live region or alert should not *also* fire a
-  // live region changed event.
-  if (event == Event::LIVE_REGION_CHANGED &&
-      HasOtherLiveRegionEvent(node_events)) {
-    return;
-  }
-
-  // We shouldn't fire children changed events on nodes that become
-  // ignored or unignored.
-  if (event == Event::IGNORED_CHANGED) {
-    for (auto& iter : node_events) {
-      if (iter.event == Event::CHILDREN_CHANGED) {
-        node_events.erase(iter);
-        break;
-      }
-    }
-  }
-  if (event == Event::CHILDREN_CHANGED) {
-    for (auto& iter : node_events) {
-      if (iter.event == Event::IGNORED_CHANGED)
-        return;
-    }
-  }
-
   node_events.emplace(event, ax::mojom::EventFrom::kNone);
 }
 

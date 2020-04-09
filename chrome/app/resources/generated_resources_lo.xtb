@@ -120,7 +120,6 @@
 <translation id="1153636665119721804">ໂປຣແກຣມການປົກປ້ອງຂັ້ນສູງຂອງ Google</translation>
 <translation id="1161575384898972166">ກະ​ລຸ​ນາ​ລົງຊື່ເຂົ້າ​ໃຊ້ <ph name="TOKEN_NAME" /> ເພື່ອສົ່ງໃບຢັ້ງຢືນລູກຂ່າຍອອກໄປ.</translation>
 <translation id="1163931534039071049">ເບິ່ງແຫຼ່ງທີ່ມາຂອບ</translation>
-<translation id="1164674268730883318">ປິດ Smart Lock ສຳລັບ <ph name="DEVICE_TYPE" />?</translation>
 <translation id="1164891049599601209">ມີການປ້ອນໃນເວັບໄຊຫຼອກລວງ</translation>
 <translation id="1164899421101904659">ປ້ອນລະຫັດປົດລັອກ PIN</translation>
 <translation id="1165039591588034296">ຜິດພາດ</translation>
@@ -772,7 +771,6 @@
 
 ທ່ານສາມາດຈັດການການຕັ້ງຄ່າບັນຊີນີ້ໄດ້ໂດຍການຕິດຕັ້ງແອັບ Family Link ໃນອຸປະກອນຂອງທ່ານ.  ພວກເຮົາໄດ້ສົ່ງຄຳແນະນຳໃຫ້ທ່ານໃນອີເມວ.</translation>
 <translation id="2040460856718599782">ອຸ້ຍ! ມີບາງອັນຜິດພາດ ເມື່ອພະຍາຍາມຮັບຮອງ. ກະລຸນາກວດເບິ່ງໃບຢັ້ງຢືນການລົງຊື່ເຂົ້າໃຊ້ໃຫ້ດີ ແລະລອງໃໝ່ອີກ.</translation>
-<translation id="2043818754674261542">ໄລຍະຫ່າງທີ່ຕ້ອງການເພື່ອໃຫ້ໂທລະສັບປົດລັອກ <ph name="DEVICE_TYPE" /> ນີ້</translation>
 <translation id="204497730941176055">ຊື່​ແມ່​ແບບໃບຢັ້ງຢືນ Microsoft</translation>
 <translation id="2045117674524495717">ຕົວຊ່ວຍທາງລັດແປ້ນພິມ</translation>
 <translation id="2045969484888636535">ສືບຕໍ່ບລັອກຄຸກກີ້</translation>
@@ -1145,7 +1143,6 @@
 <translation id="2518024842978892609">ໃຊ້​ໃບ​ຢັ້ງ​ຢືນ​ລູກ​ຂ່າຍ​ຂອງ​ທ່ານ</translation>
 <translation id="2520644704042891903">ກໍາລັງລໍຖ້າເຕົ້າຮັບທີ່ມີຢູ່...</translation>
 <translation id="252219247728877310">ອົງ​ປະ​ກອບ​ບໍ່ໄດ້ຮັບການອັບເດດ</translation>
-<translation id="2522791476825452208">ໃກ້ທີ່ສຸດ</translation>
 <translation id="2523184218357549926">ສົ່ງ URL ຂອງໜ້າຕ່າງໆທີ່ທ່ານເຂົ້າເບິ່ງໃຫ້ Google</translation>
 <translation id="2526277209479171883">ຕິດຕັ້ງ ແລະ ສືບຕໍ່</translation>
 <translation id="2526590354069164005">ເດັສທັອບ</translation>
@@ -1754,7 +1751,6 @@
 <translation id="3333190335304955291">ທ່ານສາມາດປິດການບໍລິການນີ້ໄດ້ໃນການຕັ້ງຄ່າ.</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> - ວິດີໂອທີ່ຫຼິ້ນໃນໂໝດສະແດງຜົນຊ້ອນກັນ</translation>
 <translation id="3335947283844343239">ເປີດ​ແຖບ​ທີ່ປິດແລ້ວຄືນໃໝ່</translation>
-<translation id="3336664756920573711">ປົດລັອກ <ph name="DEVICE_TYPE" /> ຂອງທ່ານດ້ວຍໂທລະສັບ Android ຂອງທ່ານ</translation>
 <translation id="3340620525920140773">ດາວໂຫຼດສຳເລັດແລ້ວ: <ph name="FILE_NAME" />.</translation>
 <translation id="3341699307020049241">PIN ບໍ່ຖືກຕ້ອງ. ທ່ານຍັງເຫຼືອຄວາມພະຍາຍາມ <ph name="RETRIES" /> ຄັ້ງ.</translation>
 <translation id="3341703758641437857">ອະນຸຍາດການເຂົ້າຫາ URLs ໄຟລ໌</translation>
@@ -2777,7 +2773,6 @@
 <translation id="4697551882387947560">ເມື່ອຊ່ວງເວລາການເຂົ້າທ່ອງເນັດສິ້ນສຸດ</translation>
 <translation id="4699172675775169585">ຮູບ ແລະໄຟລ໌ທີ່ແຄຊ໌ແລ້ວ</translation>
 <translation id="4699357559218762027">(ເປີດໃຊ້ອັດຕະໂນມັດ)</translation>
-<translation id="470074695271471509">ອອກຈາກລະບົບເພື່ອສຳເລັດບໍ?</translation>
 <translation id="4701025263201366865">ການເຂົ້າສູ່ລະບົບຂອງພໍ່ແມ່</translation>
 <translation id="4707302005824653064">ສາມາດທົບທວນເບິ່ງການ​​ໃຊ້​ ແລະ​ປະ​ຫວັດ​ດ້ວຍຕົວ​ຈັດ​ການ (<ph name="CUSTODIAN_EMAIL" />)  ຢູ່ທີ່ chrome.com ໄດ້.</translation>
 <translation id="4707579418881001319">L2TP/IPsec + ໃບຢັ້ງຢືນຜູ້ໃຊ້</translation>
@@ -2800,7 +2795,6 @@
 <translation id="473546211690256853">ບັນຊີນີ້ຖືກຈັດການໂດຍ <ph name="DOMAIN" /></translation>
 <translation id="4735803855089279419">ລະບົບກໍານົດຕົວລະບຸອຸປະກອນສໍາລັບອຸປະກອນນີ້ບໍ່ສຳເລັດ.</translation>
 <translation id="4736292055110123391">ຊິ້ງບຸກມາກ, ລະຫັດຜ່ານ, ປະຫວັດຂອງທ່ານ ແລະ ອື່ນໆອີກຢູ່ໃນທຸກອຸປະກອນຂອງທ່ານ</translation>
-<translation id="4737715515457435632">ເຊື່ອມ​ຕໍ່​ກັບ​ເຄືອ​ຂ່າຍ​</translation>
 <translation id="473775607612524610">ອັບເດດ</translation>
 <translation id="4739639199548674512">ປີ້</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />ສຶກສາວິທີອັບເດດແອັບພລິເຄຊັນ<ph name="END_LINK" /></translation>
@@ -3278,7 +3272,6 @@
 <translation id="5423829801105537712">ຕົວກວດການສະກົດຄຳພື້ນຖານ</translation>
 <translation id="5423849171846380976">ເປີດໃຊ້ງານແລ້ວ</translation>
 <translation id="5425042808445046667">ສືບຕໍ່ການດາວໂຫລດ</translation>
-<translation id="5425722269016440406">ທ່ານ​ຕ້ອງ​ອອນ​ລາຍ​ນ໌ ເພື່ອ​ປິດ​ລັອກ​ອັດ​ສະ​ລິ​ຍະ ເພາະ​ວ່າ​ການ​ຕັ້ງ​ຄ່າ​ນີ້​ຖືກ​ຊິງ​ຄ໌​ຫາ​ໂທ​ລະ​ສັບ​ຂອງ​ທ່ານ ແລະ​ອຸ​ປະ​ກອນ​ອື່ນ​ແລ້ວ. ກະ​ລຸ​ນາ​ເຊື່ອມ​ຕໍ່​ກັບ​ເຄືອ​ຂ່າຍ​ກ່ອນ.</translation>
 <translation id="5425863515030416387">ເຂົ້າສູ່ລະບົບໄດ້ຢ່າງງ່າຍດາຍໃນທົ່ວອຸປະກອນ</translation>
 <translation id="5427278936122846523">ແປທຸກເທື່ອ</translation>
 <translation id="5427459444770871191">ໝຸນຕາມເຂັມໂມງ</translation>
@@ -3420,7 +3413,6 @@
 <translation id="558918721941304263">ກຳລັງໂຫຼດແອັບ...</translation>
 <translation id="5592595402373377407">ບໍ່ມີຂໍ້​ມູນພຽງ​ພໍ​ເທື່ອ​.</translation>
 <translation id="5593357315997824387">ຊິ້ງຂໍ້ມູນໄຟລ໌ຂອງຂ້ອຍ</translation>
-<translation id="5595152862129936745">ໄກທີ່ສຸດ</translation>
 <translation id="5595485650161345191">ແກ້ໄຂທີ່ຢູ່</translation>
 <translation id="5595727715083333657">ກ່ອງບັນຈຸຂອງທ່ານບໍ່ຮອງຮັບການປັບຂະໜາດ. ເພື່ອປັບປະລິມານພື້ນທີ່ຫວ່າງທີ່ຈັດສັນລ່ວງໜ້າໃຫ້ Linux (ເບຕ້າ), ກະລຸນາສຳຮອງຂໍ້ມູນໄວ້ ແລະ ຈາກນັ້ນກູ້ຄືນໃສ່ກ່ອງບັນຈຸໃໝ່.</translation>
 <translation id="5596627076506792578">ໂຕ​ເລືອກ​ເພີ່ມ​ເຕີມ</translation>
@@ -3533,7 +3525,6 @@
 <translation id="5747552184818312860">ໝົດອາຍຸ</translation>
 <translation id="5747785204778348146">ຜູ້ພັດ​ທະ​ນາ - ບໍ່ໝັ້ນຄົງ</translation>
 <translation id="5747809636523347288">ວາງໃສ່ ແລະ ໄປຫາ <ph name="URL" /></translation>
-<translation id="5750324801516359607">ໄກ</translation>
 <translation id="5751887393582880060">ການອັບໂຫຼດນີ້ລະເມີດນະໂຍບາຍຄວາມປອດໄພຂອງອົງການຂອງທ່ານ. ທ່ານຕ້ອງການຢືນຢັນການດຳເນີນຕໍ່ບໍ?</translation>
 <translation id="5756163054456765343">ສູນຊ່ວຍເຫຼືອ</translation>
 <translation id="5759728514498647443">ເອ​ກະ​ສານ​ທີ່​ທ່ານ​ສົ່ງ​ເພື່ອ​ພິມ​ຜ່ານ​ທາງ <ph name="APP_NAME" /> ສາ​ມາດ​ອ່ານ​ໄດ້ໂດຍ <ph name="APP_NAME" />.</translation>
@@ -4083,7 +4074,6 @@
 <translation id="6490471652906364588">ອຸ​ປະ​ກອນ USB-C (ຊ່ອງ​ຂວາ)</translation>
 <translation id="6491376743066338510">ການອະນຸຍາດບໍ່ສຳເລັດ</translation>
 <translation id="6494445798847293442">ບໍ່ແມ່ນໜ່ວຍງານອອກໃບຮັບຮອງ</translation>
-<translation id="649454645705377674">ປິດ</translation>
 <translation id="6495925982925244349">ເຄືອຂ່າຍທີ <ph name="NETWORK_INDEX" /> ຈາກທັງໝົດ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, ຄວາມແຮງສັນຍານ <ph name="SIGNAL_STRENGTH" />%, ຈັດການໂດຍຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານ, ລາຍລະອຽດ</translation>
 <translation id="6498249116389603658">&amp;ທຸກພາສາຂອງທ່ານ</translation>
 <translation id="6499143127267478107">ກໍາລັງແກ້ໄຂແມ່ຂ່າຍຢູ່ໃນຕົວໜັງສືພຣັອກຊີ...</translation>
@@ -4151,7 +4141,6 @@
 <translation id="6590458744723262880">ປ່ຽນຊື່ໂຟນເດີ</translation>
 <translation id="6592267180249644460">ແຄັບເຈີບັນທຶກ WebRTC <ph name="WEBRTC_LOG_CAPTURE_TIME" /> ແລ້ວ</translation>
 <translation id="6592808042417736307">ບັນທຶກລາຍນິ້ວມືຂອງທ່ານແລ້ວ</translation>
-<translation id="6594883168703494535">ໃຊ້ Smart Lock ເພື່ອເຂົ້າສູ່ລະບົບບັນຊີ Google ຂອງທ່ານ</translation>
 <translation id="6596325263575161958">ທາງເລືອກການໃສ່ລະຫັດ</translation>
 <translation id="6596816719288285829">ທີ່​ຢູ່ IP</translation>
 <translation id="6597017209724497268">ຕົວ​ຢ່າງ</translation>
@@ -4685,7 +4674,6 @@
 <translation id="7328867076235380839">ການລວມເຂົ້າກັນບໍ່ຖືກຕ້ອງ</translation>
 <translation id="7329154610228416156">ລົງຊື່ເຂົ້າໃຊ້ບໍ່ສໍາເລັດ ເພາະວ່າມັນບໍ່ຖືກປັບ​ຕັ້ງ​ຄ່າໃຫ້ໃຊ້ URL ທີ່​ບໍ່​ປອດ​ໄພ  (<ph name="BLOCKED_URL" />). ກະລຸນາຕິດຕໍ່ຜູ້ຄວບຄຸມຂອງທ່ານ.</translation>
 <translation id="7332053360324989309">ຜູ້ເຮັດວຽກສະເພາະຢ່າງ: <ph name="SCRIPT_URL" /></translation>
-<translation id="7334190995941642545">​ລັອກ​ອັ​ດ​ສະ​ລິ​ຍະ​ບໍ່​ພ້ອມ​ໃຫ້​ໃຊ້​ງານ​ໃນ​ຂະນະ​ນີ້. ກະ​ລຸ​ນາ​ລອງ​ໃໝ່​ພາຍຫຼັງ.</translation>
 <translation id="7334274148831027933">ເປີດນຳໃຊ້ແວ່ນຂະຫຍາຍທີ່ຕັ້ງໄວ້ແລ້ວ</translation>
 <translation id="7335974957018254119">ໃຊ້ການກວດການສະກົດຄໍາສຳລັບ</translation>
 <translation id="7336799713063880535">ບລັອກການແຈ້ງເຕືອນແລ້ວ.</translation>
@@ -5228,11 +5216,6 @@
 <translation id="8017679124341497925">ແກ້ໄຂທາງລັດແລ້ວ</translation>
 <translation id="8018313076035239964">ຄວບຄຸມວ່າເວັບໄຊສາມາດໃຊ້ຂໍ້ມູນໃດແດ່ ແລະ ພວກເຂົາສາມາດສະແດງເນື້ອຫາໃດແດ່ໃຫ້ທ່ານເຫັນໄດ້</translation>
 <translation id="8023801379949507775">ອັບເດດສ່ວນຂະຫຍາຍດຽວນີ້</translation>
-<translation id="8024483450737722621">ແອັບທີ່ທ່ານດາວໂຫຼດຈາກ Google Play ຈະຖືກລຶບອອກຈາກ Chromebook ນີ້.
-      <ph name="LINE_BREAKS1" />
-      ເນື້ອຫາທີ່ທ່ານໄດ້ຊື້ເຊັ່ນວ່າ ຮູບເງົາ, ລາຍການໂທລະພາບ, ເພງ, ປຶ້ມ ຫຼື ການຊື້ໃນແອັບອື່ນໆ ອາດຈະຖືກລຶບອອກເຊັ່ນກັນ.
-      <ph name="LINE_BREAKS2" />
-      ນີ້ບໍ່ມີຜົນຕໍ່ກັບແອັບ ຫຼື ເນື້ອຫາຢູ່ໃນອຸປະກອນອື່ນ.</translation>
 <translation id="8026334261755873520">ລຶບຂໍ້​ມູນການທ່ອງ​ເນັດ</translation>
 <translation id="8028060951694135607">ການກູ້ຄືນລະຫັດ Microsoft</translation>
 <translation id="8028803902702117856">ກຳລັງດາວໂຫຼດ <ph name="SIZE" />, <ph name="FILE_NAME" /></translation>
@@ -5548,7 +5531,6 @@
 <translation id="8455026683977728932">ເປີດນຳໃຊ້ຮູບປະກອບ ADB ບໍ່ສຳເລັດ</translation>
 <translation id="845702320058262034">ບໍ່ສາມາດເຊື່ອມຕໍ່ໄດ້. ກວດໃຫ້ແນ່ໃຈວ່າ Bluetooth ຂອງໂທລະສັບຂອງທ່ານເປີດຢູ່.</translation>
 <translation id="8457451314607652708">ນໍາບຸກມາກສ໌ເຂົ້າມາ</translation>
-<translation id="8460336040822756677">ຖ້າປິດ Smart Lock ສຳລັບ <ph name="DEVICE_TYPE" />, ທ່ານຈະບໍ່ສາມາດປົດລັອກອຸປະກອນ Chrome ຂອງທ່ານໂດຍໃຊ້ໂທລະສັບຂອງທ່ານໄດ້. ທ່ານຈະຈຳເປັນຕ້ອງພິມລະຫັດຜ່ານຂອງທ່ານ.</translation>
 <translation id="8461329675984532579">ຊື່ຜູ້ໃຫ້ບໍລິການ Home</translation>
 <translation id="84613761564611563">ໄດ້ຮ້ອງຂໍ UI ກຳນົດຄ່າເຄືອຂ່າຍແລ້ວ, ກະລຸນາລໍຖ້າ...</translation>
 <translation id="8461914792118322307">ພຣັອກຊີ</translation>
@@ -5774,7 +5756,6 @@
 <translation id="8743864605301774756">ອັບເດດແລ້ວເມື່ອ 1 ຊົ່ວໂມງກ່ອນນີ້</translation>
 <translation id="8746654918629346731">ທ່ານໄດ້ຂໍ "<ph name="EXTENSION_NAME" />" ແລ້ວ</translation>
 <translation id="874689135111202667">{0,plural, =1{ອັບໂຫຼດໜຶ່ງໄຟລ໌ໃສ່ເວັບໄຊນີ້ບໍ?}other{ອັບໂຫຼດ # ໄຟລ໌ໃສ່ເວັບໄຊນີ້ບໍ?}}</translation>
-<translation id="8748384418490037181">ຕົວເລືອກ Smart Lock</translation>
 <translation id="8749863574775030885">ເຂົ້າ​ຫາ​ອຸ​ປະ​ກອນ USB ຈາກ​ຜູ້​ຂາຍ​ທີ່​ບໍ່​ຮູ້​ຈັກ</translation>
 <translation id="8750133148106010815">ເພື່ອເລີ່ມ Google Play, <ph name="ORGANIZATION_NAME" /> ກຳນົດໃຫ້ທ່ານສຳຮອງຂໍ້ມູນຂອງທ່ານໄວ້ ແລະ ຣີເຊັດ Chromebook ນີ້ເປັນການຕັ້ງຄ່າຈາກໂຮງງານ.</translation>
 <translation id="8750155211039279868"><ph name="ORIGIN" /> ຕ້ອງການເຊື່ອມຕໍ່ກັບຜອດອະນຸກໍາ</translation>
@@ -5897,7 +5878,6 @@
 <translation id="8881020143150461183">ກະລຸນາລອງໃໝ່. ສຳລັບການຊ່ວຍເຫຼືອດ້ານເທັກນິກ, ກະລຸນາຕິດຕໍ່ <ph name="CARRIER_NAME" />.</translation>
 <translation id="8883273463630735858">ເປີດນຳໃຊ້ການເລັ່ງຄວາມໄວແຜ່ນສຳຜັດ</translation>
 <translation id="8884570509232205463">ອຸປະກອນຂອງທ່ານຕອນນີ້ຈະລັອກເວລາ <ph name="UNLOCK_TIME" /></translation>
-<translation id="8885197664446363138">ບໍ່​ມີ​ລັອກ​ອັດ​ສະ​ລິ​ຍະ​ຢູ່</translation>
 <translation id="8888253246822647887">ແອັບຂອງທ່ານຈະເປີດເມື່ອການອັບເກຣດສຳເລັດແລ້ວ. ການອັບເກຣດໃຊ້ເວລາສອງສາມນາທີ.</translation>
 <translation id="8888432776533519951">ສີ​:</translation>
 <translation id="8889651696183044030"><ph name="ORIGIN" /> ສາມາດແກ້ໄຂໄຟລ໌ ແລະ ໂຟນເດີຕໍ່ໄປນີ້ໄດ້</translation>

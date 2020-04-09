@@ -1281,7 +1281,7 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
       base::ASCIIToUTF16(chrome::kContentSettingsExceptionsLearnMoreURL));
   html_source->AddBoolean(
       "installedAppsInCbd",
-      base::FeatureList::IsEnabled(features::kStoragePressureUI));
+      base::FeatureList::IsEnabled(features::kInstalledAppsInCbd));
   html_source->AddBoolean(
       "driveSuggestAvailable",
       base::FeatureList::IsEnabled(omnibox::kDocumentProvider));

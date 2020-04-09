@@ -72,7 +72,7 @@ to do this easily: `settings-toggle-button`.
 Examples:
 
 ```
-<settings-toggle-button id="toggle" class="first two-line"
+<settings-toggle-button id="toggle" class="two-line"
   label="$i18n{siteSettingsPdfDownloadPdfs}"
   pref="{{prefs.plugins.always_open_pdf_externally}}">
 </settings-toggle-button>
@@ -82,7 +82,7 @@ or with a dynamically selected pref:
 
 ```
 <settings-toggle-button id="toggle"
-  class="first" pref="{{controlParams_}}"
+  pref="{{controlParams_}}"
   label="[[optionLabel_]]" sub-label="[[optionDescription_]]"
   disabled$="[[isToggleDisabled_(category)]]">
 </settings-toggle-button>

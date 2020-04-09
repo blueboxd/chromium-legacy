@@ -103,6 +103,7 @@ using mojom::SubmissionSource;
 namespace {
 
 const int kDefaultPageID = 137;
+const std::string kArbitraryNickname = "Grocery Card";
 
 class MockAutofillClient : public TestAutofillClient {
  public:
@@ -685,6 +686,8 @@ class AutofillManagerTest : public testing::Test {
     credit_card2.set_use_count(5);
     credit_card2.set_use_date(AutofillClock::Now() -
                               base::TimeDelta::FromDays(4));
+    // Set arbitrary nickname to the second card.
+    credit_card2.SetNickname(ASCIIToUTF16(kArbitraryNickname));
     personal_data_.AddCreditCard(credit_card2);
 
     CreditCard credit_card3;
@@ -766,15 +769,31 @@ std::string SuggestionMatchingTest::MakeMobileLabel(
 
 class CreditCardSuggestionMatchingTest
     : public AutofillManagerTest,
-      public testing::WithParamInterface<bool> {
+      public testing::WithParamInterface<std::tuple<bool, bool>> {
  protected:
+  CreditCardSuggestionMatchingTest()
+      : is_keyboard_accessory_enabled_(std::get<0>(GetParam())),
+        is_surfacing_server_card_nickname_enabled_(std::get<1>(GetParam())) {}
+
   void SetUp() override {
     AutofillManagerTest::SetUp();
-    features_.InitWithFeatureState(features::kAutofillKeyboardAccessory,
-                                   GetParam());
+    std::vector<base::Feature> enabled;
+    std::vector<base::Feature> disabled;
+    (is_keyboard_accessory_enabled_ ? enabled : disabled)
+        .push_back(features::kAutofillKeyboardAccessory);
+    (is_surfacing_server_card_nickname_enabled_ ? enabled : disabled)
+        .push_back(features::kAutofillEnableSurfacingServerCardNickname);
+    features_.InitWithFeatures(enabled, disabled);
   }
 
+  bool IsSurfacingServerCardNicknameEnabled() {
+    return is_surfacing_server_card_nickname_enabled_;
+  }
+
+ private:
   base::test::ScopedFeatureList features_;
+  const bool is_keyboard_accessory_enabled_;
+  const bool is_surfacing_server_card_nickname_enabled_;
 };
 
 // Test that calling OnFormsSeen with an empty set of forms (such as when
@@ -1575,24 +1594,38 @@ TEST_P(CreditCardSuggestionMatchingTest, GetCreditCardSuggestions_NonCCNumber) {
       test::ObfuscatedCardDigitsAsUTF8("8765");
 
 #if defined(OS_ANDROID)
+  // For Android, when keyboard accessary is enabled, always show obfuscated
+  // last four. When keyboard accessary is not enabled (drop-down suggestion):
+  // 1) if nickname feature is enabled and nickname is available, show nickname
+  // + last four. 2) Otherwise, show network + last four.
+  // Visa card does not have a nickname.
   const std::string visa_label =
       IsKeyboardAccessoryEnabled()
           ? obfuscated_last_four_digits1
           : std::string("Visa  ") + obfuscated_last_four_digits1;
+  // Mastercard has a valid nickname.
   const std::string master_card_label =
-      IsKeyboardAccessoryEnabled()
-          ? obfuscated_last_four_digits2
-          : std::string("Mastercard  ") + obfuscated_last_four_digits2;
+      IsKeyboardAccessoryEnabled() ? obfuscated_last_four_digits2
+                                   : (IsSurfacingServerCardNicknameEnabled()
+                                          ? kArbitraryNickname + "  "
+                                          : std::string("Mastercard  ")) +
+                                         obfuscated_last_four_digits2;
 
 #elif defined(OS_IOS)
   const std::string visa_label = obfuscated_last_four_digits1;
   const std::string master_card_label = obfuscated_last_four_digits2;
 
 #else
+  // If no nickname available, we will show network.
   const std::string visa_label = base::JoinString(
       {"Visa  ", obfuscated_last_four_digits1, ", expires on 04/99"}, "");
+  // When nickname is available, if nickname experiment is enabled, show
+  // nickname. Otherwise, show network.
   const std::string master_card_label = base::JoinString(
-      {"Mastercard  ", obfuscated_last_four_digits2, ", expires on 10/98"}, "");
+      {IsSurfacingServerCardNicknameEnabled() ? kArbitraryNickname + "  "
+                                              : "Mastercard  ",
+       obfuscated_last_four_digits2, ", expires on 10/98"},
+      "");
 #endif
 
   // Test that we sent the right values to the external delegate.
@@ -6374,21 +6407,30 @@ TEST_P(CreditCardSuggestionMatchingTest,
                           "4444555566667777",  // Visa
                           "01", "2030", "1");
   credit_card.set_guid(guid);
+  credit_card.SetNickname(ASCIIToUTF16(kArbitraryNickname));
   personal_data_.AddCreditCard(credit_card);
 
 #if defined(OS_ANDROID)
+  // When keyboard accessary is enabled, always show "7777".
+  // When keyboard accessary is disabled, if nickname feature is enabled and
+  // nickname is valid, show "Nickname  ****7777", otherwise, show "Visa
+  // ****7777".
   const std::string visa_label =
       IsKeyboardAccessoryEnabled()
           ? test::ObfuscatedCardDigitsAsUTF8("7777")
-          : std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("7777");
+          : (IsSurfacingServerCardNicknameEnabled() ? kArbitraryNickname + "  "
+                                                    : std::string("Visa  ")) +
+                test::ObfuscatedCardDigitsAsUTF8("7777");
 
 #elif defined(OS_IOS)
   const std::string visa_label = test::ObfuscatedCardDigitsAsUTF8("7777");
 
 #else
-  const std::string visa_label = base::UTF16ToUTF8(
-      credit_card.NetworkOrBankNameLastFourDigitsAndDescriptiveExpiration(
-          "en-US"));
+  const std::string visa_label = base::JoinString(
+      {IsSurfacingServerCardNicknameEnabled() ? kArbitraryNickname + "  "
+                                              : "Visa  ",
+       test::ObfuscatedCardDigitsAsUTF8("7777"), ", expires on 01/30"},
+      "");
 #endif
 
   GetAutofillSuggestions(form, field);
@@ -8284,8 +8326,11 @@ INSTANTIATE_TEST_SUITE_P(All,
                                          std::make_tuple(1, "")));
 #endif  // defined(OS_IOS) || defined(OS_ANDROID)
 
+// First bool is to indicate whether AutofillKeyboardAccessory is enabled.
+// Second bool is to indicate whether AutofillEnableSurfacingServerCardNickname
+// is enabled.
 INSTANTIATE_TEST_SUITE_P(All,
                          CreditCardSuggestionMatchingTest,
-                         testing::Bool());
+                         testing::Combine(testing::Bool(), testing::Bool()));
 
 }  // namespace autofill

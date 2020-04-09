@@ -222,8 +222,7 @@ void AutoclickMenuBubbleController::ShowBubble(AutoclickEventType type,
   init_params.insets = gfx::Insets(0, kCollisionWindowWorkAreaInsetsDp,
                                    kCollisionWindowWorkAreaInsetsDp,
                                    kCollisionWindowWorkAreaInsetsDp);
-  init_params.min_width = kAutoclickMenuWidth;
-  init_params.max_width = kAutoclickMenuWidth;
+  init_params.preferred_width = kAutoclickMenuWidth;
   init_params.corner_radius = kUnifiedTrayCornerRadius;
   init_params.has_shadow = false;
   init_params.translucent = true;

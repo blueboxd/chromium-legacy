@@ -39,7 +39,7 @@
       <div class$="[[getSubsectionClass_(hasMouse, hasTouchpad)]]">
         <!-- Do not change the mouse button pref before the mouse is released.
              See crbug.com/686949 -->
-        <settings-toggle-button id="mouseSwapButton" class="first"
+        <settings-toggle-button id="mouseSwapButton"
             pref="{{prefs.settings.mouse.primary_right}}"
             label="$i18n{mouseSwapButtons}"
             on-settings-boolean-control-change="onMouseSwapButtonsChange_"
@@ -48,6 +48,7 @@
         </settings-toggle-button>
         <template is="dom-if" if="[[allowDisableAcceleration_]]">
           <settings-toggle-button id="mouseAcceleration"
+              class="hr"
               pref="{{prefs.settings.mouse.acceleration}}"
               label="$i18n{mouseAccelerationLabel}">
           </settings-toggle-button>
@@ -65,6 +66,7 @@
         </div>
         <template is="dom-if" if="[[allowScrollSettings_]]">
           <settings-toggle-button id="mouseScrollAcceleration"
+              class="hr"
               pref="{{prefs.settings.mouse.scroll_acceleration}}"
               label="$i18n{mouseScrollAccelerationLabel}">
           </settings-toggle-button>
@@ -81,6 +83,7 @@
           </div>
         </template>
         <settings-toggle-button id="mouseReverseScroll"
+            class="hr"
             pref="{{prefs.settings.mouse.reverse_scroll}}"
             label="$i18n{mouseReverseScroll}">
         </settings-toggle-button>
@@ -90,16 +93,18 @@
       <!-- Subsection title only appears if both mouse and touchpad exist. -->
       <h2 hidden$="[[!hasMouse]]">$i18n{touchpadTitle}</h2>
       <div class$="[[getSubsectionClass_(hasMouse, hasTouchpad)]]">
-        <settings-toggle-button id="enableTapToClick" class="first"
+        <settings-toggle-button id="enableTapToClick"
             pref="{{prefs.settings.touchpad.enable_tap_to_click}}"
             label="$i18n{touchpadTapToClickEnabledLabel}">
         </settings-toggle-button>
         <settings-toggle-button id="enableTapDragging"
+            class="hr"
             pref="{{prefs.settings.touchpad.enable_tap_dragging}}"
             label="$i18n{tapDraggingLabel}">
         </settings-toggle-button>
         <template is="dom-if" if="[[allowDisableAcceleration_]]">
           <settings-toggle-button id="touchpadAcceleration"
+              class="hr"
               pref="{{prefs.settings.touchpad.acceleration}}"
               label="$i18n{touchpadAccelerationLabel}">
           </settings-toggle-button>
@@ -118,6 +123,7 @@
         </div>
         <template is="dom-if" if="[[allowScrollSettings_]]">
           <settings-toggle-button id="touchpadScrollAcceleration"
+              class="hr"
               pref="{{prefs.settings.touchpad.scroll_acceleration}}"
               label="$i18n{touchpadScrollAccelerationLabel}">
           </settings-toggle-button>

@@ -49,8 +49,6 @@ class WebAppUninstallDialogDelegateView : public views::DialogDelegateView {
 
  private:
   // views::DialogDelegateView:
-  bool Accept() override;
-  bool Cancel() override;
   gfx::Size CalculatePreferredSize() const override;
 
   // views::WidgetDelegate:
@@ -64,6 +62,9 @@ class WebAppUninstallDialogDelegateView : public views::DialogDelegateView {
   bool Uninstall();
   void ClearWebAppSiteData();
   void ProcessAutoConfirmValue();
+
+  void OnDialogAccepted();
+  void OnDialogCanceled();
 
   WebAppUninstallDialogViews* dialog_;
   base::string16 app_name_;

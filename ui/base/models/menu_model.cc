@@ -4,6 +4,8 @@
 
 #include "ui/base/models/menu_model.h"
 
+#include "ui/base/models/image_model.h"
+
 namespace ui {
 
 MenuModel::MenuModel() : menu_model_delegate_(nullptr) {}
@@ -50,15 +52,11 @@ base::string16 MenuModel::GetMinorTextAt(int index) const {
   return base::string16();
 }
 
-const gfx::VectorIcon* MenuModel::GetMinorIconAt(int index) const {
-  return nullptr;
+ImageModel MenuModel::GetMinorIconAt(int index) const {
+  return ImageModel();
 }
 
 const gfx::FontList* MenuModel::GetLabelFontListAt(int index) const {
-  return NULL;
-}
-
-const gfx::VectorIcon* MenuModel::GetVectorIconAt(int index) const {
   return nullptr;
 }
 

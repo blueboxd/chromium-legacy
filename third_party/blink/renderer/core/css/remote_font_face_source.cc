@@ -11,6 +11,7 @@
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/renderer/core/css/css_custom_font_data.h"
 #include "third_party/blink/renderer/core/css/css_font_face.h"
+#include "third_party/blink/renderer/core/css/font_face_set_document.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -33,6 +34,21 @@ RemoteFontFaceSource::DisplayPeriod RemoteFontFaceSource::ComputePeriod()
     const {
   switch (display_) {
     case kFontDisplayAuto:
+      if (base::FeatureList::IsEnabled(
+              features::kAlignFontDisplayAutoTimeoutWithLCPGoal)) {
+        // If a 'display: auto' font hasn't finished loading by the LCP limit,
+        // it should enter the failure period immediately, so that it doesn't
+        // become a source of bad LCP. The only exception is when the font is
+        // immediately available from the memory cache, in which case it can be
+        // used right away without any latency.
+        if (GetDocument() &&
+            FontFaceSetDocument::From(*GetDocument())->HasReachedLCPLimit()) {
+          if (!IsLoaded() ||
+              (!FinishedFromMemoryCache() && !finished_before_lcp_limit_)) {
+            return kFailurePeriod;
+          }
+        }
+      }
       if (is_intervention_triggered_)
         return kSwapPeriod;
       FALLTHROUGH;
@@ -106,7 +122,8 @@ RemoteFontFaceSource::RemoteFontFaceSource(CSSFontFace* css_font_face,
                                                ReportOptions::kDoNotReport)),
       phase_(kNoLimitExceeded),
       is_intervention_triggered_(ShouldTriggerWebFontsIntervention()),
-      finished_before_document_rendering_begin_(false) {
+      finished_before_document_rendering_begin_(false),
+      finished_before_lcp_limit_(false) {
   DCHECK(face_);
   period_ = ComputePeriod();
 }
@@ -171,9 +188,11 @@ void RemoteFontFaceSource::NotifyFinished(Resource* resource) {
 
   PruneTable();
 
-  if (GetDocument() &&
-      !GetDocument()->GetFontPreloadManager().RenderingHasBegun()) {
-    finished_before_document_rendering_begin_ = true;
+  if (GetDocument()) {
+    if (!GetDocument()->GetFontPreloadManager().RenderingHasBegun())
+      finished_before_document_rendering_begin_ = true;
+    if (!FontFaceSetDocument::From(*GetDocument())->HasReachedLCPLimit())
+      finished_before_lcp_limit_ = true;
   }
 
   if (FinishedFromMemoryCache())

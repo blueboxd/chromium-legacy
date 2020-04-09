@@ -224,6 +224,7 @@ CompositorFrameReporter::CopyReporterAtBeginImplStage() const {
       should_report_metrics_);
   new_reporter->did_finish_impl_frame_ = did_finish_impl_frame_;
   new_reporter->impl_frame_finish_time_ = impl_frame_finish_time_;
+  new_reporter->main_frame_abort_time_ = main_frame_abort_time_;
   new_reporter->current_stage_.stage_type =
       StageType::kBeginImplFrameToSendBeginMainFrame;
   new_reporter->current_stage_.start_time = stage_history_.front().start_time;
@@ -281,9 +282,8 @@ void CompositorFrameReporter::OnFinishImplFrame(base::TimeTicks timestamp) {
 }
 
 void CompositorFrameReporter::OnAbortBeginMainFrame(base::TimeTicks timestamp) {
-  DCHECK(!did_abort_main_frame_);
-
-  did_abort_main_frame_ = true;
+  DCHECK(!main_frame_abort_time_.has_value());
+  main_frame_abort_time_ = timestamp;
   impl_frame_finish_time_ = timestamp;
   // impl_frame_finish_time_ can be used for the end of BeginMain to Commit
   // stage

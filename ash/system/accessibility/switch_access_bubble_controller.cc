@@ -41,11 +41,10 @@ void SwitchAccessBubbleController::ShowBackButton(const gfx::Rect& anchor) {
   init_params.anchor_rect = anchor;
   init_params.has_shadow = false;
 
-  // The back button is a circle, so the max/min width and height are the
+  // The back button is a circle, so the preferred width and height are the
   // diameter, and the corner radius is the circle radius.
   init_params.corner_radius = kBackButtonRadiusDip;
-  init_params.min_width = kBackButtonDiameterDip;
-  init_params.max_width = kBackButtonDiameterDip;
+  init_params.preferred_width = kBackButtonDiameterDip;
   init_params.max_height = kBackButtonDiameterDip;
 
   back_button_bubble_view_ = new TrayBubbleView(init_params);

@@ -5,6 +5,7 @@
 #include "printing/backend/cups_helper.h"
 
 #include "printing/backend/print_backend.h"
+#include "printing/print_settings.h"
 #include "printing/printing_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,6 +19,15 @@ bool PapersEqual(const PrinterSemanticCapsAndDefaults::Paper& lhs,
                  const PrinterSemanticCapsAndDefaults::Paper& rhs) {
   return lhs.display_name == rhs.display_name &&
          lhs.vendor_id == rhs.vendor_id && lhs.size_um == rhs.size_um;
+}
+
+void VerifyCapabilityColorModels(const PrinterSemanticCapsAndDefaults& caps) {
+  base::Optional<bool> maybe_color = IsColorModelSelected(caps.color_model);
+  ASSERT_TRUE(maybe_color.has_value());
+  EXPECT_TRUE(maybe_color.value());
+  maybe_color = IsColorModelSelected(caps.bw_model);
+  ASSERT_TRUE(maybe_color.has_value());
+  EXPECT_FALSE(maybe_color.value());
 }
 
 }  // namespace
@@ -280,6 +290,7 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingBrotherPrinters) {
     EXPECT_TRUE(caps.color_default);
     EXPECT_EQ(BROTHER_BRSCRIPT3_COLOR, caps.color_model);
     EXPECT_EQ(BROTHER_BRSCRIPT3_BLACK, caps.bw_model);
+    VerifyCapabilityColorModels(caps);
   }
   {
     constexpr char kTestPpdData[] =
@@ -298,6 +309,7 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingBrotherPrinters) {
     EXPECT_TRUE(caps.color_default);
     EXPECT_EQ(BROTHER_CUPS_COLOR, caps.color_model);
     EXPECT_EQ(BROTHER_CUPS_MONO, caps.bw_model);
+    VerifyCapabilityColorModels(caps);
   }
   {
     constexpr char kTestPpdData[] =
@@ -336,6 +348,7 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingHpPrinters) {
   EXPECT_TRUE(caps.color_default);
   EXPECT_EQ(HP_COLOR_COLOR, caps.color_model);
   EXPECT_EQ(HP_COLOR_BLACK, caps.bw_model);
+  VerifyCapabilityColorModels(caps);
 }
 
 TEST(PrintBackendCupsHelperTest, TestPpdParsingEpsonPrinters) {
@@ -358,6 +371,7 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingEpsonPrinters) {
   EXPECT_TRUE(caps.color_default);
   EXPECT_EQ(EPSON_INK_COLOR, caps.color_model);
   EXPECT_EQ(EPSON_INK_MONO, caps.bw_model);
+  VerifyCapabilityColorModels(caps);
 }
 
 TEST(PrintBackendCupsHelperTest, TestPpdParsingSamsungPrinters) {
@@ -376,6 +390,7 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingSamsungPrinters) {
   EXPECT_TRUE(caps.color_default);
   EXPECT_EQ(COLORMODE_COLOR, caps.color_model);
   EXPECT_EQ(COLORMODE_MONOCHROME, caps.bw_model);
+  VerifyCapabilityColorModels(caps);
 }
 
 TEST(PrintBackendCupsHelperTest, TestPpdParsingSharpPrinters) {
@@ -399,6 +414,7 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingSharpPrinters) {
   EXPECT_TRUE(caps.color_default);
   EXPECT_EQ(SHARP_ARCMODE_CMCOLOR, caps.color_model);
   EXPECT_EQ(SHARP_ARCMODE_CMBW, caps.bw_model);
+  VerifyCapabilityColorModels(caps);
 }
 
 TEST(PrintBackendCupsHelperTest, TestPpdParsingXeroxPrinters) {
@@ -420,6 +436,7 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingXeroxPrinters) {
   EXPECT_TRUE(caps.color_default);
   EXPECT_EQ(XEROX_XRXCOLOR_AUTOMATIC, caps.color_model);
   EXPECT_EQ(XEROX_XRXCOLOR_BW, caps.bw_model);
+  VerifyCapabilityColorModels(caps);
 }
 
 }  // namespace printing

@@ -124,7 +124,9 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
   self.unifiedConsentCoordinator.delegate = self;
 
   // Set UnifiedConsentCoordinator properties.
-  self.unifiedConsentCoordinator.selectedIdentity = self.defaultIdentity;
+  if (self.defaultIdentity) {
+    self.unifiedConsentCoordinator.selectedIdentity = self.defaultIdentity;
+  }
   self.unifiedConsentCoordinator.autoOpenIdentityPicker =
       self.logger.promoAction == PromoAction::PROMO_ACTION_NOT_DEFAULT;
 

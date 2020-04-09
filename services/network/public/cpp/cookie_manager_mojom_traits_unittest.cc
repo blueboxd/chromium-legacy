@@ -202,8 +202,7 @@ TEST(CookieManagerTraitsTest, Roundtrips_CookieSameSiteContext) {
           mojo::test::SerializeAndDeserialize<mojom::CookieSameSiteContext>(
               &context_in, &copy));
 
-      EXPECT_EQ(context_in.context, copy.context);
-      EXPECT_EQ(context_in.cross_schemeness, copy.cross_schemeness);
+      EXPECT_EQ(context_in, copy);
     }
   }
 }

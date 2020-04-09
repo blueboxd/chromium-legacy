@@ -168,7 +168,7 @@
 <translation id="3112556859945124369">标为…</translation>
 <translation id="3153862085237805241">保存卡片</translation>
 <translation id="3157684681743766797">全部标为…</translation>
-<translation id="3161291298470460782">执行此操作会使您退出帐号、关闭同步功能并从此设备中清除所有 Chrome 数据。已同步的数据仍会保留在您的 Google 帐号中。</translation>
+<translation id="3161291298470460782">执行此操作会使您退出帐号、关闭同步功能并清除此设备中的所有 Chrome 数据，但已同步的数据仍会保留在您的 Google 帐号中。</translation>
 <translation id="3175081911749765310">网络服务</translation>
 <translation id="3178650076442119961">今天曾有活动</translation>
 <translation id="3207960819495026254">已加书签</translation>
@@ -511,7 +511,7 @@
 <translation id="7765158879357617694">移动</translation>
 <translation id="7771470029643830783">退出帐号后，您的书签、历史记录、密码及其他 Chrome 数据将不再同步到您的 Google 帐号中。
 
-由于您的帐号是由 <ph name="HOSTED_DOMAIN" /> 管理，因此在退出帐号后，您的 Chrome 数据将会从此设备中删除。已同步的数据仍会保留在您的 Google 帐号中。</translation>
+您的帐号是由 <ph name="HOSTED_DOMAIN" /> 管理，因此在退出帐号后，您的 Chrome 数据将会从此设备中删除，但已同步的数据仍会保留在您的 Google 帐号中。</translation>
 <translation id="7772032839648071052">确认密码</translation>
 <translation id="7781011649027948662">翻译网页？</translation>
 <translation id="7781829728241885113">昨天</translation>

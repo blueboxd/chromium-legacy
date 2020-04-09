@@ -31,7 +31,7 @@ class RecoveryInstallGlobalError : public GlobalErrorWithStandardBubble,
   bool HasMenuItem() override;
   int MenuItemCommandID() override;
   base::string16 MenuItemLabel() override;
-  gfx::Image MenuItemIcon() override;
+  ui::ImageModel MenuItemIcon() override;
   void ExecuteMenuItem(Browser* browser) override;
   bool HasBubbleView() override;
   bool HasShownBubbleView() override;

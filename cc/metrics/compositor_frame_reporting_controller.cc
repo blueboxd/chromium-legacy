@@ -153,64 +153,96 @@ void CompositorFrameReportingController::DidSubmitCompositorFrame(
   // Impl work is finished.
   bool is_activated_frame_new =
       (last_activated_frame_id != last_submitted_frame_id_);
+
+  // Temporarily hold the main and impl reporter until they are moved into
+  // |submitted_compositor_frames_|
+  std::unique_ptr<CompositorFrameReporter> main_reporter;
+  std::unique_ptr<CompositorFrameReporter> impl_reporter;
+
+  // If |is_activated_frame_new| is true, |main_reporter| is guaranteed to
+  // be set, and |impl_reporter| may or may not be set; otherwise,
+  // |impl_reporter| is guaranteed to be set, and |main_reporter| will not be
+  // set.
   if (is_activated_frame_new) {
     DCHECK_EQ(reporters_[PipelineStage::kActivate]->frame_id_,
               last_activated_frame_id);
     // The reporter in activate state can be submitted
+    main_reporter = std::move(reporters_[PipelineStage::kActivate]);
   } else {
-    // There is no Main damage, which is possible if (1) there was no beginMain
-    // so the reporter in beginImpl will be submitted or (2) the beginMain is
-    // sent and aborted, so the reporter in beginMain will be submitted or (3)
-    // the main thread work is not done yet and the impl portion should be
-    // reported.
-    if (CanSubmitImplFrame(current_frame_id)) {
-      auto& reporter = reporters_[PipelineStage::kBeginImplFrame];
+    DCHECK(!reporters_[PipelineStage::kActivate]);
+  }
+
+  // There is no Main damage, which is possible if (1) there was no beginMain
+  // so the reporter in beginImpl will be submitted or (2) the beginMain is
+  // sent and aborted, so the reporter in beginMain will be submitted or (3)
+  // the main thread work is not done yet and the impl portion should be
+  // reported.
+  if (CanSubmitImplFrame(current_frame_id)) {
+    auto& reporter = reporters_[PipelineStage::kBeginImplFrame];
+    reporter->StartStage(StageType::kEndActivateToSubmitCompositorFrame,
+                         reporter->impl_frame_finish_time());
+    AdvanceReporterStage(PipelineStage::kBeginImplFrame,
+                         PipelineStage::kActivate);
+    impl_reporter = std::move(reporters_[PipelineStage::kActivate]);
+  } else if (CanSubmitMainFrame(current_frame_id)) {
+    auto& reporter = reporters_[PipelineStage::kBeginMainFrame];
+    reporter->StartStage(StageType::kEndActivateToSubmitCompositorFrame,
+                         reporter->impl_frame_finish_time());
+    AdvanceReporterStage(PipelineStage::kBeginMainFrame,
+                         PipelineStage::kActivate);
+    impl_reporter = std::move(reporters_[PipelineStage::kActivate]);
+  } else {
+    // No main damage: the submitted frame might have unfinished main thread
+    // work, which in that case the BeginImpl portion can be reported.
+    auto reporter = RestoreReporterAtBeginImpl(current_frame_id);
+    // The method will return nullptr if Impl reporter has been submitted
+    // prior to BeginMainFrame.
+    if (reporter) {
       reporter->StartStage(StageType::kEndActivateToSubmitCompositorFrame,
                            reporter->impl_frame_finish_time());
-      AdvanceReporterStage(PipelineStage::kBeginImplFrame,
-                           PipelineStage::kActivate);
-    } else if (CanSubmitMainFrame(current_frame_id)) {
-      auto& reporter = reporters_[PipelineStage::kBeginMainFrame];
-      reporter->StartStage(StageType::kEndActivateToSubmitCompositorFrame,
-                           reporter->impl_frame_finish_time());
-      AdvanceReporterStage(PipelineStage::kBeginMainFrame,
-                           PipelineStage::kActivate);
-    } else {
-      // The submitted frame might have unfinished main thread work, which in
-      // that case the BeginImpl portion can be reported.
-      auto reporter = RestoreReporterAtBeginImpl(current_frame_id);
-      // The method will return nullptr if Impl reporter has been submitted
-      // prior to BeginMainFrame.
-      if (!reporter)
-        return;
-      reporter->StartStage(StageType::kEndActivateToSubmitCompositorFrame,
-                           reporter->impl_frame_finish_time());
-      reporters_[PipelineStage::kActivate] = std::move(reporter);
+      impl_reporter = std::move(reporter);
     }
   }
 
+  if (!events_metrics.main_event_metrics.empty()) {
+    DCHECK(main_reporter);
+  }
+
+  // When |impl_reporter| does not exist, but there are still impl-side metrics,
+  // merge the main and impl metrics and pass the combined vector into
+  // |main_reporter|.
+  if (!impl_reporter && !events_metrics.impl_event_metrics.empty()) {
+    DCHECK(main_reporter);
+    // If there are impl events, there must be a reporter with
+    // |current_frame_id|.
+    DCHECK_EQ(main_reporter->frame_id_, current_frame_id);
+    events_metrics.main_event_metrics.reserve(
+        events_metrics.main_event_metrics.size() +
+        events_metrics.impl_event_metrics.size());
+    events_metrics.main_event_metrics.insert(
+        events_metrics.main_event_metrics.end(),
+        events_metrics.impl_event_metrics.begin(),
+        events_metrics.impl_event_metrics.end());
+  }
+
   last_submitted_frame_id_ = last_activated_frame_id;
-  std::unique_ptr<CompositorFrameReporter> submitted_reporter =
-      std::move(reporters_[PipelineStage::kActivate]);
-  submitted_reporter->StartStage(
-      StageType::kSubmitCompositorFrameToPresentationCompositorFrame, Now());
+  if (main_reporter) {
+    main_reporter->StartStage(
+        StageType::kSubmitCompositorFrameToPresentationCompositorFrame, Now());
+    main_reporter->SetEventsMetrics(
+        std::move(events_metrics.main_event_metrics));
+    submitted_compositor_frames_.emplace_back(frame_token,
+                                              std::move(main_reporter));
+  }
 
-  // TODO(mjzhang): The main and impl vectors are combined to preserve the
-  // current behavior. In a subsequent CL, an impl reporter will also be added
-  // for submission and the two vectors will be kept separate and moved into
-  // their corresponding reporter.
-  std::vector<EventMetrics> combined_event_metrics =
-      std::move(events_metrics.main_event_metrics);
-
-  combined_event_metrics.reserve(combined_event_metrics.size() +
-                                 events_metrics.impl_event_metrics.size());
-  combined_event_metrics.insert(combined_event_metrics.end(),
-                                events_metrics.impl_event_metrics.begin(),
-                                events_metrics.impl_event_metrics.end());
-
-  submitted_reporter->SetEventsMetrics(std::move(combined_event_metrics));
-  submitted_compositor_frames_.emplace_back(frame_token,
-                                            std::move(submitted_reporter));
+  if (impl_reporter) {
+    impl_reporter->StartStage(
+        StageType::kSubmitCompositorFrameToPresentationCompositorFrame, Now());
+    impl_reporter->SetEventsMetrics(
+        std::move(events_metrics.impl_event_metrics));
+    submitted_compositor_frames_.emplace_back(frame_token,
+                                              std::move(impl_reporter));
+  }
 }
 
 void CompositorFrameReportingController::DidNotProduceFrame(
@@ -280,13 +312,18 @@ void CompositorFrameReportingController::RemoveActiveTracker(
 void CompositorFrameReportingController::AdvanceReporterStage(
     PipelineStage start,
     PipelineStage target) {
-  if (reporters_[target]) {
+  auto& reporter = reporters_[target];
+  if (reporter) {
+    auto termination_time = (target == PipelineStage::kBeginMainFrame &&
+                             reporter->did_abort_main_frame())
+                                ? reporter->main_frame_abort_time()
+                                : Now();
     if (reporters_[target]->did_not_produce_frame())
       reporters_[target]->TerminateFrame(
-          FrameTerminationStatus::kDidNotProduceFrame, Now());
+          FrameTerminationStatus::kDidNotProduceFrame, termination_time);
     else
       reporters_[target]->TerminateFrame(
-          FrameTerminationStatus::kReplacedByNewReporter, Now());
+          FrameTerminationStatus::kReplacedByNewReporter, termination_time);
   }
   reporters_[target] = std::move(reporters_[start]);
 }

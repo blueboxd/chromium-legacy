@@ -67,24 +67,6 @@ void RecordChildKills(RendererType histogram_type) {
                             histogram_type, RENDERER_TYPE_COUNT);
 }
 
-// Macro for logging the age of a crashed process.
-//
-// Notes:
-// - IMPORTANT: When changing the constants below, please change the names of
-//   the histograms logged via UMA_HISTOGRAM_CRASHED_PROCESS_AGE.
-// - 99th percentile of Memory.Experimental.Renderer.Uptime hovers around 17h.
-// - |kCrashedProcessAgeMin| is as low as possible, so that we may with
-//   high-confidence categorize crashes that occur during early startup (e.g.
-//   crashes that end up with STATUS_DLL_INIT_FAILED or STATUS_DLL_NOT_FOUND).
-// - Note that even with just 50 buckets, we still get narrow and accurate
-//   buckets at the lower end: 0ms, 1ms, 2ms, 3ms, 4-5ms, 6-8ms, 9-12ms, ...
-constexpr auto kCrashedProcessAgeMin = base::TimeDelta::FromMilliseconds(1);
-constexpr auto kCrashedProcessAgeMax = base::TimeDelta::FromHours(48);
-constexpr uint32_t kCrashedProcessAgeCount = 50;
-#define UMA_HISTOGRAM_CRASHED_PROCESS_AGE(histogram_name, uptime)           \
-  UMA_HISTOGRAM_CUSTOM_TIMES(histogram_name, uptime, kCrashedProcessAgeMin, \
-                             kCrashedProcessAgeMax, kCrashedProcessAgeCount)
-
 }  // namespace
 
 StabilityMetricsHelper::StabilityMetricsHelper(PrefService* local_state)
@@ -234,11 +216,9 @@ void StabilityMetricsHelper::LogLoadStarted() {
   RecordStabilityEvent(StabilityEventType::kPageLoad);
 }
 
-void StabilityMetricsHelper::LogRendererCrash(
-    bool was_extension_process,
-    base::TerminationStatus status,
-    int exit_code,
-    base::Optional<base::TimeDelta> uptime) {
+void StabilityMetricsHelper::LogRendererCrash(bool was_extension_process,
+                                              base::TerminationStatus status,
+                                              int exit_code) {
   RendererType histogram_type =
       was_extension_process ? RENDERER_TYPE_EXTENSION : RENDERER_TYPE_RENDERER;
 
@@ -257,19 +237,11 @@ void StabilityMetricsHelper::LogRendererCrash(
 
         base::UmaHistogramSparse("CrashExitCodes.Extension",
                                  MapCrashExitCodeForHistogram(exit_code));
-        if (uptime.has_value()) {
-          UMA_HISTOGRAM_CRASHED_PROCESS_AGE(
-              "Stability.CrashedProcessAge.Extension", uptime.value());
-        }
       } else {
         IncreaseRendererCrashCount();
 
         base::UmaHistogramSparse("CrashExitCodes.Renderer",
                                  MapCrashExitCodeForHistogram(exit_code));
-        if (uptime.has_value()) {
-          UMA_HISTOGRAM_CRASHED_PROCESS_AGE(
-              "Stability.CrashedProcessAge.Renderer", uptime.value());
-        }
       }
 
       UMA_HISTOGRAM_ENUMERATION("BrowserRenderProcessHost.ChildCrashes",

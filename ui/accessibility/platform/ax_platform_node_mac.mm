@@ -56,7 +56,7 @@ RoleMap BuildRoleMap() {
       {ax::mojom::Role::kColumn, NSAccessibilityColumnRole},
       {ax::mojom::Role::kColumnHeader, @"AXCell"},
       {ax::mojom::Role::kComboBoxGrouping, NSAccessibilityGroupRole},
-      {ax::mojom::Role::kComboBoxMenuButton, NSAccessibilityButtonRole},
+      {ax::mojom::Role::kComboBoxMenuButton, NSAccessibilityPopUpButtonRole},
       {ax::mojom::Role::kComment, NSAccessibilityGroupRole},
       {ax::mojom::Role::kComplementary, NSAccessibilityGroupRole},
       {ax::mojom::Role::kContentDeletion, NSAccessibilityGroupRole},

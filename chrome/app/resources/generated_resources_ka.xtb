@@ -120,7 +120,6 @@
 <translation id="1153636665119721804">Google-ის დამატებითი დაცვის პროგრამა</translation>
 <translation id="1161575384898972166">შედით <ph name="TOKEN_NAME" />-ში, კლიენტის სერტიფიკატის ექსპორტისთვის.</translation>
 <translation id="1163931534039071049">ჩარჩოს წყაროს &amp;ნახვა</translation>
-<translation id="1164674268730883318">გსურთ, ჩართოთ Smart Lock <ph name="DEVICE_TYPE" />-ისთვის?</translation>
 <translation id="1164891049599601209">შეყვანილია შეცდომაში შემყვან საიტზე</translation>
 <translation id="1164899421101904659">PIN-კოდის განბლოკვის გასაღების შეყვანა</translation>
 <translation id="1165039591588034296">შეცდომა</translation>
@@ -774,7 +773,6 @@
 
 ამ ანგარიშის პარამეტრების მართვა შეგიძლიათ თქვენს მოწყობილობაზე Family Link აპის ინსტალაციით.  ინსტრუქცია ელფოსტით გამოგიგზავნეთ.</translation>
 <translation id="2040460856718599782">უი! რაღაც არასწორად წავიდა თქვენი ავტორიზაციის დროს. გთხოვთ, გადაამოწმოთ თქვენი შესვლის მონაცემები და ხელახლა სცადოთ.</translation>
-<translation id="2043818754674261542">ამ <ph name="DEVICE_TYPE" />-ის განსაბლოკად ტელეფონისთვის საჭირო მანძილი</translation>
 <translation id="204497730941176055">Microsoft-ის სერტიფიკატის შაბლონის სახელი</translation>
 <translation id="2045117674524495717">კლავიატურის მალსახმობების დამხმარე ხელსაწყო</translation>
 <translation id="2045969484888636535">ქუქის დაბლოკვის გაგრძელება</translation>
@@ -1146,7 +1144,6 @@
 <translation id="2518024842978892609">გამოიყენეთ თქვენი კლიენტის სერთიფიკატები</translation>
 <translation id="2520644704042891903">ხელმისაწვდომი სოკეტის ლოდინი…</translation>
 <translation id="252219247728877310">კომპონენტი არ არის განახლებული</translation>
-<translation id="2522791476825452208">ძალიან ახლო</translation>
 <translation id="2523184218357549926">Google-ს უგზავნის თქვენ მიერ მონახულებული გვერდების URL-ებს</translation>
 <translation id="2526277209479171883">ინსტალაცია და გაგრძელება</translation>
 <translation id="2526590354069164005">სამუშაო დაფა</translation>
@@ -1755,7 +1752,6 @@
 <translation id="3333190335304955291">ამ სერვისის გამორთვა შეგიძლიათ პარამეტრებში.</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> — ვიდეო იყენებს რეჟიმს „გამოსახულება გამოსახულებაში“</translation>
 <translation id="3335947283844343239">&amp;დახურული ჩანართის ხელახლა გახსნა</translation>
-<translation id="3336664756920573711">განბლოკეთ <ph name="DEVICE_TYPE" /> თქვენი Android ტელეფონის მეშვეობით</translation>
 <translation id="3340620525920140773">ჩამოტვირთვა დასრულდა: <ph name="FILE_NAME" />.</translation>
 <translation id="3341699307020049241">PIN-კოდი არასწორია. დაგრჩათ <ph name="RETRIES" /> მცდელობა.</translation>
 <translation id="3341703758641437857">ფაილის URL-ებზე წვდომის დაშვება</translation>
@@ -2778,7 +2774,6 @@
 <translation id="4697551882387947560">როდესაც გვერდების დათვალიერების სესია მთავრდება</translation>
 <translation id="4699172675775169585">ქეშირებული სურათები და ფაილები</translation>
 <translation id="4699357559218762027">(ავტომატურად გაშვებული)</translation>
-<translation id="470074695271471509">გსურთ დასასრულებლად გასვლა?</translation>
 <translation id="4701025263201366865">შესვლა მშობლისთვის</translation>
 <translation id="4707302005824653064">მმართველს (<ph name="CUSTODIAN_EMAIL" />) შეუძლია გადახედოს გამოყენებას და ისტორიას საიტზე chrome.com.</translation>
 <translation id="4707579418881001319">L2TP/IPsec + მომხმარებლის სერტიფიკატი</translation>
@@ -2801,7 +2796,6 @@
 <translation id="473546211690256853">ეს ანგარიში იმართება <ph name="DOMAIN" />-ის მიერ</translation>
 <translation id="4735803855089279419">სისტემამ ვერ დაადგინა მოწყობილობის იდენტიფიკატორები ამ მოწყობილობისთვის.</translation>
 <translation id="4736292055110123391">მოახდინეთ თქვენი სანიშნეების, პაროლების, ისტორიისა და სხვა კონტენტის სინქრონიზაცია თქვენს ყველა მოწყობილობას შორის</translation>
-<translation id="4737715515457435632">დაუკავშირდით ქსელს</translation>
 <translation id="473775607612524610">განახლება</translation>
 <translation id="4739639199548674512">ბილეთები</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />შეიტყვეთ აპლიკაციების განახლების შესახებ<ph name="END_LINK" /></translation>
@@ -3279,7 +3273,6 @@
 <translation id="5423829801105537712">მართლწერის მარტივი შემოწმება</translation>
 <translation id="5423849171846380976">გააქტიურებულია</translation>
 <translation id="5425042808445046667">ჩამოტვირთვის გაგრძელება</translation>
-<translation id="5425722269016440406">თუ გსურთ Smart Lock-ის ფუნქციის გამორთვა, თქვენ უნდა იყოთ ონლაინ რეჟიმში. ეს პარამეტრი სინქრონირდება თქვენს ტელეფონთან და სხვა მოწყობილობებთან. გთხოვთ, პირველ რიგში, დაამყაროთ ქსელთან კავშირდი.</translation>
 <translation id="5425863515030416387">მარტივად შედით სისტემაში ყველა მოწყობილობიდან</translation>
 <translation id="5427278936122846523">ყოველთვის ითარგმნოს</translation>
 <translation id="5427459444770871191">შეტრიალება &amp;საათის ისრის მიმართულებით</translation>
@@ -3421,7 +3414,6 @@
 <translation id="558918721941304263">აპები იტვირთება…</translation>
 <translation id="5592595402373377407">ჯერჯერობით არ არის საკმარისი მონაცემები.</translation>
 <translation id="5593357315997824387">ჩემი ფაილების სინქრონიზაცია</translation>
-<translation id="5595152862129936745">ძალიან შორი</translation>
 <translation id="5595485650161345191">მისამართის რედაქტირება</translation>
 <translation id="5595727715083333657">კონტეინერის ზომის შეცვლა მხარდაუჭერელია. Linux-ისთვის (ბეტა) წინასწარ გამოყოფილი მეხსიერების ზომის შესაცვლელად შექმენით კონტეინერის სარეზერვო ასლი, ხოლო შემდეგ აღადგინეთ ის.</translation>
 <translation id="5596627076506792578">დამატებითი ვარიანტები</translation>
@@ -3534,7 +3526,6 @@
 <translation id="5747552184818312860">ვადა</translation>
 <translation id="5747785204778348146">შემმუშავებელი - არასტაბილური</translation>
 <translation id="5747809636523347288">ჩა&amp;სმა და <ph name="URL" />-ზე გადასვლა</translation>
-<translation id="5750324801516359607">შორი</translation>
 <translation id="5751887393582880060">ეს ატვირთული კონტენტი არღვევს თქვენი ორგანიზაციის უსაფრთხოებასთან დაკავშირებულ წესებს. მაინც გსურთ გაგრძელება?</translation>
 <translation id="5756163054456765343">დახმარ&amp;ების ცენტრი</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" />-ს შეუძლია თქვენ მიერ <ph name="APP_NAME" />-ის მეშვეობით ამოსაბეჭდად გაგზავნილი დოკუმენტების წაკითხვა.</translation>
@@ -4084,7 +4075,6 @@
 <translation id="6490471652906364588">USB-C მოწყობილობა (მარჯვენა პორტი)</translation>
 <translation id="6491376743066338510">ავტორიზაცია ვერ განხორციელდა</translation>
 <translation id="6494445798847293442">არ წამოადგენს სერტიფიცირების ცენტრს</translation>
-<translation id="649454645705377674">დახურვა</translation>
 <translation id="6495925982925244349">ქსელი <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />-დან, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, სიგნალის სიძლიერე: <ph name="SIGNAL_STRENGTH" />%, მართავს თქვენი ადმინისტრატორი, დეტალები</translation>
 <translation id="6498249116389603658">&amp;ყველა თქვენი ენა</translation>
 <translation id="6499143127267478107">ჰოსტის გადაწყვეტა პროქსის სკრიპტში…</translation>
@@ -4152,7 +4142,6 @@
 <translation id="6590458744723262880">საქაღალდის გადარქმევა</translation>
 <translation id="6592267180249644460">WebRTC ჟურნალი გადაღებულია <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">თქვენი თითის ანაბეჭდი აღბეჭდილია</translation>
-<translation id="6594883168703494535">თქვენს Google ანგარიშში შესვლა Smart Lock-ის მეშვეობით</translation>
 <translation id="6596325263575161958">დაშიფვრის პარამეტრები</translation>
 <translation id="6596816719288285829">IP მისამართი</translation>
 <translation id="6597017209724497268">ნიმუშები</translation>
@@ -4686,7 +4675,6 @@
 <translation id="7328867076235380839">კომბინაცია არასწორია</translation>
 <translation id="7329154610228416156">შესვლა ვერ მოხერხდა, რადგან იგი არაუსაფრთხო URL-ის (<ph name="BLOCKED_URL" />) მეშვეობით დაკონფიგურირდა. გთხოვთ, დაუკავშირდეთ ადმინისტრატორს.</translation>
 <translation id="7332053360324989309">Dedicated Worker: <ph name="SCRIPT_URL" /></translation>
-<translation id="7334190995941642545">Smart Lock ამჟამად მიუწვდომელია. გთხოვთ სცადეთ მოგვიანებით.</translation>
 <translation id="7334274148831027933">ჩამაგრებული ლუპის ჩართვა</translation>
 <translation id="7335974957018254119">მართლწერის შემოწმების გამოყენება შემდეგისთვის:</translation>
 <translation id="7336799713063880535">შეტყ.-ბი დაბლოკილია.</translation>
@@ -5230,11 +5218,6 @@
 <translation id="8017679124341497925">მალსახმობი რედაქტირებულია</translation>
 <translation id="8018313076035239964">ვებსაიტების მიერ თქვენთვის ნაჩვენები კონტენტისა და მათ მიერ გამოყენებული ინფორმაციის მართვა</translation>
 <translation id="8023801379949507775">გაანახლეთ გაფართოებები ეხლა</translation>
-<translation id="8024483450737722621">ამ Chromebook-იდან წაიშლება Google Play-ს მეშვეობით ჩამოტვირთული აპები.
-      <ph name="LINE_BREAKS1" />
-      გარდა ამისა, შეიძლება წაიშალოს თქვენ მიერ შეძენილი კონტენტი, როგორიცაა ფილმები, სატელევიზიო შოუები, მუსიკა, წიგნები ან აპს-შიდა შენაძენები.
-      <ph name="LINE_BREAKS2" />
-      ეს მოქმედება სხვა მოწყობილობებზე არსებულ აპებსა და კონტენტზე გავლენას არ იქონიებს.</translation>
 <translation id="8026334261755873520">დათვალიერების მონაცემების გასუფთავება</translation>
 <translation id="8028060951694135607">Microsoft-ის გასაღების აღდგენა</translation>
 <translation id="8028803902702117856">მიმდინარეობს <ph name="SIZE" />-ის ჩამოტვირთვა, <ph name="FILE_NAME" /></translation>
@@ -5549,7 +5532,6 @@
 <translation id="8455026683977728932">ADB ილუსტრაცია ვერ ჩაირთო</translation>
 <translation id="845702320058262034">დაკავშირება ვერ მოხერხდა. დარწმუნდით, რომ თქვენს ტელეფონზე ჩართულია Bluetooth.</translation>
 <translation id="8457451314607652708">სანიშნეების იმპორტი</translation>
-<translation id="8460336040822756677">ფუნქცია „Smart Lock <ph name="DEVICE_TYPE" />-ისთვის“ გამორთვის შემთხვევაში, ტელეფონის მეშვეობით თქვენი Chrome მოწყობილობების განბლოკვას ვეღარ შეძლებთ და პაროლის აკრეფა მოგიწევთ.</translation>
 <translation id="8461329675984532579">ადგილობრივი პროვაიდერის სახელი</translation>
 <translation id="84613761564611563">მოთხოვნილია ქსელის კონფიგურაციის UI. გთხოვთ, მოითმინოთ…</translation>
 <translation id="8461914792118322307">პროქსი</translation>
@@ -5775,7 +5757,6 @@
 <translation id="8743864605301774756">განახლდა 1 საათის წინ</translation>
 <translation id="8746654918629346731">თქვენ უკვე მოითხოვეთ „<ph name="EXTENSION_NAME" />“</translation>
 <translation id="874689135111202667">{0,plural, =1{გსურთ ერთი ფაილის ატვირთვა ამ საიტზე?}other{გსურთ # ფაილის ატვირთვა ამ საიტზე?}}</translation>
-<translation id="8748384418490037181">Smart Lock-ის ვარიანტები</translation>
 <translation id="8749863574775030885">USB მოწყობილობებზე უცნობი ვენდორისაგან წვდომა</translation>
 <translation id="8750133148106010815">Google Play-ს გასაშვებად <ph name="ORGANIZATION_NAME" /> საჭიროებს თქვენი მონაცემების სარეზერვო ასლის შექმნასა და ამ Chromebook-ის ქარხნულ პარამეტრებზე დაბრუნებას.</translation>
 <translation id="8750155211039279868"><ph name="ORIGIN" /> ითხოვს დაკავშირებას თანმიმდევრულ პორტთან</translation>
@@ -5898,7 +5879,6 @@
 <translation id="8881020143150461183">გთხოვთ, ცადოთ ხელახლა. ტექნიკური მხარდაჭერის მისაღებად დაუკავშირდით <ph name="CARRIER_NAME" />-ს.</translation>
 <translation id="8883273463630735858">სენსორული პანელის აჩქარების ჩართვა</translation>
 <translation id="8884570509232205463">თქვენი მოწყობილობა ახლა ჩაიკეტება <ph name="UNLOCK_TIME" />-ზე.</translation>
-<translation id="8885197664446363138">Smart Lock მიუწვდომელია</translation>
 <translation id="8888253246822647887">თქვენი აპი გაიხსნება განახლების დასრულების შემდეგ. განახლებას შეიძლება დასჭირდეს რამდენიმე წუთი.</translation>
 <translation id="8888432776533519951">ფერი:</translation>
 <translation id="8889651696183044030"><ph name="ORIGIN" />-ს შეუძლია მითითებული ფაილებისა და საქაღალდეების რედაქტირება</translation>

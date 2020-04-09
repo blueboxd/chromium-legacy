@@ -247,6 +247,7 @@ static_library("test_support") {
       # target.
       "//chrome/app:test_support",
       "//components/ukm:test_support",
+      "//components/ukm:ukm_test_helper",
       "//components/zoom:test_support",
     ]
     sources += [
@@ -511,6 +512,7 @@ if (is_android) {
       "../browser/metrics/metrics_service_user_demographics_browsertest.cc",
       "../browser/net/cert_verify_proc_browsertest.cc",
       "../browser/profiles/profile_browsertest_android.cc",
+      "../browser/ssl/chrome_security_state_client_browsertest.cc",
       "../browser/ssl/crlset_browsertest.cc",
       "android/browsertests_apk/android_browsertests_jni_onload.cc",
       "base/android/android_browser_test_browsertest_android.cc",
@@ -1166,6 +1168,7 @@ if (!is_android) {
       "../browser/ui/passwords/google_password_manager_navigation_throttle_browsertest.cc",
       "../browser/ui/tabs/pinned_tab_service_browsertest.cc",
       "../browser/ui/thumbnails/thumbnail_tab_helper_browsertest.cc",
+      "../browser/ui/views/accessibility/caption_bubble_controller_views_browsertest.cc",
       "../browser/ui/views/sharing/click_to_call_browsertest.cc",
       "../browser/ui/views/sharing/remote_copy_browsertest.cc",
       "../browser/ui/views/sharing/shared_clipboard_browsertest.cc",
@@ -3984,15 +3987,7 @@ test("unit_tests") {
       "../browser/resource_coordinator/usage_clock_unittest.cc",
 
       # The site data database isn't supported on Android.
-      "../browser/performance_manager/persistence/site_data/exponential_moving_average_unittest.cc",
-      "../browser/performance_manager/persistence/site_data/leveldb_site_data_store_unittest.cc",
-      "../browser/performance_manager/persistence/site_data/non_recording_site_data_cache_unittest.cc",
       "../browser/performance_manager/persistence/site_data/site_data_cache_facade_unittest.cc",
-      "../browser/performance_manager/persistence/site_data/site_data_cache_factory_unittest.cc",
-      "../browser/performance_manager/persistence/site_data/site_data_cache_impl_unittest.cc",
-      "../browser/performance_manager/persistence/site_data/site_data_impl_unittest.cc",
-      "../browser/performance_manager/persistence/site_data/site_data_reader_unittest.cc",
-      "../browser/performance_manager/persistence/site_data/site_data_writer_unittest.cc",
       "../browser/performance_manager/persistence/site_data/unittest_utils.cc",
       "../browser/performance_manager/persistence/site_data/unittest_utils.h",
 
@@ -5811,6 +5806,7 @@ if (!is_android) {
       "//components/sync",
       "//components/sync:test_support_model",
       "//components/ukm:test_support",
+      "//components/ukm:ukm_test_helper",
       "//content/app/resources",
       "//content/test:test_support",
       "//crypto:platform",

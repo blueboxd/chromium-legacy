@@ -390,6 +390,7 @@ class VaapiDependencies {
  public:
   virtual ~VaapiDependencies() = default;
   virtual const media::VASurface* GetVaSurface() const = 0;
+  virtual bool SyncSurface() = 0;
 };
 
 // Interface that allows a SharedImageBacking to create VaapiDependencies from a
@@ -416,9 +417,6 @@ class VaapiDependenciesFactory {
 // decoding work until we're sure that the destination buffer is not being used
 // by the rest of the pipeline. However, we still need to keep track of write
 // accesses so that other representations can synchronize with the decoder.
-//
-// TODO(pwarren): create subclass SharedImageRepresentationVaapiOzone that
-// implements EndAccess.
 class GPU_GLES2_EXPORT SharedImageRepresentationVaapi
     : public SharedImageRepresentation {
  public:
@@ -442,8 +440,8 @@ class GPU_GLES2_EXPORT SharedImageRepresentationVaapi
 
  private:
   VaapiDependencies* vaapi_deps_;
-  // TODO(pwarren): Make EndAccess purely virtual.
-  virtual void EndAccess() {}
+  virtual void EndAccess() = 0;
+  virtual void BeginAccess() = 0;
 };
 
 }  // namespace gpu

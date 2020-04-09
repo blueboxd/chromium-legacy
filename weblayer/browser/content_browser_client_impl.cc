@@ -478,12 +478,14 @@ void ContentBrowserClientImpl::ExposeInterfacesToRenderer(
 #endif  // defined(OS_ANDROID)
 }
 
-void ContentBrowserClientImpl::ExposeInterfacesToMediaService(
-    service_manager::BinderRegistry* registry,
-    content::RenderFrameHost* render_frame_host) {
+void ContentBrowserClientImpl::BindMediaServiceReceiver(
+    content::RenderFrameHost* render_frame_host,
+    mojo::GenericPendingReceiver receiver) {
 #if defined(OS_ANDROID)
-  registry->AddInterface(
-      base::BindRepeating(&CreateMediaDrmStorage, render_frame_host));
+  if (auto r = receiver.As<media::mojom::MediaDrmStorage>()) {
+    CreateMediaDrmStorage(render_frame_host, std::move(r));
+    return;
+  }
 #endif
 }
 

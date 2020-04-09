@@ -402,8 +402,7 @@ TEST_F(ExtensionContextMenuModelTest, RequiredInstallationsDisablesItems) {
       menu.GetIndexOfCommandId(ExtensionContextMenuModel::UNINSTALL);
   // There should also be an icon to visually indicate why uninstallation is
   // forbidden.
-  gfx::Image icon;
-  EXPECT_TRUE(menu.GetIconAt(uninstall_index, &icon));
+  ui::ImageModel icon = menu.GetIconAt(uninstall_index);
   EXPECT_FALSE(icon.IsEmpty());
 
   // Don't leave |policy_provider| dangling.

@@ -10,6 +10,7 @@
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
+#include "gpu/command_buffer/service/shared_image_backing_ozone.h"
 #include "gpu/command_buffer/service/shared_image_manager.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/texture_manager.h"
@@ -45,6 +46,9 @@ class SharedImageRepresentationGLOzone
                                    gles2::Texture* texture);
 
   gles2::Texture* texture_;
+  SharedImageBackingOzone* ozone_backing() {
+    return static_cast<SharedImageBackingOzone*>(backing());
+  }
 
   DISALLOW_COPY_AND_ASSIGN(SharedImageRepresentationGLOzone);
 };

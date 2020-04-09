@@ -17,6 +17,7 @@
 #include "components/tab_groups/tab_group_color.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "components/tab_groups/tab_group_visual_data.h"
+#include "ui/base/models/image_model.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia.h"
@@ -53,9 +54,11 @@ void ExistingTabGroupSubMenuModel::Build() {
       constexpr int kIconSize = 14;
       const int color_id =
           GetTabGroupContextMenuColorId(tab_group->visual_data()->color());
+      // TODO (kylixrd): Investigate passing in color_id in order to color the
+      // icon using the ColorProvider.
       AddItemWithIcon(group_index, displayed_title,
-                      gfx::CreateVectorIcon(kTabGroupIcon, kIconSize,
-                                            tp.GetColor(color_id)));
+                      ui::ImageModel::FromVectorIcon(
+                          kTabGroupIcon, tp.GetColor(color_id), kIconSize));
     }
     group_index++;
   }

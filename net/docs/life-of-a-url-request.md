@@ -25,15 +25,16 @@ generally be assumed it's in //net/ and is in the net namespace.
 The top-level network stack object is the URLRequestContext. The context has
 non-owning pointers to everything needed to create and issue a URLRequest. The
 context must outlive all requests that use it. Creating a context is a rather
-complicated process, and it's recommended that most consumers use
-URLRequestContextBuilder to do this.
+complicated process usually managed by URLRequestContextBuilder.
 
 The primary use of the URLRequestContext is to create URLRequest objects using
 URLRequestContext::CreateRequest(). The URLRequest is the main interface used
-by direct consumers of the network stack. It use used to drive requests for
-http, https, ftp, and some data URLs. Each URLRequest tracks a single request
-across all redirects until an error occurs, it's canceled, or a final response
-is received, with a (possibly empty) body.
+by direct consumers of the network stack. It manages loading URLs with the
+http, https, ws, and wss schemes. URLs for other schemes, such as file,
+filesystem, blob, chrome, and data, are managed completely outside of //net.
+Each URLRequest tracks a single request across all redirects until an error
+occurs, it's canceled, or a final response is received, with a (possibly empty)
+body.
 
 The HttpNetworkSession is another major network stack object. It owns the
 HttpStreamFactory, the socket pools, and the HTTP/2 and QUIC session pools. It
@@ -64,13 +65,15 @@ The network service, which lives in //services/network/, wraps //net/ objects,
 and provides cross-process network APIs and their implementations for the rest
 of Chrome. The network service uses the namespace "network" for all its classes.
 The Mojo interfaces it provides are in the network::mojom namespace. Mojo is
-Chrome's IPC layer. Generally there's a network::mojom::FooPtr proxy object in
-the consumer's process which also implements the network::mojom::Foo interface.
-When the proxy object's methods are invoked, it passes the call and all its
-arguments over a Mojo IPC channel to another the implementation of the
-network::mojom::Foo interface in the network service (typically implemented by a
-class named network::Foo), which may be running in another process, or possibly
-another thread in the consumer's process.
+Chrome's IPC layer. Generally there's a `mojo::Remote<network::mojom::Foo>`
+proxy object in the consumer's process which also implements
+the network::mojom::Foo interface. When the proxy object's methods are invoked,
+it passes the call and all its arguments over a Mojo IPC channel, using a
+`mojo::Receiver<network::mojom::Foo>`, to an implementation of the
+network::mojom::Foo interface in the network service (the implementation is
+typically a class named network::Foo), which may be running in another process,
+another thread in the consumer's process, or even the same thread in the
+consumer's process.
 
 The network::NetworkService object is singleton that is used by Chrome to create
 all other network service objects. The primary objects it is used to create are
@@ -97,16 +100,15 @@ on-disk data, depending on the Profile and the App.
 
 # Life of a Simple URLRequest
 
-A request for data is dispatched from some other process which results in
-creating a network::URLLoader in the network process. The URLLoader then
-creates a URLRequest to drive the request. A protocol-specific job
-(e.g. HTTP, data, file) is attached to the request. In the HTTP case, that job
-first checks the cache, and then creates a network connection object, if
-necessary, to actually fetch the data. That connection object interacts with
-network socket pools to potentially re-use sockets; the socket pools create and
-connect a socket if there is no appropriate existing socket. Once that socket
-exists, the HTTP request is dispatched, the response read and parsed, and the
-result returned back up the stack and sent over to the child process.
+A request for data is dispatched from some process, which results in creating
+a network::URLLoader in the network service (which, on desktop platform, is
+typically in its own process). The URLLoader then creates a URLRequest to
+drive the network request. That job first checks the HTTP cache, and then
+creates a network transaction object, if necessary, to actually fetch the data.
+That transaction tries to reuse a connection if available. If none is available,
+it creates a new one. Once it has established a connection, the HTTP request is
+dispatched, the response read and parsed, and the result returned back up the
+stack and sent over to the caller.
 
 Of course, it's not quite that simple :-}.
 
@@ -122,10 +124,12 @@ work.
 
 Summary:
 
+* In the browser process, the network::mojom::NetworkContext interface is used
+to create a network::mojom::URLLoaderFactory.
 * A consumer (e.g. the content::ResourceDispatcher for Blink, the
 content::NavigationURLLoaderImpl for frame navigations, or a
 network::SimpleURLLoader) passes a network::ResourceRequest object and
-network::mojom::URLLoaderClient Mojo channel to a
+network::mojom::URLLoaderClient Mojo channel to the
 network::mojom::URLLoaderFactory, and tells it to create and start a
 network::mojom::URLLoader.
 * Mojo sends the network::ResourceRequest over an IPC pipe to a
@@ -140,17 +144,31 @@ multiple types of child processes (renderer, GPU, plugin, network, etc). The
 renderer processes are the ones that layout webpages and run HTML.
 
 The browser process creates the top level network::mojom::NetworkContext
-objects, and uses them to create network::mojom::URLLoaderFactories, which it
-can set some security-related options on, before vending them to child
-processes. Child processes can then use them to directly talk to the network
-service.
+objects. The NetworkContext interface is privileged and can only be accessed
+from the browser process. The browser process uses it to create
+network::mojom::URLLoaderFactories, which can then be passed to less
+privileged processes to allow them to load resources using the NetworkContext.
+To create a URLLoaderFactory, a network::mojom::URLLoaderFactoryParams object
+is passed to the NetworkContext to configure fields that other processes are
+not trusted to set, for security and privacy reasons.
 
-A consumer that wants to make a network request gets a URLLoaderFactory through
-some manner, assembles a bunch of parameters in the large ResourceRequest
-object, creates a network::mojom::URLLoaderClient Mojo channel for the
-network::mojom::URLLoader to use to talk back to it, and then passes them to
-the URLLoaderFactory, which returns a URLLoader object that it can use to
-manage the network request.
+One such field is the net::IsolationInfo field, which includes:
+* A net::NetworkIsolationKey, which is used to enforce the
+[privacy sandbox](https://www.chromium.org/Home/chromium-privacy/privacy-sandbox)
+in the network stack, separating network resources used by different sites in
+order to protect against tracking a user across sites.
+* A net::SiteForCookies, which is used to determine which site to send SameSite
+cookies for. SameSite cookies prevent cross-site attacks by only being
+accessible when that site is the top-level site.
+* How to update these values across redirects.
+
+A consumer, either in the browser process or a child process, that wants to
+make a network request gets a URLLoaderFactory from the browser process through
+some manner, assembles a bunch of parameters in the large
+network::ResourceRequest object, creates a network::mojom::URLLoaderClient Mojo
+channel for the network::mojom::URLLoader to use to talk back to it, and then
+passes them all to the URLLoaderFactory, which returns a URLLoader object that
+it can use to manage the network request.
 
 ### network::URLLoaderFactory sets up the request in the network service
 
@@ -160,18 +178,20 @@ Summary:
 * network::URLLoader uses the network::NetworkContext's URLRequestContext to
 create and start a URLRequest.
 
-The URLLoaderFactory, along with all NetworkContexts and most of the network
-stack, lives on a single thread in the network service. It gets a reconstituted
-ResourceRequest object from the Mojo pipe, does some checks to make sure it
-can service the request, and if so, creates a URLLoader, passing the request and
-the NetworkContext associated with the URLLoaderFactory.
+The network::URLLoaderFactory, along with all NetworkContexts and most of the
+network stack, lives on a single thread in the network service. It gets a
+reconstituted ResourceRequest object from the network::mojom::URLLoaderFactory
+Mojo pipe, does some checks to make sure it can service the request, and if so,
+creates a URLLoader, passing the request and the NetworkContext associated with
+the URLLoaderFactory.
 
-The URLLoader then calls into a URLRequestContext to create the URLRequest. The
-URLRequestContext has pointers to all the network stack objects needed to issue
-the request over the network, such as the cache, cookie store, and host
-resolver. The URLLoader then calls into the ResourceScheduler, which may delay
-starting the request, based on priority and other activity. Eventually, the
-ResourceScheduler starts the request.
+The URLLoader then calls into the NetworkContext's net::URLRequestContext to
+create the URLRequest. The URLRequestContext has pointers to all the network
+stack objects needed to issue the request over the network, such as the cache,
+cookie store, and host resolver. The URLLoader then calls into the
+network::ResourceScheduler, which may delay starting the request, based on
+priority and other activity. Eventually, the ResourceScheduler starts the
+request.
 
 ### Check the cache, request an HttpStream
 

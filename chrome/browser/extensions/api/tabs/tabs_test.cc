@@ -343,8 +343,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetAllWindows) {
   CloseAppWindow(app_window);
 }
 
-// Flaky. https://crbug.com/1035620
-IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DISABLED_GetAllWindowsAllTypes) {
+// Flaky on Windows. https://crbug.com/1035620
+#if defined(OS_WIN)
+#define MAYBE_GetAllWindowsAllTypes DISABLED_GetAllWindowsAllTypes
+#else
+#define MAYBE_GetAllWindowsAllTypes GetAllWindowsAllTypes
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, MAYBE_GetAllWindowsAllTypes) {
   const size_t NUM_WINDOWS = 5;
   std::set<int> window_ids;
   std::set<int> result_ids;

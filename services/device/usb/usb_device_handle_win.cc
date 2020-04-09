@@ -525,6 +525,16 @@ UsbDeviceHandleWin::UsbDeviceHandleWin(scoped_refptr<UsbDeviceWin> device,
 
 UsbDeviceHandleWin::~UsbDeviceHandleWin() = default;
 
+void UsbDeviceHandleWin::UpdateFunctionPath(
+    int interface_number,
+    const base::string16& function_path) {
+  auto it = interfaces_.find(interface_number);
+  if (it == interfaces_.end())
+    return;
+
+  it->second.function_path = function_path;
+}
+
 bool UsbDeviceHandleWin::OpenInterfaceHandle(Interface* interface) {
   if (interface->handle.IsValid())
     return true;

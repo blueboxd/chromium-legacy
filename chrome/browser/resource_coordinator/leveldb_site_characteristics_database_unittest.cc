@@ -16,7 +16,7 @@
 #include "base/test/task_environment.h"
 #include "base/test/test_file_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/performance_manager/persistence/site_data/site_data.pb.h"
+#include "components/performance_manager/persistence/site_data/site_data.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 #include "url/gurl.h"

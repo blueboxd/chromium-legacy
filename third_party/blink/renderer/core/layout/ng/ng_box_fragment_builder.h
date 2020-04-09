@@ -106,9 +106,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // Add a layout result. This involves appending the fragment and its relative
   // offset to the builder, but also keeping track of out-of-flow positioned
   // descendants, propagating fragmentainer breaks, and more.
-  void AddResult(const NGLayoutResult&,
-                 const LogicalOffset,
-                 const LayoutInline* = nullptr);
+  void AddResult(const NGLayoutResult&, const LogicalOffset);
 
   void AddBreakToken(scoped_refptr<const NGBreakToken>);
 

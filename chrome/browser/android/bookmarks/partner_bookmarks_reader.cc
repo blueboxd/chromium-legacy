@@ -17,7 +17,6 @@
 #include "chrome/browser/favicon/large_icon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon/core/large_icon_service_impl.h"
 #include "components/favicon_base/favicon_types.h"
@@ -37,7 +36,6 @@ using base::android::JavaParamRef;
 using base::android::JavaRef;
 using base::android::ScopedJavaGlobalRef;
 using bookmarks::BookmarkNode;
-using bookmarks::BookmarkPermanentNode;
 using content::BrowserThread;
 
 namespace {
@@ -108,6 +106,10 @@ const BookmarkNode* GetNodeByID(const BookmarkNode* parent, int64_t id) {
       return result;
   }
   return nullptr;
+}
+
+std::unique_ptr<BookmarkNode> CreatePartnerBookmarksRoot(int id) {
+  return std::make_unique<BookmarkNode>(id, base::GenerateGUID(), GURL());
 }
 
 }  // namespace
@@ -206,14 +208,19 @@ jlong PartnerBookmarksReader::AddPartnerBookmark(
     node_id = node->id();
     const_cast<BookmarkNode*>(parent)->Add(std::move(node));
   } else {
-    std::unique_ptr<BookmarkPermanentNode> node =
-        std::make_unique<BookmarkPermanentNode>(wip_next_available_id_++,
-                                                BookmarkNode::FOLDER);
+    std::unique_ptr<BookmarkNode> node =
+        CreatePartnerBookmarksRoot(wip_next_available_id_++);
     node_id = node->id();
     node->SetTitle(title);
     wip_partner_bookmarks_root_ = std::move(node);
   }
   return node_id;
+}
+
+// static
+std::unique_ptr<BookmarkNode>
+PartnerBookmarksReader::CreatePartnerBookmarksRootForTesting() {
+  return CreatePartnerBookmarksRoot(/*id=*/0);
 }
 
 void PartnerBookmarksReader::GetFavicon(const GURL& page_url,

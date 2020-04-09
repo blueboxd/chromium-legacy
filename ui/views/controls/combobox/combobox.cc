@@ -15,6 +15,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
@@ -176,7 +177,9 @@ class Combobox::ComboboxMenuModel : public ui::MenuModel {
 
   int GetGroupIdAt(int index) const override { return -1; }
 
-  bool GetIconAt(int index, gfx::Image* icon) const override { return false; }
+  ui::ImageModel GetIconAt(int index) const override {
+    return ui::ImageModel();
+  }
 
   ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const override {
     return nullptr;

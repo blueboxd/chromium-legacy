@@ -6,43 +6,10 @@
 
 #include <utility>
 
-#include "base/bind_helpers.h"
 #include "base/callback.h"
 
 namespace performance_manager {
 namespace testing {
-
-MockSiteDataImplOnDestroyDelegate::MockSiteDataImplOnDestroyDelegate() =
-    default;
-MockSiteDataImplOnDestroyDelegate::~MockSiteDataImplOnDestroyDelegate() =
-    default;
-
-NoopSiteDataStore::NoopSiteDataStore() = default;
-NoopSiteDataStore::~NoopSiteDataStore() = default;
-
-void NoopSiteDataStore::ReadSiteDataFromStore(
-    const url::Origin& origin,
-    ReadSiteDataFromStoreCallback callback) {
-  std::move(callback).Run(base::nullopt);
-}
-
-void NoopSiteDataStore::WriteSiteDataIntoStore(
-    const url::Origin& origin,
-    const SiteDataProto& site_characteristic_proto) {}
-
-void NoopSiteDataStore::RemoveSiteDataFromStore(
-    const std::vector<url::Origin>& site_origins) {}
-
-void NoopSiteDataStore::ClearStore() {}
-
-void NoopSiteDataStore::GetStoreSize(GetStoreSizeCallback callback) {
-  std::move(callback).Run(base::nullopt, base::nullopt);
-}
-
-void NoopSiteDataStore::SetInitializationCallbackForTesting(
-    base::OnceClosure callback) {
-  std::move(callback).Run();
-}
 
 TestWithPerformanceManager::TestWithPerformanceManager() = default;
 

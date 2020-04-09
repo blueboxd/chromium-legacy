@@ -16,6 +16,9 @@ class MediaNotificationContainerObserver : public base::CheckedObserver {
   // Called when the metadata displayed in the container changes.
   virtual void OnContainerMetadataChanged() = 0;
 
+  // Called when the action buttons in the container change.
+  virtual void OnContainerActionsChanged() = 0;
+
   // Called when the container is clicked.
   virtual void OnContainerClicked(const std::string& id) = 0;
 

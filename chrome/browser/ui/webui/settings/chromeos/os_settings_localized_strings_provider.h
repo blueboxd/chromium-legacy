@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_per_page_strings_provider.h"
-#include "chrome/services/local_search_service/public/mojom/local_search_service.mojom.h"
+#include "chrome/services/local_search_service/index_impl.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
@@ -19,6 +19,10 @@ class Profile;
 namespace content {
 class WebUIDataSource;
 }  // namespace content
+
+namespace local_search_service {
+class LocalSearchServiceImpl;
+}  // namespace local_search_service
 
 namespace chromeos {
 namespace settings {
@@ -52,7 +56,7 @@ class OsSettingsLocalizedStringsProvider
  public:
   OsSettingsLocalizedStringsProvider(
       Profile* profile,
-      local_search_service::mojom::LocalSearchService* local_search_service);
+      local_search_service::LocalSearchServiceImpl* local_search_service);
   OsSettingsLocalizedStringsProvider(
       const OsSettingsLocalizedStringsProvider& other) = delete;
   OsSettingsLocalizedStringsProvider& operator=(
@@ -81,7 +85,7 @@ class OsSettingsLocalizedStringsProvider
 
   std::vector<std::unique_ptr<OsSettingsPerPageStringsProvider>>
       per_page_providers_;
-  mojo::Remote<local_search_service::mojom::Index> index_remote_;
+  local_search_service::IndexImpl* index_;
   std::unordered_map<int, const SearchConcept*> canonical_id_to_metadata_map_;
 };
 

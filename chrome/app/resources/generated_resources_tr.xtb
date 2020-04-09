@@ -120,7 +120,6 @@
 <translation id="1153636665119721804">Google Gelişmiş Koruma Programı</translation>
 <translation id="1161575384898972166">Lütfen istemci sertifikasını dışa aktarmak için <ph name="TOKEN_NAME" /> cihazında oturum açın.</translation>
 <translation id="1163931534039071049">&amp;Çerçeve kaynağını görüntüle</translation>
-<translation id="1164674268730883318"><ph name="DEVICE_TYPE" /> için Smart Lock kapatılsın mı?</translation>
 <translation id="1164891049599601209">Yanıltıcı bir sitede girildi</translation>
 <translation id="1164899421101904659">PIN Kilit Açma Anahtarını Girin</translation>
 <translation id="1165039591588034296">Hata</translation>
@@ -774,7 +773,6 @@ Aksi takdirde, bu hesaptaki değişikliklerin bu cihazda geçerli olması için 
 
 Cihazınızda Family Link uygulamasını yükleyerek bu hesabın ayarlarını yönetebilirsiniz.  Size talimatları e-postayla gönderdik.</translation>
 <translation id="2040460856718599782">Hata! Kimliğiniz doğrulanmaya çalışılırken bir şeyler ters gitti. Lütfen oturum açma kimlik bilgilerinizi tekrar kontrol edin ve yeniden deneyin.</translation>
-<translation id="2043818754674261542">Telefonun bu <ph name="DEVICE_TYPE" /> cihazının kilidini açması için gereken mesafe</translation>
 <translation id="204497730941176055">Microsoft Sertifika Şablonu Adı</translation>
 <translation id="2045117674524495717">Klavye Kısayolu Yardımcısı</translation>
 <translation id="2045969484888636535">Çerezleri engellemeye devam et</translation>
@@ -1147,7 +1145,6 @@ Cihazınızda Family Link uygulamasını yükleyerek bu hesabın ayarlarını y�
 <translation id="2518024842978892609">İstemci sertifikalarınızı kullanma</translation>
 <translation id="2520644704042891903">Kullanılabilir soket bekleniyor...</translation>
 <translation id="252219247728877310">Bileşen güncellenmedi</translation>
-<translation id="2522791476825452208">Çok yakın</translation>
 <translation id="2523184218357549926">Ziyaret ettiğiniz sayfaların URL'lerini Google'a gönderir</translation>
 <translation id="2526277209479171883">Yükle ve devam et</translation>
 <translation id="2526590354069164005">Masaüstü</translation>
@@ -1756,7 +1753,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3333190335304955291">Bu hizmeti Ayarlar'dan kapatabilirsiniz.</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> - Video pencere içinde pencere modunda oynatılıyor</translation>
 <translation id="3335947283844343239">Kapatılan Sekmeyi Tekrar Aç</translation>
-<translation id="3336664756920573711"><ph name="DEVICE_TYPE" /> cihazınızın kilidini Android telefonunuzla açın.</translation>
 <translation id="3340620525920140773">İndirme işlemi tamamlandı: <ph name="FILE_NAME" />.</translation>
 <translation id="3341699307020049241">Yanlış PIN. <ph name="RETRIES" /> deneme hakkınız kaldı.</translation>
 <translation id="3341703758641437857">Dosya URL'lerine erişime izin ver</translation>
@@ -2779,7 +2775,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4697551882387947560">Göz atma oturumu sona erdiğinde</translation>
 <translation id="4699172675775169585">Önbelleğe alınan resimler ve dosyalar</translation>
 <translation id="4699357559218762027">(otomatik başlatıldı)</translation>
-<translation id="470074695271471509">Tamamlamak için oturum kapatılsın mı?</translation>
 <translation id="4701025263201366865">Ebeveyn oturum açmalı</translation>
 <translation id="4707302005824653064">Kullanım ve geçmiş bilgileri, yönetici tarafından (<ph name="CUSTODIAN_EMAIL" />) chrome.com adresinden incelenebilir.</translation>
 <translation id="4707579418881001319">L2TP/IPSec + kullanıcı sertifikası</translation>
@@ -2802,7 +2797,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="473546211690256853">Bu hesap <ph name="DOMAIN" /> tarafından yönetiliyor.</translation>
 <translation id="4735803855089279419">Sistem, bu cihaz için cihaz tanıtıcılarını belirleyemedi.</translation>
 <translation id="4736292055110123391">Yer işaretleriniz, şifreleriniz, geçmişiniz ve daha fazlasını tüm cihazlarınızda senkronize edin</translation>
-<translation id="4737715515457435632">Lütfen bir ağa bağlanın</translation>
 <translation id="473775607612524610">Güncelle</translation>
 <translation id="4739639199548674512">Biletler</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Uygulamaların nasıl güncelleneceğini öğrenin<ph name="END_LINK" /></translation>
@@ -3280,7 +3274,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="5423829801105537712">Temel yazım denetimi</translation>
 <translation id="5423849171846380976">Etkin</translation>
 <translation id="5425042808445046667">İndirmeye devam et</translation>
-<translation id="5425722269016440406">Smart Lock, telefonunuz ve diğer cihazlarınız ile senkronize olduğundan bu ayarı kapatmak için çevrimiçi olmanız gerekir. Lütfen önce bir ağa bağlanın.</translation>
 <translation id="5425863515030416387">Cihazlarda kolayca oturum açın</translation>
 <translation id="5427278936122846523">Her Zaman Çevir</translation>
 <translation id="5427459444770871191">Saat &amp;Yönünde Döndür</translation>
@@ -3422,7 +3415,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="558918721941304263">Uygulamalar yükleniyor...</translation>
 <translation id="5592595402373377407">Henüz yeterli veri yok.</translation>
 <translation id="5593357315997824387">Dosyalarımı senkronize et</translation>
-<translation id="5595152862129936745">Çok uzak</translation>
 <translation id="5595485650161345191">Adresi düzenle</translation>
 <translation id="5595727715083333657">Kapsayıcınız yeniden boyutlandırılmayı desteklemiyor. Linux'a (Beta) önceden ayrılan yer miktarını düzenlemek için yedekleme yapın, ardından yeni bir kapsayıcıya geri yükleyin.</translation>
 <translation id="5596627076506792578">Diğer seçenekler</translation>
@@ -3536,7 +3528,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="5747552184818312860">Süre sonu tarihi</translation>
 <translation id="5747785204778348146">Geliştirici - kararsız</translation>
 <translation id="5747809636523347288">Ya&amp;pıştır ve <ph name="URL" /> adresine git</translation>
-<translation id="5750324801516359607">Uzak</translation>
 <translation id="5751887393582880060">Bu yükleme, kuruluşunuzun güvenlik politikalarını ihlal ediyor. Yine de devam etmek istiyor musunuz?</translation>
 <translation id="5756163054456765343">Y&amp;ardım merkezi</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" /> aracılığıyla yazdırılmaları için gönderdiğiniz dokümanlar <ph name="APP_NAME" /> tarafından okunabilir.</translation>
@@ -4086,7 +4077,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6490471652906364588">USB-C cihaz (sağ bağlantı noktası)</translation>
 <translation id="6491376743066338510">Yetkilendirme başarısız oldu</translation>
 <translation id="6494445798847293442">Sertifika Yetkilisi değil</translation>
-<translation id="649454645705377674">Kapat</translation>
 <translation id="6495925982925244349">Ağ <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, %<ph name="SIGNAL_STRENGTH" /> Sinyal Gücü, Yöneticiniz tarafından yönetiliyor, Ayrıntılar</translation>
 <translation id="6498249116389603658">&amp;Tüm dilleriniz</translation>
 <translation id="6499143127267478107">Proxy komut dosyasındaki ana makine çözümleniyor...</translation>
@@ -4154,7 +4144,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6590458744723262880">Klasörü yeniden adlandırın</translation>
 <translation id="6592267180249644460">WebRTC günlüğü yakalandı: <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">Parmak iziniz alındı</translation>
-<translation id="6594883168703494535">Google Hesabınızda oturum açmak için Smart Lock'u kullanın</translation>
 <translation id="6596325263575161958">Şifreleme seçenekleri</translation>
 <translation id="6596816719288285829">IP Adresi</translation>
 <translation id="6597017209724497268">Örnek Sayısı</translation>
@@ -4688,7 +4677,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7328867076235380839">Geçersiz kombinasyon</translation>
 <translation id="7329154610228416156">Güvenli olmayan bir URL (<ph name="BLOCKED_URL" />) kullanmak üzere yapılandırıldığından oturum açılamadı. Lütfen yöneticinizle iletişime geçin.</translation>
 <translation id="7332053360324989309">Özel Çalışan: <ph name="SCRIPT_URL" /></translation>
-<translation id="7334190995941642545">Smart Lock şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.</translation>
 <translation id="7334274148831027933">Yerleştirilmiş büyüteci etkinleştir</translation>
 <translation id="7335974957018254119">Şu diller için yazım denetimi kullan:</translation>
 <translation id="7336799713063880535">Bildirimler engellendi.</translation>
@@ -5232,11 +5220,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8017679124341497925">Kısayol düzenlendi</translation>
 <translation id="8018313076035239964">Web sitelerinin kullanabilecekleri bilgileri ve size gösterebilecekleri içerikleri kontrol edin</translation>
 <translation id="8023801379949507775">Uzantıları şimdi güncelle</translation>
-<translation id="8024483450737722621">Google Play'den indirdiğiniz uygulamalar bu Chromebook'tan silinecek.
-      <ph name="LINE_BREAKS1" />
-      Satın aldığınız film, TV dizisi, müzik, kitap gibi içerikler veya diğer uygulama içi satın almalar da silinebilir.
-      <ph name="LINE_BREAKS2" />
-      Bu durum, diğer cihazlardaki uygulamaları veya içerikleri etkilemez.</translation>
 <translation id="8026334261755873520">Tarama verilerini temizle</translation>
 <translation id="8028060951694135607">Microsoft Anahtar Kurtarma</translation>
 <translation id="8028803902702117856">İndiriliyor <ph name="SIZE" />, <ph name="FILE_NAME" /></translation>
@@ -5552,7 +5535,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8455026683977728932">ADB resmi etkinleştirilemedi</translation>
 <translation id="845702320058262034">Bağlanılamıyor. Telefonunuzda Bluetooth'un açık olduğundan emin olun.</translation>
 <translation id="8457451314607652708">Yer işaretlerini içe aktar</translation>
-<translation id="8460336040822756677"><ph name="DEVICE_TYPE" /> için Smart Lock'u kapatırsanız, telefonunuzu kullanarak Chrome cihazlarınızın kilidini açamazsınız. Şifrenizi yazmanız gerekecektir.</translation>
 <translation id="8461329675984532579">Ev sağlayıcısının adı</translation>
 <translation id="84613761564611563">Ağ yapılandırma kullanıcı arayüzü istendi, lütfen bekleyin...</translation>
 <translation id="8461914792118322307">Proxy</translation>
@@ -5778,7 +5760,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8743864605301774756">1 saat önce güncellendi</translation>
 <translation id="8746654918629346731">"<ph name="EXTENSION_NAME" />" zaten istendi</translation>
 <translation id="874689135111202667">{0,plural, =1{Bu siteye bir dosya yüklensin mi?}other{Bu siteye # dosya yüklensin mi?}}</translation>
-<translation id="8748384418490037181">Smart Lock seçenekleri</translation>
 <translation id="8749863574775030885">Bilinmeyen bir tedarikçinin USB cihazlarına erişme</translation>
 <translation id="8750133148106010815"><ph name="ORGANIZATION_NAME" />, Google Play'i başlatmak için verilerinizi yedekleyip bu Chromebook'u fabrika ayarlarına sıfırlamanızı zorunlu tutuyor.</translation>
 <translation id="8750155211039279868"><ph name="ORIGIN" /> bir seri bağlantı noktasına bağlanmak istiyor</translation>
@@ -5901,7 +5882,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8881020143150461183">Lütfen tekrar deneyin. Teknik destek için <ph name="CARRIER_NAME" /> ile iletişime geçin.</translation>
 <translation id="8883273463630735858">Dokunmatik alan hızlandırmayı etkinleştir</translation>
 <translation id="8884570509232205463">Cihazınız saat <ph name="UNLOCK_TIME" /> olduğunda artık kilitlenecek.</translation>
-<translation id="8885197664446363138">Smart Lock kullanılamıyor</translation>
 <translation id="8888253246822647887">Uygulamanız, yeni sürüme geçme işlemi tamamlandığında açılır. Yeni sürüme geçme işlemi birkaç dakika sürebilir.</translation>
 <translation id="8888432776533519951">Renk:</translation>
 <translation id="8889651696183044030"><ph name="ORIGIN" /> sitesi şu dosya ve klasörleri düzenleyebilir:</translation>

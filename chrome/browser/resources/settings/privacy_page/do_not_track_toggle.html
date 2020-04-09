@@ -10,7 +10,7 @@
 <dom-module id="settings-do-not-track-toggle">
   <template>
     <style include="settings-shared"></style>
-    <settings-toggle-button id="toggle" label="$i18n{doNotTrack}"
+    <settings-toggle-button id="toggle" class="hr" label="$i18n{doNotTrack}"
         pref="{{prefs.enable_do_not_track}}"
         on-settings-boolean-control-change="onToggleChange_"
         no-set-pref>

@@ -8483,12 +8483,8 @@ void Document::ReportFeaturePolicyViolation(
                                                                : "enforce");
 
   FeaturePolicyViolationReportBody* body =
-      source_file.IsEmpty()
-          ? MakeGarbageCollected<FeaturePolicyViolationReportBody>(
-                feature_name, "Feature policy violation", disp_str)
-          : MakeGarbageCollected<FeaturePolicyViolationReportBody>(
-                feature_name, "Feature policy violation", disp_str,
-                source_file);
+      MakeGarbageCollected<FeaturePolicyViolationReportBody>(
+          feature_name, "Feature policy violation", disp_str, source_file);
 
   Report* report = MakeGarbageCollected<Report>(
       ReportType::kFeaturePolicyViolation, Url().GetString(), body);
@@ -8527,12 +8523,8 @@ void Document::ReportDocumentPolicyViolation(
                      : GetSecurityContext().GetDocumentPolicy();
 
   DocumentPolicyViolationReportBody* body =
-      source_file.IsEmpty()
-          ? MakeGarbageCollected<DocumentPolicyViolationReportBody>(
-                feature_name, "Document policy violation", disp_str)
-          : MakeGarbageCollected<DocumentPolicyViolationReportBody>(
-                feature_name, "Document policy violation", disp_str,
-                source_file);
+      MakeGarbageCollected<DocumentPolicyViolationReportBody>(
+          feature_name, "Document policy violation", disp_str, source_file);
 
   Report* report = MakeGarbageCollected<Report>(
       ReportType::kDocumentPolicyViolation, Url().GetString(), body);

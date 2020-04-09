@@ -60,7 +60,7 @@
     </template>
 
     <!-- Allow shared proxies -->
-    <settings-toggle-button id="allowShared" class="continuation indented"
+    <settings-toggle-button id="allowShared" class="indented"
         hidden$="[[!shouldShowAllowShared_(managedProperties.source)]]"
         pref="{{prefs.settings.use_shared_proxies}}"
         label="$i18n{networkProxyAllowShared}"

@@ -94,6 +94,7 @@
 <translation id="1122960773616686544">بُک مارک کا نام</translation>
 <translation id="1124772482545689468">صارف</translation>
 <translation id="1125550662859510761">‏<ph name="WIDTH" /> x <ph name="HEIGHT" /> جیسا نظر آتا ہے (اصل)</translation>
+<translation id="1126809382673880764">‏خطرناک ویب سائٹس، ڈاؤن لوڈز اور ایکسٹینشنز سے آپ کی حفاظت نہیں کرتی ہے۔ آپ کو اب بھی Gmail اور تلاش جیسی Google کی دیگر سروسز میں جہاں بھی دستیاب ہوگا محفوظ براؤزنگ کا تحفظ ملے گا۔</translation>
 <translation id="1128109161498068552">‏MIDI آلات تک رسائی حاصل کرنے کیلئے کسی بھی سائٹس کو سسٹم کے جامع پیغامات استعمال کرنے کی اجازت نہ دیں</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">سرچ انجن میں ترمیم کریں</translation>
@@ -120,7 +121,6 @@
 <translation id="1153636665119721804">‏Google کا اعلی تحفظ پروگرام</translation>
 <translation id="1161575384898972166">براہ کرم کلائنٹ سرٹیفکیٹ برآمد کرنے کیلئے <ph name="TOKEN_NAME" /> میں سائن ان کریں۔</translation>
 <translation id="1163931534039071049">&amp;فریم کا ماخذ دیکھیں</translation>
-<translation id="1164674268730883318">‏<ph name="DEVICE_TYPE" /> کیلئے Smart Lock آف کریں؟</translation>
 <translation id="1164891049599601209">فریب والی سائٹ پر درج کیا گیا</translation>
 <translation id="1164899421101904659">‏PIN غیر مقفل کرنے کی کلید درج کریں</translation>
 <translation id="1165039591588034296">خرابی</translation>
@@ -187,6 +187,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="1235458158152011030">معلوم نیٹ ورکس</translation>
 <translation id="123578888592755962">ڈسک بھری ہوئی ہے</translation>
 <translation id="1238191093934674082">Open VPN</translation>
+<translation id="1239439601391236986">ان پٹ کی ذاتی معلومات کی تجاویز دکھائیں</translation>
 <translation id="1239594683407221485">فائلز ایپ میں آلے کے مواد کا پتہ لگائیں۔</translation>
 <translation id="124116460088058876">مزید زبانیں</translation>
 <translation id="1241753985463165747">موجودہ ویب سائٹ پر موجود اپنے سبھی ڈیٹا کو چلائے جانے پر پڑھیں اور انہیں تبدیل کریں</translation>
@@ -303,6 +304,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="140723521119632973">سیلولر فعالیت</translation>
 <translation id="1407489512183974736">بیچ سے تراش دیا گیا</translation>
 <translation id="1408504635543854729">فائلز ایپ میں آلہ کا مواد دریافت کریں۔ منتظم نے مواد کو محدود کر دیا ہے اور اس میں ترمیم نہیں کی جا سکتی ہے۔</translation>
+<translation id="1408980562518920698">ذاتی معلومات کا نظم کریں</translation>
 <translation id="1410197035576869800">‏App کا آئیکن</translation>
 <translation id="1410616244180625362"><ph name="HOST" /> کو اپنے کیمرے تک رسائی کی اجازت دینا جاری رکھیں</translation>
 <translation id="1414648216875402825">آپ <ph name="PRODUCT_NAME" /> کے ایک ناپائیدار ورژن میں اپ ڈیٹ کر رہے ہیں جس میں ایسی خصوصیات شامل ہیں جو جاری ہیں۔ کریشز اور غیر متوقع بگز پیش آئیں گے۔ براہ کرم احتیاط سے آگے بڑھیں۔</translation>
@@ -436,6 +438,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <ph name="EXTENSION_NAME" /></translation>
 <translation id="1587275751631642843">‏JavaScript&amp; کونسول</translation>
 <translation id="1587907146729660231">اپنی انگلی سے پاور بٹن کو ٹچ کریں</translation>
+<translation id="1588200577109872591">اسمارٹ ان پٹس</translation>
 <translation id="1588438908519853928">حسب معمول</translation>
 <translation id="158849752021629804">مقامی نیٹ ورک درکار ہے</translation>
 <translation id="1588870296199743671">لنک کو اس کے ساتھ کھولیں…</translation>
@@ -671,6 +674,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="1879000426787380528">سائن ان کریں بطور</translation>
 <translation id="1880905663253319515">سرٹیفکیٹ "<ph name="CERTIFICATE_NAME" />" حذف کریں؟</translation>
 <translation id="1884013283844450420"><ph name="NETWORK_COUNT" /> میں سے نیٹ ورک <ph name="NETWORK_INDEX" />، <ph name="NETWORK_NAME" />، منسلک کریں</translation>
+<translation id="1884705339276589024">‏Linux ڈسک کا سائز تبدیل کریں</translation>
 <translation id="1886996562706621347">سائٹس کو پروٹوکولز کیلئے ڈیفالٹ ہینڈلرز بننے کی درخواست کرنے کی اجازت دیں (تجویز کردہ)</translation>
 <translation id="1887442540531652736">سائن ان کی خرابی</translation>
 <translation id="1887597546629269384">‏دوبارہ "Ok Google" بولیں</translation>
@@ -740,6 +744,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="1979280758666859181">آپ <ph name="PRODUCT_NAME" /> کے ایک پرانے ورژن کے ساتھ ایک چینل میں تبدیل ہو رہے ہیں۔ آپ کے آلہ پر فی الحال انسٹال کردہ ورژن سے اس چینل ورژن کے مماثل ہونے پر چینل کی تبدیلی لاگو ہوگی۔</translation>
 <translation id="197989455406964291">‏KDC مرموز کاری کی قسم کو سپورٹ نہیں کرتا ہے</translation>
 <translation id="1982354452682152483">کوئی تفصیل دستیاب نہیں ہے۔</translation>
+<translation id="1984417487208496350">کوئی تحفظ نہیں (تجویز نہیں کی جاتی ہے)</translation>
 <translation id="1987317783729300807">اکاؤنٹس</translation>
 <translation id="1989112275319619282">براؤز کریں</translation>
 <translation id="1990512225220753005">اس صفحہ پر شارٹ کٹس نہ دکھائیں</translation>
@@ -775,7 +780,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 
 آپ اپنے آلے پر Family Link ایپ انسٹال کر کے اس اکاؤنٹ کی ترتیبات کا نظم کر سکتے ہیں۔  ہم نے آپ کو ایک ای میل میں ہدایات بھیجی ہیں۔</translation>
 <translation id="2040460856718599782">افوہ! آپ کی توثیق کرتے وقت کچھ غلط ہوگیا۔ براہ کرم اپنی سائن ان کے اسناد دوبار چیک کریں اور دوبارہ کوشش کریں۔</translation>
-<translation id="2043818754674261542">اس <ph name="DEVICE_TYPE" /> کو غیر مقفل کرنے کی خاطر فون کیلئے درکار فاصلہ</translation>
 <translation id="204497730941176055">‏Microsoft سرٹیفکیٹ تمثیل کا نام</translation>
 <translation id="2045117674524495717">کی بورڈ شارٹ کٹ کا مددگار</translation>
 <translation id="2045969484888636535">کوکیز کو مسدود کرنا جاری رکھیں</translation>
@@ -810,6 +814,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="2090165459409185032">‏اپنے اکاؤنٹ کی معلومات کی بازیابی کیلئے، اس پر جائیں: google.com/accounts/recovery</translation>
 <translation id="2090876986345970080">سسٹم سیکیورٹی کی ترتیبات</translation>
 <translation id="2091887806945687916">آواز</translation>
+<translation id="2096478741073211388">جب آپ کچھ مخصوص الفاظ ٹائپ کرتے ہیں تو ذاتی معلومات کی تجاویز آپ کا نام، پتہ یا فون نمبر تجویز کرکے آپ کو تیزی سے لکھنے میں مدد کرتی ہیں۔ اپنے اکاؤنٹ کے لئے صرف آپ اپنی نجی، ذاتی نوعیت کی بنائی گئی تجاویز دیکھتے ہیں۔</translation>
 <translation id="2096715839409389970">فریق ثالث کوکیز صاف کریں</translation>
 <translation id="2097372108957554726">‏نئے آلات رجسٹر کرنے کیلئے آپ کو Chrome میں سائن ان کرنے کی ضرورت ہے</translation>
 <translation id="2099172618127234427">‏آپ Chrome OS ڈیبگنگ کی خصوصیات فعال کر رہے رہیں جو sshd daemon تشکیل دیں گی اور USB ڈرائیورز سے بوٹنگ کو فعال کریں گی۔</translation>
@@ -826,6 +831,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="2114326799768592691">&amp;فریم دوبارہ لوڈ کریں</translation>
 <translation id="2114896190328250491"><ph name="NAME" /> کی تصویر</translation>
 <translation id="2119349053129246860"><ph name="APP" /> میں کھولیں</translation>
+<translation id="2119461801241504254">محفوظ براؤزنگ آن ہے اور نقصان دہ سائٹس اور ڈاؤن لوڈز سے آپ کی حفاظت کر رہی ہے</translation>
 <translation id="2120297377148151361">سرگرمی اور تعاملات</translation>
 <translation id="2120639962942052471"><ph name="PERMISSION" /> کو مسدود کر دیا گیا</translation>
 <translation id="2121055421682309734">{COUNT,plural, =0{کوکیز مسدود ہیں}=1{سوائے 1 کے، کوکیز مسدود ہیں}other{سوائے {COUNT} کے، کوکیز مسدود ہیں}}</translation>
@@ -1148,7 +1154,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="2518024842978892609">اپنے کلائنٹ سرٹیفکیٹس استعمال کریں</translation>
 <translation id="2520644704042891903">دستیاب ساکٹ کا منتظر…</translation>
 <translation id="252219247728877310">جزء اپ ڈیٹ نہیں کیا گیا</translation>
-<translation id="2522791476825452208">بہت قریب</translation>
 <translation id="2523184218357549926">‏Google کو ان صفحات کے URLs بھیجتی ہے جنہیں آپ ملاحظہ کرتے ہیں</translation>
 <translation id="2526277209479171883">انسٹال کریں اور جاری رکھیں</translation>
 <translation id="2526590354069164005">ڈیسک ٹاپ</translation>
@@ -1758,7 +1763,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="3333190335304955291">آپ اس سروس کو ترتیبات میں جا کر آف کر سکتے ہیں۔</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> - تصویر میں تصویر وضع میں ویڈیو چل رہی ہے</translation>
 <translation id="3335947283844343239">بند ٹیب دوبارہ کھولیں</translation>
-<translation id="3336664756920573711">‏اپنے <ph name="DEVICE_TYPE" /> کو اپنے Android فون سے غیر مقفل کریں</translation>
 <translation id="3340620525920140773">ڈاؤن لوڈ مکمل ہو گیا: <ph name="FILE_NAME" />۔</translation>
 <translation id="3341699307020049241">‏غلط PIN۔ آپ کے پاس <ph name="RETRIES" /> کوششیں باقی ہیں۔</translation>
 <translation id="3341703758641437857">‏فائل URLs تک رسائی کی اجازت دیں</translation>
@@ -1897,6 +1901,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="3515983984924808886">‏دوبارہ ترتیب دینے کی تصدیق کرنے کے لیے اپنی سیکیورٹی کلید کو دوبارہ ٹچ کریں۔ سیکیورٹی کلید کے PIN سمیت اس میں اسٹور کردہ سبھی معلومات کو حذف کر دیا جائے گا۔</translation>
 <translation id="3518985090088779359">قبول کرکے جاری رکھیں</translation>
 <translation id="351952459507671940">نئے گروپ میں شامل کریں</translation>
+<translation id="3521606918211282604">ڈسک کی سائز تبدیل کریں</translation>
 <translation id="3523642406908660543">جب کوئی سائٹ آپ کے کمپیوٹر تک رسائی حاصل کرنے کیلئے ایک پلگ ان استعمال کرنا چاہتی ہو تو پوچھیں (تجویز کردہ)</translation>
 <translation id="3524965460886318643">سرگرمیاں برآمد کریں</translation>
 <translation id="3526034519184079374">سائٹ کا ڈیٹا پڑھا یا تبدیل نہیں کیا جا سکتا</translation>
@@ -1984,6 +1989,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="3629631988386925734">‏Smart Lock کو فعال کرنے کے لیے اپنا پاس ورڈ درج کریں۔ اگلی بار آپ کے فون سے آپ کا <ph name="DEVICE_TYPE" /> غیر مقفل ہوگا۔ آپ ترتیبات میں Smart Lock کو آف کر سکتے ہیں۔</translation>
 <translation id="3630132874740063857">آپ کا فون</translation>
 <translation id="3630995161997703415">اس سائٹ کو کسی بھی وقت استعمال کرنے کیلئے، اسے اپنی شیلف میں شامل کریں</translation>
+<translation id="3633309367764744750">صفحات سے پیشگی معلومات بازیافت کرتا ہے، بشمول ایسے صفحات جنہیں آپ نے ابھی تک ملاحظہ نہیں کیا ہے۔ اگر آپ کوکیز کی اجازت دیتے ہیں تو بازیافت کردہ معلومات میں کوکیز شامل ہو سکتی ہیں۔</translation>
 <translation id="3634507049637220048"><ph name="NETWORK_COUNT" /> میں سے نیٹ ورک <ph name="NETWORK_INDEX" />، <ph name="NETWORK_NAME" />، <ph name="CONNECTION_STATUS" />، آپ کے منتظم کے زیر انتظام ہے، تفصیلات</translation>
 <translation id="3635241501480133979">یہ ڈیٹا آپ کی تنظیم کی سکیورٹی کی پالیسیوں کی خلاف ورزی کرتا ہے اور اسے ڈراپ نہیں کیا جا سکتا۔</translation>
 <translation id="3635353578505343390">‏Google کو تاثرات بھیجیں</translation>
@@ -2781,7 +2787,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="4697551882387947560">براؤزنگ سیشن ختم ہو جانے پر</translation>
 <translation id="4699172675775169585">کیش کردہ تصاویر اور فائلیں</translation>
 <translation id="4699357559218762027">(از خود شروع کیا گیا)</translation>
-<translation id="470074695271471509">مکمل کرنے کیلئے سائن آؤٹ کریں؟</translation>
 <translation id="4701025263201366865">والدین کا سائن ان</translation>
 <translation id="4707302005824653064">‏مینیجر (<ph name="CUSTODIAN_EMAIL" />) استعمال اور سرگزشت کا chrome.com پر جائزہ لے سکتا ہے۔</translation>
 <translation id="4707579418881001319">‏L2TP/IPsec + صارف سرٹیفکیٹ</translation>
@@ -2804,7 +2809,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="473546211690256853">یہ اکاؤنٹ <ph name="DOMAIN" /> کے زیر انتظام ہے۔</translation>
 <translation id="4735803855089279419">سسٹم اس آلہ کیلئے آلہ کے شناخت کنندگان کا تعین کرنے میں ناکام ہوگیا۔</translation>
 <translation id="4736292055110123391">اپنے سبھی آلات پر اپنے بُک مارکس، پاس ورڈز، سرگزشت اور مزید بہت کچھ کی مطابقت پذیری کریں</translation>
-<translation id="4737715515457435632">براہ کرم کسی نیٹ ورک سے منسلک ہوں</translation>
 <translation id="473775607612524610">اپ ڈيٹ کریں</translation>
 <translation id="4739639199548674512">ٹکٹیں</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />ایپلیکیشنز کو اپ ڈیٹ کرنے کا طریقہ جانیں<ph name="END_LINK" /></translation>
@@ -3282,7 +3286,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="5423829801105537712">املا کی بنیادی جانچ</translation>
 <translation id="5423849171846380976">فعال</translation>
 <translation id="5425042808445046667">ڈاؤن لوڈ کرنا جاری رکھیں</translation>
-<translation id="5425722269016440406">‏Smart Lock آف کرنے کیلئے آپ کا آن لائن ہونا لازمی ہے کیونکہ اس ترتیب کی مطابقت پذیری آپ کے فون اور دیگر آلات پر ہوئی ہے۔ براہ کرم پہلے نیٹ ورک سے منسلک ہوں۔</translation>
 <translation id="5425863515030416387">سبھی آلات پر آسانی سے سائن ان کریں</translation>
 <translation id="5427278936122846523">ہمیشہ ترجمہ کریں</translation>
 <translation id="5427459444770871191">&amp;گھڑی وار گھمائیں</translation>
@@ -3424,7 +3427,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="558918721941304263">ایپس لوڈ ہو رہی ہیں…</translation>
 <translation id="5592595402373377407">ابھی تک کافی ڈیٹا دستیاب نہیں ہے۔</translation>
 <translation id="5593357315997824387">میری فائلز کی مطابقت پذیری کریں</translation>
-<translation id="5595152862129936745">بہت دور</translation>
 <translation id="5595485650161345191">پتے میں ترمیم کریں</translation>
 <translation id="5595727715083333657">‏آپ کا کنٹینر سائز تبدیل کرنے کو سپورٹ نہیں کرتا ہے۔ Linux (بی ٹا) کے لیے پہلے سے مختص کی گئی جگہ کی مقدار کو ایڈجسٹ کرنے کے لیے بیک اپ لیں اور اسے نئے کنٹینر میں بحال کریں۔</translation>
 <translation id="5596627076506792578">مزید اختیارات</translation>
@@ -3537,7 +3539,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="5747552184818312860">میعاد کا اختتام</translation>
 <translation id="5747785204778348146">ڈیولپر - ناپائیدار</translation>
 <translation id="5747809636523347288">پیسٹ کریں اور <ph name="URL" /> پر جائیں</translation>
-<translation id="5750324801516359607">دور</translation>
 <translation id="5751887393582880060">اس اپ لوڈ سے آپ کی تنظیم کی سکیورٹی کی پالیسیوں کی خلاف ورزی ہوتی ہے۔ کیا آپ بہر صورت جاری رکھنا چاہتے ہیں؟</translation>
 <translation id="5756163054456765343">امدادی &amp;مرکز</translation>
 <translation id="5759728514498647443">وہ دستاویزات جنہیں آپ <ph name="APP_NAME" /> کے ذریعے پرنٹ کرنے کیلئے بھیجتے ہیں ان کو <ph name="APP_NAME" /> پڑھ سکتی ہے۔</translation>
@@ -3948,6 +3949,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="6298962879096096191">‏Android ایپس کو انسٹال کرنے کیلئے Google Play استعمال کریں</translation>
 <translation id="630065524203833229">&amp;خارج ہوں</translation>
 <translation id="6300718114348072351"><ph name="PRINTER_NAME" /> کو خودکار طور پر کنفیگر نہیں کیا جا سکا۔ براہ کرم پرنٹر کی جدید ترین تفصیلات بیان کریں۔ <ph name="LINK_BEGIN" />مزید جانیں<ph name="LINK_END" /></translation>
+<translation id="630292539633944562">ذاتی معلومات کی تجاویز</translation>
 <translation id="6305607932814307878">عالمی پالیسی:</translation>
 <translation id="6307990684951724544">سسٹم مصروف ہے</translation>
 <translation id="6308493641021088955"><ph name="EXTENSION_NAME" /> کی طرف سے فراہم کردہ سائن ان</translation>
@@ -4026,6 +4028,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="641081527798843608">موضوع کی مماثلت</translation>
 <translation id="6412673304250309937">‏Chrome میں اسٹور کردہ غیر محفوظ سائٹس کی فہرست کے URLs چیک کرتا ہے۔ اگر کوئی سائٹ آپ کا پاس ورڈ چرانے کی کوشش کرتی ہے یا جب آپ نقصان دہ فائل ڈاؤن لوڈ کرتے ہیں تو Chrome محفوظ براؤزنگ پر صفحہ کے مواد کے بائٹس سمیت URLs بھیجتا ہے۔</translation>
 <translation id="6412931879992742813">نئی پوشیدگی ونڈو</translation>
+<translation id="6413591858632097328">اس سے <ph name="ORIGIN_NAME" /> کا اسٹور کردہ تمام ڈیٹا اور کوکیز اور اس کی انسٹال کردہ ایپس صاف ہو جائیں گی۔</translation>
 <translation id="641469293210305670">اپ ڈیٹس اور ایپس انسٹال کریں</translation>
 <translation id="6414888972213066896">آپ نے اپنے والدین سے پوچھا کہ کیا یہ سائٹ ملاحظہ کرنا ٹھیک ہے</translation>
 <translation id="6415900369006735853">اپنے فون کے ذریعے انٹرنیٹ سے منسلک ہوں</translation>
@@ -4087,7 +4090,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="6490471652906364588">‏USB-C آلہ (دایاں پورٹ)</translation>
 <translation id="6491376743066338510">اجازت دہندگی ناکام ہو گئی</translation>
 <translation id="6494445798847293442">سرٹیفیکیشن ادارہ نہیں ہے</translation>
-<translation id="649454645705377674">بند کریں</translation>
 <translation id="6495925982925244349"><ph name="NETWORK_COUNT" /> میں سے <ph name="NETWORK_INDEX" /> نیٹ ورک، <ph name="NETWORK_NAME" />، <ph name="SECURITY_STATUS" />، <ph name="CONNECTION_STATUS" />، سگنل کی مضبوطی <ph name="SIGNAL_STRENGTH" />%، آپ کے منتظم کے زیر انتظام ہے، تفصیلات</translation>
 <translation id="6498249116389603658">&amp;آپ کی سبھی زبانیں</translation>
 <translation id="6499143127267478107">میزبان کو پراکسی اسکرپٹ میں حل کیا جا رہا ہے…</translation>
@@ -4155,7 +4157,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="6590458744723262880">فولڈر کا نام تبدیل کریں</translation>
 <translation id="6592267180249644460">‏WebRTC لاگ کیپچر کرنے کا وقت <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">آپ کا فنگر پرنٹ کیپچر ہو گیا تھا</translation>
-<translation id="6594883168703494535">‏اپنے اکاؤنٹ میں سائن ان کرنے کیلئے Smart Lock کا استعمال کریں</translation>
 <translation id="6596325263575161958">مرموزکاری کے اختیارات</translation>
 <translation id="6596816719288285829">‏IP پتہ</translation>
 <translation id="6597017209724497268">نمونے</translation>
@@ -4689,7 +4690,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="7328867076235380839">غلط مجموعہ</translation>
 <translation id="7329154610228416156">‏سائن ان ناکام ہو گیا کیونکہ اسے ایک غیر محفوظ ‎URL (<ph name="BLOCKED_URL" />)‎ استعمال کرنے کیلئے کنفیگر کیا گیا تھا۔ براہ کرم اپنے منتظم سے رابطہ کریں۔</translation>
 <translation id="7332053360324989309">سرشار کارکن: <ph name="SCRIPT_URL" /></translation>
-<translation id="7334190995941642545">‏Smart Lock فی الحال دستیاب نہیں ہے۔ براہ کرم بعد میں دوبارہ کوشش کریں۔</translation>
 <translation id="7334274148831027933">ڈاک کردہ مکبّر فعال کریں</translation>
 <translation id="7335974957018254119">درج ذیل کے لیے املا کی جانچ کا استعمال کریں</translation>
 <translation id="7336799713063880535">اطلاعات مسدود ہیں۔</translation>
@@ -5234,11 +5234,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="8017679124341497925">شارٹ کٹ میں ترمیم کی گئی</translation>
 <translation id="8018313076035239964">کنٹرول کریں کہ ویب سائٹس کس طرح کی معلومات استعمال کر سکتی ہیں اور آپ کو کس طرح کے مواد دکھا سکتی ہیں</translation>
 <translation id="8023801379949507775">ایکسٹینشنز کو ابھی اپ ڈیٹ کریں</translation>
-<translation id="8024483450737722621">‏Google Play سے آپ کی ڈاؤن لوڈ کردہ ایپس کو اس Chromebook سے حذف کر دیا جائے گا۔
-      <ph name="LINE_BREAKS1" />
-      موویز، ٹی وی شوز، موسیقی، کتابوں جیسا آپ کا خریدا ہوا مواد یا دیگر درون ایپ خریداریوں کو بھی حذف کیا جا سکتا ہے۔
-      <ph name="LINE_BREAKS2" />
-      اس سے دیگر آلات پر موجود ایپس یا مواد متاثر نہیں ہوتے ہیں۔</translation>
 <translation id="8026334261755873520">براؤزنگ ڈیٹا صاف کریں</translation>
 <translation id="8028060951694135607">‏Microsoft کلید کی بازیابی</translation>
 <translation id="8028803902702117856">ڈاؤن لوڈ جاری ہے <ph name="SIZE" />، <ph name="FILE_NAME" /></translation>
@@ -5554,7 +5549,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="8455026683977728932">‏ADB کا نمونہ فعال کرنے میں ناکام</translation>
 <translation id="845702320058262034">منسلک نہیں ہو سکتا۔ یقینی بنائیں کہ آپ کے فون کا بلوٹوتھ آن ہے۔</translation>
 <translation id="8457451314607652708">بُک مارکس درآمد کریں</translation>
-<translation id="8460336040822756677">‏اگر آپ <ph name="DEVICE_TYPE" /> کیلئے Smart Lock کو آف کر دیتے ہیں تو آپ اپنا فون استعمال کر کے اپنے Chrome آلات کو غیر مقفل نہیں کر سکیں گے۔ آپ کو اپنا پاس ورڈ ٹائپ کرنا ہوگا۔</translation>
 <translation id="8461329675984532579">گھر فراہم کرنے والے کا نام</translation>
 <translation id="84613761564611563">‏نیٹ ورک کنفیگر UI کی درخواست کی گئی، براہ کرم انتظار کریں…</translation>
 <translation id="8461914792118322307">پراکسی</translation>
@@ -5780,7 +5774,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="8743864605301774756">اپ ڈیٹ کیا گیا 1 گھنٹہ قبل</translation>
 <translation id="8746654918629346731">آپ نے پہلے ہی "<ph name="EXTENSION_NAME" />" کی درخواست کی ہے</translation>
 <translation id="874689135111202667">{0,plural, =1{اس سائٹ پر ایک فائل اپ لوڈ کریں؟}other{اس سائٹ پر # فائلز اپ لوڈ کریں؟}}</translation>
-<translation id="8748384418490037181">‏Smart Lock کے اختیارات</translation>
 <translation id="8749863574775030885">‏ایک نامعلوم وینڈر کی جانب سے USB آلات تک رسائی حاصل کریں</translation>
 <translation id="8750133148106010815">‏Google Play شروع کرنے کے لیے <ph name="ORGANIZATION_NAME" /> کا تقاضہ ہے کہ آپ اپنے ڈیٹا کا بیک اپ لیں اور اس Chromebook کو فیکٹری کی ترتیبات پر ری سیٹ کریں۔</translation>
 <translation id="8750155211039279868"><ph name="ORIGIN" /> ایک سیریل پورٹ سے منسلک ہونا چاہتا ہے</translation>
@@ -5903,7 +5896,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="8881020143150461183">براہ کرم دوبارہ کوشش کریں۔ تکنیکی سپورٹ کیلئے <ph name="CARRIER_NAME" /> سے رابطہ کریں۔</translation>
 <translation id="8883273463630735858">ٹچ پیڈ ایکسلریشن کو فعال کریں</translation>
 <translation id="8884570509232205463">اب آپ کا آلہ <ph name="UNLOCK_TIME" /> بجے مقفل ہو جاتا ہے۔</translation>
-<translation id="8885197664446363138">‏Smart Lock دستیاب نہیں ہے</translation>
 <translation id="8888253246822647887">اپ گریڈ مکمل ہونے کے بعد آپ کی ایپ کھل جائے گی۔ اپ گریڈز میں چند منٹ لگ سکتے ہیں۔</translation>
 <translation id="8888432776533519951">رنگ:</translation>
 <translation id="8889651696183044030"><ph name="ORIGIN" /> مندرجہ ذیل فائلز اور فولڈرز میں ترمیم کر سکتا ہے</translation>

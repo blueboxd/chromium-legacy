@@ -120,7 +120,6 @@
 <translation id="1153636665119721804">Google-ren Babes aurreratua programa</translation>
 <translation id="1161575384898972166">Bezeroaren ziurtagiria esportatzeko, hasi saioa <ph name="TOKEN_NAME" /> gailuan.</translation>
 <translation id="1163931534039071049">&amp;Ikusi markoaren iturburua</translation>
-<translation id="1164674268730883318">Smart Lock desaktibatu nahi duzu <ph name="DEVICE_TYPE" /> gailuan?</translation>
 <translation id="1164891049599601209">Webgune engainagarri batean idatzi duzu</translation>
 <translation id="1164899421101904659">Idatzi PIN kodea desblokeatzeko gakoa</translation>
 <translation id="1165039591588034296">Errorea</translation>
@@ -774,7 +773,6 @@ Bestela, amaitu saioa orain kontu honen aldaketak gailu honetan aplikatzeko.
 
 Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.  Posta elektronikoz bidali dizkizugu argibideak.</translation>
 <translation id="2040460856718599782">Arazoren bat izan da zu autentifikatzen saiatzean. Egiaztatu bi aldiz saioa hasteko erabili dituzun kredentzialak eta saiatu berriro.</translation>
-<translation id="2043818754674261542">Telefonoak <ph name="DEVICE_TYPE" /> hau desblokeatzeko behar duen distantzia</translation>
 <translation id="204497730941176055">Microsoft ziurtagiriaren txantiloiaren izena</translation>
 <translation id="2045117674524495717">Lasterbideei buruzko laguntza</translation>
 <translation id="2045969484888636535">Jarraitu cookieak blokeatzen</translation>
@@ -1147,7 +1145,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="2518024842978892609">Erabili zure bezero-ziurtagiriak</translation>
 <translation id="2520644704042891903">Socket bat erabilgarri egoteko zain…</translation>
 <translation id="252219247728877310">Osagaia ez da eguneratu</translation>
-<translation id="2522791476825452208">Oso hurbil</translation>
 <translation id="2523184218357549926">Bisitatzen dituzun orrien URLak bidaltzen dizkio Google-ri</translation>
 <translation id="2526277209479171883">Instalatu eta egin aurrera</translation>
 <translation id="2526590354069164005">Ordenagailua</translation>
@@ -1756,7 +1753,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="3333190335304955291">Ezarpenak atalean desaktiba dezakezu zerbitzu hori.</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" />: bideoa pantaila txikiko moduan erreproduzitzen ari da</translation>
 <translation id="3335947283844343239">Ireki aurretik itxitako fitxa</translation>
-<translation id="3336664756920573711">Desblokeatu <ph name="DEVICE_TYPE" /> Android-eko telefonoarekin</translation>
 <translation id="3340620525920140773">Deskargatu da <ph name="FILE_NAME" />.</translation>
 <translation id="3341699307020049241">Okerreko PIN kodea. <ph name="RETRIES" /> saiakera geratzen zaizkizu.</translation>
 <translation id="3341703758641437857">Eman fitxategien URLetan sartzeko baimena</translation>
@@ -2779,7 +2775,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="4697551882387947560">Nabigazio saioa amaitzean</translation>
 <translation id="4699172675775169585">Cachean gordetako irudiak eta fitxategiak</translation>
 <translation id="4699357559218762027">(automatikoki abiarazia)</translation>
-<translation id="470074695271471509">Saioa amaitu nahi duzu prozesua amaitzeko?</translation>
 <translation id="4701025263201366865">Gurasoen saio-hasiera</translation>
 <translation id="4707302005824653064">Kudeatzaileak (<ph name="CUSTODIAN_EMAIL" />) erabilera eta historia ikuska ditzake chrome.com helbidean.</translation>
 <translation id="4707579418881001319">L2TP/IPsec + erabiltzaile-ziurtagiria</translation>
@@ -2802,7 +2797,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="473546211690256853"><ph name="DOMAIN" /> domeinuak kudeatzen du kontua</translation>
 <translation id="4735803855089279419">Sistemak ezin izan ditu zehaztu gailuaren identifikatzaileak.</translation>
 <translation id="4736292055110123391">Sinkronizatu laster-markak, pasahitzak, historia eta beste gauza asko zure gailu guztietan</translation>
-<translation id="4737715515457435632">Konektatu sare batera</translation>
 <translation id="473775607612524610">Eguneratu</translation>
 <translation id="4739639199548674512">Zerbitzu-eskaerak</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Lortu aplikazioak eguneratzeari buruzko informazioa<ph name="END_LINK" /></translation>
@@ -3280,7 +3274,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="5423829801105537712">Oinarrizko ortografia-zuzentzailea</translation>
 <translation id="5423849171846380976">Aktibatuta</translation>
 <translation id="5425042808445046667">Jarraitu deskargatzen</translation>
-<translation id="5425722269016440406">Konektatuta egon behar duzu Smart Lock desaktibatzeko, ezarpen hau telefonoarekin eta beste gailu batzuekin sinkronizatuta baitago. Lehenik, konektatu sarera.</translation>
 <translation id="5425863515030416387">Hasi saioa erraz gailu guztietan</translation>
 <translation id="5427278936122846523">Itzuli beti</translation>
 <translation id="5427459444770871191">Biratu &amp;eskuinera</translation>
@@ -3422,7 +3415,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="558918721941304263">Aplikazioak kargatzen…</translation>
 <translation id="5592595402373377407">Ez dago behar adina datu erabilgarri oraindik.</translation>
 <translation id="5593357315997824387">Sinkronizatu fitxategiak</translation>
-<translation id="5595152862129936745">Oso urrun</translation>
 <translation id="5595485650161345191">Editatu helbidea</translation>
 <translation id="5595727715083333657">Edukiontziak ez du onartzen tamainaz aldatzea. Linux-ek (Beta) aldez aurretik esleituta duen biltegiratze-tamaina doitzeko, egin babeskopia bat eta, ondoren, lehenera ezazu edukiontzi berri batean.</translation>
 <translation id="5596627076506792578">Aukera gehiago</translation>
@@ -3535,7 +3527,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="5747552184818312860">Iraungitze-data</translation>
 <translation id="5747785204778348146">Garatzailea; egoera ezegonkorra</translation>
 <translation id="5747809636523347288">It&amp;satsi eta joan "<ph name="URL" />" helbidera</translation>
-<translation id="5750324801516359607">Urrun</translation>
 <translation id="5751887393582880060">Karga honek erakundearen segurtasun-gidalerroak urratzen ditu. Aurrera egin nahi duzu dena den?</translation>
 <translation id="5756163054456765343">&amp;Laguntza-zentroa</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" /> aplikazioaren bidez inprimatzera bidaltzen dituzun dokumentuak <ph name="APP_NAME" /> aplikazioak irakur ditzake.</translation>
@@ -4085,7 +4076,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="6490471652906364588">USB-C gailua (eskuinaldeko ataka)</translation>
 <translation id="6491376743066338510">Ezin izan da baimendu</translation>
 <translation id="6494445798847293442">Ez da autoritate ziurtagiri-emailea</translation>
-<translation id="649454645705377674">Itxi</translation>
 <translation id="6495925982925244349"><ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> sarea. <ph name="NETWORK_NAME" /> (<ph name="SECURITY_STATUS" />; <ph name="CONNECTION_STATUS" />). Seinalearen indarra % <ph name="SIGNAL_STRENGTH" />. Administratzaileak kudeatua. Xehetasunak.</translation>
 <translation id="6498249116389603658">&amp;Zure hizkuntza guztiak</translation>
 <translation id="6499143127267478107">Ostalaria proxyaren scriptean ebazten…</translation>
@@ -4153,7 +4143,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="6590458744723262880">Aldatu karpetaren izena</translation>
 <translation id="6592267180249644460">WebRTC erregistroa egin da (<ph name="WEBRTC_LOG_CAPTURE_TIME" />)</translation>
 <translation id="6592808042417736307">Gehitu da hatz-marka</translation>
-<translation id="6594883168703494535">Erabili Smart Lock Google-ko kontuan saioa hasteko</translation>
 <translation id="6596325263575161958">Enkriptatze aukerak</translation>
 <translation id="6596816719288285829">IP helbidea</translation>
 <translation id="6597017209724497268">Adibideak</translation>
@@ -4687,7 +4676,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="7328867076235380839">Konbinazioak ez du balio</translation>
 <translation id="7329154610228416156">Ezin izan da hasi saioa, segurua ez den URL bat (<ph name="BLOCKED_URL" />) erabiltzeko konfiguratu delako. Jarri administratzailearekin harremanetan.</translation>
 <translation id="7332053360324989309">Langile espezifikoa: <ph name="SCRIPT_URL" /></translation>
-<translation id="7334190995941642545">Une honetan Smart Lock ez dago erabilgarri. Saiatu berriro geroago.</translation>
 <translation id="7334274148831027933">Gaitu lupa ainguratzeko aukera</translation>
 <translation id="7335974957018254119">Erabili ortografia-zuzentzailea hizkuntza hauetan:</translation>
 <translation id="7336799713063880535">Jakinarazpenak blokeatuta.</translation>
@@ -5231,11 +5219,6 @@ Gorde gakoen fitxategia leku seguru batean. Zure luzapenaren bertsio berriak sor
 <translation id="8017679124341497925">Editatu da lasterbidea</translation>
 <translation id="8018313076035239964">Kontrolatu webguneek zer informazio erabil dezaketen eta zer eduki erakuts diezazuketen</translation>
 <translation id="8023801379949507775">Eguneratu luzapenak</translation>
-<translation id="8024483450737722621">Google Play zerbitzutik deskargatu dituzun aplikazioak ezabatu egingo dira Chromebook-etik.
-<ph name="LINE_BREAKS1" />
-Erosi duzun edukia ere ezabatuko da agian; besteak beste, filmak, telesaioak, musika, liburuak edo aplikazioko beste erosketa batzuk.
-<ph name="LINE_BREAKS2" />
-Horrek ez die eragiten beste gailu batzuetako aplikazioei edo edukiei.</translation>
 <translation id="8026334261755873520">Garbitu arakatze-datuak</translation>
 <translation id="8028060951694135607">Microsoft-en gakoak berreskuratzeko zerbitzua</translation>
 <translation id="8028803902702117856"><ph name="SIZE" /> deskargatzen. Fitxategiaren izena: <ph name="FILE_NAME" /></translation>
@@ -5551,7 +5534,6 @@ Horrek ez die eragiten beste gailu batzuetako aplikazioei edo edukiei.</translat
 <translation id="8455026683977728932">Ezin izan dira gaitu ADB ilustrazioak</translation>
 <translation id="845702320058262034">Ezin da konektatu. Ziurtatu telefonoaren Bluetooth konexioa aktibatuta dagoela.</translation>
 <translation id="8457451314607652708">Inportatu laster-markak</translation>
-<translation id="8460336040822756677"><ph name="DEVICE_TYPE" /> gailuan Smart Lock desaktibatzen baduzu, ezin izango dituzu desblokeatu Chrome gailuak telefonoaren bidez. Pasahitza idatzi beharko duzu.</translation>
 <translation id="8461329675984532579">Hasierako hornitzailearen izena</translation>
 <translation id="84613761564611563">Sarea konfiguratzeko erabiltzaile-interfazea behar da. Itxaron, mesedez…</translation>
 <translation id="8461914792118322307">Proxya</translation>
@@ -5777,7 +5759,6 @@ Horrek ez die eragiten beste gailu batzuetako aplikazioei edo edukiei.</translat
 <translation id="8743864605301774756">Duela ordubete eguneratu da</translation>
 <translation id="8746654918629346731">Eskatu duzu "<ph name="EXTENSION_NAME" />" dagoeneko</translation>
 <translation id="874689135111202667">{0,plural, =1{Fitxategi bat kargatu nahi duzu webgune honetara?}other{# fitxategi kargatu nahi dituzu webgune honetara?}}</translation>
-<translation id="8748384418490037181">Smart Lock eginbidearen aukerak</translation>
 <translation id="8749863574775030885">Atzitu saltzaile ezezagunaren USB gailuak</translation>
 <translation id="8750133148106010815">Google Play abiarazteko, datuen babeskopia egitea eta Chromebook honen jatorrizko ezarpenak berrezartzea eskatzen du <ph name="ORGANIZATION_NAME" /> erakundeak.</translation>
 <translation id="8750155211039279868"><ph name="ORIGIN" /> webguneak serie-ataka batera konektatu nahi du</translation>
@@ -5900,7 +5881,6 @@ Horrek ez die eragiten beste gailu batzuetako aplikazioei edo edukiei.</translat
 <translation id="8881020143150461183">Saiatu berriro. Laguntza teknikoa behar baduzu, jarri <ph name="CARRIER_NAME" /> operadorearekin harremanetan.</translation>
 <translation id="8883273463630735858">Gaitu ukipen-panelaren erabilera bizkortua</translation>
 <translation id="8884570509232205463">Aurrerantzean, ordu honetan blokeatuko da gailua: <ph name="UNLOCK_TIME" />.</translation>
-<translation id="8885197664446363138">Smart Lock ez dago erabilgarri</translation>
 <translation id="8888253246822647887">Bertsio-berritzen amaitzen denean irekiko da aplikazioa. Agian minutu batzuk beharko dira bertsioa berritzeko.</translation>
 <translation id="8888432776533519951">Kolorea:</translation>
 <translation id="8889651696183044030"><ph name="ORIGIN" /> webguneak fitxategi eta karpeta hauek edita ditzake</translation>

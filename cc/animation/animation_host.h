@@ -212,6 +212,12 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
   bool HasCustomPropertyAnimations() const override;
   bool CurrentFrameHadRAF() const override;
   bool NextFrameHasPendingRAF() const override;
+  PendingThroughputTrackerInfos TakePendingThroughputTrackerInfos() override;
+
+  // Starts/stops throughput tracking represented by |sequence_id|.
+  void StartThroughputTracking(TrackedAnimationSequenceId sequence_id);
+  void StopThroughputTracking(TrackedAnimationSequenceId sequnece_id);
+
   void SetAnimationCounts(size_t total_animations_count,
                           bool current_frame_had_raf,
                           bool next_frame_has_pending_raf);
@@ -267,6 +273,8 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
   size_t main_thread_animations_count_ = 0;
   bool current_frame_had_raf_ = false;
   bool next_frame_has_pending_raf_ = false;
+
+  PendingThroughputTrackerInfos pending_throughput_tracker_infos_;
 
   base::WeakPtrFactory<AnimationHost> weak_factory_{this};
 };

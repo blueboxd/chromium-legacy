@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_FEED_CORE_V2_TYPES_H_
 #define COMPONENTS_FEED_CORE_V2_TYPES_H_
 
+#include <string>
+
 #include "base/util/type_safety/id_type.h"
 #include "components/feed/core/v2/public/types.h"
 
@@ -19,6 +21,9 @@ using ::feed::EphemeralChangeId;
 // it is assigned a new revision number.
 using ContentRevision = util::IdTypeU32<class ContentRevisionClass>;
 
+std::string ToString(ContentRevision c);
+ContentRevision ToContentRevision(const std::string& str);
+
 }  // namespace feed
 
-#endif  // COMPONENTS_FEED_CORE_V2_PUBLIC_TYPES_H_
+#endif  // COMPONENTS_FEED_CORE_V2_TYPES_H_

@@ -83,6 +83,9 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
 
   ~UsbDeviceHandleWin() override;
 
+  void UpdateFunctionPath(int interface_number,
+                          const base::string16& function_path);
+
  private:
   class Request;
 

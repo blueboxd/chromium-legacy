@@ -38,6 +38,7 @@
     </style>
 <if expr="not chromeos">
     <settings-toggle-button id="signinAllowedToggle"
+        class="hr"
         disabled="[[syncFirstSetupInProgress_]]"
         pref="{{prefs.signin.allowed_on_next_startup}}"
         label="$i18n{signinAllowedTitle}"
@@ -46,13 +47,14 @@
         no-set-pref>
     </settings-toggle-button>
 </if><!-- not chromeos -->
-    <settings-toggle-button hidden="[[!pageVisibility.searchPrediction]]"
+    <settings-toggle-button class="hr"
+        hidden="[[!pageVisibility.searchPrediction]]"
         pref="{{prefs.search.suggest_enabled}}"
         label="$i18n{searchSuggestPref}"
         sub-label="$i18n{searchSuggestPrefDesc}">
     </settings-toggle-button>
   <template is="dom-if" if="[[!privacySettingsRedesignEnabled_]]">
-    <settings-toggle-button id="linkDoctor"
+    <settings-toggle-button id="linkDoctor" class="hr"
         pref="{{prefs.alternate_error_pages.enabled}}"
         label="$i18n{linkDoctorPref}"
         sub-label="$i18n{linkDoctorPrefDesc}">
@@ -60,13 +62,15 @@
   </template>
 <if expr="_google_chrome">
 <if expr="chromeos">
-    <settings-toggle-button pref="{{prefs.cros.metrics.reportingEnabled}}"
+    <settings-toggle-button class="hr"
+        pref="{{prefs.cros.metrics.reportingEnabled}}"
         label="$i18n{enablePersonalizationLogging}"
         sub-label="$i18n{enablePersonalizationLoggingDesc}">
     </settings-toggle-button>
 </if><!-- chromeos -->
 <if expr="not chromeos">
     <settings-toggle-button id="metricsReportingControl"
+        class="hr"
         pref="[[metricsReportingPref_]]"
         label="$i18n{enablePersonalizationLogging}"
         sub-label="$i18n{enablePersonalizationLoggingDesc}" no-set-pref
@@ -81,12 +85,14 @@
 </if><!-- not chromeos -->
 </if><!-- _google_chrome -->
     <settings-toggle-button
+        class="hr"
         pref="{{prefs.url_keyed_anonymized_data_collection.enabled}}"
         label="$i18n{urlKeyedAnonymizedDataCollection}"
         sub-label="$i18n{urlKeyedAnonymizedDataCollectionDesc}">
     </settings-toggle-button>
 <if expr="_google_chrome">
     <settings-toggle-button id="spellCheckControl"
+        class="hr"
         pref="{{prefs.spellcheck.use_spelling_service}}"
         on-settings-boolean-control-change="onUseSpellingServiceToggle_"
         label="$i18n{spellingPref}"
@@ -96,7 +102,7 @@
 </if><!-- _google_chrome -->
     <template is="dom-if" if="[[shouldShowDriveSuggest_(
         syncStatus, syncStatus.signedIn, syncStatus.statusAction)]]" restamp>
-      <settings-toggle-button id="driveSuggestControl"
+      <settings-toggle-button id="driveSuggestControl" class="hr"
           pref="{{prefs.documentsuggest.enabled}}"
           label="$i18n{driveSuggestPref}"
           sub-label="$i18n{driveSuggestPrefDesc}">

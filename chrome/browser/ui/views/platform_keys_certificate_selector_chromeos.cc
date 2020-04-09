@@ -63,6 +63,11 @@ PlatformKeysCertificateSelector::PlatformKeysCertificateSelector(
       extension_name_(extension_name),
       callback_(callback) {
   DCHECK(!callback_.is_null());
+  DialogDelegate::SetCancelCallback(base::BindOnce(
+      [](PlatformKeysCertificateSelector* dialog) {
+        std::move(dialog->callback_).Run(nullptr);
+      },
+      base::Unretained(this)));
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::PLATFORM_KEYS_CERTIFICATE_SELECTOR);
 }
@@ -88,12 +93,6 @@ void PlatformKeysCertificateSelector::Init() {
   bold_style.text_style = STYLE_EMPHASIZED;
   label->AddStyleRange(gfx::Range(offset, offset + name.size()), bold_style);
   CertificateSelector::InitWithText(std::move(label));
-}
-
-bool PlatformKeysCertificateSelector::Cancel() {
-  DCHECK(!callback_.is_null());
-  std::move(callback_).Run(nullptr);
-  return true;
 }
 
 void PlatformKeysCertificateSelector::AcceptCertificate(

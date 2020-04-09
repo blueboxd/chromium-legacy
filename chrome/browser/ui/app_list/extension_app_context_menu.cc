@@ -19,6 +19,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/context_menu_params.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/image_model.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/vector_icons.h"
@@ -224,7 +225,8 @@ void ExtensionAppContextMenu::CreateOpenNewSubmenu(
       kGroupId);
   menu_model->AddActionableSubmenuWithStringIdAndIcon(
       ash::LAUNCH_NEW, GetLaunchStringId(), open_new_submenu_model_.get(),
-      GetMenuItemVectorIcon(ash::LAUNCH_NEW, GetLaunchStringId()));
+      ui::ImageModel::FromVectorIcon(
+          GetMenuItemVectorIcon(ash::LAUNCH_NEW, GetLaunchStringId())));
 }
 
 }  // namespace app_list

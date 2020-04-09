@@ -99,7 +99,7 @@ CreditCard CardFromSpecifics(const sync_pb::WalletMaskedCreditCard& card) {
   result.SetExpirationYear(card.exp_year());
   result.set_billing_address_id(card.billing_address_id());
   if (!card.nickname().empty())
-    result.set_nickname(base::UTF8ToUTF16(card.nickname()));
+    result.SetNickname(base::UTF8ToUTF16(card.nickname()));
   return result;
 }
 

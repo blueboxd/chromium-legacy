@@ -159,8 +159,7 @@ check_targets = [
   "//chrome/browser/permissions/*",
   "//chrome/browser/picture_in_picture/*",
   "//chrome/browser/plugins/*",
-
-  # "//chrome/browser/policy/*",  # 1 error on Windows
+  "//chrome/browser/policy/*",
   "//chrome/browser/predictors/*",
   "//chrome/browser/prefetch/*",
   "//chrome/browser/prefs/*",

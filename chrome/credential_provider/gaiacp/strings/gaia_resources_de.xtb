@@ -18,6 +18,7 @@
 <translation id="4744575902940448763">Das Passwort Ihres Arbeitskontos konnte nicht mit Ihrem Windows-Profil synchronisiert werden, da Passwortaktualisierungen auf Ihrem Gerät von Ihrer Organisation eingeschränkt werden. Wenden Sie sich an Ihren Administrator, um Hilfe zu erhalten.</translation>
 <translation id="5186761973554910131">Beim Versuch, das Passwort zu ändern, wurde ein ungültiger Computername angegeben. Bitte wenden Sie sich an Ihren Administrator.</translation>
 <translation id="5265714013989877288">Fortsetzen aufgrund eines Fehlers beim Ändern Ihres Windows-Passworts nicht möglich. Bitte wenden Sie sich an Ihren Administrator.</translation>
+<translation id="5581861273642234526">Ein anderes Arbeitskonto ist bereits mit diesem Gerät verknüpft. Melden Sie sich mit Ihrem Windows-Konto an.</translation>
 <translation id="6033715878377252112">Hilfsdienst für den Google-Anmeldeinformationsanbieter unter Windows</translation>
 <translation id="6149399665202317746">Google-Anmeldeinformationsanbieter für Windows</translation>
 <translation id="6243062314475217481">Das Passwort Ihres Arbeitskontos erfüllt nicht die Anforderungen an die Komplexität für Windows-Passwörter. Wenden Sie sich an Ihren Administrator, um Hilfe zu erhalten.</translation>

@@ -5,6 +5,11 @@
 #ifndef IOS_CHROME_BROWSER_POLICY_POLICY_FEATURES_H_
 #define IOS_CHROME_BROWSER_POLICY_POLICY_FEATURES_H_
 
+#include "base/feature_list.h"
+
+// Feature flag for supporting the ManagedBookmarks enterprise policy on iOS.
+extern const base::Feature kManagedBookmarksIOS;
+
 // Returns true if the core enterprise policy infrastructure is enabled. Does
 // not control whether policy data is parsed and made user visible; that is
 // controlled by |ShouldInstallEnterprisePolicyHandlers()| below.
@@ -13,5 +18,12 @@ bool IsEnterprisePolicyEnabled();
 // Returns true if enterprise policy handlers should be installed to parse
 // policy data and make it user visible.
 bool ShouldInstallEnterprisePolicyHandlers();
+
+// Returns true if the ManagedBookmarks policy handler should be installed to
+// parse policy data and make it user visible.
+bool ShouldInstallManagedBookmarksPolicyHandler();
+
+// Returns true if ManagedBookmarks enterprise policy is enabled.
+bool IsManagedBookmarksEnabled();
 
 #endif  // IOS_CHROME_BROWSER_POLICY_POLICY_FEATURES_H_

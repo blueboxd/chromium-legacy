@@ -633,6 +633,8 @@ void WidgetInputHandlerManager::HandledInputEvent(
                "ack_state", ack_state);
 
   if (!touch_action.has_value()) {
+    TRACE_EVENT_INSTANT0("input", "Using white_listed_touch_action",
+                         TRACE_EVENT_SCOPE_THREAD);
     touch_action = white_listed_touch_action_;
     white_listed_touch_action_.reset();
   }

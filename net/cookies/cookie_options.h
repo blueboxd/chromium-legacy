@@ -46,11 +46,16 @@ class NET_EXPORT CookieOptions {
     explicit SameSiteCookieContext(
         ContextType same_site_context,
         CrossSchemeness cross_schemeness = CrossSchemeness::NONE)
-        : context(same_site_context), cross_schemeness(cross_schemeness) {}
+        : context_(same_site_context), cross_schemeness_(cross_schemeness) {}
 
     // Convenience method which returns a SameSiteCookieContext with the most
     // inclusive context. This allows access to all SameSite cookies.
     static SameSiteCookieContext MakeInclusive();
+
+    // Returns the context for determining SameSite cookie inclusion.
+    // TODO(https://crbug.com/1030938): When schemeful_context is
+    // implemented choose to return it based on feature::kSchemefulSameSite.
+    ContextType GetContextForCookieInclusion() const;
 
     // The following functions are for conversion to the previous style of
     // SameSiteCookieContext for metrics usage. This may be removed when the
@@ -64,9 +69,23 @@ class NET_EXPORT CookieOptions {
     }
     int64_t ConvertToMetricsValue() const;
 
-    ContextType context;
+    // If you're just trying to determine if a cookie is accessible you likely
+    // want to use GetContextForCookieInclusion() which will return the correct
+    // context regardless the status of same-site features.
+    ContextType context() const { return context_; }
+    void set_context(ContextType context) { context_ = context; }
 
-    CrossSchemeness cross_schemeness;
+    CrossSchemeness cross_schemeness() const { return cross_schemeness_; }
+    void set_cross_schemeness(CrossSchemeness cross_schemeness) {
+      cross_schemeness_ = cross_schemeness;
+    }
+
+    NET_EXPORT friend bool operator==(
+        const CookieOptions::SameSiteCookieContext& lhs,
+        const CookieOptions::SameSiteCookieContext& rhs);
+    NET_EXPORT friend bool operator!=(
+        const CookieOptions::SameSiteCookieContext& lhs,
+        const CookieOptions::SameSiteCookieContext& rhs);
 
    private:
     // The following variables are for conversion to the previous style of
@@ -76,6 +95,10 @@ class NET_EXPORT CookieOptions {
     static const int kToSecureMask = 1 << 5;
     // Mask indicating secure site-for-cookies and insecure request/response.
     static const int kToInsecureMask = kToSecureMask << 1;
+
+    ContextType context_;
+
+    CrossSchemeness cross_schemeness_;
   };
 
   // Creates a CookieOptions object which:
@@ -130,12 +153,6 @@ class NET_EXPORT CookieOptions {
   bool update_access_time_;
   bool return_excluded_cookies_;
 };
-
-NET_EXPORT bool operator==(const CookieOptions::SameSiteCookieContext& lhs,
-                           const CookieOptions::SameSiteCookieContext& rhs);
-
-NET_EXPORT bool operator!=(const CookieOptions::SameSiteCookieContext& lhs,
-                           const CookieOptions::SameSiteCookieContext& rhs);
 
 }  // namespace net
 

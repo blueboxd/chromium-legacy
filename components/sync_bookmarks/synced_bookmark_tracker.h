@@ -56,6 +56,10 @@ class SyncedBookmarkTracker {
     // Check whether |specifics| matches the stored specifics_hash.
     bool MatchesSpecificsHash(const sync_pb::EntitySpecifics& specifics) const;
 
+    // Check whether |favicon_png_bytes| matches the stored
+    // bookmark_favicon_hash.
+    bool MatchesFaviconHash(const std::string& favicon_png_bytes) const;
+
     // Returns null for tombstones.
     const bookmarks::BookmarkNode* bookmark_node() const {
       return bookmark_node_;
@@ -104,6 +108,8 @@ class SyncedBookmarkTracker {
     // is required to populate the client tag (and be considered invalid
     // otherwise).
     void set_final_guid(const std::string& guid);
+
+    void PopulateFaviconHashIfUnset(const std::string& favicon_png_bytes);
 
     // Returns the estimate of dynamically allocated memory in bytes.
     size_t EstimateMemoryUsage() const;
@@ -172,6 +178,11 @@ class SyncedBookmarkTracker {
 
   // Populates a bookmark's final GUID. |entity| must be owned by this tracker.
   void PopulateFinalGuid(const Entity* entity, const std::string& guid);
+
+  // Populates the metadata field representing the hashed favicon. This method
+  // is effectively used to backfill the proto field, which was introduced late.
+  void PopulateFaviconHashIfUnset(const Entity* entity,
+                                  const std::string& favicon_png_bytes);
 
   // Marks an existing entry that a commit request might have been sent to the
   // server. |entity| must be owned by this tracker.
@@ -249,6 +260,9 @@ class SyncedBookmarkTracker {
   // Returns number of bookmarks that have been deleted but the server hasn't
   // confirmed the deletion yet.
   size_t TrackedUncommittedTombstonesCountForDebugging() const;
+
+  // Clears the specifics hash for |entity|, useful for testing.
+  void ClearSpecificsHashForTest(const Entity* entity);
 
   // Checks whther all nodes in |bookmark_model| that *should* be tracked as per
   // CanSyncNode() are tracked.

@@ -12,12 +12,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
-#include "chrome/browser/performance_manager/persistence/site_data/exponential_moving_average.h"
-#include "chrome/browser/performance_manager/persistence/site_data/feature_usage.h"
-#include "chrome/browser/performance_manager/persistence/site_data/site_data.pb.h"
-#include "chrome/browser/performance_manager/persistence/site_data/tab_visibility.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_database.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
+#include "components/performance_manager/persistence/site_data/exponential_moving_average.h"
+#include "components/performance_manager/persistence/site_data/feature_usage.h"
+#include "components/performance_manager/persistence/site_data/site_data.pb.h"
+#include "components/performance_manager/persistence/site_data/tab_visibility.h"
 #include "url/origin.h"
 
 namespace resource_coordinator {

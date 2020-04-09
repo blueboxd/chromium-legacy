@@ -235,6 +235,11 @@ extern const char kIOSLookalikeUrlNavigationSuggestionsUIDescription[];
 extern const char kLockBottomToolbarName[];
 extern const char kLockBottomToolbarDescription[];
 
+// Title and description for the flag to enable ManagedBookmarks enterprise
+// policy on iOS.
+extern const char kManagedBookmarksIOSName[];
+extern const char kManagedBookmarksIOSDescription[];
+
 // Title, description, and options for the MarkHttpAs setting that controls
 // display of omnibox warnings about non-secure pages.
 extern const char kMarkHttpAsName[];

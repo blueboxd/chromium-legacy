@@ -48,6 +48,9 @@ class UsbServiceWin final : public DeviceMonitorWin::Observer,
       uint32_t bus_number,
       uint32_t port_number,
       const base::string16& driver_name);
+  void UpdateFunctionPath(const base::string16& device_path,
+                          int interface_number,
+                          const base::string16& function_path);
 
   void DeviceReady(scoped_refptr<UsbDeviceWin> device, bool success);
 

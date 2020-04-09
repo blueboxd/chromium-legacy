@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_SYNC_TEST_INTEGRATION_BOOKMARKS_HELPER_H_
 
 #include <memory>
+#include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -418,6 +420,22 @@ class BookmarksTitleChecker : public SingleBookmarkModelStatusChangeChecker {
   const int profile_index_;
   const std::string title_;
   const int expected_count_;
+};
+
+// Checker used to wait until the favicon of a bookmark has been loaded. It
+// doesn't itself trigger the load of the favicon.
+class BookmarkFaviconLoadedChecker
+    : public SingleBookmarkModelStatusChangeChecker {
+ public:
+  // There must be exactly one bookmark for |page_url| in the BookmarkModel in
+  // |profile_index|.
+  BookmarkFaviconLoadedChecker(int profile_index, const GURL& page_url);
+
+  // StatusChangeChecker implementation.
+  bool IsExitConditionSatisfied(std::ostream* os) override;
+
+ private:
+  const bookmarks::BookmarkNode* const bookmark_node_;
 };
 
 // Checker used to block until the bookmarks on the server match a given set of

@@ -53,6 +53,7 @@ class BackgroundTabLoadingPolicyTest : public GraphTestHarness {
     // Set a value explicitly for MaxSimultaneousLoad threshold to avoid a
     // dependency on the number of cores of the machine on which the test runs.
     policy_->SetMaxSimultaneousLoadsForTesting(4);
+    policy_->SetFreeMemoryForTesting(150);
   }
 
   void TearDown() override { graph()->TakeFromGraph(policy_); }
@@ -123,6 +124,91 @@ TEST_F(BackgroundTabLoadingPolicyTest, AllLoadingSlotsUsed) {
 
   // Simulate load finish of a PageNode.
   page_node_impl->SetIsLoading(false);
+}
+
+TEST_F(BackgroundTabLoadingPolicyTest, ShouldLoad_MaxTabsToRestore) {
+  // Create vector of PageNodes to restore.
+  std::vector<
+      performance_manager::TestNodeWrapper<performance_manager::PageNodeImpl>>
+      page_nodes;
+  std::vector<PageNode*> raw_page_nodes;
+
+  for (uint32_t i = 0; i < policy()->kMaxTabsToLoad + 1; i++) {
+    page_nodes.push_back(CreateNode<performance_manager::PageNodeImpl>());
+    raw_page_nodes.push_back(page_nodes.back().get());
+  }
+
+  // Test the maximum number of tabs to load threshold.
+  for (uint32_t i = 0; i < policy()->kMaxTabsToLoad; i++) {
+    EXPECT_TRUE(policy()->ShouldLoad(raw_page_nodes[i]));
+    policy()->tab_loads_started_++;
+  }
+  EXPECT_FALSE(policy()->ShouldLoad(raw_page_nodes[policy()->kMaxTabsToLoad]));
+}
+
+TEST_F(BackgroundTabLoadingPolicyTest, ShouldLoad_MinTabsToRestore) {
+  // Create vector of PageNodes to restore.
+  std::vector<
+      performance_manager::TestNodeWrapper<performance_manager::PageNodeImpl>>
+      page_nodes;
+  std::vector<PageNode*> raw_page_nodes;
+
+  for (uint32_t i = 0; i < policy()->kMinTabsToLoad + 1; i++) {
+    page_nodes.push_back(CreateNode<performance_manager::PageNodeImpl>());
+    raw_page_nodes.push_back(page_nodes.back().get());
+  }
+
+  // When free memory limit is reached.
+  const size_t kFreeMemoryLimit = policy()->kDesiredAmountOfFreeMemoryMb - 1;
+  policy()->SetFreeMemoryForTesting(kFreeMemoryLimit);
+
+  // Test that the minimum number of tabs to load is respected.
+  for (uint32_t i = 0; i < policy()->kMinTabsToLoad; i++) {
+    EXPECT_TRUE(policy()->ShouldLoad(raw_page_nodes[i]));
+    policy()->tab_loads_started_++;
+  }
+  EXPECT_FALSE(policy()->ShouldLoad(raw_page_nodes[policy()->kMinTabsToLoad]));
+}
+
+TEST_F(BackgroundTabLoadingPolicyTest, ShouldLoad_FreeMemory) {
+  // Create a PageNode to restore.
+  performance_manager::TestNodeWrapper<performance_manager::PageNodeImpl>
+      page_node;
+  PageNode* raw_page_node;
+
+  page_node = CreateNode<performance_manager::PageNodeImpl>();
+  raw_page_node = page_node.get();
+
+  // Simulate that kMinTabsToLoad have loaded.
+  policy()->tab_loads_started_ = policy()->kMinTabsToLoad;
+
+  // Test the free memory constraint.
+  const size_t kFreeMemoryLimit = policy()->kDesiredAmountOfFreeMemoryMb;
+  policy()->SetFreeMemoryForTesting(kFreeMemoryLimit);
+  EXPECT_TRUE(policy()->ShouldLoad(raw_page_node));
+  policy()->SetFreeMemoryForTesting(kFreeMemoryLimit - 1);
+  EXPECT_FALSE(policy()->ShouldLoad(raw_page_node));
+  policy()->SetFreeMemoryForTesting(kFreeMemoryLimit + 1);
+  EXPECT_TRUE(policy()->ShouldLoad(raw_page_node));
+}
+
+TEST_F(BackgroundTabLoadingPolicyTest, ShouldLoad_OldTab) {
+  // Create an old tab.
+  performance_manager::TestNodeWrapper<performance_manager::PageNodeImpl>
+      page_node;
+  PageNode* raw_page_node;
+
+  page_node = CreateNode<performance_manager::PageNodeImpl>(
+      WebContentsProxy(), std::string(), GURL(), false, false,
+      base::TimeTicks::Now() - (base::TimeDelta::FromSeconds(1) +
+                                policy()->kMaxTimeSinceLastUseToLoad));
+  raw_page_node = page_node.get();
+
+  // Simulate that kMinTabsToLoad have loaded.
+  policy()->tab_loads_started_ = policy()->kMinTabsToLoad;
+
+  // Test the max time since last use threshold.
+  EXPECT_FALSE(policy()->ShouldLoad(raw_page_node));
 }
 
 }  // namespace policies

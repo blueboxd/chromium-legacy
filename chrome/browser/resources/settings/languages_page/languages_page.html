@@ -250,12 +250,13 @@
             </div>
           </div>
           <settings-toggle-button id="offerTranslateOtherLanguages"
-              class="first" pref="{{prefs.translate.enabled}}"
+              pref="{{prefs.translate.enabled}}"
               label="$i18n{offerToEnableTranslate}">
           </settings-toggle-button>
         </iron-collapse>
         <settings-toggle-button
             id="enableSpellcheckingToggle"
+            class="hr"
             label="$i18n{spellCheckTitle}"
             sub-label="[[getSpellCheckSubLabel_(spellCheckLanguages_)]]"
             pref="{{prefs.browser.enable_spellchecking}}"

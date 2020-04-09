@@ -135,8 +135,9 @@ class WebStateImpl : public WebState,
   void SetContentsMimeType(const std::string& mime_type);
 
   // Returns whether the navigation corresponding to |request| should be allowed
-  // to continue by asking its policy deciders. Defaults to true.
-  bool ShouldAllowRequest(
+  // to continue by asking its policy deciders. Defaults to
+  // PolicyDecision::Allow().
+  WebStatePolicyDecider::PolicyDecision ShouldAllowRequest(
       NSURLRequest* request,
       const WebStatePolicyDecider::RequestInfo& request_info);
   // Returns whether the navigation corresponding to |response| should be

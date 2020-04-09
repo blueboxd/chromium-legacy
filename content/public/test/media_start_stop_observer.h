@@ -16,7 +16,12 @@ class WebContents;
 // Used in tests to wait for media in a WebContents to start or stop playing.
 class MediaStartStopObserver : public WebContentsObserver {
  public:
-  enum class Type { kStart, kStop };
+  enum class Type {
+    kStart,
+    kStop,
+    kEnterPictureInPicture,
+    kExitPictureInPicture
+  };
 
   MediaStartStopObserver(WebContents* web_contents, Type type);
   ~MediaStartStopObserver() override;
@@ -28,6 +33,8 @@ class MediaStartStopObserver : public WebContentsObserver {
       const MediaPlayerInfo& info,
       const MediaPlayerId& id,
       WebContentsObserver::MediaStoppedReason reason) override;
+
+  void MediaPictureInPictureChanged(bool is_picture_in_picture) override;
 
   void Wait();
 

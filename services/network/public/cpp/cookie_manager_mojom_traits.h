@@ -81,12 +81,12 @@ struct StructTraits<network::mojom::CookieSameSiteContextDataView,
                     net::CookieOptions::SameSiteCookieContext> {
   static net::CookieOptions::SameSiteCookieContext::ContextType context(
       net::CookieOptions::SameSiteCookieContext& s) {
-    return s.context;
+    return s.context();
   }
 
   static net::CookieOptions::SameSiteCookieContext::CrossSchemeness
   cross_schemeness(net::CookieOptions::SameSiteCookieContext& s) {
-    return s.cross_schemeness;
+    return s.cross_schemeness();
   }
 
   static bool Read(network::mojom::CookieSameSiteContextDataView mojo_options,

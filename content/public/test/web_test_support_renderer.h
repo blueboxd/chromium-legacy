@@ -13,11 +13,9 @@
 #include "base/callback_forward.h"
 
 namespace blink {
-struct Manifest;
 class WebInputEvent;
 struct WebSize;
 class WebURL;
-class WebView;
 }  // namespace blink
 
 namespace gfx {
@@ -38,10 +36,6 @@ void EnableRendererWebTestMode();
 // WebWidgetTestProxy between WebWidgets and RenderWidgets and WebFrameTestProxy
 // between WebFrames and RenderFrames.
 void EnableWebTestProxyCreation();
-
-typedef base::OnceCallback<void(const blink::WebURL&, const blink::Manifest&)>
-    FetchManifestCallback;
-void FetchManifest(blink::WebView* view, FetchManifestCallback callback);
 
 // Returns the length of the local session history of a render view.
 int GetLocalSessionHistoryLength(RenderView* render_view);

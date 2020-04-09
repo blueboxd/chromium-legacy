@@ -34,6 +34,7 @@
 #include "extensions/browser/api/usb/usb_device_resource.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/app_window/app_window_geometry_cache.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/declarative_user_script_manager_factory.h"
 #include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/extension_message_filter.h"
@@ -51,6 +52,10 @@
 #include "extensions/browser/api/webcam_private/webcam_private_api.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "extensions/browser/api/system_power_source/system_power_source_api.h"
+#endif
+
 namespace extensions {
 
 void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
@@ -62,6 +67,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   ApiResourceManager<Socket>::GetFactoryInstance();
   ApiResourceManager<UsbDeviceResource>::GetFactoryInstance();
   AppWindowGeometryCache::Factory::GetInstance();
+  AppWindowRegistry::Factory::GetInstance();
   AudioAPI::GetFactoryInstance();
   BluetoothAPI::GetFactoryInstance();
   BluetoothPrivateAPI::GetFactoryInstance();

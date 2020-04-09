@@ -167,6 +167,7 @@
 <translation id="2347456970887948350">Посилання</translation>
 <translation id="2381733276052567791">Вмикає або вимикає голосові підказки</translation>
 <translation id="2390264819538553347">Щоб перейти далі, натисніть клавішу Enter, щоб повернутися назад – клавішу Backspace.</translation>
+<translation id="2398579267367951220">Введіть текст, який потрібно знайти на сторінці. Щоб перейти до результатів, натисніть клавішу Enter. Щоб переглянути їх, натискайте стрілки вгору або вниз. Щоб змінити пошуковий запит, продовжуйте вводити текст. Щоб скасувати його, натисніть клавішу Escape.</translation>
 <translation id="240709722712693803">Фіолетово-синій</translation>
 <translation id="2416512023405990736">Невибрана опція</translation>
 <translation id="2417569100218200841">Інформація про вміст</translation>
@@ -626,7 +627,7 @@
 <translation id="5992285135956208197">Графічний документ</translation>
 <translation id="5999630716831179808">Голоси</translation>
 <translation id="6006050241733874051">Форма</translation>
-<translation id="6006064078185310784">{COUNT,plural, =1{зворотна коса риска}one{# зворотна коса риска}few{# зворотні косі риски}many{# зворотних косих рисок}other{# backslashes}}</translation>
+<translation id="6006064078185310784">{COUNT,plural, =1{обернена скісна риска}one{# обернена скісна риска}few{# обернені скісні риски}many{# обернених скісних рисок}other{# backslashes}}</translation>
 <translation id="6017514345406065928">Зелений</translation>
 <translation id="602001110135236999">Прокрутити ліворуч</translation>
 <translation id="6034000775414344507">Світло-сірий</translation>

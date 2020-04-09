@@ -44,7 +44,7 @@ std::unique_ptr<VideoDecoder> MojoMediaClient::CreateVideoDecoder(
 }
 
 std::unique_ptr<Renderer> MojoMediaClient::CreateRenderer(
-    service_manager::mojom::InterfaceProvider* host_interfaces,
+    mojom::FrameInterfaceFactory* frame_interfaces,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     MediaLog* media_log,
     const std::string& audio_device_id) {
@@ -53,7 +53,7 @@ std::unique_ptr<Renderer> MojoMediaClient::CreateRenderer(
 
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
 std::unique_ptr<Renderer> MojoMediaClient::CreateCastRenderer(
-    service_manager::mojom::InterfaceProvider* host_interfaces,
+    mojom::FrameInterfaceFactory* frame_interfaces,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     MediaLog* media_log,
     const base::UnguessableToken& overlay_plane_id) {
@@ -62,7 +62,7 @@ std::unique_ptr<Renderer> MojoMediaClient::CreateCastRenderer(
 #endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
 
 std::unique_ptr<CdmFactory> MojoMediaClient::CreateCdmFactory(
-    service_manager::mojom::InterfaceProvider* host_interfaces) {
+    mojom::FrameInterfaceFactory* frame_interfaces) {
   return nullptr;
 }
 

@@ -101,7 +101,6 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   views::View* GetInitiallyFocusedView() override;
 
   // views::DialogDelegate:
-  bool Cancel() override;
   bool ShouldShowCloseButton() const override;
 
   // payments::PaymentRequestDialog:
@@ -185,6 +184,7 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   void OnDialogOpened();
   void ShowInitialPaymentSheet();
   void SetupSpinnerOverlay();
+  void OnDialogClosed();
 
   // views::View
   gfx::Size CalculatePreferredSize() const override;

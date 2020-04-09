@@ -94,6 +94,7 @@
 <translation id="1122960773616686544">Nome do marcador</translation>
 <translation id="1124772482545689468">Utilizador</translation>
 <translation id="1125550662859510761">Parece ter <ph name="WIDTH" /> x <ph name="HEIGHT" /> (nativo)</translation>
+<translation id="1126809382673880764">Não protege contra transferências, extensões ou Websites perigosos. Continuará a obter a proteção da Navegação segura, quando disponível, noutros Serviços Google, como o Gmail e a Pesquisa.</translation>
 <translation id="1128109161498068552">Não permitir que os sites utilizem mensagens exclusivas do sistema para aceder a dispositivos MIDI</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Editar motor de pesquisa</translation>
@@ -120,7 +121,6 @@
 <translation id="1153636665119721804">Programa de Proteção avançada da Google</translation>
 <translation id="1161575384898972166">Inicie sessão no <ph name="TOKEN_NAME" /> para exportar o certificado de cliente.</translation>
 <translation id="1163931534039071049">&amp;Ver fonte da moldura</translation>
-<translation id="1164674268730883318">Pretende desativar o Smart Lock para o <ph name="DEVICE_TYPE" />?</translation>
 <translation id="1164891049599601209">Entrou num site fraudulento.</translation>
 <translation id="1164899421101904659">Introduzir chave de desbloqueio do PIN</translation>
 <translation id="1165039591588034296">Erro</translation>
@@ -186,6 +186,7 @@
 <translation id="1235458158152011030">Redes conhecidas</translation>
 <translation id="123578888592755962">Disco cheio</translation>
 <translation id="1238191093934674082">VPN aberta</translation>
+<translation id="1239439601391236986">Mostrar sugestões de introdução de informações pessoais</translation>
 <translation id="1239594683407221485">Explore o conteúdo do dispositivo na aplicação Ficheiros.</translation>
 <translation id="124116460088058876">Mais idiomas</translation>
 <translation id="1241753985463165747">Ler e alterar todos os dados no Website atual quando invocado</translation>
@@ -302,6 +303,7 @@
 <translation id="140723521119632973">Ativação de rede móvel</translation>
 <translation id="1407489512183974736">Cortado no centro</translation>
 <translation id="1408504635543854729">Explore o conteúdo do dispositivo na aplicação Ficheiros. O conteúdo é restringido por um gestor e não é possível modificá-lo.</translation>
+<translation id="1408980562518920698">Gerir informações pessoais</translation>
 <translation id="1410197035576869800">Ícone da aplicação</translation>
 <translation id="1410616244180625362">Continuar a permitir que <ph name="HOST" /> aceda à sua câmara</translation>
 <translation id="1414648216875402825">Está a atualizar para uma versão instável do <ph name="PRODUCT_NAME" /> que contém funcionalidades que estão em curso. Ocorrerão falhas e erros inesperados. Prossiga com cuidado.</translation>
@@ -435,6 +437,7 @@
 <ph name="EXTENSION_NAME" /></translation>
 <translation id="1587275751631642843">Consola de &amp;JavaScript</translation>
 <translation id="1587907146729660231">Toque no botão ligar/desligar com o dedo</translation>
+<translation id="1588200577109872591">Introduções inteligentes</translation>
 <translation id="1588438908519853928">Normal</translation>
 <translation id="158849752021629804">Requer rede doméstica</translation>
 <translation id="1588870296199743671">Abrir Link Com...</translation>
@@ -670,6 +673,7 @@
 <translation id="1879000426787380528">Iniciar sessão como</translation>
 <translation id="1880905663253319515">Eliminar o certificado "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="1884013283844450420">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, ligar</translation>
+<translation id="1884705339276589024">Redimensione o disco do Linux</translation>
 <translation id="1886996562706621347">Permitir que os Web sites peçam para se tornarem os processadores de protocolos predefinidos (recomendado)</translation>
 <translation id="1887442540531652736">Erro de início de sessão</translation>
 <translation id="1887597546629269384">Diga "Ok Google" novamente</translation>
@@ -739,6 +743,7 @@
 <translation id="1979280758666859181">Está a mudar para um canal com uma versão mais antiga do <ph name="PRODUCT_NAME" />. A alteração de canal será aplicada quando a versão do canal corresponder à versão atualmente instalada no seu dispositivo.</translation>
 <translation id="197989455406964291">O KDC não suporta o tipo de encriptação.</translation>
 <translation id="1982354452682152483">Nenhuma descrição disponível.</translation>
+<translation id="1984417487208496350">Sem proteção (não recomendado)</translation>
 <translation id="1987317783729300807">Contas</translation>
 <translation id="1989112275319619282">Procurar</translation>
 <translation id="1990512225220753005">Não mostre atalhos nesta página</translation>
@@ -774,7 +779,6 @@ Caso contrário, termine sessão agora para que as alterações efetuadas nesta 
 
 Pode gerir as definições desta conta ao instalar a aplicação Family Link no seu dispositivo.  Enviámos-lhe instruções por email.</translation>
 <translation id="2040460856718599782">Ups! Ocorreu um erro ao tentar autenticá-lo. Verifique bem as suas credenciais de início de sessão e tente novamente.</translation>
-<translation id="2043818754674261542">Distância necessária para o telemóvel desbloquear este <ph name="DEVICE_TYPE" /></translation>
 <translation id="204497730941176055">Nome do modelo de certificado Microsoft</translation>
 <translation id="2045117674524495717">Ajuda dos atalhos de teclado</translation>
 <translation id="2045969484888636535">Continuar a bloquear cookies</translation>
@@ -809,6 +813,7 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2090165459409185032">Para recuperar a sua informação da conta, aceda a google.com/accounts/recovery</translation>
 <translation id="2090876986345970080">Definição de segurança do sistema</translation>
 <translation id="2091887806945687916">Som</translation>
+<translation id="2096478741073211388">As sugestões de informações pessoais ajudam a escrever mais rápido ao sugerir o seu nome, endereço ou número de telefone quando escreve algumas palavras específicas. É o único que pode ver as sugestões privadas e personalizadas da sua conta.</translation>
 <translation id="2096715839409389970">Limpar cookies de terceiros</translation>
 <translation id="2097372108957554726">É necessário iniciar sessão no Chrome para registar novos dispositivos</translation>
 <translation id="2099172618127234427">Está a ativar as funcionalidades de depuração do Chrome OS, o que vai configurar o sshd daemon e ativar o arranque a partir de unidades USB.</translation>
@@ -825,6 +830,7 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2114326799768592691">Atualizar &amp;frame</translation>
 <translation id="2114896190328250491">Foto de <ph name="NAME" /></translation>
 <translation id="2119349053129246860">Abrir na aplicação <ph name="APP" /></translation>
+<translation id="2119461801241504254">A Navegação segura está ativada e a oferecer-lhe proteção contra transferências e sites prejudiciais.</translation>
 <translation id="2120297377148151361">Atividade e interações</translation>
 <translation id="2120639962942052471">Bloqueou <ph name="PERMISSION" /></translation>
 <translation id="2121055421682309734">{COUNT,plural, =0{Os cookies estão bloqueados.}=1{Os cookies estão bloqueados, com 1 exceção.}other{Os cookies estão bloqueados, com {COUNT} exceções.}}</translation>
@@ -1146,7 +1152,6 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2518024842978892609">Utilizar os certificados de cliente</translation>
 <translation id="2520644704042891903">A aguardar ligação disponível...</translation>
 <translation id="252219247728877310">Componente não atualizado</translation>
-<translation id="2522791476825452208">Muito próximo</translation>
 <translation id="2523184218357549926">Envia para a Google os URLs das páginas que visita.</translation>
 <translation id="2526277209479171883">Instalar e continuar</translation>
 <translation id="2526590354069164005">Ambiente de trabalho</translation>
@@ -1756,7 +1761,6 @@ Pretende pará-lo?</translation>
 <translation id="3333190335304955291">Pode desativar este serviço nas Definições.</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> – vídeo em reprodução no modo ecrã no ecrã.</translation>
 <translation id="3335947283844343239">Reabrir separador fechado</translation>
-<translation id="3336664756920573711">Desbloqueie o <ph name="DEVICE_TYPE" /> com o telemóvel Android.</translation>
 <translation id="3340620525920140773">Transferência concluída: <ph name="FILE_NAME" />.</translation>
 <translation id="3341699307020049241">PIN incorreto. Tem mais <ph name="RETRIES" /> tentativas.</translation>
 <translation id="3341703758641437857">Permitir acesso a URLs de ficheiro</translation>
@@ -1895,6 +1899,7 @@ Pretende pará-lo?</translation>
 <translation id="3515983984924808886">Toque novamente na chave de segurança para confirmar a reposição. Todas as informações armazenadas na chave de segurança, incluindo o respetivo PIN, serão eliminadas.</translation>
 <translation id="3518985090088779359">Aceitar e continuar</translation>
 <translation id="351952459507671940">Adicionar a novo grupo</translation>
+<translation id="3521606918211282604">Alterar tamanho do disco</translation>
 <translation id="3523642406908660543">Perguntar quando um site pretender utilizar um plug-in para aceder ao seu computador (recomendado)</translation>
 <translation id="3524965460886318643">Exportar atividades</translation>
 <translation id="3526034519184079374">Não é possível ler nem alterar os dados do site.</translation>
@@ -1982,6 +1987,7 @@ Pretende pará-lo?</translation>
 <translation id="3629631988386925734">Introduza a palavra-passe para ativar o Smart Lock. Da próxima vez, o telemóvel irá desbloquear o <ph name="DEVICE_TYPE" />. Desative o Smart Lock nas Definições.</translation>
 <translation id="3630132874740063857">O seu telemóvel</translation>
 <translation id="3630995161997703415">Adicione este site à prateleira para o utilizar em qualquer altura.</translation>
+<translation id="3633309367764744750">Obtém previamente informações de páginas, incluindo páginas que ainda não visitou. As informações obtidas podem incluir cookies, se os permitir.</translation>
 <translation id="3634507049637220048">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, gerida pelo administrador, detalhes</translation>
 <translation id="3635241501480133979">Estes dados violam as políticas de segurança da sua entidade e não é possível largá-los.</translation>
 <translation id="3635353578505343390">Enviar comentários para a Google</translation>
@@ -2779,7 +2785,6 @@ Pretende pará-lo?</translation>
 <translation id="4697551882387947560">Quando a sessão de navegação termina</translation>
 <translation id="4699172675775169585">Imagens e ficheiros em cache</translation>
 <translation id="4699357559218762027">(com iniciação automática)</translation>
-<translation id="470074695271471509">Pretende terminar sessão para concluir?</translation>
 <translation id="4701025263201366865">Início de sessão pelos pais</translation>
 <translation id="4707302005824653064">A utilização e o histórico podem ser consultados pelo gestor (<ph name="CUSTODIAN_EMAIL" />) em chrome.com.</translation>
 <translation id="4707579418881001319">L2TP/IPSec + certificado do utilizador</translation>
@@ -2802,7 +2807,6 @@ Pretende pará-lo?</translation>
 <translation id="473546211690256853">Esta conta é gerida por <ph name="DOMAIN" /></translation>
 <translation id="4735803855089279419">O sistema não conseguiu determinar identificadores de dispositivos para este dispositivo.</translation>
 <translation id="4736292055110123391">Sincronizar os seus marcadores, palavras-passe, histórico e muito mais em todos os seus dispositivos</translation>
-<translation id="4737715515457435632">Ligue-se a uma rede</translation>
 <translation id="473775607612524610">Atualizar</translation>
 <translation id="4739639199548674512">Permissões</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Saiba como atualizar aplicações<ph name="END_LINK" /></translation>
@@ -3280,7 +3284,6 @@ Pretende pará-lo?</translation>
 <translation id="5423829801105537712">Verificação ortográfica básica</translation>
 <translation id="5423849171846380976">Activado</translation>
 <translation id="5425042808445046667">Continuar a transferir</translation>
-<translation id="5425722269016440406">Tem de estar online para desativar o Smart Lock, porque esta definição está sincronizada com o telemóvel e outros dispositivos. Primeiro, estabeleça ligação a uma rede.</translation>
 <translation id="5425863515030416387">Iniciar facilmente sessão em vários dispositivos</translation>
 <translation id="5427278936122846523">Traduzir sempre</translation>
 <translation id="5427459444770871191">Rodar para a &amp;Direita</translation>
@@ -3422,7 +3425,6 @@ Pretende pará-lo?</translation>
 <translation id="558918721941304263">A carregar aplicações…</translation>
 <translation id="5592595402373377407">Ainda não estão disponíveis dados suficientes.</translation>
 <translation id="5593357315997824387">Sincronizar os meus ficheiros</translation>
-<translation id="5595152862129936745">Muito afastado</translation>
 <translation id="5595485650161345191">Editar morada</translation>
 <translation id="5595727715083333657">O seu contentor não suporta o redimensionamento. Para ajustar a quantidade de espaço que é pré-atribuída ao Linux (beta), faça uma cópia de segurança e, em seguida, restaure para um novo contentor.</translation>
 <translation id="5596627076506792578">Mais opções</translation>
@@ -3536,7 +3538,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="5747552184818312860">Expira</translation>
 <translation id="5747785204778348146">Programador – instável</translation>
 <translation id="5747809636523347288">Co&amp;lar e ir para <ph name="URL" /></translation>
-<translation id="5750324801516359607">Afastado</translation>
 <translation id="5751887393582880060">Este carregamento viola as políticas de segurança da sua entidade. Mesmo assim, pretende prosseguir?</translation>
 <translation id="5756163054456765343">C&amp;entro de Ajuda</translation>
 <translation id="5759728514498647443">Os documentos enviados para impressão através de <ph name="APP_NAME" /> podem ser lidos por <ph name="APP_NAME" />.</translation>
@@ -3947,6 +3948,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6298962879096096191">Utilizar o Google Play para instalar aplicações para Android</translation>
 <translation id="630065524203833229">&amp;Sair</translation>
 <translation id="6300718114348072351">Não foi possível configurar automaticamente a <ph name="PRINTER_NAME" />. Especifique detalhes avançados da impressora. <ph name="LINK_BEGIN" />Saber mais<ph name="LINK_END" /></translation>
+<translation id="630292539633944562">Sugestões de informações pessoais</translation>
 <translation id="6305607932814307878">Política Global:</translation>
 <translation id="6307990684951724544">Sistema ocupado</translation>
 <translation id="6308493641021088955">Início de sessão fornecido por <ph name="EXTENSION_NAME" /></translation>
@@ -4025,6 +4027,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="641081527798843608">Correspondência de assunto</translation>
 <translation id="6412673304250309937">Verifica os URLs com listas de sites inseguros armazenados no Chrome. Se um site tentar roubar a sua palavra-passe, ou quando transferir um ficheiro prejudicial, o Chrome também pode enviar URLs, incluindo bits de conteúdo das páginas, para a Navegação segura.</translation>
 <translation id="6412931879992742813">Nova janela de navegação anónima</translation>
+<translation id="6413591858632097328">Esta ação limpa todos os dados e cookies armazenados por <ph name="ORIGIN_NAME" /> e pelas respetivas apps instaladas.</translation>
 <translation id="641469293210305670">Instale atualizações e apps</translation>
 <translation id="6414888972213066896">Perguntaste ao teu pai/à tua mãe se podes aceder a este site.</translation>
 <translation id="6415900369006735853">Ligue-se à Internet através do seu telemóvel.</translation>
@@ -4086,7 +4089,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6490471652906364588">Dispositivo USB-C (porta direita)</translation>
 <translation id="6491376743066338510">Falha na autorização</translation>
 <translation id="6494445798847293442">Não é uma autoridade de certificação</translation>
-<translation id="649454645705377674">Fechar</translation>
 <translation id="6495925982925244349">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Intensidade do sinal <ph name="SIGNAL_STRENGTH" />%, Gerida pelo administrador, Detalhes</translation>
 <translation id="6498249116389603658">&amp;Todos os seus idiomas</translation>
 <translation id="6499143127267478107">A resolver anfitrião no script de proxy...</translation>
@@ -4154,7 +4156,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6590458744723262880">Mudar o nome da pasta</translation>
 <translation id="6592267180249644460">Registo de WebRTC capturado <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">A sua impressão digital foi capturada.</translation>
-<translation id="6594883168703494535">Utilizar o Smart Lock para iniciar sessão na sua Conta Google</translation>
 <translation id="6596325263575161958">Opções de encriptação</translation>
 <translation id="6596816719288285829">Endereço IP</translation>
 <translation id="6597017209724497268">Amostras</translation>
@@ -4688,7 +4689,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7328867076235380839">Combinação inválida.</translation>
 <translation id="7329154610228416156">O início de sessão falhou porque foi configurado para utilizar um URL não seguro (<ph name="BLOCKED_URL" />). Contacte o gestor.</translation>
 <translation id="7332053360324989309">Trabalhador dedicado: <ph name="SCRIPT_URL" /></translation>
-<translation id="7334190995941642545">O Smart Lock não está disponível atualmente. Tente novamente mais tarde.</translation>
 <translation id="7334274148831027933">Ativar lupa ancorada</translation>
 <translation id="7335974957018254119">Utilizar o corretor ortográfico para</translation>
 <translation id="7336799713063880535">Notific. bloqueadas.</translation>
@@ -5233,11 +5233,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8017679124341497925">Atalho editado</translation>
 <translation id="8018313076035239964">Controle as informações que os Sites podem utilizar e os conteúdos que podem apresentar</translation>
 <translation id="8023801379949507775">Atualizar extensões agora</translation>
-<translation id="8024483450737722621">As aplicações que transferiu do Google Play são eliminadas deste Chromebook.
-      <ph name="LINE_BREAKS1" />
-      O conteúdo que comprou, como filmes, programas de TV, música, livros ou outras compras na aplicação, também pode ser eliminado.
-      <ph name="LINE_BREAKS2" />
-      Isto não afeta as aplicações ou o conteúdo noutros dispositivos.</translation>
 <translation id="8026334261755873520">Limpar dados de navegação</translation>
 <translation id="8028060951694135607">Recuperação de chaves da Microsoft</translation>
 <translation id="8028803902702117856">A transferir <ph name="SIZE" />… <ph name="FILE_NAME" /></translation>
@@ -5552,7 +5547,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8455026683977728932">Falha ao ativar a ilustração do adb</translation>
 <translation id="845702320058262034">Não é possível estabelecer a ligação. Certifique-se de que o Bluetooth do telemóvel está ativado.</translation>
 <translation id="8457451314607652708">Importar marcadores</translation>
-<translation id="8460336040822756677">Se desativar o Smart Lock para <ph name="DEVICE_TYPE" />, não pode utilizar o telemóvel para desbloquear os dispositivos Chrome. Tem de introduzir a palavra-passe.</translation>
 <translation id="8461329675984532579">Nome do fornecedor base</translation>
 <translation id="84613761564611563">IU de configuração da rede solicitada. Por favor, aguarde...</translation>
 <translation id="8461914792118322307">Proxy</translation>
@@ -5778,7 +5772,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8743864605301774756">Atualizada há 1 hora</translation>
 <translation id="8746654918629346731">Já solicitou a extensão "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="874689135111202667">{0,plural, =1{Pretender carregar um ficheiro para este site?}other{Pretende carregar # ficheiros para este site?}}</translation>
-<translation id="8748384418490037181">Opções do Smart Lock</translation>
 <translation id="8749863574775030885">Aceder a dispositivos USB de um fornecedor desconhecido</translation>
 <translation id="8750133148106010815">Para iniciar o Google Play, a entidade<ph name="ORGANIZATION_NAME" /> necessita que faça uma cópia de segurança dos seus dados e reponha as definições de fábrica deste Chromebook.</translation>
 <translation id="8750155211039279868"><ph name="ORIGIN" /> pretende estabelecer ligação a uma porta de série</translation>
@@ -5901,7 +5894,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8881020143150461183">Tente novamente. Para obter apoio técnico, contacte o operador <ph name="CARRIER_NAME" />.</translation>
 <translation id="8883273463630735858">Ativar aceleração do touchpad</translation>
 <translation id="8884570509232205463">Agora, o seu dispositivo será bloqueado à(s) <ph name="UNLOCK_TIME" />.</translation>
-<translation id="8885197664446363138">Smart Lock não disponível</translation>
 <translation id="8888253246822647887">A aplicação será aberta quando a atualização estiver concluída. As atualizações podem demorar alguns minutos.</translation>
 <translation id="8888432776533519951">Cor:</translation>
 <translation id="8889651696183044030"><ph name="ORIGIN" /> pode editar os seguintes ficheiros e pastas</translation>

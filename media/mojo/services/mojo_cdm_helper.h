@@ -14,6 +14,7 @@
 #include "media/cdm/cdm_auxiliary_helper.h"
 #include "media/media_buildflags.h"
 #include "media/mojo/mojom/cdm_storage.mojom.h"
+#include "media/mojo/mojom/frame_interface_factory.mojom.h"
 #include "media/mojo/mojom/output_protection.mojom.h"
 #include "media/mojo/mojom/platform_verification.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
@@ -25,12 +26,6 @@
 #include "media/mojo/services/mojo_cdm_proxy.h"
 #endif
 
-namespace service_manager {
-namespace mojom {
-class InterfaceProvider;
-}
-}  // namespace service_manager
-
 namespace media {
 
 // Helper class that connects the CDM to various auxiliary services. All
@@ -39,8 +34,7 @@ namespace media {
 class MEDIA_MOJO_EXPORT MojoCdmHelper final : public CdmAuxiliaryHelper,
                                               public MojoCdmFileIO::Delegate {
  public:
-  explicit MojoCdmHelper(
-      service_manager::mojom::InterfaceProvider* interface_provider);
+  explicit MojoCdmHelper(mojom::FrameInterfaceFactory* frame_interfaces);
   ~MojoCdmHelper() final;
 
   // CdmAuxiliaryHelper implementation.
@@ -72,7 +66,7 @@ class MEDIA_MOJO_EXPORT MojoCdmHelper final : public CdmAuxiliaryHelper,
   void ConnectToPlatformVerification();
 
   // Provides interfaces when needed.
-  service_manager::mojom::InterfaceProvider* interface_provider_;
+  mojom::FrameInterfaceFactory* frame_interfaces_;
 
   // Connections to the additional services. For the mojom classes, if a
   // connection error occurs, we will not be able to reconnect to the

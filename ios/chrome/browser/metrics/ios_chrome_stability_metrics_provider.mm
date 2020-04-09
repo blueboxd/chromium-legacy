@@ -57,7 +57,7 @@ void IOSChromeStabilityMetricsProvider::LogRendererCrash() {
   int dummy_termination_code = 105;
   helper_.LogRendererCrash(false /* not an extension process */,
                            base::TERMINATION_STATUS_ABNORMAL_TERMINATION,
-                           dummy_termination_code, base::nullopt);
+                           dummy_termination_code);
 }
 
 void IOSChromeStabilityMetricsProvider::WebStateDidStartLoading(

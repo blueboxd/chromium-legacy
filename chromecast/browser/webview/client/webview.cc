@@ -26,8 +26,10 @@ namespace {
 
 constexpr int kGrpcMaxReconnectBackoffMs = 1000;
 
+constexpr char kBackCommand[] = "back";
 constexpr char kCreateCommand[] = "create";
 constexpr char kDestroyCommand[] = "destroy";
+constexpr char kForwardCommand[] = "forward";
 constexpr char kListCommand[] = "list";
 constexpr char kNavigateCommand[] = "navigate";
 constexpr char kResizeCommand[] = "resize";
@@ -306,6 +308,10 @@ void WebviewClient::InputCallback() {
     SendResizeRequest(tokens);
   else if (tokens[1] == kPositionCommand)
     SetPosition(tokens);
+  else if (tokens[1] == kBackCommand)
+    SendBackRequest(tokens);
+  else if (tokens[1] == kForwardCommand)
+    SendForwardRequest(tokens);
 
   std::cout << "Enter command: ";
   std::cout.flush();
@@ -355,6 +361,38 @@ void WebviewClient::Paint() {
 void WebviewClient::SchedulePaint() {
   task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&WebviewClient::Paint, base::Unretained(this)));
+}
+
+void WebviewClient::SendBackRequest(const std::vector<std::string>& tokens) {
+  int id;
+  if (tokens.size() != 2 || !base::StringToInt(tokens[0], &id) ||
+      webviews_.find(id) == webviews_.end()) {
+    LOG(ERROR) << "Usage: [ID] back";
+    return;
+  }
+
+  const auto& webview = webviews_[id];
+  WebviewRequest back_request;
+  back_request.mutable_go_back();
+  if (!webview->client->Write(back_request)) {
+    LOG(ERROR) << ("Back request send failed");
+  }
+}
+
+void WebviewClient::SendForwardRequest(const std::vector<std::string>& tokens) {
+  int id;
+  if (tokens.size() != 2 || !base::StringToInt(tokens[0], &id) ||
+      webviews_.find(id) == webviews_.end()) {
+    LOG(ERROR) << "Usage: [ID] forward";
+    return;
+  }
+
+  const auto& webview = webviews_[id];
+  WebviewRequest forward_request;
+  forward_request.mutable_go_forward();
+  if (!webview->client->Write(forward_request)) {
+    LOG(ERROR) << ("Forward request send failed");
+  }
 }
 
 void WebviewClient::SendNavigationRequest(

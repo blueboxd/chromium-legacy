@@ -12,7 +12,6 @@
 #include "media/cdm/default_cdm_factory.h"
 #include "media/media_buildflags.h"
 #include "media/mojo/services/cdm_service.h"
-#include "media/mojo/services/media_interface_provider.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -45,7 +44,7 @@ class MockCdmServiceClient : public media::CdmService::Client {
   MOCK_METHOD0(EnsureSandboxed, void());
 
   std::unique_ptr<media::CdmFactory> CreateCdmFactory(
-      service_manager::mojom::InterfaceProvider* host_interfaces) override {
+      mojom::FrameInterfaceFactory* frame_interfaces) override {
     return std::make_unique<media::DefaultCdmFactory>();
   }
 
@@ -74,9 +73,8 @@ class CdmServiceTest : public testing::Test {
         base::TimeDelta(), base::BindRepeating(&CdmServiceTest::CdmServiceIdle,
                                                base::Unretained(this)));
 
-    mojo::PendingRemote<service_manager::mojom::InterfaceProvider> interfaces;
-    auto provider = std::make_unique<MediaInterfaceProvider>(
-        interfaces.InitWithNewPipeAndPassReceiver());
+    mojo::PendingRemote<mojom::FrameInterfaceFactory> interfaces;
+    ignore_result(interfaces.InitWithNewPipeAndPassReceiver());
 
     ASSERT_FALSE(cdm_factory_remote_);
     cdm_service_remote_->CreateCdmFactory(

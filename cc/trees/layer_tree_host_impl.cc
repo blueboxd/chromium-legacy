@@ -515,6 +515,10 @@ void LayerTreeHostImpl::CommitComplete() {
     frame_trackers_.StartSequence(
         FrameSequenceTrackerType::kMainThreadAnimation);
   }
+
+  // TODO(crbug.com/1021774): Start/stop custom FrameSequenceTracker based on
+  // pending info.
+  auto ignored = mutator_host_->TakePendingThroughputTrackerInfos();
 }
 
 void LayerTreeHostImpl::UpdateSyncTreeAfterCommitOrImplSideInvalidation() {

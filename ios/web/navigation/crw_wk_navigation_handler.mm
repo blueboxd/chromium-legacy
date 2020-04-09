@@ -390,7 +390,8 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
         userInteractedWithRequestMainFrame);
 
     allowLoad =
-        self.webStateImpl->ShouldAllowRequest(action.request, requestInfo);
+        self.webStateImpl->ShouldAllowRequest(action.request, requestInfo)
+            .ShouldAllowNavigation();
     // The WebState may have been closed in the ShouldAllowRequest callback.
     if (self.beingDestroyed) {
       decisionHandler(WKNavigationActionPolicyCancel);

@@ -61,7 +61,16 @@ namespace ash {
 class HotseatWidgetAnimationMetricsReporter
     : public ui::AnimationMetricsReporter {
  public:
-  HotseatWidgetAnimationMetricsReporter() = default;
+  // The different kinds of hotseat elements.
+  enum class HotseatElementType {
+    // The Hotseat Widget.
+    kWidget,
+    // The Hotseat Widget's translucent background.
+    kTranslucentBackground
+  };
+  explicit HotseatWidgetAnimationMetricsReporter(
+      HotseatElementType hotseat_element)
+      : hotseat_element_(hotseat_element) {}
   ~HotseatWidgetAnimationMetricsReporter() override = default;
 
   void SetTargetHotseatState(HotseatState target_state) {
@@ -73,22 +82,43 @@ class HotseatWidgetAnimationMetricsReporter
     switch (target_state_) {
       case HotseatState::kShownClamshell:
       case HotseatState::kShownHomeLauncher:
-        UMA_HISTOGRAM_PERCENTAGE(
-            "Ash.HotseatWidgetAnimation.AnimationSmoothness."
-            "TransitionToShownHotseat",
-            value);
+        if (hotseat_element_ == HotseatElementType::kWidget) {
+          UMA_HISTOGRAM_PERCENTAGE(
+              "Ash.HotseatWidgetAnimation.Widget.AnimationSmoothness."
+              "TransitionToShownHotseat",
+              value);
+        } else {
+          UMA_HISTOGRAM_PERCENTAGE(
+              "Ash.HotseatWidgetAnimation.TranslucentBackground."
+              "AnimationSmoothness.TransitionToShownHotseat",
+              value);
+        }
         break;
       case HotseatState::kExtended:
-        UMA_HISTOGRAM_PERCENTAGE(
-            "Ash.HotseatWidgetAnimation.AnimationSmoothness."
-            "TransitionToExtendedHotseat",
-            value);
+        if (hotseat_element_ == HotseatElementType::kWidget) {
+          UMA_HISTOGRAM_PERCENTAGE(
+              "Ash.HotseatWidgetAnimation.Widget.AnimationSmoothness."
+              "TransitionToExtendedHotseat",
+              value);
+        } else {
+          UMA_HISTOGRAM_PERCENTAGE(
+              "Ash.HotseatWidgetAnimation.TranslucentBackground."
+              "AnimationSmoothness.TransitionToExtendedHotseat",
+              value);
+        }
         break;
       case HotseatState::kHidden:
-        UMA_HISTOGRAM_PERCENTAGE(
-            "Ash.HotseatWidgetAnimation.AnimationSmoothness."
-            "TransitionToHiddenHotseat",
-            value);
+        if (hotseat_element_ == HotseatElementType::kWidget) {
+          UMA_HISTOGRAM_PERCENTAGE(
+              "Ash.HotseatWidgetAnimation.Widget.AnimationSmoothness."
+              "TransitionToHiddenHotseat",
+              value);
+        } else {
+          UMA_HISTOGRAM_PERCENTAGE(
+              "Ash.HotseatWidgetAnimation.TranslucentBackground."
+              "AnimationSmoothness.TransitionToHiddenHotseat",
+              value);
+        }
         break;
       default:
         NOTREACHED();
@@ -96,6 +126,8 @@ class HotseatWidgetAnimationMetricsReporter
   }
 
  private:
+  // The element that is reporting an animation.
+  HotseatElementType hotseat_element_;
   // The state to which the animation is transitioning.
   HotseatState target_state_ = HotseatState::kHidden;
 };
@@ -321,10 +353,15 @@ void Shelf::CreateHotseatWidget(aura::Window* container) {
   DCHECK(container);
   DCHECK(!hotseat_widget_);
   hotseat_widget_ = std::make_unique<HotseatWidget>();
+  translucent_background_metrics_reporter_ =
+      std::make_unique<HotseatWidgetAnimationMetricsReporter>(
+          HotseatWidgetAnimationMetricsReporter::HotseatElementType::
+              kTranslucentBackground);
   hotseat_widget_->Initialize(container, this);
   shelf_widget_->RegisterHotseatWidget(hotseat_widget());
   hotseat_transition_metrics_reporter_ =
-      std::make_unique<HotseatWidgetAnimationMetricsReporter>();
+      std::make_unique<HotseatWidgetAnimationMetricsReporter>(
+          HotseatWidgetAnimationMetricsReporter::HotseatElementType::kWidget);
 }
 
 void Shelf::CreateStatusAreaWidget(aura::Window* status_container) {
@@ -592,6 +629,12 @@ ui::AnimationMetricsReporter* Shelf::GetHotseatTransitionMetricsReporter(
     HotseatState target_state) {
   hotseat_transition_metrics_reporter_->SetTargetHotseatState(target_state);
   return hotseat_transition_metrics_reporter_.get();
+}
+
+ui::AnimationMetricsReporter* Shelf::GetTranslucentBackgroundMetricsReporter(
+    HotseatState target_state) {
+  translucent_background_metrics_reporter_->SetTargetHotseatState(target_state);
+  return translucent_background_metrics_reporter_.get();
 }
 
 ui::AnimationMetricsReporter*

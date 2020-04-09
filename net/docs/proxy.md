@@ -918,3 +918,81 @@ The priority for encoding is determined in this order:
 When setting the `Content-Type`, servers should prefer using a mime type of
 `application/x-ns-proxy-autoconfig` or `application/x-javascript-config`.
 However in practice, Chrome does not enforce the mime type.
+
+## Capturing a Net Log for debugging proxy resolution issues
+
+Issues in proxy resolution are best investigated using a Net Log.
+
+A good starting point is to follow the [general instructions for
+net-export](https://www.chromium.org/for-testers/providing-network-details),
+*and while the Net Log is being captured perform these steps*:
+
+1. Reproduce the failure (ex: load a URL that fails)
+2. If you can reproduce a success, do so (ex: load a different URL that succeeds).
+3. In a new tab, navigate to `chrome://net-internals/#proxy` and click both
+   buttons ("Re-apply settings" and "Clear bad proxies").
+4. Repeat step (1)
+5. Stop the Net Log and save the file.
+
+The resulting Net Log should have enough information to diagnose common
+problems. It can be attached to a bug report, or explored using the [Net Log
+Viewer](https://netlog-viewer.appspot.com/). See the next section for some tips
+on analyzing it.
+
+## Analyzing Net Logs for proxy issues
+
+Load saved Net Logs using [Net Log Viewer](https://netlog-viewer.appspot.com/).
+
+### Proxy overview tab
+
+Start by getting a big-picture view of the proxy settings by clicking to the
+"Proxy" tab on the left. This summarizes the proxy settings at the time the
+_capture ended_.
+
+* Does the _original_ proxy settings match expectation?
+  The proxy settings might be coming from:
+  * Managed Chrome policy (chrome://policy)
+  * Command line flags (ex: `--proxy-server`)
+  * (per-profile) Chrome extensions (ex: [chrome.proxy](https://developer.chrome.com/extensions/proxy))
+  * (per-network) System proxy settings
+
+* Was proxy autodetect (WPAD) specified? In this case the final URL probed will
+  be reflected by the difference between the "Effective" and "Original"
+  settings. A known issue with auto-detect is that DHCP based auto-detect is only
+  supported by Chrome running on Windows and Chrome OS.
+
+* Internally, proxy settings are per-NetworkContext. The proxy
+  overview tab shows settings for a *particular* NetworkContext, namely the
+  one associated with the Profile used to navigate to `chrome://net-export`. For
+  instance if the net-export was initiated from an Incognito window, it may
+  show different proxy settings here than a net-export capture initiated by a
+  non-Incognito window. When the net-export was triggered from command line
+  (`--log-net-log`) no particular NetworkContext is associated with the
+  capture and hence no proxy settings will be shown in this overview.
+
+* Were any proxies marked as bad?
+
+### Import tab
+
+Skim through the Import tab and look for relevant command line flags and active
+field trials. A find-in-page for `proxy` is a good starting point. Be on the lookout for
+`--winhttp-proxy-resolver` which has [known
+problems](https://bugs.chromium.org/p/chromium/issues/detail?id=644030).
+
+### Events tab
+
+To deep dive into proxy resolution, switch to the Events tab.
+
+You can start by filtering on `type:URL_REQUEST` to see all the top level
+requests, and then keep click through the dependency links to
+trace the proxy resolution steps and outcome.
+
+The most relevant events have either `PROXY_`, `PAC_`, or
+`WPAD_` in their names. You can also try filtering for each of those.
+
+Documentation on specific events is available in
+[net_log_event_type_list.h](https://chromium.googlesource.com/chromium/src/+/HEAD/net/log/net_log_event_type_list.h).
+
+Network change events can also be key to understanding proxy issues. After
+switching networks (ex VPN), the effective proxy settings, as well as content
+of any PAC scripts/auto-detect can change.

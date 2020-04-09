@@ -23,6 +23,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/android/chrome_jni_headers/BookmarkBridge_jni.h"
+#include "chrome/browser/android/bookmarks/partner_bookmarks_reader.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -59,7 +60,6 @@ using bookmarks::android::JavaBookmarkIdGetId;
 using bookmarks::android::JavaBookmarkIdGetType;
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
-using bookmarks::BookmarkPermanentNode;
 using bookmarks::BookmarkType;
 using content::BrowserThread;
 
@@ -199,7 +199,7 @@ void BookmarkBridge::LoadEmptyPartnerBookmarkShimForTesting(
   if (partner_bookmarks_shim_->IsLoaded())
       return;
   partner_bookmarks_shim_->SetPartnerBookmarksRoot(
-      std::make_unique<BookmarkPermanentNode>(0, BookmarkNode::FOLDER));
+      PartnerBookmarksReader::CreatePartnerBookmarksRootForTesting());
   PartnerBookmarksShim::DisablePartnerBookmarksEditing();
   DCHECK(partner_bookmarks_shim_->IsLoaded());
 }
@@ -211,8 +211,8 @@ void BookmarkBridge::LoadFakePartnerBookmarkShimForTesting(
     const JavaParamRef<jobject>& obj) {
   if (partner_bookmarks_shim_->IsLoaded())
     return;
-  std::unique_ptr<BookmarkPermanentNode> root_partner_node =
-      std::make_unique<BookmarkPermanentNode>(0, BookmarkNode::FOLDER);
+  std::unique_ptr<BookmarkNode> root_partner_node =
+      PartnerBookmarksReader::CreatePartnerBookmarksRootForTesting();
   BookmarkNode* partner_bookmark_a =
       root_partner_node->Add(std::make_unique<BookmarkNode>(
           1, base::GenerateGUID(), GURL("http://www.a.com")));

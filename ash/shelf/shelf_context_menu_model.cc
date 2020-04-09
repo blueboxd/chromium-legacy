@@ -26,6 +26,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/safe_conversions.h"
 #include "components/prefs/pref_service.h"
+#include "ui/base/models/image_model.h"
 
 namespace ash {
 
@@ -144,7 +145,8 @@ void ShelfContextMenuModel::AddShelfAndWallpaperItems() {
                          : IDS_ASH_SHELF_CONTEXT_MENU_AUTO_HIDE;
     AddItemWithStringIdAndIcon(
         MENU_AUTO_HIDE, string_id,
-        is_autohide_set ? kAlwaysShowShelfIcon : kAutoHideIcon);
+        ui::ImageModel::FromVectorIcon(is_autohide_set ? kAlwaysShowShelfIcon
+                                                       : kAutoHideIcon));
   }
 
   // Only allow shelf alignment modifications by the owner or user. In tablet
@@ -163,14 +165,16 @@ void ShelfContextMenuModel::AddShelfAndWallpaperItems() {
     alignment_submenu_->AddRadioItemWithStringId(
         MENU_ALIGNMENT_RIGHT, IDS_ASH_SHELF_CONTEXT_MENU_ALIGN_RIGHT, group);
 
-    AddSubMenuWithStringIdAndIcon(MENU_ALIGNMENT_MENU,
-                                  IDS_ASH_SHELF_CONTEXT_MENU_POSITION,
-                                  alignment_submenu_.get(), kShelfPositionIcon);
+    AddSubMenuWithStringIdAndIcon(
+        MENU_ALIGNMENT_MENU, IDS_ASH_SHELF_CONTEXT_MENU_POSITION,
+        alignment_submenu_.get(),
+        ui::ImageModel::FromVectorIcon(kShelfPositionIcon));
   }
 
   if (Shell::Get()->wallpaper_controller()->CanOpenWallpaperPicker()) {
     AddItemWithStringIdAndIcon(MENU_CHANGE_WALLPAPER,
-                               IDS_AURA_SET_DESKTOP_WALLPAPER, kWallpaperIcon);
+                               IDS_AURA_SET_DESKTOP_WALLPAPER,
+                               ui::ImageModel::FromVectorIcon(kWallpaperIcon));
   }
 }
 

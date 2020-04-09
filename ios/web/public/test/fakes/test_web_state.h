@@ -111,8 +111,8 @@ class TestWebState : public WebState {
 
   // Getters for test data.
   // Uses |policy_deciders| to return whether the navigation corresponding to
-  // |request| should be allowed. Defaults to true.
-  bool ShouldAllowRequest(
+  // |request| should be allowed. Defaults to PolicyDecision::Allow().
+  WebStatePolicyDecider::PolicyDecision ShouldAllowRequest(
       NSURLRequest* request,
       const WebStatePolicyDecider::RequestInfo& request_info);
   // Uses |policy_deciders| to return whether the navigation corresponding to

@@ -544,6 +544,11 @@ MessagePumpForIO::IOContext::IOContext() {
   memset(&overlapped, 0, sizeof(overlapped));
 }
 
+MessagePumpForIO::IOHandler::IOHandler(const Location& from_here)
+    : io_handler_location_(from_here) {}
+
+MessagePumpForIO::IOHandler::~IOHandler() = default;
+
 MessagePumpForIO::MessagePumpForIO() {
   port_.Set(::CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr,
                                      reinterpret_cast<ULONG_PTR>(nullptr), 1));
@@ -678,6 +683,9 @@ bool MessagePumpForIO::WaitForIOCompletion(DWORD timeout, IOHandler* filter) {
     // Save this item for later
     completed_io_.push_back(item);
   } else {
+    TRACE_EVENT2("base,toplevel", "IOHandler::OnIOCompleted", "dest_file",
+                 item.handler->io_handler_location().file_name(), "dest_func",
+                 item.handler->io_handler_location().function_name());
     item.handler->OnIOCompleted(item.context, item.bytes_transfered,
                                 item.error);
   }

@@ -188,6 +188,7 @@
               managedNetworkAvailable)]]">
         <settings-toggle-button
             id="autoConnectToggle"
+            class="hr"
             pref="{{autoConnectPref_}}"
             label="[[getAutoConnectToggleLabel_(managedProperties_)]]">
         </settings-toggle-button>
@@ -206,6 +207,7 @@
       <template is="dom-if"
           if="[[showAlwaysOnVpn_(managedProperties_)]]">
         <settings-toggle-button id="alwaysOnVpnToggle"
+            class="hr"
             pref="{{alwaysOnVpn_}}"
             label="$i18n{networkAlwaysOnVpn}">
         </settings-toggle-button>
@@ -213,6 +215,7 @@
       <!-- Data roaming (Cellular only). -->
       <template is="dom-if" if="[[isCellular_(managedProperties_)]]">
         <settings-toggle-button id="allowDataRoaming"
+            class="hr"
             pref="{{prefs.cros.signed.data_roaming_enabled}}"
             label="$i18n{networkAllowDataRoaming}"
             sub-label="[[getRoamingDetails_(managedProperties_)]]">

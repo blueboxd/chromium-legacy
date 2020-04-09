@@ -227,6 +227,37 @@ TEST_F(SchemaOrgExtractorTest, StringValueRepresentingTime) {
   EXPECT_EQ(expected, extracted);
 }
 
+TEST_F(SchemaOrgExtractorTest, StringValueRepresentingDuration) {
+  EntityPtr extracted =
+      Extract("{\"@type\": \"VideoObject\",\"duration\": \"PT2H0M55S\"}");
+
+  ASSERT_FALSE(extracted.is_null());
+
+  EntityPtr expected = Entity::New();
+  expected->type = "VideoObject";
+  expected->properties.push_back(CreateTimeProperty(
+      "duration",
+      base::TimeDelta::FromHours(2) + base::TimeDelta::FromSeconds(55)));
+
+  EXPECT_EQ(expected, extracted);
+}
+
+TEST_F(SchemaOrgExtractorTest, StringValueRepresentingLongDuration) {
+  EntityPtr extracted = Extract(
+      "{\"@type\": \"VideoObject\",\"duration\": \"PT1234H5678M1234S\"}");
+
+  ASSERT_FALSE(extracted.is_null());
+
+  EntityPtr expected = Entity::New();
+  expected->type = "VideoObject";
+  expected->properties.push_back(
+      CreateTimeProperty("duration", base::TimeDelta::FromHours(1234) +
+                                         base::TimeDelta::FromMinutes(5678) +
+                                         base::TimeDelta::FromSeconds(1234)));
+
+  EXPECT_EQ(expected, extracted);
+}
+
 // startTime can be a DateTime or a Time. If it parses as DateTime successfully,
 // we should use that type.
 TEST_F(SchemaOrgExtractorTest, StringValueRepresentingDateTimeOrTime) {

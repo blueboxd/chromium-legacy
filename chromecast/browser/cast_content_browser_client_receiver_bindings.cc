@@ -112,22 +112,29 @@ void CastContentBrowserClient::ExposeInterfacesToRenderer(
 #endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 }
 
-void CastContentBrowserClient::ExposeInterfacesToMediaService(
-    service_manager::BinderRegistry* registry,
-    content::RenderFrameHost* render_frame_host) {
-  registry->AddInterface(
-      base::BindRepeating(&CreateMediaDrmStorage, render_frame_host));
+void CastContentBrowserClient::BindMediaServiceReceiver(
+    content::RenderFrameHost* render_frame_host,
+    mojo::GenericPendingReceiver receiver) {
+  if (auto r = receiver.As<::media::mojom::MediaDrmStorage>()) {
+    CreateMediaDrmStorage(render_frame_host, std::move(r));
+    return;
+  }
 
-  registry->AddInterface(base::BindRepeating(&ServiceConnector::BindReceiver,
-                                             kMediaServiceClientId));
+  if (auto r = receiver.As<mojom::ServiceConnector>()) {
+    ServiceConnector::BindReceiver(kMediaServiceClientId, std::move(r));
+    return;
+  }
 
-  std::string application_session_id;
-  bool mixer_audio_enabled;
-  GetApplicationMediaInfo(&application_session_id, &mixer_audio_enabled,
-                          render_frame_host);
-  registry->AddInterface(base::BindRepeating(
-      &media::CreateApplicationMediaInfoManager, render_frame_host,
-      std::move(application_session_id), mixer_audio_enabled));
+  if (auto r = receiver.As<::media::mojom::CastApplicationMediaInfoManager>()) {
+    std::string application_session_id;
+    bool mixer_audio_enabled;
+    GetApplicationMediaInfo(&application_session_id, &mixer_audio_enabled,
+                            render_frame_host);
+    media::CreateApplicationMediaInfoManager(render_frame_host,
+                                             std::move(application_session_id),
+                                             mixer_audio_enabled, std::move(r));
+    return;
+  }
 }
 
 void CastContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(

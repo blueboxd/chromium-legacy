@@ -79,9 +79,11 @@ class GPUDevice final : public EventTargetWithInlineData,
                             ExceptionState& exception_state);
   GPUSampler* createSampler(const GPUSamplerDescriptor* descriptor);
 
-  GPUBindGroup* createBindGroup(const GPUBindGroupDescriptor* descriptor);
+  GPUBindGroup* createBindGroup(const GPUBindGroupDescriptor* descriptor,
+                                ExceptionState& exception_state);
   GPUBindGroupLayout* createBindGroupLayout(
-      const GPUBindGroupLayoutDescriptor* descriptor);
+      const GPUBindGroupLayoutDescriptor* descriptor,
+      ExceptionState& exception_state);
   GPUPipelineLayout* createPipelineLayout(
       const GPUPipelineLayoutDescriptor* descriptor);
 
@@ -108,13 +110,13 @@ class GPUDevice final : public EventTargetWithInlineData,
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
 
+  void AddConsoleWarning(const char* message);
+
  private:
   using LostProperty =
       ScriptPromiseProperty<Member<GPUDeviceLostInfo>, ToV8UndefinedGenerator>;
 
-  void OnUncapturedError(ExecutionContext* execution_context,
-                         WGPUErrorType errorType,
-                         const char* message);
+  void OnUncapturedError(WGPUErrorType errorType, const char* message);
 
   void OnPopErrorScopeCallback(ScriptPromiseResolver* resolver,
                                WGPUErrorType type,
@@ -128,6 +130,9 @@ class GPUDevice final : public EventTargetWithInlineData,
       error_callback_;
 
   uint64_t client_id_;
+
+  static constexpr int kMaxAllowedConsoleWarnings = 500;
+  int allowed_console_warnings_remaining_ = kMaxAllowedConsoleWarnings;
 
   DISALLOW_COPY_AND_ASSIGN(GPUDevice);
 };

@@ -13,6 +13,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/image_model.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/vector_icon_types.h"
 
@@ -173,7 +174,7 @@ bool PopulateNewItemFromMojoMenuItems(
       const gfx::VectorIcon& icon =
           std::move(get_vector_icon).Run(item->command_id, item->string_id);
       model->AddItemWithStringIdAndIcon(item->command_id, item->string_id,
-                                        icon);
+                                        ui::ImageModel::FromVectorIcon(icon));
       break;
     }
     case apps::mojom::MenuItemType::kSubmenu:
@@ -182,7 +183,8 @@ bool PopulateNewItemFromMojoMenuItems(
         const gfx::VectorIcon& icon =
             std::move(get_vector_icon).Run(item->command_id, item->string_id);
         model->AddActionableSubmenuWithStringIdAndIcon(
-            item->command_id, item->string_id, submenu, icon);
+            item->command_id, item->string_id, submenu,
+            ui::ImageModel::FromVectorIcon(icon));
       }
       break;
     case apps::mojom::MenuItemType::kRadio:
@@ -204,7 +206,7 @@ void PopulateItemFromMojoMenuItems(
       break;
     case apps::mojom::MenuItemType::kArcCommand: {
       model->AddItemWithIcon(item->command_id, base::UTF8ToUTF16(item->label),
-                             item->image);
+                             ui::ImageModel::FromImageSkia(item->image));
       arc::ArcAppShortcutItem arc_shortcut_item;
       arc_shortcut_item.shortcut_id = item->shortcut_id;
       arc_shortcut_items->push_back(arc_shortcut_item);

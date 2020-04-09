@@ -46,10 +46,8 @@ GPUDevice::GPUDevice(ExecutionContext* execution_context,
           this,
           GetProcs().deviceCreateQueue(GetHandle()))),
       lost_property_(MakeGarbageCollected<LostProperty>(execution_context)),
-      error_callback_(
-          BindRepeatingDawnCallback(&GPUDevice::OnUncapturedError,
-                                    WrapWeakPersistent(this),
-                                    WrapWeakPersistent(execution_context))),
+      error_callback_(BindRepeatingDawnCallback(&GPUDevice::OnUncapturedError,
+                                                WrapWeakPersistent(this))),
       client_id_(client_id) {
   DCHECK(dawn_control_client->GetInterface()->GetDevice(client_id));
   GetProcs().deviceSetUncapturedErrorCallback(
@@ -70,17 +68,31 @@ uint64_t GPUDevice::GetClientID() const {
   return client_id_;
 }
 
-void GPUDevice::OnUncapturedError(ExecutionContext* execution_context,
-                                  WGPUErrorType errorType,
-                                  const char* message) {
-  if (execution_context) {
-    DCHECK_NE(errorType, WGPUErrorType_NoError);
-    LOG(ERROR) << "GPUDevice: " << message;
+void GPUDevice::AddConsoleWarning(const char* message) {
+  ExecutionContext* execution_context = GetExecutionContext();
+  if (execution_context && allowed_console_warnings_remaining_ > 0) {
     auto* console_message = MakeGarbageCollected<ConsoleMessage>(
-        mojom::ConsoleMessageSource::kRendering,
-        mojom::ConsoleMessageLevel::kWarning, message);
+        mojom::blink::ConsoleMessageSource::kRendering,
+        mojom::blink::ConsoleMessageLevel::kWarning, message);
     execution_context->AddConsoleMessage(console_message);
+
+    allowed_console_warnings_remaining_--;
+    if (allowed_console_warnings_remaining_ == 0) {
+      auto* final_message = MakeGarbageCollected<ConsoleMessage>(
+          mojom::blink::ConsoleMessageSource::kRendering,
+          mojom::blink::ConsoleMessageLevel::kWarning,
+          "WebGPU: too many warnings, no more warnings will be reported to the "
+          "console for this GPUDevice.");
+      execution_context->AddConsoleMessage(final_message);
+    }
   }
+}
+
+void GPUDevice::OnUncapturedError(WGPUErrorType errorType,
+                                  const char* message) {
+  DCHECK_NE(errorType, WGPUErrorType_NoError);
+  LOG(ERROR) << "GPUDevice: " << message;
+  AddConsoleWarning(message);
 
   // TODO: Use device lost callback instead of uncaptured error callback.
   if (errorType == WGPUErrorType_DeviceLost &&
@@ -144,13 +156,15 @@ GPUSampler* GPUDevice::createSampler(const GPUSamplerDescriptor* descriptor) {
 }
 
 GPUBindGroup* GPUDevice::createBindGroup(
-    const GPUBindGroupDescriptor* descriptor) {
-  return GPUBindGroup::Create(this, descriptor);
+    const GPUBindGroupDescriptor* descriptor,
+    ExceptionState& exception_state) {
+  return GPUBindGroup::Create(this, descriptor, exception_state);
 }
 
 GPUBindGroupLayout* GPUDevice::createBindGroupLayout(
-    const GPUBindGroupLayoutDescriptor* descriptor) {
-  return GPUBindGroupLayout::Create(this, descriptor);
+    const GPUBindGroupLayoutDescriptor* descriptor,
+    ExceptionState& exception_state) {
+  return GPUBindGroupLayout::Create(this, descriptor, exception_state);
 }
 
 GPUPipelineLayout* GPUDevice::createPipelineLayout(

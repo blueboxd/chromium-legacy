@@ -84,6 +84,8 @@ def _builder_sort_key(console_name, console_ordering, builder):
   if builder.category:
     for c in builder.category.split('|'):
       ordering = console_ordering.get(category, [])
+      if type(ordering) == type(''):
+        ordering = console_ordering[ordering]
       if type(ordering) == type(struct()):
         ordering = ordering.categories
       category_key.append(_level_sort_key(c, ordering))
@@ -92,6 +94,8 @@ def _builder_sort_key(console_name, console_ordering, builder):
   short_name_key = ()
   if builder.short_name:
     ordering = console_ordering.get(category, [])
+    if type(ordering) == type(''):
+      ordering = console_ordering[ordering]
     short_name_ordering = getattr(ordering, 'short_names', [])
     short_name_key = _level_sort_key(builder.short_name, short_name_ordering)
 
@@ -154,7 +158,8 @@ def console_view(*, name, ordering=None, **kwargs):
           the short names of builders that have no category.
       2.  str: Category string to apply the ordering to the next nested
           level of categories and/or the short names of builders with
-          that category.
+          that category. Arbitrary strings can be used also, which can
+          be used as aliases for other entries to refer to.
 
       The value for each entry defines the ordering to be applied to
       builders that have matched the sequence of category components
@@ -163,6 +168,9 @@ def console_view(*, name, ordering=None, **kwargs):
           details.
       2.  list of category components: Equivalent to a `ci.ordering`
           call that only specifies `categories` with the given list.
+      3.  str: An alias for another category. The string must be another
+          key in the dict. The ordering will be looked up by that key
+          instead.
     kwargs - Additional keyword arguments to forward on to
       `luci.console_view`. The header and repo arguments support
        module-level defaults.

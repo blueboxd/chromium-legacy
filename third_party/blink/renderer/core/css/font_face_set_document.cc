@@ -26,7 +26,9 @@
 #include "third_party/blink/renderer/core/css/font_face_set_document.h"
 
 #include "base/metrics/histogram_functions.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
+#include "third_party/blink/renderer/core/css/css_font_face.h"
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/css_segmented_font_face.h"
@@ -41,6 +43,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -52,7 +55,10 @@ const char FontFaceSetDocument::kSupplementName[] = "FontFaceSetDocument";
 
 FontFaceSetDocument::FontFaceSetDocument(Document& document)
     : FontFaceSet(*document.GetExecutionContext()),
-      Supplement<Document>(document) {}
+      Supplement<Document>(document),
+      lcp_limit_timer_(document.GetTaskRunner(TaskType::kInternalLoading),
+                       this,
+                       &FontFaceSetDocument::LCPLimitReached) {}
 
 FontFaceSetDocument::~FontFaceSetDocument() = default;
 
@@ -76,8 +82,23 @@ void FontFaceSetDocument::DidLayout() {
   HandlePendingEventsAndPromisesSoon();
 }
 
+void FontFaceSetDocument::StartLCPLimitTimerIfNeeded() {
+  // Make sure the timer is started at most once for each document, and only
+  // when the feature is enabled
+  if (!base::FeatureList::IsEnabled(
+          features::kAlignFontDisplayAutoTimeoutWithLCPGoal) ||
+      has_reached_lcp_limit_ || lcp_limit_timer_.IsActive() ||
+      !GetDocument()->Loader()) {
+    return;
+  }
+
+  lcp_limit_timer_.StartOneShot(
+      GetDocument()->Loader()->RemainingTimeToLCPLimit(), FROM_HERE);
+}
+
 void FontFaceSetDocument::BeginFontLoading(FontFace* font_face) {
   AddToLoadingFonts(font_face);
+  StartLCPLimitTimerIfNeeded();
 }
 
 void FontFaceSetDocument::NotifyLoaded(FontFace* font_face) {
@@ -209,6 +230,18 @@ size_t FontFaceSetDocument::ApproximateBlankCharacterCount(Document& document) {
           Supplement<Document>::From<FontFaceSetDocument>(document))
     return fonts->ApproximateBlankCharacterCount();
   return 0;
+}
+
+void FontFaceSetDocument::LCPLimitReached(TimerBase*) {
+  DCHECK(base::FeatureList::IsEnabled(
+      features::kAlignFontDisplayAutoTimeoutWithLCPGoal));
+  if (!GetDocument()->IsActive())
+    return;
+  has_reached_lcp_limit_ = true;
+  for (FontFace* font_face : CSSConnectedFontFaceList())
+    font_face->CssFontFace()->UpdatePeriod();
+  for (FontFace* font_face : non_css_connected_faces_)
+    font_face->CssFontFace()->UpdatePeriod();
 }
 
 void FontFaceSetDocument::Trace(Visitor* visitor) {

@@ -328,14 +328,17 @@ void TestWebState::OnWebFrameWillBecomeUnavailable(WebFrame* frame) {
   }
 }
 
-bool TestWebState::ShouldAllowRequest(
+WebStatePolicyDecider::PolicyDecision TestWebState::ShouldAllowRequest(
     NSURLRequest* request,
     const WebStatePolicyDecider::RequestInfo& request_info) {
   for (auto& policy_decider : policy_deciders_) {
-    if (!policy_decider.ShouldAllowRequest(request, request_info))
-      return false;
+    WebStatePolicyDecider::PolicyDecision result =
+        policy_decider.ShouldAllowRequest(request, request_info);
+    if (result.ShouldCancelNavigation()) {
+      return result;
+    }
   }
-  return true;
+  return WebStatePolicyDecider::PolicyDecision::Allow();
 }
 
 bool TestWebState::ShouldAllowResponse(NSURLResponse* response,

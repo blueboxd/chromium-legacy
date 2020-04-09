@@ -50,7 +50,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
-#include "chrome/services/local_search_service/public/mojom/types.mojom.h"
+#include "chrome/services/local_search_service/local_search_service_impl.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/assistant/public/features.h"
@@ -73,14 +73,15 @@
 #include "ui/display/display_features.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/touch_device_manager.h"
+#include "ui/display/types/display_constants.h"
 
 namespace chromeos {
 namespace settings {
 namespace {
 
-std::vector<local_search_service::mojom::DataPtr> ConceptVectorToDataPtrVector(
+std::vector<local_search_service::Data> ConceptVectorToDataVector(
     const std::vector<SearchConcept>& tags_group) {
-  std::vector<local_search_service::mojom::DataPtr> data_list;
+  std::vector<local_search_service::Data> data_list;
 
   for (const auto& concept : tags_group) {
     std::vector<base::string16> search_tags;
@@ -99,8 +100,8 @@ std::vector<local_search_service::mojom::DataPtr> ConceptVectorToDataPtrVector(
 
     // Note: A stringified version of the canonical tag message ID is used as
     // the identifier for this search data.
-    data_list.push_back(local_search_service::mojom::Data::New(
-        base::NumberToString(concept.canonical_message_id), search_tags));
+    data_list.emplace_back(base::NumberToString(concept.canonical_message_id),
+                           search_tags);
   }
 
   return data_list;
@@ -1208,6 +1209,13 @@ void AddDeviceDisplayStrings(content::WebUIDataSource* html_source) {
 
   html_source->AddBoolean("hasExternalTouchDevice",
                           display::HasExternalTouchscreenDevice());
+
+  html_source->AddBoolean(
+      "allowDisplayIdentificationApi",
+      base::FeatureList::IsEnabled(ash::features::kDisplayIdentification));
+
+  html_source->AddString("invalidDisplayId",
+                         base::NumberToString(display::kInvalidDisplayId));
 }
 
 void AddDeviceStorageStrings(content::WebUIDataSource* html_source) {
@@ -2071,11 +2079,9 @@ void AddPageVisibilityStrings(content::WebUIDataSource* html_source) {
 
 OsSettingsLocalizedStringsProvider::OsSettingsLocalizedStringsProvider(
     Profile* profile,
-    local_search_service::mojom::LocalSearchService* local_search_service) {
-  local_search_service->GetIndex(
-      local_search_service::mojom::LocalSearchService::IndexId::CROS_SETTINGS,
-      index_remote_.BindNewPipeAndPassReceiver());
-
+    local_search_service::LocalSearchServiceImpl* local_search_service)
+    : index_(local_search_service->GetIndexImpl(
+          local_search_service::IndexId::kCrosSettings)) {
   // Add per-page string providers.
   // TODO(khorimoto): Add providers for the remaining pages.
   per_page_providers_.push_back(
@@ -2135,13 +2141,16 @@ OsSettingsLocalizedStringsProvider::GetCanonicalTagMetadata(
 }
 
 void OsSettingsLocalizedStringsProvider::Shutdown() {
-  index_remote_.reset();
+  index_ = nullptr;
 }
 
 void OsSettingsLocalizedStringsProvider::AddSearchTags(
     const std::vector<SearchConcept>& tags_group) {
-  index_remote_->AddOrUpdate(ConceptVectorToDataPtrVector(tags_group),
-                             /*callback=*/base::DoNothing());
+  // Note: Can be null after Shutdown().
+  if (!index_)
+    return;
+
+  index_->AddOrUpdate(ConceptVectorToDataVector(tags_group));
 
   // Add each concept to the map. Note that it is safe to take the address of
   // each concept because all concepts are allocated via static
@@ -2152,13 +2161,17 @@ void OsSettingsLocalizedStringsProvider::AddSearchTags(
 
 void OsSettingsLocalizedStringsProvider::RemoveSearchTags(
     const std::vector<SearchConcept>& tags_group) {
+  // Note: Can be null after Shutdown().
+  if (!index_)
+    return;
+
   std::vector<std::string> ids;
   for (const auto& concept : tags_group) {
     canonical_id_to_metadata_map_.erase(concept.canonical_message_id);
     ids.push_back(base::NumberToString(concept.canonical_message_id));
   }
 
-  index_remote_->Delete(ids, /*callback=*/base::DoNothing());
+  index_->Delete(ids);
 }
 
 }  // namespace settings

@@ -6,5 +6,5 @@
 dictionary XRSessionInit {
   sequence<any> requiredFeatures;
   sequence<any> optionalFeatures;
-  [RuntimeEnabled=WebXRIncubations] XRDOMOverlayInit domOverlay;
+  XRDOMOverlayInit domOverlay;
 };

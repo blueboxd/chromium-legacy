@@ -19,6 +19,37 @@ class TestWebState;
 // Decides the navigation policy for a web state.
 class WebStatePolicyDecider {
  public:
+  // Specifies a navigation decision. Used as a return value by
+  // WebStatePolicyDecider::ShouldAllowRequest().
+  struct PolicyDecision {
+    // A policy decision which allows the navigation.
+    static PolicyDecision Allow();
+
+    // A policy decision which cancels the navigation.
+    static PolicyDecision Cancel();
+
+    // Whether or not the navigation will continue.
+    bool ShouldAllowNavigation() const;
+
+    // Whether or not the navigation will be cancelled.
+    bool ShouldCancelNavigation() const;
+
+   private:
+    // The decisions which can be taken for a given navigation.
+    enum class Decision {
+      // Allow the navigation to proceed.
+      kAllow,
+
+      // Cancel the navigation.
+      kCancel
+    };
+
+    PolicyDecision(Decision decision) : decision(decision) {}
+
+    // The decision to be taken for a given navigation.
+    Decision decision = Decision::kAllow;
+  };
+
   // Data Transfer Object for the additional information about navigation
   // request passed to WebStatePolicyDecider::ShouldAllowRequest().
   struct RequestInfo {
@@ -45,8 +76,8 @@ class WebStatePolicyDecider {
   // Called before WebStateObserver::DidStartNavigation.
   // Never called in the following cases:
   //  - same-document back-forward and state change navigations
-  virtual bool ShouldAllowRequest(NSURLRequest* request,
-                                  const RequestInfo& request_info);
+  virtual PolicyDecision ShouldAllowRequest(NSURLRequest* request,
+                                            const RequestInfo& request_info);
 
   // Asks the decider whether the navigation corresponding to |response| should
   // be allowed to continue. Defaults to true if not overriden.

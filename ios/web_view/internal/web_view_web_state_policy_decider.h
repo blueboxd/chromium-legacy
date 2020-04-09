@@ -25,7 +25,7 @@ class WebViewWebStatePolicyDecider : public web::WebStatePolicyDecider {
   WebViewWebStatePolicyDecider(web::WebState* web_state, CWVWebView* web_view);
 
   // web::WebStatePolicyDecider overrides:
-  bool ShouldAllowRequest(
+  web::WebStatePolicyDecider::PolicyDecision ShouldAllowRequest(
       NSURLRequest* request,
       const web::WebStatePolicyDecider::RequestInfo& request_info) override;
   bool ShouldAllowResponse(NSURLResponse* response,

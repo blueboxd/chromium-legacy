@@ -11,6 +11,7 @@
 #include "components/performance_manager/graph/node_attached_data_impl.h"
 #include "components/performance_manager/graph/page_node_impl.h"
 #include "components/performance_manager/graph/process_node_impl.h"
+#include "components/performance_manager/public/graph/node_data_describer_registry.h"
 
 namespace performance_manager {
 
@@ -45,6 +46,24 @@ class DataImpl : public PageLoadTrackerDecorator::Data,
   DISALLOW_COPY_AND_ASSIGN(DataImpl);
 };
 
+// static
+const char* ToString(LoadIdleState state) {
+  switch (state) {
+    case LoadIdleState::kLoadingNotStarted:
+      return "kLoadingNotStarted";
+    case LoadIdleState::kLoading:
+      return "kLoading";
+    case LoadIdleState::kLoadedNotIdling:
+      return "kLoadedNotIdling";
+    case LoadIdleState::kLoadedAndIdling:
+      return "kLoadedAndIdling";
+    case LoadIdleState::kLoadedAndIdle:
+      return "kLoadedAndIdle";
+  }
+}
+
+const char kDescriberName[] = "PageLoadTrackerDecorator";
+
 }  // namespace
 
 // static
@@ -67,10 +86,28 @@ void PageLoadTrackerDecorator::OnNetworkAlmostIdleChanged(
 
 void PageLoadTrackerDecorator::OnPassedToGraph(Graph* graph) {
   RegisterObservers(graph);
+  graph->GetNodeDataDescriberRegistry()->RegisterDescriber(this,
+                                                           kDescriberName);
 }
 
 void PageLoadTrackerDecorator::OnTakenFromGraph(Graph* graph) {
+  graph->GetNodeDataDescriberRegistry()->UnregisterDescriber(this);
   UnregisterObservers(graph);
+}
+
+base::Value PageLoadTrackerDecorator::DescribePageNodeData(
+    const PageNode* page_node) const {
+  auto* data = DataImpl::Get(PageNodeImpl::FromNode(page_node));
+  if (data == nullptr)
+    return base::Value();
+
+  base::Value ret(base::Value::Type::DICTIONARY);
+  ret.SetKey("load_idle_state_",
+             base::Value(ToString(data->load_idle_state())));
+  ret.SetKey("loading_received_response_",
+             base::Value(data->loading_received_response_));
+
+  return ret;
 }
 
 void PageLoadTrackerDecorator::OnMainThreadTaskLoadIsLow(

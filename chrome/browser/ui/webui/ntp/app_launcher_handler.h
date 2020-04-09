@@ -105,8 +105,7 @@ class AppLauncherHandler
 
   // Create a dictionary value for the given web app.
   std::unique_ptr<base::DictionaryValue> GetWebAppInfo(
-      const web_app::AppId& app_id,
-      const web_app::AppRegistrar& app_registrar);
+      const web_app::AppId& app_id);
 
   // Populate the given dictionary with the web store promo content.
   void FillPromoDictionary(base::DictionaryValue* value);

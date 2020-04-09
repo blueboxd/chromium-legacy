@@ -34,6 +34,7 @@ source_set("browser") {
     "aw_browser_terminator.h",
     "aw_content_browser_client.cc",
     "aw_content_browser_client.h",
+    "aw_content_browser_client_receiver_bindings.cc",
     "aw_content_browser_overlay_manifest.cc",
     "aw_content_browser_overlay_manifest.h",
     "aw_contents.cc",

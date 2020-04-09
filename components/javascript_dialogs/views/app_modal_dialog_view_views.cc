@@ -44,6 +44,21 @@ AppModalDialogViewViews::AppModalDialogViewViews(
               content::JAVASCRIPT_DIALOG_TYPE_ALERT
           ? ui::DIALOG_BUTTON_OK
           : (ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL));
+  DialogDelegate::SetAcceptCallback(base::BindOnce(
+      [](AppModalDialogViewViews* dialog) {
+        dialog->controller_->OnAccept(
+            dialog->message_box_view_->GetInputText(),
+            dialog->message_box_view_->IsCheckBoxSelected());
+      },
+      base::Unretained(this)));
+  auto cancel_callback = [](AppModalDialogViewViews* dialog) {
+    dialog->controller_->OnCancel(
+        dialog->message_box_view_->IsCheckBoxSelected());
+  };
+  DialogDelegate::SetCancelCallback(
+      base::BindOnce(cancel_callback, base::Unretained(this)));
+  DialogDelegate::SetCloseCallback(
+      base::BindOnce(cancel_callback, base::Unretained(this)));
 
   if (controller_->is_before_unload_dialog()) {
     DialogDelegate::SetButtonLabel(
@@ -94,17 +109,6 @@ base::string16 AppModalDialogViewViews::GetWindowTitle() const {
 
 void AppModalDialogViewViews::DeleteDelegate() {
   delete this;
-}
-
-bool AppModalDialogViewViews::Cancel() {
-  controller_->OnCancel(message_box_view_->IsCheckBoxSelected());
-  return true;
-}
-
-bool AppModalDialogViewViews::Accept() {
-  controller_->OnAccept(message_box_view_->GetInputText(),
-                        message_box_view_->IsCheckBoxSelected());
-  return true;
 }
 
 ui::ModalType AppModalDialogViewViews::GetModalType() const {

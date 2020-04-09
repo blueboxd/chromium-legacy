@@ -68,6 +68,7 @@
 #include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_family.h"
 
@@ -157,7 +158,8 @@ void BackgroundModeManager::BackgroundModeData::BuildProfileMenu(
           base::RetainedRef(application)));
       menu->AddItem(command_id, base::UTF8ToUTF16(name));
       if (!icon.isNull())
-        menu->SetIcon(menu->GetItemCount() - 1, gfx::Image(icon));
+        menu->SetIcon(menu->GetItemCount() - 1,
+                      ui::ImageModel::FromImageSkia(icon));
 
       // Component extensions with background that do not have an options page
       // will cause this menu item to go to the extensions page with an

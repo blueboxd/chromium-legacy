@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "weblayer/browser/i18n_util.h"
+#include "weblayer/browser/profile_disk_operations.h"
 #include "weblayer/public/profile.h"
 
 #if defined(OS_ANDROID)
@@ -53,7 +54,7 @@ class ProfileImpl : public Profile {
   void DownloadsInitialized();
 
   // Path data is stored at, empty if off-the-record.
-  const base::FilePath& data_path() const { return data_path_; }
+  const base::FilePath& data_path() const { return info_.data_path; }
   DownloadDelegate* download_delegate() { return download_delegate_; }
 
   // Profile implementation:
@@ -107,9 +108,7 @@ class ProfileImpl : public Profile {
   // Callback when the system locale has been updated.
   void OnLocaleChanged();
 
-  const std::string name_;
-
-  base::FilePath data_path_;
+  ProfileInfo info_;
 
   std::unique_ptr<BrowserContextImpl> browser_context_;
 

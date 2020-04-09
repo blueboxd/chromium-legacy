@@ -1533,6 +1533,12 @@ String AXLayoutObject::StringValue() const {
     }
   }
 
+  // ARIA combobox can get value from  inner contents.
+  if (AriaRoleAttribute() == ax::mojom::Role::kComboBoxMenuButton) {
+    AXObjectSet visited;
+    return TextFromDescendants(visited, false);
+  }
+
   // FIXME: We might need to implement a value here for more types
   // FIXME: It would be better not to advertise a value at all for the types for
   // which we don't implement one; this would require subclassing or making

@@ -120,7 +120,6 @@
 <translation id="1153636665119721804">Programi i "Mbrojtjes së përparuar" të Google</translation>
 <translation id="1161575384898972166">Identifikohu në <ph name="TOKEN_NAME" /> për të eksportuar certifikatën e klientit.</translation>
 <translation id="1163931534039071049">&amp;Shiko burimin e kornizës</translation>
-<translation id="1164674268730883318">Të çaktivizohet Smart Lock për <ph name="DEVICE_TYPE" />?</translation>
 <translation id="1164891049599601209">Ka hyrë në një sajt mashtrues</translation>
 <translation id="1164899421101904659">Fut "Çelësin e zhbllokimit të kodit PIN"</translation>
 <translation id="1165039591588034296">Gabim</translation>
@@ -771,7 +770,6 @@ Në rast të kundërt, dil tani që ndryshimet në këtë llogari të reflektohe
 
 Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Family Link në pajisjen tënde.  Të kemi dërguar udhëzime në një email.</translation>
 <translation id="2040460856718599782">Gabim! Diçka nuk shkoi mirë gjatë përpjekjes për të të vërtetuar. Kontrollo për së dyti kredencialet e identifikimit dhe provo sërish.</translation>
-<translation id="2043818754674261542">Distanca që nevojitet për telefonin që të shkyçë këtë pajisje <ph name="DEVICE_TYPE" /></translation>
 <translation id="204497730941176055">Microsoft Certificate Template Name</translation>
 <translation id="2045117674524495717">Ndihmësi i shkurtoreve të tastierës</translation>
 <translation id="2045969484888636535">Vazhdo bllokimin e kukive</translation>
@@ -1144,7 +1142,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="2518024842978892609">Përdor certifikatat e klientit</translation>
 <translation id="2520644704042891903">Po pret për folenë e lirë...</translation>
 <translation id="252219247728877310">Përbërësi nuk u përditësua</translation>
-<translation id="2522791476825452208">Shumë pranë</translation>
 <translation id="2523184218357549926">Dërgon te Google URL-të e faqeve që ti viziton</translation>
 <translation id="2526277209479171883">Instalo e vazhdo</translation>
 <translation id="2526590354069164005">Desktopi</translation>
@@ -1753,7 +1750,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="3333190335304955291">Këtë shërbim mund ta çaktivizosh te "Cilësimet".</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> - Videoja po luhet në modalitetin "figurë brenda figurës"</translation>
 <translation id="3335947283844343239">Rihap skedën e mbyllur</translation>
-<translation id="3336664756920573711">Shkyçe <ph name="DEVICE_TYPE" /> me telefonin tënd Android</translation>
 <translation id="3340620525920140773">Shkarkimi përfundoi: <ph name="FILE_NAME" />.</translation>
 <translation id="3341699307020049241">Kodi PIN është i pasaktë. Të kanë mbetur <ph name="RETRIES" /> përpjekje.</translation>
 <translation id="3341703758641437857">Lejo qasjen te URL-të e skedarëve</translation>
@@ -2776,7 +2772,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="4697551882387947560">Kur mbaron seanca e shfletimit</translation>
 <translation id="4699172675775169585">Imazhet dhe skedarët në memorien specifike</translation>
 <translation id="4699357559218762027">(nisur automatikisht)</translation>
-<translation id="470074695271471509">Do të dalësh për ta përfunduar?</translation>
 <translation id="4701025263201366865">Identifikimi i prindit</translation>
 <translation id="4707302005824653064">Përdorimi dhe historiku mund të rishikohen nga menaxheri (<ph name="CUSTODIAN_EMAIL" />) në chrome.com.</translation>
 <translation id="4707579418881001319">L2TP/IPsec + certifikatë përdoruesi</translation>
@@ -2799,7 +2794,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="473546211690256853">Kjo llogari menaxhohet nga <ph name="DOMAIN" />.</translation>
 <translation id="4735803855089279419">Sistemi nuk arriti të përcaktonte identifikuesit e pajisjeve për këtë pajisje.</translation>
 <translation id="4736292055110123391">Sinkronizo faqeshënuesit, fjalëkalimet, historikun tënd etj. në të gjitha pajisjet e tua</translation>
-<translation id="4737715515457435632">Lidhu me një rrjet</translation>
 <translation id="473775607612524610">Përditësoje</translation>
 <translation id="4739639199548674512">Bileta</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Mëso se si të përditësosh aplikacionet<ph name="END_LINK" /></translation>
@@ -3277,7 +3271,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="5423829801105537712">Kontrolli drejtshkrimor bazë</translation>
 <translation id="5423849171846380976">U aktivizua</translation>
 <translation id="5425042808445046667">Vazhdo shkarkimin</translation>
-<translation id="5425722269016440406">Duhet të jesh në linjë për të çaktivizuar Smart Lock sepse ky cilësim është i sinkronizuar me telefonin tënd dhe pajisje të tjera. Lidhu me rrjetin fillimisht.</translation>
 <translation id="5425863515030416387">Identifikohu me lehtësi në pajisje</translation>
 <translation id="5427278936122846523">Përkthe gjithmonë</translation>
 <translation id="5427459444770871191">Rrotullo në drejtim &amp;të akrepave të orës</translation>
@@ -3419,7 +3412,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="558918721941304263">Po ngarkon aplikacionet...</translation>
 <translation id="5592595402373377407">Nuk ofrohen ende të dhëna të mjaftueshme.</translation>
 <translation id="5593357315997824387">Sinkronizo skedarët e mi</translation>
-<translation id="5595152862129936745">Shumë larg</translation>
 <translation id="5595485650161345191">Redakto adresën</translation>
 <translation id="5595727715083333657">Kontejneri yt nuk mbështet ndryshimin e madhësisë. Për të rregulluar sasinë e hapësirës që i është paracaktuar (Beta), rezervoje dhe më pas restauroje në një kontejner të ri.</translation>
 <translation id="5596627076506792578">Më shumë opsione</translation>
@@ -3532,7 +3524,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="5747552184818312860">Skadon</translation>
 <translation id="5747785204778348146">Programimi - i paqëndrueshëm</translation>
 <translation id="5747809636523347288">Ngj&amp;it dhe shko te <ph name="URL" /></translation>
-<translation id="5750324801516359607">Larg</translation>
 <translation id="5751887393582880060">Ky ngarkim shkel politikat e sigurisë së organizatës sate. Dëshiron të vazhdosh gjithsesi?</translation>
 <translation id="5756163054456765343">Qendra e n&amp;dihmës</translation>
 <translation id="5759728514498647443">Dokumentet që dërgon për printim nëpërmjet <ph name="APP_NAME" /> mund të lexohen nga <ph name="APP_NAME" />.</translation>
@@ -4082,7 +4073,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="6490471652906364588">Pajisja USB-C (porta djathtas)</translation>
 <translation id="6491376743066338510">Autorizimi dështoi</translation>
 <translation id="6494445798847293442">Nuk është një autoritet certifikimi</translation>
-<translation id="649454645705377674">Mbyll</translation>
 <translation id="6495925982925244349">Rrjeti <ph name="NETWORK_INDEX" /> nga <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, fuqia e sinjalit <ph name="SIGNAL_STRENGTH" />%, menaxhuar nga administratori yt, detaje</translation>
 <translation id="6498249116389603658">&amp;Të gjitha gjuhët e tua</translation>
 <translation id="6499143127267478107">Po zgjidh pritësin në skriptin e përfaqësuesit...</translation>
@@ -4150,7 +4140,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="6590458744723262880">Riemërto dosjen</translation>
 <translation id="6592267180249644460">Evidenca e WebRTC regjistroi <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">Gjurma e gishtit tënd u regjistrua</translation>
-<translation id="6594883168703494535">Përdor Smart Lock për t'u identifikuar në "Llogarinë tënde të Google"</translation>
 <translation id="6596325263575161958">Opsionet e enkriptimit</translation>
 <translation id="6596816719288285829">Adresa e IP-së</translation>
 <translation id="6597017209724497268">Shembuj</translation>
@@ -4684,7 +4673,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="7328867076235380839">Kombinim i pavlefshëm</translation>
 <translation id="7329154610228416156">Identifikimi dështoi, sepse ishte i konfiguruar të përdorte një URL jo të sigurt <ph name="BLOCKED_URL" />. Kontakto me administratorin.</translation>
 <translation id="7332053360324989309">Procesi i posaçëm i punës: <ph name="SCRIPT_URL" /></translation>
-<translation id="7334190995941642545">Smart Lock aktualisht nuk ofrohet. Provo përsëri më vonë.</translation>
 <translation id="7334274148831027933">Aktivizo zmadhuesin e stacionuar</translation>
 <translation id="7335974957018254119">Përdor kontrollin drejtshkrimor për</translation>
 <translation id="7336799713063880535">Njoftimet u bllokuan.</translation>
@@ -5227,11 +5215,6 @@ Mbaje skedarin e çelësit tënd në një vend të sigurt. Do të të duhet për
 <translation id="8017679124341497925">Shkurtorja u modifikua</translation>
 <translation id="8018313076035239964">Kontrollo se çfarë informacioni mund të përdorin sajtet e uebit dhe çfarë përmbajtjeje mund të të shfaqin</translation>
 <translation id="8023801379949507775">Përditëso shtesat tani</translation>
-<translation id="8024483450737722621">Aplikacionet që ke shkarkuar nga Google Play do të fshihen nga ky Chromebook.
-      <ph name="LINE_BREAKS1" />
-      Përmbajtja që ke blerë si filmat, shfaqjet televizive, muzika, librat ose blerjet e tjera përmes aplikacionit mund të fshihen po ashtu.
-      <ph name="LINE_BREAKS2" />
-      Kjo nuk ndikon tek aplikacionet ose përmbajtjet në pajisjet e tjera.</translation>
 <translation id="8026334261755873520">Pastro të dhënat e shfletimit</translation>
 <translation id="8028060951694135607">Rikuperimi i Çelësit të Microsoft</translation>
 <translation id="8028803902702117856">Po shkarkon <ph name="SIZE" />, <ph name="FILE_NAME" /></translation>
@@ -5547,7 +5530,6 @@ Mbaje skedarin e çelësit tënd në një vend të sigurt. Do të të duhet për
 <translation id="8455026683977728932">Aktivizimi i ilustrimit të ADB-së dështoi</translation>
 <translation id="845702320058262034">Nuk mund të lidhet. Sigurohu që të jetë aktivizuar Bluetooth-i i telefonit tënd.</translation>
 <translation id="8457451314607652708">Importo faqeshënuesit</translation>
-<translation id="8460336040822756677">Nëse e çaktivizon Smart Lock për <ph name="DEVICE_TYPE" />, nuk do të mund t'i shkyçësh pajisjet e tua të Chrome me anë të telefonit. Për këtë do të duhet të shkruash fjalëkalimin.</translation>
 <translation id="8461329675984532579">Emri i ofruesit të rrjetit bazë</translation>
 <translation id="84613761564611563">Kërkohet ndërfaqja e konfigurimit të rrjetit, qëndro në pritje...</translation>
 <translation id="8461914792118322307">Përfaqësues</translation>
@@ -5773,7 +5755,6 @@ Mbaje skedarin e çelësit tënd në një vend të sigurt. Do të të duhet për
 <translation id="8743864605301774756">Përditësuar 1 orë më parë</translation>
 <translation id="8746654918629346731">Ke kërkuar tashmë "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="874689135111202667">{0,plural, =1{Të ngarkohet një skedar në këtë sajt?}other{Të ngarkohen # skedarë në këtë sajt?}}</translation>
-<translation id="8748384418490037181">Opsionet e Smart Lock</translation>
 <translation id="8749863574775030885">Qasu te pajisjet USB nga një shitës i panjohur</translation>
 <translation id="8750133148106010815">Për të nisur Google Play, <ph name="ORGANIZATION_NAME" /> kërkon që të rezervosh të dhënat e tua dhe ta rivendosësh këtë Chromebook te cilësimet e fabrikës.</translation>
 <translation id="8750155211039279868"><ph name="ORIGIN" /> dëshiron të lidhet me një portë serie</translation>
@@ -5896,7 +5877,6 @@ Mbaje skedarin e çelësit tënd në një vend të sigurt. Do të të duhet për
 <translation id="8881020143150461183">Provo sërish. Për mbështetje teknike, kontakto me <ph name="CARRIER_NAME" />.</translation>
 <translation id="8883273463630735858">Aktivizo përshpejtimin e bllokut me prekje</translation>
 <translation id="8884570509232205463">Pajisja jote tani kyçet në <ph name="UNLOCK_TIME" />.</translation>
-<translation id="8885197664446363138">Smart Lock nuk ofrohet</translation>
 <translation id="8888253246822647887">Aplikacioni yt do të hapet kur të përfundojë përmirësimi. Përmirësimi mund të zgjasë disa minuta.</translation>
 <translation id="8888432776533519951">Ngjyra:</translation>
 <translation id="8889651696183044030"><ph name="ORIGIN" /> mund t'i modifikojë skedarët dhe dosjet e mëposhtme</translation>

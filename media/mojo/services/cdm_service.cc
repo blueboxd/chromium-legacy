@@ -41,9 +41,8 @@ namespace {
 //     details.
 class CdmFactoryImpl : public DeferredDestroy<mojom::CdmFactory> {
  public:
-  CdmFactoryImpl(
-      CdmService::Client* client,
-      mojo::PendingRemote<service_manager::mojom::InterfaceProvider> interfaces)
+  CdmFactoryImpl(CdmService::Client* client,
+                 mojo::PendingRemote<mojom::FrameInterfaceFactory> interfaces)
       : client_(client), interfaces_(std::move(interfaces)) {
     DVLOG(1) << __func__;
 
@@ -99,7 +98,7 @@ class CdmFactoryImpl : public DeferredDestroy<mojom::CdmFactory> {
   MojoCdmServiceContext cdm_service_context_;
 
   CdmService::Client* client_;
-  mojo::Remote<service_manager::mojom::InterfaceProvider> interfaces_;
+  mojo::Remote<mojom::FrameInterfaceFactory> interfaces_;
   mojo::UniqueReceiverSet<mojom::ContentDecryptionModule> cdm_receivers_;
   std::unique_ptr<media::CdmFactory> cdm_factory_;
   base::OnceClosure destroy_cb_;
@@ -183,15 +182,14 @@ void CdmService::LoadCdm(const base::FilePath& cdm_path) {
 
 void CdmService::CreateCdmFactory(
     mojo::PendingReceiver<mojom::CdmFactory> receiver,
-    mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
-        host_interfaces) {
+    mojo::PendingRemote<mojom::FrameInterfaceFactory> frame_interfaces) {
   // Ignore receiver if service has already stopped.
   if (!client_)
     return;
 
   cdm_factory_receivers_.AddReceiver(
       std::make_unique<CdmFactoryImpl>(client_.get(),
-                                       std::move(host_interfaces)),
+                                       std::move(frame_interfaces)),
       std::move(receiver));
 }
 

@@ -324,6 +324,11 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   bool NavigationScrollAllowed() const { return navigation_scroll_allowed_; }
 
+  // We want to make sure that the largest content is painted before the "LCP
+  // limit", so that we get a good LCP value. This returns the remaining time to
+  // the LCP limit. See crbug.com/1065508 for details.
+  base::TimeDelta RemainingTimeToLCPLimit() const;
+
  protected:
   Vector<KURL> redirect_chain_;
 

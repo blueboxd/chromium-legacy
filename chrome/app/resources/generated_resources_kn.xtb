@@ -120,7 +120,6 @@
 <translation id="1153636665119721804">Google ಸುಧಾರಿತ ರಕ್ಷಣೆ ಪ್ರೋಗ್ರಾಂ</translation>
 <translation id="1161575384898972166">ಕ್ಲೈಂಟ್ ಪ್ರಮಾಣಪತ್ರವನ್ನು ರಫ್ತು ಮಾಡಲು <ph name="TOKEN_NAME" /> ಗೆ ದಯವಿಟ್ಟು ಸೈನ್ ಇನ್ ಆಗಿರಿ.</translation>
 <translation id="1163931534039071049">ಫ್ರೇಮ್ ಮೂಲವನ್ನು &amp;ವೀಕ್ಷಿಸಿ</translation>
-<translation id="1164674268730883318"><ph name="DEVICE_TYPE" /> ಗೆ Smart Lock ಆಫ್ ಮಾಡುವುದೇ?</translation>
 <translation id="1164891049599601209">ವಂಚನೆ ಮಾಡುವ ಸೈಟ್‌ನಲ್ಲಿ ನಮೂದಿಸಲಾಗಿದೆ</translation>
 <translation id="1164899421101904659">ಪಿನ್ ಅನ್‌ಲಾಕ್ ಕೀ ನಮೂದಿಸಿ</translation>
 <translation id="1165039591588034296">ದೋಷ</translation>
@@ -775,7 +774,6 @@
 
 ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ Family Link ಆ್ಯಪ್ ಅನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡುವ ಮೂಲಕ ಈ ಖಾತೆಯ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ನೀವು ನಿರ್ವಹಿಸಬಹುದು.  ನಾವು ನಿಮಗೆ ಇಮೇಲ್ ಮೂಲಕ ಸೂಚನೆಗಳನ್ನು ಕಳುಹಿಸಿದ್ದೇವೆ.</translation>
 <translation id="2040460856718599782">ಓಹ್! ನೀವು ದೃಢೀಕರಿಸುವ ಪ್ರಯತ್ನದಲ್ಲಿರುವಾಗ ಏನೋ ತಪ್ಪು ನಡೆದಿದೆ. ದಯವಿಟ್ಟು ನಿಮ್ಮ ಸೈನ್‌-ಇನ್‌ ರುಜುವಾತುಗಳನ್ನು ಎರಡು ಬಾರಿ ಪರಿಶೀಲಿಸಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
-<translation id="2043818754674261542">ಈ <ph name="DEVICE_TYPE" /> ಅನ್ನು ಅನ್‌ಲಾಕ್‌ ಮಾಡಲು ಫೋನ್‌ಗೆ ಅಂತರದ ಅಗತ್ಯವಿದೆ</translation>
 <translation id="204497730941176055">Microsoft ಪ್ರಮಾಣಪತ್ರ ಟೆಂಪ್ಲೇಟ್ ಹೆಸರು</translation>
 <translation id="2045117674524495717">ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್ ಸಹಾಯಕ</translation>
 <translation id="2045969484888636535">ಕುಕೀಸ್ ನಿರ್ಬಂಧಿಸುವುದನ್ನು ಮುಂದುವರಿಸು</translation>
@@ -1147,7 +1145,6 @@
 <translation id="2518024842978892609">ನಿಮ್ಮ ಕ್ಲೈಂಟ್ ಪ್ರಮಾಣಪತ್ರಗಳನ್ನು ಬಳಸಿ</translation>
 <translation id="2520644704042891903">ಲಭ್ಯವಿರುವ ಸಾಕೆಟ್‌ಗಾಗಿ ಕಾಯಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="252219247728877310">ಕಾಂಪೊನೆಂಟ್ ನವೀಕರಣಗೊಂಡಿಲ್ಲ</translation>
-<translation id="2522791476825452208">ಅತಿ ಹತ್ತಿರ</translation>
 <translation id="2523184218357549926">ನೀವು ಭೇಟಿ ನೀಡುವ ಪುಟಗಳ URLಗಳನ್ನು Google ಗೆ ಕಳುಹಿಸುತ್ತದೆ</translation>
 <translation id="2526277209479171883">ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ, ಮುಂದುವರಿಯಿರಿ</translation>
 <translation id="2526590354069164005">ಡೆಸ್ಕ್‌ಟಾಪ್</translation>
@@ -1756,7 +1753,6 @@
 <translation id="3333190335304955291">ಈ ಸೇವೆಯನ್ನು ನೀವು ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಆಫ್ ಮಾಡಬಹುದು.</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> - ಚಿತ್ರದಲ್ಲಿನ ಚಿತ್ರ ಮೋಡ್‌ನಲ್ಲಿ ವೀಡಿಯೊ ಪ್ಲೇ ಆಗುತ್ತಿದೆ</translation>
 <translation id="3335947283844343239">ಮುಚ್ಚಿದ ಟ್ಯಾಬ್ ಮರುತೆರೆ</translation>
-<translation id="3336664756920573711">ನಿಮ್ಮ Android ಫೋನ್‌ನ ಮೂಲಕ ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಅನ್ನು ಅನ್‌ಲಾಕ್ ಮಾಡಿ</translation>
 <translation id="3340620525920140773">ಡೌನ್‌ಲೋಡ್ ಪೂರ್ಣಗೊಂಡಿದೆ: <ph name="FILE_NAME" />.</translation>
 <translation id="3341699307020049241">ಪಿನ್ ತಪ್ಪಾಗಿದೆ. ನೀವು ಇನ್ನೂ <ph name="RETRIES" /> ಬಾರಿ ಪ್ರಯತ್ನಿಸಬಹುದು.</translation>
 <translation id="3341703758641437857">URL ಗಳನ್ನು ಫೈಲ್‌ಗಳಿಗೆ ಪ್ರವೇಶಿಸಲು ಅನುಮತಿಸಿ</translation>
@@ -2779,7 +2775,6 @@
 <translation id="4697551882387947560">ಬ್ರೌಸಿಂಗ್ ಸೆಷನ್ ಯಾವಾಗ ಕೊನೆಗೊಳ್ಳುತ್ತದೆ</translation>
 <translation id="4699172675775169585">ಸಂಗ್ರಹಿಸಲಾಗಿರುವ ಚಿತ್ರಗಳು ಮತ್ತು ಫೈಲ್‌ಗಳು</translation>
 <translation id="4699357559218762027">(ಆಟೋ-ಲಾಂಚ್ ಮಾಡಲಾಗಿದೆ)</translation>
-<translation id="470074695271471509">ಪೂರ್ಣಗೊಳಿಸಲು ಸೈನ್ ಔಟ್ ಮಾಡುವುದೇ?</translation>
 <translation id="4701025263201366865">ಪೋಷಕರ ಸೈನ್ ಇನ್</translation>
 <translation id="4707302005824653064">ಬಳಕೆ ಮತ್ತು ಇತಿಹಾಸವನ್ನು chrome.com ನಲ್ಲಿ ನಿರ್ವಾಹಕರು (<ph name="CUSTODIAN_EMAIL" />) ಪರಿಶೀಲಿಸಬಹುದು.</translation>
 <translation id="4707579418881001319">L2TP/IPSec + ಬಳಕೆದಾರರ ಪ್ರಮಾಣಪತ್ರ</translation>
@@ -2802,7 +2797,6 @@
 <translation id="473546211690256853">ಈ ಖಾತೆಯನ್ನು <ph name="DOMAIN" /> ರಿಂದ ನಿರ್ವಹಿಸಲಾಗಿದೆ</translation>
 <translation id="4735803855089279419">ಈ ಸಾಧನಕ್ಕಾಗಿ ಸಾಧನದ ಗುರುತುಗಳನ್ನು ನಿರ್ಧರಿಸಲು ಸಿಸ್ಟಂ ವಿಫಲವಾಗಿದೆ.</translation>
 <translation id="4736292055110123391">ನಿಮ್ಮ ಎಲ್ಲಾ ಸಾಧನಗಳಲ್ಲೂ ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌‌ಗಳು, ಪಾಸ್‍ವರ್ಡ್‍ಗಳು, ಇತಿಹಾಸ ಹಾಗೂ ಇನ್ನೂ ಹೆಚ್ಚಿನವುಗಳನ್ನು ಸಿಂಕ್ ಮಾಡಿ</translation>
-<translation id="4737715515457435632">ದಯವಿಟ್ಟು ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಸಂಪರ್ಕಿಸಿ</translation>
 <translation id="473775607612524610">ಅಪ್‌ಡೇಟ್‌‌</translation>
 <translation id="4739639199548674512">ಟಿಕೆಟ್‌ಗಳು</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ಅಪ್‌ಡೇಟ್‌ ಮಾಡುವುದು ಹೇಗೆ ಎಂದು ತಿಳಿಯಿರಿ<ph name="END_LINK" /></translation>
@@ -3281,7 +3275,6 @@
 <translation id="5423829801105537712">ಪ್ರಾಥಮಿಕ ಕಾಗುಣಿತ ಪರೀಕ್ಷೆ</translation>
 <translation id="5423849171846380976">ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="5425042808445046667">ಡೌನ್‌ಲೋಡ್ ಮಾಡುವುದನ್ನು ಮುಂದುವರಿಸಿ</translation>
-<translation id="5425722269016440406">Smart Lock ಆಫ್‌ ಮಾಡಲು ನೀವು ಆನ್‌ಲೈನ್‌ನಲ್ಲಿರಬೇಕು. ಏಕೆಂದರೆ ಈ ಸೆಟ್ಟಿಂಗ್‌ ಅನ್ನು ನಿಮ್ಮ ಫೋನ್‌ ಮತ್ತು ಇತರ ಸಾಧನಗಳಿಗೆ ಸಿಂಕ್‌ ಮಾಡಲಾಗಿದೆ. ದಯವಿಟ್ಟು ಮೊದಲು ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಸಂಪರ್ಕಿಸಿ.</translation>
 <translation id="5425863515030416387">ಸಾಧನಗಳಾದ್ಯಂತ ಸುಲಭವಾಗಿ ಸೈನ್ ಇನ್ ಮಾಡಿ</translation>
 <translation id="5427278936122846523">ಯಾವಾಗಲೂ ಅನುವಾದಿಸು</translation>
 <translation id="5427459444770871191">&amp;ಪ್ರದಕ್ಷಿಣೆಯಂತೆ ತಿರುಗಿಸಿ</translation>
@@ -3423,7 +3416,6 @@
 <translation id="558918721941304263">ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="5592595402373377407">ಇನ್ನೂ ಸಾಕಷ್ಟು ಡೇಟಾ ಲಭ್ಯವಿಲ್ಲ.</translation>
 <translation id="5593357315997824387">ನನ್ನ ಫೈಲ್‌ಗಳನ್ನು ಸಿಂಕ್ ಮಾಡಿ</translation>
-<translation id="5595152862129936745">ಬಹಳ ದೂರ</translation>
 <translation id="5595485650161345191">ವಿಳಾಸ ಎಡಿಟ್ ಮಾಡಿ</translation>
 <translation id="5595727715083333657">ಮರುಗಾತ್ರಗೊಳಿಸುವ ಡಿಸ್ಕ್ ಅನ್ನು ನಿಮ್ಮ ಕಂಟೇನರ್ ಬೆಂಬಲಿಸುವುದಿಲ್ಲ. Linux (ಬೀಟಾ) ಗೆ ಮೊದಲೇ ನಿಗದಿಪಡಿಸಿದ ಸ್ಥಳಾವಕಾಶದ ಪ್ರಮಾಣವನ್ನು ಹೊಂದಿಸಲು, ಬ್ಯಾಕಪ್ ಮಾಡಿ ನಂತರ ಹೊಸ ಕಂಟೇನರ್‌ಗೆ ಮರುಸ್ಥಾಪಿಸಿ.</translation>
 <translation id="5596627076506792578">ಇನ್ನಷ್ಟು ಆಯ್ಕೆಗಳು</translation>
@@ -3537,7 +3529,6 @@
 <translation id="5747552184818312860">ಅವಧಿ ಮೀರುವುದು</translation>
 <translation id="5747785204778348146">ಡೆವಲಪರ್ - ಅಸ್ಥಿರ</translation>
 <translation id="5747809636523347288">ಅಂ&amp;ಟಿಸಿ ಮತ್ತು <ph name="URL" /> ಗೆ ಹೋಗಿ</translation>
-<translation id="5750324801516359607">ದೂರದಲ್ಲಿದೆ</translation>
 <translation id="5751887393582880060">ಈ ಅಪ್‌ಲೋಡ್, ನಿಮ್ಮ ಸಂಸ್ಥೆಯ ಸುರಕ್ಷತೆ ನೀತಿಗಳನ್ನು ಉಲ್ಲಂಘಿಸುತ್ತಿದೆ. ಹಾಗಿದ್ದರೂ ನೀವು ಮುಂದುವರಿಯಲು ಬಯಸುವಿರಾ?</translation>
 <translation id="5756163054456765343">ಸ&amp;ಹಾಯ ಕೇಂದ್ರ</translation>
 <translation id="5759728514498647443">ನೀವು <ph name="APP_NAME" /> ಮೂಲಕ ಪ್ರಿಂಟ್ ಮಾಡಲು ಕಳುಹಿಸುವ ಡಾಕ್ಯುಮೆಂಟ್‌ಗಳನ್ನು <ph name="APP_NAME" /> ಮೂಲಕ ಓದಬಹುದಾಗಿದೆ.</translation>
@@ -4087,7 +4078,6 @@
 <translation id="6490471652906364588">USB-C ಸಾಧನ (ಬಲ ಪೋರ್ಟ್)</translation>
 <translation id="6491376743066338510">ದೃಢೀಕರಣ ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="6494445798847293442">ಪ್ರಮಾಣೀಕರಣದ ಪ್ರಾಧಿಕಾರವಲ್ಲ</translation>
-<translation id="649454645705377674">ಮುಚ್ಚಿ</translation>
 <translation id="6495925982925244349"><ph name="NETWORK_COUNT" /> ರಲ್ಲಿ <ph name="NETWORK_INDEX" /> ನೆಟ್‌ವರ್ಕ್, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, ಸಿಗ್ನಲ್ ಸಾಮರ್ಥ್ಯ <ph name="SIGNAL_STRENGTH" />%, ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ನಿರ್ವಹಿಸಿದ್ದಾರೆ, ವಿವರಗಳು</translation>
 <translation id="6498249116389603658">&amp;ನಿಮ್ಮ ಎಲ್ಲಾ ಭಾಷೆಗಳು</translation>
 <translation id="6499143127267478107">ಪ್ರಾಕ್ಸಿ ಸ್ಕ್ರಿಪ್ಟ್‌ನಲ್ಲಿ ಹೋಸ್ಟ್ ಅನ್ನು ಪರಿಹರಿಸಲಾಗುತ್ತಿದೆ...</translation>
@@ -4155,7 +4145,6 @@
 <translation id="6590458744723262880">ಫೋಲ್ಡರ್ ಅನ್ನು ಮರುಹೆಸರಿಸಿ</translation>
 <translation id="6592267180249644460">WebRTC ಲಾಗ್ ಸೆರೆಹಿಡಿಯಲಾಗಿದೆ <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">ನಿಮ್ಮ ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಅನ್ನು ಕ್ಯಾಪ್ಚರ್ ಮಾಡಲಾಗಿದೆ</translation>
-<translation id="6594883168703494535">ನಿಮ್ಮ Google ಖಾತೆಗೆ ಸೈನ್ ಇನ್ ಮಾಡಲು Smart Lock ಬಳಸಿ</translation>
 <translation id="6596325263575161958">ಎನ್‌ಕ್ರಿಫ್ಶನ್ ಆಯ್ಕೆಗಳು</translation>
 <translation id="6596816719288285829">IP ವಿಳಾಸ</translation>
 <translation id="6597017209724497268">ಮಾದರಿಗಳು</translation>
@@ -4690,7 +4679,6 @@
 <translation id="7328867076235380839">ಅಮಾನ್ಯ ಸಂಯೋಜನೆ</translation>
 <translation id="7329154610228416156">ಸೈನ್‌ ಇನ್‌ ವಿಫಲಗೊಂಡಿದೆ ಏಕೆಂದರೆ ಅದು ಸುರಕ್ಷಿತವಲ್ಲದ URL (<ph name="BLOCKED_URL" />) ಬಳಸುವಂತೆ ಕಾನ್ಫಿಗರ್‌‌ ಮಾಡಲಾಗಿದೆ. ದಯವಿಟ್ಟು ನಿಮ್ಮ ನಿರ್ವಾಹಕರನ್ನು ಸಂಪರ್ಕಿಸಿ.</translation>
 <translation id="7332053360324989309">ಮೀಸಲು ಕೆಲಸಗಾರ: <ph name="SCRIPT_URL" /></translation>
-<translation id="7334190995941642545">Smart Lock ಪ್ರಸ್ತುತ ಲಭ್ಯವಿಲ್ಲ. ದಯವಿಟ್ಟು ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="7334274148831027933">ಡಾಕ್ ಮಾಡಲಾದ ವರ್ಧಕವನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="7335974957018254119">ಈ ಭಾಷೆಗಳಿಗಾಗಿ ಕಾಗುಣಿತ ಪರೀಕ್ಷೆಯನ್ನು ಬಳಸಿ</translation>
 <translation id="7336799713063880535">ಸೂಚನೆ ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
@@ -5231,11 +5219,6 @@
 <translation id="8017679124341497925">ಶಾರ್ಟ್‌ಕಟ್ ಅನ್ನು ಎಡಿಟ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="8018313076035239964">ವೆಬ್‌ಸೈಟ್‌ಗಳು ಯಾವ ಮಾಹಿತಿಯನ್ನು ಬಳಸಬಹುದು ಮತ್ತು ಅವುಗಳು ನಿಮಗೆ ಯಾವ ವಿಷಯವನ್ನು ತೋರಿಸಬಹುದು ಎನ್ನುವುದನ್ನು ನಿಯಂತ್ರಿಸಿ</translation>
 <translation id="8023801379949507775">ಈಗ ವಿಸ್ತರಣೆಗಳನ್ನು ಅಪ್‌ಡೇಟ್‌ ಮಾಡಿ</translation>
-<translation id="8024483450737722621">Google Play ನಿಂದ ನೀವು ಡೌನ್‌ಲೋಡ್ ಮಾಡಲಾದ ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು Chromebook ನಿಂದ ಅಳಿಸಲಾಗುತ್ತದೆ.
-      <ph name="LINE_BREAKS1" />
-      ಚಲನಚಿತ್ರಗಳು, ಟಿವಿ ಪ್ರದರ್ಶನಗಳು, ಸಂಗೀತ, ಪುಸ್ತಕಗಳಂತಹ ನೀವು ಖರೀದಿಸಿದ ವಿಷಯವನ್ನು ಅಥವಾ ಇತರ ಅಪ್ಲಿಕೇಶನ್‌ನಲ್ಲಿನ ಖರೀದಿಗಳನ್ನು ಸಹ ಅಳಿಸಬಹುದು.
-      <ph name="LINE_BREAKS2" />
-      ಇದು ಇತರ ಸಾಧನಗಳಲ್ಲಿನ ಅಪ್ಲಿಕೇಶನ್‌ಗಳು ಅಥವಾ ವಿಷಯಕ್ಕೆ ಪರಿಣಾಮ ಬೀರುವುದಿಲ್ಲ.</translation>
 <translation id="8026334261755873520">ಬ್ರೌಸಿಂಗ್ ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸಿ</translation>
 <translation id="8028060951694135607">Microsoft Key Recovery</translation>
 <translation id="8028803902702117856">ಡೌನ್‌ಲೋಡ್‌ ಮಾಡಲಾಗುತ್ತಿದೆ <ph name="SIZE" />, <ph name="FILE_NAME" /></translation>
@@ -5551,9 +5534,6 @@
 <translation id="8455026683977728932">ADB ನಿದರ್ಶನ ಸಕ್ರಿಯಗೊಳಿಸಲು ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="845702320058262034">ಸಂಪರ್ಕಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ನಿಮ್ಮ ಫೋನ್‌ನ ಬ್ಲೂಟೂತ್ ಆನ್‌ ಆಗಿದೆಯೇ ಎಂದು ಖಚಿತಪಡಿಸಿಕೊಳ್ಳಿ.</translation>
 <translation id="8457451314607652708">ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಆಮದು ಮಾಡಿ</translation>
-<translation id="8460336040822756677"><ph name="DEVICE_TYPE" /> ಗೆ Smart Lock ಅನ್ನು ನೀವು ಆಫ್ ಮಾಡಿದರೆ, ನಿಮ್ಮ ಫೋನ್ ಬಳಸಿಕೊಂಡು ನಿಮ್ಮ Chrome 
-ಸಾಧನಗಳನ್ನು ನಿಮಗೆ ಅನ್‌ಲಾಕ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗುವುದಿಲ್ಲ. ನೀವು ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ 
-ಟೈಪ್ ಮಾಡಬೇಕಾಗಿರುತ್ತದೆ.</translation>
 <translation id="8461329675984532579">Home ಪೂರೈಕೆದಾರರ ಹೆಸರು</translation>
 <translation id="84613761564611563">ನೆಟ್‌ವರ್ಕ್ ಕಾನ್ಫಿಗರ್ UI ವಿನಂತಿಸಲಾಗಿದೆ, ದಯವಿಟ್ಟು ಕಾಯಿರಿ...</translation>
 <translation id="8461914792118322307">ಪ್ರಾಕ್ಸಿ</translation>
@@ -5779,7 +5759,6 @@
 <translation id="8743864605301774756">1ಗಂಟೆಯ ಹಿಂದೆ ಆಪ್‌ಡೇಟ್‌ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="8746654918629346731">ನೀವು ಈಗಾಗಲೇ "<ph name="EXTENSION_NAME" />" ಗಾಗಿ ವಿನಂತಿಸಿದ್ದೀರಿ</translation>
 <translation id="874689135111202667">{0,plural, =1{ಈ ಸೈಟ್‌ಗೆ ಒಂದು ಫೈಲ್‌ ಅನ್ನು ಅಪ್‌ಲೋಡ್‌ ಮಾಡಬೇಕೇ?}one{ಈ ಸೈಟ್‌ಗೆ # ಫೈಲ್‌ಗಳನ್ನು ಅಪ್‌ಲೋಡ್‌ ಮಾಡಬೇಕೇ?}other{ಈ ಸೈಟ್‌ಗೆ # ಫೈಲ್‌ಗಳನ್ನು ಅಪ್‌ಲೋಡ್‌ ಮಾಡಬೇಕೇ?}}</translation>
-<translation id="8748384418490037181">Smart Lock ಆಯ್ಕೆಗಳು</translation>
 <translation id="8749863574775030885">ಅಪರಿಚಿತ ಮಾರಾಟಗಾರರಿಂದ USB ಸಾಧನಗಳನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="8750133148106010815">Google Play ಪ್ರಾರಂಭಿಸಲು, ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಬ್ಯಾಕಪ್ ಮಾಡುವುದು ಮತ್ತು ಈ Chromebook ಅನ್ನು ಫ್ಯಾಕ್ಟರಿ ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಗೆ ಮರುಹೊಂದಿಸುವುದನ್ನು<ph name="ORGANIZATION_NAME" /> ಅಗತ್ಯಗೊಳಿಸಿದೆ.</translation>
 <translation id="8750155211039279868"><ph name="ORIGIN" /> ಒಂದು ಸೀರಿಯಲ್ ಪೋರ್ಟ್‌ಗೆ ಸಂಪರ್ಕಿಸಲು ಬಯಸುತ್ತದೆ</translation>
@@ -5902,7 +5881,6 @@
 <translation id="8881020143150461183">ಪುನಃ ಪ್ರಯತ್ನಿಸಿ. ತಾಂತ್ರಿಕ ಬೆಂಬಲಕ್ಕಾಗಿ, <ph name="CARRIER_NAME" /> ಅನ್ನು ಸಂಪರ್ಕಿಸಿ.</translation>
 <translation id="8883273463630735858">ಟಚ್‌ಪ್ಯಾಡ್ ವೇಗವರ್ಧನೆಯನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="8884570509232205463">ನಿಮ್ಮ ಸಾಧನವು ಇದೀಗ <ph name="UNLOCK_TIME" /> ಸಮಯಕ್ಕೆ ಲಾಕ್ ಆಗುತ್ತದೆ.</translation>
-<translation id="8885197664446363138">Smart Lock ಲಭ್ಯವಿಲ್ಲ</translation>
 <translation id="8888253246822647887">ಅಪ್‌ಗ್ರೇಡ್‌ ಮಾಡುವುದು ಪೂರ್ಣಗೊಂಡಾಗ ನಿಮ್ಮ ಆ್ಯಪ್‌ ತೆರೆದುಕೊಳ್ಳುತ್ತದೆ. ಅಪ್‌ಗ್ರೇಡ್‌ಗಳನ್ನು ಮಾಡುವುದಕ್ಕೆ ಕೆಲವು ನಿಮಿಷಗಳು ಬೇಕಾಗಬಹುದು.</translation>
 <translation id="8888432776533519951">ಬಣ್ಣ:</translation>
 <translation id="8889651696183044030"><ph name="ORIGIN" />, ಕೆಳಗಿನ ಫೈಲ್‌ಗಳು ಮತ್ತು ಫೋಲ್ಡರ್‌ಗಳನ್ನು ಎಡಿಟ್ ಮಾಡಬಹುದು</translation>

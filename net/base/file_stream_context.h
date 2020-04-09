@@ -62,8 +62,8 @@ class FileStream::Context {
   // file_stream_context_{win,posix}.cc.
   ////////////////////////////////////////////////////////////////////////////
 
-  explicit Context(const scoped_refptr<base::TaskRunner>& task_runner);
-  Context(base::File file, const scoped_refptr<base::TaskRunner>& task_runner);
+  explicit Context(scoped_refptr<base::TaskRunner> task_runner);
+  Context(base::File file, scoped_refptr<base::TaskRunner> task_runner);
 #if defined(OS_WIN)
   ~Context() override;
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
@@ -172,7 +172,7 @@ class FileStream::Context {
   // Deletes an orphaned context.
   void DeleteOrphanedContext();
 
-  // The ReadFile call on Windows can execute synchonously at times.
+  // The ReadFile call on Windows can execute synchronously at times.
   // http://support.microsoft.com/kb/156932. This ends up blocking the calling
   // thread which is undesirable. To avoid this we execute the ReadFile call
   // on a worker thread.
@@ -217,10 +217,10 @@ class FileStream::Context {
 #endif  // defined(OS_WIN)
 
   base::File file_;
-  bool async_in_progress_;
+  bool async_in_progress_ = false;
 
-  bool orphaned_;
-  scoped_refptr<base::TaskRunner> task_runner_;
+  bool orphaned_ = false;
+  const scoped_refptr<base::TaskRunner> task_runner_;
 
 #if defined(OS_WIN)
   base::MessagePumpForIO::IOContext io_context_;
@@ -228,16 +228,16 @@ class FileStream::Context {
   scoped_refptr<IOBuffer> in_flight_buf_;
   // This flag is set to true when we receive a Read request which is queued to
   // the thread pool.
-  bool async_read_initiated_;
+  bool async_read_initiated_ = false;
   // This flag is set to true when we receive a notification ReadAsyncResult()
   // on the calling thread which indicates that the asynchronous Read
   // operation is complete.
-  bool async_read_completed_;
+  bool async_read_completed_ = false;
   // This flag is set to true when we receive an IO completion notification for
-  // an asynchonously initiated Read operaton. OnIOComplete().
-  bool io_complete_for_read_received_;
+  // an asynchronously initiated Read operation. OnIOComplete().
+  bool io_complete_for_read_received_ = false;
   // Tracks the result of the IO completion operation. Set in OnIOComplete.
-  int result_;
+  int result_ = 0;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(Context);

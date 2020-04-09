@@ -22,8 +22,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelper;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelper.FaviconImageCallback;
-import org.chromium.chrome.browser.ui.favicon.RoundedIconGenerator;
 import org.chromium.components.browser_ui.settings.ChromeImageViewPreference;
+import org.chromium.components.favicon.FaviconFallbackGenerator;
 
 /**
  * A preference that displays a website's favicon and URL and, optionally, the amount of local
@@ -94,8 +94,8 @@ class WebsitePreference extends ChromeImageViewPreference implements FaviconImag
             // Invalid favicon, produce a generic one.
             float density = resources.getDisplayMetrics().density;
             int faviconSizeDp = Math.round(mFaviconSizePx / density);
-            RoundedIconGenerator faviconGenerator =
-                    new RoundedIconGenerator(resources, faviconSizeDp, faviconSizeDp,
+            FaviconFallbackGenerator faviconGenerator =
+                    new FaviconFallbackGenerator(resources, faviconSizeDp, faviconSizeDp,
                             Math.round(FAVICON_CORNER_RADIUS_FRACTION * faviconSizeDp),
                             FAVICON_BACKGROUND_COLOR,
                             Math.round(FAVICON_TEXT_SIZE_FRACTION * faviconSizeDp));

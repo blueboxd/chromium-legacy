@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
+#include "gpu/command_buffer/service/shared_image_backing_ozone.h"
 #include "gpu/command_buffer/service/shared_image_manager.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "ui/gfx/native_pixmap.h"
@@ -40,6 +41,11 @@ class SharedImageRepresentationDawnOzone
   void EndAccess() override;
 
  private:
+  // TODO(andrescj): move other shared image representations into
+  // SharedImageBackingOzone.
+  SharedImageBackingOzone* ozone_backing() {
+    return static_cast<SharedImageBackingOzone*>(backing());
+  }
   const WGPUDevice device_;
   const WGPUTextureFormat format_;
   scoped_refptr<gfx::NativePixmap> pixmap_;

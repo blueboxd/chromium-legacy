@@ -18,6 +18,7 @@
 <translation id="4744575902940448763">Non è stato possibile sincronizzare la password del tuo account di lavoro con il tuo profilo Windows perché gli aggiornamenti della password sul tuo dispositivo sono limitati dalla tua organizzazione. Contatta l'amministratore per ricevere assistenza.</translation>
 <translation id="5186761973554910131">È stato fornito un nome del computer non valido durante il tentativo di modifica della password. Contatta l'amministratore.</translation>
 <translation id="5265714013989877288">Impossibile continuare perché si è verificato un errore durante la modifica della password di Windows. Contatta l'amministratore.</translation>
+<translation id="5581861273642234526">Esiste già un altro account di lavoro associato a questo dispositivo. Accedi con il tuo account Windows.</translation>
 <translation id="6033715878377252112">Assistente Provider di credenziali Google per Windows</translation>
 <translation id="6149399665202317746">Provider di credenziali Google per Windows</translation>
 <translation id="6243062314475217481">La password del tuo account di lavoro non risponde ai requisiti di complessità per Windows. Contatta l'amministratore per ricevere assistenza.</translation>

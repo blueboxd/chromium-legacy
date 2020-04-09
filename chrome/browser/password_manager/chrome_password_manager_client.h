@@ -300,9 +300,10 @@ class ChromePasswordManagerClient
   // without custom sync passphrase.
   static bool ShouldAnnotateNavigationEntries(Profile* profile);
 
-  // |ui_data| is empty in case the renderer failed to start manual generation.
-  // In this case nothing should happen.
-  void ShowManualPasswordGenerationPopup(
+  // Called back by the PasswordGenerationAgent when the manual generation flow
+  // is completed. If |ui_data| is non-empty, will create a UI to display the
+  // generated password. Otherwise, nothing will happen.
+  void ManualGenerationResultAvailable(
       base::WeakPtr<password_manager::ContentPasswordManagerDriver> driver,
       const base::Optional<
           autofill::password_generation::PasswordGenerationUIData>& ui_data);

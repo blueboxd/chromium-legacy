@@ -100,7 +100,7 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
 
   // Returns the delay till the next task. If there's no delay TimeDelta::Max()
   // will be returned.
-  TimeDelta DoWorkImpl(LazyNow* continuation_lazy_now, bool* ran_task);
+  TimeDelta DoWorkImpl(LazyNow* continuation_lazy_now);
 
   void InitializeThreadTaskRunnerHandle()
       EXCLUSIVE_LOCKS_REQUIRED(task_runner_lock_);

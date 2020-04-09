@@ -267,9 +267,6 @@ const char kEnableHoudini[] = "enable-houdini";
 // Enables the use of Houdini 64-bit library for ARM binary translation.
 const char kEnableHoudini64[] = "enable-houdini64";
 
-// Determines the URL to be used when calling the backend.
-const char kMarketingOptInUrl[] = "marketing-opt-in-url";
-
 // Enables the use of NDK translation library for ARM binary translation.
 const char kEnableNdkTranslation[] = "enable-ndk-translation";
 
@@ -409,6 +406,9 @@ const char kLoginProfile[] = "login-profile";
 // Specifies the user which is already logged in.
 const char kLoginUser[] = "login-user";
 
+// Determines the URL to be used when calling the backend.
+const char kMarketingOptInUrl[] = "marketing-opt-in-url";
+
 // Enables natural scroll by default.
 const char kNaturalScrollDefault[] = "enable-natural-scroll-default";
 
@@ -443,6 +443,9 @@ const char kOobeSkipToLogin[] = "oobe-skip-to-login";
 
 // Interval at which we check for total time on OOBE.
 const char kOobeTimerInterval[] = "oobe-timer-interval";
+
+// Allows the timezone to be overridden on the marketing opt-in screen.
+const char kOobeTimezoneOverrideForTests[] = "oobe-timezone-override-for-tests";
 
 // SAML assertion consumer URL, used to detect when Gaia-less SAML flows end
 // (e.g. for SAML managed guest sessions)

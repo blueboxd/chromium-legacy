@@ -511,7 +511,7 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="7765158879357617694">Presunúť</translation>
 <translation id="7771470029643830783">Po odhlásení nebudú vaše záložky, história, heslá ani ďalšie údaje Chromu naďalej synchronizované s vaším účtom Google
 
-Váš účet ovláda doména <ph name="HOSTED_DOMAIN" />, takže vaše údaje Chromu budú po odhlásení odstránené z tohto zariadenia. Synchronizované údaje zostanú vo vašom účte Google.</translation>
+Váš účet spravuje doména <ph name="HOSTED_DOMAIN" />, takže vaše údaje Chromu budú po odhlásení odstránené z tohto zariadenia. Synchronizované údaje zostanú vo vašom účte Google.</translation>
 <translation id="7772032839648071052">Potvrďte prístupovú frázu</translation>
 <translation id="7781011649027948662">Chcete preložiť stránku?</translation>
 <translation id="7781829728241885113">Včera</translation>

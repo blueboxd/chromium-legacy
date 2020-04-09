@@ -20,19 +20,21 @@ class FakeWebStatePolicyDecider : public WebStatePolicyDecider {
   ~FakeWebStatePolicyDecider() override = default;
 
   // Sets the value returned from |ShouldAllowRequest|.
-  void SetShouldAllowRequest(bool should_allow_request);
+  void SetShouldAllowRequest(
+      WebStatePolicyDecider::PolicyDecision should_allow_request);
 
   // WebStatePolicyDecider overrides
   // Returns the value set with |SetShouldAllowRequest|. Defaults to true.
-  bool ShouldAllowRequest(NSURLRequest* request,
-                          const RequestInfo& request_info) override;
+  WebStatePolicyDecider::PolicyDecision ShouldAllowRequest(
+      NSURLRequest* request,
+      const RequestInfo& request_info) override;
   // Always returns true to allow |response|.
   bool ShouldAllowResponse(NSURLResponse* response,
                            bool for_main_frame) override;
   void WebStateDestroyed() override {}
 
  private:
-  bool should_allow_request_ = true;
+  PolicyDecision should_allow_request_ = PolicyDecision::Allow();
 };
 
 }  // namespace web

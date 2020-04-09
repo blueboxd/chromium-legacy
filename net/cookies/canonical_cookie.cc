@@ -122,13 +122,13 @@ void ApplySameSiteCookieWarningToStatus(
     CookieOptions::SameSiteCookieContext same_site_context,
     CanonicalCookie::CookieInclusionStatus* status) {
   if (samesite == CookieSameSite::UNSPECIFIED &&
-      same_site_context.context <
+      same_site_context.GetContextForCookieInclusion() <
           CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX) {
     status->AddWarningReason(CanonicalCookie::CookieInclusionStatus::
                                  WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT);
   }
   if (effective_samesite == CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE &&
-      same_site_context.context ==
+      same_site_context.GetContextForCookieInclusion() ==
           CookieOptions::SameSiteCookieContext::ContextType::
               SAME_SITE_LAX_METHOD_UNSAFE) {
     // This warning is more specific so remove the previous, more general,
@@ -158,9 +158,9 @@ bool ShouldLogCrossSchemeForHistograms(
     const CookieOptions::SameSiteCookieContext& context,
     const CookieEffectiveSameSite effective_same_site) {
   bool correct_context =
-      context.cross_schemeness !=
+      context.cross_schemeness() !=
           CookieOptions::SameSiteCookieContext::CrossSchemeness::NONE &&
-      context.context !=
+      context.context() !=
           CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE;
 
   bool correct_effective_same_site =
@@ -498,24 +498,24 @@ CanonicalCookie::CookieInclusionStatus CanonicalCookie::IncludeForRequestURL(
   }
   UMA_HISTOGRAM_ENUMERATION(
       "Cookie.RequestSameSiteContext",
-      options.same_site_cookie_context().context,
+      options.same_site_cookie_context().GetContextForCookieInclusion(),
       CookieOptions::SameSiteCookieContext::ContextType::COUNT);
 
   switch (effective_same_site) {
     case CookieEffectiveSameSite::STRICT_MODE:
-      if (options.same_site_cookie_context().context <
+      if (options.same_site_cookie_context().GetContextForCookieInclusion() <
           CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_STRICT) {
         status.AddExclusionReason(
             CookieInclusionStatus::EXCLUDE_SAMESITE_STRICT);
       }
       break;
     case CookieEffectiveSameSite::LAX_MODE:
-      if (options.same_site_cookie_context().context <
+      if (options.same_site_cookie_context().GetContextForCookieInclusion() <
           CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX) {
         // Log metrics for a cookie that would have been included under the
         // "Lax-allow-unsafe" intervention, had it been new enough.
         if (SameSite() == CookieSameSite::UNSPECIFIED &&
-            options.same_site_cookie_context().context ==
+            options.same_site_cookie_context().GetContextForCookieInclusion() ==
                 CookieOptions::SameSiteCookieContext::ContextType::
                     SAME_SITE_LAX_METHOD_UNSAFE) {
           UMA_HISTOGRAM_CUSTOM_TIMES(
@@ -533,13 +533,14 @@ CanonicalCookie::CookieInclusionStatus CanonicalCookie::IncludeForRequestURL(
     // TODO(crbug.com/990439): Add a browsertest for this behavior.
     case CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE:
       DCHECK(SameSite() == CookieSameSite::UNSPECIFIED);
-      if (options.same_site_cookie_context().context <
+      if (options.same_site_cookie_context().GetContextForCookieInclusion() <
           CookieOptions::SameSiteCookieContext::ContextType::
               SAME_SITE_LAX_METHOD_UNSAFE) {
         // TODO(chlily): Do we need a separate CookieInclusionStatus for this?
         status.AddExclusionReason(
             CookieInclusionStatus::EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX);
-      } else if (options.same_site_cookie_context().context ==
+      } else if (options.same_site_cookie_context()
+                     .GetContextForCookieInclusion() ==
                  CookieOptions::SameSiteCookieContext::ContextType::
                      SAME_SITE_LAX_METHOD_UNSAFE) {
         // Log metrics for cookies that activate the "Lax-allow-unsafe"
@@ -633,7 +634,7 @@ void CanonicalCookie::IsSetPermittedInContext(
       // This intentionally checks for `< SAME_SITE_LAX`, as we allow
       // `SameSite=Strict` cookies to be set for top-level navigations that
       // qualify for receipt of `SameSite=Lax` cookies.
-      if (options.same_site_cookie_context().context <
+      if (options.same_site_cookie_context().GetContextForCookieInclusion() <
           CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX) {
         DVLOG(net::cookie_util::kVlogSetCookies)
             << "Trying to set a `SameSite=Strict` cookie from a "
@@ -644,7 +645,7 @@ void CanonicalCookie::IsSetPermittedInContext(
       break;
     case CookieEffectiveSameSite::LAX_MODE:
     case CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE:
-      if (options.same_site_cookie_context().context <
+      if (options.same_site_cookie_context().GetContextForCookieInclusion() <
           CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX) {
         if (SameSite() == CookieSameSite::UNSPECIFIED) {
           DVLOG(net::cookie_util::kVlogSetCookies)
@@ -779,9 +780,9 @@ std::string CanonicalCookie::BuildCookieLine(
 void net::CanonicalCookie::AddSameSiteCrossSchemeWarning(
     CookieInclusionStatus* status,
     CookieOptions::SameSiteCookieContext same_site_context) const {
-  if (same_site_context.cross_schemeness ==
+  if (same_site_context.cross_schemeness() ==
       CookieOptions::SameSiteCookieContext::CrossSchemeness::INSECURE_SECURE) {
-    switch (same_site_context.context) {
+    switch (same_site_context.context()) {
       case CookieOptions::SameSiteCookieContext::ContextType::
           SAME_SITE_LAX_METHOD_UNSAFE:
         status->AddWarningReason(
@@ -800,10 +801,10 @@ void net::CanonicalCookie::AddSameSiteCrossSchemeWarning(
       default:
         break;
     }
-  } else if (same_site_context.cross_schemeness ==
+  } else if (same_site_context.cross_schemeness() ==
              CookieOptions::SameSiteCookieContext::CrossSchemeness::
                  SECURE_INSECURE) {
-    switch (same_site_context.context) {
+    switch (same_site_context.context()) {
       case CookieOptions::SameSiteCookieContext::ContextType::
           SAME_SITE_LAX_METHOD_UNSAFE:
         status->AddWarningReason(

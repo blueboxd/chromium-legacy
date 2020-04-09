@@ -38043,6 +38043,7 @@ from previous Chrome versions.
   <int value="-1532014193" label="disable-encryption-migration"/>
   <int value="-1529907580" label="ImeServiceConnectable:disabled"/>
   <int value="-1528455406" label="OmniboxPedalSuggestions:enabled"/>
+  <int value="-1524323669" label="InstalledAppsInCbd:enabled"/>
   <int value="-1521296022"
       label="UpdateNotificationScheduleServiceImmediateShowOption:disabled"/>
   <int value="-1521160841" label="DismissNtpPromos:enabled"/>
@@ -40870,6 +40871,7 @@ from previous Chrome versions.
       label="ClickToCallContextMenuForSelectedText:disabled"/>
   <int value="1794057460" label="AutofillProfileClientValidation:enabled"/>
   <int value="1795186324" label="SyncPseudoUSSExtensionSettings:disabled"/>
+  <int value="1796592669" label="InstalledAppsInCbd:disabled"/>
   <int value="1798347197"
       label="ContextualSuggestionsIPHReverseScroll:disabled"/>
   <int value="1799521026" label="LegacyTLSEnforced:disabled"/>
@@ -42715,6 +42717,26 @@ Called by update_use_counter_css.py.-->
   <int value="137" label="Yank"/>
   <int value="138" label="YankAndSelect"/>
   <int value="139" label="AlignCenter"/>
+</enum>
+
+<enum name="MarketingOptInBackendConnectorEvent">
+  <summary>
+    An event that occurs on the MarketingBackendConnector used in the OOBE
+    MarketingOptInScreen.
+  </summary>
+  <int value="0" label="Request successful"/>
+  <int value="1" label="Internal Server Error"/>
+  <int value="2" label="Request Timeout Error"/>
+  <int value="3" label="Authentication Error"/>
+  <int value="4" label="Other Error"/>
+</enum>
+
+<enum name="MarketingOptInScreenEvent">
+  <summary>Opt-in actions that occur on the OOBE MarketingOptInScreen.</summary>
+  <int value="0" label="Opt-in when the default is opt-in"/>
+  <int value="1" label="Opt-in when the default is opt-out"/>
+  <int value="2" label="Opt-out when the default is opt-in"/>
+  <int value="3" label="Opt-out when the default is opt-out"/>
 </enum>
 
 <enum name="MarkHttpAsStatus">

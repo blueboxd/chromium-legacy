@@ -388,6 +388,7 @@ Als je dit beleid uitschakelt, wordt op de webpagina naar specifieke tekstfragme
 <translation id="1561424797596341174">Beleid overschrijft Debug-builds van de host voor externe toegang</translation>
 <translation id="1561967320164410511">U2F plus extensies voor individuele bevestiging</translation>
 <translation id="1583248206450240930"><ph name="PRODUCT_FRAME_NAME" /> standaard gebruiken</translation>
+<translation id="1588240398285670601">Browserinstellingen</translation>
 <translation id="1599424828227887013">Site-isolatie inschakelen voor gespecificeerde herkomsten op Android-apparaten</translation>
 <translation id="1608755754295374538">URL's die zonder prompt toegang krijgen tot apparaten voor het vastleggen van audio</translation>
 <translation id="1615221548356595305">Toestaan dat HTTP/2-verbindingen voor deze hosts kunnen worden samengevoegd, zelfs als client certificates worden gebruikt</translation>
@@ -1366,6 +1367,7 @@ Als dit beleid niet is ingesteld, is het privacyscherm in eerste instantie uitge
 <translation id="2872961005593481000">Afsluiten</translation>
 <translation id="2873651257716068683">Hiermee overschrijf je de standaardgrootte voor de afdrukpagina. Als de paginagrootte niet beschikbaar is, wordt dit beleid genegeerd.</translation>
 <translation id="2874209944580848064">Opmerking voor <ph name="PRODUCT_OS_NAME" />-apparaten die Android-apps ondersteunen:</translation>
+<translation id="2874901846804525128">Voorkom dat de gebruiker Android-apps gebruikt van niet-vertrouwde bronnen.</translation>
 <translation id="2875192972412983412">Specificeert de subset van afdrukservers die worden aangeroepen voor serverprinters.
 
       Als dit beleid wordt gebruikt, zijn alleen serverprinters beschikbaar met ID's die overeenkomen met de waarden in dit beleid.
@@ -2992,6 +2994,7 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
           Als dit is ingesteld op 'True' of niet is geconfigureerd, kunnen gebruikers met beperkte rechten worden gemaakt en beheerd door deze gebruiker.</translation>
 <translation id="5369937289900051171">Alleen afdrukken in kleur</translation>
 <translation id="5370279767682621504">Ondersteuning voor HTTP/0.9 op niet-standaardpoorten inschakelen</translation>
+<translation id="5377606826822211923">Het gebruik van Android-apps van niet-vertrouwde bronnen beheren voor de gebruiker</translation>
 <translation id="5378985487213287085">Hiermee kun je instellen of websites bureaubladmeldingen mogen weergeven. Het weergeven van bureaubladmeldingen kan standaard worden toegestaan of geweigerd, of de gebruiker kan een melding te zien krijgen wanneer een website bureaubladmeldingen wil weergeven.
 
           Als dit beleid niet wordt ingesteld, wordt 'AskNotifications' gebruikt en kan de gebruiker dit aanpassen.</translation>
@@ -3799,6 +3802,7 @@ Als dit beleid niet wordt ingesteld, kan de gebruiker ervoor kiezen de pagina 'N
       Dit beleid kan worden overschreven door EnabledPlugins en DisabledPluginsExceptions.
 
       Als dit beleid niet is ingesteld, kan de gebruiker elke op het systeem geïnstalleerde plug-in gebruiken, behalve hardgecodeerde ongeschikte, verouderde of gevaarlijke plug-ins.</translation>
+<translation id="6571871508154591774">De functies van de camera, browserinstellingen en de OS-instellingen configureren die moeten worden uitgeschakeld</translation>
 <translation id="6573305661369899995">Een externe bron voor URL-beperkingen instellen</translation>
 <translation id="6583851521569686409">Hiermee wordt een lijst met printers geconfigureerd.
 
@@ -3874,6 +3878,7 @@ Als dit beleid niet wordt ingesteld, kan de gebruiker ervoor kiezen de pagina 'N
 <translation id="6731757988219967594">Sites op hoofdniveau (maar geen ingesloten iframes) filteren op content voor volwassenen</translation>
 <translation id="6734521799274931721">Beheert netwerkfileshares voor Chrome OS-beschikbaarheid</translation>
 <translation id="6735701345096330595">Inschakelen van spellingcontrole voor talen afdwingen</translation>
+<translation id="6737677282967014160">Sta toe dat de gebruiker Android-apps van niet-vertrouwde bronnen kan gebruiken.</translation>
 <translation id="6757613329154374267">Back-up en herstel is ingeschakeld</translation>
 <translation id="6758659208493449452">Met dit beleid wordt bepaald of gebruikers die bij 'Geavanceerde beveiliging' zijn ingeschreven, extra beveiligingsmaatregelen ontvangen. Voor sommige van deze functies kunnen gegevens worden gedeeld met Google (gebruikers van 'Geavanceerde beveiliging' kunnen bijvoorbeeld hun downloads naar Google sturen om ze te scannen op malware). Als dit beleid is ingesteld op True of niet is ingesteld, ontvangen ingeschreven gebruikers extra beveiligingsmaatregelen. Als dit beleid is ingesteld op False, ontvangen gebruikers van 'Geavanceerde beveiliging' alleen de standaardfuncties voor consumenten.</translation>
 <translation id="6762235610019366960">Hiermee kun je de presentatie van promotie- en/of educatieve content op een volledig tabblad beheren in <ph name="PRODUCT_NAME" />.
@@ -4412,6 +4417,13 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       De URL-patronen hebben dezelfde indeling als het beleid 'URLBlacklist', dat wordt beschreven op https://www.chromium.org/administrators/url-blacklist-filter-format.
       </translation>
 <translation id="7566878661979235378">Verificatietype voor SAML-inlog</translation>
+<translation id="7567373982693549834">Met dit beleid beheer je het gebruik van Android-apps van niet-vertrouwde bronnen (andere dan de Google Play Store) per gebruiker.
+
+      Als de waarde voor dit beleid niet is ingesteld, wordt de functionaliteit behandeld alsof er geen toestemming is gegeven.
+
+      Als het apparaat van de gebruiker wordt beheerd, is de beschikbaarheid van deze functionaliteit ook afhankelijk van het bijbehorende apparaatbeleid.
+
+      Als het apparaat van de gebruiker niet wordt beheerd, is de beschikbaarheid van deze functionaliteit ook afhankelijk van of de gebruiker de eigenaar is van het apparaat.</translation>
 <translation id="757395965347379751">Wanneer deze instelling is ingeschakeld, staat <ph name="PRODUCT_NAME" /> met SHA-1 ondertekende certificaten toe, zolang deze correct zijn gevalideerd en zijn gekoppeld aan een lokaal geïnstalleerd CA-certificaat.
 
       Opmerking: Dit beleid is afhankelijk van de uitgevoerde verificatiestack voor het certificaat van het besturingssysteem en of hiermee SHA-1-handtekeningen zijn toegestaan. Als door een update van het besturingssysteem een wijziging wordt aangebracht in de verwerking van het besturingssysteem ten aanzien van SHA-1-certificaten, is dit beleid wellicht niet meer van toepassing. Daarnaast is dit beleid bedoeld als tijdelijke oplossing voor bedrijven om af te stappen van SHA-1. Dit beleid wordt op of rond 1 januari 2019 verwijderd.
@@ -4604,6 +4616,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
           Opmerking: <ph name="DEVICE_LOGIN_SCREEN_HIGH_CONTRAST_ENABLED_POLICY_NAME" /> overschrijft dit beleid als het voorgaande is opgegeven.</translation>
 <translation id="7846952520291088817">URL's waarvan lokale IP's zichtbaar zijn in WebRTC ICE-kandidaten</translation>
+<translation id="7848641140449742406">OS-instellingen</translation>
 <translation id="7858404742201086014">Als je deze instelling inschakelt, worden verouderde plug-ins gebruikt als normale plug-ins.
 
       Als je deze instelling uitschakelt, worden verouderde plug-ins niet gebruikt en wordt gebruikers niet gevraagd of ze deze willen uitvoeren.

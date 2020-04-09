@@ -18,6 +18,7 @@
 <translation id="4744575902940448763">Nie udało się zsynchronizować hasła do konta do pracy z Twoim profilem Windows, ponieważ organizacja nie zezwala na aktualizowanie haseł na tym urządzeniu. Poproś o pomoc administratora.</translation>
 <translation id="5186761973554910131">Podczas próby zmiany hasła podano nieprawidłową nazwę komputera. Skontaktuj się z administratorem.</translation>
 <translation id="5265714013989877288">Nie możesz przejść dalej, bo podczas zmieniania hasła do systemu Windows wystąpił błąd. Skontaktuj się z administratorem.</translation>
+<translation id="5581861273642234526">Z tym urządzeniem jest już powiązane inne konto do pracy. Zaloguj się, używając konta systemu Windows.</translation>
 <translation id="6033715878377252112">Konto pomocnicze dostawcy danych uwierzytelniających Google do systemów Windows</translation>
 <translation id="6149399665202317746">Dostawca danych uwierzytelniających Google do systemów Windows</translation>
 <translation id="6243062314475217481">Twoje hasło do konta do pracy nie spełnia wymagań systemu Windows dotyczących siły haseł. Poproś o pomoc administratora.</translation>

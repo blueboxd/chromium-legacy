@@ -45,11 +45,14 @@
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/web_applications/web_app_dialog_manager.h"
+#include "chrome/browser/ui/web_applications/web_app_ui_manager_impl.h"
 #include "chrome/browser/ui/webui/extensions/extension_basic_info.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/web_applications/components/app_registry_controller.h"
 #include "chrome/browser/web_applications/components/file_handler_manager.h"
+#include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_finalizer_utils.h"
@@ -190,6 +193,8 @@ void AppLauncherHandler::CreateWebAppInfo(const web_app::AppId& app_id,
 
   GetWebAppBasicInfo(app_id, registrar, value);
 
+  value->SetBoolean("mayDisable", web_app_provider_->install_finalizer()
+                                      .CanUserUninstallExternalApp(app_id));
   bool is_locally_installed = registrar.IsLocallyInstalled(app_id);
   value->SetBoolean("mayChangeLaunchType", is_locally_installed);
 
@@ -531,8 +536,7 @@ void AppLauncherHandler::OnExtensionUninstalled(
 }
 
 void AppLauncherHandler::OnWebAppInstalled(const web_app::AppId& app_id) {
-  std::unique_ptr<base::DictionaryValue> app_info(
-      GetWebAppInfo(app_id, web_app_provider_->registrar()));
+  std::unique_ptr<base::DictionaryValue> app_info(GetWebAppInfo(app_id));
   if (!app_info.get())
     return;
 
@@ -569,7 +573,7 @@ void AppLauncherHandler::FillAppDictionary(base::DictionaryValue* dictionary) {
   std::set<web_app::AppId> web_app_ids;
   web_app::AppRegistrar& registrar = web_app_provider_->registrar();
   for (const web_app::AppId& web_app_id : registrar.GetAppIds()) {
-    installed_extensions->Append(GetWebAppInfo(web_app_id, registrar));
+    installed_extensions->Append(GetWebAppInfo(web_app_id));
     web_app_ids.insert(web_app_id);
   }
 
@@ -611,8 +615,7 @@ std::unique_ptr<base::DictionaryValue> AppLauncherHandler::GetExtensionInfo(
 }
 
 std::unique_ptr<base::DictionaryValue> AppLauncherHandler::GetWebAppInfo(
-    const web_app::AppId& app_id,
-    const web_app::AppRegistrar& app_registrar) {
+    const web_app::AppId& app_id) {
   std::unique_ptr<base::DictionaryValue> app_info(new base::DictionaryValue());
   CreateWebAppInfo(app_id, app_info.get());
   return app_info;
@@ -848,17 +851,47 @@ void AppLauncherHandler::HandleUninstallApp(const base::ListValue* args) {
   std::string extension_id;
   CHECK(args->GetString(0, &extension_id));
 
-  if (DesktopPWAsWithoutExtensions() &&
-      web_app_provider_->registrar().IsInstalled(extension_id)) {
-    NOTIMPLEMENTED();
+  if (web_app_provider_->registrar().IsInstalled(extension_id)) {
+    if (!extension_id_prompting_.empty())
+      return;  // Only one prompt at a time.
+    if (!web_app_provider_->install_finalizer().CanUserUninstallExternalApp(
+            extension_id)) {
+      LOG(ERROR) << "Attempt to uninstall a webapp that is non-usermanagable "
+                 << "was made. App id : " << extension_id;
+      return;
+    }
+
+    auto uninstall_success_callback = base::BindOnce(
+        [](base::WeakPtr<AppLauncherHandler> app_launcher_handler,
+           bool success) {
+          LOCAL_HISTOGRAM_BOOLEAN("Apps.Launcher.UninstallSuccess", success);
+          app_launcher_handler->CleanupAfterUninstall();
+        },
+        weak_ptr_factory_.GetWeakPtr());
+
+    extension_id_prompting_ = extension_id;
+    bool dont_confirm = false;
+    if (args->GetBoolean(1, &dont_confirm) && dont_confirm) {
+      base::AutoReset<bool> auto_reset(&ignore_changes_, true);
+      web_app_provider_->install_finalizer().UninstallExternalAppByUser(
+          extension_id_prompting_, std::move(uninstall_success_callback));
+    } else {
+      web_app::WebAppUiManagerImpl::Get(Profile::FromWebUI(web_ui()))
+          ->dialog_manager()
+          .UninstallWebApp(
+              extension_id_prompting_,
+              web_app::WebAppDialogManager::UninstallSource::kAppsPage,
+              /*browser_window=*/nullptr,
+              std::move(uninstall_success_callback));
+    }
     return;
   }
-
   const Extension* extension =
       ExtensionRegistry::Get(extension_service_->profile())
           ->GetInstalledExtension(extension_id);
   if (!extension)
     return;
+  DCHECK(!extension->from_bookmark());
 
   if (!extensions::ExtensionSystem::Get(extension_service_->profile())
            ->management_policy()
@@ -953,9 +986,10 @@ void AppLauncherHandler::HandleShowAppInfo(const base::ListValue* args) {
   std::string extension_id;
   CHECK(args->GetString(0, &extension_id));
 
-  if (DesktopPWAsWithoutExtensions() &&
-      web_app_provider_->registrar().IsInstalled(extension_id)) {
-    NOTIMPLEMENTED();
+  if (web_app_provider_->registrar().IsInstalled(extension_id)) {
+    chrome::ShowSiteSettings(
+        chrome::FindBrowserWithWebContents(web_ui()->GetWebContents()),
+        web_app_provider_->registrar().GetAppLaunchURL(extension_id));
     return;
   }
 
@@ -967,13 +1001,7 @@ void AppLauncherHandler::HandleShowAppInfo(const base::ListValue* args) {
                                  extensions::ExtensionRegistry::TERMINATED);
   if (!extension)
     return;
-
-  if (extension->is_hosted_app() && extension->from_bookmark()) {
-    chrome::ShowSiteSettings(
-        chrome::FindBrowserWithWebContents(web_ui()->GetWebContents()),
-        extensions::AppLaunchInfo::GetFullLaunchURL(extension));
-    return;
-  }
+  DCHECK(!extension->from_bookmark());
 
   UMA_HISTOGRAM_ENUMERATION("Apps.AppInfoDialog.Launches",
                             AppInfoLaunchSource::FROM_APPS_PAGE,

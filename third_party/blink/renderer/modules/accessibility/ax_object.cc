@@ -3413,8 +3413,8 @@ bool AXObject::OnNativeScrollToMakeVisibleAction() const {
   // Node might not have a LayoutObject due to the fact that it is in a locked
   // subtree. Force the update to create the LayoutObject (and update position
   // information) for this node.
-  DisplayLockUtilities::ScopedChainForcedUpdate scoped_force_update(node);
-  GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kDisplayLock);
+  GetDocument()->UpdateStyleAndLayoutForNode(
+      node, DocumentUpdateReason::kDisplayLock);
 
   LayoutObject* layout_object = node->GetLayoutObject();
   if (!layout_object)
@@ -3587,7 +3587,6 @@ bool AXObject::NameFromContents(bool recursive) const {
     case ax::mojom::Role::kCell:
     case ax::mojom::Role::kCheckBox:
     case ax::mojom::Role::kColumnHeader:
-    case ax::mojom::Role::kComboBoxMenuButton:
     case ax::mojom::Role::kDocBackLink:
     case ax::mojom::Role::kDocBiblioRef:
     case ax::mojom::Role::kDocNoteRef:
@@ -3598,7 +3597,6 @@ bool AXObject::NameFromContents(bool recursive) const {
     case ax::mojom::Role::kLineBreak:
     case ax::mojom::Role::kLink:
     case ax::mojom::Role::kListBoxOption:
-    case ax::mojom::Role::kMenuButton:
     case ax::mojom::Role::kMenuItem:
     case ax::mojom::Role::kMenuItemCheckBox:
     case ax::mojom::Role::kMenuItemRadio:
@@ -3630,6 +3628,7 @@ bool AXObject::NameFromContents(bool recursive) const {
     case ax::mojom::Role::kClient:
     case ax::mojom::Role::kColorWell:
     case ax::mojom::Role::kColumn:
+    case ax::mojom::Role::kComboBoxMenuButton:  // Only value from content.
     case ax::mojom::Role::kComboBoxGrouping:
     case ax::mojom::Role::kComment:
     case ax::mojom::Role::kComplementary:
@@ -3699,6 +3698,7 @@ bool AXObject::NameFromContents(bool recursive) const {
     case ax::mojom::Role::kMenuListPopup:
     case ax::mojom::Role::kMenu:
     case ax::mojom::Role::kMenuBar:
+    case ax::mojom::Role::kMenuButton:  // Only value from content, not name.
     case ax::mojom::Role::kMeter:
     case ax::mojom::Role::kNavigation:
     case ax::mojom::Role::kNote:

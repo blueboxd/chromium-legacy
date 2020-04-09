@@ -120,7 +120,6 @@
 <translation id="1153636665119721804">Program Perlindungan Lanjutan Google</translation>
 <translation id="1161575384898972166">Masuklah ke <ph name="TOKEN_NAME" /> untuk mengeskpor sertifikat klien.</translation>
 <translation id="1163931534039071049">&amp;Lihat sumber bingkai</translation>
-<translation id="1164674268730883318">Nonaktifkan Smart Lock untuk <ph name="DEVICE_TYPE" />?</translation>
 <translation id="1164891049599601209">Dimasukkan pada situs penipuan</translation>
 <translation id="1164899421101904659">Masukkan Kunci Pembuka PIN</translation>
 <translation id="1165039591588034296">Kesalahan</translation>
@@ -774,7 +773,6 @@ Atau, logout sekarang dan semua perubahan akun akan muncul di perangkat ini.
 
 Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di perangkat Anda.  Kami telah mengirim petunjuk kepada Anda melalui email.</translation>
 <translation id="2040460856718599782">Ups!  Terjadi masalah saat mencoba mengautentikasi Anda.  Periksa lagi kredensial login Anda dan coba lagi.</translation>
-<translation id="2043818754674261542">Jauhkan ponsel untuk membuka kunci <ph name="DEVICE_TYPE" /> ini</translation>
 <translation id="204497730941176055">Microsoft Certificate Template Name</translation>
 <translation id="2045117674524495717">Bantuan Pintasan Keyboard</translation>
 <translation id="2045969484888636535">Lanjutkan pencekalan cookie</translation>
@@ -1147,7 +1145,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="2518024842978892609">Gunakan sertifikat klien Anda</translation>
 <translation id="2520644704042891903">Menunggu soket tersedia...</translation>
 <translation id="252219247728877310">Komponen tidak diperbarui</translation>
-<translation id="2522791476825452208">Sangat dekat</translation>
 <translation id="2523184218357549926">Mengirimkan URL halaman yang Anda buka ke Google</translation>
 <translation id="2526277209479171883">Instal &amp; lanjutkan</translation>
 <translation id="2526590354069164005">Desktop</translation>
@@ -1754,7 +1751,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="3333190335304955291">Anda dapat menonaktifkan layanan ini di Setelan.</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> - Video diputar dalam mode picture-in-picture</translation>
 <translation id="3335947283844343239">Buka Kembali Tab yang Tertutup</translation>
-<translation id="3336664756920573711">Buka kunci <ph name="DEVICE_TYPE" /> menggunakan ponsel Android</translation>
 <translation id="3340620525920140773">Download selesai: <ph name="FILE_NAME" />.</translation>
 <translation id="3341699307020049241">PIN salah. Anda memiliki <ph name="RETRIES" /> kesempatan lagi.</translation>
 <translation id="3341703758641437857">Izinkan akses ke URL file</translation>
@@ -2777,7 +2773,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="4697551882387947560">Saat sesi menjelajah berakhir</translation>
 <translation id="4699172675775169585">Gambar dan file dalam cache</translation>
 <translation id="4699357559218762027">(diluncurkan otomatis)</translation>
-<translation id="470074695271471509">Logout untuk menyelesaikan?</translation>
 <translation id="4701025263201366865">Login orang tua</translation>
 <translation id="4707302005824653064">Penggunaan dan histori dapat ditinjau oleh pengelola (<ph name="CUSTODIAN_EMAIL" />) di chrome.com.</translation>
 <translation id="4707579418881001319">L2TP/IPsec + sertifikat pengguna</translation>
@@ -2800,7 +2795,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="473546211690256853">Akun ini dikelola oleh <ph name="DOMAIN" /></translation>
 <translation id="4735803855089279419">Sistem gagal menentukan ID perangkat untuk perangkat ini.</translation>
 <translation id="4736292055110123391">Sinkronisasikan bookmark, sandi, histori, dan lainnya di semua perangkat Anda</translation>
-<translation id="4737715515457435632">Sambungkan ke jaringan</translation>
 <translation id="473775607612524610">Perbarui</translation>
 <translation id="4739639199548674512">Tiket</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Pelajari cara mengupdate aplikasi<ph name="END_LINK" /></translation>
@@ -3278,7 +3272,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="5423829801105537712">Pemeriksaan ejaan dasar</translation>
 <translation id="5423849171846380976">Diaktifkan</translation>
 <translation id="5425042808445046667">Lanjutkan mendownload</translation>
-<translation id="5425722269016440406">Anda harus tersambung ke internet untuk menonaktifkan Smart Lock karena setelan ini disinkronkan ke ponsel dan perangkat lain. Sambungkan ke jaringan terlebih dahulu.</translation>
 <translation id="5425863515030416387">Login ke seluruh perangkat dengan mudah</translation>
 <translation id="5427278936122846523">Selalu Terjemahkan</translation>
 <translation id="5427459444770871191">Putar &amp;Searah Jarum Jam</translation>
@@ -3420,7 +3413,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="558918721941304263">Memuat aplikasi...</translation>
 <translation id="5592595402373377407">Data yang tersedia belum cukup.</translation>
 <translation id="5593357315997824387">Sinkronkan file saya</translation>
-<translation id="5595152862129936745">Sangat jauh</translation>
 <translation id="5595485650161345191">Edit alamat</translation>
 <translation id="5595727715083333657">Container Anda tidak mendukung fitur ubah ukuran. Untuk menyesuaikan jumlah ruang yang telah dialokasikan sebelumnya untuk Linux (Beta), cadangkan lalu pulihkan ke dalam container baru.</translation>
 <translation id="5596627076506792578">Opsi lainnya</translation>
@@ -3533,7 +3525,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="5747552184818312860">Kedaluwarsa</translation>
 <translation id="5747785204778348146">Pengembang - tidak stabil</translation>
 <translation id="5747809636523347288">Tempel dan buka <ph name="URL" /></translation>
-<translation id="5750324801516359607">Jauh</translation>
 <translation id="5751887393582880060">File yang diupload ini melanggar kebijakan keamanan organisasi Anda. Anda ingin tetap melanjutkan?</translation>
 <translation id="5756163054456765343">Pusat bantuan</translation>
 <translation id="5759728514498647443">Dokumen yang Anda kirim untuk dicetak melalui <ph name="APP_NAME" /> dapat dibaca oleh <ph name="APP_NAME" />.</translation>
@@ -4083,7 +4074,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="6490471652906364588">Perangkat USB-C (port sebelah kanan)</translation>
 <translation id="6491376743066338510">Otorisasi gagal</translation>
 <translation id="6494445798847293442">Bukan Otoritas Sertifikasi</translation>
-<translation id="649454645705377674">Tutup</translation>
 <translation id="6495925982925244349">Jaringan <ph name="NETWORK_INDEX" /> dari <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Kekuatan Sinyal <ph name="SIGNAL_STRENGTH" />%, Dikelola oleh Administrator Anda, Detail</translation>
 <translation id="6498249116389603658">&amp;Semua bahasa Anda</translation>
 <translation id="6499143127267478107">Mencari host di skrip proxy...</translation>
@@ -4151,7 +4141,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="6590458744723262880">Ganti nama folder</translation>
 <translation id="6592267180249644460">Log WebRTC direkam pada <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">Sidik jari Anda telah direkam</translation>
-<translation id="6594883168703494535">Gunakan Smart Lock untuk login ke Akun Google</translation>
 <translation id="6596325263575161958">Opsi enkripsi</translation>
 <translation id="6596816719288285829">Alamat IP</translation>
 <translation id="6597017209724497268">Contoh</translation>
@@ -4685,7 +4674,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="7328867076235380839">Kombinasi tidak valid</translation>
 <translation id="7329154610228416156">Proses masuk gagal karena dikonfigurasi untuk menggunakan URL yang tidak aman (<ph name="BLOCKED_URL" />). Hubungi administrator Anda.</translation>
 <translation id="7332053360324989309">Pekerja Khusus: <ph name="SCRIPT_URL" /></translation>
-<translation id="7334190995941642545">Saat ini Smart Lock tidak tersedia. Coba lagi nanti.</translation>
 <translation id="7334274148831027933">Aktifkan kaca pembesar tersemat</translation>
 <translation id="7335974957018254119">Gunakan fitur periksa ejaan untuk</translation>
 <translation id="7336799713063880535">Notifikasi diblokir.</translation>
@@ -5230,11 +5218,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8017679124341497925">Pintasan diedit</translation>
 <translation id="8018313076035239964">Kontrol informasi yang dapat digunakan situs dan konten yang dapat ditampilkan kepada Anda</translation>
 <translation id="8023801379949507775">Perbarui ekstensi sekarang</translation>
-<translation id="8024483450737722621">Aplikasi yang telah Anda download dari Google Play akan dihapus dari Chromebook ini.
-      <ph name="LINE_BREAKS1" />
-      Konten yang telah Anda beli seperti film, acara TV, musik, buku, atau pembelian dalam aplikasi lainnya juga akan dihapus.
-      <ph name="LINE_BREAKS2" />
-      Hal ini tidak akan berpengaruh pada aplikasi atau konten di perangkat lain.</translation>
 <translation id="8026334261755873520">Hapus data penjelajahan</translation>
 <translation id="8028060951694135607">Microsoft Key Recovery</translation>
 <translation id="8028803902702117856">Mendownload <ph name="SIZE" />, <ph name="FILE_NAME" /></translation>
@@ -5550,7 +5533,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8455026683977728932">Gagal mengaktifkan ilustrasi ADB</translation>
 <translation id="845702320058262034">Tidak dapat terhubung. Pastikan Bluetooth ponsel Anda diaktifkan.</translation>
 <translation id="8457451314607652708">Impor bookmark</translation>
-<translation id="8460336040822756677">Jika fitur Smart Lock untuk <ph name="DEVICE_TYPE" /> dinonaktifkan, perangkat Chrome tidak dapat dibuka menggunakan ponsel. Anda perlu mengetikkan sandi untuk membukanya.</translation>
 <translation id="8461329675984532579">Nama penyedia rumah</translation>
 <translation id="84613761564611563">Antarmuka konfigurasi jaringan diminta, harap tunggu...</translation>
 <translation id="8461914792118322307">Proxy</translation>
@@ -5776,7 +5758,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8743864605301774756">Diupdate 1 jam yang lalu</translation>
 <translation id="8746654918629346731">Anda telah meminta "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="874689135111202667">{0,plural, =1{Upload 1 file ke situs ini?}other{Upload # file ke situs ini?}}</translation>
-<translation id="8748384418490037181">Opsi Smart Lock</translation>
 <translation id="8749863574775030885">Akses perangkat USB dari vendor tak dikenal</translation>
 <translation id="8750133148106010815">Untuk memulai Google Play, <ph name="ORGANIZATION_NAME" /> mengharuskan Anda mencadangkan data dan menyetel ulang Chromebook ini ke setelan pabrik.</translation>
 <translation id="8750155211039279868"><ph name="ORIGIN" /> ingin terhubung ke port serial</translation>
@@ -5899,7 +5880,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8881020143150461183">Coba lagi. Untuk dukungan teknis, hubungi <ph name="CARRIER_NAME" />.</translation>
 <translation id="8883273463630735858">Aktifkan akselerasi touchpad</translation>
 <translation id="8884570509232205463">Sekarang perangkat akan terkunci pukul <ph name="UNLOCK_TIME" />.</translation>
-<translation id="8885197664446363138">Smart Lock tidak tersedia</translation>
 <translation id="8888253246822647887">Aplikasi Anda akan terbuka setelah proses upgrade selesai. Proses upgrade dapat memerlukan waktu beberapa menit.</translation>
 <translation id="8888432776533519951">Warna:</translation>
 <translation id="8889651696183044030"><ph name="ORIGIN" /> dapat mengedit file dan folder berikut ini</translation>

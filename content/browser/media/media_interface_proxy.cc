@@ -22,8 +22,8 @@
 #include "content/public/browser/service_process_host.h"
 #include "content/public/common/content_client.h"
 #include "media/mojo/buildflags.h"
+#include "media/mojo/mojom/frame_interface_factory.mojom.h"
 #include "media/mojo/mojom/media_service.mojom.h"
-#include "media/mojo/services/media_interface_provider.h"
 
 #if BUILDFLAG(ENABLE_MOJO_CDM)
 #include "content/public/browser/browser_context.h"
@@ -185,6 +185,72 @@ media::mojom::MediaService& GetSecondaryMediaService() {
   return *remote->get();
 }
 
+class FrameInterfaceFactoryImpl : public media::mojom::FrameInterfaceFactory {
+ public:
+#if BUILDFLAG(ENABLE_CDM_PROXY)
+  using CdmProxyCreator = base::RepeatingCallback<
+      void(const base::Token&, mojo::PendingReceiver<media::mojom::CdmProxy>)>;
+#endif
+
+  FrameInterfaceFactoryImpl(RenderFrameHost* rfh,
+#if BUILDFLAG(ENABLE_CDM_PROXY)
+                            CdmProxyCreator cdm_proxy_creator,
+#endif
+                            const base::Token& cdm_guid,
+                            const std::string& cdm_file_system_id)
+      : render_frame_host_(rfh),
+#if BUILDFLAG(ENABLE_CDM_PROXY)
+        cdm_proxy_creator_(std::move(cdm_proxy_creator)),
+#endif
+        cdm_guid_(cdm_guid),
+        cdm_file_system_id_(cdm_file_system_id) {
+  }
+
+  void CreateProvisionFetcher(
+      mojo::PendingReceiver<media::mojom::ProvisionFetcher> receiver) override {
+#if BUILDFLAG(ENABLE_MOJO_CDM)
+    ProvisionFetcherImpl::Create(
+        BrowserContext::GetDefaultStoragePartition(
+            render_frame_host_->GetProcess()->GetBrowserContext())
+            ->GetURLLoaderFactoryForBrowserProcess(),
+        std::move(receiver));
+#endif
+  }
+
+  void CreateCdmStorage(
+      mojo::PendingReceiver<media::mojom::CdmStorage> receiver) override {
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+    // Only provide CdmStorageImpl when we have a valid |cdm_file_system_id|,
+    // which is currently only set for the CdmService (not the MediaService).
+    if (cdm_file_system_id_.empty())
+      return;
+
+    CdmStorageImpl::Create(render_frame_host_, cdm_file_system_id_,
+                           std::move(receiver));
+#endif
+  }
+
+#if BUILDFLAG(ENABLE_CDM_PROXY)
+  void CreateCdmProxy(
+      mojo::PendingReceiver<media::mojom::CdmProxy> receiver) override {
+    cdm_proxy_creator_.Run(cdm_guid_, std::move(receiver));
+  }
+#endif
+
+  void BindEmbedderReceiver(mojo::GenericPendingReceiver receiver) override {
+    GetContentClient()->browser()->BindMediaServiceReceiver(
+        render_frame_host_, std::move(receiver));
+  }
+
+ private:
+  RenderFrameHost* const render_frame_host_;
+#if BUILDFLAG(ENABLE_CDM_PROXY)
+  CdmProxyCreator cdm_proxy_creator_;
+#endif
+  const base::Token cdm_guid_;
+  const std::string cdm_file_system_id_;
+};
+
 }  // namespace
 
 MediaInterfaceProxy::MediaInterfaceProxy(
@@ -197,14 +263,13 @@ MediaInterfaceProxy::MediaInterfaceProxy(
   DCHECK(render_frame_host_);
   DCHECK(!error_handler.is_null());
 
-  auto create_interface_provider_cb =
+  auto frame_factory_getter =
       base::BindRepeating(&MediaInterfaceProxy::GetFrameServices,
                           base::Unretained(this), base::Token(), std::string());
   media_interface_factory_ptr_ = std::make_unique<MediaInterfaceFactoryHolder>(
-      base::BindRepeating(&GetMediaService), create_interface_provider_cb);
+      base::BindRepeating(&GetMediaService), frame_factory_getter);
   secondary_interface_factory_ = std::make_unique<MediaInterfaceFactoryHolder>(
-      base::BindRepeating(&GetSecondaryMediaService),
-      create_interface_provider_cb);
+      base::BindRepeating(&GetSecondaryMediaService), frame_factory_getter);
 
   receiver_.set_disconnect_handler(std::move(error_handler));
 
@@ -335,48 +400,19 @@ void MediaInterfaceProxy::CreateCdmProxy(
 }
 #endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 
-mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+mojo::PendingRemote<media::mojom::FrameInterfaceFactory>
 MediaInterfaceProxy::GetFrameServices(const base::Token& cdm_guid,
                                       const std::string& cdm_file_system_id) {
-  // Register frame services.
-  mojo::PendingRemote<service_manager::mojom::InterfaceProvider> interfaces;
-
-  // TODO(xhwang): Replace this InterfaceProvider with a dedicated media host
-  // interface. See http://crbug.com/660573
-  auto provider = std::make_unique<media::MediaInterfaceProvider>(
-      interfaces.InitWithNewPipeAndPassReceiver());
-
-#if BUILDFLAG(ENABLE_MOJO_CDM)
-  // TODO(slan): Wrap these into a RenderFrame specific ProvisionFetcher impl.
-  provider->registry()->AddInterface(base::BindRepeating(
-      &ProvisionFetcherImpl::Create,
-      base::RetainedRef(
-          BrowserContext::GetDefaultStoragePartition(
-              render_frame_host_->GetProcess()->GetBrowserContext())
-              ->GetURLLoaderFactoryForBrowserProcess())));
-
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  // Only provide CdmStorageImpl when we have a valid |cdm_file_system_id|,
-  // which is currently only set for the CdmService (not the MediaService).
-  if (!cdm_file_system_id.empty()) {
-    provider->registry()->AddInterface(base::BindRepeating(
-        &CdmStorageImpl::Create, render_frame_host_, cdm_file_system_id));
-  }
-
+  mojo::PendingRemote<media::mojom::FrameInterfaceFactory> factory;
+  frame_factories_.Add(
+      std::make_unique<FrameInterfaceFactoryImpl>(
+          render_frame_host_,
 #if BUILDFLAG(ENABLE_CDM_PROXY)
-  provider->registry()->AddInterface(
-      base::BindRepeating(&MediaInterfaceProxy::CreateCdmProxyInternal,
-                          base::Unretained(this), cdm_guid));
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
-#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
-#endif  // BUILDFLAG(ENABLE_MOJO_CDM)
-
-  GetContentClient()->browser()->ExposeInterfacesToMediaService(
-      provider->registry(), render_frame_host_);
-
-  media_registries_.push_back(std::move(provider));
-
-  return interfaces;
+          base::BindRepeating(&CreateCdmProxyInternal, base::Unretained(this)),
+#endif
+          cdm_guid, cdm_file_system_id),
+      factory.InitWithNewPipeAndPassReceiver());
+  return factory;
 }
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)

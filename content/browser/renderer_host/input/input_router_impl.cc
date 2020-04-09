@@ -288,6 +288,8 @@ void InputRouterImpl::SetTouchActionFromMain(cc::TouchAction touch_action) {
 
 void InputRouterImpl::OnSetWhiteListedTouchAction(
     cc::TouchAction touch_action) {
+  TRACE_EVENT1("input", "InputRouterImpl::OnSetWhiteListedTouchAction",
+               "action", cc::TouchActionToString(touch_action));
   touch_action_filter_.OnSetWhiteListedTouchAction(touch_action);
   client_->OnSetWhiteListedTouchAction(touch_action);
   if (touch_action == cc::TouchAction::kAuto)
@@ -716,7 +718,7 @@ bool InputRouterImpl::IsFlingActiveForTest() {
 
 void InputRouterImpl::OnSetTouchAction(cc::TouchAction touch_action) {
   TRACE_EVENT1("input", "InputRouterImpl::OnSetTouchAction", "action",
-               touch_action);
+               cc::TouchActionToString(touch_action));
 
   // It is possible we get a touch action for a touch start that is no longer
   // in the queue. eg. Events that have fired the Touch ACK timeout.

@@ -120,7 +120,6 @@
 <translation id="1153636665119721804">Program pokročilé ochrany Google</translation>
 <translation id="1161575384898972166">Chcete-li exportovat certifikát klienta, přihlaste se prosím do zařízení <ph name="TOKEN_NAME" />.</translation>
 <translation id="1163931534039071049">Zobrazit zdrojový kód rámu</translation>
-<translation id="1164674268730883318">Vypnout v zařízení <ph name="DEVICE_TYPE" /> funkci Smart Lock?</translation>
 <translation id="1164891049599601209">Zadáno na klamavém webu</translation>
 <translation id="1164899421101904659">Zadejte klíč k odemknutí kódu PIN</translation>
 <translation id="1165039591588034296">Chyba</translation>
@@ -774,7 +773,6 @@ V opačném případě se odhlaste, aby se v zařízení mohly projevit změny
 
 Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení aplikaci Family Link.  Pokyny jsme vám odeslali e-mailem.</translation>
 <translation id="2040460856718599782">Jejda! Při ověřování vaší totožnosti došlo k chybě. Zkontrolujte prosím identifikační údaje a zkuste to znovu.</translation>
-<translation id="2043818754674261542">Maximální vzdálenost od telefonu k odemknutí tohoto zařízení <ph name="DEVICE_TYPE" /></translation>
 <translation id="204497730941176055">Název šablony certifikátu Microsoft</translation>
 <translation id="2045117674524495717">Nápověda ke klávesovým zkratkám</translation>
 <translation id="2045969484888636535">Pokračovat v blokování souborů cookie</translation>
@@ -1146,7 +1144,6 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="2518024842978892609">Používat vaše klientské certifikáty</translation>
 <translation id="2520644704042891903">Čeká se na dostupný soket...</translation>
 <translation id="252219247728877310">Komponenta nebyla aktualizována</translation>
-<translation id="2522791476825452208">Velmi blízko</translation>
 <translation id="2523184218357549926">Odesílá do Googlu adresy URL stránek, které navštěvujete</translation>
 <translation id="2526277209479171883">Nainstalovat a pokračovat</translation>
 <translation id="2526590354069164005">Plocha</translation>
@@ -1755,7 +1752,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3333190335304955291">Tuto službu můžete vypnout v Nastavení.</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> – video se přehrává v režimu obrazu v obraze</translation>
 <translation id="3335947283844343239">Znovu otevřít zavřenou kartu</translation>
-<translation id="3336664756920573711">Odemykejte zařízení <ph name="DEVICE_TYPE" /> telefonem Android</translation>
 <translation id="3340620525920140773">Stažení bylo dokončeno: <ph name="FILE_NAME" />.</translation>
 <translation id="3341699307020049241">Nesprávný PIN. Zbývá pokusů: <ph name="RETRIES" /></translation>
 <translation id="3341703758641437857">Umožnit přístup k adresám URL souborů</translation>
@@ -2777,7 +2773,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4697551882387947560">Při ukončení návštěvy prohlížení</translation>
 <translation id="4699172675775169585">Obrázky a soubory v mezipaměti</translation>
 <translation id="4699357559218762027">(spuštěno automaticky)</translation>
-<translation id="470074695271471509">Odhlásit se a dokončit proces?</translation>
 <translation id="4701025263201366865">Přihlášení rodiče</translation>
 <translation id="4707302005824653064">Využití a historii může zkontrolovat správce (<ph name="CUSTODIAN_EMAIL" />) na webu chrome.com.</translation>
 <translation id="4707579418881001319">L2TP/IPSec + certifikát uživatele</translation>
@@ -2800,7 +2795,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="473546211690256853">Tento účet spravuje <ph name="DOMAIN" />.</translation>
 <translation id="4735803855089279419">Systému se nepodařilo zjistit identifikátory tohoto zařízení.</translation>
 <translation id="4736292055110123391">Synchronizujte záložky, hesla, historii a další údaje do všech svých zařízení</translation>
-<translation id="4737715515457435632">Připojte se prosím k síti</translation>
 <translation id="473775607612524610">Aktualizovat</translation>
 <translation id="4739639199548674512">Lístky</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Přečtěte si, jak aktualizovat aplikace<ph name="END_LINK" /></translation>
@@ -3278,7 +3272,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="5423829801105537712">Základní kontrola pravopisu</translation>
 <translation id="5423849171846380976">Aktivováno</translation>
 <translation id="5425042808445046667">Pokračovat ve stahování</translation>
-<translation id="5425722269016440406">Chcete-li funkci Smart Lock vypnout, musíte být online, protože toto nastavení je synchronizováno do telefonu a ostatních zařízení. Nejdříve se prosím připojte k síti.</translation>
 <translation id="5425863515030416387">Snadné přihlášení v různých zařízeních</translation>
 <translation id="5427278936122846523">Vždy překládat</translation>
 <translation id="5427459444770871191">Otočit &amp;ve směru hodinových ručiček</translation>
@@ -3420,7 +3413,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="558918721941304263">Načítání aplikací...</translation>
 <translation id="5592595402373377407">Zatím není k dispozici dostatek dat.</translation>
 <translation id="5593357315997824387">Synchronizovat moje soubory</translation>
-<translation id="5595152862129936745">Velmi daleko</translation>
 <translation id="5595485650161345191">Upravit adresu</translation>
 <translation id="5595727715083333657">Váš kontejner změnu velikosti nepodporuje. Chcete-li upravit množství místa předem alokované pro Linux (Beta), zálohujte ho a poté ho obnovte do nového kontejneru.</translation>
 <translation id="5596627076506792578">Další možnosti</translation>
@@ -3533,7 +3525,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="5747552184818312860">Konec platnosti</translation>
 <translation id="5747785204778348146">Pro vývojáře – nestabilní</translation>
 <translation id="5747809636523347288">Vl&amp;ožit a přejít na adresu <ph name="URL" /></translation>
-<translation id="5750324801516359607">Daleko</translation>
 <translation id="5751887393582880060">Tato nahrávaná data porušují bezpečnostní zásady vaší organizace. Chcete přesto pokračovat?</translation>
 <translation id="5756163054456765343">C&amp;entrum nápovědy</translation>
 <translation id="5759728514498647443">Dokumenty odeslané k tisku prostřednictvím aplikace <ph name="APP_NAME" /> lze číst v aplikaci <ph name="APP_NAME" />.</translation>
@@ -4083,7 +4074,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="6490471652906364588">Zařízení USB Type-C (pravý port)</translation>
 <translation id="6491376743066338510">Autorizace se nezdařila</translation>
 <translation id="6494445798847293442">Není certifikační autorita</translation>
-<translation id="649454645705377674">Zavřít</translation>
 <translation id="6495925982925244349">Síť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" /> síla signálu: <ph name="SIGNAL_STRENGTH" /> %, spravováno administrátorem, podrobnosti</translation>
 <translation id="6498249116389603658">&amp;Všechny vaše jazyky</translation>
 <translation id="6499143127267478107">Rozpoznávání hostitele ve skriptu proxy serveru...</translation>
@@ -4151,7 +4141,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="6590458744723262880">Přejmenovat složku</translation>
 <translation id="6592267180249644460">Protokol WebRTC zaznamenaný <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">Otisk prstu byl sejmut</translation>
-<translation id="6594883168703494535">Přihlašujte se ke svému účtu pomocí funkce Smart Lock</translation>
 <translation id="6596325263575161958">Možnosti šifrování</translation>
 <translation id="6596816719288285829">IP adresa</translation>
 <translation id="6597017209724497268">Vzory</translation>
@@ -4685,7 +4674,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="7328867076235380839">Neplatná kombinace</translation>
 <translation id="7329154610228416156">Přihlášení se nezdařilo, protože bylo nakonfigurováno k použití nezabezpečené adresy URL (<ph name="BLOCKED_URL" />). Obraťte se na svého administrátora.</translation>
 <translation id="7332053360324989309">Vyhrazený pracovník: <ph name="SCRIPT_URL" /></translation>
-<translation id="7334190995941642545">Smart Lock aktuálně není k dispozici. Zkuste to znovu později.</translation>
 <translation id="7334274148831027933">Zapnout zabudovanou lupu</translation>
 <translation id="7335974957018254119">Používat kontrolu pravopisu pro</translation>
 <translation id="7336799713063880535">Oznámení jsou blokována.</translation>
@@ -5230,11 +5218,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8017679124341497925">Zkratka byla upravena</translation>
 <translation id="8018313076035239964">Určete, jaký obsah vám webové stránky mohou zobrazovat a jaké údaje mohou využívat, když si je prohlížíte</translation>
 <translation id="8023801379949507775">Aktualizovat rozšíření</translation>
-<translation id="8024483450737722621">Z tohoto Chromebooku budou smazány aplikace, které jste stáhli z Google Play.
-      <ph name="LINE_BREAKS1" />
-      Může být smazán i váš zakoupený obsah, jako jsou například filmy, televizní pořady, hudba, knihy a další nákupy v aplikacích.
-      <ph name="LINE_BREAKS2" />
-      Na aplikace a obsah v jiných zařízeních tato akce nemá vliv.</translation>
 <translation id="8026334261755873520">Vymazat údaje o prohlížení</translation>
 <translation id="8028060951694135607">Obnovení klíčů Microsoft</translation>
 <translation id="8028803902702117856">Stahování souboru <ph name="FILE_NAME" /> – <ph name="SIZE" /></translation>
@@ -5549,7 +5532,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8455026683977728932">Ilustraci ADB se nepodařilo aktivovat</translation>
 <translation id="845702320058262034">Nelze se připojit. Zkontrolujte, zda na telefonu máte zapnuté rozhraní Bluetooth.</translation>
 <translation id="8457451314607652708">Import záložek</translation>
-<translation id="8460336040822756677">Pokud v zařízení <ph name="DEVICE_TYPE" /> vypnete funkci Smart Lock, nebudete moci svá zařízení Chrome odemykat pomocí telefonu. Budete muset zadat heslo.</translation>
 <translation id="8461329675984532579">Název domácího poskytovatele</translation>
 <translation id="84613761564611563">Požadavek uživatelského rozhraní na konfiguraci sítě byl odeslán. Čekejte prosím...</translation>
 <translation id="8461914792118322307">Proxy server</translation>
@@ -5775,7 +5757,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8743864605301774756">Aktualizováno před 1 h</translation>
 <translation id="8746654918629346731">O rozšíření <ph name="EXTENSION_NAME" /> jste již požádali</translation>
 <translation id="874689135111202667">{0,plural, =1{Nahrát jeden soubor na tento web?}few{Nahrát # soubory na tento web?}many{Nahrát # souboru na tento web?}other{Nahrát # souborů na tento web?}}</translation>
-<translation id="8748384418490037181">Možnosti zámku Smart Lock</translation>
 <translation id="8749863574775030885">Přístup k zařízením USB od neznámého dodavatele</translation>
 <translation id="8750133148106010815">Organizace <ph name="ORGANIZATION_NAME" /> vyžaduje, abyste před spuštěním Google Play zálohovali data a resetovali tento Chromebook do továrního nastavení.</translation>
 <translation id="8750155211039279868">Web <ph name="ORIGIN" /> se chce připojit k sériovému portu</translation>
@@ -5898,7 +5879,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8881020143150461183">Zkuste to znovu. Se žádostmi o technickou podporu se obracejte na operátora <ph name="CARRIER_NAME" />.</translation>
 <translation id="8883273463630735858">Zapnout zrychlení touchpadu</translation>
 <translation id="8884570509232205463">Zařízení se uzamkne v <ph name="UNLOCK_TIME" />.</translation>
-<translation id="8885197664446363138">Funkce Smart Lock není k dispozici</translation>
 <translation id="8888253246822647887">Aplikace se spustí po dokončení upgradu. Upgrade může trvat několik minut.</translation>
 <translation id="8888432776533519951">Barva:</translation>
 <translation id="8889651696183044030">Web <ph name="ORIGIN" /> může upravovat následující soubory a složky</translation>

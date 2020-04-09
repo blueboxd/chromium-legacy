@@ -326,6 +326,104 @@ TEST_P(DisplayResourceProviderTest, LockForExternalUse) {
   child_resource_provider_->RemoveImportedResource(id1);
 }
 
+TEST_P(DisplayResourceProviderTest, LockForExternalUseWebView) {
+  // TODO(penghuang): consider supporting SW mode.
+  if (!use_gpu())
+    return;
+
+  gpu::SyncToken sync_token1(gpu::CommandBufferNamespace::GPU_IO,
+                             gpu::CommandBufferId::FromUnsafeValue(0x123),
+                             0x42);
+  auto mailbox = gpu::Mailbox::Generate();
+  constexpr gfx::Size size(64, 64);
+  TransferableResource gl_resource = TransferableResource::MakeGL(
+      mailbox, GL_LINEAR, GL_TEXTURE_2D, sync_token1, size,
+      false /* is_overlay_candidate */);
+  ResourceId id1 = child_resource_provider_->ImportResource(
+      gl_resource, SingleReleaseCallback::Create(base::DoNothing()));
+  std::vector<ReturnedResource> returned_to_child;
+  int child_id =
+      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
+
+  // Transfer some resources to the parent.
+  std::vector<TransferableResource> list;
+  child_resource_provider_->PrepareSendToParent(
+      {id1}, &list,
+      static_cast<RasterContextProvider*>(child_context_provider_.get()));
+  ASSERT_EQ(1u, list.size());
+  EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id1));
+
+  resource_provider_->ReceiveFromChild(child_id, list);
+
+  // In DisplayResourceProvider's namespace, use the mapped resource id.
+  std::unordered_map<ResourceId, ResourceId> resource_map =
+      resource_provider_->GetChildToParentMap(child_id);
+
+  unsigned parent_id = resource_map[list.front().id];
+
+  auto owned_image_context = std::make_unique<ExternalUseClient::ImageContext>(
+      gpu::MailboxHolder(mailbox, sync_token1, GL_TEXTURE_2D), size, RGBA_8888,
+      /*ycbcr_info=*/base::nullopt, /*color_space=*/nullptr);
+  auto* image_context = owned_image_context.get();
+
+  testing::StrictMock<MockExternalUseClient> client;
+  DisplayResourceProvider::LockSetForExternalUse lock_set(
+      resource_provider_.get(), &client);
+  gpu::MailboxHolder holder;
+  EXPECT_CALL(client, CreateImageContext(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<0>(&holder),
+                      Return(ByMove(std::move(owned_image_context)))));
+
+  ExternalUseClient::ImageContext* locked_image_context =
+      lock_set.LockResource(parent_id, /*is_video_plane=*/false);
+  EXPECT_EQ(image_context, locked_image_context);
+  ASSERT_EQ(holder.mailbox, mailbox);
+  ASSERT_TRUE(holder.sync_token.HasData());
+
+  // Don't release while locked.
+  EXPECT_CALL(client, ReleaseImageContexts(_)).Times(0);
+  // Return the resources back to the child. Nothing should happen because
+  // of the resource lock.
+  resource_provider_->DeclareUsedResourcesFromChild(child_id, ResourceIdSet());
+  // The resource should not be returned due to the external use lock.
+  EXPECT_EQ(0u, returned_to_child.size());
+
+  // Disable access to gpu thread.
+  resource_provider_->SetAllowAccessToGPUThread(false);
+
+  gpu::SyncToken sync_token2(gpu::CommandBufferNamespace::GPU_IO,
+                             gpu::CommandBufferId::FromUnsafeValue(0x234),
+                             0x456);
+  sync_token2.SetVerifyFlush();
+
+  gpu::SyncToken sync_token3(gpu::CommandBufferNamespace::GPU_IO,
+                             gpu::CommandBufferId::FromUnsafeValue(0x234),
+                             0x567);
+  sync_token3.SetVerifyFlush();
+
+  // Without GPU thread access no ReleaseImageContexts() should happen
+  EXPECT_CALL(client, ReleaseImageContexts(_)).Times(0);
+  // Unlock resources
+  lock_set.UnlockResources(sync_token2);
+  // Resources should not be returned because we can't unlock them on GPU
+  // thread.
+  EXPECT_EQ(0u, returned_to_child.size());
+
+  // We will get a second release of |parent_id| now that we've released our
+  // external lock and have access to GPU thread.
+  EXPECT_CALL(client, ReleaseImageContexts(
+                          testing::ElementsAre(SamePtr(locked_image_context))))
+      .WillOnce(Return(sync_token3));
+  // Enable access to GPU Thread
+  resource_provider_->SetAllowAccessToGPUThread(true);
+
+  // The resource should be returned after the lock is released.
+  EXPECT_EQ(1u, returned_to_child.size());
+  EXPECT_EQ(sync_token3, returned_to_child[0].sync_token);
+  child_resource_provider_->ReceiveReturnsFromParent(returned_to_child);
+  child_resource_provider_->RemoveImportedResource(id1);
+}
+
 TEST_P(DisplayResourceProviderTest, ReadLockCountStopsReturnToChildOrDelete) {
   if (!use_gpu())
     return;

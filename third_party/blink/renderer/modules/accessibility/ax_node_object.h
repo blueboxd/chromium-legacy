@@ -159,6 +159,8 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   KURL Url() const override;
   AXObject* ChooserPopup() const override;
   String StringValue() const override;
+  String TextFromDescendants(AXObjectSet& visited,
+                             bool recursive) const override;
 
   // ARIA attributes.
   ax::mojom::Role AriaRoleAttribute() const final;
@@ -251,8 +253,6 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   Member<Node> node_;
 
   bool IsNativeCheckboxInMixedState() const;
-  String TextFromDescendants(AXObjectSet& visited,
-                             bool recursive) const override;
   String NativeTextAlternative(AXObjectSet& visited,
                                ax::mojom::NameFrom&,
                                AXRelatedObjectVector*,

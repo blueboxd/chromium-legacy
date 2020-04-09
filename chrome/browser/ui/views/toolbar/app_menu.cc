@@ -48,6 +48,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
@@ -56,6 +57,7 @@
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/text_utils.h"
+#include "ui/native_theme/themed_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
@@ -673,9 +675,12 @@ class AppMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
     int command_id = model_->GetCommandIdAt(index);
     views::MenuItemView* item = menu_item_->GetMenuItemByID(command_id);
     DCHECK(item);
-    gfx::Image icon;
-    model_->GetIconAt(index, &icon);
-    item->SetIcon(*icon.ToImageSkia());
+    ui::ImageModel image = model_->GetIconAt(index);
+    // TODO (kylixrd): Use a utility function to get this as an actual image.
+    if (image.IsImage())
+      item->SetIcon(*image.GetImage().ToImageSkia());
+    else if (image.IsVectorIcon())
+      item->SetIcon(ui::ThemedVectorIcon(image.GetVectorIcon()));
   }
 
   void OnMenuStructureChanged() override {
@@ -1118,9 +1123,11 @@ MenuItemView* AppMenu::AddMenuItem(MenuItemView* parent,
     menu_item->SetVisible(model->IsVisibleAt(model_index));
 
     if (menu_type == MenuModel::TYPE_COMMAND && model->HasIcons()) {
-      gfx::Image icon;
-      if (model->GetIconAt(model_index, &icon))
-        menu_item->SetIcon(*icon.ToImageSkia());
+      ui::ImageModel icon = model->GetIconAt(model_index);
+      if (icon.IsImage())
+        menu_item->SetIcon(*icon.GetImage().ToImageSkia());
+      else if (icon.IsVectorIcon())
+        menu_item->SetIcon(ui::ThemedVectorIcon(icon.GetVectorIcon()));
     }
 
     // If we want to show items relating to reopening the last-closed tab as

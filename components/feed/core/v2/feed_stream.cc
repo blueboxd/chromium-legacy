@@ -29,6 +29,9 @@
 #include "components/prefs/pref_service.h"
 
 namespace feed {
+namespace {
+constexpr char kZeroStateSliceId[] = "zero-state";
+}
 
 // Tracks UI changes in |StreamModel| and forwards them to |SurfaceInterface|s.
 class FeedStream::SurfaceUpdater : public StreamModel::Observer {
@@ -119,13 +122,22 @@ class FeedStream::SurfaceUpdater : public StreamModel::Observer {
     }
   }
 
- private:
-  static std::string ToSliceId(ContentRevision content_revision) {
-    auto integer_value = content_revision.value();
-    return std::string(reinterpret_cast<char*>(&integer_value),
-                       sizeof(integer_value));
+  // Returns the 0-based index of the slice in the stream, or -1 if the slice is
+  // not found. Ignores all non-content slices.
+  int GetSliceIndexFromSliceId(const std::string& slice_id) {
+    ContentRevision slice_rev = ToContentRevision(slice_id);
+    if (slice_rev.is_null())
+      return -1;
+    int index = 0;
+    for (const ContentRevision& rev : model_->GetContentList()) {
+      if (rev == slice_rev)
+        return index;
+      ++index;
+    }
+    return -1;
   }
 
+ private:
   static feedui::StreamUpdate GetUpdateForNewSurface(const StreamModel& model) {
     feedui::StreamUpdate result;
     for (ContentRevision content_revision : model.GetContentList()) {
@@ -151,7 +163,7 @@ class FeedStream::SurfaceUpdater : public StreamModel::Observer {
     feedui::StreamUpdate update;
     feedui::Slice* slice = update.add_updated_slices()->mutable_slice();
     slice->mutable_zero_state_slice()->set_type(zero_state_type);
-    slice->set_slice_id("zero-state");
+    slice->set_slice_id(kZeroStateSliceId);
     surface->StreamUpdate(update);
   }
 
@@ -175,13 +187,13 @@ class FeedStream::SurfaceUpdater : public StreamModel::Observer {
     if (is_content_new) {
       feedui::Slice* slice =
           stream_update->add_updated_slices()->mutable_slice();
-      slice->set_slice_id(ToSliceId(content_revision));
+      slice->set_slice_id(ToString(content_revision));
       const feedstore::Content* content = model.FindContent(content_revision);
       DCHECK(content);
       slice->mutable_xsurface_slice()->set_xsurface_frame(content->frame());
     } else {
       stream_update->add_updated_slices()->set_slice_id(
-          ToSliceId(content_revision));
+          ToString(content_revision));
     }
   }
 
@@ -463,20 +475,26 @@ void FeedStream::UnloadModel() {
   model_.reset();
 }
 
+void FeedStream::ReportSliceViewed(const std::string& slice_id) {
+  int index = surface_updater_->GetSliceIndexFromSliceId(slice_id);
+  if (index >= 0)
+    metrics_reporter_->ContentSliceViewed(index);
+}
+
 void FeedStream::ReportNavigationStarted() {
   metrics_reporter_->NavigationStarted();
 }
 void FeedStream::ReportNavigationDone() {
   metrics_reporter_->NavigationDone();
 }
-void FeedStream::ReportContentRemoved() {
-  metrics_reporter_->ContentRemoved();
+void FeedStream::ReportRemoveAction() {
+  metrics_reporter_->RemoveAction();
 }
-void FeedStream::ReportNotInterestedIn() {
-  metrics_reporter_->NotInterestedIn();
+void FeedStream::ReportNotInterestedInAction() {
+  metrics_reporter_->NotInterestedInAction();
 }
-void FeedStream::ReportManageInterests() {
-  metrics_reporter_->ManageInterests();
+void FeedStream::ReportManageInterestsAction() {
+  metrics_reporter_->ManageInterestsAction();
 }
 void FeedStream::ReportContextMenuOpened() {
   metrics_reporter_->ContextMenuOpened();

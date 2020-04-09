@@ -168,7 +168,7 @@
 <translation id="3112556859945124369">وضع علامة...</translation>
 <translation id="3153862085237805241">حفظ البطاقة</translation>
 <translation id="3157684681743766797">وضع علامة على الكل...</translation>
-<translation id="3161291298470460782">‏سيؤدي هذا الإجراء إلى تسجيل خروجك وإيقاف المزامنة ومحو جميع بيانات Chrome من هذا الجهاز. وستظل البيانات المتزامنة في حسابك على Google.</translation>
+<translation id="3161291298470460782">‏سيؤدي هذا الإجراء إلى تسجيل الخروج من حسابك على Chrome وإيقاف المزامنة ومحو جميع بيانات Chrome من هذا الجهاز. وستظل البيانات المتزامنة في حسابك على Google.</translation>
 <translation id="3175081911749765310">خدمات الويب</translation>
 <translation id="3178650076442119961">نشط اليوم</translation>
 <translation id="3207960819495026254">تمت إضافتها إلى الإشارات المرجعية.</translation>
@@ -561,7 +561,7 @@
 <translation id="8490978609246021741">حفظ التغييرات</translation>
 <translation id="8503813439785031346">اسم المستخدم</translation>
 <translation id="850600235656508448">فتح في وضع التصفح المتخفي</translation>
-<translation id="8510057420705599706">‏سيؤدي هذا الإجراء إلى تسجيل خروجك وإيقاف المزامنة، ولكن ستظل الإشارات المرجعية والسجلّ وكلمات المرور وبيانات Chrome الأخرى على هذا الجهاز.</translation>
+<translation id="8510057420705599706">‏سيؤدي هذا الإجراء إلى تسجيل الخروج من حسابك على Chrome وإيقاف المزامنة، ولكن ستظل الإشارات المرجعية والسجلّ وكلمات المرور وبيانات Chrome الأخرى على هذا الجهاز.</translation>
 <translation id="8517375800490286174">تراخيص البرامج المفتوحة المصدر</translation>
 <translation id="8524799873541103884">علامات تبويب <ph name="INCOGNITO" /><ph name="FIRST_VISIBLE_TAB" /> عبر <ph name="LAST_VISIBLE_TAB" /> من <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">جديد</translation>

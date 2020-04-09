@@ -114,34 +114,34 @@ class WtsSessionProcessDelegate::Core
   void ReportProcessLaunched(base::win::ScopedHandle worker_process);
 
   // The task runner all public methods of this class should be called on.
-  scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
 
   // The task runner serving job object notifications.
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // The server end of the IPC channel used to communicate to the worker
   // process.
   std::unique_ptr<IPC::ChannelProxy> channel_;
 
   // Security descriptor (as SDDL) to be applied to |channel_|.
-  std::string channel_security_;
+  const std::string channel_security_;
 
-  WorkerProcessLauncher* event_handler_;
+  WorkerProcessLauncher* event_handler_ = nullptr;
 
   // The job object used to control the lifetime of child processes.
   base::win::ScopedHandle job_;
 
   // True if the worker process should be launched elevated.
-  bool launch_elevated_;
+  const bool launch_elevated_;
 
-  // True if a laucnh attemp is pending.
-  bool launch_pending_;
+  // True if a launch attempt is pending.
+  bool launch_pending_ = false;
 
   // The token to be used to launch a process in a different session.
   base::win::ScopedHandle session_token_;
 
   // Command line of the launched process.
-  std::unique_ptr<base::CommandLine> target_command_;
+  const std::unique_ptr<base::CommandLine> target_command_;
 
   // The handle of the worker process, if launched.
   base::win::ScopedHandle worker_process_;
@@ -167,12 +167,11 @@ WtsSessionProcessDelegate::Core::Core(
     std::unique_ptr<base::CommandLine> target_command,
     bool launch_elevated,
     const std::string& channel_security)
-    : caller_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      io_task_runner_(io_task_runner),
+    : base::MessagePumpForIO::IOHandler(FROM_HERE),
+      caller_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      io_task_runner_(std::move(io_task_runner)),
       channel_security_(channel_security),
-      event_handler_(nullptr),
       launch_elevated_(launch_elevated),
-      launch_pending_(false),
       target_command_(std::move(target_command)) {}
 
 bool WtsSessionProcessDelegate::Core::Initialize(uint32_t session_id) {

@@ -44,7 +44,7 @@ class ITunesUrlsHandlerTabHelper
   static bool CanHandleUrl(const GURL& url);
 
   // web::WebStatePolicyDecider implementation
-  bool ShouldAllowRequest(
+  web::WebStatePolicyDecider::PolicyDecision ShouldAllowRequest(
       NSURLRequest* request,
       const web::WebStatePolicyDecider::RequestInfo& request_info) override;
 

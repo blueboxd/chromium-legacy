@@ -15,8 +15,6 @@ jumbo_component("services") {
     "gpu_mojo_media_client.h",
     "interface_factory_impl.cc",
     "interface_factory_impl.h",
-    "media_interface_provider.cc",
-    "media_interface_provider.h",
     "media_metrics_provider.cc",
     "media_metrics_provider.h",
     "media_mojo_export.h",

@@ -10,54 +10,103 @@ GEN_INCLUDE([
 /**
  * Test fixture for SmartStickyMode.
  */
-ChromeVoxSmartStickyModeTest = class extends ChromeVoxNextE2ETest {};
+ChromeVoxSmartStickyModeTest = class extends ChromeVoxNextE2ETest {
+  /** @override */
+  setUp() {
+    this.ssm_ = new SmartStickyMode();
+    // Deregister from actual range changes.
+    ChromeVoxState.removeObserver(this.ssm_);
+    assertFalse(ssm.didTurnOffStickyMode_);
+  }
+
+  assertDidTurnOffForNode(node) {
+    this.ssm_.onCurrentRangeChanged(cursors.Range.fromNode(node));
+    assertTrue(this.ssm_.didTurnOffStickyMode_);
+  }
+
+  assertDidNotTurnOffForNode(node) {
+    this.ssm_.onCurrentRangeChanged(cursors.Range.fromNode(node));
+    assertFalse(this.ssm_.didTurnOffStickyMode_);
+  }
+
+  get relationsDoc() {
+    return `
+      <p>start</p>
+      <input aria-controls="controls-target" type="text"></input>
+      <textarea aria-activedescendant="active-descendant-target"></textarea>
+      <div contenteditable><h3>hello</h3></div>
+      <ul id="controls-target"><li>end</ul>
+      <ul id="active-descendant-target"><li>end</ul>
+    `;
+  }
+};
 
 TEST_F('ChromeVoxSmartStickyModeTest', 'PossibleRangeTypes', function() {
-  this.runWithLoadedTree(
-      `
-    <p>start</p>
-    <input aria-controls="controls-target" type="text"></input>
-    <textarea aria-activedescendant="active-descendant-target"></textarea>
-    <div contenteditable><h3>hello</h3></div>
-    <ul id="controls-target"><li>end</ul>
-    <ul id="active-descendant-target"><li>end</ul>
-  `,
-      function(root) {
-        const ssm = new SmartStickyMode();
+  this.runWithLoadedTree(this.relationsDoc, function(root) {
+    const [p, input, textarea, contenteditable, ul1, ul2] = root.children;
 
-        // Deregister from actual range changes.
-        ChromeVoxState.removeObserver(ssm);
-        assertFalse(ssm.didTurnOffStickyMode_);
+    // First, turn on sticky mode and try changing range to various parts of
+    // the document.
+    ChromeVoxBackground.setPref(
+        'sticky', true /* value */, true /* announce */);
+    this.assertDidTurnOffForNode(input);
+    this.assertDidTurnOffForNode(textarea);
+    this.assertDidNotTurnOffForNode(p);
+    this.assertDidTurnOffForNode(contenteditable);
+    this.assertDidTurnOffForNode(ul1);
+    this.assertDidNotTurnOffForNode(p);
+    this.assertDidTurnOffForNode(ul2);
+    this.assertDidTurnOffForNode(ul1.firstChild);
+    this.assertDidNotTurnOffForNode(ul1.parent);
+    this.assertDidNotTurnOffForNode(ul2.parent);
+    this.assertDidNotTurnOffForNode(p);
+    this.assertDidTurnOffForNode(ul2.firstChild);
+    this.assertDidNotTurnOffForNode(p);
+    this.assertDidNotTurnOffForNode(contenteditable.parent);
+    this.assertDidTurnOffForNode(contenteditable.find({role: 'heading'}));
+    this.assertDidTurnOffForNode(contenteditable.find({role: 'inlineTextBox'}));
+  });
+});
+
+TEST_F(
+    'ChromeVoxSmartStickyModeTest', 'UserPressesStickyModeCommand', function() {
+      this.runWithLoadedTree(this.relationsDoc, function(root) {
         const [p, input, textarea, contenteditable, ul1, ul2] = root.children;
-
-        function assertDidTurnOffForNode(node) {
-          ssm.onCurrentRangeChanged(cursors.Range.fromNode(node));
-          assertTrue(ssm.didTurnOffStickyMode_);
-        }
-
-        function assertDidNotTurnOffForNode(node) {
-          ssm.onCurrentRangeChanged(cursors.Range.fromNode(node));
-          assertFalse(ssm.didTurnOffStickyMode_);
-        }
-
-        // First, turn on sticky mode and try changing range to various parts of
-        // the document.
         ChromeVoxBackground.setPref(
             'sticky', true /* value */, true /* announce */);
 
-        assertDidTurnOffForNode(input);
-        assertDidTurnOffForNode(textarea);
-        assertDidNotTurnOffForNode(p);
+        // Mix in calls to turn on / off sticky mode while moving the range
+        // around.
+        this.assertDidTurnOffForNode(input);
+        this.ssm_.onStickyModeCommand(cursors.Range.fromNode(input));
+        this.assertDidNotTurnOffForNode(input);
+        this.ssm_.onStickyModeCommand(cursors.Range.fromNode(input));
+        this.assertDidNotTurnOffForNode(input);
+        this.assertDidNotTurnOffForNode(input.firstChild);
+        this.assertDidNotTurnOffForNode(p);
 
-        assertDidTurnOffForNode(contenteditable);
-        assertDidTurnOffForNode(ul1);
-        assertDidNotTurnOffForNode(p);
-        assertDidTurnOffForNode(ul2);
-        assertDidTurnOffForNode(ul1.firstChild);
-        assertDidNotTurnOffForNode(p);
-        assertDidTurnOffForNode(ul2.firstChild);
-        assertDidNotTurnOffForNode(p);
-        assertDidTurnOffForNode(contenteditable.find({role: 'heading'}));
-        assertDidTurnOffForNode(contenteditable.find({role: 'inlineTextBox'}));
+        // Make sure sticky mode is on again. This call doesn't impact our
+        // instance of SmartStickyMode.
+        ChromeVoxBackground.setPref(
+            'sticky', true /* value */, true /* announce */);
+
+        // Mix in more sticky mode user commands and move to related nodes.
+        this.assertDidTurnOffForNode(contenteditable);
+        this.assertDidTurnOffForNode(ul2);
+        this.ssm_.onStickyModeCommand(cursors.Range.fromNode(ul2));
+        this.assertDidNotTurnOffForNode(ul2);
+        this.assertDidNotTurnOffForNode(ul2.firstChild);
+        this.assertDidNotTurnOffForNode(contenteditable);
+        this.ssm_.onStickyModeCommand(cursors.Range.fromNode(input));
+        this.assertDidNotTurnOffForNode(ul2);
+        this.assertDidNotTurnOffForNode(ul2.firstChild);
+        this.assertDidNotTurnOffForNode(contenteditable);
+
+        // Finally, verify sticky mode isn't impacted on non-editables.
+        this.assertDidNotTurnOffForNode(p);
+        this.ssm_.onStickyModeCommand(cursors.Range.fromNode(p));
+        this.assertDidNotTurnOffForNode(p);
+        this.ssm_.onStickyModeCommand(cursors.Range.fromNode(p));
+        this.assertDidNotTurnOffForNode(p);
       });
-});
+    });

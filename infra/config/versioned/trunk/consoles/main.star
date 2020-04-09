@@ -340,14 +340,14 @@ luci.console_view(
             short_name = 'M',
         ),
         luci.console_view_entry(
-            builder = builder_name('Cast Android (dbg)'),
-            category = 'chromium.android|on_cq',
-            short_name = 'cst',
-        ),
-        luci.console_view_entry(
             builder = builder_name('android-pie-arm64-rel'),
             category = 'chromium.android|on_cq',
             short_name = 'P',
+        ),
+        luci.console_view_entry(
+            builder = builder_name('Cast Android (dbg)'),
+            category = 'chromium.android|on_cq',
+            short_name = 'cst',
         ),
         luci.console_view_entry(
             builder = 'chrome:ci/linux-chromeos-chrome',
@@ -499,7 +499,7 @@ luci.console_view(
         ),
         luci.console_view_entry(
             builder = builder_name('chromeos-kevin-rel-hw-tests'),
-            category = 'chromium.fyi|chromos',
+            category = 'chromium.fyi|chromeos',
         ),
         luci.console_view_entry(
             builder = builder_name('VR Linux'),

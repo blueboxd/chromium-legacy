@@ -88,6 +88,7 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tasks.pseudotab.TabAttributeCache;
 import org.chromium.chrome.browser.tasks.tab_management.TabProperties;
 import org.chromium.chrome.browser.tasks.tab_management.TabSelectionEditorTestingRobot;
 import org.chromium.chrome.browser.tasks.tab_management.TabSuggestionMessageService;
@@ -102,6 +103,7 @@ import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.OverviewModeBehaviorWatcher;
+import org.chromium.chrome.test.util.ViewUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
@@ -1433,6 +1435,11 @@ public class StartSurfaceLayoutTest {
         }
     }
 
+    private void waitForLastSearchTerm(Tab tab, String expected) {
+        CriteriaHelper.pollUiThread(
+                Criteria.equals(expected, () -> TabAttributeCache.getLastSearchTerm(tab.getId())));
+    }
+
     @Test
     @MediumTest
     // Disable TAB_TO_GTS_ANIMATION to make it less flaky.
@@ -1441,7 +1448,7 @@ public class StartSurfaceLayoutTest {
     public void testSearchTermChip_noChip() throws InterruptedException {
         assertTrue(TabUiFeatureUtilities.ENABLE_SEARCH_CHIP.getValue());
         prepareTabs(1, 0, mUrl);
-        enterGTSWithThumbnailChecking();
+        enterTabSwitcher(mActivityTestRule.getActivity());
 
         onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(1));
         onView(withId(R.id.search_button)).check(matches(not(isDisplayed())));
@@ -1465,59 +1472,66 @@ public class StartSurfaceLayoutTest {
         // Do search, and verify the chip is still not shown.
         AtomicReference<String> searchUrl = new AtomicReference<>();
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        Tab currentTab = cta.getTabModelSelector().getCurrentTab();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             TemplateUrlServiceFactory.get().setSearchEngine("google.com");
             searchUrl.set(TemplateUrlServiceFactory.get().getUrlForSearchQuery(
                     searchTermWithSpecialCodePoints));
-            cta.getTabModelSelector().getCurrentTab().loadUrl(new LoadUrlParams(searchUrl.get()));
+            currentTab.loadUrl(new LoadUrlParams(searchUrl.get()));
         });
-        enterGTSWithThumbnailChecking();
+        ChromeTabUtils.waitForTabPageLoaded(currentTab, null);
+        enterTabSwitcher(mActivityTestRule.getActivity());
 
         onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(1));
         onView(withId(R.id.search_button)).check(matches(not(isDisplayed())));
-        leaveGTSAndVerifyThumbnailsAreReleased();
+        Espresso.pressBack();
 
         // Navigate, and verify the chip is shown.
         mActivityTestRule.loadUrl(mUrl);
-        enterGTSWithThumbnailChecking();
+        waitForLastSearchTerm(currentTab, expectedTerm);
+        enterTabSwitcher(mActivityTestRule.getActivity());
 
         onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(1));
-        onView(allOf(withParent(withId(R.id.search_button)), withText(expectedTerm)))
-                .check(matches(isDisplayed()));
-        leaveGTSAndVerifyThumbnailsAreReleased();
+        onView(withId(R.id.search_button))
+                .check(ViewUtils.waitForView(allOf(withText(expectedTerm), isDisplayed())));
+        Espresso.pressBack();
 
         // Do another search, and verify the chip is gone.
         AtomicReference<String> searchUrl2 = new AtomicReference<>();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             TemplateUrlServiceFactory.get().setSearchEngine("google.com");
             searchUrl2.set(TemplateUrlServiceFactory.get().getUrlForSearchQuery(anotherTerm));
-            cta.getTabModelSelector().getCurrentTab().loadUrl(new LoadUrlParams(searchUrl2.get()));
+            currentTab.loadUrl(new LoadUrlParams(searchUrl2.get()));
         });
-        enterGTSWithThumbnailChecking();
+        ChromeTabUtils.waitForTabPageLoaded(currentTab, null);
+        waitForLastSearchTerm(currentTab, null);
+        enterTabSwitcher(mActivityTestRule.getActivity());
 
         onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(1));
         onView(withId(R.id.search_button)).check(matches(not(isDisplayed())));
-        leaveGTSAndVerifyThumbnailsAreReleased();
+        Espresso.pressBack();
 
         // Back to previous page, and verify the chip is back.
         Espresso.pressBack();
-        enterGTSWithThumbnailChecking();
+        waitForLastSearchTerm(currentTab, expectedTerm);
+        enterTabSwitcher(mActivityTestRule.getActivity());
 
         onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(1));
-        onView(allOf(withParent(withId(R.id.search_button)), withText(expectedTerm)))
-                .check(matches(isDisplayed()));
+        onView(withId(R.id.search_button))
+                .check(ViewUtils.waitForView(allOf(withText(expectedTerm), isDisplayed())));
 
         // Click the chip and check the tab navigates back to the search result page.
-        assertEquals(mUrl, cta.getTabModelSelector().getCurrentTab().getUrlString());
+        assertEquals(mUrl, currentTab.getUrlString());
         OverviewModeBehaviorWatcher hideWatcher = TabUiTestHelper.createOverviewHideWatcher(cta);
-        onView(allOf(withParent(withId(R.id.search_button)), withText(expectedTerm)))
-                .perform(click());
+        onView(withId(R.id.search_button))
+                .check(ViewUtils.waitForView(allOf(withText(expectedTerm), isDisplayed())));
+        onView(withId(R.id.search_button)).perform(click());
         hideWatcher.waitForBehavior();
-        CriteriaHelper.pollUiThread(Criteria.equals(
-                searchUrl.get(), () -> cta.getTabModelSelector().getCurrentTab().getUrlString()));
+        ChromeTabUtils.waitForTabPageLoaded(currentTab, searchUrl.get());
 
         // Verify the chip is gone.
-        enterGTSWithThumbnailChecking();
+        waitForLastSearchTerm(currentTab, null);
+        enterTabSwitcher(mActivityTestRule.getActivity());
 
         onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(1));
         onView(withId(R.id.search_button)).check(matches(not(isDisplayed())));
@@ -1539,24 +1553,27 @@ public class StartSurfaceLayoutTest {
         // Do search, and verify the chip is still not shown.
         AtomicReference<String> searchUrl = new AtomicReference<>();
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        Tab currentTab = cta.getTabModelSelector().getCurrentTab();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             TemplateUrlServiceFactory.get().setSearchEngine("google.com");
             searchUrl.set(TemplateUrlServiceFactory.get().getUrlForSearchQuery(searchTerm));
-            cta.getTabModelSelector().getCurrentTab().loadUrl(new LoadUrlParams(searchUrl.get()));
+            currentTab.loadUrl(new LoadUrlParams(searchUrl.get()));
         });
-        enterGTSWithThumbnailChecking();
+        ChromeTabUtils.waitForTabPageLoaded(currentTab, null);
+        enterTabSwitcher(mActivityTestRule.getActivity());
 
         onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(1));
         onView(withId(R.id.search_button)).check(matches(not(isDisplayed())));
-        leaveGTSAndVerifyThumbnailsAreReleased();
+        Espresso.pressBack();
 
         // Navigate, and verify the chip is shown.
         mActivityTestRule.loadUrl(mUrl);
-        enterGTSWithThumbnailChecking();
+        waitForLastSearchTerm(currentTab, searchTerm);
+        enterTabSwitcher(mActivityTestRule.getActivity());
 
         onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(1));
-        onView(allOf(withParent(withId(R.id.search_button)), withText(searchTerm)))
-                .check(matches(isDisplayed()));
+        onView(withId(R.id.search_button))
+                .check(ViewUtils.waitForView(allOf(withText(searchTerm), isDisplayed())));
 
         // Switch the default search engine from google.com to yahoo.com, the search chip icon
         // should change.

@@ -305,6 +305,12 @@ void AnimationHost::PushPropertiesToImplThread(AnimationHost* host_impl) {
   host_impl->main_thread_animations_count_ = main_thread_animations_count_;
   host_impl->current_frame_had_raf_ = current_frame_had_raf_;
   host_impl->next_frame_has_pending_raf_ = next_frame_has_pending_raf_;
+
+  // The pending info list is cleared in LayerTreeHostImpl::CommitComplete
+  // and should be empty when pushing properties.
+  DCHECK(host_impl->pending_throughput_tracker_infos_.empty());
+  host_impl->pending_throughput_tracker_infos_ =
+      TakePendingThroughputTrackerInfos();
 }
 
 scoped_refptr<ElementAnimations>
@@ -800,6 +806,26 @@ bool AnimationHost::CurrentFrameHadRAF() const {
 
 bool AnimationHost::NextFrameHasPendingRAF() const {
   return next_frame_has_pending_raf_;
+}
+
+AnimationHost::PendingThroughputTrackerInfos
+AnimationHost::TakePendingThroughputTrackerInfos() {
+  PendingThroughputTrackerInfos infos =
+      std::move(pending_throughput_tracker_infos_);
+  pending_throughput_tracker_infos_ = {};
+  return infos;
+}
+
+void AnimationHost::StartThroughputTracking(
+    TrackedAnimationSequenceId sequence_id) {
+  pending_throughput_tracker_infos_.push_back({sequence_id, true});
+  SetNeedsPushProperties();
+}
+
+void AnimationHost::StopThroughputTracking(
+    TrackedAnimationSequenceId sequnece_id) {
+  pending_throughput_tracker_infos_.push_back({sequnece_id, false});
+  SetNeedsPushProperties();
 }
 
 }  // namespace cc

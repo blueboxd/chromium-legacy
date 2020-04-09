@@ -105,7 +105,7 @@
 <translation id="2268813581635650749">すべてログアウト</translation>
 <translation id="2277103315734023688">前方に移動</translation>
 <translation id="2292698582925480719">表示スケール</translation>
-<translation id="2295777434187870477">マイクはオンになっています。切り替えると入力がミュートされます。</translation>
+<translation id="2295777434187870477">マイクはオンです。切り替えるとミュートになります。</translation>
 <translation id="2298170939937364391">全画面拡大鏡がオンになっています。オフにするには Ctrl+検索+M キーをもう一度押します。</translation>
 <translation id="2302092602801625023">このアカウントはファミリー リンクによって管理されています</translation>
 <translation id="2303600792989757991">ウィンドウ切り替えの概要</translation>
@@ -299,7 +299,7 @@
 <translation id="4665114317261903604">サイレント モードを切り替えます。<ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">保護者のコードでデバイスをロック解除</translation>
 <translation id="4702647871202761252">プライバシー スクリーンはオフになっています</translation>
-<translation id="4705716602320768426">ファイルのフィードバック</translation>
+<translation id="4705716602320768426">フィードバックを送信</translation>
 <translation id="4710243778082831592">IME 設定</translation>
 <translation id="4731797938093519117">保護者によるアクセス</translation>
 <translation id="4734965478015604180">横</translation>
@@ -380,7 +380,7 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" />（<ph name="MAIL" />）</translation>
 <translation id="5916664084637901428">オン</translation>
-<translation id="5920710855273935292">マイクはミュートされています。</translation>
+<translation id="5920710855273935292">マイクはミュートです。</translation>
 <translation id="5947494881799873997">元に戻す</translation>
 <translation id="595202126637698455">パフォーマンス追跡機能が有効です</translation>
 <translation id="5957083217255311415">モバイルデータ通信が無効になっています。</translation>

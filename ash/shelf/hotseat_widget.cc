@@ -40,12 +40,16 @@ namespace ash {
 namespace {
 
 void DoScopedAnimationSetting(
-    ui::ScopedLayerAnimationSettings* animation_setter) {
+    ui::ScopedLayerAnimationSettings* animation_setter,
+    ui::AnimationMetricsReporter* metrics_reporter) {
   animation_setter->SetTransitionDuration(
       ShelfConfig::Get()->shelf_animation_duration());
   animation_setter->SetTweenType(gfx::Tween::EASE_OUT);
   animation_setter->SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  if (metrics_reporter) {
+    animation_setter->SetAnimationMetricsReporter(metrics_reporter);
+  }
 }
 
 // Custom window targeter for the hotseat. Used so the hotseat only processes
@@ -105,7 +109,8 @@ class HotseatWidget::DelegateView : public HotseatTransitionAnimator::Observer,
 
   // Initializes the view.
   void Init(ScrollableShelfView* scrollable_shelf_view,
-            ui::Layer* parent_layer);
+            ui::Layer* parent_layer,
+            HotseatWidget* hotseat_widget);
 
   // Updates the hotseat background.
   void UpdateTranslucentBackground();
@@ -154,6 +159,7 @@ class HotseatWidget::DelegateView : public HotseatTransitionAnimator::Observer,
   // A background layer that may be visible depending on HotseatState.
   ui::Layer translucent_background_;
   ScrollableShelfView* scrollable_shelf_view_ = nullptr;  // unowned.
+  HotseatWidget* hotseat_widget_ = nullptr;               // unowned.
   // Blur is disabled during animations to improve performance.
   int blur_lock_ = 0;
 
@@ -167,8 +173,7 @@ class HotseatWidget::DelegateView : public HotseatTransitionAnimator::Observer,
 HotseatWidget::DelegateView::~DelegateView() {
   WallpaperControllerImpl* wallpaper_controller =
       Shell::Get()->wallpaper_controller();
-  OverviewController* overview_controller =
-      Shell::Get()->overview_controller();
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
   if (wallpaper_controller)
     wallpaper_controller->RemoveObserver(this);
   if (overview_controller)
@@ -177,18 +182,19 @@ HotseatWidget::DelegateView::~DelegateView() {
 
 void HotseatWidget::DelegateView::Init(
     ScrollableShelfView* scrollable_shelf_view,
-    ui::Layer* parent_layer) {
+    ui::Layer* parent_layer,
+    HotseatWidget* hotseat_widget) {
+  hotseat_widget_ = hotseat_widget;
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   WallpaperControllerImpl* wallpaper_controller =
       Shell::Get()->wallpaper_controller();
-  OverviewController* overview_controller =
-      Shell::Get()->overview_controller();
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
   if (wallpaper_controller)
     wallpaper_controller->AddObserver(this);
   if (overview_controller) {
     overview_controller->AddObserver(this);
-    if(overview_controller->InOverviewSession())
+    if (overview_controller->InOverviewSession())
       ++blur_lock_;
   }
   SetParentLayer(parent_layer);
@@ -215,11 +221,15 @@ void HotseatWidget::DelegateView::SetTranslucentBackground(
 
   translucent_background_.SetVisible(true);
   SetBackgroundBlur(/*enable_blur=*/true);
+  ui::AnimationMetricsReporter* metrics_reporter =
+      hotseat_widget_
+          ? hotseat_widget_->GetTranslucentBackgroundMetricsReporter()
+          : nullptr;
 
   if (ShelfConfig::Get()->GetDefaultShelfColor() != target_color_) {
     ui::ScopedLayerAnimationSettings color_animation_setter(
         translucent_background_.GetAnimator());
-    DoScopedAnimationSetting(&color_animation_setter);
+    DoScopedAnimationSetting(&color_animation_setter, metrics_reporter);
     target_color_ = ShelfConfig::Get()->GetDefaultShelfColor();
     translucent_background_.SetColor(target_color_);
   }
@@ -234,7 +244,8 @@ void HotseatWidget::DelegateView::SetTranslucentBackground(
   base::Optional<ui::ScopedLayerAnimationSettings> bounds_animation_setter;
   if (animate_bounds) {
     bounds_animation_setter.emplace(translucent_background_.GetAnimator());
-    DoScopedAnimationSetting(&bounds_animation_setter.value());
+    DoScopedAnimationSetting(&bounds_animation_setter.value(),
+                             metrics_reporter);
   }
 
   const int radius = ShelfConfig::Get()->hotseat_size() / 2;
@@ -350,7 +361,7 @@ void HotseatWidget::Initialize(aura::Window* container, Shelf* shelf) {
   scrollable_shelf_view_ = GetContentsView()->AddChildView(
       std::make_unique<ScrollableShelfView>(ShelfModel::Get(), shelf));
   scrollable_shelf_view_->Init();
-  delegate_view_->Init(scrollable_shelf_view(), GetLayer());
+  delegate_view_->Init(scrollable_shelf_view(), GetLayer(), this);
 }
 
 void HotseatWidget::OnHotseatTransitionAnimatorCreated(
@@ -578,6 +589,11 @@ bool HotseatWidget::IsShowingShelfMenu() const {
 const ShelfView* HotseatWidget::GetShelfView() const {
   return const_cast<const ShelfView*>(
       const_cast<HotseatWidget*>(this)->GetShelfView());
+}
+
+ui::AnimationMetricsReporter*
+HotseatWidget::GetTranslucentBackgroundMetricsReporter() {
+  return shelf_->GetTranslucentBackgroundMetricsReporter(state_);
 }
 
 void HotseatWidget::SetState(HotseatState state) {

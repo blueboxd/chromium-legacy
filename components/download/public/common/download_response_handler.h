@@ -99,7 +99,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadResponseHandler
   net::CertStatus cert_status_;
   bool has_strong_validators_;
   base::Optional<url::Origin> request_initiator_;
-  net::NetworkIsolationKey network_isolation_key_;
   bool is_partial_request_;
   bool completed_;
 

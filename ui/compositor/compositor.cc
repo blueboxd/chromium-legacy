@@ -695,6 +695,25 @@ void Compositor::OnFrameTokenChanged(uint32_t frame_token) {
   NOTREACHED();
 }
 
+void Compositor::StartThroughputTracker(
+    TrackerId tracker_id,
+    ThroughputTrackerHost::ReportCallback callback) {
+  DCHECK(!base::Contains(throughput_tracker_map_, tracker_id));
+  throughput_tracker_map_[tracker_id] = std::move(callback);
+  animation_host_->StartThroughputTracking(tracker_id);
+}
+
+void Compositor::StopThroughtputTracker(TrackerId tracker_id) {
+  DCHECK(base::Contains(throughput_tracker_map_, tracker_id));
+  animation_host_->StopThroughputTracking(tracker_id);
+}
+
+void Compositor::CancelThroughtputTracker(TrackerId tracker_id) {
+  DCHECK(base::Contains(throughput_tracker_map_, tracker_id));
+  StopThroughtputTracker(tracker_id);
+  throughput_tracker_map_.erase(tracker_id);
+}
+
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 void Compositor::OnCompleteSwapWithNewSize(const gfx::Size& size) {
   for (auto& observer : observer_list_)
@@ -720,6 +739,10 @@ void Compositor::SetLayerTreeDebugState(
 void Compositor::RequestPresentationTimeForNextFrame(
     PresentationTimeCallback callback) {
   host_->RequestPresentationTimeForNextFrame(std::move(callback));
+}
+
+ThroughputTracker Compositor::RequestNewThroughputTracker() {
+  return ThroughputTracker(next_throughput_tracker_id_++, this);
 }
 
 }  // namespace ui

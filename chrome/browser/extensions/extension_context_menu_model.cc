@@ -45,6 +45,7 @@
 #include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/manifest_url_handlers.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/models/menu_separator_types.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
@@ -411,9 +412,10 @@ void ExtensionContextMenuModel::InitMenu(const Extension* extension,
     AddItem(UNINSTALL, l10n_util::GetStringUTF16(message_id));
     if (is_required_by_policy) {
       int uninstall_index = GetIndexOfCommandId(UNINSTALL);
+      // TODO (kylixrd): Investigate the usage of the hard-coded color.
       SetIcon(uninstall_index,
-              gfx::Image(gfx::CreateVectorIcon(vector_icons::kBusinessIcon, 16,
-                                               gfx::kChromeIconGrey)));
+              ui::ImageModel::FromVectorIcon(vector_icons::kBusinessIcon,
+                                             gfx::kChromeIconGrey, 16));
     }
   }
 

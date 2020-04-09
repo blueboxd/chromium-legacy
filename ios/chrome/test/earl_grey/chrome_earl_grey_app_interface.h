@@ -305,10 +305,10 @@
 // Triggers a sync cycle for a |type|.
 + (void)triggerSyncCycleForType:(syncer::ModelType)type;
 
-// Injects user demographics into the fake sync server. The year is the
-// un-noised birth year, and the gender corresponds to the options in
-// UserDemographicsProto::Gender..
-+ (void)addUserDemographicsToSyncServerWithBirthYear:(int)birthYear
+// Injects user demographics into the fake sync server. |rawBirthYear| is the
+// true birth year, pre-noise, and the gender corresponds to the proto enum
+// UserDemographicsProto::Gender.
++ (void)addUserDemographicsToSyncServerWithBirthYear:(int)rawBirthYear
                                               gender:(int)gender;
 
 // Clears the autofill profile for the given |GUID|.

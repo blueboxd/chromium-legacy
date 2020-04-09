@@ -36,6 +36,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/default_tick_clock.h"
 #include "services/network/public/cpp/features.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/origin_policy/origin_policy.h"
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
@@ -1920,6 +1921,19 @@ void DocumentLoader::InitializePrefetchedSignedExchangeManager() {
 PrefetchedSignedExchangeManager*
 DocumentLoader::GetPrefetchedSignedExchangeManager() const {
   return prefetched_signed_exchange_manager_;
+}
+
+base::TimeDelta DocumentLoader::RemainingTimeToLCPLimit() const {
+  // We shouldn't call this function before navigation start
+  DCHECK(!document_load_timing_.NavigationStart().is_null());
+  base::TimeTicks lcp_limit =
+      document_load_timing_.NavigationStart() +
+      base::TimeDelta::FromMilliseconds(
+          features::kAlignFontDisplayAutoTimeoutWithLCPGoalParam.Get());
+  base::TimeTicks now = clock_->NowTicks();
+  if (now < lcp_limit)
+    return lcp_limit - now;
+  return base::TimeDelta();
 }
 
 DEFINE_WEAK_IDENTIFIER_MAP(DocumentLoader)

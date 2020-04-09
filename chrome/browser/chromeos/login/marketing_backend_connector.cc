@@ -5,7 +5,9 @@
 #include "chrome/browser/chromeos/login/marketing_backend_connector.h"
 #include <cstddef>
 
+#include "base/bind_helpers.h"
 #include "base/json/json_writer.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -35,22 +37,22 @@ const char kAccessPointsApiEndpoint[] = "https://accesspoints.googleapis.com/";
 const char kChromebookEmailServicePath[] = "v2/chromebookEmailPreferences";
 constexpr size_t kResponseMaxBodySize = 4 * 1024 * 1024;  // 4MiB
 
-const std::string GetEndpoint() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kMarketingOptInUrl)) {
-    return command_line->GetSwitchValueASCII(switches::kMarketingOptInUrl);
-  } else {
-    return kAccessPointsApiEndpoint;
-  }
-}
-
 const GURL GetChromebookServiceEndpoint() {
-  return GURL(GetEndpoint() + std::string(kChromebookEmailServicePath));
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+
+  // Allows the URL to be completely overridden from the command line.
+  return (command_line->HasSwitch(switches::kMarketingOptInUrl))
+             ? GURL(command_line->GetSwitchValueASCII(
+                   switches::kMarketingOptInUrl))
+             : GURL(kAccessPointsApiEndpoint +
+                    std::string(kChromebookEmailServicePath));
 }
 
 // UMA Metrics
-void RecordUMAHistogram(MarketingBackendConnector::UmaEvent event) {
-  // TODO (https://crbug.com/1056672)
+void RecordUMAHistogram(
+    MarketingBackendConnector::BackendConnectorEvent event) {
+  base::UmaHistogramEnumeration("OOBE.MarketingOptInScreen.BackendConnector",
+                                event);
 }
 
 std::unique_ptr<network::ResourceRequest> GetResourceRequest() {
@@ -63,30 +65,41 @@ std::unique_ptr<network::ResourceRequest> GetResourceRequest() {
 }
 }  // namespace
 
-void MarketingBackendConnector::UpdateChromebookEmailPreferences() {
-  DCHECK(chromeos::ProfileHelper::Get());
-  DCHECK(user_manager::UserManager::Get());
+// static
+base::RepeatingCallback<void(std::string)>*
+    MarketingBackendConnector::request_finished_for_tests_ = nullptr;
+
+// static
+void MarketingBackendConnector::UpdateEmailPreferences(
+    Profile* profile,
+    const std::string& country_code) {
+  DCHECK(profile);
   VLOG(1) << "Subscribing the user to all chromebook email campaigns.";
 
-  const user_manager::User* user =
-      user_manager::UserManager::Get()->GetPrimaryUser();
-  if (!user)
+  // Early exit for testing
+  if (MarketingBackendConnector::request_finished_for_tests_ != nullptr) {
+    std::move(*MarketingBackendConnector::request_finished_for_tests_)
+        .Run(country_code);
     return;
+  }
 
-  Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
-  if (!profile)
+  // No requests without a Gaia account
+  if (profile->IsOffTheRecord())
     return;
 
   scoped_refptr<MarketingBackendConnector> ref =
       new MarketingBackendConnector(profile);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&MarketingBackendConnector::PerformRequest, ref));
+      FROM_HERE, base::Bind(&MarketingBackendConnector::PerformRequest, ref,
+                            country_code));
 }
 
 MarketingBackendConnector::MarketingBackendConnector(Profile* profile)
     : profile_(profile) {}
 
-void MarketingBackendConnector::PerformRequest() {
+void MarketingBackendConnector::PerformRequest(
+    const std::string& country_code) {
+  country_code_ = country_code;
   StartTokenFetch();
 }
 
@@ -94,7 +107,7 @@ void MarketingBackendConnector::StartTokenFetch() {
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile_);
   if (!identity_manager) {
-    RecordUMAHistogram(UmaEvent::ERROR_OTHER);
+    RecordUMAHistogram(BackendConnectorEvent::kErrorOther);
     return;
   }
 
@@ -118,7 +131,7 @@ void MarketingBackendConnector::OnAccessTokenRequestCompleted(
     SetTokenAndStartRequest();
   } else {
     VLOG(1) << "Auth Error: " << error.ToString();
-    RecordUMAHistogram(UmaEvent::ERROR_AUTH);
+    RecordUMAHistogram(BackendConnectorEvent::kErrorAuth);
   }
 }
 
@@ -192,29 +205,29 @@ void MarketingBackendConnector::OnSimpleLoaderCompleteInternal(
   switch (response_code) {
     case net::HTTP_OK: {
       VLOG(1) << "Successfully set the user preferences on the server.";
-      RecordUMAHistogram(UmaEvent::SUCCESS);
+      RecordUMAHistogram(BackendConnectorEvent::kSuccess);
       return;
     }
 
     case net::HTTP_INTERNAL_SERVER_ERROR: {
       VLOG(1) << "Internal server error occurred.";
-      RecordUMAHistogram(UmaEvent::ERROR_SERVER_INTERNAL);
+      RecordUMAHistogram(BackendConnectorEvent::kErrorServerInternal);
       return;
     }
 
     // Retry once in case of a timeout.
     case net::HTTP_REQUEST_TIMEOUT: {
-      RecordUMAHistogram(UmaEvent::ERROR_REQUEST_TIMEOUT);
+      RecordUMAHistogram(BackendConnectorEvent::kErrorRequestTimeout);
       return;
     }
   }
   // Failure. There is nothing we can do at this point.
-  RecordUMAHistogram(UmaEvent::ERROR_OTHER);
+  RecordUMAHistogram(BackendConnectorEvent::kErrorOther);
 }
 
 std::string MarketingBackendConnector::GetRequestContent() {
   base::Value request_dict(base::Value::Type::DICTIONARY);
-  request_dict.SetKey("country_code", base::Value("us"));
+  request_dict.SetKey("country_code", base::Value(country_code_));
   request_dict.SetKey("language", base::Value("en"));
 
   std::string request_content;
@@ -223,5 +236,15 @@ std::string MarketingBackendConnector::GetRequestContent() {
 }
 
 MarketingBackendConnector::~MarketingBackendConnector() {}
+
+ScopedRequestCallbackSetter::ScopedRequestCallbackSetter(
+    std::unique_ptr<base::RepeatingCallback<void(std::string)>> callback)
+    : callback_(std::move(callback)) {
+  MarketingBackendConnector::request_finished_for_tests_ = callback_.get();
+}
+
+ScopedRequestCallbackSetter::~ScopedRequestCallbackSetter() {
+  MarketingBackendConnector::request_finished_for_tests_ = nullptr;
+}
 
 }  // namespace chromeos

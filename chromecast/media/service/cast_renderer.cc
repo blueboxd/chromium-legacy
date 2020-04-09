@@ -60,13 +60,13 @@ CastRenderer::CastRenderer(
     VideoModeSwitcher* video_mode_switcher,
     VideoResolutionPolicy* video_resolution_policy,
     const base::UnguessableToken& overlay_plane_id,
-    service_manager::mojom::InterfaceProvider* host_interfaces)
+    ::media::mojom::FrameInterfaceFactory* frame_interfaces)
     : backend_factory_(backend_factory),
       task_runner_(task_runner),
       video_mode_switcher_(video_mode_switcher),
       video_resolution_policy_(video_resolution_policy),
       overlay_plane_id_(overlay_plane_id),
-      host_interfaces_(host_interfaces),
+      frame_interfaces_(frame_interfaces),
       client_(nullptr),
       cast_cdm_context_(nullptr),
       media_task_runner_factory_(
@@ -79,10 +79,9 @@ CastRenderer::CastRenderer(
   if (video_resolution_policy_)
     video_resolution_policy_->AddObserver(this);
 
-  if (host_interfaces_) {
-    host_interfaces_->GetInterface(
-        chromecast::mojom::ServiceConnector::Name_,
-        service_connector_.BindNewPipeAndPassReceiver().PassPipe());
+  if (frame_interfaces_) {
+    frame_interfaces_->BindEmbedderReceiver(mojo::GenericPendingReceiver(
+        service_connector_.BindNewPipeAndPassReceiver()));
   }
 }
 
@@ -131,11 +130,9 @@ void CastRenderer::OnSubscribeToVideoGeometryChange(
   // Retrieve application_media_info_manager_remote_ if it is available via
   // CastApplicationMediaInfoManager.
 
-  if (host_interfaces_) {
-    host_interfaces_->GetInterface(
-        ::media::mojom::CastApplicationMediaInfoManager::Name_,
-        application_media_info_manager_remote_.BindNewPipeAndPassReceiver()
-            .PassPipe());
+  if (frame_interfaces_) {
+    frame_interfaces_->BindEmbedderReceiver(mojo::GenericPendingReceiver(
+        application_media_info_manager_remote_.BindNewPipeAndPassReceiver()));
   }
 
   if (application_media_info_manager_remote_) {

@@ -3,10 +3,12 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <string>
 
 #include "base/bind.h"
+#include "base/files/file_path.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -45,6 +47,7 @@
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/ukm/ukm_service.h"
+#include "components/ukm/ukm_test_helper.h"
 #include "components/unified_consent/unified_consent_service.h"
 #include "components/variations/service/variations_field_trial_creator.h"
 #include "components/version_info/version_info.h"
@@ -79,6 +82,10 @@ void ClearBrowsingData(Profile* profile) {
   observer.BlockUntilCompletion();
   // Make sure HistoryServiceObservers have a chance to be notified.
   content::RunAllTasksUntilIdle();
+}
+
+ukm::UkmService* GetUkmService() {
+  return g_browser_process->GetMetricsServicesManager()->GetUkmService();
 }
 
 }  // namespace
@@ -147,93 +154,23 @@ class SyncConnectionOkChecker : public SingleClientStatusChangeChecker {
 class UkmBrowserTestBase : public SyncTest {
  public:
   UkmBrowserTestBase() : SyncTest(SINGLE_CLIENT) {
-    // Explicitly enable UKM and disable the MetricsReporting (which should
-    // not affect UKM).
+    // TODO(crbug.com/1068796): Replace kMetricsReportingFeature with a more
+    // apt name.
+    // Explicitly enable UKM and disable metrics reporting. Disabling metrics
+    // reporting should affect only UMA--not UKM.
     scoped_feature_list_.InitWithFeatures({ukm::kUkmFeature},
                                           {internal::kMetricsReportingFeature});
   }
 
-  bool ukm_enabled() const {
-    auto* service = ukm_service();
-    return service ? service->recording_enabled_ : false;
-  }
-  bool ukm_extensions_enabled() const {
-    auto* service = ukm_service();
-    return service ? service->extensions_enabled_ : false;
-  }
-  uint64_t client_id() const {
-    auto* service = ukm_service();
-    DCHECK(service);
-    // Can be non-zero only if UpdateUploadPermissions(true) has been called.
-    return service->client_id_;
-  }
-  ukm::UkmSource* GetSource(ukm::SourceId source_id) {
-    auto* service = ukm_service();
-    if (!service)
-      return nullptr;
-    auto it = service->sources().find(source_id);
-    return it == service->sources().end() ? nullptr : it->second.get();
-  }
-  ukm::UkmSource* NavigateAndGetSource(Browser* browser, const GURL& url) {
+  ukm::UkmSource* NavigateAndGetSource(const GURL& url,
+                                       Browser* browser,
+                                       ukm::UkmTestHelper* ukm_test_helper) {
     content::NavigationHandleObserver observer(
         browser->tab_strip_model()->GetActiveWebContents(), url);
     ui_test_utils::NavigateToURL(browser, url);
     const ukm::SourceId source_id = ukm::ConvertToSourceId(
         observer.navigation_id(), ukm::SourceIdType::NAVIGATION_ID);
-    return GetSource(source_id);
-  }
-  bool HasSource(ukm::SourceId source_id) const {
-    auto* service = ukm_service();
-    return service && base::Contains(service->sources(), source_id);
-  }
-  void RecordDummySource(ukm::SourceId source_id) {
-    auto* service = ukm_service();
-    if (service)
-      service->UpdateSourceURL(source_id, GURL("http://example.com"));
-  }
-  bool IsSourceMarkedAsObsolete(ukm::SourceId source_id) {
-    auto* service = ukm_service();
-    DCHECK(service);
-    return base::Contains(service->recordings_.obsolete_source_ids, source_id);
-  }
-  void BuildAndStoreUkmLog() {
-    auto* service = ukm_service();
-    DCHECK(service);
-    // Wait for initialization to complete before flushing.
-    base::RunLoop run_loop;
-    service->SetInitializationCompleteCallbackForTesting(run_loop.QuitClosure());
-    run_loop.Run();
-    DCHECK(service->initialize_complete_);
-
-    service->Flush();
-    DCHECK(service->reporting_service_.ukm_log_store()->has_unsent_logs());
-  }
-  bool HasUnsentUkmLogs() {
-    auto* service = ukm_service();
-    DCHECK(service);
-    return service->reporting_service_.ukm_log_store()->has_unsent_logs();
-  }
-
-  ukm::Report GetUkmReport() {
-    EXPECT_TRUE(HasUnsentUkmLogs());
-
-    UnsentLogStore* log_store =
-        ukm_service()->reporting_service_.ukm_log_store();
-    if (log_store->has_staged_log()) {
-      // For testing purposes, we are examining the content of a staged log
-      // without ever sending the log, so discard any previously staged log.
-      log_store->DiscardStagedLog();
-    }
-    log_store->StageNextLog();
-    EXPECT_TRUE(log_store->has_staged_log());
-
-    std::string uncompressed_log_data;
-    EXPECT_TRUE(compression::GzipUncompress(log_store->staged_log(),
-                                            &uncompressed_log_data));
-
-    ukm::Report report;
-    EXPECT_TRUE(report.ParseFromString(uncompressed_log_data));
-    return report;
+    return ukm_test_helper->GetSource(source_id);
   }
 
  protected:
@@ -270,10 +207,6 @@ class UkmBrowserTestBase : public SyncTest {
   }
 
  private:
-  ukm::UkmService* ukm_service() const {
-    return g_browser_process->GetMetricsServicesManager()->GetUkmService();
-  }
-
   base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(UkmBrowserTestBase);
@@ -345,27 +278,29 @@ class UkmConsentParamBrowserTest : public UkmBrowserTestBase,
 
  private:
   base::FilePath local_state_path_;
+
   DISALLOW_COPY_AND_ASSIGN(UkmConsentParamBrowserTest);
 };
 
 class UkmEnabledChecker : public SingleClientStatusChangeChecker {
  public:
-  UkmEnabledChecker(UkmBrowserTestBase* test,
-                    syncer::ProfileSyncService* service,
+  UkmEnabledChecker(syncer::ProfileSyncService* service,
+                    ukm::UkmTestHelper* ukm_test_helper,
                     bool want_enabled)
       : SingleClientStatusChangeChecker(service),
-        test_(test),
+        ukm_test_helper_(ukm_test_helper),
         want_enabled_(want_enabled) {}
 
   // StatusChangeChecker:
   bool IsExitConditionSatisfied(std::ostream* os) override {
-    *os << "Waiting for ukm_enabled=" << (want_enabled_ ? "true" : "false");
-    return test_->ukm_enabled() == want_enabled_;
+    *os << "Waiting for IsUkmEnabled=" << (want_enabled_ ? "true" : "false");
+    return ukm_test_helper_->IsRecordingEnabled() == want_enabled_;
   }
 
  private:
-  UkmBrowserTestBase* const test_;
+  ukm::UkmTestHelper* const ukm_test_helper_;
   const bool want_enabled_;
+
   DISALLOW_COPY_AND_ASSIGN(UkmEnabledChecker);
 };
 
@@ -404,6 +339,7 @@ class UkmBrowserTestWithDemographics
 // chrome/android/javatests/src/org/chromium/chrome/browser/metrics/
 // UkmTest.java.
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, RegularPlusIncognitoCheck) {
+  ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -411,28 +347,28 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, RegularPlusIncognitoCheck) {
       EnableSyncForProfile(profile);
 
   Browser* sync_browser = CreateBrowser(profile);
-  EXPECT_TRUE(ukm_enabled());
-  uint64_t original_client_id = client_id();
+  EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
+  uint64_t original_client_id = ukm_test_helper.GetClientId();
   EXPECT_NE(0U, original_client_id);
 
   Browser* incognito_browser = CreateIncognitoBrowser();
-  EXPECT_FALSE(ukm_enabled());
+  EXPECT_FALSE(ukm_test_helper.IsRecordingEnabled());
 
   // Opening another regular browser mustn't enable UKM.
   Browser* regular_browser = CreateBrowser(profile);
-  EXPECT_FALSE(ukm_enabled());
+  EXPECT_FALSE(ukm_test_helper.IsRecordingEnabled());
 
   // Opening and closing another Incognito browser mustn't enable UKM.
   CloseBrowserSynchronously(CreateIncognitoBrowser());
-  EXPECT_FALSE(ukm_enabled());
+  EXPECT_FALSE(ukm_test_helper.IsRecordingEnabled());
 
   CloseBrowserSynchronously(regular_browser);
-  EXPECT_FALSE(ukm_enabled());
+  EXPECT_FALSE(ukm_test_helper.IsRecordingEnabled());
 
   CloseBrowserSynchronously(incognito_browser);
-  EXPECT_TRUE(ukm_enabled());
+  EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
   // Client ID should not have been reset.
-  EXPECT_EQ(original_client_id, client_id());
+  EXPECT_EQ(original_client_id, ukm_test_helper.GetClientId());
 
   harness->service()->GetUserSettings()->SetSyncRequested(false);
   CloseBrowserSynchronously(sync_browser);
@@ -443,6 +379,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, RegularPlusIncognitoCheck) {
 // chrome/android/javatests/src/org/chromium/chrome/browser/metrics/
 // UkmTest.java.
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, IncognitoPlusRegularCheck) {
+  ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -450,13 +387,13 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, IncognitoPlusRegularCheck) {
       EnableSyncForProfile(profile);
 
   Browser* incognito_browser = CreateIncognitoBrowser();
-  EXPECT_FALSE(ukm_enabled());
+  EXPECT_FALSE(ukm_test_helper.IsRecordingEnabled());
 
   Browser* sync_browser = CreateBrowser(profile);
-  EXPECT_FALSE(ukm_enabled());
+  EXPECT_FALSE(ukm_test_helper.IsRecordingEnabled());
 
   CloseBrowserSynchronously(incognito_browser);
-  EXPECT_TRUE(ukm_enabled());
+  EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
 
   harness->service()->GetUserSettings()->SetSyncRequested(false);
   CloseBrowserSynchronously(sync_browser);
@@ -464,6 +401,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, IncognitoPlusRegularCheck) {
 
 // Make sure that UKM is disabled while a guest profile's window is open.
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, RegularPlusGuestCheck) {
+  ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -471,20 +409,20 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, RegularPlusGuestCheck) {
       EnableSyncForProfile(profile);
 
   Browser* regular_browser = CreateBrowser(profile);
-  EXPECT_TRUE(ukm_enabled());
-  uint64_t original_client_id = client_id();
+  EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
+  uint64_t original_client_id = ukm_test_helper.GetClientId();
 
   // Create browser for guest profile. Only "off the record" browsers may be
   // opened in this mode.
   Profile* guest_profile = CreateGuestProfile();
   Browser* guest_browser = CreateIncognitoBrowser(guest_profile);
-  EXPECT_FALSE(ukm_enabled());
+  EXPECT_FALSE(ukm_test_helper.IsRecordingEnabled());
 
   CloseBrowserSynchronously(guest_browser);
   // TODO(crbug/746076): UKM doesn't actually get re-enabled yet.
-  // EXPECT_TRUE(ukm_enabled());
+  // EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
   // Client ID should not have been reset.
-  EXPECT_EQ(original_client_id, client_id());
+  EXPECT_EQ(original_client_id, ukm_test_helper.GetClientId());
 
   harness->service()->GetUserSettings()->SetSyncRequested(false);
   CloseBrowserSynchronously(regular_browser);
@@ -492,6 +430,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, RegularPlusGuestCheck) {
 
 // Make sure that UKM is disabled while an non-sync profile's window is open.
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, OpenNonSyncCheck) {
+  ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -499,19 +438,19 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, OpenNonSyncCheck) {
       EnableSyncForProfile(profile);
 
   Browser* sync_browser = CreateBrowser(profile);
-  EXPECT_TRUE(ukm_enabled());
-  uint64_t original_client_id = client_id();
+  EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
+  uint64_t original_client_id = ukm_test_helper.GetClientId();
   EXPECT_NE(0U, original_client_id);
 
   Profile* nonsync_profile = CreateNonSyncProfile();
   Browser* nonsync_browser = CreateBrowser(nonsync_profile);
-  EXPECT_FALSE(ukm_enabled());
+  EXPECT_FALSE(ukm_test_helper.IsRecordingEnabled());
 
   CloseBrowserSynchronously(nonsync_browser);
   // TODO(crbug/746076): UKM doesn't actually get re-enabled yet.
-  // EXPECT_TRUE(ukm_enabled());
+  // EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
   // Client ID should not have been reset.
-  EXPECT_EQ(original_client_id, client_id());
+  EXPECT_EQ(original_client_id, ukm_test_helper.GetClientId());
 
   harness->service()->GetUserSettings()->SetSyncRequested(false);
   CloseBrowserSynchronously(sync_browser);
@@ -522,6 +461,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, OpenNonSyncCheck) {
 // chrome/android/javatests/src/org/chromium/chrome/browser/sync/
 // UkmTest.java.
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MetricsConsentCheck) {
+  ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -529,29 +469,30 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MetricsConsentCheck) {
       EnableSyncForProfile(profile);
 
   Browser* sync_browser = CreateBrowser(profile);
-  EXPECT_TRUE(ukm_enabled());
-  uint64_t original_client_id = client_id();
+  EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
+  uint64_t original_client_id = ukm_test_helper.GetClientId();
   EXPECT_NE(0U, original_client_id);
 
   // Make sure there is a persistent log.
-  BuildAndStoreUkmLog();
-  EXPECT_TRUE(HasUnsentUkmLogs());
+  ukm_test_helper.BuildAndStoreLog();
+  EXPECT_TRUE(ukm_test_helper.HasUnsentLogs());
 
   metrics_consent.Update(false);
-  EXPECT_FALSE(ukm_enabled());
-  EXPECT_FALSE(HasUnsentUkmLogs());
+  EXPECT_FALSE(ukm_test_helper.IsRecordingEnabled());
+  EXPECT_FALSE(ukm_test_helper.HasUnsentLogs());
 
   metrics_consent.Update(true);
 
-  EXPECT_TRUE(ukm_enabled());
+  EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
   // Client ID should have been reset.
-  EXPECT_NE(original_client_id, client_id());
+  EXPECT_NE(original_client_id, ukm_test_helper.GetClientId());
 
   harness->service()->GetUserSettings()->SetSyncRequested(false);
   CloseBrowserSynchronously(sync_browser);
 }
 
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, LogProtoData) {
+  ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -559,30 +500,30 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, LogProtoData) {
       EnableSyncForProfile(profile);
 
   Browser* sync_browser = CreateBrowser(profile);
-  EXPECT_TRUE(ukm_enabled());
-  uint64_t original_client_id = client_id();
+  EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
+  uint64_t original_client_id = ukm_test_helper.GetClientId();
   EXPECT_NE(0U, original_client_id);
 
   // Make sure there is a persistent log.
-  BuildAndStoreUkmLog();
-  EXPECT_TRUE(HasUnsentUkmLogs());
+  ukm_test_helper.BuildAndStoreLog();
+  EXPECT_TRUE(ukm_test_helper.HasUnsentLogs());
 
   // Check log contents.
-  ukm::Report report = GetUkmReport();
-  EXPECT_EQ(original_client_id, report.client_id());
+  std::unique_ptr<ukm::Report> report = ukm_test_helper.GetUkmReport();
+  EXPECT_EQ(original_client_id, report->client_id());
   // Note: The version number reported in the proto may have a suffix, such as
   // "-64-devel", so use use StartsWith() rather than checking for equality.
-  EXPECT_TRUE(base::StartsWith(report.system_profile().app_version(),
+  EXPECT_TRUE(base::StartsWith(report->system_profile().app_version(),
                                version_info::GetVersionNumber(),
                                base::CompareCase::SENSITIVE));
 
 // Chrome OS hardware class comes from a different API than on other platforms.
 #if defined(OS_CHROMEOS)
   EXPECT_EQ(variations::VariationsFieldTrialCreator::GetShortHardwareClass(),
-            report.system_profile().hardware().hardware_class());
+            report->system_profile().hardware().hardware_class());
 #else   // !defined(OS_CHROMEOS)
   EXPECT_EQ(base::SysInfo::HardwareModelName(),
-            report.system_profile().hardware().hardware_class());
+            report->system_profile().hardware().hardware_class());
 #endif  // defined(OS_CHROMEOS)
 
   harness->service()->GetUserSettings()->SetSyncRequested(false);
@@ -592,6 +533,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, LogProtoData) {
 // TODO(crbug/1016118): Add the remaining test cases.
 IN_PROC_BROWSER_TEST_P(UkmBrowserTestWithDemographics,
                        AddSyncedUserBirthYearAndGenderToProtoData) {
+  ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   test::DemographicsTestParams param = GetParam();
   MetricsConsentOverride metrics_consent(true);
 
@@ -616,24 +558,24 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTestWithDemographics,
   ASSERT_EQ(1, num_clients());
 
   Browser* sync_browser = CreateBrowser(test_profile);
-  EXPECT_TRUE(ukm_enabled());
-  uint64_t original_client_id = client_id();
+  EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
+  uint64_t original_client_id = ukm_test_helper.GetClientId();
   EXPECT_NE(0U, original_client_id);
 
   // Log UKM metrics report.
-  BuildAndStoreUkmLog();
-  EXPECT_TRUE(HasUnsentUkmLogs());
+  ukm_test_helper.BuildAndStoreLog();
+  EXPECT_TRUE(ukm_test_helper.HasUnsentLogs());
 
   // Check the log's content and the histogram.
-  ukm::Report report = GetUkmReport();
+  std::unique_ptr<ukm::Report> report = ukm_test_helper.GetUkmReport();
   if (param.expect_reported_demographics) {
     EXPECT_EQ(test::GetNoisedBirthYear(test_birth_year, *test_profile),
-              report.user_demographics().birth_year());
-    EXPECT_EQ(test_gender, report.user_demographics().gender());
+              report->user_demographics().birth_year());
+    EXPECT_EQ(test_gender, report->user_demographics().gender());
     histogram.ExpectUniqueSample("UKM.UserDemographics.Status",
                                  syncer::UserDemographicsStatus::kSuccess, 1);
   } else {
-    EXPECT_FALSE(report.has_user_demographics());
+    EXPECT_FALSE(report->has_user_demographics());
     histogram.ExpectTotalCount("UKM.UserDemographics.Status", /*count=*/0);
   }
 
@@ -662,6 +604,7 @@ INSTANTIATE_TEST_SUITE_P(,
 // Verifies that network provider attaches effective connection type correctly
 // to the UKM report.
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, NetworkProviderPopulatesSystemProfile) {
+  ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   // Override network quality to 2G. This should cause the
   // |max_effective_connection_type| in the system profile to be set to 2G.
   g_browser_process->network_quality_tracker()
@@ -675,8 +618,8 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, NetworkProviderPopulatesSystemProfile) {
       EnableSyncForProfile(profile);
 
   Browser* sync_browser = CreateBrowser(profile);
-  EXPECT_TRUE(ukm_enabled());
-  uint64_t original_client_id = client_id();
+  EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
+  uint64_t original_client_id = ukm_test_helper.GetClientId();
   EXPECT_NE(0U, original_client_id);
 
   // Override network quality to 4G. This should cause the
@@ -686,15 +629,15 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, NetworkProviderPopulatesSystemProfile) {
           net::EFFECTIVE_CONNECTION_TYPE_4G);
 
   // Make sure there is a persistent log.
-  BuildAndStoreUkmLog();
-  EXPECT_TRUE(HasUnsentUkmLogs());
+  ukm_test_helper.BuildAndStoreLog();
+  EXPECT_TRUE(ukm_test_helper.HasUnsentLogs());
   // Check log contents.
-  ukm::Report report = GetUkmReport();
+  std::unique_ptr<ukm::Report> report = ukm_test_helper.GetUkmReport();
 
   EXPECT_EQ(SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_2G,
-            report.system_profile().network().min_effective_connection_type());
+            report->system_profile().network().min_effective_connection_type());
   EXPECT_EQ(SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_4G,
-            report.system_profile().network().max_effective_connection_type());
+            report->system_profile().network().max_effective_connection_type());
 
   harness->service()->GetUserSettings()->SetSyncRequested(false);
   CloseBrowserSynchronously(sync_browser);
@@ -705,19 +648,20 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, NetworkProviderPopulatesSystemProfile) {
 // chrome/android/javatests/src/org/chromium/chrome/browser/sync/
 // UkmTest.java.
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, ConsentAddedButNoSyncCheck) {
+  ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   MetricsConsentOverride metrics_consent(false);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
   Browser* browser = CreateBrowser(profile);
-  EXPECT_FALSE(ukm_enabled());
+  EXPECT_FALSE(ukm_test_helper.IsRecordingEnabled());
 
   metrics_consent.Update(true);
-  EXPECT_FALSE(ukm_enabled());
+  EXPECT_FALSE(ukm_test_helper.IsRecordingEnabled());
 
   std::unique_ptr<ProfileSyncServiceHarness> harness =
       EnableSyncForProfile(profile);
   g_browser_process->GetMetricsServicesManager()->UpdateUploadPermissions(true);
-  EXPECT_TRUE(ukm_enabled());
+  EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
 
   harness->service()->GetUserSettings()->SetSyncRequested(false);
   CloseBrowserSynchronously(browser);
@@ -726,6 +670,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, ConsentAddedButNoSyncCheck) {
 // Make sure that extension URLs are disabled when an open sync window
 // disables it.
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, SingleDisableExtensionsSyncCheck) {
+  ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -733,22 +678,22 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, SingleDisableExtensionsSyncCheck) {
       EnableSyncForProfile(profile);
 
   Browser* sync_browser = CreateBrowser(profile);
-  EXPECT_TRUE(ukm_enabled());
-  EXPECT_TRUE(ukm_extensions_enabled());
-  uint64_t original_client_id = client_id();
+  EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
+  EXPECT_TRUE(ukm_test_helper.IsExtensionRecordingEnabled());
+  uint64_t original_client_id = ukm_test_helper.GetClientId();
   EXPECT_NE(0U, original_client_id);
 
   ASSERT_TRUE(
       harness->DisableSyncForType(syncer::UserSelectableType::kExtensions));
-  EXPECT_TRUE(ukm_enabled());
-  EXPECT_FALSE(ukm_extensions_enabled());
+  EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
+  EXPECT_FALSE(ukm_test_helper.IsExtensionRecordingEnabled());
 
   ASSERT_TRUE(
       harness->EnableSyncForType(syncer::UserSelectableType::kExtensions));
-  EXPECT_TRUE(ukm_enabled());
-  EXPECT_TRUE(ukm_extensions_enabled());
+  EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
+  EXPECT_TRUE(ukm_test_helper.IsExtensionRecordingEnabled());
   // Client ID should not be reset.
-  EXPECT_EQ(original_client_id, client_id());
+  EXPECT_EQ(original_client_id, ukm_test_helper.GetClientId());
 
   harness->service()->GetUserSettings()->SetSyncRequested(false);
   CloseBrowserSynchronously(sync_browser);
@@ -757,6 +702,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, SingleDisableExtensionsSyncCheck) {
 // Make sure that extension URLs are disabled when any open sync window
 // disables it.
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MultiDisableExtensionsSyncCheck) {
+  ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile1 = ProfileManager::GetActiveUserProfile();
@@ -764,26 +710,26 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MultiDisableExtensionsSyncCheck) {
       EnableSyncForProfile(profile1);
 
   Browser* browser1 = CreateBrowser(profile1);
-  EXPECT_TRUE(ukm_enabled());
-  uint64_t original_client_id = client_id();
+  EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
+  uint64_t original_client_id = ukm_test_helper.GetClientId();
   EXPECT_NE(0U, original_client_id);
 
   Profile* profile2 = CreateNonSyncProfile();
   std::unique_ptr<ProfileSyncServiceHarness> harness2 =
       EnableSyncForProfile(profile2);
   Browser* browser2 = CreateBrowser(profile2);
-  EXPECT_TRUE(ukm_enabled());
-  EXPECT_TRUE(ukm_extensions_enabled());
-  EXPECT_EQ(original_client_id, client_id());
+  EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
+  EXPECT_TRUE(ukm_test_helper.IsExtensionRecordingEnabled());
+  EXPECT_EQ(original_client_id, ukm_test_helper.GetClientId());
 
   harness2->DisableSyncForType(syncer::UserSelectableType::kExtensions);
-  EXPECT_TRUE(ukm_enabled());
-  EXPECT_FALSE(ukm_extensions_enabled());
+  EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
+  EXPECT_FALSE(ukm_test_helper.IsExtensionRecordingEnabled());
 
   harness2->EnableSyncForType(syncer::UserSelectableType::kExtensions);
-  EXPECT_TRUE(ukm_enabled());
-  EXPECT_TRUE(ukm_extensions_enabled());
-  EXPECT_EQ(original_client_id, client_id());
+  EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
+  EXPECT_TRUE(ukm_test_helper.IsExtensionRecordingEnabled());
+  EXPECT_EQ(original_client_id, ukm_test_helper.GetClientId());
 
   harness2->service()->GetUserSettings()->SetSyncRequested(false);
   harness1->service()->GetUserSettings()->SetSyncRequested(false);
@@ -792,6 +738,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MultiDisableExtensionsSyncCheck) {
 }
 
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, LogsTabId) {
+  ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   ASSERT_TRUE(embedded_test_server()->Start());
   MetricsConsentOverride metrics_consent(true);
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -799,27 +746,31 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, LogsTabId) {
       EnableSyncForProfile(profile);
   Browser* sync_browser = CreateBrowser(profile);
 
-  const ukm::UkmSource* first_source = NavigateAndGetSource(
-      sync_browser, embedded_test_server()->GetURL("/title1.html"));
+  const ukm::UkmSource* first_source =
+      NavigateAndGetSource(embedded_test_server()->GetURL("/title1.html"),
+                           sync_browser, &ukm_test_helper);
 
   // Tab ids are incremented starting from 1. Since we started a new sync
   // browser, this is the second tab.
   EXPECT_EQ(2, first_source->navigation_data().tab_id);
 
   // Ensure the tab id is constant in a single tab.
-  const ukm::UkmSource* second_source = NavigateAndGetSource(
-      sync_browser, embedded_test_server()->GetURL("/title2.html"));
+  const ukm::UkmSource* second_source =
+      NavigateAndGetSource(embedded_test_server()->GetURL("/title2.html"),
+                           sync_browser, &ukm_test_helper);
   EXPECT_EQ(first_source->navigation_data().tab_id,
             second_source->navigation_data().tab_id);
 
   // Add a new tab, it should get a new tab id.
   chrome::NewTab(sync_browser);
-  const ukm::UkmSource* third_source = NavigateAndGetSource(
-      sync_browser, embedded_test_server()->GetURL("/title3.html"));
+  const ukm::UkmSource* third_source =
+      NavigateAndGetSource(embedded_test_server()->GetURL("/title3.html"),
+                           sync_browser, &ukm_test_helper);
   EXPECT_EQ(3, third_source->navigation_data().tab_id);
 }
 
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, LogsPreviousSourceId) {
+  ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   ASSERT_TRUE(embedded_test_server()->Start());
   MetricsConsentOverride metrics_consent(true);
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -827,11 +778,13 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, LogsPreviousSourceId) {
       EnableSyncForProfile(profile);
   Browser* sync_browser = CreateBrowser(profile);
 
-  const ukm::UkmSource* first_source = NavigateAndGetSource(
-      sync_browser, embedded_test_server()->GetURL("/title1.html"));
+  const ukm::UkmSource* first_source =
+      NavigateAndGetSource(embedded_test_server()->GetURL("/title1.html"),
+                           sync_browser, &ukm_test_helper);
 
-  const ukm::UkmSource* second_source = NavigateAndGetSource(
-      sync_browser, embedded_test_server()->GetURL("/title2.html"));
+  const ukm::UkmSource* second_source =
+      NavigateAndGetSource(embedded_test_server()->GetURL("/title2.html"),
+                           sync_browser, &ukm_test_helper);
   EXPECT_EQ(first_source->id(),
             second_source->navigation_data().previous_source_id);
 
@@ -847,20 +800,22 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, LogsPreviousSourceId) {
   EXPECT_NE(opener, sync_browser->tab_strip_model()->GetActiveWebContents());
   ukm::SourceId new_id = ukm::GetSourceIdForWebContentsDocument(
       sync_browser->tab_strip_model()->GetActiveWebContents());
-  ukm::UkmSource* new_tab_source = GetSource(new_id);
+  ukm::UkmSource* new_tab_source = ukm_test_helper.GetSource(new_id);
   EXPECT_NE(nullptr, new_tab_source);
   EXPECT_EQ(ukm::kInvalidSourceId,
             new_tab_source->navigation_data().previous_source_id);
 
   // Subsequent navigations within the tab should get a previous_source_id field
   // set.
-  const ukm::UkmSource* subsequent_source = NavigateAndGetSource(
-      sync_browser, embedded_test_server()->GetURL("/title3.html"));
+  const ukm::UkmSource* subsequent_source =
+      NavigateAndGetSource(embedded_test_server()->GetURL("/title3.html"),
+                           sync_browser, &ukm_test_helper);
   EXPECT_EQ(new_tab_source->id(),
             subsequent_source->navigation_data().previous_source_id);
 }
 
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, LogsOpenerSource) {
+  ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   ASSERT_TRUE(embedded_test_server()->Start());
   MetricsConsentOverride metrics_consent(true);
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -868,8 +823,9 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, LogsOpenerSource) {
       EnableSyncForProfile(profile);
   Browser* sync_browser = CreateBrowser(profile);
 
-  const ukm::UkmSource* first_source = NavigateAndGetSource(
-      sync_browser, embedded_test_server()->GetURL("/title1.html"));
+  const ukm::UkmSource* first_source =
+      NavigateAndGetSource(embedded_test_server()->GetURL("/title1.html"),
+                           sync_browser, &ukm_test_helper);
   // This tab was not opened by another tab, so it should not have an opener
   // id.
   EXPECT_EQ(ukm::kInvalidSourceId,
@@ -887,14 +843,15 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, LogsOpenerSource) {
   EXPECT_NE(opener, sync_browser->tab_strip_model()->GetActiveWebContents());
   ukm::SourceId new_id = ukm::GetSourceIdForWebContentsDocument(
       sync_browser->tab_strip_model()->GetActiveWebContents());
-  ukm::UkmSource* new_tab_source = GetSource(new_id);
+  ukm::UkmSource* new_tab_source = ukm_test_helper.GetSource(new_id);
   EXPECT_NE(nullptr, new_tab_source);
   EXPECT_EQ(first_source->id(),
             new_tab_source->navigation_data().opener_source_id);
 
   // Subsequent navigations within the tab should not get an opener set.
-  const ukm::UkmSource* subsequent_source = NavigateAndGetSource(
-      sync_browser, embedded_test_server()->GetURL("/title3.html"));
+  const ukm::UkmSource* subsequent_source =
+      NavigateAndGetSource(embedded_test_server()->GetURL("/title3.html"),
+                           sync_browser, &ukm_test_helper);
   EXPECT_EQ(ukm::kInvalidSourceId,
             subsequent_source->navigation_data().opener_source_id);
 }
@@ -907,6 +864,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, LogsOpenerSource) {
 // chrome/android/javatests/src/org/chromium/chrome/browser/sync/
 // UkmTest.java.
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, SingleSyncSignoutCheck) {
+  ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -914,13 +872,13 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, SingleSyncSignoutCheck) {
       EnableSyncForProfile(profile);
 
   Browser* sync_browser = CreateBrowser(profile);
-  EXPECT_TRUE(ukm_enabled());
-  uint64_t original_client_id = client_id();
+  EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
+  uint64_t original_client_id = ukm_test_helper.GetClientId();
   EXPECT_NE(0U, original_client_id);
 
   harness->SignOutPrimaryAccount();
-  EXPECT_FALSE(ukm_enabled());
-  EXPECT_NE(original_client_id, client_id());
+  EXPECT_FALSE(ukm_test_helper.IsRecordingEnabled());
+  EXPECT_NE(original_client_id, ukm_test_helper.GetClientId());
 
   harness->service()->GetUserSettings()->SetSyncRequested(false);
   CloseBrowserSynchronously(sync_browser);
@@ -932,6 +890,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, SingleSyncSignoutCheck) {
 #if !defined(OS_CHROMEOS)
 // Make sure that UKM is disabled when any profile signs out of Sync.
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MultiSyncSignoutCheck) {
+  ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile1 = ProfileManager::GetActiveUserProfile();
@@ -939,20 +898,20 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MultiSyncSignoutCheck) {
       EnableSyncForProfile(profile1);
 
   Browser* browser1 = CreateBrowser(profile1);
-  EXPECT_TRUE(ukm_enabled());
-  uint64_t original_client_id = client_id();
+  EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
+  uint64_t original_client_id = ukm_test_helper.GetClientId();
   EXPECT_NE(0U, original_client_id);
 
   Profile* profile2 = CreateNonSyncProfile();
   std::unique_ptr<ProfileSyncServiceHarness> harness2 =
       EnableSyncForProfile(profile2);
   Browser* browser2 = CreateBrowser(profile2);
-  EXPECT_TRUE(ukm_enabled());
-  EXPECT_EQ(original_client_id, client_id());
+  EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
+  EXPECT_EQ(original_client_id, ukm_test_helper.GetClientId());
 
   harness2->SignOutPrimaryAccount();
-  EXPECT_FALSE(ukm_enabled());
-  EXPECT_NE(original_client_id, client_id());
+  EXPECT_FALSE(ukm_test_helper.IsRecordingEnabled());
+  EXPECT_NE(original_client_id, ukm_test_helper.GetClientId());
 
   harness2->service()->GetUserSettings()->SetSyncRequested(false);
   harness1->service()->GetUserSettings()->SetSyncRequested(false);
@@ -964,6 +923,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MultiSyncSignoutCheck) {
 // Make sure that if history/sync services weren't available when we tried to
 // attach listeners, UKM is not enabled.
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, ServiceListenerInitFailedCheck) {
+  ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   MetricsConsentOverride metrics_consent(true);
   ChromeMetricsServiceClient::SetNotificationListenerSetupFailedForTesting(
       true);
@@ -973,15 +933,15 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, ServiceListenerInitFailedCheck) {
       EnableSyncForProfile(profile);
 
   Browser* sync_browser = CreateBrowser(profile);
-  EXPECT_FALSE(ukm_enabled());
+  EXPECT_FALSE(ukm_test_helper.IsRecordingEnabled());
   harness->service()->GetUserSettings()->SetSyncRequested(false);
   CloseBrowserSynchronously(sync_browser);
 }
 
 // Make sure that UKM is not affected by MetricsReporting Feature (sampling).
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MetricsReportingCheck) {
+  ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   // Need to set the Metrics Default to OPT_OUT to trigger MetricsReporting.
-  DCHECK(g_browser_process);
   PrefService* local_state = g_browser_process->local_state();
   ForceRecordMetricsReportingDefaultState(local_state,
                                           EnableMetricsDefault::OPT_OUT);
@@ -997,7 +957,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MetricsReportingCheck) {
       EnableSyncForProfile(profile);
 
   Browser* sync_browser = CreateBrowser(profile);
-  EXPECT_TRUE(ukm_enabled());
+  EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
 
   harness->service()->GetUserSettings()->SetSyncRequested(false);
   CloseBrowserSynchronously(sync_browser);
@@ -1008,6 +968,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MetricsReportingCheck) {
 // chrome/android/javatests/src/org/chromium/chrome/browser/metrics/
 // UkmTest.java.
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, HistoryDeleteCheck) {
+  ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -1015,21 +976,21 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, HistoryDeleteCheck) {
       EnableSyncForProfile(profile);
 
   Browser* sync_browser = CreateBrowser(profile);
-  EXPECT_TRUE(ukm_enabled());
-  uint64_t original_client_id = client_id();
+  EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
+  uint64_t original_client_id = ukm_test_helper.GetClientId();
   EXPECT_NE(0U, original_client_id);
 
   const ukm::SourceId kDummySourceId = 0x54321;
-  RecordDummySource(kDummySourceId);
-  EXPECT_TRUE(HasSource(kDummySourceId));
+  ukm_test_helper.RecordSourceForTesting(kDummySourceId);
+  EXPECT_TRUE(ukm_test_helper.HasSource(kDummySourceId));
 
   ClearBrowsingData(profile);
   // Other sources may already have been recorded since the data was cleared,
   // but the dummy source should be gone.
-  EXPECT_FALSE(HasSource(kDummySourceId));
+  EXPECT_FALSE(ukm_test_helper.HasSource(kDummySourceId));
   // Client ID should NOT be reset.
-  EXPECT_EQ(original_client_id, client_id());
-  EXPECT_TRUE(ukm_enabled());
+  EXPECT_EQ(original_client_id, ukm_test_helper.GetClientId());
+  EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
 
   harness->service()->GetUserSettings()->SetSyncRequested(false);
   CloseBrowserSynchronously(sync_browser);
@@ -1040,6 +1001,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, HistoryDeleteCheck) {
 #if !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(UkmBrowserTestWithSyncTransport,
                        NotEnabledForSecondaryAccountSync) {
+  ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   MetricsConsentOverride metrics_consent(true);
 
   // Signing in (without making the account Chrome's primary one or explicitly
@@ -1069,11 +1031,12 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTestWithSyncTransport,
   ASSERT_TRUE(sync_service->GetUserSettings()->GetSelectedTypes().Has(
       syncer::UserSelectableType::kHistory));
 
-  EXPECT_FALSE(ukm_enabled());
+  EXPECT_FALSE(ukm_test_helper.IsRecordingEnabled());
 }
 #endif  // !OS_CHROMEOS
 
 IN_PROC_BROWSER_TEST_P(UkmConsentParamBrowserTest, GroupPolicyConsentCheck) {
+  ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   // Note we are not using the synthetic MetricsConsentOverride since we are
   // testing directly from prefs.
 
@@ -1089,7 +1052,7 @@ IN_PROC_BROWSER_TEST_P(UkmConsentParamBrowserTest, GroupPolicyConsentCheck) {
   bool is_enabled = is_metrics_reporting_enabled_initial_value();
   EXPECT_EQ(is_enabled,
             UkmConsentParamBrowserTest::IsMetricsAndCrashReportingEnabled());
-  EXPECT_EQ(is_enabled, ukm_enabled());
+  EXPECT_EQ(is_enabled, ukm_test_helper.IsRecordingEnabled());
 
   harness->service()->GetUserSettings()->SetSyncRequested(false);
   CloseBrowserSynchronously(sync_browser);
@@ -1104,6 +1067,7 @@ INSTANTIATE_TEST_SUITE_P(UkmConsentParamBrowserTests,
 // one reporting cycle after the web contents are destroyed when the tab is
 // closed or when the user navigated away in the same tab.
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, EvictObsoleteSources) {
+  ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   MetricsConsentOverride metrics_consent(true);
   Profile* profile = ProfileManager::GetActiveUserProfile();
   std::unique_ptr<ProfileSyncServiceHarness> harness =
@@ -1136,11 +1100,11 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, EvictObsoleteSources) {
                                       ukm::SourceIdType::NAVIGATION_ID);
 
   // The UKM report contains this newly-created source.
-  BuildAndStoreUkmLog();
-  ukm::Report report = GetUkmReport();
+  ukm_test_helper.BuildAndStoreLog();
+  std::unique_ptr<ukm::Report> report = ukm_test_helper.GetUkmReport();
   bool has_source_id1 = false;
   bool has_source_id2 = false;
-  for (const auto& s : report.sources()) {
+  for (const auto& s : report->sources()) {
     has_source_id1 |= s.id() == source_id1;
     has_source_id2 |= s.id() == source_id2;
   }
@@ -1159,11 +1123,11 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, EvictObsoleteSources) {
   // The next report should again contain source 1 because the tab is still
   // alive, and also source 2 associated to the new tab that has just been
   // opened.
-  BuildAndStoreUkmLog();
-  report = GetUkmReport();
+  ukm_test_helper.BuildAndStoreLog();
+  report = ukm_test_helper.GetUkmReport();
   has_source_id1 = false;
   has_source_id2 = false;
-  for (const auto& s : report.sources()) {
+  for (const auto& s : report->sources()) {
     has_source_id1 |= s.id() == source_id1;
     has_source_id2 |= s.id() == source_id2;
   }
@@ -1176,11 +1140,11 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, EvictObsoleteSources) {
   sync_browser->tab_strip_model()->CloseWebContentsAt(
       1, TabStripModel::CloseTypes::CLOSE_NONE);
 
-  BuildAndStoreUkmLog();
-  report = GetUkmReport();
+  ukm_test_helper.BuildAndStoreLog();
+  report = ukm_test_helper.GetUkmReport();
   has_source_id1 = false;
   has_source_id2 = false;
-  for (const auto& s : report.sources()) {
+  for (const auto& s : report->sources()) {
     has_source_id1 |= s.id() == source_id1;
     has_source_id2 |= s.id() == source_id2;
   }
@@ -1195,11 +1159,11 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, EvictObsoleteSources) {
   // for source 1. Source 1 is thus no longer included in future reports. This
   // report will still contain source 2 because we might have associated entries
   // since the last report.
-  BuildAndStoreUkmLog();
-  report = GetUkmReport();
+  ukm_test_helper.BuildAndStoreLog();
+  report = ukm_test_helper.GetUkmReport();
   has_source_id1 = false;
   has_source_id2 = false;
-  for (const auto& s : report.sources()) {
+  for (const auto& s : report->sources()) {
     has_source_id1 |= s.id() == source_id1;
     has_source_id2 |= s.id() == source_id2;
   }
@@ -1207,11 +1171,11 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, EvictObsoleteSources) {
   EXPECT_TRUE(has_source_id2);
 
   // Neither source 1 or source 2 is alive anymore.
-  BuildAndStoreUkmLog();
-  report = GetUkmReport();
+  ukm_test_helper.BuildAndStoreLog();
+  report = ukm_test_helper.GetUkmReport();
   has_source_id1 = false;
   has_source_id2 = false;
-  for (const auto& s : report.sources()) {
+  for (const auto& s : report->sources()) {
     has_source_id1 |= s.id() == source_id1;
     has_source_id2 |= s.id() == source_id2;
   }
@@ -1225,6 +1189,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, EvictObsoleteSources) {
 // navigation happens.
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest,
                        MarkObsoleteSourcesSameDocumentNavigation) {
+  ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   MetricsConsentOverride metrics_consent(true);
   Profile* profile = ProfileManager::GetActiveUserProfile();
   std::unique_ptr<ProfileSyncServiceHarness> harness =
@@ -1234,52 +1199,53 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest,
 
   // First navigation.
   const ukm::SourceId source_id1 =
-      NavigateAndGetSource(sync_browser,
-                           embedded_test_server()->GetURL("/title1.html"))
+      NavigateAndGetSource(embedded_test_server()->GetURL("/title1.html"),
+                           sync_browser, &ukm_test_helper)
           ->id();
 
-  EXPECT_FALSE(IsSourceMarkedAsObsolete(source_id1));
+  EXPECT_FALSE(ukm_test_helper.IsSourceObsolete(source_id1));
 
   // Cross-document navigation where the previous navigation is cross-document.
   const ukm::SourceId source_id2 =
-      NavigateAndGetSource(sync_browser,
-                           embedded_test_server()->GetURL("/title2.html"))
+      NavigateAndGetSource(embedded_test_server()->GetURL("/title2.html"),
+                           sync_browser, &ukm_test_helper)
           ->id();
-  EXPECT_TRUE(IsSourceMarkedAsObsolete(source_id1));
-  EXPECT_FALSE(IsSourceMarkedAsObsolete(source_id2));
+  EXPECT_TRUE(ukm_test_helper.IsSourceObsolete(source_id1));
+  EXPECT_FALSE(ukm_test_helper.IsSourceObsolete(source_id2));
 
   // Same-document navigation where the previous navigation is cross-document.
   const ukm::SourceId source_id3 =
-      NavigateAndGetSource(sync_browser,
-                           embedded_test_server()->GetURL("/title2.html#a"))
+      NavigateAndGetSource(embedded_test_server()->GetURL("/title2.html#a"),
+                           sync_browser, &ukm_test_helper)
           ->id();
-  EXPECT_TRUE(IsSourceMarkedAsObsolete(source_id1));
-  EXPECT_FALSE(IsSourceMarkedAsObsolete(source_id2));
-  EXPECT_FALSE(IsSourceMarkedAsObsolete(source_id3));
+  EXPECT_TRUE(ukm_test_helper.IsSourceObsolete(source_id1));
+  EXPECT_FALSE(ukm_test_helper.IsSourceObsolete(source_id2));
+  EXPECT_FALSE(ukm_test_helper.IsSourceObsolete(source_id3));
 
   // Same-document navigation where the previous navigation is same-document.
   const ukm::SourceId source_id4 =
-      NavigateAndGetSource(sync_browser,
-                           embedded_test_server()->GetURL("/title2.html#b"))
+      NavigateAndGetSource(embedded_test_server()->GetURL("/title2.html#b"),
+                           sync_browser, &ukm_test_helper)
           ->id();
-  EXPECT_TRUE(IsSourceMarkedAsObsolete(source_id1));
-  EXPECT_FALSE(IsSourceMarkedAsObsolete(source_id2));
-  EXPECT_TRUE(IsSourceMarkedAsObsolete(source_id3));
-  EXPECT_FALSE(IsSourceMarkedAsObsolete(source_id4));
+  EXPECT_TRUE(ukm_test_helper.IsSourceObsolete(source_id1));
+  EXPECT_FALSE(ukm_test_helper.IsSourceObsolete(source_id2));
+  EXPECT_TRUE(ukm_test_helper.IsSourceObsolete(source_id3));
+  EXPECT_FALSE(ukm_test_helper.IsSourceObsolete(source_id4));
 
   // Cross-document navigation where the previous navigation is same-document.
-  NavigateAndGetSource(sync_browser,
-                       embedded_test_server()->GetURL("/title1.html"))
+  NavigateAndGetSource(embedded_test_server()->GetURL("/title1.html"),
+                       sync_browser, &ukm_test_helper)
       ->id();
-  EXPECT_TRUE(IsSourceMarkedAsObsolete(source_id1));
-  EXPECT_TRUE(IsSourceMarkedAsObsolete(source_id2));
-  EXPECT_TRUE(IsSourceMarkedAsObsolete(source_id3));
-  EXPECT_TRUE(IsSourceMarkedAsObsolete(source_id4));
+  EXPECT_TRUE(ukm_test_helper.IsSourceObsolete(source_id1));
+  EXPECT_TRUE(ukm_test_helper.IsSourceObsolete(source_id2));
+  EXPECT_TRUE(ukm_test_helper.IsSourceObsolete(source_id3));
+  EXPECT_TRUE(ukm_test_helper.IsSourceObsolete(source_id4));
 }
 
 // Verify that sources are not marked as obsolete by a new navigation that does
 // not commit.
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, NotMarkSourcesIfNavigationNotCommitted) {
+  ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   MetricsConsentOverride metrics_consent(true);
   Profile* profile = ProfileManager::GetActiveUserProfile();
   std::unique_ptr<ProfileSyncServiceHarness> harness =
@@ -1298,14 +1264,15 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, NotMarkSourcesIfNavigationNotCommitted) {
 
   // Get the source id from the committed navigation.
   const ukm::SourceId source_id =
-      NavigateAndGetSource(sync_browser, test_url_with_commit)->id();
+      NavigateAndGetSource(test_url_with_commit, sync_browser, &ukm_test_helper)
+          ->id();
 
   // Initial default state.
-  EXPECT_FALSE(IsSourceMarkedAsObsolete(source_id));
+  EXPECT_FALSE(ukm_test_helper.IsSourceObsolete(source_id));
 
   // New navigation did not commit, thus the source should still be kept alive.
   ui_test_utils::NavigateToURL(sync_browser, test_url_no_commit);
-  EXPECT_FALSE(IsSourceMarkedAsObsolete(source_id));
+  EXPECT_FALSE(ukm_test_helper.IsSourceObsolete(source_id));
 }
 
 }  // namespace metrics

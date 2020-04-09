@@ -45,11 +45,13 @@ class ITunesUrlsHandlerTabHelperTest : public PlatformTest {
     web::WebStatePolicyDecider::RequestInfo request_info(
         ui::PageTransition::PAGE_TRANSITION_LINK, main_frame,
         /*has_user_gesture=*/false);
-    bool request_allowed = web_state_.ShouldAllowRequest(
-        [NSURLRequest requestWithURL:[NSURL URLWithString:url_string]],
-        request_info);
-    return !request_allowed && (fake_launcher_.launchedProductID != nil ||
-                                fake_launcher_.launchedProductParams != nil);
+    web::WebStatePolicyDecider::PolicyDecision request_policy =
+        web_state_.ShouldAllowRequest(
+            [NSURLRequest requestWithURL:[NSURL URLWithString:url_string]],
+            request_info);
+    return request_policy.ShouldCancelNavigation() &&
+           (fake_launcher_.launchedProductID != nil ||
+            fake_launcher_.launchedProductParams != nil);
   }
 
   web::WebTaskEnvironment task_environment_;

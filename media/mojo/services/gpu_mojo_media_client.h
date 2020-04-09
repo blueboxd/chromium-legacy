@@ -59,7 +59,7 @@ class GpuMojoMediaClient : public MojoMediaClient {
       RequestOverlayInfoCB request_overlay_info_cb,
       const gfx::ColorSpace& target_color_space) final;
   std::unique_ptr<CdmFactory> CreateCdmFactory(
-      service_manager::mojom::InterfaceProvider* interface_provider) final;
+      mojom::FrameInterfaceFactory* interface_provider) final;
 #if BUILDFLAG(ENABLE_CDM_PROXY)
   std::unique_ptr<CdmProxy> CreateCdmProxy(const base::Token& cdm_guid) final;
 #endif  // BUILDFLAG(ENABLE_CDM_PROXY)

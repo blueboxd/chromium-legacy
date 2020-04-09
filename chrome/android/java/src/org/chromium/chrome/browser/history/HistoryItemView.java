@@ -25,8 +25,8 @@ import org.chromium.chrome.browser.ui.favicon.FaviconHelper.DefaultFaviconHelper
 import org.chromium.chrome.browser.ui.favicon.FaviconUtils;
 import org.chromium.chrome.browser.ui.favicon.IconType;
 import org.chromium.chrome.browser.ui.favicon.LargeIconBridge.LargeIconCallback;
-import org.chromium.chrome.browser.ui.favicon.RoundedIconGenerator;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemView;
+import org.chromium.components.favicon.FaviconFallbackGenerator;
 
 /**
  * The SelectableItemView for items displayed in the browsing history UI.
@@ -36,7 +36,7 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
     private VectorDrawableCompat mBlockedVisitDrawable;
 
     private HistoryManager mHistoryManager;
-    private final RoundedIconGenerator mIconGenerator;
+    private final FaviconFallbackGenerator mIconGenerator;
     private DefaultFaviconHelper mFaviconHelper;
 
     private final int mMinIconSize;

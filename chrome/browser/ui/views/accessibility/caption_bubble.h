@@ -36,6 +36,7 @@ class CaptionBubble : public views::BubbleDialogDelegateView {
       views::Widget* widget) override;
 
  private:
+  friend class CaptionBubbleControllerViewsTest;
   views::Label label_;
   base::ScopedClosureRunner destroyed_callback_;
 };

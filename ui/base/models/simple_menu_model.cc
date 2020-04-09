@@ -12,6 +12,9 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/image_model.h"
+#include "ui/gfx/image/image.h"
+#include "ui/gfx/vector_icon_types.h"
 
 namespace ui {
 
@@ -95,29 +98,15 @@ void SimpleMenuModel::AddItemWithStringId(int command_id, int string_id) {
 
 void SimpleMenuModel::AddItemWithIcon(int command_id,
                                       const base::string16& label,
-                                      const gfx::ImageSkia& icon) {
+                                      const ImageModel& icon) {
   Item item(command_id, TYPE_COMMAND, label);
-  item.icon = gfx::Image(icon);
-  AppendItem(std::move(item));
-}
-
-void SimpleMenuModel::AddItemWithIcon(int command_id,
-                                      const base::string16& label,
-                                      const gfx::VectorIcon& icon) {
-  Item item(command_id, TYPE_COMMAND, label);
-  item.vector_icon = &icon;
+  item.icon = icon;
   AppendItem(std::move(item));
 }
 
 void SimpleMenuModel::AddItemWithStringIdAndIcon(int command_id,
                                                  int string_id,
-                                                 const gfx::ImageSkia& icon) {
-  AddItemWithIcon(command_id, l10n_util::GetStringUTF16(string_id), icon);
-}
-
-void SimpleMenuModel::AddItemWithStringIdAndIcon(int command_id,
-                                                 int string_id,
-                                                 const gfx::VectorIcon& icon) {
+                                                 const ImageModel& icon) {
   AddItemWithIcon(command_id, l10n_util::GetStringUTF16(string_id), icon);
 }
 
@@ -145,9 +134,9 @@ void SimpleMenuModel::AddRadioItemWithStringId(int command_id, int string_id,
 
 void SimpleMenuModel::AddHighlightedItemWithIcon(int command_id,
                                                  const base::string16& label,
-                                                 const gfx::ImageSkia& icon) {
+                                                 const ImageModel& icon) {
   Item item(command_id, TYPE_HIGHLIGHTED, label);
-  item.icon = gfx::Image(icon);
+  item.icon = icon;
   AppendItem(std::move(item));
 }
 
@@ -198,25 +187,13 @@ void SimpleMenuModel::AddSubMenuWithStringId(int command_id,
   AddSubMenu(command_id, l10n_util::GetStringUTF16(string_id), model);
 }
 
-void SimpleMenuModel::AddSubMenuWithStringIdAndIcon(
-    int command_id,
-    int string_id,
-    MenuModel* model,
-    const gfx::ImageSkia& icon) {
+void SimpleMenuModel::AddSubMenuWithStringIdAndIcon(int command_id,
+                                                    int string_id,
+                                                    MenuModel* model,
+                                                    const ImageModel& icon) {
   Item item(command_id, TYPE_SUBMENU, l10n_util::GetStringUTF16(string_id));
   item.submenu = model;
-  item.icon = gfx::Image(icon);
-  AppendItem(std::move(item));
-}
-
-void SimpleMenuModel::AddSubMenuWithStringIdAndIcon(
-    int command_id,
-    int string_id,
-    MenuModel* model,
-    const gfx::VectorIcon& icon) {
-  Item item(command_id, TYPE_SUBMENU, l10n_util::GetStringUTF16(string_id));
-  item.submenu = model;
-  item.vector_icon = &icon;
+  item.icon = icon;
   AppendItem(std::move(item));
 }
 
@@ -232,23 +209,11 @@ void SimpleMenuModel::AddActionableSubmenuWithStringIdAndIcon(
     int command_id,
     int string_id,
     MenuModel* model,
-    const gfx::ImageSkia& icon) {
+    const ImageModel& icon) {
   Item item(command_id, TYPE_ACTIONABLE_SUBMENU,
             l10n_util::GetStringUTF16(string_id));
   item.submenu = model;
-  item.icon = gfx::Image(icon);
-  AppendItem(std::move(item));
-}
-
-void SimpleMenuModel::AddActionableSubmenuWithStringIdAndIcon(
-    int command_id,
-    int string_id,
-    MenuModel* model,
-    const gfx::VectorIcon& icon) {
-  Item item(command_id, TYPE_ACTIONABLE_SUBMENU,
-            l10n_util::GetStringUTF16(string_id));
-  item.submenu = model;
-  item.vector_icon = &icon;
+  item.icon = icon;
   AppendItem(std::move(item));
 }
 
@@ -321,17 +286,10 @@ void SimpleMenuModel::RemoveItemAt(int index) {
   MenuItemsChanged();
 }
 
-void SimpleMenuModel::SetIcon(int index, const gfx::Image& icon) {
-  Item* item = &items_[ValidateItemIndex(index)];
-  DCHECK(!item->vector_icon);
-  item->icon = icon;
-  MenuItemsChanged();
-}
-
-void SimpleMenuModel::SetIcon(int index, const gfx::VectorIcon& icon) {
+void SimpleMenuModel::SetIcon(int index, const ui::ImageModel& icon) {
   Item* item = &items_[ValidateItemIndex(index)];
   DCHECK(item->icon.IsEmpty());
-  item->vector_icon = &icon;
+  item->icon = icon;
   MenuItemsChanged();
 }
 
@@ -346,8 +304,8 @@ void SimpleMenuModel::SetMinorText(int index,
 }
 
 void SimpleMenuModel::SetMinorIcon(int index,
-                                   const gfx::VectorIcon& minor_icon) {
-  items_[ValidateItemIndex(index)].minor_icon = &minor_icon;
+                                   const ui::ImageModel& minor_icon) {
+  items_[ValidateItemIndex(index)].minor_icon = minor_icon;
 }
 
 void SimpleMenuModel::SetEnabledAt(int index, bool enabled) {
@@ -384,8 +342,7 @@ int SimpleMenuModel::GetIndexOfCommandId(int command_id) const {
 
 bool SimpleMenuModel::HasIcons() const {
   for (int i = 0; i < GetItemCount(); ++i) {
-    gfx::Image icon;
-    if (GetIconAt(i, &icon) || GetVectorIconAt(i))
+    if (!GetIconAt(i).IsEmpty())
       return true;
   }
 
@@ -418,7 +375,7 @@ base::string16 SimpleMenuModel::GetMinorTextAt(int index) const {
   return items_[ValidateItemIndex(index)].minor_text;
 }
 
-const gfx::VectorIcon* SimpleMenuModel::GetMinorIconAt(int index) const {
+ImageModel SimpleMenuModel::GetMinorIconAt(int index) const {
   return items_[ValidateItemIndex(index)].minor_icon;
 }
 
@@ -449,23 +406,16 @@ int SimpleMenuModel::GetGroupIdAt(int index) const {
   return items_[ValidateItemIndex(index)].group_id;
 }
 
-bool SimpleMenuModel::GetIconAt(int index, gfx::Image* icon) const {
-  if (IsItemDynamicAt(index))
-    return delegate_->GetIconForCommandId(GetCommandIdAt(index), icon);
+ImageModel SimpleMenuModel::GetIconAt(int index) const {
+  if (IsItemDynamicAt(index)) {
+    gfx::Image icon;
+    if (delegate_->GetIconForCommandId(GetCommandIdAt(index), &icon))
+      return ImageModel::FromImage(icon);
+    return ImageModel();
+  }
 
   ValidateItemIndex(index);
-  if (items_[index].icon.IsEmpty())
-    return false;
-
-  *icon = items_[index].icon;
-  return true;
-}
-
-const gfx::VectorIcon* SimpleMenuModel::GetVectorIconAt(int index) const {
-  if (IsItemDynamicAt(index))
-    return delegate_->GetVectorIconForCommandId(GetCommandIdAt(index));
-
-  return items_[ValidateItemIndex(index)].vector_icon;
+  return items_[index].icon;
 }
 
 ButtonMenuItemModel* SimpleMenuModel::GetButtonMenuItemAt(int index) const {

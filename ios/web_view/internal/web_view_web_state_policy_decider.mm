@@ -19,7 +19,8 @@ WebViewWebStatePolicyDecider::WebViewWebStatePolicyDecider(
     CWVWebView* web_view)
     : web::WebStatePolicyDecider(web_state), web_view_(web_view) {}
 
-bool WebViewWebStatePolicyDecider::ShouldAllowRequest(
+web::WebStatePolicyDecider::PolicyDecision
+WebViewWebStatePolicyDecider::ShouldAllowRequest(
     NSURLRequest* request,
     const web::WebStatePolicyDecider::RequestInfo& request_info) {
   id<CWVNavigationDelegate> delegate = web_view_.navigationDelegate;
@@ -31,11 +32,14 @@ bool WebViewWebStatePolicyDecider::ShouldAllowRequest(
     // in a C++ header //ui/base/page_transition_types.h.
     CWVNavigationType navigation_type =
         CWVNavigationTypeFromPageTransition(request_info.transition_type);
-    return [delegate webView:web_view_
+    BOOL allow = [delegate webView:web_view_
         shouldStartLoadWithRequest:request
                     navigationType:navigation_type];
+    if (!allow) {
+      return WebStatePolicyDecider::PolicyDecision::Cancel();
+    }
   }
-  return true;
+  return WebStatePolicyDecider::PolicyDecision::Allow();
 }
 
 bool WebViewWebStatePolicyDecider::ShouldAllowResponse(NSURLResponse* response,

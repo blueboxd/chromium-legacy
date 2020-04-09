@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/webauthn/transport_utils.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/image_model.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 
@@ -15,6 +16,8 @@ namespace {
 
 gfx::ImageSkia GetTransportIcon(AuthenticatorTransport transport) {
   constexpr int kTransportIconSize = 16;
+  // TODO (kylixrd): Review the use of the hard-coded color for possible change
+  // to using a ColorProvider color id.
   return gfx::CreateVectorIcon(*GetTransportVectorIcon(transport),
                                kTransportIconSize, gfx::kGoogleGrey700);
 }
@@ -63,7 +66,7 @@ void OtherTransportsMenuModel::PopulateWithTransportsExceptFor(
     auto name = GetTransportHumanReadableName(
         transport, TransportSelectionContext::kOtherTransportsMenu);
     AddItemWithIcon(base::strict_cast<int>(transport), std::move(name),
-                    GetTransportIcon(transport));
+                    ui::ImageModel::FromImageSkia(GetTransportIcon(transport)));
   }
 }
 
@@ -71,7 +74,8 @@ void OtherTransportsMenuModel::AppendItemForAnotherBluetoothKey() {
   AddItemWithIcon(
       base::strict_cast<int>(AuthenticatorTransport::kBluetoothLowEnergy),
       l10n_util::GetStringUTF16(IDS_WEBAUTHN_TRANSPORT_POPUP_ANOTHER_BLE),
-      GetTransportIcon(AuthenticatorTransport::kBluetoothLowEnergy));
+      ui::ImageModel::FromImageSkia(
+          GetTransportIcon(AuthenticatorTransport::kBluetoothLowEnergy)));
 }
 
 #if defined(OS_WIN)
@@ -80,11 +84,11 @@ void OtherTransportsMenuModel::AppendItemForAnotherBluetoothKey() {
 constexpr int kWinNativeApiMenuCommand = 999;
 
 void OtherTransportsMenuModel::AppendItemForNativeWinApi() {
-  AddItemWithIcon(
-      kWinNativeApiMenuCommand,
-      l10n_util::GetStringUTF16(
-          IDS_WEBAUTHN_TRANSPORT_POPUP_DIFFERENT_AUTHENTICATOR_WIN),
-      GetTransportIcon(AuthenticatorTransport::kUsbHumanInterfaceDevice));
+  AddItemWithIcon(kWinNativeApiMenuCommand,
+                  l10n_util::GetStringUTF16(
+                      IDS_WEBAUTHN_TRANSPORT_POPUP_DIFFERENT_AUTHENTICATOR_WIN),
+                  ui::ImageModel::FromImageSkia(GetTransportIcon(
+                      AuthenticatorTransport::kUsbHumanInterfaceDevice)));
 }
 #endif  // defined(OS_WIN)
 

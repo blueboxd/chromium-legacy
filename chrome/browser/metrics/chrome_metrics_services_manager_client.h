@@ -24,6 +24,7 @@ class MetricsStateManager;
 
 // Used only for testing.
 namespace internal {
+// TODO(crbug.com/1068796): Replace kMetricsReportingFeature with a better name.
 extern const base::Feature kMetricsReportingFeature;
 }
 }

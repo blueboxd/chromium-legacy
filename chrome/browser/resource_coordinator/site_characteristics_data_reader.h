@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_SITE_CHARACTERISTICS_DATA_READER_H_
 #define CHROME_BROWSER_RESOURCE_COORDINATOR_SITE_CHARACTERISTICS_DATA_READER_H_
 
-#include "chrome/browser/performance_manager/persistence/site_data/feature_usage.h"
+#include "components/performance_manager/persistence/site_data/feature_usage.h"
 
 #include "base/callback_forward.h"
 

@@ -49,6 +49,7 @@ source_set("feed_core_v2") {
     "tasks/load_stream_task.h",
     "tasks/wait_for_store_initialize_task.cc",
     "tasks/wait_for_store_initialize_task.h",
+    "types.cc",
     "types.h",
   ]
   deps = [

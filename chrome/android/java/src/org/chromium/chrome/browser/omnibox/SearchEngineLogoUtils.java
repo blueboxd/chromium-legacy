@@ -25,8 +25,8 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.toolbar.ToolbarCommonPropertiesModel;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelper;
-import org.chromium.chrome.browser.ui.favicon.RoundedIconGenerator;
 import org.chromium.components.embedder_support.util.UrlUtilities;
+import org.chromium.components.favicon.FaviconFallbackGenerator;
 import org.chromium.content_public.browser.BrowserStartupController;
 
 import java.lang.annotation.Retention;
@@ -48,7 +48,7 @@ public class SearchEngineLogoUtils {
     private static Bitmap sCachedComposedBackground;
     private static String sCachedComposedBackgroundLogoUrl;
     private static FaviconHelper sFaviconHelper;
-    private static RoundedIconGenerator sRoundedIconGenerator;
+    private static FaviconFallbackGenerator sFaviconFallbackGenerator;
 
     // Cache these values so they don't need to be recalculated.
     private static int sSearchEngineLogoTargetSizePixels;
@@ -288,17 +288,17 @@ public class SearchEngineLogoUtils {
         Bitmap composedIcon = scaledIcon;
         if (isRoundedSearchEngineLogoEnabled()) {
             int composedSizePixels = getSearchEngineLogoComposedSizePixels(resources);
-            if (sRoundedIconGenerator == null) {
-                sRoundedIconGenerator = new RoundedIconGenerator(composedSizePixels,
+            if (sFaviconFallbackGenerator == null) {
+                sFaviconFallbackGenerator = new FaviconFallbackGenerator(composedSizePixels,
                         composedSizePixels, composedSizePixels, Color.TRANSPARENT, 0);
             }
             int color = (image.getWidth() == 0 || image.getHeight() == 0)
                     ? Color.TRANSPARENT
                     : getMostCommonEdgeColor(image);
-            sRoundedIconGenerator.setBackgroundColor(color);
+            sFaviconFallbackGenerator.setBackgroundColor(color);
 
             // Generate a rounded background with no text.
-            composedIcon = sRoundedIconGenerator.generateIconForText("");
+            composedIcon = sFaviconFallbackGenerator.generateIconForText("");
             Canvas canvas = new Canvas(composedIcon);
             // Draw the logo in the middle of the generated background.
             int dx = (composedSizePixels - logoSizePixels) / 2;
@@ -379,9 +379,10 @@ public class SearchEngineLogoUtils {
         sDelegate = mDelegate;
     }
 
-    /** Set the RoundedIconGenerator for testing. */
-    static void setRoundedIconGeneratorForTesting(RoundedIconGenerator roundedIconGenerator) {
-        sRoundedIconGenerator = roundedIconGenerator;
+    /** Set the FaviconFallbackGenerator for testing. */
+    static void setFaviconFallbackGeneratorForTesting(
+            FaviconFallbackGenerator roundedIconGenerator) {
+        sFaviconFallbackGenerator = roundedIconGenerator;
     }
 
     /** Reset the cache values for testing. */

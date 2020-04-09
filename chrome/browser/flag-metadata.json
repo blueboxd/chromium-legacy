@@ -2647,6 +2647,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "installed-apps-in-cbd",
+    "owners": [ "jarrydg", "pwnall" ],
+    "expiry_milestone": 89
+  },
+  {
     "name": "instant-tethering",
     "owners": [ "hansberry", "khorimoto", "vecore", "cros-system-services@google.com" ],
     // Though Instant Tethering is now a launched feature, it is only marked enabled on select,
@@ -2741,6 +2746,11 @@
     "name": "mac-v2-gpu-sandbox",
     "owners": [ "kerrnel@google.com" ],
     "expiry_milestone": 88
+  },
+  {
+    "name": "managed-bookmarks-ios",
+    "owners": [ "edchin", "rohitrao" ],
+    "expiry_milestone": 90
   },
   {
     "name": "media-app",

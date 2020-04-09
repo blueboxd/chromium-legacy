@@ -263,9 +263,16 @@ class FakeRefreshTaskScheduler : public RefreshTaskScheduler {
   bool refresh_task_complete = false;
 };
 
-class TestEventObserver : public FeedStream::EventObserver {
+class TestMetricsReporter : public MetricsReporter {
  public:
-  // FeedStreamUnittest::StreamEventObserver.
+  explicit TestMetricsReporter(const base::TickClock* clock)
+      : MetricsReporter(clock) {}
+
+  // MetricsReporter.
+  void ContentSliceViewed(int index_in_stream) override {
+    slice_viewed_index = index_in_stream;
+  }
+
   void OnLoadStream(LoadStreamStatus load_from_store_status,
                     LoadStreamStatus final_status) override {
     load_stream_status = final_status;
@@ -282,6 +289,7 @@ class TestEventObserver : public FeedStream::EventObserver {
 
   // Test access.
 
+  base::Optional<int> slice_viewed_index;
   base::Optional<LoadStreamStatus> load_stream_status;
   base::Optional<base::TimeDelta> time_since_last_clear;
   base::Optional<TriggerType> refresh_trigger_type;
@@ -297,7 +305,7 @@ class FeedStreamTest : public testing::Test, public FeedStream::Delegate {
     chrome_info.channel = version_info::Channel::STABLE;
     chrome_info.version = base::Version({99, 1, 9911, 2});
     stream_ = std::make_unique<FeedStream>(
-        &refresh_scheduler_, &event_observer_, &metrics_reporter_, this,
+        &refresh_scheduler_, &metrics_reporter_, &metrics_reporter_, this,
         &profile_prefs_, &network_, store_.get(),
         task_environment_.GetMockClock(), task_environment_.GetMockTickClock(),
         chrome_info);
@@ -352,8 +360,7 @@ class FeedStreamTest : public testing::Test, public FeedStream::Delegate {
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   TestUserClassifier* user_classifier_;
-  TestEventObserver event_observer_;
-  MetricsReporter metrics_reporter_{task_environment_.GetMockTickClock()};
+  TestMetricsReporter metrics_reporter_{task_environment_.GetMockTickClock()};
   TestingPrefServiceSimple profile_prefs_;
   TestFeedNetwork network_;
   TestWireResponseTranslator response_translator_;
@@ -390,7 +397,7 @@ TEST_F(FeedStreamTest, ScheduledRefreshTriggersRefresh) {
   stream_->InitializeScheduling();
   stream_->ExecuteRefreshTask();
 
-  EXPECT_EQ(TriggerType::kFixedTimer, event_observer_.refresh_trigger_type);
+  EXPECT_EQ(TriggerType::kFixedTimer, metrics_reporter_.refresh_trigger_type);
   // TODO(harringtond): Once we actually perform the refresh, make sure
   // RefreshTaskComplete() is called.
   // EXPECT_TRUE(refresh_scheduler_.refresh_task_complete);
@@ -402,7 +409,7 @@ TEST_F(FeedStreamTest, DoNotRefreshIfArticlesListIsHidden) {
   stream_->ExecuteRefreshTask();
 
   EXPECT_TRUE(refresh_scheduler_.canceled);
-  EXPECT_FALSE(event_observer_.refresh_trigger_type);
+  EXPECT_FALSE(metrics_reporter_.refresh_trigger_type);
 }
 
 TEST_F(FeedStreamTest, SurfaceReceivesInitialContent) {
@@ -587,7 +594,7 @@ TEST_F(FeedStreamTest, LoadFromNetworkFailsDueToProtoTranslation) {
   WaitForIdleTaskQueue();
 
   EXPECT_EQ(LoadStreamStatus::kProtoTranslationFailed,
-            event_observer_.load_stream_status);
+            metrics_reporter_.load_stream_status);
 }
 
 TEST_F(FeedStreamTest, DoNotLoadFromNetworkWhenOffline) {
@@ -597,7 +604,7 @@ TEST_F(FeedStreamTest, DoNotLoadFromNetworkWhenOffline) {
   WaitForIdleTaskQueue();
 
   EXPECT_EQ(LoadStreamStatus::kCannotLoadFromNetworkOffline,
-            event_observer_.load_stream_status);
+            metrics_reporter_.load_stream_status);
   EXPECT_EQ("zero-state", surface.Describe());
 }
 
@@ -608,7 +615,7 @@ TEST_F(FeedStreamTest, DoNotLoadStreamWhenArticleListIsHidden) {
   WaitForIdleTaskQueue();
 
   EXPECT_EQ(LoadStreamStatus::kLoadNotAllowedArticlesListHidden,
-            event_observer_.load_stream_status);
+            metrics_reporter_.load_stream_status);
   EXPECT_EQ("zero-state", surface.Describe());
 }
 
@@ -619,7 +626,7 @@ TEST_F(FeedStreamTest, DoNotLoadStreamWhenEulaIsNotAccepted) {
   WaitForIdleTaskQueue();
 
   EXPECT_EQ(LoadStreamStatus::kLoadNotAllowedEulaNotAccepted,
-            event_observer_.load_stream_status);
+            metrics_reporter_.load_stream_status);
   EXPECT_EQ("zero-state", surface.Describe());
 }
 
@@ -634,7 +641,7 @@ TEST_F(FeedStreamTest, DoNotLoadFromNetworkAfterHistoryIsDeleted) {
   EXPECT_EQ("zero-state", surface.Describe());
 
   EXPECT_EQ(LoadStreamStatus::kCannotLoadFromNetworkSupressedForHistoryDelete,
-            event_observer_.load_stream_status);
+            metrics_reporter_.load_stream_status);
 
   surface.Detach();
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(2));
@@ -750,6 +757,17 @@ TEST_F(FeedStreamTest, ModelChangesAreSavedToStorage) {
   EXPECT_STRINGS_EQUAL(
       ModelStateFor(MakeTypicalInitialModelState(), operations, operations2),
       ModelStateFor(store_.get()));
+}
+
+TEST_F(FeedStreamTest, ReportSliceViewedIdentifiesCorrectIndex) {
+  store_->SaveFullStream(MakeTypicalInitialModelState(), base::DoNothing());
+  TestSurface surface;
+  stream_->AttachSurface(&surface);
+  WaitForIdleTaskQueue();
+
+  stream_->ReportSliceViewed(
+      surface.initial_state->updated_slices(1).slice().slice_id());
+  EXPECT_EQ(1, metrics_reporter_.slice_viewed_index);
 }
 
 }  // namespace

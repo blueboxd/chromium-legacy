@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/menu_label_accelerator_util_linux.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/image/image.h"
 
@@ -37,10 +38,10 @@ MenuItemProperties ComputeMenuPropertiesForMenuItem(ui::MenuModel* menu,
   if (!menu->IsVisibleAt(i))
     properties["visible"] = MakeDbusVariant(DbusBoolean(false));
 
-  gfx::Image icon;
-  if (menu->GetIconAt(i, &icon)) {
+  ui::ImageModel icon = menu->GetIconAt(i);
+  if (icon.IsImage()) {
     properties["icon-data"] =
-        MakeDbusVariant(DbusByteArray(icon.As1xPNGBytes()));
+        MakeDbusVariant(DbusByteArray(icon.GetImage().As1xPNGBytes()));
   }
 
   ui::Accelerator accelerator;

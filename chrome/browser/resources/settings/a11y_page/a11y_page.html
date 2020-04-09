@@ -41,21 +41,13 @@
         </cr-link-row>
         <settings-toggle-button
             id="a11yImageLabels"
+            class="hr"
             hidden$="[[!showAccessibilityLabelsSetting_]]"
             pref="{{prefs.settings.a11y.enable_accessibility_image_labels}}"
             on-change="onToggleAccessibilityImageLabels_"
             label="$i18n{accessibleImageLabelsTitle}"
             sub-label="$i18n{accessibleImageLabelsSubtitle}">
         </settings-toggle-button>
-</if>
-<if expr="not is_macosx and not chromeos">
-        <template is="dom-if" route-path="/captions">
-          <settings-subpage
-              associated-control="[[$$('#captions')]]"
-              page-title="$i18n{captionsTitle}">
-            <settings-captions prefs="{{prefs}}"></settings-captions>
-          </settings-subpage>
-        </template>
 </if>
         <template is="dom-if" if="[[enableLiveCaption_]]">
           <settings-toggle-button
@@ -69,6 +61,15 @@
             external>
         </cr-link-row>
       </div>
+<if expr="not is_macosx and not chromeos">
+      <template is="dom-if" route-path="/captions">
+        <settings-subpage
+            associated-control="[[$$('#captions')]]"
+            page-title="$i18n{captionsTitle}">
+          <settings-captions prefs="{{prefs}}"></settings-captions>
+        </settings-subpage>
+      </template>
+</if>
     </settings-animated-pages>
   </template>
   <script src="a11y_page.js"></script>

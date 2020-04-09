@@ -132,7 +132,8 @@ android_library("custom_tabs_support_java") {
     # TODO (bjoyce): Restore to android_support_v7_appcompat_java once source
     # files are manually written to androidx crbug.com/1047843.
     # "//third_party/android_deps:android_support_v7_appcompat_java",
-    "//third_party/android_deps:com_android_support_appcompat_v7_java_orig",
+    # Remove _temp target once upstream is compatible.
+    "//third_party/android_deps:com_android_support_appcompat_v7_java_temp",
     "//third_party/android_deps:com_android_support_collections_java_orig",
     "//third_party/android_deps:com_android_support_interpolator_java",
     "//third_party/android_deps:com_android_support_support_annotations_java",

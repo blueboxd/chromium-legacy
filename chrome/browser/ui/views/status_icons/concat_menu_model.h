@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/models/menu_model.h"
 
 // Combines two menu models (without using submenus).
@@ -24,12 +25,12 @@ class ConcatMenuModel : public ui::MenuModel {
   int GetCommandIdAt(int index) const override;
   base::string16 GetLabelAt(int index) const override;
   base::string16 GetMinorTextAt(int index) const override;
-  const gfx::VectorIcon* GetMinorIconAt(int index) const override;
+  ui::ImageModel GetMinorIconAt(int index) const override;
   bool IsItemDynamicAt(int index) const override;
   bool GetAcceleratorAt(int index, ui::Accelerator* accelerator) const override;
   bool IsItemCheckedAt(int index) const override;
   int GetGroupIdAt(int index) const override;
-  bool GetIconAt(int index, gfx::Image* icon) const override;
+  ui::ImageModel GetIconAt(int index) const override;
   ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const override;
   bool IsEnabledAt(int index) const override;
   bool IsVisibleAt(int index) const override;

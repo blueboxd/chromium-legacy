@@ -362,8 +362,7 @@ void ImeMenuTray::ShowImeMenuBubbleInternal(bool show_by_click) {
   init_params.parent_window = GetBubbleWindowContainer();
   init_params.anchor_view = GetBubbleAnchor();
   init_params.shelf_alignment = shelf()->alignment();
-  init_params.min_width = kTrayMenuWidth;
-  init_params.max_width = kTrayMenuWidth;
+  init_params.preferred_width = kTrayMenuWidth;
   init_params.close_on_deactivate = true;
   init_params.show_by_click = show_by_click;
 

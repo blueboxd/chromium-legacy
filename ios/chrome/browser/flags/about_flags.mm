@@ -57,6 +57,7 @@
 #include "ios/chrome/browser/find_in_page/features.h"
 #include "ios/chrome/browser/flags/ios_chrome_flag_descriptions.h"
 #include "ios/chrome/browser/passwords/password_manager_features.h"
+#include "ios/chrome/browser/policy/policy_features.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/download/features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
@@ -592,6 +593,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillEnableSurfacingServerCardNickname)},
+    {"managed-bookmarks-ios", flag_descriptions::kManagedBookmarksIOSName,
+     flag_descriptions::kManagedBookmarksIOSDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kManagedBookmarksIOS)},
 };
 
 // Add all switches from experimental flags to |command_line|.

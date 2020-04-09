@@ -56,7 +56,7 @@ android_library("java") {
     "//components/browser_ui/widget/android:java",
     "//components/infobars/core:infobar_enums_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
-    "//third_party/android_deps:com_android_support_appcompat_v7_java",
+    "//third_party/android_deps:androidx_appcompat_appcompat_java",
     "//ui/android:ui_full_java",
     "//ui/android:ui_utils_java",
   ]

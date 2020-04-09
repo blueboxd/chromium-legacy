@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list_types.h"
 #include "content/common/content_export.h"
 
@@ -30,7 +31,7 @@ class SmsFetcher {
   // Retrieval for devices that have telephony capabilities and can receive
   // SMSes coming from the installed device locally. (eg. Android phones)
   CONTENT_EXPORT static SmsFetcher* Get(BrowserContext* context,
-                                        RenderFrameHost* rfh);
+                                        base::WeakPtr<RenderFrameHost> rfh);
 
   class Subscriber : public base::CheckedObserver {
    public:

@@ -18,7 +18,7 @@
 #include "base/android/build_info.h"
 #endif
 #if defined(OS_WIN)
-#include "components/metrics/system_session_analyzer_win.h"
+#include "components/metrics/system_session_analyzer/system_session_analyzer_win.h"
 #endif
 
 namespace metrics {

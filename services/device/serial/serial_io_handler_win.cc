@@ -358,9 +358,7 @@ SerialIoHandlerWin::SerialIoHandlerWin(
     const base::FilePath& port,
     scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner)
     : SerialIoHandler(port, std::move(ui_thread_task_runner)),
-      event_mask_(0),
-      is_comm_pending_(false),
-      helper_(nullptr) {}
+      base::MessagePumpForIO::IOHandler(FROM_HERE) {}
 
 SerialIoHandlerWin::~SerialIoHandlerWin() {
   ui_thread_task_runner()->DeleteSoon(FROM_HERE, helper_);

@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -153,6 +154,7 @@
 #include "chromeos/settings/cros_settings_provider.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "chromeos/timezone/timezone_provider.h"
+#include "chromeos/timezone/timezone_request.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_bridge_service.h"
@@ -682,6 +684,11 @@ void WizardController::ShowTermsOfServiceScreen() {
 }
 
 void WizardController::ShowSyncConsentScreen() {
+  // First screen after login. Perform a timezone request so that any screens
+  // relying on geolocation can tailor their contents according to the user's
+  // region. Currently used on the MarketingOptInScreen.
+  StartNetworkTimezoneResolve();
+
   if (is_branded_build_)
     SetCurrentScreen(GetScreen(SyncConsentScreenView::kScreenId));
   else
@@ -693,7 +700,8 @@ void WizardController::ShowFingerprintSetupScreen() {
 }
 
 void WizardController::ShowMarketingOptInScreen() {
-  SetCurrentScreen(GetScreen(MarketingOptInScreenView::kScreenId));
+  MarketingOptInScreen* screen = MarketingOptInScreen::Get(screen_manager());
+  SetCurrentScreen(screen);
 }
 
 void WizardController::ShowArcTermsOfServiceScreen() {
@@ -1200,8 +1208,10 @@ void WizardController::OnMultiDeviceSetupScreenExit() {
   ShowGestureNavigationScreen();
 }
 
-void WizardController::OnGestureNavigationScreenExit() {
-  OnScreenExit(GestureNavigationScreenView::kScreenId, kDefaultExitReason);
+void WizardController::OnGestureNavigationScreenExit(
+    GestureNavigationScreen::Result result) {
+  OnScreenExit(GestureNavigationScreenView::kScreenId,
+               GestureNavigationScreen::GetResultString(result));
 
   ShowMarketingOptInScreen();
 }
@@ -1351,6 +1361,29 @@ void WizardController::StartOOBEUpdate() {
   SetCurrentScreen(GetScreen(UpdateView::kScreenId));
 }
 
+void WizardController::StartNetworkTimezoneResolve() {
+  // Bypass the network requests for the geolocation and the timezone if the
+  // timezone is being overridden through the command line.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kOobeTimezoneOverrideForTests)) {
+    auto timezone = std::make_unique<TimeZoneResponseData>();
+    timezone->status = TimeZoneResponseData::OK;
+    timezone->timeZoneId =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kOobeTimezoneOverrideForTests);
+    VLOG(1) << "Timezone is being overridden with : " << timezone->timeZoneId;
+    OnTimezoneResolved(std::move(timezone), /*server_error*/ false);
+    return;
+  }
+
+  DelayNetworkCall(
+      base::TimeDelta::FromMilliseconds(kDefaultNetworkRetryDelayMS),
+      base::Bind(&WizardController::StartTimezoneResolve,
+                 weak_factory_.GetWeakPtr()));
+}
+
+// Resolving the timezone consists of first determining the location,
+// and then determining the timezone.
 void WizardController::StartTimezoneResolve() {
   if (!g_browser_process->platform_part()
            ->GetTimezoneResolverManager()
@@ -1372,10 +1405,7 @@ void WizardController::StartTimezoneResolve() {
 }
 
 void WizardController::PerformPostEulaActions() {
-  DelayNetworkCall(
-      base::TimeDelta::FromMilliseconds(kDefaultNetworkRetryDelayMS),
-      base::Bind(&WizardController::StartTimezoneResolve,
-                 weak_factory_.GetWeakPtr()));
+  StartNetworkTimezoneResolve();
   DelayNetworkCall(
       base::TimeDelta::FromMilliseconds(kDefaultNetworkRetryDelayMS),
       ServicesCustomizationDocument::GetInstance()

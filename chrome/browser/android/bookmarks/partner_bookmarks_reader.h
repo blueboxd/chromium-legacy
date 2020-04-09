@@ -11,7 +11,7 @@
 
 #include "base/android/jni_weak_ref.h"
 #include "base/macros.h"
-#include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/browser/bookmark_node.h"
 
 namespace favicon {
 class LargeIconService;
@@ -47,6 +47,9 @@ class PartnerBookmarksReader {
   void PartnerBookmarksCreationComplete(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
+
+  static std::unique_ptr<bookmarks::BookmarkNode>
+  CreatePartnerBookmarksRootForTesting();
 
  private:
   // These values are persisted to logs. Entries should not be renumbered and

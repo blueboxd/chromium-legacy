@@ -120,7 +120,6 @@
 <translation id="1153636665119721804">โปรแกรมการปกป้องขั้นสูงของ Google</translation>
 <translation id="1161575384898972166">โปรดลงชื่อเข้าใช้ <ph name="TOKEN_NAME" /> เพื่อส่งออกใบรับรองไคลเอ็นต์</translation>
 <translation id="1163931534039071049">&amp;ดูรหัสต้นฉบับของเฟรม</translation>
-<translation id="1164674268730883318">ปิด Smart Lock สำหรับ <ph name="DEVICE_TYPE" /> ไหม</translation>
 <translation id="1164891049599601209">มีการป้อนในเว็บไซต์ที่มีการหลอกลวง</translation>
 <translation id="1164899421101904659">ป้อนคีย์ปลดล็อก PIN</translation>
 <translation id="1165039591588034296">ข้อผิดพลาด</translation>
@@ -774,7 +773,6 @@
 
 คุณจัดการการตั้งค่าบัญชีนี้ได้โดยการติดตั้งแอป Family Link ในอุปกรณ์ของคุณ  เราส่งอีเมลวิธีการตั้งค่าไปให้คุณแล้ว</translation>
 <translation id="2040460856718599782">อ๊ะ! เกิดข้อผิดพลาดขณะตรวจสอบสิทธิ์ของคุณ โปรดตรวจสอบข้อมูลรับรองสำหรับลงชื่อเข้าใช้อีกครั้ง แล้วลองอีกครั้ง</translation>
-<translation id="2043818754674261542">ระยะห่างที่โทรศัพท์จะปลดล็อก <ph name="DEVICE_TYPE" /> นี้ได้</translation>
 <translation id="204497730941176055">ชื่อแม่แบบใบรับรองของ Microsoft</translation>
 <translation id="2045117674524495717">ตัวช่วยเหลือสำหรับแป้นพิมพ์ลัด</translation>
 <translation id="2045969484888636535">ปิดกั้นคุกกี้ต่อไป</translation>
@@ -1147,7 +1145,6 @@
 <translation id="2518024842978892609">ใช้ใบรับรองไคลเอ็นต์</translation>
 <translation id="2520644704042891903">กำลังรอ Socket ที่ใช้งานได้...</translation>
 <translation id="252219247728877310">ไม่ได้อัปเดตคอมโพเนนต์</translation>
-<translation id="2522791476825452208">ใกล้มาก</translation>
 <translation id="2523184218357549926">ส่ง URL ของหน้าที่คุณเข้าชมไปยัง Google</translation>
 <translation id="2526277209479171883">ติดตั้งและดำเนินการต่อ</translation>
 <translation id="2526590354069164005">เดสก์ท็อป</translation>
@@ -1756,7 +1753,6 @@
 <translation id="3333190335304955291">คุณปิดบริการนี้ได้ในการตั้งค่า</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> - วิดีโอกำลังเล่นในโหมดการแสดงภาพซ้อนภาพ</translation>
 <translation id="3335947283844343239">เปิดแท็บที่ปิดไปแล้วขึ้นใหม่</translation>
-<translation id="3336664756920573711">ปลดล็อก <ph name="DEVICE_TYPE" /> ด้วยโทรศัพท์ Android ของคุณ</translation>
 <translation id="3340620525920140773">ดาวน์โหลดเสร็จสมบูรณ์: <ph name="FILE_NAME" /></translation>
 <translation id="3341699307020049241">PIN ไม่ถูกต้อง คุณป้อน PIN ได้อีก <ph name="RETRIES" /> ครั้ง</translation>
 <translation id="3341703758641437857">อนุญาตให้เข้าถึงไฟล์ URL</translation>
@@ -2779,7 +2775,6 @@
 <translation id="4697551882387947560">เมื่อเซสชันการเรียกดูสิ้นสุดลง</translation>
 <translation id="4699172675775169585">รูปภาพและไฟล์ในแคช</translation>
 <translation id="4699357559218762027">(เรียกใช้อัตโนมัติ)</translation>
-<translation id="470074695271471509">ออกจากระบบเพื่อตั้งค่าให้เสร็จไหม</translation>
 <translation id="4701025263201366865">การลงชื่อเข้าใช้ของผู้ปกครอง</translation>
 <translation id="4707302005824653064">การใช้งานและประวัติอาจได้รับการตรวจสอบโดยผู้จัดการ (<ph name="CUSTODIAN_EMAIL" />) ใน chrome.com</translation>
 <translation id="4707579418881001319">L2TP/IPsec + ใบรับรองผู้ใช้</translation>
@@ -2802,7 +2797,6 @@
 <translation id="473546211690256853">บัญชีนี้จัดการโดย <ph name="DOMAIN" /></translation>
 <translation id="4735803855089279419">ระบบระบุตัวบ่งชี้อุปกรณ์ของอุปกรณ์นี้ไม่สำเร็จ</translation>
 <translation id="4736292055110123391">ซิงค์บุ๊กมาร์ก รหัสผ่าน ประวัติการเข้าชม และอื่นๆ ในอุปกรณ์ทุกเครื่อง</translation>
-<translation id="4737715515457435632">โปรดเชื่อมต่อเครือข่าย</translation>
 <translation id="473775607612524610">อัปเดต</translation>
 <translation id="4739639199548674512">ตั๋ว</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />ดูวิธีอัปเดตแอปพลิเคชัน<ph name="END_LINK" /></translation>
@@ -3280,7 +3274,6 @@
 <translation id="5423829801105537712">การตรวจตัวสะกดพื้นฐาน</translation>
 <translation id="5423849171846380976">เปิดอยู่</translation>
 <translation id="5425042808445046667">ดาวน์โหลดต่อ</translation>
-<translation id="5425722269016440406">คุณต้องออนไลน์เพื่อปิด Smart Lock เนื่องจากการตั้งค่านี้ได้ซิงค์กับโทรศัพท์และอุปกรณ์อื่นๆ โปรดเชื่อมต่อเครือข่ายก่อน</translation>
 <translation id="5425863515030416387">ลงชื่อเข้าใช้อุปกรณ์ทุกเครื่องได้ง่ายๆ</translation>
 <translation id="5427278936122846523">แปลทุกครั้ง</translation>
 <translation id="5427459444770871191">หมุน&amp;ตามเข็มนาฬิกา</translation>
@@ -3422,7 +3415,6 @@
 <translation id="558918721941304263">กำลังโหลดแอป...</translation>
 <translation id="5592595402373377407">ยังไม่มีข้อมูลเพียงพอ</translation>
 <translation id="5593357315997824387">ซิงค์ไฟล์</translation>
-<translation id="5595152862129936745">ไกลมาก</translation>
 <translation id="5595485650161345191">แก้ไขที่อยู่</translation>
 <translation id="5595727715083333657">คอนเทนเนอร์ไม่รองรับการปรับขนาด หากต้องการปรับพื้นที่ว่างที่จัดสรรล่วงหน้าสำหรับ Linux (เบต้า) ให้สำรองข้อมูลแล้วคืนค่าในคอนเทนเนอร์ใหม่</translation>
 <translation id="5596627076506792578">ตัวเลือกเพิ่มเติม</translation>
@@ -3535,7 +3527,6 @@
 <translation id="5747552184818312860">หมดอายุ</translation>
 <translation id="5747785204778348146">นักพัฒนาซอฟต์แวร์ - ไม่เสถียร</translation>
 <translation id="5747809636523347288">ว&amp;างและไปที่ <ph name="URL" /></translation>
-<translation id="5750324801516359607">ไกล</translation>
 <translation id="5751887393582880060">การอัปโหลดนี้ละเมิดนโยบายความปลอดภัยขององค์กร คุณแน่ใจไหมว่าต้องการดำเนินการต่อ</translation>
 <translation id="5756163054456765343">ศู&amp;นย์ช่วยเหลือ</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" /> สามารถอ่านเอกสารที่คุณส่งไปพิมพ์ผ่าน <ph name="APP_NAME" /> ได้</translation>
@@ -4085,7 +4076,6 @@
 <translation id="6490471652906364588">อุปกรณ์ USB-C (พอร์ตด้านขวา)</translation>
 <translation id="6491376743066338510">การให้สิทธิ์ล้มเหลว</translation>
 <translation id="6494445798847293442">ไม่ใช่ผู้ออกใบรับรอง</translation>
-<translation id="649454645705377674">ปิด</translation>
 <translation id="6495925982925244349">เครือข่ายที่ <ph name="NETWORK_INDEX" /> จาก <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, ความแรงสัญญาณ <ph name="SIGNAL_STRENGTH" />%, จัดการโดยผู้ดูแลระบบ, รายละเอียด</translation>
 <translation id="6498249116389603658">&amp;ทุกภาษาของคุณ</translation>
 <translation id="6499143127267478107">กำลังแก้ไขปัญหาโฮสต์ในสคริปต์พร็อกซี...</translation>
@@ -4153,7 +4143,6 @@
 <translation id="6590458744723262880">เปลี่ยนชื่อโฟลเดอร์</translation>
 <translation id="6592267180249644460">บันทึก WebRTC ที่จับภาพ <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">บันทึกลายนิ้วมือของคุณได้แล้ว</translation>
-<translation id="6594883168703494535">ใช้ Smart Lock เพื่อลงชื่อเข้าใช้บัญชี Google</translation>
 <translation id="6596325263575161958">ตัวเลือกการเข้ารหัส</translation>
 <translation id="6596816719288285829">ที่อยู่ IP</translation>
 <translation id="6597017209724497268">ตัวอย่าง</translation>
@@ -4687,7 +4676,6 @@
 <translation id="7328867076235380839">ชุดค่าผสมไม่ถูกต้อง</translation>
 <translation id="7329154610228416156">การลงชื่อเข้าใช้ล้มเหลวเนื่องจากมีการกำหนดค่าให้ใช้ URL ที่ไม่ปลอดภัย (<ph name="BLOCKED_URL" />) โปรดติดต่อผู้ดูแลระบบของคุณ</translation>
 <translation id="7332053360324989309">ผู้ปฏิบัติงานเฉพาะอย่าง: <ph name="SCRIPT_URL" /></translation>
-<translation id="7334190995941642545">ไม่สามารถใช้ Smart Lock ได้ในขณะนี้ โปรดลองอีกครั้งในภายหลัง</translation>
 <translation id="7334274148831027933">เปิดใช้แว่นขยายหน้าจอบางส่วน</translation>
 <translation id="7335974957018254119">ใช้การตรวจตัวสะกดสำหรับ</translation>
 <translation id="7336799713063880535">บล็อกการแจ้งเตือนอยู่</translation>
@@ -5232,11 +5220,6 @@
 <translation id="8017679124341497925">แก้ไขทางลัดแล้ว</translation>
 <translation id="8018313076035239964">ควบคุมว่าจะให้เว็บไซต์ใช้ข้อมูลใดได้บ้าง และสามารถแสดงเนื้อหาใดให้กับคุณ</translation>
 <translation id="8023801379949507775">อัปเดตส่วนขยายทันที</translation>
-<translation id="8024483450737722621">ระบบจะลบแอปที่คุณดาวน์โหลดจาก Google Play ออกจาก Chromebook นี้
-      <ph name="LINE_BREAKS1" />
-      และอาจลบเนื้อหาที่คุณเคยซื้อ เช่น ภาพยนตร์ รายการทีวี เพลง หนังสือ หรือการซื้อในแอปอื่นๆ อีกด้วย
-      <ph name="LINE_BREAKS2" />
-      การลบนี้จะไม่ส่งผลต่อแอปหรือเนื้อหาบนอุปกรณ์เครื่องอื่น</translation>
 <translation id="8026334261755873520">ล้างข้อมูลการท่องเว็บ</translation>
 <translation id="8028060951694135607">การกู้คืนคีย์ของ Microsoft</translation>
 <translation id="8028803902702117856">กำลังดาวน์โหลด <ph name="SIZE" /> <ph name="FILE_NAME" /></translation>
@@ -5421,7 +5404,7 @@
 <translation id="8263744495942430914"><ph name="FULLSCREEN_ORIGIN" /> ได้ปิดใช้งานเคอร์เซอร์เมาส์แล้ว</translation>
 <translation id="8264024885325823677">การตั้งค่านี้จัดการโดยผู้ดูแลระบบ</translation>
 <translation id="8264718194193514834">"<ph name="EXTENSION_NAME" />" เรียกใช้หน้าจอแบบเต็ม</translation>
-<translation id="826511437356419340">เข้าสู่โหมดภาพรวมหน้าต่างแล้ว เลื่อนเพื่อไปยังส่วนต่างๆ หรือกด Tab หากกำลังใช้แป้นพิมพ์</translation>
+<translation id="826511437356419340">เข้าสู่โหมดภาพรวมหน้าต่างแล้ว เลื่อนเพื่อไปยังส่วนต่างๆ หรือกด Tab หากใช้แป้นพิมพ์</translation>
 <translation id="8267961145111171918"><ph name="BEGIN_PARAGRAPH1" />นี่คือข้อมูลทั่วไปเกี่ยวกับอุปกรณ์นี้และวิธีใช้อุปกรณ์ (เช่น ระดับแบตเตอรี่ กิจกรรมในระบบและแอป และข้อผิดพลาด) ระบบจะใช้ข้อมูลดังกล่าวเพื่อปรับปรุง Android และข้อมูลแบบสรุปรวมบางอย่างจะช่วยให้แอป Google และพาร์ทเนอร์ต่างๆ เช่น นักพัฒนาซอฟต์แวร์ Android ปรับปรุงแอปและผลิตภัณฑ์ของตนให้ดีขึ้นได้อีกด้วย<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />การปิดฟีเจอร์นี้จะไม่ส่งผลต่อความสามารถของอุปกรณ์ในการส่งข้อมูลที่จำเป็นต้องใช้ในบริการสำคัญอย่างเช่น การอัปเดตระบบ และความปลอดภัย<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />เจ้าของจะควบคุมฟีเจอร์นี้ได้จากการตั้งค่า &gt; ขั้นสูง &gt; ส่งข้อมูลการวินิจฉัยและการใช้งานไปยัง Google โดยอัตโนมัติ<ph name="END_PARAGRAPH3" />
@@ -5552,7 +5535,6 @@
 <translation id="8455026683977728932">เปิดใช้ภาพ ADB ไม่สำเร็จ</translation>
 <translation id="845702320058262034">เชื่อมต่อไม่ได้ ตรวจสอบว่าบลูทูธโทรศัพท์เปิดอยู่</translation>
 <translation id="8457451314607652708">นำเข้าบุ๊กมาร์ก</translation>
-<translation id="8460336040822756677">หากคุณปิด Smart Lock for <ph name="DEVICE_TYPE" /> คุณจะไม่สามารถปลดล็อกอุปกรณ์ Chrome โดยใช้โทรศัพท์ได้ คุณจะต้องพิมพ์รหัสผ่าน</translation>
 <translation id="8461329675984532579">ชื่อผู้ให้บริการหน้าแรก</translation>
 <translation id="84613761564611563">ขอ UI การกำหนดค่าเครือข่ายแล้ว โปรดรอ...</translation>
 <translation id="8461914792118322307">พร็อกซี</translation>
@@ -5778,7 +5760,6 @@
 <translation id="8743864605301774756">อัปเดตเมื่อ 1 ชั่วโมงที่ผ่านมา</translation>
 <translation id="8746654918629346731">คุณขอ "<ph name="EXTENSION_NAME" />" แล้ว</translation>
 <translation id="874689135111202667">{0,plural, =1{อัปโหลด 1 ไฟล์ไปยังเว็บไซต์นี้ใช่ไหม}other{อัปโหลด # ไฟล์ไปยังเว็บไซต์นี้ใช่ไหม}}</translation>
-<translation id="8748384418490037181">ตัวเลือก Smart Lock</translation>
 <translation id="8749863574775030885">เข้าถึงอุปกรณ์ USB จากผู้ขายที่ไม่รู้จัก</translation>
 <translation id="8750133148106010815">ในการเริ่มต้น Google Play <ph name="ORGANIZATION_NAME" /> จะขอให้คุณสำรองข้อมูลและรีเซ็ต Chromebook เป็นการตั้งค่าเริ่มต้น</translation>
 <translation id="8750155211039279868"><ph name="ORIGIN" /> ต้องการเชื่อมต่อกับพอร์ตอนุกรม</translation>
@@ -5901,7 +5882,6 @@
 <translation id="8881020143150461183">โปรดลองอีกครั้ง หรือติดต่อ <ph name="CARRIER_NAME" /> เพื่อรับการสนับสนุนด้านเทคนิค</translation>
 <translation id="8883273463630735858">เปิดใช้การเร่งความเร็วทัชแพด</translation>
 <translation id="8884570509232205463">ตอนนี้อุปกรณ์จะล็อกที่เวลา <ph name="UNLOCK_TIME" /></translation>
-<translation id="8885197664446363138">Smart Lock ไม่พร้อมใช้งาน</translation>
 <translation id="8888253246822647887">แอปจะเปิดเมื่อการอัปเกรดเสร็จสมบูรณ์ ซึ่งอาจใช้เวลาสักครู่</translation>
 <translation id="8888432776533519951">สี:</translation>
 <translation id="8889651696183044030"><ph name="ORIGIN" /> แก้ไขไฟล์และโฟลเดอร์ต่อไปนี้ได้</translation>

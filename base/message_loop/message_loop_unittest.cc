@@ -387,7 +387,7 @@ class TestIOHandler : public MessagePumpForIO::IOHandler {
 };
 
 TestIOHandler::TestIOHandler(const wchar_t* name, HANDLE signal, bool wait)
-    : signal_(signal), wait_(wait) {
+    : MessagePumpForIO::IOHandler(FROM_HERE), signal_(signal), wait_(wait) {
   memset(buffer_, 0, sizeof(buffer_));
 
   file_.Set(CreateFile(name, GENERIC_READ, 0, NULL, OPEN_EXISTING,

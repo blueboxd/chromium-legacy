@@ -138,7 +138,8 @@ bool LocalNetworkCollectorImpl::IsEligible(
     return false;
   }
 
-  if (network->source != network_config::mojom::OncSource::kUser) {
+  if (network->source != network_config::mojom::OncSource::kUser &&
+      !network_metadata_store_->GetIsCreatedByUser(network->guid)) {
     NET_LOG(EVENT) << NetworkGuidId(network->guid)
                    << " is not eligible, was not configured by user.";
     return false;

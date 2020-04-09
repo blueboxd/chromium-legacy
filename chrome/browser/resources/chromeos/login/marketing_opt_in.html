@@ -39,16 +39,16 @@
           icon2x="oobe-32:checkmark">
       </hd-iron-icon>
       <div slot="subtitle" id="marketing-opt-in-subtitle"
-          hidden="[[!marketingOptInEnabled_]]">
+          hidden="[[!marketingOptInVisible_]]">
         [[i18nDynamic(locale, 'marketingOptInScreenSubtitle')]]
       </div>
       <div slot="subtitle" id="marketing-opt-in-subtitle"
-          hidden="[[marketingOptInEnabled_]]">
+          hidden="[[marketingOptInVisible_]]">
         [[i18nDynamic(locale, 'marketingOptInScreenSubtitleWithDeviceName')]]
       </div>
       <div slot="footer" class="layout vertical flex">
         <div class="marketing-option layout horizontal center"
-            hidden="[[!marketingOptInEnabled_]]"
+            hidden="[[!marketingOptInVisible_]]"
             id="marketing-opt-in-toggle">
           <hd-iron-icon icon1x="oobe-32:chromebook" icon2x="oobe-64:chromebook">
           </hd-iron-icon>

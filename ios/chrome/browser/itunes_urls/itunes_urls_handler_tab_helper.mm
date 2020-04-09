@@ -111,7 +111,8 @@ bool ITunesUrlsHandlerTabHelper::CanHandleUrl(const GURL& url) {
   return path_components[media_type_index] == kITunesAppPathIdentifier;
 }
 
-bool ITunesUrlsHandlerTabHelper::ShouldAllowRequest(
+web::WebStatePolicyDecider::PolicyDecision
+ITunesUrlsHandlerTabHelper::ShouldAllowRequest(
     NSURLRequest* request,
     const web::WebStatePolicyDecider::RequestInfo& request_info) {
   // Don't Handle URLS in Off The record mode as this will open StoreKit with
@@ -119,15 +120,15 @@ bool ITunesUrlsHandlerTabHelper::ShouldAllowRequest(
   // may be spam, and they will be handled by other policy deciders.
   if (web_state()->GetBrowserState()->IsOffTheRecord() ||
       !request_info.target_frame_is_main) {
-    return true;
+    return web::WebStatePolicyDecider::PolicyDecision::Allow();
   }
 
   GURL request_url = net::GURLWithNSURL(request.URL);
   if (!CanHandleUrl(request_url))
-    return true;
+    return web::WebStatePolicyDecider::PolicyDecision::Allow();
 
   HandleITunesUrl(request_url);
-  return false;
+  return web::WebStatePolicyDecider::PolicyDecision::Cancel();
 }
 
 // private

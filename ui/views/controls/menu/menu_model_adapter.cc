@@ -104,15 +104,17 @@ MenuItemView* MenuModelAdapter::AddMenuItemFromModelAt(ui::MenuModel* model,
                                model->GetSeparatorTypeAt(model_index));
   }
 
-  gfx::Image icon;
-  model->GetIconAt(model_index, &icon);
+  ui::ImageModel icon = model->GetIconAt(model_index);
+  ui::ImageModel minor_icon = model->GetMinorIconAt(model_index);
   return menu->AddMenuItemAt(
       menu_index, item_id, model->GetLabelAt(model_index),
       model->GetMinorTextAt(model_index),
-      ui::ThemedVectorIcon(model->GetMinorIconAt(model_index)),
-      icon.IsEmpty() ? gfx::ImageSkia() : *icon.ToImageSkia(),
-      icon.IsEmpty() ? ui::ThemedVectorIcon(model->GetVectorIconAt(model_index))
-                     : ui::ThemedVectorIcon(),
+      minor_icon.IsVectorIcon()
+          ? ui::ThemedVectorIcon(minor_icon.GetVectorIcon())
+          : ui::ThemedVectorIcon(),
+      icon.IsImage() ? *icon.GetImage().ToImageSkia() : gfx::ImageSkia(),
+      icon.IsVectorIcon() ? ui::ThemedVectorIcon(icon.GetVectorIcon())
+                          : ui::ThemedVectorIcon(),
       *type, ui::NORMAL_SEPARATOR);
 }
 

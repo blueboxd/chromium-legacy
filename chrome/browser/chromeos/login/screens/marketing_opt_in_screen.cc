@@ -4,6 +4,10 @@
 
 #include "chrome/browser/chromeos/login/screens/marketing_opt_in_screen.h"
 
+#include <cstddef>
+#include <string>
+#include <unordered_set>
+
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/login_screen.h"
@@ -11,6 +15,10 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
+#include "chrome/browser/apps/user_type_filter.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/marketing_backend_connector.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/gesture_navigation_screen.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
@@ -22,9 +30,80 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
+#include "third_party/icu/source/common/unicode/utypes.h"
+#include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
+
+namespace {
+MarketingOptInScreen::Country GetCountryFromTimezone(
+    const std::string& timezone_id) {
+  const size_t buf_size = 8;
+  char region[buf_size];
+  UErrorCode error = U_ZERO_ERROR;
+  icu::UnicodeString str(timezone_id.c_str(), timezone_id.size());
+  icu::TimeZone::getRegion(str, region, buf_size, error);
+  if (error != 0) {
+    LOG(WARNING) << "Could not determine country code. ";
+    return MarketingOptInScreen::Country::OTHER;
+  }
+  const std::string region_str(region);
+  if (region_str == "US") {
+    return MarketingOptInScreen::Country::US;
+  }
+  if (region_str == "CA") {
+    return MarketingOptInScreen::Country::CA;
+  }
+  if (region_str == "GB") {
+    return MarketingOptInScreen::Country::GB;
+  } else {
+    return MarketingOptInScreen::Country::OTHER;
+  }
+}
+
+bool IsDefaultOptInCountry(MarketingOptInScreen::Country country) {
+  return (country == MarketingOptInScreen::Country::US);
+}
+
+std::string GetCountryCode(MarketingOptInScreen::Country country) {
+  switch (country) {
+    case MarketingOptInScreen::Country::US:
+      return std::string("us");
+    case MarketingOptInScreen::Country::CA:
+      return std::string("ca");
+    case MarketingOptInScreen::Country::GB:
+      return std::string("uk");  // Due to server implementation. Not an error.
+    case MarketingOptInScreen::Country::OTHER:
+      NOTREACHED();
+      return std::string("unspecified");
+  }
+}
+
+// Records the opt-in and opt-out rates for Chromebook emails. Differentiates
+// between users who have a default opt-in vs. a default opt-out option.
+void RecordOptInAndOptOutRates(const bool user_opted_in,
+                               const bool opt_in_by_default) {
+  MarketingOptInScreen::Event event;
+  if (opt_in_by_default)  // A 'checked' toggle was shown.
+    event = (user_opted_in)
+                ? MarketingOptInScreen::Event::kUserOptedInWhenDefaultIsOptIn
+                : MarketingOptInScreen::Event::kUserOptedOutWhenDefaultIsOptIn;
+  else  // An 'unchecked' toggle was shown
+    event = (user_opted_in)
+                ? MarketingOptInScreen::Event::kUserOptedInWhenDefaultIsOptOut
+                : MarketingOptInScreen::Event::kUserOptedOutWhenDefaultIsOptOut;
+
+  base::UmaHistogramEnumeration("OOBE.MarketingOptInScreen.Event", event);
+}
+
+}  // namespace
+
+// static
+MarketingOptInScreen* MarketingOptInScreen::Get(ScreenManager* manager) {
+  return static_cast<MarketingOptInScreen*>(
+      manager->GetScreen(MarketingOptInScreenView::kScreenId));
+}
 
 MarketingOptInScreen::MarketingOptInScreen(
     MarketingOptInScreenView* view,
@@ -53,8 +132,27 @@ void MarketingOptInScreen::ShowImpl() {
     return;
   }
 
+  // Determine the country from the timezone
+  country_ = GetCountryFromTimezone(g_browser_process->local_state()->GetString(
+      prefs::kSigninScreenTimezone));
+
   active_ = true;
   view_->Show();
+
+  /* Hide the marketing opt-in option if:
+   *   1) the user is managed. (enterprise-managed, guest, child, supervised)
+   * OR
+   *   2) The country is not a valid country
+   *
+   */
+  email_opt_in_visible_ =
+      !(IsCurrentUserManaged() || (country_ == Country::OTHER));
+  view_->SetOptInVisibility(email_opt_in_visible_);
+
+  /**
+   * Set the default state of the email opt-in toggle. Geolocation based.
+   */
+  view_->SetEmailToggleState(IsDefaultOptInCountry(country_));
 
   view_->UpdateA11yShelfNavigationButtonToggle(prefs->GetBoolean(
       ash::prefs::kAccessibilityTabletModeShelfNavigationButtonsEnabled));
@@ -80,8 +178,21 @@ void MarketingOptInScreen::HideImpl() {
 }
 
 void MarketingOptInScreen::OnGetStarted(bool chromebook_email_opt_in) {
-  // Call Chromebook Email Service API
-  // TODO(https://crbug.com/1056672)
+  Profile* profile = ProfileManager::GetPrimaryUserProfile();
+
+  // UMA Metrics & API call only when the toggle is visible
+  if (email_opt_in_visible_) {
+    RecordOptInAndOptOutRates(
+        chromebook_email_opt_in /*user_opted_in*/,
+        IsDefaultOptInCountry(country_) /*opt_in_by_default*/);
+
+    if ((profile != nullptr) && chromebook_email_opt_in) {
+      // Call Chromebook Email Service API
+      const std::string country_code = GetCountryCode(country_);
+      MarketingBackendConnector::UpdateEmailPreferences(profile, country_code);
+    }
+  }
+
   ExitScreen();
 }
 
@@ -90,7 +201,6 @@ void MarketingOptInScreen::ExitScreen() {
     return;
 
   active_ = false;
-
   exit_callback_.Run();
 }
 
@@ -98,6 +208,14 @@ void MarketingOptInScreen::OnA11yShelfNavigationButtonPrefChanged() {
   view_->UpdateA11yShelfNavigationButtonToggle(
       ProfileManager::GetActiveUserProfile()->GetPrefs()->GetBoolean(
           ash::prefs::kAccessibilityTabletModeShelfNavigationButtonsEnabled));
+}
+
+bool MarketingOptInScreen::IsCurrentUserManaged() {
+  Profile* profile = ProfileManager::GetPrimaryUserProfile();
+  if (profile->IsOffTheRecord())
+    return false;
+  const std::string user_type = apps::DetermineUserType(profile);
+  return (user_type != apps::kUserTypeUnmanaged);
 }
 
 }  // namespace chromeos

@@ -105,7 +105,7 @@
 <translation id="2268813581635650749">Đăng xuất tất cả</translation>
 <translation id="2277103315734023688">Tua tiến</translation>
 <translation id="2292698582925480719">Tỷ lệ hiển thị</translation>
-<translation id="2295777434187870477">Micrô đang bật. Nếu bạn chuyển đổi, âm thanh đầu vào sẽ bị tắt.</translation>
+<translation id="2295777434187870477">Micrô đang bật. Nhấn vào nút bật tắt sẽ tắt micrô và không thu được tiếng.</translation>
 <translation id="2298170939937364391">Đã bật tính năng Phóng to toàn màn hình. Hãy nhấn lại tổ hợp phím Ctrl+Tìm kiếm+M để tắt tính năng này.</translation>
 <translation id="2302092602801625023">Tài khoản này do Family Link quản lý</translation>
 <translation id="2303600792989757991">Tổng quan về chuyển đổi cửa sổ</translation>
@@ -139,7 +139,7 @@
 <translation id="2658778018866295321">Nhấp và kéo</translation>
 <translation id="2700493154570097719">Đặt bàn phím</translation>
 <translation id="2704781753052663061">Dùng các mạng Wi-Fi khác</translation>
-<translation id="2705001408393684014">Chuyển đổi micrô. <ph name="STATE_TEXT" /></translation>
+<translation id="2705001408393684014">Bật tắt micrô. <ph name="STATE_TEXT" /></translation>
 <translation id="2718395828230677721">Ánh sáng đêm</translation>
 <translation id="2727977024730340865">Được cắm vào bộ sạc công suất thấp. Việc sạc pin có thể không được đảm bảo.</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
@@ -380,7 +380,7 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Bật</translation>
-<translation id="5920710855273935292">Micrô đang tắt tiếng.</translation>
+<translation id="5920710855273935292">Micrô đang tắt.</translation>
 <translation id="5947494881799873997">Hoàn nguyên</translation>
 <translation id="595202126637698455">Đã bật theo dõi hoạt động</translation>
 <translation id="5957083217255311415">Dữ liệu di động đã bị tắt.</translation>

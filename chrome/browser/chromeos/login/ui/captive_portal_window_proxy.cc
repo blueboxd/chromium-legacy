@@ -6,7 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/chromeos/login/ui/captive_portal_view.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
@@ -16,11 +16,37 @@
 
 namespace {
 
+// A widget that uses the supplied Profile to return a ThemeProvider.  This is
+// necessary because the Views in the captive portal UI need to access the theme
+// colors; also, this widget cannot copy the theme from e.g. a Browser widget
+// because there may be no Browsers started.
+class CaptivePortalWidget : public views::Widget {
+ public:
+  explicit CaptivePortalWidget(Profile* profile);
+  CaptivePortalWidget(const CaptivePortalWidget&) = delete;
+  CaptivePortalWidget& operator=(const CaptivePortalWidget&) = delete;
+  ~CaptivePortalWidget() override = default;
+
+  // views::Widget:
+  const ui::ThemeProvider* GetThemeProvider() const override;
+
+ private:
+  Profile* profile_;
+};
+
+CaptivePortalWidget::CaptivePortalWidget(Profile* profile)
+    : profile_(profile) {}
+
+const ui::ThemeProvider* CaptivePortalWidget::GetThemeProvider() const {
+  return &ThemeService::GetThemeProviderForProfile(profile_);
+}
+
 // The captive portal dialog is system-modal, but uses the web-content-modal
 // dialog manager (odd) and requires this atypical dialog widget initialization.
-views::Widget* CreateWindowAsFramelessChild(views::WidgetDelegate* delegate,
+views::Widget* CreateWindowAsFramelessChild(Profile* profile,
+                                            views::WidgetDelegate* delegate,
                                             gfx::NativeView parent) {
-  views::Widget* widget = new views::Widget;
+  views::Widget* widget = new CaptivePortalWidget(profile);
 
   views::Widget::InitParams params;
   params.delegate = delegate;
@@ -39,17 +65,14 @@ namespace chromeos {
 CaptivePortalWindowProxy::CaptivePortalWindowProxy(
     Delegate* delegate,
     content::WebContents* web_contents)
-    : delegate_(delegate),
-      widget_(NULL),
-      web_contents_(web_contents),
-      captive_portal_view_for_testing_(NULL) {
-  DCHECK(GetState() == STATE_IDLE);
+    : delegate_(delegate), web_contents_(web_contents) {
+  DCHECK_EQ(STATE_IDLE, GetState());
 }
 
 CaptivePortalWindowProxy::~CaptivePortalWindowProxy() {
   if (!widget_)
     return;
-  DCHECK(GetState() == STATE_DISPLAYED);
+  DCHECK_EQ(STATE_DISPLAYED, GetState());
   widget_->RemoveObserver(this);
   widget_->Close();
 }
@@ -58,7 +81,7 @@ void CaptivePortalWindowProxy::ShowIfRedirected() {
   if (GetState() != STATE_IDLE)
     return;
   InitCaptivePortalView();
-  DCHECK(GetState() == STATE_WAITING_FOR_REDIRECTION);
+  DCHECK_EQ(STATE_WAITING_FOR_REDIRECTION, GetState());
 }
 
 void CaptivePortalWindowProxy::Show() {
@@ -80,7 +103,7 @@ void CaptivePortalWindowProxy::Show() {
   auto* manager =
       web_modal::WebContentsModalDialogManager::FromWebContents(web_contents_);
   widget_ = CreateWindowAsFramelessChild(
-      portal,
+      profile_, portal,
       manager->delegate()->GetWebContentsModalDialogHost()->GetHostView());
   portal->Init();
   widget_->AddObserver(this);
@@ -91,7 +114,7 @@ void CaptivePortalWindowProxy::Close() {
   if (GetState() == STATE_DISPLAYED)
     widget_->Close();
   captive_portal_view_.reset();
-  captive_portal_view_for_testing_ = NULL;
+  captive_portal_view_for_testing_ = nullptr;
 }
 
 void CaptivePortalWindowProxy::OnRedirected() {
@@ -119,12 +142,12 @@ void CaptivePortalWindowProxy::RemoveObserver(Observer* observer) {
 }
 
 void CaptivePortalWindowProxy::OnWidgetDestroyed(views::Widget* widget) {
-  DCHECK(GetState() == STATE_DISPLAYED);
-  DCHECK(widget == widget_);
+  DCHECK_EQ(STATE_DISPLAYED, GetState());
+  DCHECK_EQ(widget, widget_);
 
   DetachFromWidget(widget);
 
-  DCHECK(GetState() == STATE_IDLE);
+  DCHECK_EQ(STATE_IDLE, GetState());
 
   for (auto& observer : observers_)
     observer.OnAfterCaptivePortalHidden();
@@ -134,8 +157,7 @@ void CaptivePortalWindowProxy::InitCaptivePortalView() {
   DCHECK(GetState() == STATE_IDLE ||
          GetState() == STATE_WAITING_FOR_REDIRECTION);
   if (!captive_portal_view_.get()) {
-    captive_portal_view_.reset(
-        new CaptivePortalView(ProfileHelper::GetSigninProfile(), this));
+    captive_portal_view_ = std::make_unique<CaptivePortalView>(profile_, this);
     captive_portal_view_for_testing_ = captive_portal_view_.get();
   }
 
@@ -144,25 +166,17 @@ void CaptivePortalWindowProxy::InitCaptivePortalView() {
 }
 
 CaptivePortalWindowProxy::State CaptivePortalWindowProxy::GetState() const {
-  if (widget_ == NULL) {
-    if (captive_portal_view_.get() == NULL)
-      return STATE_IDLE;
-    else
-      return STATE_WAITING_FOR_REDIRECTION;
-  } else {
-    if (captive_portal_view_.get() == NULL)
-      return STATE_DISPLAYED;
-    else
-      NOTREACHED();
-  }
-  return STATE_UNKNOWN;
+  if (!widget_)
+    return captive_portal_view_ ? STATE_WAITING_FOR_REDIRECTION : STATE_IDLE;
+  DCHECK(!captive_portal_view_);
+  return STATE_DISPLAYED;
 }
 
 void CaptivePortalWindowProxy::DetachFromWidget(views::Widget* widget) {
   if (!widget_ || widget_ != widget)
     return;
   widget_->RemoveObserver(this);
-  widget_ = NULL;
+  widget_ = nullptr;
 }
 
 }  // namespace chromeos

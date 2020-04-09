@@ -155,6 +155,7 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/emoji/emoji_panel_helper.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/image_model.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/text_elider.h"
@@ -525,7 +526,8 @@ void AddAvatarToLastMenuItem(const gfx::Image& icon,
   gfx::Image sized_icon = profiles::GetSizedAvatarIcon(
       icon, true /* is_rectangle */, target_dip_width, target_dip_height,
       profiles::SHAPE_CIRCLE);
-  menu->SetIcon(menu->GetItemCount() - 1, sized_icon);
+  menu->SetIcon(menu->GetItemCount() - 1,
+                ui::ImageModel::FromImage(sized_icon));
 }
 #endif  // !defined(OS_CHROMEOS)
 
@@ -1261,7 +1263,7 @@ void RenderViewContextMenu::AppendLinkItems() {
                 IDS_LINK_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
                 send_tab_to_self::GetSingleTargetDeviceName(
                     GetBrowser()->profile())),
-            kSendTabToSelfIcon);
+            ui::ImageModel::FromVectorIcon(kSendTabToSelfIcon));
 #endif
         send_tab_to_self::RecordSendTabToSelfClickResult(
             send_tab_to_self::kLinkMenu,
@@ -1281,7 +1283,8 @@ void RenderViewContextMenu::AppendLinkItems() {
 #else
         menu_model_.AddSubMenuWithStringIdAndIcon(
             IDC_CONTENT_LINK_SEND_TAB_TO_SELF, IDS_LINK_MENU_SEND_TAB_TO_SELF,
-            send_tab_to_self_sub_menu_model_.get(), kSendTabToSelfIcon);
+            send_tab_to_self_sub_menu_model_.get(),
+            ui::ImageModel::FromVectorIcon(kSendTabToSelfIcon));
 #endif
       }
     }
@@ -1367,7 +1370,8 @@ void RenderViewContextMenu::AppendOpenInBookmarkAppLinkItems() {
   MenuManager* menu_manager = MenuManager::Get(browser_context_);
   // TODO(crbug.com/1052707): Use AppIconManager to read PWA icons.
   gfx::Image icon = menu_manager->GetIconForExtension(*app_id);
-  menu_model_.SetIcon(menu_model_.GetItemCount() - 1, icon);
+  menu_model_.SetIcon(menu_model_.GetItemCount() - 1,
+                      ui::ImageModel::FromImage(icon));
 }
 
 void RenderViewContextMenu::AppendImageItems() {
@@ -1501,7 +1505,7 @@ void RenderViewContextMenu::AppendPageItems() {
               IDS_CONTEXT_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
               send_tab_to_self::GetSingleTargetDeviceName(
                   GetBrowser()->profile())),
-          kSendTabToSelfIcon);
+          ui::ImageModel::FromVectorIcon(kSendTabToSelfIcon));
 #endif
       send_tab_to_self::RecordSendTabToSelfClickResult(
           send_tab_to_self::kContentMenu,
@@ -1520,7 +1524,8 @@ void RenderViewContextMenu::AppendPageItems() {
 #else
       menu_model_.AddSubMenuWithStringIdAndIcon(
           IDC_SEND_TAB_TO_SELF, IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
-          send_tab_to_self_sub_menu_model_.get(), kSendTabToSelfIcon);
+          send_tab_to_self_sub_menu_model_.get(),
+          ui::ImageModel::FromVectorIcon(kSendTabToSelfIcon));
 #endif
     }
   }
@@ -1624,13 +1629,9 @@ void RenderViewContextMenu::AppendSearchProvider() {
                      base::ASCIIToUTF16(" "), &params_.selection_text);
 
   AutocompleteMatch match;
-  AutocompleteClassifierFactory::GetForProfile(GetProfile())->Classify(
-      params_.selection_text,
-      false,
-      false,
-      metrics::OmniboxEventProto::INVALID_SPEC,
-      &match,
-      NULL);
+  AutocompleteClassifierFactory::GetForProfile(GetProfile())
+      ->Classify(params_.selection_text, false, false,
+                 metrics::OmniboxEventProto::INVALID_SPEC, &match, nullptr);
   selection_navigation_url_ = match.destination_url;
   if (!selection_navigation_url_.is_valid())
     return;

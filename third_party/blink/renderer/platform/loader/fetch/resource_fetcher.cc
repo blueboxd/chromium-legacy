@@ -591,8 +591,7 @@ bool ResourceFetcher::ResourceNeedsLoad(Resource* resource,
   // - instructed to defer loading images from network
   if (resource->GetType() == ResourceType::kImage &&
       (ShouldDeferImageLoad(resource->Url()) ||
-       params.GetImageRequestOptimization() ==
-           FetchParameters::kDeferImageLoad)) {
+       params.GetImageRequestBehavior() == FetchParameters::kDeferImageLoad)) {
     return false;
   }
   return policy != RevalidationPolicy::kUse || resource->StillNeedsLoad();
@@ -1084,9 +1083,18 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
     }
   }
 
+  // Image loaders are by default added to |loaders_|, and are therefore
+  // load-blocking. Lazy loaded images that are eventually fetched, however,
+  // should always be added to |non_blocking_loaders_|, as they are never
+  // load-blocking.
+  LoadBlockingPolicy load_blocking_policy = LoadBlockingPolicy::kDefault;
   if (resource->GetType() == ResourceType::kImage) {
     image_resources_.insert(resource);
     not_loaded_image_resources_.insert(resource);
+    if (params.GetImageRequestBehavior() ==
+        FetchParameters::kNonBlockingImage) {
+      load_blocking_policy = LoadBlockingPolicy::kForceNonBlockingLoad;
+    }
   }
 
   // Returns with an existing resource if the resource does not need to start
@@ -1095,7 +1103,8 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
   // start loading.
   if (ResourceNeedsLoad(resource, params, policy)) {
     if (!StartLoad(resource,
-                   std::move(params.MutableResourceRequest().MutableBody()))) {
+                   std::move(params.MutableResourceRequest().MutableBody()),
+                   load_blocking_policy)) {
       resource->FinishAsError(ResourceError::CancelledError(params.Url()),
                               task_runner_.get());
     }
@@ -1852,11 +1861,13 @@ void ResourceFetcher::MoveResourceLoaderToNonBlocking(ResourceLoader* loader) {
 }
 
 bool ResourceFetcher::StartLoad(Resource* resource) {
-  return StartLoad(resource, ResourceRequestBody());
+  return StartLoad(resource, ResourceRequestBody(),
+                   LoadBlockingPolicy::kDefault);
 }
 
 bool ResourceFetcher::StartLoad(Resource* resource,
-                                ResourceRequestBody request_body) {
+                                ResourceRequestBody request_body,
+                                LoadBlockingPolicy policy) {
   DCHECK(resource);
   DCHECK(resource->StillNeedsLoad());
 
@@ -1908,7 +1919,8 @@ bool ResourceFetcher::StartLoad(Resource* resource,
     // is not responsible for promoting matched preloads to load-blocking. This
     // is handled by MakePreloadedResourceBlockOnloadIfNeeded().
     if (!resource->IsLinkPreload() &&
-        resource->IsLoadEventBlockingResourceType()) {
+        resource->IsLoadEventBlockingResourceType() &&
+        policy != LoadBlockingPolicy::kForceNonBlockingLoad) {
       loaders_.insert(loader);
     } else {
       non_blocking_loaders_.insert(loader);

@@ -33,6 +33,12 @@ class MarketingOptInScreenView {
   // Sets whether the a11y setting for showing shelf navigation buttons is
   // toggled on or off.
   virtual void UpdateA11yShelfNavigationButtonToggle(bool enabled) = 0;
+
+  // Sets the visibility of the marketing email opt-in
+  virtual void SetOptInVisibility(bool visible) = 0;
+
+  // Updates the toggle state for the email opt-in
+  virtual void SetEmailToggleState(bool checked) = 0;
 };
 
 // The sole implementation of the MarketingOptInScreenView, using WebUI.
@@ -53,6 +59,8 @@ class MarketingOptInScreenHandler : public BaseScreenHandler,
   void Show() override;
   void Hide() override;
   void UpdateA11yShelfNavigationButtonToggle(bool enabled) override;
+  void SetOptInVisibility(bool visible) override;
+  void SetEmailToggleState(bool checked) override;
 
  private:
   // BaseScreenHandler:

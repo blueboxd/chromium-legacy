@@ -17,14 +17,15 @@ WebStatePolicyDeciderBridge::WebStatePolicyDeciderBridge(
 
 WebStatePolicyDeciderBridge::~WebStatePolicyDeciderBridge() = default;
 
-bool WebStatePolicyDeciderBridge::ShouldAllowRequest(
+WebStatePolicyDecider::PolicyDecision
+WebStatePolicyDeciderBridge::ShouldAllowRequest(
     NSURLRequest* request,
     const WebStatePolicyDecider::RequestInfo& request_info) {
   if ([decider_
           respondsToSelector:@selector(shouldAllowRequest:requestInfo:)]) {
     return [decider_ shouldAllowRequest:request requestInfo:request_info];
   }
-  return true;
+  return WebStatePolicyDecider::PolicyDecision::Allow();
 }
 
 bool WebStatePolicyDeciderBridge::ShouldAllowResponse(NSURLResponse* response,

@@ -120,6 +120,14 @@ struct URLRequest {
   // bypassed by setting site_for_cookies = SiteForCookies::FromUrl(url), but
   // this should only be done if the fetch can be reasonably said to be done by
   // the same principal as what |url| represents.
+  //
+  // Currently if a renderer is compromised an attacker could alter the
+  // SiteForCookies. This would allow the renderer to send cookies to a
+  // third-party context when it otherwise wouldn't be able to.
+  // https://crbug.com/1060631 will move the SFC computation into the browser
+  // process to prevent this.
+  // TODO(https://crbug.com/1060631): Remove this message after the fix is
+  // landed.
   SiteForCookies site_for_cookies;
 
   // Boolean indicating whether SameSite cookies are allowed to be attached

@@ -13,6 +13,7 @@ include_rules = [
   "+components/background_task_scheduler/android",
   "+components/bookmarks/common/android",
   "+components/browser_ui/widget/android",
+  "+components/favicon/android",
   "+components/offline_items_collection/core/android/java/src",
   "+components/omnibox/browser/android/java/src/org/chromium/components/omnibox",
   "+components/payments/content/android/java/src/org/chromium/components/payments",

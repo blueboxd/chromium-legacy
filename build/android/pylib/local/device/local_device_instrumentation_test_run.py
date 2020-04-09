@@ -11,7 +11,9 @@ import logging
 import os
 import posixpath
 import re
+import shutil
 import sys
+import tempfile
 import time
 
 from devil import base_error
@@ -93,6 +95,8 @@ RE_RENDER_IMAGE_NAME = re.compile(
       r'(?P<description>[-\w]+)\.'
       r'(?P<device_model_sdk>[-\w]+)\.png')
 
+_DEVICE_GOLD_DIR = 'skia_gold'
+
 
 @contextlib.contextmanager
 def _LogTestEndpoints(device, test_name):
@@ -136,6 +140,7 @@ class LocalDeviceInstrumentationTestRun(
     self._context_managers = collections.defaultdict(list)
     self._flag_changers = {}
     self._shared_prefs_to_restore = []
+    self._skia_gold_work_dir = None
 
   #override
   def TestPackage(self):
@@ -361,6 +366,10 @@ class LocalDeviceInstrumentationTestRun(
     self._env.parallel_devices.pMap(
         individual_device_set_up,
         self._test_instance.GetDataDependencies())
+    # Created here instead of on a per-test basis so that the downloaded
+    # expectations can be re-used between tests, saving a significant amount
+    # of time.
+    self._skia_gold_work_dir = tempfile.mkdtemp()
     if self._test_instance.wait_for_java_debugger:
       apk = self._test_instance.apk_under_test or self._test_instance.test_apk
       logging.warning('*' * 80)
@@ -370,6 +379,8 @@ class LocalDeviceInstrumentationTestRun(
 
   #override
   def TearDown(self):
+    shutil.rmtree(self._skia_gold_work_dir)
+    self._skia_gold_work_dir = None
     # By default, teardown will invoke ADB. When receiving SIGTERM due to a
     # timeout, there's a high probability that ADB is non-responsive. In these
     # cases, sending an ADB command will potentially take a long time to time
@@ -906,39 +917,41 @@ class LocalDeviceInstrumentationTestRun(
 
   def _ProcessSkiaGoldRenderTestResults(
       self, device, render_tests_device_output_dir, results):
-    gold_dir = posixpath.join(render_tests_device_output_dir, 'skia_gold')
+    gold_dir = posixpath.join(render_tests_device_output_dir, _DEVICE_GOLD_DIR)
     if not device.FileExists(gold_dir):
       return
 
     gold_properties = self._test_instance.skia_gold_properties
-    with tempfile_ext.NamedTemporaryDirectory() as working_dir:
+    with tempfile_ext.NamedTemporaryDirectory() as host_dir:
       gold_session = gold_utils.SkiaGoldSession(
-          working_dir=working_dir, gold_properties=gold_properties)
+          working_dir=self._skia_gold_work_dir, gold_properties=gold_properties)
       use_luci = not (gold_properties.local_pixel_tests
                       or gold_properties.no_luci_auth)
-      for image_name in device.ListDirectory(gold_dir):
+
+      # Pull everything at once instead of pulling individually, as it's
+      # slightly faster since each command over adb has some overhead compared
+      # to doing the same thing locally.
+      device.PullFile(gold_dir, host_dir)
+      host_dir = os.path.join(host_dir, _DEVICE_GOLD_DIR)
+      for image_name in os.listdir(host_dir):
         if not image_name.endswith('.png'):
           continue
 
         render_name = image_name[:-4]
         json_name = render_name + '.json'
-        device_json_path = posixpath.join(gold_dir, json_name)
-        if not device.FileExists(device_json_path):
+        json_path = os.path.join(host_dir, json_name)
+        image_path = os.path.join(host_dir, image_name)
+        if not os.path.exists(json_path):
           _FailTestIfNecessary(results)
           _AppendToLog(
               results, 'Unable to find corresponding JSON file for image %s '
               'when doing Skia Gold comparison.' % image_name)
           continue
 
-        host_image_path = os.path.join(working_dir, image_name)
-        device.PullFile(posixpath.join(gold_dir, image_name), host_image_path)
-        host_json_path = os.path.join(working_dir, json_name)
-        device.PullFile(device_json_path, host_json_path)
-
         status, error = gold_session.RunComparison(
             name=render_name,
-            keys_file=host_json_path,
-            png_file=host_image_path,
+            keys_file=json_path,
+            png_file=image_path,
             output_manager=self._env.output_manager,
             use_luci=use_luci)
 

@@ -121,6 +121,7 @@
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
 #include "chromecast/browser/extensions/api/tts/tts_extension_api.h"
 #include "chromecast/browser/extensions/cast_extension_system.h"
+#include "chromecast/browser/extensions/cast_extension_system_factory.h"
 #include "chromecast/browser/extensions/cast_extensions_browser_client.h"
 #include "chromecast/browser/extensions/cast_prefs.h"
 #include "chromecast/common/cast_extensions_client.h"
@@ -378,6 +379,17 @@ void AddDefaultCommandLineSwitches(base::CommandLine* command_line) {
   }
 }
 
+#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
+// Instantiates all cast KeyedService factories, which is especially important
+// for services that should be created at profile creation time as compared to
+// lazily on first access.
+void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
+  extensions::EnsureBrowserContextKeyedServiceFactoriesBuilt();
+
+  extensions::CastExtensionSystemFactory::GetInstance();
+}
+#endif
+
 }  // namespace
 
 CastBrowserMainParts::CastBrowserMainParts(
@@ -627,7 +639,7 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
           cast_content_browser_client_->cast_network_contexts());
   extensions::ExtensionsBrowserClient::Set(extensions_browser_client_.get());
 
-  extensions::EnsureBrowserContextKeyedServiceFactoriesBuilt();
+  EnsureBrowserContextKeyedServiceFactoriesBuilt();
 
   extensions::CastExtensionSystem* extension_system =
       static_cast<extensions::CastExtensionSystem*>(

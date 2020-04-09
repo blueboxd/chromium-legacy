@@ -65,6 +65,30 @@ gfx::BufferUsage GetBufferUsage(uint32_t usage) {
 
 }  // namespace
 
+class SharedImageBackingOzone::SharedImageRepresentationVaapiOzone
+    : public SharedImageRepresentationVaapi {
+ public:
+  SharedImageRepresentationVaapiOzone(SharedImageManager* manager,
+                                      SharedImageBacking* backing,
+                                      MemoryTypeTracker* tracker,
+                                      VaapiDependencies* vaapi_dependency)
+      : SharedImageRepresentationVaapi(manager,
+                                       backing,
+                                       tracker,
+                                       vaapi_dependency) {}
+
+ private:
+  SharedImageBackingOzone* ozone_backing() {
+    return static_cast<SharedImageBackingOzone*>(backing());
+  }
+  void EndAccess() override { ozone_backing()->has_pending_va_writes_ = true; }
+  void BeginAccess() override {
+    // TODO(andrescj): DCHECK that there are no fences to wait on (because the
+    // compositor should be completely done with a VideoFrame before returning
+    // it).
+  }
+};
+
 std::unique_ptr<SharedImageBackingOzone> SharedImageBackingOzone::Create(
     scoped_refptr<base::RefCountedData<DawnProcTable>> dawn_procs,
     SharedContextState* context_state,
@@ -90,7 +114,6 @@ std::unique_ptr<SharedImageBackingOzone> SharedImageBackingOzone::Create(
   if (!pixmap) {
     return nullptr;
   }
-
   return base::WrapUnique(new SharedImageBackingOzone(
       mailbox, format, size, color_space, usage, context_state,
       std::move(pixmap), std::move(dawn_procs)));
@@ -174,24 +197,6 @@ SharedImageBackingOzone::ProduceOverlay(SharedImageManager* manager,
   return nullptr;
 }
 
-std::unique_ptr<SharedImageRepresentationVaapi>
-SharedImageBackingOzone::ProduceVASurface(
-    SharedImageManager* manager,
-    MemoryTypeTracker* tracker,
-    VaapiDependenciesFactory* dep_factory) {
-  DCHECK(pixmap_);
-  if (!vaapi_deps_)
-    vaapi_deps_ = dep_factory->CreateVaapiDependencies(pixmap_);
-
-  if (!vaapi_deps_) {
-    LOG(ERROR) << "SharedImageBackingOzone::ProduceVASurface failed to create "
-                  "VaapiDependencies";
-    return nullptr;
-  }
-  return std::make_unique<SharedImageRepresentationVaapi>(
-      manager, this, tracker, vaapi_deps_.get());
-}
-
 SharedImageBackingOzone::SharedImageBackingOzone(
     const Mailbox& mailbox,
     viz::ResourceFormat format,
@@ -211,4 +216,28 @@ SharedImageBackingOzone::SharedImageBackingOzone(
       pixmap_(std::move(pixmap)),
       dawn_procs_(std::move(dawn_procs)) {}
 
+std::unique_ptr<SharedImageRepresentationVaapi>
+SharedImageBackingOzone::ProduceVASurface(
+    SharedImageManager* manager,
+    MemoryTypeTracker* tracker,
+    VaapiDependenciesFactory* dep_factory) {
+  DCHECK(pixmap_);
+  if (!vaapi_deps_)
+    vaapi_deps_ = dep_factory->CreateVaapiDependencies(pixmap_);
+
+  if (!vaapi_deps_) {
+    LOG(ERROR) << "SharedImageBackingOzone::ProduceVASurface failed to create "
+                  "VaapiDependencies";
+    return nullptr;
+  }
+  return std::make_unique<
+      SharedImageBackingOzone::SharedImageRepresentationVaapiOzone>(
+      manager, this, tracker, vaapi_deps_.get());
+}
+
+bool SharedImageBackingOzone::VaSync() {
+  if (has_pending_va_writes_)
+    has_pending_va_writes_ = !vaapi_deps_->SyncSurface();
+  return !has_pending_va_writes_;
+}
 }  // namespace gpu

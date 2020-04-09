@@ -32,7 +32,7 @@
       }
     </style>
     <settings-toggle-button id="google-assistant-enable"
-        class="first primary-toggle"
+        class="primary-toggle"
         pref="{{prefs.settings.voice_interaction.enabled}}"
         label="[[getAssistantOnOffLabel_(
             prefs.settings.voice_interaction.enabled.value)]]"
@@ -41,12 +41,14 @@
     <template is="dom-if"
         if="[[prefs.settings.voice_interaction.enabled.value]]">
       <settings-toggle-button id="google-assistant-context-enable"
+          class="hr"
           pref="{{prefs.settings.voice_interaction.context.enabled}}"
           label="$i18n{googleAssistantEnableContext}"
           sub-label="$i18n{googleAssistantEnableContextDescription}">
       </settings-toggle-button>
       <template is="dom-if" if="[[isAssistantAllowed_]]">
         <settings-toggle-button id="google-assistant-hotword-enable"
+            class="hr"
             pref="{{prefs.settings.voice_interaction.hotword.enabled}}"
             label="$i18n{googleAssistantEnableHotword}"
             sub-label="$i18n{googleAssistantEnableHotwordDescription}"
@@ -104,11 +106,13 @@
           </div>
         </template>
         <settings-toggle-button id="google-assistant-notification-enable"
+            class="hr"
             pref="{{prefs.settings.voice_interaction.notification.enabled}}"
             label="$i18n{googleAssistantEnableNotification}"
             sub-label="$i18n{googleAssistantEnableNotificationDescription}">
         </settings-toggle-button>
         <settings-toggle-button id="google-assistant-launch-with-mic-open"
+            class="hr"
             pref="{{prefs.settings.voice_interaction.launch_with_mic_open}}"
             label="$i18n{googleAssistantLaunchWithMicOpen}"
             sub-label="$i18n{googleAssistantLaunchWithMicOpenDescription}">

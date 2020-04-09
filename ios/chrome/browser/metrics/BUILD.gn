@@ -245,6 +245,7 @@ source_set("eg_tests") {
     "//components/metrics:demographic_metrics_provider",
     "//components/metrics_services_manager",
     "//components/strings",
+    "//components/sync/base",
     "//components/ukm",
     "//components/ukm:test_support",
     "//components/unified_consent:unified_consent",
@@ -328,6 +329,7 @@ source_set("test_support") {
     "//components/network_time",
     "//components/sync/base",
     "//components/ukm",
+    "//components/ukm:ukm_test_helper",
     "//ios/chrome/app:app_internal",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
@@ -343,7 +345,6 @@ source_set("test_support") {
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/testing/earl_grey:earl_grey_support",
     "//net:test_support",
-    "//services/metrics/public/cpp:metrics_cpp",
     "//third_party/metrics_proto",
 
     #TODO(crbug.com/1066297): Remove the below line.
@@ -385,14 +386,16 @@ source_set("eg_app_support+eg2") {
     "//components/network_time",
     "//components/sync/base",
     "//components/ukm",
+    "//components/ukm:ukm_test_helper",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/metrics",
     "//ios/chrome/browser/metrics:metrics_internal",
     "//ios/chrome/test/app:test_support",
     "//ios/testing:nserror_support",
-    "//services/metrics/public/cpp:metrics_cpp",
     "//third_party/metrics_proto",
+
+    #TODO(crbug.com/1066297): Remove the below line.
     "//third_party/zlib/google:compression_utils",
   ]
 }

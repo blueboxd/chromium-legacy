@@ -978,7 +978,8 @@ TEST_F(CRWWebControllerPolicyDeciderTest, ClosedWebState) {
   web_state()->SetDelegate(&delegate);
 
   FakeWebStatePolicyDecider policy_decider(web_state());
-  policy_decider.SetShouldAllowRequest(false);
+  policy_decider.SetShouldAllowRequest(
+      web::WebStatePolicyDecider::PolicyDecision::Cancel());
 
   NSURL* url =
       [NSURL URLWithString:@"https://itunes.apple.com/us/album/american-radio/"
@@ -1002,10 +1003,11 @@ TEST_F(CRWWebControllerPolicyDeciderTest, ClosedWebStateInShouldAllowRequest) {
     ~TestWebStatePolicyDecider() override = default;
 
     // WebStatePolicyDecider overrides
-    bool ShouldAllowRequest(NSURLRequest* request,
-                            const RequestInfo& request_info) override {
+    PolicyDecision ShouldAllowRequest(
+        NSURLRequest* request,
+        const RequestInfo& request_info) override {
       test_fixture->DestroyWebState();
-      return true;
+      return PolicyDecision::Allow();
     }
     bool ShouldAllowResponse(NSURLResponse* response,
                              bool for_main_frame) override {
@@ -1014,6 +1016,32 @@ TEST_F(CRWWebControllerPolicyDeciderTest, ClosedWebStateInShouldAllowRequest) {
     void WebStateDestroyed() override {}
   };
   TestWebStatePolicyDecider policy_decider(web_state());
+
+  NSURL* url = [NSURL URLWithString:@(kTestURLString)];
+  NSMutableURLRequest* url_request = [NSMutableURLRequest requestWithURL:url];
+  EXPECT_TRUE(VerifyDecidePolicyForNavigationAction(
+      url_request, WKNavigationActionPolicyCancel));
+}
+
+// Tests that navigations are allowed if |ShouldAllowRequest| returns a
+// PolicyDecision which returns true from |ShouldAllowNavigation()|.
+TEST_F(CRWWebControllerPolicyDeciderTest, AllowRequest) {
+  FakeWebStatePolicyDecider policy_decider(web_state());
+  policy_decider.SetShouldAllowRequest(
+      web::WebStatePolicyDecider::PolicyDecision::Allow());
+
+  NSURL* url = [NSURL URLWithString:@(kTestURLString)];
+  NSMutableURLRequest* url_request = [NSMutableURLRequest requestWithURL:url];
+  EXPECT_TRUE(VerifyDecidePolicyForNavigationAction(
+      url_request, WKNavigationActionPolicyAllow));
+}
+
+// Tests that navigations are cancelled if |ShouldAllowRequest| returns a
+// PolicyDecision which returns false from |ShouldAllowNavigation()|.
+TEST_F(CRWWebControllerPolicyDeciderTest, CancelRequest) {
+  FakeWebStatePolicyDecider policy_decider(web_state());
+  policy_decider.SetShouldAllowRequest(
+      web::WebStatePolicyDecider::PolicyDecision::Cancel());
 
   NSURL* url = [NSURL URLWithString:@(kTestURLString)];
   NSMutableURLRequest* url_request = [NSMutableURLRequest requestWithURL:url];

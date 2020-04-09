@@ -64,7 +64,6 @@
           <iron-collapse id="moreCollapse" opened="[[moreOpened_]]"
               class="iron-collapse-indented">
             <settings-toggle-button id="safeBrowsingToggle"
-                class="settings-box first"
                 pref="{{prefs.safebrowsing.enabled}}"
                 label="$i18n{safeBrowsingEnableProtection}"
                 sub-label="$i18n{safeBrowsingEnableProtectionDesc}"
@@ -77,6 +76,7 @@
                 sync-status="[[syncStatus]]">
             </settings-passwords-leak-detection-toggle>
             <settings-toggle-button id="safeBrowsingReportingToggle"
+                class="hr"
                 pref="[[safeBrowsingReportingPref_]]" no-set-pref
                 label="$i18n{safeBrowsingEnableExtendedReporting}"
                 sub-label="$i18n{safeBrowsingEnableExtendedReportingDesc}"
@@ -87,12 +87,13 @@
             <settings-do-not-track-toggle id="doNotTrack" prefs="{{prefs}}">
             </settings-do-not-track-toggle>
             <settings-toggle-button id="canMakePaymentToggle"
+                class="hr"
                 aria-label="$i18n{canMakePaymentToggleLabel}"
                 label="$i18n{canMakePaymentToggleLabel}"
                 pref="{{prefs.payments.can_make_payment_enabled}}"
                 on-settings-boolean-control-change="onCanMakePaymentChange_">
             </settings-toggle-button>
-            <settings-toggle-button
+            <settings-toggle-button class="hr"
                 hidden="[[!pageVisibility.networkPrediction]]"
                 pref="{{prefs.net.network_prediction_options}}"
                 label="$i18n{networkPredictionEnabled}"
@@ -274,6 +275,7 @@
           </category-default-setting>
           <settings-toggle-button
               id="blockThirdPartyCookies"
+              class="hr"
               pref="{{prefs.profile.block_third_party_cookies}}"
               label="$i18n{thirdPartyCookie}"
               sub-label="$i18n{thirdPartyCookieSublabel}"
@@ -393,6 +395,7 @@
           </category-default-setting>
           <settings-toggle-button
               id="block-autoplay-setting"
+              class="hr"
               label="$i18n{siteSettingsBlockAutoplaySetting}"
               pref="{{blockAutoplayStatus_.pref}}"
               disabled="[[!blockAutoplayStatus_.enabled]]"
@@ -676,7 +679,7 @@
             search-label="$i18n{siteSettingsAllSitesSearch}"
             search-term="{{searchFilter_}}">
 </if>
-          <settings-toggle-button class="first"
+          <settings-toggle-button
               pref="{{prefs.webkit.webprefs.encrypted_media_enabled}}"
               label="[[getProtectedContentLabel_(
                   prefs.webkit.webprefs.encrypted_media_enabled.value)]]"
@@ -686,7 +689,7 @@
           <div class="settings-box first two-line">
             $i18n{siteSettingsProtectedContentIdentifiersExplanation}
           </div>
-          <settings-toggle-button class="first"
+          <settings-toggle-button
               pref="{{prefs.settings.privacy.drm_enabled}}"
               label="[[getProtectedContentIdentifiersLabel_(
                   prefs.settings.privacy.drm_enabled.value)]]"

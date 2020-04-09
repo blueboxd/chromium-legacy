@@ -11,6 +11,7 @@
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/shell.h"
 #include "base/metrics/histogram_macros.h"
+#include "ui/base/models/image_model.h"
 #include "ui/display/types/display_constants.h"
 
 namespace ash {
@@ -22,7 +23,8 @@ ShelfApplicationMenuModel::ShelfApplicationMenuModel(
     : ui::SimpleMenuModel(this), delegate_(delegate) {
   AddTitle(title);
   for (size_t i = 0; i < items.size(); i++)
-    AddItemWithIcon(i, items[i].first, items[i].second);
+    AddItemWithIcon(i, items[i].first,
+                    ui::ImageModel::FromImageSkia(items[i].second));
   AddSeparator(ui::SPACING_SEPARATOR);
   DCHECK_EQ(GetItemCount(), int{items.size() + 2}) << "Update metrics |- 2|";
 }

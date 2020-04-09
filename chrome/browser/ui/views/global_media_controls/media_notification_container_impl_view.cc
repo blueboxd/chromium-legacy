@@ -226,6 +226,9 @@ void MediaNotificationContainerImplView::OnVisibleActionsChanged(
            actions,
            media_session::mojom::MediaSessionAction::kExitPictureInPicture));
   ForceExpandedState();
+
+  for (auto& observer : observers_)
+    observer.OnContainerActionsChanged();
 }
 
 void MediaNotificationContainerImplView::OnMediaArtworkChanged(

@@ -470,7 +470,7 @@ void ChromePasswordManagerClient::GeneratePassword() {
   // Using unretained pointer is safe because |this| outlives
   // ContentPasswordManagerDriver that holds the connection.
   content_driver->GeneratePassword(base::BindOnce(
-      &ChromePasswordManagerClient::ShowManualPasswordGenerationPopup,
+      &ChromePasswordManagerClient::ManualGenerationResultAvailable,
       base::Unretained(this), base::AsWeakPtr(content_driver)));
 }
 
@@ -1264,7 +1264,7 @@ bool ChromePasswordManagerClient::CanShowBubbleOnURL(const GURL& url) {
           scheme != content::kChromeDevToolsScheme);
 }
 
-void ChromePasswordManagerClient::ShowManualPasswordGenerationPopup(
+void ChromePasswordManagerClient::ManualGenerationResultAvailable(
     base::WeakPtr<password_manager::ContentPasswordManagerDriver> driver,
     const base::Optional<
         autofill::password_generation::PasswordGenerationUIData>& ui_data) {

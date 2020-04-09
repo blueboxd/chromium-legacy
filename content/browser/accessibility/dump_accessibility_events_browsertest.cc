@@ -268,6 +268,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("aria-controls-changed.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaComboBoxUneditable) {
+  RunEventTest(FILE_PATH_LITERAL("aria-combo-box-uneditable.html"));
+}
+
 #if defined(OS_WIN)
 #define MAYBE_AccessibilityEventsAriaDisabledChanged \
   DISABLED_AccessibilityEventsAriaDisabledChanged

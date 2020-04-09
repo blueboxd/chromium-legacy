@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Test that in viewport images with loading='lazy' and changed to loading='eager' do not block the window load event. assert_true: The window.load() event should fire before in_viewport image loads. expected true got false
-Harness: the test ran to completion.
-

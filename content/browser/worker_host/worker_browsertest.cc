@@ -174,11 +174,24 @@ class WorkerTest : public ContentBrowserTest,
   }
 
   // Returns the cookie received with the request for the specified path. If the
-  // path was requested but no cookie was received, return kNoCookie.
+  // path was requested but no cookie was received, return kNoCookie. Waits for
+  // the path to be requested if it hasn't been requested already.
   std::string GetReceivedCookie(const std::string& path) {
+    {
+      base::AutoLock auto_lock(path_cookie_map_lock_);
+      DCHECK(path_to_wait_for_.empty());
+      DCHECK(!path_wait_loop_);
+      if (path_cookie_map_.find(path) != path_cookie_map_.end())
+        return path_cookie_map_[path];
+      path_to_wait_for_ = path;
+      path_wait_loop_ = std::make_unique<base::RunLoop>();
+    }
+
+    path_wait_loop_->Run();
+
     base::AutoLock auto_lock(path_cookie_map_lock_);
-    if (path_cookie_map_.find(path) == path_cookie_map_.end())
-      return "path not requested";
+    path_to_wait_for_.clear();
+    path_wait_loop_.reset();
     return path_cookie_map_[path];
   }
 
@@ -213,9 +226,12 @@ class WorkerTest : public ContentBrowserTest,
     auto cookie_header = request.headers.find("Cookie");
     if (cookie_header == request.headers.end()) {
       path_cookie_map_[request.relative_url] = kNoCookie;
-      return nullptr;
+    } else {
+      path_cookie_map_[request.relative_url] = cookie_header->second;
     }
-    path_cookie_map_[request.relative_url] = cookie_header->second;
+    if (path_to_wait_for_ == request.relative_url) {
+      path_wait_loop_->Quit();
+    }
     return nullptr;
   }
 
@@ -223,6 +239,14 @@ class WorkerTest : public ContentBrowserTest,
   // with. Paths may only be requested once without clearing the map.
   std::map<std::string, std::string> path_cookie_map_
       GUARDED_BY(path_cookie_map_lock_);
+  // If non-empty, path to wait for the test server to see a request for on the
+  // "a.test" server.
+  std::string path_to_wait_for_ GUARDED_BY(path_cookie_map_lock_);
+  // If non-null, quit when a request for |path_to_wait_for_| is observed. May
+  // only be created or dereferenced off of the UI thread while holding
+  // |path_cookie_map_lock_|, its run method must be called while not holding
+  // the lock.
+  std::unique_ptr<base::RunLoop> path_wait_loop_;
   // Lock that must be held while modifying |path_cookie_map_|, as it's used on
   // both the test server's thread and the UI thread.
   base::Lock path_cookie_map_lock_;
@@ -396,17 +420,18 @@ IN_PROC_BROWSER_TEST_P(WorkerTest,
 }
 
 // Tests the value of |request_initiator| for shared worker resources.
-IN_PROC_BROWSER_TEST_P(WorkerTest, VerifyInitiatorSharedWorker) {
+IN_PROC_BROWSER_TEST_P(WorkerTest,
+                       VerifyInitiatorAndSameSiteCookiesSharedWorker) {
   if (!SupportsSharedWorker())
     return;
 
-  const GURL start_url(ssl_server()->GetURL("a.test", "/frame_tree/top.html"));
+  const GURL start_url(ssl_server()->GetURL("b.test", "/frame_tree/top.html"));
   EXPECT_TRUE(NavigateToURL(shell(), start_url));
 
   // To make things tricky about |top_frame_origin|, this test navigates to
   // a page on |ssl_server()| which has a cross-origin iframe that registers the
   // worker.
-  std::string cross_site_domain("b.test");
+  std::string cross_site_domain("a.test");
   const GURL test_url(ssl_server()->GetURL(
       cross_site_domain, "/workers/simple_shared_worker.html"));
 
@@ -420,6 +445,9 @@ IN_PROC_BROWSER_TEST_P(WorkerTest, VerifyInitiatorSharedWorker) {
       ssl_server()->GetURL(cross_site_domain, "/workers/empty.js"));
   const GURL resource_url(
       ssl_server()->GetURL(cross_site_domain, "/workers/empty.html"));
+
+  // Set a cookie for verfifying which requests send SameSite cookies.
+  SetSameSiteCookie(cross_site_domain);
 
   std::set<GURL> expected_request_urls = {worker_url, script_url, resource_url};
   const url::Origin expected_origin =
@@ -445,6 +473,14 @@ IN_PROC_BROWSER_TEST_P(WorkerTest, VerifyInitiatorSharedWorker) {
                             ->root();
   NavigateFrameToURL(root->child_at(0), test_url);
   waiter.Run();
+
+  // Check cookies sent with each request to "a.test". Frame request should not
+  // have SameSite cookies, but SharedWorker could (though eventually this will
+  // need to be changed, to protect against cross-site user tracking).
+  EXPECT_EQ(kNoCookie, GetReceivedCookie(test_url.path()));
+  EXPECT_EQ(kSameSiteCookie, GetReceivedCookie(worker_url.path()));
+  EXPECT_EQ(kSameSiteCookie, GetReceivedCookie(script_url.path()));
+  EXPECT_EQ(kSameSiteCookie, GetReceivedCookie(resource_url.path()));
 }
 
 // Test that an "a.test" worker sends "a.test" SameSite cookies, both when

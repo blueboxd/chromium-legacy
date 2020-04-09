@@ -313,10 +313,26 @@ class GomaLinkBase(object):
     if os.path.basename(args.linker).startswith('pnacl-'):
       return None
 
-    if 'clang' in os.path.basename(args.linker):
-      compiler = args.linker
+    rsp_expanded = list(self.expand_args_rsps(args.linker_args))
+    expanded_args = list(self.expand_thin_archives(rsp_expanded))
+
+    return self.analyze_expanded_args(expanded_args, args.output, args.linker,
+                                      gen_dir, common_dir, use_common_objects)
+
+  def analyze_expanded_args(self, args, output, linker, gen_dir, common_dir,
+                            use_common_objects):
+    """
+    Helper function for analyze_args. This is called by analyze_args after
+    expanding rsp files and determining which files are bitcode files, and
+    produces codegen_params, final_params, and index_params.
+
+    This function interacts with the filesystem through os.path.exists,
+    is_bitcode_file, and ensure_file.
+    """
+    if 'clang' in os.path.basename(linker):
+      compiler = linker
     else:
-      compiler_dir = os.path.dirname(args.linker)
+      compiler_dir = os.path.dirname(linker)
       if compiler_dir:
         compiler_dir += '/'
       else:
@@ -356,14 +372,6 @@ class GomaLinkBase(object):
           return ['-mllvm', match.group(2)]
         else:
           return ['-mllvm']
-      match = re.match('(?:-Wl,)?--lto-O(.*)', param)
-      if match:
-        optlevel[0] = match.group(1)
-        return None
-      match = re.match('[-/]opt:.*lldlto=([^:]*)', param, re.IGNORECASE)
-      if match:
-        optlevel[0] = match.group(1)
-        return None
       if (param.startswith('-f') and not param.startswith('-flto')
           and not param.startswith('-fsanitize')
           and not param.startswith('-fthinlto')
@@ -373,25 +381,58 @@ class GomaLinkBase(object):
         return [param]
       return None
 
+    def extract_opt_level(param):
+      """
+      If param is a parameter that specifies the LTO optimization level,
+      returns the level. If not, returns None.
+      """
+      match = re.match('(?:-Wl,)?--lto-O(.+)', param)
+      if match:
+        return match.group(1)
+      match = re.match('[-/]opt:.*lldlto=([^:]*)', param, re.IGNORECASE)
+      if match:
+        return match.group(1)
+      return None
+
     def process_param(param):
       """
       Common code for processing a single parameter from the either the
       command line or an rsp file.
       """
-      if in_mllvm[0]:
-        if param.startswith('-Wl,'):
-          codegen_params.append(param[4:])
-        else:
-          codegen_params.append(param)
-        in_mllvm[0] = False
-      else:
+
+      def helper():
+        """
+        This exists so that we can use return instead of
+        nested if statements to use the first matching case.
+        """
+        # After -mllvm, just pass on the param.
+        if in_mllvm[0]:
+          if param.startswith('-Wl,'):
+            codegen_params.append(param[4:])
+          else:
+            codegen_params.append(param)
+          in_mllvm[0] = False
+          return
+
+        # Check for params that specify LTO optimization level.
+        o = extract_opt_level(param)
+        if o is not None:
+          optlevel[0] = o
+          return
+
+        # Check for params that affect code generation.
         cg_param = transform_codegen_param(param)
         if cg_param:
           codegen_params.extend(cg_param)
+          # No return here, we still want to check for -mllvm.
+
+        # Check for -mllvm.
         match = MLLVM_RE.match(param)
         if match and not match.group(2):
           # Next parameter will be the thing to pass to LLVM.
           in_mllvm[0] = True
+
+      helper()
       if self.GROUP_RE.match(param):
         return
       index_params.append(param)
@@ -411,17 +452,14 @@ class GomaLinkBase(object):
         final_params.append(param)
 
     index_params.append(self.WL + self.PREFIX_REPLACE + ';' + obj_dir)
-
-    rsp_expanded = list(self.expand_args_rsps(args.linker_args))
-    expanded_args = list(self.expand_thin_archives(rsp_expanded))
     i = 0
-    while i < len(expanded_args):
-      x = expanded_args[i]
+    while i < len(args):
+      x = args[i]
       if not self.GROUP_RE.match(x):
-        outfile, next_i = self.process_output_param(expanded_args, i)
+        outfile, next_i = self.process_output_param(args, i)
         if outfile is not None:
-          index_params.extend(expanded_args[i:next_i])
-          final_params.extend(expanded_args[i:next_i])
+          index_params.extend(args[i:next_i])
+          final_params.extend(args[i:next_i])
           i = next_i - 1
         else:
           process_param(x)
@@ -438,15 +476,15 @@ class GomaLinkBase(object):
       for tup in codegen:
         final_params.append(tup[0])
     else:
-      splitfile = gen_dir + '/' + args.output + '.split' + self.OBJ_SUFFIX
+      splitfile = gen_dir + '/' + output + '.split' + self.OBJ_SUFFIX
       final_params.append(splitfile)
       index_params.append(self.WL + self.OBJ_PATH + splitfile)
-      used_obj_file = gen_dir + '/' + args.output + '.objs'
+      used_obj_file = gen_dir + '/' + output + '.objs'
       final_params.append('@' + used_obj_file)
 
     return AnalyzeArgsResult(
-        output=args.output,
-        linker=args.linker,
+        output=output,
+        linker=linker,
         compiler=compiler,
         splitfile=splitfile,
         index_params=index_params,

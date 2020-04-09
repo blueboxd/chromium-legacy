@@ -116,7 +116,6 @@
 <translation id="1153636665119721804">Google को सुरक्षासम्बन्धी उन्नत सुविधा कार्यक्रम</translation>
 <translation id="1161575384898972166">ग्राहक प्रमाणपत्र निर्यात गर्नको लागि कृपया <ph name="TOKEN_NAME" /> मा साइन इन गर्नुहोस्।</translation>
 <translation id="1163931534039071049">&amp;फ्रेम स्रोत हेर्नुहोस्</translation>
-<translation id="1164674268730883318"><ph name="DEVICE_TYPE" /> को Smart Lock लाई निष्क्रिय पार्ने हो?</translation>
 <translation id="1164891049599601209">भ्रामक साइटमा प्रविष्टि गरिएको</translation>
 <translation id="1164899421101904659">PIN अनलक गर्ने साँचो प्रविष्टि गर्नुहोस्</translation>
 <translation id="1165039591588034296">त्रुटि</translation>
@@ -767,7 +766,6 @@
 
 तपाईं आफ्नो यन्त्रमा Family Link अनुप्रयोग स्थापना गरेर यो खाताको सेटिङ व्यवस्थित गर्न सक्नुहुन्छ।  हामीले इमेलमार्फत तपाईंलाई निर्देशनहरू पठाएका छौँ।</translation>
 <translation id="2040460856718599782">ओहो! तपाईं प्रमाणीकरण गर्न प्रयास गर्दा केही गल्ती भयो। आफ्नो साइन इन प्रमाणहरू डबल जाँच गरी फेरि प्रयास गर्नुहोस्।</translation>
-<translation id="2043818754674261542">यो <ph name="DEVICE_TYPE" /> अनलक गर्न फोन टाढा हुनु आवश्यक छ</translation>
 <translation id="204497730941176055">Microsoft प्रमाणपत्र ट्याम्प्लेट नाम</translation>
 <translation id="2045117674524495717">किबोर्ड सर्टकटको सहयोगी</translation>
 <translation id="2045969484888636535">कुकीहरू ब्लकिङ जारी राख्नुहोस्</translation>
@@ -1139,7 +1137,6 @@
 <translation id="2518024842978892609">तपाईंको ग्राहक प्रमाणपत्रहरू प्रयोग गर्नुहोस्</translation>
 <translation id="2520644704042891903">उपलब्ध सकेट प्रतिक्षा गर्दै...</translation>
 <translation id="252219247728877310">अवयव अपडेट गरिएको छैन</translation>
-<translation id="2522791476825452208">निकै नजिक हुनु पर्छ</translation>
 <translation id="2523184218357549926">तपाईं जाने पृष्ठका URL हरू Google मा पठाउँछ</translation>
 <translation id="2526277209479171883">स्थापना गरी जारी राख्नुहोस्</translation>
 <translation id="2526590354069164005">डेस्कटप</translation>
@@ -1746,7 +1743,6 @@
 <translation id="3333190335304955291">तपाईं सेटिङमा गई यो सेवालाई निष्क्रिय पार्न सक्नुहुन्छ।</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> - भिडियो Picture-in-Picture मोडमा प्ले हुँदै छ</translation>
 <translation id="3335947283844343239">बन्द गरिएको ट्याब पुन: खोल्नुहोस्</translation>
-<translation id="3336664756920573711">आफ्नो Android फोनमार्फत आफ्नो <ph name="DEVICE_TYPE" /> अनलक गर्नुहोस्</translation>
 <translation id="3340620525920140773">डाउनलोड सम्पन्न भयो: <ph name="FILE_NAME" />।</translation>
 <translation id="3341699307020049241">PIN मिलेन। तपाईं अब <ph name="RETRIES" /> पटक मात्र प्रयास गर्न सक्नुहुन्छ।</translation>
 <translation id="3341703758641437857">फाइल URLs मा पहुँच अनुमति दिनुहोस्</translation>
@@ -2760,7 +2756,6 @@
 <translation id="4697551882387947560">जब ब्राउजिङ सत्र समाप्त हुन्छ</translation>
 <translation id="4699172675775169585">क्यास गरिएका छविहरू र फाइलहरू</translation>
 <translation id="4699357559218762027">(स्वत: सुरुवात गरिएको)</translation>
-<translation id="470074695271471509">समाप्त गर्न साइन आउट गर्ने हो?</translation>
 <translation id="4701025263201366865">अभिभावकको साइन इन</translation>
 <translation id="4707302005824653064">chrome.com मा रहेको व्यवस्थापक (<ph name="CUSTODIAN_EMAIL" />) ले उपयोग र इतिहासको समीक्षा गर्न सक्छ।</translation>
 <translation id="4707579418881001319">L2TP/IPsec + प्रयोगकर्ता प्रमाणपत्र</translation>
@@ -2783,7 +2778,6 @@
 <translation id="473546211690256853">यो खातालाई <ph name="DOMAIN" /> ले व्यवस्थित गरेको छ</translation>
 <translation id="4735803855089279419">प्रणालीले यो यन्त्रका यान्त्रिक पहिचानकर्ताहरू निर्धारण गर्न सकेन।</translation>
 <translation id="4736292055110123391">तपाईंका सबै यन्त्रहरूमा तपाईंका पुस्तक चिन्ह, पासवर्ड, इतिहाससम्बन्धी जानकारी र थप कुराहरू सिंक गर्नुहोस्</translation>
-<translation id="4737715515457435632">कृपया नेटवर्कमा जडान गर्नुहोस्।</translation>
 <translation id="473775607612524610">अद्यावधिक गर्नुहोस्</translation>
 <translation id="4739639199548674512">टिकटहरू</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />अनुप्रयोगहरू अद्यावधिक गर्ने तरिका सिक्नुहोस्‌<ph name="END_LINK" /></translation>
@@ -3259,7 +3253,6 @@
 <translation id="5423829801105537712">आधारभूत हिज्जे जाँच</translation>
 <translation id="5423849171846380976">सक्रिय भयो</translation>
 <translation id="5425042808445046667">डाउनलोड जारी राख्नुहोस्</translation>
-<translation id="5425722269016440406">Smart Lock निष्क्रिय गर्न तपाईं अनलाइन हुनु पर्छ किनकि यो सेटिङ तपाईंको फोन र अन्य यन्त्रहरूमा सिंक गरिएको छ। कृपया पहिले नेटवर्कमा जडान गर्नुहोस्।</translation>
 <translation id="5425863515030416387">यन्त्रहरूमा सजिलैसँग साइन इन गर्नुहोस्</translation>
 <translation id="5427278936122846523">सधैँ अनुवाद गर्नुहोस्</translation>
 <translation id="5427459444770871191">दायाँबाट &amp;घुमाउनुहोस्</translation>
@@ -3401,7 +3394,6 @@
 <translation id="558918721941304263">अनुप्रयोगहरू लोड गर्दै...</translation>
 <translation id="5592595402373377407">अझै पर्याप्त डाटा उपलब्ध छैन।</translation>
 <translation id="5593357315997824387">मेरा फाइलहरू सिंक गर्नुहोस्</translation>
-<translation id="5595152862129936745">धेरै टाढा हुनसक्छ</translation>
 <translation id="5595485650161345191">ठेगाना सम्पादन गर्नुहोस्</translation>
 <translation id="5595727715083333657">तपाईंको कन्टेनरको आकार बदल्न मिल्दैन। Linux (बिटा) लाई पहिले नै छुट्याइएको खाली ठाउँको मात्रा समायोजन गर्न यो खाली ठाउँ ब्याक अप गर्नुहोस् र त्यसपछि यसलाई नयाँ कन्टेनरमा पुनर्स्थापना गर्नुहोस्।</translation>
 <translation id="5596627076506792578">अन्य विकल्पहरू</translation>
@@ -3513,7 +3505,6 @@
 <translation id="5747552184818312860">म्याद सकिन्छ</translation>
 <translation id="5747785204778348146">विकासकर्ता - अस्थिर</translation>
 <translation id="5747809636523347288">टाँस्नुहोस् र <ph name="URL" /> मा जानुहोस्</translation>
-<translation id="5750324801516359607">टाढा</translation>
 <translation id="5751887393582880060">अपलोड गरिएको यो डेटाले तपाईंको सङ्गठनका सुरक्षासम्बन्धी नीतिहरूको उल्लङ्घन गर्छ। तपाईं जे भए पनि अघि बढ्न चाहनुहुन्छ?</translation>
 <translation id="5756163054456765343">मद्द&amp;त केन्द्र</translation>
 <translation id="5759728514498647443">तपाईँले प्रिन्टमा <ph name="APP_NAME" /> मार्फत पठाउने कागजातहरू <ph name="APP_NAME" /> द्वारा पढ्न सकिन्छ।</translation>
@@ -4062,7 +4053,6 @@
 <translation id="6490471652906364588">USB-C यन्त्र (दायाँ पोर्ट)</translation>
 <translation id="6491376743066338510">अनुमति दिन सकिएन</translation>
 <translation id="6494445798847293442">प्रमाणीकरण अधिकारी होइन</translation>
-<translation id="649454645705377674">बन्द गर्नुहोस्</translation>
 <translation id="6495925982925244349"><ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /> <ph name="SECURITY_STATUS" /> <ph name="CONNECTION_STATUS" /> मध्ये नेटवर्क <ph name="NETWORK_INDEX" />, सिग्नलको क्षमता <ph name="SIGNAL_STRENGTH" />%, तपाईंका प्रशासकले व्यवस्थित गर्नुभएको छ, विवरणहरू</translation>
 <translation id="6498249116389603658">&amp;तपाईँका सबै भाषाहरू</translation>
 <translation id="6499143127267478107">प्रोक्सी स्क्रिप्टमा होस्ट विघटन गर्दै...</translation>
@@ -4130,7 +4120,6 @@
 <translation id="6590458744723262880">फोल्डरको पुनः नामकरण गर्नुहोस्</translation>
 <translation id="6592267180249644460">WebRTC लगले <ph name="WEBRTC_LOG_CAPTURE_TIME" /> क्याप्चर गर्‍यो</translation>
 <translation id="6592808042417736307">तपाईंको फिंगरप्रिन्ट थपियो</translation>
-<translation id="6594883168703494535">आफ्नो Google खातामा साइन इन गर्न Smart Lock प्रयोग गर्नुहोस्</translation>
 <translation id="6596325263575161958">गुप्तीकरण विकल्पहरू</translation>
 <translation id="6596816719288285829">IP ​​ठेगाना</translation>
 <translation id="6597017209724497268">नमूनाहरू</translation>
@@ -4663,7 +4652,6 @@
 <translation id="7328867076235380839">अमान्य संयोजन</translation>
 <translation id="7329154610228416156">साइन इन विफल  भयो किनभने यसलाई एउटा गैर-सुरक्षित URL (<ph name="BLOCKED_URL" />) सँग कन्फिगर गरिएको थियो। कृपया तपाईँको प्रशासकसँग सम्पर्क गर्नुहोस्।</translation>
 <translation id="7332053360324989309">यसै कामको लागि तोकिएको कर्मचारी: <ph name="SCRIPT_URL" /></translation>
-<translation id="7334190995941642545">Smart Lock हाल उपलब्ध छैन। पछि फेरि प्रयास गर्नुहोस्।</translation>
 <translation id="7334274148831027933">डक गरिएको म्याग्निफायर सक्षम पार्नुहोस्</translation>
 <translation id="7335974957018254119">यी भाषाहरूका लागि हिज्जे जाँच प्रयोग गर्नुहोस्</translation>
 <translation id="7336799713063880535">सूचनालाई रोक लगाइयो।</translation>
@@ -5204,11 +5192,6 @@
 <translation id="8017679124341497925">सर्टकट सम्पादन गरियो</translation>
 <translation id="8018313076035239964">वेबसाइटहरूले प्रयोग गर्ने जानकारी र तपाईंलाई देखाउने सामग्रीको सम्बन्धमा रहेका कुराहरूलाई नियन्त्रण गर्नुहोस्।</translation>
 <translation id="8023801379949507775">एक्स्टेन्सनहरूलाई अहिले नै अद्यावधिक गर्नुहोस्</translation>
-<translation id="8024483450737722621">तपाईंले Google Play बाट डाउनलोड गर्नुभएका अनुप्रयोगहरू यस Chromebook बाट मेटिनेछन्।
-      <ph name="LINE_BREAKS1" />
-      चलचित्र, TV सो, सङ्गीत, पुस्तक वा अन्य अनुप्रयोग भित्रका किनमेलहरू जस्ता तपाईंले खरिद गर्नुभएको सामग्री पनि मेटिन सक्छ।
-      <ph name="LINE_BREAKS2" />
-      यसले अन्य यन्त्रहरूमा रहेका अनुप्रयोग वा सामग्रीमा असर पार्दैन।</translation>
 <translation id="8026334261755873520">ब्राउजिङ लगत खालि गर्नुहोस्</translation>
 <translation id="8028060951694135607">Microsoft कुञ्जी पुन: प्राप्ति</translation>
 <translation id="8028803902702117856">डाउनलोड गर्दै <ph name="SIZE" />, <ph name="FILE_NAME" /></translation>
@@ -5521,7 +5504,6 @@
 <translation id="8455026683977728932">ADB चित्रण सक्षम पार्न सकिएन</translation>
 <translation id="845702320058262034">जडान गर्न सकिएन। आफ्नो फोनको ब्लुटुथ सक्रिय गरिएको कुरा सुनिश्चित गर्नुहोस्।</translation>
 <translation id="8457451314607652708">बुकमार्कहरू आयात गर्नुहोस्</translation>
-<translation id="8460336040822756677">यदि तपाईंले <ph name="DEVICE_TYPE" /> को Smart Lock लाई निष्क्रिय पार्नुभयो भने तपाईं आफ्नो फोनको प्रयोग गरेर आफ्ना Chrome सम्बन्धी यन्त्रहरू अनलक गर्न सक्नुहुने छैन। तपाईंले आफ्नो पासवर्ड टाइप गर्नुपर्ने हुनेछ।</translation>
 <translation id="8461329675984532579">गृह प्रदायकको नाम</translation>
 <translation id="84613761564611563">नेटवर्क कन्फिगर गर्ने UI को अनुरोध गरियो, कृपया कुर्नुहोस्...</translation>
 <translation id="8461914792118322307">प्रोक्सी</translation>
@@ -5746,7 +5728,6 @@
 <translation id="8743864605301774756">१ घन्टाअघि अद्यावधिक गरिएको</translation>
 <translation id="8746654918629346731">तपाईंले "<ph name="EXTENSION_NAME" />" का लागि अनुरोध गरिसक्नुभएको छ</translation>
 <translation id="874689135111202667">{0,plural, =1{यो साइटमा एउटा फाइल अपलोड गर्ने हो?}other{यो साइटमा # फाइलहरू अपलोड गर्ने हो?}}</translation>
-<translation id="8748384418490037181">Smart Lock का विकल्पहरू</translation>
 <translation id="8749863574775030885">एक अज्ञात विक्रेताबाट USB उपकरणहरूको पहुँच गर्नुहोस्</translation>
 <translation id="8750133148106010815">Google Play सुरु गर्न <ph name="ORGANIZATION_NAME" /> को मागअनुसार तपाईंले आफ्नो डेटा ब्याकअप गरी यो Chromebook रिसेट गरेर फ्याक्ट्री सेटिङमा लैजानु पर्ने हुन्छ।</translation>
 <translation id="8750155211039279868"><ph name="ORIGIN" /> ले एउटा क्रमिक पोर्टमा जडान गर्न चाहन्छ</translation>
@@ -5867,7 +5848,6 @@
 <translation id="8881020143150461183">कृपया फेरि प्रयास गर्नुहोस्। प्राविधिक सहयोगका लागि <ph name="CARRIER_NAME" /> मा सम्पर्क गर्नुहोस्।</translation>
 <translation id="8883273463630735858">टचप्याडको गति बढाउने सुविधा सक्षम पार्नुहोस्</translation>
 <translation id="8884570509232205463">अब तपाईंको यन्त्र <ph name="UNLOCK_TIME" /> बजे लक हुन्छ।</translation>
-<translation id="8885197664446363138">Smart Lock अनुपलब्ध छ</translation>
 <translation id="8888253246822647887">स्तरवृद्धि सम्पन्न भएपछि तपाईंको अनुप्रयोग खुल्ने छ। स्तरवृद्धि गर्न केही बेर लाग्न सक्छ।</translation>
 <translation id="8888432776533519951">रंग:</translation>
 <translation id="8889651696183044030"><ph name="ORIGIN" /> ले निम्न फाइल र फोल्डरहरू सम्पादन गर्न सक्छ</translation>

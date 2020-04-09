@@ -9,8 +9,6 @@ static_library("sync_sessions") {
     "local_session_event_handler_impl.cc",
     "local_session_event_handler_impl.h",
     "local_session_event_router.h",
-    "lost_navigations_recorder.cc",
-    "lost_navigations_recorder.h",
     "open_tabs_ui_delegate.cc",
     "open_tabs_ui_delegate.h",
     "open_tabs_ui_delegate_impl.cc",
@@ -100,7 +98,6 @@ source_set("unit_tests") {
   sources = [
     "favicon_cache_unittest.cc",
     "local_session_event_handler_impl_unittest.cc",
-    "lost_navigations_recorder_unittest.cc",
     "open_tabs_ui_delegate_impl_unittest.cc",
     "session_store_unittest.cc",
     "session_sync_bridge_unittest.cc",

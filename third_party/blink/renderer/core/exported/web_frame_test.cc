@@ -10503,11 +10503,8 @@ TEST_F(WebFrameTest, OrientationFrameDetach) {
   web_view_impl->MainFrameImpl()->SendOrientationChangeEvent();
 }
 
-#if defined(THREAD_SANITIZER)
+// https://crbug.com/1069355
 TEST_F(WebFrameTest, DISABLED_MaxFramesDetach) {
-#else
-TEST_F(WebFrameTest, MaxFramesDetach) {
-#endif  // defined(THREAD_SANITIZER)
   RegisterMockedHttpURLLoad("max-frames-detach.html");
   frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view_impl =

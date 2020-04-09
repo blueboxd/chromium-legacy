@@ -119,7 +119,7 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
                           IDS_CONTEXT_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
                           (send_tab_to_self::GetSingleTargetDeviceName(
                               tab_strip->profile()))),
-                      kSendTabToSelfIcon);
+                      ui::ImageModel::FromVectorIcon(kSendTabToSelfIcon));
 #endif
       send_tab_to_self::RecordSendTabToSelfClickResult(
           send_tab_to_self::kTabMenu,
@@ -136,10 +136,11 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
                              IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
                              send_tab_to_self_sub_menu_model_.get());
 #else
-      AddSubMenuWithStringIdAndIcon(TabStripModel::CommandSendTabToSelf,
-                                    IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
-                                    send_tab_to_self_sub_menu_model_.get(),
-                                    kSendTabToSelfIcon);
+      AddSubMenuWithStringIdAndIcon(
+          TabStripModel::CommandSendTabToSelf,
+          IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
+          send_tab_to_self_sub_menu_model_.get(),
+          ui::ImageModel::FromVectorIcon(kSendTabToSelfIcon));
 #endif
     }
   }

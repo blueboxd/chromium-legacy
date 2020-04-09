@@ -259,6 +259,8 @@ public final class WebLayerImpl extends IWebLayer.Stub {
             LibraryLoader.getInstance().ensureInitialized();
         }
         GmsBridge.getInstance().setSafeBrowsingHandler();
+
+        MediaStreamManager.onWebLayerInit();
     }
 
     @Override

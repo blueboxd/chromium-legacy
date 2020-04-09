@@ -120,7 +120,6 @@
 <translation id="1153636665119721804">Google Күшейтілген қорғаныс бағдарламасы</translation>
 <translation id="1161575384898972166">Клиент сертификатын экспорттау үшін <ph name="TOKEN_NAME" /> таңбалауышына кіріңіз.</translation>
 <translation id="1163931534039071049">&amp;Жақтау дереккөзін көру</translation>
-<translation id="1164674268730883318"><ph name="DEVICE_TYPE" /> құрылғысы үшін Smart Lock функциясы өшірілсін бе?</translation>
 <translation id="1164891049599601209">Жалған сайтта енгізілген</translation>
 <translation id="1164899421101904659">PIN кодының құлпын ашу кілтін енгізу</translation>
 <translation id="1165039591588034296">Қате</translation>
@@ -771,7 +770,6 @@
 
 Құрылғыңызға Family Link қолданбасын орнату арқылы есептік жазбаңыздың параметрлерін басқара аласыз.  Нұсқауларды электрондық пошта арқылы жібереміз.</translation>
 <translation id="2040460856718599782">Сізді аутентификациялау кезінде бірдеңе дұрыс болмады. Есептік деректеріңізді қайта тексеріп, әрекетті қайталап көріңіз.</translation>
-<translation id="2043818754674261542"><ph name="DEVICE_TYPE" /> құрылғысы құлпын ашу үшін телефонға қажетті қашықтық</translation>
 <translation id="204497730941176055">Microsoft Certificate Template Name</translation>
 <translation id="2045117674524495717">Пернелер тіркесімі бойынша көмекші</translation>
 <translation id="2045969484888636535">Cookie файлдарына салынған тыйымды сақтау</translation>
@@ -1144,7 +1142,6 @@
 <translation id="2518024842978892609">Клиентіңіздің сертификаттарын пайдалану</translation>
 <translation id="2520644704042891903">Қолжетімді ұяшық күтілуде…</translation>
 <translation id="252219247728877310">Құрамдас жаңартылмады</translation>
-<translation id="2522791476825452208">Өте жақын</translation>
 <translation id="2523184218357549926">Кірген беттердің URL мекенжайларын Google-ға жібереді</translation>
 <translation id="2526277209479171883">Орнату және жалғастыру</translation>
 <translation id="2526590354069164005">Жұмыс үстелі</translation>
@@ -1753,7 +1750,6 @@
 <translation id="3333190335304955291">Бұл қызметті "Параметрлер" бөлімінен өшіруге болады.</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> – бейне "Суреттегі сурет" режимінде ойнатылып жатыр</translation>
 <translation id="3335947283844343239">Жабық қойындыны қайта ашу</translation>
-<translation id="3336664756920573711"><ph name="DEVICE_TYPE" /> құрылғысының құлпын Android телефоны арқылы ашыңыз</translation>
 <translation id="3340620525920140773"><ph name="FILE_NAME" /> жүктеп алынды.</translation>
 <translation id="3341699307020049241">PIN коды дұрыс емес. Сізде <ph name="RETRIES" /> мүмкіндік қалды.</translation>
 <translation id="3341703758641437857">URL мекенжайларын тіркеу рұқсатын беру</translation>
@@ -2776,7 +2772,6 @@
 <translation id="4697551882387947560">Шолу сеансы аяқталғанда</translation>
 <translation id="4699172675775169585">Кэштелген кескіндер мен файлдар</translation>
 <translation id="4699357559218762027">(автоматты іске қосу)</translation>
-<translation id="470074695271471509">Аяқтау үшін есептік жазбадан шығасыз ба?</translation>
 <translation id="4701025263201366865">Ата-ананың жүйеге кіруі</translation>
 <translation id="4707302005824653064">Пайдаланылу мен журналды басқарушы chrome.com сайтында (<ph name="CUSTODIAN_EMAIL" />) қарап шыға алады.</translation>
 <translation id="4707579418881001319">L2TP/IPsec + пайдаланушы сертификаты</translation>
@@ -2799,7 +2794,6 @@
 <translation id="473546211690256853">Бұл есептік жазбаны <ph name="DOMAIN" /> басқарады</translation>
 <translation id="4735803855089279419">Жүйе бұл құрылғыға арналған идентификаторларды анықтай алмады.</translation>
 <translation id="4736292055110123391">Барлық құрылғыларда бетбелгілерді, құпия сөздерді, тарихты, т.б. синхрондау</translation>
-<translation id="4737715515457435632">Желіге қосылыңыз</translation>
 <translation id="473775607612524610">Жаңарту</translation>
 <translation id="4739639199548674512">Билеттер</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Қолданбаларды жаңарту әдісі туралы ақпарат алу<ph name="END_LINK" /></translation>
@@ -3277,7 +3271,6 @@
 <translation id="5423829801105537712">Негізгі емлені тексеру</translation>
 <translation id="5423849171846380976">Белсендірілген</translation>
 <translation id="5425042808445046667">Жүктеп алуды жалғастыру</translation>
-<translation id="5425722269016440406">Smart Lock өшіру үшін желіде болуыңыз керек, себебі бұл параметр телефоныңызға және басқа құрылғыларға синхрондалған. Алдымен желіге қосылыңыз.</translation>
 <translation id="5425863515030416387">Құрылғыларға оңай кіру</translation>
 <translation id="5427278936122846523">Әрқашан аудару</translation>
 <translation id="5427459444770871191">&amp;Сағат тілімен бұру</translation>
@@ -3419,7 +3412,6 @@
 <translation id="558918721941304263">Қолданбаларды жүктеу…</translation>
 <translation id="5592595402373377407">Қол жетімді деректер әлі жеткілікті емес.</translation>
 <translation id="5593357315997824387">Файлдарды синхрондау</translation>
-<translation id="5595152862129936745">Өте алыс</translation>
 <translation id="5595485650161345191">Мекенжайды өзгерту</translation>
 <translation id="5595727715083333657">Контейнердің өлшемін өзгерту мүмкін емес. Linux (бета) жүйесіне алдын ала орналастырылған бос орынның көлемін реттеу үшін оның сақтық көшірмесін жасап, жаңа контейнерде қалпына келтіріңіз.</translation>
 <translation id="5596627076506792578">Қосымша опциялар</translation>
@@ -3532,7 +3524,6 @@
 <translation id="5747552184818312860">Мерзімі бітеді</translation>
 <translation id="5747785204778348146">Әзірлеуші – тұрақсыз</translation>
 <translation id="5747809636523347288">Қою және "<ph name="URL" />" бетіне өту</translation>
-<translation id="5750324801516359607">Алыс</translation>
 <translation id="5751887393582880060">Бұл жүктеп салу ұйымыңыздың қауіпсіздік саясаттарына қайшы келеді. Сонда да жалғастырасыз ба?</translation>
 <translation id="5756163054456765343">А&amp;нықтама орталығы</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" /> арқылы басып шығару үшін жіберген құжаттарыңызды <ph name="APP_NAME" /> оқи алады.</translation>
@@ -4082,7 +4073,6 @@
 <translation id="6490471652906364588">USB-C құрылғысы (оң жақ ұяшық)</translation>
 <translation id="6491376743066338510">Авторизация сәтсіз</translation>
 <translation id="6494445798847293442">Сертификат беру органы емес</translation>
-<translation id="649454645705377674">Жабу</translation>
 <translation id="6495925982925244349"><ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> желі, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, сигнал күші:<ph name="SIGNAL_STRENGTH" />%, әкімшіңіз басқарады, мәліметтер</translation>
 <translation id="6498249116389603658">&amp;Барлық тілдер</translation>
 <translation id="6499143127267478107">Прокси сценарийіндегі хост анықталуда…</translation>
@@ -4150,7 +4140,6 @@
 <translation id="6590458744723262880">Қалтаның атауын өзгерту</translation>
 <translation id="6592267180249644460">WebRTC журналы жазып алынды <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">Саусақ ізіңіз түсірілді.</translation>
-<translation id="6594883168703494535">Google есептік жазбаңызға кіру үшін Smart Lock жүйесін пайдалану</translation>
 <translation id="6596325263575161958">Шифрлау опциялары</translation>
 <translation id="6596816719288285829">IP мекенжайы</translation>
 <translation id="6597017209724497268">Үлгілер</translation>
@@ -4684,7 +4673,6 @@
 <translation id="7328867076235380839">Жарамсыз тіркес</translation>
 <translation id="7329154610228416156">Қауіпті URL (<ph name="BLOCKED_URL" />) мекенжайын пайдалануға конфигурацияланғандықтан, кіру мүмкін болмады. Әкімшіңізге хабарласыңыз.</translation>
 <translation id="7332053360324989309">Dedicated Worker: <ph name="SCRIPT_URL" /></translation>
-<translation id="7334190995941642545">Smart Lock қазір қолжетімсіз. Кейінірек қайталап көріңіз.</translation>
 <translation id="7334274148831027933">Бекітілген ұлғайтқышты қосу</translation>
 <translation id="7335974957018254119">Емлені тексеруді пайдалану</translation>
 <translation id="7336799713063880535">Хабарландыру бөгелді.</translation>
@@ -5228,11 +5216,6 @@
 <translation id="8017679124341497925">Таңбаша өзгерді</translation>
 <translation id="8018313076035239964">Вебсайттар қандай ақпаратты пайдалана алатынын және сізге қандай мазмұн көрсете алатынын басқару</translation>
 <translation id="8023801379949507775">Кеңейтімдерді қазір жаңарту</translation>
-<translation id="8024483450737722621">Google Play дүкенінен жүктеп алынған қолданбалар бұл Chromebook құрылғысынан жойылады.
-      <ph name="LINE_BREAKS1" />
-      Фильмдер, телешоулар, музыка, кітаптар сияқты мазмұндар не басқа да қолданба арқылы сатып алынғандар жойылуы мүмкін.
-      <ph name="LINE_BREAKS2" />
-      Басқа құрылғылардағы қолданбалар немесе мазмұн сол күйінде қалады.</translation>
 <translation id="8026334261755873520">Шолу деректерін өшіру</translation>
 <translation id="8028060951694135607">Microsoft Key Recovery</translation>
 <translation id="8028803902702117856"><ph name="FILE_NAME" /> (<ph name="SIZE" />) жүктеп алынуда</translation>
@@ -5548,7 +5531,6 @@
 <translation id="8455026683977728932">ADB кескіні қосылмады</translation>
 <translation id="845702320058262034">Қосылу мүмкін емес. Телефоныңыздағы Bluetooth қосылып тұрғанына көз жеткізіңіз.</translation>
 <translation id="8457451314607652708">Бетбелгілерді импорттау</translation>
-<translation id="8460336040822756677"><ph name="DEVICE_TYPE" /> құрылғысы үшін Smart Lock функциясын өшірсеңіз, Chrome құрылғыларының құлпын телефоныңызбен аша алмайсыз. Құпия сөзіңізді енгізу қажет болады.</translation>
 <translation id="8461329675984532579">Жергілікті провайдер аты</translation>
 <translation id="84613761564611563">Желіні конфигурациялау интерфейсін алу сұралды, күте тұрыңыз…</translation>
 <translation id="8461914792118322307">Прокси</translation>
@@ -5774,7 +5756,6 @@
 <translation id="8743864605301774756">1 сағат бұрын жаңартылды</translation>
 <translation id="8746654918629346731">Бұған дейін "<ph name="EXTENSION_NAME" />" деп сұрап қойғансыз.</translation>
 <translation id="874689135111202667">{0,plural, =1{Осы сайтқа бір файл жүктеп салынсын ба?}other{Осы сайтқа # файл жүктеп салынсын ба?}}</translation>
-<translation id="8748384418490037181">Smart Lock опциялары</translation>
 <translation id="8749863574775030885">Белгісіз жеткізуші атынан USB құрылғыларына кіру</translation>
 <translation id="8750133148106010815">Google Play қолданбасын іске қосу үшін <ph name="ORGANIZATION_NAME" /> деректердің сақтық көшірмесін жасауды және Chromebook құрылғысын зауыттық параметрлерге қайтаруды талап етеді.</translation>
 <translation id="8750155211039279868"><ph name="ORIGIN" /> сериялық портқа қосылғысы келеді</translation>
@@ -5897,7 +5878,6 @@
 <translation id="8881020143150461183">Қайталап көріңіз. Техникалық қолдау керек болса, <ph name="CARRIER_NAME" /> операторына хабарласыңыз.</translation>
 <translation id="8883273463630735858">Сенсорлық тақта жылдамдатқышын іске қосу</translation>
 <translation id="8884570509232205463">Құрылғы <ph name="UNLOCK_TIME" /> кезінде құлыпталады.</translation>
-<translation id="8885197664446363138">Smart Lock қолжетімсіз</translation>
 <translation id="8888253246822647887">Қолданба, жаңа нұсқа орнатылғаннан кейін, ашылады. Бұл бірнеше минут алуы мүмкін.</translation>
 <translation id="8888432776533519951">Түсі:</translation>
 <translation id="8889651696183044030"><ph name="ORIGIN" /> мына файлдар мен қалталарды өңдей алады.</translation>

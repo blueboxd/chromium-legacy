@@ -80,10 +80,6 @@ struct COMPONENTS_DOWNLOAD_EXPORT DownloadCreateInfo {
   // The origin of the requester that originally initiated the download.
   base::Optional<url::Origin> request_initiator;
 
-  // The key used to isolate requests from different contexts in accessing
-  // shared network resources like the cache.
-  net::NetworkIsolationKey network_isolation_key;
-
   // The time when the download started.
   base::Time start_time;
 

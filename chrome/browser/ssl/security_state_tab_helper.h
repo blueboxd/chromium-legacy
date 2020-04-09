@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/optional.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -38,6 +39,12 @@ class SecurityStateTabHelper
       content::NavigationHandle* navigation_handle) override;
   void DidChangeVisibleSecurityState() override;
 
+  // Used by tests to specify a callback to be called when
+  // GetVisibleSecurityState() is called.
+  void set_get_security_level_callback_for_tests_(base::OnceClosure closure) {
+    get_security_level_callback_for_tests_ = std::move(closure);
+  }
+
  private:
   explicit SecurityStateTabHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<SecurityStateTabHelper>;
@@ -53,6 +60,8 @@ class SecurityStateTabHelper
   base::Optional<std::pair<int /* navigation entry ID */,
                            bool /* should_suppress_legacy_tls_warning */>>
       cached_should_suppress_legacy_tls_warning_;
+
+  base::OnceClosure get_security_level_callback_for_tests_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

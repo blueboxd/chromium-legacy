@@ -58,8 +58,6 @@ class ExtensionInstallDialogView
   gfx::Size CalculatePreferredSize() const override;
   void VisibilityChanged(views::View* starting_from, bool is_visible) override;
   void AddedToWidget() override;
-  bool Cancel() override;
-  bool Accept() override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   bool ShouldShowCloseButton() const override;
 
@@ -77,6 +75,8 @@ class ExtensionInstallDialogView
   ui::ModalType GetModalType() const override;
 
   void LinkClicked();
+  void OnDialogCanceled();
+  void OnDialogAccepted();
 
   // Creates the contents area that contains permissions and other extension
   // info.
@@ -104,10 +104,6 @@ class ExtensionInstallDialogView
   // The scroll view containing all the details for the dialog (including all
   // collapsible/expandable sections).
   views::ScrollView* scroll_view_;
-
-  // Set to true once the user's selection has been received and the callback
-  // has been run.
-  bool handled_result_;
 
   // Used to record time between dialog creation and acceptance, cancellation,
   // or dismissal.

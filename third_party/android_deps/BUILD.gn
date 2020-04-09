@@ -25,15 +25,13 @@ java_group("android_support_v4_java") {
 java_group("android_support_v7_appcompat_java") {
   deps = [
     ":android_support_v4_java",
-    ":com_android_support_animated_vector_drawable_java",
-    ":com_android_support_appcompat_v7_java",
-    ":com_android_support_support_vector_drawable_java",
+    ":androidx_appcompat_appcompat_java",
+    ":androidx_vectordrawable_vectordrawable_animated_java",
+    ":androidx_vectordrawable_vectordrawable_java",
+    ":com_android_support_appcompat_v7_java__unpack_aar",
   ]
-  input_jars_paths = [
-    "${target_out_dir}/com_android_support_appcompat_v7_java_orig/classes.jar",
-    "${target_out_dir}/com_android_support_animated_vector_drawable_java_orig/classes.jar",
-    "${target_out_dir}/com_android_support_support_vector_drawable_java_orig/classes.jar",
-  ]
+  input_jars_paths =
+      [ "${target_out_dir}/com_android_support_appcompat_v7_java/classes.jar" ]
 }
 
 java_group("android_arch_lifecycle_common_java") {
@@ -51,22 +49,14 @@ java_group("android_arch_lifecycle_viewmodel_java") {
   ]
 }
 
-java_group("com_android_support_animated_vector_drawable_java") {
-  deps = [
-    ":${target_name}_orig__unpack_aar",
-    ":androidx_vectordrawable_vectordrawable_animated_java",
-  ]
-  input_jars_paths = [ "${target_out_dir}/com_android_support_animated_vector_drawable_java_orig/classes.jar" ]
+# TODO (bjoyce): Remove when downstream bots can call this directly.
+java_group("com_android_support_animated_vector_drawable_java_temp") {
+  deps = [ ":com_android_support_animated_vector_drawable_java" ]
 }
 
-java_group("com_android_support_appcompat_v7_java") {
-  deps = [
-    ":${target_name}_orig__unpack_aar",
-    ":androidx_appcompat_appcompat_java",
-  ]
-  input_jars_paths = [
-    "${target_out_dir}/com_android_support_appcompat_v7_java_orig/classes.jar",
-  ]
+# TODO (bjoyce): Remove when downstream bots can call this directly.
+java_group("com_android_support_appcompat_v7_java_temp") {
+  deps = [ ":com_android_support_appcompat_v7_java" ]
 }
 
 java_group("com_android_support_cardview_v7_java") {
@@ -188,12 +178,9 @@ java_group("com_android_support_support_v4_java") {
   ]
 }
 
-java_group("com_android_support_support_vector_drawable_java") {
-  deps = [
-    ":${target_name}_orig__unpack_aar",
-    ":androidx_vectordrawable_vectordrawable_java",
-  ]
-  input_jars_paths = [ "${target_out_dir}/com_android_support_support_vector_drawable_java_orig/classes.jar" ]
+# TODO (bjoyce): Remove when downstream bots can call this directly.
+java_group("com_android_support_support_vector_drawable_java_temp") {
+  deps = [ ":com_android_support_support_vector_drawable_java" ]
 }
 
 java_group("com_android_support_versionedparcelable_java") {
@@ -779,18 +766,18 @@ android_aar_prebuilt("androidx_viewpager_viewpager_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
-android_aar_prebuilt("com_android_support_appcompat_v7_java_orig") {
+android_aar_prebuilt("com_android_support_appcompat_v7_java") {
   aar_path = "libs/com_android_support_appcompat_v7/appcompat-v7-28.0.0.aar"
   info_path = "libs/com_android_support_appcompat_v7/com_android_support_appcompat_v7.info"
   deps = [
-    ":com_android_support_animated_vector_drawable_java_orig",
+    ":com_android_support_animated_vector_drawable_java",
     ":com_android_support_collections_java_orig",
     ":com_android_support_cursoradapter_java",
     ":com_android_support_support_annotations_java_orig",
     ":com_android_support_support_compat_java_orig",
     ":com_android_support_support_core_utils_java_orig",
     ":com_android_support_support_fragment_java_orig",
-    ":com_android_support_support_vector_drawable_java_orig",
+    ":com_android_support_support_vector_drawable_java",
   ]
   skip_jetify = true
   jar_excluded_patterns = [ "androidx/appcompat/R*" ]
@@ -857,7 +844,7 @@ android_aar_prebuilt("com_android_support_design_java_orig") {
   aar_path = "libs/com_android_support_design/design-28.0.0.aar"
   info_path = "libs/com_android_support_design/com_android_support_design.info"
   deps = [
-    ":com_android_support_appcompat_v7_java_orig",
+    ":com_android_support_appcompat_v7_java",
     ":com_android_support_cardview_v7_java_orig",
     ":com_android_support_recyclerview_v7_java_orig",
     ":com_android_support_support_annotations_java_orig",
@@ -915,7 +902,7 @@ android_aar_prebuilt("com_android_support_mediarouter_v7_java_orig") {
   aar_path = "libs/com_android_support_mediarouter_v7/mediarouter-v7-28.0.0.aar"
   info_path = "libs/com_android_support_mediarouter_v7/com_android_support_mediarouter_v7.info"
   deps = [
-    ":com_android_support_appcompat_v7_java_orig",
+    ":com_android_support_appcompat_v7_java",
     ":com_android_support_palette_v7_java",
     ":com_android_support_recyclerview_v7_java_orig",
     ":com_android_support_support_media_compat_java_orig",
@@ -939,7 +926,7 @@ android_aar_prebuilt("com_android_support_preference_leanback_v17_java") {
   aar_path = "libs/com_android_support_preference_leanback_v17/preference-leanback-v17-28.0.0.aar"
   info_path = "libs/com_android_support_preference_leanback_v17/com_android_support_preference_leanback_v17.info"
   deps = [
-    ":com_android_support_appcompat_v7_java_orig",
+    ":com_android_support_appcompat_v7_java",
     ":com_android_support_collections_java_orig",
     ":com_android_support_leanback_v17_java",
     ":com_android_support_preference_v14_java",
@@ -955,7 +942,7 @@ android_aar_prebuilt("com_android_support_preference_v7_java") {
   aar_path = "libs/com_android_support_preference_v7/preference-v7-28.0.0.aar"
   info_path = "libs/com_android_support_preference_v7/com_android_support_preference_v7.info"
   deps = [
-    ":com_android_support_appcompat_v7_java_orig",
+    ":com_android_support_appcompat_v7_java",
     ":com_android_support_collections_java_orig",
     ":com_android_support_recyclerview_v7_java_orig",
     ":com_android_support_support_compat_java_orig",
@@ -1901,7 +1888,7 @@ android_aar_prebuilt("androidx_versionedparcelable_versionedparcelable_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
-android_aar_prebuilt("com_android_support_animated_vector_drawable_java_orig") {
+android_aar_prebuilt("com_android_support_animated_vector_drawable_java") {
   aar_path = "libs/com_android_support_animated_vector_drawable/animated-vector-drawable-28.0.0.aar"
   info_path = "libs/com_android_support_animated_vector_drawable/com_android_support_animated_vector_drawable.info"
 
@@ -1910,7 +1897,7 @@ android_aar_prebuilt("com_android_support_animated_vector_drawable_java_orig") {
   visibility = [ ":*" ]
   deps = [
     ":com_android_support_support_core_ui_java_orig",
-    ":com_android_support_support_vector_drawable_java_orig",
+    ":com_android_support_support_vector_drawable_java",
   ]
   skip_jetify = true
 }
@@ -2050,7 +2037,7 @@ android_aar_prebuilt("com_android_support_support_media_compat_java_orig") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
-android_aar_prebuilt("com_android_support_support_vector_drawable_java_orig") {
+android_aar_prebuilt("com_android_support_support_vector_drawable_java") {
   aar_path = "libs/com_android_support_support_vector_drawable/support-vector-drawable-28.0.0.aar"
   info_path = "libs/com_android_support_support_vector_drawable/com_android_support_support_vector_drawable.info"
 

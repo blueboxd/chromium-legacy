@@ -34,8 +34,8 @@ import org.chromium.chrome.browser.signin.SyncPromoView;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelper.DefaultFaviconHelper;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.ui.favicon.FaviconUtils;
-import org.chromium.chrome.browser.ui.favicon.RoundedIconGenerator;
 import org.chromium.components.embedder_support.util.UrlUtilities;
+import org.chromium.components.favicon.FaviconFallbackGenerator;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.mojom.WindowOpenDisposition;
@@ -120,7 +120,7 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
             new ArrayMap<>(FaviconLocality.NUM_ENTRIES);
     private final int mFaviconSize;
     private boolean mHasForeignDataRecorded;
-    private RoundedIconGenerator mIconGenerator;
+    private FaviconFallbackGenerator mIconGenerator;
 
     /**
      * A generic group of objects to be shown in the RecentTabsRowAdapter, such as the list of

@@ -1269,7 +1269,7 @@ bool AutofillTable::GetServerCreditCards(
     card->SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, s.ColumnString16(index++));
     card->set_billing_address_id(s.ColumnString(index++));
     card->set_bank_name(s.ColumnString(index++));
-    card->set_nickname(s.ColumnString16(index++));
+    card->SetNickname(s.ColumnString16(index++));
     credit_cards->push_back(std::move(card));
   }
   return s.Succeeded();

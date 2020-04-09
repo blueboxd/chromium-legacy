@@ -38,6 +38,7 @@
 #include "skia/ext/image_operations.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -316,7 +317,8 @@ class KioskAppsButton : public views::MenuButton,
       gfx::ImageSkia icon = gfx::ImageSkiaOperations::CreateResizedImage(
           kiosk_apps_[i].icon, skia::ImageOperations::RESIZE_GOOD,
           kAppIconSize);
-      AddItemWithIcon(i, kiosk_apps_[i].name, icon);
+      AddItemWithIcon(i, kiosk_apps_[i].name,
+                      ui::ImageModel::FromImageSkia(icon));
     }
   }
 

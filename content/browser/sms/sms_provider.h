@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "content/browser/sms/sms_parser.h"
@@ -40,7 +41,8 @@ class CONTENT_EXPORT SmsProvider {
   // it is received or (exclusively) when it timeouts.
   virtual void Retrieve() = 0;
 
-  static std::unique_ptr<SmsProvider> Create(RenderFrameHost* rfh);
+  static std::unique_ptr<SmsProvider> Create(
+      base::WeakPtr<RenderFrameHost> rfh);
 
   void AddObserver(Observer*);
   void RemoveObserver(const Observer*);

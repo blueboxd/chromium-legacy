@@ -127,7 +127,7 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
   Document* GetDocument() const;
 
   DisplayPeriod ComputePeriod() const;
-  void UpdatePeriod();
+  void UpdatePeriod() override;
   bool ShouldTriggerWebFontsIntervention();
   bool IsLowPriorityLoadingAllowedForRemoteFont() const override;
   FontDisplay GetFontDisplayWithFeaturePolicyCheck(FontDisplay,
@@ -147,6 +147,7 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
   FontLoadHistograms histograms_;
   bool is_intervention_triggered_;
   bool finished_before_document_rendering_begin_;
+  bool finished_before_lcp_limit_;
 };
 
 }  // namespace blink

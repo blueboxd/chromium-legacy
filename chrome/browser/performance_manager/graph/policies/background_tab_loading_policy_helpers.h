@@ -18,6 +18,11 @@ size_t CalculateMaxSimultaneousTabLoads(size_t lower_bound,
                                         size_t cores_per_load,
                                         size_t num_cores);
 
+// Calculates a score for the "age" of the tab. This is a value between 0
+// (inclusive) and 1 (exclusive), where higher values are attributed to newer
+// tabs.
+float CalculateAgeScore(double last_visibility_change_seconds);
+
 }  // namespace policies
 
 }  // namespace performance_manager

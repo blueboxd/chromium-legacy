@@ -10,6 +10,7 @@
 
 goog.provide('SmartStickyMode');
 
+goog.require('AutomationUtil');
 goog.require('ChromeVoxState');
 
 /** @implements {ChromeVoxStateObserver} */
@@ -24,6 +25,8 @@ SmartStickyMode = class {
      * @private {boolean}
      */
     this.didTurnOffStickyMode_ = false;
+    /** @private {chrome.automation.AutomationNode|undefined} */
+    this.ignoredNodeSubtree_;
 
     ChromeVoxState.addObserver(this);
   }
@@ -35,33 +38,24 @@ SmartStickyMode = class {
       return;
     }
 
+    const node = newRange.start.node;
+    if (this.ignoredNodeSubtree_) {
+      const editableOrRelatedEditable =
+          this.getEditableOrRelatedEditable_(node);
+      if (editableOrRelatedEditable &&
+          AutomationUtil.isDescendantOf(
+              editableOrRelatedEditable, this.ignoredNodeSubtree_)) {
+        return;
+      }
+
+      // Clear it when the user leaves the subtree.
+      this.ignoredNodeSubtree_ = undefined;
+    }
+
     // Several cases arise which may lead to a sticky mode toggle:
     // The node is either editable itself or a descendant of an editable.
     // The node is a relation target of an editable.
-    const node = newRange.start.node;
-    let shouldTurnOffStickyMode = false;
-    if (node.state[chrome.automation.StateType.EDITABLE] ||
-        (node.parent &&
-         node.parent.state[chrome.automation.StateType.EDITABLE])) {
-      // This covers both editable nodes, and inline text boxes (which are not
-      // editable themselves, but may have an editable parent).
-      shouldTurnOffStickyMode = true;
-    } else {
-      let focus = node;
-      while (!shouldTurnOffStickyMode && focus) {
-        if (focus.activeDescendantFor && focus.activeDescendantFor.length) {
-          shouldTurnOffStickyMode |= focus.activeDescendantFor.some(
-              (n) => n.state[chrome.automation.StateType.EDITABLE]);
-        }
-
-        if (focus.controlledBy && focus.controlledBy.length) {
-          shouldTurnOffStickyMode |= focus.controlledBy.some(
-              (n) => n.state[chrome.automation.StateType.EDITABLE]);
-        }
-
-        focus = focus.parent;
-      }
-    }
+    const shouldTurnOffStickyMode = !!this.getEditableOrRelatedEditable_(node);
 
     // This toggler should not make any changes when the range isn't what we're
     // lloking for and we haven't previously tracked any sticky mode state from
@@ -109,5 +103,83 @@ SmartStickyMode = class {
    */
   stopIgnoringRangeChanges() {
     this.ignoreRangeChanges_ = false;
+  }
+
+  /**
+   * Called whenever a user toggles sticky mode. In this case, we need to ensure
+   * we reset our internal state appropriately.
+   * @param {!cursors.Range} range The range when the sticky mode command was
+   *     received.
+   */
+  onStickyModeCommand(range) {
+    if (!this.didTurnOffStickyMode_) {
+      return;
+    }
+
+    this.didTurnOffStickyMode_ = false;
+
+    // Resetting the above isn't quite enough. We now have to track the current
+    // range, if it is editable or has an editable relation, to ensure we don't
+    // interfere with the user's sticky mode state.
+    if (!range || !range.start) {
+      return;
+    }
+
+    let editable = this.getEditableOrRelatedEditable_(range.start.node);
+    if (!editable) {
+      return;
+    }
+
+    while (!editable.editableRoot) {
+      editable = editable.parent;
+    }
+    this.ignoredNodeSubtree_ = editable;
+  }
+
+  /**
+   * @param {chrome.automation.AutomationNode} node
+   * @return {chrome.automation.AutomationNode}
+   * @private
+   */
+  getEditableOrRelatedEditable_(node) {
+    if (!node) {
+      return null;
+    }
+
+    if (node.state[chrome.automation.StateType.EDITABLE]) {
+      return node;
+    } else if (
+        node.parent &&
+        node.parent.state[chrome.automation.StateType.EDITABLE]) {
+      // This covers inline text boxes (which are not
+      // editable themselves, but may have an editable parent).
+      return node.parent;
+    } else {
+      let focus = node;
+      let found;
+      while (!found && focus) {
+        if (focus.activeDescendantFor && focus.activeDescendantFor.length) {
+          found = focus.activeDescendantFor.find(
+              (n) => n.state[chrome.automation.StateType.EDITABLE]);
+        }
+
+        if (found) {
+          return found;
+        }
+
+        if (focus.controlledBy && focus.controlledBy.length) {
+          found = focus.controlledBy.find(
+              (n) => n.state[chrome.automation.StateType.EDITABLE]);
+        }
+
+        if (found) {
+          return found;
+        }
+
+        focus = focus.parent;
+      }
+    }
+
+    return null;
   }
 };

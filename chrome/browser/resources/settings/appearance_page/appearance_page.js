@@ -289,15 +289,6 @@ Polymer({
   },
 
   /**
-   * @param {boolean} bookmarksBarVisible if bookmarks bar option is visible.
-   * @return {string} 'first' if the argument is false or empty otherwise.
-   * @private
-   */
-  getFirst_(bookmarksBarVisible) {
-    return !bookmarksBarVisible ? 'first' : '';
-  },
-
-  /**
    * @see blink::PageZoomValuesEqual().
    * @param {number} zoom1
    * @param {number} zoom2

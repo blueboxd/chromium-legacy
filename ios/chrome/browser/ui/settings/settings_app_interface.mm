@@ -4,20 +4,46 @@
 
 #import "ios/chrome/browser/ui/settings/settings_app_interface.h"
 
+#include "base/strings/sys_string_conversions.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
+#include "components/search_engines/template_url_service.h"
 #import "ios/chrome/app/main_controller.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "ios/chrome/browser/pref_names.h"
+#include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/test/app/tab_test_util.h"
+#import "ios/web/public/navigation/navigation_manager.h"
+#import "ios/web/public/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+
+std::vector<std::string> listHosts;
+std::string portForRewrite;
+
+bool HostToLocalHostRewrite(GURL* url, web::BrowserState* browser_state) {
+  DCHECK(url);
+  for (std::string host : listHosts) {
+    if (url->host().find(host) != std::string::npos) {
+      *url =
+          GURL(std::string("http://127.0.0.1:") + portForRewrite + "/" + host);
+      return true;
+    }
+  }
+
+  return false;
+}
+
+}  // namespace
 
 // Test specific helpers for settings_egtest.mm.
 @implementation SettingsAppInterface : NSObject
@@ -90,6 +116,28 @@
       chrome_test_util::GetMainController()
           .interfaceProvider.mainInterface.viewController;
   return viewController.presentedViewController.keyCommands != nil;
+}
+
++ (void)resetSearchEngine {
+  TemplateURLService* service =
+      ios::TemplateURLServiceFactory::GetForBrowserState(
+          chrome_test_util::GetOriginalBrowserState());
+
+  TemplateURL* templateURL = service->GetTemplateURLForHost("google.com");
+  service->SetUserSelectedDefaultSearchProvider(templateURL);
+}
+
++ (void)addURLRewriterForHosts:(NSArray<NSString*>*)hosts
+                        onPort:(NSString*)port {
+  listHosts.clear();
+  for (NSString* host in hosts) {
+    listHosts.push_back(base::SysNSStringToUTF8(host));
+  }
+  portForRewrite = base::SysNSStringToUTF8(port);
+
+  chrome_test_util::GetCurrentWebState()
+      ->GetNavigationManager()
+      ->AddTransientURLRewriter(&HostToLocalHostRewrite);
 }
 
 @end

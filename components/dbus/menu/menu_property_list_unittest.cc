@@ -10,6 +10,7 @@
 #include "components/dbus/properties/types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/models/menu_separator_types.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -171,7 +172,8 @@ class TestMenuModelBuilder {
         menu->AddActionableSubMenu(0, label_, nullptr);
         break;
       case ui::MenuModel::TYPE_HIGHLIGHTED:
-        menu->AddHighlightedItemWithIcon(0, label_, icon_.AsImageSkia());
+        menu->AddHighlightedItemWithIcon(0, label_,
+                                         ui::ImageModel::FromImage(icon_));
         break;
     }
     return menu;

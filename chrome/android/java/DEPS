@@ -28,6 +28,7 @@ include_rules = [
   "+components/dom_distiller/core/android/java/src/org/chromium/components/dom_distiller/core",
   "+components/embedder_support/android",
   "+components/embedder_support/android/delegate",
+  "+components/favicon/android",
   "+components/feature_engagement/public/android/java/src/org/chromium/components/feature_engagement",
   "+components/gcm_driver/android/java/src/org/chromium/components/gcm_driver",
   "+components/language",

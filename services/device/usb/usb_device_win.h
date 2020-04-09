@@ -48,6 +48,9 @@ class UsbDeviceWin : public UsbDevice {
   // and string descriptors.
   void ReadDescriptors(base::OnceCallback<void(bool)> callback);
 
+  void UpdateFunctionPath(int interface_number,
+                          const base::string16& function_path);
+
  private:
   void OnReadDescriptors(base::OnceCallback<void(bool)> callback,
                          scoped_refptr<UsbDeviceHandle> device_handle,
@@ -77,7 +80,7 @@ class UsbDeviceWin : public UsbDevice {
 
   const base::string16 device_path_;
   const base::string16 hub_path_;
-  const base::flat_map<int, base::string16> function_paths_;
+  base::flat_map<int, base::string16> function_paths_;
   const base::string16 driver_name_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbDeviceWin);

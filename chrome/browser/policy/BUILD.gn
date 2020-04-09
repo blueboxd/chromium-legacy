@@ -19,6 +19,12 @@ source_set("path_parser") {
   ]
 
   if (is_win) {
+    deps += [ "//chrome/install_static:install_static_util" ]
+
     libs = [ "wtsapi32.lib" ]
+  }
+
+  if (is_mac) {
+    deps += [ "//build:branding_buildflags" ]
   }
 }

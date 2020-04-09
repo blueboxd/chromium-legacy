@@ -313,7 +313,10 @@ class BottomSheet extends FrameLayout
                     // This shrinks the content size while retaining the default background color
                     // where the keyboard is appearing. If the sheet is not showing, resize the
                     // sheet to its default state.
-                    mBottomSheetContentContainer.setPadding(0, 0, 0, keyboardHeight);
+                    mBottomSheetContentContainer.setPadding(
+                            mBottomSheetContentContainer.getPaddingLeft(),
+                            mBottomSheetContentContainer.getPaddingTop(),
+                            mBottomSheetContentContainer.getPaddingRight(), keyboardHeight);
                 }
 
                 if (previousHeight != mContainerHeight

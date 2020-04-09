@@ -16,6 +16,7 @@ extern const char kEnableEnterprisePolicy[];
 extern const char kEnableIOSHandoffToOtherDevices[];
 extern const char kEnableSpotlightActions[];
 extern const char kEnableThirdPartyKeyboardWorkaround[];
+extern const char kInstallManagedBookmarksHandler[];
 
 extern const char kUserAgent[];
 

@@ -23,6 +23,7 @@ mojom("mojom") {
     "decryptor.mojom",
     "demuxer_stream.mojom",
     "display_media_information.mojom",
+    "frame_interface_factory.mojom",
     "interface_factory.mojom",
     "key_system_support.mojom",
     "media_log.mojom",

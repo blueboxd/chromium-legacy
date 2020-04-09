@@ -17,7 +17,7 @@ namespace content {
 
 class CONTENT_EXPORT SmsProviderGmsUserConsent : public SmsProvider {
  public:
-  SmsProviderGmsUserConsent(RenderFrameHost* rfh);
+  SmsProviderGmsUserConsent(base::WeakPtr<RenderFrameHost> rfh);
   ~SmsProviderGmsUserConsent() override;
 
   void Retrieve() override;
@@ -30,7 +30,7 @@ class CONTENT_EXPORT SmsProviderGmsUserConsent : public SmsProvider {
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> j_sms_receiver_;
-  RenderFrameHost* const render_frame_host_;
+  const base::WeakPtr<RenderFrameHost> render_frame_host_;
 
   DISALLOW_COPY_AND_ASSIGN(SmsProviderGmsUserConsent);
 };

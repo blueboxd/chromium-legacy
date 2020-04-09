@@ -2375,11 +2375,11 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="4389091865841123886">Định cấu hình chứng thực từ xa với cơ chế TPM.</translation>
 <translation id="4401496838830169080">Cho phép bạn kiểm soát xem có bật tính năng Duyệt web an toàn của <ph name="PRODUCT_NAME" /> không và tính năng này sẽ hoạt động ở chế độ nào.
 
-      Nếu bạn đặt chính sách này thành "NoProtection" (giá trị là 0), thì tính năng Duyệt web an toàn sẽ không bao giờ hoạt động.
+      Nếu bạn đặt chính sách này thành "NoProtection" (giá trị 0), thì tính năng Duyệt web an toàn sẽ không bao giờ hoạt động.
 
-      Nếu bạn đặt chính sách này thành "StandardProtection" (giá trị mặc định là 1), thì tính năng Duyệt web an toàn sẽ luôn hoạt động ở chế độ chuẩn.
+      Nếu bạn đặt chính sách này thành "StandardProtection" (giá trị 1, giá trị mặc định), thì tính năng Duyệt web an toàn sẽ luôn hoạt động ở chế độ chuẩn.
 
-      Nếu bạn đặt chính sách này thành "EnhancedProtection" (giá trị là 2), thì tính năng Duyệt web an toàn sẽ luôn hoạt động ở chế độ nâng cao. Chế độ này bảo mật tốt hơn nhưng bạn sẽ phải chia sẻ thêm thông tin duyệt web với Google.
+      Nếu bạn đặt chính sách này thành "EnhancedProtection" (giá trị 2), thì tính năng Duyệt web an toàn sẽ luôn hoạt động ở chế độ nâng cao. Chế độ này bảo mật tốt hơn nhưng người dùng sẽ phải chia sẻ thêm thông tin duyệt web với Google.
 
       Nếu bạn đặt chính sách này thành bắt buộc, thì người dùng sẽ không thể thay đổi hoặc ghi đè tùy chọn cài đặt Duyệt web an toàn trong <ph name="PRODUCT_NAME" />.
 
@@ -3533,7 +3533,7 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="6111936128861357925">Cho phép trò chơi trứng khủng long Phục sinh</translation>
 <translation id="6114416803310251055">không được chấp thuận</translation>
 <translation id="6133088669883929098">Cho phép tất cả các trang web sử dụng tạo khóa</translation>
-<translation id="6135398260575578389">Tính năng Duyệt web an toàn đang hoạt động ở chế độ nâng cao. Chế độ này bảo mật tốt hơn nhưng bạn sẽ phải chia sẻ thêm thông tin duyệt web với Google.</translation>
+<translation id="6135398260575578389">Tính năng Duyệt web an toàn đang hoạt động ở chế độ nâng cao. Chế độ này bảo mật tốt hơn nhưng người dùng sẽ phải chia sẻ thêm thông tin duyệt web với Google.</translation>
 <translation id="6136537398661737682">Chính sách này kiểm soát trạng thái ban đầu của Dịch vụ vị trí của Google.
 
       Khi bạn không định cấu hình chính sách này hoặc đặt chính sách thành <ph name="GLS_DISABLED" />, Dịch vụ vị trí của Google sẽ tắt ngay từ đầu.
@@ -4540,7 +4540,7 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 
       Nếu bạn tắt tùy chọn cài đặt này, thì tính năng Duyệt web an toàn sẽ không bao giờ hoạt động.
 
-      Nếu bạn bật hoặc tắt tùy chọn cài đặt này, thì người dùng không thể thay đổi hoặc ghi đè tùy chọn cài đặt "Bảo vệ khỏi lừa đảo và phần mềm độc hại" trong <ph name="PRODUCT_NAME" />.
+      Nếu bạn bật hoặc tắt tùy chọn cài đặt này, thì người dùng không thể thay đổi hoặc ghi đè tùy chọn "Bật tính năng bảo vệ chống lừa đảo trực tuyến và phần mềm độc hại" trong <ph name="PRODUCT_NAME" />.
 
       Nếu bạn không đặt chính sách này, thì tính năng Duyệt web an toàn sẽ bật nhưng người dùng có thể tắt tính năng này.
 

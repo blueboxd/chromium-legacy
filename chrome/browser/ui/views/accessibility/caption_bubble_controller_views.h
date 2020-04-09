@@ -39,6 +39,7 @@ class CaptionBubbleControllerViews : public CaptionBubbleController {
   void OnActiveTabChanged(int index) override;
 
  private:
+  friend class CaptionBubbleControllerViewsTest;
   // A callback passed to the CaptionBubble which is called when the
   // CaptionBubble is destroyed.
   void OnCaptionBubbleDestroyed();

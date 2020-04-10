@@ -123,11 +123,14 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // change. Must be called before PositionWindows in OverviewGrid.
   void UpdateWindowDimensionsType();
 
-  // Updates the rounded corners on the window. Makes the rounded corners if
-  // |show| is true, otherwise removes it. If |update_clip| is true, it will
-  // clip the top portion of the window that normally contains the caption (if
-  // any), otherwise it will skip updating that clip.
-  void UpdateRoundedCorners(bool show, bool update_clip);
+  // Updates the rounded corners and clipping on the window. Note that the
+  // rounded corners can be hidden with |show| set to false, but the clipping
+  // stays for the duration of overview once applied.
+  void UpdateRoundedCornersAndClip(bool show);
+
+  // Clip the top portion of the window that normally contains the caption (if
+  // any).
+  void ClipHeaderIfNeeded(bool animate);
 
   // aura::client::TransientWindowClientObserver:
   void OnTransientChildWindowAdded(aura::Window* parent,

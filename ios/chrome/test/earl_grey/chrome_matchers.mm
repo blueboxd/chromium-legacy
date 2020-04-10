@@ -195,10 +195,6 @@ id<GREYMatcher> SignOutAccountsButton() {
   return [ChromeMatchersAppInterface signOutAccountsButton];
 }
 
-id<GREYMatcher> SignOutAndClearDataAccountsButton() {
-  return [ChromeMatchersAppInterface signOutAndClearDataAccountsButton];
-}
-
 id<GREYMatcher> ClearBrowsingDataCell() {
   return [ChromeMatchersAppInterface clearBrowsingDataCell];
 }

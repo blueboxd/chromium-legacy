@@ -202,8 +202,7 @@ public class AndroidViewIntegrationTest {
     @Feature({"AndroidWebView"})
     public void testDisconnectedViewLoadsContent() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
-        final AwTestContainerView mTestContainerView =
-                createDetachedTestContainerViewOnMainSync(contentsClient);
+        mTestContainerView = createDetachedTestContainerViewOnMainSync(contentsClient);
         assertZeroHeight(mTestContainerView);
 
         final int contentSizeChangeCallCount = mOnContentSizeChangedHelper.getCallCount();

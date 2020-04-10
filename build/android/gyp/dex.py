@@ -258,7 +258,7 @@ def _ZipMultidex(file_dir, dex_files):
   """
   ordered_files = []  # List of (archive name, file name)
   for f in dex_files:
-    if f.endswith('dex.jar'):
+    if f.endswith('classes.dex.zip'):
       ordered_files.append(('classes.dex', f))
       break
   if not ordered_files:

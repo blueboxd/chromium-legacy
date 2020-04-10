@@ -373,6 +373,26 @@ jumbo_static_library("test_support") {
   deps = [ "//base" ]
 }
 
+static_library("demographics_test_support") {
+  testonly = true
+  sources = [
+    "test/demographic_metrics_test_utils.cc",
+    "test/demographic_metrics_test_utils.h",
+  ]
+
+  deps = [
+    ":metrics",
+    "//base",
+    "//components/network_time",
+    "//components/prefs",
+    "//components/sync",
+    "//components/sync/base",
+    "//components/sync/test/fake_server",
+    "//third_party/metrics_proto",
+    "//third_party/zlib/google:compression_utils",
+  ]
+}
+
 if (is_linux) {
   static_library("serialization") {
     sources = [

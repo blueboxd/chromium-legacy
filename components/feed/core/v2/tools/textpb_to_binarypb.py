@@ -46,7 +46,7 @@ flags.DEFINE_string('message',
 flags.DEFINE_string('direction', 'forward',
                     'Set --direction=reverse to convert binary to text.')
 
-COMPONENT_FEED_PROTO_PATH = 'components/feed/core/proto'
+COMPONENT_FEED_PROTO_PATH = 'components/feed/core/proto/v2'
 
 def text_to_binary():
   with open(FLAGS.source_file, mode='r') as file:

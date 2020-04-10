@@ -12,9 +12,9 @@ namespace content {
 
 namespace {
 
-const char kDefaultImpressionOrigin[] = "https:/impression.test/";
-const char kDefaultConversionOrigin[] = "https:/conversion.test/";
-const char kDefaultReportOrigin[] = "https:/report.test/";
+const char kDefaultImpressionOrigin[] = "https://impression.test/";
+const char kDefaultConversionOrigin[] = "https://conversion.test/";
+const char kDefaultReportOrigin[] = "https://report.test/";
 
 // Default expiry time for impressions for testing.
 const int64_t kExpiryTime = 30;
@@ -23,6 +23,24 @@ const int64_t kExpiryTime = 30;
 
 int EmptyStorageDelegate::GetMaxConversionsPerImpression() const {
   return 1;
+}
+
+void TestConversionManager::HandleImpression(
+    const StorableImpression& impression) {
+  num_impressions_++;
+}
+
+void TestConversionManager::HandleSentReport(int64_t conversion_id) {
+  last_sent_report_id_ = conversion_id;
+}
+
+const ConversionPolicy& TestConversionManager::GetConversionPolicy() const {
+  return policy_;
+}
+
+void TestConversionManager::Reset() {
+  num_impressions_ = 0u;
+  last_sent_report_id_ = 0UL;
 }
 
 // Builds an impression with default values. This is done as a builder because

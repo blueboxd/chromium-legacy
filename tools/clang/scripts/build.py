@@ -129,11 +129,7 @@ def CheckoutLLVM(commit, dir):
 
 
 def UrlOpen(url):
-  # Normally we'd use urllib, but on our bots it can't connect to the GitHub API
-  # due to using too old TLS (see crbug.com/897796#c56). As a horrible
-  # workaround, shell out to curl instead. It seems curl is recent enough on all
-  # our machines that it can connect. On Windows it's in our gnuwin package.
-  # TODO(crbug.com/965937): Use urllib once our Python is recent enough.
+  # TODO(crbug.com/1067752): Use urllib once certificates are fixed.
   return subprocess.check_output(['curl', '--silent', url])
 
 
@@ -396,7 +392,7 @@ def main():
 
   # The gnuwin package also includes curl, which is needed to interact with the
   # github API below.
-  # TODO(crbug.com/965937): Use urllib once our Python is recent enough, and
+  # TODO(crbug.com/1067752): Use urllib once certificates are fixed, and
   # move this down to where we fetch other build tools.
   AddGnuWinToPath()
 

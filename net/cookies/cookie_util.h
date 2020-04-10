@@ -160,6 +160,7 @@ ComputeSameSiteContextForSubresource(const GURL& url,
 // Returns whether the respective SameSite feature is enabled.
 NET_EXPORT bool IsSameSiteByDefaultCookiesEnabled();
 NET_EXPORT bool IsCookiesWithoutSameSiteMustBeSecureEnabled();
+NET_EXPORT bool IsSchemefulSameSiteEnabled();
 bool IsRecentHttpSameSiteAccessGrantsLegacyCookieSemanticsEnabled();
 bool IsRecentCreationTimeGrantsLegacyCookieSemanticsEnabled();
 

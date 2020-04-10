@@ -7,18 +7,49 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/task_runner_util.h"
 #include "base/time/default_clock.h"
+#include "content/browser/conversions/conversion_reporter_impl.h"
 #include "content/browser/conversions/conversion_storage_delegate_impl.h"
 #include "content/browser/conversions/conversion_storage_sql.h"
 
 namespace content {
 
+const constexpr base::TimeDelta kConversionManagerQueueReportsInterval =
+    base::TimeDelta::FromMinutes(30);
+
+// static
+std::unique_ptr<ConversionManagerImpl> ConversionManagerImpl::CreateForTesting(
+    std::unique_ptr<ConversionReporter> reporter,
+    const base::Clock* clock,
+    const base::FilePath& user_data_directory,
+    scoped_refptr<base::SequencedTaskRunner> storage_task_runner) {
+  return base::WrapUnique<ConversionManagerImpl>(
+      new ConversionManagerImpl(std::move(reporter), clock, user_data_directory,
+                                std::move(storage_task_runner)));
+}
+
 ConversionManagerImpl::ConversionManagerImpl(
+    StoragePartition* storage_partition,
     const base::FilePath& user_data_directory,
     scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : storage_task_runner_(std::move(task_runner)),
-      clock_(base::DefaultClock::GetInstance()),
+    : ConversionManagerImpl(std::make_unique<ConversionReporterImpl>(
+                                storage_partition,
+                                this,
+                                base::DefaultClock::GetInstance()),
+                            base::DefaultClock::GetInstance(),
+                            user_data_directory,
+                            std::move(task_runner)) {}
+
+ConversionManagerImpl::ConversionManagerImpl(
+    std::unique_ptr<ConversionReporter> reporter,
+    const base::Clock* clock,
+    const base::FilePath& user_data_directory,
+    scoped_refptr<base::SequencedTaskRunner> storage_task_runner)
+    : storage_task_runner_(std::move(storage_task_runner)),
+      clock_(clock),
+      reporter_(std::move(reporter)),
       storage_(new ConversionStorageSql(
                    user_data_directory,
                    std::make_unique<ConversionStorageDelegateImpl>(),
@@ -66,13 +97,64 @@ void ConversionManagerImpl::HandleConversion(
           base::Unretained(storage_.get()), conversion));
 }
 
+void ConversionManagerImpl::HandleSentReport(int64_t conversion_id) {
+  storage_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(base::IgnoreResult(&ConversionStorage::DeleteConversion),
+                     base::Unretained(storage_.get()), conversion_id));
+}
+
 const ConversionPolicy& ConversionManagerImpl::GetConversionPolicy() const {
   return *conversion_policy_;
 }
 
 void ConversionManagerImpl::OnInitCompleted(bool success) {
-  if (!success)
+  if (!success) {
     storage_.reset();
+    return;
+  }
+
+  // Once the database is loaded, get all reports that may have expired while
+  // Chrome was not running and handle these specially.
+  GetAndHandleReports(
+      base::BindOnce(&ConversionManagerImpl::HandleReportsExpiredAtStartup,
+                     weak_factory_.GetWeakPtr()));
+
+  // Start a repeating timer that will fetch reports once every
+  // |kConversionManagerQueueReportsInterval| and add them to |reporter_|.
+  get_and_queue_reports_timer_.Start(
+      FROM_HERE, kConversionManagerQueueReportsInterval, this,
+      &ConversionManagerImpl::GetAndQueueReportsForNextInterval);
+}
+
+void ConversionManagerImpl::GetAndHandleReports(
+    ReportsHandlerFunc handler_function) {
+  base::PostTaskAndReplyWithResult(
+      storage_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&ConversionStorage::GetConversionsToReport,
+                     base::Unretained(storage_.get()),
+                     clock_->Now() + kConversionManagerQueueReportsInterval),
+      std::move(handler_function));
+}
+
+void ConversionManagerImpl::GetAndQueueReportsForNextInterval() {
+  // Get all the reports that will be reported in the next interval and them to
+  // the |reporter_|.
+  GetAndHandleReports(base::BindOnce(&ConversionManagerImpl::QueueReports,
+                                     weak_factory_.GetWeakPtr()));
+}
+
+void ConversionManagerImpl::QueueReports(
+    std::vector<ConversionReport> reports) {
+  if (!reports.empty())
+    reporter_->AddReportsToQueue(std::move(reports));
+}
+
+void ConversionManagerImpl::HandleReportsExpiredAtStartup(
+    std::vector<ConversionReport> reports) {
+  // TODO(https://crbug.com/1054119): We need to add special logic to ensure
+  // that these reports are not temporally joinable.
+  QueueReports(std::move(reports));
 }
 
 }  // namespace content

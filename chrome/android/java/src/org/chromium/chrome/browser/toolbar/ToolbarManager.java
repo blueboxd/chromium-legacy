@@ -94,7 +94,6 @@ import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
 import org.chromium.chrome.browser.toolbar.top.ToolbarLayout;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator;
 import org.chromium.chrome.browser.toolbar.top.ViewShiftingActionBarDelegate;
-import org.chromium.chrome.browser.ui.ImmersiveModeManager;
 import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuCoordinator;
@@ -1574,15 +1573,6 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             };
         } else {
             mOnInitializedRunnable = null;
-        }
-    }
-
-    /**
-     * @param immersiveModeManager The {@link ImmersiveModeManager} for the containing activity.
-     */
-    public void setImmersiveModeManager(ImmersiveModeManager immersiveModeManager) {
-        if (mBottomControlsCoordinator != null) {
-            mBottomControlsCoordinator.setImmersiveModeManager(immersiveModeManager);
         }
     }
 

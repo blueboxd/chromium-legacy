@@ -239,7 +239,7 @@ class CONTENT_EXPORT NavigationRequest
   const base::Optional<net::SSLInfo>& GetSSLInfo() override;
   const base::Optional<net::AuthChallengeInfo>& GetAuthChallengeInfo() override;
   net::ResolveErrorInfo GetResolveErrorInfo() override;
-  net::NetworkIsolationKey GetNetworkIsolationKey() override;
+  net::IsolationInfo GetIsolationInfo() override;
   void RegisterThrottleForTesting(
       std::unique_ptr<NavigationThrottle> navigation_throttle) override;
   bool IsDeferredForTesting() override;
@@ -1156,9 +1156,9 @@ class CONTENT_EXPORT NavigationRequest
   int64_t frame_entry_item_sequence_number_ = -1;
   int64_t frame_entry_document_sequence_number_ = -1;
 
-  // If non-empty, it represents the network isolation key explicitly asked to
-  // be used for this NavigationRequest.
-  base::Optional<net::NetworkIsolationKey> network_isolation_key_;
+  // If non-empty, it represents the IsolationInfo explicitly asked to be used
+  // for this NavigationRequest.
+  base::Optional<net::IsolationInfo> isolation_info_;
 
   // This is used to store the current_frame_host id at request creation time.
   GlobalFrameRoutingId previous_render_frame_host_id_;

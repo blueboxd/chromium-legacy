@@ -91,7 +91,8 @@ void DesktopWindowTreeHostX11::Init(const Widget::InitParams& params) {
 
 void DesktopWindowTreeHostX11::OnNativeWidgetCreated(
     const Widget::InitParams& params) {
-  x11_window_move_client_ = std::make_unique<X11DesktopWindowMoveClient>();
+  x11_window_move_client_ = std::make_unique<X11DesktopWindowMoveClient>(
+      static_cast<ui::X11Window*>(platform_window()));
   DesktopWindowTreeHostLinux::OnNativeWidgetCreated(params);
 }
 
@@ -109,7 +110,9 @@ Widget::MoveLoopResult DesktopWindowTreeHostX11::RunMoveLoop(
     const gfx::Vector2d& drag_offset,
     Widget::MoveLoopSource source,
     Widget::MoveLoopEscapeBehavior escape_behavior) {
-  if (x11_window_move_client_->RunMoveLoop(GetContentWindow(), drag_offset))
+  GetContentWindow()->SetCapture();
+  if (x11_window_move_client_->RunMoveLoop(!GetContentWindow()->HasCapture(),
+                                           drag_offset))
     return Widget::MOVE_LOOP_SUCCESSFUL;
   return Widget::MOVE_LOOP_CANCELED;
 }

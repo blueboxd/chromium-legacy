@@ -50,6 +50,7 @@ bool DownloadCallbackProxy::InterceptDownload(
 }
 
 void DownloadCallbackProxy::AllowDownload(
+    Tab* tab,
     const GURL& url,
     const std::string& request_method,
     base::Optional<url::Origin> request_initiator,
@@ -68,8 +69,8 @@ void DownloadCallbackProxy::AllowDownload(
   intptr_t callback_id = reinterpret_cast<intptr_t>(
       new AllowDownloadCallback(std::move(callback)));
   Java_DownloadCallbackProxy_allowDownload(
-      env, java_delegate_, jstring_url, jstring_method,
-      jstring_request_initator, callback_id);
+      env, java_delegate_, static_cast<TabImpl*>(tab)->GetJavaTab(),
+      jstring_url, jstring_method, jstring_request_initator, callback_id);
 }
 
 void DownloadCallbackProxy::DownloadStarted(Download* download) {

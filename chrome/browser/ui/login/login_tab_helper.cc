@@ -80,7 +80,8 @@ void LoginTabHelper::DidFinishNavigation(
   }
 
   challenge_ = navigation_handle->GetAuthChallengeInfo().value();
-  network_isolation_key_ = navigation_handle->GetNetworkIsolationKey();
+  network_isolation_key_ =
+      navigation_handle->GetIsolationInfo().network_isolation_key();
 
   url_for_login_handler_ = navigation_handle->GetURL();
   login_handler_ = LoginHandler::Create(

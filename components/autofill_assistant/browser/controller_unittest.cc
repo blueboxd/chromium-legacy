@@ -2146,4 +2146,62 @@ TEST_F(ControllerTest, BlockPasswordChangeFlow) {
   EXPECT_FALSE(GetUserData()->selected_login_);
 }
 
+TEST_F(ControllerTest, EndPromptWithOnEndNavigation) {
+  // A single script, with a prompt action and on_end_navigation enabled.
+  SupportsScriptResponseProto script_response;
+  AddRunnableScript(&script_response, "script")
+      ->mutable_presentation()
+      ->set_autostart(true);
+  SetupScripts(script_response);
+
+  ActionsResponseProto actions_response;
+  auto* action = actions_response.add_actions()->mutable_prompt();
+  action->set_end_on_navigation(true);
+  action->add_choices()->mutable_chip()->set_text("ok");
+
+  actions_response.add_actions()
+      ->mutable_prompt()
+      ->add_choices()
+      ->mutable_chip()
+      ->set_text("ok 2");
+
+  SetupActionsForScript("script", actions_response);
+
+  std::vector<ProcessedActionProto> processed_actions_capture;
+  EXPECT_CALL(*mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
+                      RunOnceCallback<4>(true, "")));
+
+  Start("http://a.example.com/path");
+
+  EXPECT_EQ(AutofillAssistantState::PROMPT, controller_->GetState());
+  EXPECT_THAT(controller_->GetUserActions(),
+              ElementsAre(Property(&UserAction::chip,
+                                   Field(&Chip::text, StrEq("ok")))));
+
+  std::unique_ptr<content::NavigationSimulator> simulator =
+      content::NavigationSimulator::CreateRendererInitiated(
+          GURL("http://a.example.com/path"), web_contents()->GetMainFrame());
+  simulator->SetTransition(ui::PAGE_TRANSITION_LINK);
+  simulator->Start();
+  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  // Commit the navigation, which will end the current prompt.
+  EXPECT_THAT(processed_actions_capture, SizeIs(0));
+  simulator->Commit();
+
+  EXPECT_EQ(AutofillAssistantState::PROMPT, controller_->GetState());
+  EXPECT_THAT(controller_->GetUserActions(),
+              ElementsAre(Property(&UserAction::chip,
+                                   Field(&Chip::text, StrEq("ok 2")))));
+
+  EXPECT_TRUE(controller_->PerformUserAction(0));
+
+  EXPECT_THAT(processed_actions_capture, SizeIs(2));
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[0].status());
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[1].status());
+  EXPECT_TRUE(processed_actions_capture[0].prompt_choice().navigation_ended());
+  EXPECT_FALSE(processed_actions_capture[1].prompt_choice().navigation_ended());
+}
+
 }  // namespace autofill_assistant

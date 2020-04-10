@@ -7,6 +7,8 @@
 #include <vector>
 
 #include "base/strings/strcat.h"
+#include "base/test/scoped_feature_list.h"
+#include "net/base/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -14,6 +16,16 @@
 
 namespace net {
 namespace {
+
+class SchemefulSiteForCookiesTest : public ::testing::Test {
+ public:
+  SchemefulSiteForCookiesTest() {
+    scope_feature_list_.InitAndEnableFeature(features::kSchemefulSameSite);
+  }
+
+ protected:
+  base::test::ScopedFeatureList scope_feature_list_;
+};
 
 // Tests that all URLs from |equivalent| produce SiteForCookies that match
 // URLs in the set and are equivalent to each other, and are distinct and
@@ -90,6 +102,38 @@ TEST(SiteForCookiesTest, Basic) {
   TestEquivalentAndDistinct(equivalent, distinct, "example.com");
 }
 
+// Similar to SiteForCookiesTest_Basic with a focus on testing secure SFCs.
+TEST_F(SchemefulSiteForCookiesTest, BasicSecure) {
+  std::vector<GURL> equivalent = {GURL("https://example.com"),
+                                  GURL("wss://example.com"),
+                                  GURL("https://sub1.example.com:42/something"),
+                                  GURL("wss://sub2.example.com/something")};
+
+  std::vector<GURL> distinct = {
+      GURL("http://example.com"),      GURL("https://example.org"),
+      GURL("ws://example.com"),        GURL("https://com/i_am_a_tld"),
+      GURL("file://example.com/helo"),
+  };
+
+  TestEquivalentAndDistinct(equivalent, distinct, "example.com");
+}
+
+// Similar to SiteForCookiesTest_Basic with a focus on testing insecure SFCs.
+TEST_F(SchemefulSiteForCookiesTest, BasicInsecure) {
+  std::vector<GURL> equivalent = {GURL("http://example.com"),
+                                  GURL("ws://example.com"),
+                                  GURL("http://sub1.example.com:42/something"),
+                                  GURL("ws://sub2.example.com/something")};
+
+  std::vector<GURL> distinct = {
+      GURL("https://example.com"),     GURL("http://example.org"),
+      GURL("wss://example.com"),       GURL("http://com/i_am_a_tld"),
+      GURL("file://example.com/helo"),
+  };
+
+  TestEquivalentAndDistinct(equivalent, distinct, "example.com");
+}
+
 TEST(SiteForCookiesTest, File) {
   std::vector<GURL> equivalent = {GURL("file:///a/b/c"),
                                   GURL("file:///etc/shaaadow")};
@@ -104,10 +148,28 @@ TEST(SiteForCookiesTest, Extension) {
   url::AddStandardScheme("chrome-extension", url::SCHEME_WITH_HOST);
   std::vector<GURL> equivalent = {GURL("chrome-extension://abc/"),
                                   GURL("chrome-extension://abc/foo.txt"),
+                                  GURL("https://abc"), GURL("http://abc"),
                                   // This one is disputable.
                                   GURL("file://abc/bar.txt")};
 
   std::vector<GURL> distinct = {GURL("chrome-extension://def")};
+
+  TestEquivalentAndDistinct(equivalent, distinct, "abc");
+}
+
+// Similar to SiteForCookiesTest_Extension with a focus on ensuring that http(s)
+// schemes are distinct.
+TEST_F(SchemefulSiteForCookiesTest, Extension) {
+  url::ScopedSchemeRegistryForTests scoped_registry;
+  url::AddStandardScheme("chrome-extension", url::SCHEME_WITH_HOST);
+  std::vector<GURL> equivalent = {
+      GURL("chrome-extension://abc/"),
+      GURL("chrome-extension://abc/foo.txt"),
+  };
+
+  std::vector<GURL> distinct = {GURL("chrome-extension://def"),
+                                GURL("https://abc"), GURL("http://abc"),
+                                GURL("file://abc/bar.txt")};
 
   TestEquivalentAndDistinct(equivalent, distinct, "abc");
 }
@@ -144,6 +206,45 @@ TEST(SiteForCookiesTest, Blob) {
       SiteForCookies::FromUrl(GURL("http://www.example.org:631"))));
 }
 
+// Similar to SiteForCookiesTest_Blob with a focus on a secure blob.
+TEST_F(SchemefulSiteForCookiesTest, SecureBlob) {
+  SiteForCookies from_blob = SiteForCookies::FromUrl(
+      GURL("blob:https://example.org/9115d58c-bcda-ff47-86e5-083e9a2153041"));
+
+  EXPECT_TRUE(from_blob.IsFirstParty(GURL("https://sub.example.org/resource")));
+  EXPECT_FALSE(from_blob.IsFirstParty(GURL("http://sub.example.org/resource")));
+  EXPECT_EQ("https", from_blob.scheme());
+  EXPECT_EQ(
+      "SiteForCookies: {scheme=https; registrable_domain=example.org; "
+      "schemefully_same=true}",
+      from_blob.ToDebugString());
+  EXPECT_EQ("https://example.org/", from_blob.RepresentativeUrl().spec());
+  EXPECT_TRUE(from_blob.IsEquivalent(
+      SiteForCookies::FromUrl(GURL("https://www.example.org:631"))));
+  EXPECT_FALSE(from_blob.IsEquivalent(
+      SiteForCookies::FromUrl(GURL("http://www.example.org:631"))));
+}
+
+// Similar to SiteForCookiesTest_Blob with a focus on an insecure blob.
+TEST_F(SchemefulSiteForCookiesTest, InsecureBlob) {
+  SiteForCookies from_blob = SiteForCookies::FromUrl(
+      GURL("blob:http://example.org/9115d58c-bcda-ff47-86e5-083e9a2153041"));
+
+  EXPECT_TRUE(from_blob.IsFirstParty(GURL("http://sub.example.org/resource")));
+  EXPECT_FALSE(
+      from_blob.IsFirstParty(GURL("https://sub.example.org/resource")));
+  EXPECT_EQ("http", from_blob.scheme());
+  EXPECT_EQ(
+      "SiteForCookies: {scheme=http; registrable_domain=example.org; "
+      "schemefully_same=true}",
+      from_blob.ToDebugString());
+  EXPECT_EQ("http://example.org/", from_blob.RepresentativeUrl().spec());
+  EXPECT_TRUE(from_blob.IsEquivalent(
+      SiteForCookies::FromUrl(GURL("http://www.example.org:631"))));
+  EXPECT_FALSE(from_blob.IsEquivalent(
+      SiteForCookies::FromUrl(GURL("https://www.example.org:631"))));
+}
+
 TEST(SiteForCookiesTest, Wire) {
   SiteForCookies out;
 
@@ -177,6 +278,48 @@ TEST(SiteForCookiesTest, Wire) {
       "SiteForCookies: {scheme=https; registrable_domain=127.0.0.1; "
       "schemefully_same=false}",
       out.ToDebugString());
+
+  // As is actual eTLD+1.
+  EXPECT_TRUE(SiteForCookies::FromWire("wss", "example.com", true, &out));
+  EXPECT_FALSE(out.IsNull());
+  EXPECT_EQ(
+      "SiteForCookies: {scheme=wss; registrable_domain=example.com; "
+      "schemefully_same=true}",
+      out.ToDebugString());
+}
+
+// Similar to SiteForCookiesTest_Wire except that schemefully_same has an
+// effect.
+TEST_F(SchemefulSiteForCookiesTest, Wire) {
+  SiteForCookies out;
+
+  // Empty one.
+  EXPECT_TRUE(SiteForCookies::FromWire("", "", false, &out));
+  EXPECT_TRUE(out.IsNull());
+
+  EXPECT_TRUE(SiteForCookies::FromWire("", "", true, &out));
+  EXPECT_TRUE(out.IsNull());
+
+  // Not a valid scheme.
+  EXPECT_FALSE(SiteForCookies::FromWire("aH", "example.com", false, &out));
+  EXPECT_TRUE(out.IsNull());
+
+  // Not a eTLD + 1 (or something hosty).
+  EXPECT_FALSE(
+      SiteForCookies::FromWire("http", "sub.example.com", false, &out));
+  EXPECT_TRUE(out.IsNull());
+
+  // This is fine, though.
+  EXPECT_TRUE(SiteForCookies::FromWire("https", "127.0.0.1", true, &out));
+  EXPECT_FALSE(out.IsNull());
+  EXPECT_EQ(
+      "SiteForCookies: {scheme=https; registrable_domain=127.0.0.1; "
+      "schemefully_same=true}",
+      out.ToDebugString());
+
+  // This one's schemefully_same is false
+  EXPECT_TRUE(SiteForCookies::FromWire("https", "127.0.0.1", false, &out));
+  EXPECT_TRUE(out.IsNull());
 
   // As is actual eTLD+1.
   EXPECT_TRUE(SiteForCookies::FromWire("wss", "example.com", true, &out));

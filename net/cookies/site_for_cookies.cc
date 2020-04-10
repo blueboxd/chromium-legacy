@@ -7,6 +7,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/cookies/cookie_util.h"
 
 namespace net {
 
@@ -75,20 +76,20 @@ std::string SiteForCookies::ToDebugString() const {
 }
 
 bool SiteForCookies::IsFirstParty(const GURL& url) const {
-  if (IsNull() || !url.is_valid())
-    return false;
+  if (cookie_util::IsSchemefulSameSiteEnabled())
+    return IsSchemefullyFirstParty(url);
 
-  std::string other_registrable_domain = RegistrableDomainOrHost(url.host());
-
-  if (registrable_domain_.empty())
-    return other_registrable_domain.empty() && (scheme_ == url.scheme());
-
-  return registrable_domain_ == other_registrable_domain;
+  return IsSchemelesslyFirstParty(url);
 }
 
 bool SiteForCookies::IsEquivalent(const SiteForCookies& other) const {
   if (IsNull())
     return other.IsNull();
+
+  if (cookie_util::IsSchemefulSameSiteEnabled() &&
+      !CompatibleScheme(other.scheme())) {
+    return false;
+  }
 
   if (registrable_domain_.empty())
     return other.registrable_domain_.empty() && (scheme_ == other.scheme_);
@@ -103,28 +104,14 @@ void SiteForCookies::MarkIfCrossScheme(const url::Origin& other) {
   if (IsNull() || !schemefully_same_)
     return;
 
-  // Mark and return early if |other| is opaque. Opaque origins shouldn't match.
+  // Mark if |other| is opaque. Opaque origins shouldn't match.
   if (other.opaque()) {
     schemefully_same_ = false;
     return;
   }
-  const std::string& other_scheme = other.scheme();
 
-  // Exact match case.
-  if (scheme_ == other_scheme)
+  if (CompatibleScheme(other.scheme()))
     return;
-
-  // ["https", "wss"] case.
-  if ((scheme_ == url::kHttpsScheme || scheme_ == url::kWssScheme) &&
-      (other_scheme == url::kHttpsScheme || other_scheme == url::kWssScheme)) {
-    return;
-  }
-
-  // ["http", "ws"] case.
-  if ((scheme_ == url::kHttpScheme || scheme_ == url::kWsScheme) &&
-      (other_scheme == url::kHttpScheme || other_scheme == url::kWsScheme)) {
-    return;
-  }
 
   // The two are cross-scheme to each other.
   schemefully_same_ = false;
@@ -138,10 +125,63 @@ GURL SiteForCookies::RepresentativeUrl() const {
   return result;
 }
 
+bool SiteForCookies::IsNull() const {
+  if (cookie_util::IsSchemefulSameSiteEnabled())
+    return scheme_.empty() || !schemefully_same_;
+
+  return scheme_.empty();
+}
+
+bool SiteForCookies::IsSchemefullyFirstParty(const GURL& url) const {
+  // Can't use IsNull() as we want the same behavior regardless of
+  // SchemefulSameSite feature status.
+  if (scheme_.empty() || !schemefully_same_ || !url.is_valid())
+    return false;
+
+  return CompatibleScheme(url.scheme()) && IsSchemelesslyFirstParty(url);
+}
+
+bool SiteForCookies::IsSchemelesslyFirstParty(const GURL& url) const {
+  // Can't use IsNull() as we want the same behavior regardless of
+  // SchemefulSameSite feature status.
+  if (scheme_.empty() || !url.is_valid())
+    return false;
+
+  std::string other_registrable_domain = RegistrableDomainOrHost(url.host());
+
+  if (registrable_domain_.empty())
+    return other_registrable_domain.empty() && (scheme_ == url.scheme());
+
+  return registrable_domain_ == other_registrable_domain;
+}
+
 SiteForCookies::SiteForCookies(const std::string& scheme,
                                const std::string& host)
     : scheme_(scheme),
       registrable_domain_(RegistrableDomainOrHost(host)),
       schemefully_same_(!scheme.empty()) {}
+
+bool SiteForCookies::CompatibleScheme(const std::string& other_scheme) const {
+  DCHECK(base::IsStringASCII(other_scheme));
+  DCHECK(base::ToLowerASCII(other_scheme) == other_scheme);
+
+  // Exact match case.
+  if (scheme_ == other_scheme)
+    return true;
+
+  // ["https", "wss"] case.
+  if ((scheme_ == url::kHttpsScheme || scheme_ == url::kWssScheme) &&
+      (other_scheme == url::kHttpsScheme || other_scheme == url::kWssScheme)) {
+    return true;
+  }
+
+  // ["http", "ws"] case.
+  if ((scheme_ == url::kHttpScheme || scheme_ == url::kWsScheme) &&
+      (other_scheme == url::kHttpScheme || other_scheme == url::kWsScheme)) {
+    return true;
+  }
+
+  return false;
+}
 
 }  // namespace net

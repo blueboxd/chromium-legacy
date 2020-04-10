@@ -250,6 +250,7 @@ class AutocompleteResult {
 
   ACMatches matches_;
 
+  // The map of suggestion group IDs to headers.
   SearchSuggestionParser::HeadersMap headers_map_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteResult);

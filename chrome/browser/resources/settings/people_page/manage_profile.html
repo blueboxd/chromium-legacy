@@ -27,7 +27,8 @@
       <cr-input id="name" value="[[profileName]]" pattern="[[pattern_]]"
           on-change="onProfileNameChanged_" on-keydown="onProfileNameKeydown_"
           disabled="[[isProfileNameDisabled_(syncStatus)]]" maxlength="500"
-          auto-validate required spellcheck="false">
+          aria-label="$i18n{nameInputLabel}" auto-validate required
+          spellcheck="false">
       </cr-input>
     </div>
     <template is="dom-if" if="[[isProfileShortcutSettingVisible_]]">

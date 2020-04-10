@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/time/time.h"
+#include "content/browser/conversions/conversion_manager.h"
 #include "content/browser/conversions/conversion_report.h"
 #include "content/browser/conversions/conversion_storage.h"
 #include "content/browser/conversions/storable_conversion.h"
@@ -28,6 +29,32 @@ class EmptyStorageDelegate : public ConversionStorage::Delegate {
       std::vector<ConversionReport>* reports) override {}
 
   int GetMaxConversionsPerImpression() const override;
+};
+
+// Test ConversionManager which can be injected into tests to monitor calls to a
+// ConversionManager instance.
+class TestConversionManager : public ConversionManager {
+ public:
+  TestConversionManager() = default;
+  ~TestConversionManager() override = default;
+
+  // ConversionManager:
+  void HandleImpression(const StorableImpression& impression) override;
+  void HandleConversion(const StorableConversion& impression) override {}
+  void HandleSentReport(int64_t conversion_id) override;
+  const ConversionPolicy& GetConversionPolicy() const override;
+
+  // Resets all counters on this.
+  void Reset();
+
+  size_t num_impressions() const { return num_impressions_; }
+
+  int64_t last_sent_report_id() { return last_sent_report_id_; }
+
+ private:
+  ConversionPolicy policy_;
+  size_t num_impressions_ = 0;
+  int64_t last_sent_report_id_ = 0L;
 };
 
 // Helper class to construct a StorableImpression for tests using default data.

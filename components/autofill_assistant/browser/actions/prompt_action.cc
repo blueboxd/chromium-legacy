@@ -149,9 +149,14 @@ void PromptAction::UpdateUserActions() {
                                            weak_ptr_factory_.GetWeakPtr(), i));
     user_actions->emplace_back(std::move(user_action));
   }
-  delegate_->Prompt(std::move(user_actions),
-                    proto_.prompt().disable_force_expand_sheet(),
-                    proto_.prompt().browse_mode());
+  base::OnceCallback<void()> end_on_navigation_callback;
+  if (proto_.prompt().end_on_navigation()) {
+    end_on_navigation_callback = base::BindOnce(
+        &PromptAction::OnNavigationEnded, weak_ptr_factory_.GetWeakPtr());
+  }
+  delegate_->Prompt(
+      std::move(user_actions), proto_.prompt().disable_force_expand_sheet(),
+      std::move(end_on_navigation_callback), proto_.prompt().browse_mode());
   precondition_changed_ = false;
 }
 
@@ -210,9 +215,17 @@ void PromptAction::OnSuggestionChosen(int choice_index) {
   }
   DCHECK(choice_index >= 0 && choice_index <= proto_.prompt().choices_size());
 
-  PromptProto::Choice choice;
   *processed_action_proto_->mutable_prompt_choice() =
       proto_.prompt().choices(choice_index);
+  EndAction(ClientStatus(ACTION_APPLIED));
+}
+
+void PromptAction::OnNavigationEnded() {
+  if (!callback_) {
+    NOTREACHED();
+    return;
+  }
+  processed_action_proto_->mutable_prompt_choice()->set_navigation_ended(true);
   EndAction(ClientStatus(ACTION_APPLIED));
 }
 
@@ -221,4 +234,5 @@ void PromptAction::EndAction(const ClientStatus& status) {
   UpdateProcessedAction(status);
   std::move(callback_).Run(std::move(processed_action_proto_));
 }
+
 }  // namespace autofill_assistant

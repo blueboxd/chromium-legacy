@@ -22,10 +22,6 @@
 #include "ui/views/widget/desktop_aura/x11_move_loop.h"
 #include "ui/views/widget/desktop_aura/x11_move_loop_delegate.h"
 
-namespace aura {
-class Window;
-}
-
 namespace ui {
 class MouseEvent;
 class ScopedEventDispatcher;
@@ -47,14 +43,16 @@ class X11WholeScreenMoveLoop : public X11MoveLoop,
   uint32_t DispatchEvent(const ui::PlatformEvent& event) override;
 
   // X11MoveLoop:
-  bool RunMoveLoop(aura::Window* window, gfx::NativeCursor cursor) override;
-  void UpdateCursor(gfx::NativeCursor cursor) override;
+  bool RunMoveLoop(bool can_grab_pointer,
+                   ::Cursor old_cursor,
+                   ::Cursor new_cursor) override;
+  void UpdateCursor(::Cursor cursor) override;
   void EndMoveLoop() override;
 
  private:
   // Grabs the pointer, setting the mouse cursor to |cursor|. Returns true if
   // successful.
-  bool GrabPointer(gfx::NativeCursor cursor);
+  bool GrabPointer(::Cursor cursor);
 
   void GrabEscKey();
 
@@ -74,7 +72,7 @@ class X11WholeScreenMoveLoop : public X11MoveLoop,
 
   // Cursor in use prior to the move loop starting. Restored when the move loop
   // quits.
-  gfx::NativeCursor initial_cursor_;
+  ::Cursor initial_cursor_;
 
   // An invisible InputOnly window. Keyboard grab and sometimes mouse grab
   // are set on this window.

@@ -160,7 +160,7 @@ void ThirdPartyMetricsObserver::OnDidFinishSubFrameNavigation(
     content::NavigationHandle* navigation_handle) {
   largest_contentful_paint_handler_.OnDidFinishSubFrameNavigation(
       navigation_handle, GetDelegate());
-  DCHECK(navigation_handle->GetNetworkIsolationKey().GetTopFrameOrigin());
+  DCHECK(navigation_handle->GetIsolationInfo().top_frame_origin());
 
   if (!navigation_handle->HasCommitted())
     return;

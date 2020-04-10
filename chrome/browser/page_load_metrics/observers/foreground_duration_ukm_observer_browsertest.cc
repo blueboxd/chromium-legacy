@@ -47,8 +47,8 @@ class ForegroundDurationUKMObserverBrowserTest : public InProcessBrowserTest {
     for (auto* entry :
          test_ukm_recorder_->GetEntriesByName(UkmEntry::kEntryName)) {
       auto* source = test_ukm_recorder_->GetSourceForSourceId(entry->source_id);
-      if (source && source->url() == url) {
-        test_ukm_recorder_->EntryHasMetric(entry, metric_name);
+      if (source && source->url() == url &&
+          test_ukm_recorder_->EntryHasMetric(entry, metric_name)) {
         count++;
       }
     }
@@ -80,6 +80,9 @@ IN_PROC_BROWSER_TEST_F(ForegroundDurationUKMObserverBrowserTest, RecordSimple) {
   ui_test_utils::NavigateToURL(browser(), url);
   CloseAllTabs();
   ExpectMetricCountForUrl(url, "ForegroundDuration", 1);
+  ExpectMetricCountForUrl(url, "ForegroundNumInputEvents", 1);
+  ExpectMetricCountForUrl(url, "ForegroundTotalInputDelay", 1);
+  ExpectMetricCountForUrl(url, "ForegroundTotalAdjustedInputDelay", 1);
 }
 
 IN_PROC_BROWSER_TEST_F(ForegroundDurationUKMObserverBrowserTest, TabSwitching) {
@@ -102,5 +105,11 @@ IN_PROC_BROWSER_TEST_F(ForegroundDurationUKMObserverBrowserTest, TabSwitching) {
   tab_strip_model->ActivateTabAt(1, {TabStripModel::GestureType::kOther});
   tab_strip_model->CloseAllTabs();
   ExpectMetricCountForUrl(url1, "ForegroundDuration", 3);
+  ExpectMetricCountForUrl(url1, "ForegroundNumInputEvents", 3);
+  ExpectMetricCountForUrl(url1, "ForegroundTotalInputDelay", 3);
+  ExpectMetricCountForUrl(url1, "ForegroundTotalAdjustedInputDelay", 3);
   ExpectMetricCountForUrl(url2, "ForegroundDuration", 3);
+  ExpectMetricCountForUrl(url2, "ForegroundNumInputEvents", 3);
+  ExpectMetricCountForUrl(url2, "ForegroundTotalInputDelay", 3);
+  ExpectMetricCountForUrl(url2, "ForegroundTotalAdjustedInputDelay", 3);
 }

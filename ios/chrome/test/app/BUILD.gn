@@ -42,6 +42,7 @@ source_set("test_support") {
     "//components/history/core/browser",
     "//components/keyed_service/core",
     "//components/metrics",
+    "//components/metrics:demographics_test_support",
     "//components/prefs",
     "//components/signin/public/base",
     "//components/sync/base",
@@ -96,6 +97,7 @@ source_set("test_support") {
     "//net",
     "//net:test_support",
     "//third_party/breakpad:client",
+    "//third_party/metrics_proto",
     "//url",
   ]
 }

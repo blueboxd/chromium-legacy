@@ -146,6 +146,23 @@ OmniboxResultView::OmniboxResultView(
 
 OmniboxResultView::~OmniboxResultView() {}
 
+// static
+std::unique_ptr<views::Background> OmniboxResultView::GetPopupCellBackground(
+    views::View* view,
+    OmniboxPartState part_state) {
+  DCHECK(view);
+
+  bool high_contrast = view->GetNativeTheme() &&
+                       view->GetNativeTheme()->UsesHighContrastColors();
+  // TODO(tapted): Consider using background()->SetNativeControlColor() and
+  // always have a background.
+  if ((part_state == OmniboxPartState::NORMAL && !high_contrast))
+    return nullptr;
+
+  return views::CreateSolidBackground(GetOmniboxColor(
+      view->GetThemeProvider(), OmniboxPart::RESULTS_BACKGROUND, part_state));
+}
+
 SkColor OmniboxResultView::GetColor(OmniboxPart part) const {
   return GetOmniboxColor(GetThemeProvider(), part, GetThemeState());
 }
@@ -203,14 +220,7 @@ void OmniboxResultView::ShowKeyword(bool show_keyword) {
 }
 
 void OmniboxResultView::ApplyThemeAndRefreshIcons(bool force_reapply_styles) {
-  bool high_contrast =
-      GetNativeTheme() && GetNativeTheme()->UsesHighContrastColors();
-  // TODO(tapted): Consider using background()->SetNativeControlColor() and
-  // always have a background.
-  SetBackground((GetThemeState() == OmniboxPartState::NORMAL && !high_contrast)
-                    ? nullptr
-                    : views::CreateSolidBackground(
-                          GetColor(OmniboxPart::RESULTS_BACKGROUND)));
+  SetBackground(GetPopupCellBackground(this, GetThemeState()));
 
   // Reapply the dim color to account for the highlight state.
   suggestion_view_->separator()->ApplyTextColor(
@@ -231,6 +241,8 @@ void OmniboxResultView::ApplyThemeAndRefreshIcons(bool force_reapply_styles) {
       omnibox::kKeywordSearchIcon, GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
       GetColor(OmniboxPart::RESULTS_ICON)));
 
+  bool high_contrast =
+      GetNativeTheme() && GetNativeTheme()->UsesHighContrastColors();
   if (match_.answer) {
     suggestion_view_->content()->ApplyTextColor(
         OmniboxPart::RESULTS_TEXT_DEFAULT);

@@ -890,11 +890,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     return;
   _broadcasting = broadcasting;
 
-  if (IsMultiwindowSupported()) {
-    // TODO(crbug.com/1060653): fix fullscreen.
-    return;
-  }
-
   ChromeBroadcaster* broadcaster = self.fullscreenController->broadcaster();
   if (_broadcasting) {
     _toolbarUIUpdater = [[LegacyToolbarUIUpdater alloc]
@@ -2664,7 +2659,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         ios::GetChromeBrowserProvider()->GetVoiceSearchProvider();
     if (provider) {
       _voiceSearchController =
-          provider->CreateVoiceSearchController(self.browserState);
+          provider->CreateVoiceSearchController(self.browser);
       if (self.primaryToolbarCoordinator) {
         _voiceSearchController->SetDispatcher(
             static_cast<id<LoadQueryCommands>>(self.commandDispatcher));

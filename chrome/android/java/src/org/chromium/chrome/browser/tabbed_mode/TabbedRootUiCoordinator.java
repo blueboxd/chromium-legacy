@@ -20,7 +20,6 @@ import org.chromium.base.supplier.Supplier;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
-import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCoordinator;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
@@ -44,7 +43,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.toolbar.ToolbarButtonInProductHelpController;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
-import org.chromium.chrome.browser.ui.ImmersiveModeManager;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.ui.tablet.emptybackground.EmptyBackgroundViewWrapper;
@@ -62,7 +60,6 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
     private static final int STATUS_INDICATOR_WAIT_BEFORE_HIDE_DURATION_MS = 2000;
 
     private final ObservableSupplierImpl<EphemeralTabCoordinator> mEphemeralTabCoordinatorSupplier;
-    private @Nullable ImmersiveModeManager mImmersiveModeManager;
     private TabbedSystemUiCoordinator mSystemUiCoordinator;
     private @Nullable EmptyBackgroundViewWrapper mEmptyBackgroundViewWrapper;
 
@@ -94,7 +91,6 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
 
     @Override
     public void destroy() {
-        if (mImmersiveModeManager != null) mImmersiveModeManager.destroy();
         if (mSystemUiCoordinator != null) mSystemUiCoordinator.destroy();
         if (mEmptyBackgroundViewWrapper != null) mEmptyBackgroundViewWrapper.destroy();
 
@@ -115,15 +111,8 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
     public void onPostInflationStartup() {
         super.onPostInflationStartup();
 
-        mImmersiveModeManager = AppHooks.get().createImmersiveModeManager(
-                mActivity.getWindow().getDecorView().findViewById(android.R.id.content));
         mSystemUiCoordinator = new TabbedSystemUiCoordinator(mActivity.getWindow(),
-                mActivity.getTabModelSelector(), mImmersiveModeManager,
-                mActivity.getOverviewModeBehaviorSupplier());
-
-        if (mImmersiveModeManager != null) {
-            getToolbarManager().setImmersiveModeManager(mImmersiveModeManager);
-        }
+                mActivity.getTabModelSelector(), mActivity.getOverviewModeBehaviorSupplier());
     }
 
     @Override
@@ -290,6 +279,11 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
     @VisibleForTesting
     public static void setEnableStatusIndicatorForTests(boolean disable) {
         sEnableStatusIndicatorForTests = disable;
+    }
+
+    @VisibleForTesting
+    public EphemeralTabCoordinator getEphemeralTabCoordinatorForTesting() {
+        return mEphemeralTabCoordinatorSupplier.get();
     }
 
     /**

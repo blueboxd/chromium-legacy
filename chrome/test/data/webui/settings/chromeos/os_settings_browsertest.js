@@ -755,7 +755,7 @@ var OSSettingsSearchBoxBrowserTest = class extends OSSettingsBrowserTest {
   }
 };
 
-TEST_F('OSSettingsSearchBoxBrowserTest', 'DISABLED_AllJsTests', () => {
+TEST_F('OSSettingsSearchBoxBrowserTest', 'AllJsTests', () => {
   mocha.run();
 });
 

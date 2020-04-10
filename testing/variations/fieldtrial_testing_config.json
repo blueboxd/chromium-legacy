@@ -1477,21 +1477,6 @@
             ]
         }
     ],
-    "ClearSyncedData": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20200407",
-                    "enable_features": [
-                        "ClearSyncedData"
-                    ]
-                }
-            ]
-        }
-    ],
     "CompositeCrossOriginIframes": [
         {
             "platforms": [
@@ -3339,24 +3324,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "MirroringService"
-                    ]
-                }
-            ]
-        }
-    ],
-    "MostLikelyDesktopDeprecation": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Disabled",
-                    "disable_features": [
-                        "DisplaySuggestionsServiceTiles"
                     ]
                 }
             ]

@@ -64,6 +64,7 @@ public class VisualStateTest {
     private static final String ENTER_FULLSCREEN_CONTROL_ID = "enterFullscreenControl";
 
     private TestAwContentsClient mContentsClient = new TestAwContentsClient();
+    private AwTestContainerView mTestView;
 
     private static class DelayedInputStream extends FilterInputStream {
         private CountDownLatch mLatch = new CountDownLatch(1);
@@ -120,9 +121,8 @@ public class VisualStateTest {
     @Feature({"AndroidWebView"})
     @SmallTest
     public void testVisualStateCallbackIsReceived() throws Throwable {
-        AwTestContainerView testContainer =
-                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
-        final AwContents awContents = testContainer.getAwContents();
+        mTestView = mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
+        final AwContents awContents = mTestView.getAwContents();
         mActivityTestRule.loadDataSync(awContents, mContentsClient.getOnPageFinishedHelper(),
                 CommonResources.ABOUT_HTML, "text/html", false);
         final CallbackHelper ch = new CallbackHelper();
@@ -153,7 +153,7 @@ public class VisualStateTest {
         final CountDownLatch testFinishedSignal = new CountDownLatch(1);
 
         final AtomicReference<AwContents> awContentsRef = new AtomicReference<>();
-        final AwTestContainerView testView =
+        mTestView =
                 mActivityTestRule.createAwTestContainerViewOnMainSync(new TestAwContentsClient() {
                     @Override
                     public void onPageFinished(String url) {
@@ -175,7 +175,7 @@ public class VisualStateTest {
                         }
                     }
                 });
-        final AwContents awContents = testView.getAwContents();
+        final AwContents awContents = mTestView.getAwContents();
         awContentsRef.set(awContents);
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
@@ -207,7 +207,7 @@ public class VisualStateTest {
         final CountDownLatch pageCommitCallbackOccurred = new CountDownLatch(1);
 
         final AtomicReference<AwContents> awContentsRef = new AtomicReference<>();
-        final AwTestContainerView testView =
+        mTestView =
                 mActivityTestRule.createAwTestContainerViewOnMainSync(new TestAwContentsClient() {
                     @Override
                     public void onPageCommitVisible(String url) {
@@ -246,7 +246,7 @@ public class VisualStateTest {
                     }
                 });
 
-        final AwContents awContents = testView.getAwContents();
+        final AwContents awContents = mTestView.getAwContents();
         awContentsRef.set(awContents);
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
@@ -297,11 +297,10 @@ public class VisualStateTest {
                         });
             }
         };
-        final AwTestContainerView testView =
-                mActivityTestRule.createAwTestContainerViewOnMainSync(awContentsClient);
-        final AwContents awContents = testView.getAwContents();
+        mTestView = mActivityTestRule.createAwTestContainerViewOnMainSync(awContentsClient);
+        final AwContents awContents = mTestView.getAwContents();
         awContentsRef.set(awContents);
-        final WebContents webContents = testView.getWebContents();
+        final WebContents webContents = mTestView.getWebContents();
         AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
 
         // JS will notify this observer once it has changed the background color of the page.
@@ -364,11 +363,10 @@ public class VisualStateTest {
                                 });
                     }
                 };
-        final AwTestContainerView testView =
-                mActivityTestRule.createAwTestContainerViewOnMainSync(awContentsClient);
-        final AwContents awContents = testView.getAwContents();
+        mTestView = mActivityTestRule.createAwTestContainerViewOnMainSync(awContentsClient);
+        final AwContents awContents = mTestView.getAwContents();
         awContentsRef.set(awContents);
-        final WebContents webContents = testView.getWebContents();
+        final WebContents webContents = mTestView.getWebContents();
         AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
         awContents.getSettings().setFullscreenSupported(true);
 
@@ -421,9 +419,8 @@ public class VisualStateTest {
         final CountDownLatch testFinishedSignal = new CountDownLatch(1);
 
         final TestAwContentsClient awContentsClient = new TestAwContentsClient();
-        final AwTestContainerView testView =
-                createDetachedTestContainerViewOnMainSync(awContentsClient);
-        final AwContents awContents = testView.getAwContents();
+        mTestView = createDetachedTestContainerViewOnMainSync(awContentsClient);
+        final AwContents awContents = mTestView.getAwContents();
 
         AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
 

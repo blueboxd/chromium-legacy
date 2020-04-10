@@ -145,12 +145,12 @@ This step happens only when targets have `supports_android = true`.
 This step is skipped when building using [Incremental Install].
 
 When `is_java_debug = true`:
-* [d8] merges all library `.dex.jar` files into a final `.mergeddex.jar`.
+* [d8] merges all library `.dex.jar` files into a final `.dex.zip`.
 
 When `is_java_debug = false`:
 * [R8] performs whole-program optimization on all library `lib.java` `.jar`
-  files and outputs a final `.r8dex.jar`.
-  * For App Bundles, R8 creates a single `.r8dex.jar` with the code from all
+  files and outputs a final `.dex.zip`.
+  * For App Bundles, R8 creates a single `.dex.zip` with the code from all
     modules.
 
 [Incremental Install]: /build/android/incremental_install/README.md
@@ -160,7 +160,7 @@ When `is_java_debug = false`:
 
 This step happens only when `is_java_debug = false`.
 
-* [dexsplitter.py] splits the single `*dex.jar` into per-module `*dex.jar`
+* [dexsplitter.py] splits the single `.dex.zip` into per-module `.dex.zip`
   files.
 
 ## Test APKs with apk_under_test

@@ -8,7 +8,8 @@ feed_request {
       build_type: DEV
       api_version: 29
     }
-    app_type: CHROME
+    # TODO(iwells): Change this to CLANK when possible.
+    app_type: TEST_APP
     app_version {
       major: 79
       minor: 0

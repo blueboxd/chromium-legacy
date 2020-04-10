@@ -28,6 +28,7 @@ source_set("feed_core_v2") {
     "proto_util.h",
     "public/feed_service.cc",
     "public/feed_service.h",
+    "public/feed_stream_api.cc",
     "public/feed_stream_api.h",
     "public/types.h",
     "refresh_task_scheduler.h",

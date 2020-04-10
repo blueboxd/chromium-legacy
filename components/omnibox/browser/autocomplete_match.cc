@@ -916,7 +916,6 @@ AutocompleteMatch AutocompleteMatch::DerivePedalSuggestion(
 void AutocompleteMatch::RecordAdditionalInfo(const std::string& property,
                                              const std::string& value) {
   DCHECK(!property.empty());
-  DCHECK(!value.empty());
   additional_info[property] = value;
 }
 

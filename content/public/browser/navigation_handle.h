@@ -17,8 +17,8 @@
 #include "content/public/common/transferrable_url_loader.mojom.h"
 #include "net/base/auth.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/isolation_info.h"
 #include "net/base/net_errors.h"
-#include "net/base/network_isolation_key.h"
 #include "net/dns/public/resolve_error_info.h"
 #include "net/http/http_response_info.h"
 #include "services/network/public/cpp/resource_request_body.h"
@@ -290,11 +290,11 @@ class CONTENT_EXPORT NavigationHandle {
   // Returns host resolution error info associated with the request.
   virtual net::ResolveErrorInfo GetResolveErrorInfo() = 0;
 
-  // Gets the NetworkIsolationKey associated with the navigation. Updated as
+  // Gets the net::IsolationInfo associated with the navigation. Updated as
   // redirects are followed. When one of the origins used to construct the
-  // NetworkIsolationKey is opaque, the returned NetworkIsolationKey will not be
-  // consistent between calls.
-  virtual net::NetworkIsolationKey GetNetworkIsolationKey() = 0;
+  // IsolationInfo is opaque, the returned IsolationInfo will not be consistent
+  // between calls.
+  virtual net::IsolationInfo GetIsolationInfo() = 0;
 
   // Returns the ID of the URLRequest associated with this navigation. Can only
   // be called from NavigationThrottle::WillProcessResponse and

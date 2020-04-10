@@ -11,7 +11,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "net/base/ip_endpoint.h"
-#include "net/base/network_isolation_key.h"
+#include "net/base/isolation_info.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/mojom/referrer.mojom.h"
 #include "url/gurl.h"
@@ -94,7 +94,7 @@ class MockNavigationHandle : public NavigationHandle {
   net::ResolveErrorInfo GetResolveErrorInfo() override {
     return resolve_error_info_;
   }
-  MOCK_METHOD0(GetNetworkIsolationKey, net::NetworkIsolationKey());
+  MOCK_METHOD0(GetIsolationInfo, net::IsolationInfo());
   MOCK_METHOD0(GetGlobalRequestID, const GlobalRequestID&());
   MOCK_METHOD0(IsDownload, bool());
   bool IsFormSubmission() override { return is_form_submission_; }

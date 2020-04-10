@@ -19,6 +19,7 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/animation/animation_delegate_views.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
@@ -47,6 +48,11 @@ class OmniboxResultView : public views::View,
   OmniboxResultView(OmniboxPopupContentsView* popup_contents_view,
                     size_t model_index);
   ~OmniboxResultView() override;
+
+  // Static method to share logic about how to set backgrounds of popup cells.
+  static std::unique_ptr<views::Background> GetPopupCellBackground(
+      views::View* view,
+      OmniboxPartState part_state);
 
   // Helper to get the color for |part| using the current state.
   SkColor GetColor(OmniboxPart part) const;

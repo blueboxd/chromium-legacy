@@ -29,7 +29,6 @@ using chrome_test_util::SecondarySignInButton;
 using chrome_test_util::SettingsAccountButton;
 using chrome_test_util::SettingsDoneButton;
 using chrome_test_util::SignOutAccountsButton;
-using chrome_test_util::SignOutAndClearDataAccountsButton;
 using chrome_test_util::UnifiedConsentAddAccountButton;
 
 @implementation SigninEarlGreyUI
@@ -194,22 +193,19 @@ using chrome_test_util::UnifiedConsentAddAccountButton;
     (SignOutConfirmation)signOutConfirmation {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsAccountButton()];
+  [ChromeEarlGreyUI tapAccountsMenuButton:SignOutAccountsButton()];
   int confirmationLabelID = 0;
-  id<GREYMatcher> signOutButton;
   switch (signOutConfirmation) {
     case SignOutConfirmationManagedUser: {
-      confirmationLabelID = IDS_IOS_DISCONNECT_DIALOG_CONTINUE_AND_CLEAR_MOBILE;
-      signOutButton = SignOutAndClearDataAccountsButton();
+      confirmationLabelID = IDS_IOS_MANAGED_DISCONNECT_DIALOG_ACCEPT_UNITY;
       break;
     }
     case SignOutConfirmationNonManagedUser: {
       confirmationLabelID = IDS_IOS_DISCONNECT_DIALOG_CONTINUE_BUTTON_MOBILE;
-      signOutButton = SignOutAccountsButton();
       break;
     }
     case SignOutConfirmationNonManagedUserWithClearedData: {
       confirmationLabelID = IDS_IOS_DISCONNECT_DIALOG_CONTINUE_AND_CLEAR_MOBILE;
-      signOutButton = SignOutAccountsButton();
       break;
     }
     default: {
@@ -218,11 +214,9 @@ using chrome_test_util::UnifiedConsentAddAccountButton;
     }
   }
 
-  [ChromeEarlGreyUI tapAccountsMenuButton:signOutButton];
-  [[EarlGrey selectElementWithMatcher:
-                 grey_allOf(chrome_test_util::ButtonWithAccessibilityLabelId(
-                                confirmationLabelID),
-                            grey_not(signOutButton), nil)]
+  id<GREYMatcher> confirmationButtonMatcher = [ChromeMatchersAppInterface
+      buttonWithAccessibilityLabelID:confirmationLabelID];
+  [[EarlGrey selectElementWithMatcher:confirmationButtonMatcher]
       performAction:grey_tap()];
   // Wait until the user is signed out.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];

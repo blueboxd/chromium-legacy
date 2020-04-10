@@ -35,6 +35,12 @@ suite('OSSettingsSearchBox', () => {
     Polymer.dom.flush();
   }
 
+  async function waitForListUpdate() {
+    // Wait for iron-list to complete resizing.
+    await test_util.eventToPromise('iron-resize', resultList);
+    Polymer.dom.flush();
+  }
+
   /**
    * @param {string} resultText Exact string of the result to be displayed.
    * @param {string} path Url path with optional params.
@@ -187,12 +193,7 @@ suite('OSSettingsSearchBox', () => {
     settingsSearchHandler.setFakeResults(
         [fakeResult('WiFi Settings', 'networks?type=WiFi')]);
     await simulateSearch('query');
-
-    // Adding two flushTasks ensures that all events are fully handled, so that
-    // the iron-list is fully rendered and that the physical
-    // <os-search-result-row>s are available to dispatch 'Enter' on.
-    await test_util.flushTasks();
-    await test_util.flushTasks();
+    await waitForListUpdate();
 
     const enterEvent = new KeyboardEvent(
         'keydown', {cancelable: true, key: 'Enter', keyCode: 13});
@@ -210,12 +211,7 @@ suite('OSSettingsSearchBox', () => {
     settingsSearchHandler.setFakeResults(
         [fakeResult('WiFi Settings', 'networks?type=WiFi')]);
     await simulateSearch('query');
-
-    // Adding two flushTasks ensures that all events are fully handled, so that
-    // the iron-list is fully rendered and that the physical
-    // <os-search-result-row>s are available to dispatch 'Enter' on.
-    await test_util.flushTasks();
-    await test_util.flushTasks();
+    await waitForListUpdate();
 
     const searchResultRow = searchBox.getSelectedOsSearchResultRow_();
 

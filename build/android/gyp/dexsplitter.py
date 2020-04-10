@@ -101,15 +101,15 @@ def main(args):
         if os.path.exists(module_dex_file):
           curr_location_to_dest.append((module_dex_file, dest))
         else:
-          module_dex_file += '.jar'
+          module_dex_file += '.zip'
           assert os.path.exists(
               module_dex_file), 'Dexsplitter tool output not found.'
-          curr_location_to_dest.append((module_dex_file + '.jar', dest))
+          curr_location_to_dest.append((module_dex_file + '.zip', dest))
 
     for curr_location, dest in curr_location_to_dest:
       with build_utils.AtomicOutput(dest) as f:
-        if curr_location.endswith('.jar'):
-          if dest.endswith('.jar'):
+        if curr_location.endswith('.zip'):
+          if dest.endswith('.zip'):
             shutil.copy(curr_location, f.name)
           else:
             with zipfile.ZipFile(curr_location, 'r') as z:
@@ -119,7 +119,7 @@ def main(args):
                   options.input_dex_zip)
               z.extract(namelist[0], f.name)
         else:
-          if dest.endswith('.jar'):
+          if dest.endswith('.zip'):
             build_utils.ZipDir(
                 f.name, os.path.abspath(os.path.join(curr_location, os.pardir)))
           else:

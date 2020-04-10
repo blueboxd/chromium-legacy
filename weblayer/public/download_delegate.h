@@ -15,6 +15,7 @@ class GURL;
 
 namespace weblayer {
 class Download;
+class Tab;
 
 using AllowDownloadCallback = base::OnceCallback<void(bool /*allow*/)>;
 
@@ -26,7 +27,8 @@ class DownloadDelegate {
   // Gives the embedder the opportunity to asynchronously allow or disallow the
   // given download. The download is paused until the callback is run. It's safe
   // to run |callback| synchronously.
-  virtual void AllowDownload(const GURL& url,
+  virtual void AllowDownload(Tab* tab,
+                             const GURL& url,
                              const std::string& request_method,
                              base::Optional<url::Origin> request_initiator,
                              AllowDownloadCallback callback) = 0;

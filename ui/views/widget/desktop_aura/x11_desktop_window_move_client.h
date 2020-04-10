@@ -13,8 +13,8 @@
 #include "ui/views/widget/desktop_aura/x11_move_loop_delegate.h"
 #include "ui/views/widget/desktop_aura/x11_whole_screen_move_loop.h"
 
-namespace aura {
-class WindowTreeHost;
+namespace ui {
+class XWindow;
 }
 
 namespace views {
@@ -23,7 +23,7 @@ namespace views {
 class VIEWS_EXPORT X11DesktopWindowMoveClient
     : public views::X11MoveLoopDelegate {
  public:
-  X11DesktopWindowMoveClient();
+  explicit X11DesktopWindowMoveClient(ui::XWindow* window);
   ~X11DesktopWindowMoveClient() override;
 
   // Overridden from X11WholeScreenMoveLoopDelegate:
@@ -33,7 +33,7 @@ class VIEWS_EXPORT X11DesktopWindowMoveClient
   void OnMouseReleased() override;
   void OnMoveLoopEnded() override;
 
-  bool RunMoveLoop(aura::Window* window, const gfx::Vector2d& drag_offset);
+  bool RunMoveLoop(bool can_grab_pointer, const gfx::Vector2d& drag_offset);
   void EndMoveLoop();
 
  private:
@@ -41,7 +41,7 @@ class VIEWS_EXPORT X11DesktopWindowMoveClient
 
   // We need to keep track of this so we can actually move it when reacting to
   // mouse events.
-  aura::WindowTreeHost* host_ = nullptr;
+  ui::XWindow* const window_;
 
   // Our cursor offset from the top left window origin when the drag
   // started. Used to calculate the window's new bounds relative to the current

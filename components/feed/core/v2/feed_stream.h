@@ -54,17 +54,6 @@ class FeedStream : public FeedStreamApi,
     virtual bool IsOffline() = 0;
   };
 
-  // An observer of stream events for testing and for tracking metrics.
-  // Concrete implementation should have no observable effects on the Feed.
-  class EventObserver {
-   public:
-    virtual void OnLoadStream(LoadStreamStatus load_from_store_status,
-                              LoadStreamStatus final_status) = 0;
-    virtual void OnMaybeTriggerRefresh(TriggerType trigger,
-                                       bool clear_all_before_refresh) = 0;
-    virtual void OnClearAll(base::TimeDelta time_since_last_clear) = 0;
-  };
-
   // Forwards to |feed::TranslateWireResponse()| by default. Can be overridden
   // for testing.
   class WireResponseTranslator {
@@ -78,7 +67,6 @@ class FeedStream : public FeedStreamApi,
   };
 
   FeedStream(RefreshTaskScheduler* refresh_task_scheduler,
-             EventObserver* stream_event_observer,
              MetricsReporter* metrics_reporter,
              Delegate* delegate,
              PrefService* profile_prefs,
@@ -109,11 +97,13 @@ class FeedStream : public FeedStreamApi,
   bool RejectEphemeralChange(EphemeralChangeId id) override;
 
   void ReportSliceViewed(const std::string& slice_id) override;
+  void ReportNavigationStarted() override;
+  void ReportNavigationDone() override;
+  void ReportOpenAction() override;
+  void ReportOpenInNewTabAction() override;
   void ReportSendFeedbackAction() override;
   void ReportLearnMoreAction() override;
   void ReportDownloadAction() override;
-  void ReportNavigationStarted() override;
-  void ReportNavigationDone() override;
   void ReportRemoveAction() override;
   void ReportNotInterestedInAction() override;
   void ReportManageInterestsAction() override;
@@ -204,7 +194,6 @@ class FeedStream : public FeedStreamApi,
   // Unowned.
 
   RefreshTaskScheduler* refresh_task_scheduler_;
-  EventObserver* stream_event_observer_;
   MetricsReporter* metrics_reporter_;
   Delegate* delegate_;
   PrefService* profile_prefs_;

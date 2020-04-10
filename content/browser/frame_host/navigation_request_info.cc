@@ -9,8 +9,7 @@ namespace content {
 NavigationRequestInfo::NavigationRequestInfo(
     mojom::CommonNavigationParamsPtr common_params,
     mojom::BeginNavigationParamsPtr begin_params,
-    const net::SiteForCookies& site_for_cookies,
-    const net::NetworkIsolationKey& network_isolation_key,
+    const net::IsolationInfo& isolation_info,
     bool is_main_frame,
     bool parent_is_main_frame,
     bool are_ancestors_secure,
@@ -26,8 +25,7 @@ NavigationRequestInfo::NavigationRequestInfo(
     bool obey_origin_policy)
     : common_params(std::move(common_params)),
       begin_params(std::move(begin_params)),
-      site_for_cookies(site_for_cookies),
-      network_isolation_key(network_isolation_key),
+      isolation_info(isolation_info),
       is_main_frame(is_main_frame),
       parent_is_main_frame(parent_is_main_frame),
       are_ancestors_secure(are_ancestors_secure),

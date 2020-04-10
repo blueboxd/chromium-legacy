@@ -772,10 +772,11 @@ void AutocompleteController::UpdateHeaders(AutocompleteResult* result) {
   for (AutocompleteMatch& match : *result) {
     if (match.suggestion_group_id.has_value()) {
       int group_id = match.suggestion_group_id.value();
-      match.RecordAdditionalInfo("suggestion_group_id", group_id);
-      match.RecordAdditionalInfo(
-          "header string",
-          base::UTF16ToUTF8(result->GetHeaderForGroupId(group_id)));
+      const base::string16 header = result->GetHeaderForGroupId(group_id);
+      if (!header.empty()) {
+        match.RecordAdditionalInfo("suggestion_group_id", group_id);
+        match.RecordAdditionalInfo("header string", base::UTF16ToUTF8(header));
+      }
     }
   }
 }

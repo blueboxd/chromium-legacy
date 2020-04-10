@@ -7,6 +7,8 @@
 
 #include "base/time/time.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
+#include "components/page_load_metrics/common/page_load_metrics.mojom.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
 // Observer responsible for appending previews information to the PLM UKM
@@ -35,7 +37,10 @@ class ForegroundDurationUKMObserver
   bool currently_in_foreground_ = false;
   base::TimeTicks last_time_shown_;
   ukm::SourceId source_id_ = ukm::kInvalidSourceId;
+  page_load_metrics::mojom::InputTiming last_page_input_timing_;
   void RecordUkmIfInForeground(base::TimeTicks end_time);
+  void RecordInputTimingMetrics(
+      ukm::builders::PageForegroundSession* ukm_builder);
 
   DISALLOW_COPY_AND_ASSIGN(ForegroundDurationUKMObserver);
 };

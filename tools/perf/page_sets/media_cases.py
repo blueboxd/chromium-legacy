@@ -166,11 +166,11 @@ class _BackgroundPlaybackPage(_MediaPage):
     self._background_time = background_time
     tags.append('background')
     tags.append('src')
-    # disable-media-suspend is required since for Android background playback
-    # gets suspended. This flag makes Android work the same way as desktop and
-    # not turn off video playback in the background.
+    # --disable-background-media-suspend is required since for Android,
+    # background playback gets suspended. This flag makes Android work the same
+    # way as desktop and not turn off video playback in the background.
     extra_browser_args = extra_browser_args or []
-    extra_browser_args.append('--disable-media-suspend')
+    extra_browser_args.append('--disable-background-media-suspend')
     super(_BackgroundPlaybackPage, self).__init__(
         url, page_set, tags, extra_browser_args)
 

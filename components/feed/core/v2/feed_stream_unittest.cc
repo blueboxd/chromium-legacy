@@ -271,20 +271,23 @@ class TestMetricsReporter : public MetricsReporter {
   // MetricsReporter.
   void ContentSliceViewed(int index_in_stream) override {
     slice_viewed_index = index_in_stream;
+    MetricsReporter::ContentSliceViewed(index_in_stream);
   }
-
   void OnLoadStream(LoadStreamStatus load_from_store_status,
                     LoadStreamStatus final_status) override {
     load_stream_status = final_status;
     LOG(INFO) << "OnLoadStream: " << final_status
               << " (store status: " << load_from_store_status << ")";
+    MetricsReporter::OnLoadStream(load_from_store_status, final_status);
   }
   void OnMaybeTriggerRefresh(TriggerType trigger,
                              bool clear_all_before_refresh) override {
     refresh_trigger_type = trigger;
+    MetricsReporter::OnMaybeTriggerRefresh(trigger, clear_all_before_refresh);
   }
   void OnClearAll(base::TimeDelta time_since_last_clear) override {
     this->time_since_last_clear = time_since_last_clear;
+    MetricsReporter::OnClearAll(time_since_last_clear);
   }
 
   // Test access.
@@ -305,10 +308,9 @@ class FeedStreamTest : public testing::Test, public FeedStream::Delegate {
     chrome_info.channel = version_info::Channel::STABLE;
     chrome_info.version = base::Version({99, 1, 9911, 2});
     stream_ = std::make_unique<FeedStream>(
-        &refresh_scheduler_, &metrics_reporter_, &metrics_reporter_, this,
-        &profile_prefs_, &network_, store_.get(),
-        task_environment_.GetMockClock(), task_environment_.GetMockTickClock(),
-        chrome_info);
+        &refresh_scheduler_, &metrics_reporter_, this, &profile_prefs_,
+        &network_, store_.get(), task_environment_.GetMockClock(),
+        task_environment_.GetMockTickClock(), chrome_info);
 
     // Set the user classifier.
     auto user_classifier = std::make_unique<TestUserClassifier>(

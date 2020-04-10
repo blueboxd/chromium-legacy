@@ -41,6 +41,10 @@ class CONTENT_EXPORT ConversionManager {
   // conversion reports to storage.
   virtual void HandleConversion(const StorableConversion& conversion) = 0;
 
+  // Notify storage to delete the given |conversion_id| when it's associated
+  // report has been sent.
+  virtual void HandleSentReport(int64_t conversion_id) = 0;
+
   // Returns the ConversionPolicy that is used to control API policies such
   // as noise.
   virtual const ConversionPolicy& GetConversionPolicy() const = 0;

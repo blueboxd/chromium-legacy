@@ -78,12 +78,13 @@ class NavigationURLLoaderTest : public testing::Test {
     std::unique_ptr<NavigationRequestInfo> request_info(
         new NavigationRequestInfo(
             std::move(common_params), std::move(begin_params),
-            net::SiteForCookies::FromUrl(url),
-            net::NetworkIsolationKey(origin, origin), true /* is_main_frame */,
-            false /* parent_is_main_frame */, false /* are_ancestors_secure */,
-            -1 /* frame_tree_node_id */, false /* is_for_guests_only */,
-            false /* report_raw_headers */, false /* is_prerendering */,
-            false /* upgrade_if_insecure */,
+            net::IsolationInfo::Create(
+                net::IsolationInfo::RedirectMode::kUpdateTopFrame, origin,
+                origin, net::SiteForCookies::FromUrl(url)),
+            true /* is_main_frame */, false /* parent_is_main_frame */,
+            false /* are_ancestors_secure */, -1 /* frame_tree_node_id */,
+            false /* is_for_guests_only */, false /* report_raw_headers */,
+            false /* is_prerendering */, false /* upgrade_if_insecure */,
             nullptr /* blob_url_loader_factory */,
             base::UnguessableToken::Create() /* devtools_navigation_token */,
             base::UnguessableToken::Create() /* devtools_frame_token */,

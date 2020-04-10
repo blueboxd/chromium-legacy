@@ -94,10 +94,8 @@ class MediaSessionImplVisibilityBrowserTest
 
     VisibilityTestData params = GetVisibilityTestData();
 
-    if (params.media_suspend == MediaSuspend::ENABLED)
-      command_line->AppendSwitch(switches::kEnableMediaSuspend);
-    else
-      command_line->AppendSwitch(switches::kDisableMediaSuspend);
+    if (params.media_suspend == MediaSuspend::DISABLED)
+      command_line->AppendSwitch(switches::kDisableBackgroundMediaSuspend);
   }
 
   const VisibilityTestData& GetVisibilityTestData() {

@@ -138,7 +138,7 @@ class ASH_EXPORT StatusAreaWidget : public SessionObserver,
     CollapseState collapse_state = CollapseState::NOT_COLLAPSIBLE;
     float opacity = 0.0f;
     // Each bit keep track of one child's visibility.
-    long child_visibility_bitmask = 0;
+    unsigned int child_visibility_bitmask = 0;
 
     bool operator==(const LayoutInputs& other) const {
       return bounds == other.bounds && collapse_state == other.collapse_state &&

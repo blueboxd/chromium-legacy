@@ -12713,6 +12713,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="25" label="Crash.Chrome.CrashesFromKernel"/>
   <int value="26" label="Crash.Chrome.MissedCrashes"/>
   <int value="27" label="Crash.Collector.CollectionCount"/>
+  <int value="28" label="Cryptohome.DoubleMountRequest"/>
 </enum>
 
 <enum name="CrosFirstRunTutorialCompletionType">
@@ -27107,6 +27108,27 @@ Called by update_feature_policy_enum.py.-->
   <int value="17" label="ROOT_NOT_BOUND_TO_FEATURE"/>
 </enum>
 
+<enum name="FeedLoadStreamStatus">
+  <int value="0" label="Loading wasn't attempted"/>
+  <int value="1" label="Success loading from persistent store"/>
+  <int value="2" label="Success loading from network"/>
+  <int value="3" label="Failed - store error"/>
+  <int value="4" label="Failed - no data in store"/>
+  <int value="5" label="Failed - model is already loaded"/>
+  <int value="6" label="Failed - network response has no body"/>
+  <int value="7" label="Failed - error translating to internal protos"/>
+  <int value="8" label="Failed - data in store is stale"/>
+  <int value="9" label="Failed - data in store has timestamp from the future"/>
+  <int value="10"
+      label="Failed - loading from network is suppressed due to recent
+             history deletion"/>
+  <int value="11" label="Failed - cannot load from network while offline"/>
+  <int value="12" label="Failed - network request throttled"/>
+  <int value="13" label="Failed - EULA not accepted"/>
+  <int value="14" label="Failed - articles list hidden"/>
+  <int value="15" label="Failed - cannot parse network response body"/>
+</enum>
+
 <enum name="FeedRequestReason">
   <int value="0" label="UNKNOWN"/>
   <int value="1" label="ZERO_STATE"/>
@@ -27141,6 +27163,20 @@ Called by update_feature_policy_enum.py.-->
   <int value="3" label="More button"/>
   <int value="4" label="Synthetic token"/>
   <int value="5" label="Infinite feed"/>
+</enum>
+
+<enum name="FeedUserActionType">
+  <int value="0" label="Tapped on card"/>
+  <int value="1" label="Shown card"/>
+  <int value="2" label="Tapped Send Feedback"/>
+  <int value="3" label="Tapped Learn More"/>
+  <int value="4" label="Tapped Hide Story"/>
+  <int value="5" label="Tapped Not Interested In"/>
+  <int value="6" label="Tapped Manage Interests"/>
+  <int value="7" label="Tapped Download"/>
+  <int value="8" label="Tapped Open in New Tab"/>
+  <int value="9" label="Opened context menu"/>
+  <int value="10" label="Opened feed surface"/>
 </enum>
 
 <enum name="FeedZeroStateShowReason">
@@ -43003,6 +43039,10 @@ Called by update_use_counter_css.py.-->
   <int value="1" label="Failed due to no foreign key support"/>
   <int value="2" label="Failed since database is too new"/>
   <int value="3" label="Failed to create tables"/>
+  <int value="4" label="Failed to create directory"/>
+  <int value="5" label="Failed to open database"/>
+  <int value="6" label="Failed to establish DB transaction"/>
+  <int value="7" label="Failed to create meta table"/>
 </enum>
 
 <enum name="MediaHistoryPlaybackWriteResult">

@@ -492,6 +492,7 @@ if (is_android) {
       "//chrome/browser/profiling_host:profiling_browsertests",
       "//components/crash/android:crashpad_main",
       "//components/games/core/test:test_support",
+      "//components/metrics:demographics_test_support",
 
       # TODO(crbug.com/961849): This is needed for ShellManager which is what
       # the ChromeBrowserTestsActivity is using to build the java UI. It's
@@ -670,6 +671,7 @@ if (!is_android) {
       "//components/dom_distiller/core:test_support",
       "//components/embedder_support",
       "//components/feature_engagement/test:test_support",
+      "//components/metrics:demographics_test_support",
       "//components/nacl/common:buildflags",
       "//components/offline_items_collection/core/test_support",
       "//components/optimization_guide:test_support",

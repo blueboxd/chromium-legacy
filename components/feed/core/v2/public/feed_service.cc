@@ -98,9 +98,9 @@ FeedService::FeedService(
 
   stream_ = std::make_unique<FeedStream>(
       refresh_task_scheduler_.get(), metrics_reporter_.get(),
-      metrics_reporter_.get(), stream_delegate_.get(), profile_prefs,
-      feed_network_.get(), store_.get(), base::DefaultClock::GetInstance(),
-      base::DefaultTickClock::GetInstance(), chrome_info);
+      stream_delegate_.get(), profile_prefs, feed_network_.get(), store_.get(),
+      base::DefaultClock::GetInstance(), base::DefaultTickClock::GetInstance(),
+      chrome_info);
 
   stream_delegate_->Initialize(static_cast<FeedStream*>(stream_.get()));
 

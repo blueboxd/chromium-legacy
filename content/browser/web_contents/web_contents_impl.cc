@@ -4831,7 +4831,8 @@ void WebContentsImpl::ViewSource(RenderFrameHostImpl* frame) {
                                        std::string(":") +
                                        frame_entry->url().spec()));
 
-  navigation_entry->set_network_isolation_key(frame->GetNetworkIsolationKey());
+  navigation_entry->set_isolation_info(
+      frame->GetIsolationInfoForSubresources());
 
   // Do not restore scroller position.
   // TODO(creis, lukasza, arthursonzogni): Do not reuse the original PageState,

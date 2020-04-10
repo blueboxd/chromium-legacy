@@ -8,6 +8,7 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/conversions/conversion_manager.h"
+#include "content/browser/conversions/conversion_test_utils.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/test_renderer_host.h"
@@ -35,36 +36,6 @@ Impression CreateValidImpression() {
 }
 
 }  // namespace
-
-class TestConversionManager : public ConversionManager {
- public:
-  TestConversionManager() = default;
-  ~TestConversionManager() override = default;
-
-  void HandleImpression(const StorableImpression& impression) override {
-    num_impressions_++;
-  }
-
-  void HandleConversion(const StorableConversion& impression) override {
-    num_conversions_++;
-  }
-
-  const ConversionPolicy& GetConversionPolicy() const override {
-    return policy;
-  }
-
-  size_t num_impressions() const { return num_impressions_; }
-
-  void Reset() {
-    num_impressions_ = 0u;
-    num_conversions_ = 0u;
-  }
-
- private:
-  ConversionPolicy policy;
-  size_t num_impressions_ = 0u;
-  size_t num_conversions_ = 0u;
-};
 
 class TestManagerProvider : public ConversionManager::Provider {
  public:

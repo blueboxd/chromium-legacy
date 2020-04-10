@@ -200,10 +200,10 @@ void LocalNetworkCollectorImpl::OnGetManagedPropertiesResult(
   proto.mutable_proxy_configuration()->CopyFrom(
       ProxyConfigurationProtoFromMojo(properties->proxy_settings));
 
-  if (properties->saved_ip_config &&
-      properties->saved_ip_config->name_servers) {
+  if (properties->static_ip_config &&
+      properties->static_ip_config->name_servers) {
     for (const std::string& nameserver :
-         *(properties->saved_ip_config->name_servers)) {
+         properties->static_ip_config->name_servers->active_value) {
       proto.add_custom_dns(nameserver);
     }
   }

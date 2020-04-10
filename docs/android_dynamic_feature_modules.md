@@ -107,7 +107,7 @@ this step.
 <!--- TODO(tiborg): Add info about install UI. -->
 Lastly, give your module a title that Chrome and Play can use for the install
 UI. To do this, add a string to
-`//chrome/android/java/strings/android_chrome_strings.grd`:
+`//chrome/browser/ui/android/strings/android_chrome_strings.grd`:
 
 ```xml
 ...

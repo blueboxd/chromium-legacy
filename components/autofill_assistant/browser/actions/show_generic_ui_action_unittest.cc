@@ -89,7 +89,7 @@ TEST_F(ShowGenericUiActionTest, GoesIntoPromptState) {
           }));
 
   InSequence seq;
-  EXPECT_CALL(mock_action_delegate_, Prompt(_, _, _)).Times(1);
+  EXPECT_CALL(mock_action_delegate_, Prompt(_, _, _, _)).Times(1);
   EXPECT_CALL(mock_action_delegate_, OnSetGenericUi(_, _)).Times(1);
   EXPECT_CALL(mock_action_delegate_, ClearGenericUi()).Times(1);
   EXPECT_CALL(mock_action_delegate_, CleanUpAfterPrompt()).Times(1);

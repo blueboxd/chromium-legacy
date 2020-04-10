@@ -19,6 +19,10 @@
 #include "base/android/scoped_java_ref.h"
 #endif
 
+namespace content {
+class NavigationThrottle;
+}
+
 namespace weblayer {
 class TabImpl;
 
@@ -27,6 +31,11 @@ class NavigationControllerImpl : public NavigationController,
  public:
   explicit NavigationControllerImpl(TabImpl* tab);
   ~NavigationControllerImpl() override;
+
+  // Creates the NavigationThrottle used to ensure WebContents::Stop() is called
+  // at safe times. See NavigationControllerImpl for details.
+  std::unique_ptr<content::NavigationThrottle> CreateNavigationThrottle(
+      content::NavigationHandle* handle);
 
 #if defined(OS_ANDROID)
   void SetNavigationControllerImpl(
@@ -80,6 +89,13 @@ class NavigationControllerImpl : public NavigationController,
 #endif
 
  private:
+  class NavigationThrottleImpl;
+
+  // Called from NavigationControllerImpl::WillRedirectRequest(). See
+  // description of NavigationControllerImpl for details.
+  void WillRedirectRequest(NavigationThrottleImpl* throttle,
+                           content::NavigationHandle* navigation_handle);
+
   // NavigationController implementation:
   void AddObserver(NavigationObserver* observer) override;
   void RemoveObserver(NavigationObserver* observer) override;
@@ -118,6 +134,13 @@ class NavigationControllerImpl : public NavigationController,
   base::ObserverList<NavigationObserver>::Unchecked observers_;
   std::map<content::NavigationHandle*, std::unique_ptr<NavigationImpl>>
       navigation_map_;
+
+  // If non-null then processing is inside DidStartNavigation() and
+  // |navigation_starting_| is the NavigationImpl that was created.
+  NavigationImpl* navigation_starting_ = nullptr;
+
+  // Set to non-null while in WillRedirectRequest().
+  NavigationThrottleImpl* active_throttle_ = nullptr;
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaGlobalRef<jobject> java_controller_;

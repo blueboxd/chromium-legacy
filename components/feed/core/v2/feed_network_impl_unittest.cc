@@ -31,6 +31,8 @@
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/protobuf/src/google/protobuf/io/coded_stream.h"
+#include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "third_party/zlib/google/compression_utils.h"
 #include "url/gurl.h"
 
@@ -129,6 +131,16 @@ class FeedNetworkTest : public testing::Test {
     test_factory_.AddResponse(url, std::move(head), response_string, status);
   }
 
+  std::string PrependResponseLength(const std::string& response) {
+    std::string result;
+    ::google::protobuf::io::StringOutputStream string_output_stream(&result);
+    ::google::protobuf::io::CodedOutputStream stream(&string_output_stream);
+
+    stream.WriteVarint32(static_cast<uint32_t>(response.size()));
+    stream.WriteString(response);
+    return result;
+  }
+
   network::ResourceRequest RespondToQueryRequest(
       const std::string& response_string,
       net::HttpStatusCode code) {
@@ -137,7 +149,8 @@ class FeedNetworkTest : public testing::Test {
         test_factory()->GetPendingRequest(0);
     CHECK(pending_request);
     network::ResourceRequest resource_request = pending_request->request;
-    Respond(pending_request->request.url, response_string, code);
+    Respond(pending_request->request.url,
+            PrependResponseLength(response_string), code);
     task_environment_.FastForwardUntilNoTasksRemain();
     return resource_request;
   }
@@ -189,8 +202,8 @@ TEST_F(FeedNetworkTest, SendQueryRequestSendsValidRequest) {
       RespondToQueryRequest("", net::HTTP_OK);
 
   EXPECT_EQ(
-      "https://www.google.com/httpservice/retry/InteractiveDiscoverAgaService/"
-      "FeedQuery?reqpld=%08%01%C2%3E%04%12%02%08%01&fmt=bin&hl=en",
+      "https://www.google.com/httpservice/retry/TrellisClankService/"
+      "FeedQuery?reqpld=CAHCPgQSAggB&fmt=bin&hl=en",
       resource_request.url);
   EXPECT_EQ("GET", resource_request.method);
   EXPECT_FALSE(resource_request.headers.HasHeader("content-encoding"));

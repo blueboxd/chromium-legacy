@@ -14,9 +14,30 @@ namespace feed {
 namespace {
 using feed::internal::FeedEngagementType;
 
+// This enum must match FeedUserActionType in enums.xml.
+// TODO(harringtond): Add user actions for most of these.
+enum class FeedUserActionType {
+  kTappedOnCard = 0,
+  kShownCard = 1,
+  kTappedSendFeedback = 2,
+  kTappedLearnMore = 3,
+  kTappedHideStory = 4,
+  kTappedNotInterestedIn = 5,
+  kTappedManageInterests = 6,
+  kTappedDownload = 7,
+  kTappedOpenInNewTab = 8,
+  kOpenedContextMenu = 9,
+  kOpenedFeedSurface = 10,
+  kMaxValue = kOpenedFeedSurface,
+};
+
 void ReportEngagementTypeHistogram(FeedEngagementType engagement_type) {
   UMA_HISTOGRAM_ENUMERATION("ContentSuggestions.Feed.EngagementType",
                             engagement_type);
+}
+
+void ReportUserActionHistogram(FeedUserActionType action_type) {
+  UMA_HISTOGRAM_ENUMERATION("ContentSuggestions.Feed.UserAction", action_type);
 }
 
 }  // namespace
@@ -79,25 +100,33 @@ void MetricsReporter::ContentSliceViewed(int index_in_stream) {
                              index_in_stream, kMaxSuggestionsTotal);
 }
 
+void MetricsReporter::OpenAction() {
+  ReportUserActionHistogram(FeedUserActionType::kTappedOnCard);
+  RecordInteraction();
+}
+
+void MetricsReporter::OpenInNewTabAction() {
+  ReportUserActionHistogram(FeedUserActionType::kTappedOpenInNewTab);
+  RecordInteraction();
+}
+
 void MetricsReporter::SendFeedbackAction() {
-  // TODO(harringtond): Report UMA/UserAction for this.
+  ReportUserActionHistogram(FeedUserActionType::kTappedSendFeedback);
   RecordInteraction();
 }
 
 void MetricsReporter::DownloadAction() {
-  // TODO(harringtond): Report UMA/UserAction for this.
+  ReportUserActionHistogram(FeedUserActionType::kTappedDownload);
   RecordInteraction();
 }
 
 void MetricsReporter::LearnMoreAction() {
-  // TODO(harringtond): Report UMA/UserAction for this.
+  ReportUserActionHistogram(FeedUserActionType::kTappedLearnMore);
   RecordInteraction();
 }
 
 void MetricsReporter::NavigationStarted() {
-  // TODO(harringtond): Add user actions.
-  // Report Feed_OpeningContent
-  RecordInteraction();
+  // TODO(harringtond): Use this or remove it.
 }
 
 void MetricsReporter::NavigationDone() {
@@ -105,26 +134,26 @@ void MetricsReporter::NavigationDone() {
 }
 
 void MetricsReporter::RemoveAction() {
-  // TODO(harringtond): Add user actions.
-  // Report Feed_RemovedContent
+  ReportUserActionHistogram(FeedUserActionType::kTappedHideStory);
   RecordInteraction();
 }
 
 void MetricsReporter::NotInterestedInAction() {
-  // TODO(harringtond): Add user actions.
-  // Report Feed_NotInterestedIn
+  ReportUserActionHistogram(FeedUserActionType::kTappedNotInterestedIn);
   RecordInteraction();
 }
 
 void MetricsReporter::ManageInterestsAction() {
-  // TODO(harringtond): Add user actions.
-  // Report Feed_ManageInterests
+  ReportUserActionHistogram(FeedUserActionType::kTappedManageInterests);
   RecordInteraction();
 }
 
 void MetricsReporter::ContextMenuOpened() {
-  // TODO(harringtond): Add user actions.
-  // Report Feed_OpenedContextMenu
+  ReportUserActionHistogram(FeedUserActionType::kOpenedContextMenu);
+}
+
+void MetricsReporter::SurfaceOpened() {
+  ReportUserActionHistogram(FeedUserActionType::kOpenedFeedSurface);
 }
 
 void MetricsReporter::NetworkRequestComplete(NetworkRequestType type,
@@ -145,7 +174,24 @@ void MetricsReporter::NetworkRequestComplete(NetworkRequestType type,
 
 void MetricsReporter::OnLoadStream(LoadStreamStatus load_from_store_status,
                                    LoadStreamStatus final_status) {
-  // TODO(harringtond): Add UMA for this, or record it with another histogram.
+  UMA_HISTOGRAM_ENUMERATION("ContentSuggestions.Feed.LoadStreamStatus.Initial",
+                            final_status);
+  if (load_from_store_status != LoadStreamStatus::kNoStatus) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "ContentSuggestions.Feed.LoadStreamStatus.InitialFromStore",
+        load_from_store_status);
+  }
+}
+
+void MetricsReporter::OnBackgroundRefresh(LoadStreamStatus final_status) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "ContentSuggestions.Feed.LoadStreamStatus.BackgroundRefresh",
+      final_status);
+}
+
+void MetricsReporter::OnLoadMore(LoadStreamStatus final_status) {
+  UMA_HISTOGRAM_ENUMERATION("ContentSuggestions.Feed.LoadStreamStatus.LoadMore",
+                            final_status);
 }
 
 void MetricsReporter::OnMaybeTriggerRefresh(TriggerType trigger,

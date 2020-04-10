@@ -30,7 +30,6 @@ import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsViewBinder.ViewHolder;
-import org.chromium.chrome.browser.ui.ImmersiveModeManager;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -91,22 +90,18 @@ public class BottomControlsCoordinator {
                 model, new ViewHolder(root), BottomControlsViewBinder::bind);
 
         int bottomToolbarHeightId;
-        int bottomToolbarHeightWithShadowId;
 
         if (BottomToolbarConfiguration.isLabeledBottomToolbarEnabled()) {
             bottomToolbarHeightId = R.dimen.labeled_bottom_toolbar_height;
-            bottomToolbarHeightWithShadowId = R.dimen.labeled_bottom_toolbar_height_with_shadow;
         } else {
             bottomToolbarHeightId = R.dimen.bottom_toolbar_height;
-            bottomToolbarHeightWithShadowId = R.dimen.bottom_toolbar_height_with_shadow;
         }
 
         View toolbar = root.findViewById(R.id.bottom_container_slot);
         ViewGroup.LayoutParams params = toolbar.getLayoutParams();
         params.height = root.getResources().getDimensionPixelOffset(bottomToolbarHeightId);
         mMediator = new BottomControlsMediator(model, fullscreenManager,
-                root.getResources().getDimensionPixelOffset(bottomToolbarHeightId),
-                root.getResources().getDimensionPixelOffset(bottomToolbarHeightWithShadowId));
+                root.getResources().getDimensionPixelOffset(bottomToolbarHeightId));
 
         if (TabManagementModuleProvider.getDelegate() != null
                 && TabUiFeatureUtilities.isTabGroupsAndroidEnabled()
@@ -125,13 +120,6 @@ public class BottomControlsCoordinator {
                 BottomToolbarConfiguration.isLabeledBottomToolbarEnabled()
                         ? R.dimen.labeled_bottom_toolbar_height
                         : R.dimen.bottom_toolbar_height));
-    }
-
-    /**
-     * @param immersiveModeManager The {@link ImmersiveModeManager} for the containing activity.
-     */
-    public void setImmersiveModeManager(ImmersiveModeManager immersiveModeManager) {
-        mMediator.setImmersiveModeManager(immersiveModeManager);
     }
 
     /**

@@ -8486,7 +8486,7 @@ void Document::ReportFeaturePolicyViolation(
 
   FeaturePolicyViolationReportBody* body =
       MakeGarbageCollected<FeaturePolicyViolationReportBody>(
-          feature_name, "Feature policy violation", disp_str, source_file);
+          feature_name, message, disp_str, source_file);
 
   Report* report = MakeGarbageCollected<Report>(
       ReportType::kFeaturePolicyViolation, Url().GetString(), body);
@@ -8498,11 +8498,8 @@ void Document::ReportFeaturePolicyViolation(
   // TODO(iclelland): Report something different in report-only mode
   if (disposition == mojom::blink::PolicyDisposition::kEnforce) {
     frame->Console().AddMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::ConsoleMessageSource::kViolation,
-        mojom::ConsoleMessageLevel::kError,
-        (message.IsEmpty() ? ("Feature policy violation: " + feature_name +
-                              " is not allowed in this document.")
-                           : message)));
+        mojom::blink::ConsoleMessageSource::kViolation,
+        mojom::blink::ConsoleMessageLevel::kError, body->message()));
   }
 }
 
@@ -8526,7 +8523,7 @@ void Document::ReportDocumentPolicyViolation(
 
   DocumentPolicyViolationReportBody* body =
       MakeGarbageCollected<DocumentPolicyViolationReportBody>(
-          feature_name, "Document policy violation", disp_str, source_file);
+          feature_name, message, disp_str, source_file);
 
   Report* report = MakeGarbageCollected<Report>(
       ReportType::kDocumentPolicyViolation, Url().GetString(), body);
@@ -8543,10 +8540,7 @@ void Document::ReportDocumentPolicyViolation(
   if (!is_report_only) {
     frame->Console().AddMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::blink::ConsoleMessageSource::kViolation,
-        mojom::blink::ConsoleMessageLevel::kError,
-        (message.IsEmpty() ? ("Document policy violation: " + feature_name +
-                              " is not allowed in this document.")
-                           : message)));
+        mojom::blink::ConsoleMessageLevel::kError, body->message()));
   }
 }
 

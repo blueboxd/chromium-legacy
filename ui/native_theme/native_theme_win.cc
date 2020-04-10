@@ -590,12 +590,14 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id,
   if (color_scheme == ColorScheme::kDefault)
     color_scheme = GetDefaultSystemColorScheme();
 
-  return (color_scheme == ColorScheme::kPlatformHighContrast)
-             ? GetPlatformHighContrastColor(color_id)
-             : NativeTheme::GetSystemColor(color_id, color_scheme);
+  base::Optional<SkColor> color;
+  if (color_scheme == ColorScheme::kPlatformHighContrast)
+    color = GetPlatformHighContrastColor(color_id);
+  return color.value_or(NativeTheme::GetSystemColor(color_id, color_scheme));
 }
 
-SkColor NativeThemeWin::GetPlatformHighContrastColor(ColorId color_id) const {
+base::Optional<SkColor> NativeThemeWin::GetPlatformHighContrastColor(
+    ColorId color_id) const {
   switch (color_id) {
     // Window Background
     case kColorId_WindowBackground:
@@ -692,7 +694,7 @@ SkColor NativeThemeWin::GetPlatformHighContrastColor(ColorId color_id) const {
       return system_colors_[SystemThemeColor::kHighlightText];
 
     default:
-      return gfx::kPlaceholderColor;
+      return base::nullopt;
   }
 }
 

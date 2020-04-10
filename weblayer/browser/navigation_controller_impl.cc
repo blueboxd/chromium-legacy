@@ -4,9 +4,12 @@
 
 #include "weblayer/browser/navigation_controller_impl.h"
 
+#include "base/auto_reset.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/page_transition_types.h"
 #include "weblayer/browser/tab_impl.h"
@@ -26,10 +29,74 @@ using base::android::ScopedJavaLocalRef;
 
 namespace weblayer {
 
+// NavigationThrottle implementation responsible for stopping the navigation in
+// certain situations. In particular, WebContents::Stop() can not be called from
+// WebContentsObserver::DidStartNavigation() or
+// WebContentsObserver::DidRedirectNavigation() (to do so crashes). To work
+// around this NavigationControllerImpl detects if Stop() is called while
+// processing DidStartNavigation() or DidRedirectNavigation() and sets state in
+// NavigationThrottleImpl such that the navigation is canceled.
+//
+// The call order for starting is WebContents::DidStartNavigation() followed
+// by NavigationThrottle::WillStartRequest(). To make things interesting,
+// the NavigationThrottle is created *after* DidStartNavigation(). OTOH,
+// the call order for redirect is NavigationThrottle::WillRedirectRequest()
+// followed by WebContentsObserver::DidRedirectNavigation(). To ensure the
+// right call order NavigationControllerImpl does nothing in
+// DidRedirectNavigation(), instead this class calls to the
+// NavigationController and then returns cancel if necessary. While redirect
+// handling is initiated from this class, start must be handled from the
+// WebContentsObserver call. This is necessary as some code paths do *not*
+// call to NavigationThrottle::WillStartRequest().
+class NavigationControllerImpl::NavigationThrottleImpl
+    : public content::NavigationThrottle {
+ public:
+  NavigationThrottleImpl(NavigationControllerImpl* controller,
+                         content::NavigationHandle* handle)
+      : NavigationThrottle(handle), controller_(controller) {}
+  NavigationThrottleImpl(const NavigationThrottleImpl&) = delete;
+  NavigationThrottleImpl& operator=(const NavigationThrottleImpl&) = delete;
+  ~NavigationThrottleImpl() override = default;
+
+  void ScheduleCancel() { should_cancel_ = true; }
+
+  // content::NavigationThrottle:
+  ThrottleCheckResult WillStartRequest() override {
+    return should_cancel_ ? CANCEL : PROCEED;
+  }
+
+  ThrottleCheckResult WillRedirectRequest() override {
+    controller_->WillRedirectRequest(this, navigation_handle());
+    return should_cancel_ ? CANCEL : PROCEED;
+  }
+
+  const char* GetNameForLogging() override {
+    return "WebLayerNavigationControllerThrottle";
+  }
+
+ private:
+  NavigationControllerImpl* controller_;
+  bool should_cancel_ = false;
+};
+
 NavigationControllerImpl::NavigationControllerImpl(TabImpl* tab)
     : WebContentsObserver(tab->web_contents()) {}
 
 NavigationControllerImpl::~NavigationControllerImpl() = default;
+
+std::unique_ptr<content::NavigationThrottle>
+NavigationControllerImpl::CreateNavigationThrottle(
+    content::NavigationHandle* handle) {
+  if (!handle->IsInMainFrame())
+    return nullptr;
+
+  auto throttle = std::make_unique<NavigationThrottleImpl>(this, handle);
+  DCHECK(navigation_map_.find(handle) != navigation_map_.end());
+  auto* navigation = navigation_map_[handle].get();
+  if (navigation->should_stop_when_throttle_created())
+    throttle->ScheduleCancel();
+  return throttle;
+}
 
 #if defined(OS_ANDROID)
 void NavigationControllerImpl::SetNavigationControllerImpl(
@@ -74,6 +141,29 @@ ScopedJavaLocalRef<jstring> NavigationControllerImpl::GetNavigationEntryTitle(
 }
 #endif
 
+void NavigationControllerImpl::WillRedirectRequest(
+    NavigationThrottleImpl* throttle,
+    content::NavigationHandle* navigation_handle) {
+  DCHECK(navigation_handle->IsInMainFrame());
+  DCHECK(navigation_map_.find(navigation_handle) != navigation_map_.end());
+  auto* navigation = navigation_map_[navigation_handle].get();
+  navigation->set_safe_to_set_request_headers(true);
+  DCHECK(!active_throttle_);
+  base::AutoReset<NavigationThrottleImpl*> auto_reset(&active_throttle_,
+                                                      throttle);
+#if defined(OS_ANDROID)
+  if (java_controller_) {
+    TRACE_EVENT0("weblayer",
+                 "Java_NavigationControllerImpl_navigationRedirected");
+    Java_NavigationControllerImpl_navigationRedirected(
+        AttachCurrentThread(), java_controller_, navigation->java_navigation());
+  }
+#endif
+  for (auto& observer : observers_)
+    observer.NavigationRedirected(navigation);
+  navigation->set_safe_to_set_request_headers(false);
+}
+
 void NavigationControllerImpl::AddObserver(NavigationObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -117,7 +207,12 @@ void NavigationControllerImpl::Reload() {
 }
 
 void NavigationControllerImpl::Stop() {
-  web_contents()->Stop();
+  if (navigation_starting_)
+    navigation_starting_->set_should_stop_when_throttle_created();
+  else if (active_throttle_)
+    active_throttle_->ScheduleCancel();
+  else
+    web_contents()->Stop();
 }
 
 int NavigationControllerImpl::GetNavigationListSize() {
@@ -147,9 +242,15 @@ void NavigationControllerImpl::DidStartNavigation(
   if (!navigation_handle->IsInMainFrame())
     return;
 
+  // This function should not be called reentrantly.
+  DCHECK(!navigation_starting_);
+
+  DCHECK(!base::Contains(navigation_map_, navigation_handle));
   navigation_map_[navigation_handle] =
       std::make_unique<NavigationImpl>(navigation_handle);
   auto* navigation = navigation_map_[navigation_handle].get();
+  base::AutoReset<NavigationImpl*> auto_reset(&navigation_starting_,
+                                              navigation);
   navigation->set_safe_to_set_request_headers(true);
 #if defined(OS_ANDROID)
   if (java_controller_) {
@@ -172,23 +273,9 @@ void NavigationControllerImpl::DidStartNavigation(
 
 void NavigationControllerImpl::DidRedirectNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame())
-    return;
-
-  DCHECK(navigation_map_.find(navigation_handle) != navigation_map_.end());
-  auto* navigation = navigation_map_[navigation_handle].get();
-  navigation->set_safe_to_set_request_headers(true);
-#if defined(OS_ANDROID)
-  if (java_controller_) {
-    TRACE_EVENT0("weblayer",
-                 "Java_NavigationControllerImpl_navigationRedirected");
-    Java_NavigationControllerImpl_navigationRedirected(
-        AttachCurrentThread(), java_controller_, navigation->java_navigation());
-  }
-#endif
-  for (auto& observer : observers_)
-    observer.NavigationRedirected(navigation);
-  navigation->set_safe_to_set_request_headers(false);
+  // NOTE: this implementation should remain empty. Real implementation is in
+  // WillRedirectNavigation(). See description of NavigationThrottleImpl for
+  // more information.
 }
 
 void NavigationControllerImpl::ReadyToCommitNavigation(

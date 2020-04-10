@@ -197,23 +197,27 @@ request.
 
 Summary:
 
-* The URLRequest asks the URLRequestJobFactory to create a URLRequestJob, in
-this case, a URLRequestHttpJob.
-* The URLRequestHttpJob asks the HttpCache to create an HttpTransaction
-(always an HttpCache::Transaction).
+* The URLRequest asks the URLRequestJobFactory to create a URLRequestJob,
+and gets a URLRequestHttpJob.
+* The URLRequestHttpJob asks the HttpCache to create an HttpTransaction, and
+gets an HttpCache::Transaction, assuming caching is enabled.
 * The HttpCache::Transaction sees there's no cache entry for the request,
 and creates an HttpNetworkTransaction.
 * The HttpNetworkTransaction calls into the HttpStreamFactory to request an
 HttpStream.
 
 The URLRequest then calls into the URLRequestJobFactory to create a
-URLRequestJob and then starts it. In the case of an HTTP or HTTPS request, this
-will be a URLRequestHttpJob. The URLRequestHttpJob attaches cookies to the
-request, if needed.
+URLRequestHttpJob, a subclass of URLRequestJob, and then starts it
+(historically, non-network URL schemes were also disptched through the
+network stack, so there were a variety of job types.) The
+URLRequestHttpJob attaches cookies to the request, if needed. Whether or
+not SameSite cookies are attached depends on the IsolationInfo's
+SiteForCookies, the URL, and the URLRequest's request_initiator field.
 
 The URLRequestHttpJob calls into the HttpCache to create an
-HttpCache::Transaction. If there's no matching entry in the cache, the
-HttpCache::Transaction will just call into the HttpNetworkLayer to create an
+HttpCache::Transaction. The cache checks for an entry with the same URL
+and NetworkIsolationKey. If there's no matching entry, the
+HttpCache::Transaction will call into the HttpNetworkLayer to create an
 HttpNetworkTransaction, and transparently wrap it. The HttpNetworkTransaction
 then calls into the HttpStreamFactory to request an HttpStream to the server.
 
@@ -580,13 +584,33 @@ priority socket request.
 
 ## Non-HTTP Schemes
 
-The URLRequestJobFactory has a ProtocolHander for ftp, http, https, and data
-URLs, though most data URLs are handled directly in the renderer. For other
-schemes, and non-network code that can intercept HTTP/HTTPS requests (like
-ServiceWorker, or extensions), there's typically another
-network::mojom::URLLoaderFactory class that is used instead of
-network::URLLoaderFactory. These URLLoaderFactories are not part of the
-network service. Some of these are web standards and handled in content/
-code (like blob:// and file:// URLs), while other of these are
-Chrome-specific, and implemented in chrome/ (like chrome:// and
-chrome-extension:// URLs).
+WebSockets requests (wss:// and ws://) start as HTTP requests with an HTTP
+upgrade header. Once the handshake completes successfully, the connection
+is used as a full-duplex communication channel to the server for WebSocket
+frames, rather than to receive an HTTP response body. WebSockets have their
+own Mojo interfaces and //net classes, but internally they reuse the full
+URLRequest machinery up to the point headers are received from the server.
+Then the connection is handed off to the WebSocket code to manage.
+
+Other schemes typically have their own network::mojom::URLLoaderFactory that
+is not part of the network service. Standard schemes like file:// and blob://
+are handled by the content layer and its dependencies
+(content::FileURLLoaderFactory and storage::BlobURLLoaderFactory, respectively,
+for those two schemes). Chrome-specific schemes, like externalfile:// and
+chrome-extension:// are often handled by a URLLoaderFactory in the chrome layer,
+though chrome:// itself is actually handled in //content.
+
+data:// URLs are handled a bit differently from other schemes. If a renderer
+process requests a data:// subresource, the renderer typically decodes it
+internally, as sending it to an out-of-process URLLoader would be inefficient.
+Navigations are a bit different. To navigate to a URL, the browser process
+creates a URLLoader and passes it over to a renderer process. So in the
+case of a navigation to a data:// URL, a URLLoader is created using a
+content::DataURLLoaderFactory that lives in the browser process, and then a
+mojo::Remote for the browser-hosted URLLoader is passed to a renderer
+proceess.
+
+about:blank is similarly often handled in the renderer, though there is a
+factory for that used in the case of navigations as well. Other about: URLs
+are mapped to the corresponding Chrome URLs by the navigation code, rather
+than having that logic live in a URLLoaderFactory.

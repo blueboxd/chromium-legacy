@@ -644,6 +644,11 @@ void XWindow::SetBounds(const gfx::Rect& requested_bounds_in_pixels) {
   // |bounds_in_pixels_| later.
   bounds_in_pixels_ = bounds_in_pixels;
   ResetWindowRegion();
+
+  // Even if the pixel bounds didn't change this call to the delegate should
+  // still happen. The device scale factor may have changed which effectively
+  // changes the bounds.
+  OnXWindowBoundsChanged(bounds_in_pixels);
 }
 
 bool XWindow::IsXWindowVisible() const {
@@ -722,6 +727,7 @@ void XWindow::StackXWindowAtTop() {
 }
 
 void XWindow::SetCursor(::Cursor cursor) {
+  last_cursor_ = cursor;
   XDefineCursor(xdisplay_, xwindow_, cursor);
 }
 

@@ -7,6 +7,7 @@
 
 #include "base/test/values_test_util.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
+#include "chrome/common/extensions/api/extension_action/action_info_test_util.h"
 #include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
@@ -42,7 +43,7 @@ TEST_F(BrowserActionManifestTest,
 
   ASSERT_TRUE(extension.get());
   const ActionInfo* browser_action_info =
-      ActionInfo::GetBrowserActionInfo(extension.get());
+      GetActionInfoOfType(*extension, ActionInfo::TYPE_BROWSER);
   ASSERT_TRUE(browser_action_info);
   EXPECT_TRUE(browser_action_info->default_icon.empty());
 }
@@ -64,7 +65,7 @@ TEST_F(BrowserActionManifestTest,
 
   ASSERT_TRUE(extension.get());
   const ActionInfo* browser_action_info =
-      ActionInfo::GetBrowserActionInfo(extension.get());
+      GetActionInfoOfType(*extension, ActionInfo::TYPE_BROWSER);
   ASSERT_TRUE(browser_action_info);
   ASSERT_FALSE(browser_action_info->default_icon.empty());
 
@@ -98,7 +99,7 @@ TEST_F(BrowserActionManifestTest,
 
   ASSERT_TRUE(extension.get());
   const ActionInfo* browser_action_info =
-      ActionInfo::GetBrowserActionInfo(extension.get());
+      GetActionInfoOfType(*extension, ActionInfo::TYPE_BROWSER);
   ASSERT_TRUE(browser_action_info);
   ASSERT_FALSE(browser_action_info->default_icon.empty());
 

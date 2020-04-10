@@ -149,14 +149,16 @@ void DownloadManagerDelegateImpl::CheckDownloadAllowed(
     bool from_download_cross_origin_redirect,
     bool content_initiated,
     content::CheckDownloadAllowedCallback check_download_allowed_cb) {
+  auto* web_contents = web_contents_getter.Run();
   // If there's no DownloadDelegate, the download is simply dropped.
-  auto* delegate = GetDelegate(web_contents_getter.Run());
-  if (!delegate) {
+  auto* delegate = GetDelegate(web_contents);
+  auto* tab = TabImpl::FromWebContents(web_contents);
+  if (!delegate || !tab) {
     std::move(check_download_allowed_cb).Run(false);
     return;
   }
 
-  delegate->AllowDownload(url, request_method, request_initiator,
+  delegate->AllowDownload(tab, url, request_method, request_initiator,
                           std::move(check_download_allowed_cb));
 }
 

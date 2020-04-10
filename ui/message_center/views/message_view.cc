@@ -82,9 +82,6 @@ MessageView::MessageView(const Notification& notification)
   views::HighlightPathGenerator::Install(
       this, std::make_unique<HighlightPathGenerator>());
 
-  // TODO(amehfooz): Remove explicit color setting after native theme changes.
-  focus_ring_->SetColor(gfx::kGoogleBlue500);
-
   // Paint to a dedicated layer to make the layer non-opaque.
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);

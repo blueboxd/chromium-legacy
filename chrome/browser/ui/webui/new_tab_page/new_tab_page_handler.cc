@@ -449,6 +449,7 @@ void NewTabPageHandler::OnLogoAvailable(
         "data:image/png;base64,%s", logo->metadata.share_button_icon.c_str()));
     image_doodle_content->share_button->background_color =
         SkColorSetA(doodle_share_button_background_color, 255);
+    image_doodle_content->share_url = logo->metadata.short_link;
     doodle->content = new_tab_page::mojom::DoodleContent::NewImageDoodle(
         std::move(image_doodle_content));
   } else if (logo->metadata.type ==
@@ -459,5 +460,6 @@ void NewTabPageHandler::OnLogoAvailable(
     std::move(callback).Run(nullptr);
     return;
   }
+  doodle->description = logo->metadata.alt_text;
   std::move(callback).Run(std::move(doodle));
 }

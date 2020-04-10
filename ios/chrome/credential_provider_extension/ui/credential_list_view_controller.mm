@@ -164,6 +164,7 @@ UIImage* GetFallbackImageWithStringAndColor(NSString* string) {
   cell.textLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
   cell.detailTextLabel.text = credential.serviceName;
   cell.detailTextLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
+  cell.selectionStyle = UITableViewCellSelectionStyleNone;
   return cell;
 }
 

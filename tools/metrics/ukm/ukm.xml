@@ -7108,6 +7108,62 @@ be describing additional metrics about the same event.
       </history>
     </aggregation>
   </metric>
+  <metric name="ForegroundNumInputEvents">
+    <summary>
+      The number of Input Events, recorded each time the page is backgrounded.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.country,profile.system_ram"/>
+        <index fields="profile.is_dominant_version"/>
+        <index fields="profile.is_latest_version"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="ForegroundTotalAdjustedInputDelay">
+    <summary>
+      sum(max(Input Delay - 50, 0)), recorded each time the page is
+      backgrounded. The Input Delay refers to the duration between the hardware
+      timestamp and the start of event processing on the main thread for the
+      meaningful input. In ms.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.country,profile.system_ram"/>
+        <index fields="profile.is_dominant_version"/>
+        <index fields="profile.is_latest_version"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="ForegroundTotalInputDelay">
+    <summary>
+      sum(Input Delay), recorded each time the page is backgrounded. The Input
+      Delay refers to the duration between the hardware timestamp and the start
+      of event processing on the main thread for the meaningful input. In ms.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.country,profile.system_ram"/>
+        <index fields="profile.is_dominant_version"/>
+        <index fields="profile.is_latest_version"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
 </event>
 
 <event name="PageInfoBubble">

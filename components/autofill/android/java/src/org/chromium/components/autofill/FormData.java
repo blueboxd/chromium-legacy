@@ -19,39 +19,35 @@ public class FormData {
     public final String mHost;
     public final ArrayList<FormFieldData> mFields;
 
-    private long mNativeObj;
-
     @CalledByNative
     private static FormData createFormData(
             long nativeObj, String name, String origin, int fieldCount) {
         return new FormData(nativeObj, name, origin, fieldCount);
     }
 
-    private FormData(long nativeObj, String name, String host, int fieldCount) {
-        mNativeObj = nativeObj;
+    private static ArrayList<FormFieldData> popupFormFields(long nativeObj, int fieldCount) {
+        FormFieldData formFieldData = FormDataJni.get().getNextFormFieldData(nativeObj);
+        ArrayList<FormFieldData> fields = new ArrayList<FormFieldData>(fieldCount);
+        while (formFieldData != null) {
+            fields.add(formFieldData);
+            formFieldData = FormDataJni.get().getNextFormFieldData(nativeObj);
+        }
+        assert fields.size() == fieldCount;
+        return fields;
+    }
+
+    private FormData(String name, String host, ArrayList<FormFieldData> fields) {
         mName = name;
         mHost = host;
-        mFields = new ArrayList<FormFieldData>(fieldCount);
-        popupFormFields(fieldCount);
+        mFields = fields;
     }
 
-    private void popupFormFields(int fieldCount) {
-        FormFieldData formFieldData =
-                FormDataJni.get().getNextFormFieldData(mNativeObj, FormData.this);
-        while (formFieldData != null) {
-            mFields.add(formFieldData);
-            formFieldData = FormDataJni.get().getNextFormFieldData(mNativeObj, FormData.this);
-        }
-        assert mFields.size() == fieldCount;
-    }
-
-    @CalledByNative
-    private void onNativeDestroyed() {
-        mNativeObj = 0;
+    private FormData(long nativeObj, String name, String host, int fieldCount) {
+        this(name, host, popupFormFields(nativeObj, fieldCount));
     }
 
     @NativeMethods
     interface Natives {
-        FormFieldData getNextFormFieldData(long nativeFormDataAndroid, FormData caller);
+        FormFieldData getNextFormFieldData(long nativeFormDataAndroid);
     }
 }

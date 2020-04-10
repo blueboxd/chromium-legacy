@@ -29,8 +29,3 @@
 
 # https://crbug.com/986544 - Flakes with mismatched state expectations.
 -URLLoaderTest.ResourceSchedulerIntegration
-
-# https://crbug.com/989223 - connect()ed UDP socket's getsockname() is wrong.
--UDPSocketTest.TestReceiveMoreWithBufferSize
--UDPSocketTest.TestReadSend
--NetworkContextTest.CreateUDPSocket

@@ -95,7 +95,8 @@ class Shell : public TabObserver,
                          const std::string& content_disposition,
                          const std::string& mime_type,
                          int64_t content_length) override;
-  void AllowDownload(const GURL& url,
+  void AllowDownload(Tab* tab,
+                     const GURL& url,
                      const std::string& request_method,
                      base::Optional<url::Origin> request_initiator,
                      AllowDownloadCallback callback) override;

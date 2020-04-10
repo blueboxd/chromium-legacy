@@ -6,7 +6,6 @@ package org.chromium.chrome.browser;
 
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.view.View;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
@@ -46,7 +45,6 @@ import org.chromium.chrome.browser.signin.GoogleActivityController;
 import org.chromium.chrome.browser.survey.SurveyController;
 import org.chromium.chrome.browser.sync.TrustedVaultClient;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.ui.ImmersiveModeManager;
 import org.chromium.chrome.browser.usage_stats.DigitalWellbeingClient;
 import org.chromium.chrome.browser.webapps.GooglePlayWebApkInstallDelegate;
 import org.chromium.chrome.browser.webauth.Fido2ApiHandler;
@@ -358,14 +356,6 @@ public abstract class AppHooks {
             return ConnectionResult.SERVICE_MISSING;
         }
         return ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED;
-    }
-
-    /**
-     * @param contentView The root content view for the containing activity.
-     * @return A new {@link ImmersiveModeManager} or null if there isn't one.
-     */
-    public @Nullable ImmersiveModeManager createImmersiveModeManager(View contentView) {
-        return null;
     }
 
     /**

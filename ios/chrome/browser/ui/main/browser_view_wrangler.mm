@@ -25,6 +25,7 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/util/multi_window_support.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -408,10 +409,18 @@
       browser->GetBrowserState()->GetStatePath().AsUTF8Unsafe());
   SessionIOS* session =
       [[SessionServiceIOS sharedService] loadSessionFromDirectory:statePath];
-  if (session) {
-    DCHECK_EQ(session.sessionWindows.count, 1u);
-    sessionWindow = session.sessionWindows[0];
+  if (IsMultiwindowSupported()) {
+    if (session && session.sessionWindows.count > self.windowID) {
+      sessionWindow = session.sessionWindows[self.windowID];
+    }
+
+  } else {
+    if (session) {
+      DCHECK_EQ(session.sessionWindows.count, 1u);
+      sessionWindow = session.sessionWindows[0];
+    }
   }
+
   SessionRestorationBrowserAgent::FromBrowser(browser)->RestoreSessionWindow(
       sessionWindow);
 }

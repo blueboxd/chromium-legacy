@@ -77,8 +77,10 @@ class TestMoveLoop : public X11MoveLoop {
   bool IsRunning() const;
 
   // X11MoveLoop:
-  bool RunMoveLoop(aura::Window* window, gfx::NativeCursor cursor) override;
-  void UpdateCursor(gfx::NativeCursor cursor) override;
+  bool RunMoveLoop(bool can_grab_pointer,
+                   ::Cursor old_cursor,
+                   ::Cursor new_cursor) override;
+  void UpdateCursor(::Cursor cursor) override;
   void EndMoveLoop() override;
 
  private:
@@ -216,7 +218,9 @@ bool TestMoveLoop::IsRunning() const {
   return is_running_;
 }
 
-bool TestMoveLoop::RunMoveLoop(aura::Window* window, gfx::NativeCursor cursor) {
+bool TestMoveLoop::RunMoveLoop(bool can_grab_pointer,
+                               ::Cursor old_cursor,
+                               ::Cursor new_cursor) {
   is_running_ = true;
   base::RunLoop run_loop;
   quit_closure_ = run_loop.QuitClosure();
@@ -224,7 +228,7 @@ bool TestMoveLoop::RunMoveLoop(aura::Window* window, gfx::NativeCursor cursor) {
   return true;
 }
 
-void TestMoveLoop::UpdateCursor(gfx::NativeCursor cursor) {}
+void TestMoveLoop::UpdateCursor(::Cursor cursor) {}
 
 void TestMoveLoop::EndMoveLoop() {
   if (is_running_) {

@@ -13,10 +13,12 @@ OUT_FILE=$2
 TMP_FILE=/tmp/trimmedfeedresponse.binarypb
 
 CHROMIUM_SRC=$(realpath $(dirname $(readlink -f $0))/../../../../..)
-FEEDPROTO="$CHROMIUM_SRC/components/feed/core/proto"
 
-# Responses start with a 4-byte length value that must be removed.
-tail -c +4 $IN_FILE > $TMP_FILE
+# Responses start with a varint length value that must be removed.
+cat $IN_FILE | python3 -c "import sys
+while sys.stdin.buffer.read(1)[0]>127:
+  pass
+sys.stdout.buffer.write(sys.stdin.buffer.read())" > $TMP_FILE
 
 python3 $CHROMIUM_SRC/components/feed/core/v2/tools/textpb_to_binarypb.py \
   --chromium_path=$CHROMIUM_SRC \

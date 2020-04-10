@@ -13,6 +13,7 @@
 #include "base/system/sys_info.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "chrome/browser/browser_process.h"
@@ -20,7 +21,6 @@
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
 #include "chrome/browser/metrics/chrome_metrics_services_manager_client.h"
-#include "chrome/browser/metrics/testing/demographic_metrics_test_utils.h"
 #include "chrome/browser/metrics/testing/metrics_reporting_pref_helper.h"
 #include "chrome/browser/metrics/testing/sync_metrics_test_utils.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -37,6 +37,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/metrics/demographic_metrics_provider.h"
+#include "components/metrics/test/demographic_metrics_test_utils.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -63,7 +64,6 @@
 #include "services/network/test/test_network_quality_tracker.h"
 #include "third_party/metrics_proto/ukm/report.pb.h"
 #include "third_party/metrics_proto/user_demographics.pb.h"
-#include "third_party/zlib/google/compression_utils.h"
 #include "url/url_constants.h"
 
 namespace metrics {
@@ -539,8 +539,9 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTestWithDemographics,
 
   base::HistogramTester histogram;
 
-  const int test_birth_year =
-      test::UpdateNetworkTimeAndGetMinimalEligibleBirthYear();
+  const base::Time now = base::Time::Now();
+  test::UpdateNetworkTime(now, g_browser_process->network_time_tracker());
+  const int test_birth_year = test::GetMaximumEligibleBirthYear(now);
   const UserDemographicsProto::Gender test_gender =
       UserDemographicsProto::GENDER_FEMALE;
 
@@ -569,8 +570,9 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTestWithDemographics,
   // Check the log's content and the histogram.
   std::unique_ptr<ukm::Report> report = ukm_test_helper.GetUkmReport();
   if (param.expect_reported_demographics) {
-    EXPECT_EQ(test::GetNoisedBirthYear(test_birth_year, *test_profile),
-              report->user_demographics().birth_year());
+    EXPECT_EQ(
+        test::GetNoisedBirthYear(*test_profile->GetPrefs(), test_birth_year),
+        report->user_demographics().birth_year());
     EXPECT_EQ(test_gender, report->user_demographics().gender());
     histogram.ExpectUniqueSample("UKM.UserDemographics.Status",
                                  syncer::UserDemographicsStatus::kSuccess, 1);

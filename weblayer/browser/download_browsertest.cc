@@ -87,7 +87,8 @@ class DownloadBrowserTest : public WebLayerBrowserTest,
 
  private:
   // DownloadDelegate implementation:
-  void AllowDownload(const GURL& url,
+  void AllowDownload(Tab* tab,
+                     const GURL& url,
                      const std::string& request_method,
                      base::Optional<url::Origin> request_initiator,
                      AllowDownloadCallback callback) override {

@@ -148,11 +148,10 @@ ScopedOverviewTransformWindow::~ScopedOverviewTransformWindow() {
     event_targeting_blocker_map_.erase(transient);
   }
 
-  // No need to update the clip since we're about to restore it to
-  // `original_clip_rect_`.
-  UpdateRoundedCorners(/*show=*/false, /*update_clip=*/false);
-  aura::client::GetTransientWindowClient()->RemoveObserver(this);
+  // Remove rounded corners and clipping.
+  UpdateRoundedCornersAndClip(/*show=*/false);
   window_->layer()->SetClipRect(original_clip_rect_);
+  aura::client::GetTransientWindowClient()->RemoveObserver(this);
 }
 
 // static
@@ -396,8 +395,7 @@ void ScopedOverviewTransformWindow::UpdateWindowDimensionsType() {
   type_ = GetWindowDimensionsType(window_->bounds().size());
 }
 
-void ScopedOverviewTransformWindow::UpdateRoundedCorners(bool show,
-                                                         bool update_clip) {
+void ScopedOverviewTransformWindow::UpdateRoundedCornersAndClip(bool show) {
   // Hide the corners if minimized, OverviewItemView will handle showing the
   // rounded corners on the UI.
   const bool show_corners = show && !IsMinimized();
@@ -411,21 +409,38 @@ void ScopedOverviewTransformWindow::UpdateRoundedCorners(bool show,
   layer->SetRoundedCornerRadius(radii);
   layer->SetIsFastRoundedCorner(true);
 
-  if (!update_clip || layer->GetAnimator()->is_animating() || IsMinimized())
+  if (!show || layer->GetAnimator()->is_animating() || IsMinimized())
     return;
 
+  ClipHeaderIfNeeded(true);
+}
+
+void ScopedOverviewTransformWindow::ClipHeaderIfNeeded(bool animate) {
   const int top_inset = GetTopInset();
-  if (!has_aspect_ratio_clipping_ && top_inset > 0) {
-    gfx::Rect clip_rect(window_->bounds().size());
-    // We add 1 to the top_inset, because in some cases, the header is not
-    // clipped fully due to what seems to be a rounding error.
-    // TODO(afakhry|sammiequon): Investigate a proper fix for this.
-    clip_rect.Inset(0, top_inset + 1, 0, 0);
-    ScopedOverviewAnimationSettings settings(
+  if (top_inset <= 0)
+    return;
+
+  // Clipping a window to preserve aspect ratios will account for the header, so
+  // no need to clip here.
+  if (has_aspect_ratio_clipping_)
+    return;
+
+  gfx::Rect clip_rect(window_->bounds().size());
+  // We add 1 to the top_inset, because in some cases, the header is not
+  // clipped fully due to what seems to be a rounding error.
+  // TODO(afakhry|sammiequon): Investigate a proper fix for this.
+  clip_rect.Inset(0, top_inset + 1, 0, 0);
+
+  if (overview_clip_rect_ == clip_rect)
+    return;
+
+  std::unique_ptr<ScopedOverviewAnimationSettings> settings;
+  if (animate) {
+    settings = std::make_unique<ScopedOverviewAnimationSettings>(
         OVERVIEW_ANIMATION_FRAME_HEADER_CLIP, window_);
-    layer->SetClipRect(clip_rect);
-    overview_clip_rect_ = clip_rect;
   }
+  window_->layer()->SetClipRect(clip_rect);
+  overview_clip_rect_ = clip_rect;
 }
 
 void ScopedOverviewTransformWindow::OnTransientChildWindowAdded(

@@ -144,7 +144,8 @@ bool Shell::InterceptDownload(const GURL& url,
   return false;
 }
 
-void Shell::AllowDownload(const GURL& url,
+void Shell::AllowDownload(Tab* tab,
+                          const GURL& url,
                           const std::string& request_method,
                           base::Optional<url::Origin> request_initiator,
                           AllowDownloadCallback callback) {

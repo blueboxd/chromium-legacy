@@ -2264,15 +2264,14 @@ const url::Origin& RenderFrameHostImpl::ComputeTopFrameOrigin(
   return host->GetLastCommittedOrigin();
 }
 
-net::SiteForCookies RenderFrameHostImpl::ComputeSiteForCookiesForNavigation(
+net::IsolationInfo RenderFrameHostImpl::ComputeIsolationInfoForNavigation(
     const GURL& destination) const {
   net::IsolationInfo::RedirectMode redirect_mode =
       frame_tree_node_->IsMainFrame()
           ? net::IsolationInfo::RedirectMode::kUpdateTopFrame
           : net::IsolationInfo::RedirectMode::kUpdateFrameOnly;
   return ComputeIsolationInfoInternal(url::Origin::Create(destination),
-                                      redirect_mode)
-      .site_for_cookies();
+                                      redirect_mode);
 }
 
 net::SiteForCookies RenderFrameHostImpl::ComputeSiteForCookies() {

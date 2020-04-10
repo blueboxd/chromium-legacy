@@ -50,7 +50,6 @@ void AddLegacyBookmarkToFakeSyncServer(std::string url,
                                        std::string originator_client_item_id);
 
 // Injects user demographics into the fake sync server.
-// TODO(crbug.com/1066297): Refactor to remove duplicate code.
 void AddUserDemographicsToSyncServer(int birth_year, int gender);
 
 // Injects an autofill profile into the fake sync server with |guid| and

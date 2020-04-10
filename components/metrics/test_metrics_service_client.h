@@ -14,6 +14,8 @@
 #include "components/metrics/metrics_service_client.h"
 #include "components/metrics/test_metrics_log_uploader.h"
 
+// TODO(crbug.com/1068142): Move this to the new test directory.
+
 namespace metrics {
 
 // A simple concrete implementation of the MetricsServiceClient interface, for

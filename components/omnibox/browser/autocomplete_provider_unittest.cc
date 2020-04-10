@@ -29,9 +29,11 @@
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/keyword_provider.h"
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
+#include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/omnibox/browser/search_provider.h"
 #include "components/omnibox/browser/zero_suggest_provider.h"
 #include "components/open_from_clipboard/fake_clipboard_recent_content.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/search_engines/search_engines_switches.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
@@ -327,6 +329,8 @@ class AutocompleteProviderTest : public testing::Test {
     provider_headers_map = headers_map;
   }
 
+  TestingPrefServiceSimple* GetPrefs() { return &pref_service_; }
+
   AutocompleteResult result_;
 
  private:
@@ -336,6 +340,7 @@ class AutocompleteProviderTest : public testing::Test {
   void ResetControllerWithType(int type);
 
   base::test::TaskEnvironment task_environment_;
+  TestingPrefServiceSimple pref_service_;
   std::unique_ptr<AutocompleteController> controller_;
   // Owned by |controller_|.
   AutocompleteProviderClientWithClosure* client_;

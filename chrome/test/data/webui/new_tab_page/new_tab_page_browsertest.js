@@ -158,3 +158,15 @@ var NewTabPageLogoTest = class extends NewTabPageBrowserTest {
 TEST_F('NewTabPageLogoTest', 'All', function() {
   mocha.run();
 });
+
+// eslint-disable-next-line no-var
+var NewTabPageDoodleShareDialogTest = class extends NewTabPageBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/doodle_share_dialog_test.js';
+  }
+};
+
+TEST_F('NewTabPageDoodleShareDialogTest', 'All', function() {
+  mocha.run();
+});

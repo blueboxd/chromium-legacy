@@ -69,6 +69,9 @@ interface AssistantController {
 };
 
 // Interface to communicate with assistant backend.
+// The Assistant instance is held by chromeos::assistant::Service, which is
+// hosted in the browser process.
+// The callers are mostly in ash, and some are in autotest.
 interface Assistant {
   // Starts an interaction to edit the reminder uniquely identified by
   // |client_id|. In response to the request, LibAssistant will initiate
@@ -79,6 +82,7 @@ interface Assistant {
   // Starts a screen context interaction. Results related to the screen context
   // will be returned through the |AssistantInteractionSubscriber| interface to
   // registered subscribers.
+  // |assistant_screenshot| contains JPEG data.
   StartScreenContextInteraction(
       ax.mojom.AssistantStructure? assistant_structure,
       array<uint8> assistant_screenshot);

@@ -17,6 +17,7 @@ include_rules = [
   "+services/network/public/mojom",
   "+services/network/test",
   "+third_party/zlib/google",
+  "+third_party/protobuf/src/google/protobuf/io",
   "+ui/base/mojom",
   "+ui/gfx/geometry",
   "+ui/gfx/image",

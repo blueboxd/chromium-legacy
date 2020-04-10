@@ -169,6 +169,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   ::Region shape() const { return window_shape_.get(); }
   XID update_counter() const { return update_counter_; }
   XID extended_update_counter() const { return extended_update_counter_; }
+  ::Cursor last_cursor() const { return last_cursor_; }
 
  protected:
   // Updates |xwindow_|'s _NET_WM_USER_TIME if |xwindow_| is active.
@@ -377,6 +378,8 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   // Keep track of barriers to confine cursor.
   bool has_pointer_barriers_ = false;
   std::array<XID, 4> pointer_barriers_;
+
+  ::Cursor last_cursor_ = x11::None;
 
   base::WeakPtrFactory<XWindow> resize_weak_factory_{this};
 };

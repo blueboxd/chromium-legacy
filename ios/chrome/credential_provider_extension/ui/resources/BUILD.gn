@@ -9,6 +9,8 @@ group("resources") {
   deps = [
     ":consent_illustration",
     ":empty_credentials_illustration",
+    ":password_hide_icon",
+    ":password_reveal_icon",
     ":stale_credentials_illustration",
   ]
 }
@@ -34,5 +36,21 @@ imageset("stale_credentials_illustration") {
     "stale_credentials_illustration.imageset/Contents.json",
     "stale_credentials_illustration.imageset/illustration_dark.png",
     "stale_credentials_illustration.imageset/illustration_light.png",
+  ]
+}
+
+imageset("password_reveal_icon") {
+  sources = [
+    "password_reveal_icon.imageset/Contents.json",
+    "password_reveal_icon.imageset/password_reveal_icon@2x.png",
+    "password_reveal_icon.imageset/password_reveal_icon@3x.png",
+  ]
+}
+
+imageset("password_hide_icon") {
+  sources = [
+    "password_hide_icon.imageset/Contents.json",
+    "password_hide_icon.imageset/password_hide_icon@2x.png",
+    "password_hide_icon.imageset/password_hide_icon@3x.png",
   ]
 }

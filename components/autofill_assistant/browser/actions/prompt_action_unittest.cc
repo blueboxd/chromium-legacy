@@ -45,10 +45,11 @@ class PromptActionTest : public testing::Test {
 
     EXPECT_CALL(mock_action_delegate_, OnWaitForDom(_, _, _, _))
         .WillRepeatedly(Invoke(this, &PromptActionTest::FakeWaitForDom));
-    ON_CALL(mock_action_delegate_, Prompt(_, _, _))
-        .WillByDefault(
-            Invoke([this](std::unique_ptr<std::vector<UserAction>> user_actions,
-                          bool disable_force_expand_sheet, bool browse_mode) {
+    ON_CALL(mock_action_delegate_, Prompt(_, _, _, _))
+        .WillByDefault(Invoke(
+            [this](std::unique_ptr<std::vector<UserAction>> user_actions,
+                   bool disable_force_expand_sheet,
+                   base::OnceCallback<void()> callback, bool browse_mode) {
               user_actions_ = std::move(user_actions);
             }));
     prompt_proto_ = proto_.mutable_prompt();
@@ -170,6 +171,8 @@ TEST_F(PromptActionTest, SelectButtons) {
       callback_,
       Run(Pointee(AllOf(
           Property(&ProcessedActionProto::status, ACTION_APPLIED),
+          Property(&ProcessedActionProto::prompt_choice,
+                   Property(&PromptProto::Choice::navigation_ended, false)),
           Property(&ProcessedActionProto::prompt_choice,
                    Property(&PromptProto::Choice::server_payload, "ok"))))));
   EXPECT_TRUE((*user_actions_)[0].HasCallback());
@@ -365,7 +368,7 @@ TEST_F(PromptActionTest, ForceExpandSheetDefault) {
   ok_proto->mutable_chip()->set_type(HIGHLIGHTED_ACTION);
   ok_proto->set_server_payload("ok");
 
-  EXPECT_CALL(mock_action_delegate_, Prompt(_, Eq(false), Eq(false)));
+  EXPECT_CALL(mock_action_delegate_, Prompt(_, Eq(false), _, Eq(false)));
   PromptAction action(&mock_action_delegate_, proto_);
   action.ProcessAction(callback_.Get());
 }
@@ -377,7 +380,7 @@ TEST_F(PromptActionTest, ForceExpandSheetDisable) {
   ok_proto->set_server_payload("ok");
 
   prompt_proto_->set_disable_force_expand_sheet(true);
-  EXPECT_CALL(mock_action_delegate_, Prompt(_, Eq(true), Eq(false)));
+  EXPECT_CALL(mock_action_delegate_, Prompt(_, Eq(true), _, Eq(false)));
   PromptAction action(&mock_action_delegate_, proto_);
   action.ProcessAction(callback_.Get());
 }
@@ -389,7 +392,7 @@ TEST_F(PromptActionTest, RunPromptInBrowseMode) {
   ok_proto->set_server_payload("ok");
 
   prompt_proto_->set_browse_mode(true);
-  EXPECT_CALL(mock_action_delegate_, Prompt(_, Eq(false), Eq(true)));
+  EXPECT_CALL(mock_action_delegate_, Prompt(_, Eq(false), _, Eq(true)));
   PromptAction action(&mock_action_delegate_, proto_);
   action.ProcessAction(callback_.Get());
 }
@@ -419,6 +422,33 @@ TEST_F(PromptActionTest, ForwardInterruptFailure) {
                        Property(&PromptProto::Choice::server_payload, ""))))));
   ASSERT_TRUE(fake_wait_for_dom_done_);
   std::move(fake_wait_for_dom_done_).Run(ClientStatus(INTERRUPT_FAILED));
+}
+
+TEST_F(PromptActionTest, EndActionOnNavigation) {
+  EXPECT_CALL(mock_action_delegate_, Prompt(_, _, _, _))
+      .WillOnce(
+          Invoke([this](std::unique_ptr<std::vector<UserAction>> user_actions,
+                        bool disable_force_expand_sheet,
+                        base::OnceCallback<void()> callback, bool browse_mode) {
+            user_actions_ = std::move(user_actions);
+            std::move(callback).Run();
+          }));
+
+  prompt_proto_->set_end_on_navigation(true);
+  prompt_proto_->add_choices()->mutable_chip()->set_text("ok");
+
+  PromptAction action(&mock_action_delegate_, proto_);
+
+  // Set new expectations for when the navigation event arrives.
+  EXPECT_CALL(mock_action_delegate_, CleanUpAfterPrompt());
+  EXPECT_CALL(
+      callback_,
+      Run(Pointee(AllOf(
+          Property(&ProcessedActionProto::status, ACTION_APPLIED),
+          Property(&ProcessedActionProto::prompt_choice,
+                   Property(&PromptProto::Choice::navigation_ended, true))))));
+
+  action.ProcessAction(callback_.Get());
 }
 
 }  // namespace

@@ -527,6 +527,26 @@ public class NavigationTest {
         return navigationUrl.get();
     }
 
+    @Test
+    @SmallTest
+    public void testStopFromOnNavigationStarted() throws Exception {
+        final InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(null);
+        final BoundedCountDownLatch doneLatch = new BoundedCountDownLatch(1);
+        NavigationCallback navigationCallback = new NavigationCallback() {
+            @Override
+            public void onNavigationStarted(Navigation navigation) {
+                activity.getTab().getNavigationController().stop();
+                doneLatch.countDown();
+            }
+        };
+        runOnUiThreadBlocking(() -> {
+            NavigationController controller = activity.getTab().getNavigationController();
+            controller.registerNavigationCallback(navigationCallback);
+            controller.navigate(Uri.parse(URL1));
+        });
+        doneLatch.timedAwait();
+    }
+
     // NavigationCallback implementation that sets a header in either start or redirect.
     private static final class HeaderSetter extends NavigationCallback {
         private final String mName;

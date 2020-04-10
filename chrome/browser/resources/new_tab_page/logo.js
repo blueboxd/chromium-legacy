@@ -6,6 +6,7 @@ import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
 import './untrusted_iframe.js';
+import './doodle_share_dialog.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
@@ -98,6 +99,9 @@ class LogoElement extends PolymerElement {
         type: String,
         value: null,
       },
+
+      /** @private */
+      showShareDialog_: Boolean,
     };
   }
 
@@ -223,6 +227,20 @@ class LogoElement extends PolymerElement {
    */
   rgbOrUnset_(skColor) {
     return skColor ? skColorToRgb(skColor) : 'unset';
+  }
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onShareButtonClick_(e) {
+    e.stopPropagation();
+    this.showShareDialog_ = true;
+  }
+
+  /** @private */
+  onShareDialogClose_() {
+    this.showShareDialog_ = false;
   }
 }
 

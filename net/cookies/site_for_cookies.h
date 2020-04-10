@@ -23,8 +23,13 @@ namespace net {
 // 2) They both have empty hostnames and equal schemes.
 // Invalid URLs are not first party to anything.
 //
-// TODO(crbug.com/1030938): For case 1 the schemes must be "https" & "wss",
-// "http" & "ws", or they must match exactly.
+// With the SchemefulSameSite feature enabled the policy is that two valid URLs
+// would be considered the same party if either:
+// 1) They both have compatible schemes along with non-empty and equal
+// registrable domains or hostnames/IPs. See CompatibleScheme() for more details
+// on what it means to have a compatible scheme.
+// 2) They both have empty hostnames and exactly equal schemes. Invalid URLs are
+// not first party to anything.
 class NET_EXPORT SiteForCookies {
  public:
   // Matches nothing.
@@ -58,6 +63,8 @@ class NET_EXPORT SiteForCookies {
   // Equivalent to FromOrigin(url::Origin::Create(url)).
   static SiteForCookies FromUrl(const GURL& url);
 
+  // Returns a string with the values of the member variables.
+  // |schemefully_same| being false does not change the output.
   std::string ToDebugString() const;
 
   // Returns true if |url| should be considered first-party to the context
@@ -69,10 +76,7 @@ class NET_EXPORT SiteForCookies {
   bool IsEquivalent(const SiteForCookies& other) const;
 
   // Clears the schemefully_same_ flag if |other|'s scheme is cross-scheme to
-  // |this|.
-  // Two schemes are considered the same (not cross-scheme) if they exactly
-  // match, they are both in ["https", "wss"], or they are both in ["http",
-  // "ws"]. All other cases are cross-scheme.
+  // |this|. Schemes are considered cross-scheme if they're !CompatibleScheme().
   void MarkIfCrossScheme(const url::Origin& other);
 
   // Returns a URL that's first party to this SiteForCookies (an empty URL if
@@ -96,10 +100,35 @@ class NET_EXPORT SiteForCookies {
   bool schemefully_same() const { return schemefully_same_; }
 
   // Returns true if this SiteForCookies matches nothing.
-  bool IsNull() const { return scheme_.empty(); }
+  // If the SchemefulSameSite feature is enabled then !schemefully_same_ causes
+  // this function to return true.
+  bool IsNull() const;
+
+  // Don't use this function unless you know what you're doing, if you're unsure
+  // you probably want IsFirstParty().
+  //
+  // Returns true if |url| should be considered first-party to the context
+  // |this| represents when the compatibility of the schemes are taken into
+  // account. See CompatibleScheme().
+  bool IsSchemefullyFirstParty(const GURL& url) const;
+
+  // Don't use this function unless you know what you're doing, if you're unsure
+  // you probably want IsFirstParty().
+  //
+  // Returns true if |url| should be considered first-party to the context
+  // |this| represents when the compatibility of the scheme are not taken into
+  // account. See CompatibleScheme().
+  //
+  // Note that schemes are still compared for exact equality if neither |this|
+  // nor |url| have a registered domain.
+  bool IsSchemelesslyFirstParty(const GURL& url) const;
 
  private:
   SiteForCookies(const std::string& scheme, const std::string& host);
+
+  // Two schemes are considered compatible if they exactly match, they are both
+  // in ["https", "wss"], or they are both in ["http", "ws"].
+  bool CompatibleScheme(const std::string& other_scheme) const;
 
   // These should be canonicalized appropriately by GURL/url::Origin.
   // An empty |scheme_| means that this matches nothing.
@@ -114,10 +143,10 @@ class NET_EXPORT SiteForCookies {
   // Used to indicate if the SiteForCookies would be the same if computed
   // schemefully. A schemeful computation means to take the |scheme_| as well as
   // the |registrable_domain_| into account when determining first-partyness.
-  // See MarkIfCrossScheme() for more information on scheme comparison.
+  // See CompatibleScheme() for more information on scheme comparison.
   //
   // True means to treat |this| as-is while false means that |this| should be
-  // treated as if it matches nothing i.e. as if IsNull() returned true.
+  // treated as if it matches nothing i.e. IsNull() returns true.
   //
   // This value is important in the case where the SiteForCookies is being used
   // to assess the first-partyness of a sub-frame in a document.
@@ -125,9 +154,6 @@ class NET_EXPORT SiteForCookies {
   // For a SiteForCookies with !scheme_.empty() this value starts as true and
   // will only go false via MarkIfCrossScheme(), otherwise this value is
   // irrelevant.
-  //
-  // TODO(https://crbug.com/1030938): Actually use this for decisions in other
-  // functions.
   bool schemefully_same_;
 };
 

@@ -8,6 +8,8 @@
 #include "components/metrics/metrics_log_uploader.h"
 #include "third_party/metrics_proto/reporting_info.pb.h"
 
+// TODO(crbug.com/1068142): Move this to the new test directory.
+
 namespace metrics {
 
 class TestMetricsLogUploader : public MetricsLogUploader {

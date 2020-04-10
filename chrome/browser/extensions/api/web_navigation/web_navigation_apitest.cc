@@ -246,20 +246,6 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, Download) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ServerRedirectSingleProcess) {
-  // TODO(lukasza): https://crbug.com/671734: In the long-term, //chrome-layer
-  // tests should only be run with site-per-process - remove the early return
-  // below when fixing https://crbug.com/870761 and removing the
-  // not_site_per_process_browser_tests step.
-  //
-  // This test has its expectations in
-  // serverRedirectSingleProcess/test_serverRedirectSingleProcess.js.  The
-  // expectations include exact |processId| ("exact" meaning that one cannot use
-  // a wildcard - the verification is done via chrome.test.checkDeepEq).
-  // Inclusion of |processId| means that the expectation change in
-  // site-per-process mode.
-  if (!content::AreAllSitesIsolatedForTesting())
-    return;
-
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   // Set max renderers to 1 to force running out of processes.

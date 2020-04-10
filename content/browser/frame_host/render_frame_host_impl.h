@@ -526,9 +526,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   const url::Origin& ComputeTopFrameOrigin(
       const url::Origin& frame_origin) const;
 
-  // Computes site_for_cookies to be used when navigating this frame to
-  // |destination|.
-  net::SiteForCookies ComputeSiteForCookiesForNavigation(
+  // Computes the IsolationInfo this frame to |destination|.
+  net::IsolationInfo ComputeIsolationInfoForNavigation(
       const GURL& destination) const;
 
   // Computes site_for_cookies for this frame. A non-empty result denotes which

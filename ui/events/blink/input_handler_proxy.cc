@@ -809,17 +809,21 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleMouseWheel(
     // Noncancellable wheel events should have phase info.
     DCHECK(wheel_event.phase != WebMouseWheelEvent::kPhaseNone ||
            wheel_event.momentum_phase != WebMouseWheelEvent::kPhaseNone);
+
     DCHECK(mouse_wheel_result_.has_value());
-
-    result = mouse_wheel_result_.value();
-
-    if (wheel_event.phase == WebMouseWheelEvent::kPhaseEnded ||
-        wheel_event.phase == WebMouseWheelEvent::kPhaseCancelled ||
-        wheel_event.momentum_phase == WebMouseWheelEvent::kPhaseEnded ||
-        wheel_event.momentum_phase == WebMouseWheelEvent::kPhaseCancelled) {
-      mouse_wheel_result_.reset();
-    } else {
-      return result;
+    // TODO(bokan): This should never happen but after changing
+    // mouse_event_result_ to a base::Optional, crashes indicate that it does
+    // so |if| maintains prior behavior. https://crbug.com/1069760.
+    if (mouse_wheel_result_.has_value()) {
+      result = mouse_wheel_result_.value();
+      if (wheel_event.phase == WebMouseWheelEvent::kPhaseEnded ||
+          wheel_event.phase == WebMouseWheelEvent::kPhaseCancelled ||
+          wheel_event.momentum_phase == WebMouseWheelEvent::kPhaseEnded ||
+          wheel_event.momentum_phase == WebMouseWheelEvent::kPhaseCancelled) {
+        mouse_wheel_result_.reset();
+      } else {
+        return result;
+      }
     }
   }
 

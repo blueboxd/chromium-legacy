@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/ios/browser/autofill_util.h"
+#include "components/security_state/ios/security_state_utils.h"
 #import "ios/web/public/web_state.h"
 #include "ios/web_view/internal/app/application_context.h"
 #import "ios/web_view/internal/autofill/web_view_autofill_log_router_factory.h"
@@ -118,9 +119,7 @@ AddressNormalizer* WebViewAutofillClientIOS::GetAddressNormalizer() {
 
 security_state::SecurityLevel
 WebViewAutofillClientIOS::GetSecurityLevelForUmaHistograms() {
-  // The metrics are not recorded for iOS webview, so return the count value
-  // which will not be recorded.
-  return security_state::SecurityLevel::SECURITY_LEVEL_COUNT;
+  return security_state::GetSecurityLevelForWebState(web_state_);
 }
 
 void WebViewAutofillClientIOS::ShowAutofillSettings(

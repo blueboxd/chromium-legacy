@@ -624,8 +624,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
 }
 
 #if !defined(OS_ANDROID) && !defined(OS_MACOSX)
+// Disabled due to flake: https://crbug.com/1069850
 IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
-                       HitTestingWithPinchZoom) {
+                       DISABLED_HitTestingWithPinchZoom) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));

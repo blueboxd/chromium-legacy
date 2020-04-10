@@ -201,6 +201,19 @@ network_config::mojom::ConfigPropertiesPtr MojoNetworkConfigFromProto(
           ? 1
           : 0);
 
+  if (specifics.custom_dns().size()) {
+    auto ip_config = network_config::mojom::IPConfigProperties::New();
+    std::vector<std::string> custom_dns;
+    for (const std::string& nameserver : specifics.custom_dns()) {
+      custom_dns.push_back(nameserver);
+    }
+    ip_config->name_servers = std::move(custom_dns);
+    config->static_ip_config = std::move(ip_config);
+    config->name_servers_config_type = onc::network_config::kIPConfigTypeStatic;
+  } else {
+    config->name_servers_config_type = onc::network_config::kIPConfigTypeDHCP;
+  }
+
   return config;
 }
 

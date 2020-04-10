@@ -53,7 +53,7 @@ base::Time DeserializeTime(int64_t microseconds) {
 ConversionStorageSql::ConversionStorageSql(
     const base::FilePath& path_to_database_dir,
     std::unique_ptr<Delegate> delegate,
-    base::Clock* clock)
+    const base::Clock* clock)
     : path_to_database_(path_to_database_dir.Append(kDatabaseName)),
       clock_(clock),
       delegate_(std::move(delegate)),
@@ -332,7 +332,6 @@ bool ConversionStorageSql::DeleteConversion(int64_t conversion_id) {
   if (!statement.Run())
     return false;
 
-  DCHECK_EQ(1, db_.GetLastChangeCount());
   return db_.GetLastChangeCount() > 0;
 }
 

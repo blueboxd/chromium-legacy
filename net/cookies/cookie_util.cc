@@ -552,6 +552,10 @@ bool IsCookiesWithoutSameSiteMustBeSecureEnabled() {
              features::kCookiesWithoutSameSiteMustBeSecure);
 }
 
+bool IsSchemefulSameSiteEnabled() {
+  return base::FeatureList::IsEnabled(features::kSchemefulSameSite);
+}
+
 bool IsRecentHttpSameSiteAccessGrantsLegacyCookieSemanticsEnabled() {
   return IsSameSiteByDefaultCookiesEnabled() &&
          base::FeatureList::IsEnabled(

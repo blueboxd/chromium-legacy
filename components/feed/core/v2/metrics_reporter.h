@@ -29,7 +29,7 @@ enum class FeedEngagementType {
 
 // Reports UMA metrics for feed.
 // Note this is inherited only for testing.
-class MetricsReporter : public FeedStream::EventObserver {
+class MetricsReporter {
  public:
   explicit MetricsReporter(const base::TickClock* clock);
   virtual ~MetricsReporter();
@@ -39,6 +39,8 @@ class MetricsReporter : public FeedStream::EventObserver {
   // User interactions. See |FeedStreamApi| for definitions.
 
   virtual void ContentSliceViewed(int index_in_stream);
+  void OpenAction();
+  void OpenInNewTabAction();
   void SendFeedbackAction();
   void LearnMoreAction();
   void DownloadAction();
@@ -52,6 +54,9 @@ class MetricsReporter : public FeedStream::EventObserver {
   // scrolling.
   void StreamScrolled(int distance_dp);
 
+  // Called when the Feed surface is opened.
+  void SurfaceOpened();
+
   // Network metrics.
 
   static void NetworkRequestComplete(NetworkRequestType type,
@@ -59,11 +64,13 @@ class MetricsReporter : public FeedStream::EventObserver {
 
   // FeedStream::EventObserver.
 
-  void OnLoadStream(LoadStreamStatus load_from_store_status,
-                    LoadStreamStatus final_status) override;
-  void OnMaybeTriggerRefresh(TriggerType trigger,
-                             bool clear_all_before_refresh) override;
-  void OnClearAll(base::TimeDelta time_since_last_clear) override;
+  virtual void OnLoadStream(LoadStreamStatus load_from_store_status,
+                            LoadStreamStatus final_status);
+  void OnBackgroundRefresh(LoadStreamStatus final_status);
+  void OnLoadMore(LoadStreamStatus final_status);
+  virtual void OnMaybeTriggerRefresh(TriggerType trigger,
+                                     bool clear_all_before_refresh);
+  virtual void OnClearAll(base::TimeDelta time_since_last_clear);
 
  private:
   void RecordEngagement(int scroll_distance_dp, bool interacted);

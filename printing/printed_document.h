@@ -124,18 +124,18 @@ class PRINTING_EXPORT PrintedDocument
       const base::string16& document_name,
       const base::FilePath::StringType& extension);
 
+#if defined(OS_WIN)
+  // Get page content rect adjusted based on
+  // http://dev.w3.org/csswg/css3-page/#positioning-page-box
+  static gfx::Rect GetCenteredPageContentRect(const gfx::Size& paper_size,
+                                              const gfx::Size& page_size,
+                                              const gfx::Rect& content_rect);
+#endif
+
   // Dump data on blocking task runner.
   // Should only be called when debug dumps are enabled.
   void DebugDumpData(const base::RefCountedMemory* data,
                      const base::FilePath::StringType& extension);
-
-#if defined(OS_WIN)
-  // Get page content rect adjusted based on
-  // http://dev.w3.org/csswg/css3-page/#positioning-page-box
-  gfx::Rect GetCenteredPageContentRect(const gfx::Size& paper_size,
-                                       const gfx::Size& page_size,
-                                       const gfx::Rect& content_rect) const;
-#endif
 
  private:
   friend class base::RefCountedThreadSafe<PrintedDocument>;

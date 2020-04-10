@@ -127,6 +127,7 @@ class ScriptExecutor : public ActionDelegate,
   void GetFullCard(GetFullCardCallback callback) override;
   void Prompt(std::unique_ptr<std::vector<UserAction>> user_actions,
               bool disable_force_expand_sheet,
+              base::OnceCallback<void()> end_on_navigation_callback,
               bool browse_mode) override;
   void CleanUpAfterPrompt() override;
   void FillAddressForm(
@@ -437,6 +438,10 @@ class ScriptExecutor : public ActionDelegate,
     // Set to true when a direct action was used to trigger a UserAction within
     // a prompt. This is reported to the backend.
     bool direct_action = false;
+
+    // This callback is set when a navigation event should terminate an ongoing
+    // prompt action. Only a prompt action will set a valid callback here.
+    base::OnceCallback<void()> end_prompt_on_navigation_callback;
   };
   CurrentActionData current_action_data_;
 

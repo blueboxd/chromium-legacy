@@ -33,9 +33,7 @@ class FormDataAndroid {
   // Get autofill values from Java side and return FormData.
   const FormData& GetAutofillValues();
 
-  base::android::ScopedJavaLocalRef<jobject> GetNextFormFieldData(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& jcaller);
+  base::android::ScopedJavaLocalRef<jobject> GetNextFormFieldData(JNIEnv* env);
 
   // Get index of given field, return True and index of focus field if found.
   bool GetFieldIndex(const FormFieldData& field, size_t* index);

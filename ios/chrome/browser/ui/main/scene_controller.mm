@@ -306,6 +306,8 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
        applicationCommandEndpoint:self
       browsingDataCommandEndpoint:self.mainController];
 
+  self.browserViewWrangler.windowID = self.sceneState.windowID;
+
   // Ensure the main browser is created. This also creates the BVC.
   [self.browserViewWrangler createMainBrowser];
 

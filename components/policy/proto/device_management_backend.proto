@@ -185,7 +185,16 @@ message DeviceRegisterRequest {
   // domain from token.
   optional string expected_enrollment_domain = 17;
 
-  // Next id: 18.
+  // Identification of the device that is not already available.
+  optional DeviceRegisterIdentification device_register_identification = 18;
+
+  // Next id: 19.
+}
+
+// Identification of a device used during its registration.
+message DeviceRegisterIdentification {
+  // The Zero-Touch SN if a device has one.
+  optional string zero_touch_sn = 1;
 }
 
 // Response from server to device register request.

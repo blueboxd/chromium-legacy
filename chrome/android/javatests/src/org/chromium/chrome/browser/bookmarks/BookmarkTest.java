@@ -15,6 +15,7 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.hamcrest.core.IsInstanceOf;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -36,6 +37,7 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -44,6 +46,7 @@ import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksShim;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -52,7 +55,6 @@ import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.BookmarkTestUtil;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
-import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
@@ -62,6 +64,7 @@ import org.chromium.components.browser_ui.widget.selectable_list.SelectableListT
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.test.util.MockSyncContentResolverDelegate;
+import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
@@ -309,8 +312,20 @@ public class BookmarkTest {
         Assert.assertTrue("Grid view does not contain added bookmark: ",
                 isItemPresentInBookmarkList(TEST_PAGE_TITLE_GOOGLE));
         final View title = getViewWithText(mItemsContainer, TEST_PAGE_TITLE_GOOGLE);
-        ChromeTabUtils.waitForTabPageLoadStart(mActivityTestRule.getActivity().getActivityTab(),
-                mTestPage, () -> TouchCommon.singleClickView(title));
+        TestThreadUtils.runOnUiThreadBlocking(() -> TouchCommon.singleClickView(title));
+        ChromeTabbedActivity activity = waitForTabbedActivity();
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                Tab activityTab = activity.getActivityTab();
+                String tabUrl = activityTab == null || activityTab.getUrl() == null
+                        ? ""
+                        : activityTab.getUrl().getSpec();
+                updateFailureReason(activityTab == null ? "Activity tab is null."
+                                                        : "Tab URL incorrect: " + tabUrl);
+                return mTestPage.equals(tabUrl);
+            }
+        });
     }
 
     @Test
@@ -670,10 +685,16 @@ public class BookmarkTest {
     }
 
     private void waitForEditActivity() {
-        CriteriaHelper.pollUiThread(()
-                                            -> ApplicationStatus.getLastTrackedFocusedActivity()
-                                                       instanceof BookmarkEditActivity,
-                "Timed out waiting for BookmarkEditActivity");
+        CriteriaHelper.pollUiThread(
+                Criteria.checkThat(ApplicationStatus::getLastTrackedFocusedActivity,
+                        IsInstanceOf.instanceOf(BookmarkEditActivity.class)));
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+    }
+
+    private ChromeTabbedActivity waitForTabbedActivity() {
+        CriteriaHelper.pollUiThread(
+                Criteria.checkThat(ApplicationStatus::getLastTrackedFocusedActivity,
+                        IsInstanceOf.instanceOf(ChromeTabbedActivity.class)));
+        return (ChromeTabbedActivity) ApplicationStatus.getLastTrackedFocusedActivity();
     }
 }

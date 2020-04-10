@@ -43,6 +43,8 @@ std::ostream& operator<<(std::ostream& out, LoadStreamStatus value) {
       return out << "kLoadNotAllowedEulaNotAccepted";
     case LoadStreamStatus::kLoadNotAllowedArticlesListHidden:
       return out << "kLoadNotAllowedArticlesListHidden";
+    case LoadStreamStatus::kCannotParseNetorkResponseBody:
+      return out << "kCannotParseNetorkResponseBody";
   }
 #else
   return out << (static_cast<int>(value));

@@ -2349,7 +2349,7 @@ if (enable_java_templates) {
         defined(invoker.static_library_dependent_targets) && _proguard_enabled
     if (_is_static_library_provider) {
       _static_library_sync_dex_path =
-          "$_out_dir/static_library_synchronized_proguard.r8dex.jar"
+          "$_out_dir/static_library_synchronized_proguard.classes.dex.zip"
       _resource_ids_provider_deps = []
       foreach(_target, invoker.static_library_dependent_targets) {
         if (_target.is_resource_ids_provider) {
@@ -2397,11 +2397,7 @@ if (enable_java_templates) {
     if (!_incremental_apk) {
       # Bundle modules don't build the dex here, but need to write this path
       # to their .build_config file.
-      if (_proguard_enabled) {
-        _final_dex_path = "$_base_path.r8dex.jar"
-      } else {
-        _final_dex_path = "$_base_path.mergeddex.jar"
-      }
+      _final_dex_path = "$_out_dir/classes.dex.zip"
     }
 
     _android_manifest =

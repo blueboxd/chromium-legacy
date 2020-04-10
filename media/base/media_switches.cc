@@ -29,9 +29,9 @@ const char kFailAudioStreamCreation[] = "fail-audio-stream-creation";
 // Set number of threads to use for video decoding.
 const char kVideoThreads[] = "video-threads";
 
-// Suspend media pipeline on background tabs.
-const char kEnableMediaSuspend[] = "enable-media-suspend";
-const char kDisableMediaSuspend[] = "disable-media-suspend";
+// Do not immediately suspend media in background tabs.
+const char kDisableBackgroundMediaSuspend[] =
+    "disable-background-media-suspend";
 
 // Force to report VP9 as an unsupported MIME type.
 const char kReportVp9AsAnUnsupportedMimeType[] =

@@ -6,6 +6,7 @@ include_rules = [
   "+components/component_updater",
   "+components/compression",
   "+components/metrics",
+  "+components/network_time",
   "+components/prefs",
   "+components/sync",
   "+components/variations",

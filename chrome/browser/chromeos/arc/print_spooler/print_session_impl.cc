@@ -146,6 +146,8 @@ base::ReadOnlySharedMemoryRegion ReadPreviewDocument(
   base::PlatformFile platform_file;
   if (mojo::UnwrapPlatformFile(std::move(preview_document), &platform_file) !=
       MOJO_RESULT_OK) {
+    // TODO(jschettler): Remove logging when finished investigating b/152251595.
+    LOG(ERROR) << "Failed to unwrap platform file.";
     return base::ReadOnlySharedMemoryRegion();
   }
 
@@ -261,6 +263,8 @@ void PrintSessionImpl::CreatePreviewDocument(
   mojom::PrintDocumentRequestPtr request =
       PrintDocumentRequestFromJobSettings(job_settings);
   if (!request || !request->attributes) {
+    // TODO(jschettler): Remove logging when finished investigating b/152251595.
+    LOG(ERROR) << "Failed to create print document request.";
     std::move(callback).Run(base::ReadOnlySharedMemoryRegion());
     return;
   }
@@ -280,6 +284,8 @@ void PrintSessionImpl::OnPreviewDocumentCreated(
     int64_t data_size) {
   if (data_size < kMinimumPdfSize ||
       !base::IsValueInRangeForNumericType<size_t>(data_size)) {
+    // TODO(jschettler): Remove logging when finished investigating b/152251595.
+    LOG(ERROR) << "Invalid data size for preview document: " << data_size;
     std::move(callback).Run(base::ReadOnlySharedMemoryRegion());
     return;
   }
@@ -298,6 +304,8 @@ void PrintSessionImpl::OnPreviewDocumentRead(
     CreatePreviewDocumentCallback callback,
     base::ReadOnlySharedMemoryRegion preview_document_region) {
   if (!preview_document_region.IsValid()) {
+    // TODO(jschettler): Remove logging when finished investigating b/152251595.
+    LOG(ERROR) << "Invalid memory region for preview document.";
     std::move(callback).Run(std::move(preview_document_region));
     return;
   }

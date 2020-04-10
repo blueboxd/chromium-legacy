@@ -29,7 +29,7 @@ class CONTENT_EXPORT ConversionStorageSql : public ConversionStorage {
  public:
   ConversionStorageSql(const base::FilePath& path_to_database_dir,
                        std::unique_ptr<Delegate> delegate,
-                       base::Clock* clock);
+                       const base::Clock* clock);
   ConversionStorageSql(const ConversionStorageSql& other) = delete;
   ConversionStorageSql& operator=(const ConversionStorageSql& other) = delete;
   ~ConversionStorageSql() override;
@@ -53,7 +53,7 @@ class CONTENT_EXPORT ConversionStorageSql : public ConversionStorage {
   sql::Database db_;
 
   // Must outlive |this|.
-  base::Clock* const clock_;
+  const base::Clock* clock_;
 
   std::unique_ptr<Delegate> delegate_;
 

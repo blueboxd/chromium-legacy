@@ -1577,8 +1577,9 @@ void Controller::DidFinishLoad(content::RenderFrameHost* render_frame_host,
 void Controller::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame() ||
-      navigation_handle->IsSameDocument())
+      navigation_handle->IsSameDocument()) {
     return;
+  }
 
   if (!navigating_to_new_document_) {
     navigating_to_new_document_ = true;

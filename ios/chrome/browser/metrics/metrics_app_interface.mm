@@ -4,20 +4,16 @@
 
 #include "ios/chrome/browser/metrics/metrics_app_interface.h"
 
+#include <memory>
 #include <string>
 
-#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#include "base/time/default_clock.h"
-#include "base/time/default_tick_clock.h"
-#include "base/time/time.h"
 #include "components/metrics/metrics_service.h"
-#include "components/metrics/unsent_log_store.h"
+#include "components/metrics/test/demographic_metrics_test_utils.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/network_time/network_time_tracker.h"
-#include "components/sync/base/pref_names.h"
 #include "components/ukm/ukm_service.h"
 #include "components/ukm/ukm_test_helper.h"
 #include "ios/chrome/browser/application_context.h"
@@ -28,7 +24,6 @@
 #import "ios/testing/nserror_util.h"
 #include "third_party/metrics_proto/chrome_user_metrics_extension.pb.h"
 #include "third_party/metrics_proto/ukm/report.pb.h"
-#include "third_party/zlib/google/compression_utils.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -40,30 +35,19 @@ bool g_metrics_enabled = false;
 
 chrome_test_util::HistogramTester* g_histogram_tester = nullptr;
 
+PrefService* GetProfilePrefs() {
+  return GetApplicationContext()
+      ->GetChromeBrowserStateManager()
+      ->GetLastUsedBrowserState()
+      ->GetPrefs();
+}
+
 ukm::UkmService* GetUkmService() {
   return GetApplicationContext()->GetMetricsServicesManager()->GetUkmService();
 }
 
-// TODO(crbug.com/1066297): Refactor to remove duplicate code.
-// Returns an UMA log if the metrics service has a staged log.
-std::unique_ptr<metrics::ChromeUserMetricsExtension> GetLastUmaLog() {
-  metrics::MetricsLogStore* const log_store =
-      GetApplicationContext()->GetMetricsService()->LogStoreForTest();
-
-  // Decompress the staged log.
-  std::string uncompressed_log;
-  if (!compression::GzipUncompress(log_store->staged_log(),
-                                   &uncompressed_log)) {
-    return nullptr;
-  }
-
-  // Deserialize and return the log.
-  std::unique_ptr<metrics::ChromeUserMetricsExtension> uma_log =
-      std::make_unique<metrics::ChromeUserMetricsExtension>();
-  if (!uma_log->ParseFromString(uncompressed_log)) {
-    return nullptr;
-  }
-  return uma_log;
+metrics::MetricsService* GetMetricsService() {
+  return GetApplicationContext()->GetMetricsService();
 }
 
 }  // namespace
@@ -117,28 +101,13 @@ std::unique_ptr<metrics::ChromeUserMetricsExtension> GetLastUmaLog() {
   ukm_test_helper.RecordSourceForTesting(sourceID);
 }
 
-+ (void)setNetworkTimeForTesting {
-  // The resolution was arbitrarily chosen.
-  base::TimeDelta resolution = base::TimeDelta::FromMilliseconds(17);
-
-  // Simulate the latency in the network to get the network time from the remote
-  // server.
-  base::TimeDelta latency = base::TimeDelta::FromMilliseconds(50);
-
-  base::DefaultClock clock;
-  base::DefaultTickClock tickClock;
-  GetApplicationContext()->GetNetworkTimeTracker()->UpdateNetworkTime(
-      clock.Now() - latency / 2, resolution, latency, tickClock.NowTicks());
++ (void)updateNetworkTime:(base::Time)now {
+  metrics::test::UpdateNetworkTime(
+      now, GetApplicationContext()->GetNetworkTimeTracker());
 }
 
-+ (int)noisedBirthYear:(int)rawBirthYear {
-  int birthYearOffset =
-      GetApplicationContext()
-          ->GetChromeBrowserStateManager()
-          ->GetLastUsedBrowserState()
-          ->GetPrefs()
-          ->GetInteger(syncer::prefs::kSyncDemographicsBirthYearOffset);
-  return rawBirthYear + birthYearOffset;
++ (int)maximumEligibleBirthYearForTime:(base::Time)now {
+  return metrics::test::GetMaximumEligibleBirthYear(now);
 }
 
 + (void)buildAndStoreUKMLog {
@@ -154,7 +123,8 @@ std::unique_ptr<metrics::ChromeUserMetricsExtension> GetLastUmaLog() {
 + (BOOL)UKMReportHasBirthYear:(int)year gender:(int)gender {
   ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   std::unique_ptr<ukm::Report> report = ukm_test_helper.GetUkmReport();
-  int noisedBirthYear = [self noisedBirthYear:year];
+  int noisedBirthYear =
+      metrics::test::GetNoisedBirthYear(*GetProfilePrefs(), year);
 
   return report && gender == report->user_demographics().gender() &&
          noisedBirthYear == report->user_demographics().birth_year();
@@ -162,28 +132,26 @@ std::unique_ptr<metrics::ChromeUserMetricsExtension> GetLastUmaLog() {
 
 + (BOOL)UKMReportHasUserDemographics {
   ukm::UkmTestHelper ukm_test_helper(GetUkmService());
-  // TODO(crbug.com/1066910): Maybe ukm::Report*?
   std::unique_ptr<ukm::Report> report = ukm_test_helper.GetUkmReport();
   return report && report->has_user_demographics();
 }
 
 + (void)buildAndStoreUMALog {
-  GetApplicationContext()->GetMetricsService()->StageCurrentLogForTest();
+  metrics::test::BuildAndStoreLog(GetMetricsService());
 }
 
 + (BOOL)hasUnsentUMALogs {
-  return GetApplicationContext()
-      ->GetMetricsService()
-      ->LogStoreForTest()
-      ->has_unsent_logs();
+  return metrics::test::HasUnsentLogs(GetMetricsService());
 }
 
 + (BOOL)UMALogHasBirthYear:(int)year gender:(int)gender {
   if (![self UMALogHasUserDemographics]) {
     return NO;
   }
-  std::unique_ptr<metrics::ChromeUserMetricsExtension> log = GetLastUmaLog();
-  int noisedBirthYear = [self noisedBirthYear:year];
+  std::unique_ptr<metrics::ChromeUserMetricsExtension> log =
+      metrics::test::GetLastUmaLog(GetMetricsService());
+  int noisedBirthYear =
+      metrics::test::GetNoisedBirthYear(*GetProfilePrefs(), year);
 
   return noisedBirthYear == log->user_demographics().birth_year() &&
          gender == log->user_demographics().gender();
@@ -193,7 +161,8 @@ std::unique_ptr<metrics::ChromeUserMetricsExtension> GetLastUmaLog() {
   if (![self hasUnsentUMALogs]) {
     return NO;
   }
-  std::unique_ptr<metrics::ChromeUserMetricsExtension> log = GetLastUmaLog();
+  std::unique_ptr<metrics::ChromeUserMetricsExtension> log =
+      metrics::test::GetLastUmaLog(GetMetricsService());
   return log && log->has_user_demographics();
 }
 

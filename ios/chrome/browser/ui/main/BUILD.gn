@@ -129,6 +129,7 @@ source_set("main") {
     "//ios/chrome/browser/ui/recent_tabs",
     "//ios/chrome/browser/ui/snackbar",
     "//ios/chrome/browser/ui/translate:legacy_translate",
+    "//ios/chrome/browser/ui/util:multiwindow_util",
     "//ios/chrome/browser/url_loading",
     "//ios/chrome/browser/web",
     "//ios/chrome/browser/web:tab_helper_delegates",

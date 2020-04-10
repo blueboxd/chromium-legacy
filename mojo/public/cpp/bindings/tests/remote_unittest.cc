@@ -1111,6 +1111,7 @@ TEST_P(RemoteTest, RemoteSet) {
 }
 
 INSTANTIATE_MOJO_BINDINGS_TEST_SUITE_P(RemoteTest);
+INSTANTIATE_MOJO_BINDINGS_TEST_SUITE_P(EndToEndRemoteTest);
 
 }  // namespace
 }  // namespace remote_unittest

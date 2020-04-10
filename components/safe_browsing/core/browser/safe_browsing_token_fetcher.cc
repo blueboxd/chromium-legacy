@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
@@ -66,6 +67,8 @@ void SafeBrowsingTokenFetcher::OnTokenFetched(
     int request_id,
     GoogleServiceAuthError error,
     signin::AccessTokenInfo access_token_info) {
+  UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.TokenFetcher.ErrorType",
+                            error.state(), GoogleServiceAuthError::NUM_STATES);
   if (error.state() == GoogleServiceAuthError::NONE)
     Finish(request_id, access_token_info);
   else

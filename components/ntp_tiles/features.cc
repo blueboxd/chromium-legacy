@@ -21,15 +21,7 @@ const base::Feature kNtpMostLikelyFaviconsFromServerFeature{
 const base::Feature kUsePopularSitesSuggestions{
     "UsePopularSitesSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::FeatureState kDisplaySuggestionsServiceTilesDefaultState =
-#if defined(OS_ANDROID) || defined(OS_IOS)
-    base::FEATURE_DISABLED_BY_DEFAULT;
-#else
-    base::FEATURE_ENABLED_BY_DEFAULT;
-#endif
-
 const base::Feature kDisplaySuggestionsServiceTiles{
-    "DisplaySuggestionsServiceTiles",
-    kDisplaySuggestionsServiceTilesDefaultState};
+    "DisplaySuggestionsServiceTiles", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace ntp_tiles

@@ -424,11 +424,6 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
   return grey_accessibilityID(kSettingsAccountsTableViewSignoutCellId);
 }
 
-+ (id<GREYMatcher>)signOutAndClearDataAccountsButton {
-  return grey_accessibilityID(
-      kSettingsAccountsTableViewSignoutAndClearDataCellId);
-}
-
 + (id<GREYMatcher>)clearBrowsingDataCell {
   return [ChromeMatchersAppInterface
       buttonWithAccessibilityLabelID:(IDS_IOS_CLEAR_BROWSING_DATA_TITLE)];

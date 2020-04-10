@@ -20,16 +20,27 @@ class FingerprintSetupScreenView;
 // user to enroll fingerprint on the device.
 class FingerprintSetupScreen : public BaseScreen {
  public:
+  enum class Result { NEXT, NOT_APPLICABLE };
+
+  static std::string GetResultString(Result result);
+
+  using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
   FingerprintSetupScreen(FingerprintSetupScreenView* view,
-                         const base::RepeatingClosure& exit_callback);
+                         const ScreenExitCallback& exit_callback);
   ~FingerprintSetupScreen() override;
 
   static FingerprintSetupScreen* Get(ScreenManager* manager);
 
-  void set_exit_callback_for_testing(
-      const base::RepeatingClosure& exit_callback) {
+  void set_exit_callback_for_testing(const ScreenExitCallback& exit_callback) {
     exit_callback_ = exit_callback;
   }
+
+  const ScreenExitCallback& get_exit_callback_for_testing() {
+    return exit_callback_;
+  }
+
+  // BaseScreen:
+  bool MaybeSkip() override;
 
  protected:
   // BaseScreen:
@@ -39,7 +50,7 @@ class FingerprintSetupScreen : public BaseScreen {
 
  private:
   FingerprintSetupScreenView* const view_;
-  base::RepeatingClosure exit_callback_;
+  ScreenExitCallback exit_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FingerprintSetupScreen);
 };

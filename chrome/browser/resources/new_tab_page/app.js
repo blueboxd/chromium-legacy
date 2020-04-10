@@ -18,7 +18,7 @@ import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/poly
 
 import {BrowserProxy} from './browser_proxy.js';
 import {BackgroundSelection, BackgroundSelectionType} from './customize_dialog.js';
-import {skColorToRgb} from './utils.js';
+import {hexColorToSkColor, skColorToRgb} from './utils.js';
 
 class AppElement extends PolymerElement {
   static get is() {
@@ -44,7 +44,10 @@ class AppElement extends PolymerElement {
       },
 
       /** @private {!newTabPage.mojom.Theme} */
-      theme_: Object,
+      theme_: {
+        type: Object,
+        observer: 'updateBackgroundImagePath_',
+      },
 
       /** @private */
       showCustomizeDialog_: Boolean,
@@ -63,6 +66,7 @@ class AppElement extends PolymerElement {
       backgroundSelection_: {
         type: Object,
         value: () => ({type: BackgroundSelectionType.NO_SELECTION}),
+        observer: 'updateBackgroundImagePath_',
       },
 
       /** @private */
@@ -87,20 +91,20 @@ class AppElement extends PolymerElement {
       },
 
       /** @private */
-      backgroundImagePath_: {
-        computed: 'computeBackgroundImagePath_(theme_, backgroundSelection_)',
-        type: String,
-      },
-
-      /** @private */
       doodleAllowed_: {
         computed: 'computeDoodleAllowed_(showBackgroundImage_, theme_)',
         type: Boolean,
       },
 
       /** @private */
+      logoColor_: {
+        type: String,
+        computed: 'computeLogoColor_(theme_, backgroundSelection_)',
+      },
+
+      /** @private */
       singleColoredLogo_: {
-        computed: 'computeSingleColoredLogo_(theme_)',
+        computed: 'computeSingleColoredLogo_(theme_, backgroundSelection_)',
         type: Boolean,
       },
     };
@@ -247,22 +251,43 @@ class AppElement extends PolymerElement {
   }
 
   /**
-   * @return {string}
+   * Set the #backgroundImage |path| only when different and non-empty. Reset
+   * the customize dialog background selection if the dialog is closed.
+   *
+   * The ntp-untrusted-iframe |path| is set directly. When using a data binding
+   * instead, the quick updates to the |path| result in iframe loading an error
+   * page.
    * @private
    */
-  computeBackgroundImagePath_() {
+  updateBackgroundImagePath_() {
+    // The |backgroundSelection_| is retained after the dialog commits the
+    // change to the theme. Since |backgroundSelection_| has precendence over
+    // the theme background, the |backgroundSelection_| needs to be reset when
+    // the theme is updated. This is only necessary when the dialog is closed.
+    // If the dialog is open, it will either commit the |backgroundSelection_|
+    // or reset |backgroundSelection_| on cancel.
+    if (!this.showCustomizeDialog_ &&
+        this.backgroundSelection_.type !==
+            BackgroundSelectionType.NO_SELECTION) {
+      this.backgroundSelection_ = {type: BackgroundSelectionType.NO_SELECTION};
+    }
+    let path;
     switch (this.backgroundSelection_.type) {
       case BackgroundSelectionType.NO_SELECTION:
-        return this.theme_ && this.theme_.backgroundImageUrl ?
-            `background_image?${this.theme_.backgroundImageUrl.url}` :
-            '';
+        path = this.theme_ && this.theme_.backgroundImageUrl &&
+            `background_image?${this.theme_.backgroundImageUrl.url}`;
+        break;
       case BackgroundSelectionType.IMAGE:
-        return `background_image?${
-            this.backgroundSelection_.image.imageUrl.url}`;
+        path =
+            `background_image?${this.backgroundSelection_.image.imageUrl.url}`;
+        break;
       case BackgroundSelectionType.NO_BACKGROUND:
       case BackgroundSelectionType.DAILY_REFRESH:
       default:
-        return '';
+        path = '';
+    }
+    if (path && this.$.backgroundImage.path !== path) {
+      this.$.backgroundImage.path = path;
     }
   }
 
@@ -277,11 +302,37 @@ class AppElement extends PolymerElement {
   }
 
   /**
+   * @return {skia.mojom.SkColor}
+   * @private
+   */
+  computeLogoColor_() {
+    switch (this.backgroundSelection_.type) {
+      case BackgroundSelectionType.NO_SELECTION:
+        return this.theme_ && this.theme_.logoColor || null;
+      case BackgroundSelectionType.IMAGE:
+        return hexColorToSkColor('#ffffff');
+      case BackgroundSelectionType.NO_BACKGROUND:
+      case BackgroundSelectionType.DAILY_REFRESH:
+      default:
+        return null;
+    }
+  }
+
+  /**
    * @return {boolean}
    * @private
    */
   computeSingleColoredLogo_() {
-    return this.theme_ && !!this.theme_.logoColor;
+    switch (this.backgroundSelection_.type) {
+      case BackgroundSelectionType.NO_SELECTION:
+        return this.theme_ && !!this.theme_.logoColor;
+      case BackgroundSelectionType.IMAGE:
+        return true;
+      case BackgroundSelectionType.NO_BACKGROUND:
+      case BackgroundSelectionType.DAILY_REFRESH:
+      default:
+        return false;
+    }
   }
 
   /**

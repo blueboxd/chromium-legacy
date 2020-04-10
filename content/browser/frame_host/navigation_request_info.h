@@ -13,6 +13,7 @@
 #include "content/common/navigation_params.h"
 #include "content/common/navigation_params.mojom.h"
 #include "content/public/common/referrer.h"
+#include "net/base/isolation_info.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -25,8 +26,7 @@ namespace content {
 struct CONTENT_EXPORT NavigationRequestInfo {
   NavigationRequestInfo(mojom::CommonNavigationParamsPtr common_params,
                         mojom::BeginNavigationParamsPtr begin_params,
-                        const net::SiteForCookies& site_for_cookies,
-                        const net::NetworkIsolationKey& network_isolation_key,
+                        const net::IsolationInfo& isolation_info,
                         bool is_main_frame,
                         bool parent_is_main_frame,
                         bool are_ancestors_secure,
@@ -46,13 +46,13 @@ struct CONTENT_EXPORT NavigationRequestInfo {
   mojom::CommonNavigationParamsPtr common_params;
   mojom::BeginNavigationParamsPtr begin_params;
 
-  // Used to check which URLs (if any) are third-party for purposes of cookie
-  // blocking policy.
-  const net::SiteForCookies site_for_cookies;
-
-  // Navigation resource requests will be keyed using |network_isolation_key|
-  // for accessing shared network resources like the http cache.
-  const net::NetworkIsolationKey network_isolation_key;
+  // Contains information used to prevent sharing information from a navigation
+  // request across first party contexts. In particular, tracks the
+  // SiteForCookies, which controls what site's SameSite cookies may be set,
+  // NetworkIsolationKey, which is used to restrict sharing of network
+  // resources, and how to update them across redirects, which is different for
+  // main frames and subresources.
+  const net::IsolationInfo isolation_info;
 
   const bool is_main_frame;
   const bool parent_is_main_frame;

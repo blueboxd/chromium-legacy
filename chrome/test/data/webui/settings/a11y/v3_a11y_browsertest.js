@@ -20,7 +20,7 @@ const axeOptionsExcludeLinkInTextBlock =
       })
     });
 
-const editDictionaryViolationFilter =
+const violationFilterExcludeCustomInputAndTabindex =
     Object.assign({}, SettingsAccessibilityV3Test.violationFilter, {
       // Excuse custom input elements.
       'aria-valid-attr-value': function(nodeResult) {
@@ -41,13 +41,22 @@ const editDictionaryViolationFilter =
  ['Passwords', 'passwords_a11y_v3_test.js'],
 ].forEach(test => defineTest(...test));
 
+GEN('#if !defined(OS_CHROMEOS)');
+[[
+  'ManageProfile', 'manage_profile_a11y_v3_test.js',
+  {filter: violationFilterExcludeCustomInputAndTabindex}
+],
+ ['Signout', 'sign_out_a11y_v3_test.js'],
+].forEach(test => defineTest(...test));
+GEN('#endif  // !defined(OS_CHROMEOS)');
+
 // Disable since the EDIT_DICTIONARY route does not exist on Mac.
 // TODO(crbug.com/1012370) flaky on Linux b/c assertTrue(!!languagesPage);
 // TODO(crbug.com/1012370) flaky on Win the same way
 GEN('#if !defined(OS_MACOSX) && !defined(OS_LINUX) && !defined(OS_WIN)');
 defineTest(
     'EditDictionary', 'edit_dictionary_a11y_v3_test.js',
-    {filter: editDictionaryViolationFilter});
+    {filter: violationFilterExcludeCustomInputAndTabindex});
 GEN('#endif');
 
 function defineTest(testName, module, config) {

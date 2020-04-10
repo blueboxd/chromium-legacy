@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/feed/core/v2/feed_network_impl.h"
+#include "base/base64url.h"
 #include "base/bind.h"
 #include "base/containers/flat_set.h"
 #include "base/metrics/histogram_functions.h"
@@ -31,6 +32,7 @@
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "third_party/protobuf/src/google/protobuf/io/coded_stream.h"
 #include "third_party/zlib/google/compression_utils.h"
 
 namespace feed {
@@ -40,14 +42,14 @@ constexpr char kAuthenticationScope[] =
 constexpr char kApplicationOctetStream[] = "application/octet-stream";
 constexpr base::TimeDelta kNetworkTimeout = base::TimeDelta::FromSeconds(30);
 
+// Add URLs for Bling when it is supported.
 constexpr char kFeedQueryUrl[] =
-    "https://www.google.com/httpservice/retry/InteractiveDiscoverAgaService/"
-    "FeedQuery";
+    "https://www.google.com/httpservice/retry/TrellisClankService/FeedQuery";
 constexpr char kNextPageQueryUrl[] =
-    "https://www.google.com/httpservice/retry/InteractiveDiscoverAgaService/"
+    "https://www.google.com/httpservice/retry/TrellisClankService/"
     "NextPageQuery";
 constexpr char kBackgroundQueryUrl[] =
-    "https://www.google.com/httpservice/noretry/BackgroundDiscoverAgaService/"
+    "https://www.google.com/httpservice/noretry/TrellisClankService/"
     "FeedQuery";
 
 using RawResponse = FeedNetworkImpl::RawResponse;
@@ -72,7 +74,17 @@ void ParseAndForwardResponse(base::OnceCallback<void(RESULT)> result_callback,
   if (result.status_code == 200) {
     auto response_message = std::make_unique<typename decltype(
         result.response_body)::element_type>();
-    if (response_message->ParseFromString(raw_response.response_bytes)) {
+
+    ::google::protobuf::io::CodedInputStream input_stream(
+        reinterpret_cast<const uint8_t*>(raw_response.response_bytes.data()),
+        raw_response.response_bytes.size());
+
+    // The first few bytes of the body are a varint containing the size of the
+    // message. We need to skip over them.
+    int message_size;
+    input_stream.ReadVarintSizeAsInt(&message_size);
+
+    if (response_message->ParseFromCodedStream(&input_stream)) {
       result.response_body = std::move(response_message);
     }
   }
@@ -380,6 +392,9 @@ void FeedNetworkImpl::SendQueryRequest(
     base::OnceCallback<void(QueryRequestResult)> callback) {
   std::string binary_proto;
   request.SerializeToString(&binary_proto);
+  std::string base64proto;
+  base::Base64UrlEncode(
+      binary_proto, base::Base64UrlEncodePolicy::INCLUDE_PADDING, &base64proto);
 
   // TODO(harringtond): Decide how we want to override these URLs for testing.
   // Should probably add a command-line flag.
@@ -400,7 +415,7 @@ void FeedNetworkImpl::SendQueryRequest(
       return;
   }
 
-  AddMothershipPayloadQueryParams(/*is_post=*/false, binary_proto,
+  AddMothershipPayloadQueryParams(/*is_post=*/false, base64proto,
                                   delegate_->GetLanguageTag(), &url);
   Send(url, "GET", /*request_body=*/std::string(),
        base::BindOnce(&ParseAndForwardResponse<QueryRequestResult,
@@ -419,7 +434,6 @@ void FeedNetworkImpl::SendActionRequest(
       "ClankActionUpload");
   AddMothershipPayloadQueryParams(/*is_post=*/true, /*payload=*/std::string(),
                                   delegate_->GetLanguageTag(), &url);
-
   Send(url, "POST", std::move(binary_proto),
        base::BindOnce(
            &ParseAndForwardResponse<ActionRequestResult,

@@ -20,6 +20,7 @@
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 
 class AutocompleteProviderListener;
+class PrefRegistrySimple;
 
 namespace base {
 class Value;
@@ -29,9 +30,6 @@ namespace network {
 class SimpleURLLoader;
 }
 
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
 
 // Autocomplete provider for searches based on the current URL.
 //
@@ -57,7 +55,7 @@ class ZeroSuggestProvider : public BaseSearchProvider {
                                      AutocompleteProviderListener* listener);
 
   // Registers a preference used to cache zero suggest results.
-  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // AutocompleteProvider:
   void Start(const AutocompleteInput& input, bool minimal_changes) override;

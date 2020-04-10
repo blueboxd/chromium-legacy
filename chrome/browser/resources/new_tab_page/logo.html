@@ -80,7 +80,7 @@
     <div id="singleColoredLogo" hidden="[[!singleColored]]"></div>
     <div id="multiColoredLogo" hidden="[[singleColored]]"></div>
   </div>
-  <div id="doodle">
+  <div id="doodle" title="[[doodle_.description]]">
     <div id="imageContainer" hidden="[[!doodle_.content.imageDoodle]]"
         tabindex="1" on-click="onImageClick_" on-keydown="onImageKeydown_">
       <!-- The static image is always visible and the animated image is stacked
@@ -91,13 +91,11 @@
       <ntp-untrusted-iframe id="animation" path="[[animationUrl_]]"
           hidden="[[!showAnimation_]]">
       </ntp-untrusted-iframe>
-      <!-- TODO(crbug.com/1039910): Set focus ring that works for both dark and
-                                    light doodles.
-           TODO(crbug.com/1039910): Open share dialog on click. -->
       <cr-button id="shareButton" title="$i18n{shareDoodle}"
-        style="background-color: [[rgbOrUnset_(doodle_.content.imageDoodle.shareButton.backgroundColor)]];
-               left: [[doodle_.content.imageDoodle.shareButton.x]]px;
-               top: [[doodle_.content.imageDoodle.shareButton.y]]px;">
+          on-click="onShareButtonClick_"
+          style="background-color: [[rgbOrUnset_(doodle_.content.imageDoodle.shareButton.backgroundColor)]];
+                 left: [[doodle_.content.imageDoodle.shareButton.x]]px;
+                 top: [[doodle_.content.imageDoodle.shareButton.y]]px;">
         <img id="shareButtonImage"
             src="[[doodle_.content.imageDoodle.shareButton.iconUrl.url]]">
         </img>
@@ -111,3 +109,11 @@
     </ntp-untrusted-iframe>
   </div>
 </iron-pages>
+<dom-if if="[[showShareDialog_]]" restamp>
+  <template>
+    <ntp-doodle-share-dialog title="[[doodle_.description]]"
+        url="[[doodle_.content.imageDoodle.shareUrl]]"
+        on-close="onShareDialogClose_">
+    </ntp-doodle-share-dialog>
+  </template>
+</dom-if>

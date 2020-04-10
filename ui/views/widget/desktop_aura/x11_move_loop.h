@@ -6,6 +6,7 @@
 #define UI_VIEWS_WIDGET_DESKTOP_AURA_X11_MOVE_LOOP_H_
 
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace views {
@@ -20,10 +21,12 @@ class X11MoveLoop {
   // the mouse cursor. Returns true if the move-loop is completed successfully.
   // If the pointer-grab fails, or the move-loop is canceled by the user (e.g.
   // by pressing escape), then returns false.
-  virtual bool RunMoveLoop(aura::Window* window, gfx::NativeCursor cursor) = 0;
+  virtual bool RunMoveLoop(bool can_grab_pointer,
+                           ::Cursor old_cursor,
+                           ::Cursor new_cursor) = 0;
 
   // Updates the cursor while the move loop is running.
-  virtual void UpdateCursor(gfx::NativeCursor cursor) = 0;
+  virtual void UpdateCursor(::Cursor cursor) = 0;
 
   // Ends the move loop that's currently in progress.
   virtual void EndMoveLoop() = 0;

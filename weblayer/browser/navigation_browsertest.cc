@@ -20,6 +20,35 @@ namespace weblayer {
 
 namespace {
 
+class StopNavigationObserver : public NavigationObserver {
+ public:
+  StopNavigationObserver(NavigationController* controller, bool stop_in_start)
+      : controller_(controller), stop_in_start_(stop_in_start) {
+    controller_->AddObserver(this);
+  }
+  ~StopNavigationObserver() override { controller_->RemoveObserver(this); }
+
+  void WaitForNavigation() { run_loop_.Run(); }
+
+  // NavigationObserver:
+  void NavigationStarted(Navigation* navigation) override {
+    if (stop_in_start_)
+      controller_->Stop();
+  }
+  void NavigationRedirected(Navigation* navigation) override {
+    if (!stop_in_start_)
+      controller_->Stop();
+  }
+  void NavigationFailed(Navigation* navigation) override { run_loop_.Quit(); }
+
+ private:
+  NavigationController* controller_;
+  // If true Stop() is called in NavigationStarted(), otherwise Stop() is
+  // called in NavigationRedirected().
+  const bool stop_in_start_;
+  base::RunLoop run_loop_;
+};
+
 class OneShotNavigationObserver : public NavigationObserver {
  public:
   explicit OneShotNavigationObserver(Shell* shell) : tab_(shell->tab()) {
@@ -147,6 +176,28 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, HttpConnectivityError) {
   EXPECT_TRUE(observer.is_error_page());
   EXPECT_EQ(observer.load_error(), Navigation::kConnectivityError);
   EXPECT_EQ(observer.navigation_state(), NavigationState::kFailed);
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, StopInOnStart) {
+  EXPECT_TRUE(embedded_test_server()->Start());
+  StopNavigationObserver observer(shell()->tab()->GetNavigationController(),
+                                  true);
+  shell()->tab()->GetNavigationController()->Navigate(
+      embedded_test_server()->GetURL("/simple_page.html"));
+
+  observer.WaitForNavigation();
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, StopInOnRedirect) {
+  EXPECT_TRUE(embedded_test_server()->Start());
+  StopNavigationObserver observer(shell()->tab()->GetNavigationController(),
+                                  false);
+  const GURL original_url = embedded_test_server()->GetURL("/simple_page.html");
+  shell()->tab()->GetNavigationController()->Navigate(
+      embedded_test_server()->GetURL("/server-redirect?" +
+                                     original_url.spec()));
+
+  observer.WaitForNavigation();
 }
 
 namespace {

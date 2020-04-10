@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/login/screens/fingerprint_setup_screen.h"
+
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -15,6 +16,16 @@ constexpr char kUserActionClose[] = "fingerprint-setup-done";
 
 }  // namespace
 
+// static
+std::string FingerprintSetupScreen::GetResultString(Result result) {
+  switch (result) {
+    case Result::NEXT:
+      return "Next";
+    case Result::NOT_APPLICABLE:
+      return BaseScreen::kNotApplicable;
+  }
+}
+
 FingerprintSetupScreen* FingerprintSetupScreen::Get(ScreenManager* manager) {
   return static_cast<FingerprintSetupScreen*>(
       manager->GetScreen(FingerprintSetupScreenView::kScreenId));
@@ -22,7 +33,7 @@ FingerprintSetupScreen* FingerprintSetupScreen::Get(ScreenManager* manager) {
 
 FingerprintSetupScreen::FingerprintSetupScreen(
     FingerprintSetupScreenView* view,
-    const base::RepeatingClosure& exit_callback)
+    const ScreenExitCallback& exit_callback)
     : BaseScreen(FingerprintSetupScreenView::kScreenId,
                  OobeScreenPriority::DEFAULT),
       view_(view),
@@ -35,13 +46,17 @@ FingerprintSetupScreen::~FingerprintSetupScreen() {
   view_->Bind(nullptr);
 }
 
-void FingerprintSetupScreen::ShowImpl() {
+bool FingerprintSetupScreen::MaybeSkip() {
   if (!chromeos::quick_unlock::IsFingerprintEnabled(
           ProfileManager::GetActiveUserProfile()) ||
       chrome_user_manager_util::IsPublicSessionOrEphemeralLogin()) {
-    exit_callback_.Run();
-    return;
+    exit_callback_.Run(Result::NOT_APPLICABLE);
+    return true;
   }
+  return false;
+}
+
+void FingerprintSetupScreen::ShowImpl() {
   view_->Show();
 }
 
@@ -51,7 +66,7 @@ void FingerprintSetupScreen::HideImpl() {
 
 void FingerprintSetupScreen::OnUserAction(const std::string& action_id) {
   if (action_id == kUserActionClose) {
-    exit_callback_.Run();
+    exit_callback_.Run(Result::NEXT);
     return;
   }
   BaseScreen::OnUserAction(action_id);

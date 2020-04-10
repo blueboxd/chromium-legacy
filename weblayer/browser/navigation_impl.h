@@ -24,6 +24,13 @@ class NavigationImpl : public Navigation {
   explicit NavigationImpl(content::NavigationHandle* navigation_handle);
   ~NavigationImpl() override;
 
+  void set_should_stop_when_throttle_created() {
+    should_stop_when_throttle_created_ = true;
+  }
+  bool should_stop_when_throttle_created() const {
+    return should_stop_when_throttle_created_;
+  }
+
   void set_safe_to_set_request_headers(bool value) {
     safe_to_set_request_headers_ = value;
   }
@@ -80,6 +87,10 @@ class NavigationImpl : public Navigation {
                         const std::string& value) override;
 
   content::NavigationHandle* navigation_handle_;
+
+  // Used to delay calling Stop() until safe. See
+  // NavigationControllerImpl::NavigationThrottleImpl for details.
+  bool should_stop_when_throttle_created_ = false;
 
   // Whether SetRequestHeader() is allowed at this time.
   bool safe_to_set_request_headers_ = false;

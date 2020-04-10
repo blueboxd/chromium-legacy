@@ -118,3 +118,32 @@ Exposing your feature this way has several benefits:
 ### See also
 
 - [Design doc](http://go/webview-dev-ui-flags-design) (Google-only)
+
+## More cool stuff
+
+### Switching WebView provider
+
+Since Android 7 (Nougat), Android supports installing [multiple WebView
+packages](prerelease.md) side by side and switching between them. After
+installing the WebView channel you want, launch WebView DevTools, open the
+three-dotted menu, and select "Change WebView Provider." This launches the
+system UI where you can select your new WebView channel.
+
+### Filing a bug report
+
+*** aside
+This was [added in M84](https://chromiumdash.appspot.com/commit/874adae46ba404dfec1660ef239899eef47d72bc).
+***
+
+You can file general bug reports for the WebView engineering team. Launch
+WebView DevTools, open the three-dotted menu, and select "Report WebView Bug."
+Similar to filing bug reports for crashes, this will open the system browser to
+[our bug
+tracker](https://bugs.chromium.org/p/chromium/issues/entry?template=Webview+Bugs&labels=Via-WebView-DevTools)
+(requires sign-in), where you can describe the issue.
+
+## Looking for Chrome DevTools?
+
+You can debug WebView even more with Chrome DevTools! For detailed instructions,
+check out [Remote Debugging
+WebViews](https://developers.google.com/web/tools/chrome-devtools/remote-debugging/webviews).

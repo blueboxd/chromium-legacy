@@ -39,13 +39,6 @@ ActionInfoData::ActionInfoData(std::unique_ptr<ActionInfo> info)
 ActionInfoData::~ActionInfoData() {
 }
 
-static const ActionInfo* GetActionInfo(const Extension* extension,
-                                       const std::string& key) {
-  ActionInfoData* data = static_cast<ActionInfoData*>(
-      extension->GetManifestData(key));
-  return data ? data->action_info.get() : NULL;
-}
-
 }  // namespace
 
 ActionInfo::ActionInfo(Type type) : type(type), synthesized(false) {
@@ -152,51 +145,18 @@ std::unique_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
 
 // static
 const ActionInfo* ActionInfo::GetAnyActionInfo(const Extension* extension) {
-  // TODO(devlin): Since all actions are mutually exclusive, we can store
-  // them all under the same key. For now, we don't do that because some callers
-  // need to differentiate between action types.
-  const ActionInfo* info = GetActionInfo(extension, keys::kBrowserAction);
-  if (info)
-    return info;
-  info = GetActionInfo(extension, keys::kPageAction);
-  if (info)
-    return info;
-  return GetActionInfo(extension, keys::kAction);
-}
-
-// static
-const ActionInfo* ActionInfo::GetExtensionActionInfo(
-    const Extension* extension) {
-  return GetActionInfo(extension, keys::kAction);
-}
-
-// static
-const ActionInfo* ActionInfo::GetBrowserActionInfo(const Extension* extension) {
-  return GetActionInfo(extension, keys::kBrowserAction);
-}
-
-const ActionInfo* ActionInfo::GetPageActionInfo(const Extension* extension) {
-  return GetActionInfo(extension, keys::kPageAction);
+  const ActionInfoData* data =
+      static_cast<ActionInfoData*>(extension->GetManifestData(keys::kAction));
+  return data ? data->action_info.get() : nullptr;
 }
 
 // static
 void ActionInfo::SetExtensionActionInfo(Extension* extension,
                                         std::unique_ptr<ActionInfo> info) {
+  // Note: we store all actions (actions, browser actions, and page actions)
+  // under the same key for simplicity because they are mutually exclusive,
+  // and most callers shouldn't care about the type.
   extension->SetManifestData(keys::kAction,
-                             std::make_unique<ActionInfoData>(std::move(info)));
-}
-
-// static
-void ActionInfo::SetBrowserActionInfo(Extension* extension,
-                                      std::unique_ptr<ActionInfo> info) {
-  extension->SetManifestData(keys::kBrowserAction,
-                             std::make_unique<ActionInfoData>(std::move(info)));
-}
-
-// static
-void ActionInfo::SetPageActionInfo(Extension* extension,
-                                   std::unique_ptr<ActionInfo> info) {
-  extension->SetManifestData(keys::kPageAction,
                              std::make_unique<ActionInfoData>(std::move(info)));
 }
 

@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#import "ios/chrome/browser/ui/util/multi_window_support.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -25,6 +26,10 @@ bool ShouldUseSmoothScrolling() {
 }
 
 bool ShouldScopeFullscreenControllerToBrowser() {
+  if (IsMultiwindowSupported()) {
+    return true;
+  }
+
   return base::FeatureList::IsEnabled(kFullscreenControllerBrowserScoped);
 }
 

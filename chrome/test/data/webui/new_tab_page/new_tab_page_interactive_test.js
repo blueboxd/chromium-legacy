@@ -63,3 +63,16 @@ var NewTabPageGridFocusTest = class extends NewTabPageInteractiveTest {
 TEST_F('NewTabPageGridFocusTest', 'All', function() {
   mocha.run();
 });
+
+// eslint-disable-next-line no-var
+var NewTabPageDoodleShareDialogFocusTest =
+    class extends NewTabPageInteractiveTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/doodle_share_dialog_focus_test.js';
+  }
+};
+
+TEST_F('NewTabPageDoodleShareDialogFocusTest', 'All', function() {
+  mocha.run();
+});

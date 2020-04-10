@@ -3,9 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
-#import "base/test/ios/wait_util.h"
-#include "base/time/default_clock.h"
-#include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "components/metrics/demographic_metrics_provider.h"
 #include "components/ukm/ukm_service.h"
@@ -23,15 +20,15 @@
 
 namespace {
 
-const int kTestBirthYear = 1990;
-
 // TODO(crbug.com/1066910): Use a proto instead.
 // Corresponds to GENDER_MALE in UserDemographicsProto::Gender.
 const int kTestGender = 1;
 
 }  // namespace
 
-@interface DemographicsTestCase : ChromeTestCase
+@interface DemographicsTestCase : ChromeTestCase {
+  int testBirthYear_;
+}
 @end
 
 @implementation DemographicsTestCase
@@ -41,14 +38,18 @@ const int kTestGender = 1;
   GREYAssertNil([MetricsAppInterface setupHistogramTester],
                 @"Failed to set up histogram tester.");
   [MetricsAppInterface overrideMetricsAndCrashReportingForTesting];
-  [self addUserDemographicsToSyncServerWithBirthYear:kTestBirthYear
+
+  // Set a network time so that SyncPrefs::GetUserNoisedBirthYearAndGender does
+  // not return a UserDemographicsResult for the kCannotGetTime status.
+  const base::Time now = base::Time::Now();
+  [MetricsAppInterface updateNetworkTime:now];
+
+  // Get the maximum eligible birth year for reporting demographics.
+  testBirthYear_ = [MetricsAppInterface maximumEligibleBirthYearForTime:now];
+  [self addUserDemographicsToSyncServerWithBirthYear:testBirthYear_
                                               gender:kTestGender];
   [self signInAndSync];
   [self grantMetricsConsent];
-
-  // Set a network time so that SyncPrefs::GetUserNoisedBirthYearAndGender
-  // does not return a UserDemographicsResult for the kCannotGetTime status.
-  [MetricsAppInterface setNetworkTimeForTesting];
 }
 
 - (void)tearDown {
@@ -206,7 +207,7 @@ const int kTestGender = 1;
 
   [self buildAndStoreUKMLog];
 
-  GREYAssertTrue([MetricsAppInterface UKMReportHasBirthYear:kTestBirthYear
+  GREYAssertTrue([MetricsAppInterface UKMReportHasBirthYear:testBirthYear_
                                                      gender:kTestGender],
                  @"The report should contain the specified user demographics");
 
@@ -264,7 +265,7 @@ const int kTestGender = 1;
   GREYAssertTrue([MetricsAppInterface hasUnsentUMALogs],
                  @"The UKM service should have unsent logs.");
 
-  GREYAssertTrue([MetricsAppInterface UMALogHasBirthYear:kTestBirthYear
+  GREYAssertTrue([MetricsAppInterface UMALogHasBirthYear:testBirthYear_
                                                   gender:kTestGender],
                  @"The report should contain the specified user demographics");
 

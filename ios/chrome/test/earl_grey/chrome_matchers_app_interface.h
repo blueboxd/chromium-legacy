@@ -153,9 +153,6 @@
 // Returns matcher for the sign out accounts button.
 + (id<GREYMatcher>)signOutAccountsButton;
 
-// Returns matcher for the sign out and clear data accounts button.
-+ (id<GREYMatcher>)signOutAndClearDataAccountsButton;
-
 // Returns matcher for the Clear Browsing Data cell on the Privacy screen.
 + (id<GREYMatcher>)clearBrowsingDataCell;
 

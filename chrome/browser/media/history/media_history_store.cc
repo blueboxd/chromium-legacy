@@ -83,7 +83,9 @@ MediaHistoryStore::~MediaHistoryStore() {
   db_task_runner_->ReleaseSoon(FROM_HERE, std::move(images_table_));
   db_task_runner_->ReleaseSoon(FROM_HERE, std::move(feeds_table_));
   db_task_runner_->ReleaseSoon(FROM_HERE, std::move(feed_items_table_));
-  db_task_runner_->DeleteSoon(FROM_HERE, std::move(db_));
+
+  if (db_)
+    db_task_runner_->DeleteSoon(FROM_HERE, db_.release());
 }
 
 sql::Database* MediaHistoryStore::DB() {
@@ -157,8 +159,26 @@ void MediaHistoryStore::Initialize() {
   db_ = std::make_unique<sql::Database>();
   db_->set_histogram_tag("MediaHistory");
 
-  bool success = db_->Open(db_path_);
-  DCHECK(success);
+  base::File::Error err;
+  if (!base::CreateDirectoryAndGetError(db_path_.DirName(), &err)) {
+    LOG(ERROR) << "Failed to create the directory.";
+
+    base::UmaHistogramEnumeration(
+        MediaHistoryStore::kInitResultHistogramName,
+        MediaHistoryStore::InitResult::kFailedToCreateDirectory);
+
+    return;
+  }
+
+  if (!db_->Open(db_path_)) {
+    LOG(ERROR) << "Failed to open the database.";
+
+    base::UmaHistogramEnumeration(
+        MediaHistoryStore::kInitResultHistogramName,
+        MediaHistoryStore::InitResult::kFailedToOpenDatabase);
+
+    return;
+  }
 
   db_->Preload();
 
@@ -173,11 +193,30 @@ void MediaHistoryStore::Initialize() {
     return;
   }
 
-  meta_table_.Init(db_.get(), GetCurrentVersion(), kCompatibleVersionNumber);
+  if (!meta_table_.Init(db_.get(), GetCurrentVersion(),
+                        kCompatibleVersionNumber)) {
+    LOG(ERROR) << "Failed to create the meta table.";
+
+    base::UmaHistogramEnumeration(
+        MediaHistoryStore::kInitResultHistogramName,
+        MediaHistoryStore::InitResult::kFailedToCreateMetaTable);
+
+    return;
+  }
+
+  if (!db_->BeginTransaction()) {
+    LOG(ERROR) << "Failed to begin the transaction.";
+
+    base::UmaHistogramEnumeration(
+        MediaHistoryStore::kInitResultHistogramName,
+        MediaHistoryStore::InitResult::kFailedToEstablishTransaction);
+
+    return;
+  }
+
   sql::InitStatus status = CreateOrUpgradeIfNeeded();
   if (status != sql::INIT_OK) {
     LOG(ERROR) << "Failed to create or update the media history store.";
-    db_->Poison();
 
     base::UmaHistogramEnumeration(
         MediaHistoryStore::kInitResultHistogramName,
@@ -189,7 +228,6 @@ void MediaHistoryStore::Initialize() {
   status = InitializeTables();
   if (status != sql::INIT_OK) {
     LOG(ERROR) << "Failed to initialize the media history store tables.";
-    db_->Poison();
 
     base::UmaHistogramEnumeration(
         MediaHistoryStore::kInitResultHistogramName,
@@ -197,6 +235,9 @@ void MediaHistoryStore::Initialize() {
 
     return;
   }
+
+  // Commit the transaction for creating the db_->
+  DB()->CommitTransaction();
 
   initialization_successful_ = true;
 
@@ -206,7 +247,6 @@ void MediaHistoryStore::Initialize() {
   // Get the size in bytes.
   int64_t file_size = 0;
   base::GetFileSize(db_path_, &file_size);
-  DCHECK_NE(0, file_size);
 
   // Record the size in KB.
   if (file_size > 0) {
@@ -216,7 +256,7 @@ void MediaHistoryStore::Initialize() {
 }
 
 sql::InitStatus MediaHistoryStore::CreateOrUpgradeIfNeeded() {
-  if (!db_)
+  if (!db_->is_open())
     return sql::INIT_FAILURE;
 
   int cur_version = meta_table_.GetVersionNumber();
@@ -446,7 +486,7 @@ MediaHistoryStore::GetPlaybackSessions(
 void MediaHistoryStore::RazeAndClose() {
   DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
 
-  if (db_ && db_->is_open())
+  if (db_->is_open())
     db_->RazeAndClose();
 
   sql::Database::Delete(db_path_);

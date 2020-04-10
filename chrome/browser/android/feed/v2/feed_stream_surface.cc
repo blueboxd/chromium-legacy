@@ -91,6 +91,17 @@ void FeedStreamSurface::SurfaceOpened(JNIEnv* env,
 void FeedStreamSurface::SurfaceClosed(JNIEnv* env,
                                       const JavaParamRef<jobject>& obj) {}
 
+void FeedStreamSurface::ReportOpenAction(JNIEnv* env,
+                                         const JavaParamRef<jobject>& obj) {
+  feed_stream_api_->ReportOpenAction();
+}
+
+void FeedStreamSurface::ReportOpenInNewTabAction(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  feed_stream_api_->ReportOpenInNewTabAction();
+}
+
 void FeedStreamSurface::ReportSliceViewed(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,

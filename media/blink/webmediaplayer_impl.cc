@@ -110,14 +110,10 @@ void SetSinkIdOnMediaThread(
 }
 
 bool IsBackgroundSuspendEnabled(const WebMediaPlayerImpl* wmpi) {
-  // TODO(crbug.com/867146): remove these switches.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableMediaSuspend))
+          switches::kDisableBackgroundMediaSuspend)) {
     return false;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableMediaSuspend))
-    return true;
-
+  }
   return wmpi->IsBackgroundMediaSuspendEnabled();
 }
 

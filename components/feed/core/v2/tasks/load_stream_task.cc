@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
+#include "components/feed/core/proto/v2/wire/capability.pb.h"
 #include "components/feed/core/proto/v2/wire/client_info.pb.h"
 #include "components/feed/core/proto/v2/wire/feed_request.pb.h"
 #include "components/feed/core/proto/v2/wire/request.pb.h"
@@ -77,6 +78,8 @@ void LoadStreamTask::LoadFromStoreComplete(
 
   feed_request.mutable_feed_query()->set_reason(
       feedwire::FeedQuery::MANUAL_REFRESH);
+  request.mutable_feed_request()->add_client_capability(
+      feedwire::Capability::BASE_UI);
   if (!result.consistency_token.empty()) {
     feed_request.mutable_consistency_token()->set_token(
         result.consistency_token);

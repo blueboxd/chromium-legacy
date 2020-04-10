@@ -4,12 +4,15 @@
 
 package org.chromium.weblayer_private;
 
+import android.Manifest.permission;
+import android.content.pm.PackageManager;
 import android.os.RemoteException;
 import android.webkit.ValueCallback;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.weblayer_private.interfaces.IDownloadCallbackClient;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 
@@ -51,7 +54,29 @@ public final class DownloadCallbackProxy {
     }
 
     @CalledByNative
-    private void allowDownload(String url, String requestMethod, String requestInitiator,
+    private void allowDownload(TabImpl tab, String url, String requestMethod,
+            String requestInitiator, long callbackId) throws RemoteException {
+        WindowAndroid window = tab.getBrowser().getWindowAndroid();
+        if (window.hasPermission(permission.WRITE_EXTERNAL_STORAGE)) {
+            continueAllowDownload(url, requestMethod, requestInitiator, callbackId);
+            return;
+        }
+
+        String[] requestPermissions = new String[] {permission.WRITE_EXTERNAL_STORAGE};
+        window.requestPermissions(requestPermissions, (permissions, grantResults) -> {
+            if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
+                DownloadCallbackProxyJni.get().allowDownload(callbackId, false);
+                return;
+            }
+
+            try {
+                continueAllowDownload(url, requestMethod, requestInitiator, callbackId);
+            } catch (RemoteException e) {
+            }
+        });
+    }
+
+    private void continueAllowDownload(String url, String requestMethod, String requestInitiator,
             long callbackId) throws RemoteException {
         if (WebLayerFactoryImpl.getClientMajorVersion() < 81) {
             DownloadCallbackProxyJni.get().allowDownload(callbackId, true);

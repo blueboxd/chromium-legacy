@@ -151,14 +151,22 @@ def GetVisualStudioVersion():
       for k,v in MSVS_VERSIONS.items())
   available_versions = []
   for version in supported_versions:
-    for path in (
-        os.environ.get('vs%s_install' % version),
-        os.path.expandvars('%ProgramFiles(x86)%' +
-                           '/Microsoft Visual Studio/%s' % version)):
-      if path and any(os.path.exists(os.path.join(path, edition)) for edition in
-          ('Enterprise', 'Professional', 'Community', 'Preview')):
-        available_versions.append(version)
-        break
+    # Checking vs%s_install environment variables.
+    # For example, vs2019_install could have the value
+    # "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community".
+    # Only vs2017_install and vs2019_install are supported.
+    path = os.environ.get('vs%s_install' % version)
+    if path and os.path.exists(path):
+      available_versions.append(version)
+      break
+    # Detecting VS under possible paths.
+    path = os.path.expandvars('%ProgramFiles(x86)%' +
+                              '/Microsoft Visual Studio/%s' % version)
+    if path and any(
+        os.path.exists(os.path.join(path, edition))
+        for edition in ('Enterprise', 'Professional', 'Community', 'Preview')):
+      available_versions.append(version)
+      break
 
   if not available_versions:
     raise Exception('No supported Visual Studio can be found.'

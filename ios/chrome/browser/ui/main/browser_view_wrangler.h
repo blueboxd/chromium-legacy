@@ -43,6 +43,11 @@ NSString* kIncognitoCurrentKey = @"IncognitoActive";
 
 - (instancetype)init NS_UNAVAILABLE;
 
+// Window ID. Only used in multiwindow. Temporary solution for session
+// restoration in multiwindow.
+// TODO(crbug.com/1069762): remove this.
+@property(nonatomic, assign) NSUInteger windowID;
+
 // Creates the main Browser used by the receiver, using the browser state
 // and tab model observer it was configured with. The main interface is then
 // created; until this method is called, the main and incognito interfaces will

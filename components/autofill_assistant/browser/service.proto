@@ -1147,6 +1147,11 @@ message PromptProto {
     // be transmitted as-is by the client without interpreting.
     optional bytes server_payload = 5;
 
+    // This field is only used when crafting a response Choice for the server
+    // when the |end_on_navigation| option is set. It means there was a
+    // navigation event while in prompt mode that ended the action.
+    optional bool navigation_ended = 17;
+
     reserved 4, 6, 8, 13, 14;
   }
   repeated Choice choices = 4;
@@ -1163,6 +1168,11 @@ message PromptProto {
   // like go_back do not shut down autofill assistant.
   // TODO(marianfe): Consider introducing a BrowseAction instead.
   optional bool browse_mode = 7;
+
+  // When set to true, end prompt on navigation events happening during a prompt
+  // action. The result sent back to the server will contain a Choice marked as
+  // |navigation_ended|.
+  optional bool end_on_navigation = 8;
 }
 
 message ContactDetailsProto {

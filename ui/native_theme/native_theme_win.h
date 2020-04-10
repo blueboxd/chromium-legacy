@@ -15,6 +15,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
+#include "base/optional.h"
 #include "base/win/registry.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size.h"
@@ -196,7 +197,7 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
 
   // Returns the platform provided high contrast color for the given
   // |color_id|.
-  SkColor GetPlatformHighContrastColor(ColorId color_id) const;
+  base::Optional<SkColor> GetPlatformHighContrastColor(ColorId color_id) const;
 
   // Dark Mode registry key.
   base::win::RegKey hkcu_themes_regkey_;

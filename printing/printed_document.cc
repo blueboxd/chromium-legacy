@@ -280,10 +280,11 @@ void PrintedDocument::DebugDumpData(
 }
 
 #if defined(OS_WIN)
+// static
 gfx::Rect PrintedDocument::GetCenteredPageContentRect(
     const gfx::Size& paper_size,
     const gfx::Size& page_size,
-    const gfx::Rect& page_content_rect) const {
+    const gfx::Rect& page_content_rect) {
   gfx::Rect content_rect = page_content_rect;
   if (paper_size.width() > page_size.width()) {
     int diff = paper_size.width() - page_size.width();

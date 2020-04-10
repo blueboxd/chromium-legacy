@@ -7,8 +7,6 @@ import("//components/metrics/generate_expired_histograms_array.gni")
 source_set("test_support") {
   testonly = true
   sources = [
-    "testing/demographic_metrics_test_utils.cc",
-    "testing/demographic_metrics_test_utils.h",
     "testing/sync_metrics_test_utils.cc",
     "testing/sync_metrics_test_utils.h",
   ]
@@ -16,11 +14,7 @@ source_set("test_support") {
   deps = [
     "//base",
     "//chrome/browser",
-    "//components/network_time",
-    "//components/prefs",
     "//components/signin/public/identity_manager",
-    "//components/sync",
-    "//components/sync/base",
     "//components/sync/test/fake_server",
     "//third_party/metrics_proto",
   ]

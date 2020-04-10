@@ -281,8 +281,9 @@ gfx::RectF OverviewItem::GetTransformedBounds() const {
 void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
                              OverviewAnimationType animation_type) {
   if (in_bounds_update_ ||
-      !Shell::Get()->overview_controller()->InOverviewSession())
+      !Shell::Get()->overview_controller()->InOverviewSession()) {
     return;
+  }
 
   // Do not animate if the resulting bounds does not change. The original
   // window may change bounds so we still need to call SetItemBounds to update
@@ -398,6 +399,8 @@ void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
     SetItemBounds(inset_bounds, new_animation_type, is_first_update);
     UpdateHeaderLayout(is_first_update ? OVERVIEW_ANIMATION_NONE
                                        : new_animation_type);
+    if (is_first_update && !should_animate_when_entering_)
+      transform_window_.ClipHeaderIfNeeded(/*animate=*/false);
   }
 
   // Shadow is normally set after an animation is finished. In the case of no
@@ -760,9 +763,7 @@ void OverviewItem::UpdateRoundedCornersAndShadow() {
     overview_item_view_->UpdatePreviewRoundedCorners(
         should_show_rounded_corners);
   } else {
-    transform_window_.UpdateRoundedCorners(
-        should_show_rounded_corners,
-        /*update_clip=*/should_show_rounded_corners);
+    transform_window_.UpdateRoundedCornersAndClip(should_show_rounded_corners);
   }
 
   // In addition, the shadow should be hidden if

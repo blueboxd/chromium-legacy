@@ -208,11 +208,6 @@ void X11Window::SetBounds(const gfx::Rect& bounds) {
   // (possibly synthetic) ConfigureNotify about the actual size and correct
   // |bounds_| later.
   XWindow::SetBounds(bounds_in_pixels);
-
-  // Even if the pixel bounds didn't change this call to the delegate should
-  // still happen. The device scale factor may have changed which effectively
-  // changes the bounds.
-  platform_window_delegate_->OnBoundsChanged(bounds_in_pixels);
 }
 
 gfx::Rect X11Window::GetBounds() {

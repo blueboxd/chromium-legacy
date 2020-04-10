@@ -171,8 +171,11 @@ int DesktopDragDropClientAuraX11::StartDragAndDrop(
   // Windows has a specific method, DoDragDrop(), which performs the entire
   // drag. We have to emulate this, so we spin off a nested runloop which will
   // track all cursor movement and reroute events to a specific handler.
-  move_loop_->RunMoveLoop(source_window, cursor_manager_->GetInitializedCursor(
-                                             ui::mojom::CursorType::kGrabbing));
+  move_loop_->RunMoveLoop(
+      !source_window->HasCapture(),
+      source_window->GetHost()->last_cursor().platform(),
+      cursor_manager_->GetInitializedCursor(ui::mojom::CursorType::kGrabbing)
+          .platform());
 
   if (alive) {
     auto resulting_operation = negotiated_operation();
@@ -362,7 +365,8 @@ void DesktopDragDropClientAuraX11::UpdateCursor(
       cursor_type = ui::mojom::CursorType::kDndLink;
       break;
   }
-  move_loop_->UpdateCursor(cursor_manager_->GetInitializedCursor(cursor_type));
+  move_loop_->UpdateCursor(
+      cursor_manager_->GetInitializedCursor(cursor_type).platform());
 }
 
 void DesktopDragDropClientAuraX11::OnBeginForeignDrag(XID window) {

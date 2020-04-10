@@ -325,9 +325,10 @@ source_set("test_support") {
     "//base",
     "//base/test:test_support",
     "//components/metrics",
+    "//components/metrics:demographics_test_support",
     "//components/metrics_services_manager",
     "//components/network_time",
-    "//components/sync/base",
+    "//components/prefs",
     "//components/ukm",
     "//components/ukm:ukm_test_helper",
     "//ios/chrome/app:app_internal",
@@ -346,9 +347,6 @@ source_set("test_support") {
     "//ios/testing/earl_grey:earl_grey_support",
     "//net:test_support",
     "//third_party/metrics_proto",
-
-    #TODO(crbug.com/1066297): Remove the below line.
-    "//third_party/zlib/google:compression_utils",
     "//ui/base",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -382,9 +380,10 @@ source_set("eg_app_support+eg2") {
     "//base",
     "//base/test:test_support",
     "//components/metrics",
+    "//components/metrics:demographics_test_support",
     "//components/metrics_services_manager",
     "//components/network_time",
-    "//components/sync/base",
+    "//components/prefs",
     "//components/ukm",
     "//components/ukm:ukm_test_helper",
     "//ios/chrome/browser",
@@ -394,9 +393,6 @@ source_set("eg_app_support+eg2") {
     "//ios/chrome/test/app:test_support",
     "//ios/testing:nserror_support",
     "//third_party/metrics_proto",
-
-    #TODO(crbug.com/1066297): Remove the below line.
-    "//third_party/zlib/google:compression_utils",
   ]
 }
 

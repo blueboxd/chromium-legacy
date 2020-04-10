@@ -1124,8 +1124,10 @@ void WizardController::OnSyncConsentFinished() {
   ShowFingerprintSetupScreen();
 }
 
-void WizardController::OnFingerprintSetupScreenExit() {
-  OnScreenExit(FingerprintSetupScreenView::kScreenId, kDefaultExitReason);
+void WizardController::OnFingerprintSetupScreenExit(
+    FingerprintSetupScreen::Result result) {
+  OnScreenExit(FingerprintSetupScreenView::kScreenId,
+               FingerprintSetupScreen::GetResultString(result));
 
   ShowDiscoverScreen();
 }

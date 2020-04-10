@@ -8,6 +8,8 @@
 #include "base/macros.h"
 #include "components/metrics/enabled_state_provider.h"
 
+// TODO(crbug.com/1068142): Move this to the new test directory.
+
 namespace metrics {
 
 // A simple concrete implementation of the EnabledStateProvider interface, for

@@ -61,7 +61,6 @@ class CustomizeDialogElement extends PolymerElement {
        */
       backgroundSelection: {
         type: Object,
-        value: () => ({type: BackgroundSelectionType.NO_SELECTION}),
         notify: true,
       },
 
@@ -101,12 +100,12 @@ class CustomizeDialogElement extends PolymerElement {
     this.pageHandler_ = BrowserProxy.getInstance().handler;
     /** @private {!Array<!IntersectionObserver>} */
     this.intersectionObservers_ = [];
+    this.backgroundSelection = {type: BackgroundSelectionType.NO_SELECTION};
   }
 
   /** @override */
   disconnectedCallback() {
     super.disconnectedCallback();
-    this.backgroundSelection = {type: BackgroundSelectionType.NO_SELECTION};
     this.intersectionObservers_.forEach(observer => {
       observer.disconnect();
     });
@@ -133,7 +132,16 @@ class CustomizeDialogElement extends PolymerElement {
     this.$.dialog.cancel();
   }
 
-  /** @private */
+  /**
+   * The |backgroundSelection| is used in ntp-app to preview the image and has
+   * precedence over the theme background setting. |backgroundSelection| is not
+   * reset because it takes time for the theme to update, and after the update
+   * the theme and |backgroundSelection| are the same. By not resetting the
+   * value here, ntp-app can reset it if needed (other theme update). This
+   * prevents a flicker between |backgroundSelection| and the previous theme
+   * background setting.
+   * @private
+   */
   onDoneClick_() {
     this.pageHandler_.confirmThemeChanges();
     this.shadowRoot.querySelector('ntp-customize-shortcuts').apply();
@@ -151,7 +159,6 @@ class CustomizeDialogElement extends PolymerElement {
         this.pageHandler_.setDailyRefreshCollectionId(
             assert(this.backgroundSelection.dailyRefreshCollectionId));
     }
-    this.backgroundSelection = {type: BackgroundSelectionType.NO_SELECTION};
     this.$.dialog.close();
   }
 

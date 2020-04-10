@@ -215,7 +215,6 @@ FeedStream::WireResponseTranslator::TranslateWireResponse(
 }
 
 FeedStream::FeedStream(RefreshTaskScheduler* refresh_task_scheduler,
-                       EventObserver* stream_event_observer,
                        MetricsReporter* metrics_reporter,
                        Delegate* delegate,
                        PrefService* profile_prefs,
@@ -225,7 +224,6 @@ FeedStream::FeedStream(RefreshTaskScheduler* refresh_task_scheduler,
                        const base::TickClock* tick_clock,
                        const ChromeInfo& chrome_info)
     : refresh_task_scheduler_(refresh_task_scheduler),
-      stream_event_observer_(stream_event_observer),
       metrics_reporter_(metrics_reporter),
       delegate_(delegate),
       profile_prefs_(profile_prefs),
@@ -283,8 +281,8 @@ void FeedStream::TriggerStreamLoad() {
 }
 
 void FeedStream::LoadStreamTaskComplete(LoadStreamTask::Result result) {
-  stream_event_observer_->OnLoadStream(result.load_from_store_status,
-                                       result.final_status);
+  metrics_reporter_->OnLoadStream(result.load_from_store_status,
+                                  result.final_status);
   DVLOG(1) << "LoadStreamTaskComplete load_from_store_status="
            << result.load_from_store_status
            << " final_status=" << result.final_status;
@@ -297,6 +295,7 @@ void FeedStream::LoadStreamTaskComplete(LoadStreamTask::Result result) {
 }
 
 void FeedStream::AttachSurface(SurfaceInterface* surface) {
+  metrics_reporter_->SurfaceOpened();
   surfaces_.AddObserver(surface);
   surface_updater_->SurfaceAdded(surface);
   TriggerStreamLoad();
@@ -447,7 +446,7 @@ void FeedStream::ExecuteRefreshTask() {
 
 void FeedStream::ClearAll() {
   // TODO(harringtond): How should we handle in-progress tasks.
-  stream_event_observer_->OnClearAll(clock_->Now() - GetLastFetchTime());
+  metrics_reporter_->OnClearAll(clock_->Now() - GetLastFetchTime());
 
   // TODO(harringtond): This should result in clearing feed data
   // and _maybe_ triggering refresh with TriggerType::kNtpShown.
@@ -456,8 +455,7 @@ void FeedStream::ClearAll() {
 
 void FeedStream::MaybeTriggerRefresh(TriggerType trigger,
                                      bool clear_all_before_refresh) {
-  stream_event_observer_->OnMaybeTriggerRefresh(trigger,
-                                                clear_all_before_refresh);
+  metrics_reporter_->OnMaybeTriggerRefresh(trigger, clear_all_before_refresh);
   // TODO(harringtond): Implement refresh (with LoadStreamTask).
 }
 
@@ -475,6 +473,12 @@ void FeedStream::UnloadModel() {
   model_.reset();
 }
 
+void FeedStream::ReportOpenAction() {
+  metrics_reporter_->OpenAction();
+}
+void FeedStream::ReportOpenInNewTabAction() {
+  metrics_reporter_->OpenInNewTabAction();
+}
 void FeedStream::ReportSliceViewed(const std::string& slice_id) {
   int index = surface_updater_->GetSliceIndexFromSliceId(slice_id);
   if (index >= 0)

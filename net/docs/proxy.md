@@ -996,3 +996,44 @@ Documentation on specific events is available in
 Network change events can also be key to understanding proxy issues. After
 switching networks (ex VPN), the effective proxy settings, as well as content
 of any PAC scripts/auto-detect can change.
+
+## Web Proxy Auto-Discovery (WPAD)
+
+When configured to use WPAD (aka "autotmaticaly detect proxy settings"), Chrome
+will prioritize:
+
+1. DHCP-based WPAD (option 252)
+2. DNS-based WPAD
+
+These are tried in order, however DHCP-based WPAD is only supported for Chrome
+on Windows and Chrome on Chrome OS.
+
+WPAD is the system default for many home and Enterprise users.
+
+### Chrome on macOS support for DHCP-based WPAD
+
+Chrome on macOS does not support DHCP-based WPAD when configured to use
+"autodetect".
+
+However, macOS might perform DHCP-based WPAD and embed this discovered PAC URL
+as part of the system proxy settings. So effectively when Chrome is configured
+to "use system proxy settings" it may behave as if it supports DHCP-based WPAD.
+
+### Dangers of DNS-based WPAD and DNS search suffix list
+
+DNS-based WPAD involves probing for the non-FQDN `wpad`. This means
+WPAD's performance and security is directly tied to the user's DNS search
+suffix list.
+
+When resolving `wpad`, the host's DNS resolver will complete the hostname using
+each of the suffixes in the search list:
+
+1. If the suffix list is long this process can very slow, as it triggers a
+   cascade of NXDOMAIN.
+2. If the suffix list includes domains *outside of the administrative domain*,
+   WPAD may select an attacker controlled PAC server, and can subsequently
+   funnel the user's traffic through a proxy server of their choice. The
+   evolution of TLDs further increases this risk, since what were previously
+   private suffixes used by an enterprise can become publicly registerable.
+   See also [WPAD Name Collision
+   Vulnerability](https://www.us-cert.gov/ncas/alerts/TA16-144A)

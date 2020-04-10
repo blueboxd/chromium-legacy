@@ -16,6 +16,7 @@ enum class NetworkRequestType : int {
   kUploadActions = 1,
 };
 
+// This must be kept in sync with FeedLoadStreamStatus in enums.xml.
 enum class LoadStreamStatus {
   // Loading was not attempted.
   kNoStatus = 0,
@@ -36,6 +37,9 @@ enum class LoadStreamStatus {
   kCannotLoadFromNetworkThrottled = 12,
   kLoadNotAllowedEulaNotAccepted = 13,
   kLoadNotAllowedArticlesListHidden = 14,
+  // TODO(harringtond): Emit this status value.
+  kCannotParseNetorkResponseBody = 15,
+  kMaxValue = kCannotParseNetorkResponseBody,
 };
 
 std::ostream& operator<<(std::ostream& out, LoadStreamStatus value);

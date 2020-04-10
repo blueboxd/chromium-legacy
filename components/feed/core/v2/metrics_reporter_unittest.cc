@@ -57,7 +57,7 @@ TEST_F(MetricsReporterTest, ScrollingCanTriggerEngaged) {
 }
 
 TEST_F(MetricsReporterTest, OpeningContentIsInteracting) {
-  reporter_.NavigationStarted();
+  reporter_.OpenAction();
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedEngaged, 1},
@@ -103,7 +103,7 @@ TEST_F(MetricsReporterTest, ManageInterestsInIsInteracting) {
 TEST_F(MetricsReporterTest, VisitsCanLastMoreThanFiveMinutes) {
   reporter_.StreamScrolled(1);
   clock_.Advance(base::TimeDelta::FromMinutes(5) - kEpsilon);
-  reporter_.NavigationStarted();
+  reporter_.OpenAction();
   clock_.Advance(base::TimeDelta::FromMinutes(5) - kEpsilon);
   reporter_.StreamScrolled(1);
 
@@ -117,10 +117,10 @@ TEST_F(MetricsReporterTest, VisitsCanLastMoreThanFiveMinutes) {
 }
 
 TEST_F(MetricsReporterTest, NewVisitAfterInactivity) {
-  reporter_.NavigationStarted();
+  reporter_.OpenAction();
   reporter_.StreamScrolled(1);
   clock_.Advance(base::TimeDelta::FromMinutes(5) + kEpsilon);
-  reporter_.NavigationStarted();
+  reporter_.OpenAction();
   reporter_.StreamScrolled(1);
 
   std::map<FeedEngagementType, int> want({
@@ -130,6 +130,45 @@ TEST_F(MetricsReporterTest, NewVisitAfterInactivity) {
       {FeedEngagementType::kFeedScrolled, 1},
   });
   EXPECT_EQ(want, ReportedEngagementType());
+}
+
+TEST_F(MetricsReporterTest, ReportsLoadStreamStatus) {
+  reporter_.OnLoadStream(LoadStreamStatus::kDataInStoreIsStale,
+                         LoadStreamStatus::kLoadedFromNetwork);
+
+  histogram_.ExpectUniqueSample(
+      "ContentSuggestions.Feed.LoadStreamStatus.Initial",
+      LoadStreamStatus::kLoadedFromNetwork, 1);
+  histogram_.ExpectUniqueSample(
+      "ContentSuggestions.Feed.LoadStreamStatus.InitialFromStore",
+      LoadStreamStatus::kDataInStoreIsStale, 1);
+}
+
+TEST_F(MetricsReporterTest, ReportsLoadStreamStatusIgnoresNoStatusFromStore) {
+  reporter_.OnLoadStream(LoadStreamStatus::kNoStatus,
+                         LoadStreamStatus::kLoadedFromNetwork);
+
+  histogram_.ExpectUniqueSample(
+      "ContentSuggestions.Feed.LoadStreamStatus.Initial",
+      LoadStreamStatus::kLoadedFromNetwork, 1);
+  histogram_.ExpectTotalCount(
+      "ContentSuggestions.Feed.LoadStreamStatus.InitialFromStore", 0);
+}
+
+TEST_F(MetricsReporterTest, ReportsLoadMoreStatus) {
+  reporter_.OnLoadMore(LoadStreamStatus::kLoadedFromNetwork);
+
+  histogram_.ExpectUniqueSample(
+      "ContentSuggestions.Feed.LoadStreamStatus.LoadMore",
+      LoadStreamStatus::kLoadedFromNetwork, 1);
+}
+
+TEST_F(MetricsReporterTest, ReportsBackgroundRefreshStatus) {
+  reporter_.OnBackgroundRefresh(LoadStreamStatus::kLoadedFromNetwork);
+
+  histogram_.ExpectUniqueSample(
+      "ContentSuggestions.Feed.LoadStreamStatus.BackgroundRefresh",
+      LoadStreamStatus::kLoadedFromNetwork, 1);
 }
 
 }  // namespace feed

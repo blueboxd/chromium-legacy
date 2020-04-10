@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/compiler_specific.h"
+#include "base/time/time.h"
 
 namespace syncher {
 
@@ -47,14 +48,12 @@ const NSTimeInterval kSyncUKMOperationsTimeout = 10.0;
 // Adds a new sourceID for UKM.
 + (void)UKMRecordDummySource:(int64_t)sourceID;
 
-// TODO(crbug.com/1066297): Refactor to remove duplicate code.
-// Sets the network time to approximately now.
-+ (void)setNetworkTimeForTesting;
+// Updates the network time to approximately |now|.
++ (void)updateNetworkTime:(base::Time)now;
 
-// TODO(crbug.com/1066297): Refactor to remove duplicate code.
-// Gets the user's noised birth year, where |rawBirthYear| is the true birth
-// year, pre-noise.
-+ (int)noisedBirthYear:(int)rawBirthYear;
+// Gets the maximum eligible birth year for reporting demographics based on
+// |now|.
++ (int)maximumEligibleBirthYearForTime:(base::Time)now;
 
 // If data are available, creates a UKM Report and stores it in the
 // UKM service's UnsentLogStore.
@@ -63,32 +62,26 @@ const NSTimeInterval kSyncUKMOperationsTimeout = 10.0;
 // Returns YES if the UKM service has logs to send.
 + (BOOL)hasUnsentUKMLogs;
 
-// TODO(crbug.com/1066297): Refactor to remove duplicate code.
 // Returns YES if the UKM service's report has the expected year and gender.
 // The year is the un-noised birth year, and the gender corresponds to the
 // options in UserDemographicsProto::Gender.
 + (BOOL)UKMReportHasBirthYear:(int)year gender:(int)gender;
 
-// TODO(crbug.com/1066297): Refactor to remove duplicate code.
 // Returns YES if the UKM service's report has user demographics.
 + (BOOL)UKMReportHasUserDemographics;
 
-// TODO(crbug.com/1066297): Refactor to remove duplicate code.
 // If data are available, creates an UMA log and stores it in the
 // MetricsLogStore.
 + (void)buildAndStoreUMALog;
 
-// TODO(crbug.com/1066297): Refactor to remove duplicate code.
 // Returns YES if the metrics service has logs to send.
 + (BOOL)hasUnsentUMALogs;
 
-// TODO(crbug.com/1066297): Refactor to remove duplicate code.
 // Returns YES if the UMA log has the expected year and gender. The year is the
 // un-noised birth year, and the gender corresponds to the proto enum
 // UserDemographicsProto::Gender.
 + (BOOL)UMALogHasBirthYear:(int)year gender:(int)gender;
 
-// TODO(crbug.com/1066297): Refactor to remove duplicate code.
 // Returns YES if the UMA log has user demographics.
 + (BOOL)UMALogHasUserDemographics;
 

@@ -222,4 +222,38 @@ suite('NewTabPageAppTest', () => {
         'background_image?https://example.com/image.png',
         app.$.backgroundImage.path);
   });
+
+  test('theme update when dialog closed clears selection', async () => {
+    const theme = createTheme();
+    theme.backgroundImageUrl = {url: 'https://example.com/image.png'};
+    testProxy.callbackRouterRemote.setTheme(theme);
+    await testProxy.callbackRouterRemote.$.flushForTesting();
+    assertEquals(
+        'background_image?https://example.com/image.png',
+        app.$.backgroundImage.path);
+    app.$.customizeButton.click();
+    await flushTasks();
+    const dialog = app.shadowRoot.querySelector('ntp-customize-dialog');
+    dialog.backgroundSelection = {
+      type: BackgroundSelectionType.IMAGE,
+      image: {
+        attribution1: '1',
+        attribution2: '2',
+        attributionUrl: {url: 'https://example.com'},
+        imageUrl: {url: 'https://example.com/other.png'},
+      },
+    };
+    assertEquals(
+        'background_image?https://example.com/other.png',
+        app.$.backgroundImage.path);
+    dialog.dispatchEvent(new Event('close'));
+    assertEquals(
+        'background_image?https://example.com/other.png',
+        app.$.backgroundImage.path);
+    testProxy.callbackRouterRemote.setTheme(theme);
+    await testProxy.callbackRouterRemote.$.flushForTesting();
+    assertEquals(
+        'background_image?https://example.com/image.png',
+        app.$.backgroundImage.path);
+  });
 });

@@ -145,6 +145,22 @@ suite('NewTabPageCustomizeDialogTest', () => {
       assertFalse(customizeDialog.$.refreshToggle.checked);
     });
 
+    test('clicking cancel', () => {
+      customizeDialog.backgroundSelection = {
+        type: BackgroundSelectionType.IMAGE,
+        image: {
+          attribution1: '1',
+          attribution2: '2',
+          attributionUrl: {url: 'https://example.com'},
+          imageUrl: {url: 'https://example.com/other.png'}
+        },
+      };
+      customizeDialog.shadowRoot.querySelector('.cancel-button').click();
+      assertDeepEquals(
+          {type: BackgroundSelectionType.NO_SELECTION},
+          customizeDialog.backgroundSelection);
+    });
+
     suite('clicking done', () => {
       function done() {
         customizeDialog.shadowRoot.querySelector('.action-button').click();
@@ -168,7 +184,15 @@ suite('NewTabPageCustomizeDialogTest', () => {
         assertEquals('https://example.com', attributionUrl.url);
         assertEquals('https://example.com/other.png', imageUrl.url);
         assertDeepEquals(
-            {type: BackgroundSelectionType.NO_SELECTION},
+            {
+              type: BackgroundSelectionType.IMAGE,
+              image: {
+                attribution1: '1',
+                attribution2: '2',
+                attributionUrl: {url: 'https://example.com'},
+                imageUrl: {url: 'https://example.com/other.png'}
+              },
+            },
             customizeDialog.backgroundSelection);
       });
 
@@ -180,7 +204,10 @@ suite('NewTabPageCustomizeDialogTest', () => {
             'abstract',
             await testProxy.handler.whenCalled('setDailyRefreshCollectionId'));
         assertDeepEquals(
-            {type: BackgroundSelectionType.NO_SELECTION},
+            {
+              type: BackgroundSelectionType.DAILY_REFRESH,
+              dailyRefreshCollectionId: 'abstract',
+            },
             customizeDialog.backgroundSelection);
       });
 
@@ -189,19 +216,16 @@ suite('NewTabPageCustomizeDialogTest', () => {
         customizeDialog.$.refreshToggle.click();
         done();
         await testProxy.handler.whenCalled('setNoBackgroundImage');
-        assertDeepEquals(
-            {type: BackgroundSelectionType.NO_SELECTION},
-            customizeDialog.backgroundSelection);
       });
 
       test('set no background', async () => {
         customizeDialog.backgroundSelection = {
-          type: BackgroundSelectionType.NO_BACKGROUND
+          type: BackgroundSelectionType.NO_BACKGROUND,
         };
         done();
         await testProxy.handler.whenCalled('setNoBackgroundImage');
         assertDeepEquals(
-            {type: BackgroundSelectionType.NO_SELECTION},
+            {type: BackgroundSelectionType.NO_BACKGROUND},
             customizeDialog.backgroundSelection);
       });
     });

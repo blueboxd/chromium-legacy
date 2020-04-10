@@ -45,6 +45,10 @@ typedef NS_ENUM(NSUInteger, SceneActivationLevel) {
 // The current activation level.
 @property(nonatomic, assign) SceneActivationLevel activationLevel;
 
+// Window ID, used for restoration.
+// TODO(crbug.com/1069762): remove this.
+@property(nonatomic, assign, readonly) NSUInteger windowID;
+
 // Window for the associated scene, if any.
 @property(nonatomic, strong) UIWindow* window;
 

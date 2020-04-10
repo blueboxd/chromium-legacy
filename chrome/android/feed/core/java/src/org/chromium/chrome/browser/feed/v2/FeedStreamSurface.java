@@ -125,20 +125,24 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     @NativeMethods
     interface Natives {
         long init(FeedStreamSurface caller);
-        void reportNavigationStarted(long nativeFeedStreamSurface, FeedStreamSurface caller,
-                String url, boolean inNewTab);
         // TODO(jianli): Call this function at the appropriate time.
         void reportSliceViewed(
                 long nativeFeedStreamSurface, FeedStreamSurface caller, String sliceId);
+        void reportNavigationStarted(long nativeFeedStreamSurface, FeedStreamSurface caller,
+                String url, boolean inNewTab);
+        // TODO(jianli): Call this function at the appropriate time.
+        void reportNavigationDone(long nativeFeedStreamSurface, FeedStreamSurface caller,
+                String url, boolean inNewTab);
+        // TODO(jianli): Call this function at the appropriate time.
+        void reportOpenAction(long nativeFeedStreamSurface, FeedStreamSurface caller);
+        // TODO(jianli): Call this function at the appropriate time.
+        void reportOpenInNewTabAction(long nativeFeedStreamSurface, FeedStreamSurface caller);
         // TODO(jianli): Call this function at the appropriate time.
         void reportSendFeedbackAction(long nativeFeedStreamSurface, FeedStreamSurface caller);
         // TODO(jianli): Call this function at the appropriate time.
         void reportLearnMoreAction(long nativeFeedStreamSurface, FeedStreamSurface caller);
         // TODO(jianli): Call this function at the appropriate time.
         void reportDownloadAction(long nativeFeedStreamSurface, FeedStreamSurface caller);
-        // TODO(jianli): Call this function at the appropriate time.
-        void reportNavigationDone(long nativeFeedStreamSurface, FeedStreamSurface caller,
-                String url, boolean inNewTab);
         // TODO(jianli): Call this function at the appropriate time.
         void reportRemoveAction(long nativeFeedStreamSurface, FeedStreamSurface caller);
         // TODO(jianli): Call this function at the appropriate time.

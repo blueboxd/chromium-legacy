@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/login/screens/enable_adb_sideloading_screen.h"
 #include "chrome/browser/chromeos/login/screens/enable_debugging_screen.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
+#include "chrome/browser/chromeos/login/screens/fingerprint_setup_screen.h"
 #include "chrome/browser/chromeos/login/screens/gesture_navigation_screen.h"
 #include "chrome/browser/chromeos/login/screens/kiosk_autolaunch_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
@@ -240,7 +241,7 @@ class WizardController {
   void OnTermsOfServiceAccepted();
   void OnSyncConsentScreenExit();
   void OnSyncConsentFinished();
-  void OnFingerprintSetupScreenExit();
+  void OnFingerprintSetupScreenExit(FingerprintSetupScreen::Result result);
   void OnDiscoverScreenExit();
   void OnArcTermsOfServiceScreenExit(ArcTermsOfServiceScreen::Result result);
   void OnArcTermsOfServiceSkipped();

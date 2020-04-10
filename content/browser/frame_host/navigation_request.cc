@@ -991,7 +991,7 @@ NavigationRequest::NavigationRequest(
       if (common_params_->is_history_navigation_in_new_child_frame)
         SetSourceSiteInstanceToInitiatorIfNeeded();
     }
-    network_isolation_key_ = entry->network_isolation_key();
+    isolation_info_ = entry->isolation_info();
     is_view_source_ = entry->IsViewSourceMode();
 
     // Ensure that we always have a |source_site_instance_| for navigations
@@ -2349,9 +2349,6 @@ void NavigationRequest::OnStartChecksComplete(
   // Mark the fetch_start (Navigation Timing API).
   commit_params_->navigation_timing->fetch_start = base::TimeTicks::Now();
 
-  net::SiteForCookies site_for_cookies =
-      frame_tree_node_->current_frame_host()
-          ->ComputeSiteForCookiesForNavigation(common_params_->url);
   bool parent_is_main_frame = !frame_tree_node_->parent()
                                   ? false
                                   : frame_tree_node_->parent()->IsMainFrame();
@@ -2381,9 +2378,9 @@ void NavigationRequest::OnStartChecksComplete(
   loader_ = NavigationURLLoader::Create(
       browser_context, partition,
       std::make_unique<NavigationRequestInfo>(
-          common_params_->Clone(), begin_params_.Clone(), site_for_cookies,
-          GetNetworkIsolationKey(), frame_tree_node_->IsMainFrame(),
-          parent_is_main_frame, IsSecureFrame(frame_tree_node_->parent()),
+          common_params_->Clone(), begin_params_.Clone(), GetIsolationInfo(),
+          frame_tree_node_->IsMainFrame(), parent_is_main_frame,
+          IsSecureFrame(frame_tree_node_->parent()),
           frame_tree_node_->frame_tree_node_id(),
           starting_site_instance_->IsGuest(), report_raw_headers,
           navigating_frame_host->GetVisibilityState() ==
@@ -2516,7 +2513,7 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
       resource_request->trusted_params =
           network::ResourceRequest::TrustedParams();
       resource_request->trusted_params->network_isolation_key =
-          GetNetworkIsolationKey();
+          GetIsolationInfo().network_isolation_key();
 
       BrowserContext* browser_context =
           frame_tree_node_->navigator()->GetController()->GetBrowserContext();
@@ -3897,22 +3894,14 @@ net::ResolveErrorInfo NavigationRequest::GetResolveErrorInfo() {
   return resolve_error_info_;
 }
 
-net::NetworkIsolationKey NavigationRequest::GetNetworkIsolationKey() {
-  if (network_isolation_key_)
-    return network_isolation_key_.value();
+net::IsolationInfo NavigationRequest::GetIsolationInfo() {
+  if (isolation_info_)
+    return isolation_info_.value();
 
-  // If this is a top-frame navigation, then use the origin of the url (and
-  // update it as redirects happen). If this is a subframe navigation, get the
-  // URL from the top frame.
   // TODO(crbug.com/979296): Consider changing this code to copy an origin
   // instead of creating one from a URL which lacks opacity information.
-  url::Origin frame_origin = url::Origin::Create(common_params_->url);
-  url::Origin top_frame_origin =
-      frame_tree_node_->IsMainFrame()
-          ? frame_origin
-          : frame_tree_node_->frame_tree()->root()->current_origin();
-
-  return net::NetworkIsolationKey(top_frame_origin, frame_origin);
+  return frame_tree_node_->current_frame_host()
+      ->ComputeIsolationInfoForNavigation(common_params_->url);
 }
 
 bool NavigationRequest::HasSubframeNavigationEntryCommitted() {

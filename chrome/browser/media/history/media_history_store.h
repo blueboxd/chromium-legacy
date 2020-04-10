@@ -27,10 +27,6 @@ struct MediaMetadata;
 struct MediaPosition;
 }  // namespace media_session
 
-namespace sql {
-class Database;
-}  // namespace sql
-
 namespace url {
 class Origin;
 }  // namespace url
@@ -73,7 +69,11 @@ class MediaHistoryStore : public base::RefCountedThreadSafe<MediaHistoryStore> {
     kFailedNoForeignKeys = 1,
     kFailedDatabaseTooNew = 2,
     kFailedInitializeTables = 3,
-    kMaxValue = kFailedInitializeTables,
+    kFailedToCreateDirectory = 4,
+    kFailedToOpenDatabase = 5,
+    kFailedToEstablishTransaction = 6,
+    kFailedToCreateMetaTable = 7,
+    kMaxValue = kFailedToCreateMetaTable,
   };
 
   // If we write a playback into the database then we record the result to

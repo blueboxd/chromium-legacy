@@ -735,6 +735,18 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       {"checkPasswordsCanceled", IDS_SETTINGS_CHECK_PASSWORDS_CANCELED},
       {"checkedPasswords", IDS_SETTINGS_CHECKED_PASSWORDS},
       {"checkPasswordsDescription", IDS_SETTINGS_CHECK_PASSWORDS_DESCRIPTION},
+      {"checkPasswordsErrorOffline",
+       IDS_SETTINGS_CHECK_PASSWORDS_ERROR_OFFLINE},
+      {"checkPasswordsErrorSignedOut",
+       IDS_SETTINGS_CHECK_PASSWORDS_ERROR_SIGNED_OUT},
+      {"checkPasswordsErrorNoPasswords",
+       IDS_SETTINGS_CHECK_PASSWORDS_ERROR_NO_PASSWORDS},
+      {"checkPasswordsErrorQuota",
+       IDS_SETTINGS_CHECK_PASSWORDS_ERROR_QUOTA_LIMIT},
+      {"checkPasswordsErrorGeneric",
+       IDS_SETTINGS_CHECK_PASSWORDS_ERROR_GENERIC},
+      {"noCompromisedCredentials",
+       IDS_SETTINGS_NO_COMPROMISED_CREDENTIALS_LABEL},
       {"checkPasswordsAgain", IDS_SETTINGS_CHECK_PASSWORDS_AGAIN},
       {"checkPasswordsAgainAfterError",
        IDS_SETTINGS_CHECK_PASSWORDS_AGAIN_AFTER_ERROR},
@@ -859,33 +871,6 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       {"savedToThisDeviceOnly",
        IDS_SETTINGS_PAYMENTS_SAVED_TO_THIS_DEVICE_ONLY}};
 
-  const base::string16 short_product_name =
-      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
-  html_source->AddString(
-      "checkPasswordsErrorOffline",
-      l10n_util::GetStringFUTF16(IDS_SETTINGS_CHECK_PASSWORDS_ERROR_OFFLINE,
-                                 short_product_name));
-  html_source->AddString(
-      "checkPasswordsErrorSignedOut",
-      l10n_util::GetStringFUTF16(IDS_SETTINGS_CHECK_PASSWORDS_ERROR_SIGNED_OUT,
-                                 short_product_name));
-  html_source->AddString(
-      "checkPasswordsErrorNoPasswords",
-      l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_CHECK_PASSWORDS_ERROR_NO_PASSWORDS, short_product_name));
-  html_source->AddString(
-      "checkPasswordsErrorQuota",
-      l10n_util::GetStringFUTF16(IDS_SETTINGS_CHECK_PASSWORDS_ERROR_QUOTA_LIMIT,
-                                 short_product_name));
-  html_source->AddString(
-      "checkPasswordsErrorGeneric",
-      l10n_util::GetStringFUTF16(IDS_SETTINGS_CHECK_PASSWORDS_ERROR_GENERIC,
-                                 short_product_name));
-  html_source->AddString(
-      "noCompromisedCredentials",
-      l10n_util::GetStringFUTF16(IDS_SETTINGS_NO_COMPROMISED_CREDENTIALS_LABEL,
-                                 short_product_name));
-
   GURL google_password_manager_url = GetGooglePasswordManagerURL(
       password_manager::ManagePasswordsReferrer::kChromeSettings);
 
@@ -898,7 +883,6 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       "checkPasswordsErrorQuotaGoogleAccount",
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_CHECK_PASSWORDS_ERROR_QUOTA_LIMIT_GOOGLE_ACCOUNT,
-          short_product_name,
           base::UTF8ToUTF16(
               password_manager::GetPasswordCheckupURL(
                   password_manager::PasswordCheckupReferrer::kPasswordCheck)
@@ -1042,6 +1026,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
   // Manage profile strings:
 #if !defined(OS_CHROMEOS)
     {"showShortcutLabel", IDS_SETTINGS_PROFILE_SHORTCUT_TOGGLE_LABEL},
+    {"nameInputLabel", IDS_SETTINGS_PROFILE_NAME_INPUT_LABEL},
 #endif
     {"deleteProfileWarningExpandA11yLabel",
      IDS_SETTINGS_SYNC_DISCONNECT_EXPAND_ACCESSIBILITY_LABEL},

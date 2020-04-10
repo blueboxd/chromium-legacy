@@ -1,2 +1,5 @@
 # crbug.com/1067395
 -AXPlatformNodeBaseTest.InnerTextIgnoresInvisibleAndIgnored
+
+# crbug.com/1069808
+-AXPlatformNodeBaseTest.TestSelectedChildren*

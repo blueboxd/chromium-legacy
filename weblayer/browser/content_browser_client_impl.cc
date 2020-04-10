@@ -53,6 +53,7 @@
 #include "weblayer/browser/browser_process.h"
 #include "weblayer/browser/feature_list_creator.h"
 #include "weblayer/browser/i18n_util.h"
+#include "weblayer/browser/navigation_controller_impl.h"
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/browser/system_network_context_manager.h"
 #include "weblayer/browser/tab_impl.h"
@@ -406,6 +407,18 @@ std::vector<std::unique_ptr<content::NavigationThrottle>>
 ContentBrowserClientImpl::CreateThrottlesForNavigation(
     content::NavigationHandle* handle) {
   std::vector<std::unique_ptr<content::NavigationThrottle>> throttles;
+
+  // This throttle *must* be first as it's responsible for calling to
+  // NavigationController for certain events.
+  TabImpl* tab = TabImpl::FromWebContents(handle->GetWebContents());
+  if (tab) {
+    auto throttle =
+        static_cast<NavigationControllerImpl*>(tab->GetNavigationController())
+            ->CreateNavigationThrottle(handle);
+    if (throttle)
+      throttles.push_back(std::move(throttle));
+  }
+
   throttles.push_back(std::make_unique<SSLErrorNavigationThrottle>(
       handle, std::make_unique<SSLCertReporterImpl>(),
       base::BindOnce(&HandleSSLErrorWrapper), base::BindOnce(&IsInHostedApp)));

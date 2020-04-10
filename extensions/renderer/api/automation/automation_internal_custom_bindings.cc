@@ -803,7 +803,7 @@ void AutomationInternalCustomBindings::AddRoutes() {
   RouteNodeIDFunction(
       "GetRole", [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
                     AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
-        std::string role_name = ui::ToString(node->data().role);
+        const std::string& role_name = ui::ToString(node->data().role);
         result.Set(v8::String::NewFromUtf8(isolate, role_name.c_str(),
                                            v8::NewStringType::kNormal)
                        .ToLocalChecked());
@@ -936,7 +936,7 @@ void AutomationInternalCustomBindings::AddRoutes() {
         gfx::RectF local_bounds(0, 0,
                                 node->data().relative_bounds.bounds.width(),
                                 node->data().relative_bounds.bounds.height());
-        std::string name =
+        const std::string& name =
             node->data().GetStringAttribute(ax::mojom::StringAttribute::kName);
         std::vector<int> character_offsets = node->data().GetIntListAttribute(
             ax::mojom::IntListAttribute::kCharacterOffsets);
@@ -1001,15 +1001,17 @@ void AutomationInternalCustomBindings::AddRoutes() {
          const std::string& attribute_name) {
         ax::mojom::StringAttribute attribute =
             ui::ParseStringAttribute(attribute_name.c_str());
-        std::string attr_value;
+        const char* attr_value;
         if (attribute == ax::mojom::StringAttribute::kFontFamily ||
             attribute == ax::mojom::StringAttribute::kLanguage) {
-          attr_value = node->GetInheritedStringAttribute(attribute);
-        } else if (!node->data().GetStringAttribute(attribute, &attr_value)) {
+          attr_value = node->GetInheritedStringAttribute(attribute).c_str();
+        } else if (!node->data().HasStringAttribute(attribute)) {
           return;
+        } else {
+          attr_value = node->data().GetStringAttribute(attribute).c_str();
         }
 
-        result.Set(v8::String::NewFromUtf8(isolate, attr_value.c_str(),
+        result.Set(v8::String::NewFromUtf8(isolate, attr_value,
                                            v8::NewStringType::kNormal)
                        .ToLocalChecked());
       });
@@ -1132,11 +1134,12 @@ void AutomationInternalCustomBindings::AddRoutes() {
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          ui::AXTree* tree, ui::AXNode* node,
          const std::string& attribute_name) {
-        std::string attr_value;
-        if (!node->data().GetHtmlAttribute(attribute_name.c_str(), &attr_value))
+        std::string attribute_value;
+        if (!node->data().GetHtmlAttribute(attribute_name.c_str(),
+                                           &attribute_value))
           return;
 
-        result.Set(v8::String::NewFromUtf8(isolate, attr_value.c_str(),
+        result.Set(v8::String::NewFromUtf8(isolate, attribute_value.c_str(),
                                            v8::NewStringType::kNormal)
                        .ToLocalChecked());
       });
@@ -1146,7 +1149,7 @@ void AutomationInternalCustomBindings::AddRoutes() {
          AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
         ax::mojom::NameFrom name_from = static_cast<ax::mojom::NameFrom>(
             node->data().GetIntAttribute(ax::mojom::IntAttribute::kNameFrom));
-        std::string name_from_str = ui::ToString(name_from);
+        const std::string& name_from_str = ui::ToString(name_from);
         result.Set(v8::String::NewFromUtf8(isolate, name_from_str.c_str(),
                                            v8::NewStringType::kNormal)
                        .ToLocalChecked());
@@ -1188,7 +1191,7 @@ void AutomationInternalCustomBindings::AddRoutes() {
       "GetImageAnnotation",
       [this](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
              AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
-        std::string status_string;
+        std::string status_string = std::string();
         auto status = node->data().GetImageAnnotationStatus();
         switch (status) {
           case ax::mojom::ImageAnnotationStatus::kNone:
@@ -1265,7 +1268,7 @@ void AutomationInternalCustomBindings::AddRoutes() {
       "GetDetectedLanguage",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
-        std::string detectedLanguage = node->GetLanguage();
+        const std::string& detectedLanguage = node->GetLanguage();
         result.Set(v8::String::NewFromUtf8(isolate, detectedLanguage.c_str(),
                                            v8::NewStringType::kNormal)
                        .ToLocalChecked());
@@ -1379,9 +1382,8 @@ void AutomationInternalCustomBindings::AddRoutes() {
 
         // Increment and decrement are available when the role is a slider or
         // spin button.
-        std::string role_string;
-        node->GetStringAttribute(ax::mojom::StringAttribute::kRole,
-                                 &role_string);
+        const std::string& role_string =
+            node->GetStringAttribute(ax::mojom::StringAttribute::kRole);
         ax::mojom::Role role = ui::ParseRole(role_string.c_str());
         if (role == ax::mojom::Role::kSlider ||
             role == ax::mojom::Role::kSpinButton) {
@@ -1415,7 +1417,7 @@ void AutomationInternalCustomBindings::AddRoutes() {
             static_cast<ax::mojom::CheckedState>(node->data().GetIntAttribute(
                 ax::mojom::IntAttribute::kCheckedState));
         if (checked_state != ax::mojom::CheckedState::kNone) {
-          const std::string checked_str = ui::ToString(checked_state);
+          const std::string& checked_str = ui::ToString(checked_state);
           result.Set(v8::String::NewFromUtf8(isolate, checked_str.c_str(),
                                              v8::NewStringType::kNormal)
                          .ToLocalChecked());
@@ -1428,7 +1430,7 @@ void AutomationInternalCustomBindings::AddRoutes() {
         const ax::mojom::Restriction restriction =
             node->data().GetRestriction();
         if (restriction != ax::mojom::Restriction::kNone) {
-          const std::string restriction_str = ui::ToString(restriction);
+          const std::string& restriction_str = ui::ToString(restriction);
           result.Set(v8::String::NewFromUtf8(isolate, restriction_str.c_str(),
                                              v8::NewStringType::kNormal)
                          .ToLocalChecked());
@@ -1442,7 +1444,8 @@ void AutomationInternalCustomBindings::AddRoutes() {
             static_cast<ax::mojom::DefaultActionVerb>(
                 node->data().GetIntAttribute(
                     ax::mojom::IntAttribute::kDefaultActionVerb));
-        std::string default_action_verb_str = ui::ToString(default_action_verb);
+        const std::string& default_action_verb_str =
+            ui::ToString(default_action_verb);
         result.Set(v8::String::NewFromUtf8(isolate,
                                            default_action_verb_str.c_str(),
                                            v8::NewStringType::kNormal)
@@ -1453,7 +1456,7 @@ void AutomationInternalCustomBindings::AddRoutes() {
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
         ax::mojom::HasPopup has_popup = node->data().GetHasPopup();
-        std::string has_popup_str = ui::ToString(has_popup);
+        const std::string& has_popup_str = ui::ToString(has_popup);
         result.Set(v8::String::NewFromUtf8(isolate, has_popup_str.c_str(),
                                            v8::NewStringType::kNormal)
                        .ToLocalChecked());

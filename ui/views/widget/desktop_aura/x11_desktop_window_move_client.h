@@ -12,7 +12,6 @@
 #include "ui/views/views_export.h"
 #include "ui/views/widget/desktop_aura/x11_move_loop_delegate.h"
 #include "ui/views/widget/desktop_aura/x11_whole_screen_move_loop.h"
-#include "ui/wm/public/window_move_client.h"
 
 namespace aura {
 class WindowTreeHost;
@@ -22,8 +21,7 @@ namespace views {
 
 // When we're dragging tabs, we need to manually position our window.
 class VIEWS_EXPORT X11DesktopWindowMoveClient
-    : public views::X11MoveLoopDelegate,
-      public wm::WindowMoveClient {
+    : public views::X11MoveLoopDelegate {
  public:
   X11DesktopWindowMoveClient();
   ~X11DesktopWindowMoveClient() override;
@@ -35,11 +33,8 @@ class VIEWS_EXPORT X11DesktopWindowMoveClient
   void OnMouseReleased() override;
   void OnMoveLoopEnded() override;
 
-  // Overridden from wm::WindowMoveClient:
-  wm::WindowMoveResult RunMoveLoop(aura::Window* window,
-                                   const gfx::Vector2d& drag_offset,
-                                   wm::WindowMoveSource move_source) override;
-  void EndMoveLoop() override;
+  bool RunMoveLoop(aura::Window* window, const gfx::Vector2d& drag_offset);
+  void EndMoveLoop();
 
  private:
   X11WholeScreenMoveLoop move_loop_{this};

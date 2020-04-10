@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2020 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+  <!-- Tile dimensions -->
+  <dimen name="tile_corner_radius">8dp</dimen>
+  <dimen name="tile_ideal_width">86dp</dimen>
+
+  <!-- Tile container dimensions -->
+  <dimen name="tile_grid_inter_tile_padding">12dp</dimen>
+  <dimen name="recycler_view_start_margin">16dp</dimen>
+</resources>

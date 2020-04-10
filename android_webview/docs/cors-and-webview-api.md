@@ -12,6 +12,15 @@ explained in the API documents. This document aims to clarify such detailed
 behaviors and implementation details to give WebView and chromium developers
 hints to keep consistent behaviors among making code changes.
 
+## TL;DR for new developers
+If you are working on new WebView applications and finding a way to load local
+resources, we recommend that you use [WebViewAssetLoader](https://developer.android.com/reference/androidx/webkit/WebViewAssetLoader)
+as using other Android specific schemes is not covered by the open web platform
+standards, and behavior details for new web features might be undefined or
+changed. Using the WebViewAssetLoader API to load local resource on virtual
+http/https URLs avoids these compatibility issues and allows the standard web
+security model to apply.
+
 ## Android or WebView specific features
 
 ### intent:// URLs

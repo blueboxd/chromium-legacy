@@ -346,7 +346,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void MarkIsolatedWorldsAsRequiringSeparateURLLoaderFactory(
       base::flat_set<url::Origin> isolated_world_origins,
       bool push_to_renderer_now) override;
-  bool IsSandboxed(blink::mojom::WebSandboxFlags flags) override;
+  bool IsSandboxed(network::mojom::WebSandboxFlags flags) override;
   void FlushNetworkAndNavigationInterfacesForTesting() override;
   void PrepareForInnerWebContentsAttach(
       PrepareForInnerWebContentsAttachCallback callback) override;
@@ -961,7 +961,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   }
   void SetKeepAliveTimeoutForTesting(base::TimeDelta timeout);
 
-  blink::mojom::WebSandboxFlags active_sandbox_flags() {
+  network::mojom::WebSandboxFlags active_sandbox_flags() {
     return active_sandbox_flags_;
   }
 
@@ -1714,7 +1714,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DidChangeName(const std::string& name,
                      const std::string& unique_name) override;
   void DidSetFramePolicyHeaders(
-      blink::mojom::WebSandboxFlags sandbox_flags,
+      network::mojom::WebSandboxFlags sandbox_flags,
       const blink::ParsedFeaturePolicy& feature_policy_header,
       const blink::DocumentPolicy::FeatureState& document_policy_header)
       override;
@@ -2526,7 +2526,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // copy of the active sandbox flags which are stored in the FrameTreeNode for
   // this RenderFrameHost, but may diverge if this RenderFrameHost is pending
   // deletion.
-  blink::mojom::WebSandboxFlags active_sandbox_flags_;
+  network::mojom::WebSandboxFlags active_sandbox_flags_;
 
   // Tracks the document policy which has been set on this frame.
   std::unique_ptr<blink::DocumentPolicy> document_policy_;

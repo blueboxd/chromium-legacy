@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_SECURITY_CONTEXT_INIT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_SECURITY_CONTEXT_INIT_H_
 
+#include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -38,7 +39,7 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
     return security_origin_;
   }
 
-  mojom::blink::WebSandboxFlags GetSandboxFlags() const {
+  network::mojom::blink::WebSandboxFlags GetSandboxFlags() const {
     return sandbox_flags_;
   }
 
@@ -91,8 +92,8 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
   void InitializeAgent(const DocumentInit&);
 
   scoped_refptr<SecurityOrigin> security_origin_;
-  mojom::blink::WebSandboxFlags sandbox_flags_ =
-      mojom::blink::WebSandboxFlags::kNone;
+  network::mojom::blink::WebSandboxFlags sandbox_flags_ =
+      network::mojom::blink::WebSandboxFlags::kNone;
   DocumentPolicy::ParsedDocumentPolicy document_policy_;
   DocumentPolicy::ParsedDocumentPolicy report_only_document_policy_;
   bool initialized_feature_policy_state_ = false;

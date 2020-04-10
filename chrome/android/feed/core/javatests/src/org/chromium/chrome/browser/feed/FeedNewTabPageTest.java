@@ -171,8 +171,10 @@ import java.util.List;
         onView(withId(R.id.signin_promo_view_container)).check(matches(isDisplayed()));
 
         // Reset states.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> recyclerView.setDescendantFocusability(descendantFocusability));
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mNtp.getMediatorForTesting().destroy();
+            recyclerView.setDescendantFocusability(descendantFocusability);
+        });
     }
 
     @Test

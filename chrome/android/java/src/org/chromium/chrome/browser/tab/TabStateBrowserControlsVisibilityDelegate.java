@@ -8,6 +8,8 @@ import android.annotation.SuppressLint;
 import android.os.Handler;
 import android.os.Message;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
@@ -21,6 +23,7 @@ import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.BrowserControlsState;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Determines the desired visibility of the browser controls based on the current state of a given
@@ -149,8 +152,8 @@ public class TabStateBrowserControlsVisibilityDelegate
             }
 
             @Override
-            public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {
-                if (isAttached) updateVisibilityConstraints();
+            public void onActivityAttachmentChanged(Tab tab, @Nullable WindowAndroid window) {
+                if (window != null) updateVisibilityConstraints();
             }
 
             @Override

@@ -6,10 +6,13 @@ package org.chromium.chrome.browser.tab;
 
 import android.view.ViewGroup;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.Callback;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.content_public.browser.RenderWidgetHostView;
 import org.chromium.ui.base.ViewAndroidDelegate;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Implementation of the abstract class {@link ViewAndroidDelegate} for Chrome.
@@ -36,8 +39,8 @@ public class TabViewAndroidDelegate extends ViewAndroidDelegate {
 
         mTab.addObserver(new EmptyTabObserver() {
             @Override
-            public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {
-                if (isAttached) {
+            public void onActivityAttachmentChanged(Tab tab, @Nullable WindowAndroid window) {
+                if (window != null) {
                     mCurrentInsetSupplier =
                             tab.getWindowAndroid().getApplicationBottomInsetProvider();
                     mCurrentInsetSupplier.addObserver(insetObserver);

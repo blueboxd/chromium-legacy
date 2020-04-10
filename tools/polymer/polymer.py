@@ -76,6 +76,8 @@ _auto_imports = {}
 # ignore when converting HTML imports to JS modules.
 _ignore_imports = []
 
+_migrated_imports = []
+
 _chrome_redirects = {
     'chrome://resources/polymer/v1_0/': POLYMER_V1_DIR,
     'chrome://resources/html/': 'ui/webui/resources/html/',
@@ -139,7 +141,9 @@ class Dependency:
           .replace(r'ui/webui/resources/html/', 'ui/webui/resources/js/')
           .replace(r'.html', '.m.js'))
 
-    return self.html_path_normalized.replace(r'.html', '.m.js')
+    extension = (
+        '.js' if self.html_path_normalized in _migrated_imports else '.m.js')
+    return self.html_path_normalized.replace(r'.html', extension)
 
   def _to_js(self):
     js_path = self.js_path_normalized
@@ -481,6 +485,15 @@ document.head.appendChild(template.content);
   out_filename = os.path.basename(js_file)
   return js_template, out_filename
 
+def _resetGlobals():
+  global _namespace_rewrites
+  _namespace_rewrites = {}
+  global _auto_imports
+  _auto_imports = {}
+  global _ignore_imports
+  _ignore_imports = []
+  global _migrated_imports
+  _migrated_imports = []
 
 def main(argv):
   parser = argparse.ArgumentParser()
@@ -491,6 +504,7 @@ def main(argv):
   parser.add_argument('--namespace_rewrites', required=False, nargs="*")
   parser.add_argument('--ignore_imports', required=False, nargs="*")
   parser.add_argument('--auto_imports', required=False, nargs="*")
+  parser.add_argument('--migrated_imports', required=False, nargs="*")
   parser.add_argument(
       '--html_type', choices=['dom-module', 'style-module', 'custom-style',
       'iron-iconset', 'v3-ready'],
@@ -505,14 +519,22 @@ def main(argv):
 
   # Extract automatic imports from arguments.
   if args.auto_imports:
+    global _auto_imports
     for entry in args.auto_imports:
       path, imports = entry.split('|')
       _auto_imports[path] = imports.split(',')
 
   # Extract ignored imports from arguments.
   if args.ignore_imports:
+    assert args.html_type != 'v3-ready'
     global _ignore_imports
     _ignore_imports = args.ignore_imports
+
+  # Extract migrated imports from arguments.
+  if args.migrated_imports:
+    assert args.html_type != 'v3-ready'
+    global _migrated_imports
+    _migrated_imports = args.migrated_imports
 
   in_folder = os.path.normpath(os.path.join(_CWD, args.in_folder))
   out_folder = os.path.normpath(os.path.join(_CWD, args.out_folder))
@@ -538,6 +560,10 @@ def main(argv):
   with io.open(os.path.join(out_folder, result[1]), mode='wb') as f:
     for l in result[0]:
       f.write(l.encode('utf-8'))
+
+  # Reset global variables so that main() can be invoked multiple times during
+  # testing without leaking state from one test to the next.
+  _resetGlobals()
   return
 
 

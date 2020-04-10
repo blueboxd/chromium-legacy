@@ -30,6 +30,7 @@
 #include <utility>
 
 #include "services/network/public/mojom/content_security_policy.mojom-blink.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_content_security_policy_struct.h"
@@ -73,7 +74,6 @@ class SecurityPolicyViolationEventInit;
 class SourceLocation;
 enum class ResourceType : uint8_t;
 
-using SandboxFlags = mojom::blink::WebSandboxFlags;
 typedef HeapVector<Member<CSPDirectiveList>> CSPDirectiveListVector;
 typedef HeapVector<Member<ConsoleMessage>> ConsoleMessageVector;
 typedef std::pair<String, network::mojom::ContentSecurityPolicyType>
@@ -101,7 +101,7 @@ class CORE_EXPORT ContentSecurityPolicyDelegate : public GarbageCollectedMixin {
   virtual const KURL& Url() const = 0;
 
   // Directives support.
-  virtual void SetSandboxFlags(SandboxFlags) = 0;
+  virtual void SetSandboxFlags(network::mojom::blink::WebSandboxFlags) = 0;
   virtual void SetRequireTrustedTypes() = 0;
   virtual void AddInsecureRequestPolicy(
       mojom::blink::InsecureRequestPolicy) = 0;
@@ -425,7 +425,7 @@ class CORE_EXPORT ContentSecurityPolicy final
   // Used as <object>'s URL when there is no `src` attribute.
   const KURL FallbackUrlForPlugin() const;
 
-  void EnforceSandboxFlags(SandboxFlags);
+  void EnforceSandboxFlags(network::mojom::blink::WebSandboxFlags);
   void RequireTrustedTypes();
   bool IsRequireTrustedTypes() const { return require_trusted_types_; }
   String EvalDisabledErrorMessage() const;
@@ -486,7 +486,9 @@ class CORE_EXPORT ContentSecurityPolicy final
   // context will be used for all sandbox checks but there are situations
   // (before installing the document that this CSP will bind to) when
   // there is no execution context to enforce the sandbox flags.
-  SandboxFlags GetSandboxMask() const { return sandbox_mask_; }
+  network::mojom::blink::WebSandboxFlags GetSandboxMask() const {
+    return sandbox_mask_;
+  }
 
   bool HasPolicyFromSource(network::mojom::ContentSecurityPolicySource) const;
 
@@ -577,7 +579,7 @@ class CORE_EXPORT ContentSecurityPolicy final
   uint8_t style_hash_algorithms_used_;
 
   // State flags used to configure the environment after parsing a policy.
-  SandboxFlags sandbox_mask_;
+  network::mojom::blink::WebSandboxFlags sandbox_mask_;
   bool require_trusted_types_;
   String disable_eval_error_message_;
   mojom::blink::InsecureRequestPolicy insecure_request_policy_;

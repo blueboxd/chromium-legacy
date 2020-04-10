@@ -38,6 +38,8 @@ class VP8Encoder : public AcceleratedVideoEncoder {
     // Coded picture buffer size in bits.
     unsigned int cpb_size_bits;
 
+    // Quantization parameter. They are vp8 ac/dc indices and their ranges are
+    // 0-127.
     int initial_qp;
     ScalingSettings scaling_settings;
 

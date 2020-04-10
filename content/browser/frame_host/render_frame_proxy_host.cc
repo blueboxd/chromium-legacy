@@ -32,6 +32,7 @@
 #include "content/public/common/content_features.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "services/network/public/cpp/web_sandbox_flags.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom.h"
@@ -423,8 +424,8 @@ void RenderFrameProxyHost::OnOpenURL(
       current_rfh, params.user_gesture, &download_policy);
 
   if ((frame_tree_node_->pending_frame_policy().sandbox_flags &
-       blink::mojom::WebSandboxFlags::kDownloads) !=
-      blink::mojom::WebSandboxFlags::kNone) {
+       network::mojom::WebSandboxFlags::kDownloads) !=
+      network::mojom::WebSandboxFlags::kNone) {
     if (download_policy.blocking_downloads_in_sandbox_enabled) {
       download_policy.SetDisallowed(content::NavigationDownloadType::kSandbox);
     } else {

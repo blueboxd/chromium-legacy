@@ -155,8 +155,8 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
 
   ContentSecurityPolicy* GetContentSecurityPolicy() const;
 
-  mojom::blink::WebSandboxFlags GetSandboxFlags() const;
-  bool IsSandboxed(mojom::blink::WebSandboxFlags mask) const;
+  network::mojom::blink::WebSandboxFlags GetSandboxFlags() const;
+  bool IsSandboxed(network::mojom::blink::WebSandboxFlags mask) const;
 
   // Returns the content security policy to be used based on the current
   // JavaScript world we are in.

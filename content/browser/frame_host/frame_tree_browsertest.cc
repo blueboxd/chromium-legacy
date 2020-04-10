@@ -29,7 +29,8 @@
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "third_party/blink/public/common/frame/sandbox_flags.h"
+#include "services/network/public/cpp/web_sandbox_flags.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "url/url_constants.h"
 
@@ -567,11 +568,11 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, SandboxFlagsSetForMainFrame) {
 
   // Verify that sandbox flags are set properly for the root FrameTreeNode and
   // RenderFrameHost. Root frame is sandboxed with "allow-scripts".
-  EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone,
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kNone,
             root->effective_frame_policy().sandbox_flags);
-  EXPECT_EQ(blink::mojom::WebSandboxFlags::kAll &
-                ~blink::mojom::WebSandboxFlags::kScripts &
-                ~blink::mojom::WebSandboxFlags::kAutomaticFeatures,
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kAll &
+                ~network::mojom::WebSandboxFlags::kScripts &
+                ~network::mojom::WebSandboxFlags::kAutomaticFeatures,
             root->active_sandbox_flags());
   EXPECT_EQ(root->active_sandbox_flags(),
             root->current_frame_host()->active_sandbox_flags());
@@ -579,19 +580,19 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, SandboxFlagsSetForMainFrame) {
   // Verify that child frames inherit sandbox flags from the root. First frame
   // has no explicitly set flags of its own, and should inherit those from the
   // root. Second frame is completely sandboxed.
-  EXPECT_EQ(blink::mojom::WebSandboxFlags::kAll &
-                ~blink::mojom::WebSandboxFlags::kScripts &
-                ~blink::mojom::WebSandboxFlags::kAutomaticFeatures,
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kAll &
+                ~network::mojom::WebSandboxFlags::kScripts &
+                ~network::mojom::WebSandboxFlags::kAutomaticFeatures,
             root->child_at(0)->effective_frame_policy().sandbox_flags);
-  EXPECT_EQ(blink::mojom::WebSandboxFlags::kAll &
-                ~blink::mojom::WebSandboxFlags::kScripts &
-                ~blink::mojom::WebSandboxFlags::kAutomaticFeatures,
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kAll &
+                ~network::mojom::WebSandboxFlags::kScripts &
+                ~network::mojom::WebSandboxFlags::kAutomaticFeatures,
             root->child_at(0)->active_sandbox_flags());
   EXPECT_EQ(root->child_at(0)->active_sandbox_flags(),
             root->child_at(0)->current_frame_host()->active_sandbox_flags());
-  EXPECT_EQ(blink::mojom::WebSandboxFlags::kAll,
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kAll,
             root->child_at(1)->effective_frame_policy().sandbox_flags);
-  EXPECT_EQ(blink::mojom::WebSandboxFlags::kAll,
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kAll,
             root->child_at(1)->active_sandbox_flags());
   EXPECT_EQ(root->child_at(1)->active_sandbox_flags(),
             root->child_at(1)->current_frame_host()->active_sandbox_flags());
@@ -602,10 +603,11 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, SandboxFlagsSetForMainFrame) {
 
   // Verify that sandbox flags are cleared properly for the root FrameTreeNode
   // and RenderFrameHost.
-  EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone,
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kNone,
             root->effective_frame_policy().sandbox_flags);
-  EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone, root->active_sandbox_flags());
-  EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone,
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kNone,
+            root->active_sandbox_flags());
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kNone,
             root->current_frame_host()->active_sandbox_flags());
 }
 
@@ -624,18 +626,18 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, SandboxFlagsSetForChildFrames) {
   // which resets both SandboxFlags::Scripts and
   // SandboxFlags::AutomaticFeatures bits per blink::parseSandboxPolicy(), and
   // third frame has "allow-scripts allow-same-origin".
-  EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone,
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kNone,
             root->effective_frame_policy().sandbox_flags);
-  EXPECT_EQ(blink::mojom::WebSandboxFlags::kAll,
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kAll,
             root->child_at(0)->effective_frame_policy().sandbox_flags);
-  EXPECT_EQ(blink::mojom::WebSandboxFlags::kAll &
-                ~blink::mojom::WebSandboxFlags::kScripts &
-                ~blink::mojom::WebSandboxFlags::kAutomaticFeatures,
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kAll &
+                ~network::mojom::WebSandboxFlags::kScripts &
+                ~network::mojom::WebSandboxFlags::kAutomaticFeatures,
             root->child_at(1)->effective_frame_policy().sandbox_flags);
-  EXPECT_EQ(blink::mojom::WebSandboxFlags::kAll &
-                ~blink::mojom::WebSandboxFlags::kScripts &
-                ~blink::mojom::WebSandboxFlags::kAutomaticFeatures &
-                ~blink::mojom::WebSandboxFlags::kOrigin,
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kAll &
+                ~network::mojom::WebSandboxFlags::kScripts &
+                ~network::mojom::WebSandboxFlags::kAutomaticFeatures &
+                ~network::mojom::WebSandboxFlags::kOrigin,
             root->child_at(2)->effective_frame_policy().sandbox_flags);
 
   // Sandboxed frames should set a unique origin unless they have the
@@ -648,7 +650,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, SandboxFlagsSetForChildFrames) {
   // Navigating to a different URL should not clear sandbox flags.
   GURL frame_url(embedded_test_server()->GetURL("/title1.html"));
   NavigateFrameToURL(root->child_at(0), frame_url);
-  EXPECT_EQ(blink::mojom::WebSandboxFlags::kAll,
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kAll,
             root->child_at(0)->effective_frame_policy().sandbox_flags);
 }
 
@@ -673,31 +675,32 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest,
   // "allow-orientation-lock", and the framed document is also served with a CSP
   // header which uses "allow-popups" and "allow-pointer-lock". The resulting
   // sandbox for the frame should only have "allow-pointer-lock".
-  EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone,
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kNone,
             root->effective_frame_policy().sandbox_flags);
-  EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone, root->active_sandbox_flags());
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kNone,
+            root->active_sandbox_flags());
   EXPECT_EQ(root->active_sandbox_flags(),
             root->current_frame_host()->active_sandbox_flags());
-  EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone,
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kNone,
             root->child_at(0)->effective_frame_policy().sandbox_flags);
-  EXPECT_EQ(blink::mojom::WebSandboxFlags::kAll &
-                ~blink::mojom::WebSandboxFlags::kScripts &
-                ~blink::mojom::WebSandboxFlags::kAutomaticFeatures &
-                ~blink::mojom::WebSandboxFlags::kPopups &
-                ~blink::mojom::WebSandboxFlags::kPointerLock,
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kAll &
+                ~network::mojom::WebSandboxFlags::kScripts &
+                ~network::mojom::WebSandboxFlags::kAutomaticFeatures &
+                ~network::mojom::WebSandboxFlags::kPopups &
+                ~network::mojom::WebSandboxFlags::kPointerLock,
             root->child_at(0)->active_sandbox_flags());
   EXPECT_EQ(root->child_at(0)->active_sandbox_flags(),
             root->child_at(0)->current_frame_host()->active_sandbox_flags());
-  EXPECT_EQ(blink::mojom::WebSandboxFlags::kAll &
-                ~blink::mojom::WebSandboxFlags::kScripts &
-                ~blink::mojom::WebSandboxFlags::kAutomaticFeatures &
-                ~blink::mojom::WebSandboxFlags::kPointerLock &
-                ~blink::mojom::WebSandboxFlags::kOrientationLock,
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kAll &
+                ~network::mojom::WebSandboxFlags::kScripts &
+                ~network::mojom::WebSandboxFlags::kAutomaticFeatures &
+                ~network::mojom::WebSandboxFlags::kPointerLock &
+                ~network::mojom::WebSandboxFlags::kOrientationLock,
             root->child_at(1)->effective_frame_policy().sandbox_flags);
-  EXPECT_EQ(blink::mojom::WebSandboxFlags::kAll &
-                ~blink::mojom::WebSandboxFlags::kScripts &
-                ~blink::mojom::WebSandboxFlags::kAutomaticFeatures &
-                ~blink::mojom::WebSandboxFlags::kPointerLock,
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kAll &
+                ~network::mojom::WebSandboxFlags::kScripts &
+                ~network::mojom::WebSandboxFlags::kAutomaticFeatures &
+                ~network::mojom::WebSandboxFlags::kPointerLock,
             root->child_at(1)->active_sandbox_flags());
   EXPECT_EQ(root->child_at(1)->active_sandbox_flags(),
             root->child_at(1)->current_frame_host()->active_sandbox_flags());
@@ -707,25 +710,25 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest,
   GURL frame_url(embedded_test_server()->GetURL("/title1.html"));
 
   NavigateFrameToURL(root->child_at(0), frame_url);
-  EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone,
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kNone,
             root->child_at(0)->effective_frame_policy().sandbox_flags);
-  EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone,
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kNone,
             root->child_at(0)->active_sandbox_flags());
   EXPECT_EQ(root->child_at(0)->active_sandbox_flags(),
             root->child_at(0)->current_frame_host()->active_sandbox_flags());
 
   NavigateFrameToURL(root->child_at(1), frame_url);
-  EXPECT_EQ(blink::mojom::WebSandboxFlags::kAll &
-                ~blink::mojom::WebSandboxFlags::kScripts &
-                ~blink::mojom::WebSandboxFlags::kAutomaticFeatures &
-                ~blink::mojom::WebSandboxFlags::kPointerLock &
-                ~blink::mojom::WebSandboxFlags::kOrientationLock,
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kAll &
+                ~network::mojom::WebSandboxFlags::kScripts &
+                ~network::mojom::WebSandboxFlags::kAutomaticFeatures &
+                ~network::mojom::WebSandboxFlags::kPointerLock &
+                ~network::mojom::WebSandboxFlags::kOrientationLock,
             root->child_at(1)->effective_frame_policy().sandbox_flags);
-  EXPECT_EQ(blink::mojom::WebSandboxFlags::kAll &
-                ~blink::mojom::WebSandboxFlags::kScripts &
-                ~blink::mojom::WebSandboxFlags::kAutomaticFeatures &
-                ~blink::mojom::WebSandboxFlags::kPointerLock &
-                ~blink::mojom::WebSandboxFlags::kOrientationLock,
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kAll &
+                ~network::mojom::WebSandboxFlags::kScripts &
+                ~network::mojom::WebSandboxFlags::kAutomaticFeatures &
+                ~network::mojom::WebSandboxFlags::kPointerLock &
+                ~network::mojom::WebSandboxFlags::kOrientationLock,
             root->child_at(1)->active_sandbox_flags());
   EXPECT_EQ(root->child_at(1)->active_sandbox_flags(),
             root->child_at(1)->current_frame_host()->active_sandbox_flags());
@@ -1178,13 +1181,13 @@ IN_PROC_BROWSER_TEST_F(CrossProcessFrameTreeBrowserTest,
   // flags. Main frame sets allow-popups, allow-pointer-lock and allow-scripts.
   FrameTreeNode* popup_root =
       static_cast<WebContentsImpl*>(new_contents)->GetFrameTree()->root();
-  blink::mojom::WebSandboxFlags main_frame_sandbox_flags =
+  network::mojom::WebSandboxFlags main_frame_sandbox_flags =
       root->current_frame_host()->active_sandbox_flags();
-  EXPECT_EQ(blink::mojom::WebSandboxFlags::kAll &
-                ~blink::mojom::WebSandboxFlags::kPopups &
-                ~blink::mojom::WebSandboxFlags::kPointerLock &
-                ~blink::mojom::WebSandboxFlags::kScripts &
-                ~blink::mojom::WebSandboxFlags::kAutomaticFeatures,
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kAll &
+                ~network::mojom::WebSandboxFlags::kPopups &
+                ~network::mojom::WebSandboxFlags::kPointerLock &
+                ~network::mojom::WebSandboxFlags::kScripts &
+                ~network::mojom::WebSandboxFlags::kAutomaticFeatures,
             main_frame_sandbox_flags);
 
   EXPECT_EQ(main_frame_sandbox_flags,

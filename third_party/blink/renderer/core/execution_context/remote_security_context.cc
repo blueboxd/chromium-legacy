@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/execution_context/remote_security_context.h"
 
+#include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/security_context_init.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -40,10 +41,10 @@ void RemoteSecurityContext::ResetReplicatedContentSecurityPolicy() {
 }
 
 void RemoteSecurityContext::ResetAndEnforceSandboxFlags(
-    mojom::blink::WebSandboxFlags flags) {
+    network::mojom::blink::WebSandboxFlags flags) {
   sandbox_flags_ = flags;
 
-  if (IsSandboxed(mojom::blink::WebSandboxFlags::kOrigin) &&
+  if (IsSandboxed(network::mojom::blink::WebSandboxFlags::kOrigin) &&
       GetSecurityOrigin() && !GetSecurityOrigin()->IsOpaque()) {
     SetSecurityOrigin(GetSecurityOrigin()->DeriveNewOpaqueOrigin());
   }

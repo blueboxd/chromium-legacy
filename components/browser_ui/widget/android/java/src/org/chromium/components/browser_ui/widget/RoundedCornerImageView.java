@@ -162,7 +162,8 @@ public class RoundedCornerImageView extends AppCompatImageView {
         if (drawable instanceof ColorDrawable) {
             mRoundedBackgroundPaint.setColor(((ColorDrawable) getDrawable()).getColor());
             mRoundedContentPaint = null;
-        } else if (drawable instanceof BitmapDrawable) {
+        } else if (drawable instanceof BitmapDrawable
+                && ((BitmapDrawable) drawable).getBitmap() != null) {
             mRoundedBackgroundPaint.setColor(mFillColor);
             mRoundedContentPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
@@ -210,7 +211,6 @@ public class RoundedCornerImageView extends AppCompatImageView {
             Shader shader = mRoundedContentPaint.getShader();
             if (shader != null) {
                 Drawable drawable = getDrawable();
-
                 Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
                 mTmpMatrix.set(getImageMatrix());
                 mTmpMatrix.preScale((float) drawable.getIntrinsicWidth() / bitmap.getWidth(),

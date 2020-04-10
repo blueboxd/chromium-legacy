@@ -66,9 +66,9 @@
 #include "content/test/test_web_contents.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
+#include "services/network/public/cpp/web_sandbox_flags.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -3524,18 +3524,18 @@ TEST_F(WebContentsImplTest, ResetJavaScriptDialogOnUserNavigate) {
 
 TEST_F(WebContentsImplTest, StartingSandboxFlags) {
   WebContents::CreateParams params(browser_context());
-  const blink::mojom::WebSandboxFlags expected_flags =
-      blink::mojom::WebSandboxFlags::kPopups |
-      blink::mojom::WebSandboxFlags::kModals |
-      blink::mojom::WebSandboxFlags::kTopNavigation;
+  network::mojom::WebSandboxFlags expected_flags =
+      network::mojom::WebSandboxFlags::kPopups |
+      network::mojom::WebSandboxFlags::kModals |
+      network::mojom::WebSandboxFlags::kTopNavigation;
   params.starting_sandbox_flags = expected_flags;
   std::unique_ptr<WebContentsImpl> new_contents(
       WebContentsImpl::CreateWithOpener(params, nullptr));
   FrameTreeNode* root = new_contents->GetFrameTree()->root();
-  blink::mojom::WebSandboxFlags pending_flags =
+  network::mojom::WebSandboxFlags pending_flags =
       root->pending_frame_policy().sandbox_flags;
   EXPECT_EQ(pending_flags, expected_flags);
-  blink::mojom::WebSandboxFlags effective_flags =
+  network::mojom::WebSandboxFlags effective_flags =
       root->effective_frame_policy().sandbox_flags;
   EXPECT_EQ(effective_flags, expected_flags);
 }

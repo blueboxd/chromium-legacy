@@ -28,8 +28,8 @@
         --cr-icon-button-fill-color-focus: var(
             --cr-toolbar-search-field-input-bg-color,
             var(--cr-toolbar-background-color));
-        --cr-icon-button-size: 32px;
-        margin: 6px;
+        --cr-icon-button-size: var(--cr-toolbar-icon-container-size, 32px);
+        margin: var(--cr-toolbar-icon-margin, 6px);
       }
 
       @media (prefers-color-scheme: light) {
@@ -67,7 +67,7 @@
         --paper-spinner-color:
             var(--cr-toolbar-search-field-input-color, white);
         height: var(--cr-icon-size);
-        margin: 0 6px;
+        margin: var(--cr-toolbar-search-field-paper-spinner-margin, 0 6px);
         opacity: 0;
         padding: 6px;
         position: absolute;
@@ -88,8 +88,7 @@
         -webkit-font-smoothing: antialiased;
         flex: 1;
         line-height: 185%;
-        margin-inline-end: 2px;
-        margin-inline-start: 2px;
+        margin: var(--cr-toolbar-search-field-term-margin, 0 2px);
         position: relative;
       }
 
@@ -141,6 +140,8 @@
       }
 
       :host(:not([narrow])) #prompt {
+        margin-inline-start:
+            var(--cr-toolbar-search-field-prompt-margin-inline-start);
         opacity: var(--cr-toolbar-search-field-prompt-opacity);
       }
 

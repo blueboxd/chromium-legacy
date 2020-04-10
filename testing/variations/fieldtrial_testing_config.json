@@ -1477,6 +1477,21 @@
             ]
         }
     ],
+    "ClearSyncedData": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20200407",
+                    "enable_features": [
+                        "ClearSyncedData"
+                    ]
+                }
+            ]
+        }
+    ],
     "CompositeCrossOriginIframes": [
         {
             "platforms": [

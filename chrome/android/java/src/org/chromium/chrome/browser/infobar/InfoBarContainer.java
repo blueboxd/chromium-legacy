@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.KeyboardVisibilityDelegate.KeyboardVisibilityListener;
+import org.chromium.ui.base.WindowAndroid;
 
 import java.util.ArrayList;
 
@@ -118,8 +119,8 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener, I
         }
 
         @Override
-        public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {
-            if (isAttached) {
+        public void onActivityAttachmentChanged(Tab tab, @Nullable WindowAndroid window) {
+            if (window != null) {
                 initializeContainerView();
                 updateWebContents();
             } else {

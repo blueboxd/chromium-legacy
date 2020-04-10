@@ -13,6 +13,7 @@
 #include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/common/feature_policy/policy_value.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-forward.h"
@@ -20,10 +21,6 @@
 #include "url/origin.h"
 
 namespace blink {
-
-namespace mojom {
-enum class WebSandboxFlags;
-}
 
 // Feature Policy is a mechanism for controlling the availability of web
 // platform features in a frame, including all embedded frames. It can be used
@@ -258,7 +255,7 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
   static const FeatureList& GetDefaultFeatureList();
 
   static mojom::FeaturePolicyFeature FeatureForSandboxFlag(
-      mojom::WebSandboxFlags flag);
+      network::mojom::WebSandboxFlags flag);
 
  private:
   friend class FeaturePolicyTest;

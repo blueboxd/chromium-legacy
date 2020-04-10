@@ -1525,19 +1525,10 @@ AtkObject* RefSelection(AtkSelection* selection, gint requested_child_index) {
   if (!obj)
     return nullptr;
 
-  int child_count = obj->GetChildCount();
-  gint selected_count = 0;
-  for (int i = 0; i < child_count; ++i) {
-    AtkObject* child = obj->ChildAtIndex(i);
-    AXPlatformNodeAuraLinux* child_ax_node =
-        AXPlatformNodeAuraLinux::FromAtkObject(child);
-    if (!child_ax_node)
-      continue;
-
-    if (child_ax_node->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected)) {
-      if (selected_count == requested_child_index)
-        return static_cast<AtkObject*>(g_object_ref(child));
-      ++selected_count;
+  if (auto* selected_child = obj->GetSelectedItem(requested_child_index)) {
+    if (AtkObject* atk_object = selected_child->GetNativeViewAccessible()) {
+      g_object_ref(atk_object);
+      return atk_object;
     }
   }
 
@@ -1552,19 +1543,7 @@ gint GetSelectionCount(AtkSelection* selection) {
   if (!obj)
     return 0;
 
-  int child_count = obj->GetChildCount();
-  gint selected_count = 0;
-  for (int i = 0; i < child_count; ++i) {
-    AXPlatformNodeAuraLinux* child =
-        AXPlatformNodeAuraLinux::FromAtkObject(obj->ChildAtIndex(i));
-    if (!child)
-      continue;
-
-    if (child->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected))
-      ++selected_count;
-  }
-
-  return selected_count;
+  return obj->GetSelectionCount();
 }
 
 gboolean IsChildSelected(AtkSelection* selection, gint index) {

@@ -25,6 +25,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_IFRAME_ELEMENT_H_
 
 #include "services/network/public/mojom/trust_tokens.mojom-blink-forward.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -62,8 +63,8 @@ class CORE_EXPORT HTMLIFrameElement final
     return FrameOwnerElementType::kIframe;
   }
 
-  mojom::blink::WebSandboxFlags sandbox_flags_converted_to_feature_policies()
-      const {
+  network::mojom::blink::WebSandboxFlags
+  sandbox_flags_converted_to_feature_policies() const {
     return sandbox_flags_converted_to_feature_policies_;
   }
 
@@ -111,8 +112,9 @@ class CORE_EXPORT HTMLIFrameElement final
   // This represents a subset of sandbox flags set through 'sandbox' attribute
   // that will be converted to feature policies as part of the container
   // policies.
-  mojom::blink::WebSandboxFlags sandbox_flags_converted_to_feature_policies_ =
-      mojom::blink::WebSandboxFlags::kNone;
+  network::mojom::blink::WebSandboxFlags
+      sandbox_flags_converted_to_feature_policies_ =
+          network::mojom::blink::WebSandboxFlags::kNone;
 
   network::mojom::ReferrerPolicy referrer_policy_;
 };

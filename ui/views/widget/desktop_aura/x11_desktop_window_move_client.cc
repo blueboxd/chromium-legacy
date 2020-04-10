@@ -34,19 +34,13 @@ void X11DesktopWindowMoveClient::OnMoveLoopEnded() {
   host_ = nullptr;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// DesktopWindowTreeHostLinux, wm::WindowMoveClient implementation:
-
-wm::WindowMoveResult X11DesktopWindowMoveClient::RunMoveLoop(
-    aura::Window* source,
-    const gfx::Vector2d& drag_offset,
-    wm::WindowMoveSource move_source) {
+bool X11DesktopWindowMoveClient::RunMoveLoop(aura::Window* source,
+                                             const gfx::Vector2d& drag_offset) {
   window_offset_ = drag_offset;
   host_ = source->GetHost();
 
   source->SetCapture();
-  bool success = move_loop_.RunMoveLoop(source, host_->last_cursor());
-  return success ? wm::MOVE_SUCCESSFUL : wm::MOVE_CANCELED;
+  return move_loop_.RunMoveLoop(source, host_->last_cursor());
 }
 
 void X11DesktopWindowMoveClient::EndMoveLoop() {

@@ -149,9 +149,10 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/web_sandbox_flags.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
-#include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/common/security/security_style.h"
@@ -766,17 +767,17 @@ std::unique_ptr<WebContentsImpl> WebContentsImpl::CreateWithOpener(
   // See https://html.spec.whatwg.org/#attr-iframe-sandbox.
   FrameTreeNode* new_root = new_contents->GetFrameTree()->root();
   if (opener) {
-    blink::mojom::WebSandboxFlags opener_flags =
+    network::mojom::WebSandboxFlags opener_flags =
         opener_rfh->active_sandbox_flags();
-    const blink::mojom::WebSandboxFlags inherit_flag =
-        blink::mojom::WebSandboxFlags::kPropagatesToAuxiliaryBrowsingContexts;
+    const network::mojom::WebSandboxFlags inherit_flag =
+        network::mojom::WebSandboxFlags::kPropagatesToAuxiliaryBrowsingContexts;
     bool sandbox_propagates_to_auxilary_context =
         (opener_flags & inherit_flag) == inherit_flag;
     if (sandbox_propagates_to_auxilary_context)
       new_root->SetPendingFramePolicy({opener_flags,
                                        {} /* container_policy */,
                                        {} /* required_document_policy */});
-    if (opener_flags == blink::mojom::WebSandboxFlags::kNone ||
+    if (opener_flags == network::mojom::WebSandboxFlags::kNone ||
         sandbox_propagates_to_auxilary_context) {
       // TODO(ekaramad, iclelland): Do not propagate feature policies from non-
       // sandboxed disowned openers (rel=noopener).
@@ -4978,7 +4979,7 @@ void WebContentsImpl::OnGoToEntryAtOffset(RenderFrameHostImpl* source,
 
   // All frames are allowed to navigate the global history.
   if (!delegate_ || delegate_->OnGoToEntryOffset(offset)) {
-    if (source->IsSandboxed(blink::mojom::WebSandboxFlags::kTopNavigation)) {
+    if (source->IsSandboxed(network::mojom::WebSandboxFlags::kTopNavigation)) {
       // Keep track of whether this is a session history from a sandboxed iframe
       // with top level navigation disallowed.
       controller_.GoToOffsetInSandboxedFrame(offset,

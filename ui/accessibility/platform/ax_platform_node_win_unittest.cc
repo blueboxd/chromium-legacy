@@ -4654,8 +4654,7 @@ TEST_F(AXPlatformNodeWinTest, TestUIANavigate) {
 TEST_F(AXPlatformNodeWinTest, TestISelectionProviderCanSelectMultipleDefault) {
   Init(BuildListBox(/*option_1_is_selected*/ false,
                     /*option_2_is_selected*/ false,
-                    /*option_3_is_selected*/ false,
-                    /*additional_state*/ ax::mojom::State::kNone));
+                    /*option_3_is_selected*/ false, {}));
 
   ComPtr<ISelectionProvider> selection_provider(
       QueryInterfaceFromNode<ISelectionProvider>(GetRootAsAXNode()));
@@ -4667,10 +4666,12 @@ TEST_F(AXPlatformNodeWinTest, TestISelectionProviderCanSelectMultipleDefault) {
 }
 
 TEST_F(AXPlatformNodeWinTest, TestISelectionProviderCanSelectMultipleTrue) {
+  const std::vector<ax::mojom::State> state = {
+      ax::mojom::State::kMultiselectable, ax::mojom::State::kFocusable};
   Init(BuildListBox(/*option_1_is_selected*/ false,
                     /*option_2_is_selected*/ false,
                     /*option_3_is_selected*/ false,
-                    /*additional_state*/ ax::mojom::State::kMultiselectable));
+                    /*additional_state*/ state));
 
   ComPtr<ISelectionProvider> selection_provider(
       QueryInterfaceFromNode<ISelectionProvider>(GetRootAsAXNode()));
@@ -4686,7 +4687,7 @@ TEST_F(AXPlatformNodeWinTest,
   Init(BuildListBox(/*option_1_is_selected*/ false,
                     /*option_2_is_selected*/ false,
                     /*option_3_is_selected*/ false,
-                    /*additional_state*/ ax::mojom::State::kNone));
+                    /*additional_state*/ {}));
 
   ComPtr<ISelectionProvider> selection_provider(
       QueryInterfaceFromNode<ISelectionProvider>(GetRootAsAXNode()));
@@ -4701,7 +4702,7 @@ TEST_F(AXPlatformNodeWinTest, TestISelectionProviderIsSelectionRequiredTrue) {
   Init(BuildListBox(/*option_1_is_selected*/ false,
                     /*option_2_is_selected*/ false,
                     /*option_3_is_selected*/ false,
-                    /*additional_state*/ ax::mojom::State::kRequired));
+                    /*additional_state*/ {ax::mojom::State::kRequired}));
 
   ComPtr<ISelectionProvider> selection_provider(
       QueryInterfaceFromNode<ISelectionProvider>(GetRootAsAXNode()));
@@ -4716,7 +4717,7 @@ TEST_F(AXPlatformNodeWinTest, TestISelectionProviderGetSelectionNoneSelected) {
   Init(BuildListBox(/*option_1_is_selected*/ false,
                     /*option_2_is_selected*/ false,
                     /*option_3_is_selected*/ false,
-                    /*additional_state*/ ax::mojom::State::kNone));
+                    /*additional_state*/ {ax::mojom::State::kFocusable}));
 
   ComPtr<ISelectionProvider> selection_provider(
       QueryInterfaceFromNode<ISelectionProvider>(GetRootAsAXNode()));
@@ -4742,7 +4743,7 @@ TEST_F(AXPlatformNodeWinTest,
   Init(BuildListBox(/*option_1_is_selected*/ false,
                     /*option_2_is_selected*/ true,
                     /*option_3_is_selected*/ false,
-                    /*additional_state*/ ax::mojom::State::kNone));
+                    /*additional_state*/ {ax::mojom::State::kFocusable}));
 
   ComPtr<ISelectionProvider> selection_provider(
       QueryInterfaceFromNode<ISelectionProvider>(GetRootAsAXNode()));
@@ -4774,10 +4775,12 @@ TEST_F(AXPlatformNodeWinTest,
 
 TEST_F(AXPlatformNodeWinTest,
        TestISelectionProviderGetSelectionMultipleItemsSelected) {
+  const std::vector<ax::mojom::State> state = {
+      ax::mojom::State::kMultiselectable, ax::mojom::State::kFocusable};
   Init(BuildListBox(/*option_1_is_selected*/ true,
                     /*option_2_is_selected*/ true,
                     /*option_3_is_selected*/ true,
-                    /*additional_state*/ ax::mojom::State::kNone));
+                    /*additional_state*/ state));
 
   ComPtr<ISelectionProvider> selection_provider(
       QueryInterfaceFromNode<ISelectionProvider>(GetRootAsAXNode()));

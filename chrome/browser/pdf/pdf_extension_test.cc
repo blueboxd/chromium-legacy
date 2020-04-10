@@ -2384,8 +2384,10 @@ class PDFExtensionAccessibilityTextExtractionTest : public PDFExtensionTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PDFExtensionTest::SetUpCommandLine(command_line);
-    feature_list_.InitAndEnableFeature(
-        chrome_pdf::features::kAccessiblePDFHighlight);
+    std::vector<base::Feature> enabled_features = {
+        chrome_pdf::features::kAccessiblePDFHighlight,
+        chrome_pdf::features::kAccessiblePDFForm};
+    feature_list_.InitWithFeatures(enabled_features, /*disabled_features=*/{});
   }
 
   void RunTextExtractionTest(const base::FilePath::CharType* pdf_file) {
@@ -2549,6 +2551,12 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionAccessibilityTextExtractionTest,
   RunTextExtractionTest(FILE_PATH_LITERAL("highlights.pdf"));
 }
 
+// Test data of inline text boxes for PDF with text fields.
+IN_PROC_BROWSER_TEST_F(PDFExtensionAccessibilityTextExtractionTest,
+                       TextFields) {
+  RunTextExtractionTest(FILE_PATH_LITERAL("text_fields.pdf"));
+}
+
 // Test data of inline text boxes for PDF with multi-line and various font-sized
 // text.
 IN_PROC_BROWSER_TEST_F(PDFExtensionAccessibilityTextExtractionTest,
@@ -2581,8 +2589,11 @@ class PDFExtensionAccessibilityTreeDumpTest
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PDFExtensionTest::SetUpCommandLine(command_line);
-    feature_list_.InitAndEnableFeature(
-        chrome_pdf::features::kAccessiblePDFHighlight);
+    std::vector<base::Feature> enabled_features = {
+        chrome_pdf::features::kAccessiblePDFHighlight,
+        chrome_pdf::features::kAccessiblePDFForm};
+    feature_list_.InitWithFeatures(enabled_features, /*disabled_features=*/{});
+
     // Each test pass might require custom command-line setup
     if (test_pass_.set_up_command_line)
       test_pass_.set_up_command_line(command_line);
@@ -2780,6 +2791,10 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest,
 
 IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest, Highlights) {
   RunPDFTest(FILE_PATH_LITERAL("highlights.pdf"));
+}
+
+IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest, TextFields) {
+  RunPDFTest(FILE_PATH_LITERAL("text_fields.pdf"));
 }
 
 IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest, Images) {

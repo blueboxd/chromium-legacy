@@ -26,6 +26,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/picture_in_picture_window_controller.h"
+#include "content/public/browser/presentation_receiver_flags.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -45,7 +46,6 @@
 #include "content/shell/common/web_test/web_test_switches.h"
 #include "media/media_buildflags.h"
 #include "third_party/blink/public/common/peerconnection/webrtc_ip_handling_policy.h"
-#include "third_party/blink/public/common/presentation/presentation_receiver_flags.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 
 namespace content {
@@ -223,7 +223,7 @@ Shell* Shell::CreateNewWindow(BrowserContext* browser_context,
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kForcePresentationReceiverForTesting)) {
     create_params.starting_sandbox_flags =
-        blink::kPresentationReceiverSandboxFlags;
+        content::kPresentationReceiverSandboxFlags;
   }
   std::unique_ptr<WebContents> web_contents =
       WebContents::Create(create_params);
@@ -245,7 +245,7 @@ Shell* Shell::CreateNewWindowWithSessionStorageNamespace(
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kForcePresentationReceiverForTesting)) {
     create_params.starting_sandbox_flags =
-        blink::kPresentationReceiverSandboxFlags;
+        content::kPresentationReceiverSandboxFlags;
   }
   std::map<std::string, scoped_refptr<SessionStorageNamespace>>
       session_storages;

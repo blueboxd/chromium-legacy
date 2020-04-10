@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
 
+#include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -97,7 +98,7 @@ class OutsideSettingsCSPDelegate final
   // SecurityContext and FetchClientSettingsObject, e.g. when doing
   // off-the-main-thread shared worker/service worker top-level script fetch.
   // https://crbug.com/924041 https://crbug.com/924043
-  void SetSandboxFlags(SandboxFlags) override {}
+  void SetSandboxFlags(network::mojom::blink::WebSandboxFlags) override {}
   void SetRequireTrustedTypes() override {}
   void AddInsecureRequestPolicy(mojom::blink::InsecureRequestPolicy) override {}
   void DisableEval(const String& error_message) override {}
@@ -423,9 +424,10 @@ WorkerOrWorkletGlobalScope::GetTaskRunner(TaskType type) {
   return GetThread()->GetTaskRunner(type);
 }
 
-void WorkerOrWorkletGlobalScope::ApplySandboxFlags(SandboxFlags mask) {
+void WorkerOrWorkletGlobalScope::ApplySandboxFlags(
+    network::mojom::blink::WebSandboxFlags mask) {
   GetSecurityContext().ApplySandboxFlags(mask);
-  if (IsSandboxed(mojom::blink::WebSandboxFlags::kOrigin) &&
+  if (IsSandboxed(network::mojom::blink::WebSandboxFlags::kOrigin) &&
       !GetSecurityOrigin()->IsOpaque()) {
     GetSecurityContext().SetSecurityOrigin(
         GetSecurityOrigin()->DeriveNewOpaqueOrigin());

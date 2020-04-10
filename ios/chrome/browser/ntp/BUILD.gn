@@ -15,6 +15,7 @@ source_set("ntp") {
     "//components/strings:components_strings_grit",
     "//ios/chrome/browser",
     "//ios/chrome/browser/ui:feature_flags",
+    "//ios/web/common:features",
     "//ios/web/public",
     "//ui/base:base",
   ]

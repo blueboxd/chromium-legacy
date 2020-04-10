@@ -2134,15 +2134,10 @@ IFACEMETHODIMP AXPlatformNodeWin::GetSelection(SAFEARRAY** result) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SELECTION_GETSELECTION);
   UIA_VALIDATE_CALL_1_ARG(result);
 
-  std::vector<AXPlatformNodeWin*> selected_children;
-  LONG child_count = GetDelegate()->GetChildCount();
-  for (LONG i = 0; i < child_count; ++i) {
-    auto* child = static_cast<AXPlatformNodeWin*>(
-        FromNativeViewAccessible(GetDelegate()->ChildAtIndex(i)));
-    DCHECK(child);
-    if (child->GetData().GetBoolAttribute(ax::mojom::BoolAttribute::kSelected))
-      selected_children.push_back(child);
-  }
+  std::vector<AXPlatformNodeBase*> selected_children;
+  int max_items = GetMaxSelectableItems();
+  if (max_items)
+    GetSelectedItems(max_items, &selected_children);
 
   LONG selected_children_count = selected_children.size();
   *result = SafeArrayCreateVector(VT_UNKNOWN, 0, selected_children_count);
@@ -2150,9 +2145,10 @@ IFACEMETHODIMP AXPlatformNodeWin::GetSelection(SAFEARRAY** result) {
     return E_OUTOFMEMORY;
 
   for (LONG i = 0; i < selected_children_count; ++i) {
+    AXPlatformNodeWin* children =
+        static_cast<AXPlatformNodeWin*>(selected_children[i]);
     HRESULT hr = SafeArrayPutElement(
-        *result, &i,
-        static_cast<IRawElementProviderSimple*>(selected_children[i]));
+        *result, &i, static_cast<IRawElementProviderSimple*>(children));
     if (FAILED(hr)) {
       SafeArrayDestroy(*result);
       *result = nullptr;

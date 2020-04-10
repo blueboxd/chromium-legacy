@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client_impl.h"
 #include "base/run_loop.h"
 #include "cc/trees/layer_tree_host.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
@@ -63,7 +64,7 @@ class ViewCreatingClient : public frame_test_helpers::TestWebViewClient {
                       const WebWindowFeatures&,
                       const WebString& name,
                       WebNavigationPolicy,
-                      mojom::blink::WebSandboxFlags,
+                      network::mojom::blink::WebSandboxFlags,
                       const FeaturePolicy::FeatureState&,
                       const SessionStorageNamespaceId&) override {
     return web_view_helper_.InitializeWithOpener(opener);
@@ -97,7 +98,7 @@ TEST_F(CreateWindowTest, CreateWindowFromPausedPage) {
   WebWindowFeatures features;
   EXPECT_EQ(nullptr, chrome_client_impl_->CreateWindow(
                          frame, request, "", features,
-                         mojom::blink::WebSandboxFlags::kNone,
+                         network::mojom::blink::WebSandboxFlags::kNone,
                          FeaturePolicy::FeatureState(), ""));
 }
 

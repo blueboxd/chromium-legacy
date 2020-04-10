@@ -12,6 +12,7 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.ntp.RecentlyClosedBridge;
 import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
+import org.chromium.chrome.browser.tab.InterceptNavigationDelegateTabHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
@@ -813,7 +814,7 @@ public class TabModelImpl extends TabModelJniBridge {
 
         // If shouldIgnoreNewTab returns true, the intent is handled by another
         // activity. As a result, don't launch a new tab to open the URL.
-        InterceptNavigationDelegateImpl delegate = InterceptNavigationDelegateImpl.get(parent);
+        InterceptNavigationDelegateImpl delegate = InterceptNavigationDelegateTabHelper.get(parent);
         if (delegate != null && delegate.shouldIgnoreNewTab(url, incognito)) return;
 
         LoadUrlParams loadUrlParams = new LoadUrlParams(url);

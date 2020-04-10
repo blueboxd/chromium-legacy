@@ -203,7 +203,7 @@ class MockFrameHost : public mojom::FrameHost {
                      const std::string& unique_name) override {}
 
   void DidSetFramePolicyHeaders(
-      blink::mojom::WebSandboxFlags sandbox_flags,
+      network::mojom::WebSandboxFlags sandbox_flags,
       const blink::ParsedFeaturePolicy& feature_policy_header,
       const blink::DocumentPolicy::FeatureState& document_policy_header)
       override {}

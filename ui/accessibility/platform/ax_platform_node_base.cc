@@ -130,7 +130,7 @@ int AXPlatformNodeBase::GetChildCount() const {
   return 0;
 }
 
-gfx::NativeViewAccessible AXPlatformNodeBase::ChildAtIndex(int index) {
+gfx::NativeViewAccessible AXPlatformNodeBase::ChildAtIndex(int index) const {
   if (delegate_)
     return delegate_->ChildAtIndex(index);
   return nullptr;
@@ -2054,6 +2054,54 @@ ui::TextAttributeList AXPlatformNodeBase::ComputeTextAttributes() const {
   return attributes;
 }
 
+int AXPlatformNodeBase::GetSelectionCount() const {
+  int max_items = GetMaxSelectableItems();
+  if (!max_items)
+    return 0;
+  return GetSelectedItems(max_items);
+}
+
+AXPlatformNodeBase* AXPlatformNodeBase::GetSelectedItem(
+    int selected_index) const {
+  DCHECK_GE(selected_index, 0);
+  int max_items = GetMaxSelectableItems();
+  if (max_items == 0)
+    return nullptr;
+  if (selected_index >= max_items)
+    return nullptr;
+
+  std::vector<AXPlatformNodeBase*> selected_children;
+  int requested_count = selected_index + 1;
+  int returned_count = GetSelectedItems(requested_count, &selected_children);
+
+  if (returned_count <= selected_index)
+    return nullptr;
+
+  DCHECK(!selected_children.empty());
+  DCHECK_LT(selected_index, static_cast<int>(selected_children.size()));
+  return selected_children[selected_index];
+}
+
+int AXPlatformNodeBase::GetSelectedItems(
+    int max_items,
+    std::vector<AXPlatformNodeBase*>* out_selected_items) const {
+  int selected_count = 0;
+  // TODO(Nektar): Remove const_cast by making all tree traversal methods const.
+  for (AXPlatformNodeBase* child =
+           const_cast<AXPlatformNodeBase*>(this)->GetFirstChild();
+       child && selected_count < max_items; child = child->GetNextSibling()) {
+    if (!IsItemLike(child->GetData().role)) {
+      selected_count += child->GetSelectedItems(max_items - selected_count,
+                                                out_selected_items);
+    } else if (child->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected)) {
+      selected_count++;
+      if (out_selected_items)
+        out_selected_items->emplace_back(child);
+    }
+  }
+  return selected_count;
+}
+
 void AXPlatformNodeBase::SanitizeTextAttributeValue(const std::string& input,
                                                     std::string* output) const {
   DCHECK(output);
@@ -2110,6 +2158,22 @@ std::string AXPlatformNodeBase::ComputeDetailsRoles() const {
   std::vector<std::string> details_roles_vector(details_roles_set.begin(),
                                                 details_roles_set.end());
   return base::JoinString(details_roles_vector, " ");
+}
+
+int AXPlatformNodeBase::GetMaxSelectableItems() const {
+  if (!GetData().HasState(ax::mojom::State::kFocusable))
+    return 0;
+
+  if (IsLeaf())
+    return 0;
+
+  if (!IsContainerWithSelectableChildren(GetData().role))
+    return 0;
+
+  int max_items = 1;
+  if (GetData().HasState(ax::mojom::State::kMultiselectable))
+    max_items = std::numeric_limits<int>::max();
+  return max_items;
 }
 
 }  // namespace ui

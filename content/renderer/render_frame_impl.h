@@ -684,7 +684,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidChangeFramePolicy(blink::WebFrame* child_frame,
                             const blink::FramePolicy& frame_policy) override;
   void DidSetFramePolicyHeaders(
-      blink::mojom::WebSandboxFlags flags,
+      network::mojom::WebSandboxFlags flags,
       const blink::ParsedFeaturePolicy& fp_header,
       const blink::DocumentPolicy::FeatureState& dp_header) override;
   void DidChangeFrameOwnerProperties(

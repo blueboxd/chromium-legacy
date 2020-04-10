@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_VIEW_CLIENT_H_
 
 #include "base/strings/string_piece.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -45,9 +46,6 @@ class WebPagePopup;
 class WebURL;
 class WebURLRequest;
 class WebView;
-namespace mojom {
-enum class WebSandboxFlags;
-}
 struct WebRect;
 struct WebSize;
 struct WebTextAutosizerPageInfo;
@@ -71,7 +69,7 @@ class WebViewClient {
       const WebWindowFeatures& features,
       const WebString& name,
       WebNavigationPolicy policy,
-      mojom::WebSandboxFlags,
+      network::mojom::WebSandboxFlags,
       const FeaturePolicy::FeatureState&,
       const SessionStorageNamespaceId& session_storage_namespace_id) {
     return nullptr;

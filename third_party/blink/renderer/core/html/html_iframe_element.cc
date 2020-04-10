@@ -24,7 +24,9 @@
 
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 
+#include "services/network/public/cpp/web_sandbox_flags.h"
 #include "services/network/public/mojom/trust_tokens.mojom-blink.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_html_iframe_element.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
@@ -151,22 +153,22 @@ void HTMLIFrameElement::ParseAttribute(
     String invalid_tokens;
     bool feature_policy_for_sandbox =
         RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled();
-    mojom::blink::WebSandboxFlags current_flags =
+    network::mojom::blink::WebSandboxFlags current_flags =
         value.IsNull()
-            ? mojom::blink::WebSandboxFlags::kNone
+            ? network::mojom::blink::WebSandboxFlags::kNone
             : ParseSandboxPolicy(sandbox_->TokenSet(), invalid_tokens);
     SetAllowedToDownload(
-        (current_flags & mojom::blink::WebSandboxFlags::kDownloads) ==
-        mojom::blink::WebSandboxFlags::kNone);
+        (current_flags & network::mojom::blink::WebSandboxFlags::kDownloads) ==
+        network::mojom::blink::WebSandboxFlags::kNone);
     // With FeaturePolicyForSandbox, sandbox flags are represented as part of
     // the container policies. However, not all sandbox flags are yet converted
     // and for now the residue will stay around in the stored flags.
     // (see https://crbug.com/812381).
-    mojom::blink::WebSandboxFlags sandbox_to_set = current_flags;
+    network::mojom::blink::WebSandboxFlags sandbox_to_set = current_flags;
     sandbox_flags_converted_to_feature_policies_ =
-        mojom::blink::WebSandboxFlags::kNone;
+        network::mojom::blink::WebSandboxFlags::kNone;
     if (feature_policy_for_sandbox &&
-        current_flags != mojom::blink::WebSandboxFlags::kNone) {
+        current_flags != network::mojom::blink::WebSandboxFlags::kNone) {
       // Residue sandbox which will not be mapped to feature policies.
       sandbox_to_set =
           GetSandboxFlagsNotImplementedAsFeaturePolicy(current_flags);
@@ -318,11 +320,11 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy(
     // If the frame is sandboxed at all, then warn if feature policy attributes
     // will override the sandbox attributes.
     if (messages && (sandbox_flags_converted_to_feature_policies_ &
-                     mojom::blink::WebSandboxFlags::kNavigation) !=
-                        mojom::blink::WebSandboxFlags::kNone) {
+                     network::mojom::blink::WebSandboxFlags::kNavigation) !=
+                        network::mojom::blink::WebSandboxFlags::kNone) {
       for (const auto& pair : SandboxFlagsWithFeaturePolicies()) {
         if ((sandbox_flags_converted_to_feature_policies_ & pair.first) !=
-                mojom::blink::WebSandboxFlags::kNone &&
+                network::mojom::blink::WebSandboxFlags::kNone &&
             IsFeatureDeclared(pair.second, container_policy)) {
           messages->push_back(String::Format(
               "Allow and Sandbox attributes both mention '%s'. Allow will take "

@@ -7,6 +7,7 @@ import androidx.annotation.AnyThread;
 import androidx.annotation.MainThread;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 
@@ -17,6 +18,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * AccountManagerFacade instance manipulation methods in one place.
  */
 public class AccountManagerFacadeProvider {
+    private static final String TAG = "AccManagerProvider";
     private static final AtomicReference<AccountManagerFacade> sAtomicInstance =
             new AtomicReference<>();
     private static AccountManagerFacade sInstance;
@@ -61,6 +63,7 @@ public class AccountManagerFacadeProvider {
         ThreadUtils.runOnUiThreadBlocking(() -> {
             sTestingInstance = null;
             sAtomicInstance.set(sInstance);
+            Log.d(TAG, "reset AccountManagerFacade test instance");
         });
     }
 

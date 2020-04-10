@@ -29,7 +29,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/navigation_policy.h"
-#include "third_party/blink/public/common/frame/sandbox_flags.h"
+#include "services/network/public/cpp/web_sandbox_flags.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom.h"
 
@@ -231,7 +232,7 @@ void FrameTreeNode::ResetForNavigation() {
 
   // Clear any CSP-set sandbox flags, and the declared feature policy for the
   // frame.
-  UpdateFramePolicyHeaders(blink::mojom::WebSandboxFlags::kNone, {});
+  UpdateFramePolicyHeaders(network::mojom::WebSandboxFlags::kNone, {});
 
   // This frame has had its user activation bits cleared in the renderer
   // before arriving here. We just need to clear them here and in the other
@@ -687,7 +688,7 @@ FrameTreeNode* FrameTreeNode::GetSibling(int relative_offset) const {
 }
 
 void FrameTreeNode::UpdateFramePolicyHeaders(
-    blink::mojom::WebSandboxFlags sandbox_flags,
+    network::mojom::WebSandboxFlags sandbox_flags,
     const blink::ParsedFeaturePolicy& parsed_header) {
   bool changed = false;
   if (replication_state_.feature_policy_header != parsed_header) {
@@ -696,7 +697,7 @@ void FrameTreeNode::UpdateFramePolicyHeaders(
   }
   // TODO(iclelland): Kill the renderer if sandbox flags is not a subset of the
   // currently effective sandbox flags from the frame. https://crbug.com/740556
-  blink::mojom::WebSandboxFlags updated_flags =
+  network::mojom::WebSandboxFlags updated_flags =
       sandbox_flags | effective_frame_policy().sandbox_flags;
   if (replication_state_.active_sandbox_flags != updated_flags) {
     replication_state_.active_sandbox_flags = updated_flags;

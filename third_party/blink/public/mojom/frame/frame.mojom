@@ -12,6 +12,7 @@ import "mojo/public/mojom/base/time.mojom";
 import "services/data_decoder/public/mojom/resource_snapshot_for_web_bundle.mojom";
 import "services/network/public/mojom/content_security_policy.mojom";
 import "services/network/public/mojom/fetch_api.mojom";
+import "services/network/public/mojom/web_sandbox_flags.mojom";
 import "skia/public/mojom/skcolor.mojom";
 import "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom";
 import "third_party/blink/public/mojom/devtools/console_message.mojom";
@@ -607,7 +608,7 @@ interface RemoteFrame {
 
   // Used to replicate the updated sandbox flags and feature policy headers to
   // all corresponding remote frames of a local frame when a navigation commits.
-  DidSetFramePolicyHeaders(blink.mojom.WebSandboxFlags sandbox_flags,
+  DidSetFramePolicyHeaders(network.mojom.WebSandboxFlags sandbox_flags,
       array<blink.mojom.ParsedFeaturePolicyDeclaration> parsed_feature_policy);
 
   // Notifies the frame that its parent has changed the frame's sandbox flags or

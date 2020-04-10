@@ -23,6 +23,8 @@
 
 #include "third_party/blink/renderer/core/html/html_frame_element_base.h"
 
+#include "services/network/public/cpp/web_sandbox_flags.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/binding_security.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
@@ -162,9 +164,10 @@ scoped_refptr<const SecurityOrigin>
 HTMLFrameElementBase::GetOriginForFeaturePolicy() const {
   // Sandboxed frames have a unique origin.
   if ((GetFramePolicy().sandbox_flags &
-       mojom::blink::WebSandboxFlags::kOrigin) !=
-      mojom::blink::WebSandboxFlags::kNone)
+       network::mojom::blink::WebSandboxFlags::kOrigin) !=
+      network::mojom::blink::WebSandboxFlags::kNone) {
     return SecurityOrigin::CreateUniqueOpaque();
+  }
 
   // If the frame will inherit its origin from the owner, then use the owner's
   // origin when constructing the container policy.

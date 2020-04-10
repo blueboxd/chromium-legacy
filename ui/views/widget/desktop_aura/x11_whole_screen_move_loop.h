@@ -76,8 +76,6 @@ class X11WholeScreenMoveLoop : public X11MoveLoop,
   // quits.
   gfx::NativeCursor initial_cursor_;
 
-  bool should_reset_mouse_flags_;
-
   // An invisible InputOnly window. Keyboard grab and sometimes mouse grab
   // are set on this window.
   XID grab_input_window_;

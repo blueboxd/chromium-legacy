@@ -343,7 +343,7 @@ class CONTENT_EXPORT FrameTreeNode {
   // pending_frame_policy() for those. To see the flags which will take effect
   // on navigation (which does not include the CSP-set flags), use
   // effective_frame_policy().
-  blink::mojom::WebSandboxFlags active_sandbox_flags() const {
+  network::mojom::WebSandboxFlags active_sandbox_flags() const {
     return replication_state_.active_sandbox_flags;
   }
 
@@ -354,7 +354,7 @@ class CONTENT_EXPORT FrameTreeNode {
   // will be cleared, and the flags in the pending frame policy will be applied
   // to the frame.
   void UpdateFramePolicyHeaders(
-      blink::mojom::WebSandboxFlags sandbox_flags,
+      network::mojom::WebSandboxFlags sandbox_flags,
       const blink::ParsedFeaturePolicy& parsed_header);
 
   // Returns whether the frame received a user gesture.

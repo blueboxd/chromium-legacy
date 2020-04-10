@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
+import org.chromium.chrome.browser.tab.InterceptNavigationDelegateTabHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
@@ -289,7 +290,7 @@ public class UrlOverridingTest {
 
     private static InterceptNavigationDelegateImpl getInterceptNavigationDelegate(Tab tab) {
         return TestThreadUtils.runOnUiThreadBlockingNoException(
-                () -> InterceptNavigationDelegateImpl.get(tab));
+                () -> InterceptNavigationDelegateTabHelper.get(tab));
     }
 
     @Test

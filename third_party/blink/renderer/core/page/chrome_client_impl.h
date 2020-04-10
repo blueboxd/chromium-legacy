@@ -87,7 +87,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
                              const FrameLoadRequest&,
                              const AtomicString& name,
                              const WebWindowFeatures&,
-                             mojom::blink::WebSandboxFlags,
+                             network::mojom::blink::WebSandboxFlags,
                              const FeaturePolicy::FeatureState&,
                              const SessionStorageNamespaceId&) override;
   void Show(NavigationPolicy) override;

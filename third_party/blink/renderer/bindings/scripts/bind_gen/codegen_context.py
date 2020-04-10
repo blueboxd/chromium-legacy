@@ -331,4 +331,4 @@ class _StringifierProperty(_PropertyBase):
             identifier=web_idl.Identifier("toString"),
             extended_attributes=extended_attributes,
             owner=stringifier.owner,
-            debug_info=stringifier.debug_info)
+            debug_info=stringifier.operation.debug_info)

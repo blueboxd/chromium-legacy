@@ -27,7 +27,9 @@
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "services/network/public/cpp/web_sandbox_flags.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/feature_policy/document_policy_features.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
@@ -108,14 +110,21 @@ void SecurityContext::SetContentSecurityPolicy(
   content_security_policy_ = content_security_policy;
 }
 
-bool SecurityContext::IsSandboxed(mojom::blink::WebSandboxFlags mask) const {
+bool SecurityContext::IsSandboxed(
+    network::mojom::blink::WebSandboxFlags mask) const {
   if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
     mojom::blink::FeaturePolicyFeature feature =
         FeaturePolicy::FeatureForSandboxFlag(mask);
     if (feature != mojom::blink::FeaturePolicyFeature::kNotFound)
       return !feature_policy_->IsFeatureEnabled(feature);
   }
-  return (sandbox_flags_ & mask) != mojom::blink::WebSandboxFlags::kNone;
+  return (sandbox_flags_ & mask) !=
+         network::mojom::blink::WebSandboxFlags::kNone;
+}
+
+void SecurityContext::ApplySandboxFlags(
+    network::mojom::blink::WebSandboxFlags flags) {
+  sandbox_flags_ |= flags;
 }
 
 void SecurityContext::SetRequireTrustedTypes() {

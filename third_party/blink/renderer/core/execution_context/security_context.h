@@ -32,8 +32,8 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-blink-forward.h"
 #include "third_party/blink/public/common/feature_policy/document_policy.h"
-#include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/mojom/feature_policy/document_policy_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink-forward.h"
@@ -104,13 +104,11 @@ class CORE_EXPORT SecurityContext {
   // Like SetSecurityOrigin(), but no security CHECKs.
   void SetSecurityOriginForTesting(scoped_refptr<SecurityOrigin>);
 
-  mojom::blink::WebSandboxFlags GetSandboxFlags() const {
+  network::mojom::blink::WebSandboxFlags GetSandboxFlags() const {
     return sandbox_flags_;
   }
-  bool IsSandboxed(mojom::blink::WebSandboxFlags mask) const;
-  void ApplySandboxFlags(mojom::blink::WebSandboxFlags flags) {
-    sandbox_flags_ |= flags;
-  }
+  bool IsSandboxed(network::mojom::blink::WebSandboxFlags mask) const;
+  void ApplySandboxFlags(network::mojom::blink::WebSandboxFlags flags);
 
   void SetAddressSpace(network::mojom::IPAddressSpace space) {
     address_space_ = space;
@@ -197,7 +195,7 @@ class CORE_EXPORT SecurityContext {
   bool BindCSPImmediately() const { return bind_csp_immediately_; }
 
  protected:
-  mojom::blink::WebSandboxFlags sandbox_flags_;
+  network::mojom::blink::WebSandboxFlags sandbox_flags_;
   scoped_refptr<SecurityOrigin> security_origin_;
   std::unique_ptr<FeaturePolicy> feature_policy_;
   std::unique_ptr<FeaturePolicy> report_only_feature_policy_;

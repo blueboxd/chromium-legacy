@@ -72,12 +72,7 @@ DesktopWindowTreeHostX11::DesktopWindowTreeHostX11(
     : DesktopWindowTreeHostLinux(native_widget_delegate,
                                  desktop_native_widget_aura) {}
 
-DesktopWindowTreeHostX11::~DesktopWindowTreeHostX11() {
-  wm::SetWindowMoveClient(window(), nullptr);
-
-  // ~DWTHPlatform notifies the DestkopNativeWidgetAura about destruction and
-  // also destroyes the dispatcher.
-}
+DesktopWindowTreeHostX11::~DesktopWindowTreeHostX11() = default;
 
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11, DesktopWindowTreeHost implementation:
@@ -97,8 +92,6 @@ void DesktopWindowTreeHostX11::Init(const Widget::InitParams& params) {
 void DesktopWindowTreeHostX11::OnNativeWidgetCreated(
     const Widget::InitParams& params) {
   x11_window_move_client_ = std::make_unique<X11DesktopWindowMoveClient>();
-  wm::SetWindowMoveClient(window(), x11_window_move_client_.get());
-
   DesktopWindowTreeHostLinux::OnNativeWidgetCreated(params);
 }
 
@@ -116,14 +109,8 @@ Widget::MoveLoopResult DesktopWindowTreeHostX11::RunMoveLoop(
     const gfx::Vector2d& drag_offset,
     Widget::MoveLoopSource source,
     Widget::MoveLoopEscapeBehavior escape_behavior) {
-  wm::WindowMoveSource window_move_source =
-      source == Widget::MoveLoopSource::kMouse ? wm::WINDOW_MOVE_SOURCE_MOUSE
-                                               : wm::WINDOW_MOVE_SOURCE_TOUCH;
-  if (x11_window_move_client_->RunMoveLoop(GetContentWindow(), drag_offset,
-                                           window_move_source) ==
-      wm::MOVE_SUCCESSFUL)
+  if (x11_window_move_client_->RunMoveLoop(GetContentWindow(), drag_offset))
     return Widget::MOVE_LOOP_SUCCESSFUL;
-
   return Widget::MOVE_LOOP_CANCELED;
 }
 

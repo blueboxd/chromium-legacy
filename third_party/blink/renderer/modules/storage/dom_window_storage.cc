@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/memory/scoped_refptr.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -64,7 +65,7 @@ StorageArea* DOMWindowStorage::sessionStorage(
   DCHECK(document);
   String access_denied_message = "Access is denied for this document.";
   if (!document->GetSecurityOrigin()->CanAccessSessionStorage()) {
-    if (document->IsSandboxed(mojom::blink::WebSandboxFlags::kOrigin))
+    if (document->IsSandboxed(network::mojom::blink::WebSandboxFlags::kOrigin))
       exception_state.ThrowSecurityError(
           "The document is sandboxed and lacks the 'allow-same-origin' flag.");
     else if (document->Url().ProtocolIs("data"))
@@ -116,7 +117,7 @@ StorageArea* DOMWindowStorage::localStorage(
   DCHECK(document);
   String access_denied_message = "Access is denied for this document.";
   if (!document->GetSecurityOrigin()->CanAccessLocalStorage()) {
-    if (document->IsSandboxed(mojom::blink::WebSandboxFlags::kOrigin))
+    if (document->IsSandboxed(network::mojom::blink::WebSandboxFlags::kOrigin))
       exception_state.ThrowSecurityError(
           "The document is sandboxed and lacks the 'allow-same-origin' flag.");
     else if (document->Url().ProtocolIs("data"))

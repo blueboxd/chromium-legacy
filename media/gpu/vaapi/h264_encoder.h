@@ -53,7 +53,7 @@ class H264Encoder : public AcceleratedVideoEncoder {
     // Bitrate window size in bits.
     unsigned int cpb_size_bits;
 
-    // Quantization parameter.
+    // Quantization parameter. Their ranges are 0-51.
     int initial_qp;
     ScalingSettings scaling_settings;
 

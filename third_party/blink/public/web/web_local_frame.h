@@ -13,9 +13,9 @@
 #include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "third_party/blink/public/common/css/page_size_type.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
-#include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/common/frame/user_activation_update_source.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-shared.h"
@@ -95,7 +95,7 @@ class WebLocalFrame : public WebFrame {
       blink::InterfaceRegistry*,
       WebFrame* opener = nullptr,
       const WebString& name = WebString(),
-      mojom::WebSandboxFlags = mojom::WebSandboxFlags::kNone,
+      network::mojom::WebSandboxFlags = network::mojom::WebSandboxFlags::kNone,
       const FeaturePolicy::FeatureState& opener_feature_state =
           FeaturePolicy::FeatureState());
 
@@ -527,7 +527,8 @@ class WebLocalFrame : public WebFrame {
   // where the notion of FrameReplicationState is relevant to.
   // Returns the effective sandbox flags which are inherited from their parent
   // frame.
-  virtual mojom::WebSandboxFlags EffectiveSandboxFlagsForTesting() const = 0;
+  virtual network::mojom::WebSandboxFlags EffectiveSandboxFlagsForTesting()
+      const = 0;
 
   // Returns false if this frame, or any parent frame is sandboxed and does not
   // have the flag "allow-downloads" set.

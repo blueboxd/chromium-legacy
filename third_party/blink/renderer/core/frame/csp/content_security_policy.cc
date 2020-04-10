@@ -29,6 +29,8 @@
 #include <utility>
 
 #include "base/debug/dump_without_crashing.h"
+#include "services/network/public/cpp/web_sandbox_flags.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -50,7 +52,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/location.h"
-#include "third_party/blink/renderer/core/frame/sandbox_flags.h"
 #include "third_party/blink/renderer/core/html/html_script_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
@@ -156,7 +157,7 @@ ContentSecurityPolicy::ContentSecurityPolicy()
       override_inline_style_allowed_(false),
       script_hash_algorithms_used_(kContentSecurityPolicyHashAlgorithmNone),
       style_hash_algorithms_used_(kContentSecurityPolicyHashAlgorithmNone),
-      sandbox_mask_(mojom::blink::WebSandboxFlags::kNone),
+      sandbox_mask_(network::mojom::blink::WebSandboxFlags::kNone),
       require_trusted_types_(false),
       insecure_request_policy_(
           mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone) {}
@@ -200,7 +201,7 @@ void ContentSecurityPolicy::ApplyPolicySideEffectsToDelegate() {
 
   // Set mixed content checking and sandbox flags, then dump all the parsing
   // error messages, then poke at histograms.
-  if (sandbox_mask_ != mojom::blink::WebSandboxFlags::kNone) {
+  if (sandbox_mask_ != network::mojom::blink::WebSandboxFlags::kNone) {
     Count(WebFeature::kSandboxViaCSP);
     delegate_->SetSandboxFlags(sandbox_mask_);
   }
@@ -928,7 +929,8 @@ const KURL ContentSecurityPolicy::FallbackUrlForPlugin() const {
   return delegate_ ? delegate_->Url() : KURL();
 }
 
-void ContentSecurityPolicy::EnforceSandboxFlags(SandboxFlags mask) {
+void ContentSecurityPolicy::EnforceSandboxFlags(
+    network::mojom::blink::WebSandboxFlags mask) {
   sandbox_mask_ |= mask;
 }
 

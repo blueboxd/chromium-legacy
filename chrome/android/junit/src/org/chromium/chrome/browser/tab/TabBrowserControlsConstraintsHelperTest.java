@@ -107,11 +107,12 @@ public class TabBrowserControlsConstraintsHelperTest {
         initHelper();
         Mockito.verify(mDelegateFactory, Mockito.never())
                 .createBrowserControlsVisibilityDelegate(mTab);
-        mRegisteredTabObserver.onActivityAttachmentChanged(mTab, false);
+        mRegisteredTabObserver.onActivityAttachmentChanged(mTab, null);
         Mockito.verify(mDelegateFactory, Mockito.never())
                 .createBrowserControlsVisibilityDelegate(mTab);
 
-        mRegisteredTabObserver.onActivityAttachmentChanged(mTab, true);
+        WindowAndroid window = Mockito.mock(WindowAndroid.class);
+        mRegisteredTabObserver.onActivityAttachmentChanged(mTab, window);
         Mockito.verify(mDelegateFactory, Mockito.times(1))
                 .createBrowserControlsVisibilityDelegate(mTab);
         verifyUpdateState(BrowserControlsState.BOTH);
@@ -139,7 +140,8 @@ public class TabBrowserControlsConstraintsHelperTest {
         Mockito.when(newDelegateFactory.createBrowserControlsVisibilityDelegate(Mockito.any()))
                 .thenReturn(newVisibilityDelegate);
 
-        mRegisteredTabObserver.onActivityAttachmentChanged(mTab, true);
+        WindowAndroid window = Mockito.mock(WindowAndroid.class);
+        mRegisteredTabObserver.onActivityAttachmentChanged(mTab, window);
         Mockito.verify(newDelegateFactory).createBrowserControlsVisibilityDelegate(mTab);
 
         verifyUpdateState(BrowserControlsState.BOTH);

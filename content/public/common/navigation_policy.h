@@ -39,7 +39,7 @@ enum class NavigationDownloadType {
   kAdFrame = 10,
 
   // The navigation was initiated from or occurred in an iframe with
-  // |WebSandboxFlags::kDownloads| flag set.
+  // |network::mojom::WebSandboxFlags::kDownloads| flag set.
   kSandbox = 11,
 
   // The navigation was initiated without user activation.

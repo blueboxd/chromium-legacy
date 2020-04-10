@@ -132,8 +132,6 @@ struct ImageDoodleContent {
   url.mojom.Url? animation_url;
   // Specification of the share button.
   DoodleShareButton share_button;
-  // URL displayed to users, which they can use to share the doodle.
-  url.mojom.Url share_url;
 };
 
 // The contents of a doodle.
@@ -148,8 +146,6 @@ union DoodleContent {
 struct Doodle {
   // The doodle content.
   DoodleContent content;
-  // Localized description of the doodle.
-  string description;
 };
 
 // Used by the WebUI page to bootstrap bidirectional communication.

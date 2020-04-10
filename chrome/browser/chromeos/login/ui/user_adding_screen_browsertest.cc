@@ -113,78 +113,105 @@ class UserAddingScreenTest : public LoginManagerTest,
 IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, CancelAdding) {
   const auto& users = login_mixin_.users();
   EXPECT_EQ(users.size(), user_manager::UserManager::Get()->GetUsers().size());
-  EXPECT_EQ(0u, user_manager::UserManager::Get()->GetLoggedInUsers().size());
-  EXPECT_EQ(session_manager::SessionState::LOGIN_PRIMARY,
-            session_manager::SessionManager::Get()->session_state());
+  EXPECT_EQ(user_manager::UserManager::Get()->GetLoggedInUsers().size(), 0u);
+  EXPECT_EQ(session_manager::SessionManager::Get()->session_state(),
+            session_manager::SessionState::LOGIN_PRIMARY);
 
   LoginUser(users[0].account_id);
-  EXPECT_EQ(1u, user_manager::UserManager::Get()->GetLoggedInUsers().size());
-  EXPECT_EQ(session_manager::SessionState::ACTIVE,
-            session_manager::SessionManager::Get()->session_state());
+  EXPECT_EQ(user_manager::UserManager::Get()->GetLoggedInUsers().size(), 1u);
+  EXPECT_EQ(session_manager::SessionManager::Get()->session_state(),
+            session_manager::SessionState::ACTIVE);
 
+  base::HistogramTester histogram_tester;
   UserAddingScreen::Get()->Start();
-  content::RunAllPendingInMessageLoop();
-  EXPECT_EQ(1, user_adding_started());
-  EXPECT_EQ(session_manager::SessionState::LOGIN_SECONDARY,
-            session_manager::SessionManager::Get()->session_state());
+  OobeScreenWaiter(OobeScreen::SCREEN_ACCOUNT_PICKER).Wait();
+
+  EXPECT_EQ(user_adding_started(), 1);
+  EXPECT_EQ(session_manager::SessionManager::Get()->session_state(),
+            session_manager::SessionState::LOGIN_SECONDARY);
 
   EXPECT_TRUE(ash::LoginScreenTestApi::IsCancelButtonShown());
   EXPECT_TRUE(ash::LoginScreenTestApi::ClickCancelButton());
-
   WaitUntilUserAddingFinishedOrCancelled();
-  content::RunAllPendingInMessageLoop();
-  EXPECT_EQ(1, user_adding_finished());
-  EXPECT_EQ(session_manager::SessionState::ACTIVE,
-            session_manager::SessionManager::Get()->session_state());
+
+  histogram_tester.ExpectTotalCount("ChromeOS.UserAddingScreen.LoadTime", 1);
+
+  EXPECT_EQ(user_adding_finished(), 1);
+  EXPECT_EQ(session_manager::SessionManager::Get()->session_state(),
+            session_manager::SessionState::ACTIVE);
 
   EXPECT_TRUE(LoginDisplayHost::default_host() == nullptr);
-  EXPECT_EQ(1u, user_manager::UserManager::Get()->GetLoggedInUsers().size());
-  EXPECT_EQ(users[0].account_id,
-            user_manager::UserManager::Get()->GetActiveUser()->GetAccountId());
+  EXPECT_EQ(user_manager::UserManager::Get()->GetLoggedInUsers().size(), 1u);
+  EXPECT_EQ(user_manager::UserManager::Get()->GetActiveUser()->GetAccountId(),
+            users[0].account_id);
 }
 
-// TODO(crbug.com/1067461): Flakes on ASAN and MSAN
-#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
-#define MAYBE_AddingSeveralUsers DISABLED_AddingSeveralUsers
-#else
-#define MAYBE_AddingSeveralUsers AddingSeveralUsers
-#endif
-IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, MAYBE_AddingSeveralUsers) {
+IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, UILogin) {
   const auto& users = login_mixin_.users();
-  EXPECT_EQ(session_manager::SessionState::LOGIN_PRIMARY,
-            session_manager::SessionManager::Get()->session_state());
+  EXPECT_EQ(session_manager::SessionManager::Get()->session_state(),
+            session_manager::SessionState::LOGIN_PRIMARY);
 
   LoginUser(users[0].account_id);
-  users_in_session_order_.push_back(users[0].account_id);
-  EXPECT_EQ(session_manager::SessionState::ACTIVE,
-            session_manager::SessionManager::Get()->session_state());
+  EXPECT_EQ(session_manager::SessionManager::Get()->session_state(),
+            session_manager::SessionState::ACTIVE);
 
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
 
   base::HistogramTester histogram_tester;
+  UserAddingScreen::Get()->Start();
+  OobeScreenWaiter(OobeScreen::SCREEN_ACCOUNT_PICKER).Wait();
+  EXPECT_EQ(user_adding_started(), 1);
+  EXPECT_EQ(session_manager::SessionManager::Get()->session_state(),
+            session_manager::SessionState::LOGIN_SECONDARY);
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsCancelButtonShown());
+
+  UILoginUser(users.back().account_id, kPassword);
+
+  EXPECT_EQ(user_adding_finished(), 1);
+  EXPECT_EQ(session_manager::SessionManager::Get()->session_state(),
+            session_manager::SessionState::ACTIVE);
+  EXPECT_TRUE(LoginDisplayHost::default_host() == nullptr);
+  ASSERT_EQ(user_manager->GetLoggedInUsers().size(), 2u);
+
+  histogram_tester.ExpectTotalCount("ChromeOS.UserAddingScreen.LoadTime", 1);
+
+  EXPECT_EQ(session_manager::SessionManager::Get()->session_state(),
+            session_manager::SessionState::ACTIVE);
+}
+
+IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, AddingSeveralUsers) {
+  const auto& users = login_mixin_.users();
+  EXPECT_EQ(session_manager::SessionManager::Get()->session_state(),
+            session_manager::SessionState::LOGIN_PRIMARY);
+
+  LoginUser(users[0].account_id);
+  users_in_session_order_.push_back(users[0].account_id);
+  EXPECT_EQ(session_manager::SessionManager::Get()->session_state(),
+            session_manager::SessionState::ACTIVE);
+
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+
   const int n = users.size();
   for (int i = 1; i < n; ++i) {
     UserAddingScreen::Get()->Start();
-    OobeScreenWaiter(OobeScreen::SCREEN_ACCOUNT_PICKER).Wait();
-    EXPECT_EQ(i, user_adding_started());
-    EXPECT_EQ(session_manager::SessionState::LOGIN_SECONDARY,
-              session_manager::SessionManager::Get()->session_state());
-    EXPECT_TRUE(ash::LoginScreenTestApi::IsCancelButtonShown());
+    EXPECT_EQ(user_adding_started(), i);
+    EXPECT_EQ(session_manager::SessionManager::Get()->session_state(),
+              session_manager::SessionState::LOGIN_SECONDARY);
 
-    UILoginUser(users[n - i].account_id, kPassword);
+    AddUser(users[n - i].account_id);
     users_in_session_order_.push_back(users[n - i].account_id);
+    WaitUntilUserAddingFinishedOrCancelled();
 
-    EXPECT_EQ(i, user_adding_finished());
-    EXPECT_EQ(session_manager::SessionState::ACTIVE,
-              session_manager::SessionManager::Get()->session_state());
+    EXPECT_EQ(user_adding_finished(), i);
+    EXPECT_EQ(session_manager::SessionManager::Get()->session_state(),
+              session_manager::SessionState::ACTIVE);
     EXPECT_TRUE(LoginDisplayHost::default_host() == nullptr);
-    ASSERT_EQ(unsigned(i + 1), user_manager->GetLoggedInUsers().size());
+    ASSERT_EQ(user_manager->GetLoggedInUsers().size(),
+              static_cast<size_t>(i + 1));
   }
-  histogram_tester.ExpectTotalCount("ChromeOS.UserAddingScreen.LoadTime",
-                                    n - 1);
 
-  EXPECT_EQ(session_manager::SessionState::ACTIVE,
-            session_manager::SessionManager::Get()->session_state());
+  EXPECT_EQ(session_manager::SessionManager::Get()->session_state(),
+            session_manager::SessionState::ACTIVE);
 
   // Now check how unlock policy works for these users.
   PrefService* prefs1 =
@@ -216,33 +243,33 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, MAYBE_AddingSeveralUsers) {
   prefs3->SetString(prefs::kMultiProfileUserBehavior,
                     MultiProfileUserController::kBehaviorUnrestricted);
   user_manager::UserList unlock_users = user_manager->GetUnlockUsers();
-  ASSERT_EQ(1UL, unlock_users.size());
+  ASSERT_EQ(unlock_users.size(), 1u);
   EXPECT_EQ(users[0].account_id, unlock_users[0]->GetAccountId());
 
   prefs1->SetBoolean(ash::prefs::kEnableAutoScreenLock, false);
   unlock_users = user_manager->GetUnlockUsers();
-  ASSERT_EQ(1UL, unlock_users.size());
+  ASSERT_EQ(unlock_users.size(), 1u);
   EXPECT_EQ(users[0].account_id, unlock_users[0]->GetAccountId());
 
   // If all users have unrestricted policy then anyone can perform unlock.
   prefs1->SetString(prefs::kMultiProfileUserBehavior,
                     MultiProfileUserController::kBehaviorUnrestricted);
   unlock_users = user_manager->GetUnlockUsers();
-  ASSERT_EQ(3UL, unlock_users.size());
+  ASSERT_EQ(unlock_users.size(), 3u);
   for (int i = 0; i < 3; ++i)
     EXPECT_EQ(users_in_session_order_[i], unlock_users[i]->GetAccountId());
 
   // This preference doesn't affect list of unlock users.
   prefs2->SetBoolean(ash::prefs::kEnableAutoScreenLock, true);
   unlock_users = user_manager->GetUnlockUsers();
-  ASSERT_EQ(3UL, unlock_users.size());
+  ASSERT_EQ(unlock_users.size(), 3u);
   for (int i = 0; i < 3; ++i)
     EXPECT_EQ(users_in_session_order_[i], unlock_users[i]->GetAccountId());
 
   // Now one of the users is unable to unlock.
   SetUserCanLock(user_manager->GetLoggedInUsers()[2], false);
   unlock_users = user_manager->GetUnlockUsers();
-  ASSERT_EQ(2UL, unlock_users.size());
+  ASSERT_EQ(unlock_users.size(), 2u);
   for (int i = 0; i < 2; ++i)
     EXPECT_EQ(users_in_session_order_[i], unlock_users[i]->GetAccountId());
   SetUserCanLock(user_manager->GetLoggedInUsers()[2], true);
@@ -254,29 +281,14 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, MAYBE_AddingSeveralUsers) {
   prefs3->SetString(prefs::kMultiProfileUserBehavior,
                     MultiProfileUserController::kBehaviorNotAllowed);
   unlock_users = user_manager->GetUnlockUsers();
-  ASSERT_EQ(2UL, unlock_users.size());
+  ASSERT_EQ(unlock_users.size(), 2u);
   for (int i = 0; i < 2; ++i)
     EXPECT_EQ(users_in_session_order_[i], unlock_users[i]->GetAccountId());
 }
 
-// crbug.com/1067461: Flakes on ASAN and MSAN
-#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
-#define MAYBE_ScreenVisibility DISABLED_ScreenVisibility
-#else
-#define MAYBE_ScreenVisibility ScreenVisibility
-#endif
-IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, MAYBE_ScreenVisibility) {
+IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, ScreenVisibilityAfterLock) {
   const auto& users = login_mixin_.users();
   LoginUser(users[0].account_id);
-
-  UserAddingScreen::Get()->Start();
-  OobeScreenWaiter(OobeScreen::SCREEN_ACCOUNT_PICKER).Wait();
-
-  EXPECT_TRUE(ash::LoginScreenTestApi::IsCancelButtonShown());
-  EXPECT_TRUE(ash::LoginScreenTestApi::ClickCancelButton());
-
-  WaitUntilUserAddingFinishedOrCancelled();
-  content::RunAllPendingInMessageLoop();
 
   {
     content::WindowedNotificationObserver observer(
@@ -296,12 +308,14 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, MAYBE_ScreenVisibility) {
 
   UserAddingScreen::Get()->Start();
   OobeScreenWaiter(OobeScreen::SCREEN_ACCOUNT_PICKER).Wait();
+  EXPECT_EQ(user_adding_started(), 1);
+  EXPECT_EQ(session_manager::SessionManager::Get()->session_state(),
+            session_manager::SessionState::LOGIN_SECONDARY);
 
   EXPECT_TRUE(ash::LoginScreenTestApi::IsCancelButtonShown());
   EXPECT_TRUE(ash::LoginScreenTestApi::ClickCancelButton());
 
   WaitUntilUserAddingFinishedOrCancelled();
-  content::RunAllPendingInMessageLoop();
 }
 
 }  // namespace chromeos

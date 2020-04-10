@@ -48,10 +48,11 @@ class AXPlatformNodeTest : public testing::Test, public TestAXTreeManager {
   AXTreeUpdate Build3X3Table();
   AXTreeUpdate BuildAriaColumnAndRowCountGrids();
 
-  AXTreeUpdate BuildListBox(bool option_1_is_selected,
-                            bool option_2_is_selected,
-                            bool option_3_is_selected,
-                            ax::mojom::State additional_state);
+  AXTreeUpdate BuildListBox(
+      bool option_1_is_selected,
+      bool option_2_is_selected,
+      bool option_3_is_selected,
+      const std::vector<ax::mojom::State>& additional_state);
 };
 
 }  // namespace ui

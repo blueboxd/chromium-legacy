@@ -60,6 +60,7 @@ class Operation(FunctionLike, WithExtendedAttributes, WithCodeGeneratorInfo,
             self.is_setter = is_setter
             self.is_deleter = is_deleter
             self.is_stringifier = False
+            self.stringifier_attribute = None
 
     def __init__(self, ir, owner):
         assert isinstance(ir, Operation.IR)
@@ -77,6 +78,7 @@ class Operation(FunctionLike, WithExtendedAttributes, WithCodeGeneratorInfo,
         self._is_setter = ir.is_setter
         self._is_deleter = ir.is_deleter
         self._is_stringifier = ir.is_stringifier
+        self._stringifier_attribute = ir.stringifier_attribute
 
     @property
     def is_special_operation(self):
@@ -106,6 +108,10 @@ class Operation(FunctionLike, WithExtendedAttributes, WithCodeGeneratorInfo,
     @property
     def is_stringifier(self):
         return self._is_stringifier
+
+    @property
+    def stringifier_attribute(self):
+        return self._stringifier_attribute
 
 
 class OperationGroup(OverloadGroup, WithExtendedAttributes,

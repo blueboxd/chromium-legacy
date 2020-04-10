@@ -251,7 +251,7 @@ Page* ChromeClientImpl::CreateWindowDelegate(
     const FrameLoadRequest& r,
     const AtomicString& name,
     const WebWindowFeatures& features,
-    mojom::blink::WebSandboxFlags sandbox_flags,
+    network::mojom::blink::WebSandboxFlags sandbox_flags,
     const FeaturePolicy::FeatureState& opener_feature_state,
     const SessionStorageNamespaceId& session_storage_namespace_id) {
   if (!web_view_->Client())
@@ -268,8 +268,7 @@ Page* ChromeClientImpl::CreateWindowDelegate(
           WebLocalFrameImpl::FromFrame(frame),
           WrappedResourceRequest(r.GetResourceRequest()), features, frame_name,
           static_cast<WebNavigationPolicy>(r.GetNavigationPolicy()),
-          static_cast<mojom::blink::WebSandboxFlags>(sandbox_flags),
-          opener_feature_state, session_storage_namespace_id));
+          sandbox_flags, opener_feature_state, session_storage_namespace_id));
   if (!new_view)
     return nullptr;
   return new_view->GetPage();

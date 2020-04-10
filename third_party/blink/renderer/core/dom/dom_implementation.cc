@@ -219,7 +219,8 @@ Document* DOMImplementation::createDocument(const DocumentInit& init) {
       // replace it with a SinkDocument when plugins are sanboxed. If we move
       // final sandbox flag calcuation earlier, we could construct the
       // SinkDocument directly.
-      if (document->IsSandboxed(mojom::blink::WebSandboxFlags::kPlugins))
+      if (document->IsSandboxed(
+              network::mojom::blink::WebSandboxFlags::kPlugins))
         document = MakeGarbageCollected<SinkDocument>(init);
       return document;
     }

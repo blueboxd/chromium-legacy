@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 
 #include "cc/layers/surface_layer.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom-blink.h"
@@ -151,7 +152,7 @@ void RemoteFrame::Navigate(FrameLoadRequest& frame_request,
     initiator_frame_has_download_sandbox_flag =
         frame->GetSecurityContext() &&
         frame->GetSecurityContext()->IsSandboxed(
-            mojom::blink::WebSandboxFlags::kDownloads);
+            network::mojom::blink::WebSandboxFlags::kDownloads);
     initiator_frame_is_ad = frame->IsAdSubframe();
     if (frame_request.ClientRedirectReason() != ClientNavigationReason::kNone) {
       probe::FrameRequestedNavigation(frame, this, url,
@@ -324,7 +325,7 @@ void RemoteFrame::SetReplicatedFeaturePolicyHeaderAndOpenerPolicies(
 }
 
 void RemoteFrame::SetReplicatedSandboxFlags(
-    mojom::blink::WebSandboxFlags flags) {
+    network::mojom::blink::WebSandboxFlags flags) {
   security_context_.ResetAndEnforceSandboxFlags(flags);
 }
 
@@ -565,8 +566,8 @@ void RemoteFrame::IntrinsicSizingInfoOfChildChanged(
 // ensure that sandbox flags and feature policy are inherited properly if this
 // proxy ever parents a local frame.
 void RemoteFrame::DidSetFramePolicyHeaders(
-    mojom::blink::WebSandboxFlags sandbox_flags,
-    const Vector<ParsedFeaturePolicyDeclaration>& parsed_feature_policy) {
+    network::mojom::blink::WebSandboxFlags sandbox_flags,
+    const WTF::Vector<ParsedFeaturePolicyDeclaration>& parsed_feature_policy) {
   SetReplicatedSandboxFlags(sandbox_flags);
   // Convert from WTF::Vector<ParsedFeaturePolicyDeclaration>
   // to std::vector<ParsedFeaturePolicyDeclaration>, since ParsedFeaturePolicy

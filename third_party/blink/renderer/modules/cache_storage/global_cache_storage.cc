@@ -44,7 +44,7 @@ class GlobalCacheStorageImpl final
     ExecutionContext* context = fetching_scope.GetExecutionContext();
     if (!context->GetSecurityOrigin()->CanAccessCacheStorage()) {
       if (context->GetSecurityContext().IsSandboxed(
-              mojom::blink::WebSandboxFlags::kOrigin)) {
+              network::mojom::blink::WebSandboxFlags::kOrigin)) {
         exception_state.ThrowSecurityError(
             "Cache storage is disabled because the context is sandboxed and "
             "lacks the 'allow-same-origin' flag.");

@@ -9,18 +9,31 @@
     android:layout_height="86dp"
     android:orientation="vertical">
 
-    <org.chromium.ui.widget.ChromeImageView
+    <org.chromium.components.browser_ui.widget.RoundedCornerImageView
         android:id="@+id/thumbnail"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center_horizontal"
         android:scaleType="centerCrop"
-        android:src="@drawable/chrome_sync_logo"
-        android:importantForAccessibility="no"/>
+        android:importantForAccessibility="no"
+        app:cornerRadiusBottomStart="@dimen/tile_corner_radius"
+        app:cornerRadiusBottomEnd="@dimen/tile_corner_radius"
+        app:cornerRadiusTopStart="@dimen/tile_corner_radius"
+        app:cornerRadiusTopEnd="@dimen/tile_corner_radius" />
+
+    <ImageView
+        android:id="@+id/gradient_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no"
+        app:srcCompat="@drawable/query_tile_overlay"/>
 
     <TextView
         android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"/>
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="12dp"
+        android:layout_marginStart="16dp"
+        android:textAppearance="@style/TextAppearance.WhiteText"/>
 </RelativeLayout>

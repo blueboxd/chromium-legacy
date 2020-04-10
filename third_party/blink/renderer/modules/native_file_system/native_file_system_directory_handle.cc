@@ -6,6 +6,7 @@
 
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_error.mojom-blink.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_manager.mojom-blink.h"
@@ -197,7 +198,7 @@ ScriptPromise NativeFileSystemDirectoryHandle::getSystemDirectory(
   ExecutionContext* context = ExecutionContext::From(script_state);
   if (!context->GetSecurityOrigin()->CanAccessNativeFileSystem()) {
     if (context->GetSecurityContext().IsSandboxed(
-            mojom::blink::WebSandboxFlags::kOrigin)) {
+            network::mojom::blink::WebSandboxFlags::kOrigin)) {
       exception_state.ThrowSecurityError(
           "System directory access is denied because the context is "
           "sandboxed and lacks the 'allow-same-origin' flag.");

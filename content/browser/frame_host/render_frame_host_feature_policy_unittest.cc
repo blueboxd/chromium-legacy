@@ -11,7 +11,6 @@
 #include "content/test/test_render_frame_host.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
-#include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -64,7 +63,7 @@ class RenderFrameHostFeaturePolicyTest
     RenderFrameHost* current = *rfh;
     SimulateNavigation(&current, current->GetLastCommittedURL());
     static_cast<TestRenderFrameHost*>(current)->DidSetFramePolicyHeaders(
-        blink::mojom::WebSandboxFlags::kNone, CreateFPHeader(feature, values),
+        network::mojom::WebSandboxFlags::kNone, CreateFPHeader(feature, values),
         {} /* document_policy_header */);
     *rfh = current;
   }
@@ -75,7 +74,7 @@ class RenderFrameHostFeaturePolicyTest
       blink::mojom::FeaturePolicyFeature feature,
       const std::map<std::string, blink::PolicyValue>& values) {
     static_cast<TestRenderFrameHost*>(parent)->OnDidChangeFramePolicy(
-        child->GetRoutingID(), {blink::mojom::WebSandboxFlags::kNone,
+        child->GetRoutingID(), {network::mojom::WebSandboxFlags::kNone,
                                 CreateFPHeader(feature, values),
                                 {} /* required_document_policy */});
   }

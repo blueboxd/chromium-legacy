@@ -64,7 +64,7 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   gfx::NativeViewAccessible GetFocus();
   gfx::NativeViewAccessible GetParent() const;
   int GetChildCount() const;
-  gfx::NativeViewAccessible ChildAtIndex(int index);
+  gfx::NativeViewAccessible ChildAtIndex(int index) const;
 
   std::string GetName() const;
   base::string16 GetNameAsString16() const;
@@ -313,6 +313,24 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
 
   ui::TextAttributeList ComputeTextAttributes() const;
 
+  // Get the number of items selected. It checks kMultiselectable and
+  // kFocusable. and uses GetSelectedItems to get the selected number.
+  int GetSelectionCount() const;
+
+  // If this object is a container that supports selectable children, returns
+  // the selected item at the provided index.
+  AXPlatformNodeBase* GetSelectedItem(int selected_index) const;
+
+  // If this object is a container that supports selectable children,
+  // returns the number of selected items in this container.
+  // |out_selected_items| could be set to nullptr if the caller just
+  // needs to know the number of items selected.
+  // |max_items| represents the number that the caller expects as a
+  // maximum. For a single selection list box, it will be 1.
+  int GetSelectedItems(
+      int max_items,
+      std::vector<AXPlatformNodeBase*>* out_selected_items = nullptr) const;
+
   //
   // Delegate.  This is a weak reference which owns |this|.
   //
@@ -454,6 +472,11 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   base::Optional<int> GetSetSize() const;
 
   std::string GetInvalidValue() const;
+
+  // Based on the characteristics of this object, such as its role and the
+  // presence of a multiselectable attribute, returns the maximum number of
+  // selectable children that this object could potentially contain.
+  int GetMaxSelectableItems() const;
 
   mutable AXHypertext hypertext_;
 

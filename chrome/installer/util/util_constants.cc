@@ -64,6 +64,9 @@ const char kForceConfigureUserSettings[] = "force-configure-user-settings";
 // confirmation from user.
 const char kForceUninstall[] = "force-uninstall";
 
+// See description for kPatch.
+const char kInputFile[] = "input-file";
+
 // Specify the path to the compressed Chrome archive for install. If not
 // specified, chrome.packed.7z or chrome.7z in the same directory as setup.exe
 // is used (the packed file is preferred; see kUncompressedArchive to force use
@@ -92,6 +95,14 @@ const char kNewSetupExe[] = "new-setup-exe";
 // Notify the installer that the OS has been upgraded.
 const char kOnOsUpgrade[] = "on-os-upgrade";
 
+// Applies a binary patch to a file. The input, patch, and the output file are
+// specified as command line arguments following the --patch switch.
+// Ex: --patch=courgette --input_file='input' --patch_file='patch'
+//        --output_file='output'
+const char kOutputFile[] = "output-file";
+const char kPatch[] = "patch";
+const char kPatchFile[] = "patch-file";
+
 // Provide the previous version that patch is for.
 const char kPreviousVersion[] = "previous-version";
 
@@ -119,29 +130,36 @@ const char kRegisterDevChrome[] = "register-dev-chrome";
 // in addition to the standard set of protocols.
 const char kRegisterURLProtocol[] = "register-url-protocol";
 
+// Removes Chrome registration from current machine. Requires admin rights.
+const char kRemoveChromeRegistration[] = "remove-chrome-registration";
+
 // Renames chrome.exe to old_chrome.exe and renames new_chrome.exe to chrome.exe
 // to support in-use updates. Also deletes opv key.
 const char kRenameChromeExe[] = "rename-chrome-exe";
-
-// Removes Chrome registration from current machine. Requires admin rights.
-const char kRemoveChromeRegistration[] = "remove-chrome-registration";
 
 // When we try to relaunch setup.exe as admin on Vista, we append this command
 // line flag so that we try the launch only once.
 const char kRunAsAdmin[] = "run-as-admin";
 
-// Saves the specified device management token to the registry.
-const char kStoreDMToken[] = "store-dmtoken";
-
 // Combined with --uninstall, signals to setup.exe that this uninstall was
 // triggered by a self-destructing Chrome.
 const char kSelfDestruct[] = "self-destruct";
+
+// Show the embedded EULA dialog.
+const char kShowEula[] = "show-eula";
+
+// Saves the specified device management token to the registry.
+const char kStoreDMToken[] = "store-dmtoken";
 
 // Install Chrome to system wise location. The default is per user install.
 const char kSystemLevel[] = "system-level";
 
 // Signals to setup.exe that it should trigger the active setup command.
 const char kTriggerActiveSetup[] = "trigger-active-setup";
+
+// Use the given uncompressed chrome.7z archive as the source of files to
+// install.
+const char kUncompressedArchive[] = "uncompressed-archive";
 
 // If present, setup will uninstall chrome.
 const char kUninstall[] = "uninstall";
@@ -151,24 +169,8 @@ const char kUninstall[] = "uninstall";
 // path given by --new-setup-exe.
 const char kUpdateSetupExe[] = "update-setup-exe";
 
-// Use the given uncompressed chrome.7z archive as the source of files to
-// install.
-const char kUncompressedArchive[] = "uncompressed-archive";
-
 // Enable verbose logging (info level).
 const char kVerboseLogging[] = "verbose-logging";
-
-// Show the embedded EULA dialog.
-const char kShowEula[] = "show-eula";
-
-// Applies a binary patch to a file. The input, patch, and the output file are
-// specified as command line arguments following the --patch switch.
-// Ex: --patch=courgette --input_file='input' --patch_file='patch'
-//        --output_file='output'
-const char kPatch[] = "patch";
-const char kInputFile[] = "input-file";
-const char kPatchFile[] = "patch-file";
-const char kOutputFile[] = "output-file";
 
 }  // namespace switches
 
@@ -191,8 +193,8 @@ const char kGoogleUpdateIsMachineEnvVar[] = "GoogleUpdateIsMachine";
 // TODO(gab): Rename setup.exe itself altogether and use the same binary for
 // Active Setup.
 const wchar_t kActiveSetupExe[] = L"chrmstp.exe";
-const wchar_t kChromeDll[] = L"chrome.dll";
 const wchar_t kChromeChildDll[] = L"chrome_child.dll";
+const wchar_t kChromeDll[] = L"chrome.dll";
 const wchar_t kChromeExe[] = L"chrome.exe";
 const wchar_t kChromeNewExe[] = L"new_chrome.exe";
 const wchar_t kChromeOldExe[] = L"old_chrome.exe";

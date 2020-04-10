@@ -140,7 +140,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
  protected:
   HTMLFrameOwnerElement(const QualifiedName& tag_name, Document&);
 
-  void SetSandboxFlags(mojom::blink::WebSandboxFlags);
+  void SetSandboxFlags(network::mojom::blink::WebSandboxFlags);
   void SetAllowedToDownload(bool allowed) {
     frame_policy_.allowed_to_download = allowed;
   }

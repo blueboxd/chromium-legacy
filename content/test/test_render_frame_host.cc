@@ -229,7 +229,7 @@ void TestRenderFrameHost::SimulateFeaturePolicyHeader(
     header[0].values.insert(std::pair<url::Origin, blink::PolicyValue>(
         origin, blink::PolicyValue(true)));
   }
-  DidSetFramePolicyHeaders(blink::mojom::WebSandboxFlags::kNone, header,
+  DidSetFramePolicyHeaders(network::mojom::WebSandboxFlags::kNone, header,
                            {} /* dp_header */);
 }
 
@@ -490,7 +490,7 @@ TestRenderFrameHost::CreateWebBluetoothServiceForTesting() {
 }
 
 void TestRenderFrameHost::SendFramePolicy(
-    blink::mojom::WebSandboxFlags sandbox_flags,
+    network::mojom::WebSandboxFlags sandbox_flags,
     const blink::ParsedFeaturePolicy& fp_header,
     const blink::DocumentPolicy::FeatureState& dp_header) {
   DidSetFramePolicyHeaders(sandbox_flags, fp_header, dp_header);

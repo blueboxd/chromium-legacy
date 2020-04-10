@@ -90,14 +90,17 @@ def build_mojom_bindings(mojom_bindings):
     ]
     run(precompile_cmd)
 
-    parse_cmd = [
-        generator,
-        '-o',
-        'build/mojo',
-        '--use_bundled_pylibs',
-        'parse',
-        '-d',
+    parser = os.path.join(
         get_chromium_root(),
+        'mojo/public/tools/mojom/mojom_parser.py')
+
+    parse_cmd = [
+        parser,
+        '--output-root',
+        'build/mojo',
+        '--input-root',
+        get_chromium_root(),
+        '--mojoms',
     ] + list(mojom_paths)
     run(parse_cmd)
 

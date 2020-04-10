@@ -8,6 +8,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.view.ContextMenu;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -25,6 +27,7 @@ import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.NetworkChangeNotifier;
+import org.chromium.ui.base.WindowAndroid;
 
 /** Manages the activation and gesture listeners for ContextualSearch on a given tab. */
 public class ContextualSearchTabHelper
@@ -151,8 +154,8 @@ public class ContextualSearchTabHelper
     }
 
     @Override
-    public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {
-        if (isAttached) {
+    public void onActivityAttachmentChanged(Tab tab, @Nullable WindowAndroid window) {
+        if (window != null) {
             updateHooksForTab(tab);
         } else {
             removeContextualSearchHooks(mWebContents);

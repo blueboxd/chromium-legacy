@@ -18,7 +18,7 @@
 #import "ios/web_view/internal/cwv_preferences_internal.h"
 #import "ios/web_view/internal/cwv_user_content_controller_internal.h"
 #import "ios/web_view/internal/cwv_web_view_internal.h"
-#include "ios/web_view/internal/passwords/web_view_password_store_factory.h"
+#import "ios/web_view/internal/passwords/web_view_account_password_store_factory.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
 #include "ios/web_view/internal/signin/web_view_signin_error_controller_factory.h"
 #import "ios/web_view/internal/sync/cwv_sync_controller_internal.h"
@@ -130,7 +130,7 @@ CWVWebViewConfiguration* gIncognitoConfiguration = nil;
         ios_web_view::WebViewPersonalDataManagerFactory::GetForBrowserState(
             self.browserState);
     scoped_refptr<password_manager::PasswordStore> passwordStore =
-        ios_web_view::WebViewPasswordStoreFactory::GetForBrowserState(
+        ios_web_view::WebViewAccountPasswordStoreFactory::GetForBrowserState(
             self.browserState, ServiceAccessType::EXPLICIT_ACCESS);
     _autofillDataManager = [[CWVAutofillDataManager alloc]
         initWithPersonalDataManager:personalDataManager
@@ -160,7 +160,7 @@ CWVWebViewConfiguration* gIncognitoConfiguration = nil;
             GetAutofillWebDataForBrowserState(
                 self.browserState, ServiceAccessType::EXPLICIT_ACCESS);
     scoped_refptr<password_manager::PasswordStore> passwordStore =
-        ios_web_view::WebViewPasswordStoreFactory::GetForBrowserState(
+        ios_web_view::WebViewAccountPasswordStoreFactory::GetForBrowserState(
             self.browserState, ServiceAccessType::EXPLICIT_ACCESS);
 
     _syncController = [[CWVSyncController alloc]

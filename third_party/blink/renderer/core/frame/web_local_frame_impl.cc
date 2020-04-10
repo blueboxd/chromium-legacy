@@ -95,6 +95,8 @@
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "services/network/public/cpp/web_sandbox_flags.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom-blink.h"
@@ -1648,7 +1650,7 @@ WebLocalFrame* WebLocalFrame::CreateMainFrame(
     InterfaceRegistry* interface_registry,
     WebFrame* opener,
     const WebString& name,
-    mojom::blink::WebSandboxFlags sandbox_flags,
+    network::mojom::blink::WebSandboxFlags sandbox_flags,
     const FeaturePolicy::FeatureState& opener_feature_state) {
   return WebLocalFrameImpl::CreateMainFrame(
       web_view, client, interface_registry, opener, name, sandbox_flags,
@@ -1671,7 +1673,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateMainFrame(
     InterfaceRegistry* interface_registry,
     WebFrame* opener,
     const WebString& name,
-    mojom::blink::WebSandboxFlags sandbox_flags,
+    network::mojom::blink::WebSandboxFlags sandbox_flags,
     const FeaturePolicy::FeatureState& opener_feature_state) {
   auto* frame = MakeGarbageCollected<WebLocalFrameImpl>(
       util::PassKey<WebLocalFrameImpl>(), WebTreeScopeType::kDocument, client,
@@ -1702,8 +1704,8 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
       client, interface_registry);
   web_frame->SetParent(previous_web_frame->Parent());
   web_frame->SetOpener(previous_web_frame->Opener());
-  mojom::blink::WebSandboxFlags sandbox_flags =
-      mojom::blink::WebSandboxFlags::kNone;
+  network::mojom::blink::WebSandboxFlags sandbox_flags =
+      network::mojom::blink::WebSandboxFlags::kNone;
   FeaturePolicy::FeatureState feature_state;
   if (!previous_frame->Owner()) {
     // Provisional main frames need to force sandbox flags.  This is necessary
@@ -1808,7 +1810,7 @@ void WebLocalFrameImpl::InitializeCoreFrame(
     FrameOwner* owner,
     const AtomicString& name,
     WindowAgentFactory* window_agent_factory,
-    mojom::blink::WebSandboxFlags sandbox_flags,
+    network::mojom::blink::WebSandboxFlags sandbox_flags,
     const FeaturePolicy::FeatureState& opener_feature_state) {
   SetCoreFrame(MakeGarbageCollected<LocalFrame>(local_frame_client_.Get(), page,
                                                 owner, window_agent_factory,
@@ -2288,11 +2290,12 @@ void WebLocalFrameImpl::CopyImageAtForTesting(
   GetFrame()->CopyImageAtViewportPoint(IntPoint(pos_in_viewport));
 }
 
-mojom::blink::WebSandboxFlags
+network::mojom::blink::WebSandboxFlags
 WebLocalFrameImpl::EffectiveSandboxFlagsForTesting() const {
   if (!GetFrame())
-    return mojom::blink::WebSandboxFlags::kNone;
-  SandboxFlags flags = GetFrame()->Loader().EffectiveSandboxFlags();
+    return network::mojom::blink::WebSandboxFlags::kNone;
+  network::mojom::blink::WebSandboxFlags flags =
+      GetFrame()->Loader().EffectiveSandboxFlags();
   if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
     // When some of sandbox flags set in the 'sandbox' attribute are implemented
     // as policies they are removed form the FrameOwner's sandbox flags to avoid
@@ -2309,7 +2312,7 @@ WebLocalFrameImpl::EffectiveSandboxFlagsForTesting() const {
                    ->sandbox_flags_converted_to_feature_policies();
     }
   }
-  return static_cast<mojom::blink::WebSandboxFlags>(flags);
+  return flags;
 }
 
 bool WebLocalFrameImpl::IsAllowedToDownload() const {
@@ -2328,8 +2331,8 @@ bool WebLocalFrameImpl::IsAllowedToDownload() const {
            GetFrame()->Owner()->GetFramePolicy().allowed_to_download;
   }
   return (GetFrame()->Loader().PendingEffectiveSandboxFlags() &
-          mojom::blink::WebSandboxFlags::kDownloads) ==
-         mojom::blink::WebSandboxFlags::kNone;
+          network::mojom::blink::WebSandboxFlags::kDownloads) ==
+         network::mojom::blink::WebSandboxFlags::kNone;
 }
 
 void WebLocalFrameImpl::UsageCountChromeLoadTimes(const WebString& metric) {

@@ -12,7 +12,6 @@ This script should be compatible with Python 2 and Python 3.
 """
 
 import argparse
-import imp
 import os
 import pipes
 import sys
@@ -98,6 +97,22 @@ def _GetTargetPythonVersion(module):
   return default_version
 
 
+def _ImportModuleByPath(module_path):
+  """Imports a module by its source file."""
+  sys.path[0] = os.path.dirname(module_path)
+  if sys.version_info[0] == 2:
+    import imp  # Python 2 only, since it's deprecated in Python 3.
+    imp.load_source('NAME', module_path)
+  else:
+    # https://docs.python.org/3/library/importlib.html#importing-a-source-file-directly
+    module_name = os.path.splitext(os.path.basename(module_path))[0]
+    import importlib.util  # Python 3 only, since it's unavailable in Python 2.
+    spec = importlib.util.spec_from_file_location(module_name, module_path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+
+
 def main():
   parser = argparse.ArgumentParser(
       description='Prints all non-system dependencies for the given module.')
@@ -155,8 +170,7 @@ def main():
   # Replace the path entry for print_python_deps.py with the one for the given
   # module.
   try:
-    sys.path[0] = os.path.dirname(options.module)
-    imp.load_source('NAME', options.module)
+    _ImportModuleByPath(options.module)
   except Exception:
     # Output extra diagnostics when loading the script fails.
     sys.stderr.write('Error running print_python_deps.py.\n')

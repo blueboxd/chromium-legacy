@@ -25,6 +25,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.third_party.android.swiperefresh.SwipeRefreshLayout;
 import org.chromium.ui.OverscrollAction;
 import org.chromium.ui.OverscrollRefreshHandler;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * An overscroll handler implemented in terms a modified version of the Android
@@ -97,8 +98,8 @@ public class SwipeRefreshHandler
         mTab = tab;
         mTabObserver = new EmptyTabObserver() {
             @Override
-            public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {
-                if (!isAttached && mSwipeRefreshLayout != null) {
+            public void onActivityAttachmentChanged(Tab tab, @Nullable WindowAndroid window) {
+                if (window == null && mSwipeRefreshLayout != null) {
                     cancelStopRefreshingRunnable();
                     detachSwipeRefreshLayoutIfNecessary();
                     mSwipeRefreshLayout.setOnRefreshListener(null);

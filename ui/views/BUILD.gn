@@ -809,9 +809,14 @@ jumbo_component("views") {
         ]
       }
       if (is_linux || is_fuchsia) {
-        public += [ "widget/desktop_aura/desktop_window_tree_host_platform.h" ]
-        sources +=
-            [ "widget/desktop_aura/desktop_window_tree_host_platform.cc" ]
+        public += [
+          "widget/desktop_aura/desktop_window_tree_host_platform.h",
+          "widget/desktop_aura/window_move_client_platform.h",
+        ]
+        sources += [
+          "widget/desktop_aura/desktop_window_tree_host_platform.cc",
+          "widget/desktop_aura/window_move_client_platform.cc",
+        ]
         deps += [ "//ui/platform_window/extensions" ]
       }
       if (use_atk) {

@@ -3,18 +3,19 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/public/common/frame/frame_policy.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 
 namespace blink {
 
 FramePolicy::FramePolicy()
-    : sandbox_flags(mojom::WebSandboxFlags::kNone),
+    : sandbox_flags(network::mojom::WebSandboxFlags::kNone),
       container_policy({}),
       required_document_policy({}),
       allowed_to_download(true),
       disallow_document_access(false) {}
 
 FramePolicy::FramePolicy(
-    mojom::WebSandboxFlags sandbox_flags,
+    network::mojom::WebSandboxFlags sandbox_flags,
     const ParsedFeaturePolicy& container_policy,
     const DocumentPolicy::FeatureState& required_document_policy,
     bool allowed_to_download,

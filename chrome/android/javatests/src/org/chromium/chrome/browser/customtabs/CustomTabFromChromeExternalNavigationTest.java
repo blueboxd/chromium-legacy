@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory.CustomTabNavigationDelegate;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
+import org.chromium.chrome.browser.tab.InterceptNavigationDelegateTabHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabTestUtils;
@@ -129,7 +130,8 @@ public class CustomTabFromChromeExternalNavigationTest {
 
         CriteriaHelper.pollUiThread(() -> {
             Tab tab = mActivityRule.getActivity().getActivityTab();
-            InterceptNavigationDelegateImpl delegate = InterceptNavigationDelegateImpl.get(tab);
+            InterceptNavigationDelegateImpl delegate =
+                    InterceptNavigationDelegateTabHelper.get(tab);
             if (delegate == null) return false;
             navigationDelegate.set(delegate);
             return true;

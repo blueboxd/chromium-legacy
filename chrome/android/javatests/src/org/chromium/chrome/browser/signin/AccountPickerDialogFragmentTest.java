@@ -20,6 +20,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.test.filters.LargeTest;
 import androidx.test.filters.MediumTest;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -85,6 +86,11 @@ import java.io.IOException;
         mDialog = AccountPickerDialogFragment.create(mAccountName1);
         mDialog.setTargetFragment(mTargetFragment, 0);
         mDialog.show(fragmentManager, null);
+    }
+
+    @After
+    public void tearDown() {
+        if (mDialog.getDialog() != null) mDialog.dismiss();
     }
 
     @Test

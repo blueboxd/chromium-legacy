@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.Snackbar
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.WindowAndroid;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -150,10 +151,11 @@ class AutofillAssistantUiController {
                     }
 
                     @Override
-                    public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {
+                    public void onActivityAttachmentChanged(
+                            Tab tab, @Nullable WindowAndroid window) {
                         if (mWebContents == null) return;
 
-                        if (!isAttached && tab.getWebContents() == mWebContents) {
+                        if (window == null && tab.getWebContents() == mWebContents) {
                             if (!allowTabSwitching) {
                                 safeNativeStop(DropOutReason.TAB_DETACHED);
                                 return;

@@ -84,7 +84,6 @@ function verifyPrintJobs(expected, actual) {
  * @return {!Array<!HTMLElement>}
  */
 function getPrintJobEntries(page) {
-  flush();
   const entryList = page.$$('#entryList');
   return Array.from(
       entryList.querySelectorAll('print-job-entry:not([hidden])'));
@@ -186,6 +185,7 @@ suite('PrintManagementTest', () => {
   });
 
   teardown(function() {
+    mojoApi_ = null;
     page.remove();
     page = null;
   });
@@ -198,6 +198,7 @@ suite('PrintManagementTest', () => {
     mojoApi_.setPrintJobs(printJobs);
     page = document.createElement('print-management');
     document.body.appendChild(page);
+    assert(!!page);
     flush();
   }
 
@@ -218,8 +219,8 @@ suite('PrintManagementTest', () => {
     // app to sort the list when it first loads. Since reverse() mutates the
     // original array, use a copy array to prevent mutating |expectedArr|.
     initializePrintManagementApp(expectedArr.slice().reverse());
-
-    mojoApi_.whenCalled('getPrintJobs').then(() => {
+    return mojoApi_.whenCalled('getPrintJobs').then(() => {
+      flush();
       verifyPrintJobs(expectedArr, getPrintJobEntries(page));
     });
   });

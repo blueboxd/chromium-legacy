@@ -99,10 +99,11 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "services/network/public/cpp/web_sandbox_flags.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
-#include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
@@ -1896,7 +1897,7 @@ void NavigationRequest::OnResponseStarted(
     if (response_head_->cross_origin_opener_policy !=
             network::mojom::CrossOriginOpenerPolicy::kUnsafeNone &&
         (frame_tree_node_->pending_frame_policy().sandbox_flags !=
-         blink::mojom::WebSandboxFlags::kNone)) {
+         network::mojom::WebSandboxFlags::kNone)) {
       OnRequestFailedInternal(
           network::URLLoaderCompletionStatus(
               network::BlockedByResponseReason::
@@ -2285,8 +2286,8 @@ void NavigationRequest::OnStartChecksComplete(
   // for this frame.
   bool can_create_service_worker =
       (frame_tree_node_->pending_frame_policy().sandbox_flags &
-       blink::mojom::WebSandboxFlags::kOrigin) !=
-      blink::mojom::WebSandboxFlags::kOrigin;
+       network::mojom::WebSandboxFlags::kOrigin) !=
+      network::mojom::WebSandboxFlags::kOrigin;
   if (can_create_service_worker) {
     ServiceWorkerContextWrapper* service_worker_context =
         static_cast<ServiceWorkerContextWrapper*>(
@@ -2484,7 +2485,7 @@ void NavigationRequest::OnFailureChecksComplete(
     CHECK_EQ(ShouldKeepErrorPageInCurrentProcess(old_net_error),
              ShouldKeepErrorPageInCurrentProcess(net_error_))
         << " Unsupported error code change in WillFailRequest(): from "
-        << net_error_ << " to " << result.net_error_code();
+        << old_net_error << " to " << net_error_;
   }
 
   CommitErrorPage(result.error_page_content());

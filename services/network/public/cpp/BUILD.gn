@@ -80,6 +80,7 @@ jumbo_component("cpp") {
     "source_stream_to_data_pipe.h",
     "weak_wrapper_shared_url_loader_factory.cc",
     "weak_wrapper_shared_url_loader_factory.h",
+    "web_sandbox_flags.h",
     "wrapper_shared_url_loader_factory.cc",
     "wrapper_shared_url_loader_factory.h",
   ]

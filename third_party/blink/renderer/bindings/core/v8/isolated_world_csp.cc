@@ -70,7 +70,7 @@ class IsolatedWorldCSPDelegate final
   // These directives depend on ExecutionContext for their implementation and
   // since isolated worlds don't have their own ExecutionContext, these are not
   // supported.
-  void SetSandboxFlags(SandboxFlags) override {}
+  void SetSandboxFlags(network::mojom::blink::WebSandboxFlags) override {}
   void SetRequireTrustedTypes() override {}
   void AddInsecureRequestPolicy(mojom::blink::InsecureRequestPolicy) override {}
 

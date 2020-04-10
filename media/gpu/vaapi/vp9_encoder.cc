@@ -16,10 +16,14 @@ constexpr size_t kKFPeriod = 3000;
 // Arbitrarily chosen bitrate window size for rate control, in ms.
 constexpr int kCPBWindowSizeMs = 500;
 
-// Based on WebRTC's defaults.
+// Quantization parameter. They are vp9 ac/dc indices and their ranges are
+// 0-255. Based on WebRTC's defaults.
 constexpr int kMinQP = 4;
 constexpr int kMaxQP = 112;
-constexpr int kDefaultQP = (3 * kMinQP + kMaxQP) / 4;
+// This stands for 31 as a real ac value (see rfc 8.6.1 table
+// ac_qlookup[3][256]). Note: This needs to be revisited once we have 10&12 bit
+// encoder support.
+constexpr int kDefaultQP = 24;
 
 // filter level may affect on quality at lower bitrates; for now,
 // we set a constant value (== 10) which is what other VA-API
@@ -166,12 +170,7 @@ void VP9Encoder::InitializeFrameHeader() {
   current_frame_hdr_.frame_height = visible_size_.height();
   current_frame_hdr_.render_width = visible_size_.width();
   current_frame_hdr_.render_height = visible_size_.height();
-  // Since initial_qp is always kDefaultQP (=31), base_q_idx should be 24
-  // (the table index for kDefaultQP, see rfc 8.6.1 table ac_qlookup[3][256])
-  // Note: This needs to be revisited once we have 10&12 bit encoder support
-  DCHECK_EQ(current_params_.initial_qp, kDefaultQP);
-  constexpr uint8_t kDefaultQPACQIndex = 24;
-  current_frame_hdr_.quant_params.base_q_idx = kDefaultQPACQIndex;
+  current_frame_hdr_.quant_params.base_q_idx = kDefaultQP;
   current_frame_hdr_.loop_filter.level = kDefaultLfLevel;
   current_frame_hdr_.show_frame = true;
 }

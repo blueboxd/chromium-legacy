@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.ui.base.WindowAndroid;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
@@ -331,10 +332,8 @@ public class PictureInPictureController {
         }
 
         @Override
-        public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {
-            if (isAttached) {
-                dismissActivity(mActivity, METRICS_END_REASON_REPARENT);
-            }
+        public void onActivityAttachmentChanged(Tab tab, @Nullable WindowAndroid window) {
+            if (window != null) dismissActivity(mActivity, METRICS_END_REASON_REPARENT);
         }
 
         @Override

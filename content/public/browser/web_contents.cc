@@ -8,6 +8,7 @@
 
 #include "content/public/common/child_process_host.h"
 #include "ipc/ipc_message.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 
 namespace content {
 
@@ -27,7 +28,7 @@ WebContents::CreateParams::CreateParams(BrowserContext* context,
       context(nullptr),
       renderer_initiated_creation(false),
       desired_renderer_state(kOkayToHaveRendererProcess),
-      starting_sandbox_flags(blink::mojom::WebSandboxFlags::kNone),
+      starting_sandbox_flags(network::mojom::WebSandboxFlags::kNone),
       is_never_visible(false) {}
 
 WebContents::CreateParams::CreateParams(const CreateParams& other) = default;

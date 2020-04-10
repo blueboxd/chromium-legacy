@@ -3241,7 +3241,7 @@ TEST_P(RenderFrameHostManagerTest, ReceivedFramePolicyAfterNavigationStarted) {
   TestRenderFrameHost* initial_rfh = main_test_rfh();
 
   // The RFH should start out with an empty frame policy.
-  EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone,
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kNone,
             initial_rfh->frame_tree_node()->active_sandbox_flags());
 
   // Navigate cross-site but don't commit the navigation.
@@ -3250,16 +3250,16 @@ TEST_P(RenderFrameHostManagerTest, ReceivedFramePolicyAfterNavigationStarted) {
   navigation_to_kUrl2->ReadyToCommit();
 
   // Now send the frame policy for the initial page.
-  initial_rfh->SendFramePolicy(blink::mojom::WebSandboxFlags::kAll,
+  initial_rfh->SendFramePolicy(network::mojom::WebSandboxFlags::kAll,
                                {} /* feature_policy_header */,
                                {} /* document_policy_header */);
   // Verify that the policy landed in the frame tree.
-  EXPECT_EQ(blink::mojom::WebSandboxFlags::kAll,
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kAll,
             initial_rfh->frame_tree_node()->active_sandbox_flags());
 
   // Commit the naviagation; the new frame should have a clear frame policy.
   navigation_to_kUrl2->Commit();
-  EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone,
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kNone,
             main_test_rfh()->frame_tree_node()->active_sandbox_flags());
 }
 

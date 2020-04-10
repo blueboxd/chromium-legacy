@@ -71,7 +71,7 @@ std::unique_ptr<KeyedService> BuildBookmarkModel(web::BrowserState* context) {
       ChromeBrowserState::FromBrowserState(context);
   std::unique_ptr<bookmarks::BookmarkModel> bookmark_model(
       new bookmarks::BookmarkModel(std::make_unique<BookmarkClientImpl>(
-          browser_state,
+          browser_state, nullptr,
           ios::BookmarkSyncServiceFactory::GetForBrowserState(browser_state))));
   bookmark_model->Load(
       browser_state->GetPrefs(), browser_state->GetStatePath(),

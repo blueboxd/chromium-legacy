@@ -38,12 +38,6 @@
 #include "ui/gl/scoped_make_current.h"
 #include "ui/gl/sync_control_vsync_provider.h"
 
-#if defined(USE_X11)
-#include "ui/base/x/x11_display_util.h"
-#include "ui/base/x/x11_util_internal.h"  // nogncheck
-#include "ui/gfx/x/x11.h"
-#endif
-
 #if defined(OS_ANDROID)
 #include <android/native_window_jni.h>
 #include "base/android/build_info.h"

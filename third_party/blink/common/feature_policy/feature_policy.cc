@@ -8,7 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
-#include "third_party/blink/public/common/frame/sandbox_flags.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 
 namespace blink {
@@ -381,41 +381,42 @@ const FeaturePolicy::FeatureList& FeaturePolicy::GetFeatureList() const {
 
 // static
 mojom::FeaturePolicyFeature FeaturePolicy::FeatureForSandboxFlag(
-    mojom::WebSandboxFlags flag) {
+    network::mojom::WebSandboxFlags flag) {
   switch (flag) {
-    case mojom::WebSandboxFlags::kAll:
+    case network::mojom::WebSandboxFlags::kAll:
       NOTREACHED();
       break;
-    case mojom::WebSandboxFlags::kTopNavigation:
+    case network::mojom::WebSandboxFlags::kTopNavigation:
       return mojom::FeaturePolicyFeature::kTopNavigation;
-    case mojom::WebSandboxFlags::kForms:
+    case network::mojom::WebSandboxFlags::kForms:
       return mojom::FeaturePolicyFeature::kFormSubmission;
-    case mojom::WebSandboxFlags::kAutomaticFeatures:
-    case mojom::WebSandboxFlags::kScripts:
+    case network::mojom::WebSandboxFlags::kAutomaticFeatures:
+    case network::mojom::WebSandboxFlags::kScripts:
       return mojom::FeaturePolicyFeature::kScript;
-    case mojom::WebSandboxFlags::kPopups:
+    case network::mojom::WebSandboxFlags::kPopups:
       return mojom::FeaturePolicyFeature::kPopups;
-    case mojom::WebSandboxFlags::kPointerLock:
+    case network::mojom::WebSandboxFlags::kPointerLock:
       return mojom::FeaturePolicyFeature::kPointerLock;
-    case mojom::WebSandboxFlags::kOrientationLock:
+    case network::mojom::WebSandboxFlags::kOrientationLock:
       return mojom::FeaturePolicyFeature::kOrientationLock;
-    case mojom::WebSandboxFlags::kModals:
+    case network::mojom::WebSandboxFlags::kModals:
       return mojom::FeaturePolicyFeature::kModals;
-    case mojom::WebSandboxFlags::kPresentationController:
+    case network::mojom::WebSandboxFlags::kPresentationController:
       return mojom::FeaturePolicyFeature::kPresentation;
-    case mojom::WebSandboxFlags::kDownloads:
+    case network::mojom::WebSandboxFlags::kDownloads:
       return mojom::FeaturePolicyFeature::kDownloads;
     // Other flags fall through to the bitmask test below. They are named
     // specifically here so that authors introducing new flags must consider
     // this method when adding them.
-    case mojom::WebSandboxFlags::kDocumentDomain:
-    case mojom::WebSandboxFlags::kNavigation:
-    case mojom::WebSandboxFlags::kNone:
-    case mojom::WebSandboxFlags::kOrigin:
-    case mojom::WebSandboxFlags::kPlugins:
-    case mojom::WebSandboxFlags::kPropagatesToAuxiliaryBrowsingContexts:
-    case mojom::WebSandboxFlags::kTopNavigationByUserActivation:
-    case mojom::WebSandboxFlags::kStorageAccessByUserActivation:
+    case network::mojom::WebSandboxFlags::kDocumentDomain:
+    case network::mojom::WebSandboxFlags::kNavigation:
+    case network::mojom::WebSandboxFlags::kNone:
+    case network::mojom::WebSandboxFlags::kOrigin:
+    case network::mojom::WebSandboxFlags::kPlugins:
+    case network::mojom::WebSandboxFlags::
+        kPropagatesToAuxiliaryBrowsingContexts:
+    case network::mojom::WebSandboxFlags::kTopNavigationByUserActivation:
+    case network::mojom::WebSandboxFlags::kStorageAccessByUserActivation:
       break;
   }
   return mojom::FeaturePolicyFeature::kNotFound;

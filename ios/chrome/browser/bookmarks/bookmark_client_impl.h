@@ -17,6 +17,7 @@ class GURL;
 
 namespace bookmarks {
 class BookmarkModel;
+class ManagedBookmarkService;
 }
 
 namespace sync_bookmarks {
@@ -27,6 +28,7 @@ class BookmarkClientImpl : public bookmarks::BookmarkClient {
  public:
   BookmarkClientImpl(
       ChromeBrowserState* browser_state,
+      bookmarks::ManagedBookmarkService* managed_bookmark_service,
       sync_bookmarks::BookmarkSyncService* bookmark_sync_service);
   ~BookmarkClientImpl() override;
 
@@ -56,13 +58,17 @@ class BookmarkClientImpl : public bookmarks::BookmarkClient {
  private:
   // Pointer to the associated ChromeBrowserState. Must outlive
   // BookmarkClientImpl.
-  ChromeBrowserState* browser_state_;
+  ChromeBrowserState* browser_state_ = nullptr;
 
-  bookmarks::BookmarkModel* model_;
+  // Pointer to the ManagedBookmarkService responsible for bookmark policy. May
+  // be null during testing.
+  bookmarks::ManagedBookmarkService* managed_bookmark_service_ = nullptr;
+
+  bookmarks::BookmarkModel* model_ = nullptr;
 
   // Pointer to the BookmarkSyncService responsible for encoding and decoding
   // sync metadata persisted together with the bookmarks model.
-  sync_bookmarks::BookmarkSyncService* bookmark_sync_service_;
+  sync_bookmarks::BookmarkSyncService* bookmark_sync_service_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkClientImpl);
 };

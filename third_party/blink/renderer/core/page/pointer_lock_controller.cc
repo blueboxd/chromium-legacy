@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
 
+#include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/mojom/input/pointer_lock_result.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -71,7 +72,7 @@ ScriptPromise PointerLockController::RequestPointerLock(
   }
 
   if (target->GetDocument().IsSandboxed(
-          mojom::blink::WebSandboxFlags::kPointerLock)) {
+          network::mojom::blink::WebSandboxFlags::kPointerLock)) {
     // FIXME: This message should be moved off the console once a solution to
     // https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
     target->GetDocument().AddConsoleMessage(

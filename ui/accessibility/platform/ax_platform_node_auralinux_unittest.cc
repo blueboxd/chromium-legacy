@@ -1859,6 +1859,8 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkSelectionInterface) {
   AXNodeData root;
   root.id = 1;
   root.role = ax::mojom::Role::kListBox;
+  root.AddState(ax::mojom::State::kFocusable);
+  root.AddState(ax::mojom::State::kMultiselectable);
   root.child_ids.push_back(2);
   root.child_ids.push_back(3);
   root.child_ids.push_back(4);

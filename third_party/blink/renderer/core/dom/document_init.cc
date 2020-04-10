@@ -29,6 +29,8 @@
 
 #include "third_party/blink/renderer/core/dom/document_init.h"
 
+#include "services/network/public/cpp/web_sandbox_flags.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_implementation.h"
@@ -105,8 +107,8 @@ DocumentLoader* DocumentInit::MasterDocumentLoader() const {
   return nullptr;
 }
 
-mojom::blink::WebSandboxFlags DocumentInit::GetSandboxFlags() const {
-  mojom::blink::WebSandboxFlags flags = sandbox_flags_;
+network::mojom::blink::WebSandboxFlags DocumentInit::GetSandboxFlags() const {
+  network::mojom::blink::WebSandboxFlags flags = sandbox_flags_;
   if (DocumentLoader* loader = MasterDocumentLoader())
     flags |= loader->GetFrame()->Loader().EffectiveSandboxFlags();
   // If the load was blocked by CSP, force the Document's origin to be unique,
@@ -114,7 +116,7 @@ mojom::blink::WebSandboxFlags DocumentInit::GetSandboxFlags() const {
   // document's load per CSP spec:
   // https://www.w3.org/TR/CSP3/#directive-frame-ancestors.
   if (blocked_by_csp_)
-    flags |= mojom::blink::WebSandboxFlags::kOrigin;
+    flags |= network::mojom::blink::WebSandboxFlags::kOrigin;
   return flags;
 }
 
@@ -365,7 +367,7 @@ DocumentInit& DocumentInit::WithOriginTrialsHeader(const String& header) {
 }
 
 DocumentInit& DocumentInit::WithSandboxFlags(
-    mojom::blink::WebSandboxFlags flags) {
+    network::mojom::blink::WebSandboxFlags flags) {
   // Only allow adding more sandbox flags.
   sandbox_flags_ |= flags;
   return *this;

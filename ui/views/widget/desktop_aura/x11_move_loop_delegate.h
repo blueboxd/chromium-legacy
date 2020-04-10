@@ -14,6 +14,8 @@ namespace views {
 // Receives mouse events while the X11MoveLoop is tracking a drag.
 class X11MoveLoopDelegate {
  public:
+  virtual ~X11MoveLoopDelegate() = default;
+
   // Called when we receive a mouse move event.
   virtual void OnMouseMovement(const gfx::Point& screen_point,
                                int flags,

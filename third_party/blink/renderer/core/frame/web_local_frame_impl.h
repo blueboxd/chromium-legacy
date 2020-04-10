@@ -39,6 +39,7 @@
 #include "base/util/type_safety/pass_key.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom-blink-forward.h"
@@ -237,7 +238,7 @@ class CORE_EXPORT WebLocalFrameImpl final
       const WebVector<WebString>& words) override;
   void SetContentSettingsClient(WebContentSettingsClient*) override;
   void ReloadImage(const WebNode&) override;
-  mojom::blink::WebSandboxFlags EffectiveSandboxFlagsForTesting()
+  network::mojom::blink::WebSandboxFlags EffectiveSandboxFlagsForTesting()
       const override;
   bool IsAllowedToDownload() const override;
   bool FindForTesting(int identifier,
@@ -335,8 +336,8 @@ class CORE_EXPORT WebLocalFrameImpl final
       FrameOwner*,
       const AtomicString& name,
       WindowAgentFactory*,
-      mojom::blink::WebSandboxFlags sandbox_flags =
-          mojom::blink::WebSandboxFlags::kNone,
+      network::mojom::blink::WebSandboxFlags sandbox_flags =
+          network::mojom::blink::WebSandboxFlags::kNone,
       const FeaturePolicy::FeatureState& opener_feature_state =
           FeaturePolicy::FeatureState());
   LocalFrame* GetFrame() const { return frame_.Get(); }
@@ -345,13 +346,14 @@ class CORE_EXPORT WebLocalFrameImpl final
   void WillDetachParent();
   void CollectGarbageForTesting();
 
-  static WebLocalFrameImpl* CreateMainFrame(WebView*,
-                                            WebLocalFrameClient*,
-                                            InterfaceRegistry*,
-                                            WebFrame* opener,
-                                            const WebString& name,
-                                            mojom::blink::WebSandboxFlags,
-                                            const FeaturePolicy::FeatureState&);
+  static WebLocalFrameImpl* CreateMainFrame(
+      WebView*,
+      WebLocalFrameClient*,
+      InterfaceRegistry*,
+      WebFrame* opener,
+      const WebString& name,
+      network::mojom::blink::WebSandboxFlags,
+      const FeaturePolicy::FeatureState&);
   static WebLocalFrameImpl* CreateProvisional(WebLocalFrameClient*,
                                               InterfaceRegistry*,
                                               WebFrame*,

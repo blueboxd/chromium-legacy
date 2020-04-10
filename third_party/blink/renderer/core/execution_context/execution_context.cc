@@ -239,11 +239,13 @@ ContentSecurityPolicy* ExecutionContext::GetContentSecurityPolicy() const {
   return GetSecurityContext().GetContentSecurityPolicy();
 }
 
-mojom::blink::WebSandboxFlags ExecutionContext::GetSandboxFlags() const {
+network::mojom::blink::WebSandboxFlags ExecutionContext::GetSandboxFlags()
+    const {
   return GetSecurityContext().GetSandboxFlags();
 }
 
-bool ExecutionContext::IsSandboxed(mojom::blink::WebSandboxFlags mask) const {
+bool ExecutionContext::IsSandboxed(
+    network::mojom::blink::WebSandboxFlags mask) const {
   return GetSecurityContext().IsSandboxed(mask);
 }
 

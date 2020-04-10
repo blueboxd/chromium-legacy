@@ -78,14 +78,6 @@
           file="icons/mic.svg" type="BINDATA" compress="gzip" />
       <include name="IDR_NEW_TAB_PAGE_LINK_SVG"
           file="icons/link.svg" type="BINDATA" compress="gzip" />
-      <include name="IDR_NEW_TAB_PAGE_COPY_SVG"
-          file="icons/copy.svg" type="BINDATA" compress="gzip" />
-      <include name="IDR_NEW_TAB_PAGE_FACEBOOK_SVG"
-          file="icons/facebook.svg" type="BINDATA" compress="gzip" />
-      <include name="IDR_NEW_TAB_PAGE_TWITTER_SVG"
-          file="icons/twitter.svg" type="BINDATA" compress="gzip" />
-      <include name="IDR_NEW_TAB_PAGE_MAIL_SVG"
-          file="icons/mail.svg" type="BINDATA" compress="gzip" />
       <include name="IDR_NEW_TAB_PAGE_MINI_PAGE_JS"
           file="${root_gen_dir}/chrome/browser/resources/new_tab_page/mini_page.js"
           use_base_dir="false" type="BINDATA" compress="gzip" />
@@ -94,9 +86,6 @@
           use_base_dir="false" type="BINDATA" compress="gzip" />
       <include name="IDR_NEW_TAB_PAGE_LOGO_JS"
           file="${root_gen_dir}/chrome/browser/resources/new_tab_page/logo.js"
-          use_base_dir="false" type="BINDATA" compress="gzip" />
-      <include name="IDR_NEW_TAB_PAGE_DOODLE_SHARE_DIALOG_JS"
-          file="${root_gen_dir}/chrome/browser/resources/new_tab_page/doodle_share_dialog.js"
           use_base_dir="false" type="BINDATA" compress="gzip" />
     </includes>
     <structures>

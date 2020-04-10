@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_manager.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -77,7 +78,8 @@ ScriptPromise WindowNativeFileSystem::chooseFileSystemEntries(
   }
 
   if (!document->GetSecurityOrigin()->CanAccessNativeFileSystem()) {
-    if (document->IsSandboxed(mojom::blink::WebSandboxFlags::kOrigin)) {
+    if (document->IsSandboxed(
+            network::mojom::blink::WebSandboxFlags::kOrigin)) {
       exception_state.ThrowSecurityError(
           "Sandboxed documents aren't allowed to show a file picker.");
       return ScriptPromise();

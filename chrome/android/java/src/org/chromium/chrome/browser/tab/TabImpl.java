@@ -308,8 +308,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
         // Non-null delegate factory while being detached is not valid.
         assert !(window == null && tabDelegateFactory != null);
 
-        boolean attached = window != null;
-        if (attached) {
+        if (window != null) {
             updateWindowAndroid(window);
             if (tabDelegateFactory != null) setDelegateFactory(tabDelegateFactory);
 
@@ -324,7 +323,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
                 || (window == null && tabDelegateFactory == null);
         if (notify) {
             for (TabObserver observer : mObservers) {
-                observer.onActivityAttachmentChanged(this, attached);
+                observer.onActivityAttachmentChanged(this, window);
             }
         }
     }

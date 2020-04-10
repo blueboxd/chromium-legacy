@@ -28,6 +28,7 @@
 #include "ui/views/widget/widget_aura_utils.h"
 #include "ui/views/window/native_frame_view.h"
 #include "ui/wm/core/window_util.h"
+#include "ui/wm/public/window_move_client.h"
 
 namespace views {
 
@@ -108,7 +109,8 @@ DesktopWindowTreeHostPlatform::DesktopWindowTreeHostPlatform(
     internal::NativeWidgetDelegate* native_widget_delegate,
     DesktopNativeWidgetAura* desktop_native_widget_aura)
     : native_widget_delegate_(native_widget_delegate),
-      desktop_native_widget_aura_(desktop_native_widget_aura) {}
+      desktop_native_widget_aura_(desktop_native_widget_aura),
+      window_move_client_(this) {}
 
 DesktopWindowTreeHostPlatform::~DesktopWindowTreeHostPlatform() {
   DCHECK(!platform_window()) << "The host must be closed before destroying it.";
@@ -160,6 +162,10 @@ void DesktopWindowTreeHostPlatform::Init(const Widget::InitParams& params) {
 
 void DesktopWindowTreeHostPlatform::OnNativeWidgetCreated(
     const Widget::InitParams& params) {
+  // This reroutes RunMoveLoop requests to the DesktopWindowTreeHostPlatform.
+  // The availability of this feature depends on a platform (PlatformWindow)
+  // that implements RunMoveLoop.
+  wm::SetWindowMoveClient(window(), &window_move_client_);
   platform_window()->SetUseNativeFrame(params.type ==
                                            Widget::InitParams::TYPE_WINDOW &&
                                        !params.remove_standard_frame);
@@ -646,6 +652,7 @@ void DesktopWindowTreeHostPlatform::HideImpl() {
 }
 
 void DesktopWindowTreeHostPlatform::OnClosed() {
+  wm::SetWindowMoveClient(window(), nullptr);
   SetPlatformWindow(nullptr);
   desktop_native_widget_aura_->OnHostClosed();
 }

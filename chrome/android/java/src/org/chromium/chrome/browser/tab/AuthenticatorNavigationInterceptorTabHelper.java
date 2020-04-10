@@ -13,6 +13,7 @@ package org.chromium.chrome.browser.tab;
  */
 public class AuthenticatorNavigationInterceptorTabHelper {
     public static AuthenticatorNavigationInterceptor getInterceptorForTab(Tab tab) {
-        return InterceptNavigationDelegateImpl.get(tab).getAuthenticatorNavigationInterceptor();
+        return InterceptNavigationDelegateTabHelper.get(tab)
+                .getAuthenticatorNavigationInterceptor();
     }
 }

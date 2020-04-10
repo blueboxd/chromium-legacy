@@ -15,8 +15,8 @@
 #include "chrome/browser/ui/media_router/presentation_receiver_window.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/presentation_receiver_flags.h"
 #include "content/public/browser/web_contents.h"
-#include "third_party/blink/public/common/presentation/presentation_receiver_flags.h"
 #include "ui/views/widget/widget.h"
 
 using content::WebContents;
@@ -25,7 +25,7 @@ namespace {
 
 WebContents::CreateParams CreateWebContentsParams(Profile* profile) {
   WebContents::CreateParams params(profile);
-  params.starting_sandbox_flags = blink::kPresentationReceiverSandboxFlags;
+  params.starting_sandbox_flags = content::kPresentationReceiverSandboxFlags;
   return params;
 }
 

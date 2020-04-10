@@ -12,6 +12,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "ios/web/public/webui/web_ui_ios_controller_factory.h"
 #include "ios/web_view/internal/app/application_context.h"
 #import "ios/web_view/internal/cwv_flags_internal.h"
@@ -54,7 +55,8 @@ void WebViewWebMainParts::PreCreateThreads() {
   std::string enable_features = base::JoinString(
       {autofill::features::kAutofillUpstream.name,
        autofill::features::kAutofillNoLocalSaveOnUploadSuccess.name,
-       autofill::features::kAutofillNoLocalSaveOnUnmaskSuccess.name},
+       autofill::features::kAutofillNoLocalSaveOnUnmaskSuccess.name,
+       password_manager::features::kEnablePasswordsAccountStorage.name},
       ",");
   std::string disabled_features = base::JoinString({}, ",");
   feature_list->InitializeFromCommandLine(

@@ -15,9 +15,9 @@
 #include "chrome/browser/ui/web_contents_sizer.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/presentation_receiver_flags.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "third_party/blink/public/common/presentation/presentation_receiver_flags.h"
 
 #if defined(USE_AURA)
 #include "base/threading/thread_task_runner_handle.h"
@@ -151,7 +151,7 @@ void OffscreenTab::Start(const GURL& start_url,
   // Create the WebContents to contain the off-screen tab's page.
   WebContents::CreateParams params(otr_profile_registration_->profile());
   if (!optional_presentation_id.empty())
-    params.starting_sandbox_flags = blink::kPresentationReceiverSandboxFlags;
+    params.starting_sandbox_flags = content::kPresentationReceiverSandboxFlags;
 
   offscreen_tab_web_contents_ = WebContents::Create(params);
   offscreen_tab_web_contents_->SetDelegate(this);

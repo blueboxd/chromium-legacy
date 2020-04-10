@@ -4,10 +4,10 @@
 
 package org.chromium.chrome.browser.tab;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.UserData;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.components.external_intents.ExternalNavigationParams;
+import org.chromium.components.external_intents.InterceptNavigationDelegateClient;
 import org.chromium.components.external_intents.RedirectHandlerImpl;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.navigation_interception.NavigationParams;
@@ -26,6 +27,7 @@ import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.ConsoleMessageLevel;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Class that controls navigations and allows to intercept them. It is used on Android to 'convert'
@@ -35,12 +37,10 @@ import org.chromium.content_public.common.ConsoleMessageLevel;
  * hence can cause UAF error. It should be done in an asynchronous fashion to avoid it.
  * See https://crbug.com/732260.
  */
-public class InterceptNavigationDelegateImpl implements InterceptNavigationDelegate, UserData {
-    private static final Class<InterceptNavigationDelegateImpl> USER_DATA_KEY =
-            InterceptNavigationDelegateImpl.class;
-
+public class InterceptNavigationDelegateImpl implements InterceptNavigationDelegate {
     private final TabImpl mTab;
     private final AuthenticatorNavigationInterceptor mAuthenticatorHelper;
+    private InterceptNavigationDelegateClient mClient;
     private @OverrideUrlLoadingResult int mLastOverrideUrlLoadingResult =
             OverrideUrlLoadingResult.NO_OVERRIDE;
     private final TabObserver mDelegateObserver;
@@ -53,21 +53,13 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
     private boolean mClearAllForwardHistoryRequired;
     private boolean mShouldClearRedirectHistoryForTabClobbering;
 
-    public static void createForTab(Tab tab) {
-        assert get(tab) == null;
-        tab.getUserDataHost().setUserData(USER_DATA_KEY, new InterceptNavigationDelegateImpl(tab));
-    }
-
-    public static InterceptNavigationDelegateImpl get(Tab tab) {
-        return tab.getUserDataHost().getUserData(USER_DATA_KEY);
-    }
-
     /**
      * Default constructor of {@link InterceptNavigationDelegateImpl}.
      */
     @VisibleForTesting
-    InterceptNavigationDelegateImpl(Tab tab) {
+    InterceptNavigationDelegateImpl(Tab tab, InterceptNavigationDelegateClient client) {
         mTab = (TabImpl) tab;
+        mClient = client;
         mAuthenticatorHelper = AppHooks.get().createAuthenticatorNavigationInterceptor(mTab);
         mDelegateObserver = new EmptyTabObserver() {
             @Override
@@ -76,8 +68,8 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
             }
 
             @Override
-            public void onActivityAttachmentChanged(Tab tab, boolean attached) {
-                if (attached) {
+            public void onActivityAttachmentChanged(Tab tab, @Nullable WindowAndroid window) {
+                if (window != null) {
                     setExternalNavigationHandler(
                             mTab.getDelegateFactory().createExternalNavigationHandler(tab));
                 }
@@ -95,10 +87,9 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
             }
         };
         mTab.addObserver(mDelegateObserver);
-        associateWithWebContents(mTab.getWebContents());
+        associateWithWebContents(mClient.getWebContents());
     }
 
-    @Override
     public void destroy() {
         mTab.removeObserver(mDelegateObserver);
     }
@@ -239,7 +230,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
      * entries from the navigation history. See crbug.com/426679
      */
     public void maybeUpdateNavigationHistory() {
-        WebContents webContents = mTab.getWebContents();
+        WebContents webContents = mClient.getWebContents();
         if (mClearAllForwardHistoryRequired && webContents != null) {
             webContents.getNavigationController().pruneForwardEntries();
         } else if (mShouldClearRedirectHistoryForTabClobbering
@@ -267,13 +258,13 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
     }
 
     private int getLastCommittedEntryIndex() {
-        if (mTab.getWebContents() == null) return -1;
-        return mTab.getWebContents().getNavigationController().getLastCommittedEntryIndex();
+        if (mClient.getWebContents() == null) return -1;
+        return mClient.getWebContents().getNavigationController().getLastCommittedEntryIndex();
     }
 
     private boolean shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent() {
-        if (mTab.getWebContents() == null) return false;
-        if (!mTab.getWebContents().getNavigationController().canGoToOffset(0)) return true;
+        if (mClient.getWebContents() == null) return false;
+        if (!mClient.getWebContents().getNavigationController().canGoToOffset(0)) return true;
 
         // http://crbug/415948 : if the last committed entry index which was saved before this
         // navigation is invalid, it means that this navigation is the first one since this tab was
@@ -293,7 +284,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
      * @param shouldCloseTab
      */
     private void onOverrideUrlLoadingAndLaunchIntent(boolean shouldCloseTab) {
-        if (mTab.getWebContents() == null) return;
+        if (mClient.getWebContents() == null) return;
 
         // Before leaving Chrome, close the empty child tab.
         // If a new tab is created through JavaScript open to load this
@@ -323,7 +314,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
                 // was saved before this navigation, and remove the empty entries from the
                 // navigation history.
                 mClearAllForwardHistoryRequired = true;
-                mTab.getWebContents().getNavigationController().goToNavigationIndex(
+                mClient.getWebContents().getNavigationController().goToNavigationIndex(
                         lastCommittedEntryIndexBeforeNavigation);
             }
         }
@@ -333,14 +324,13 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
         int resId = mExternalNavHandler.canExternalAppHandleUrl(url)
                 ? R.string.blocked_navigation_warning
                 : R.string.unreachable_navigation_warning;
-        mTab.getWebContents().addMessageToDevToolsConsole(ConsoleMessageLevel.WARNING,
+        mClient.getWebContents().addMessageToDevToolsConsole(ConsoleMessageLevel.WARNING,
                 ContextUtils.getApplicationContext().getString(resId, url));
     }
 
     @VisibleForTesting
     static void initDelegateForTesting(Tab tab, InterceptNavigationDelegateImpl delegate) {
         delegate.associateWithWebContents(tab.getWebContents());
-        tab.getUserDataHost().setUserData(USER_DATA_KEY, delegate);
     }
 
     @NativeMethods

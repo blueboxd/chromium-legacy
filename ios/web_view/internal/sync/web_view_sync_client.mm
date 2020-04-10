@@ -27,6 +27,7 @@
 #include "components/version_info/version_string.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
+#import "ios/web_view/internal/passwords/web_view_account_password_store_factory.h"
 #include "ios/web_view/internal/passwords/web_view_password_store_factory.h"
 #include "ios/web_view/internal/pref_names.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
@@ -72,6 +73,9 @@ WebViewSyncClient::WebViewSyncClient(WebViewBrowserState* browser_state)
 
   password_store_ = WebViewPasswordStoreFactory::GetForBrowserState(
       browser_state_, ServiceAccessType::IMPLICIT_ACCESS);
+  account_password_store_ =
+      WebViewAccountPasswordStoreFactory::GetForBrowserState(
+          browser_state_, ServiceAccessType::IMPLICIT_ACCESS);
 
   component_factory_ =
       std::make_unique<browser_sync::ProfileSyncComponentsFactoryImpl>(
@@ -79,7 +83,7 @@ WebViewSyncClient::WebViewSyncClient(WebViewBrowserState* browser_state)
           prefs::kSavingBrowserHistoryDisabled,
           base::CreateSingleThreadTaskRunner({web::WebThread::UI}), db_thread_,
           profile_web_data_service_, account_web_data_service_, password_store_,
-          /*account_password_store=*/nullptr,
+          account_password_store_,
           /*bookmark_sync_service=*/nullptr);
 }
 

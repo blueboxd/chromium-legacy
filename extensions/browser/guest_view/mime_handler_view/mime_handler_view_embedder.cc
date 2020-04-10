@@ -18,9 +18,9 @@
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_constants.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/common/mojom/guest_view.mojom.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
-#include "third_party/blink/public/common/frame/sandbox_flags.h"
 
 namespace extensions {
 
@@ -229,7 +229,7 @@ void MimeHandlerViewEmbedder::CheckSandboxFlags() {
   // NavigationRequest, DidFinishNavigation is called before FrameDeleted (see
   // https://crbug.com/969840).
   if (render_frame_host_ && !render_frame_host_->IsSandboxed(
-                                blink::mojom::WebSandboxFlags::kPlugins)) {
+                                network::mojom::WebSandboxFlags::kPlugins)) {
     return;
   }
   if (render_frame_host_) {

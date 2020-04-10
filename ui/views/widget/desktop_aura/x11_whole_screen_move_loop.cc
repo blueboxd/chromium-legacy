@@ -50,7 +50,6 @@ X11WholeScreenMoveLoop::X11WholeScreenMoveLoop(X11MoveLoopDelegate* delegate)
     : delegate_(delegate),
       in_move_loop_(false),
       initial_cursor_(ui::mojom::CursorType::kNull),
-      should_reset_mouse_flags_(false),
       grab_input_window_(x11::None),
       grabbed_pointer_(false),
       canceled_(false) {}
@@ -165,15 +164,6 @@ bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
   nested_dispatcher_ =
       ui::PlatformEventSource::GetInstance()->OverrideDispatcher(this);
 
-  // We are handling a mouse drag outside of the aura::Window system. We must
-  // manually make aura think that the mouse button is pressed so that we don't
-  // draw extraneous tooltips.
-  aura::Env* env = aura::Env::GetInstance();
-  if (!env->IsMouseButtonDown()) {
-    env->set_mouse_button_flags(ui::EF_LEFT_MOUSE_BUTTON);
-    should_reset_mouse_flags_ = true;
-  }
-
   base::WeakPtr<X11WholeScreenMoveLoop> alive(weak_factory_.GetWeakPtr());
 
   in_move_loop_ = true;
@@ -200,12 +190,6 @@ void X11WholeScreenMoveLoop::EndMoveLoop() {
 
   // Prevent DispatchMouseMovement from dispatching any posted motion event.
   last_motion_in_screen_.reset();
-
-  // We undo our emulated mouse click from RunMoveLoop();
-  if (should_reset_mouse_flags_) {
-    aura::Env::GetInstance()->set_mouse_button_flags(0);
-    should_reset_mouse_flags_ = false;
-  }
 
   // TODO(erg): Is this ungrab the cause of having to click to give input focus
   // on drawn out windows? Not ungrabbing here screws the X server until I kill

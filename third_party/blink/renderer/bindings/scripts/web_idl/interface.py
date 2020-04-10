@@ -40,8 +40,6 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
                      constructors=None,
                      named_constructors=None,
                      operations=None,
-                     indexed_and_named_properties=None,
-                     stringifier=None,
                      iterable=None,
                      maplike=None,
                      setlike=None,
@@ -58,10 +56,6 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             assert named_constructors is None or isinstance(
                 named_constructors, (list, tuple))
             assert operations is None or isinstance(operations, (list, tuple))
-            assert indexed_and_named_properties is None or isinstance(
-                indexed_and_named_properties, IndexedAndNamedProperties.IR)
-            assert stringifier is None or isinstance(stringifier,
-                                                     Stringifier.IR)
             assert iterable is None or isinstance(iterable, Iterable)
             assert maplike is None or isinstance(maplike, Maplike)
             assert setlike is None or isinstance(setlike, Setlike)
@@ -118,8 +112,6 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             self.operation_groups = []
             self.exposed_constructs = []
             self.legacy_window_aliases = []
-            self.indexed_and_named_properties = indexed_and_named_properties
-            self.stringifier = stringifier
             self.iterable = iterable
             self.maplike = maplike
             self.setlike = setlike
@@ -195,27 +187,26 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
         self._exposed_constructs = tuple(ir.exposed_constructs)
         self._legacy_window_aliases = tuple(ir.legacy_window_aliases)
         self._indexed_and_named_properties = None
-        if ir.indexed_and_named_properties:
-            operations = filter(
-                lambda x: x.is_indexed_or_named_property_operation,
-                self._operations)
+        indexed_and_named_property_operations = filter(
+            lambda x: x.is_indexed_or_named_property_operation,
+            self._operations)
+        if indexed_and_named_property_operations:
             self._indexed_and_named_properties = IndexedAndNamedProperties(
-                ir.indexed_and_named_properties, operations, owner=self)
+                indexed_and_named_property_operations, owner=self)
         self._stringifier = None
-        if ir.stringifier:
-            operations = filter(lambda x: x.is_stringifier, self._operations)
-            assert len(operations) == 1
-            attributes = [None]
-            if ir.stringifier.attribute:
-                attr_id = ir.stringifier.attribute.identifier
+        stringifier_operations = filter(lambda x: x.is_stringifier,
+                                        self._operations)
+        if stringifier_operations:
+            assert len(stringifier_operations) == 1
+            operation = stringifier_operations[0]
+            attribute = None
+            if operation.stringifier_attribute:
+                attr_id = operation.stringifier_attribute
                 attributes = filter(lambda x: x.identifier == attr_id,
                                     self._attributes)
-            assert len(attributes) == 1
-            self._stringifier = Stringifier(
-                ir.stringifier,
-                operation=operations[0],
-                attribute=attributes[0],
-                owner=self)
+                assert len(attributes) == 1
+                attribute = attributes[0]
+            self._stringifier = Stringifier(operation, attribute, owner=self)
         self._iterable = ir.iterable
         self._maplike = ir.maplike
         self._setlike = ir.setlike
@@ -383,7 +374,7 @@ class LegacyWindowAlias(WithIdentifier, WithExtendedAttributes, WithExposure):
         return self._original.target_object
 
 
-class IndexedAndNamedProperties(WithOwner, WithDebugInfo):
+class IndexedAndNamedProperties(WithOwner):
     """
     Represents a set of indexed/named getter/setter/deleter.
 
@@ -391,55 +382,12 @@ class IndexedAndNamedProperties(WithOwner, WithDebugInfo):
     https://heycam.github.io/webidl/#idl-named-properties
     """
 
-    class IR(WithDebugInfo):
-        def __init__(self, operations, debug_info=None):
-            assert isinstance(operations, (list, tuple))
-            assert all(
-                isinstance(operation, Operation.IR)
-                for operation in operations)
-
-            WithDebugInfo.__init__(self, debug_info)
-
-            self.indexed_getter = None
-            self.indexed_setter = None
-            self.named_getter = None
-            self.named_setter = None
-            self.named_deleter = None
-
-            for operation in operations:
-                arg1_type = operation.arguments[0].idl_type
-                if arg1_type.is_integer:
-                    if operation.is_getter:
-                        assert self.indexed_getter is None
-                        self.indexed_getter = operation
-                    elif operation.is_setter:
-                        assert self.indexed_setter is None
-                        self.indexed_setter = operation
-                    else:
-                        assert False
-                elif arg1_type.is_string:
-                    if operation.is_getter:
-                        assert self.named_getter is None
-                        self.named_getter = operation
-                    elif operation.is_setter:
-                        assert self.named_setter is None
-                        self.named_setter = operation
-                    elif operation.is_deleter:
-                        assert self.named_deleter is None
-                        self.named_deleter = operation
-                    else:
-                        assert False
-                else:
-                    assert False
-
-    def __init__(self, ir, operations, owner):
-        assert isinstance(ir, IndexedAndNamedProperties.IR)
+    def __init__(self, operations, owner):
         assert isinstance(operations, (list, tuple))
         assert all(
             isinstance(operation, Operation) for operation in operations)
 
         WithOwner.__init__(self, owner)
-        WithDebugInfo.__init__(self, ir)
 
         self._own_indexed_getter = None
         self._own_indexed_setter = None
@@ -539,26 +487,14 @@ class IndexedAndNamedProperties(WithOwner, WithDebugInfo):
         return None
 
 
-class Stringifier(WithOwner, WithDebugInfo):
+class Stringifier(WithOwner):
     """https://heycam.github.io/webidl/#idl-stringifiers"""
 
-    class IR(WithDebugInfo):
-        def __init__(self, operation=None, attribute=None, debug_info=None):
-            assert isinstance(operation, Operation.IR)
-            assert attribute is None or isinstance(attribute, Attribute.IR)
-
-            WithDebugInfo.__init__(self, debug_info)
-
-            self.operation = operation
-            self.attribute = attribute
-
-    def __init__(self, ir, operation, attribute, owner):
-        assert isinstance(ir, Stringifier.IR)
+    def __init__(self, operation, attribute, owner):
         assert isinstance(operation, Operation)
         assert attribute is None or isinstance(attribute, Attribute)
 
         WithOwner.__init__(self, owner)
-        WithDebugInfo.__init__(self, ir)
 
         self._operation = operation
         self._attribute = attribute

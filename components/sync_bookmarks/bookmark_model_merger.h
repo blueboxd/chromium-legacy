@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "components/sync/base/unique_position.h"
 #include "components/sync/engine/non_blocking_sync_common.h"
 
 namespace bookmarks {
@@ -180,6 +181,13 @@ class BookmarkModelMerger {
       const RemoteTreeNode& remote_node,
       const bookmarks::BookmarkNode* local_parent,
       size_t starting_child_index) const;
+
+  // Used to generate a unique position for the current locally created
+  // bookmark.
+  syncer::UniquePosition GenerateUniquePositionForLocalCreation(
+      const bookmarks::BookmarkNode* parent,
+      size_t index,
+      const std::string& suffix) const;
 
   bookmarks::BookmarkModel* const bookmark_model_;
   favicon::FaviconService* const favicon_service_;

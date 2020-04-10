@@ -70,6 +70,7 @@ class WebViewSyncClient : public browser_sync::BrowserSyncClient {
   scoped_refptr<autofill::AutofillWebDataService> profile_web_data_service_;
   scoped_refptr<autofill::AutofillWebDataService> account_web_data_service_;
   scoped_refptr<password_manager::PasswordStore> password_store_;
+  scoped_refptr<password_manager::PasswordStore> account_password_store_;
 
   // TODO(crbug.com/915154): Revert to SyncApiComponentFactory once common
   // controller creation is moved elsewhere.

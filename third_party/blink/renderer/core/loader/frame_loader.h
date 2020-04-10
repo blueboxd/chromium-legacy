@@ -37,6 +37,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-blink-forward.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
@@ -47,7 +48,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
-#include "third_party/blink/renderer/core/frame/sandbox_flags.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_state_machine.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/core/loader/history_item.h"
@@ -142,28 +142,24 @@ class CORE_EXPORT FrameLoader final {
 
   // The following sandbox flags will be forced, regardless of changes to the
   // sandbox attribute of any parent frames.
-  void ForceSandboxFlags(mojom::blink::WebSandboxFlags flags) {
-    forced_sandbox_flags_ |= flags;
-  }
+  void ForceSandboxFlags(network::mojom::blink::WebSandboxFlags flags);
 
   // Set frame_owner's effective sandbox flags, which are sandbox flags value
   // at the beginning of navigation.
-  void SetFrameOwnerSandboxFlags(mojom::blink::WebSandboxFlags flags) {
-    frame_owner_sandbox_flags_ = flags;
-  }
+  void SetFrameOwnerSandboxFlags(network::mojom::blink::WebSandboxFlags flags);
 
   // Includes the collection of forced, inherited, and FrameOwner's sandbox
   // flags, where the FrameOwner's flag is snapshotted from the last committed
   // navigation. Note: with FeaturePolicyForSandbox the frame owner's sandbox
   // flags only includes the flags which are *not* implemented as feature
   // policies already present in the FrameOwner's ContainerPolicy.
-  mojom::blink::WebSandboxFlags EffectiveSandboxFlags() const;
+  network::mojom::blink::WebSandboxFlags EffectiveSandboxFlags() const;
 
   // Includes the collection of forced, inherited, and FrameOwner's sandbox
   // flags. Note: with FeaturePolicyForSandbox the frame owner's sandbox flags
   // only includes the flags which are *not* implemented as feature policies
   // already present in the FrameOwner's ContainerPolicy.
-  mojom::blink::WebSandboxFlags PendingEffectiveSandboxFlags() const;
+  network::mojom::blink::WebSandboxFlags PendingEffectiveSandboxFlags() const;
 
   // Modifying itself is done based on |fetch_client_settings_object|.
   // |document_for_logging| is used only for logging, use counters,
@@ -322,15 +318,15 @@ class CORE_EXPORT FrameLoader final {
   };
   std::unique_ptr<ClientNavigationState> client_navigation_;
 
-  mojom::blink::WebSandboxFlags forced_sandbox_flags_;
+  network::mojom::blink::WebSandboxFlags forced_sandbox_flags_;
   // A snapshot value of frame_owner's sandbox flags states at the beginning of
   // navigation. For main frame which does not have a frame owner, the value is
   // base::nullopt.
   // The snapshot value is needed because of potential racing conditions on
   // sandbox attribute on iframe element.
   // crbug.com/1026627
-  base::Optional<mojom::blink::WebSandboxFlags> frame_owner_sandbox_flags_ =
-      base::nullopt;
+  base::Optional<network::mojom::blink::WebSandboxFlags>
+      frame_owner_sandbox_flags_ = base::nullopt;
 
   bool dispatching_did_clear_window_object_in_main_world_;
   bool detached_;

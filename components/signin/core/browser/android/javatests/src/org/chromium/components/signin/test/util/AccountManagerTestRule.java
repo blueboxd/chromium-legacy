@@ -57,7 +57,11 @@ public class AccountManagerTestRule implements TestRule {
                     AccountManagerFacadeProvider.setInstanceForTests(
                             new AccountManagerFacade(mDelegate));
                 });
-                statement.evaluate();
+                try {
+                    statement.evaluate();
+                } finally {
+                    AccountManagerFacadeProvider.resetInstanceForTests();
+                }
             }
         };
     }

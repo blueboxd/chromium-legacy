@@ -7,12 +7,15 @@ package org.chromium.chrome.browser.tab;
 import android.graphics.Bitmap;
 import android.view.ContextMenu;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.TabLoadStatus;
 import org.chromium.components.find_in_page.FindMatchRectsDetails;
 import org.chromium.components.find_in_page.FindNotificationDetails;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * An observer that is notified of changes to a {@link Tab} object.
@@ -289,9 +292,10 @@ public interface TabObserver {
     /**
      * Called when the Tab is attached or detached from an {@code Activity}.
      * @param tab The notifying {@link Tab}.
-     * @param isAttached Whether the Tab is being attached or detached.
+     * @param window {@link WindowAndroid} which the Tab is being associated with. {@code null} if
+     *         the tab is being detached.
      */
-    void onActivityAttachmentChanged(Tab tab, boolean isAttached);
+    void onActivityAttachmentChanged(Tab tab, @Nullable WindowAndroid window);
 
     /**
      * A notification when tab changes whether or not it is interactable and is accepting input.

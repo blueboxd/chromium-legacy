@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.signin;
 import android.accounts.Account;
 import android.support.test.filters.SmallTest;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -17,7 +16,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.signin.MockChangeEventChecker;
-import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.test.util.AccountHolder;
@@ -36,11 +34,6 @@ public class SigninHelperTest {
     @Before
     public void setUp() {
         mEventChecker = new MockChangeEventChecker();
-    }
-
-    @After
-    public void tearDown() {
-        AccountManagerFacadeProvider.resetInstanceForTests();
     }
 
     @Test

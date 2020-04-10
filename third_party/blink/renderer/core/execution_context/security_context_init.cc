@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/execution_context/security_context_init.h"
 
+#include "services/network/public/cpp/web_sandbox_flags.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document_init.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -14,6 +15,7 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/core/frame/sandbox_flags.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -218,9 +220,9 @@ void SecurityContextInit::InitializeSandboxFlags(
     // Document's URL and origin. Instead, force a Document loaded from a
     // MHTML archive to be sandboxed, providing exceptions only for creating
     // new windows.
-    sandbox_flags_ |= (mojom::blink::WebSandboxFlags::kAll &
-                       ~(mojom::blink::WebSandboxFlags::kPopups |
-                         mojom::blink::WebSandboxFlags::
+    sandbox_flags_ |= (network::mojom::blink::WebSandboxFlags::kAll &
+                       ~(network::mojom::blink::WebSandboxFlags::kPopups |
+                         network::mojom::blink::WebSandboxFlags::
                              kPropagatesToAuxiliaryBrowsingContexts));
   }
 }
@@ -228,8 +230,8 @@ void SecurityContextInit::InitializeSandboxFlags(
 void SecurityContextInit::InitializeOrigin(const DocumentInit& initializer) {
   scoped_refptr<SecurityOrigin> document_origin =
       initializer.GetDocumentOrigin();
-  if ((sandbox_flags_ & mojom::blink::WebSandboxFlags::kOrigin) !=
-      mojom::blink::WebSandboxFlags::kNone) {
+  if ((sandbox_flags_ & network::mojom::blink::WebSandboxFlags::kOrigin) !=
+      network::mojom::blink::WebSandboxFlags::kNone) {
     scoped_refptr<SecurityOrigin> sandboxed_origin =
         initializer.OriginToCommit() ? initializer.OriginToCommit()
                                      : document_origin->DeriveNewOpaqueOrigin();
@@ -337,7 +339,7 @@ void SecurityContextInit::InitializeFeaturePolicy(
       initializer.ReportOnlyFeaturePolicyHeader(), security_origin_,
       &report_only_feature_policy_parse_messages_, this);
 
-  if (sandbox_flags_ != mojom::blink::WebSandboxFlags::kNone &&
+  if (sandbox_flags_ != network::mojom::blink::WebSandboxFlags::kNone &&
       RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
     // The sandbox flags might have come from CSP header or the browser; in
     // such cases the sandbox is not part of the container policy. They are
@@ -356,8 +358,8 @@ void SecurityContextInit::InitializeFeaturePolicy(
   // feature policy is initialized.
   if (RuntimeEnabledFeatures::BlockingFocusWithoutUserActivationEnabled() &&
       frame && frame->Tree().Parent() &&
-      (sandbox_flags_ & mojom::blink::WebSandboxFlags::kNavigation) !=
-          mojom::blink::WebSandboxFlags::kNone) {
+      (sandbox_flags_ & network::mojom::blink::WebSandboxFlags::kNavigation) !=
+          network::mojom::blink::WebSandboxFlags::kNone) {
     // Enforcing the policy for sandbox frames (for context see
     // https://crbug.com/954349).
     DisallowFeatureIfNotPresent(
@@ -464,7 +466,7 @@ void SecurityContextInit::InitializeSecureContextMode(
     secure_context_mode_ = SecureContextMode::kInsecureContext;
   }
   bool is_secure = secure_context_mode_ == SecureContextMode::kSecureContext;
-  if (GetSandboxFlags() != mojom::blink::WebSandboxFlags::kNone) {
+  if (GetSandboxFlags() != network::mojom::blink::WebSandboxFlags::kNone) {
     feature_count_.insert(
         is_secure ? WebFeature::kSecureContextCheckForSandboxedOriginPassed
                   : WebFeature::kSecureContextCheckForSandboxedOriginFailed);

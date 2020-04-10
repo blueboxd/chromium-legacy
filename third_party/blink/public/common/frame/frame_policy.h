@@ -5,9 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_FRAME_FRAME_POLICY_H_
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_FRAME_FRAME_POLICY_H_
 
+#include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "third_party/blink/public/common/feature_policy/document_policy.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
-#include "third_party/blink/public/common/frame/sandbox_flags.h"
 
 namespace blink {
 
@@ -25,7 +25,7 @@ namespace blink {
 // navigated.
 struct BLINK_COMMON_EXPORT FramePolicy {
   FramePolicy();
-  FramePolicy(mojom::WebSandboxFlags sandbox_flags,
+  FramePolicy(network::mojom::WebSandboxFlags sandbox_flags,
               const ParsedFeaturePolicy& container_policy,
               const DocumentPolicy::FeatureState& required_document_policy,
               bool allowed_to_download = true,
@@ -33,7 +33,7 @@ struct BLINK_COMMON_EXPORT FramePolicy {
   FramePolicy(const FramePolicy& lhs);
   ~FramePolicy();
 
-  mojom::WebSandboxFlags sandbox_flags;
+  network::mojom::WebSandboxFlags sandbox_flags;
   ParsedFeaturePolicy container_policy;
   // |required_document_policy| is the combination of the following:
   // - iframe 'policy' attribute

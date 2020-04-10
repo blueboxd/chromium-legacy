@@ -4,9 +4,7 @@
 
 package org.chromium.chrome.browser.query_tiles.list;
 
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -23,16 +21,6 @@ class TileViewHolder extends ViewHolder {
     /** Creates an instance of a {@link TileViewHolder}. */
     protected TileViewHolder(View itemView) {
         super(itemView);
-    }
-
-    /**
-     * Used as a method reference for ViewHolderFactory.
-     * @see RecyclerViewAdapter.ViewHolderFactory#createViewHolder
-     */
-    public static TileViewHolder create(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                            .inflate(R.layout.query_tile_view, parent, false);
-        return new TileViewHolder(view);
     }
 
     /**

@@ -8,7 +8,6 @@
 #include "services/network/public/mojom/content_security_policy.mojom-shared.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
-#include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom-shared.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-shared.h"
@@ -96,7 +95,7 @@ class WebRemoteFrame : public WebFrame {
       bool is_potentially_trustworthy_opaque_origin) = 0;
 
   // Set sandbox flags replicated from another process.
-  virtual void SetReplicatedSandboxFlags(mojom::WebSandboxFlags) = 0;
+  virtual void SetReplicatedSandboxFlags(network::mojom::WebSandboxFlags) = 0;
 
   // Set frame |name| replicated from another process.
   virtual void SetReplicatedName(const WebString&) = 0;

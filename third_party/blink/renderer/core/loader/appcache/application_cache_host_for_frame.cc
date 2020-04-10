@@ -208,7 +208,7 @@ void ApplicationCacheHostForFrame::SelectCacheWithManifest(
     const KURL& manifest_url) {
   LocalFrame* frame = document_loader_->GetFrame();
   Document* document = frame->GetDocument();
-  if (document->IsSandboxed(mojom::blink::WebSandboxFlags::kOrigin)) {
+  if (document->IsSandboxed(network::mojom::blink::WebSandboxFlags::kOrigin)) {
     // Prevent sandboxes from establishing application caches.
     SelectCacheWithoutManifest();
     return;

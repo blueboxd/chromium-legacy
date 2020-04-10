@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.settings.MainSettings;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.components.browser_ui.settings.ChromeBasePreference;
 import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.test.util.AccountHolder;
@@ -78,8 +79,9 @@ public class PasswordViewingTypeTest {
     }
 
     @After
-    public void tearDown() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> ProfileSyncService.resetForTests());
+    public void tearDown() throws Exception {
+        ApplicationTestUtils.finishActivity(mMainSettings.getActivity());
+        TestThreadUtils.runOnUiThreadBlocking(ProfileSyncService::resetForTests);
     }
 
     /**

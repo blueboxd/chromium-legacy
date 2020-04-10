@@ -288,7 +288,7 @@ class TestWebViewClient : public WebViewClient {
                       const WebWindowFeatures&,
                       const WebString& name,
                       WebNavigationPolicy,
-                      mojom::blink::WebSandboxFlags,
+                      network::mojom::blink::WebSandboxFlags,
                       const FeaturePolicy::FeatureState&,
                       const SessionStorageNamespaceId&) override;
 

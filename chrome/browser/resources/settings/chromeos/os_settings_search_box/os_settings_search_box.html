@@ -17,6 +17,8 @@
     <style include="settings-shared">
       :host {
         --cr-toolbar-field-width: 480px;
+        --cr-toolbar-icon-container-size: 32px;
+        --cr-toolbar-icon-margin: 6px 12px;
         display: flex;
         flex-basis: var(--cr-toolbar-field-width);
         flex-direction: row;
@@ -33,7 +35,10 @@
       }
 
       cr-toolbar-search-field {
+        --cr-toolbar-search-field-term-margin: 0;
         --cr-toolbar-search-field-border-radius: 20px;
+        --cr-toolbar-search-field-paper-spinner-margin: 0 12px;
+        --cr-toolbar-search-field-prompt-margin-inline-start: 140px;
         transition: height 150ms;
       }
 
@@ -61,7 +66,7 @@
         border-radius: 0 0 20px 20px;
         box-shadow: var(--cr-menu-shadow);
         display: table;
-        padding: 8px 0 13px 0;
+        padding: 8px 0 12px 0;
       }
 
       :host([narrow]) iron-dropdown [slot='dropdown-content'] {
@@ -70,6 +75,10 @@
 
       :host(:not([narrow])) iron-dropdown [slot='dropdown-content'] {
         width: var(--cr-toolbar-field-width, 680px);
+      }
+
+      :host([narrow]) os-search-result-row {
+        --cr-toolbar-icon-margin: 6px 12px 6px 18px;
       }
     </style>
     <cr-toolbar-search-field id="search" narrow="[[narrow]]"

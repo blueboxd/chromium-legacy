@@ -265,17 +265,20 @@ def FindProbableFreePorts():
   raise RuntimeError('Cannot find open port')
 
 
-def WriteResultToJSONFile(tests, result, json_path):
-  """Write a unittest result object to a file as a JSON.
+def WriteResultToJSONFile(test_suites, results, json_path):
+  """Aggregate a list of unittest result object and write to a file as a JSON.
 
-  This takes a result object from a run of Python unittest tests and writes
-  it to a file in the correct format for the --isolated-script-test-output
-  argument passed to test isolates.
+  This takes a list of result object from one or more runs (for retry purpose)
+  of Python unittest tests; aggregates the list by appending each test result
+  from each run and writes to a file in the correct format
+  for the --isolated-script-test-output argument passed to test isolates.
 
   Args:
-    tests: unittest.TestSuite that was run to get the result object; iterated
-      to get all test cases that were run.
-    result: unittest.TextTestResult object returned from running unittest tests.
+    test_suites: a list of unittest.TestSuite that were run to get
+                 the list of result object; each test_suite contains
+                 the tests run and is iterated to get all test cases ran.
+    results: a list of unittest.TextTestResult object returned
+             from running unittest tests.
     json_path: desired path to JSON file of result.
   """
   output = {
@@ -287,17 +290,44 @@ def WriteResultToJSONFile(tests, result, json_path):
       'version': 3,
   }
 
-  for test in tests:
-    output['tests'][test.id()] = {
-        'expected': 'PASS',
-        'actual': 'PASS'
+  def initialize(test_suite):
+    for test in test_suite:
+      if test.id() not in output['tests']:
+        output['tests'][test.id()] = {
+            'expected': 'PASS',
+            'actual': []
+        }
+
+  for test_suite in test_suites:
+    initialize(test_suite)
+
+  def get_pass_fail(test_suite, result):
+    success = []
+    fail = []
+    for failure in result.failures + result.errors:
+      fail.append(failure[0].id())
+    for test in test_suite:
+      if test.id() not in fail:
+        success.append(test.id())
+    return {
+        'success': success,
+        'fail': fail,
     }
 
-  for failure in result.failures + result.errors:
-    output['tests'][failure[0].id()]['actual'] = 'FAIL'
-    output['tests'][failure[0].id()]['is_unexpected'] = True
+  for test_suite, result in zip(test_suites, results):
+    pass_fail = get_pass_fail(test_suite, result)
+    for s in pass_fail['success']:
+      output['tests'][s]['actual'].append('PASS')
+    for f in pass_fail['fail']:
+      output['tests'][f]['actual'].append('FAIL')
 
-  num_fails = len(result.failures) + len(result.errors)
+  num_fails = 0
+  for test_result in output['tests'].itervalues():
+    if test_result['actual'][-1] == 'FAIL':
+      num_fails += 1
+      test_result['is_unexpected'] = True
+    test_result['actual'] = ' '.join(test_result['actual'])
+
   output['num_failures_by_type']['FAIL'] = num_fails
   output['num_failures_by_type']['PASS'] = len(output['tests']) - num_fails
 

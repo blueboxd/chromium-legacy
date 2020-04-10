@@ -88,8 +88,8 @@ struct BLINK_EXPORT WebNavigationInfo {
   bool is_client_redirect = false;
 
   // Whether the navigation initiator frame has the
-  // |mojom::blink::WebSandboxFlags::kDownloads| bit set in its sandbox flags
-  // set.
+  // |network::mojom::blink::WebSandboxFlags::kDownloads| bit set in its sandbox
+  // flags set.
   bool initiator_frame_has_download_sandbox_flag = false;
 
   // Whether the navigation initiator frame is an ad frame.

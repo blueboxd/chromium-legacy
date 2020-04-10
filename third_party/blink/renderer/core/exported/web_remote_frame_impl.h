@@ -78,7 +78,8 @@ class CORE_EXPORT WebRemoteFrameImpl final
   void SetReplicatedOrigin(
       const WebSecurityOrigin&,
       bool is_potentially_trustworthy_opaque_origin) override;
-  void SetReplicatedSandboxFlags(mojom::blink::WebSandboxFlags) override;
+  void SetReplicatedSandboxFlags(
+      network::mojom::blink::WebSandboxFlags) override;
   void SetReplicatedName(const WebString&) override;
   void SetReplicatedFeaturePolicyHeaderAndOpenerPolicies(
       const ParsedFeaturePolicy& parsed_header,

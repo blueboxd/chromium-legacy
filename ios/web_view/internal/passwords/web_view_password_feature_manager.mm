@@ -5,19 +5,30 @@
 #include "ios/web_view/internal/passwords/web_view_password_feature_manager.h"
 
 #include "base/logging.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/prefs/pref_service.h"
+#include "components/sync/driver/sync_service.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 namespace ios_web_view {
+WebViewPasswordFeatureManager::WebViewPasswordFeatureManager(
+    PrefService* pref_service,
+    const syncer::SyncService* sync_service)
+    : pref_service_(pref_service), sync_service_(sync_service) {}
 
 bool WebViewPasswordFeatureManager::IsGenerationEnabled() const {
   return false;
 }
 
 bool WebViewPasswordFeatureManager::IsOptedInForAccountStorage() const {
-  return false;
+  // Although ios/web_view will only write to the account store, this should
+  // still be controlled on a per user basis to ensure that the logged out user
+  // remains opted out.
+  return password_manager_util::IsOptedInForAccountStorage(pref_service_,
+                                                           sync_service_);
 }
 
 bool WebViewPasswordFeatureManager::ShouldShowAccountStorageOptIn() const {
@@ -38,7 +49,8 @@ bool WebViewPasswordFeatureManager::ShouldShowPasswordStorePicker() const {
 
 autofill::PasswordForm::Store
 WebViewPasswordFeatureManager::GetDefaultPasswordStore() const {
-  return autofill::PasswordForm::Store::kProfileStore;
+  // ios/web_view should never write to the profile password store.
+  return autofill::PasswordForm::Store::kAccountStore;
 }
 
 void WebViewPasswordFeatureManager::SetDefaultPasswordStore(

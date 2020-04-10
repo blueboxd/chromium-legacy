@@ -49,9 +49,6 @@ class WebLocalFrame;
 class WebRemoteFrame;
 class WebSecurityOrigin;
 class WebView;
-namespace mojom {
-enum class WebSandboxFlags;
-}
 
 // Frames may be rendered in process ('local') or out of process ('remote').
 // A remote frame is always cross-site; a local frame may be either same-site or

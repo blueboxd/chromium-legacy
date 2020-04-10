@@ -20,12 +20,10 @@ from .extended_attribute import ExtendedAttribute
 from .extended_attribute import ExtendedAttributes
 from .idl_type import IdlTypeFactory
 from .includes import Includes
-from .interface import IndexedAndNamedProperties
 from .interface import Interface
 from .interface import Iterable
 from .interface import Maplike
 from .interface import Setlike
-from .interface import Stringifier
 from .literal_constant import LiteralConstant
 from .namespace import Namespace
 from .operation import Operation
@@ -99,7 +97,7 @@ class _IRBuilder(object):
 
         child_nodes = list(node.GetChildren())
         inherited = self._take_inheritance(child_nodes)
-        stringifier = self._take_stringifier(child_nodes)
+        stringifier_members = self._take_stringifier(child_nodes)
         iterable = self._take_iterable(child_nodes)
         maplike = self._take_maplike(child_nodes)
         setlike = self._take_setlike(child_nodes)
@@ -111,11 +109,12 @@ class _IRBuilder(object):
                 child, interface_identifier=identifier)
             for child in child_nodes
         ]
+        if stringifier_members:
+            members.extend(filter(None, stringifier_members))
         attributes = []
         constants = []
         constructors = []
         operations = []
-        indexed_and_named_property_operations = []
         for member in members:
             if isinstance(member, Attribute.IR):
                 attributes.append(member)
@@ -125,23 +124,10 @@ class _IRBuilder(object):
                 constructors.append(member)
             elif isinstance(member, Operation.IR):
                 operations.append(member)
-                if member.is_getter or member.is_setter or member.is_deleter:
-                    indexed_and_named_property_operations.append(member)
             else:
                 assert False
 
         named_constructors = self._build_named_constructors(node)
-
-        indexed_and_named_properties = None
-        if indexed_and_named_property_operations:
-            indexed_and_named_properties = IndexedAndNamedProperties.IR(
-                indexed_and_named_property_operations,
-                self._build_debug_info(node))
-
-        if stringifier:
-            operations.append(stringifier.operation)
-            if stringifier.attribute:
-                attributes.append(stringifier.attribute)
 
         return Interface.IR(
             identifier=identifier,
@@ -153,8 +139,6 @@ class _IRBuilder(object):
             constructors=constructors,
             named_constructors=named_constructors,
             operations=operations,
-            indexed_and_named_properties=indexed_and_named_properties,
-            stringifier=stringifier,
             iterable=iterable,
             maplike=maplike,
             setlike=setlike,
@@ -631,11 +615,11 @@ class _IRBuilder(object):
                 component=self._component,
                 debug_info=self._build_debug_info(node))
         operation.is_stringifier = True
-
-        return Stringifier.IR(
-            operation=operation,
-            attribute=attribute,
-            debug_info=self._build_debug_info(node))
+        if attribute:
+            operation.stringifier_attribute = attribute.identifier
+            return (operation, attribute)
+        else:
+            return (operation, )
 
     def _build_type(self,
                     node,

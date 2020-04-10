@@ -212,7 +212,7 @@ IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
       "a.com", "/cross-origin-opener-policy_csp_sandboxed.html"));
   EXPECT_TRUE(NavigateToURL(shell(), starting_page));
   EXPECT_NE(current_frame_host()->active_sandbox_flags(),
-            blink::mojom::WebSandboxFlags::kNone)
+            network::mojom::WebSandboxFlags::kNone)
       << "Document should be sandboxed.";
 
   GURL next_page(https_server()->GetURL(

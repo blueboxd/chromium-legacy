@@ -17,6 +17,7 @@ import org.chromium.components.security_state.SecurityStateModel;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.RenderWidgetHostView;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.util.ColorUtils;
 
 /**
@@ -253,7 +254,7 @@ public class TabThemeColorHelper extends EmptyTabObserver implements UserData {
     }
 
     @Override
-    public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {
+    public void onActivityAttachmentChanged(Tab tab, @Nullable WindowAndroid window) {
         updateDefaultColor();
         updateDefaultBackgroundColor();
     }

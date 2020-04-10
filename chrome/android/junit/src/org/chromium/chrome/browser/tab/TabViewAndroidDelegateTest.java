@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.supplier.ObservableSupplierImpl;
@@ -88,13 +89,13 @@ public class TabViewAndroidDelegateTest {
         assertEquals("The bottom inset for the tab should be non-zero.", 10,
                 mViewAndroidDelegate.getViewportInsetBottom());
 
-        mTabObserverCaptor.getValue().onActivityAttachmentChanged(mTab, false);
+        mTabObserverCaptor.getValue().onActivityAttachmentChanged(mTab, null);
 
         assertEquals("The bottom inset for the tab should be zero.", 0,
                 mViewAndroidDelegate.getViewportInsetBottom());
 
-        mTabObserverCaptor.getValue().onActivityAttachmentChanged(mTab, true);
-
+        WindowAndroid window = Mockito.mock(WindowAndroid.class);
+        mTabObserverCaptor.getValue().onActivityAttachmentChanged(mTab, window);
         assertEquals("The bottom inset for the tab should be non-zero.", 10,
                 mViewAndroidDelegate.getViewportInsetBottom());
     }

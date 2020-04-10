@@ -15,7 +15,6 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/sync/base/hash_util.h"
-#include "components/sync/base/unique_position.h"
 #include "components/sync/engine/engine_util.h"
 #include "components/sync_bookmarks/bookmark_specifics_conversions.h"
 #include "components/sync_bookmarks/switches.h"
@@ -626,22 +625,10 @@ void BookmarkModelMerger::ProcessLocalCreation(
   const base::Time creation_time = base::Time::Now();
   const std::string& suffix = syncer::GenerateSyncableBookmarkHash(
       bookmark_tracker_->model_type_state().cache_guid(), sync_id);
-  syncer::UniquePosition pos;
   // Locally created nodes aren't tracked and hence don't have a unique position
   // yet so we need to produce new ones.
-  if (index == 0) {
-    pos = syncer::UniquePosition::InitialPosition(suffix);
-  } else {
-    const SyncedBookmarkTracker::Entity* predecessor_entity =
-        bookmark_tracker_->GetEntityForBookmarkNode(
-            parent->children()[index - 1].get());
-    DCHECK(predecessor_entity);
-    pos = syncer::UniquePosition::After(
-        syncer::UniquePosition::FromProto(
-            predecessor_entity->metadata()->unique_position()),
-        suffix);
-  }
-
+  const syncer::UniquePosition pos =
+      GenerateUniquePositionForLocalCreation(parent, index, suffix);
   const sync_pb::EntitySpecifics specifics = CreateSpecificsFromBookmarkNode(
       node, bookmark_model_, /*force_favicon_load=*/true,
       /*include_guid=*/true);
@@ -702,6 +689,29 @@ const bookmarks::BookmarkNode* BookmarkModelMerger::FindMatchingLocalNodeByGUID(
 
   DCHECK_EQ(it->second.remote_node, &remote_node);
   return it->second.local_node;
+}
+
+syncer::UniquePosition
+BookmarkModelMerger::GenerateUniquePositionForLocalCreation(
+    const bookmarks::BookmarkNode* parent,
+    size_t index,
+    const std::string& suffix) const {
+  // Try to find last tracked preceding entity. It is not always the previous
+  // one as it might be skipped if it has unprocessed remote matching by GUID
+  // update.
+  for (size_t i = index; i > 0; --i) {
+    const SyncedBookmarkTracker::Entity* predecessor_entity =
+        bookmark_tracker_->GetEntityForBookmarkNode(
+            parent->children()[i - 1].get());
+    if (predecessor_entity != nullptr) {
+      return syncer::UniquePosition::After(
+          syncer::UniquePosition::FromProto(
+              predecessor_entity->metadata()->unique_position()),
+          suffix);
+    }
+    DCHECK(FindMatchingRemoteNodeByGUID(parent->children()[i - 1].get()));
+  }
+  return syncer::UniquePosition::InitialPosition(suffix);
 }
 
 }  // namespace sync_bookmarks

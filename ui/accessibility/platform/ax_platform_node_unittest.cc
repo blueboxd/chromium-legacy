@@ -356,13 +356,13 @@ AXTreeUpdate AXPlatformNodeTest::BuildListBox(
     bool option_1_is_selected,
     bool option_2_is_selected,
     bool option_3_is_selected,
-    ax::mojom::State additional_state /* ax::mojom::State::kNone */) {
+    const std::vector<ax::mojom::State>& additional_state) {
   AXNodeData listbox;
   listbox.id = 1;
   listbox.SetName("ListBox");
   listbox.role = ax::mojom::Role::kListBox;
-  if (additional_state != ax::mojom::State::kNone)
-    listbox.AddState(additional_state);
+  for (auto state : additional_state)
+    listbox.AddState(state);
 
   AXNodeData option_1;
   option_1.id = 2;

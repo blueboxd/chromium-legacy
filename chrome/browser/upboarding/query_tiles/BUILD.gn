@@ -71,7 +71,9 @@ if (is_android) {
       "android/java/src/org/chromium/chrome/browser/query_tiles/list/TileListProperties.java",
       "android/java/src/org/chromium/chrome/browser/query_tiles/list/TileListPropertyViewBinder.java",
       "android/java/src/org/chromium/chrome/browser/query_tiles/list/TileListView.java",
+      "android/java/src/org/chromium/chrome/browser/query_tiles/list/TileSizeSupplier.java",
       "android/java/src/org/chromium/chrome/browser/query_tiles/list/TileViewHolder.java",
+      "android/java/src/org/chromium/chrome/browser/query_tiles/list/TileViewHolderFactory.java",
     ]
 
     deps = [
@@ -92,7 +94,12 @@ if (is_android) {
   }
 
   android_resources("chrome_upboarding_query_tiles_java_resources") {
-    sources = [ "android/java/res/layout/query_tile_view.xml" ]
+    sources = [
+      "android/java/res/drawable/query_tile_overlay.xml",
+      "android/java/res/layout/query_tile_view.xml",
+      "android/java/res/values/dimens.xml",
+      "android/java/res/values/styles.xml",
+    ]
     custom_package = "org.chromium.chrome.query_tiles"
   }
 

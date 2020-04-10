@@ -13,6 +13,7 @@ include_rules = [
     "+mojo",
     "+services/metrics/public/cpp",
     "+services/network/public/cpp",
+    "+services/network/public/mojom/web_sandbox_flags.mojom-shared.h",
     "+services/network/public/mojom/url_loader.mojom.h",
     "+services/network/public/mojom/url_loader_factory.mojom.h",
     "+services/network/public/mojom/url_response_head.mojom.h",

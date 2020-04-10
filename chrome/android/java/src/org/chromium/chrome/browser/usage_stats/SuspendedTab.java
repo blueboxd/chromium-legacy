@@ -15,6 +15,7 @@ import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
@@ -29,6 +30,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsAccessibility;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Represents the suspension page presented when a user tries to visit a site whose fully-qualified
@@ -207,8 +209,8 @@ public class SuspendedTab extends EmptyTabObserver implements UserData {
 
     // TabObserver implementation.
     @Override
-    public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {
-        if (!isAttached) {
+    public void onActivityAttachmentChanged(Tab tab, @Nullable WindowAndroid window) {
+        if (window == null) {
             removeViewIfPresent();
         } else {
             attachView();

@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 
 BackgroundSyncPermissionContext::BackgroundSyncPermissionContext(
     content::BrowserContext* browser_context)

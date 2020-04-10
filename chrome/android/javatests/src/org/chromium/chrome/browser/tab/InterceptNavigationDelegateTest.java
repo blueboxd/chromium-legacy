@@ -100,7 +100,8 @@ public class InterceptNavigationDelegateTest {
         mActivity = mActivityTestRule.getActivity();
         final Tab tab = mActivity.getActivityTab();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            InterceptNavigationDelegateImpl delegate = new InterceptNavigationDelegateImpl(tab) {
+            InterceptNavigationDelegateImpl delegate = new InterceptNavigationDelegateImpl(
+                    tab, new InterceptNavigationDelegateClientImpl(tab)) {
                 @Override
                 public boolean shouldIgnoreNavigation(NavigationParams navigationParams) {
                     mNavParamHistory.add(navigationParams);

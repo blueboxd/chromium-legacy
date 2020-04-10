@@ -19,6 +19,7 @@
 #include "components/password_manager/ios/credential_manager_util.h"
 #import "ios/web/public/web_state.h"
 #include "ios/web_view/internal/app/application_context.h"
+#import "ios/web_view/internal/passwords/web_view_account_password_store_factory.h"
 #import "ios/web_view/internal/passwords/web_view_password_manager_log_router_factory.h"
 #include "ios/web_view/internal/passwords/web_view_password_store_factory.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
@@ -52,6 +53,8 @@ namespace ios_web_view {
 WebViewPasswordManagerClient::WebViewPasswordManagerClient(
     id<CWVPasswordManagerClientDelegate> delegate)
     : delegate_(delegate),
+      password_feature_manager_(GetPrefs(),
+                                GetSyncService(delegate.browserState)),
       credentials_filter_(
           this,
           base::BindRepeating(&GetSyncService, delegate_.browserState)),
@@ -84,6 +87,9 @@ bool WebViewPasswordManagerClient::PromptUserToSaveOrUpdatePassword(
     std::unique_ptr<PasswordFormManagerForUI> form_to_save,
     bool update_password) {
   if (form_to_save->IsBlacklisted()) {
+    return false;
+  }
+  if (!password_feature_manager_.IsOptedInForAccountStorage()) {
     return false;
   }
 
@@ -157,8 +163,9 @@ PasswordStore* WebViewPasswordManagerClient::GetProfilePasswordStore() const {
 }
 
 PasswordStore* WebViewPasswordManagerClient::GetAccountPasswordStore() const {
-  // Account password stores aren't currently supported in iOS webviews.
-  return nullptr;
+  return ios_web_view::WebViewAccountPasswordStoreFactory::GetForBrowserState(
+             delegate_.browserState, ServiceAccessType::EXPLICIT_ACCESS)
+      .get();
 }
 
 void WebViewPasswordManagerClient::NotifyUserAutoSignin(

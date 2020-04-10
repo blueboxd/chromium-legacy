@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.tab;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.Callback;
 import org.chromium.base.UserData;
 import org.chromium.base.annotations.NativeMethods;
@@ -11,6 +13,7 @@ import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.BrowserControlsState;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Manages the state of tab browser controls.
@@ -82,8 +85,8 @@ public class TabBrowserControlsConstraintsHelper implements UserData {
             }
 
             @Override
-            public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {
-                if (isAttached) updateVisibilityDelegate();
+            public void onActivityAttachmentChanged(Tab tab, @Nullable WindowAndroid window) {
+                if (window != null) updateVisibilityDelegate();
             }
 
             @Override

@@ -1041,7 +1041,7 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
   blink::WebView* new_web_view = view()->CreateView(
       GetMainFrame(), popup_request, blink::WebWindowFeatures(), "foo",
       blink::kWebNavigationPolicyNewForegroundTab,
-      blink::mojom::WebSandboxFlags::kNone,
+      network::mojom::WebSandboxFlags::kNone,
       blink::FeaturePolicy::FeatureState(),
       blink::AllocateSessionStorageNamespaceId());
   RenderViewImpl* new_view = RenderViewImpl::FromWebView(new_web_view);

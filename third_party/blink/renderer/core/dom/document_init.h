@@ -31,12 +31,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_INIT_H_
 
 #include "services/network/public/mojom/ip_address_space.mojom-shared.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
-#include "third_party/blink/renderer/core/frame/sandbox_flags.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_registration_context.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -94,7 +94,7 @@ class CORE_EXPORT DocumentInit final {
   bool HasSecurityContext() const { return MasterDocumentLoader(); }
   bool IsSrcdocDocument() const;
   bool ShouldSetURL() const;
-  mojom::blink::WebSandboxFlags GetSandboxFlags() const;
+  network::mojom::blink::WebSandboxFlags GetSandboxFlags() const;
   mojom::blink::InsecureRequestPolicy GetInsecureRequestPolicy() const;
   const SecurityContext::InsecureNavigationsSet* InsecureNavigationsToUpgrade()
       const;
@@ -162,7 +162,7 @@ class CORE_EXPORT DocumentInit final {
   DocumentInit& WithOriginTrialsHeader(const String& header);
   const String& OriginTrialsHeader() const { return origin_trials_header_; }
 
-  DocumentInit& WithSandboxFlags(mojom::blink::WebSandboxFlags flags);
+  DocumentInit& WithSandboxFlags(network::mojom::blink::WebSandboxFlags flags);
 
   DocumentInit& WithContentSecurityPolicy(ContentSecurityPolicy* policy);
   DocumentInit& WithContentSecurityPolicyFromContextDoc();
@@ -254,8 +254,8 @@ class CORE_EXPORT DocumentInit final {
   String origin_trials_header_;
 
   // Additional sandbox flags
-  mojom::blink::WebSandboxFlags sandbox_flags_ =
-      mojom::blink::WebSandboxFlags::kNone;
+  network::mojom::blink::WebSandboxFlags sandbox_flags_ =
+      network::mojom::blink::WebSandboxFlags::kNone;
 
   // Loader's CSP
   ContentSecurityPolicy* content_security_policy_ = nullptr;

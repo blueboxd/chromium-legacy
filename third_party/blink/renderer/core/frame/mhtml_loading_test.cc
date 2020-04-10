@@ -30,6 +30,8 @@
 
 #include "base/bind_helpers.h"
 #include "build/build_config.h"
+#include "services/network/public/cpp/web_sandbox_flags.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -119,9 +121,9 @@ TEST_F(MHTMLLoadingTest, EnforceSandboxFlags) {
 
   // Full sandboxing with the exception to new top-level windows should be
   // turned on.
-  EXPECT_EQ(mojom::blink::WebSandboxFlags::kAll &
-                ~(mojom::blink::WebSandboxFlags::kPopups |
-                  mojom::blink::WebSandboxFlags::
+  EXPECT_EQ(network::mojom::blink::WebSandboxFlags::kAll &
+                ~(network::mojom::blink::WebSandboxFlags::kPopups |
+                  network::mojom::blink::WebSandboxFlags::
                       kPropagatesToAuxiliaryBrowsingContexts),
             document->GetSandboxFlags());
 
@@ -140,9 +142,9 @@ TEST_F(MHTMLLoadingTest, EnforceSandboxFlags) {
   Document* child_document = child_frame->GetDocument();
   ASSERT_TRUE(child_document);
 
-  EXPECT_EQ(mojom::blink::WebSandboxFlags::kAll &
-                ~(mojom::blink::WebSandboxFlags::kPopups |
-                  mojom::blink::WebSandboxFlags::
+  EXPECT_EQ(network::mojom::blink::WebSandboxFlags::kAll &
+                ~(network::mojom::blink::WebSandboxFlags::kPopups |
+                  network::mojom::blink::WebSandboxFlags::
                       kPropagatesToAuxiliaryBrowsingContexts),
             child_document->GetSandboxFlags());
 
@@ -167,9 +169,9 @@ TEST_F(MHTMLLoadingTest, EnforceSandboxFlagsInXSLT) {
 
   // Full sandboxing with the exception to new top-level windows should be
   // turned on.
-  EXPECT_EQ(mojom::blink::WebSandboxFlags::kAll &
-                ~(mojom::blink::WebSandboxFlags::kPopups |
-                  mojom::blink::WebSandboxFlags::
+  EXPECT_EQ(network::mojom::blink::WebSandboxFlags::kAll &
+                ~(network::mojom::blink::WebSandboxFlags::kPopups |
+                  network::mojom::blink::WebSandboxFlags::
                       kPropagatesToAuxiliaryBrowsingContexts),
             document->GetSandboxFlags());
 

@@ -274,7 +274,7 @@ DOMWindow* HTMLFrameOwnerElement::contentWindow() const {
 }
 
 void HTMLFrameOwnerElement::SetSandboxFlags(
-    mojom::blink::WebSandboxFlags flags) {
+    network::mojom::blink::WebSandboxFlags flags) {
   frame_policy_.sandbox_flags = flags;
   // Recalculate the container policy in case the allow-same-origin flag has
   // changed.

@@ -18,6 +18,7 @@ import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "mojo/public/mojom/base/values.mojom";
 import "services/network/public/mojom/content_security_policy.mojom";
+import "services/network/public/mojom/web_sandbox_flags.mojom";
 import "services/network/public/mojom/url_loader.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
 import "services/network/public/mojom/url_response_head.mojom";
@@ -473,7 +474,7 @@ interface FrameHost {
   // |feature_policy_header| is a list of an origin whitelist for each feature
   // in the policy.
   DidSetFramePolicyHeaders(
-      blink.mojom.WebSandboxFlags sandbox_flags,
+      network.mojom.WebSandboxFlags sandbox_flags,
       array<blink.mojom.ParsedFeaturePolicyDeclaration> feature_policy_header,
       map<blink.mojom.DocumentPolicyFeature, blink.mojom.PolicyValue>
         document_policy_header);

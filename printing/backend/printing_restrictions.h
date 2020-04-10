@@ -53,8 +53,7 @@ PRINTING_EXPORT extern const char kDefaultColorMode[];
 PRINTING_EXPORT extern const char kDefaultDuplexMode[];
 PRINTING_EXPORT extern const char kDefaultPinMode[];
 
-// Dictionary keys to be used with |kPrintingAllowedPageSizes| and
-// |kPrintingSizeDefault| policies.
+// Dictionary keys to be used with |kPrintingSizeDefault| policy.
 PRINTING_EXPORT extern const char kPageWidthUm[];
 PRINTING_EXPORT extern const char kPageHeightUm[];
 

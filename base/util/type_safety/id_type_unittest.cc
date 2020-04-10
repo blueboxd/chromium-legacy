@@ -40,6 +40,18 @@ TEST(IdType, GeneratorWithNonZeroInvalidValue) {
     EXPECT_EQ(test_id_generator.GenerateNextId(), TestId::FromUnsafeValue(i));
 }
 
+TEST(IdType, GeneratorWithBigUnsignedInvalidValue) {
+  using TestId =
+      IdType<class TestIdTag, uint32_t, std::numeric_limits<uint32_t>::max()>;
+
+  TestId::Generator test_id_generator;
+  for (int i = 0; i < 10; i++) {
+    TestId id = test_id_generator.GenerateNextId();
+    EXPECT_FALSE(id.is_null());
+    EXPECT_EQ(id, TestId::FromUnsafeValue(i));
+  }
+}
+
 class IdTypeSpecificValueTest : public ::testing::TestWithParam<int> {
  protected:
   FooId test_id() { return FooId::FromUnsafeValue(GetParam()); }

@@ -96,8 +96,13 @@ HTMLImportLoader::State HTMLImportLoader::StartWritingAndParsing(
     const ResourceResponse& response) {
   DCHECK(controller_);
   DCHECK(!imports_.IsEmpty());
+  Document* master = controller_->Master();
   document_ = MakeGarbageCollected<HTMLDocument>(
-      DocumentInit::CreateWithImportsController(controller_)
+      DocumentInit::Create()
+          .WithImportsController(controller_)
+          .WithContextDocument(master->ContextDocument())
+          .WithRegistrationContext(master->RegistrationContext())
+          .WithContentSecurityPolicy(master->GetContentSecurityPolicy())
           .WithURL(response.CurrentRequestUrl()));
   document_->OpenForNavigation(kAllowAsynchronousParsing, response.MimeType(),
                                "UTF-8");

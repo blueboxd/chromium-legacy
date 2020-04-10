@@ -156,7 +156,7 @@ vars = {
   # luci-go CIPD package version.
   # Make sure the revision is uploaded by infra-packagers builder.
   # https://ci.chromium.org/p/infra-internal/g/infra-packagers/console
-  'luci_go': 'git_revision:dad957de715bbe7e8b0f382488ff7af75cf600a5',
+  'luci_go': 'git_revision:513b1319d7d855f6c42bc01471562df910fd61b3',
 
   # This can be overridden, e.g. with custom_vars, to build clang from HEAD
   # instead of downloading the prebuilt pinned revision.
@@ -175,7 +175,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '05e2350de5a97a4f2adc91af9ad292538fd7fa10',
+  'skia_revision': 'f7255d72f8da16153cb3d794a4b6802494f390e2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -187,7 +187,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'c68dfaf3a529d8a85793ae2951fc8207b2b621cf',
+  'angle_revision': '469c029a7c225c4590a030b6ac11ba187cf5aa9e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -195,7 +195,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '595e98f8751373b20ab56a30fcf46028db300fad',
+  'pdfium_revision': '8cc69b1037252e46883624efe239017dfdca5676',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -246,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '1260c0bbd0ae3ee93326c6c88b7ef3df21b816fe',
+  'devtools_frontend_revision': 'cf9ec0ae80a4f3c850ae2c9b80e5043bcdc1f49a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -286,7 +286,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spv_tools_revision': '538512e8e8980cc01ab6501cd1cbd402d54f8491',
+  'spv_tools_revision': '34be23373b9e73694c3b214ba857283bad65aedb',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -525,7 +525,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '8c27dcf2e53f038ba97e4e6452143a8f223c35b7',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '969f6f55460312e5f16236ad0e06c3e725f1fb74',
       'condition': 'checkout_ios',
   },
 
@@ -937,7 +937,7 @@ deps = {
     Var('chromium_git') + '/codecs/libgav1.git' + '@' + '638ef84819f8b3cd614dcf63378fe4814aa4cb2a',
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '75de196cecab0d37faa0e3de30c5bf85ab4e43f6',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + 'fd593d5f08343b44302c3a018a8bb734f550be9e',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
@@ -1218,7 +1218,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + '6f26bce0b1c4e8ce0e13332f7c0083788def5fdf',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + '8277ecb30334efbf1d828776f3d04a151180201b',
+    Var('chromium_git') + '/openscreen' + '@' + 'c2dcb3eec9ad96225ffdd6d2b749565b5916b64b',
 
   'src/third_party/openxr/src': {
     'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + '9e97b73e7dd2bfc07745489d728f6a36665c648f',
@@ -1465,7 +1465,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '059c1b75eb67739a78b38e3d1dad5c0b19c0759a',
+    Var('webrtc_git') + '/src.git' + '@' + '9f0b36c4610de8e0fe4bde2f57c8bc487e3a1005',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),

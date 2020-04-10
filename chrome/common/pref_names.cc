@@ -1418,10 +1418,6 @@ const char kPrintingAllowedDuplexModes[] = "printing.allowed_duplex_modes";
 // A pref holding the allowed PIN printing modes.
 const char kPrintingAllowedPinModes[] = "printing.allowed_pin_modes";
 
-// A pref holding the list of allowed printing duplex mode.
-// Empty list is no restriction.
-const char kPrintingAllowedPageSizes[] = "printing.allowed_page_sizes";
-
 // A pref holding the default color mode.
 const char kPrintingColorDefault[] = "printing.color_default";
 

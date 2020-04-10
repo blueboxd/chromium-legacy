@@ -2552,9 +2552,9 @@ void AXPlatformNodeAuraLinux::StaticInitialize() {
 AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
   switch (GetData().role) {
     case ax::mojom::Role::kAlert:
-      return ATK_ROLE_ALERT;
+      return ATK_ROLE_NOTIFICATION;
     case ax::mojom::Role::kAlertDialog:
-      return ATK_ROLE_DIALOG;
+      return ATK_ROLE_ALERT;
     case ax::mojom::Role::kAnchor:
       return ATK_ROLE_LINK;
     case ax::mojom::Role::kComment:

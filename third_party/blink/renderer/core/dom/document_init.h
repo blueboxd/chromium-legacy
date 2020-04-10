@@ -47,8 +47,9 @@ namespace blink {
 class ContentSecurityPolicy;
 class Document;
 class DocumentLoader;
-class LocalFrame;
 class HTMLImportsController;
+class LocalFrame;
+class PluginData;
 class Settings;
 class UseCounter;
 class WindowAgentFactory;
@@ -69,7 +70,6 @@ class CORE_EXPORT DocumentInit final {
   //       .WithURL(url);
   //   Document* document = MakeGarbageCollected<Document>(init);
   static DocumentInit Create();
-  static DocumentInit CreateWithImportsController(HTMLImportsController*);
 
   DocumentInit(const DocumentInit&);
   ~DocumentInit();
@@ -87,6 +87,7 @@ class CORE_EXPORT DocumentInit final {
     kUnspecified
   };
 
+  DocumentInit& WithImportsController(HTMLImportsController*);
   HTMLImportsController* ImportsController() const {
     return imports_controller_;
   }
@@ -106,7 +107,17 @@ class CORE_EXPORT DocumentInit final {
   LocalFrame* GetFrame() const;
   UseCounter* GetUseCounter() const;
 
-  DocumentInit& WithTypeFrom(const String& type);
+  // Compute the type of document to be loaded inside a |frame|, given its |url|
+  // and its |mime_type|.
+  //
+  // In case of plugin handled by MimeHandlerview (which do not create a
+  // PluginDocument), the type is Type::KHTML and |is_for_external_handler| is
+  // set to true.
+  static Type ComputeDocumentType(LocalFrame* frame,
+                                  const KURL& url,
+                                  const String& mime_type,
+                                  bool* is_for_external_handler = nullptr);
+  DocumentInit& WithTypeFrom(const String& mime_type);
   Type GetType() const { return type_; }
   const String& GetMimeType() const { return mime_type_; }
   bool IsForExternalHandler() const { return is_for_external_handler_; }
@@ -192,13 +203,15 @@ class CORE_EXPORT DocumentInit final {
   Settings* GetSettingsForWindowAgentFactory() const;
 
  private:
-  DocumentInit(HTMLImportsController*);
+  DocumentInit() = default;
 
   // For a Document associated directly with a frame, this will be the
   // DocumentLoader driving the commit. For an import, XSLT-generated
   // document, etc., it will be the DocumentLoader that drove the commit
   // of its owning Document.
   DocumentLoader* MasterDocumentLoader() const;
+
+  static PluginData* GetPluginData(LocalFrame* frame, const KURL& url);
 
   Type type_ = Type::kUnspecified;
   String mime_type_;
@@ -244,7 +257,7 @@ class CORE_EXPORT DocumentInit final {
   bool grant_load_local_resources_ = false;
 
   V0CustomElementRegistrationContext* registration_context_ = nullptr;
-  bool create_new_registration_context_;
+  bool create_new_registration_context_ = false;
 
   // The feature policy set via response header.
   String feature_policy_header_;
@@ -259,7 +272,7 @@ class CORE_EXPORT DocumentInit final {
 
   // Loader's CSP
   ContentSecurityPolicy* content_security_policy_ = nullptr;
-  bool content_security_policy_from_context_doc_;
+  bool content_security_policy_from_context_doc_ = false;
 
   network::mojom::IPAddressSpace ip_address_space_ =
       network::mojom::IPAddressSpace::kUnknown;

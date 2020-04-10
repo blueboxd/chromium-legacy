@@ -133,6 +133,10 @@ class TopControlsContainerView extends FrameLayout {
         setView(null);
         TopControlsContainerViewJni.get().deleteTopControlsContainerView(
                 mNativeTopControlsContainerView, TopControlsContainerView.this);
+        if (mSystemUiFullscreenResizeRunnable != null) {
+            getHandler().removeCallbacks(mSystemUiFullscreenResizeRunnable);
+            mSystemUiFullscreenResizeRunnable = null;
+        }
     }
 
     public long getNativeHandle() {

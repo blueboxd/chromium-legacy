@@ -19741,7 +19741,6 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="473" label="ReportUserIDData"/>
   <int value="474" label="PrintingAllowedColorModes"/>
   <int value="475" label="PrintingAllowedDuplexModes"/>
-  <int value="476" label="PrintingAllowedPageSizes"/>
   <int value="477" label="PrintingColorDefault"/>
   <int value="478" label="PrintingDuplexDefault"/>
   <int value="479" label="PrintingSizeDefault"/>
@@ -38312,6 +38311,7 @@ from previous Chrome versions.
   <int value="-1248478422" label="enable-zip-archiver-packer"/>
   <int value="-1247631459" label="TerminalSystemAppSplits:disabled"/>
   <int value="-1246840031" label="OptInImeMenu:disabled"/>
+  <int value="-1245617305" label="NewProfilePicker:enabled"/>
   <int value="-1244772303" label="NtpRealboxMatchOmniboxTheme:enabled"/>
   <int value="-1243694853" label="DeferAllScript:disabled"/>
   <int value="-1241868814" label="WebAuthenticationPhoneSupport:disabled"/>
@@ -39232,6 +39232,7 @@ from previous Chrome versions.
   <int value="-160571071" label="InterestFeedV2:enabled"/>
   <int value="-159877930" label="MaterialDesignUserManager:disabled"/>
   <int value="-158549277" label="enable-embeddedsearch-api"/>
+  <int value="-153299083" label="NewProfilePicker:disabled"/>
   <int value="-152677714" label="AsmJsToWebAssembly:enabled"/>
   <int value="-152632720" label="RuntimeHostPermissions:enabled"/>
   <int value="-147283486" label="enable-network-portal-notification"/>

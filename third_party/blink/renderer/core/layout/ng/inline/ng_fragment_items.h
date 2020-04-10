@@ -20,7 +20,9 @@ class CORE_EXPORT NGFragmentItems {
  public:
   NGFragmentItems(NGFragmentItemsBuilder* builder);
 
-  const Vector<scoped_refptr<NGFragmentItem>>& Items() const { return items_; }
+  const Vector<scoped_refptr<const NGFragmentItem>>& Items() const {
+    return items_;
+  }
 
   const String& Text(bool first_line) const {
     return UNLIKELY(first_line) ? first_line_text_content_ : text_content_;
@@ -36,7 +38,7 @@ class CORE_EXPORT NGFragmentItems {
 
  private:
   // TODO(kojii): inline capacity TBD.
-  Vector<scoped_refptr<NGFragmentItem>> items_;
+  Vector<scoped_refptr<const NGFragmentItem>> items_;
   String text_content_;
   String first_line_text_content_;
 };

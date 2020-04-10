@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "content/public/test/url_loader_interceptor.h"
+#include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "weblayer/public/navigation.h"
 #include "weblayer/public/navigation_controller.h"
@@ -146,6 +147,103 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, HttpConnectivityError) {
   EXPECT_TRUE(observer.is_error_page());
   EXPECT_EQ(observer.load_error(), Navigation::kConnectivityError);
   EXPECT_EQ(observer.navigation_state(), NavigationState::kFailed);
+}
+
+namespace {
+
+class HeaderInjectorNavigationObserver : public NavigationObserver {
+ public:
+  HeaderInjectorNavigationObserver(Shell* shell,
+                                   const std::string& header_name,
+                                   const std::string& header_value,
+                                   bool inject_in_start)
+      : tab_(shell->tab()),
+        header_name_(header_name),
+        header_value_(header_value),
+        inject_in_start_(inject_in_start) {
+    tab_->GetNavigationController()->AddObserver(this);
+  }
+
+  ~HeaderInjectorNavigationObserver() override {
+    tab_->GetNavigationController()->RemoveObserver(this);
+  }
+
+ private:
+  // NavigationObserver implementation:
+  void NavigationStarted(Navigation* navigation) override {
+    if (inject_in_start_)
+      InjectHeaders(navigation);
+  }
+
+  void NavigationRedirected(Navigation* navigation) override {
+    if (!inject_in_start_)
+      InjectHeaders(navigation);
+  }
+
+  void InjectHeaders(Navigation* navigation) {
+    navigation->SetRequestHeader(header_name_, header_value_);
+  }
+
+  Tab* tab_;
+  const std::string header_name_;
+  const std::string header_value_;
+  // If true, header is set in start, otherwise header is set in redirect.
+  const bool inject_in_start_;
+};
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, SetRequestHeader) {
+  net::test_server::ControllableHttpResponse response_1(embedded_test_server(),
+                                                        "", true);
+  net::test_server::ControllableHttpResponse response_2(embedded_test_server(),
+                                                        "", true);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const std::string header_name = "header";
+  const std::string header_value = "value";
+  HeaderInjectorNavigationObserver observer(shell(), header_name, header_value,
+                                            true);
+
+  shell()->LoadURL(embedded_test_server()->GetURL("/simple_page.html"));
+  response_1.WaitForRequest();
+
+  // Header should be present in initial request.
+  EXPECT_EQ(header_value, response_1.http_request()->headers.at(header_name));
+  response_1.Send(
+      "HTTP/1.1 302 Moved Temporarily\r\nLocation: /new_doc\r\n\r\n");
+  response_1.Done();
+
+  // Header should carry through to redirect.
+  response_2.WaitForRequest();
+  EXPECT_EQ(header_value, response_2.http_request()->headers.at(header_name));
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, SetRequestHeaderInRedirect) {
+  net::test_server::ControllableHttpResponse response_1(embedded_test_server(),
+                                                        "", true);
+  net::test_server::ControllableHttpResponse response_2(embedded_test_server(),
+                                                        "", true);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const std::string header_name = "header";
+  const std::string header_value = "value";
+  HeaderInjectorNavigationObserver observer(shell(), header_name, header_value,
+                                            false);
+  shell()->LoadURL(embedded_test_server()->GetURL("/simple_page.html"));
+  response_1.WaitForRequest();
+
+  // Header should not be present in initial request.
+  EXPECT_FALSE(base::Contains(response_1.http_request()->headers, header_name));
+
+  response_1.Send(
+      "HTTP/1.1 302 Moved Temporarily\r\nLocation: /new_doc\r\n\r\n");
+  response_1.Done();
+
+  response_2.WaitForRequest();
+
+  // Header should be in redirect.
+  EXPECT_EQ(header_value, response_2.http_request()->headers.at(header_name));
 }
 
 }  // namespace weblayer

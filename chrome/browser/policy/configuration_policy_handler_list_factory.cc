@@ -1577,8 +1577,6 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       std::make_unique<PrintingAllowedDuplexModesPolicyHandler>());
   handlers->AddHandler(
       std::make_unique<PrintingAllowedPinModesPolicyHandler>());
-  handlers->AddHandler(
-      std::make_unique<PrintingAllowedPageSizesPolicyHandler>());
   handlers->AddHandler(std::make_unique<PrintingColorDefaultPolicyHandler>());
   handlers->AddHandler(std::make_unique<PrintingDuplexDefaultPolicyHandler>());
   handlers->AddHandler(std::make_unique<PrintingPinDefaultPolicyHandler>());

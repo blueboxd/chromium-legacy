@@ -20,6 +20,11 @@ const base::Feature kExtensionsToolbarMenu{"ExtensionsToolbarMenu",
 const base::Feature kMixBrowserTypeTabs{"MixBrowserTypeTabs",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the new profile picker.
+// https:://crbug.com/1063856
+const base::Feature kNewProfilePicker{"NewProfilePicker",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables updated tabstrip animations, required for a scrollable tabstrip.
 // https://crbug.com/958173
 const base::Feature kNewTabstripAnimation{"NewTabstripAnimation",

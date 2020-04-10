@@ -5,6 +5,7 @@
 #ifndef WEBLAYER_PUBLIC_NAVIGATION_H_
 #define WEBLAYER_PUBLIC_NAVIGATION_H_
 
+#include <string>
 #include <vector>
 
 class GURL;
@@ -73,6 +74,14 @@ class Navigation {
   // Return information about the error, if any, that was encountered while
   // loading the page.
   virtual LoadError GetLoadError() = 0;
+
+  // Set a request's header. If the header is already present, its value is
+  // overwritten. This function can only be called at two times, during start
+  // and redirect. When called during start, the header applies to both the
+  // start and redirect. |name| must be rfc 2616 compliant and |value| must
+  // not contain '\0', '\n' or '\r'.
+  virtual void SetRequestHeader(const std::string& name,
+                                const std::string& value) = 0;
 };
 
 }  // namespace weblayer

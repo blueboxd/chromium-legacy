@@ -448,10 +448,6 @@ void FrameFetchContext::PrepareRequest(
   if (request.GetPreviewsState() == WebURLRequest::kPreviewsUnspecified) {
     WebURLRequest::PreviewsState request_previews_state =
         document_loader->GetPreviewsState();
-    // The decision of whether or not to enable Client Lo-Fi is made earlier
-    // in the request lifetime, in LocalFrame::MaybeAllowImagePlaceholder(),
-    // so don't add the Client Lo-Fi bit to the request here.
-    request_previews_state &= ~(WebURLRequest::kLazyImageLoadDeferred);
     if (request_previews_state == WebURLRequest::kPreviewsUnspecified)
       request_previews_state = WebURLRequest::kPreviewsOff;
     request.SetPreviewsState(request_previews_state);

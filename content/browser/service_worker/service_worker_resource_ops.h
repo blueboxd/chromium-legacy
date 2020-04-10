@@ -72,6 +72,32 @@ class ServiceWorkerResourceWriterImpl
   const std::unique_ptr<ServiceWorkerResponseWriter> writer_;
 };
 
+// The implementation of storage::mojom::ServiceWorkerResourceMetadataWriter.
+// Currently this class is an adaptor that uses
+// ServiceWorkerResponseMetadataWriter internally.
+// TODO(crbug.com/1055677): Fork the implementation of
+// ServiceWorkerResponseMetadataWriter and stop using it.
+class ServiceWorkerResourceMetadataWriterImpl
+    : public storage::mojom::ServiceWorkerResourceMetadataWriter {
+ public:
+  explicit ServiceWorkerResourceMetadataWriterImpl(
+      std::unique_ptr<ServiceWorkerResponseMetadataWriter> writer);
+
+  ServiceWorkerResourceMetadataWriterImpl(
+      const ServiceWorkerResourceMetadataWriterImpl&) = delete;
+  ServiceWorkerResourceMetadataWriterImpl& operator=(
+      const ServiceWorkerResourceMetadataWriterImpl&) = delete;
+
+  ~ServiceWorkerResourceMetadataWriterImpl() override;
+
+ private:
+  // storage::mojom::ServiceWorkerResourceMetadataWriter implementations:
+  void WriteMetadata(mojo_base::BigBuffer data,
+                     WriteMetadataCallback callback) override;
+
+  const std::unique_ptr<ServiceWorkerResponseMetadataWriter> writer_;
+};
+
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_RESOURCE_OPS_H_

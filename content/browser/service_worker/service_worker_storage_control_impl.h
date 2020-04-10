@@ -65,6 +65,10 @@ class CONTENT_EXPORT ServiceWorkerStorageControlImpl
       int64_t resource_id,
       mojo::PendingReceiver<storage::mojom::ServiceWorkerResourceWriter> writer)
       override;
+  void CreateResourceMetadataWriter(
+      int64_t resource_id,
+      mojo::PendingReceiver<storage::mojom::ServiceWorkerResourceMetadataWriter>
+          writer) override;
 
   const std::unique_ptr<ServiceWorkerStorage> storage_;
 };

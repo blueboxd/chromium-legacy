@@ -140,28 +140,6 @@ PrintingPinDefaultPolicyHandler::PrintingPinDefaultPolicyHandler()
 
 PrintingPinDefaultPolicyHandler::~PrintingPinDefaultPolicyHandler() = default;
 
-PrintingAllowedPageSizesPolicyHandler::PrintingAllowedPageSizesPolicyHandler()
-    : ListPolicyHandler(key::kPrintingAllowedPageSizes,
-                        base::Value::Type::DICTIONARY) {}
-
-PrintingAllowedPageSizesPolicyHandler::
-    ~PrintingAllowedPageSizesPolicyHandler() {}
-
-bool PrintingAllowedPageSizesPolicyHandler::CheckListEntry(
-    const base::Value& value) {
-  if (!value.is_dict())
-    return false;
-  const base::Value* width = value.FindKey(printing::kPageWidthUm);
-  const base::Value* height = value.FindKey(printing::kPageHeightUm);
-  return width && height && width->is_int() && height->is_int();
-}
-
-void PrintingAllowedPageSizesPolicyHandler::ApplyList(base::Value filtered_list,
-                                                      PrefValueMap* prefs) {
-  DCHECK(filtered_list.is_list());
-  prefs->SetValue(prefs::kPrintingAllowedPageSizes, std::move(filtered_list));
-}
-
 PrintingSizeDefaultPolicyHandler::PrintingSizeDefaultPolicyHandler()
     : TypeCheckingPolicyHandler(key::kPrintingSizeDefault,
                                 base::Value::Type::DICTIONARY) {}

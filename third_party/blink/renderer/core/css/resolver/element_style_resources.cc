@@ -212,8 +212,6 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
                       ->GetLazyLoadImageSetting() ==
                   LocalFrame::LazyLoadImageSetting::kEnabledAutomatic) {
                 image_request_behavior = FetchParameters::kDeferImageLoad;
-              } else {
-                image_request_behavior = FetchParameters::kAllowPlaceholder;
               }
             }
             StyleImage* new_image =
@@ -236,9 +234,9 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
             StyleImage* image = To<ImageContentData>(content_data)->GetImage();
             if (image->IsPendingImage()) {
               To<ImageContentData>(content_data)
-                  ->SetImage(
-                      LoadPendingImage(style, To<StylePendingImage>(image),
-                                       FetchParameters::kAllowPlaceholder));
+                  ->SetImage(LoadPendingImage(style,
+                                              To<StylePendingImage>(image),
+                                              FetchParameters::kNone));
             }
           }
         }
@@ -250,7 +248,6 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
             CursorData& current_cursor = cursor_list->at(i);
             if (StyleImage* image = current_cursor.GetImage()) {
               if (image->IsPendingImage()) {
-                // cursor images shouldn't be replaced with placeholders
                 current_cursor.SetImage(
                     LoadPendingImage(style, To<StylePendingImage>(image),
                                      FetchParameters::kNone));
@@ -263,7 +260,6 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
       case CSSPropertyID::kListStyleImage: {
         if (style->ListStyleImage() &&
             style->ListStyleImage()->IsPendingImage()) {
-          // List style images shouldn't be replaced with placeholders
           style->SetListStyleImage(LoadPendingImage(
               style, To<StylePendingImage>(style->ListStyleImage()),
               FetchParameters::kNone));
@@ -273,7 +269,6 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
       case CSSPropertyID::kBorderImageSource: {
         if (style->BorderImageSource() &&
             style->BorderImageSource()->IsPendingImage()) {
-          // Border images shouldn't be replaced with placeholders
           style->SetBorderImageSource(LoadPendingImage(
               style, To<StylePendingImage>(style->BorderImageSource()),
               FetchParameters::kNone));
@@ -287,7 +282,7 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
               mask_image.GetImage()->IsPendingImage()) {
             StyleImage* loaded_image = LoadPendingImage(
                 style, To<StylePendingImage>(mask_image.GetImage()),
-                FetchParameters::kAllowPlaceholder);
+                FetchParameters::kNone);
             reflection->SetMask(NinePieceImage(
                 loaded_image, mask_image.ImageSlices(), mask_image.Fill(),
                 mask_image.BorderSlices(), mask_image.Outset(),
@@ -301,7 +296,7 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
             style->MaskBoxImageSource()->IsPendingImage()) {
           style->SetMaskBoxImageSource(LoadPendingImage(
               style, To<StylePendingImage>(style->MaskBoxImageSource()),
-              FetchParameters::kAllowPlaceholder));
+              FetchParameters::kNone));
         }
         break;
       }
@@ -312,8 +307,7 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
               mask_layer->GetImage()->IsPendingImage()) {
             mask_layer->SetImage(LoadPendingImage(
                 style, To<StylePendingImage>(mask_layer->GetImage()),
-                FetchParameters::kAllowPlaceholder,
-                kCrossOriginAttributeAnonymous));
+                FetchParameters::kNone, kCrossOriginAttributeAnonymous));
           }
         }
         break;
@@ -323,8 +317,7 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
             style->ShapeOutside()->GetImage()->IsPendingImage()) {
           style->ShapeOutside()->SetImage(LoadPendingImage(
               style, To<StylePendingImage>(style->ShapeOutside()->GetImage()),
-              FetchParameters::kAllowPlaceholder,
-              kCrossOriginAttributeAnonymous));
+              FetchParameters::kNone, kCrossOriginAttributeAnonymous));
         }
         break;
       default:

@@ -1442,14 +1442,12 @@ TEST_F(LoginDatabaseTest, ReportMetricsTest) {
   password_form.origin = GURL("http://rsolomakhin.github.io/autofill/123");
   password_form.signon_realm = "http://rsolomakhin.github.io/";
   password_form.blacklisted_by_user = true;
-  EXPECT_EQ(AddChangeForForm(password_form),
-            db().AddBlacklistedLoginForTesting(password_form));
+  EXPECT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
 
   password_form.origin = GURL("https://rsolomakhin.github.io/autofill/1234");
   password_form.signon_realm = "https://rsolomakhin.github.io/";
   password_form.blacklisted_by_user = true;
-  EXPECT_EQ(AddChangeForForm(password_form),
-            db().AddBlacklistedLoginForTesting(password_form));
+  EXPECT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
 
   StatisticsTable& stats_table = db().stats_table();
   InteractionsStats stats;
@@ -2431,6 +2429,77 @@ TEST_F(LoginDatabaseTest, GetLoginsByPassword) {
   // Check if there are exactly two forms with the duplicated_password.
   EXPECT_TRUE(db().GetLoginsByPassword(duplicated_password, &forms));
   EXPECT_THAT(forms, UnorderedElementsAre(Pointee(form1), Pointee(form3)));
+}
+
+// Test encrypted passwords are present in add change lists.
+TEST_F(LoginDatabaseTest, EncryptedPasswordAdd) {
+  PasswordForm form;
+  form.origin = GURL("http://0.com");
+  form.signon_realm = "http://www.example.com/";
+  form.action = GURL("http://www.example.com/action");
+  form.password_element = base::ASCIIToUTF16("pwd");
+  form.password_value = base::ASCIIToUTF16("example");
+  password_manager::PasswordStoreChangeList changes = db().AddLogin(form);
+  ASSERT_EQ(1u, changes.size());
+  ASSERT_FALSE(changes[0].form().encrypted_password.empty());
+}
+
+// Test encrypted passwords are present in add change lists, when the password
+// is already in the DB.
+TEST_F(LoginDatabaseTest, EncryptedPasswordAddWithReplaceSemantics) {
+  PasswordForm form;
+  form.origin = GURL("http://0.com");
+  form.signon_realm = "http://www.example.com/";
+  form.action = GURL("http://www.example.com/action");
+  form.password_element = base::ASCIIToUTF16("pwd");
+  form.password_value = base::ASCIIToUTF16("example");
+
+  ignore_result(db().AddLogin(form));
+
+  form.password_value = base::ASCIIToUTF16("secret");
+
+  password_manager::PasswordStoreChangeList changes = db().AddLogin(form);
+  ASSERT_EQ(2u, changes.size());
+  ASSERT_EQ(password_manager::PasswordStoreChange::Type::ADD,
+            changes[1].type());
+  ASSERT_FALSE(changes[1].form().encrypted_password.empty());
+}
+
+// Test encrypted passwords are present in update change lists.
+TEST_F(LoginDatabaseTest, EncryptedPasswordUpdate) {
+  PasswordForm form;
+  form.origin = GURL("http://0.com");
+  form.signon_realm = "http://www.example.com/";
+  form.action = GURL("http://www.example.com/action");
+  form.password_element = base::ASCIIToUTF16("pwd");
+  form.password_value = base::ASCIIToUTF16("example");
+
+  ignore_result(db().AddLogin(form));
+
+  form.password_value = base::ASCIIToUTF16("secret");
+
+  password_manager::PasswordStoreChangeList changes = db().UpdateLogin(form);
+  ASSERT_EQ(1u, changes.size());
+  ASSERT_FALSE(changes[0].form().encrypted_password.empty());
+}
+
+// Test encrypted passwords are present when retrieving from DB.
+TEST_F(LoginDatabaseTest, GetLoginsEncryptedPassword) {
+  PasswordForm form;
+  form.origin = GURL("http://0.com");
+  form.signon_realm = "http://www.example.com/";
+  form.action = GURL("http://www.example.com/action");
+  form.password_element = base::ASCIIToUTF16("pwd");
+  form.password_value = base::ASCIIToUTF16("example");
+  password_manager::PasswordStoreChangeList changes = db().AddLogin(form);
+  ASSERT_EQ(1u, changes.size());
+  ASSERT_FALSE(changes[0].form().encrypted_password.empty());
+
+  std::vector<std::unique_ptr<PasswordForm>> forms;
+  EXPECT_TRUE(db().GetLogins(PasswordStore::FormDigest(form), &forms));
+
+  ASSERT_EQ(1U, forms.size());
+  ASSERT_FALSE(forms[0]->encrypted_password.empty());
 }
 
 }  // namespace password_manager

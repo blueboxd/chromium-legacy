@@ -74,10 +74,6 @@ TEST(SubresourceRedirectURLLoaderThrottleTest, TestMaybeCreateThrottle) {
       {true, true, network::mojom::RequestDestination::kImage,
        content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON,
        "https://www.test.com/test.jpg", true},
-      {true, true, network::mojom::RequestDestination::kImage,
-       content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON |
-           content::PreviewsTypes::LAZY_IMAGE_AUTO_RELOAD,
-       "https://www.test.com/test.jpg", true},
 
       // Failure cases
       {false, true, network::mojom::RequestDestination::kImage,
@@ -155,11 +151,6 @@ TEST(SubresourceRedirectURLLoaderThrottleTest, TestGetSubresourceURL) {
       {
           content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON,
           GURL("https://www.test.com/public_img.jpg&private_arg1=foo"),
-          GURL(),
-      },
-      {
-          content::PreviewsTypes::LAZY_IMAGE_AUTO_RELOAD,
-          GURL("https://www.test.com/public_img.jpg"),
           GURL(),
       },
   };

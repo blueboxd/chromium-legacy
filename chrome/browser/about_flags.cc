@@ -3987,6 +3987,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"use-multilogin-endpoint", flag_descriptions::kUseMultiloginEndpointName,
      flag_descriptions::kUseMultiloginEndpointDescription,
      kOsMac | kOsWin | kOsLinux, FEATURE_VALUE_TYPE(kUseMultiloginEndpoint)},
+
+    {"enable-new-profile-picker", flag_descriptions::kNewProfilePickerName,
+     flag_descriptions::kNewProfilePickerDescription,
+     kOsMac | kOsWin | kOsLinux,
+     FEATURE_VALUE_TYPE(features::kNewProfilePicker)},
 #endif
 
 #if defined(OS_CHROMEOS)

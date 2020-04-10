@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string.h>
+
 #include "content/browser/service_worker/service_worker_storage_control_impl.h"
 
 #include "base/containers/span.h"
@@ -29,13 +31,16 @@ using FindRegistrationResult =
 namespace {
 
 int ReadResponseHead(storage::mojom::ServiceWorkerResourceReader* reader,
-                     network::mojom::URLResponseHeadPtr& out_response_head) {
+                     network::mojom::URLResponseHeadPtr& out_response_head,
+                     base::Optional<mojo_base::BigBuffer>& out_metadata) {
   int return_value;
   base::RunLoop loop;
   reader->ReadResponseHead(base::BindLambdaForTesting(
-      [&](int result, network::mojom::URLResponseHeadPtr response_head) {
+      [&](int result, network::mojom::URLResponseHeadPtr response_head,
+          base::Optional<mojo_base::BigBuffer> metadata) {
         return_value = result;
         out_response_head = std::move(response_head);
+        out_metadata = std::move(metadata);
         loop.Quit();
       }));
   loop.Run();
@@ -79,6 +84,20 @@ int WriteResponseData(storage::mojom::ServiceWorkerResourceWriter* writer,
                       return_value = result;
                       loop.Quit();
                     }));
+  loop.Run();
+  return return_value;
+}
+
+int WriteResponseMetadata(
+    storage::mojom::ServiceWorkerResourceMetadataWriter* writer,
+    mojo_base::BigBuffer metadata) {
+  int return_value;
+  base::RunLoop loop;
+  writer->WriteMetadata(std::move(metadata),
+                        base::BindLambdaForTesting([&](int result) {
+                          return_value = result;
+                          loop.Quit();
+                        }));
   loop.Run();
   return return_value;
 }
@@ -268,6 +287,14 @@ class ServiceWorkerStorageControlImplTest : public testing::Test {
     mojo::Remote<storage::mojom::ServiceWorkerResourceWriter> writer;
     storage()->CreateResourceWriter(resource_id,
                                     writer.BindNewPipeAndPassReceiver());
+    return writer;
+  }
+
+  mojo::Remote<storage::mojom::ServiceWorkerResourceMetadataWriter>
+  CreateResourceMetadataWriter(int64_t resource_id) {
+    mojo::Remote<storage::mojom::ServiceWorkerResourceMetadataWriter> writer;
+    storage()->CreateResourceMetadataWriter(
+        resource_id, writer.BindNewPipeAndPassReceiver());
     return writer;
   }
 
@@ -472,10 +499,12 @@ TEST_F(ServiceWorkerStorageControlImplTest, WriteAndReadResource) {
   mojo::Remote<storage::mojom::ServiceWorkerResourceReader> reader =
       CreateResourceReader(resource_id);
 
-  // Read the response head and the content.
+  // Read the response head, metadata and the content.
   {
     network::mojom::URLResponseHeadPtr response_head;
-    int result = ReadResponseHead(reader.get(), response_head);
+    base::Optional<mojo_base::BigBuffer> response_metadata;
+    int result =
+        ReadResponseHead(reader.get(), response_head, response_metadata);
     ASSERT_GT(result, 0);
 
     EXPECT_EQ(response_head->mime_type, "application/javascript");
@@ -483,12 +512,37 @@ TEST_F(ServiceWorkerStorageControlImplTest, WriteAndReadResource) {
     EXPECT_TRUE(response_head->ssl_info->is_valid());
     EXPECT_EQ(response_head->ssl_info->cert->serial_number(),
               ssl_info.cert->serial_number());
+    EXPECT_EQ(response_metadata, base::nullopt);
 
     std::string data = ReadResponseData(reader.get(), data_size);
     EXPECT_EQ(data, kData);
   }
 
-  // TODO(crbug.com/1055677): Write metadata, read it then check the metadata.
+  const auto kMetadata = base::as_bytes(base::make_span("metadata"));
+  int metadata_size = kMetadata.size();
+
+  // Write metadata.
+  {
+    mojo::Remote<storage::mojom::ServiceWorkerResourceMetadataWriter>
+        metadata_writer = CreateResourceMetadataWriter(resource_id);
+    int result = WriteResponseMetadata(metadata_writer.get(),
+                                       mojo_base::BigBuffer(kMetadata));
+    ASSERT_EQ(result, metadata_size);
+  }
+
+  // Read the response head again. This time metadata should be read.
+  {
+    network::mojom::URLResponseHeadPtr response_head;
+    base::Optional<mojo_base::BigBuffer> response_metadata;
+    int result =
+        ReadResponseHead(reader.get(), response_head, response_metadata);
+    ASSERT_GT(result, 0);
+    ASSERT_TRUE(response_metadata.has_value());
+    EXPECT_EQ(response_metadata->size(), kMetadata.size());
+    EXPECT_EQ(
+        memcmp(response_metadata->data(), kMetadata.data(), kMetadata.size()),
+        0);
+  }
 }
 
 }  // namespace content

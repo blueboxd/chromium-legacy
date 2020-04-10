@@ -175,11 +175,6 @@ void FontResource::NotifyClientsLongLimitExceeded() {
     client->FontLoadLongLimitExceeded(this);
 }
 
-void FontResource::AllClientsAndObserversRemoved() {
-  font_data_ = nullptr;
-  Resource::AllClientsAndObserversRemoved();
-}
-
 void FontResource::NotifyFinished() {
   font_load_short_limit_.Cancel();
   font_load_long_limit_.Cancel();

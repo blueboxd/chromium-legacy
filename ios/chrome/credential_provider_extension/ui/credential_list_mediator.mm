@@ -32,6 +32,12 @@
 // The extension context in which the credential list was started.
 @property(nonatomic, weak) ASCredentialProviderExtensionContext* context;
 
+// List of suggested credentials.
+@property(nonatomic, copy) NSArray<id<Credential>>* suggestedCredentials;
+
+// List of all credentials.
+@property(nonatomic, copy) NSArray<id<Credential>>* allCredentials;
+
 @end
 
 @implementation CredentialListMediator
@@ -56,12 +62,14 @@
 
 - (void)fetchCredentials {
   // TODO(crbug.com/1045454): Implement ordering and suggestions.
-  NSArray<id<Credential>>* allCredentials = self.credentialStore.credentials;
-  if (!allCredentials.count) {
+  self.allCredentials = self.credentialStore.credentials;
+  self.suggestedCredentials = nil;
+  if (!self.allCredentials.count) {
     [self.UIHandler showEmptyCredentials];
     return;
   }
-  [self.consumer presentSuggestedPasswords:nil allPasswords:allCredentials];
+  [self.consumer presentSuggestedPasswords:self.suggestedCredentials
+                              allPasswords:self.allCredentials];
 }
 
 #pragma mark - CredentialListConsumerDelegate
@@ -75,7 +83,27 @@
 }
 
 - (void)updateResultsWithFilter:(NSString*)filter {
-  // TODO(crbug.com/1045454): Implement this method.
+  NSMutableArray<id<Credential>>* suggested = [[NSMutableArray alloc] init];
+  if (self.suggestedCredentials.count > 0) {
+    for (id<Credential> credential in self.suggestedCredentials) {
+      if ([filter length] == 0 ||
+          [credential.serviceName localizedStandardContainsString:filter] ||
+          [credential.user localizedStandardContainsString:filter]) {
+        [suggested addObject:credential];
+      }
+    }
+  }
+  NSMutableArray<id<Credential>>* all = [[NSMutableArray alloc] init];
+  if (self.allCredentials.count > 0) {
+    for (id<Credential> credential in self.allCredentials) {
+      if ([filter length] == 0 ||
+          [credential.serviceName localizedStandardContainsString:filter] ||
+          [credential.user localizedStandardContainsString:filter]) {
+        [all addObject:credential];
+      }
+    }
+  }
+  [self.consumer presentSuggestedPasswords:suggested allPasswords:all];
 }
 
 - (void)showDetailsForCredential:(id<Credential>)credential {

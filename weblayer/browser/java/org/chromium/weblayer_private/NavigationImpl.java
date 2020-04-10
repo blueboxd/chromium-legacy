@@ -113,6 +113,19 @@ public final class NavigationImpl extends INavigation.Stub {
                 NavigationImplJni.get().getLoadError(mNativeNavigationImpl, NavigationImpl.this));
     }
 
+    @Override
+    public void setRequestHeader(String name, String value) {
+        if (!NavigationImplJni.get().isValidRequestHeaderName(name)) {
+            throw new IllegalArgumentException("Invalid header");
+        }
+        if (!NavigationImplJni.get().isValidRequestHeaderValue(value)) {
+            throw new IllegalArgumentException("Invalid value");
+        }
+        if (!NavigationImplJni.get().setRequestHeader(mNativeNavigationImpl, this, name, value)) {
+            throw new IllegalStateException();
+        }
+    }
+
     private void throwIfNativeDestroyed() {
         if (mNativeNavigationImpl == 0) {
             throw new IllegalStateException("Using Navigation after native destroyed");
@@ -155,5 +168,9 @@ public final class NavigationImpl extends INavigation.Stub {
         boolean isSameDocument(long nativeNavigationImpl, NavigationImpl caller);
         boolean isErrorPage(long nativeNavigationImpl, NavigationImpl caller);
         int getLoadError(long nativeNavigationImpl, NavigationImpl caller);
+        boolean setRequestHeader(
+                long nativeNavigationImpl, NavigationImpl caller, String name, String value);
+        boolean isValidRequestHeaderName(String name);
+        boolean isValidRequestHeaderValue(String value);
     }
 }

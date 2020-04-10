@@ -23,6 +23,8 @@ extern const base::Feature kExtensionsToolbarMenu;
 
 extern const base::Feature kMixBrowserTypeTabs;
 
+extern const base::Feature kNewProfilePicker;
+
 extern const base::Feature kNewTabstripAnimation;
 
 extern const base::Feature kProminentDarkModeActiveTabTitle;

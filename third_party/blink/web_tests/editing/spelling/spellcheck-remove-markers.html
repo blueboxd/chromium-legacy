@@ -96,4 +96,29 @@
         'Removing "contenteditable" attribute on child still keeps the spelling markers.')
     });
 
+  spellcheck_test(
+    '<textarea>|zz. I have a issue.</textarea>',
+    '',
+    '<textarea>#zz#. I have ~a~ issue.</textarea>',
+    {
+      title: '8) Setup for the initial markers.',
+      callback: sample => spellcheck_test(
+        sample,
+        document => document.querySelector('textarea').setAttribute('readonly', ''),
+        '<textarea readonly>zz. I have a issue.</textarea>',
+        'Setting "readonly" attribute removes spelling markers.')
+    });
+
+  spellcheck_test(
+    '<textarea>|zz. I have a issue.</textarea>',
+    '',
+    '<textarea>#zz#. I have ~a~ issue.</textarea>',
+    {
+      title: '9) Setup for the initial markers.',
+      callback: sample => spellcheck_test(
+        sample,
+        document => document.querySelector('textarea').setAttribute('disabled', ''),
+        '<textarea disabled>zz. I have a issue.</textarea>',
+        'Setting "disabled" attribute removes spelling markers.')
+    });
 </script>

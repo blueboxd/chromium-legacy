@@ -90,7 +90,6 @@ NSArray<id<Credential>>* allPasswords = @[
 }
 
 - (void)updateResultsWithFilter:(NSString*)filter {
-  // TODO(crbug.com/1045454): Implement this method.
   NSMutableArray<id<Credential>>* suggested = [[NSMutableArray alloc] init];
   for (id<Credential> credential in suggestedPasswords) {
     if ([filter length] == 0 ||

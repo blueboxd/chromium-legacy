@@ -517,6 +517,9 @@ const char kInvalidatorSavedInvalidations[] = "invalidator.saved_invalidations";
 #if defined(OS_CHROMEOS)
 // Deprecated 4/2020
 const char kAmbientModeTopicSource[] = "settings.ambient_mode.topic_source";
+
+// Deprecated 4/2020
+const char kPrintingAllowedPageSizes[] = "printing.allowed_page_sizes";
 #endif  // defined(OS_CHROMEOS)
 
 // Register local state used only for migration (clearing or moving to a new
@@ -609,6 +612,7 @@ void RegisterProfilePrefsForMigration(
 
 #if defined(OS_CHROMEOS)
   registry->RegisterIntegerPref(kAmbientModeTopicSource, 0);
+  registry->RegisterListPref(kPrintingAllowedPageSizes);
 #endif  // defined(OS_CHROMEOS)
 }
 
@@ -1209,5 +1213,8 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 #if defined(OS_CHROMEOS)
   // Added 4/2020.
   profile_prefs->ClearPref(kAmbientModeTopicSource);
+
+  // Added 4/2020.
+  profile_prefs->ClearPref(kPrintingAllowedPageSizes);
 #endif
 }

@@ -45,7 +45,7 @@ class CORE_EXPORT NGInlineCursorPosition {
   STACK_ALLOCATED();
 
  public:
-  using ItemsSpan = base::span<const scoped_refptr<NGFragmentItem>>;
+  using ItemsSpan = base::span<const scoped_refptr<const NGFragmentItem>>;
 
   const NGPaintFragment* PaintFragment() const { return paint_fragment_; }
   const NGFragmentItem* Item() const { return item_; }
@@ -170,7 +170,7 @@ class CORE_EXPORT NGInlineCursor {
   STACK_ALLOCATED();
 
  public:
-  using ItemsSpan = base::span<const scoped_refptr<NGFragmentItem>>;
+  using ItemsSpan = base::span<const scoped_refptr<const NGFragmentItem>>;
 
   explicit NGInlineCursor(const LayoutBlockFlow& block_flow);
   explicit NGInlineCursor(const NGFragmentItems& items);

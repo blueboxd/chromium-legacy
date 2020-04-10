@@ -163,4 +163,15 @@ void ServiceWorkerStorageControlImpl::CreateResourceWriter(
                               std::move(writer));
 }
 
+void ServiceWorkerStorageControlImpl::CreateResourceMetadataWriter(
+    int64_t resource_id,
+    mojo::PendingReceiver<storage::mojom::ServiceWorkerResourceMetadataWriter>
+        writer) {
+  DCHECK_NE(resource_id, blink::mojom::kInvalidServiceWorkerResourceId);
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<ServiceWorkerResourceMetadataWriterImpl>(
+          storage_->CreateResponseMetadataWriter(resource_id)),
+      std::move(writer));
+}
+
 }  // namespace content

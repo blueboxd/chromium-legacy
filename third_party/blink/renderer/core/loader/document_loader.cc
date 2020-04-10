@@ -130,7 +130,9 @@ DocumentLoader::DocumentLoader(
       service_worker_network_provider_(
           std::move(params_->service_worker_network_provider)),
       was_blocked_by_document_policy_(false),
-      was_blocked_by_csp_(false),
+      content_security_policy_(content_security_policy),
+      // The CSP is null when the CSP check done in the FrameLoader failed.
+      was_blocked_by_csp_(!content_security_policy),
       state_(kNotStarted),
       in_commit_data_(false),
       data_buffer_(SharedBuffer::Create()),
@@ -240,27 +242,20 @@ DocumentLoader::DocumentLoader(
   loading_url_as_empty_document_ =
       !params_->is_static_data && WillLoadUrlAsEmpty(url_);
 
-  if (!loading_url_as_empty_document_) {
-    content_security_policy_ = content_security_policy;
+  if (was_blocked_by_csp_) {
+    // Loading the document was blocked by the CSP check. Pretend that this was
+    // an empty document instead and don't reuse the original URL. More details
+    // in: https://crbug.com/622385.
+    // TODO(https://crbug.com/555418) Remove this once XFO moves to the browser.
 
-    // The CSP are null when the CSP check done in the FrameLoader failed.
-    if (!content_security_policy_) {
-      // Loading the document was blocked by the CSP check. Pretend that
-      // this was an empty document instead and don't reuse the
-      // original URL (https://crbug.com/622385).
-      // TODO(mkwst):  Remove this once XFO moves to the browser.
-      // https://crbug.com/555418.
-
-      // Update |origin_to_commit_| to contain an opaque origin with precursor
-      // information that is consistent with the final request URL.
-      // Note: We can't use |url_| for the origin calculation because
-      // we need to take into account any redirects that may have occurred.
-      const auto request_url_origin =
-          blink::SecurityOrigin::Create(response_.CurrentRequestUrl());
-      origin_to_commit_ = request_url_origin->DeriveNewOpaqueOrigin();
-
-      was_blocked_by_csp_ = true;
-    }
+    // Update |origin_to_commit_| to contain an opaque origin with precursor
+    // information that is consistent with the final request URL.
+    // Note: this doesn't use |url_| for the origin calculation, because
+    // redirects are not yet accounted for (this happens later in
+    // StartLoadingInternal).
+    const auto request_url_origin =
+        blink::SecurityOrigin::Create(response_.CurrentRequestUrl());
+    origin_to_commit_ = request_url_origin->DeriveNewOpaqueOrigin();
   }
 
   if (was_blocked_by_csp_ || was_blocked_by_document_policy_)
@@ -1815,7 +1810,6 @@ void DocumentLoader::ReportPreviewsIntervention() const {
 
   // Verify that certain types are not on main frame requests.
   DCHECK_NE(WebURLRequest::kClientLoFiAutoReload, previews_state_);
-  DCHECK_NE(WebURLRequest::kLazyImageLoadDeferred, previews_state_);
   DCHECK_NE(WebURLRequest::kSubresourceRedirectOn, previews_state_);
 
   static_assert(WebURLRequest::kPreviewsStateLast ==

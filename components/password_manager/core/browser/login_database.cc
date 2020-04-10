@@ -160,16 +160,14 @@ struct SQLTableBuilders {
   SQLTableBuilder* sync_model_metadata;
 };
 
-void BindAddStatement(const PasswordForm& form,
-                      const std::string& encrypted_password,
-                      sql::Statement* s) {
+void BindAddStatement(const PasswordForm& form, sql::Statement* s) {
   s->BindString(COLUMN_ORIGIN_URL, form.origin.spec());
   s->BindString(COLUMN_ACTION_URL, form.action.spec());
   s->BindString16(COLUMN_USERNAME_ELEMENT, form.username_element);
   s->BindString16(COLUMN_USERNAME_VALUE, form.username_value);
   s->BindString16(COLUMN_PASSWORD_ELEMENT, form.password_element);
-  s->BindBlob(COLUMN_PASSWORD_VALUE, encrypted_password.data(),
-              static_cast<int>(encrypted_password.length()));
+  s->BindBlob(COLUMN_PASSWORD_VALUE, form.encrypted_password.data(),
+              static_cast<int>(form.encrypted_password.length()));
   s->BindString16(COLUMN_SUBMIT_ELEMENT, form.submit_element);
   s->BindString(COLUMN_SIGNON_REALM, form.signon_realm);
   // The "preferred" column has been deprecated in M81.
@@ -1016,17 +1014,21 @@ PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form,
     }
     return list;
   }
+  PasswordForm form_with_encrypted_password = form;
+  form_with_encrypted_password.encrypted_password = encrypted_password;
 
   DCHECK(!add_statement_.empty());
   sql::Statement s(
       db_.GetCachedStatement(SQL_FROM_HERE, add_statement_.c_str()));
-  BindAddStatement(form, encrypted_password, &s);
+  BindAddStatement(form_with_encrypted_password, &s);
   int sqlite_error_code;
   db_.set_error_callback(base::BindRepeating(&AddCallback, &sqlite_error_code));
   const bool success = s.Run();
   if (success) {
     // If success, the row never existed so password was not changed.
-    list.emplace_back(PasswordStoreChange::ADD, form, db_.GetLastInsertRowId(),
+    list.emplace_back(PasswordStoreChange::ADD,
+                      std::move(form_with_encrypted_password),
+                      db_.GetLastInsertRowId(),
                       /*password_changed=*/false);
     return list;
   }
@@ -1040,11 +1042,12 @@ PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form,
   int old_primary_key = GetPrimaryKey(form);
   s.Assign(
       db_.GetCachedStatement(SQL_FROM_HERE, add_replace_statement_.c_str()));
-  BindAddStatement(form, encrypted_password, &s);
+  BindAddStatement(form_with_encrypted_password, &s);
   if (s.Run()) {
     list.emplace_back(PasswordStoreChange::REMOVE, form, old_primary_key);
-    list.emplace_back(PasswordStoreChange::ADD, form, db_.GetLastInsertRowId(),
-                      password_changed);
+    list.emplace_back(PasswordStoreChange::ADD,
+                      std::move(form_with_encrypted_password),
+                      db_.GetLastInsertRowId(), password_changed);
   } else if (error) {
     if (sqlite_error_code == 19 /*SQLITE_CONSTRAINT*/) {
       *error = AddLoginError::kConstraintViolation;
@@ -1053,25 +1056,6 @@ PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form,
     }
   }
   db_.reset_error_callback();
-  return list;
-}
-
-PasswordStoreChangeList LoginDatabase::AddBlacklistedLoginForTesting(
-    const PasswordForm& form) {
-  DCHECK(form.blacklisted_by_user);
-  PasswordStoreChangeList list;
-
-  std::string encrypted_password;
-  if (EncryptedString(form.password_value, &encrypted_password) !=
-      ENCRYPTION_RESULT_SUCCESS)
-    return list;
-
-  DCHECK(!add_statement_.empty());
-  sql::Statement s(
-      db_.GetCachedStatement(SQL_FROM_HERE, add_statement_.c_str()));
-  BindAddStatement(form, encrypted_password, &s);
-  if (s.Run())
-    list.emplace_back(PasswordStoreChange::ADD, form, db_.GetLastInsertRowId());
   return list;
 }
 
@@ -1152,8 +1136,11 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form,
 
   PasswordStoreChangeList list;
   if (db_.GetLastChangeCount()) {
-    list.emplace_back(PasswordStoreChange::UPDATE, form, GetPrimaryKey(form),
-                      password_changed);
+    PasswordForm form_with_encrypted_password = form;
+    form_with_encrypted_password.encrypted_password = encrypted_password;
+    list.emplace_back(PasswordStoreChange::UPDATE,
+                      std::move(form_with_encrypted_password),
+                      GetPrimaryKey(form), password_changed);
   } else if (error) {
     *error = UpdateLoginError::kNoUpdatedRecords;
   }
@@ -1317,6 +1304,7 @@ LoginDatabase::EncryptionResult LoginDatabase::InitPasswordFormFromStatement(
   form->username_value = s.ColumnString16(COLUMN_USERNAME_VALUE);
   form->password_element = s.ColumnString16(COLUMN_PASSWORD_ELEMENT);
   form->password_value = decrypted_password;
+  form->encrypted_password = encrypted_password;
   form->submit_element = s.ColumnString16(COLUMN_SUBMIT_ELEMENT);
   tmp = s.ColumnString(COLUMN_SIGNON_REALM);
   form->signon_realm = tmp;

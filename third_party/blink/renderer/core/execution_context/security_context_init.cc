@@ -139,74 +139,25 @@ void SecurityContextInit::ApplyPendingDataToDocument(Document& document) const {
 
 void SecurityContextInit::InitializeContentSecurityPolicy(
     const DocumentInit& initializer) {
-  auto* frame = initializer.GetFrame();
-  ContentSecurityPolicy* last_origin_document_csp =
-      frame ? frame->Loader().GetLastOriginDocumentCSP() : nullptr;
-
-  KURL url;
-  if (initializer.ShouldSetURL())
-    url = initializer.Url().IsEmpty() ? BlankURL() : initializer.Url();
-
-  // Alias certain security properties from |owner_document|. Used for the
-  // case of about:blank pages inheriting the security properties of their
-  // requestor context.
+  // --------------
+  // THE MAIN PATH:
+  // --------------
   //
-  // Note that this is currently somewhat broken; Blink always inherits from
-  // the parent or opener, even though it should actually be inherited from
-  // the request initiator.
-  if (url.IsEmpty() && initializer.HasSecurityContext() &&
-      !initializer.OriginToCommit() && initializer.OwnerDocument()) {
-    last_origin_document_csp =
-        initializer.OwnerDocument()->GetContentSecurityPolicy();
-  }
-
+  // This path is used (among others) to load a document inside a frame. In this
+  // case, the CSP is computed by:
+  // - FrameLoader::CreateCSPForInitialEmptyDocument() or
+  // - FrameLoader::CreateCSP().
   csp_ = initializer.GetContentSecurityPolicy();
+  if (csp_)
+    return;
 
-  if (!csp_) {
-    if (initializer.ImportsController()) {
-      // If this document is an HTML import, grab a reference to its master
-      // document's Content Security Policy. We don't bind the CSP's delegate
-      // in 'InitSecurityPolicy' in this case, as we can't rebind the master
-      // document's policy object: The Content Security Policy's delegate
-      // needs to remain set to the master document.
-      csp_ =
-          initializer.ImportsController()->Master()->GetContentSecurityPolicy();
-      return;
-    }
-
-    csp_ = MakeGarbageCollected<ContentSecurityPolicy>();
-    bind_csp_immediately_ = true;
-  }
-
-  // We should inherit the navigation initiator CSP if the document is loaded
-  // using a local-scheme url.
-  //
-  // Note: about:srcdoc inherits CSP from its parent, not from its initiator.
-  // In this case, the initializer.GetContentSecurityPolicy() is used.
-  if (last_origin_document_csp && !url.IsAboutSrcdocURL() &&
-      (url.IsEmpty() || url.ProtocolIsAbout() || url.ProtocolIsData() ||
-       url.ProtocolIs("blob") || url.ProtocolIs("filesystem"))) {
-    csp_->CopyStateFrom(last_origin_document_csp);
-  }
-
-  if (initializer.GetType() == DocumentInit::Type::kPlugin) {
-    if (last_origin_document_csp) {
-      csp_->CopyPluginTypesFrom(last_origin_document_csp);
-      return;
-    }
-
-    // TODO(andypaicu): This should inherit the origin document's plugin types
-    // but because this could be a OOPIF document it might not have access. In
-    // this situation we fallback on using the parent/opener:
-    if (frame) {
-      Frame* inherit_from = frame->Tree().Parent() ? frame->Tree().Parent()
-                                                   : frame->Client()->Opener();
-      if (inherit_from && frame != inherit_from) {
-        csp_->CopyPluginTypesFrom(
-            inherit_from->GetSecurityContext()->GetContentSecurityPolicy());
-      }
-    }
-  }
+  // A few users of DocumentInit do not specify the CSP to be used. An empty CSP
+  // is used in this case.
+  // TODO(arthursonzogni): Audit every users of DocumentInit::Create() that do
+  // not specify a CSP to be used. Ideally they should be forced to explicitly
+  // choose one.
+  csp_ = MakeGarbageCollected<ContentSecurityPolicy>();
+  bind_csp_immediately_ = true;
 }
 
 void SecurityContextInit::InitializeSandboxFlags(

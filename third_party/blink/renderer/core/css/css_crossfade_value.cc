@@ -68,7 +68,7 @@ static ImageResourceContent* CachedImageForCSSValue(CSSValue* value,
 
   if (auto* image_value = DynamicTo<CSSImageValue>(value)) {
     StyleImage* style_image_resource =
-        image_value->CacheImage(document, FetchParameters::kAllowPlaceholder);
+        image_value->CacheImage(document, FetchParameters::kNone);
     if (!style_image_resource)
       return nullptr;
 

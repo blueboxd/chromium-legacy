@@ -78,6 +78,9 @@ class TabImpl : public Tab,
 
   bool has_new_tab_delegate() const { return new_tab_delegate_ != nullptr; }
 
+  // Called from Browser when this Tab is losing active status.
+  void OnLosingActive();
+
   bool IsActive();
 
   void ShowContextMenu(const content::ContextMenuParams& params);

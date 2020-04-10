@@ -39,14 +39,10 @@ enum PreviewsTypes {
       1 << 8,  // Request that an offline page be used if one is stored.
   LITE_PAGE_REDIRECT_ON = 1 << 9,  // Allow the browser to redirect the resource
                                    // to a Lite Page server.
-  LAZY_IMAGE_LOAD_DEFERRED = 1 << 10,  // Request the placeholder version of an
-                                       // image that was deferred by lazyload.
-  LAZY_IMAGE_AUTO_RELOAD = 1 << 11,  // Request the full image after previously
-                                     // getting a lazy load placeholder.
-  DEFER_ALL_SCRIPT_ON = 1 << 12,  // Request that script execution be deferred
-                                  // until parsing completes.
+  DEFER_ALL_SCRIPT_ON = 1 << 10,   // Request that script execution be deferred
+                                   // until parsing completes.
   SUBRESOURCE_REDIRECT_ON =
-      1 << 13,  // Allow the subresources in the page to be redirected to
+      1 << 11,  // Allow the subresources in the page to be redirected to
                 // serve better optimized resources. Set on subresources.
   PREVIEWS_STATE_LAST = SUBRESOURCE_REDIRECT_ON
 };

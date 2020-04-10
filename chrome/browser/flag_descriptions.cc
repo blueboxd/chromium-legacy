@@ -1192,6 +1192,10 @@ const char kNearbySharingName[] = "Nearby Sharing";
 const char kNearbySharingDescription[] =
     "Enables Nearby Sharing for sharing content between devices.";
 
+const char kNewProfilePickerName[] = "New profile picker";
+const char kNewProfilePickerDescription[] =
+    "Enables new profile picker implementation.";
+
 const char kNewUsbBackendName[] = "Enable new USB backend";
 const char kNewUsbBackendDescription[] =
     "Enables the new experimental USB backend for Windows.";

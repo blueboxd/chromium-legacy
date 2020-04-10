@@ -984,7 +984,6 @@
         'PrintingAllowedDuplexModes',
         'PrintingAllowedPinModes',
         'PrintingAllowedBackgroundGraphicsModes',
-        'PrintingAllowedPageSizes',
         'PrintingColorDefault',
         'PrintingDuplexDefault',
         'PrintingPinDefault',
@@ -2323,40 +2322,6 @@
       'caption': '''Restrict background graphics printing mode''',
       'tags': [],
       'desc': '''Restricts background graphics printing mode. Unset policy is treated as no restriction.''',
-    },
-    {
-      'name': 'PrintingAllowedPageSizes',
-      'owners': ['vkuzkokov@chromium.org'],
-      'type': 'dict',
-      'schema': {
-        'type': 'array',
-        'items': {
-          'type': 'object',
-          'properties': {
-            'WidthUm': {
-              'description': '''Width of the page in micrometers''',
-              'type': 'integer',
-            },
-            'HeightUm': {
-              'description': '''Height of the page in micrometers''',
-              'type': 'integer',
-            },
-          },
-          'required': ['WidthUm', 'HeightUm'],
-        },
-      },
-      'supported_on': ['chrome_os:72-'],
-      'future': True,
-      'features': {
-        'can_be_recommended': False,
-        'dynamic_refresh': True,
-        'per_profile': True,
-      },
-      'example_value': [{'WidthUm': 210000, 'HeightUm': 297000}],
-      'id': 476,
-      'caption': '''Restrict printing page size''',
-      'tags': [],
-      'desc': '''Restricts printing page size. Unset policy and empty set are treated as no restriction.''',
     },
     {
       'name': 'PrintingColorDefault',
@@ -21323,7 +21288,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     },
   ],
   'placeholders': [],
-  'deleted_policy_ids': [412, 546, 562, 569, 578],
+  'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
   'highest_id_currently_used': 691,
   'highest_atomic_group_id_currently_used': 38
 }

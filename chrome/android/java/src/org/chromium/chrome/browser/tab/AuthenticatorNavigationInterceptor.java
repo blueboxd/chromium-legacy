@@ -6,6 +6,9 @@ package org.chromium.chrome.browser.tab;
 
 /**
  * Handles intercepting navigation requests for an external authenticator application.
+ * NOTE: DO NOT CHANGE ANYTHING IN THIS INTERFACE. It will be removed in favor of the identical one
+ * in //components once downstream has been transitioned to use the //components-level one rather
+ * than this one.
  */
 public interface AuthenticatorNavigationInterceptor {
     /**

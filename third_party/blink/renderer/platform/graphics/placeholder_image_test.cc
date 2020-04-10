@@ -281,19 +281,6 @@ TEST_F(PlaceholderImageTest, FormatPlaceholderText) {
   }
 }
 
-TEST_F(PlaceholderImageTest, DrawLazyImage) {
-  MockPaintCanvas canvas;
-  EXPECT_CALL(canvas, drawRect(_, _)).Times(0);
-  EXPECT_CALL(canvas, drawImageRect(_, _, _, _, _)).Times(0);
-  EXPECT_CALL(canvas, drawTextBlob(_, _, _, _)).Times(0);
-
-  PlaceholderImage::CreateForLazyImages(nullptr, IntSize(800, 600))
-      ->Draw(&canvas, PaintFlags(), FloatRect(0.0f, 0.0f, 800.0f, 600.0f),
-             FloatRect(0.0f, 0.0f, 800.0f, 600.0f),
-             kDoNotRespectImageOrientation, Image::kClampImageToSourceRect,
-             Image::kUnspecifiedDecode);
-}
-
 TEST_F(PlaceholderImageTest, DrawNonIntersectingSrcRect) {
   MockPaintCanvas canvas;
   EXPECT_CALL(canvas, drawRect(_, _)).Times(0);

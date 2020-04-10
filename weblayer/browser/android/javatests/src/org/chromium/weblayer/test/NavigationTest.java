@@ -22,6 +22,8 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.net.test.util.TestWebServer;
 import org.chromium.weblayer.LoadError;
 import org.chromium.weblayer.Navigation;
 import org.chromium.weblayer.NavigationCallback;
@@ -483,6 +485,14 @@ public class NavigationTest {
                                 mCallback));
     }
 
+    private void registerNavigationCallback(NavigationCallback callback) {
+        runOnUiThreadBlocking(()
+                                      -> mActivityTestRule.getActivity()
+                                                 .getTab()
+                                                 .getNavigationController()
+                                                 .registerNavigationCallback(callback));
+    }
+
     private void navigateAndWaitForCompletion(String expectedUrl, Runnable navigateRunnable)
             throws Exception {
         int currentCallCount = mCallback.onCompletedCallback.getCallCount();
@@ -515,5 +525,107 @@ public class NavigationTest {
                 () -> { navigationController.unregisterNavigationCallback(navigationCallback); });
 
         return navigationUrl.get();
+    }
+
+    // NavigationCallback implementation that sets a header in either start or redirect.
+    private static final class HeaderSetter extends NavigationCallback {
+        private final String mName;
+        private final String mValue;
+        private final boolean mInStart;
+        public boolean mGotIllegalArgumentException;
+
+        HeaderSetter(String name, String value, boolean inStart) {
+            mName = name;
+            mValue = value;
+            mInStart = inStart;
+        }
+
+        @Override
+        public void onNavigationStarted(Navigation navigation) {
+            if (mInStart) applyHeader(navigation);
+        }
+
+        @Override
+        public void onNavigationRedirected(Navigation navigation) {
+            if (!mInStart) applyHeader(navigation);
+        }
+
+        private void applyHeader(Navigation navigation) {
+            try {
+                navigation.setRequestHeader(mName, mValue);
+            } catch (IllegalArgumentException e) {
+                mGotIllegalArgumentException = true;
+            }
+        }
+    }
+
+    @Test
+    @SmallTest
+    public void testSetRequestHeaderInStart() throws Exception {
+        TestWebServer testServer = TestWebServer.start();
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(null);
+        String headerName = "header";
+        String headerValue = "value";
+        HeaderSetter setter = new HeaderSetter(headerName, headerValue, true);
+        registerNavigationCallback(setter);
+        String url = testServer.setResponse("/ok.html", "<html>ok</html>", null);
+        mActivityTestRule.navigateAndWait(url);
+        assertFalse(setter.mGotIllegalArgumentException);
+        assertEquals(headerValue, testServer.getLastRequest("/ok.html").headerValue(headerName));
+    }
+
+    @Test
+    @SmallTest
+    public void testSetRequestHeaderInRedirect() throws Exception {
+        TestWebServer testServer = TestWebServer.start();
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(null);
+        String headerName = "header";
+        String headerValue = "value";
+        HeaderSetter setter = new HeaderSetter(headerName, headerValue, false);
+        registerNavigationCallback(setter);
+        // The destination of the redirect.
+        String finalUrl = testServer.setResponse("/ok.html", "<html>ok</html>", null);
+        // The url that redirects to |finalUrl|.
+        String redirectingUrl = testServer.setRedirect("/redirect.html", finalUrl);
+        Tab tab = mActivityTestRule.getActivity().getTab();
+        NavigationWaiter waiter = new NavigationWaiter(finalUrl, tab, false, false);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { tab.getNavigationController().navigate(Uri.parse(redirectingUrl)); });
+        waiter.waitForNavigation();
+        assertFalse(setter.mGotIllegalArgumentException);
+        assertEquals(headerValue, testServer.getLastRequest("/ok.html").headerValue(headerName));
+    }
+
+    @Test
+    @SmallTest
+    public void testSetRequestHeaderThrowsExceptionInCompleted() throws Exception {
+        mActivityTestRule.launchShellWithUrl(null);
+        boolean gotCompleted[] = new boolean[1];
+        NavigationCallback navigationCallback = new NavigationCallback() {
+            @Override
+            public void onNavigationCompleted(Navigation navigation) {
+                gotCompleted[0] = true;
+                boolean gotException = false;
+                try {
+                    navigation.setRequestHeader("name", "value");
+                } catch (IllegalStateException e) {
+                    gotException = true;
+                }
+                assertTrue(gotException);
+            }
+        };
+        registerNavigationCallback(navigationCallback);
+        mActivityTestRule.navigateAndWait(URL1);
+        assertTrue(gotCompleted[0]);
+    }
+
+    @Test
+    @SmallTest
+    public void testSetRequestHeaderThrowsExceptionWithInvalidValue() throws Exception {
+        mActivityTestRule.launchShellWithUrl(null);
+        HeaderSetter setter = new HeaderSetter("name", "\0", true);
+        registerNavigationCallback(setter);
+        mActivityTestRule.navigateAndWait(URL1);
+        assertTrue(setter.mGotIllegalArgumentException);
     }
 }

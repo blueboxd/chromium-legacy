@@ -6,6 +6,7 @@
 
 #include "content/public/browser/navigation_handle.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_util.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_array.h"
@@ -53,6 +54,19 @@ ScopedJavaLocalRef<jobjectArray> NavigationImpl::GetRedirectChain(
   for (const GURL& redirect : GetRedirectChain())
     jni_redirects.push_back(redirect.spec());
   return base::android::ToJavaArrayOfStrings(env, jni_redirects);
+}
+
+jboolean NavigationImpl::SetRequestHeader(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jstring>& name,
+    const base::android::JavaParamRef<jstring>& value) {
+  if (!safe_to_set_request_headers_)
+    return false;
+
+  SetRequestHeader(ConvertJavaStringToUTF8(name),
+                   ConvertJavaStringToUTF8(value));
+  return true;
 }
 
 #endif
@@ -109,5 +123,24 @@ Navigation::LoadError NavigationImpl::GetLoadError() {
 
   return kOtherError;
 }
+
+void NavigationImpl::SetRequestHeader(const std::string& name,
+                                      const std::string& value) {
+  navigation_handle_->SetRequestHeader(name, value);
+}
+
+#if defined(OS_ANDROID)
+static jboolean JNI_NavigationImpl_IsValidRequestHeaderName(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jstring>& name) {
+  return net::HttpUtil::IsValidHeaderName(ConvertJavaStringToUTF8(name));
+}
+
+static jboolean JNI_NavigationImpl_IsValidRequestHeaderValue(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jstring>& value) {
+  return net::HttpUtil::IsValidHeaderValue(ConvertJavaStringToUTF8(value));
+}
+#endif
 
 }  // namespace weblayer

@@ -19,6 +19,18 @@
 
 namespace base {
 
+namespace {
+
+bool InitializeOnce() {
+  // We mark the sentinel bucket/page as free to make sure it is skipped by our
+  // logic to find a new active page.
+  internal::PartitionBucket::get_sentinel_bucket()->active_pages_head =
+      internal::PartitionPage::get_sentinel_page();
+  return true;
+}
+
+}  // namespace
+
 // Two partition pages are used as guard / metadata page so make sure the super
 // page size is bigger.
 static_assert(kPartitionPageSize * 4 <= kSuperPageSize, "ok super page size");
@@ -56,12 +68,6 @@ PartitionRoot::~PartitionRoot() = default;
 PartitionRootGeneric::PartitionRootGeneric() = default;
 PartitionRootGeneric::~PartitionRootGeneric() = default;
 PartitionAllocatorGeneric::PartitionAllocatorGeneric() = default;
-
-Lock& GetLock() {
-  static NoDestructor<Lock> s_initialized_lock;
-  return *s_initialized_lock;
-}
-static bool g_initialized = false;
 
 Lock& GetHooksLock() {
   static NoDestructor<Lock> lock;
@@ -175,21 +181,12 @@ bool PartitionAllocHooks::ReallocOverrideHookIfEnabled(size_t* out,
 
 static void PartitionAllocBaseInit(internal::PartitionRootBase* root) {
   DCHECK(!root->initialized);
-  {
-    AutoLock guard(GetLock());
-    if (!g_initialized) {
-      g_initialized = true;
-      // We mark the sentinel bucket/page as free to make sure it is skipped by
-      // our logic to find a new active page.
-      internal::PartitionBucket::get_sentinel_bucket()->active_pages_head =
-          internal::PartitionPage::get_sentinel_page();
-    }
-  }
-
-  root->initialized = true;
+  static bool initialized = InitializeOnce();
+  static_cast<void>(initialized);
 
   // This is a "magic" value so we can test if a root pointer is valid.
   root->inverted_self = ~reinterpret_cast<uintptr_t>(root);
+  root->initialized = true;
 }
 
 void PartitionAllocGlobalInit(OomFunction on_out_of_memory) {

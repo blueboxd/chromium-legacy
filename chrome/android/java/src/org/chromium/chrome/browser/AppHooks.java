@@ -45,7 +45,6 @@ import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.signin.GoogleActivityController;
 import org.chromium.chrome.browser.survey.SurveyController;
 import org.chromium.chrome.browser.sync.TrustedVaultClient;
-import org.chromium.chrome.browser.tab.AuthenticatorNavigationInterceptor;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.ImmersiveModeManager;
 import org.chromium.chrome.browser.usage_stats.DigitalWellbeingClient;
@@ -111,8 +110,22 @@ public abstract class AppHooks {
     /**
      * Return a {@link AuthenticatorNavigationInterceptor} for the given {@link Tab}.
      * This can be null if there are no applicable interceptor to be built.
+     * NOTE: This method will be transitioned to talk in terms of the //components-level interface
+     * once downstream has been transitioned.
      */
-    public AuthenticatorNavigationInterceptor createAuthenticatorNavigationInterceptor(Tab tab) {
+    public org.chromium.chrome.browser.tab.AuthenticatorNavigationInterceptor
+    createAuthenticatorNavigationInterceptor(Tab tab) {
+        return null;
+    }
+
+    /**
+     * Return a {@link AuthenticatorNavigationInterceptor} for the given {@link Tab}.
+     * This can be null if there are no applicable interceptor to be built.
+     * NOTE: This method exists only to allow downstream to transition to talking in terms of the
+     * //components-level interface. It will be deleted once the transition is complete.
+     */
+    public org.chromium.components.external_intents.AuthenticatorNavigationInterceptor
+    createAuthenticatorNavigationInterceptorV2(Tab tab) {
         return null;
     }
 

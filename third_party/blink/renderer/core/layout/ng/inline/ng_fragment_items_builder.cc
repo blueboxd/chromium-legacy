@@ -37,24 +37,22 @@ void NGFragmentItemsBuilder::AddLine(const NGPhysicalLineBoxFragment& line,
 #endif
 
   // Reserve the capacity for (children + line box item).
-  wtf_size_t size_before = items_.size();
-  wtf_size_t capacity = size_before + current_line_.size() + 1;
+  const wtf_size_t size_before = items_.size();
+  const wtf_size_t capacity = size_before + current_line_.size() + 1;
   items_.ReserveCapacity(capacity);
   offsets_.ReserveCapacity(capacity);
 
   // Add an empty item so that the start of the line can be set later.
-  wtf_size_t line_start_index = items_.size();
+  const wtf_size_t line_start_index = items_.size();
   items_.Grow(line_start_index + 1);
   offsets_.push_back(offset);
 
   AddItems(current_line_.begin(), current_line_.end());
 
   // All children are added. Create an item for the start of the line.
-  wtf_size_t item_count = items_.size() - line_start_index;
+  const wtf_size_t item_count = items_.size() - line_start_index;
   items_[line_start_index] =
       base::MakeRefCounted<NGFragmentItem>(line, item_count);
-  // TODO(kojii): We probably need an end marker too for the reverse-order
-  // traversals.
 
   // Keep children's offsets relative to |line|. They will be adjusted later in
   // |ConvertToPhysical()|.
@@ -63,6 +61,9 @@ void NGFragmentItemsBuilder::AddLine(const NGPhysicalLineBoxFragment& line,
 #if DCHECK_IS_ON()
   current_line_fragment_ = nullptr;
 #endif
+
+  DCHECK_EQ(items_.size(), offsets_.size());
+  DCHECK_LE(items_.size(), capacity);
 }
 
 void NGFragmentItemsBuilder::AddItems(Child* child_begin, Child* child_end) {
@@ -190,10 +191,10 @@ void NGFragmentItemsBuilder::AddItems(const NGFragmentItems& items,
   first_line_text_content_ = items.Text(true);
 }
 
-const Vector<scoped_refptr<NGFragmentItem>>& NGFragmentItemsBuilder::Items(
-    WritingMode writing_mode,
-    TextDirection direction,
-    const PhysicalSize& outer_size) {
+const Vector<scoped_refptr<const NGFragmentItem>>&
+NGFragmentItemsBuilder::Items(WritingMode writing_mode,
+                              TextDirection direction,
+                              const PhysicalSize& outer_size) {
   ConvertToPhysical(writing_mode, direction, outer_size);
   return items_;
 }
@@ -211,13 +212,13 @@ void NGFragmentItemsBuilder::ConvertToPhysical(WritingMode writing_mode,
   // convert their logical offsets.
   const WritingMode line_writing_mode = ToLineWritingMode(writing_mode);
 
-  scoped_refptr<NGFragmentItem>* item_iter = items_.begin();
+  scoped_refptr<const NGFragmentItem>* item_iter = items_.begin();
   const LogicalOffset* offset = offsets_.begin();
   for (; item_iter != items_.end(); ++item_iter, ++offset) {
     DCHECK_NE(offset, offsets_.end());
-    NGFragmentItem* item = item_iter->get();
-    item->SetOffset(offset->ConvertToPhysical(writing_mode, direction,
-                                              outer_size, item->Size()));
+    const NGFragmentItem* item = item_iter->get();
+    const_cast<NGFragmentItem*>(item)->SetOffset(offset->ConvertToPhysical(
+        writing_mode, direction, outer_size, item->Size()));
 
     // Transform children of lines separately from children of the block,
     // because they may have different directions from the block. To do
@@ -235,7 +236,7 @@ void NGFragmentItemsBuilder::ConvertToPhysical(WritingMode writing_mode,
           item = item_iter->get();
           // Use `kLtr` because inline items are after bidi-reoder, and that
           // their offset is visual, not logical.
-          item->SetOffset(
+          const_cast<NGFragmentItem*>(item)->SetOffset(
               offset->ConvertToPhysical(line_writing_mode, TextDirection::kLtr,
                                         line_box_bounds.size, item->Size()) +
               line_box_bounds.offset);
@@ -250,7 +251,7 @@ void NGFragmentItemsBuilder::ConvertToPhysical(WritingMode writing_mode,
 base::Optional<LogicalOffset> NGFragmentItemsBuilder::LogicalOffsetFor(
     const LayoutObject& layout_object) const {
   DCHECK_EQ(items_.size(), offsets_.size());
-  for (const scoped_refptr<NGFragmentItem>& item : items_) {
+  for (const scoped_refptr<const NGFragmentItem>& item : items_) {
     if (item->GetLayoutObject() == &layout_object)
       return offsets_[&item - items_.begin()];
   }

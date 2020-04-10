@@ -23,7 +23,7 @@ NGFragmentItems::NGFragmentItems(NGFragmentItemsBuilder* builder)
       first_line_text_content_(std::move(builder->first_line_text_content_)) {}
 
 void NGFragmentItems::AssociateWithLayoutObject() const {
-  const Vector<scoped_refptr<NGFragmentItem>>* items = &items_;
+  const Vector<scoped_refptr<const NGFragmentItem>>* items = &items_;
   DCHECK(std::all_of(items->begin(), items->end(), [](const auto& item) {
     return !item->DeltaToNextForSameLayoutObject();
   }));
@@ -62,8 +62,7 @@ void NGFragmentItems::ClearAssociatedFragments() const {
   if (items_.size() <= 1)
     return;
   LayoutObject* last_object = nullptr;
-  for (const auto& item : base::span<const scoped_refptr<NGFragmentItem>>(
-           items_.begin() + 1, items_.end())) {
+  for (const auto& item : base::make_span(items_.begin() + 1, items_.end())) {
     if (!ShouldAssociateWithLayoutObject(*item)) {
       // These items are not associated and that no need to clear.
       DCHECK_EQ(item->DeltaToNextForSameLayoutObject(), 0u);

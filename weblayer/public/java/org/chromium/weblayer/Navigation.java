@@ -125,4 +125,31 @@ public class Navigation extends IClientNavigation.Stub {
             throw new APICallException(e);
         }
     }
+
+    /**
+     * Sets a header for a network request. If a header with the specified name exists it is
+     * overwritten. This method can only be called at two times, from
+     * {@link NavigationCallback.onNavigationStarted} and {@link
+     * NavigationCallback.onNavigationStarted}. When called during start, the header applies to both
+     * the initial network request as well as redirects.
+     *
+     * @param name The name of the header. The name must be rfc 2616 compliant.
+     * @param value The value of the header. The value must not contain '\0', '\n' or '\r'.
+     *
+     * @throws IllegalArgumentException If supplied invalid values.
+     * @throws IllegalStateException If not called during start or a redirect.
+     *
+     * @since 83
+     */
+    public void setRequestHeader(@NonNull String name, @NonNull String value) {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 83) {
+            throw new UnsupportedOperationException();
+        }
+        try {
+            mNavigationImpl.setRequestHeader(name, value);
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
 }

@@ -322,15 +322,6 @@ INSTANTIATE_TEST_SUITE_P(All,
                          LazyLoadImagesSimTest,
                          ::testing::Bool() /*is_lazyload_image_enabled*/);
 
-void ExpectResourceIsFullImage(Resource* resource) {
-  EXPECT_TRUE(resource);
-  EXPECT_TRUE(resource->IsLoaded());
-  EXPECT_FALSE(
-      resource->GetResourceRequest().HttpHeaderFields().Contains("range"));
-  EXPECT_EQ(ResourceType::kImage, resource->GetType());
-  EXPECT_FALSE(ToImageResource(resource)->ShouldShowLazyImagePlaceholder());
-}
-
 class ScopedDataSaverSetting {
  public:
   explicit ScopedDataSaverSetting(bool is_data_saver_enabled)
@@ -503,8 +494,6 @@ TEST_P(LazyLoadImagesParamsTest, NearViewport) {
   EXPECT_FALSE(ConsoleMessages().Contains("unset onload"));
 
   eager_resource.Complete(full_image);
-  ExpectResourceIsFullImage(GetDocument().Fetcher()->CachedResource(
-      KURL("https://example.com/eager.png")));
 
   Compositor().BeginFrame();
   test::RunPendingTasks();
@@ -523,12 +512,7 @@ TEST_P(LazyLoadImagesParamsTest, NearViewport) {
   EXPECT_FALSE(ConsoleMessages().Contains("unset onload"));
 
   auto_resource->Complete(full_image);
-  ExpectResourceIsFullImage(GetDocument().Fetcher()->CachedResource(
-      KURL("https://example.com/auto.png")));
-
   unset_resource->Complete(full_image);
-  ExpectResourceIsFullImage(GetDocument().Fetcher()->CachedResource(
-      KURL("https://example.com/unset.png")));
 
   Compositor().BeginFrame();
   test::RunPendingTasks();
@@ -544,8 +528,6 @@ TEST_P(LazyLoadImagesParamsTest, NearViewport) {
   EXPECT_TRUE(ConsoleMessages().Contains("unset onload"));
 
   lazy_resource->Complete(full_image);
-  ExpectResourceIsFullImage(GetDocument().Fetcher()->CachedResource(
-      KURL("https://example.com/lazy.png")));
 
   Compositor().BeginFrame();
   test::RunPendingTasks();
@@ -621,8 +603,6 @@ TEST_P(LazyLoadImagesParamsTest, FarFromViewport) {
   partial_image.Append(full_image.data(), 2048U);
 
   eager_resource.Complete(full_image);
-  ExpectResourceIsFullImage(GetDocument().Fetcher()->CachedResource(
-      KURL("https://example.com/eager.png")));
 
   Compositor().BeginFrame();
   test::RunPendingTasks();
@@ -643,18 +623,11 @@ TEST_P(LazyLoadImagesParamsTest, FarFromViewport) {
 
   if (!RuntimeEnabledFeatures::LazyImageLoadingEnabled()) {
     lazy_resource->Complete(full_image);
-    ExpectResourceIsFullImage(GetDocument().Fetcher()->CachedResource(
-        KURL("https://example.com/lazy.png")));
   }
 
   if (!IsAutomaticLazyImageLoadingExpected()) {
     auto_resource->Complete(full_image);
-    ExpectResourceIsFullImage(GetDocument().Fetcher()->CachedResource(
-        KURL("https://example.com/auto.png")));
-
     unset_resource->Complete(full_image);
-    ExpectResourceIsFullImage(GetDocument().Fetcher()->CachedResource(
-        KURL("https://example.com/unset.png")));
   }
 
   if (lazy_image_loading_feature_status !=
@@ -679,20 +652,13 @@ TEST_P(LazyLoadImagesParamsTest, FarFromViewport) {
     EXPECT_FALSE(ConsoleMessages().Contains("lazy onload"));
 
     lazy_resource->Complete(full_image);
-    ExpectResourceIsFullImage(GetDocument().Fetcher()->CachedResource(
-        KURL("https://example.com/lazy.png")));
 
     if (IsAutomaticLazyImageLoadingExpected()) {
       EXPECT_FALSE(ConsoleMessages().Contains("auto onload"));
       EXPECT_FALSE(ConsoleMessages().Contains("unset onload"));
 
       auto_resource->Complete(full_image);
-      ExpectResourceIsFullImage(GetDocument().Fetcher()->CachedResource(
-          KURL("https://example.com/auto.png")));
-
       unset_resource->Complete(full_image);
-      ExpectResourceIsFullImage(GetDocument().Fetcher()->CachedResource(
-          KURL("https://example.com/unset.png")));
     }
 
     Compositor().BeginFrame();
@@ -813,8 +779,6 @@ class LazyLoadAutomaticImagesTest : public SimTest {
     Compositor().BeginFrame();
     test::RunPendingTasks();
     full_resource.Complete(ReadTestImage());
-    ExpectResourceIsFullImage(GetDocument().Fetcher()->CachedResource(
-        KURL("https://example.com/image.png")));
     test::RunPendingTasks();
 
     EXPECT_TRUE(ConsoleMessages().Contains("main body onload"));
@@ -839,8 +803,6 @@ class LazyLoadAutomaticImagesTest : public SimTest {
     EXPECT_FALSE(ConsoleMessages().Contains("image onload"));
 
     full_resource.Complete(ReadTestImage());
-    ExpectResourceIsFullImage(GetDocument().Fetcher()->CachedResource(
-        KURL("https://example.com/image.png")));
 
     Compositor().BeginFrame();
     test::RunPendingTasks();
@@ -880,8 +842,6 @@ TEST_F(LazyLoadAutomaticImagesTest, AttributeChangedFromLazyToEager) {
   test::RunPendingTasks();
 
   full_resource.Complete(ReadTestImage());
-  ExpectResourceIsFullImage(GetDocument().Fetcher()->CachedResource(
-      KURL("https://example.com/image.png")));
 
   Compositor().BeginFrame();
   test::RunPendingTasks();
@@ -911,8 +871,6 @@ TEST_F(LazyLoadAutomaticImagesTest, AttributeChangedFromAutoToEager) {
   test::RunPendingTasks();
 
   full_resource.Complete(ReadTestImage());
-  ExpectResourceIsFullImage(GetDocument().Fetcher()->CachedResource(
-      KURL("https://example.com/image.png")));
 
   Compositor().BeginFrame();
   test::RunPendingTasks();
@@ -942,8 +900,6 @@ TEST_F(LazyLoadAutomaticImagesTest, AttributeChangedFromUnsetToEager) {
   test::RunPendingTasks();
 
   full_resource.Complete(ReadTestImage());
-  ExpectResourceIsFullImage(GetDocument().Fetcher()->CachedResource(
-      KURL("https://example.com/image.png")));
 
   Compositor().BeginFrame();
   test::RunPendingTasks();
@@ -1025,8 +981,6 @@ TEST_F(LazyLoadAutomaticImagesTest, FirstKImagesLoaded) {
 
   // One image should be loaded fully, even though it is below viewport.
   img1.Complete(ReadTestImage());
-  ExpectResourceIsFullImage(GetDocument().Fetcher()->CachedResource(
-      KURL("https://example.com/image.png?id=1")));
   test::RunPendingTasks();
 
   EXPECT_TRUE(ConsoleMessages().Contains("main body onload"));
@@ -1043,8 +997,6 @@ TEST_F(LazyLoadAutomaticImagesTest, FirstKImagesLoaded) {
   test::RunPendingTasks();
   img2.Complete(ReadTestImage());
 
-  ExpectResourceIsFullImage(GetDocument().Fetcher()->CachedResource(
-      KURL("https://example.com/image.png?id=2")));
   test::RunPendingTasks();
 
   EXPECT_TRUE(ConsoleMessages().Contains("main body onload"));
@@ -1080,8 +1032,6 @@ TEST_F(LazyLoadAutomaticImagesTest, JavascriptCreatedImageFarFromViewport) {
   EXPECT_FALSE(ConsoleMessages().Contains("my_image onload"));
 
   image_resource.Complete(ReadTestImage());
-  ExpectResourceIsFullImage(GetDocument().Fetcher()->CachedResource(
-      KURL("https://example.com/image.png")));
 
   Compositor().BeginFrame();
   test::RunPendingTasks();
@@ -1119,8 +1069,6 @@ TEST_F(LazyLoadAutomaticImagesTest, JavascriptCreatedImageAddedAfterLoad) {
   EXPECT_FALSE(ConsoleMessages().Contains("my_image onload"));
 
   image_resource.Complete(ReadTestImage());
-  ExpectResourceIsFullImage(GetDocument().Fetcher()->CachedResource(
-      KURL("https://example.com/image.png")));
 
   test::RunPendingTasks();
 
@@ -1203,21 +1151,9 @@ TEST_F(LazyLoadAutomaticImagesTest, ImageInsideLazyLoadedFrame) {
   Vector<char> partial_image;
   partial_image.Append(full_image.data(), 2048U);
 
-  Document* child_frame_document =
-      To<HTMLIFrameElement>(GetDocument().getElementById("child_frame"))
-          ->contentDocument();
-
   eager_resource.Complete(full_image);
-  ExpectResourceIsFullImage(child_frame_document->Fetcher()->CachedResource(
-      KURL("https://example.com/eager.png")));
-
   auto_resource.Complete(full_image);
-  ExpectResourceIsFullImage(child_frame_document->Fetcher()->CachedResource(
-      KURL("https://example.com/auto.png")));
-
   unset_resource.Complete(full_image);
-  ExpectResourceIsFullImage(child_frame_document->Fetcher()->CachedResource(
-      KURL("https://example.com/unset.png")));
 
   Compositor().BeginFrame();
   test::RunPendingTasks();
@@ -1241,8 +1177,6 @@ TEST_F(LazyLoadAutomaticImagesTest, ImageInsideLazyLoadedFrame) {
   test::RunPendingTasks();
 
   lazy_resource.Complete(full_image);
-  ExpectResourceIsFullImage(child_frame_document->Fetcher()->CachedResource(
-      KURL("https://example.com/lazy.png")));
 
   Compositor().BeginFrame();
   test::RunPendingTasks();

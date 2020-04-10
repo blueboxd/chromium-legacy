@@ -330,6 +330,11 @@ bool TabImpl::GetPasswordEchoEnabled() {
   return browser_ ? browser_->GetPasswordEchoEnabled() : false;
 }
 
+void TabImpl::OnLosingActive() {
+  if (is_fullscreen_)
+    web_contents_->ExitFullscreen(/* will_cause_resize */ false);
+}
+
 bool TabImpl::IsActive() {
   return browser_->GetActiveTab() == this;
 }

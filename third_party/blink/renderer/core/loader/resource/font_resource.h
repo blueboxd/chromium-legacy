@@ -55,7 +55,6 @@ class CORE_EXPORT FontResource final : public Resource {
 
   void SetRevalidatingRequest(const ResourceRequestHead&) override;
 
-  void AllClientsAndObserversRemoved() override;
   void StartLoadLimitTimersIfNecessary(base::SingleThreadTaskRunner*);
 
   String OtsParsingMessage() const { return ots_parsing_message_; }
@@ -134,4 +133,4 @@ class FontResourceClient : public ResourceClient {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_RESOURCE_FONT_RESOURCE_H_

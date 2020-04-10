@@ -45,12 +45,14 @@
 #include "chrome/browser/profiles/profile_observer.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
@@ -261,7 +263,12 @@ bool CanOpenProfileOnStartup(Profile* profile) {
 #endif
 }
 
-void ShowUserManagerOnStartup(const base::CommandLine& command_line) {
+bool ShouldShowProfilePicker() {
+  return !signin_util::IsForceSigninEnabled() &&
+         base::FeatureList::IsEnabled(features::kNewProfilePicker);
+}
+
+void ShowUserManagerOnStartup() {
 #if !defined(OS_CHROMEOS)
   UserManager::Show(base::FilePath(),
                     profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
@@ -790,6 +797,12 @@ bool StartupBrowserCreator::LaunchBrowserForLastProfiles(
     bool process_startup,
     Profile* last_used_profile,
     const Profiles& last_opened_profiles) {
+  if (ShouldShowProfilePicker()) {
+    // TODO(crbug.com/1063856): Adjust to show the profile picker.
+    ShowUserManagerOnStartup();
+    return true;
+  }
+
   chrome::startup::IsProcessStartup is_process_startup = process_startup ?
       chrome::startup::IS_PROCESS_STARTUP :
       chrome::startup::IS_NOT_PROCESS_STARTUP;
@@ -825,7 +838,7 @@ bool StartupBrowserCreator::LaunchBrowserForLastProfiles(
     }
 
     // Show UserManager if |last_used_profile| can't be auto opened.
-    ShowUserManagerOnStartup(command_line);
+    ShowUserManagerOnStartup();
     return true;
   }
   return ProcessLastOpenedProfiles(command_line, cur_dir, is_process_startup,
@@ -891,7 +904,7 @@ bool StartupBrowserCreator::ProcessLastOpenedProfiles(
 // activation this one.
 #if !defined(OS_CHROMEOS)
   if (is_process_startup == chrome::startup::IS_PROCESS_STARTUP)
-    ShowUserManagerOnStartup(command_line);
+    ShowUserManagerOnStartup();
   else
 #endif
     profile_launch_observer.Get().set_profile_to_activate(last_used_profile);

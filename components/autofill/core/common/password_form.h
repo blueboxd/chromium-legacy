@@ -173,6 +173,11 @@ struct PasswordForm {
   // When parsing an HTML form, this is typically empty.
   base::string16 password_value;
 
+  // The current encrypted password. Must be non-empty for PasswordForm
+  // instances retrieved from the password store or coming in a
+  // PasswordStoreChange that is not of type REMOVE.
+  std::string encrypted_password;
+
   // If the form was a sign-up or a change password form, the name of the input
   // element corresponding to the new password. Optional, and not persisted.
   base::string16 new_password_element;

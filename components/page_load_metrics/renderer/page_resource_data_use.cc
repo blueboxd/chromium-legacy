@@ -13,61 +13,6 @@
 
 namespace page_load_metrics {
 
-namespace {
-
-// Returns true when the image is a placeholder for lazy load.
-bool IsPartialImageRequest(
-    network::mojom::RequestDestination request_destination,
-    content::PreviewsState previews_state) {
-  if (request_destination != network::mojom::RequestDestination::kImage)
-    return false;
-  return previews_state & content::PreviewsTypes::LAZY_IMAGE_LOAD_DEFERRED;
-}
-
-// Returns true if this resource was previously fetched as a placeholder.
-bool IsImageAutoReload(network::mojom::RequestDestination request_destination,
-                       content::PreviewsState previews_state) {
-  if (request_destination != network::mojom::RequestDestination::kImage)
-    return false;
-  return previews_state & content::PreviewsTypes::LAZY_IMAGE_AUTO_RELOAD;
-}
-
-// Returns the ratio of original data size (without applying interventions) to
-// actual data use for a placeholder.
-double EstimatePartialImageRequestSavings(
-    const network::mojom::URLResponseHead& response_head) {
-  if (!response_head.headers)
-    return 1.0;
-
-  if (response_head.headers->GetContentLength() <= 0)
-    return 1.0;
-
-  int64_t first, last, original_length;
-  if (!response_head.headers->GetContentRangeFor206(&first, &last,
-                                                    &original_length)) {
-    return 1.0;
-  }
-
-  if (original_length < response_head.headers->GetContentLength())
-    return 1.0;
-
-  return original_length / response_head.headers->GetContentLength();
-}
-
-// Returns a ratio of original data use to actual data use while factoring in
-// that this request was previously fetched as a placeholder, and therefore
-// recorded savings earlier.
-double EstimateAutoReloadImageRequestSavings(
-    const network::mojom::URLResponseHead& response_head) {
-  static const double kPlageholderContentInCache = 2048;
-
-  // Count the new network usage. For a reloaded placeholder image, 2KB will be
-  // in cache.
-  return kPlageholderContentInCache / response_head.headers->GetContentLength();
-}
-
-}  // namespace
-
 PageResourceDataUse::PageResourceDataUse()
     : resource_id_(-1),
       data_reduction_proxy_compression_ratio_estimate_(1.0),
@@ -91,21 +36,10 @@ void PageResourceDataUse::DidStartResponse(
     const GURL& response_url,
     int resource_id,
     const network::mojom::URLResponseHead& response_head,
-    network::mojom::RequestDestination request_destination,
-    content::PreviewsState previews_state) {
+    network::mojom::RequestDestination request_destination) {
   resource_id_ = resource_id;
-
-  if (IsPartialImageRequest(request_destination, previews_state)) {
-    data_reduction_proxy_compression_ratio_estimate_ =
-        EstimatePartialImageRequestSavings(response_head);
-  } else if (IsImageAutoReload(request_destination, previews_state)) {
-    data_reduction_proxy_compression_ratio_estimate_ =
-        EstimateAutoReloadImageRequestSavings(response_head);
-  } else {
-    data_reduction_proxy_compression_ratio_estimate_ =
-        data_reduction_proxy::EstimateCompressionRatioFromHeaders(
-            &response_head);
-  }
+  data_reduction_proxy_compression_ratio_estimate_ =
+      data_reduction_proxy::EstimateCompressionRatioFromHeaders(&response_head);
 
   proxy_used_ = !response_head.proxy_server.is_direct();
   mime_type_ = response_head.mime_type;

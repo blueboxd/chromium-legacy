@@ -486,14 +486,14 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   std::unique_ptr<WebServiceWorkerNetworkProvider>
       service_worker_network_provider_;
 
-  bool was_blocked_by_document_policy_;
   DocumentPolicy::ParsedDocumentPolicy document_policy_;
+  bool was_blocked_by_document_policy_;
 
-  Member<ContentSecurityPolicy> content_security_policy_;
+  const Member<ContentSecurityPolicy> content_security_policy_;
+  const bool was_blocked_by_csp_;
+
   ClientHintsPreferences client_hints_preferences_;
   InitialScrollState initial_scroll_state_;
-
-  bool was_blocked_by_csp_;
 
   enum State { kNotStarted, kProvisional, kCommitted, kSentDidFinishLoad };
   State state_;

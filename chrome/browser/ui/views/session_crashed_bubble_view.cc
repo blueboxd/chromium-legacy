@@ -158,7 +158,7 @@ void SessionCrashedBubbleView::Show(
 }
 
 ax::mojom::Role SessionCrashedBubbleView::GetAccessibleWindowRole() {
-  return ax::mojom::Role::kAlert;
+  return ax::mojom::Role::kAlertDialog;
 }
 
 SessionCrashedBubbleView::SessionCrashedBubbleView(views::View* anchor_view,

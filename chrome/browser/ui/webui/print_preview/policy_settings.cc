@@ -21,7 +21,6 @@ void PolicySettings::RegisterProfilePrefs(
   registry->RegisterIntegerPref(prefs::kPrintingAllowedColorModes, 0);
   registry->RegisterIntegerPref(prefs::kPrintingAllowedDuplexModes, 0);
   registry->RegisterIntegerPref(prefs::kPrintingAllowedPinModes, 0);
-  registry->RegisterListPref(prefs::kPrintingAllowedPageSizes);
   registry->RegisterIntegerPref(prefs::kPrintingColorDefault, 0);
   registry->RegisterIntegerPref(prefs::kPrintingDuplexDefault, 0);
   registry->RegisterIntegerPref(prefs::kPrintingPinDefault, 0);

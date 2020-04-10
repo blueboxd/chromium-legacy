@@ -6,6 +6,7 @@
 #define BASE_UTIL_TYPE_SAFETY_ID_TYPE_H_
 
 #include <cstdint>
+#include <type_traits>
 
 #include "base/util/type_safety/strong_alias.h"
 
@@ -49,9 +50,10 @@ namespace util {
 template <typename TypeMarker, typename WrappedType, WrappedType kInvalidValue>
 class IdType : public StrongAlias<TypeMarker, WrappedType> {
  public:
-  static_assert(kInvalidValue <= 0,
-                "The invalid value should be negative or equal to zero to "
-                "avoid overflow issues.");
+  static_assert(
+      std::is_unsigned<WrappedType>::value || kInvalidValue <= 0,
+      "If signed, the invalid value should be negative or equal to zero to "
+      "avoid overflow issues.");
 
   using StrongAlias<TypeMarker, WrappedType>::StrongAlias;
 

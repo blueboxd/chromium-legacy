@@ -2288,7 +2288,7 @@ RTCRtpTransceiver* RTCPeerConnection::addTransceiver(
     }
     // Allowed characters: a-z 0-9 _ and -
     if (encoding.rid.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLM"
-                                       "NOPQRSTUVWXYZ012456789-_") !=
+                                       "NOPQRSTUVWXYZ0123456789-_") !=
         std::string::npos) {
       exception_state.ThrowTypeError("Illegal character in rid");
       return nullptr;

@@ -21,4 +21,6 @@ interface INavigation {
   boolean isErrorPage() = 5;
 
   int getLoadError() = 6;
+
+  void setRequestHeader(in String name, in String value) = 7;
 }

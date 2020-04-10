@@ -115,15 +115,10 @@ class WebURLRequest {
     kOfflinePageOn = 1 << 8,
     kLitePageRedirectOn = 1 << 9,  // Allow the browser to redirect the resource
                                    // to a Lite Page server.
-    kLazyImageLoadDeferred = 1 << 10,  // Request the placeholder version of an
-                                       // image that was deferred by lazyload.
-    kLazyImageAutoReload = 1 << 11,    // Request the full version of an image
-                                       // that was previously fetched as a
-                                       // placeholder by lazyload.
-    kDeferAllScriptOn = 1 << 12,  // Request that script execution be deferred
-                                  // until parsing completes.
+    kDeferAllScriptOn = 1 << 10,   // Request that script execution be deferred
+                                   // until parsing completes.
     kSubresourceRedirectOn =
-        1 << 13,  // Allow the subresources in the page to be redirected
+        1 << 11,  // Allow the subresources in the page to be redirected
                   // to serve better optimized resources.
     kPreviewsStateLast = kSubresourceRedirectOn
   };

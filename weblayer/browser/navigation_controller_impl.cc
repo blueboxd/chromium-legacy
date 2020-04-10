@@ -150,6 +150,7 @@ void NavigationControllerImpl::DidStartNavigation(
   navigation_map_[navigation_handle] =
       std::make_unique<NavigationImpl>(navigation_handle);
   auto* navigation = navigation_map_[navigation_handle].get();
+  navigation->set_safe_to_set_request_headers(true);
 #if defined(OS_ANDROID)
   if (java_controller_) {
     JNIEnv* env = AttachCurrentThread();
@@ -166,6 +167,7 @@ void NavigationControllerImpl::DidStartNavigation(
 #endif
   for (auto& observer : observers_)
     observer.NavigationStarted(navigation);
+  navigation->set_safe_to_set_request_headers(false);
 }
 
 void NavigationControllerImpl::DidRedirectNavigation(
@@ -175,6 +177,7 @@ void NavigationControllerImpl::DidRedirectNavigation(
 
   DCHECK(navigation_map_.find(navigation_handle) != navigation_map_.end());
   auto* navigation = navigation_map_[navigation_handle].get();
+  navigation->set_safe_to_set_request_headers(true);
 #if defined(OS_ANDROID)
   if (java_controller_) {
     TRACE_EVENT0("weblayer",
@@ -185,6 +188,7 @@ void NavigationControllerImpl::DidRedirectNavigation(
 #endif
   for (auto& observer : observers_)
     observer.NavigationRedirected(navigation);
+  navigation->set_safe_to_set_request_headers(false);
 }
 
 void NavigationControllerImpl::ReadyToCommitNavigation(

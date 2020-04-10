@@ -45,7 +45,6 @@ class NullImageResourceInfo final
   bool IsSchedulingReload() const override { return false; }
   const ResourceResponse& GetResponse() const override { return response_; }
   bool ShouldShowPlaceholder() const override { return false; }
-  bool ShouldShowLazyImagePlaceholder() const override { return false; }
   bool IsCacheValidator() const override { return false; }
   bool SchedulingReloadOrShouldReloadBrokenPlaceholder() const override {
     return false;
@@ -118,14 +117,6 @@ ImageResourceContent* ImageResourceContent::CreateLoaded(
   ImageResourceContent* content =
       MakeGarbageCollected<ImageResourceContent>(std::move(image));
   content->content_status_ = ResourceStatus::kCached;
-  return content;
-}
-
-ImageResourceContent* ImageResourceContent::CreateLazyImagePlaceholder() {
-  ImageResourceContent* content = MakeGarbageCollected<ImageResourceContent>();
-  content->content_status_ = ResourceStatus::kCached;
-  content->image_ =
-      PlaceholderImage::CreateForLazyImages(content, IntSize(1, 1));
   return content;
 }
 
@@ -449,19 +440,13 @@ ImageResourceContent::UpdateImageResult ImageResourceContent::UpdateImage(
       if (size_available_ == Image::kSizeUnavailable && !all_data_received)
         return UpdateImageResult::kNoDecodeError;
 
-      if ((info_->ShouldShowPlaceholder() ||
-           info_->ShouldShowLazyImagePlaceholder()) &&
-          all_data_received) {
+      if (info_->ShouldShowPlaceholder() && all_data_received) {
         if (image_ && !image_->IsNull()) {
           IntSize dimensions = image_->Size();
           ClearImage();
-          if (info_->ShouldShowLazyImagePlaceholder()) {
-            image_ = PlaceholderImage::CreateForLazyImages(this, dimensions);
-          } else {
-            image_ = PlaceholderImage::Create(
-                this, dimensions,
-                EstimateOriginalImageSizeForPlaceholder(info_->GetResponse()));
-          }
+          image_ = PlaceholderImage::Create(
+              this, dimensions,
+              EstimateOriginalImageSizeForPlaceholder(info_->GetResponse()));
         }
       }
 

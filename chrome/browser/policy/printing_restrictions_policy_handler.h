@@ -89,16 +89,6 @@ class PrintingPinDefaultPolicyHandler
   ~PrintingPinDefaultPolicyHandler() override;
 };
 
-class PrintingAllowedPageSizesPolicyHandler : public ListPolicyHandler {
- public:
-  PrintingAllowedPageSizesPolicyHandler();
-  ~PrintingAllowedPageSizesPolicyHandler() override;
-
-  // ListPolicyHandler implementation:
-  bool CheckListEntry(const base::Value& value) override;
-  void ApplyList(base::Value filtered_list, PrefValueMap* prefs) override;
-};
-
 class PrintingSizeDefaultPolicyHandler : public TypeCheckingPolicyHandler {
  public:
   PrintingSizeDefaultPolicyHandler();

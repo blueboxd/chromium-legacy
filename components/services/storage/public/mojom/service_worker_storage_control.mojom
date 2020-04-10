@@ -39,20 +39,33 @@ enum ServiceWorkerStorageOriginState {
 // An interface that reads a service worker script (resource) to storage.
 interface ServiceWorkerResourceReader {
   // Reads the response head of the resource associated with this reader.
+  // |status| is the number of bytes read, or a //net error.
+  // Also returns metadata associated with the resource if it exists.
   ReadResponseHead() =>
-      (int32 status, network.mojom.URLResponseHead response_head);
+      (int32 status,
+       network.mojom.URLResponseHead response_head,
+       mojo_base.mojom.BigBuffer? metadata);
   // Reads the content of the resource associated with this reader.
   ReadData(int64 size) => (handle<data_pipe_consumer> pipe);
-  // TODO(crbug.com/1055677): Add ways to read the metadata of the script.
 };
 
 // An interface that writes a service worker script (resource) to storage.
 interface ServiceWorkerResourceWriter {
-  // Writes the response head to storage.
+  // Writes the response head to storage. Returns the number of bytes written,
+  // or a //net error.
   WriteResponseHead(network.mojom.URLResponseHead response_head)
       => (int32 status);
-  // Write the content of the resource to storage.
+  // Writes the content of the resource to storage. Returns the number of bytes
+  // written, or a //net error.
   WriteData(mojo_base.mojom.BigBuffer data) => (int32 status);
+};
+
+// An interface that writes a metadata (script cache) of a service worker script
+// to storage.
+interface ServiceWorkerResourceMetadataWriter {
+  // Writes the metadata of the resource associated with this writer. Returns
+  // the number of bytes written, or a //net error.
+  WriteMetadata(mojo_base.mojom.BigBuffer data) => (int32 status);
 };
 
 // Controls the state of service worker storage within a partition. This is a
@@ -105,4 +118,8 @@ interface ServiceWorkerStorageControl {
   // Creates a resource writer for the given |resource_id|.
   CreateResourceWriter(int64 resource_id,
                        pending_receiver<ServiceWorkerResourceWriter> writer);
+  // Creates a metadata writer for the given |resource_id|.
+  CreateResourceMetadataWriter(
+      int64 resource_id,
+      pending_receiver<ServiceWorkerResourceMetadataWriter> writer);
 };

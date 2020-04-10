@@ -58,7 +58,6 @@ class PLATFORM_EXPORT FetchParameters {
   };
   enum ImageRequestBehavior {
     kNone = 0,          // No optimization.
-    kAllowPlaceholder,  // The image is allowed to be a placeholder.
     kDeferImageLoad,    // Defer loading the image from network. Full image
                         // might still load if the request is already-loaded or
                         // in memory cache.
@@ -188,12 +187,6 @@ class PLATFORM_EXPORT FetchParameters {
   // Configures the request to defer the image and set the lazy image load bit.
   void SetLazyImageDeferred();
   void SetLazyImageNonBlocking();
-
-  // Configures the request to load an image placeholder if the request is
-  // eligible (e.g. the url's protocol is HTTP, etc.). If this request is
-  // non-eligible, this method doesn't modify the ResourceRequest. Calling this
-  // method sets image_request_behavior_ to the appropriate value.
-  void SetAllowImagePlaceholder();
 
   // See documentation in blink::ResourceRequest.
   bool IsFromOriginDirtyStyleSheet() const {

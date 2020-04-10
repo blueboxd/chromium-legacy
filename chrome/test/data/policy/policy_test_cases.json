@@ -403,16 +403,6 @@
     ]
   },
 
-  "PrintingAllowedPageSizes": {
-    "os": ["chromeos"],
-    "policy_pref_mapping_test": [
-      {
-        "policies": { "PrintingAllowedPageSizes": [{ "WidthUm": 210000, "HeightUm": 297000 }] },
-        "prefs": { "printing.allowed_page_sizes": {} }
-      }
-    ]
-  },
-
   "PrintingColorDefault": {
     "os": ["chromeos"],
     "policy_pref_mapping_test": [

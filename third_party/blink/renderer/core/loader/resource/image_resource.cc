@@ -97,9 +97,6 @@ class ImageResource::ImageResourceInfoImpl final
   bool ShouldShowPlaceholder() const override {
     return resource_->ShouldShowPlaceholder();
   }
-  bool ShouldShowLazyImagePlaceholder() const override {
-    return resource_->ShouldShowLazyImagePlaceholder();
-  }
   bool IsCacheValidator() const override {
     return resource_->IsCacheValidator();
   }
@@ -157,21 +154,14 @@ class ImageResource::ImageResourceFactory : public NonTextResourceFactory {
   STACK_ALLOCATED();
 
  public:
-  explicit ImageResourceFactory(const FetchParameters& fetch_params)
-      : NonTextResourceFactory(ResourceType::kImage),
-        fetch_params_(&fetch_params) {}
+  explicit ImageResourceFactory()
+      : NonTextResourceFactory(ResourceType::kImage) {}
 
   Resource* Create(const ResourceRequest& request,
                    const ResourceLoaderOptions& options) const override {
     return MakeGarbageCollected<ImageResource>(
-        request, options, ImageResourceContent::CreateNotStarted(),
-        fetch_params_->GetImageRequestBehavior() ==
-            FetchParameters::kAllowPlaceholder);
+        request, options, ImageResourceContent::CreateNotStarted());
   }
-
- private:
-  // Weak, unowned pointer. Must outlive |this|.
-  const FetchParameters* fetch_params_;
 };
 
 ImageResource* ImageResource::Fetch(FetchParameters& params,
@@ -183,7 +173,7 @@ ImageResource* ImageResource::Fetch(FetchParameters& params,
   }
 
   ImageResource* resource = ToImageResource(
-      fetcher->RequestResource(params, ImageResourceFactory(params), nullptr));
+      fetcher->RequestResource(params, ImageResourceFactory(), nullptr));
 
   // If the fetch originated from user agent CSS we should mark it as a user
   // agent resource.
@@ -197,8 +187,7 @@ Resource::MatchStatus ImageResource::CanReuse(
     const FetchParameters& params) const {
   // If the image is a placeholder, but this fetch doesn't allow a
   // placeholder, then do not reuse this resource.
-  if (params.GetImageRequestBehavior() != FetchParameters::kAllowPlaceholder &&
-      placeholder_option_ != PlaceholderOption::kDoNotReloadPlaceholder) {
+  if (placeholder_option_ != PlaceholderOption::kDoNotReloadPlaceholder) {
     return MatchStatus::kImagePlaceholder;
   }
 
@@ -218,7 +207,7 @@ bool ImageResource::CanUseCacheValidator() const {
 ImageResource* ImageResource::Create(const ResourceRequest& request) {
   ResourceLoaderOptions options;
   return MakeGarbageCollected<ImageResource>(
-      request, options, ImageResourceContent::CreateNotStarted(), false);
+      request, options, ImageResourceContent::CreateNotStarted());
 }
 
 ImageResource* ImageResource::CreateForTest(const KURL& url) {
@@ -236,14 +225,11 @@ ImageResource* ImageResource::CreateForTest(const KURL& url) {
 
 ImageResource::ImageResource(const ResourceRequest& resource_request,
                              const ResourceLoaderOptions& options,
-                             ImageResourceContent* content,
-                             bool is_placeholder)
+                             ImageResourceContent* content)
     : Resource(resource_request, ResourceType::kImage, options),
       content_(content),
       is_scheduling_reload_(false),
-      placeholder_option_(
-          is_placeholder ? PlaceholderOption::kShowAndReloadPlaceholderAlways
-                         : PlaceholderOption::kDoNotReloadPlaceholder) {
+      placeholder_option_(PlaceholderOption::kDoNotReloadPlaceholder) {
   DCHECK(GetContent());
   RESOURCE_LOADING_DVLOG(1)
       << "MakeGarbageCollected<ImageResource>(ResourceRequest) " << this;
@@ -521,21 +507,6 @@ bool ImageResource::ShouldShowPlaceholder() const {
     case PlaceholderOption::kShowAndReloadPlaceholderAlways:
     case PlaceholderOption::kShowAndDoNotReloadPlaceholder:
       return true;
-    case PlaceholderOption::kReloadPlaceholderOnDecodeError:
-    case PlaceholderOption::kDoNotReloadPlaceholder:
-      return false;
-  }
-  NOTREACHED();
-  return false;
-}
-
-bool ImageResource::ShouldShowLazyImagePlaceholder() const {
-  switch (placeholder_option_) {
-    case PlaceholderOption::kShowAndReloadPlaceholderAlways:
-    case PlaceholderOption::kShowAndDoNotReloadPlaceholder:
-      return RuntimeEnabledFeatures::LazyImageLoadingEnabled() &&
-             (GetResourceRequest().GetPreviewsState() &
-              WebURLRequest::kLazyImageLoadDeferred);
     case PlaceholderOption::kReloadPlaceholderOnDecodeError:
     case PlaceholderOption::kDoNotReloadPlaceholder:
       return false;

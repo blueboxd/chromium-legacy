@@ -629,8 +629,6 @@ bool CreateDirectoryAndGetError(const FilePath& full_path,
   const DWORD fileattr = ::GetFileAttributes(full_path_str);
   if (fileattr != INVALID_FILE_ATTRIBUTES) {
     if ((fileattr & FILE_ATTRIBUTE_DIRECTORY) != 0) {
-      DVLOG(1) << "CreateDirectory(" << full_path_str << "), "
-               << "directory already exists.";
       return true;
     }
     DLOG(WARNING) << "CreateDirectory(" << full_path_str << "), "

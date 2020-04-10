@@ -714,6 +714,9 @@ extern const char kNearbySharingDescription[];
 extern const char kUsernameFirstFlowName[];
 extern const char kUsernameFirstFlowDescription[];
 
+extern const char kNewProfilePickerName[];
+extern const char kNewProfilePickerDescription[];
+
 extern const char kNewUsbBackendName[];
 extern const char kNewUsbBackendDescription[];
 

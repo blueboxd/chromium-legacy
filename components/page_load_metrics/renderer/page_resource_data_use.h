@@ -31,8 +31,7 @@ class PageResourceDataUse {
   void DidStartResponse(const GURL& response_url,
                         int resource_id,
                         const network::mojom::URLResponseHead& response_head,
-                        network::mojom::RequestDestination request_destination,
-                        content::PreviewsState previews_state);
+                        network::mojom::RequestDestination request_destination);
 
   // Updates received bytes.
   void DidReceiveTransferSizeUpdate(int received_data_length);

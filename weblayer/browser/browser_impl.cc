@@ -244,21 +244,12 @@ std::unique_ptr<Tab> BrowserImpl::RemoveTab(Tab* tab) {
   tabs_.erase(iter);
   const bool active_tab_changed = active_tab_ == tab;
   if (active_tab_changed)
-    active_tab_ = nullptr;
+    SetActiveTab(nullptr);
+
 #if defined(OS_ANDROID)
-  if (active_tab_changed) {
-    Java_BrowserImpl_onActiveTabChanged(
-        AttachCurrentThread(), java_impl_,
-        active_tab_ ? static_cast<TabImpl*>(active_tab_)->GetJavaTab()
-                    : nullptr);
-  }
   Java_BrowserImpl_onTabRemoved(AttachCurrentThread(), java_impl_,
                                 tab ? tab_impl->GetJavaTab() : nullptr);
 #endif
-  if (active_tab_changed) {
-    for (BrowserObserver& obs : browser_observers_)
-      obs.OnActiveTabChanged(active_tab_);
-  }
   for (BrowserObserver& obs : browser_observers_)
     obs.OnTabRemoved(tab, active_tab_changed);
   return owned_tab;
@@ -267,6 +258,8 @@ std::unique_ptr<Tab> BrowserImpl::RemoveTab(Tab* tab) {
 void BrowserImpl::SetActiveTab(Tab* tab) {
   if (GetActiveTab() == tab)
     return;
+  if (active_tab_)
+    active_tab_->OnLosingActive();
   // TODO: currently the java side sets visibility, this code likely should
   // too and it should be removed from the java side.
   active_tab_ = static_cast<TabImpl*>(tab);

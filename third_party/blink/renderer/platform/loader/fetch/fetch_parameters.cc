@@ -112,40 +112,13 @@ void FetchParameters::MakeSynchronous() {
 }
 
 void FetchParameters::SetLazyImageDeferred() {
-  resource_request_.SetPreviewsState(resource_request_.GetPreviewsState() |
-                                     WebURLRequest::kLazyImageLoadDeferred);
   DCHECK_EQ(kNone, image_request_behavior_);
   image_request_behavior_ = kDeferImageLoad;
 }
 
 void FetchParameters::SetLazyImageNonBlocking() {
+  // TODO(domfarolino): [Before merging]: can we DCHECK here.
   image_request_behavior_ = kNonBlockingImage;
-}
-
-void FetchParameters::SetAllowImagePlaceholder() {
-  DCHECK_EQ(kNone, image_request_behavior_);
-  if (!resource_request_.Url().ProtocolIsInHTTPFamily() ||
-      resource_request_.HttpMethod() != "GET" ||
-      !resource_request_.HttpHeaderField("range").IsNull()) {
-    // Make sure that the request isn't marked as using an image preview type,
-    // since without loading an image placeholder, Client Lo-Fi isn't really
-    // in use.
-    resource_request_.SetPreviewsState(resource_request_.GetPreviewsState() &
-                                       ~WebURLRequest::kLazyImageLoadDeferred);
-    return;
-  }
-
-  image_request_behavior_ = kAllowPlaceholder;
-
-  // Fetch the first few bytes of the image. This number is tuned to both (a)
-  // likely capture the entire image for small images and (b) likely contain
-  // the dimensions for larger images.
-  // TODO(sclittle): Calculate the optimal value for this number.
-  resource_request_.SetHttpHeaderField("range", "bytes=0-2047");
-
-  // TODO(sclittle): Indicate somehow (e.g. through a new request bit) to the
-  // embedder that it should return the full resource if the entire resource is
-  // fresh in the cache.
 }
 
 }  // namespace blink

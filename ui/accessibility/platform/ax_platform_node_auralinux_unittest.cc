@@ -284,6 +284,14 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectRole) {
   AtkObject* child_obj(AtkObjectFromNode(child_node));
   ASSERT_TRUE(ATK_IS_OBJECT(child_obj));
   g_object_ref(child_obj);
+  EXPECT_EQ(ATK_ROLE_NOTIFICATION, atk_object_get_role(child_obj));
+  g_object_unref(child_obj);
+
+  child.role = ax::mojom::Role::kAlertDialog;
+  child_node->SetData(child);
+  child_obj = AtkObjectFromNode(child_node);
+  ASSERT_TRUE(ATK_IS_OBJECT(child_obj));
+  g_object_ref(child_obj);
   EXPECT_EQ(ATK_ROLE_ALERT, atk_object_get_role(child_obj));
   g_object_unref(child_obj);
 

@@ -59,8 +59,7 @@ class PageTimingMetricsSender {
   void DidStartResponse(const GURL& response_url,
                         int resource_id,
                         const network::mojom::URLResponseHead& response_head,
-                        network::mojom::RequestDestination request_destination,
-                        content::PreviewsState previews_state);
+                        network::mojom::RequestDestination request_destination);
   void DidReceiveTransferSizeUpdate(int resource_id, int received_data_length);
   void DidCompleteResponse(int resource_id,
                            const network::URLLoaderCompletionStatus& status);

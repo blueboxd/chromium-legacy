@@ -48,7 +48,8 @@ void DidReadInfo(
   const net::HttpResponseInfo* http_info = buffer->http_info.get();
   if (!http_info) {
     DCHECK_LT(status, 0);
-    std::move(callback).Run(status, /*response_head=*/nullptr);
+    std::move(callback).Run(status, /*response_head=*/nullptr,
+                            /*metadata=*/base::nullopt);
     return;
   }
 
@@ -73,7 +74,13 @@ void DidReadInfo(
   head->cert_status = http_info->ssl_info.cert_status;
   head->ssl_info = http_info->ssl_info;
 
-  std::move(callback).Run(status, std::move(head));
+  base::Optional<mojo_base::BigBuffer> metadata;
+  if (http_info->metadata) {
+    metadata = mojo_base::BigBuffer(base::as_bytes(base::make_span(
+        http_info->metadata->data(), http_info->metadata->size())));
+  }
+
+  std::move(callback).Run(status, std::move(head), std::move(metadata));
 }
 
 }  // namespace
@@ -252,6 +259,24 @@ void ServiceWorkerResourceWriterImpl::WriteData(mojo_base::BigBuffer data,
   int buf_len = data.size();
   auto buffer = base::MakeRefCounted<BigIOBuffer>(std::move(data));
   writer_->WriteData(buffer.get(), buf_len, std::move(callback));
+}
+
+ServiceWorkerResourceMetadataWriterImpl::
+    ServiceWorkerResourceMetadataWriterImpl(
+        std::unique_ptr<ServiceWorkerResponseMetadataWriter> writer)
+    : writer_(std::move(writer)) {
+  DCHECK(writer_);
+}
+
+ServiceWorkerResourceMetadataWriterImpl::
+    ~ServiceWorkerResourceMetadataWriterImpl() = default;
+
+void ServiceWorkerResourceMetadataWriterImpl::WriteMetadata(
+    mojo_base::BigBuffer data,
+    WriteMetadataCallback callback) {
+  int buf_len = data.size();
+  auto buffer = base::MakeRefCounted<BigIOBuffer>(std::move(data));
+  writer_->WriteMetadata(buffer.get(), buf_len, std::move(callback));
 }
 
 }  // namespace content
